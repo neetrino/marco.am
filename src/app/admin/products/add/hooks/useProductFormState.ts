@@ -17,6 +17,7 @@ export function useProductFormState() {
     categoryIds: [] as string[],
     published: false,
     featured: false,
+    productClass: 'retail' as 'retail' | 'wholesale',
     imageUrls: [] as string[],
     featuredImageIndex: 0,
     mainProductImage: '' as string,

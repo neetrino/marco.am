@@ -51,6 +51,7 @@ export async function createAndSubmitPayload({
       categoryIds: formData.categoryIds.length > 0 ? formData.categoryIds : undefined,
       published: isEditMode ? formData.published : true,
       featured: formData.featured,
+      productClass: (formData as { productClass?: 'retail' | 'wholesale' }).productClass || 'retail',
       locale: 'en',
       variants: variants,
       attributeIds: attributeIds.length > 0 ? attributeIds : undefined,

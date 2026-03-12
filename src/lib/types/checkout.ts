@@ -23,9 +23,13 @@ export interface CheckoutData {
     countryCode?: string;
     phone?: string;
   };
-  /** Ignored at checkout — server computes from shippingMethod + shippingAddress.city */
+  /** Ignored at checkout — server computes from shippingMethod + shippingAddress.city + product class */
   shippingAmount?: number;
   paymentMethod?: string;
+  /** Promo code applied at checkout (validated server-side) */
+  couponCode?: string;
+  /** Customer notes for the order */
+  notes?: string;
   billingAddress?: {
     firstName?: string;
     lastName?: string;

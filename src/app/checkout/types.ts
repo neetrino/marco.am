@@ -7,6 +7,7 @@ export type CheckoutFormData = {
   paymentMethod: 'idram' | 'arca' | 'cash_on_delivery';
   shippingAddress?: string;
   shippingCity?: string;
+  notes?: string;
   cardNumber?: string;
   cardExpiry?: string;
   cardCvv?: string;
@@ -32,6 +33,7 @@ export interface CartItem {
 
 export interface Cart {
   id: string;
+  couponCode?: string;
   items: CartItem[];
   totals: {
     subtotal: number;

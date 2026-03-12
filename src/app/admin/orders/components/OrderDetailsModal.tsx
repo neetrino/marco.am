@@ -6,6 +6,7 @@ import { OrderDetailsSummary } from './OrderDetailsSummary';
 import { OrderDetailsAddresses } from './OrderDetailsAddresses';
 import { OrderDetailsTotals } from './OrderDetailsTotals';
 import { OrderDetailsItems } from './OrderDetailsItems';
+import { OrderDetailsAdminNotes } from './OrderDetailsAdminNotes';
 import type { OrderDetails } from '../useOrders';
 
 interface OrderDetailsModalProps {
@@ -14,6 +15,7 @@ interface OrderDetailsModalProps {
   currency: string;
   onClose: () => void;
   formatCurrency: (amount: number, orderCurrency?: string, fromCurrency?: CurrencyCode) => string;
+  onUpdateAdminNotes?: (orderId: string, adminNotes: string | null) => Promise<void>;
 }
 
 export function OrderDetailsModal({
@@ -22,6 +24,7 @@ export function OrderDetailsModal({
   currency,
   onClose,
   formatCurrency,
+  onUpdateAdminNotes,
 }: OrderDetailsModalProps) {
   const { t } = useTranslation();
 
@@ -81,6 +84,13 @@ export function OrderDetailsModal({
                 orderDetails={orderDetails}
                 formatCurrency={formatCurrency}
               />
+              {onUpdateAdminNotes && (
+                <OrderDetailsAdminNotes
+                  orderId={orderDetails.id}
+                  adminNotes={orderDetails.adminNotes}
+                  onUpdate={onUpdateAdminNotes}
+                />
+              )}
             </div>
           )}
         </div>

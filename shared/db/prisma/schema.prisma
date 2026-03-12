@@ -31,9 +31,10 @@ model User {
   updatedAt            DateTime  @updatedAt
 
   // Relations
-  carts  Cart[]
-  orders Order[]
-  reviews ProductReview[]
+  carts     Cart[]
+  orders    Order[]
+  reviews   ProductReview[]
+  reelLikes ReelLike[]
 
   @@index([deletedAt])
   @@map("users")
@@ -214,6 +215,7 @@ model Product {
   labels            ProductLabel[]
   productAttributes ProductAttribute[]
   discountPercent   Int                  @default(0)
+  productClass      String               @default("retail") // "retail" | "wholesale"
   deletedAt         DateTime?
   createdAt         DateTime             @default(now())
   updatedAt         DateTime             @updatedAt
@@ -394,6 +396,7 @@ model Order {
   trackingNumber    String?
   notes             String?      @db.Text
   adminNotes        String?      @db.Text
+  couponCode        String?      // Applied promo code at checkout
   ipAddress         String?
   userAgent         String?
   paidAt            DateTime?
@@ -530,4 +533,77 @@ model ContactMessage {
   @@index([createdAt(sort: Desc)])
   @@index([email])
   @@map("contact_messages")
+}
+
+// ============================================
+// PROMO CODE MODEL
+// ============================================
+model PromoCode {
+  id            String    @id @default(cuid())
+  code          String    @unique
+  type          String    // "percent" | "fixed"
+  value         Float     // percent 0-100 or fixed amount in AMD
+  active        Boolean   @default(true)
+  validFrom     DateTime?
+  validTo       DateTime?
+  maxUses       Int?      // null = unlimited
+  usedCount     Int       @default(0)
+  minOrderAmount Float?   // minimum order subtotal in AMD (optional)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([code])
+  @@index([active])
+  @@map("promo_codes")
+}
+
+// ============================================
+// BANNER MODEL (homepage hero / slides)
+// ============================================
+model Banner {
+  id        String   @id @default(cuid())
+  title     String?
+  imageUrl  String
+  linkUrl   String?
+  position  Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([active, position])
+  @@map("banners")
+}
+
+// ============================================
+// REEL MODEL (video feed)
+// ============================================
+model Reel {
+  id           String     @id @default(cuid())
+  videoUrl     String
+  thumbnailUrl String?
+  caption      String?     @db.Text
+  position     Int         @default(0)
+  active       Boolean     @default(true)
+  likesCount   Int         @default(0)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  likes        ReelLike[]
+
+  @@index([active, position])
+  @@map("reels")
+}
+
+model ReelLike {
+  id        String   @id @default(cuid())
+  reelId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  reel Reel @relation(fields: [reelId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([reelId, userId])
+  @@index([reelId])
+  @@index([userId])
+  @@map("reel_likes")
 }

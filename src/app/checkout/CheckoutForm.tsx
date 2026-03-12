@@ -186,6 +186,18 @@ export function CheckoutForm({
         </Card>
       )}
 
+      {/* Order notes */}
+      <Card className="p-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">{t('checkout.notes')}</h2>
+        <textarea
+          {...register('notes')}
+          placeholder={t('checkout.placeholders.notes')}
+          rows={3}
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-gray-900 focus:border-transparent disabled:opacity-50"
+          disabled={isSubmitting}
+        />
+      </Card>
+
       {/* Payment Method */}
       <Card className="p-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-6">{t('checkout.paymentMethod')}</h2>

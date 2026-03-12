@@ -5,24 +5,53 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '../lib/i18n-client';
 
-const heroImages = [
+const fallbackHeroImages = [
   'https://images.pexels.com/photos/67102/pexels-photo-67102.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
   'https://images.pexels.com/photos/266688/pexels-photo-266688.jpeg',
   'https://images.pexels.com/photos/3217852/pexels-photo-3217852.jpeg',
 ];
 
+interface BannerSlide {
+  id: string;
+  imageUrl: string;
+  linkUrl?: string | null;
+  title?: string | null;
+}
+
 export function HeroCarousel() {
   const router = useRouter();
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [slides, setSlides] = useState<BannerSlide[]>([]);
   const { t } = useTranslation();
 
   useEffect(() => {
+    fetch('/api/v1/banners')
+      .then((res) => res.ok ? res.json() : Promise.reject())
+      .then((json: { data?: Array<{ id: string; imageUrl: string; linkUrl?: string | null; title?: string | null }> }) => {
+        const data = json.data || [];
+        if (data.length > 0) {
+          setSlides(data.map((b) => ({ id: b.id, imageUrl: b.imageUrl, linkUrl: b.linkUrl ?? null, title: b.title ?? null })));
+        } else {
+          setSlides(fallbackHeroImages.map((url, i) => ({ id: `fallback-${i}`, imageUrl: url, linkUrl: null, title: null })));
+        }
+      })
+      .catch(() => {
+        setSlides(fallbackHeroImages.map((url, i) => ({ id: `fallback-${i}`, imageUrl: url, linkUrl: null, title: null })));
+      });
+  }, []);
+
+  const heroImages = slides.length > 0
+    ? slides.map((s) => s.imageUrl)
+    : fallbackHeroImages;
+  const slidesWithLinks = slides.length > 0 ? slides : fallbackHeroImages.map((url, i) => ({ id: `f-${i}`, imageUrl: url, linkUrl: null, title: null }));
+
+  useEffect(() => {
+    if (heroImages.length === 0) return;
     const interval = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % heroImages.length);
-    }, 5000); // Change image every 5 seconds
-
+    }, 5000);
     return () => clearInterval(interval);
-  }, []); // Auto-advance every 5 seconds
+  }, [heroImages.length]);
 
   const goToSlide = (index: number) => {
     setCurrentIndex(index);
@@ -55,23 +84,45 @@ export function HeroCarousel() {
       
       {/* Images */}
       <div className="relative w-full h-full">
-        {heroImages.map((image, index) => (
-          <div
-            key={index}
-            className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
-              index === currentIndex ? 'opacity-100' : 'opacity-0'
-            }`}
-          >
+        {heroImages.map((image, index) => {
+          const slide = slidesWithLinks[index];
+          const wrapper = slide?.linkUrl ? (
+            <a
+              href={slide.linkUrl}
+              className="block absolute inset-0"
+              target={slide.linkUrl.startsWith('http') ? '_blank' : undefined}
+              rel={slide.linkUrl.startsWith('http') ? 'noopener noreferrer' : undefined}
+            >
+              <Image
+                src={image}
+                alt={slide?.title || `Hero image ${index + 1}`}
+                fill
+                className="object-cover"
+                priority={index === 0}
+                unoptimized
+              />
+            </a>
+          ) : (
             <Image
               src={image}
-              alt={`Hero image ${index + 1}`}
+              alt={slide?.title || `Hero image ${index + 1}`}
               fill
               className="object-cover"
               priority={index === 0}
               unoptimized
             />
-          </div>
-        ))}
+          );
+          return (
+            <div
+              key={slide?.id ?? index}
+              className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+                index === currentIndex ? 'opacity-100' : 'opacity-0'
+              }`}
+            >
+              {wrapper}
+            </div>
+          );
+        })}
       </div>
 
       {/* Overlay Content - Text and Buttons */}

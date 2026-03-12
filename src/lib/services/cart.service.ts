@@ -1,6 +1,7 @@
 import { db } from "@white-shop/db";
 import { logger } from "../utils/logger";
 import { extractMediaUrl } from "../utils/extractMediaUrl";
+import { validatePromoCode } from "./promo.service";
 
 class CartService {
   /**
@@ -167,21 +168,109 @@ class CartService {
 
     const subtotal = itemsWithDetails.reduce((sum, item) => sum + item.total, 0);
 
+    let discount = 0;
+    if (cart.couponCode && subtotal > 0) {
+      const promoResult = await validatePromoCode(cart.couponCode, subtotal);
+      if (promoResult.valid) {
+        discount = promoResult.discountAmount;
+      }
+    }
+
+    const total = Math.max(0, subtotal - discount);
+
     return {
       cart: {
         id: cart.id,
+        couponCode: cart.couponCode ?? undefined,
         items: itemsWithDetails,
         totals: {
           subtotal,
-          discount: 0,
+          discount,
           shipping: 0,
           tax: 0,
-          total: subtotal,
+          total,
           currency: "AMD",
         },
         itemsCount: itemsWithDetails.reduce((sum, item) => sum + item.quantity, 0),
       },
     };
+  }
+
+  /**
+   * Apply promo code to cart. Validates code and updates cart.couponCode.
+   */
+  async applyCoupon(userId: string, code: string) {
+    const cart = await db.cart.findFirst({
+      where: { userId },
+      include: {
+        items: {
+          include: {
+            variant: { select: { price: true } },
+            product: { select: { discountPercent: true, primaryCategoryId: true, brandId: true } },
+          },
+        },
+      },
+    });
+
+    if (!cart) {
+      throw {
+        status: 404,
+        type: "https://api.shop.am/problems/not-found",
+        title: "Cart not found",
+        detail: "Cart not found",
+      };
+    }
+
+    const subtotal = cart.items.reduce((sum, item) => {
+      const price = Number((item as { variant?: { price: number } }).variant?.price ?? 0);
+      return sum + price * item.quantity;
+    });
+
+    const result = await validatePromoCode(code, subtotal);
+    if (!result.valid) {
+      throw {
+        status: 400,
+        type: "https://api.shop.am/problems/validation-error",
+        title: "Invalid promo code",
+        detail: result.reason,
+      };
+    }
+
+    await db.cart.update({
+      where: { id: cart.id },
+      data: { couponCode: result.code },
+    });
+
+    return {
+      applied: true,
+      code: result.code,
+      discountAmount: result.discountAmount,
+    };
+  }
+
+  /**
+   * Remove promo code from cart.
+   */
+  async removeCoupon(userId: string) {
+    const cart = await db.cart.findFirst({
+      where: { userId },
+    });
+
+    if (!cart) {
+      throw {
+        status: 404,
+        type: "https://api.shop.am/problems/not-found",
+        title: "Cart not found",
+        detail: "Cart not found",
+      };
+    }
+
+    await db.cart.update({
+      where: { id: cart.id },
+      data: { couponCode: null },
+    });
+
+    return { removed: true };
   }
 
   /**
