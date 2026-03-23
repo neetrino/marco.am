@@ -64,11 +64,11 @@ export default function BannersPage() {
           ) : (
             <Card className="p-6">
               <p className="text-sm text-gray-600 mb-4">
-                Banners are used in the homepage hero carousel. Add via API: POST /api/v1/admin/banners with imageUrl, title, linkUrl, position, active.
+                Banners are used on the homepage. Add via API: POST /api/v1/admin/banners with imageUrl, title, linkUrl, position, active.
               </p>
               <div className="space-y-4">
                 {list.length === 0 ? (
-                  <p className="text-gray-500 py-2">No banners yet. Hero will show fallback images.</p>
+                  <p className="text-gray-500 py-2">No banners yet.</p>
                 ) : (
                   list.map((b) => (
                     <div key={b.id} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
