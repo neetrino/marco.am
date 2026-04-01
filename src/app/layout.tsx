@@ -4,7 +4,7 @@ import { Inter, Montserrat } from 'next/font/google';
 import './globals.css';
 import { ClientProviders } from '../components/ClientProviders';
 import { Header } from '../components/Header';
-import { Footer } from '../components/Footer';
+import { ConditionalFooter } from '../components/ConditionalFooter';
 import { Breadcrumb } from '../components/Breadcrumb';
 import { MobileBottomNav } from '../components/MobileBottomNav';
 
@@ -36,7 +36,7 @@ export default function RootLayout({
               <main className="flex-1 w-full">
                 {children}
               </main>
-              <Footer />
+              <ConditionalFooter />
               <MobileBottomNav />
             </div>
           </ClientProviders>

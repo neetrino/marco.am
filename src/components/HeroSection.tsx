@@ -2,39 +2,48 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { useTranslation } from '../lib/i18n-client';
 
-/** Figma MCP asset URLs (expire in 7 days; replace with project CDN for production). */
+/** Figma node 305:2163 — asset URLs from get_design_context (refresh via MCP if expired). */
 const FIGMA_ASSETS = {
   maskGroup1:
-    'https://www.figma.com/api/mcp/asset/181303e8-5827-4c86-a6aa-aef7e1da43a3',
-  banner1: 'https://www.figma.com/api/mcp/asset/77281017-2b61-4705-9934-f6d975d182ee',
-  banner21: 'https://www.figma.com/api/mcp/asset/b7fca506-322d-41e5-b4db-29ec77d87079',
-  banner31: 'https://www.figma.com/api/mcp/asset/53e21335-7b2e-482c-bb66-6cba414fd12e',
-  group9233: 'https://www.figma.com/api/mcp/asset/19aded66-ce17-47c3-9a3b-ff2d66a8d860',
-  ellipse88: 'https://www.figma.com/api/mcp/asset/75898b35-7b52-4718-aa6c-af89d2092824',
-  arrow2: 'https://www.figma.com/api/mcp/asset/cf39913e-5bc3-415d-8c5f-71441555833f',
-  group9234: 'https://www.figma.com/api/mcp/asset/f9d873be-5c31-4910-ad18-bfec4a907121',
-  group9294: 'https://www.figma.com/api/mcp/asset/991cabca-091c-43ee-acf7-a8cf3fb4a475',
+    'https://www.figma.com/api/mcp/asset/ebc57c18-24af-4520-95bd-ab605e37c4dc',
+  banner1: 'https://www.figma.com/api/mcp/asset/e1b284c6-89f6-4972-b288-b229ac81caff',
+  banner21: 'https://www.figma.com/api/mcp/asset/37d73f28-c5ba-47a4-821c-01c26bdf0736',
+  banner31: 'https://www.figma.com/api/mcp/asset/cd481aa5-6fec-48fc-ab88-60f8ebaf1ee1',
+  group9233: 'https://www.figma.com/api/mcp/asset/4be5b83a-7676-424e-bd45-f3f7adbdf901',
+  ellipse88: 'https://www.figma.com/api/mcp/asset/4cb84c0c-23ec-4e48-ae5f-b7bffe68710d',
+  arrow2: 'https://www.figma.com/api/mcp/asset/e43f182d-8a68-4b14-b836-956dc65637ca',
+  group9234: 'https://www.figma.com/api/mcp/asset/a3a53725-89fa-4777-b46f-3919125fba1b',
+  group9294: 'https://www.figma.com/api/mcp/asset/7d183560-6162-48ae-bb0a-f9c988a64952',
 } as const;
 
-/** Desktop-only hero section — layout and dimensions from Figma node 305:2163. */
+/**
+ * HERO — Figma MARCO node 305:2163 (inside MARCO HOME 101:2781).
+ * Fixed 1920×1055 layout; parent should use overflow-x-auto on narrow viewports.
+ */
 export function HeroSection() {
+  const { t } = useTranslation();
+
   return (
     <section
-      className="relative w-[1920px] h-[990px] overflow-hidden font-montserrat-arm"
+      className="relative h-[1055px] w-[1920px] max-w-none shrink-0 overflow-hidden font-montserrat-arm"
       aria-label="Hero"
       data-name="HERO"
+      data-node-id="305:2163"
     >
       {/* Background — Mask group 1 */}
       <div
         className="absolute left-[135px] top-[65px] h-[925px] w-[1651px]"
         data-name="Mask group 1"
+        data-node-id="305:2146"
       >
         <Image
           src={FIGMA_ASSETS.maskGroup1}
           alt=""
           fill
-          className="object-cover"
+          className="pointer-events-none object-cover"
+          sizes="1651px"
           unoptimized
         />
       </div>
@@ -43,77 +52,85 @@ export function HeroSection() {
       <div
         className="absolute left-[174px] top-[225px] h-[606px] w-[631px] overflow-hidden"
         data-name="BANNER 1"
+        data-node-id="305:2147"
       >
         <Image
           src={FIGMA_ASSETS.banner1}
           alt=""
           fill
-          className="object-cover object-[0_-16.67%] max-w-none"
+          className="max-w-none object-cover object-[0_-16.67%]"
+          sizes="631px"
           unoptimized
         />
       </div>
 
       {/* Middle card — BANNER2 */}
-      <div className="absolute left-[887px] top-[124px]" data-name="BANNER2">
+      <div className="absolute left-[887px] top-[124px]" data-name="BANNER2" data-node-id="305:2161">
         <div
           className="absolute left-0 top-0 h-[557px] w-[404px] overflow-hidden"
           data-name="BANNER2 1"
+          data-node-id="305:2151"
         >
           <Image
             src={FIGMA_ASSETS.banner21}
             alt=""
             fill
-            className="object-cover max-w-none"
+            className="max-w-none object-cover"
+            sizes="404px"
             unoptimized
           />
         </div>
-        <div className="absolute left-[322px] top-0 h-[86.524px] w-[86.924px]">
+        <div className="absolute left-[322px] top-0 h-[86.524px] w-[86.924px]" data-node-id="305:2115">
           <Image
             src={FIGMA_ASSETS.group9233}
             alt=""
             fill
             className="object-contain"
+            sizes="87px"
             unoptimized
           />
         </div>
         <Link
           href="/products"
-          className="absolute left-[80px] top-[460px] flex h-[56px] w-[250px] items-center justify-center overflow-hidden rounded-full bg-primary text-base font-bold leading-6 text-secondary"
+          className="absolute left-[80px] top-[460px] flex h-[56px] w-[250px] items-center justify-center overflow-hidden rounded-[60px] bg-black text-base font-bold leading-6 text-white hover:opacity-90"
+          data-node-id="305:2110"
         >
-          ԳՆԵԼ ՀԻՄԱ
+          {t('home.hero_buy_now')}
         </Link>
       </div>
 
-      {/* Main heading */}
+      {/* Заголовок — Figma 305:2142 */}
       <h1
-        className="absolute left-[10.78%] right-[55.63%] top-[calc(50%-407.5px)] font-montserrat-arm text-[60px] font-black leading-[72px] tracking-tight text-white whitespace-nowrap"
+        className="absolute left-[207px] top-[120px] max-w-[645px] font-montserrat-arm text-[60px] font-black leading-[72px] tracking-tight text-white"
+        data-node-id="305:2142"
       >
-        <span className="text-primary">ԱՆՎՃԱՐ </span>
-        <span>ԱՌԱՔՈՒՄ</span>
+        {t('home.hero_heading_line')}
       </h1>
 
-      {/* Promo text */}
+      {/* Промо — Figma 305:2141 */}
       <p
-        className="absolute left-[46.3%] right-[19.48%] top-[calc(50%+201.5px)] font-montserrat-arm text-2xl font-semibold leading-7 text-secondary"
+        className="absolute left-[889px] top-[729px] w-[657px] font-montserrat-arm text-2xl font-semibold leading-7 text-white"
+        data-node-id="305:2141"
       >
-        Զգացեք տեխնոլոգիայի հզորությունը: Ստացեք մինչև 20% զեղչ այսօրվա
-        նախնական պատվերների համար:
+        {t('home.hero_promo_text')}
       </p>
 
-      {/* CTA button — gold pill with arrow */}
+      {/* CTA — Figma 305:2096 */}
       <Link
         href="/products"
-        className="absolute left-[27.76%] right-[59.58%] top-[calc(50%+233.5px)] flex h-[56px] -translate-y-1/2 items-center justify-center gap-0 rounded-full bg-gold px-6 text-base font-bold leading-6 text-primary"
+        className="absolute left-[533px] top-[733px] flex h-[56px] w-[243px] items-center justify-center rounded-[68px] bg-[#facc15] text-base font-bold leading-6 text-black hover:opacity-90"
+        data-node-id="305:2096"
       >
         <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap">
-          ԳՆԵԼ ՀԻՄԱ
+          {t('home.hero_buy_now')}
         </span>
-        <span className="absolute left-[189px] top-[4px] h-12 w-12">
+        <span className="absolute left-[189px] top-1 h-12 w-12">
           <Image
             src={FIGMA_ASSETS.ellipse88}
             alt=""
             fill
             className="object-contain"
+            sizes="48px"
             unoptimized
           />
         </span>
@@ -123,65 +140,82 @@ export function HeroSection() {
             alt=""
             fill
             className="object-contain"
+            sizes="17px"
             unoptimized
           />
         </span>
       </Link>
 
-      {/* Product label under left card */}
-      <div className="absolute left-[198px] top-[758.75px] flex h-[59.505px] w-[224.383px] flex-col justify-center font-montserrat-arm text-base leading-[23.8px] text-secondary">
-        <p className="m-0">Անկյունային բազմոց</p>
-        <p>Беллини</p>
+      {/* Product labels — left card */}
+      <div
+        className="absolute left-[198px] top-[758.75px] flex h-[59.505px] w-[224.383px] -translate-y-1/2 flex-col justify-center font-montserrat-arm text-base leading-[23.8px] text-white"
+        data-node-id="305:2148"
+      >
+        <p className="m-0 leading-[23.8px]">{t('home.hero_product_sofa_title')}</p>
+        <p className="leading-[23.8px]">{t('home.hero_product_sofa_brand')}</p>
       </div>
 
       {/* Right card — BANNER3 */}
-      <div className="absolute left-[1326px] top-[124px]" data-name="BANNER3">
+      <div className="absolute left-[1326px] top-[124px]" data-name="BANNER3" data-node-id="305:2162">
         <div
           className="absolute left-0 top-0 h-[557px] w-[516px] overflow-hidden"
           data-name="BANNER3 1"
+          data-node-id="305:2154"
         >
           <Image
             src={FIGMA_ASSETS.banner31}
             alt=""
             fill
-            className="object-cover max-w-none"
+            className="pointer-events-none object-cover"
+            sizes="516px"
             unoptimized
           />
         </div>
-        <div className="absolute left-[323px] top-0 h-[86px] w-[86px]">
+        <div className="absolute left-[323px] top-0 h-[86px] w-[86px]" data-node-id="305:2131">
           <Image
             src={FIGMA_ASSETS.group9234}
             alt=""
             fill
             className="object-contain"
+            sizes="86px"
             unoptimized
           />
         </div>
         <Link
           href="/products"
-          className="absolute left-[83px] top-[461px] flex h-[56px] w-[250px] items-center justify-center overflow-hidden rounded-full bg-secondary text-base font-bold leading-6 text-primary"
+          className="absolute left-[83px] top-[461px] flex h-[56px] w-[250px] items-center justify-center overflow-hidden rounded-[60px] bg-white text-base font-bold leading-6 text-black hover:opacity-90"
+          data-node-id="305:2159"
         >
-          ԱՎԵԼԻՆ
+          {t('home.hero_more')}
         </Link>
       </div>
 
-      {/* Help block — button + chat icon */}
-      <div className="absolute left-[1311px] top-[843px] h-[100px] w-[424px]">
+      {/* Help — pill + chat (Figma 101:4067) */}
+      <div className="absolute contents left-[1311px] top-[843px]" data-node-id="101:4067">
         <Link
           href="/contact"
-          className="absolute left-0 top-[17.5px] flex h-[56px] w-[250px] -translate-y-1/2 items-center justify-center rounded-full bg-hero-blue px-6 text-base font-bold leading-6 text-secondary shadow-chat"
+          className="-translate-y-1/2 absolute left-[68.28%] right-[15.52%] top-[calc(50%+365.5px)] flex h-[56px] items-center justify-center rounded-[68px] bg-[#2f4b5d] px-4 text-base font-bold leading-6 text-white shadow-[0px_4px_24px_0px_rgba(150,150,150,0.28)] hover:opacity-95"
+          data-node-id="101:4068"
         >
-          Ինչո՞վ կարող ենք ձեզ օգնել
+          <span className="whitespace-nowrap">{t('home.hero_help_button')}</span>
         </Link>
-        <div className="absolute left-[324px] top-0 h-[100px] w-[100px]">
-          <Image
-            src={FIGMA_ASSETS.group9294}
-            alt=""
-            fill
-            className="object-contain"
-            unoptimized
-          />
-        </div>
+        <Link
+          href="/contact"
+          className="absolute left-[1635px] top-[843px] h-[100px] w-[100px]"
+          aria-label="Chat"
+          data-node-id="270:2277"
+        >
+          <span className="absolute inset-[-24%] block">
+            <Image
+              src={FIGMA_ASSETS.group9294}
+              alt=""
+              fill
+              className="object-contain"
+              sizes="100px"
+              unoptimized
+            />
+          </span>
+        </Link>
       </div>
     </section>
   );
