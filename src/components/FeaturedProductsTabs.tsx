@@ -3,8 +3,11 @@
 import { useState, useEffect, useCallback, useRef, type RefObject } from 'react';
 import { apiClient } from '../lib/api-client';
 import { getStoredLanguage, type LanguageCode } from '../lib/language';
-import { ProductCard } from './ProductCard';
-import type { ProductLabel } from './ProductLabels';
+import { HomeProductCard, type HomeProductCardData } from './HomeProductCard';
+import {
+  getFallbackFeaturedProducts,
+  getFallbackNewProducts,
+} from './homeFallbackData';
 
 // ─── Figma nav-arrow images ────────────────────────────────────────────────────
 const ARROW_LEFT_PREV = 'https://www.figma.com/api/mcp/asset/9689c1cd-8859-41bf-aaec-23b7d6156653';
@@ -21,12 +24,8 @@ interface Product {
   image: string | null;
   inStock: boolean;
   brand: { id: string; name: string } | null;
-  colors?: Array<{ value: string; imageUrl?: string | null; colors?: string[] | null }>;
-  sizes?: Array<{ value: string; imageUrl?: string | null }>;
-  attributes?: Record<string, Array<{ valueId?: string; value: string; label: string; imageUrl?: string | null; colors?: string[] | null }>>;
   originalPrice?: number | null;
   discountPercent?: number | null;
-  labels?: ProductLabel[];
 }
 
 interface ProductsResponse {
@@ -34,8 +33,32 @@ interface ProductsResponse {
   meta: { total: number; page: number; limit: number; totalPages: number };
 }
 
-
 const PRODUCTS_PER_PAGE = 10;
+
+function mapProductToCard(product: Product): HomeProductCardData {
+  const price = product.price || 0;
+  const compareAtPrice =
+    (product.originalPrice && product.originalPrice > price && product.originalPrice) ||
+    (product.compareAtPrice && product.compareAtPrice > price && product.compareAtPrice) ||
+    null;
+
+  const computedDiscount =
+    product.discountPercent ||
+    (compareAtPrice
+      ? Math.max(1, Math.round(((compareAtPrice - price) / compareAtPrice) * 100))
+      : null);
+
+  return {
+    id: product.id,
+    href: `/products/${product.slug}`,
+    title: product.title,
+    brand: product.brand?.name || 'Marco',
+    image: product.image,
+    price,
+    compareAtPrice,
+    badge: computedDiscount ? `-${computedDiscount}%` : undefined,
+  };
+}
 
 // ── Section header — Figma 119:2052 / 119:2079 (title + primary rule + arrows) ──
 function SectionHeader({
@@ -87,8 +110,8 @@ function SectionHeader({
 
 export function FeaturedProductsTabs() {
   const [language, setLanguage] = useState<LanguageCode>('en');
-  const [specialProducts, setSpecialProducts] = useState<Product[]>([]);
-  const [newProducts, setNewProducts] = useState<Product[]>([]);
+  const [specialProducts, setSpecialProducts] = useState<HomeProductCardData[]>([]);
+  const [newProducts, setNewProducts] = useState<HomeProductCardData[]>([]);
   const [loadingSpecial, setLoadingSpecial] = useState(true);
   const [loadingNew, setLoadingNew] = useState(true);
 
@@ -103,15 +126,31 @@ export function FeaturedProductsTabs() {
   }, []);
 
   const fetchProducts = useCallback(
-    async (filter: string, setter: (p: Product[]) => void, setLoading: (v: boolean) => void) => {
+    async (
+      filter: 'featured' | 'new',
+      setter: (products: HomeProductCardData[]) => void,
+      setLoading: (value: boolean) => void
+    ) => {
       try {
         setLoading(true);
         const res = await apiClient.get<ProductsResponse>('/api/v1/products', {
           params: { page: '1', limit: String(PRODUCTS_PER_PAGE), lang: language, filter },
         });
-        setter((res.data || []).slice(0, PRODUCTS_PER_PAGE));
+        const fetchedProducts = (res.data || []).slice(0, PRODUCTS_PER_PAGE).map(mapProductToCard);
+
+        setter(
+          fetchedProducts.length > 0
+            ? fetchedProducts
+            : filter === 'featured'
+              ? getFallbackFeaturedProducts(language)
+              : getFallbackNewProducts(language)
+        );
       } catch {
-        setter([]);
+        setter(
+          filter === 'featured'
+            ? getFallbackFeaturedProducts(language)
+            : getFallbackNewProducts(language)
+        );
       } finally {
         setLoading(false);
       }
@@ -148,7 +187,7 @@ export function FeaturedProductsTabs() {
               ))
             : specialProducts.map((product) => (
                 <div key={product.id} className="flex-shrink-0 w-[306px]">
-                  <ProductCard product={product} />
+                  <HomeProductCard product={product} />
                 </div>
               ))}
         </div>
@@ -170,7 +209,7 @@ export function FeaturedProductsTabs() {
               ))
             : newProducts.map((product) => (
                 <div key={product.id} className="flex-shrink-0 w-[306px]">
-                  <ProductCard product={product} />
+                  <HomeProductCard product={product} />
                 </div>
               ))}
         </div>

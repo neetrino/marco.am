@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { apiClient } from '../lib/api-client';
-import { getStoredLanguage } from '../lib/language';
+import { getStoredLanguage, type LanguageCode } from '../lib/language';
 import { logger } from '../lib/utils/logger';
+import { getFallbackTopCategories } from './homeFallbackData';
 
 // ─── Figma section-header arrow assets ────────────────────────────────────────
 const ARROW_LEFT = 'https://www.figma.com/api/mcp/asset/f6619936-dbc1-441e-8c11-81b0dcc6d826';
@@ -28,23 +29,36 @@ export function TopCategories() {
   const router = useRouter();
   const [topCategories, setTopCategories] = useState<TopCategoryItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [language, setLanguage] = useState<LanguageCode>('en');
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetchTopCategories();
+    const updateLanguage = () => setLanguage(getStoredLanguage());
+
+    updateLanguage();
+    window.addEventListener('language-updated', updateLanguage);
+
+    return () => window.removeEventListener('language-updated', updateLanguage);
   }, []);
 
-  const fetchTopCategories = async () => {
+  useEffect(() => {
+    fetchTopCategories(language);
+  }, [language]);
+
+  const fetchTopCategories = async (currentLanguage: LanguageCode) => {
     try {
       setLoading(true);
-      const language = getStoredLanguage();
       const response = await apiClient.get<TopCategoriesResponse>('/api/v1/categories/top', {
-        params: { lang: language, limit: '8' },
+        params: { lang: currentLanguage, limit: '8' },
       });
-      setTopCategories(response.data || []);
+      const nextCategories = response.data?.length
+        ? response.data
+        : getFallbackTopCategories(currentLanguage);
+
+      setTopCategories(nextCategories);
     } catch (err) {
       logger.warn('[TopCategories] fetch failed', { err });
-      setTopCategories([]);
+      setTopCategories(getFallbackTopCategories(currentLanguage));
     } finally {
       setLoading(false);
     }
