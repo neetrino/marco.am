@@ -17,6 +17,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "clean": "node -e \"require('fs').rmSync('.next', {recursive: true, force: true})\"",
+    "prisma:cli": "pnpm --filter @white-shop/db exec prisma",
     "prisma:generate": "cd shared/db && pnpm run db:generate",
     "reset": "node -e \"require('fs').rmSync('.next', {recursive: true, force: true})\" && cd shared/db && pnpm run db:generate",
     "db:generate": "pnpm --filter @white-shop/db db:generate",
