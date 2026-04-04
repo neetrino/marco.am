@@ -11,6 +11,7 @@ export interface UpdateProductData {
   categoryIds?: string[];
   published?: boolean;
   featured?: boolean;
+  productClass?: 'retail' | 'wholesale';
   locale?: string;
   media?: unknown[];
   labels?: Array<{

@@ -336,6 +336,7 @@ class AdminProductsCreateService {
             media: finalMedia,
             published: data.published,
             featured: data.featured ?? false,
+            productClass: (data as { productClass?: string }).productClass === 'wholesale' ? 'wholesale' : 'retail',
             publishedAt: data.published ? new Date() : undefined,
             translations: {
               create: {

@@ -41,6 +41,7 @@ export function OrdersPageContent() {
     handleBulkDelete,
     handleStatusChange,
     handlePaymentStatusChange,
+    handleUpdateAdminNotes,
     router,
     searchParams,
   } = useOrders();
@@ -107,6 +108,7 @@ export function OrdersPageContent() {
             currency={currency}
             onClose={handleCloseModal}
             formatCurrency={formatCurrency}
+            onUpdateAdminNotes={handleUpdateAdminNotes}
           />
         )}
       </div>

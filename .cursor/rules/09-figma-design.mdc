@@ -21,6 +21,13 @@ alwaysApply: false
 
 ## 🔗 FIGMA MCP-ՈՒՄ ԱՇԽԱՏԱՆՔ
 
+### Local Figma MCP server
+
+Figma MCP-ը նախագծում աշխատում է **local** server-ով:
+
+- **URL:** `http://127.0.0.1:3845/mcp`
+- Կարգավորումը (Cursor MCP / Figma plugin) պետք է ցույց տա այս endpoint-ը, որպեսզի `get_design_context`, `get_screenshot` և այլ Figma MCP գործիքները աշխատեն:
+
 ### Figma-ից տվյալների ստացում
 
 ```

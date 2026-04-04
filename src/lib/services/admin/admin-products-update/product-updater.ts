@@ -52,6 +52,7 @@ export function buildProductUpdateData(
   published?: boolean;
   publishedAt?: Date;
   featured?: boolean;
+  productClass?: string;
 } {
   const updateData: {
     brandId?: string | null;
@@ -61,11 +62,13 @@ export function buildProductUpdateData(
     published?: boolean;
     publishedAt?: Date;
     featured?: boolean;
+    productClass?: string;
   } = {};
   
   if (data.brandId !== undefined) updateData.brandId = data.brandId || null;
   if (data.primaryCategoryId !== undefined) updateData.primaryCategoryId = data.primaryCategoryId || null;
   if (data.categoryIds !== undefined) updateData.categoryIds = data.categoryIds || [];
+  if (data.productClass !== undefined) updateData.productClass = data.productClass;
   
   if (data.media !== undefined) {
     // Separate main images from variant images and clean them
@@ -85,7 +88,7 @@ export function buildProductUpdateData(
   }
   
   if (data.featured !== undefined) updateData.featured = data.featured;
-  
+
   return updateData;
 }
 

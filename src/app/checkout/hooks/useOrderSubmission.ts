@@ -77,6 +77,8 @@ export function useOrderSubmission({
         ...(shippingAddress ? { shippingAddress } : {}),
         shippingAmount: shippingAmount,
         paymentMethod: data.paymentMethod,
+        ...(data.notes?.trim() ? { notes: data.notes.trim() } : {}),
+        ...(cart.couponCode ? { couponCode: cart.couponCode } : {}),
       });
 
       if (!isLoggedIn) {

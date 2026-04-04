@@ -18,6 +18,7 @@ export interface UpdateOrderData {
   status?: string;
   paymentStatus?: string;
   fulfillmentStatus?: string;
+  adminNotes?: string | null;
 }
 
 

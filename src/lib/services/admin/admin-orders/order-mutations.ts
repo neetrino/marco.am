@@ -182,11 +182,13 @@ export async function updateOrder(orderId: string, data: UpdateOrderData) {
       fulfilledAt?: Date;
       cancelledAt?: Date;
       paidAt?: Date;
+      adminNotes?: string | null;
     } = {};
     
     if (data.status !== undefined) updateData.status = data.status;
     if (data.paymentStatus !== undefined) updateData.paymentStatus = data.paymentStatus;
     if (data.fulfillmentStatus !== undefined) updateData.fulfillmentStatus = data.fulfillmentStatus;
+    if (data.adminNotes !== undefined) updateData.adminNotes = data.adminNotes;
 
     // Update timestamps based on status changes
     if (data.status === 'completed' && existing.status !== 'completed') {

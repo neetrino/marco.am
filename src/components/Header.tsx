@@ -13,17 +13,12 @@ import { useAuth } from '../lib/auth/AuthContext';
 import { apiClient } from '../lib/api-client';
 import { CART_KEY, getCompareCount, getWishlistCount } from '../lib/storageCounts';
 import { LanguageSwitcherHeader } from './LanguageSwitcherHeader';
-import { Instagram, Facebook, Linkedin } from 'lucide-react';
 import { CompareIcon } from './icons/CompareIcon';
 import { CartIcon } from './icons/CartIcon';
-
-// Navigation links will be translated dynamically using useTranslation hook
-const primaryNavLinks = [
-  { href: '/', translationKey: 'common.navigation.home' },
-  { href: '/products', translationKey: 'common.navigation.products' },
-  { href: '/about', translationKey: 'common.navigation.about' },
-  { href: '/contact', translationKey: 'common.navigation.contact' },
-];
+import { HEADER_NAV_LINKS } from './Header/headerConfig';
+import { HeaderTopNav } from './Header/HeaderTopNav';
+import { HeaderActionBar } from './Header/HeaderActionBar';
+import { CartButton } from './Header/CartButton';
 
 interface Category {
   id: string;
@@ -689,315 +684,237 @@ export function Header() {
     window.dispatchEvent(new Event('currency-updated'));
   };
 
-  return (
-    <header className="bg-gradient-to-b from-gray-50 to-white sticky top-0 z-50 border-b border-gray-200/80 shadow-sm backdrop-blur-sm bg-white/95">
-      <Suspense fallback={null}>
-        <HeaderSearchSync
-          setSearchQuery={setSearchQuery}
-          setSelectedCategory={setSelectedCategory}
-          categories={categories}
-        />
-      </Suspense>
-      {/* Top Bar */}
-      <div className="bg-white border-b border-gray-200 hidden md:block">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col gap-3 py-3 text-sm text-gray-700 sm:flex-row sm:items-center sm:justify-between">
-            {/* Phone + Social */}
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-              <div className="flex items-center gap-2 text-gray-700">
-                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M2 3C2 2.44772 2.44772 2 3 2H5.15287C5.64171 2 6.0589 2.35341 6.13927 2.8356L6.87858 7.27147C6.95075 7.70451 6.73206 8.13397 6.3394 8.3303L4.79126 9.10437C5.90715 11.8783 8.12168 14.0929 10.8956 15.2088L11.6697 13.6606C11.866 13.2679 12.2955 13.0493 12.7285 13.1214L17.1644 13.8607C17.6466 13.9411 18 14.3583 18 14.8471V17C18 17.5523 17.5523 18 17 18H15C7.8203 18 2 12.1797 2 5V3Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                <span className="font-medium">{t('contact.phone')}</span>
-              </div>
-              <div className="flex items-center gap-3 text-gray-600">
-                <a
-                  href={t('contact.social.instagram') || '#'}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-pink-600 transition-colors"
-                  aria-label={t('common.ariaLabels.instagram')}
-                >
-                  <Instagram className="w-4 h-4" />
-                </a>
-                <a
-                  href={t('contact.social.facebook') || '#'}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-blue-600 transition-colors"
-                  aria-label={t('common.ariaLabels.facebook')}
-                >
-                  <Facebook className="w-4 h-4" />
-                </a>
-                <a
-                  href={t('contact.social.linkedin') || '#'}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-blue-700 transition-colors"
-                  aria-label={t('common.ariaLabels.linkedin')}
-                >
-                  <Linkedin className="w-4 h-4" />
-                </a>
-              </div>
-            </div>
+  const phoneDisplay = t('contact.phone');
+  const locationDropdown = (
+    <Link
+      href="/contact#addresses"
+      className="text-gray-700 font-medium hover:text-gray-900 transition-colors text-sm"
+    >
+      {t('common.navigation.addresses')}
+    </Link>
+  );
 
-            {/* Currency and Language Switcher */}
-            <div className="flex flex-wrap items-center gap-3 sm:justify-end">
-              <LanguageSwitcherHeader />
-              <div className="relative" ref={currencyRef}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowCurrency(!showCurrency);
-                  }}
-                  className="flex items-center gap-2 bg-white px-3 py-2 text-gray-800 transition-colors"
-                >
-                  <span className="text-base font-semibold leading-none">{selectedCurrencyInfo.symbol}</span>
-                  <span className="text-sm font-medium leading-none">{selectedCurrency}</span>
-                  <ChevronDownIcon />
-                </button>
-                {showCurrency && (
-                  <div className="absolute top-full right-0 mt-2 w-40 bg-white z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                    {Object.values(CURRENCIES).map((currency) => (
-                      <button
-                        key={currency.code}
-                        onClick={() => handleCurrencyChange(currency.code)}
-                        className={`w-full text-left px-4 py-2.5 text-sm transition-all duration-150 ${selectedCurrency === currency.code
-                            ? 'bg-gradient-to-r from-gray-100 to-gray-50 text-gray-900 font-semibold'
-                            : 'text-gray-700 hover:bg-gray-50'
-                          }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span>{currency.code}</span>
-                          <span className="text-gray-500">{currency.symbol}</span>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+  const categoryDropdown = (
+    <div
+      className="relative"
+      ref={productsMenuRef}
+      onMouseEnter={() => {
+        if (productsMenuTimeoutRef.current) {
+          clearTimeout(productsMenuTimeoutRef.current);
+          productsMenuTimeoutRef.current = null;
+        }
+        setShowProductsMenu(true);
+      }}
+      onMouseLeave={() => {
+        productsMenuTimeoutRef.current = setTimeout(() => setShowProductsMenu(false), 150);
+      }}
+    >
+      <Link
+        href="/products"
+        className="h-11 px-5 rounded-full bg-gray-800 text-white text-sm font-medium flex items-center gap-2 hover:bg-gray-900 transition-colors shrink-0"
+      >
+        {t('common.navigation.categories')}
+        <ChevronDownIcon />
+      </Link>
+      {showProductsMenu && (
+        <>
+          <div className="absolute top-full left-0 w-full h-2" />
+          <div className="absolute top-full left-0 pt-2 w-64 z-50">
+            <div className="bg-white rounded-xl shadow-2xl border border-gray-200/80 overflow-visible">
+              {loadingCategories ? (
+                <div className="px-4 py-2 text-sm text-gray-500">{t('common.messages.loading')}</div>
+              ) : (
+                getRootCategories(categories).map((category) => (
+                  <CategoryMenuItem
+                    key={category.id}
+                    category={category}
+                    onClose={() => setShowProductsMenu(false)}
+                  />
+                ))
+              )}
             </div>
           </div>
+        </>
+      )}
+    </div>
+  );
+
+  const currencySwitcher = (
+    <div className="relative" ref={currencyRef}>
+      <button
+        type="button"
+        onClick={() => setShowCurrency(!showCurrency)}
+        className="h-10 px-4 rounded-full bg-gray-100 text-gray-800 text-sm font-medium flex items-center gap-2 hover:bg-gray-200 transition-colors"
+        aria-expanded={showCurrency}
+        aria-haspopup="listbox"
+      >
+        <span className="leading-none">{selectedCurrencyInfo.symbol}</span>
+        <span className="leading-none">{selectedCurrency}</span>
+        <ChevronDownIcon />
+      </button>
+      {showCurrency && (
+        <div
+          className="absolute top-full right-0 mt-2 w-40 bg-white rounded-xl shadow-xl border border-gray-100 z-50 overflow-hidden"
+          role="listbox"
+        >
+          {Object.values(CURRENCIES).map((currency) => (
+            <button
+              key={currency.code}
+              type="button"
+              role="option"
+              aria-selected={selectedCurrency === currency.code}
+              onClick={() => handleCurrencyChange(currency.code)}
+              className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${selectedCurrency === currency.code ? 'bg-gray-50 text-gray-900 font-semibold' : 'text-gray-700 hover:bg-gray-50'}`}
+            >
+              <span className="mr-2">{currency.code}</span>
+              <span className="text-gray-500">{currency.symbol}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  const themeButton = (
+    <button
+      type="button"
+      className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 hover:text-gray-900 transition-colors shrink-0"
+      aria-label="Toggle theme"
+    >
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+      </svg>
+    </button>
+  );
+
+  const accountButton = (
+    <div className="relative" ref={userMenuRef}>
+      {isLoggedIn ? (
+        <>
+          <button
+            type="button"
+            onClick={() => setShowUserMenu(!showUserMenu)}
+            className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors shrink-0"
+            aria-expanded={showUserMenu}
+            aria-haspopup="menu"
+          >
+            <ProfileIconFilled />
+          </button>
+          {showUserMenu && (
+            <div className="absolute top-full right-0 mt-2 w-52 bg-white rounded-xl shadow-xl border border-gray-100 z-50 overflow-hidden" role="menu">
+              <Link href="/profile" className="block px-5 py-3 text-sm text-gray-700 hover:bg-gray-50 font-medium border-b border-gray-100" onClick={() => setShowUserMenu(false)}>
+                {t('common.navigation.profile')}
+              </Link>
+              {isAdmin && (
+                <Link href="/admin" className="block px-5 py-3 text-sm text-blue-600 hover:bg-blue-50 font-medium border-b border-gray-100" onClick={() => setShowUserMenu(false)}>
+                  <span className="flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                    {t('common.navigation.adminPanel')}
+                  </span>
+                </Link>
+              )}
+              <button type="button" onClick={() => { setShowUserMenu(false); logout(); }} className="block w-full text-left px-5 py-3 text-sm text-red-600 hover:bg-red-50 font-medium">
+                {t('common.navigation.logout')}
+              </button>
+            </div>
+          )}
+        </>
+      ) : (
+        <Link href="/login" className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors shrink-0" aria-label="Account">
+          <ProfileIconOutline />
+        </Link>
+      )}
+    </div>
+  );
+
+  const compareLink = (
+    <Link href="/compare" className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900 transition-colors relative shrink-0" aria-label={t('common.navigation.compare')}>
+      <BadgeIcon icon={<CompareIcon size={18} />} badge={compareCount} />
+    </Link>
+  );
+
+  const wishlistLink = (
+    <Link href="/wishlist" className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900 transition-colors relative shrink-0" aria-label={t('common.navigation.wishlist')}>
+      <BadgeIcon icon={<WishlistIcon />} badge={wishlistCount} />
+    </Link>
+  );
+
+  const cartButtonNode = (
+    <CartButton
+      totalFormatted={formatPrice(cartTotal, selectedCurrency)}
+      icon={<CartIcon size={20} />}
+      badge={cartCount}
+    />
+  );
+
+  return (
+    <header className="bg-white sticky top-0 z-50 border-b border-gray-100 shadow-sm">
+      <Suspense fallback={null}>
+        <HeaderSearchSync setSearchQuery={setSearchQuery} setSelectedCategory={setSelectedCategory} categories={categories} />
+      </Suspense>
+
+      {/* Mobile: hamburger + logo row */}
+      <div className="flex md:hidden items-center justify-between px-4 py-3 border-b border-gray-100">
+        <button
+          type="button"
+          onClick={() => setMobileMenuOpen(true)}
+          className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 hover:bg-gray-200"
+          aria-label={t('common.ariaLabels.openMenu')}
+          aria-expanded={mobileMenuOpen}
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7h16M4 12h16M4 17h16" /></svg>
+        </button>
+        <Link href="/" className="text-lg font-semibold text-gray-900">White-Shop</Link>
+        <div className="flex items-center gap-1">
+          <div className="relative" ref={mobileCurrencyRef}>
+            <button type="button" onClick={() => setShowMobileCurrency(!showMobileCurrency)} className="flex h-9 items-center gap-1 px-2 text-sm font-medium text-gray-800">
+              <span>{selectedCurrencyInfo.symbol}</span>
+              <span>{selectedCurrency}</span>
+              <ChevronDownIcon />
+            </button>
+            {showMobileCurrency && (
+              <div className="absolute top-full right-0 mt-2 w-40 bg-white rounded-xl shadow-xl border border-gray-100 z-50">
+                {Object.values(CURRENCIES).map((currency) => (
+                  <button key={currency.code} type="button" onClick={() => { handleCurrencyChange(currency.code); setShowMobileCurrency(false); }} className={`w-full text-left px-4 py-2.5 text-sm ${selectedCurrency === currency.code ? 'bg-gray-50 font-semibold' : 'hover:bg-gray-50'}`}>
+                    {currency.code} {currency.symbol}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <LanguageSwitcherHeader />
         </div>
       </div>
 
-      {/* Main Header */}
-      <div className="max-w-7xl mx-auto pl-2 sm:pl-4 md:pl-6 lg:pl-8 pr-2 sm:pr-4 md:pr-6 lg:pr-8">
-        <div className="flex flex-wrap items-center gap-2 sm:gap-4 py-4 md:py-3">
-          {/* Logo + Mobile Menu */}
-          <div className="flex w-full items-center justify-between md:w-auto md:justify-start">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <button
-                type="button"
-                onClick={() => setMobileMenuOpen(true)}
-                className="md:hidden w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200"
-                aria-label={t('common.ariaLabels.openMenu')}
-                aria-expanded={mobileMenuOpen}
-              >
-                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7h16M4 12h16M4 17h16" />
-                </svg>
-              </button>
-              <Link href="/" className="flex items-center flex-shrink-0 group">
-                <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent group-hover:from-gray-800 group-hover:to-gray-600 transition-all duration-300">
-                  White-Shop
-                </span>
-              </Link>
-            </div>
-            {/* Mobile Currency and Language - on same line as logo */}
-            <div className="flex items-center gap-1 sm:gap-2 md:hidden">
-              {/* Currency Switcher */}
-              <div className="relative" ref={mobileCurrencyRef}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowMobileCurrency(!showMobileCurrency);
-                  }}
-                  className="flex h-9 sm:h-10 items-center justify-center gap-1 sm:gap-2 bg-transparent md:bg-white px-2 sm:px-3 text-xs sm:text-sm font-medium text-gray-800 shadow-none md:shadow-sm transition-colors cursor-pointer"
-                >
-                  <span className="text-sm sm:text-base font-semibold leading-none">{selectedCurrencyInfo.symbol}</span>
-                  <span className="text-xs sm:text-sm font-medium leading-none">{selectedCurrency}</span>
-                  <ChevronDownIcon />
-                </button>
-                {showMobileCurrency && (
-                  <div className="absolute top-full right-0 mt-2 w-40 bg-white shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                    {Object.values(CURRENCIES).map((currency) => (
-                      <button
-                        key={currency.code}
-                        onClick={() => {
-                          handleCurrencyChange(currency.code);
-                          setShowMobileCurrency(false);
-                        }}
-                        className={`w-full text-left px-4 py-2.5 text-sm transition-all duration-150 ${
-                          selectedCurrency === currency.code
-                            ? 'bg-gradient-to-r from-gray-100 to-gray-50 text-gray-900 font-semibold'
-                            : 'text-gray-700 hover:bg-gray-50'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span>{currency.code}</span>
-                          <span className="text-gray-500">{currency.symbol}</span>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-              {/* Language Switcher */}
-              <div className="flex h-9 sm:h-10 items-center justify-center">
-                <LanguageSwitcherHeader />
-              </div>
-            </div>
-          </div>
-
-          {/* Navigation Links - Centered */}
-          <nav className="order-3 hidden w-full items-center justify-center gap-1 md:order-none md:flex md:flex-1">
-            <Link href="/" className="text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium whitespace-nowrap">
-              {t('common.navigation.home')}
-            </Link>
-            <div 
-              className="relative" 
-              ref={productsMenuRef}
-              onMouseEnter={() => {
-                if (productsMenuTimeoutRef.current) {
-                  clearTimeout(productsMenuTimeoutRef.current);
-                  productsMenuTimeoutRef.current = null;
-                }
-                setShowProductsMenu(true);
-              }}
-              onMouseLeave={() => {
-                productsMenuTimeoutRef.current = setTimeout(() => {
-                  setShowProductsMenu(false);
-                }, 150);
-              }}
-            >
-              <Link
-                href="/products"
-                className="text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium whitespace-nowrap flex items-center gap-1"
-              >
-                {t('common.navigation.products')}
-                <ChevronDownIcon />
-              </Link>
-              {showProductsMenu && (
-                <>
-                  <div className="absolute top-full left-0 w-full h-2" />
-                  <div className="absolute top-full left-0 pt-2 w-64 z-50">
-                    <div className="bg-white rounded-xl shadow-2xl border border-gray-200/80 overflow-visible">
-                      {loadingCategories ? (
-                        <div className="px-4 py-2 text-sm text-gray-500">{t('common.messages.loading')}</div>
-                      ) : (
-                        getRootCategories(categories).map((category) => (
-                          <CategoryMenuItem
-                            key={category.id}
-                            category={category}
-                            onClose={() => setShowProductsMenu(false)}
-                          />
-                        ))
-                      )}
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-            <Link href="/about" className="text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium whitespace-nowrap">
-              {t('common.navigation.about')}
-            </Link>
-            <Link href="/contact" className="text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium whitespace-nowrap">
-              {t('common.navigation.contact')}
-            </Link>
-          </nav>
-
-
-          {/* Right Side Actions - Icons Only */}
-          <div className="ml-auto hidden items-center gap-2 md:flex">
-            {/* Search Icon Button */}
-            <button
-              onClick={() => {
-                setShowSearchModal(!showSearchModal);
-                setShowCurrency(false);
-              }}
-              className="w-11 h-11 flex items-center justify-center text-gray-700 hover:text-gray-900 transition-colors duration-150"
-              aria-label={t('common.ariaLabels.search')}
-            >
-              <SearchIcon />
-            </button>
-
-            {/* Icons */}
-              {/* Profile / User Menu */}
-              <div className="relative" ref={userMenuRef}>
-                {isLoggedIn ? (
-                  <>
-                    <button
-                      onClick={() => setShowUserMenu(!showUserMenu)}
-                      className="w-11 h-11 flex items-center justify-center transition-all duration-200 group"
-                    >
-                      <ProfileIconFilled />
-                    </button>
-                    {showUserMenu && (
-                      <div className="absolute top-full right-0 mt-2 w-52 bg-white rounded-xl shadow-2xl border border-gray-200/80 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                        <Link
-                          href="/profile"
-                          className="block px-5 py-3 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-gray-50 hover:to-white transition-all duration-150 font-medium border-b border-gray-100"
-                          onClick={() => setShowUserMenu(false)}
-                        >
-                          {t('common.navigation.profile')}
-                        </Link>
-                        {isAdmin && (
-                          <Link
-                            href="/admin"
-                            className="block px-5 py-3 text-sm text-blue-600 hover:bg-gradient-to-r hover:from-blue-50 hover:to-white transition-all duration-150 font-medium border-b border-gray-100"
-                            onClick={() => setShowUserMenu(false)}
-                          >
-                            <div className="flex items-center">
-                              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                              </svg>
-                              {t('common.navigation.adminPanel')}
-                            </div>
-                          </Link>
-                        )}
-                        <button
-                          onClick={() => {
-                            setShowUserMenu(false);
-                            logout();
-                          }}
-                          className="block w-full text-left px-5 py-3 text-sm text-red-600 hover:bg-gradient-to-r hover:from-red-50 hover:to-white transition-all duration-150 font-medium"
-                        >
-                          {t('common.navigation.logout')}
-                        </button>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <Link href="/login" className="w-11 h-11 flex items-center justify-center text-gray-700 hover:text-gray-900 transition-colors duration-150 group">
-                    <ProfileIconOutline />
-                  </Link>
-                )}
-              </div>
-
-              {/* Compare */}
-              <Link href="/compare" className="w-11 h-11 flex items-center justify-center text-gray-700 hover:text-gray-900 transition-colors duration-150 relative group">
-                <BadgeIcon icon={<CompareIcon size={18} />} badge={compareCount} />
-              </Link>
-
-              {/* Wishlist */}
-              <Link href="/wishlist" className="w-11 h-11 flex items-center justify-center text-gray-700 hover:text-gray-900 transition-colors duration-150 relative group">
-                <BadgeIcon icon={<WishlistIcon />} badge={wishlistCount} />
-              </Link>
-
-              {/* Shopping Cart */}
-              <Link href="/cart" className="flex items-center gap-[0.hpx] group">
-                <div className="w-11 h-11 flex items-center justify-center text-gray-700 hover:text-gray-900 transition-colors duration-150 relative">
-                  <BadgeIcon icon={<CartIcon size={19} />} badge={cartCount} />
-                </div>
-                <span className="text-gray-800 font-bold text-sm hidden sm:block min-w-[3.25rem] group-hover:text-gray-900 transition-colors">
-                  {formatPrice(cartTotal, selectedCurrency)}
-                </span>
-              </Link>
-            </div>
-          </div>
-
+      {/* Desktop: Top bar + Action bar */}
+      <div className="hidden md:block">
+        <HeaderTopNav
+          t={t}
+          phoneDisplay={phoneDisplay}
+          instagramUrl={t('contact.social.instagram') || '#'}
+          facebookUrl={t('contact.social.facebook') || '#'}
+          linkedinUrl={t('contact.social.linkedin') || '#'}
+          languageSwitcher={<LanguageSwitcherHeader />}
+          locationDropdown={locationDropdown}
+        />
+        <HeaderActionBar
+          t={t}
+          searchPlaceholder={t('common.placeholders.search')}
+          searchCtaLabel={t('common.buttons.search')}
+          categoryLabel={t('common.navigation.categories')}
+          categoryDropdown={categoryDropdown}
+          onSearchClick={() => { setShowSearchModal(true); setShowCurrency(false); }}
+          searchInputRef={searchInputRef}
+          searchValue={searchQuery}
+          onSearchChange={(v) => { setSearchQuery(v); if (v.trim().length >= 1) setSearchDropdownOpen(true); }}
+          onSearchSubmit={handleSearch}
+          currencySwitcher={currencySwitcher}
+          themeButton={themeButton}
+          accountButton={accountButton}
+          compareLink={compareLink}
+          wishlistLink={wishlistLink}
+          cartButton={cartButtonNode}
+        />
       </div>
 
       {/* Mobile Menu */}
@@ -1029,7 +946,7 @@ export function Header() {
             <div className="flex-1 overflow-hidden min-h-0">
               <nav className="flex h-full flex-col border-y border-gray-200 text-sm font-semibold uppercase tracking-wide text-gray-800 bg-white">
                 <div className="flex-1 overflow-y-auto divide-y divide-gray-200">
-                  {primaryNavLinks.map((link) => (
+                  {HEADER_NAV_LINKS.map((link) => (
                     <Link
                       key={link.href}
                       href={link.href}

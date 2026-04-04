@@ -370,6 +370,21 @@ export function useOrders() {
     }
   };
 
+  const handleUpdateAdminNotes = async (orderId: string, adminNotes: string | null) => {
+    try {
+      await apiClient.put(`/api/v1/admin/orders/${orderId}`, { adminNotes });
+      if (selectedOrderId === orderId && orderDetails) {
+        setOrderDetails((prev) => (prev ? { ...prev, adminNotes: adminNotes ?? undefined } : null));
+      }
+      setUpdateMessage({ type: 'success', text: t('admin.orders.adminNotesUpdated') });
+      setTimeout(() => setUpdateMessage(null), 3000);
+    } catch (err) {
+      console.error('❌ [ADMIN] Error updating admin notes:', err);
+      setUpdateMessage({ type: 'error', text: t('admin.orders.failedToUpdateAdminNotes') });
+      setTimeout(() => setUpdateMessage(null), 5000);
+    }
+  };
+
   const handlePaymentStatusChange = async (orderId: string, newPaymentStatus: string) => {
     try {
       console.log('📝 [ADMIN] Changing order payment status:', { orderId, newPaymentStatus });
@@ -447,6 +462,7 @@ export function useOrders() {
     handleBulkDelete,
     handleStatusChange,
     handlePaymentStatusChange,
+    handleUpdateAdminNotes,
     router,
     searchParams,
   };

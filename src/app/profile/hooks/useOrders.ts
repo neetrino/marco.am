@@ -113,49 +113,15 @@ export function useOrders({
 
     setIsReordering(true);
     try {
-      console.log('[Profile][ReOrder] Starting re-order for order:', selectedOrder.number);
-      
-      let addedCount = 0;
-      let skippedCount = 0;
-
-      for (const item of selectedOrder.items) {
-        try {
-          interface VariantDetails {
-            id: string;
-            productId: string;
-            stock: number;
-            available: boolean;
-          }
-
-          const variantDetails = await apiClient.get<VariantDetails>(`/api/v1/products/variants/${item.variantId}`);
-          
-          if (!variantDetails.available || variantDetails.stock < item.quantity) {
-            console.warn(`[Profile][ReOrder] Item ${item.productTitle} is not available or insufficient stock`);
-            skippedCount++;
-            continue;
-          }
-
-          await apiClient.post('/api/v1/cart/items', {
-            productId: variantDetails.productId,
-            variantId: item.variantId,
-            quantity: item.quantity,
-          });
-          addedCount++;
-          console.log('[Profile][ReOrder] Added item to cart:', item.productTitle);
-        } catch (error: unknown) {
-          console.error('[Profile][ReOrder] Error adding item to cart:', error);
-          skippedCount++;
-        }
-      }
-
+      const result = await apiClient.post<{ cartId: string; itemsAdded: number; skipped: Array<{ sku: string; reason: string }> }>(
+        '/api/v1/orders/reorder',
+        { orderNumber: selectedOrder.number }
+      );
       window.dispatchEvent(new Event('cart-updated'));
-      
-      if (addedCount > 0) {
-        const skippedText = skippedCount > 0 ? `, ${skippedCount} ${t('profile.orderDetails.skipped')}` : '';
-        onSuccess(`${addedCount} ${t('profile.orderDetails.itemsAdded')}${skippedText}`);
-        setTimeout(() => {
-          router.push('/cart');
-        }, 1500);
+      if (result.itemsAdded > 0) {
+        const skippedText = result.skipped?.length ? `, ${result.skipped.length} ${t('profile.orderDetails.skipped')}` : '';
+        onSuccess(`${result.itemsAdded} ${t('profile.orderDetails.itemsAdded')}${skippedText}`);
+        setTimeout(() => router.push('/cart'), 1500);
       } else {
         onError(t('profile.orderDetails.failedToAdd'));
       }

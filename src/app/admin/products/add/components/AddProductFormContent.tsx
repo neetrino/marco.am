@@ -96,6 +96,7 @@ interface AddProductFormContentProps {
   onRemoveLabel: (index: number) => void;
   onUpdateLabel: (index: number, field: keyof ProductLabel, value: any) => void;
   onFeaturedChange: (featured: boolean) => void;
+  onProductClassChange?: (value: 'retail' | 'wholesale') => void;
   onVariantsUpdate: (updater: (prev: Variant[]) => Variant[]) => void;
   onApplyToAllVariants: (field: 'price' | 'compareAtPrice' | 'stock' | 'sku', value: string) => void;
   isClothingCategory: () => boolean;
@@ -161,6 +162,7 @@ export function AddProductFormContent({
   onRemoveLabel,
   onUpdateLabel,
   onFeaturedChange,
+  onProductClassChange,
   onVariantsUpdate,
   onApplyToAllVariants,
   isClothingCategory,
@@ -274,7 +276,12 @@ export function AddProductFormContent({
           onUpdateLabel={onUpdateLabel}
         />
 
-        <Publishing featured={formData.featured} onFeaturedChange={onFeaturedChange} />
+        <Publishing
+          featured={formData.featured}
+          onFeaturedChange={onFeaturedChange}
+          productClass={(formData as { productClass?: 'retail' | 'wholesale' }).productClass ?? 'retail'}
+          onProductClassChange={onProductClassChange}
+        />
 
         <FormActions loading={loading} isEditMode={isEditMode} />
       </form>

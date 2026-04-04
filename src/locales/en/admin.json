@@ -6,6 +6,8 @@
     "categories": "Categories",
     "brands": "Brands",
     "attributes": "Attributes",
+    "promoCodes": "Promo codes",
+    "banners": "Banners",
     "discounts": "Discounts",
     "users": "Users",
     "messages": "Messages",
@@ -397,6 +399,9 @@
       "quantityPlaceholder": "0",
       "publishing": "Publishing",
       "markAsFeatured": "Mark as Featured (for homepage tab)",
+        "productClass": "Product class",
+        "productClassRetail": "Retail",
+        "productClassWholesale": "Wholesale",
       "updateProduct": "Update Product",
       "createProduct": "Create Product",
       "updating": "Updating...",
@@ -613,8 +618,13 @@
       "qty": "Qty",
       "price": "Price",
       "totalCol": "Total",
-      "noItemsFound": "No items found for this order"
+      "noItemsFound": "No items found for this order",
+      "adminNotes": "Admin notes",
+      "adminNotesPlaceholder": "Internal notes (visible only to admins)...",
+      "saveAdminNotes": "Save notes"
     },
+    "adminNotesUpdated": "Admin notes updated",
+    "failedToUpdateAdminNotes": "Failed to update admin notes",
     "showingPage": "Showing page {page} of {totalPages} ({total} total)",
     "previous": "Previous",
     "next": "Next"

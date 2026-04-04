@@ -30,6 +30,9 @@
     "register": "Register",
     "about": "About",
     "contact": "Contact",
+    "blogs": "Blogs",
+    "reels": "Reels",
+    "addresses": "Addresses",
     "admin": "Admin",
     "adminPanel": "Admin Panel",
     "logout": "Logout",
@@ -211,6 +214,9 @@
     "title": "Page Not Found",
     "description": "The page you are looking for does not exist or has been moved.",
     "goHome": "Go Home"
+  },
+  "reels": {
+    "empty": "No reels yet."
   }
 }
 

@@ -4,6 +4,7 @@
   "shippingMethod": "Shipping Method",
   "shippingAddress": "Shipping Address",
   "paymentMethod": "Payment Method",
+  "notes": "Order notes",
   "orderSummary": "Order Summary",
   "form": {
     "firstName": "First Name",
@@ -23,6 +24,7 @@
     "phone": "+374XXXXXXXX",
     "address": "Street, apartment, office, etc.",
     "city": "City",
+    "notes": "Delivery instructions or other notes...",
     "postalCode": "Postal Code",
     "cardNumber": "1234 5678 9012 3456",
     "expiryDate": "MM/YY",

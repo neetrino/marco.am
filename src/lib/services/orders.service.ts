@@ -5,6 +5,8 @@ import type { CheckoutData } from "../types/checkout";
 import { logger } from "../utils/logger";
 import { adminDeliveryService } from "./admin/admin-delivery.service";
 import { extractMediaUrl } from "../utils/extractMediaUrl";
+import { validatePromoCode, incrementPromoUsage } from "./promo.service";
+import { cartService } from "./cart.service";
 
 const orderNumberId = customAlphabet("0123456789ABCDEFGHJKLMNPQRSTUVWXYZ", 10);
 
@@ -75,6 +77,8 @@ class OrdersService {
         shippingMethod = 'pickup',
         shippingAddress,
         paymentMethod = 'idram',
+        couponCode: requestCouponCode,
+        notes: requestNotes,
       } = data;
       // shippingAmount is ignored — computed server-side from shippingMethod and address
 
@@ -98,6 +102,7 @@ class OrdersService {
         variantTitle?: string;
         sku: string;
         imageUrl?: string;
+        productClass?: string;
       }> = [];
 
       if (userId && cartId && cartId !== 'guest-cart') {
@@ -189,6 +194,7 @@ class OrdersService {
 
             // Use current variant price from DB (ignore priceSnapshot to prevent outdated/abused prices)
             const currentPrice = Number(variant.price);
+            const productClass = (product as { productClass?: string })?.productClass ?? 'retail';
             const cartItem = {
               variantId: variant.id,
               productId: product.id,
@@ -198,6 +204,7 @@ class OrdersService {
               variantTitle,
               sku: variant.sku || '',
               imageUrl,
+              productClass,
             };
             
             logger.debug('Cart item formatted', {
@@ -261,6 +268,7 @@ class OrdersService {
             ?.map((opt: { attributeKey?: string | null; value?: string | null }) => `${opt.attributeKey ?? ""}: ${opt.value ?? ""}`)
             .join(", ") ?? undefined;
           const imageUrl = extractMediaUrl(variant.product.media) ?? undefined;
+          const productClass = (variant.product as { productClass?: string })?.productClass ?? 'retail';
           return {
             variantId: variant.id,
             productId: variant.product.id,
@@ -270,6 +278,7 @@ class OrdersService {
             variantTitle,
             sku: variant.sku ?? "",
             imageUrl,
+            productClass,
           };
         });
       } else {
@@ -292,10 +301,29 @@ class OrdersService {
 
       // Calculate totals
       const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-      const discountAmount = 0; // TODO: Implement discount/coupon logic
-      // Shipping: computed server-side only (never trust client-provided amount)
+
+      // Promo code: validate and compute discount
+      let discountAmount = 0;
+      let appliedCouponCode: string | null = null;
+      if (requestCouponCode && requestCouponCode.trim() && subtotal > 0) {
+        const promoResult = await validatePromoCode(requestCouponCode.trim(), subtotal);
+        if (promoResult.valid) {
+          discountAmount = promoResult.discountAmount;
+          appliedCouponCode = promoResult.code;
+        } else {
+          throw {
+            status: 400,
+            type: "https://api.shop.am/problems/validation-error",
+            title: "Invalid promo code",
+            detail: promoResult.reason,
+          };
+        }
+      }
+
+      // Delivery: Retail-only -> Yandex (city-based price); Wholesale or mixed cart -> free delivery
+      const hasWholesale = cartItems.some((item) => item.productClass === 'wholesale');
       let shippingAmount = 0;
-      if (shippingMethod === 'delivery' && shippingAddress?.city?.trim()) {
+      if (!hasWholesale && shippingMethod === 'delivery' && shippingAddress?.city?.trim()) {
         const country = (shippingAddress.countryCode ?? 'Armenia').toString();
         shippingAmount = await adminDeliveryService.getDeliveryPrice(
           shippingAddress.city.trim(),
@@ -303,8 +331,9 @@ class OrdersService {
         );
         if (shippingAmount < 0) shippingAmount = 0;
       }
-      const taxAmount = 0; // TODO: Calculate tax if needed
-      const total = subtotal - discountAmount + shippingAmount + taxAmount;
+
+      const taxAmount = 0;
+      const total = Math.max(0, subtotal - discountAmount + shippingAmount + taxAmount);
 
       // Generate order number
       const orderNumber = generateOrderNumber();
@@ -332,6 +361,8 @@ class OrdersService {
             shippingMethod,
             shippingAddress: shippingAddress ? JSON.parse(JSON.stringify(shippingAddress)) : null,
             billingAddress: shippingAddress ? JSON.parse(JSON.stringify(shippingAddress)) : null,
+            couponCode: appliedCouponCode,
+            notes: requestNotes?.trim() || null,
             items: {
               create: cartItems.map((item) => ({
                 variantId: item.variantId,
@@ -431,6 +462,12 @@ class OrdersService {
       },
         { timeout: 10000, maxWait: 5000 }
       );
+
+      if (appliedCouponCode) {
+        await incrementPromoUsage(appliedCouponCode).catch((err) => {
+          logger.warn('Failed to increment promo usage', { code: appliedCouponCode, error: err });
+        });
+      }
 
       // Return order and payment info
       return {
@@ -700,6 +737,64 @@ class OrdersService {
       createdAt: order.createdAt.toISOString(),
       updatedAt: order.updatedAt.toISOString(),
     };
+  }
+
+  /**
+   * Reorder: add all items from a previous order to the user's cart.
+   * Returns cartId and counts of items added / skipped (e.g. out of stock).
+   */
+  async reorder(userId: string, orderNumber: string) {
+    const order = await db.order.findFirst({
+      where: { number: orderNumber, userId },
+      include: {
+        items: {
+          include: {
+            variant: {
+              select: { id: true, productId: true, stock: true },
+            },
+          },
+        },
+      },
+    });
+
+    if (!order || order.items.length === 0) {
+      throw {
+        status: 404,
+        type: "https://api.shop.am/problems/not-found",
+        title: "Order not found",
+        detail: "Order not found or has no items",
+      };
+    }
+
+    const { cart } = await cartService.getCart(userId);
+    const cartId = cart.id;
+    let itemsAdded = 0;
+    const skipped: Array<{ sku: string; reason: string }> = [];
+
+    for (const item of order.items) {
+      if (!item.variantId || !item.variant) continue;
+      const variant = item.variant as { id: string; productId: string; stock: number };
+      const qty = Math.min(item.quantity, Math.max(0, variant.stock));
+      if (qty === 0) {
+        skipped.push({ sku: item.sku, reason: "out_of_stock" });
+        continue;
+      }
+      try {
+        await cartService.addItem(userId, {
+          variantId: variant.id,
+          productId: variant.productId,
+          quantity: qty,
+        });
+        itemsAdded += 1;
+        if (qty < item.quantity) {
+          skipped.push({ sku: item.sku, reason: "partial_stock" });
+        }
+      } catch {
+        skipped.push({ sku: item.sku, reason: "failed_to_add" });
+      }
+    }
+
+    return { cartId, itemsAdded, skipped };
   }
 }
 
