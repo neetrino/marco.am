@@ -27,7 +27,6 @@ import {
   HEADER_SEARCH_BAR_HEIGHT_CLASS,
   HEADER_SEARCH_ICON_TEXT_GAP_CLASS,
   HEADER_SEARCH_INPUT_PADDING_LEFT_CLASS,
-  HEADER_SEARCH_INNER_HEIGHT_CLASS,
   HEADER_SEARCH_SUBMIT_CLASS,
   HEADER_SEARCH_SUBMIT_WIDTH_CLASS,
 } from './header/header.constants';
@@ -807,10 +806,10 @@ export function Header() {
           <div ref={inlineSearchRef} className="relative min-w-0">
             <form
               onSubmit={handleSearch}
-              className={`flex w-full min-w-0 flex-row items-center gap-2 overflow-hidden rounded-[200px] bg-marco-gray px-1.5 py-1 ${HEADER_SEARCH_BAR_HEIGHT_CLASS}`}
+              className={`flex w-full min-w-0 flex-row items-stretch overflow-hidden rounded-[200px] bg-marco-gray ${HEADER_SEARCH_BAR_HEIGHT_CLASS}`}
             >
               <div
-                className={`flex min-w-0 flex-1 items-center rounded-l-full ${HEADER_SEARCH_INNER_HEIGHT_CLASS} ${HEADER_SEARCH_ICON_TEXT_GAP_CLASS} ${HEADER_SEARCH_INPUT_PADDING_LEFT_CLASS}`}
+                className={`flex min-h-0 min-w-0 flex-1 items-center ${HEADER_SEARCH_ICON_TEXT_GAP_CLASS} ${HEADER_SEARCH_INPUT_PADDING_LEFT_CLASS} pr-3`}
               >
                 <span className="shrink-0 text-[rgba(33,43,54,0.46)]" aria-hidden>
                   <SearchIcon />
