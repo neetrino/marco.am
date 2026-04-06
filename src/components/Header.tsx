@@ -843,7 +843,7 @@ export function Header() {
             >
               <button
                 type="button"
-                className="flex h-[54px] w-[251px] items-center justify-center gap-2 rounded-bl-[30px] rounded-br-[89px] rounded-tl-[30px] rounded-tr-[89px] bg-[#101010] text-[16px] font-normal text-white"
+                className="flex h-[54px] w-[251px] items-center justify-center gap-2 rounded-full bg-[#101010] text-[16px] font-normal text-white"
               >
                 {t('common.navigation.categories')}
                 <ChevronDownIcon />
@@ -899,7 +899,7 @@ export function Header() {
                 </div>
                 <button
                   type="submit"
-                  className="absolute right-0 top-0 flex h-[54px] w-[155px] items-center justify-center rounded-bl-[30px] rounded-br-[89px] rounded-tl-[30px] rounded-tr-[89px] bg-[#ffca03] text-[14px] font-semibold text-[#101010]"
+                  className="absolute right-0 top-0 flex h-[54px] w-[155px] items-center justify-center rounded-full bg-[#ffca03] text-[14px] font-semibold text-[#101010]"
                 >
                   {t('common.buttons.search')}
                 </button>
