@@ -4,6 +4,11 @@ import { useState, useEffect, useRef } from 'react';
 import { Banknote, Globe } from 'lucide-react';
 import { CURRENCIES, type CurrencyCode } from '../../lib/currency';
 import { LANGUAGES, type LanguageCode, getStoredLanguage, setStoredLanguage } from '../../lib/language';
+import {
+  HEADER_LOCALE_PILL_HEIGHT_CLASS,
+  HEADER_LOCALE_PILL_INNER_GAP_CLASS,
+  HEADER_LOCALE_PILL_RADIUS_CLASS,
+} from './header.constants';
 
 const ChevronDownIcon = () => (
   <svg width="10" height="10" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
@@ -11,9 +16,18 @@ const ChevronDownIcon = () => (
   </svg>
 );
 
-function displayLangCode(raw: LanguageCode): string {
-  if (raw === 'ka') return 'EN';
-  return raw.toUpperCase();
+/** Figma 111:4306 — 3-letter labels (ENG / AMD row) */
+function getPillLanguageLabel(raw: LanguageCode): string {
+  if (raw === 'ka') {
+    return 'ENG';
+  }
+  if (raw === 'en') {
+    return 'ENG';
+  }
+  if (raw === 'hy') {
+    return 'HYE';
+  }
+  return 'RUS';
 }
 
 interface HeaderLocaleCurrencyPillProps {
@@ -21,9 +35,6 @@ interface HeaderLocaleCurrencyPillProps {
   onCurrencyChange: (code: CurrencyCode) => void;
 }
 
-/**
- * Compact language + currency control — MARCO header pill (Figma).
- */
 function getInitialHeaderLang(): LanguageCode {
   if (typeof window === 'undefined') {
     return 'en';
@@ -32,14 +43,90 @@ function getInitialHeaderLang(): LanguageCode {
   return stored === 'ka' ? 'en' : stored;
 }
 
-export function HeaderLocaleCurrencyPill({
-  selectedCurrency,
-  onCurrencyChange,
-}: HeaderLocaleCurrencyPillProps) {
-  const [showMenu, setShowMenu] = useState(false);
-  const [currentLang, setCurrentLang] = useState<LanguageCode>(getInitialHeaderLang);
-  const menuRef = useRef<HTMLDivElement>(null);
+interface LocaleCurrencyMenuProps {
+  currentLang: LanguageCode;
+  selectedCurrency: CurrencyCode;
+  onLanguageSelect: (code: LanguageCode) => void;
+  onCurrencySelect: (code: CurrencyCode) => void;
+}
 
+function LocaleLanguageRows({
+  currentLang,
+  onLanguageSelect,
+}: {
+  currentLang: LanguageCode;
+  onLanguageSelect: (code: LanguageCode) => void;
+}) {
+  return Object.values(LANGUAGES)
+    .filter((lang) => lang.code !== 'ka')
+    .map((lang) => {
+      const isActive = currentLang === lang.code;
+      return (
+        <button
+          key={lang.code}
+          type="button"
+          onClick={() => onLanguageSelect(lang.code)}
+          disabled={isActive}
+          className={`w-full px-4 py-2.5 text-left text-sm transition-colors ${
+            isActive ? 'bg-gray-50 font-semibold text-gray-900' : 'text-gray-700 hover:bg-gray-50'
+          }`}
+        >
+          {lang.nativeName}
+        </button>
+      );
+    });
+}
+
+function LocaleCurrencyRows({
+  selectedCurrency,
+  onCurrencySelect,
+}: {
+  selectedCurrency: CurrencyCode;
+  onCurrencySelect: (code: CurrencyCode) => void;
+}) {
+  return Object.values(CURRENCIES).map((currency) => {
+    const isActive = selectedCurrency === currency.code;
+    return (
+      <button
+        key={currency.code}
+        type="button"
+        onClick={() => onCurrencySelect(currency.code)}
+        className={`flex w-full items-center justify-between px-4 py-2.5 text-sm transition-colors ${
+          isActive ? 'bg-gray-50 font-semibold text-gray-900' : 'text-gray-700 hover:bg-gray-50'
+        }`}
+      >
+        <span>{currency.code}</span>
+        <span className="text-gray-500">{currency.symbol}</span>
+      </button>
+    );
+  });
+}
+
+function LocaleCurrencyMenu({
+  currentLang,
+  selectedCurrency,
+  onLanguageSelect,
+  onCurrencySelect,
+}: LocaleCurrencyMenuProps) {
+  return (
+    <div className="absolute right-0 top-full z-[60] mt-2 w-64 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
+      <p className="border-b border-gray-100 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+        Language
+      </p>
+      <LocaleLanguageRows currentLang={currentLang} onLanguageSelect={onLanguageSelect} />
+      <p className="border-b border-t border-gray-100 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+        Currency
+      </p>
+      <LocaleCurrencyRows selectedCurrency={selectedCurrency} onCurrencySelect={onCurrencySelect} />
+    </div>
+  );
+}
+
+function useLocalePillSyncAndDismiss(
+  menuRef: React.RefObject<HTMLDivElement | null>,
+  setShowMenu: React.Dispatch<React.SetStateAction<boolean>>,
+  setCurrentLang: React.Dispatch<React.SetStateAction<LanguageCode>>,
+): void {
   useEffect(() => {
     const handleLanguageUpdate = () => {
       const next = getStoredLanguage();
@@ -47,7 +134,7 @@ export function HeaderLocaleCurrencyPill({
     };
     window.addEventListener('language-updated', handleLanguageUpdate);
     return () => window.removeEventListener('language-updated', handleLanguageUpdate);
-  }, []);
+  }, [setCurrentLang]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -57,15 +144,31 @@ export function HeaderLocaleCurrencyPill({
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [menuRef, setShowMenu]);
+}
+
+function useLocaleCurrencyPillState(
+  onCurrencyChange: (code: CurrencyCode) => void,
+): {
+  showMenu: boolean;
+  setShowMenu: React.Dispatch<React.SetStateAction<boolean>>;
+  currentLang: LanguageCode;
+  menuRef: React.RefObject<HTMLDivElement | null>;
+  changeLanguage: (langCode: LanguageCode) => void;
+  handleCurrencySelect: (code: CurrencyCode) => void;
+} {
+  const [showMenu, setShowMenu] = useState(false);
+  const [currentLang, setCurrentLang] = useState<LanguageCode>(getInitialHeaderLang);
+  const menuRef = useRef<HTMLDivElement>(null);
+  useLocalePillSyncAndDismiss(menuRef, setShowMenu, setCurrentLang);
 
   const changeLanguage = (langCode: LanguageCode) => {
     if (currentLang === langCode && langCode !== 'ka') {
       setShowMenu(false);
       return;
     }
-    const displayLang = langCode === 'ka' ? 'en' : langCode;
-    setCurrentLang(displayLang);
+    const nextLang = langCode === 'ka' ? 'en' : langCode;
+    setCurrentLang(nextLang);
     setShowMenu(false);
     setStoredLanguage(langCode);
   };
@@ -75,65 +178,49 @@ export function HeaderLocaleCurrencyPill({
     setShowMenu(false);
   };
 
+  return {
+    showMenu,
+    setShowMenu,
+    currentLang,
+    menuRef,
+    changeLanguage,
+    handleCurrencySelect,
+  };
+}
+
+/**
+ * Compact language + currency control — MARCO header pill (Figma 111:4306).
+ */
+export function HeaderLocaleCurrencyPill({
+  selectedCurrency,
+  onCurrencyChange,
+}: HeaderLocaleCurrencyPillProps) {
+  const { showMenu, setShowMenu, currentLang, menuRef, changeLanguage, handleCurrencySelect } =
+    useLocaleCurrencyPillState(onCurrencyChange);
+
   return (
-    <div className="relative" ref={menuRef}>
+    <div className="relative" ref={menuRef as React.RefObject<HTMLDivElement>}>
       <button
         type="button"
-        onClick={() => setShowMenu(!showMenu)}
+        onClick={() => setShowMenu((open) => !open)}
         aria-expanded={showMenu}
-        className="flex h-12 min-w-0 items-center gap-2 rounded-full bg-marco-gray px-3 text-[15px] font-bold text-marco-text sm:gap-3 sm:px-4"
+        className={`flex min-w-0 items-center overflow-hidden bg-marco-gray px-6 text-base font-bold leading-[18px] text-marco-text sm:px-8 ${HEADER_LOCALE_PILL_INNER_GAP_CLASS} ${HEADER_LOCALE_PILL_HEIGHT_CLASS} ${HEADER_LOCALE_PILL_RADIUS_CLASS}`}
       >
-        <Globe className="h-[18px] w-[18px] shrink-0 opacity-80" strokeWidth={1.75} aria-hidden />
+        <Globe className="h-[18px] w-[18px] shrink-0" strokeWidth={1.75} aria-hidden />
         <span className="whitespace-nowrap">
-          {displayLangCode(currentLang)} <span className="font-bold opacity-70">/</span>
+          {getPillLanguageLabel(currentLang)} <span className="font-bold">/</span>
         </span>
-        <Banknote className="h-[18px] w-[18px] shrink-0 opacity-80" strokeWidth={1.75} aria-hidden />
+        <Banknote className="h-[18px] w-[18px] shrink-0" strokeWidth={1.75} aria-hidden />
         <span className="whitespace-nowrap">{selectedCurrency}</span>
         <ChevronDownIcon />
       </button>
       {showMenu && (
-        <div className="absolute right-0 top-full z-[60] mt-2 w-64 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
-          <p className="border-b border-gray-100 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
-            Language
-          </p>
-          {Object.values(LANGUAGES)
-            .filter((lang) => lang.code !== 'ka')
-            .map((lang) => {
-              const isActive = currentLang === lang.code;
-              return (
-                <button
-                  key={lang.code}
-                  type="button"
-                  onClick={() => changeLanguage(lang.code)}
-                  disabled={isActive}
-                  className={`w-full px-4 py-2.5 text-left text-sm transition-colors ${
-                    isActive ? 'bg-gray-50 font-semibold text-gray-900' : 'text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  {lang.nativeName}
-                </button>
-              );
-            })}
-          <p className="border-b border-t border-gray-100 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
-            Currency
-          </p>
-          {Object.values(CURRENCIES).map((currency) => {
-            const isActive = selectedCurrency === currency.code;
-            return (
-              <button
-                key={currency.code}
-                type="button"
-                onClick={() => handleCurrencySelect(currency.code)}
-                className={`flex w-full items-center justify-between px-4 py-2.5 text-sm transition-colors ${
-                  isActive ? 'bg-gray-50 font-semibold text-gray-900' : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <span>{currency.code}</span>
-                <span className="text-gray-500">{currency.symbol}</span>
-              </button>
-            );
-          })}
-        </div>
+        <LocaleCurrencyMenu
+          currentLang={currentLang}
+          selectedCurrency={selectedCurrency}
+          onLanguageSelect={changeLanguage}
+          onCurrencySelect={handleCurrencySelect}
+        />
       )}
     </div>
   );

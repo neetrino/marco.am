@@ -24,7 +24,12 @@ import {
   HEADER_FIGMA_PADDING_Y_CLASS,
   HEADER_FIGMA_ROW2_GAP_X_CLASS,
   HEADER_REELS_EXTERNAL_HREF,
+  HEADER_SEARCH_BAR_HEIGHT_CLASS,
+  HEADER_SEARCH_ICON_TEXT_GAP_CLASS,
+  HEADER_SEARCH_INPUT_PADDING_LEFT_CLASS,
+  HEADER_SEARCH_INNER_HEIGHT_CLASS,
   HEADER_SEARCH_SUBMIT_CLASS,
+  HEADER_SEARCH_SUBMIT_WIDTH_CLASS,
 } from './header/header.constants';
 import { CompareIcon } from './icons/CompareIcon';
 import { CartIcon } from './icons/CartIcon';
@@ -802,10 +807,12 @@ export function Header() {
           <div ref={inlineSearchRef} className="relative min-w-0">
             <form
               onSubmit={handleSearch}
-              className="flex h-14 w-full min-w-0 items-stretch gap-0 overflow-hidden rounded-[200px] bg-marco-gray p-1 pl-6"
+              className={`flex w-full min-w-0 flex-row items-center gap-2 overflow-hidden rounded-[200px] bg-marco-gray px-1.5 py-1 ${HEADER_SEARCH_BAR_HEIGHT_CLASS}`}
             >
-              <div className="flex min-w-0 flex-1 items-center gap-2">
-                <span className="shrink-0 text-[rgba(33,43,54,0.55)]">
+              <div
+                className={`flex min-w-0 flex-1 items-center rounded-l-full ${HEADER_SEARCH_INNER_HEIGHT_CLASS} ${HEADER_SEARCH_ICON_TEXT_GAP_CLASS} ${HEADER_SEARCH_INPUT_PADDING_LEFT_CLASS}`}
+              >
+                <span className="shrink-0 text-[rgba(33,43,54,0.46)]" aria-hidden>
                   <SearchIcon />
                 </span>
                 <input
@@ -821,16 +828,16 @@ export function Header() {
                   }}
                   onKeyDown={searchHandleKeyDown}
                   placeholder={t('common.placeholders.search')}
-                  className="min-h-0 min-w-0 flex-1 border-0 bg-transparent py-2 text-sm text-marco-text placeholder:text-[rgba(33,43,54,0.46)] focus:outline-none focus:ring-0"
+                  className="min-h-0 min-w-0 flex-1 border-0 bg-transparent text-sm leading-normal text-marco-text placeholder:text-[rgba(33,43,54,0.46)] focus:outline-none focus:ring-0"
                   aria-controls="search-results"
                   aria-autocomplete="list"
                 />
               </div>
               <button
                 type="submit"
-                className={`flex min-h-0 min-w-[140px] shrink-0 items-center justify-center self-stretch px-6 text-sm font-semibold transition-opacity hover:opacity-90 md:min-w-[155px] ${HEADER_SEARCH_SUBMIT_CLASS}`}
+                className={`flex items-center justify-center px-3 text-sm font-semibold leading-normal transition-opacity hover:opacity-90 sm:px-4 ${HEADER_SEARCH_SUBMIT_WIDTH_CLASS} ${HEADER_SEARCH_SUBMIT_CLASS}`}
               >
-                {t('buttons.search')}
+                {t('common.buttons.search')}
               </button>
             </form>
             <SearchDropdown

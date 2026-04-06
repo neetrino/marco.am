@@ -27,8 +27,31 @@ export const HEADER_FIGMA_CONTACT_CLUSTER_GAP_CLASS =
 export const HEADER_FIGMA_ROW2_GAP_X_CLASS =
   'gap-x-3 sm:gap-x-4 md:gap-x-5 lg:gap-x-8 xl:gap-x-10 2xl:gap-x-12 min-[1800px]:gap-x-[54px]';
 
+/** Figma 111:4274 — outer search frame `700×56`; yellow `111:4279` fills row height and shares the pill outline. */
+export const HEADER_SEARCH_BAR_HEIGHT_CLASS = 'h-[56px]';
+
+/** Inner track + submit pill height inside the 56px bar (`py-1` × 2 + 48px). */
+export const HEADER_SEARCH_INNER_HEIGHT_CLASS = 'h-12';
+
+/** Figma 111:4275 — gap between search icon and placeholder text (`gap-[8px]`) */
+export const HEADER_SEARCH_ICON_TEXT_GAP_CLASS = 'gap-2';
+
+/** Figma 111:4274 — horizontal padding from frame edge to icon row (`pl-[24px]`) */
+export const HEADER_SEARCH_INPUT_PADDING_LEFT_CLASS = 'pl-6';
+
+/** Figma 111:4279 — yellow submit width `w-[155px]` (same at all breakpoints) */
+export const HEADER_SEARCH_SUBMIT_WIDTH_CLASS = 'w-[155px] shrink-0';
+
 /**
- * Figma 111:4279 — yellow search submit block (`bg-[#ffca03]`, asymmetric capsule radii, `overflow-clip`).
+ * Yellow submit: pill shape (rounded on both sides), inset within the 56px bar via row padding in Header.
  */
-export const HEADER_SEARCH_SUBMIT_CLASS =
-  'overflow-clip bg-marco-yellow text-marco-black rounded-bl-[30px] rounded-br-[89px] rounded-tl-[30px] rounded-tr-[89px]';
+export const HEADER_SEARCH_SUBMIT_CLASS = `${HEADER_SEARCH_INNER_HEIGHT_CLASS} shrink-0 overflow-clip rounded-full bg-marco-yellow text-marco-black`;
+
+/** Figma 111:4306 — language + currency pill (row 2, aligns with search bar outer height) */
+export const HEADER_LOCALE_PILL_HEIGHT_CLASS = 'h-[56px]';
+
+/** Figma 111:4306 — full capsule radius */
+export const HEADER_LOCALE_PILL_RADIUS_CLASS = 'rounded-[80px]';
+
+/** Figma 111:4306 — horizontal rhythm between globe, labels, icons */
+export const HEADER_LOCALE_PILL_INNER_GAP_CLASS = 'gap-3 sm:gap-[13px]';
