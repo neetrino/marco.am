@@ -5,7 +5,7 @@ import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Montserrat } from 'next/font/google';
 import { useState, useEffect, useRef, Suspense } from 'react';
 import type { FormEvent, ReactNode, CSSProperties } from 'react';
-import { getStoredCurrency, setStoredCurrency, type CurrencyCode, CURRENCIES, formatPrice, initializeCurrencyRates, clearCurrencyRatesCache } from '../lib/currency';
+import { getStoredCurrency, setStoredCurrency, type CurrencyCode, formatPrice, initializeCurrencyRates, clearCurrencyRatesCache } from '../lib/currency';
 import { useTranslation } from '../lib/i18n-client';
 import { getStoredLanguage } from '../lib/language';
 import { useInstantSearch } from './hooks/useInstantSearch';
@@ -13,7 +13,7 @@ import { SearchDropdown } from './SearchDropdown';
 import { useAuth } from '../lib/auth/AuthContext';
 import { apiClient } from '../lib/api-client';
 import { CART_KEY, getCompareCount, getWishlistCount } from '../lib/storageCounts';
-import { LanguageSwitcherHeader } from './LanguageSwitcherHeader';
+import { LocaleCurrencyPill } from './LocaleCurrencyPill';
 import { Instagram, Facebook, Sun, Send, Phone } from 'lucide-react';
 import { CompareIcon } from './icons/CompareIcon';
 import { CartIcon } from './icons/CartIcon';
@@ -355,8 +355,6 @@ export function Header() {
   const [wishlistCount, setWishlistCount] = useState(0);
   const [cartCount, setCartCount] = useState(0);
   const [cartTotal, setCartTotal] = useState(0);
-  const [showCurrency, setShowCurrency] = useState(false);
-  const [showMobileCurrency, setShowMobileCurrency] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showCategoriesMenu, setShowCategoriesMenu] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
@@ -367,8 +365,6 @@ export function Header() {
   const [loadingCategories, setLoadingCategories] = useState(false);
   const currentYear = new Date().getFullYear();
 
-  const currencyRef = useRef<HTMLDivElement>(null);
-  const mobileCurrencyRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const categoriesMenuRef = useRef<HTMLDivElement>(null);
   const categoriesMenuTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -581,17 +577,9 @@ export function Header() {
     return cats; // API already returns only root categories
   };
 
-  const selectedCurrencyInfo = CURRENCIES[selectedCurrency];
-
   // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (currencyRef.current && !currencyRef.current.contains(event.target as Node)) {
-        setShowCurrency(false);
-      }
-      if (mobileCurrencyRef.current && !mobileCurrencyRef.current.contains(event.target as Node)) {
-        setShowMobileCurrency(false);
-      }
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
         setShowUserMenu(false);
       }
@@ -693,7 +681,6 @@ export function Header() {
     });
     setStoredCurrency(currency);
     setSelectedCurrency(currency);
-    setShowCurrency(false);
     // Trigger currency update event to refresh prices
     window.dispatchEvent(new Event('currency-updated'));
   };
@@ -921,41 +908,11 @@ export function Header() {
             </form>
 
             <div className="flex h-12 items-center gap-[23px]">
-              <div className="flex h-12 items-center gap-2 rounded-[80px] bg-[#f4f4f4] px-4">
-                <LanguageSwitcherHeader triggerClassName="!bg-transparent md:!bg-transparent px-1 py-1" />
-                <span className="text-[16px] font-bold text-[#333]">/</span>
-                <div className="relative" ref={currencyRef}>
-                  <button
-                    type="button"
-                    onClick={() => setShowCurrency(!showCurrency)}
-                    className="flex items-center gap-1 text-[16px] font-bold text-[#333]"
-                  >
-                    <span>{selectedCurrency}</span>
-                    <ChevronDownIcon />
-                  </button>
-                  {showCurrency && (
-                    <div className="absolute right-0 top-full z-50 mt-2 w-40 animate-in overflow-hidden bg-white fade-in slide-in-from-top-2 duration-200">
-                      {Object.values(CURRENCIES).map((currency) => (
-                        <button
-                          key={currency.code}
-                          type="button"
-                          onClick={() => handleCurrencyChange(currency.code)}
-                          className={`w-full px-4 py-2.5 text-left text-sm transition-all duration-150 ${
-                            selectedCurrency === currency.code
-                              ? 'bg-gradient-to-r from-gray-100 to-gray-50 font-semibold text-gray-900'
-                              : 'text-gray-700 hover:bg-gray-50'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <span>{currency.code}</span>
-                            <span className="text-gray-500">{currency.symbol}</span>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
+              <LocaleCurrencyPill
+                selectedCurrency={selectedCurrency}
+                onCurrencyChange={handleCurrencyChange}
+                variant="desktop"
+              />
 
               <button
                 type="button"
@@ -1078,49 +1035,14 @@ export function Header() {
                 </span>
               </Link>
             </div>
-            {/* Mobile Currency and Language - on same line as logo */}
+            {/* Mobile locale + currency pill (same line as logo) */}
             <div className="flex items-center gap-1 sm:gap-2 md:hidden">
-              {/* Currency Switcher */}
-              <div className="relative" ref={mobileCurrencyRef}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowMobileCurrency(!showMobileCurrency);
-                  }}
-                  className="flex h-9 sm:h-10 items-center justify-center gap-1 sm:gap-2 bg-transparent md:bg-white px-2 sm:px-3 text-xs sm:text-sm font-medium text-gray-800 shadow-none md:shadow-sm transition-colors cursor-pointer"
-                >
-                  <span className="text-sm sm:text-base font-semibold leading-none">{selectedCurrencyInfo.symbol}</span>
-                  <span className="text-xs sm:text-sm font-medium leading-none">{selectedCurrency}</span>
-                  <ChevronDownIcon />
-                </button>
-                {showMobileCurrency && (
-                  <div className="absolute top-full right-0 mt-2 w-40 bg-white shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                    {Object.values(CURRENCIES).map((currency) => (
-                      <button
-                        key={currency.code}
-                        onClick={() => {
-                          handleCurrencyChange(currency.code);
-                          setShowMobileCurrency(false);
-                        }}
-                        className={`w-full text-left px-4 py-2.5 text-sm transition-all duration-150 ${
-                          selectedCurrency === currency.code
-                            ? 'bg-gradient-to-r from-gray-100 to-gray-50 text-gray-900 font-semibold'
-                            : 'text-gray-700 hover:bg-gray-50'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span>{currency.code}</span>
-                          <span className="text-gray-500">{currency.symbol}</span>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-              {/* Language Switcher */}
-              <div className="flex h-9 sm:h-10 items-center justify-center">
-                <LanguageSwitcherHeader />
-              </div>
+              <LocaleCurrencyPill
+                selectedCurrency={selectedCurrency}
+                onCurrencyChange={handleCurrencyChange}
+                variant="mobile"
+                menuSuppressed={showSearchModal || mobileMenuOpen}
+              />
             </div>
           </div>
 
@@ -1144,7 +1066,6 @@ export function Header() {
             <button
               onClick={() => {
                 setShowSearchModal(!showSearchModal);
-                setShowCurrency(false);
               }}
               className="w-11 h-11 flex items-center justify-center text-gray-700 hover:text-gray-900 transition-colors duration-150"
               aria-label={t('common.ariaLabels.search')}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, type ReactNode } from 'react';
 import Image from 'next/image';
 import { LANGUAGES, type LanguageCode, getStoredLanguage, setStoredLanguage } from '../lib/language';
 
@@ -10,9 +10,9 @@ const ChevronDownIcon = () => (
   </svg>
 );
 
-// Language icons/flags
-const getLanguageIcon = (code: LanguageCode): React.ReactNode => {
-  const icons: Record<LanguageCode, React.ReactNode> = {
+/** Icons/flags for language rows (header switcher + locale pill dropdown). */
+export const getLanguageIcon = (code: LanguageCode): ReactNode => {
+  const icons: Record<LanguageCode, ReactNode> = {
     en: (
       <Image
         src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Flag_of_the_United_Kingdom_%283-5%29.svg/1024px-Flag_of_the_United_Kingdom_%283-5%29.svg.png"
@@ -48,8 +48,8 @@ const getLanguageIcon = (code: LanguageCode): React.ReactNode => {
   return icons[code] || '🌐';
 };
 
-// Language colors for better visual distinction
-const getLanguageColor = (code: LanguageCode, isActive: boolean): string => {
+/** Border/background classes for active language row. */
+export const getLanguageColor = (code: LanguageCode, isActive: boolean): string => {
   if (isActive) {
     const colors: Record<LanguageCode, string> = {
       en: 'bg-blue-50 border-blue-200',
