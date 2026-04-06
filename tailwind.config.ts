@@ -16,6 +16,13 @@ const config: Config = {
         warning: '#F59E0B',
         error: '#EF4444',
         info: '#3B82F6',
+        marco: {
+          yellow: '#ffca03',
+          black: '#101010',
+          gray: '#f4f4f4',
+          border: '#ebebeb',
+          text: '#333333',
+        },
       },
       fontFamily: {
         sans: ['system-ui', '-apple-system', 'sans-serif'],

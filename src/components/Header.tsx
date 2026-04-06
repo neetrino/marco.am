@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect, useRef, Suspense } from 'react';
 import type { FormEvent, ReactNode, CSSProperties } from 'react';
-import { getStoredCurrency, setStoredCurrency, type CurrencyCode, CURRENCIES, formatPrice, initializeCurrencyRates, clearCurrencyRatesCache } from '../lib/currency';
+import { getStoredCurrency, setStoredCurrency, type CurrencyCode, formatPrice, initializeCurrencyRates, clearCurrencyRatesCache } from '../lib/currency';
 import { useTranslation } from '../lib/i18n-client';
 import { getStoredLanguage } from '../lib/language';
 import { useInstantSearch } from './hooks/useInstantSearch';
@@ -12,17 +12,35 @@ import { SearchDropdown } from './SearchDropdown';
 import { useAuth } from '../lib/auth/AuthContext';
 import { apiClient } from '../lib/api-client';
 import { CART_KEY, getCompareCount, getWishlistCount } from '../lib/storageCounts';
-import { LanguageSwitcherHeader } from './LanguageSwitcherHeader';
-import { Instagram, Facebook, Linkedin } from 'lucide-react';
+import { MapPin, Phone, Sun } from 'lucide-react';
+import { MarcoLogo } from './header/MarcoLogo';
+import { HeaderLocaleCurrencyPill } from './header/HeaderLocaleCurrencyPill';
+import { HeaderSocialCircleLinks } from './header/HeaderSocialCircleLinks';
+import {
+  HEADER_FIGMA_CLUSTER_GAP_CLASS,
+  HEADER_FIGMA_CONTACT_CLUSTER_GAP_CLASS,
+  HEADER_FIGMA_NAV_LINK_GAP_CLASS,
+  HEADER_FIGMA_PADDING_X_CLASS,
+  HEADER_FIGMA_PADDING_Y_CLASS,
+  HEADER_FIGMA_ROW2_GAP_X_CLASS,
+  HEADER_REELS_EXTERNAL_HREF,
+  HEADER_SEARCH_SUBMIT_CLASS,
+} from './header/header.constants';
 import { CompareIcon } from './icons/CompareIcon';
 import { CartIcon } from './icons/CartIcon';
 
-// Navigation links will be translated dynamically using useTranslation hook
-const primaryNavLinks = [
+/** Top row + mobile drawer — MARCO nav (Figma 101:2027) */
+type PrimaryNavLink =
+  | { href: string; translationKey: string; external?: false }
+  | { href: string; translationKey: string; external: true };
+
+const primaryNavLinks: PrimaryNavLink[] = [
   { href: '/', translationKey: 'common.navigation.home' },
-  { href: '/products', translationKey: 'common.navigation.products' },
   { href: '/about', translationKey: 'common.navigation.about' },
+  { href: '/products', translationKey: 'common.navigation.shop' },
+  { href: '/products', translationKey: 'common.navigation.brands' },
   { href: '/contact', translationKey: 'common.navigation.contact' },
+  { href: HEADER_REELS_EXTERNAL_HREF, translationKey: 'common.navigation.reels', external: true },
 ];
 
 interface Category {
@@ -89,8 +107,17 @@ const WishlistIcon = () => (
   </svg>
 );
 
+/** Figma 111:4274 — 24px search glyph */
 const SearchIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg
+    className="h-6 w-6 shrink-0"
+    width="24"
+    height="24"
+    viewBox="0 0 22 22"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden
+  >
     <circle cx="10" cy="10" r="6.5" stroke="currentColor" strokeWidth="1.8" fill="none" />
     <path d="M15.5 15.5L19 19" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
   </svg>
@@ -347,11 +374,8 @@ export function Header() {
   const [wishlistCount, setWishlistCount] = useState(0);
   const [cartCount, setCartCount] = useState(0);
   const [cartTotal, setCartTotal] = useState(0);
-  const [showCurrency, setShowCurrency] = useState(false);
-  const [showMobileCurrency, setShowMobileCurrency] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showProductsMenu, setShowProductsMenu] = useState(false);
-  const [showSearchModal, setShowSearchModal] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedCurrency, setSelectedCurrency] = useState<CurrencyCode>('AMD');
   const [categories, setCategories] = useState<Category[]>([]);
@@ -359,13 +383,10 @@ export function Header() {
   const [loadingCategories, setLoadingCategories] = useState(false);
   const currentYear = new Date().getFullYear();
 
-  const currencyRef = useRef<HTMLDivElement>(null);
-  const mobileCurrencyRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const productsMenuRef = useRef<HTMLDivElement>(null);
-  const productsMenuTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const searchModalRef = useRef<HTMLDivElement>(null);
-  const searchInputRef = useRef<HTMLInputElement>(null);
+  const inlineSearchRef = useRef<HTMLDivElement>(null);
+  const headerSearchInputRef = useRef<HTMLInputElement>(null);
 
   const {
     query: searchQuery,
@@ -558,7 +579,7 @@ export function Header() {
         params: { lang: 'en' },
       });
       setCategories(response.data || []);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error fetching categories:', err);
       setCategories([]);
     } finally {
@@ -572,25 +593,17 @@ export function Header() {
     return cats; // API already returns only root categories
   };
 
-  const selectedCurrencyInfo = CURRENCIES[selectedCurrency];
-
   // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (currencyRef.current && !currencyRef.current.contains(event.target as Node)) {
-        setShowCurrency(false);
-      }
-      if (mobileCurrencyRef.current && !mobileCurrencyRef.current.contains(event.target as Node)) {
-        setShowMobileCurrency(false);
-      }
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
         setShowUserMenu(false);
       }
       if (productsMenuRef.current && !productsMenuRef.current.contains(event.target as Node)) {
         setShowProductsMenu(false);
       }
-      if (searchModalRef.current && !searchModalRef.current.contains(event.target as Node)) {
-        setShowSearchModal(false);
+      if (inlineSearchRef.current && !inlineSearchRef.current.contains(event.target as Node)) {
+        setSearchDropdownOpen(false);
       }
     };
 
@@ -614,52 +627,25 @@ export function Header() {
     }
   }, [mobileMenuOpen]);
 
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (productsMenuTimeoutRef.current) {
-        clearTimeout(productsMenuTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  // Focus search input when modal opens; show dropdown if query present
-  useEffect(() => {
-    if (showSearchModal && searchInputRef.current) {
-      searchInputRef.current.focus();
-      setSearchDropdownOpen(searchQuery.trim().length >= 1);
-    } else {
-      setSearchDropdownOpen(false);
-    }
-  }, [showSearchModal, searchQuery]);
-
-  // Close search modal on ESC key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') {
         return;
       }
-
-      if (showSearchModal) {
-        setShowSearchModal(false);
-      }
-
       if (mobileMenuOpen) {
         setMobileMenuOpen(false);
       }
     };
-
     document.addEventListener('keydown', handleEscape);
     return () => {
       document.removeEventListener('keydown', handleEscape);
     };
-  }, [showSearchModal, mobileMenuOpen]);
+  }, [mobileMenuOpen]);
 
   const handleSearch = (e: FormEvent) => {
     e.preventDefault();
     const query = searchQuery.trim();
     const selected = searchSelectedIndex >= 0 && searchResults[searchSelectedIndex];
-    setShowSearchModal(false);
     if (selected) {
       router.push(`/products/${selected.slug}`);
       clearSearch();
@@ -678,19 +664,17 @@ export function Header() {
    * Updates currency selection and notifies the app with a visible log entry.
    */
   const handleCurrencyChange = (currency: CurrencyCode) => {
-    console.info('[Header][LangCurrency] Currency changed', {
-      from: selectedCurrency,
-      to: currency,
-    });
     setStoredCurrency(currency);
     setSelectedCurrency(currency);
-    setShowCurrency(false);
-    // Trigger currency update event to refresh prices
     window.dispatchEvent(new Event('currency-updated'));
   };
 
+  const phoneDisplay = t('contact.phone');
+  const telHref =
+    phoneDisplay.length > 0 ? `tel:${phoneDisplay.replace(/[^\d+]/gu, '')}` : 'tel:';
+
   return (
-    <header className="bg-gradient-to-b from-gray-50 to-white sticky top-0 z-50 border-b border-gray-200/80 shadow-sm backdrop-blur-sm bg-white/95">
+    <header className="sticky top-0 z-50 border-b border-marco-border bg-white shadow-sm backdrop-blur-sm">
       <Suspense fallback={null}>
         <HeaderSearchSync
           setSearchQuery={setSearchQuery}
@@ -698,306 +682,273 @@ export function Header() {
           categories={categories}
         />
       </Suspense>
-      {/* Top Bar */}
-      <div className="bg-white border-b border-gray-200 hidden md:block">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col gap-3 py-3 text-sm text-gray-700 sm:flex-row sm:items-center sm:justify-between">
-            {/* Phone + Social */}
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-              <div className="flex items-center gap-2 text-gray-700">
-                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M2 3C2 2.44772 2.44772 2 3 2H5.15287C5.64171 2 6.0589 2.35341 6.13927 2.8356L6.87858 7.27147C6.95075 7.70451 6.73206 8.13397 6.3394 8.3303L4.79126 9.10437C5.90715 11.8783 8.12168 14.0929 10.8956 15.2088L11.6697 13.6606C11.866 13.2679 12.2955 13.0493 12.7285 13.1214L17.1644 13.8607C17.6466 13.9411 18 14.3583 18 14.8471V17C18 17.5523 17.5523 18 17 18H15C7.8203 18 2 12.1797 2 5V3Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                <span className="font-medium">{t('contact.phone')}</span>
-              </div>
-              <div className="flex items-center gap-3 text-gray-600">
-                <a
-                  href={t('contact.social.instagram') || '#'}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-pink-600 transition-colors"
-                  aria-label={t('common.ariaLabels.instagram')}
+      {/* MARCO — top row (desktop), Figma 111:4293 / nav 111:4294 */}
+      <div
+        className={`hidden border-b border-marco-border bg-white md:block ${HEADER_FIGMA_PADDING_Y_CLASS}`}
+      >
+        <div
+          className={`mx-auto flex w-full max-w-[1920px] flex-nowrap items-center overflow-x-auto scrollbar-hide ${HEADER_FIGMA_CLUSTER_GAP_CLASS} ${HEADER_FIGMA_PADDING_X_CLASS}`}
+        >
+          <MarcoLogo />
+          <nav
+            className={`hidden min-w-0 shrink-0 flex-nowrap items-center ${HEADER_FIGMA_NAV_LINK_GAP_CLASS} text-sm font-bold capitalize leading-[18px] text-marco-text md:flex lg:text-base`}
+            aria-label="Main"
+          >
+            {primaryNavLinks.map((item) => {
+              const label = t(item.translationKey);
+              if (item.external === true) {
+                return (
+                  <a
+                    key={item.translationKey}
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="whitespace-nowrap transition-opacity hover:opacity-80"
+                  >
+                    {label}
+                  </a>
+                );
+              }
+              return (
+                <Link
+                  key={item.translationKey}
+                  href={item.href}
+                  className="whitespace-nowrap transition-opacity hover:opacity-80"
                 >
-                  <Instagram className="w-4 h-4" />
-                </a>
-                <a
-                  href={t('contact.social.facebook') || '#'}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-blue-600 transition-colors"
-                  aria-label={t('common.ariaLabels.facebook')}
-                >
-                  <Facebook className="w-4 h-4" />
-                </a>
-                <a
-                  href={t('contact.social.linkedin') || '#'}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-blue-700 transition-colors"
-                  aria-label={t('common.ariaLabels.linkedin')}
-                >
-                  <Linkedin className="w-4 h-4" />
-                </a>
-              </div>
-            </div>
-
-            {/* Currency and Language Switcher */}
-            <div className="flex flex-wrap items-center gap-3 sm:justify-end">
-              <LanguageSwitcherHeader />
-              <div className="relative" ref={currencyRef}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowCurrency(!showCurrency);
-                  }}
-                  className="flex items-center gap-2 bg-white px-3 py-2 text-gray-800 transition-colors"
-                >
-                  <span className="text-base font-semibold leading-none">{selectedCurrencyInfo.symbol}</span>
-                  <span className="text-sm font-medium leading-none">{selectedCurrency}</span>
-                  <ChevronDownIcon />
-                </button>
-                {showCurrency && (
-                  <div className="absolute top-full right-0 mt-2 w-40 bg-white z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                    {Object.values(CURRENCIES).map((currency) => (
-                      <button
-                        key={currency.code}
-                        onClick={() => handleCurrencyChange(currency.code)}
-                        className={`w-full text-left px-4 py-2.5 text-sm transition-all duration-150 ${selectedCurrency === currency.code
-                            ? 'bg-gradient-to-r from-gray-100 to-gray-50 text-gray-900 font-semibold'
-                            : 'text-gray-700 hover:bg-gray-50'
-                          }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span>{currency.code}</span>
-                          <span className="text-gray-500">{currency.symbol}</span>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
+                  {label}
+                </Link>
+              );
+            })}
+          </nav>
+          <HeaderSocialCircleLinks className="shrink-0" />
+          <div
+            className={`flex shrink-0 flex-nowrap items-center ${HEADER_FIGMA_CONTACT_CLUSTER_GAP_CLASS}`}
+          >
+            <a
+              href={telHref}
+              className="flex items-center gap-2 text-base font-medium leading-[18px] text-marco-text xl:text-lg"
+            >
+              <Phone className="h-[19px] w-[19px] shrink-0" strokeWidth={1.75} aria-hidden />
+              <span className="whitespace-nowrap">{phoneDisplay}</span>
+              <ChevronDownIcon />
+            </a>
+            <Link
+              href="/stores"
+              className="flex items-center gap-2 text-base font-medium leading-[18px] text-marco-text transition-opacity hover:opacity-80"
+            >
+              <MapPin className="h-[19px] w-[19px] shrink-0" strokeWidth={1.75} aria-hidden />
+              <span className="whitespace-nowrap">{t('common.navigation.addresses')}</span>
+              <ChevronDownIcon />
+            </Link>
           </div>
         </div>
       </div>
 
-      {/* Main Header */}
-      <div className="max-w-7xl mx-auto pl-2 sm:pl-4 md:pl-6 lg:pl-8 pr-2 sm:pr-4 md:pr-6 lg:pr-8">
-        <div className="flex flex-wrap items-center gap-2 sm:gap-4 py-4 md:py-3">
-          {/* Logo + Mobile Menu */}
-          <div className="flex w-full items-center justify-between md:w-auto md:justify-start">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <button
-                type="button"
-                onClick={() => setMobileMenuOpen(true)}
-                className="md:hidden w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border-2 border-gray-200 flex items-center justify-center text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200"
-                aria-label={t('common.ariaLabels.openMenu')}
-                aria-expanded={mobileMenuOpen}
-              >
-                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7h16M4 12h16M4 17h16" />
-                </svg>
-              </button>
-              <Link href="/" className="flex items-center flex-shrink-0 group">
-                <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent group-hover:from-gray-800 group-hover:to-gray-600 transition-all duration-300">
-                  White-Shop
-                </span>
-              </Link>
-            </div>
-            {/* Mobile Currency and Language - on same line as logo */}
-            <div className="flex items-center gap-1 sm:gap-2 md:hidden">
-              {/* Currency Switcher */}
-              <div className="relative" ref={mobileCurrencyRef}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowMobileCurrency(!showMobileCurrency);
-                  }}
-                  className="flex h-9 sm:h-10 items-center justify-center gap-1 sm:gap-2 bg-transparent md:bg-white px-2 sm:px-3 text-xs sm:text-sm font-medium text-gray-800 shadow-none md:shadow-sm transition-colors cursor-pointer"
-                >
-                  <span className="text-sm sm:text-base font-semibold leading-none">{selectedCurrencyInfo.symbol}</span>
-                  <span className="text-xs sm:text-sm font-medium leading-none">{selectedCurrency}</span>
-                  <ChevronDownIcon />
-                </button>
-                {showMobileCurrency && (
-                  <div className="absolute top-full right-0 mt-2 w-40 bg-white shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                    {Object.values(CURRENCIES).map((currency) => (
-                      <button
-                        key={currency.code}
-                        onClick={() => {
-                          handleCurrencyChange(currency.code);
-                          setShowMobileCurrency(false);
-                        }}
-                        className={`w-full text-left px-4 py-2.5 text-sm transition-all duration-150 ${
-                          selectedCurrency === currency.code
-                            ? 'bg-gradient-to-r from-gray-100 to-gray-50 text-gray-900 font-semibold'
-                            : 'text-gray-700 hover:bg-gray-50'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <span>{currency.code}</span>
-                          <span className="text-gray-500">{currency.symbol}</span>
-                        </div>
-                      </button>
-                    ))}
+      {/* Mobile — compact top */}
+      <div className="flex items-center justify-between gap-2 border-b border-marco-border px-3 py-2 md:hidden">
+        <button
+          type="button"
+          onClick={() => setMobileMenuOpen(true)}
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-gray-200 text-gray-700 transition-colors hover:bg-gray-50"
+          aria-label={t('common.ariaLabels.openMenu')}
+          aria-expanded={mobileMenuOpen}
+        >
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7h16M4 12h16M4 17h16" />
+          </svg>
+        </button>
+        <MarcoLogo />
+        <div className="w-10 shrink-0" aria-hidden />
+      </div>
+
+      {/* Row 2 — categories + search (shared width) + locale + actions; Figma alignment */}
+      <div className="border-b bg-white">
+        <div
+          className={`mx-auto grid w-full max-w-[1920px] grid-cols-1 gap-y-3 ${HEADER_FIGMA_PADDING_X_CLASS} py-2.5 md:grid-cols-[auto_minmax(0,1fr)_auto_auto] md:items-center ${HEADER_FIGMA_ROW2_GAP_X_CLASS} md:gap-y-0`}
+        >
+          <div ref={productsMenuRef} className="relative w-full shrink-0 md:w-auto">
+            <button
+              type="button"
+              onClick={() => setShowProductsMenu((open) => !open)}
+              className="flex w-full items-center justify-center gap-3 rounded-[30px] bg-marco-black px-6 py-3 text-base font-normal text-white md:w-[251px] md:justify-between md:px-8 [&_svg]:text-white"
+              aria-expanded={showProductsMenu}
+              aria-haspopup="true"
+            >
+              <span className="whitespace-nowrap">{t('common.navigation.categories')}</span>
+              <ChevronDownIcon />
+            </button>
+            {showProductsMenu && (
+              <>
+                <div className="absolute left-0 top-full z-[55] h-2 w-full" aria-hidden />
+                <div className="absolute left-0 top-full z-[55] pt-2 md:left-0">
+                  <div className="w-64 overflow-visible rounded-xl border border-gray-200/80 bg-white shadow-2xl">
+                    {loadingCategories ? (
+                      <div className="px-4 py-2 text-sm text-gray-500">{t('common.messages.loading')}</div>
+                    ) : (
+                      getRootCategories(categories).map((category) => (
+                        <CategoryMenuItem
+                          key={category.id}
+                          category={category}
+                          onClose={() => setShowProductsMenu(false)}
+                        />
+                      ))
+                    )}
                   </div>
-                )}
-              </div>
-              {/* Language Switcher */}
-              <div className="flex h-9 sm:h-10 items-center justify-center">
-                <LanguageSwitcherHeader />
-              </div>
-            </div>
+                </div>
+              </>
+            )}
           </div>
 
-          {/* Navigation Links - Centered */}
-          <nav className="order-3 hidden w-full items-center justify-center gap-1 md:order-none md:flex md:flex-1">
-            <Link href="/" className="text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium whitespace-nowrap">
-              {t('common.navigation.home')}
-            </Link>
-            <div 
-              className="relative" 
-              ref={productsMenuRef}
-              onMouseEnter={() => {
-                if (productsMenuTimeoutRef.current) {
-                  clearTimeout(productsMenuTimeoutRef.current);
-                  productsMenuTimeoutRef.current = null;
-                }
-                setShowProductsMenu(true);
-              }}
-              onMouseLeave={() => {
-                productsMenuTimeoutRef.current = setTimeout(() => {
-                  setShowProductsMenu(false);
-                }, 150);
-              }}
+          <div ref={inlineSearchRef} className="relative min-w-0">
+            <form
+              onSubmit={handleSearch}
+              className="flex h-14 w-full min-w-0 items-stretch gap-0 overflow-hidden rounded-[200px] bg-marco-gray p-1 pl-6"
             >
-              <Link
-                href="/products"
-                className="text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium whitespace-nowrap flex items-center gap-1"
+              <div className="flex min-w-0 flex-1 items-center gap-2">
+                <span className="shrink-0 text-[rgba(33,43,54,0.55)]">
+                  <SearchIcon />
+                </span>
+                <input
+                  ref={headerSearchInputRef}
+                  type="search"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    if (e.target.value.trim().length >= 1) setSearchDropdownOpen(true);
+                  }}
+                  onFocus={() => {
+                    if (searchQuery.trim().length >= 1) setSearchDropdownOpen(true);
+                  }}
+                  onKeyDown={searchHandleKeyDown}
+                  placeholder={t('common.placeholders.search')}
+                  className="min-h-0 min-w-0 flex-1 border-0 bg-transparent py-2 text-sm text-marco-text placeholder:text-[rgba(33,43,54,0.46)] focus:outline-none focus:ring-0"
+                  aria-controls="search-results"
+                  aria-autocomplete="list"
+                />
+              </div>
+              <button
+                type="submit"
+                className={`flex min-h-0 min-w-[140px] shrink-0 items-center justify-center self-stretch px-6 text-sm font-semibold transition-opacity hover:opacity-90 md:min-w-[155px] ${HEADER_SEARCH_SUBMIT_CLASS}`}
               >
-                {t('common.navigation.products')}
-                <ChevronDownIcon />
-              </Link>
-              {showProductsMenu && (
-                <>
-                  <div className="absolute top-full left-0 w-full h-2" />
-                  <div className="absolute top-full left-0 pt-2 w-64 z-50">
-                    <div className="bg-white rounded-xl shadow-2xl border border-gray-200/80 overflow-visible">
-                      {loadingCategories ? (
-                        <div className="px-4 py-2 text-sm text-gray-500">{t('common.messages.loading')}</div>
-                      ) : (
-                        getRootCategories(categories).map((category) => (
-                          <CategoryMenuItem
-                            key={category.id}
-                            category={category}
-                            onClose={() => setShowProductsMenu(false)}
-                          />
-                        ))
-                      )}
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-            <Link href="/about" className="text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium whitespace-nowrap">
-              {t('common.navigation.about')}
-            </Link>
-            <Link href="/contact" className="text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium whitespace-nowrap">
-              {t('common.navigation.contact')}
-            </Link>
-          </nav>
-
-
-          {/* Right Side Actions - Icons Only */}
-          <div className="ml-auto hidden items-center gap-2 md:flex">
-            {/* Search Icon Button */}
-            <button
-              onClick={() => {
-                setShowSearchModal(!showSearchModal);
-                setShowCurrency(false);
+                {t('buttons.search')}
+              </button>
+            </form>
+            <SearchDropdown
+              results={searchResults}
+              loading={searchLoading}
+              error={searchError}
+              isOpen={searchDropdownOpen}
+              selectedIndex={searchSelectedIndex}
+              query={searchQuery}
+              onResultClick={(result) => {
+                router.push(`/products/${result.slug}`);
+                clearSearch();
               }}
-              className="w-11 h-11 flex items-center justify-center text-gray-700 hover:text-gray-900 transition-colors duration-150"
-              aria-label={t('common.ariaLabels.search')}
-            >
-              <SearchIcon />
-            </button>
+              onClose={() => setSearchDropdownOpen(false)}
+              onSeeAllClick={() => undefined}
+            />
+          </div>
 
-            {/* Icons */}
-              {/* Profile / User Menu */}
-              <div className="relative" ref={userMenuRef}>
-                {isLoggedIn ? (
-                  <>
-                    <button
-                      onClick={() => setShowUserMenu(!showUserMenu)}
-                      className="w-11 h-11 flex items-center justify-center transition-all duration-200 group"
-                    >
-                      <ProfileIconFilled />
-                    </button>
-                    {showUserMenu && (
-                      <div className="absolute top-full right-0 mt-2 w-52 bg-white rounded-xl shadow-2xl border border-gray-200/80 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="flex shrink-0 justify-center justify-self-center md:justify-self-auto">
+            <HeaderLocaleCurrencyPill
+              selectedCurrency={selectedCurrency}
+              onCurrencyChange={handleCurrencyChange}
+            />
+          </div>
+
+          <div className="flex w-full shrink-0 items-center justify-center gap-3 md:w-auto md:justify-end">
+            <button
+              type="button"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-marco-black text-white transition-opacity hover:opacity-90"
+              aria-label="Theme"
+            >
+              <Sun className="h-5 w-5" strokeWidth={1.75} aria-hidden />
+            </button>
+            <div className="relative" ref={userMenuRef}>
+              {isLoggedIn ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setShowUserMenu(!showUserMenu)}
+                    className="flex h-11 w-11 items-center justify-center transition-all duration-200 group"
+                  >
+                    <ProfileIconFilled />
+                  </button>
+                  {showUserMenu && (
+                    <div className="absolute right-0 top-full z-[60] mt-2 w-52 overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200">
+                      <Link
+                        href="/profile"
+                        className="block border-b border-gray-100 px-5 py-3 text-sm font-medium text-gray-700 transition-all duration-150 hover:bg-gradient-to-r hover:from-gray-50 hover:to-white"
+                        onClick={() => setShowUserMenu(false)}
+                      >
+                        {t('common.navigation.profile')}
+                      </Link>
+                      {isAdmin && (
                         <Link
-                          href="/profile"
-                          className="block px-5 py-3 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-gray-50 hover:to-white transition-all duration-150 font-medium border-b border-gray-100"
+                          href="/admin"
+                          className="block border-b border-gray-100 px-5 py-3 text-sm font-medium text-blue-600 transition-all duration-150 hover:bg-gradient-to-r hover:from-blue-50 hover:to-white"
                           onClick={() => setShowUserMenu(false)}
                         >
-                          {t('common.navigation.profile')}
+                          <div className="flex items-center">
+                            <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            {t('common.navigation.adminPanel')}
+                          </div>
                         </Link>
-                        {isAdmin && (
-                          <Link
-                            href="/admin"
-                            className="block px-5 py-3 text-sm text-blue-600 hover:bg-gradient-to-r hover:from-blue-50 hover:to-white transition-all duration-150 font-medium border-b border-gray-100"
-                            onClick={() => setShowUserMenu(false)}
-                          >
-                            <div className="flex items-center">
-                              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                              </svg>
-                              {t('common.navigation.adminPanel')}
-                            </div>
-                          </Link>
-                        )}
-                        <button
-                          onClick={() => {
-                            setShowUserMenu(false);
-                            logout();
-                          }}
-                          className="block w-full text-left px-5 py-3 text-sm text-red-600 hover:bg-gradient-to-r hover:from-red-50 hover:to-white transition-all duration-150 font-medium"
-                        >
-                          {t('common.navigation.logout')}
-                        </button>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <Link href="/login" className="w-11 h-11 flex items-center justify-center text-gray-700 hover:text-gray-900 transition-colors duration-150 group">
-                    <ProfileIconOutline />
-                  </Link>
-                )}
-              </div>
-
-              {/* Compare */}
-              <Link href="/compare" className="w-11 h-11 flex items-center justify-center text-gray-700 hover:text-gray-900 transition-colors duration-150 relative group">
-                <BadgeIcon icon={<CompareIcon size={18} />} badge={compareCount} />
-              </Link>
-
-              {/* Wishlist */}
-              <Link href="/wishlist" className="w-11 h-11 flex items-center justify-center text-gray-700 hover:text-gray-900 transition-colors duration-150 relative group">
-                <BadgeIcon icon={<WishlistIcon />} badge={wishlistCount} />
-              </Link>
-
-              {/* Shopping Cart */}
-              <Link href="/cart" className="flex items-center gap-[0.hpx] group">
-                <div className="w-11 h-11 flex items-center justify-center text-gray-700 hover:text-gray-900 transition-colors duration-150 relative">
-                  <BadgeIcon icon={<CartIcon size={19} />} badge={cartCount} />
-                </div>
-                <span className="text-gray-800 font-bold text-sm hidden sm:block min-w-[3.25rem] group-hover:text-gray-900 transition-colors">
-                  {formatPrice(cartTotal, selectedCurrency)}
-                </span>
-              </Link>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowUserMenu(false);
+                          logout();
+                        }}
+                        className="block w-full px-5 py-3 text-left text-sm font-medium text-red-600 transition-all duration-150 hover:bg-gradient-to-r hover:from-red-50 hover:to-white"
+                      >
+                        {t('common.navigation.logout')}
+                      </button>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <Link
+                  href="/login"
+                  className="flex h-11 w-11 items-center justify-center text-gray-700 transition-colors duration-150 group hover:text-gray-900"
+                >
+                  <ProfileIconOutline />
+                </Link>
+              )}
             </div>
-          </div>
 
+            <Link
+              href="/compare"
+              className="relative flex h-11 w-11 items-center justify-center text-gray-700 transition-colors duration-150 hover:text-gray-900"
+            >
+              <BadgeIcon icon={<CompareIcon size={18} />} badge={compareCount} />
+            </Link>
+
+            <Link
+              href="/wishlist"
+              className="relative flex h-11 w-11 items-center justify-center text-gray-700 transition-colors duration-150 hover:text-gray-900"
+            >
+              <BadgeIcon icon={<WishlistIcon />} badge={wishlistCount} />
+            </Link>
+
+            <Link
+              href="/cart"
+              className="relative flex min-w-[120px] items-center justify-center gap-2 rounded-[68px] bg-marco-black px-5 py-3 text-base font-bold text-white transition-opacity hover:opacity-90"
+            >
+              <CartIcon size={22} className="h-5 w-5 brightness-0 invert" />
+              <span className="tabular-nums">{formatPrice(cartTotal, selectedCurrency)}</span>
+              {cartCount > 0 && (
+                <span className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white">
+                  {cartCount > 99 ? '99+' : cartCount}
+                </span>
+              )}
+            </Link>
+          </div>
+        </div>
       </div>
 
       {/* Mobile Menu */}
@@ -1029,19 +980,69 @@ export function Header() {
             <div className="flex-1 overflow-hidden min-h-0">
               <nav className="flex h-full flex-col border-y border-gray-200 text-sm font-semibold uppercase tracking-wide text-gray-800 bg-white">
                 <div className="flex-1 overflow-y-auto divide-y divide-gray-200">
-                  {primaryNavLinks.map((link) => (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="flex items-center justify-between px-4 py-3 hover:bg-gray-50"
-                    >
-                      {t(link.translationKey)}
-                      <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </Link>
-                  ))}
+                  {primaryNavLinks.map((link) => {
+                    if (link.translationKey === 'common.navigation.reels') {
+                      return (
+                        <div key="common.navigation.reels" className="border-b border-gray-200">
+                          {link.external === true ? (
+                            <a
+                              href={link.href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={() => setMobileMenuOpen(false)}
+                              className="flex items-center justify-between px-4 py-3 hover:bg-gray-50"
+                            >
+                              {t(link.translationKey)}
+                              <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              </svg>
+                            </a>
+                          ) : (
+                            <Link
+                              href={link.href}
+                              onClick={() => setMobileMenuOpen(false)}
+                              className="flex items-center justify-between px-4 py-3 hover:bg-gray-50"
+                            >
+                              {t(link.translationKey)}
+                              <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              </svg>
+                            </Link>
+                          )}
+                          <div className="flex justify-center border-t border-gray-100 px-4 py-4 normal-case">
+                            <HeaderSocialCircleLinks />
+                          </div>
+                        </div>
+                      );
+                    }
+                    return link.external === true ? (
+                      <a
+                        key={link.translationKey}
+                        href={link.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center justify-between px-4 py-3 hover:bg-gray-50"
+                      >
+                        {t(link.translationKey)}
+                        <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </a>
+                    ) : (
+                      <Link
+                        key={link.translationKey}
+                        href={link.href}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center justify-between px-4 py-3 hover:bg-gray-50"
+                      >
+                        {t(link.translationKey)}
+                        <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </Link>
+                    );
+                  })}
 
                   <Link
                     href="/wishlist"
@@ -1158,7 +1159,7 @@ export function Header() {
                 </div>
 
                 <div className="border-t border-gray-200 px-4 py-4 text-xs font-medium tracking-wide text-gray-500 normal-case">
-                  © {currentYear} White-Shop
+                  © {currentYear} MARCO GROUP
                 </div>
               </nav>
             </div>
@@ -1166,59 +1167,6 @@ export function Header() {
         </div>
       )}
 
-      {/* Search Modal */}
-      {showSearchModal && (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-start justify-center pt-20 px-4">
-          <div 
-            ref={searchModalRef}
-            className="w-full max-w-2xl bg-white rounded-xl shadow-2xl border border-gray-200/80 p-4 animate-in fade-in slide-in-from-top-2 duration-200 relative"
-          >
-            <form onSubmit={handleSearch} className="flex items-center gap-2">
-              {/* Search Input */}
-              <input
-                ref={searchInputRef}
-                type="text"
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  if (e.target.value.trim().length >= 1) setSearchDropdownOpen(true);
-                }}
-                onFocus={() => { if (searchQuery.trim().length >= 1) setSearchDropdownOpen(true); }}
-                onKeyDown={searchHandleKeyDown}
-                placeholder={t('common.placeholders.search')}
-                className="flex-1 h-11 px-4 border-2 border-gray-200 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent text-sm placeholder:text-gray-400"
-                aria-controls="search-results"
-                aria-expanded={searchDropdownOpen && searchResults.length > 0}
-                aria-autocomplete="list"
-              />
-              
-              {/* Search Button */}
-              <button
-                type="submit"
-                className="h-11 px-6 bg-gray-900 text-white rounded-r-lg hover:bg-gray-800 transition-colors flex items-center justify-center"
-              >
-                <SearchIcon />
-              </button>
-            </form>
-
-            <SearchDropdown
-              results={searchResults}
-              loading={searchLoading}
-              error={searchError}
-              isOpen={searchDropdownOpen}
-              selectedIndex={searchSelectedIndex}
-              query={searchQuery}
-              onResultClick={(result) => {
-                router.push(`/products/${result.slug}`);
-                setShowSearchModal(false);
-                clearSearch();
-              }}
-              onClose={() => setSearchDropdownOpen(false)}
-              onSeeAllClick={() => setShowSearchModal(false)}
-            />
-          </div>
-        </div>
-      )}
     </header>
   );
 }

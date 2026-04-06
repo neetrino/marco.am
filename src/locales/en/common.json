@@ -41,7 +41,11 @@
     "terms": "Terms",
     "cookies": "Cookies",
     "delivery": "Delivery",
-    "stores": "Stores"
+    "stores": "Stores",
+    "shop": "Shop",
+    "brands": "Brands",
+    "reels": "Reels",
+    "addresses": "Addresses"
   },
   "stock": {
     "inStock": "In Stock",
@@ -164,6 +168,9 @@
     "instagram": "Instagram",
     "facebook": "Facebook",
     "linkedin": "LinkedIn",
+    "telegram": "Telegram",
+    "whatsapp": "WhatsApp",
+    "viber": "Viber",
     "color": "Color: {color}",
     "previousImage": "Previous image",
     "nextImage": "Next image",
@@ -173,7 +180,8 @@
     "increaseQuantity": "Increase quantity",
     "previousThumbnail": "Previous thumbnail",
     "nextThumbnail": "Next thumbnail",
-    "fullscreenImage": "Fullscreen image"
+    "fullscreenImage": "Fullscreen image",
+    "socialLinks": "Social networks"
   },
   "placeholders": {
     "search": "Search products"

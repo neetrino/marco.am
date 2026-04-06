@@ -41,7 +41,11 @@
     "terms": "Условия",
     "cookies": "Файлы cookie",
     "delivery": "Доставка",
-    "stores": "Магазины"
+    "stores": "Магазины",
+    "shop": "Магазин",
+    "brands": "Бренды",
+    "reels": "Reels",
+    "addresses": "Адреса"
   },
   "stock": {
     "inStock": "В наличии",
@@ -164,13 +168,17 @@
     "instagram": "Instagram",
     "facebook": "Facebook",
     "linkedin": "LinkedIn",
+    "telegram": "Telegram",
+    "whatsapp": "WhatsApp",
+    "viber": "Viber",
     "color": "Цвет: {color}",
     "previousImage": "Предыдущее изображение",
     "nextImage": "Следующее изображение",
     "goToSlide": "Перейти к слайду {number}",
     "previousThumbnail": "Предыдущая миниатюра",
     "nextThumbnail": "Следующая миниатюра",
-    "fullscreenImage": "Полноэкранное изображение"
+    "fullscreenImage": "Полноэкранное изображение",
+    "socialLinks": "Социальные сети"
   },
   "placeholders": {
     "search": "Поиск товаров"
