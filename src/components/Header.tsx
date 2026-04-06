@@ -691,7 +691,7 @@ export function Header() {
         >
           <MarcoLogo />
           <nav
-            className={`hidden min-w-0 shrink-0 flex-nowrap items-center ${HEADER_FIGMA_NAV_LINK_GAP_CLASS} text-sm font-bold capitalize leading-[18px] text-marco-text md:flex lg:text-base`}
+            className={`hidden min-w-0 flex-1 flex-nowrap items-center justify-center ${HEADER_FIGMA_NAV_LINK_GAP_CLASS} text-sm font-bold capitalize leading-[18px] text-marco-text md:flex lg:text-base`}
             aria-label="Main"
           >
             {primaryNavLinks.map((item) => {
