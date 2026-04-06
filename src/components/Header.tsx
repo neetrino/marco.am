@@ -24,7 +24,9 @@ import {
   HEADER_FIGMA_NAV_LINK_GAP_CLASS,
   HEADER_FIGMA_PADDING_X_CLASS,
   HEADER_FIGMA_PADDING_Y_CLASS,
-  HEADER_FIGMA_ROW2_GAP_X_CLASS,
+  HEADER_FIGMA_ROW2_LEFT_INNER_GAP_CLASS,
+  HEADER_FIGMA_ROW2_MAIN_GAP_CLASS,
+  HEADER_FIGMA_ROW2_RIGHT_INNER_GAP_CLASS,
   HEADER_FIGMA_ROW2_PADDING_Y_CLASS,
   HEADER_REELS_EXTERNAL_HREF,
   HEADER_SEARCH_BAR_HEIGHT_CLASS,
@@ -769,12 +771,15 @@ export function Header() {
         <div className="w-10 shrink-0" aria-hidden />
       </div>
 
-      {/* Row 2 — categories + search (shared width) + locale + actions; Figma alignment */}
+      {/* Row 2 — Figma 111:4273 / 214:1055: left cluster gap 25, main gap 66, right cluster gap 23 */}
       <div className="border-b bg-white">
         <div
-          className={`mx-auto grid w-full max-w-[1920px] grid-cols-1 gap-y-2 ${HEADER_FIGMA_PADDING_X_CLASS} ${HEADER_FIGMA_ROW2_PADDING_Y_CLASS} md:grid-cols-[auto_minmax(0,1fr)_auto_auto] md:items-center ${HEADER_FIGMA_ROW2_GAP_X_CLASS} md:gap-y-0`}
+          className={`mx-auto flex w-full max-w-[1920px] flex-col flex-wrap gap-y-2 ${HEADER_FIGMA_PADDING_X_CLASS} ${HEADER_FIGMA_ROW2_PADDING_Y_CLASS} md:flex-row md:flex-nowrap md:items-center md:gap-y-0 ${HEADER_FIGMA_ROW2_MAIN_GAP_CLASS}`}
         >
-          <div ref={productsMenuRef} className="relative w-full shrink-0 md:w-auto">
+          <div
+            className={`flex min-w-0 w-full flex-1 flex-col gap-y-2 sm:flex-row sm:items-center ${HEADER_FIGMA_ROW2_LEFT_INNER_GAP_CLASS}`}
+          >
+          <div ref={productsMenuRef} className="relative w-full shrink-0 sm:w-auto">
             <button
               type="button"
               onClick={() => setShowProductsMenu((open) => !open)}
@@ -807,7 +812,7 @@ export function Header() {
             )}
           </div>
 
-          <div ref={inlineSearchRef} className="relative min-w-0">
+          <div ref={inlineSearchRef} className="relative min-w-0 flex-1">
             <form
               onSubmit={handleSearch}
               className={`flex w-full min-w-0 flex-row items-stretch overflow-hidden rounded-[200px] bg-marco-gray ${HEADER_SEARCH_BAR_HEIGHT_CLASS}`}
@@ -858,15 +863,15 @@ export function Header() {
               onSeeAllClick={() => undefined}
             />
           </div>
+          </div>
 
-          <div className="flex shrink-0 justify-center justify-self-center md:justify-self-auto">
+          <div
+            className={`flex w-full shrink-0 flex-wrap items-center justify-center md:w-auto md:flex-nowrap md:justify-end ${HEADER_FIGMA_ROW2_RIGHT_INNER_GAP_CLASS}`}
+          >
             <HeaderLocaleCurrencyPill
               selectedCurrency={selectedCurrency}
               onCurrencyChange={handleCurrencyChange}
             />
-          </div>
-
-          <div className="flex w-full shrink-0 items-center justify-center gap-2.5 md:w-auto md:justify-end">
             <button
               type="button"
               className={`flex shrink-0 items-center justify-center rounded-full bg-marco-black text-white transition-opacity hover:opacity-90 ${HEADER_TOOLBAR_ICON_BUTTON_CLASS}`}

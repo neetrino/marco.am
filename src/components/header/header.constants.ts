@@ -2,33 +2,40 @@
 export const HEADER_REELS_EXTERNAL_HREF = 'https://www.instagram.com/reels/';
 
 /**
- * Horizontal page padding — Figma 111:4293 uses `px-[151px]` on very wide frames.
- * Scales down on smaller desktops so layout matches “roomy” 80% zoom at 100% browser zoom.
+ * Horizontal page padding — Figma 111:4293 `px-[151px]`, row 2 111:4273 `px-[150px]` (aligned at max).
  */
 export const HEADER_FIGMA_PADDING_X_CLASS =
-  'px-3 sm:px-5 md:px-7 lg:px-10 xl:px-16 2xl:px-24 min-[1800px]:px-[128px]';
+  'px-3 sm:px-5 md:px-7 lg:px-10 xl:px-16 2xl:px-24 min-[1800px]:px-[151px]';
 
-/** Top row vertical padding — compact vs full Figma */
-export const HEADER_FIGMA_PADDING_Y_CLASS = 'py-1';
+/** Top row vertical padding — Figma 111:4293 `py-[6px]` */
+export const HEADER_FIGMA_PADDING_Y_CLASS = 'py-1.5';
 
-/** Gap between logo / nav / social / contact — slightly tighter than Figma max */
+/** Gap between logo / nav / social / contact — Figma 214:1052 `gap-[54px]` */
 export const HEADER_FIGMA_CLUSTER_GAP_CLASS =
-  'gap-x-2.5 sm:gap-x-3 md:gap-x-4 lg:gap-x-6 xl:gap-x-8 2xl:gap-x-10 min-[1800px]:gap-x-[46px]';
+  'gap-x-2.5 sm:gap-x-3 md:gap-x-4 lg:gap-x-6 xl:gap-x-8 2xl:gap-x-10 min-[1800px]:gap-x-[54px]';
 
-/** Horizontal gap between primary nav links */
+/** Horizontal gap between primary nav links — Figma 111:4294 `gap-[45px]` */
 export const HEADER_FIGMA_NAV_LINK_GAP_CLASS =
-  'gap-x-2 sm:gap-x-2.5 md:gap-x-3 lg:gap-x-5 xl:gap-x-7 2xl:gap-x-9 min-[1800px]:gap-x-[38px]';
+  'gap-x-2 sm:gap-x-2.5 md:gap-x-3 lg:gap-x-5 xl:gap-x-7 2xl:gap-x-9 min-[1800px]:gap-x-[45px]';
 
-/** Gap between phone and addresses */
+/** Gap between phone and addresses — Figma 214:1051 `gap-[29px]` */
 export const HEADER_FIGMA_CONTACT_CLUSTER_GAP_CLASS =
-  'gap-x-2.5 md:gap-x-3 lg:gap-x-5 min-[1800px]:gap-x-6';
+  'gap-x-2.5 md:gap-x-3 lg:gap-x-5 min-[1800px]:gap-x-[29px]';
 
-/** Second header row (categories + search + pill + actions) */
-export const HEADER_FIGMA_ROW2_GAP_X_CLASS =
-  'gap-x-2.5 sm:gap-x-3 md:gap-x-4 lg:gap-x-6 xl:gap-x-8 2xl:gap-x-10 min-[1800px]:gap-x-[46px]';
+/** Categories + search — Figma 214:1053 `gap-[25px]` */
+export const HEADER_FIGMA_ROW2_LEFT_INNER_GAP_CLASS =
+  'gap-x-2 sm:gap-x-3 md:gap-x-4 lg:gap-x-5 min-[1800px]:gap-x-[25px]';
 
-/** Search bar outer height — compact */
-export const HEADER_SEARCH_BAR_HEIGHT_CLASS = 'h-[52px]';
+/** Between (categories+search) and (locale+actions) — Figma 214:1055 `gap-[66px]` */
+export const HEADER_FIGMA_ROW2_MAIN_GAP_CLASS =
+  'gap-x-2.5 sm:gap-x-4 md:gap-x-6 lg:gap-x-8 xl:gap-x-10 min-[1800px]:gap-x-[66px]';
+
+/** Locale + theme + profile + compare + wishlist + cart — Figma 214:1054 `gap-[23px]` */
+export const HEADER_FIGMA_ROW2_RIGHT_INNER_GAP_CLASS =
+  'gap-x-2 sm:gap-x-3 md:gap-x-4 lg:gap-x-5 min-[1800px]:gap-x-[23px]';
+
+/** Search bar outer height — Figma 111:4274 outer `h-[56px]` */
+export const HEADER_SEARCH_BAR_HEIGHT_CLASS = 'h-[56px]';
 
 /** Gap between search icon and placeholder */
 export const HEADER_SEARCH_ICON_TEXT_GAP_CLASS = 'gap-1.5';
@@ -36,8 +43,9 @@ export const HEADER_SEARCH_ICON_TEXT_GAP_CLASS = 'gap-1.5';
 /** Horizontal padding from frame edge to icon row */
 export const HEADER_SEARCH_INPUT_PADDING_LEFT_CLASS = 'pl-5';
 
-/** Yellow submit width — compact */
-export const HEADER_SEARCH_SUBMIT_WIDTH_CLASS = 'w-[140px] shrink-0';
+/** Yellow submit — Figma 111:4279 `w-[155px]` */
+export const HEADER_SEARCH_SUBMIT_WIDTH_CLASS =
+  'w-[120px] shrink-0 sm:w-[130px] md:w-[140px] min-[1800px]:w-[155px]';
 
 /**
  * Yellow submit: left edge rounded into the gray track; right edge follows outer pill via form overflow clip.
@@ -45,8 +53,8 @@ export const HEADER_SEARCH_SUBMIT_WIDTH_CLASS = 'w-[140px] shrink-0';
 export const HEADER_SEARCH_SUBMIT_CLASS =
   'h-full min-h-0 shrink-0 overflow-clip rounded-l-full rounded-r-none bg-marco-yellow text-marco-black';
 
-/** Language + currency pill — compact, aligned with search bar */
-export const HEADER_LOCALE_PILL_HEIGHT_CLASS = 'h-[52px]';
+/** Language + currency pill — Figma 111:4306 `h-[48px]` */
+export const HEADER_LOCALE_PILL_HEIGHT_CLASS = 'h-[48px]';
 
 /** Full capsule radius */
 export const HEADER_LOCALE_PILL_RADIUS_CLASS = 'rounded-[72px]';
@@ -54,12 +62,12 @@ export const HEADER_LOCALE_PILL_RADIUS_CLASS = 'rounded-[72px]';
 /** Horizontal rhythm between globe, labels, icons */
 export const HEADER_LOCALE_PILL_INNER_GAP_CLASS = 'gap-2.5 sm:gap-3';
 
-/** Row 2 vertical padding — slightly tighter */
-export const HEADER_FIGMA_ROW2_PADDING_Y_CLASS = 'py-2';
+/** Row 2 vertical padding — Figma 111:4273 `py-[14px]` */
+export const HEADER_FIGMA_ROW2_PADDING_Y_CLASS = 'py-3.5';
 
-/** Category trigger — width / padding compact */
+/** Category trigger — Figma 111:4290 `w-[251px]` `h-[54px]` */
 export const HEADER_CATEGORY_BUTTON_CLASS =
-  'gap-2.5 rounded-[26px] px-5 py-2.5 text-sm font-normal md:w-[228px] md:justify-between md:px-6 md:py-0 md:h-[50px]';
+  'gap-2.5 rounded-[26px] px-5 py-2.5 text-sm font-normal md:h-[54px] md:w-[251px] md:justify-between md:px-[42px] md:py-0';
 
 /** Toolbar icon hit targets — compact */
 export const HEADER_TOOLBAR_ICON_BUTTON_CLASS = 'h-10 w-10';
