@@ -1,19 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef, type RefObject } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { apiClient } from '../lib/api-client';
 import { getStoredLanguage, type LanguageCode } from '../lib/language';
-import { HomeProductCard, type HomeProductCardData } from './HomeProductCard';
-import {
-  getFallbackFeaturedProducts,
-  getFallbackNewProducts,
-} from './homeFallbackData';
-
-// ─── Figma nav-arrow images ────────────────────────────────────────────────────
-const ARROW_LEFT_PREV = 'https://www.figma.com/api/mcp/asset/9689c1cd-8859-41bf-aaec-23b7d6156653';
-const ARROW_RIGHT_NEXT = 'https://www.figma.com/api/mcp/asset/dce468f9-403c-402e-8b3c-2bf55e318ee5';
-const ARROW_LEFT_NEW = 'https://www.figma.com/api/mcp/asset/0b8c6403-7a34-4445-9426-0d6b4c6b15c3';
-const ARROW_RIGHT_NEW = 'https://www.figma.com/api/mcp/asset/2a87d54e-fc1e-471d-8c20-69d3342079f4';
+import { ProductCard } from './ProductCard';
+import { t } from '../lib/i18n';
+import type { ProductLabel } from './ProductLabels';
+import { logger } from '../lib/utils/logger';
 
 interface Product {
   id: string;
@@ -23,197 +16,213 @@ interface Product {
   compareAtPrice?: number | null;
   image: string | null;
   inStock: boolean;
-  brand: { id: string; name: string } | null;
+  brand: {
+    id: string;
+    name: string;
+  } | null;
+  colors?: Array<{ value: string; imageUrl?: string | null; colors?: string[] | null }>;
+  sizes?: Array<{ value: string; imageUrl?: string | null }>;
+  attributes?: Record<
+    string,
+    Array<{ valueId?: string; value: string; label: string; imageUrl?: string | null; colors?: string[] | null }>
+  >;
   originalPrice?: number | null;
   discountPercent?: number | null;
+  labels?: ProductLabel[];
 }
 
 interface ProductsResponse {
   data: Product[];
-  meta: { total: number; page: number; limit: number; totalPages: number };
-}
-
-const PRODUCTS_PER_PAGE = 10;
-
-function mapProductToCard(product: Product): HomeProductCardData {
-  const price = product.price || 0;
-  const compareAtPrice =
-    (product.originalPrice && product.originalPrice > price && product.originalPrice) ||
-    (product.compareAtPrice && product.compareAtPrice > price && product.compareAtPrice) ||
-    null;
-
-  const computedDiscount =
-    product.discountPercent ||
-    (compareAtPrice
-      ? Math.max(1, Math.round(((compareAtPrice - price) / compareAtPrice) * 100))
-      : null);
-
-  return {
-    id: product.id,
-    href: `/products/${product.slug}`,
-    title: product.title,
-    brand: product.brand?.name || 'Marco',
-    image: product.image,
-    price,
-    compareAtPrice,
-    badge: computedDiscount ? `-${computedDiscount}%` : undefined,
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
   };
 }
 
-// ── Section header — Figma 119:2052 / 119:2079 (title + primary rule + arrows) ──
-function SectionHeader({
-  title,
-  onPrev,
-  onNext,
-  arrowLeft,
-  arrowRight,
-}: {
-  title: string;
-  onPrev: () => void;
-  onNext: () => void;
-  arrowLeft: string;
-  arrowRight: string;
-}) {
-  return (
-    <div className="flex justify-between items-end mb-8">
-      <div>
-        <h2
-          className="font-montserrat font-bold uppercase text-[#181111] leading-none"
-          style={{ fontSize: 'clamp(22px, 2.813vw, 54px)', letterSpacing: '-0.6px' }}
-        >
-          {title}
-        </h2>
-        <div className="h-[4px] w-[104px] bg-[#ffca03] mt-2" />
-      </div>
-      <div className="flex gap-2">
-        <button
-          onClick={onPrev}
-          className="flex items-center justify-center rounded-full border border-[#e5e7eb] hover:bg-[#ffca03] hover:border-[#ffca03] transition-colors"
-          style={{ width: 51, height: 40 }}
-          aria-label="Previous"
-        >
-          <img src={arrowLeft} alt="" aria-hidden className="w-[7px] h-[12px]" />
-        </button>
-        <button
-          onClick={onNext}
-          className="flex items-center justify-center rounded-full border border-[#e5e7eb] hover:bg-[#ffca03] hover:border-[#ffca03] transition-colors"
-          style={{ width: 51, height: 40 }}
-          aria-label="Next"
-        >
-          <img src={arrowRight} alt="" aria-hidden className="w-[7px] h-[12px]" />
-        </button>
-      </div>
-    </div>
-  );
+type FilterType = 'new' | 'featured' | 'bestseller';
+
+interface Tab {
+  id: FilterType;
+  label: string;
+  filter: string | null;
 }
 
+const PRODUCTS_PER_PAGE = 10;
+const MOBILE_GRID_LAYOUT =
+  'grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5';
 
+/**
+ * FeaturedProductsTabs Component
+ * Displays products with tabs for filtering (NEW OFFERS, NEW, FEATURED, TOP SELLERS)
+ * Similar to the reference design with underlined active tab
+ */
 export function FeaturedProductsTabs() {
   const [language, setLanguage] = useState<LanguageCode>('en');
-  const [specialProducts, setSpecialProducts] = useState<HomeProductCardData[]>([]);
-  const [newProducts, setNewProducts] = useState<HomeProductCardData[]>([]);
-  const [loadingSpecial, setLoadingSpecial] = useState(true);
-  const [loadingNew, setLoadingNew] = useState(true);
-
-  const specialScrollRef = useRef<HTMLDivElement>(null);
-  const newScrollRef = useRef<HTMLDivElement>(null);
+  const [activeTab, setActiveTab] = useState<FilterType>('new');
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const updateLanguage = () => setLanguage(getStoredLanguage());
+    const updateLanguage = () => {
+      const storedLang = getStoredLanguage();
+      setLanguage(storedLang);
+    };
+
     updateLanguage();
-    window.addEventListener('language-updated', updateLanguage);
-    return () => window.removeEventListener('language-updated', updateLanguage);
+
+    const handleLanguageUpdate = () => {
+      updateLanguage();
+    };
+
+    window.addEventListener('language-updated', handleLanguageUpdate);
+    return () => {
+      window.removeEventListener('language-updated', handleLanguageUpdate);
+    };
   }, []);
 
+  const tabs: Tab[] = [
+    { id: 'new', label: t(language, 'home.featured_products.tab_new'), filter: 'new' },
+    {
+      id: 'bestseller',
+      label: t(language, 'home.featured_products.tab_bestseller'),
+      filter: 'bestseller',
+    },
+    {
+      id: 'featured',
+      label: t(language, 'home.featured_products.tab_featured'),
+      filter: 'featured',
+    },
+  ];
+
   const fetchProducts = useCallback(
-    async (
-      filter: 'featured' | 'new',
-      setter: (products: HomeProductCardData[]) => void,
-      setLoading: (value: boolean) => void
-    ) => {
+    async (filter: string | null) => {
       try {
         setLoading(true);
-        const res = await apiClient.get<ProductsResponse>('/api/v1/products', {
-          params: { page: '1', limit: String(PRODUCTS_PER_PAGE), lang: language, filter },
-        });
-        const fetchedProducts = (res.data || []).slice(0, PRODUCTS_PER_PAGE).map(mapProductToCard);
+        setError(null);
 
-        setter(
-          fetchedProducts.length > 0
-            ? fetchedProducts
-            : filter === 'featured'
-              ? getFallbackFeaturedProducts(language)
-              : getFallbackNewProducts(language)
-        );
-      } catch {
-        setter(
-          filter === 'featured'
-            ? getFallbackFeaturedProducts(language)
-            : getFallbackNewProducts(language)
-        );
+        const currentLang = language;
+        const params: Record<string, string> = {
+          page: '1',
+          limit: PRODUCTS_PER_PAGE.toString(),
+          lang: currentLang,
+        };
+
+        if (filter) {
+          params.filter = filter;
+        }
+
+        const response = await apiClient.get<ProductsResponse>('/api/v1/products', {
+          params,
+        });
+
+        setProducts((response.data || []).slice(0, PRODUCTS_PER_PAGE));
+      } catch (err) {
+        logger.error('[FeaturedProductsTabs] Error', { err });
+        setError(t(language, 'home.featured_products.errorLoading'));
+        setProducts([]);
       } finally {
         setLoading(false);
       }
     },
-    [language]
+    [language],
   );
 
-  useEffect(() => {
-    fetchProducts('featured', setSpecialProducts, setLoadingSpecial);
-    fetchProducts('new', setNewProducts, setLoadingNew);
-  }, [fetchProducts]);
-
-  const scrollSection = (ref: RefObject<HTMLDivElement | null>, dir: 'left' | 'right') => {
-    if (ref.current) {
-      ref.current.scrollBy({ left: dir === 'left' ? -350 : 350, behavior: 'smooth' });
-    }
+  const handleTabChange = (tabId: FilterType) => {
+    setActiveTab(tabId);
+    const tab = tabs.find((t) => t.id === tabId);
+    fetchProducts(tab?.filter || null);
   };
 
-  return (
-    <>
-      {/* Figma 119:2052 — Հատուկ առաջարկներ */}
-      <section className="bg-white py-10 px-4 sm:px-6 lg:px-[80px] xl:px-[120px] 2xl:px-[151px]">
-        <SectionHeader
-          title="Հատուկ առաջարկներ"
-          onPrev={() => scrollSection(specialScrollRef, 'left')}
-          onNext={() => scrollSection(specialScrollRef, 'right')}
-          arrowLeft={ARROW_LEFT_PREV}
-          arrowRight={ARROW_RIGHT_NEXT}
-        />
-        <div ref={specialScrollRef} className="flex gap-5 overflow-x-auto scrollbar-hide pb-2">
-          {loadingSpecial
-            ? [...Array(4)].map((_, i) => (
-                <div key={i} className="flex-shrink-0 w-[306px] h-[486px] bg-[#f6f6f6] rounded-[32px] animate-pulse" />
-              ))
-            : specialProducts.map((product) => (
-                <div key={product.id} className="flex-shrink-0 w-[306px]">
-                  <HomeProductCard product={product} />
-                </div>
-              ))}
-        </div>
-      </section>
+  useEffect(() => {
+    fetchProducts('new');
+  }, [fetchProducts]);
 
-      {/* Figma 119:2079 — ՆՈՐՈՒՅԹՆԵՐ */}
-      <section className="bg-white py-10 px-4 sm:px-6 lg:px-[80px] xl:px-[120px] 2xl:px-[151px]">
-        <SectionHeader
-          title="ՆՈՐՈՒՅԹՆԵՐ"
-          onPrev={() => scrollSection(newScrollRef, 'left')}
-          onNext={() => scrollSection(newScrollRef, 'right')}
-          arrowLeft={ARROW_LEFT_NEW}
-          arrowRight={ARROW_RIGHT_NEW}
-        />
-        <div ref={newScrollRef} className="flex gap-5 overflow-x-auto scrollbar-hide pb-2">
-          {loadingNew
-            ? [...Array(4)].map((_, i) => (
-                <div key={i} className="flex-shrink-0 w-[306px] h-[486px] bg-[#f6f6f6] rounded-[32px] animate-pulse" />
-              ))
-            : newProducts.map((product) => (
-                <div key={product.id} className="flex-shrink-0 w-[306px]">
-                  <HomeProductCard product={product} />
-                </div>
-              ))}
+  return (
+    <section className="py-16 bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 className="text-3xl font-bold text-gray-900 text-center">
+          {t(language, 'home.featured_products.title')}
+        </h2>
+        <p className="mt-3 mb-8 text-base text-gray-600 text-center">
+          {t(language, 'home.featured_products.subtitle')}
+        </p>
+
+        <div className="flex justify-center items-center gap-6 md:gap-8 mb-8 flex-wrap">
+          {tabs.map((tab) => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => handleTabChange(tab.id)}
+                className={`
+                  relative px-4 py-2 text-sm font-medium transition-colors duration-200
+                  ${
+                    isActive
+                      ? 'text-blue-600'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }
+                `}
+                aria-label={t(language, 'home.featured_products.ariaShowProducts').replace(
+                  '{label}',
+                  tab.label,
+                )}
+                aria-pressed={isActive}
+              >
+                {tab.label}
+                {isActive && (
+                  <span
+                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"
+                    aria-hidden="true"
+                  />
+                )}
+              </button>
+            );
+          })}
         </div>
-      </section>
-    </>
+
+        {loading ? (
+          <div className={MOBILE_GRID_LAYOUT}>
+            {[...Array(PRODUCTS_PER_PAGE)].map((_, i) => (
+              <div key={i} className="bg-white rounded-lg overflow-hidden animate-pulse">
+                <div className="aspect-square bg-gray-200"></div>
+                <div className="p-4 space-y-2">
+                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                  <div className="h-5 bg-gray-200 rounded w-1/3"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : error ? (
+          <div className="text-center py-12">
+            <p className="text-red-600 mb-4">{error}</p>
+            <button
+              type="button"
+              onClick={() => {
+                const tab = tabs.find((t) => t.id === activeTab);
+                fetchProducts(tab?.filter || null);
+              }}
+              className="px-4 py-2 bg-gray-900 text-white rounded hover:bg-gray-800 transition-colors"
+            >
+              {t(language, 'home.featured_products.tryAgain')}
+            </button>
+          </div>
+        ) : products.length > 0 ? (
+          <div className={MOBILE_GRID_LAYOUT}>
+            {products.slice(0, PRODUCTS_PER_PAGE).map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-gray-500">{t(language, 'home.featured_products.noProducts')}</p>
+          </div>
+        )}
+      </div>
+    </section>
   );
 }
