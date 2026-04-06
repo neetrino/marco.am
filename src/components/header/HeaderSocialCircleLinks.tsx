@@ -22,15 +22,13 @@ interface HeaderSocialCircleLinksProps {
   className?: string;
 }
 
-/**
- * Figma 111:4330 — round social buttons (40×40px, gray fill); 16px gap between icons.
- */
+/** Round social buttons — compact */
 export function HeaderSocialCircleLinks({ className = '' }: HeaderSocialCircleLinksProps) {
   const { t } = useTranslation();
 
   return (
     <div
-      className={`flex shrink-0 items-center gap-4 ${className}`}
+      className={`flex shrink-0 items-center gap-3 ${className}`}
       role="list"
       aria-label={t('common.ariaLabels.socialLinks')}
     >
@@ -40,7 +38,7 @@ export function HeaderSocialCircleLinks({ className = '' }: HeaderSocialCircleLi
         const name = t(ariaKey);
 
         const inner = (
-          <Icon className="h-5 w-5 text-marco-black" strokeWidth={1.75} aria-hidden />
+          <Icon className="h-[18px] w-[18px] text-marco-black" strokeWidth={1.75} aria-hidden />
         );
 
         if (!hasHref) {
@@ -48,7 +46,7 @@ export function HeaderSocialCircleLinks({ className = '' }: HeaderSocialCircleLi
             <span
               key={translationKey}
               role="listitem"
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-marco-gray opacity-50"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-marco-gray opacity-50"
               aria-label={name}
             >
               {inner}
@@ -63,7 +61,7 @@ export function HeaderSocialCircleLinks({ className = '' }: HeaderSocialCircleLi
             href={href}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-marco-gray text-marco-black transition-colors hover:bg-marco-yellow/40"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-marco-gray text-marco-black transition-colors hover:bg-marco-yellow/40"
             aria-label={name}
           >
             {inner}

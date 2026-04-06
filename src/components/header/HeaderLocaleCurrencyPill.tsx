@@ -204,13 +204,13 @@ export function HeaderLocaleCurrencyPill({
         type="button"
         onClick={() => setShowMenu((open) => !open)}
         aria-expanded={showMenu}
-        className={`flex min-w-0 items-center overflow-hidden bg-marco-gray px-6 text-base font-bold leading-[18px] text-marco-text sm:px-8 ${HEADER_LOCALE_PILL_INNER_GAP_CLASS} ${HEADER_LOCALE_PILL_HEIGHT_CLASS} ${HEADER_LOCALE_PILL_RADIUS_CLASS}`}
+        className={`flex min-w-0 items-center overflow-hidden bg-marco-gray px-5 text-sm font-bold leading-[18px] text-marco-text sm:px-7 ${HEADER_LOCALE_PILL_INNER_GAP_CLASS} ${HEADER_LOCALE_PILL_HEIGHT_CLASS} ${HEADER_LOCALE_PILL_RADIUS_CLASS}`}
       >
-        <Globe className="h-[18px] w-[18px] shrink-0" strokeWidth={1.75} aria-hidden />
+        <Globe className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
         <span className="whitespace-nowrap">
           {getPillLanguageLabel(currentLang)} <span className="font-bold">/</span>
         </span>
-        <Banknote className="h-[18px] w-[18px] shrink-0" strokeWidth={1.75} aria-hidden />
+        <Banknote className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
         <span className="whitespace-nowrap">{selectedCurrency}</span>
         <ChevronDownIcon />
       </button>

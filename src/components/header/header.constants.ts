@@ -6,38 +6,38 @@ export const HEADER_REELS_EXTERNAL_HREF = 'https://www.instagram.com/reels/';
  * Scales down on smaller desktops so layout matches “roomy” 80% zoom at 100% browser zoom.
  */
 export const HEADER_FIGMA_PADDING_X_CLASS =
-  'px-4 sm:px-6 md:px-8 lg:px-12 xl:px-20 2xl:px-28 min-[1800px]:px-[151px]';
+  'px-3 sm:px-5 md:px-7 lg:px-10 xl:px-16 2xl:px-24 min-[1800px]:px-[128px]';
 
-/** Figma 111:4293 — frame padding `py-[6px]` */
-export const HEADER_FIGMA_PADDING_Y_CLASS = 'py-[6px]';
+/** Top row vertical padding — compact vs full Figma */
+export const HEADER_FIGMA_PADDING_Y_CLASS = 'py-1';
 
-/** Gap between logo / nav / social / contact — Figma 214:1052 `54px` at max width */
+/** Gap between logo / nav / social / contact — slightly tighter than Figma max */
 export const HEADER_FIGMA_CLUSTER_GAP_CLASS =
-  'gap-x-3 sm:gap-x-4 md:gap-x-5 lg:gap-x-8 xl:gap-x-10 2xl:gap-x-12 min-[1800px]:gap-x-[54px]';
+  'gap-x-2.5 sm:gap-x-3 md:gap-x-4 lg:gap-x-6 xl:gap-x-8 2xl:gap-x-10 min-[1800px]:gap-x-[46px]';
 
-/** Horizontal gap between primary nav links — Figma 111:4294 `45px` at max width */
+/** Horizontal gap between primary nav links */
 export const HEADER_FIGMA_NAV_LINK_GAP_CLASS =
-  'gap-x-2 sm:gap-x-3 md:gap-x-4 lg:gap-x-6 xl:gap-x-8 2xl:gap-x-10 min-[1800px]:gap-x-[45px]';
+  'gap-x-2 sm:gap-x-2.5 md:gap-x-3 lg:gap-x-5 xl:gap-x-7 2xl:gap-x-9 min-[1800px]:gap-x-[38px]';
 
-/** Gap between phone and addresses — Figma 214:1051 `29px` */
+/** Gap between phone and addresses */
 export const HEADER_FIGMA_CONTACT_CLUSTER_GAP_CLASS =
-  'gap-x-3 md:gap-x-4 lg:gap-x-6 min-[1800px]:gap-x-[29px]';
+  'gap-x-2.5 md:gap-x-3 lg:gap-x-5 min-[1800px]:gap-x-6';
 
-/** Second header row (categories + search + pill + actions) — aligns with cluster rhythm */
+/** Second header row (categories + search + pill + actions) */
 export const HEADER_FIGMA_ROW2_GAP_X_CLASS =
-  'gap-x-3 sm:gap-x-4 md:gap-x-5 lg:gap-x-8 xl:gap-x-10 2xl:gap-x-12 min-[1800px]:gap-x-[54px]';
+  'gap-x-2.5 sm:gap-x-3 md:gap-x-4 lg:gap-x-6 xl:gap-x-8 2xl:gap-x-10 min-[1800px]:gap-x-[46px]';
 
-/** Figma 111:4274 — outer search frame `700×56`; yellow submit is flush right, one pill via wrapper overflow clip. */
-export const HEADER_SEARCH_BAR_HEIGHT_CLASS = 'h-[56px]';
+/** Search bar outer height — compact */
+export const HEADER_SEARCH_BAR_HEIGHT_CLASS = 'h-[52px]';
 
-/** Figma 111:4275 — gap between search icon and placeholder text (`gap-[8px]`) */
-export const HEADER_SEARCH_ICON_TEXT_GAP_CLASS = 'gap-2';
+/** Gap between search icon and placeholder */
+export const HEADER_SEARCH_ICON_TEXT_GAP_CLASS = 'gap-1.5';
 
-/** Figma 111:4274 — horizontal padding from frame edge to icon row (`pl-[24px]`) */
-export const HEADER_SEARCH_INPUT_PADDING_LEFT_CLASS = 'pl-6';
+/** Horizontal padding from frame edge to icon row */
+export const HEADER_SEARCH_INPUT_PADDING_LEFT_CLASS = 'pl-5';
 
-/** Figma 111:4279 — yellow submit width `w-[155px]` (same at all breakpoints) */
-export const HEADER_SEARCH_SUBMIT_WIDTH_CLASS = 'w-[155px] shrink-0';
+/** Yellow submit width — compact */
+export const HEADER_SEARCH_SUBMIT_WIDTH_CLASS = 'w-[140px] shrink-0';
 
 /**
  * Yellow submit: left edge rounded into the gray track; right edge follows outer pill via form overflow clip.
@@ -45,11 +45,24 @@ export const HEADER_SEARCH_SUBMIT_WIDTH_CLASS = 'w-[155px] shrink-0';
 export const HEADER_SEARCH_SUBMIT_CLASS =
   'h-full min-h-0 shrink-0 overflow-clip rounded-l-full rounded-r-none bg-marco-yellow text-marco-black';
 
-/** Figma 111:4306 — language + currency pill (row 2, aligns with search bar outer height) */
-export const HEADER_LOCALE_PILL_HEIGHT_CLASS = 'h-[56px]';
+/** Language + currency pill — compact, aligned with search bar */
+export const HEADER_LOCALE_PILL_HEIGHT_CLASS = 'h-[52px]';
 
-/** Figma 111:4306 — full capsule radius */
-export const HEADER_LOCALE_PILL_RADIUS_CLASS = 'rounded-[80px]';
+/** Full capsule radius */
+export const HEADER_LOCALE_PILL_RADIUS_CLASS = 'rounded-[72px]';
 
-/** Figma 111:4306 — horizontal rhythm between globe, labels, icons */
-export const HEADER_LOCALE_PILL_INNER_GAP_CLASS = 'gap-3 sm:gap-[13px]';
+/** Horizontal rhythm between globe, labels, icons */
+export const HEADER_LOCALE_PILL_INNER_GAP_CLASS = 'gap-2.5 sm:gap-3';
+
+/** Row 2 vertical padding — slightly tighter */
+export const HEADER_FIGMA_ROW2_PADDING_Y_CLASS = 'py-2';
+
+/** Category trigger — width / padding compact */
+export const HEADER_CATEGORY_BUTTON_CLASS =
+  'gap-2.5 rounded-[26px] px-5 py-2.5 text-sm font-normal md:w-[228px] md:justify-between md:px-6 md:py-0 md:h-[50px]';
+
+/** Toolbar icon hit targets — compact */
+export const HEADER_TOOLBAR_ICON_BUTTON_CLASS = 'h-10 w-10';
+
+/** Cart pill — compact */
+export const HEADER_CART_BUTTON_CLASS = 'min-w-[108px] gap-1.5 rounded-[60px] px-4 py-2 text-sm font-bold';

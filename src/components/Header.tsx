@@ -17,18 +17,22 @@ import { MarcoLogo } from './header/MarcoLogo';
 import { HeaderLocaleCurrencyPill } from './header/HeaderLocaleCurrencyPill';
 import { HeaderSocialCircleLinks } from './header/HeaderSocialCircleLinks';
 import {
+  HEADER_CART_BUTTON_CLASS,
+  HEADER_CATEGORY_BUTTON_CLASS,
   HEADER_FIGMA_CLUSTER_GAP_CLASS,
   HEADER_FIGMA_CONTACT_CLUSTER_GAP_CLASS,
   HEADER_FIGMA_NAV_LINK_GAP_CLASS,
   HEADER_FIGMA_PADDING_X_CLASS,
   HEADER_FIGMA_PADDING_Y_CLASS,
   HEADER_FIGMA_ROW2_GAP_X_CLASS,
+  HEADER_FIGMA_ROW2_PADDING_Y_CLASS,
   HEADER_REELS_EXTERNAL_HREF,
   HEADER_SEARCH_BAR_HEIGHT_CLASS,
   HEADER_SEARCH_ICON_TEXT_GAP_CLASS,
   HEADER_SEARCH_INPUT_PADDING_LEFT_CLASS,
   HEADER_SEARCH_SUBMIT_CLASS,
   HEADER_SEARCH_SUBMIT_WIDTH_CLASS,
+  HEADER_TOOLBAR_ICON_BUTTON_CLASS,
 } from './header/header.constants';
 import { CompareIcon } from './icons/CompareIcon';
 import { CartIcon } from './icons/CartIcon';
@@ -111,12 +115,12 @@ const WishlistIcon = () => (
   </svg>
 );
 
-/** Figma 111:4274 — 24px search glyph */
+/** Search field icon — compact */
 const SearchIcon = () => (
   <svg
-    className="h-6 w-6 shrink-0"
-    width="24"
-    height="24"
+    className="h-5 w-5 shrink-0"
+    width="20"
+    height="20"
     viewBox="0 0 22 22"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
@@ -695,7 +699,7 @@ export function Header() {
         >
           <MarcoLogo />
           <nav
-            className={`hidden min-w-0 flex-1 flex-nowrap items-center justify-center ${HEADER_FIGMA_NAV_LINK_GAP_CLASS} text-sm font-bold capitalize leading-[18px] text-marco-text md:flex lg:text-base`}
+            className={`hidden min-w-0 flex-1 flex-nowrap items-center justify-center ${HEADER_FIGMA_NAV_LINK_GAP_CLASS} text-sm font-bold capitalize leading-[18px] text-marco-text md:flex`}
             aria-label="Main"
           >
             {primaryNavLinks.map((item) => {
@@ -730,17 +734,17 @@ export function Header() {
           >
             <a
               href={telHref}
-              className="flex items-center gap-2 text-base font-medium leading-[18px] text-marco-text xl:text-lg"
+              className="flex items-center gap-1.5 text-sm font-medium leading-[18px] text-marco-text xl:text-base"
             >
-              <Phone className="h-[19px] w-[19px] shrink-0" strokeWidth={1.75} aria-hidden />
+              <Phone className="h-[17px] w-[17px] shrink-0" strokeWidth={1.75} aria-hidden />
               <span className="whitespace-nowrap">{phoneDisplay}</span>
               <ChevronDownIcon />
             </a>
             <Link
               href="/stores"
-              className="flex items-center gap-2 text-base font-medium leading-[18px] text-marco-text transition-opacity hover:opacity-80"
+              className="flex items-center gap-1.5 text-sm font-medium leading-[18px] text-marco-text transition-opacity hover:opacity-80 xl:text-base"
             >
-              <MapPin className="h-[19px] w-[19px] shrink-0" strokeWidth={1.75} aria-hidden />
+              <MapPin className="h-[17px] w-[17px] shrink-0" strokeWidth={1.75} aria-hidden />
               <span className="whitespace-nowrap">{t('common.navigation.addresses')}</span>
               <ChevronDownIcon />
             </Link>
@@ -768,13 +772,13 @@ export function Header() {
       {/* Row 2 — categories + search (shared width) + locale + actions; Figma alignment */}
       <div className="border-b bg-white">
         <div
-          className={`mx-auto grid w-full max-w-[1920px] grid-cols-1 gap-y-3 ${HEADER_FIGMA_PADDING_X_CLASS} py-2.5 md:grid-cols-[auto_minmax(0,1fr)_auto_auto] md:items-center ${HEADER_FIGMA_ROW2_GAP_X_CLASS} md:gap-y-0`}
+          className={`mx-auto grid w-full max-w-[1920px] grid-cols-1 gap-y-2 ${HEADER_FIGMA_PADDING_X_CLASS} ${HEADER_FIGMA_ROW2_PADDING_Y_CLASS} md:grid-cols-[auto_minmax(0,1fr)_auto_auto] md:items-center ${HEADER_FIGMA_ROW2_GAP_X_CLASS} md:gap-y-0`}
         >
           <div ref={productsMenuRef} className="relative w-full shrink-0 md:w-auto">
             <button
               type="button"
               onClick={() => setShowProductsMenu((open) => !open)}
-              className="flex w-full items-center justify-center gap-3 rounded-[30px] bg-marco-black px-6 py-3 text-base font-normal text-white md:w-[251px] md:justify-between md:px-8 [&_svg]:text-white"
+              className={`flex w-full items-center justify-center bg-marco-black text-white ${HEADER_CATEGORY_BUTTON_CLASS} [&_svg]:text-white`}
               aria-expanded={showProductsMenu}
               aria-haspopup="true"
             >
@@ -862,13 +866,13 @@ export function Header() {
             />
           </div>
 
-          <div className="flex w-full shrink-0 items-center justify-center gap-3 md:w-auto md:justify-end">
+          <div className="flex w-full shrink-0 items-center justify-center gap-2.5 md:w-auto md:justify-end">
             <button
               type="button"
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-marco-black text-white transition-opacity hover:opacity-90"
+              className={`flex shrink-0 items-center justify-center rounded-full bg-marco-black text-white transition-opacity hover:opacity-90 ${HEADER_TOOLBAR_ICON_BUTTON_CLASS}`}
               aria-label="Theme"
             >
-              <Sun className="h-5 w-5" strokeWidth={1.75} aria-hidden />
+              <Sun className="h-[18px] w-[18px]" strokeWidth={1.75} aria-hidden />
             </button>
             <div className="relative" ref={userMenuRef}>
               {isLoggedIn ? (
@@ -876,7 +880,7 @@ export function Header() {
                   <button
                     type="button"
                     onClick={() => setShowUserMenu(!showUserMenu)}
-                    className="flex h-11 w-11 items-center justify-center transition-all duration-200 group"
+                    className={`flex items-center justify-center transition-all duration-200 group ${HEADER_TOOLBAR_ICON_BUTTON_CLASS}`}
                   >
                     <ProfileIconFilled />
                   </button>
@@ -920,7 +924,7 @@ export function Header() {
               ) : (
                 <Link
                   href="/login"
-                  className="flex h-11 w-11 items-center justify-center text-gray-700 transition-colors duration-150 group hover:text-gray-900"
+                  className={`flex items-center justify-center text-gray-700 transition-colors duration-150 group hover:text-gray-900 ${HEADER_TOOLBAR_ICON_BUTTON_CLASS}`}
                 >
                   <ProfileIconOutline />
                 </Link>
@@ -929,23 +933,23 @@ export function Header() {
 
             <Link
               href="/compare"
-              className="relative flex h-11 w-11 items-center justify-center text-gray-700 transition-colors duration-150 hover:text-gray-900"
+              className={`relative flex items-center justify-center text-gray-700 transition-colors duration-150 hover:text-gray-900 ${HEADER_TOOLBAR_ICON_BUTTON_CLASS}`}
             >
-              <BadgeIcon icon={<CompareIcon size={18} />} badge={compareCount} />
+              <BadgeIcon icon={<CompareIcon size={16} />} badge={compareCount} />
             </Link>
 
             <Link
               href="/wishlist"
-              className="relative flex h-11 w-11 items-center justify-center text-gray-700 transition-colors duration-150 hover:text-gray-900"
+              className={`relative flex items-center justify-center text-gray-700 transition-colors duration-150 hover:text-gray-900 ${HEADER_TOOLBAR_ICON_BUTTON_CLASS}`}
             >
               <BadgeIcon icon={<WishlistIcon />} badge={wishlistCount} />
             </Link>
 
             <Link
               href="/cart"
-              className="relative flex min-w-[120px] items-center justify-center gap-2 rounded-[68px] bg-marco-black px-5 py-3 text-base font-bold text-white transition-opacity hover:opacity-90"
+              className={`relative flex items-center justify-center bg-marco-black text-white transition-opacity hover:opacity-90 ${HEADER_CART_BUTTON_CLASS}`}
             >
-              <CartIcon size={22} className="h-5 w-5 brightness-0 invert" />
+              <CartIcon size={20} className="h-[18px] w-[18px] brightness-0 invert" />
               <span className="tabular-nums">{formatPrice(cartTotal, selectedCurrency)}</span>
               {cartCount > 0 && (
                 <span className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white">
