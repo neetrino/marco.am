@@ -27,6 +27,7 @@
     "db:migrate:deploy": "node src/scripts/run-migrations.js"
   },
   "dependencies": {
+    "@next/env": "16.1.7",
     "@aws-sdk/client-s3": "^3.995.0",
     "@hookform/resolvers": "^5.2.2",
     "@prisma/client": "^5.9.0",
