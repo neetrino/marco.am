@@ -17,7 +17,7 @@ interface ColorFilterProps {
   selectedColors?: string[];
 }
 
-interface ColorOption {
+export interface ColorOption {
   value: string;
   label: string;
   count: number;
@@ -65,7 +65,10 @@ export function ColorFilter({ category, search, minPrice, maxPrice, selectedColo
       if (maxPrice) params.maxPrice = maxPrice;
 
       // Fetch filters from API
-      const response = await apiClient.get<{ colors: ColorOption[]; sizes: any[] }>('/api/v1/products/filters', { params });
+      const response = await apiClient.get<{
+        colors: ColorOption[];
+        sizes: { value: string; count: number }[];
+      }>('/api/v1/products/filters', { params });
       
       setColors(response.colors || []);
     } catch (error) {

@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { toApiErrorResponse } from "@/lib/api/next-route-error";
+import { getErrorLogFields, toApiError } from "@/lib/types/errors";
 import { authenticateToken, requireAdmin } from "@/lib/middleware/auth";
 import { adminService } from "@/lib/services/admin.service";
 
@@ -32,29 +34,12 @@ export async function GET(
     console.log("✅ [ADMIN ORDERS] Order loaded:", id);
 
     return NextResponse.json(order);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ [ADMIN ORDERS] GET Error:", {
-      message: error?.message,
-      stack: error?.stack,
-      name: error?.name,
-      code: error?.code,
-      meta: error?.meta,
-      type: error?.type,
-      title: error?.title,
-      status: error?.status,
-      detail: error?.detail,
+      ...getErrorLogFields(error),
       fullError: error,
     });
-    return NextResponse.json(
-      {
-        type: error.type || "https://api.shop.am/problems/internal-error",
-        title: error.title || "Internal Server Error",
-        status: error.status || 500,
-        detail: error.detail || error.message || "An error occurred",
-        instance: req.url,
-      },
-      { status: error.status || 500 }
-    );
+    return toApiErrorResponse(error, req.url);
   }
 }
 
@@ -89,29 +74,12 @@ export async function PUT(
     console.log("✅ [ADMIN ORDERS] Order updated:", id);
 
     return NextResponse.json(order);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ [ADMIN ORDERS] PUT Error:", {
-      message: error?.message,
-      stack: error?.stack,
-      name: error?.name,
-      code: error?.code,
-      meta: error?.meta,
-      type: error?.type,
-      title: error?.title,
-      status: error?.status,
-      detail: error?.detail,
+      ...getErrorLogFields(error),
       fullError: error,
     });
-    return NextResponse.json(
-      {
-        type: error.type || "https://api.shop.am/problems/internal-error",
-        title: error.title || "Internal Server Error",
-        status: error.status || 500,
-        detail: error.detail || error.message || "An error occurred",
-        instance: req.url,
-      },
-      { status: error.status || 500 }
-    );
+    return toApiErrorResponse(error, req.url);
   }
 }
 
@@ -151,11 +119,10 @@ export async function DELETE(
     try {
       resolvedParams = await params;
       console.log("✅ [ADMIN ORDERS] DELETE - Params ստացված:", resolvedParams);
-    } catch (paramsError: any) {
+    } catch (paramsError: unknown) {
       console.error("❌ [ADMIN ORDERS] DELETE - Params սխալ:", {
         error: paramsError,
-        message: paramsError?.message,
-        stack: paramsError?.stack,
+        ...getErrorLogFields(paramsError),
       });
       throw {
         status: 400,
@@ -200,34 +167,27 @@ export async function DELETE(
       success: true,
       message: "Order deleted successfully",
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     const duration = Date.now() - startTime;
-    
+
     // Մանրամասն լոգավորում
     console.error("❌ [ADMIN ORDERS] DELETE Error:", {
       orderId: orderId || "unknown",
-      error: {
-        name: error?.name,
-        message: error?.message,
-        code: error?.code,
-        meta: error?.meta,
-        type: error?.type,
-        title: error?.title,
-        status: error?.status,
-        detail: error?.detail,
-      },
-      stack: error?.stack?.substring(0, 1000),
+      ...getErrorLogFields(error),
+      stack: error instanceof Error ? error.stack?.substring(0, 1000) : undefined,
       duration: `${duration}ms`,
       timestamp: new Date().toISOString(),
     });
 
-    // Ստանդարտ սխալների մշակում
-    const statusCode = error?.status || 500;
+    const api = toApiError(error, req.url);
+    const statusCode = api.status ?? 500;
     const errorResponse = {
-      type: error?.type || "https://api.shop.am/problems/internal-error",
-      title: error?.title || "Internal Server Error",
+      type: api.type ?? "https://api.shop.am/problems/internal-error",
+      title: api.title ?? "Internal Server Error",
       status: statusCode,
-      detail: error?.detail || error?.message || "An error occurred while deleting the order",
+      detail:
+        api.detail ||
+        (error instanceof Error ? error.message : "An error occurred while deleting the order"),
       instance: req.url,
     };
 

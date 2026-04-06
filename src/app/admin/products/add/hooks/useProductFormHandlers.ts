@@ -1,33 +1,33 @@
-import type { FormEvent } from 'react';
+import type { Dispatch, FormEvent, SetStateAction } from 'react';
 import { useRouter } from 'next/navigation';
 import { convertPrice, type CurrencyCode } from '@/lib/currency';
-import type { Attribute, Variant, GeneratedVariant } from '../types';
+import type { Attribute, Variant, GeneratedVariant, Brand, Category } from '../types';
+import type { AddProductFormState } from '../utils/productFormDataBuilder';
 import { useBrandAndCategoryCreation } from './useBrandAndCategoryCreation';
 import { useVariantConversionToFormData } from './useVariantConversionToFormData';
 import { useVariantValidation } from './useVariantValidation';
 import { processImagesForSubmit } from './useImageProcessingForSubmit';
 import { createAndSubmitPayload } from './useProductPayloadCreation';
 
+/** Variant object sent to admin product create/update API. */
+type SubmitVariantPayload = {
+  price: number;
+  stock?: number;
+  sku: string;
+  published?: boolean;
+  compareAtPrice?: number;
+  color?: string;
+  size?: string;
+  imageUrl?: string;
+  options?: Array<{ attributeKey: string; value: string; valueId?: string }>;
+};
+
 interface UseProductFormHandlersProps {
-  formData: {
-    title: string;
-    slug: string;
-    descriptionHtml: string;
-    brandIds: string[];
-    primaryCategoryId: string;
-    categoryIds: string[];
-    published: boolean;
-    featured: boolean;
-    imageUrls: string[];
-    featuredImageIndex: number;
-    mainProductImage: string;
-    variants: Variant[];
-    labels: any[];
-  };
-  setFormData: (updater: (prev: any) => any) => void;
+  formData: AddProductFormState;
+  setFormData: Dispatch<SetStateAction<AddProductFormState>>;
   setLoading: (loading: boolean) => void;
-  setBrands: (updater: (prev: any[]) => any[]) => void;
-  setCategories: (updater: (prev: any[]) => any[]) => void;
+  setBrands: Dispatch<SetStateAction<Brand[]>>;
+  setCategories: Dispatch<SetStateAction<Category[]>>;
   productType: 'simple' | 'variable';
   simpleProductData: {
     price: string;
@@ -133,7 +133,7 @@ export function useProductFormHandlers({
       }
 
       // Process variants for API
-      const variants: any[] = [];
+      const variants: SubmitVariantPayload[] = [];
       const variantSkuSet = new Set<string>();
 
       if (productType === 'simple') {
@@ -142,7 +142,7 @@ export function useProductFormHandlers({
         const compareAtPriceUSD = simpleProductData.compareAtPrice && simpleProductData.compareAtPrice.trim() !== ''
           ? convertPrice(parseFloat(simpleProductData.compareAtPrice), defaultCurrency, 'USD')
           : undefined;
-        const simpleVariant: any = {
+        const simpleVariant: SubmitVariantPayload = {
           price: priceUSD,
           stock: parseInt(simpleProductData.quantity) || 0,
           sku: simpleProductData.sku.trim(),
@@ -266,7 +266,10 @@ export function useProductFormHandlers({
           console.log('📦 [ADMIN] Using formData.variants format (legacy)');
           currentFormData.variants.forEach((variant, variantIndex) => {
             const variantPriceUSD = convertPrice(parseFloat(variant.price || '0'), defaultCurrency, 'USD');
-            const baseVariantData: any = { price: variantPriceUSD, published: true };
+            const baseVariantData: { price: number; published: boolean; compareAtPrice?: number } = {
+              price: variantPriceUSD,
+              published: true,
+            };
             if (variant.compareAtPrice) {
               baseVariantData.compareAtPrice = convertPrice(parseFloat(variant.compareAtPrice), defaultCurrency, 'USD');
             }
@@ -388,7 +391,7 @@ export function useProductFormHandlers({
         setLoading,
         router,
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('❌ [ADMIN] Error saving product:', err);
     } finally {
       setLoading(false);

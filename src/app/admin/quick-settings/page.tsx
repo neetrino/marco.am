@@ -6,6 +6,7 @@ import { useAuth } from '../../../lib/auth/AuthContext';
 import { apiClient } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
 import { QuickSettingsContent } from './QuickSettingsContent';
+import { getClientErrorMessage } from '../../../lib/types/errors';
 
 interface AdminSettingsResponse {
   globalDiscount: number;
@@ -25,6 +26,20 @@ interface AdminBrand {
   logoUrl?: string;
 }
 
+/** Minimal product row from admin list API (quick-settings discount UI). */
+interface AdminProductListItem {
+  id: string;
+  title: string;
+  image?: string;
+  price?: number;
+  discountPercent?: number;
+}
+
+interface AdminProductsPageResponse {
+  data: AdminProductListItem[];
+  meta?: { totalPages: number; total: number };
+}
+
 export default function QuickSettingsPage() {
   const { t } = useTranslation();
   const { isLoggedIn, isAdmin, isLoading } = useAuth();
@@ -33,7 +48,7 @@ export default function QuickSettingsPage() {
   const [globalDiscount, setGlobalDiscount] = useState<number>(0);
   const [discountLoading, setDiscountLoading] = useState(false);
   const [discountSaving, setDiscountSaving] = useState(false);
-  const [products, setProducts] = useState<any[]>([]);
+  const [products, setProducts] = useState<AdminProductListItem[]>([]);
   const [productsLoading, setProductsLoading] = useState(false);
   const [productDiscounts, setProductDiscounts] = useState<Record<string, number>>({});
   const [savingProductId, setSavingProductId] = useState<string | null>(null);
@@ -55,7 +70,7 @@ export default function QuickSettingsPage() {
       setCategoryDiscounts(settings.categoryDiscounts || {});
       setBrandDiscounts(settings.brandDiscounts || {});
       console.log('✅ [QUICK SETTINGS] Settings loaded:', settings);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('❌ [QUICK SETTINGS] Error fetching settings:', err);
       setGlobalDiscount(0);
     } finally {
@@ -69,14 +84,11 @@ export default function QuickSettingsPage() {
       setProductsLoading(true);
       
       // Սկզբում բեռնում ենք առաջին էջը limit=100-ով (առավելագույն արժեք)
-      const firstPageResponse = await apiClient.get<{ 
-        data: any[]; 
-        meta?: { totalPages: number; total: number } 
-      }>('/api/v1/admin/products', {
+      const firstPageResponse = await apiClient.get<AdminProductsPageResponse>('/api/v1/admin/products', {
         params: { page: '1', limit: '100' },
       });
       
-      let allProducts: any[] = [];
+      let allProducts: AdminProductListItem[] = [];
       
       if (firstPageResponse?.data && Array.isArray(firstPageResponse.data)) {
         allProducts = [...firstPageResponse.data];
@@ -88,10 +100,10 @@ export default function QuickSettingsPage() {
           console.log(`📦 [QUICK SETTINGS] Loading ${totalPages - 1} more pages...`);
           
           // Ստեղծում ենք բոլոր էջերի հարցումները
-          const pagePromises: Promise<{ data: any[] }>[] = [];
+          const pagePromises: Promise<AdminProductsPageResponse>[] = [];
           for (let page = 2; page <= totalPages; page++) {
             pagePromises.push(
-              apiClient.get<{ data: any[] }>('/api/v1/admin/products', {
+              apiClient.get<AdminProductsPageResponse>('/api/v1/admin/products', {
                 params: { page: page.toString(), limit: '100' },
               })
             );
@@ -112,7 +124,7 @@ export default function QuickSettingsPage() {
         
         // Նախաձեռնում ենք ապրանքների զեղչերը API տվյալներից
         const discounts: Record<string, number> = {};
-        allProducts.forEach((product: any) => {
+        allProducts.forEach((product) => {
           discounts[product.id] = product.discountPercent || 0;
         });
         setProductDiscounts(discounts);
@@ -122,7 +134,7 @@ export default function QuickSettingsPage() {
         setProducts([]);
         console.warn('⚠️ [QUICK SETTINGS] No products data received');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('❌ [QUICK SETTINGS] Error fetching products:', err);
       setProducts([]);
     } finally {
@@ -141,7 +153,7 @@ export default function QuickSettingsPage() {
       } else {
         setCategories([]);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('❌ [QUICK SETTINGS] Error fetching categories:', err);
       setCategories([]);
     } finally {
@@ -160,7 +172,7 @@ export default function QuickSettingsPage() {
       } else {
         setBrands([]);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('❌ [QUICK SETTINGS] Error fetching brands:', err);
       setBrands([]);
     } finally {
@@ -258,9 +270,9 @@ export default function QuickSettingsPage() {
       
       alert(t('admin.quickSettings.savedSuccess'));
       console.log('✅ [QUICK SETTINGS] Global discount saved');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('❌ [QUICK SETTINGS] Error saving discount:', err);
-      const errorMessage = err.response?.data?.detail || err.message || 'Failed to save';
+      const errorMessage = getClientErrorMessage(err) || 'Failed to save';
       alert(t('admin.quickSettings.errorSaving').replace('{message}', errorMessage));
     } finally {
       setDiscountSaving(false);
@@ -278,9 +290,9 @@ export default function QuickSettingsPage() {
       await fetchProducts();
       alert(t('admin.quickSettings.savedSuccess'));
       console.log('✅ [QUICK SETTINGS] Category discounts saved');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('❌ [QUICK SETTINGS] Error saving category discounts:', err);
-      const errorMessage = err.response?.data?.detail || err.message || 'Failed to save';
+      const errorMessage = getClientErrorMessage(err) || 'Failed to save';
       alert(t('admin.quickSettings.errorSaving').replace('{message}', errorMessage));
     } finally {
       setCategorySaving(false);
@@ -298,9 +310,9 @@ export default function QuickSettingsPage() {
       await fetchProducts();
       alert(t('admin.quickSettings.savedSuccess'));
       console.log('✅ [QUICK SETTINGS] Brand discounts saved');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('❌ [QUICK SETTINGS] Error saving brand discounts:', err);
-      const errorMessage = err.response?.data?.detail || err.message || 'Failed to save';
+      const errorMessage = getClientErrorMessage(err) || 'Failed to save';
       alert(t('admin.quickSettings.errorSaving').replace('{message}', errorMessage));
     } finally {
       setBrandSaving(false);
@@ -333,9 +345,9 @@ export default function QuickSettingsPage() {
       
       alert(t('admin.quickSettings.productDiscountSaved'));
       console.log('✅ [QUICK SETTINGS] Product discount saved');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('❌ [QUICK SETTINGS] Error saving product discount:', err);
-      const errorMessage = err.response?.data?.detail || err.message || 'Failed to save';
+      const errorMessage = getClientErrorMessage(err) || 'Failed to save';
       alert(t('admin.quickSettings.errorSavingProduct').replace('{message}', errorMessage));
     } finally {
       setSavingProductId(null);

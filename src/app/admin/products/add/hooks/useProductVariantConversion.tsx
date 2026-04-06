@@ -2,11 +2,12 @@
 
 import { useEffect } from 'react';
 import { convertPrice, type CurrencyCode } from '@/lib/currency';
-import type { GeneratedVariant } from '../types';
+import type { GeneratedVariant, Attribute } from '../types';
+import type { ProductVariantForConversion } from '@/types/product-variant-for-conversion';
 
 interface UseProductVariantConversionProps {
   productId: string | null;
-  attributes: any[];
+  attributes: Attribute[];
   defaultCurrency: CurrencyCode;
   setSelectedAttributesForVariants: (attrs: Set<string>) => void;
   setSelectedAttributeValueIds: (ids: Record<string, string[]>) => void;
@@ -24,8 +25,8 @@ export function useProductVariantConversion({
   setHasVariantsToLoad,
 }: UseProductVariantConversionProps) {
   useEffect(() => {
-    if (productId && attributes.length > 0 && (window as any).__productVariantsToConvert) {
-      const productVariants = (window as any).__productVariantsToConvert;
+    if (productId && attributes.length > 0 && window.__productVariantsToConvert) {
+      const productVariants: ProductVariantForConversion[] = window.__productVariantsToConvert;
       console.log('🔄 [ADMIN] Converting product variants to generatedVariants format:', {
         variantsCount: productVariants.length,
         attributesCount: attributes.length,
@@ -35,17 +36,19 @@ export function useProductVariantConversion({
       const attributeIdsSet = new Set<string>();
       const attributeValueIdsMap: Record<string, string[]> = {};
       
-      productVariants.forEach((variant: any) => {
+      productVariants.forEach((variant: ProductVariantForConversion) => {
         if (variant.options && Array.isArray(variant.options)) {
-          variant.options.forEach((opt: any) => {
-            let attributeId = opt.attributeId;
-            let valueId = opt.valueId;
-            
-            if (!attributeId && opt.attributeValue) {
-              attributeId = opt.attributeValue.attributeId || opt.attributeValue.attribute?.id;
+          variant.options.forEach((opt: unknown) => {
+            const o = opt as Record<string, unknown>;
+            let attributeId = o.attributeId as string | undefined;
+            let valueId = o.valueId as string | undefined;
+            const attrVal = o.attributeValue as Record<string, unknown> | undefined;
+            if (!attributeId && attrVal) {
+              const nestedAttr = attrVal.attribute as Record<string, unknown> | undefined;
+              attributeId = (attrVal.attributeId as string | undefined) ?? (nestedAttr?.id as string | undefined);
             }
-            if (!valueId && opt.attributeValue) {
-              valueId = opt.attributeValue.id;
+            if (!valueId && attrVal) {
+              valueId = attrVal.id as string | undefined;
             }
             
             if (attributeId && valueId) {
@@ -62,7 +65,7 @@ export function useProductVariantConversion({
         }
       });
       
-      const productAttributeIds = (window as any).__productAttributeIds || [];
+      const productAttributeIds = window.__productAttributeIds ?? [];
       if (productAttributeIds.length > 0) {
         console.log('📋 [ADMIN] Adding product attributeIds to selected attributes:', productAttributeIds);
         productAttributeIds.forEach((attrId: string) => {
@@ -92,7 +95,7 @@ export function useProductVariantConversion({
       
       const variantDataList: VariantData[] = [];
       
-      productVariants.forEach((variant: any, variantIndex: number) => {
+      productVariants.forEach((variant: ProductVariantForConversion, variantIndex: number) => {
         const selectedValueIds: string[] = [];
         
         if (variant.attributes && typeof variant.attributes === 'object') {
@@ -105,11 +108,12 @@ export function useProductVariantConversion({
               return;
             }
             
-            const attributeValues = variant.attributes[attributeKey];
+            const attributeValues = variant.attributes?.[attributeKey];
             if (Array.isArray(attributeValues)) {
-              attributeValues.forEach((attrValue: any) => {
-                const valueId = attrValue.valueId || attrValue.id;
-                const value = attrValue.value || attrValue;
+              attributeValues.forEach((attrValue: unknown) => {
+                const av = attrValue as Record<string, unknown>;
+                const valueId = (av.valueId ?? av.id) as string | undefined;
+                const value = av.value ?? attrValue;
                 
                 if (valueId) {
                   if (!selectedValueIds.includes(valueId)) {
@@ -133,31 +137,35 @@ export function useProductVariantConversion({
           
           const attributeValueMap: Record<string, Set<string>> = {};
           
-          variant.options.forEach((opt: any) => {
-            let attributeId = opt.attributeId;
-            let valueId = opt.valueId;
-            let attributeKey = opt.attributeKey;
-            
-            if (!attributeId && opt.attributeValue) {
-              attributeId = opt.attributeValue.attributeId || opt.attributeValue.attribute?.id || opt.attributeValue.attributeId;
-              attributeKey = opt.attributeValue.attribute?.key || opt.attributeValue.attributeKey;
+          variant.options.forEach((opt: unknown) => {
+            const o = opt as Record<string, unknown>;
+            let attributeId = o.attributeId as string | undefined;
+            let valueId = o.valueId as string | undefined;
+            let attributeKey = o.attributeKey as string | undefined;
+            const nested = o.attributeValue as Record<string, unknown> | undefined;
+            if (!attributeId && nested) {
+              const na = nested.attribute as Record<string, unknown> | undefined;
+              attributeId = (nested.attributeId as string | undefined) ?? (na?.id as string | undefined) ?? (nested.attributeId as string | undefined);
+              attributeKey = (na?.key as string | undefined) ?? (nested.attributeKey as string | undefined);
             }
-            if (!valueId && opt.attributeValue) {
-              valueId = opt.attributeValue.id || opt.attributeValue.valueId;
+            if (!valueId && nested) {
+              valueId = (nested.id as string | undefined) ?? (nested.valueId as string | undefined);
             }
             
-            if (!attributeId && opt.attributeKey) {
-              const foundAttr = attributes.find(a => a.key === opt.attributeKey);
+            if (!attributeId && o.attributeKey) {
+              const foundAttr = attributes.find(a => a.key === o.attributeKey);
               if (foundAttr) {
                 attributeId = foundAttr.id;
                 attributeKey = foundAttr.key;
               }
             }
             
-            if (attributeId && !valueId && opt.value) {
+            if (attributeId && !valueId && o.value) {
               const foundAttr = attributes.find(a => a.id === attributeId);
               if (foundAttr) {
-                const foundValue = foundAttr.values.find((v: { id: string; value: string; label: string }) => v.value === opt.value || v.label === opt.value);
+                const foundValue = foundAttr.values.find(
+                  (v: { id: string; value: string; label: string }) => v.value === o.value || v.label === o.value
+                );
                 if (foundValue) {
                   valueId = foundValue.id;
                 }
@@ -197,19 +205,28 @@ export function useProductVariantConversion({
           console.log(`🖼️ [ADMIN] Variant ${variantIndex} has no imageUrl`);
         }
         
-        const priceInDefaultCurrency = variant.price !== undefined && variant.price !== null 
-          ? convertPrice(variant.price, 'USD', defaultCurrency)
-          : 0;
-        const compareAtPriceInDefaultCurrency = variant.compareAtPrice !== undefined && variant.compareAtPrice !== null 
-          ? convertPrice(variant.compareAtPrice, 'USD', defaultCurrency)
-          : null;
+        const rawPrice = variant.price;
+        const priceInDefaultCurrency =
+          rawPrice !== undefined && rawPrice !== null
+            ? convertPrice(typeof rawPrice === 'number' ? rawPrice : Number(rawPrice), 'USD', defaultCurrency)
+            : 0;
+        const rawCompare = variant.compareAtPrice;
+        const compareAtPriceInDefaultCurrency =
+          rawCompare !== undefined && rawCompare !== null
+            ? convertPrice(typeof rawCompare === 'number' ? rawCompare : Number(rawCompare), 'USD', defaultCurrency)
+            : null;
         
         variantDataList.push({
           id: variant.id || `variant-${Date.now()}-${variantIndex}-${Math.random()}`,
           selectedValueIds: selectedValueIds.sort(),
           price: priceInDefaultCurrency,
           compareAtPrice: compareAtPriceInDefaultCurrency,
-          stock: variant.stock !== undefined && variant.stock !== null ? variant.stock : 0,
+          stock:
+            variant.stock !== undefined && variant.stock !== null
+              ? typeof variant.stock === 'number'
+                ? variant.stock
+                : Number(variant.stock)
+              : 0,
           sku: variant.sku || '',
           image: variantImage,
           originalVariantIds: [variant.id || `variant-${variantIndex}`],
@@ -292,7 +309,7 @@ export function useProductVariantConversion({
             sku: v.sku,
           })),
         });
-        delete (window as any).__productVariantsToConvert;
+        delete window.__productVariantsToConvert;
         setHasVariantsToLoad(false);
       } else {
         console.warn('⚠️ [ADMIN] No variants converted. Check variant options structure:', {

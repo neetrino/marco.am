@@ -1,4 +1,5 @@
 import { db } from "@white-shop/db";
+import type { Prisma } from "@prisma/client";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { findOrCreateAttributeValue } from "../../utils/variant-generator";
 import { ensureProductAttributesTable } from "../../utils/db-ensure";
@@ -15,7 +16,7 @@ class AdminProductsCreateService {
    * Checks database to ensure uniqueness
    */
   private async generateUniqueSku(
-    tx: any,
+    tx: Prisma.TransactionClient,
     baseSku: string | undefined,
     productSlug: string,
     variantIndex: number,
@@ -96,7 +97,7 @@ class AdminProductsCreateService {
     published: boolean;
     featured?: boolean;
     locale: string;
-    media?: any[];
+    media?: Array<string | { url?: string }>;
     mainProductImage?: string;
     labels?: Array<{
       type: string;
@@ -124,16 +125,20 @@ class AdminProductsCreateService {
     try {
       console.log('🆕 [ADMIN PRODUCTS CREATE SERVICE] Creating product:', data.title);
 
-      const result = await db.$transaction(async (tx: any) => {
+      const result = await db.$transaction(async (tx: Prisma.TransactionClient) => {
         // Track used SKUs within this transaction to ensure uniqueness
         const usedSkus = new Set<string>();
         
         // Generate variants with options
         // Support both old format (color/size strings) and new format (AttributeValue IDs)
         // Also support generic options array for any attribute type
+        type VariantOption =
+          | { valueId: string }
+          | { attributeKey: string; value: string };
+
         const variantsData = await Promise.all(
-          data.variants.map(async (variant: any, variantIndex: number) => {
-            const options: any[] = [];
+          data.variants.map(async (variant, variantIndex: number) => {
+            const options: VariantOption[] = [];
             const attributesMap: Record<string, Array<{ valueId: string; value: string; attributeKey: string }>> = {};
             
             // If variant has explicit options array, use it (new format)
@@ -242,7 +247,8 @@ class AdminProductsCreateService {
             );
 
             // Convert attributesMap to JSONB format
-            const attributesJson = Object.keys(attributesMap).length > 0 ? attributesMap : null;
+            const attributesJson =
+              Object.keys(attributesMap).length > 0 ? attributesMap : undefined;
 
             console.log(`📦 [ADMIN PRODUCTS CREATE SERVICE] Variant ${variantIndex + 1} attributes:`, JSON.stringify(attributesJson, null, 2));
 
@@ -288,8 +294,8 @@ class AdminProductsCreateService {
         console.log('✅ [ADMIN PRODUCTS CREATE SERVICE] All variant SKUs are unique');
 
         // Collect all variant images to exclude from main media
-        const allVariantImages: any[] = [];
-        variantsData.forEach((variant: any) => {
+        const allVariantImages: string[] = [];
+        variantsData.forEach((variant) => {
           if (variant.imageUrl) {
             const urls = smartSplitUrls(variant.imageUrl);
             allVariantImages.push(...urls);
@@ -304,7 +310,7 @@ class AdminProductsCreateService {
           console.log('📸 [ADMIN PRODUCTS CREATE SERVICE] Using mainProductImage as media:', data.mainProductImage.substring(0, 50) + '...');
         } else if (data.mainProductImage && rawMedia.length > 0) {
           // If both are provided, ensure mainProductImage is first in media array
-          const mainImageIndex = rawMedia.findIndex((m: any) => {
+          const mainImageIndex = rawMedia.findIndex((m: string | { url?: string }) => {
             const url = typeof m === 'string' ? m : m.url;
             return url === data.mainProductImage;
           });
@@ -377,12 +383,15 @@ class AdminProductsCreateService {
               skipDuplicates: true,
             });
             console.log('✅ [ADMIN PRODUCTS CREATE SERVICE] Created ProductAttribute relations:', data.attributeIds);
-          } catch (error: any) {
+          } catch (error: unknown) {
             console.error('❌ [ADMIN PRODUCTS CREATE SERVICE] Failed to create ProductAttribute relations:', error);
             console.error('   Product ID:', product.id);
             console.error('   Attribute IDs:', data.attributeIds);
-            console.error('   Error code:', error.code);
-            console.error('   Error message:', error.message);
+            console.error(
+              '   Error code:',
+              error && typeof error === 'object' && 'code' in error ? (error as { code: unknown }).code : undefined
+            );
+            console.error('   Error message:', error instanceof Error ? error.message : String(error));
             // Re-throw to fail the transaction
             throw error;
           }
@@ -414,7 +423,7 @@ class AdminProductsCreateService {
       }
 
       return result;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("❌ [ADMIN PRODUCTS CREATE SERVICE] createProduct error:", error);
       throw error;
     }

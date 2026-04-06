@@ -3,6 +3,7 @@
 import { useState, useRef, ChangeEvent, useEffect } from 'react';
 import { useTranslation } from '../lib/i18n-client';
 import { ColorPaletteSelector } from './ColorPaletteSelector';
+import { getErrorMessage } from '../lib/types/errors';
 
 interface AttributeValueEditModalProps {
   isOpen: boolean;
@@ -71,9 +72,9 @@ export function AttributeValueEditModal({
       setImageUploading(true);
       const base64 = await fileToBase64(imageFile);
       setImageUrl(base64);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('❌ [ADMIN] Error uploading image:', error);
-      alert(error?.message || t('admin.attributes.valueModal.failedToProcessImage'));
+      alert(getErrorMessage(error) || t('admin.attributes.valueModal.failedToProcessImage'));
     } finally {
       setImageUploading(false);
       if (event.target) {
@@ -105,9 +106,9 @@ export function AttributeValueEditModal({
       await onSave(saveData);
       console.log('✅ [ATTRIBUTE VALUE MODAL] Value saved successfully');
       onClose();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('❌ [ADMIN] Error saving value:', error);
-      alert(error?.message || t('admin.attributes.valueModal.failedToSave'));
+      alert(getErrorMessage(error) || t('admin.attributes.valueModal.failedToSave'));
     } finally {
       setSaving(false);
     }

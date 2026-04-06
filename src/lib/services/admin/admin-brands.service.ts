@@ -132,7 +132,7 @@ class AdminBrandsService {
     }
 
     const locale = data.locale || "en";
-    const updateData: any = {};
+    const updateData: { logoUrl?: string | null } = {};
 
     // Update logo URL if provided
     if (data.logoUrl !== undefined) {

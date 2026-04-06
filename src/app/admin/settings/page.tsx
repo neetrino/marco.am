@@ -7,13 +7,15 @@ import { Card, Button } from '@shop/ui';
 import { apiClient } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
 import { clearCurrencyRatesCache } from '../../../lib/currency';
+import { getClientErrorMessage } from '../../../lib/types/errors';
 
 interface Settings {
   defaultCurrency?: string;
   globalDiscount?: number;
   categoryDiscounts?: Record<string, number>;
   brandDiscounts?: Record<string, number>;
-  currencyRates?: Record<string, number>;
+  /** Values may be undefined while the user clears an input before blur applies a default. */
+  currencyRates?: Record<string, number | undefined>;
 }
 
 export default function SettingsPage() {
@@ -67,7 +69,7 @@ export default function SettingsPage() {
         },
       });
       console.log('✅ [ADMIN] Settings loaded:', data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('❌ [ADMIN] Error fetching settings:', err);
       // Use defaults if error
       setSettings({
@@ -118,9 +120,9 @@ export default function SettingsPage() {
       
       alert(t('admin.settings.savedSuccess'));
       console.log('✅ [ADMIN] Settings saved, currency rates:', currencyRatesToSave);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('❌ [ADMIN] Error saving settings:', err);
-      const errorMessage = err.response?.data?.detail || err.message || 'Failed to save settings';
+      const errorMessage = getClientErrorMessage(err) || 'Failed to save settings';
       alert(t('admin.settings.errorSaving').replace('{message}', errorMessage));
     } finally {
       setSaving(false);
@@ -257,7 +259,7 @@ export default function SettingsPage() {
                         ...settings,
                         currencyRates: {
                           ...settings.currencyRates,
-                          AMD: undefined as any,
+                          AMD: undefined,
                         },
                       });
                     } else {
@@ -304,7 +306,7 @@ export default function SettingsPage() {
                         ...settings,
                         currencyRates: {
                           ...settings.currencyRates,
-                          EUR: undefined as any,
+                          EUR: undefined,
                         },
                       });
                     } else {
@@ -351,7 +353,7 @@ export default function SettingsPage() {
                         ...settings,
                         currencyRates: {
                           ...settings.currencyRates,
-                          RUB: undefined as any,
+                          RUB: undefined,
                         },
                       });
                     } else {
@@ -398,7 +400,7 @@ export default function SettingsPage() {
                         ...settings,
                         currencyRates: {
                           ...settings.currencyRates,
-                          GEL: undefined as any,
+                          GEL: undefined,
                         },
                       });
                     } else {

@@ -2,6 +2,7 @@
 
 import type { ChangeEvent } from 'react';
 import { processImageFile } from '../../../../../lib/utils/image-utils';
+import { getErrorMessage } from '../../../../../lib/types/errors';
 import type { Variant, ColorData } from '../types';
 import type { GeneratedVariant } from '../types';
 
@@ -151,8 +152,8 @@ export function useImageHandling({
             console.error(`❌ [UPLOAD] Empty base64 result for file ${index + 1}/${files.length}:`, file.name);
             return { success: false, error: errorMsg, index };
           }
-        } catch (error: any) {
-          const errorMsg = `Error processing "${file.name}": ${error?.message || 'Unknown error'}`;
+        } catch (error: unknown) {
+          const errorMsg = `Error processing "${file.name}": ${getErrorMessage(error) || 'Unknown error'}`;
           console.error(`❌ [UPLOAD] Error processing file ${index + 1}/${files.length}:`, file.name, error);
           return { success: false, error: errorMsg, index };
         }
@@ -169,7 +170,7 @@ export function useImageHandling({
             errors.push(fileResult.error);
           }
         } else {
-          const errorMsg = `Failed to process file: ${result.reason?.message || 'Unknown error'}`;
+          const errorMsg = `Failed to process file: ${getErrorMessage(result.reason) || 'Unknown error'}`;
           errors.push(errorMsg);
           console.error(`❌ [UPLOAD] Promise rejected:`, result.reason);
         }
@@ -195,9 +196,9 @@ export function useImageHandling({
         }
         return newImageUrls;
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('❌ [UPLOAD] Fatal error during upload:', error);
-      setImageUploadError(error?.message || t('admin.products.add.failedToProcessImages'));
+      setImageUploadError(getErrorMessage(error) || t('admin.products.add.failedToProcessImages'));
     } finally {
       setImageUploadLoading(false);
       if (event.target) {
@@ -240,9 +241,9 @@ export function useImageHandling({
 
       setGeneratedVariants((prev) => prev.map((v) => (v.id === variantId ? { ...v, image: base64 } : v)));
       console.log('✅ [VARIANT BUILDER] Variant image uploaded and processed for variant:', variantId);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('❌ [VARIANT IMAGE] Error processing variant image:', error);
-      setImageUploadError(error?.message || t('admin.products.add.failedToProcessImage'));
+      setImageUploadError(getErrorMessage(error) || t('admin.products.add.failedToProcessImage'));
     } finally {
       setImageUploadLoading(false);
       if (event.target) {
@@ -301,9 +302,9 @@ export function useImageHandling({
 
       addColorImages(colorImageTarget.variantId, colorImageTarget.colorValue, uploadedImages);
       console.log('✅ [ADMIN] Color images added to state:', uploadedImages.length);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('❌ [ADMIN] Error uploading color images:', error);
-      setImageUploadError(error?.message || t('admin.products.add.failedToProcessImages'));
+      setImageUploadError(getErrorMessage(error) || t('admin.products.add.failedToProcessImages'));
     } finally {
       setImageUploadLoading(false);
       if (event.target) {

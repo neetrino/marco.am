@@ -19,7 +19,7 @@ class ProductsFindTransformService {
   async transformProducts(
     products: ProductWithRelations[],
     lang: string = "en"
-  ): Promise<any[]> {
+  ): Promise<unknown[]> {
     // Get discount settings
     const discountSettings = await db.settings.findMany({
       where: {
@@ -140,8 +140,19 @@ class ProductsFindTransformService {
       // Do not add new colors that don't exist in variants
       const productAttrs = product && 'productAttributes' in product && Array.isArray(product.productAttributes) ? product.productAttributes : [];
       if (productAttrs.length > 0) {
-        productAttrs.forEach((productAttr: any) => {
-          const attr = productAttr?.attribute;
+        productAttrs.forEach((productAttr) => {
+          const row = productAttr as NonNullable<ProductWithRelations["productAttributes"]>[number] & {
+            attribute?: {
+              key: string;
+              values?: Array<{
+                translations?: Array<{ locale: string; label?: string }>;
+                value?: string;
+                imageUrl?: string | null;
+                colors?: string[] | null;
+              }>;
+            };
+          };
+          const attr = row.attribute;
           if (attr && typeof attr === 'object' && 'key' in attr && attr.key === 'color' && 'values' in attr && Array.isArray(attr.values)) {
             attr.values.forEach((attrValue: { translations?: Array<{ locale: string; label?: string }>; value?: string; imageUrl?: string | null; colors?: string[] | null }) => {
               const translation = attrValue.translations?.find((t: { locale: string }) => t.locale === lang) || attrValue.translations?.[0];

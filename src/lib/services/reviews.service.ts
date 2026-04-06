@@ -29,7 +29,7 @@ class ReviewsService {
     
     console.log('📝 [REVIEWS SERVICE] Getting reviews for product:', productId);
     
-    const where: any = {
+    const where: Prisma.ProductReviewWhereInput = {
       productId,
     };
 

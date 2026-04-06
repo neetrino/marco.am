@@ -54,7 +54,7 @@ export function useBrandAndCategoryCreation({
           console.log('✅ [ADMIN] Brand created:', brandResponse.data.id);
           creationMessages.push(t('admin.products.add.brandCreatedSuccess').replace('{name}', newBrandName.trim()));
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('❌ [ADMIN] Error creating brand:', err);
         setLoading(false);
         return { finalBrandIds, finalPrimaryCategoryId, creationMessages, error: true };
@@ -78,7 +78,7 @@ export function useBrandAndCategoryCreation({
             t('admin.products.add.categoryCreatedSuccess').replace('{name}', newCategoryName.trim())
           );
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('❌ [ADMIN] Error creating category:', err);
         setLoading(false);
         return { finalBrandIds, finalPrimaryCategoryId, creationMessages, error: true };

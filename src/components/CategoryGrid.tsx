@@ -258,7 +258,7 @@ export function CategoryGrid() {
           duplicates: productIds.filter((id, index) => productIds.indexOf(id) !== index)
         });
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error fetching categories:', err);
     } finally {
       setLoading(false);

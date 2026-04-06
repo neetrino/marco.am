@@ -1,4 +1,5 @@
 import { db } from "@white-shop/db";
+import type { Prisma } from "@prisma/client";
 import * as bcrypt from "bcryptjs";
 
 class UsersService {
@@ -43,7 +44,10 @@ class UsersService {
   /**
    * Update user profile
    */
-  async updateProfile(userId: string, data: any) {
+  async updateProfile(
+    userId: string,
+    data: Pick<Prisma.UserUpdateInput, "firstName" | "lastName" | "locale">
+  ) {
     const user = await db.user.update({
       where: { id: userId },
       data: {
@@ -131,11 +135,11 @@ class UsersService {
           detail: "The old password is incorrect",
         };
       }
-    } catch (bcryptError: any) {
+    } catch (bcryptError: unknown) {
       // Handle bcrypt errors
       console.error("❌ [USERS SERVICE] bcrypt.compare error:", {
         error: bcryptError,
-        message: bcryptError?.message,
+        message: bcryptError instanceof Error ? bcryptError.message : String(bcryptError),
         userId,
         hasOldPassword: !!oldPassword,
         hasPasswordHash: !!user.passwordHash,
@@ -157,10 +161,10 @@ class UsersService {
       });
 
       return { success: true };
-    } catch (hashError: any) {
+    } catch (hashError: unknown) {
       console.error("❌ [USERS SERVICE] bcrypt.hash error:", {
         error: hashError,
-        message: hashError?.message,
+        message: hashError instanceof Error ? hashError.message : String(hashError),
         userId,
       });
       throw {
@@ -187,7 +191,7 @@ class UsersService {
   /**
    * Add address
    */
-  async addAddress(userId: string, data: any) {
+  async addAddress(userId: string, data: Omit<Prisma.AddressUncheckedCreateInput, "userId">) {
     // If this is the first address, set it as default
     const existingAddresses = await db.address.findMany({
       where: { userId },
@@ -207,7 +211,7 @@ class UsersService {
   /**
    * Update address
    */
-  async updateAddress(userId: string, addressId: string, data: any) {
+  async updateAddress(userId: string, addressId: string, data: Prisma.AddressUpdateInput) {
     const address = await db.address.findFirst({
       where: { id: addressId, userId },
     });

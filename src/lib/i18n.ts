@@ -89,7 +89,7 @@ export type ProductField = 'title' | 'shortDescription' | 'longDescription';
 
 // Translation store - organized by language and namespace
 // Supports en, hy, and ru languages
-const translations: Partial<Record<LanguageCode, Record<Namespace, any>>> = {
+const translations: Partial<Record<LanguageCode, Record<Namespace, unknown>>> = {
   en: {
     common: enCommon,
     home: enHome,
@@ -179,11 +179,16 @@ const translationCache = new Map<string, string>();
  * @param keys - Array of keys to navigate
  * @returns The value at the path or null
  */
-function getNestedValue(obj: any, keys: string[]): any {
-  let current = obj;
+function getNestedValue(obj: unknown, keys: string[]): unknown {
+  let current: unknown = obj;
   for (const key of keys) {
-    if (current && typeof current === 'object' && key in current) {
-      current = current[key];
+    if (
+      current !== null &&
+      typeof current === "object" &&
+      !Array.isArray(current) &&
+      key in current
+    ) {
+      current = (current as Record<string, unknown>)[key];
     } else {
       return null;
     }
@@ -197,9 +202,9 @@ function getNestedValue(obj: any, keys: string[]): any {
  * @param namespace - Namespace name
  * @returns Translation object or null
  */
-export function loadTranslation(lang: LanguageCode, namespace: Namespace): any {
+export function loadTranslation(lang: LanguageCode, namespace: Namespace): unknown {
   try {
-    return translations[lang]?.[namespace] || null;
+    return translations[lang]?.[namespace] ?? null;
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
       console.warn(`[i18n] Failed to load translation: ${lang}/${namespace}`, error);
@@ -290,9 +295,9 @@ export function t(lang: LanguageCode | undefined, path: string): string {
     return path;
   }
   
-  // For arrays, return as-is (don't cache)
+  // For arrays, return as-is (don't cache) — callers historically treated as string; narrow at call sites if needed
   if (Array.isArray(value)) {
-    return value as any;
+    return value as unknown as string;
   }
   
   const result = typeof value === 'string' ? value : path;
@@ -346,20 +351,26 @@ export function getProductText(
       products = loadTranslation('en', 'products');
     }
 
-    if (!products || typeof products !== 'object') {
+    if (!products || typeof products !== 'object' || Array.isArray(products)) {
       return '';
     }
 
+    const productsRecord = products as Record<string, unknown>;
     // Get product data
-    const product = products[productId];
+    const product = productsRecord[productId];
     if (!product || typeof product !== 'object') {
       // Try English fallback
       if (lang !== 'en') {
         const enProducts = loadTranslation('en', 'products');
-        if (enProducts && typeof enProducts === 'object' && productId in enProducts) {
-          const enProduct = enProducts[productId];
+        if (
+          enProducts &&
+          typeof enProducts === 'object' &&
+          !Array.isArray(enProducts) &&
+          productId in enProducts
+        ) {
+          const enProduct = (enProducts as Record<string, unknown>)[productId];
           if (enProduct && typeof enProduct === 'object' && field in enProduct) {
-            const value = enProduct[field];
+            const value = (enProduct as Record<string, unknown>)[field];
             return typeof value === 'string' ? value : '';
           }
         }
@@ -367,9 +378,10 @@ export function getProductText(
       return '';
     }
 
+    const productFields = product as Record<string, unknown>;
     // Get field value
-    if (field in product) {
-      const value = product[field];
+    if (field in productFields) {
+      const value = productFields[field];
       if (typeof value === 'string') {
         return value;
       }
@@ -378,10 +390,15 @@ export function getProductText(
     // Fallback to English
     if (lang !== 'en') {
       const enProducts = loadTranslation('en', 'products');
-      if (enProducts && typeof enProducts === 'object' && productId in enProducts) {
-        const enProduct = enProducts[productId];
+      if (
+        enProducts &&
+        typeof enProducts === 'object' &&
+        !Array.isArray(enProducts) &&
+        productId in enProducts
+      ) {
+        const enProduct = (enProducts as Record<string, unknown>)[productId];
         if (enProduct && typeof enProduct === 'object' && field in enProduct) {
-          const value = enProduct[field];
+          const value = (enProduct as Record<string, unknown>)[field];
           return typeof value === 'string' ? value : '';
         }
       }
@@ -436,23 +453,25 @@ export function getAttributeLabel(
       attributes = loadTranslation('en', 'attributes');
     }
 
-    if (!attributes || typeof attributes !== 'object') {
+    if (!attributes || typeof attributes !== 'object' || Array.isArray(attributes)) {
       return value;
     }
 
+    const attrs = attributes as Record<string, unknown>;
     // Get attribute type object
-    if (type in attributes) {
-      const typeObj = attributes[type];
-      if (typeObj && typeof typeObj === 'object') {
+    if (type in attrs) {
+      const typeObj = attrs[type];
+      if (typeObj && typeof typeObj === 'object' && !Array.isArray(typeObj)) {
+        const typeRecord = typeObj as Record<string, unknown>;
         // Try exact match first
-        if (normalizedValue in typeObj) {
-          const label = typeObj[normalizedValue];
+        if (normalizedValue in typeRecord) {
+          const label = typeRecord[normalizedValue];
           if (typeof label === 'string') {
             return label;
           }
         }
         // Try case-insensitive match
-        for (const [key, label] of Object.entries(typeObj)) {
+        for (const [key, label] of Object.entries(typeRecord)) {
           if (key.toLowerCase() === normalizedValue && typeof label === 'string') {
             return label;
           }
@@ -463,17 +482,23 @@ export function getAttributeLabel(
     // Fallback to English
     if (lang !== 'en') {
       const enAttributes = loadTranslation('en', 'attributes');
-      if (enAttributes && typeof enAttributes === 'object' && type in enAttributes) {
-        const enTypeObj = enAttributes[type];
-        if (enTypeObj && typeof enTypeObj === 'object') {
-          if (normalizedValue in enTypeObj) {
-            const label = enTypeObj[normalizedValue];
+      if (
+        enAttributes &&
+        typeof enAttributes === 'object' &&
+        !Array.isArray(enAttributes) &&
+        type in enAttributes
+      ) {
+        const enTypeObj = (enAttributes as Record<string, unknown>)[type];
+        if (enTypeObj && typeof enTypeObj === 'object' && !Array.isArray(enTypeObj)) {
+          const enRecord = enTypeObj as Record<string, unknown>;
+          if (normalizedValue in enRecord) {
+            const label = enRecord[normalizedValue];
             if (typeof label === 'string') {
               return label;
             }
           }
           // Try case-insensitive match
-          for (const [key, label] of Object.entries(enTypeObj)) {
+          for (const [key, label] of Object.entries(enRecord)) {
             if (key.toLowerCase() === normalizedValue && typeof label === 'string') {
               return label;
             }

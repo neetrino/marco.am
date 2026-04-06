@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { toApiErrorResponse } from "@/lib/api/next-route-error";
 import { db } from "@white-shop/db";
 
 export async function GET(
@@ -40,18 +41,9 @@ export async function GET(
       stock: variant.stock,
       available: available,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ [PRODUCTS] Get variant error:", error);
-    return NextResponse.json(
-      {
-        type: error.type || "https://api.shop.am/problems/internal-error",
-        title: error.title || "Internal Server Error",
-        status: error.status || 500,
-        detail: error.detail || error.message || "An error occurred",
-        instance: req.url,
-      },
-      { status: error.status || 500 }
-    );
+    return toApiErrorResponse(error, req.url);
   }
 }
 

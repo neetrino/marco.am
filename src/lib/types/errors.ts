@@ -94,6 +94,76 @@ export function toApiError(error: unknown, instance?: string): ApiError {
   };
 }
 
+/**
+ * Safe message extraction for catch (error: unknown) blocks.
+ */
+export function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return String(error);
+}
 
+/**
+ * Optional stack for logging when error is an Error.
+ */
+export function getErrorStack(error: unknown): string | undefined {
+  return error instanceof Error ? error.stack : undefined;
+}
 
+/**
+ * For thrown objects like `{ status: 400, detail: "..." }` used across services.
+ */
+export function getThrownHttpStatus(error: unknown): number | undefined {
+  if (typeof error === 'object' && error !== null && 'status' in error) {
+    const s = (error as { status: unknown }).status;
+    return typeof s === 'number' ? s : undefined;
+  }
+  return undefined;
+}
+
+/**
+ * Narrow axios/fetch-style errors with optional `data` payload.
+ */
+export function getApiLikeData(error: unknown): {
+  data?: { detail?: string; message?: string };
+} {
+  if (typeof error === "object" && error !== null && "data" in error) {
+    return error as { data?: { detail?: string; message?: string } };
+  }
+  return {};
+}
+
+/**
+ * Message for user-facing alerts from API client errors (ApiError, fetch, etc.).
+ */
+export function getClientErrorMessage(error: unknown): string {
+  const api = getApiLikeData(error);
+  if (api.data?.detail) {
+    return api.data.detail;
+  }
+  if (api.data?.message) {
+    return api.data.message;
+  }
+  return getErrorMessage(error);
+}
+
+export function getErrorLogFields(error: unknown): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  if (error instanceof Error) {
+    out.message = error.message;
+    out.stack = error.stack;
+    out.name = error.name;
+  }
+  if (typeof error === 'object' && error !== null) {
+    const e = error as Record<string, unknown>;
+    if ('status' in e) out.status = e.status;
+    if ('type' in e) out.type = e.type;
+    if ('title' in e) out.title = e.title;
+    if ('detail' in e) out.detail = e.detail;
+    if ('code' in e) out.code = e.code;
+    if ('meta' in e) out.meta = e.meta;
+  }
+  return out;
+}
 

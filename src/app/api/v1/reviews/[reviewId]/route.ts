@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { toApiErrorResponse } from "@/lib/api/next-route-error";
 import { reviewsService } from "@/lib/services/reviews.service";
 import { authenticateToken } from "@/lib/middleware/auth";
 
@@ -56,18 +57,9 @@ export async function PUT(
     console.log('✅ [REVIEWS API] Review updated:', review.id);
 
     return NextResponse.json(review);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ [REVIEWS API] PUT Error:", error);
-    return NextResponse.json(
-      {
-        type: error.type || "https://api.shop.am/problems/internal-error",
-        title: error.title || "Internal Server Error",
-        status: error.status || 500,
-        detail: error.detail || error.message || "An error occurred",
-        instance: req.url,
-      },
-      { status: error.status || 500 }
-    );
+    return toApiErrorResponse(error, req.url);
   }
 }
 
@@ -104,18 +96,9 @@ export async function DELETE(
     console.log('✅ [REVIEWS API] Review deleted:', reviewId);
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ [REVIEWS API] DELETE Error:", error);
-    return NextResponse.json(
-      {
-        type: error.type || "https://api.shop.am/problems/internal-error",
-        title: error.title || "Internal Server Error",
-        status: error.status || 500,
-        detail: error.detail || error.message || "An error occurred",
-        instance: req.url,
-      },
-      { status: error.status || 500 }
-    );
+    return toApiErrorResponse(error, req.url);
   }
 }
 

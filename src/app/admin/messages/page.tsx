@@ -6,6 +6,7 @@ import { useAuth } from '../../../lib/auth/AuthContext';
 import { Card, Button } from '@shop/ui';
 import { apiClient } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
+import { getErrorMessage } from '../../../lib/types/errors';
 
 interface Message {
   id: string;
@@ -116,9 +117,9 @@ export default function MessagesPage() {
       setSelectedIds(new Set());
       await fetchMessages();
       alert(t('admin.messages.deletedSuccess'));
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('❌ [ADMIN] Bulk delete messages error:', err);
-      alert(t('admin.messages.failedToDelete') + ': ' + (err.message || 'Unknown error'));
+      alert(t('admin.messages.failedToDelete') + ': ' + (getErrorMessage(err) || 'Unknown error'));
     } finally {
       setBulkDeleting(false);
     }

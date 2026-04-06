@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { toApiErrorResponse } from "@/lib/api/next-route-error";
 import { authenticateToken } from "@/lib/middleware/auth";
 import { usersService } from "@/lib/services/users.service";
 
@@ -20,18 +21,9 @@ export async function GET(req: NextRequest) {
 
     const result = await usersService.getAddresses(user.id);
     return NextResponse.json(result);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ [USERS] Error:", error);
-    return NextResponse.json(
-      {
-        type: error.type || "https://api.shop.am/problems/internal-error",
-        title: error.title || "Internal Server Error",
-        status: error.status || 500,
-        detail: error.detail || error.message || "An error occurred",
-        instance: req.url,
-      },
-      { status: error.status || 500 }
-    );
+    return toApiErrorResponse(error, req.url);
   }
 }
 
@@ -54,18 +46,9 @@ export async function POST(req: NextRequest) {
     const data = await req.json();
     const result = await usersService.addAddress(user.id, data);
     return NextResponse.json(result, { status: 201 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ [USERS] Error:", error);
-    return NextResponse.json(
-      {
-        type: error.type || "https://api.shop.am/problems/internal-error",
-        title: error.title || "Internal Server Error",
-        status: error.status || 500,
-        detail: error.detail || error.message || "An error occurred",
-        instance: req.url,
-      },
-      { status: error.status || 500 }
-    );
+    return toApiErrorResponse(error, req.url);
   }
 }
 

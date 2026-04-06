@@ -5,6 +5,7 @@ import { Button, Input, Card } from '@shop/ui';
 import Link from 'next/link';
 import { useAuth } from '../../lib/auth/AuthContext';
 import { useTranslation } from '../../lib/i18n-client';
+import { getErrorMessage } from '../../lib/types/errors';
 import { Eye, EyeOff } from 'lucide-react';
 
 export default function RegisterPage() {
@@ -105,14 +106,14 @@ export default function RegisterPage() {
           window.location.href = '/';
         }
       }, 1000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('❌ [REGISTER PAGE] Registration error:', err);
       console.error('❌ [REGISTER PAGE] Error details:', {
-        message: err.message,
-        stack: err.stack,
-        name: err.name,
+        message: getErrorMessage(err),
+        stack: err instanceof Error ? err.stack : undefined,
+        name: err instanceof Error ? err.name : undefined,
       });
-      setError(err.message || t('register.errors.registrationFailed'));
+      setError(getErrorMessage(err) || t('register.errors.registrationFailed'));
     } finally {
       setIsSubmitting(false);
     }

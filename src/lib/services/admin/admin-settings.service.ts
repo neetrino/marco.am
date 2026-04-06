@@ -1,5 +1,14 @@
 import { db } from "@white-shop/db";
 
+/** Payload from admin UI / API for bulk settings update. */
+type AdminSettingsUpdatePayload = {
+  globalDiscount?: number;
+  categoryDiscounts?: Record<string, number>;
+  brandDiscounts?: Record<string, number>;
+  defaultCurrency?: string;
+  currencyRates?: Record<string, number>;
+};
+
 class AdminSettingsService {
   /**
    * Get settings
@@ -40,7 +49,7 @@ class AdminSettingsService {
   /**
    * Update settings
    */
-  async updateSettings(data: any) {
+  async updateSettings(data: AdminSettingsUpdatePayload) {
     console.log('⚙️ [ADMIN SERVICE] Updating settings...', data);
     
     // Update global discount
@@ -242,7 +251,17 @@ class AdminSettingsService {
     });
 
     console.log('✅ [ADMIN SERVICE] Price filter settings updated:', setting);
-    const stored = setting.value as any;
+    const stored = setting.value as {
+      minPrice?: number;
+      maxPrice?: number;
+      stepSize?: number;
+      stepSizePerCurrency?: {
+        USD?: number;
+        AMD?: number;
+        RUB?: number;
+        GEL?: number;
+      };
+    };
     return {
       success: true,
       minPrice: stored.minPrice ?? null,

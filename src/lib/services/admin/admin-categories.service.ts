@@ -258,7 +258,7 @@ class AdminCategoriesService {
       }
     }
 
-    const updateData: any = {};
+    const updateData: { parentId?: string | null; requiresSizes?: boolean } = {};
     
     if (data.parentId !== undefined) {
       updateData.parentId = data.parentId || null;

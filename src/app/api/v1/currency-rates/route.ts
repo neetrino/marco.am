@@ -16,7 +16,7 @@ export async function GET() {
     };
     
     return NextResponse.json(rates);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ [CURRENCY RATES] Error:", error);
     // Return default rates on error
     return NextResponse.json({

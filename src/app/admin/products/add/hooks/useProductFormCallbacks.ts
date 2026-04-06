@@ -2,8 +2,9 @@
  * Hook for product form callbacks and event handlers
  */
 
-import type { ChangeEvent } from 'react';
-import type { Brand, Category, Attribute, GeneratedVariant } from '../types';
+import type { ChangeEvent, Dispatch, SetStateAction } from 'react';
+import type { Brand, Category, Attribute, GeneratedVariant, SimpleProductFormData } from '../types';
+import type { AddProductFormState } from '../utils/productFormDataBuilder';
 import { generateSlug } from '../utils/productUtils';
 
 interface UseProductFormCallbacksProps {
@@ -16,11 +17,11 @@ interface UseProductFormCallbacksProps {
   selectedAttributesForVariants: Set<string>;
   selectedAttributeValueIds: Record<string, string[]>;
   generatedVariants: GeneratedVariant[];
-  setFormData: (updater: (prev: any) => any) => void;
+  setFormData: Dispatch<SetStateAction<AddProductFormState>>;
   setSelectedAttributesForVariants: (value: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
   setSelectedAttributeValueIds: (value: Record<string, string[]> | ((prev: Record<string, string[]>) => Record<string, string[]>)) => void;
   setGeneratedVariants: (value: GeneratedVariant[] | ((prev: GeneratedVariant[]) => GeneratedVariant[])) => void;
-  setSimpleProductData: (value: any | ((prev: any) => any)) => void;
+  setSimpleProductData: Dispatch<SetStateAction<SimpleProductFormData>>;
   checkIsClothingCategory: (categoryId: string, categories: Category[]) => boolean;
 }
 

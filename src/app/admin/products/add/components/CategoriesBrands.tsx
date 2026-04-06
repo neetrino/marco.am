@@ -2,7 +2,7 @@
 
 import { Input } from '@shop/ui';
 import { useTranslation } from '../../../../../lib/i18n-client';
-import type { Category, Brand } from '../types';
+import type { Category, Brand, Variant } from '../types';
 
 interface CategoriesBrandsProps {
   categories: Category[];
@@ -25,7 +25,7 @@ interface CategoriesBrandsProps {
   onBrandIdsChange: (ids: string[]) => void;
   onPrimaryCategoryIdChange: (id: string) => void;
   isClothingCategory: () => boolean;
-  onVariantsUpdate?: (updater: (prev: any[]) => any[]) => void;
+  onVariantsUpdate?: (updater: (prev: Variant[]) => Variant[]) => void;
 }
 
 export function CategoriesBrands({

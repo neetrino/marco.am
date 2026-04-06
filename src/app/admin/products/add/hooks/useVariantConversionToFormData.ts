@@ -1,4 +1,6 @@
+import type { Dispatch, SetStateAction } from 'react';
 import type { Attribute, ColorData, Variant, GeneratedVariant } from '../types';
+import type { AddProductFormState } from '../utils/productFormDataBuilder';
 
 interface UseVariantConversionToFormDataProps {
   productType: 'simple' | 'variable';
@@ -6,7 +8,7 @@ interface UseVariantConversionToFormDataProps {
   generatedVariants: GeneratedVariant[];
   attributes: Attribute[];
   formDataSlug: string;
-  setFormData: (updater: (prev: any) => any) => void;
+  setFormData: Dispatch<SetStateAction<AddProductFormState>>;
 }
 
 export function useVariantConversionToFormData({

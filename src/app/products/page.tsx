@@ -50,6 +50,24 @@ interface ProductsResponse {
   };
 }
 
+/** API may return extra fields; we normalize below. */
+interface ProductListApiRow extends Partial<Product> {
+  id: string;
+  slug: string;
+  title: string;
+  price: number;
+  originalPrice?: number | null;
+  defaultVariantId?: string | null;
+  colors?: unknown;
+}
+
+type ProductsPageSearchParams = Promise<Record<string, string | string[] | undefined>>;
+
+function firstSearchParam(value: string | string[] | undefined): string | undefined {
+  if (value === undefined) return undefined;
+  return Array.isArray(value) ? value[0] : value;
+}
+
 /**
  * Fetch products (PRODUCTION SAFE)
  */
@@ -116,10 +134,22 @@ async function getProducts(
 /**
  * PAGE
  */
-export default async function ProductsPage({ searchParams }: any) {
+export default async function ProductsPage({
+  searchParams,
+}: {
+  searchParams?: ProductsPageSearchParams;
+}) {
   const params = searchParams ? await searchParams : {};
-  const page = parseInt(params?.page || "1", 10);
-  const limitParam = params?.limit?.toString().trim();
+  const page = parseInt(firstSearchParam(params.page) || "1", 10);
+  const limitParam = firstSearchParam(params.limit)?.toString().trim();
+  const categoryParam = firstSearchParam(params.category);
+  const searchParam = firstSearchParam(params.search);
+  const minPriceParam = firstSearchParam(params.minPrice);
+  const maxPriceParam = firstSearchParam(params.maxPrice);
+  const colorsParam = firstSearchParam(params.colors);
+  const sizesParam = firstSearchParam(params.sizes);
+  const brandParam = firstSearchParam(params.brand);
+  const sortParam = firstSearchParam(params.sort);
   const parsedLimit = limitParam && !Number.isNaN(parseInt(limitParam, 10))
     ? parseInt(limitParam, 10)
     : null;
@@ -127,13 +157,13 @@ export default async function ProductsPage({ searchParams }: any) {
 
   const productsData = await getProducts(
     page,
-    params?.search,
-    params?.category,
-    params?.minPrice,
-    params?.maxPrice,
-    params?.colors,
-    params?.sizes,
-    params?.brand,
+    firstSearchParam(params.search),
+    firstSearchParam(params.category),
+    firstSearchParam(params.minPrice),
+    firstSearchParam(params.maxPrice),
+    firstSearchParam(params.colors),
+    firstSearchParam(params.sizes),
+    firstSearchParam(params.brand),
     perPage
   );
 
@@ -141,7 +171,7 @@ export default async function ProductsPage({ searchParams }: any) {
   // 🔧 FIX: normalize products 
   // add missing inStock, missing image fields 
   // ------------------------------------
-  const normalizedProducts = productsData.data.map((p: any) => ({
+  const normalizedProducts = productsData.data.map((p: ProductListApiRow) => ({
     id: p.id,
     slug: p.slug,
     title: p.title,
@@ -151,26 +181,25 @@ export default async function ProductsPage({ searchParams }: any) {
     inStock: p.inStock ?? true,      // ⭐ FIXED
     brand: p.brand ?? null,
     defaultVariantId: p.defaultVariantId ?? null,
-    colors: p.colors ?? [],          // ⭐ Add colors array
-    labels: p.labels ?? []            // ⭐ Add labels array (includes "Out of Stock" label)
+    colors: Array.isArray(p.colors) ? (p.colors as string[]) : [],
+    labels: Array.isArray(p.labels) ? p.labels : [],
   }));
 
   // FILTERS
-  const colors = params?.colors;
-  const sizes = params?.sizes;
-  const brands = params?.brand;
-  const selectedColors = colors ? colors.split(',').map((c: string) => c.trim().toLowerCase()) : [];
-  const selectedSizes = sizes ? sizes.split(',').map((s: string) => s.trim()) : [];
-  const selectedBrands = brands ? brands.split(',').map((b: string) => b.trim()) : [];
+  const selectedColors = colorsParam ? colorsParam.split(',').map((c: string) => c.trim().toLowerCase()) : [];
+  const selectedSizes = sizesParam ? sizesParam.split(',').map((s: string) => s.trim()) : [];
+  const selectedBrands = brandParam ? brandParam.split(',').map((b: string) => b.trim()) : [];
 
   // PAGINATION: 12 per page by default, preserve limit in URLs
   const buildPaginationUrl = (num: number) => {
     const q = new URLSearchParams();
     q.set("page", num.toString());
-    const currentLimit = params?.limit ? String(params.limit) : "12";
+    const currentLimit = firstSearchParam(params.limit) ?? "12";
     q.set("limit", currentLimit);
     Object.entries(params).forEach(([k, v]) => {
-      if (k !== "page" && k !== "limit" && v && typeof v === "string") q.set(k, v);
+      if (k === "page" || k === "limit") return;
+      const s = Array.isArray(v) ? v[0] : v;
+      if (s && typeof s === "string") q.set(k, s);
     });
     return `/products?${q.toString()}`;
   };
@@ -210,18 +239,18 @@ export default async function ProductsPage({ searchParams }: any) {
 
       <div className="max-w-7xl mx-auto pl-2 sm:pl-4 md:pl-6 lg:pl-8 pr-4 sm:pr-6 lg:pr-8 flex flex-col lg:flex-row gap-8">
         <ProductsFiltersProvider
-          category={params?.category}
-          search={params?.search}
-          minPrice={params?.minPrice}
-          maxPrice={params?.maxPrice}
+          category={categoryParam}
+          search={searchParam}
+          minPrice={minPriceParam}
+          maxPrice={maxPriceParam}
         >
         <aside className="w-64 hidden lg:block bg-gray-50 rounded-xl flex-shrink-0">
           <div className="sticky top-4 p-4 space-y-6">
             <Suspense fallback={<div>{t(language, 'common.messages.loadingFilters')}</div>}>
-              <PriceFilter currentMinPrice={params?.minPrice} currentMaxPrice={params?.maxPrice} category={params?.category} search={params?.search} />
-              <ColorFilter category={params?.category} search={params?.search} minPrice={params?.minPrice} maxPrice={params?.maxPrice} selectedColors={selectedColors} />
-              <SizeFilter category={params?.category} search={params?.search} minPrice={params?.minPrice} maxPrice={params?.maxPrice} selectedSizes={selectedSizes} />
-              <BrandFilter category={params?.category} search={params?.search} minPrice={params?.minPrice} maxPrice={params?.maxPrice} selectedBrands={selectedBrands} />
+              <PriceFilter currentMinPrice={minPriceParam} currentMaxPrice={maxPriceParam} category={categoryParam} search={searchParam} />
+              <ColorFilter category={categoryParam} search={searchParam} minPrice={minPriceParam} maxPrice={maxPriceParam} selectedColors={selectedColors} />
+              <SizeFilter category={categoryParam} search={searchParam} minPrice={minPriceParam} maxPrice={maxPriceParam} selectedSizes={selectedSizes} />
+              <BrandFilter category={categoryParam} search={searchParam} minPrice={minPriceParam} maxPrice={maxPriceParam} selectedBrands={selectedBrands} />
             </Suspense>
           </div>
         </aside>
@@ -230,7 +259,7 @@ export default async function ProductsPage({ searchParams }: any) {
 
           {normalizedProducts.length > 0 ? (
             <>
-              <ProductsGrid products={normalizedProducts} sortBy={params?.sort || "default"} />
+              <ProductsGrid products={normalizedProducts} sortBy={sortParam || "default"} />
 
               {productsData.meta.totalPages > 1 && (
                 <nav
@@ -309,10 +338,10 @@ export default async function ProductsPage({ searchParams }: any) {
       <MobileFiltersDrawer openEventName={MOBILE_FILTERS_EVENT}>
         <div className="p-4 space-y-6">
           <Suspense fallback={<div>{t(language, 'common.messages.loadingFilters')}</div>}>
-            <PriceFilter currentMinPrice={params?.minPrice} currentMaxPrice={params?.maxPrice} category={params?.category} search={params?.search} />
-            <ColorFilter category={params?.category} search={params?.search} minPrice={params?.minPrice} maxPrice={params?.maxPrice} selectedColors={selectedColors} />
-            <SizeFilter category={params?.category} search={params?.search} minPrice={params?.minPrice} maxPrice={params?.maxPrice} selectedSizes={selectedSizes} />
-            <BrandFilter category={params?.category} search={params?.search} minPrice={params?.minPrice} maxPrice={params?.maxPrice} selectedBrands={selectedBrands} />
+            <PriceFilter currentMinPrice={minPriceParam} currentMaxPrice={maxPriceParam} category={categoryParam} search={searchParam} />
+            <ColorFilter category={categoryParam} search={searchParam} minPrice={minPriceParam} maxPrice={maxPriceParam} selectedColors={selectedColors} />
+            <SizeFilter category={categoryParam} search={searchParam} minPrice={minPriceParam} maxPrice={maxPriceParam} selectedSizes={selectedSizes} />
+            <BrandFilter category={categoryParam} search={searchParam} minPrice={minPriceParam} maxPrice={maxPriceParam} selectedBrands={selectedBrands} />
           </Suspense>
         </div>
       </MobileFiltersDrawer>

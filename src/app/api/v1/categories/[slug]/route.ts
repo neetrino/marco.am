@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { toApiErrorResponse } from "@/lib/api/next-route-error";
 import { categoriesService } from "@/lib/services/categories.service";
 
 export async function GET(
@@ -11,18 +12,9 @@ export async function GET(
     const { slug } = await params;
     const result = await categoriesService.findBySlug(slug, lang);
     return NextResponse.json(result);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ [CATEGORIES] Error:", error);
-    return NextResponse.json(
-      {
-        type: error.type || "https://api.shop.am/problems/internal-error",
-        title: error.title || "Internal Server Error",
-        status: error.status || 500,
-        detail: error.detail || error.message || "An error occurred",
-        instance: req.url,
-      },
-      { status: error.status || 500 }
-    );
+    return toApiErrorResponse(error, req.url);
   }
 }
 

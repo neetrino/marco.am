@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiClient, ApiError } from '../api-client';
+import { getApiLikeData, getErrorMessage, getThrownHttpStatus } from '../types/errors';
 
 /**
  * User interface
@@ -147,7 +148,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       window.dispatchEvent(new Event('auth-updated'));
 
       // Don't redirect here - let the login page handle redirect based on query params
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('❌ [AUTH] Login error:', error);
       
       // Extract error message from API response
@@ -164,15 +165,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } else {
           errorMessage = error.message || errorMessage;
         }
-      } else if (error.status === 401) {
-        errorMessage = error.message || 'Invalid email/phone or password';
-      } else if (error.status === 403) {
-        errorMessage = error.message || 'Your account has been blocked';
-      } else if (error.status === 400) {
-        errorMessage = error.message || 'Please provide email/phone and password';
-      } else if (error.message) {
-        // Use the error message directly if available
-        errorMessage = error.message;
+      } else {
+        const status = getThrownHttpStatus(error);
+        const msg = getErrorMessage(error);
+        if (status === 401) {
+          errorMessage = msg || 'Invalid email/phone or password';
+        } else if (status === 403) {
+          errorMessage = msg || 'Your account has been blocked';
+        } else if (status === 400) {
+          errorMessage = msg || 'Please provide email/phone and password';
+        } else if (msg) {
+          errorMessage = msg;
+        }
       }
 
       throw new Error(errorMessage);
@@ -228,26 +232,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.log('🔄 [AUTH] Redirecting to home page...');
       // Redirect to home page
       router.push('/');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('❌ [AUTH] Registration error:', error);
       console.error('❌ [AUTH] Error details:', {
-        message: error.message,
-        stack: error.stack,
-        name: error.name,
+        message: getErrorMessage(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        name: error instanceof Error ? error.name : undefined,
       });
       
       // Extract error message from API response
       let errorMessage = 'Registration failed. Please try again.';
       
-      if (error.message) {
+      const apiData = getApiLikeData(error);
+      const flatMessage = getErrorMessage(error);
+      if (flatMessage || apiData.data) {
         // Check if error has structured data
-        if ((error as any).data && (error as any).data.detail) {
-          errorMessage = (error as any).data.detail;
-        } else if ((error as any).data && (error as any).data.message) {
-          errorMessage = (error as any).data.message;
+        if (apiData.data?.detail) {
+          errorMessage = apiData.data.detail;
+        } else if (apiData.data?.message) {
+          errorMessage = apiData.data.message;
         } else {
           // Fallback to parsing error message
-          const errorText = error.message;
+          const errorText = flatMessage;
           if (errorText.includes('409') || errorText.includes('already exists') || errorText.includes('User already exists')) {
             errorMessage = 'User with this email or phone already exists';
           } else if (errorText.includes('400') || errorText.includes('Validation failed')) {

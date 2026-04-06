@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { toApiErrorResponse } from "@/lib/api/next-route-error";
+import { getErrorLogFields } from "@/lib/types/errors";
 import { authenticateToken, requireAdmin } from "@/lib/middleware/auth";
 import { adminService } from "@/lib/services/admin.service";
 
@@ -42,25 +44,12 @@ export async function GET(req: NextRequest) {
     console.log("✅ [ANALYTICS] Analytics data retrieved successfully");
     
     return NextResponse.json(result);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ [ANALYTICS] Error:", {
-      message: error.message,
-      stack: error.stack,
-      type: error.type,
-      status: error.status,
-      detail: error.detail,
+      ...getErrorLogFields(error),
       url: req.url,
     });
-    return NextResponse.json(
-      {
-        type: error.type || "https://api.shop.am/problems/internal-error",
-        title: error.title || "Internal Server Error",
-        status: error.status || 500,
-        detail: error.detail || error.message || "An error occurred",
-        instance: req.url,
-      },
-      { status: error.status || 500 }
-    );
+    return toApiErrorResponse(error, req.url);
   }
 }
 

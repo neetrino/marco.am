@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import type { FormEvent, ChangeEvent } from 'react';
 import { useTranslation } from '../../lib/i18n-client';
 import { apiClient } from '../../lib/api-client';
+import { getErrorMessage } from '../../lib/types/errors';
 
 // Icons
 const PhoneIcon = () => (
@@ -59,9 +60,9 @@ export default function ContactPage() {
       });
       
       alert(t('contact.form.submitSuccess') || 'Ձեր հաղորդագրությունը հաջողությամբ ուղարկվեց');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error submitting contact form:', error);
-      alert(t('contact.form.submitError') || 'Սխալ: ' + (error.message || 'Չհաջողվեց ուղարկել հաղորդագրությունը'));
+      alert(t('contact.form.submitError') || 'Սխալ: ' + (getErrorMessage(error) || 'Չհաջողվեց ուղարկել հաղորդագրությունը'));
     } finally {
       setSubmitting(false);
     }

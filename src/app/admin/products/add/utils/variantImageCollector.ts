@@ -29,7 +29,8 @@ export function collectVariantImagesFromColors(colors: ColorData[]): Set<string>
 export function collectVariantImagesFromProductVariants(variants: unknown[]): Set<string> {
   const variantImages = new Set<string>();
 
-  variants.forEach((variant: any) => {
+  variants.forEach((variantUnknown) => {
+    const variant = variantUnknown as { imageUrl?: unknown };
     if (variant.imageUrl) {
       if (typeof variant.imageUrl === 'string' && variant.imageUrl.startsWith('data:')) {
         variantImages.add(variant.imageUrl);

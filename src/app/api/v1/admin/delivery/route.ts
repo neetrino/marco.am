@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { toApiErrorResponse } from "@/lib/api/next-route-error";
+import { getErrorLogFields } from "@/lib/types/errors";
 import { authenticateToken, requireAdmin } from "@/lib/middleware/auth";
 import { adminService } from "@/lib/services/admin.service";
 
@@ -27,29 +29,12 @@ export async function GET(req: NextRequest) {
     console.log("✅ [ADMIN DELIVERY] Delivery settings fetched");
 
     return NextResponse.json(settings);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ [ADMIN DELIVERY] GET Error:", {
-      message: error?.message,
-      stack: error?.stack,
-      name: error?.name,
-      code: error?.code,
-      meta: error?.meta,
-      type: error?.type,
-      title: error?.title,
-      status: error?.status,
-      detail: error?.detail,
+      ...getErrorLogFields(error),
       fullError: error,
     });
-    return NextResponse.json(
-      {
-        type: error.type || "https://api.shop.am/problems/internal-error",
-        title: error.title || "Internal Server Error",
-        status: error.status || 500,
-        detail: error.detail || error.message || "An error occurred",
-        instance: req.url,
-      },
-      { status: error.status || 500 }
-    );
+    return toApiErrorResponse(error, req.url);
   }
 }
 
@@ -80,29 +65,12 @@ export async function PUT(req: NextRequest) {
     console.log("✅ [ADMIN DELIVERY] Delivery settings updated");
 
     return NextResponse.json(settings);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ [ADMIN DELIVERY] PUT Error:", {
-      message: error?.message,
-      stack: error?.stack,
-      name: error?.name,
-      code: error?.code,
-      meta: error?.meta,
-      type: error?.type,
-      title: error?.title,
-      status: error?.status,
-      detail: error?.detail,
+      ...getErrorLogFields(error),
       fullError: error,
     });
-    return NextResponse.json(
-      {
-        type: error.type || "https://api.shop.am/problems/internal-error",
-        title: error.title || "Internal Server Error",
-        status: error.status || 500,
-        detail: error.detail || error.message || "An error occurred",
-        instance: req.url,
-      },
-      { status: error.status || 500 }
-    );
+    return toApiErrorResponse(error, req.url);
   }
 }
 

@@ -7,6 +7,7 @@ import { apiClient } from '../lib/api-client';
 import { getStoredLanguage } from '../lib/language';
 import { useTranslation } from '../lib/i18n-client';
 import { useProductsFilters } from './ProductsFiltersProvider';
+import type { ColorOption } from './ColorFilter';
 
 interface SizeFilterProps {
   category?: string;
@@ -62,7 +63,10 @@ export function SizeFilter({ category, search, minPrice, maxPrice, selectedSizes
       if (maxPrice) params.maxPrice = maxPrice;
 
       // Fetch filters from API
-      const response = await apiClient.get<{ colors: any[]; sizes: SizeOption[] }>('/api/v1/products/filters', { params });
+      const response = await apiClient.get<{ colors: ColorOption[]; sizes: SizeOption[] }>(
+        '/api/v1/products/filters',
+        { params }
+      );
       
       setSizes(response.sizes || []);
     } catch (error) {

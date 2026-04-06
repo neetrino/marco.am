@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { toApiErrorResponse } from "@/lib/api/next-route-error";
+import { getErrorLogFields } from "@/lib/types/errors";
 import { authenticateToken, requireAdmin } from "@/lib/middleware/auth";
 import { adminService } from "@/lib/services/admin.service";
 
@@ -176,27 +178,12 @@ export async function GET(req: NextRequest) {
     });
     
     return NextResponse.json(result);
-  } catch (error: any) {
-    const totalTime = Date.now() - requestStartTime;
+  } catch (error: unknown) {
     console.error("❌ [ADMIN PRODUCTS API] GET Error:", {
-      message: error?.message,
-      stack: error?.stack,
-      name: error?.name,
-      type: error?.type,
-      status: error?.status,
-      time: `${totalTime}ms`,
+      ...getErrorLogFields(error),
+      time: `${Date.now() - requestStartTime}ms`,
     });
-    
-    return NextResponse.json(
-      {
-        type: error.type || "https://api.shop.am/problems/internal-error",
-        title: error.title || "Internal Server Error",
-        status: error.status || 500,
-        detail: error.detail || error.message || "An error occurred",
-        instance: req.url,
-      },
-      { status: error.status || 500 }
-    );
+    return toApiErrorResponse(error, req.url);
   }
 }
 
@@ -215,7 +202,7 @@ export async function GET(req: NextRequest) {
  * - published: boolean (required)
  * - featured?: boolean
  * - locale: string (required)
- * - media?: any[]
+ * - media?: unknown[]
  * - labels?: Array<{type: string, value: string, position: string, color?: string}>
  * - attributeIds?: string[]
  * - variants: Array<{price: string|number, compareAtPrice?: string|number, stock: string|number, sku?: string, color?: string, size?: string, imageUrl?: string, published?: boolean}> (required)
@@ -338,32 +325,17 @@ export async function POST(req: NextRequest) {
     
     const totalTime = Date.now() - requestStartTime;
     console.log(`✅ [ADMIN PRODUCTS API] Product created in ${totalTime}ms (service: ${serviceTime}ms)`, {
-      productId: product.id,
-      title: product.title,
+      productId: product?.id,
+      title: product?.translations?.[0]?.title,
     });
 
     return NextResponse.json(product, { status: 201 });
-  } catch (error: any) {
-    const totalTime = Date.now() - requestStartTime;
+  } catch (error: unknown) {
     console.error("❌ [ADMIN PRODUCTS API] POST Error:", {
-      message: error?.message,
-      stack: error?.stack,
-      name: error?.name,
-      type: error?.type,
-      status: error?.status,
-      time: `${totalTime}ms`,
+      ...getErrorLogFields(error),
+      time: `${Date.now() - requestStartTime}ms`,
     });
-    
-    return NextResponse.json(
-      {
-        type: error.type || "https://api.shop.am/problems/internal-error",
-        title: error.title || "Internal Server Error",
-        status: error.status || 500,
-        detail: error.detail || error.message || "An error occurred",
-        instance: req.url,
-      },
-      { status: error.status || 500 }
-    );
+    return toApiErrorResponse(error, req.url);
   }
 }
 

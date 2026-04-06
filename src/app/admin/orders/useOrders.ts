@@ -3,8 +3,16 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { apiClient } from '../../../lib/api-client';
+import { getErrorMessage } from '../../../lib/types/errors';
 import { useTranslation } from '../../../lib/i18n-client';
 import { formatPriceInCurrency, convertPrice, getStoredCurrency, initializeCurrencyRates, CurrencyCode } from '../../../lib/currency';
+import type { Address } from '../../profile/types';
+
+/** Shipping/billing payload may include legacy API field names. */
+export type OrderDetailsAddress = Address & {
+  address?: string;
+  shippingPhone?: string;
+};
 
 export interface Order {
   id: string;
@@ -62,8 +70,8 @@ export interface OrderDetails {
     firstName: string | null;
     lastName: string | null;
   } | null;
-  billingAddress?: any | null;
-  shippingAddress?: any | null;
+  billingAddress?: OrderDetailsAddress | null;
+  shippingAddress?: OrderDetailsAddress | null;
   shippingMethod?: string | null;
   notes?: string | null;
   adminNotes?: string | null;
@@ -89,7 +97,7 @@ export interface OrderDetails {
       value?: string;
       label?: string;
       imageUrl?: string;
-      colors?: string[] | any;
+      colors?: string[] | null;
     }>;
   }>;
   createdAt: string;
@@ -231,9 +239,9 @@ export function useOrders() {
     try {
       const response = await apiClient.get<OrderDetails>(`/api/v1/admin/orders/${orderId}`);
       setOrderDetails(response);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('❌ [ADMIN] Failed to load order details:', err);
-      alert(err?.message || t('admin.orders.orderDetails.failedToLoad'));
+      alert(getErrorMessage(err) || t('admin.orders.orderDetails.failedToLoad'));
       setSelectedOrderId(null);
     } finally {
       setLoadingOrderDetails(false);
@@ -293,9 +301,9 @@ export function useOrders() {
             const response = await apiClient.delete(`/api/v1/admin/orders/${id}`);
             console.log('✅ [ADMIN] Order deleted successfully:', id, response);
             return { id, success: true };
-          } catch (error: any) {
+          } catch (error: unknown) {
             console.error('❌ [ADMIN] Failed to delete order:', id, error);
-            return { id, success: false, error: error.message || t('admin.common.unknownErrorFallback') };
+            return { id, success: false, error: getErrorMessage(error) || t('admin.common.unknownErrorFallback') };
           }
         })
       );

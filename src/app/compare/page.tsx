@@ -11,6 +11,7 @@ import { formatPrice, getStoredCurrency } from '../../lib/currency';
 import { getStoredLanguage } from '../../lib/language';
 import { useTranslation } from '../../lib/i18n-client';
 import { useAuth } from '../../lib/auth/AuthContext';
+import { getErrorMessage } from '../../lib/types/errors';
 
 interface Product {
   id: string;
@@ -219,9 +220,10 @@ export default function ComparePage() {
 
       // Trigger cart update event
       window.dispatchEvent(new Event('cart-updated'));
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error adding to cart:', error);
-      if (error.message?.includes('401') || error.message?.includes('Unauthorized')) {
+      const msg = getErrorMessage(error);
+      if (msg.includes('401') || msg.includes('Unauthorized')) {
         router.push(`/login?redirect=/compare`);
       }
     } finally {

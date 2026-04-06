@@ -5,7 +5,7 @@ import type { ProductLabel } from '../types';
 interface UseLabelManagementReturn {
   addLabel: () => void;
   removeLabel: (index: number) => void;
-  updateLabel: (index: number, field: keyof ProductLabel, value: any) => void;
+  updateLabel: (index: number, field: keyof ProductLabel, value: ProductLabel[keyof ProductLabel]) => void;
 }
 
 export function useLabelManagement(
@@ -26,7 +26,7 @@ export function useLabelManagement(
     setLabels((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const updateLabel = (index: number, field: keyof ProductLabel, value: any) => {
+  const updateLabel = (index: number, field: keyof ProductLabel, value: ProductLabel[keyof ProductLabel]) => {
     setLabels((prev) => {
       const newLabels = [...prev];
       newLabels[index] = { ...newLabels[index], [field]: value };

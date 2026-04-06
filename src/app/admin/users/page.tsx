@@ -6,6 +6,7 @@ import { useAuth } from '../../../lib/auth/AuthContext';
 import { Card, Button, Input } from '@shop/ui';
 import { apiClient } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
+import { getErrorMessage } from '../../../lib/types/errors';
 
 interface User {
   id: string;
@@ -154,9 +155,9 @@ export default function UsersPage() {
       } else {
         alert(t('admin.users.userActive').replace('{name}', userName));
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('❌ [ADMIN] Error updating user status:', err);
-      alert(t('admin.users.errorUpdatingStatus').replace('{message}', err.message || t('admin.common.unknownErrorFallback')));
+      alert(t('admin.users.errorUpdatingStatus').replace('{message}', getErrorMessage(err) || t('admin.common.unknownErrorFallback')));
     }
   };
 

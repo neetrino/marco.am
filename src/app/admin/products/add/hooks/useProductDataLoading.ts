@@ -148,7 +148,7 @@ export function useProductDataLoading({
             }))
           );
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('❌ [ADMIN] Error fetching data:', err);
       }
     };

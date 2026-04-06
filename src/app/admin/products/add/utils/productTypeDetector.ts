@@ -10,11 +10,12 @@ export function hasVariantsWithAttributes(variants: unknown[]): boolean {
     return false;
   }
 
-  return variants.some((variant: any) => {
-    if (variant.attributes && typeof variant.attributes === 'object' && Object.keys(variant.attributes).length > 0) {
+  return variants.some((variant) => {
+    const rec = variant as Record<string, unknown>;
+    if (rec.attributes && typeof rec.attributes === 'object' && rec.attributes !== null && Object.keys(rec.attributes).length > 0) {
       return true;
     }
-    if (variant.options && Array.isArray(variant.options) && variant.options.length > 0) {
+    if (Array.isArray(rec.options) && rec.options.length > 0) {
       return true;
     }
     return false;

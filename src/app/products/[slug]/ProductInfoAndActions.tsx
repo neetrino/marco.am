@@ -8,7 +8,7 @@ import type { LanguageCode } from '../../../lib/language';
 import { sanitizeHtml } from '../../../lib/utils/sanitize';
 import { CompareIcon } from '../../../components/icons/CompareIcon';
 import { ProductAttributesSelector } from './ProductAttributesSelector';
-import type { Product, ProductVariant } from './types';
+import type { Product, ProductVariant, AttributeGroupValue, VariantOption, ProductAttribute } from './types';
 
 interface ProductInfoAndActionsProps {
   product: Product;
@@ -33,7 +33,7 @@ interface ProductInfoAndActionsProps {
   showMessage: string | null;
   isLoggedIn: boolean;
   currentVariant: ProductVariant | null;
-  attributeGroups: Map<string, any[]>;
+  attributeGroups: Map<string, AttributeGroupValue[]>;
   selectedColor: string | null;
   selectedSize: string | null;
   selectedAttributeValues: Map<string, string>;
@@ -47,7 +47,7 @@ interface ProductInfoAndActionsProps {
   onColorSelect: (color: string) => void;
   onSizeSelect: (size: string) => void;
   onAttributeValueSelect: (attrKey: string, value: string) => void;
-  getOptionValue: (options: any[] | undefined, key: string) => string | null;
+  getOptionValue: (options: VariantOption[] | undefined, key: string) => string | null;
   getRequiredAttributesMessage: () => string;
 }
 
@@ -198,7 +198,7 @@ export function ProductInfoAndActions({
           <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg">
             <p className="text-sm text-red-800 font-medium">
               {Array.from(unavailableAttributes.entries()).map(([attrKey]) => {
-                const productAttr = product?.productAttributes?.find((pa: any) => pa.attribute?.key === attrKey);
+                const productAttr = product?.productAttributes?.find((pa: ProductAttribute) => pa.attribute?.key === attrKey);
                 const attributeName = productAttr?.attribute?.name || attrKey.charAt(0).toUpperCase() + attrKey.slice(1);
                 return attrKey === 'color' ? t(language, 'product.color') : 
                        attrKey === 'size' ? t(language, 'product.size') : 

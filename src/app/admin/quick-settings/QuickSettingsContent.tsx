@@ -22,6 +22,15 @@ interface AdminBrand {
   logoUrl?: string;
 }
 
+/** Matches admin product list rows used for per-product discounts. */
+interface QuickSettingsProductRow {
+  id: string;
+  title: string;
+  image?: string;
+  price?: number;
+  discountPercent?: number;
+}
+
 interface QuickSettingsContentProps {
   currentPath: string;
   router: ReturnType<typeof useRouter>;
@@ -45,7 +54,7 @@ interface QuickSettingsContentProps {
   clearBrandDiscount: (brandId: string) => void;
   handleBrandDiscountSave: () => void;
   brandSaving: boolean;
-  products: any[];
+  products: QuickSettingsProductRow[];
   productsLoading: boolean;
   productDiscounts: Record<string, number>;
   setProductDiscounts: React.Dispatch<React.SetStateAction<Record<string, number>>>;

@@ -3,17 +3,7 @@
 import { processImageUrl } from '../../../lib/utils/image-utils';
 import { t, getAttributeLabel } from '../../../lib/i18n';
 import type { LanguageCode } from '../../../lib/language';
-import type { Product, ProductVariant } from './types';
-
-interface AttributeGroupValue {
-  valueId?: string;
-  value: string;
-  label: string;
-  stock: number;
-  variants: ProductVariant[];
-  imageUrl?: string | null;
-  colors?: string[] | null;
-}
+import type { Product, ProductVariant, AttributeGroupValue, VariantOption, ProductAttribute } from './types';
 
 interface ProductAttributesSelectorProps {
   product: Product;
@@ -38,7 +28,7 @@ interface ProductAttributesSelectorProps {
   onAttributeValueSelect: (attrKey: string, value: string) => void;
   onQuantityAdjust: (delta: number) => void;
   onAddToCart: () => Promise<void>;
-  getOptionValue: (options: any[] | undefined, key: string) => string | null;
+  getOptionValue: (options: VariantOption[] | undefined, key: string) => string | null;
   getRequiredAttributesMessage: () => string;
 }
 
@@ -84,7 +74,7 @@ export function ProductAttributesSelector({
         // Use attributeGroups which contains all attributes (from productAttributes and variants)
         Array.from(attributeGroups.entries()).map(([attrKey, attrGroups]) => {
           // Try to get attribute name from productAttributes if available
-          const productAttr = product?.productAttributes?.find((pa: any) => pa.attribute?.key === attrKey);
+          const productAttr = product?.productAttributes?.find((pa: ProductAttribute) => pa.attribute?.key === attrKey);
           const attributeName = productAttr?.attribute?.name || attrKey.charAt(0).toUpperCase() + attrKey.slice(1);
           const isColor = attrKey === 'color';
           const isSize = attrKey === 'size';

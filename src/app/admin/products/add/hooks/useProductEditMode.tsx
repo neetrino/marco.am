@@ -1,9 +1,19 @@
 import { useEffect } from 'react';
+import type { Dispatch, SetStateAction } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api-client';
 import { convertPrice, type CurrencyCode } from '@/lib/currency';
 import { cleanImageUrls, separateMainAndVariantImages } from '@/lib/utils/image-utils';
-import type { ProductData, ColorData, Variant } from '../types';
+import type {
+  ProductData,
+  ColorData,
+  Variant,
+  Attribute,
+  AdminProductVariantRow,
+  SimpleProductFormData,
+} from '../types';
+import type { AddProductFormState } from '../utils/productFormDataBuilder';
+import type { ProductVariantForConversion } from '@/types/product-variant-for-conversion';
 import { useTranslation } from '@/lib/i18n-client';
 import { extractColor, extractSize } from '../utils/variantAttributeExtraction';
 import {
@@ -23,17 +33,17 @@ interface UseProductEditModeProps {
   productId: string | null;
   isLoggedIn: boolean;
   isAdmin: boolean;
-  attributes: any[];
+  attributes: Attribute[];
   defaultCurrency: CurrencyCode;
   setLoadingProduct: (loading: boolean) => void;
-  setFormData: (updater: (prev: any) => any) => void;
+  setFormData: Dispatch<SetStateAction<AddProductFormState>>;
   setUseNewBrand: (use: boolean) => void;
   setUseNewCategory: (use: boolean) => void;
   setNewBrandName: (name: string) => void;
   setNewCategoryName: (name: string) => void;
   setHasVariantsToLoad: (has: boolean) => void;
   setProductType: (type: 'simple' | 'variable') => void;
-  setSimpleProductData: (data: any) => void;
+  setSimpleProductData: Dispatch<SetStateAction<SimpleProductFormData>>;
 }
 
 export function useProductEditMode({
@@ -68,7 +78,8 @@ export function useProductEditMode({
           let firstCompareAtPrice = '';
           let firstSku = '';
 
-          (product.variants || []).forEach((variant: any, index: number) => {
+          (product.variants || []).forEach((variant: AdminProductVariantRow, index: number) => {
+            const variantForForm = variant as unknown as Variant;
             console.log(`🔍 [ADMIN] Processing variant ${index}:`, {
               id: variant.id,
               sku: variant.sku,
@@ -80,8 +91,8 @@ export function useProductEditMode({
               imageUrl: variant.imageUrl,
             });
 
-            const color = extractColor(variant);
-            const size = extractSize(variant);
+            const color = extractColor(variantForForm);
+            const size = extractSize(variantForForm);
 
             console.log(`📊 [ADMIN] Extracted from variant ${index}:`, { color, size });
 
@@ -94,7 +105,7 @@ export function useProductEditMode({
 
               if (!colorDataMap.has(defaultColor)) {
                 const colorData = createDefaultColorData(
-                  variant,
+                  variantForForm,
                   defaultCurrency,
                   defaultColorLabel,
                   size,
@@ -103,23 +114,30 @@ export function useProductEditMode({
                 colorDataMap.set(defaultColor, colorData);
               } else {
                 const existingColorData = colorDataMap.get(defaultColor)!;
-                updateDefaultColorData(existingColorData, variant, defaultCurrency, size, stockValue);
+                updateDefaultColorData(existingColorData, variantForForm, defaultCurrency, size, stockValue);
               }
             } else if (color) {
               if (!colorDataMap.has(color)) {
-                const colorData = createColorData(variant, color, attributes, defaultCurrency, size, stockValue);
+                const colorData = createColorData(variantForForm, color, attributes, defaultCurrency, size, stockValue);
                 colorDataMap.set(color, colorData);
               } else {
                 const existingColorData = colorDataMap.get(color)!;
-                updateColorData(existingColorData, variant, defaultCurrency, size, stockValue);
+                updateColorData(existingColorData, variantForForm, defaultCurrency, size, stockValue);
               }
             }
 
             if (index === 0) {
-              const firstPriceUSD = variant.price !== undefined && variant.price !== null ? variant.price : 0;
+              const firstPriceUSD =
+                variant.price !== undefined && variant.price !== null
+                  ? typeof variant.price === 'number'
+                    ? variant.price
+                    : parseFloat(String(variant.price)) || 0
+                  : 0;
               const firstCompareAtPriceUSD =
                 variant.compareAtPrice !== undefined && variant.compareAtPrice !== null
-                  ? variant.compareAtPrice
+                  ? typeof variant.compareAtPrice === 'number'
+                    ? variant.compareAtPrice
+                    : parseFloat(String(variant.compareAtPrice)) || 0
                   : 0;
               firstPrice =
                 firstPriceUSD > 0 ? String(convertPrice(firstPriceUSD, 'USD', defaultCurrency)) : '';
@@ -161,15 +179,15 @@ export function useProductEditMode({
           );
 
           const featuredIndexFromApi = Array.isArray(mediaList)
-            ? mediaList.findIndex((item: any) => {
+            ? mediaList.findIndex((item: string | { url?: string; isFeatured?: boolean }) => {
                 const url = typeof item === 'string' ? item : item?.url || '';
                 if (!url) return false;
-                return typeof item === 'object' && item?.isFeatured === true;
+                return typeof item === 'object' && item !== null && item.isFeatured === true;
               })
             : -1;
 
           const mainProductImage =
-            (product as any).mainProductImage || (normalizedMedia.length > 0 ? normalizedMedia[0] : '');
+            product.mainProductImage || (normalizedMedia.length > 0 ? normalizedMedia[0] : '');
 
           const formData = buildFormData(
             product,
@@ -179,7 +197,7 @@ export function useProductEditMode({
             mergedVariant
           );
 
-          setFormData((prev: any) => ({
+          setFormData((prev) => ({
             ...prev,
             ...formData,
           }));
@@ -190,12 +208,12 @@ export function useProductEditMode({
           setNewCategoryName('');
 
           if (product.variants && product.variants.length > 0) {
-            (window as any).__productVariantsToConvert = product.variants;
+            window.__productVariantsToConvert = product.variants as ProductVariantForConversion[];
             setHasVariantsToLoad(true);
           }
 
           if (product.attributeIds && product.attributeIds.length > 0) {
-            (window as any).__productAttributeIds = product.attributeIds;
+            window.__productAttributeIds = product.attributeIds;
             console.log('📋 [ADMIN] Product attributeIds loaded:', product.attributeIds);
           }
 
@@ -203,26 +221,22 @@ export function useProductEditMode({
           const hasVariants = variants.length > 0;
           const hasVariantsWithAttrs = hasVariantsWithAttributes(variants);
 
+          const firstRow = variants[0];
           console.log('📦 [ADMIN] Product type check:', {
             hasVariants,
             variantsCount: variants.length,
             hasVariantsWithAttributes: hasVariantsWithAttrs,
             firstVariant:
-              hasVariants && variants.length > 0
+              hasVariants && firstRow
                 ? {
                     hasAttributes: !!(
-                      variants[0] &&
-                      (variants[0] as any).attributes &&
-                      typeof (variants[0] as any).attributes === 'object' &&
-                      Object.keys((variants[0] as any).attributes).length > 0
+                      firstRow.attributes &&
+                      typeof firstRow.attributes === 'object' &&
+                      Object.keys(firstRow.attributes).length > 0
                     ),
-                    hasOptions: !!(
-                      (variants[0] as any).options &&
-                      Array.isArray((variants[0] as any).options) &&
-                      (variants[0] as any).options.length > 0
-                    ),
-                    attributes: (variants[0] as any).attributes,
-                    optionsCount: ((variants[0] as any).options?.length || 0),
+                    hasOptions: !!(firstRow.options && Array.isArray(firstRow.options) && firstRow.options.length > 0),
+                    attributes: firstRow.attributes,
+                    optionsCount: firstRow.options?.length || 0,
                   }
                 : null,
           });
@@ -232,9 +246,9 @@ export function useProductEditMode({
             setProductType('simple');
 
             if (hasVariants && variants.length > 0) {
-              const firstVariant = variants[0] as any;
+              const firstVariant = variants[0];
               setSimpleProductData({
-                price: firstVariant.price
+                price: firstVariant?.price
                   ? String(
                       convertPrice(
                         typeof firstVariant.price === 'number'
@@ -245,7 +259,7 @@ export function useProductEditMode({
                       )
                     )
                   : '',
-                compareAtPrice: firstVariant.compareAtPrice
+                compareAtPrice: firstVariant?.compareAtPrice
                   ? String(
                       convertPrice(
                         typeof firstVariant.compareAtPrice === 'number'
@@ -256,8 +270,8 @@ export function useProductEditMode({
                       )
                     )
                   : '',
-                sku: firstVariant.sku || '',
-                quantity: String(firstVariant.stock || 0),
+                sku: firstVariant?.sku || '',
+                quantity: String(firstVariant?.stock ?? 0),
               });
             } else {
               setSimpleProductData({

@@ -1,4 +1,5 @@
 import { apiClient } from '@/lib/api-client';
+import { getApiLikeData, getErrorMessage } from '@/lib/types/errors';
 import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 import type { Attribute } from '../types';
 
@@ -13,11 +14,11 @@ interface CreateAndSubmitPayloadProps {
     imageUrls: string[];
     featuredImageIndex: number;
     mainProductImage: string;
-    labels: any[];
+    labels: Array<{ type: string; value: string; position: string; color?: string | null }>;
   };
   finalBrandIds: string[];
   finalPrimaryCategoryId: string;
-  variants: any[];
+  variants: unknown[];
   attributeIds: string[];
   finalMedia: string[];
   mainImage: string | null;
@@ -42,7 +43,7 @@ export async function createAndSubmitPayload({
   setLoading,
   router,
 }: CreateAndSubmitPayloadProps): Promise<void> {
-  const payload: any = {
+  const payload: Record<string, unknown> = {
       title: formData.title,
       slug: formData.slug,
       descriptionHtml: formData.descriptionHtml || undefined,
@@ -91,26 +92,23 @@ export async function createAndSubmitPayload({
       }
       
       router.push('/admin/products');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('❌ [ADMIN] Error saving product:', err);
       
       let errorMessage = isEditMode ? 'Չհաջողվեց թարմացնել ապրանքը' : 'Չհաջողվեց ստեղծել ապրանքը';
-      
-      if (err?.data?.detail) {
-        errorMessage = err.data.detail;
-      } else if (err?.response?.data?.detail) {
-        errorMessage = err.response.data.detail;
-      } else if (err?.message) {
-        if (err.message.includes('<!DOCTYPE') || err.message.includes('<html')) {
-          const mongoErrorMatch = err.message.match(/MongoServerError[^<]+/);
-          if (mongoErrorMatch) {
-            errorMessage = `Տվյալների բազայի սխալ: ${mongoErrorMatch[0]}`;
-          } else {
-            errorMessage = 'Տվյալների բազայի սխալ: SKU-ն արդեն օգտագործված է կամ այլ սխալ:';
-          }
+      const api = getApiLikeData(err);
+      const msg = getErrorMessage(err);
+      if (api.data?.detail) {
+        errorMessage = api.data.detail;
+      } else if (msg.includes('<!DOCTYPE') || msg.includes('<html')) {
+        const mongoErrorMatch = msg.match(/MongoServerError[^<]+/);
+        if (mongoErrorMatch) {
+          errorMessage = `Տվյալների բազայի սխալ: ${mongoErrorMatch[0]}`;
         } else {
-          errorMessage = err.message;
+          errorMessage = 'Տվյալների բազայի սխալ: SKU-ն արդեն օգտագործված է կամ այլ սխալ:';
         }
+      } else if (msg) {
+        errorMessage = msg;
       }
       
       throw err;

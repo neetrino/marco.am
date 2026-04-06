@@ -108,7 +108,7 @@ export function useVariantGeneration({
   };
 
   useEffect(() => {
-    if (isEditMode && productId && (window as any).__productVariantsToConvert) {
+    if (isEditMode && productId && window.__productVariantsToConvert) {
       return;
     }
 

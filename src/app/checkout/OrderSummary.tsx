@@ -3,20 +3,7 @@
 import { Card, Button } from '@shop/ui';
 import { useTranslation } from '../../lib/i18n-client';
 import { formatPriceInCurrency } from '../../lib/currency';
-
-interface Cart {
-  id: string;
-  items: any[];
-  totals: {
-    subtotal: number;
-    discount: number;
-    shipping: number;
-    tax: number;
-    total: number;
-    currency: string;
-  };
-  itemsCount: number;
-}
+import type { Cart } from './types';
 
 interface OrderSummaryProps {
   cart: Cart | null;

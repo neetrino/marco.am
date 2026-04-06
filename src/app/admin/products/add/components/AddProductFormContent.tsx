@@ -94,7 +94,7 @@ interface AddProductFormContentProps {
   onOpenValueModal: (modal: { variantId: string; attributeId: string } | null) => void;
   onAddLabel: () => void;
   onRemoveLabel: (index: number) => void;
-  onUpdateLabel: (index: number, field: keyof ProductLabel, value: any) => void;
+  onUpdateLabel: (index: number, field: keyof ProductLabel, value: ProductLabel[keyof ProductLabel]) => void;
   onFeaturedChange: (featured: boolean) => void;
   onVariantsUpdate: (updater: (prev: Variant[]) => Variant[]) => void;
   onApplyToAllVariants: (field: 'price' | 'compareAtPrice' | 'stock' | 'sku', value: string) => void;
