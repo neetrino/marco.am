@@ -83,6 +83,7 @@ function SofaCard() {
     <>
       {/* Stacked card backgrounds (scaleY-flip creates depth illusion) — scaled to MASK_BG_* */}
       <div className="absolute bg-white rounded-[36px] -scale-y-100" style={{ left: x(162), top: by(204), width: bx(629), height: by(475) }} />
+      <div className="absolute bg-white rounded-[36px] -scale-y-100" style={{ left: x(162), top: by(204), width: bx(629), height: by(475) }} />
       <div className="absolute bg-[#c7c7c7] rounded-[36px] -scale-y-100" style={{ left: x(162), top: by(260), width: bx(629), height: by(477) }} />
       <div className="absolute bg-[#2f4b5d] rounded-[36px] -scale-y-100" style={{ left: x(162), top: by(323), width: bx(631), height: by(481) }} />
 
@@ -142,7 +143,7 @@ function DeliveryCard() {
         />
       </div>
 
-      {/* Arrow/link icon — top-right of card */}
+      Arrow/link icon — top-right of card
       <div className="absolute" style={{ left: bx(1194), top: by(52), width: bx(87), height: by(87) }}>
         <Image src={ASSETS.linkIcon1} alt="" fill className="object-contain" unoptimized />
       </div>
@@ -178,9 +179,9 @@ function ElectronicsCard() {
         80%
       </p>
 
-      {/* Product image with warm-glow shadow */}
+      {/* Product image */}
       <div
-        className="absolute shadow-[0px_0px_25px_0px_rgba(66,50,0,0.8)]"
+        className="absolute"
         style={{ left: bx(1412), top: by(96), width: bx(389), height: by(366) }}
       >
         <Image src={ASSETS.sofa} alt="Product" fill className="object-cover" unoptimized />
