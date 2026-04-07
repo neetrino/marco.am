@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { montserratArm } from '../fonts/montserrat-arm';
 import { CtaArrowCircleIcon } from './icons/CtaArrowCircleIcon';
+import { MessageSolidIcon } from './icons/MessageSolidIcon';
 import { useTranslation } from '../lib/i18n-client';
 
 /**
@@ -22,6 +23,8 @@ const ASSETS = {
   linkIcon2:     'https://www.figma.com/api/mcp/asset/01c4ecb0-959a-4403-a191-8d4fe959ea88',
   /** BANNER2 1 — Figma node 305:2151, downloaded locally (404×557 px). */
   banner2:       '/images/home-banner-305-2151.png',
+  /** Ellipse 87 — Figma node 101:4070; soft white circle + shadow (100×100 ref px). */
+  ellipse87:     'https://www.figma.com/api/mcp/asset/31e7a0d8-5588-4ef0-bf2f-1a635a53a79e',
 } as const;
 
 /** Armenian copy for fixed-layout banner blocks (Figma). */
@@ -63,6 +66,13 @@ const PROMO_COPY_LEFT_REF = 880;
 
 /** Right inset (layout-ref) for the lower promo strip so the help CTA can align right. */
 const PROMO_STRIP_RIGHT_REF = 48;
+
+/**
+ * Ellipse 87 — Figma 101:4070 (MARCO): 100×100 px frame; inner icon (mynaui:message-solid).
+ * @see https://www.figma.com/design/7PlNcJ5BjWztGqYNYfsH2D/MARCO?node-id=101-4070
+ */
+const ELLIPSE87_BOX_PX = 80;
+const ELLIPSE87_ICON_PX = 40;
 
 /**
  * Middle delivery card (878) — same horizontal inset as electronics card CTA (1394 − 1312 = 82 ref px).
@@ -143,7 +153,7 @@ function DeliveryCard() {
         />
       </div>
 
-      Arrow/link icon — top-right of card
+      {/* Arrow/link icon — top-right of card */}
       <div className="absolute" style={{ left: bx(1194), top: by(52), width: bx(87), height: by(87) }}>
         <Image src={ASSETS.linkIcon1} alt="" fill className="object-contain" unoptimized />
       </div>
@@ -215,6 +225,37 @@ function ElectronicsCard() {
 }
 
 /**
+ * Ellipse 87 (Figma 101:4070) + message icon — to the right of the help CTA, vertically centered.
+ */
+function HelpPromoEllipse() {
+  return (
+    <div
+      className="pointer-events-none relative shrink-0"
+      style={{ width: ELLIPSE87_BOX_PX, height: ELLIPSE87_BOX_PX }}
+    >
+      <div className="relative size-full">
+        <div className="absolute inset-[-24%]">
+          <div className="relative size-full">
+            <Image
+              src={ASSETS.ellipse87}
+              alt=""
+              fill
+              className="block max-w-none object-contain"
+              unoptimized
+            />
+          </div>
+        </div>
+        <div className="absolute inset-0 z-10 flex items-center justify-center text-[#2F4B5D]">
+          <div style={{ width: ELLIPSE87_ICON_PX, height: ELLIPSE87_ICON_PX }}>
+            <MessageSolidIcon className="size-full shrink-0" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
  * Home page hero banner — background plate from Figma node 305:2146 (Mask group 1).
  * Texture 1651 × 925 px; overlay scaled from Figma ref 1714 × 924 to match.
  */
@@ -260,7 +301,7 @@ export function HomeBanner() {
           <DeliveryCard />
           <ElectronicsCard />
 
-          {/* Promo sub-copy (original X) + help CTA below, aligned right in the strip */}
+          {/* Promo sub-copy + help CTA; Ellipse 87 to the right of the help button (same row, right-aligned) */}
           <div
             className="absolute z-20 flex flex-col gap-4"
             style={{
@@ -272,12 +313,15 @@ export function HomeBanner() {
             <p className="max-w-[min(560px,calc(100%-2rem))] whitespace-pre-line text-left text-[24px] font-bold leading-[1.15] text-white antialiased [text-shadow:0_1px_2px_rgba(0,0,0,0.25)]">
               {t('home.hero_banner_promo')}
             </p>
-            <Link
-              href="/contact"
-              className={`${montserratArm.className} flex h-[56px] w-[311px] shrink-0 flex-row items-center justify-center self-end rounded-[68px] bg-[#2F4B5D] px-8 py-4 text-center text-base font-bold leading-6 text-[#FFF] shadow-[0_4px_24px_0_rgba(150,150,150,0.28)] antialiased`}
-            >
-              {t('home.hero_help_cta')}
-            </Link>
+            <div className="flex flex-row items-center justify-end gap-3 self-end sm:gap-4">
+              <Link
+                href="/contact"
+                className={`${montserratArm.className} flex h-[56px] w-[311px] shrink-0 flex-row items-center justify-center rounded-[68px] bg-[#2F4B5D] px-8 py-4 text-center text-base font-bold leading-6 text-[#FFF] shadow-[0_4px_24px_0_rgba(150,150,150,0.28)] antialiased`}
+              >
+                {t('home.hero_help_cta')}
+              </Link>
+              <HelpPromoEllipse />
+            </div>
           </div>
         </div>
       </div>
