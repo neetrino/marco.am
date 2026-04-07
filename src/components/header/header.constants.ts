@@ -2,29 +2,30 @@
 export const HEADER_REELS_EXTERNAL_HREF = 'https://www.instagram.com/reels/';
 
 /**
- * Row 1 horizontal padding — Figma 111:4293 `px-[151px]` at max width.
+ * Row 1 horizontal padding — matches `.hero-section-inset` in `globals.css`
+ * (1rem → 1.5rem @ sm → 135px @ lg) so header and hero share the same left/right edges.
  */
-export const HEADER_FIGMA_PADDING_X_CLASS =
-  'px-3 sm:px-5 md:px-7 lg:px-10 xl:px-16 2xl:px-24 min-[1800px]:px-[151px]';
+export const HEADER_FIGMA_PADDING_X_CLASS = 'px-4 sm:px-6 lg:px-[135px]';
 
 /**
- * Row 2 horizontal padding — Figma 111:4273 `px-[150px]` at max width (even side inset).
+ * Row 2 horizontal padding — same inset as hero / row 1.
  */
-export const HEADER_FIGMA_ROW2_PADDING_X_CLASS =
-  'px-3 sm:px-5 md:px-7 lg:px-10 xl:px-16 2xl:px-24 min-[1800px]:px-[150px]';
+export const HEADER_FIGMA_ROW2_PADDING_X_CLASS = 'px-4 sm:px-6 lg:px-[135px]';
 
 /** Top row vertical padding — Figma 111:4293 `py-[6px]` */
 export const HEADER_FIGMA_PADDING_Y_CLASS = 'py-1.5';
 
-/** Gap between logo / nav / social / contact — Figma 214:1052 `gap-[54px]` (desktop header row) */
-export const HEADER_FIGMA_CLUSTER_GAP_CLASS = 'md:gap-x-[54px]';
+/** Gap between logo / nav / social / contact — scales down on smaller desktop to avoid horizontal scroll */
+export const HEADER_FIGMA_CLUSTER_GAP_CLASS =
+  'md:gap-x-4 lg:gap-x-6 xl:gap-x-10 2xl:gap-x-[54px]';
 
-/** Horizontal gap between primary nav links — Figma 111:4294 `gap-[45px]` (uniform between items) */
-export const HEADER_FIGMA_NAV_LINK_GAP_CLASS = 'gap-x-[45px]';
+/** Horizontal gap between primary nav links — full Figma spacing only on wide screens */
+export const HEADER_FIGMA_NAV_LINK_GAP_CLASS =
+  'gap-x-3 md:gap-x-4 lg:gap-x-6 xl:gap-x-8 2xl:gap-x-[45px]';
 
-/** Gap between phone and addresses — Figma 214:1051 `gap-[29px]` */
+/** Gap between phone and addresses — tight on md, full when space allows */
 export const HEADER_FIGMA_CONTACT_CLUSTER_GAP_CLASS =
-  'gap-x-2.5 md:gap-x-3 lg:gap-x-5 min-[1800px]:gap-x-[29px]';
+  'gap-x-2 md:gap-x-2.5 lg:gap-x-4 xl:gap-x-5 2xl:gap-x-[29px]';
 
 /** Categories + search — Figma 214:1053 `gap-[25px]` */
 export const HEADER_FIGMA_ROW2_LEFT_INNER_GAP_CLASS =

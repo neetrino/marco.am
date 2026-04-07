@@ -698,11 +698,11 @@ export function Header() {
         className={`hidden border-b border-marco-border bg-white md:block ${HEADER_FIGMA_PADDING_Y_CLASS}`}
       >
         <div
-          className={`mx-auto flex w-full max-w-[1920px] flex-nowrap items-center overflow-x-auto scrollbar-hide ${HEADER_FIGMA_CLUSTER_GAP_CLASS} ${HEADER_FIGMA_PADDING_X_CLASS}`}
+          className={`mx-auto flex w-full min-w-0 max-w-[1920px] flex-nowrap items-center ${HEADER_FIGMA_CLUSTER_GAP_CLASS} ${HEADER_FIGMA_PADDING_X_CLASS}`}
         >
           <MarcoLogo />
           <nav
-            className={`hidden shrink-0 flex-nowrap items-center ${HEADER_FIGMA_NAV_LINK_GAP_CLASS} text-sm font-bold capitalize leading-[18px] text-marco-text md:flex`}
+            className={`hidden shrink-0 flex-nowrap items-center ${HEADER_FIGMA_NAV_LINK_GAP_CLASS} text-xs font-bold capitalize leading-[18px] text-marco-text md:flex lg:text-sm`}
             aria-label="Main"
           >
             {primaryNavLinks.map((item) => {
@@ -733,30 +733,34 @@ export function Header() {
           </nav>
           <HeaderSocialCircleLinks className="shrink-0" />
           <div
-            className={`flex shrink-0 flex-nowrap items-center ${HEADER_FIGMA_CONTACT_CLUSTER_GAP_CLASS}`}
+            className={`flex min-w-0 shrink-0 flex-nowrap items-center ${HEADER_FIGMA_CONTACT_CLUSTER_GAP_CLASS}`}
           >
             <a
               href={telHref}
-              className="flex items-center gap-1.5 text-sm font-medium leading-[18px] text-marco-text"
+              className="flex shrink-0 items-center gap-1 text-xs font-medium leading-tight text-marco-text sm:gap-1.5 xl:text-sm xl:leading-[18px]"
             >
-              <Phone className="h-[17px] w-[17px] shrink-0" strokeWidth={1.75} aria-hidden />
+              <Phone className="h-4 w-4 shrink-0 xl:h-[17px] xl:w-[17px]" strokeWidth={1.75} aria-hidden />
               <span className="whitespace-nowrap">{phoneDisplay}</span>
-              <ChevronDownIcon />
+              <span className="hidden shrink-0 xl:inline-flex" aria-hidden>
+                <ChevronDownIcon />
+              </span>
             </a>
             <Link
               href="/stores"
-              className="flex items-center gap-1.5 text-sm font-medium leading-[18px] text-marco-text transition-opacity hover:opacity-80"
+              className="flex shrink-0 items-center gap-1 text-xs font-medium leading-tight text-marco-text transition-opacity hover:opacity-80 sm:gap-1.5 xl:text-sm xl:leading-[18px]"
             >
-              <MapPin className="h-[17px] w-[17px] shrink-0" strokeWidth={1.75} aria-hidden />
+              <MapPin className="h-4 w-4 shrink-0 xl:h-[17px] xl:w-[17px]" strokeWidth={1.75} aria-hidden />
               <span className="whitespace-nowrap">{t('common.navigation.addresses')}</span>
-              <ChevronDownIcon />
+              <span className="hidden shrink-0 xl:inline-flex" aria-hidden>
+                <ChevronDownIcon />
+              </span>
             </Link>
           </div>
         </div>
       </div>
 
       {/* Mobile — compact top */}
-      <div className="flex items-center justify-between gap-2 border-b border-marco-border px-3 py-2 md:hidden">
+      <div className="flex items-center justify-between gap-2 border-b border-marco-border px-4 py-2 md:hidden">
         <button
           type="button"
           onClick={() => setMobileMenuOpen(true)}
