@@ -123,18 +123,18 @@ function ElectronicsCard() {
         <Image src={ASSETS.rightCardBg} alt="" fill className="object-cover rounded-[36px]" unoptimized />
       </div>
 
-      {/* Discount badge — spans boundary between delivery and right card */}
-      <p className="absolute left-[1012px] top-[125px] text-[#facc15] text-[78px] leading-[63px] font-black whitespace-nowrap">
+      {/* Discount badge — inside the card, top-left */}
+      <p className="absolute left-[1350px] top-[137px] text-[#facc15] text-[78px] leading-[63px] font-black whitespace-nowrap">
         80%
       </p>
 
       {/* Product image with warm-glow shadow */}
-      <div className="absolute left-[1172px] top-[96px] w-[389px] h-[366px] shadow-[0px_0px_25px_0px_rgba(66,50,0,0.8)]">
+      <div className="absolute left-[1412px] top-[96px] w-[389px] h-[366px] shadow-[0px_0px_25px_0px_rgba(66,50,0,0.8)]">
         <Image src={ASSETS.sofa} alt="Product" fill className="object-cover" unoptimized />
       </div>
 
       {/* Sub-headline */}
-      <div className="absolute left-[1012px] top-[366px] font-black text-[28px] leading-[33px] whitespace-nowrap">
+      <div className="absolute left-[1350px] top-[378px] font-black text-[28px] leading-[33px] whitespace-nowrap">
         <p className="text-[#facc15]">{ARM.nor}</p>
         <p className="text-white">{ARM.serndi}</p>
         <p className="text-white">{ARM.smartphones}</p>
