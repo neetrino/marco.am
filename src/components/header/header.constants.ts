@@ -10,13 +10,11 @@ export const HEADER_FIGMA_PADDING_X_CLASS =
 /** Top row vertical padding — Figma 111:4293 `py-[6px]` */
 export const HEADER_FIGMA_PADDING_Y_CLASS = 'py-1.5';
 
-/** Gap between logo / nav / social / contact — Figma 214:1052 `gap-[54px]` */
-export const HEADER_FIGMA_CLUSTER_GAP_CLASS =
-  'gap-x-2.5 sm:gap-x-3 md:gap-x-4 lg:gap-x-6 xl:gap-x-8 2xl:gap-x-10 min-[1800px]:gap-x-[54px]';
+/** Gap between logo / nav / social / contact — Figma 214:1052 `gap-[54px]` (desktop header row) */
+export const HEADER_FIGMA_CLUSTER_GAP_CLASS = 'md:gap-x-[54px]';
 
-/** Horizontal gap between primary nav links — Figma 111:4294 `gap-[45px]` */
-export const HEADER_FIGMA_NAV_LINK_GAP_CLASS =
-  'gap-x-2 sm:gap-x-2.5 md:gap-x-3 lg:gap-x-5 xl:gap-x-7 2xl:gap-x-9 min-[1800px]:gap-x-[45px]';
+/** Horizontal gap between primary nav links — Figma 111:4294 `gap-[45px]` (uniform between items) */
+export const HEADER_FIGMA_NAV_LINK_GAP_CLASS = 'gap-x-[45px]';
 
 /** Gap between phone and addresses — Figma 214:1051 `gap-[29px]` */
 export const HEADER_FIGMA_CONTACT_CLUSTER_GAP_CLASS =
