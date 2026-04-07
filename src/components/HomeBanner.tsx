@@ -72,6 +72,15 @@ const PROMO_COPY_LEFT_REF = 880;
 const PROMO_STRIP_RIGHT_REF = 48;
 
 /**
+ * Middle delivery card (878) — same horizontal inset as electronics card CTA (1394 − 1312 = 82 ref px).
+ */
+const DELIVERY_CARD_LEFT_REF = 878;
+const ELECTRONICS_CARD_LEFT_REF = 1312;
+const ELECTRONICS_BUY_CTA_LEFT_REF = 1394;
+const DELIVERY_BUY_CTA_LEFT_REF =
+  DELIVERY_CARD_LEFT_REF + (ELECTRONICS_BUY_CTA_LEFT_REF - ELECTRONICS_CARD_LEFT_REF);
+
+/**
  * Left product card — sofa promo with stacked-card depth effect.
  */
 function SofaCard() {
@@ -142,6 +151,15 @@ function DeliveryCard() {
       <div className="absolute" style={{ left: bx(1194), top: by(52), width: bx(87), height: by(87) }}>
         <Image src={ASSETS.linkIcon1} alt="" fill className="object-contain" unoptimized />
       </div>
+
+      {/* CTA — Figma 305:2110: flex, padding, rounded 60px, bg #000 */}
+      <Link
+        href="/products"
+        className="absolute z-10 flex items-center justify-center rounded-[60px] bg-black pt-[15.929px] pb-[16.071px] pl-[72.5px] pr-[72.5px] text-[16px] font-bold leading-[24px] text-white antialiased"
+        style={{ left: bx(DELIVERY_BUY_CTA_LEFT_REF), top: by(502) }}
+      >
+        {ARM.gnel} {ARM.hima}
+      </Link>
     </>
   );
 }
@@ -178,7 +196,7 @@ function ElectronicsCard() {
         className="absolute font-black whitespace-nowrap antialiased"
         style={{ left: bx(1350), top: by(378), fontSize: bx(28), lineHeight: `${by(33)}px` }}
       >
-        <p className="text-[#facc15]">նոր</p>
+        <p className="text-[#facc15]">{ARM.nor}</p>
         <p className="text-white">{ARM.serndi}</p>
         <p className="text-white">{ARM.smartphones}</p>
       </div>
