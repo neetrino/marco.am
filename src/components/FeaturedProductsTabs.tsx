@@ -142,7 +142,7 @@ export function FeaturedProductsTabs() {
 
   return (
     <section className="py-16 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="page-shell">
         <h2 className="text-3xl font-bold text-gray-900 text-center">
           {t(language, 'home.featured_products.title')}
         </h2>

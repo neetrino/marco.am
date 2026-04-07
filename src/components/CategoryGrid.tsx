@@ -173,10 +173,10 @@ export function CategoryGrid() {
       // Get all categories including children (flatten the tree)
       const allCategories = flattenAllCategories(categoriesList);
       
-      logger.debug('📦 [CategoryGrid] Root categories found:', categoriesList.length);
-      logger.debug('📦 [CategoryGrid] Root categories:', categoriesList.map(c => c.title));
-      logger.debug('📦 [CategoryGrid] Total categories (including children):', allCategories.length);
-      logger.debug('📦 [CategoryGrid] All categories:', allCategories.map(c => c.title));
+      logger.debug('ðŸ“¦ [CategoryGrid] Root categories found:', categoriesList.length);
+      logger.debug('ðŸ“¦ [CategoryGrid] Root categories:', categoriesList.map(c => c.title));
+      logger.debug('ðŸ“¦ [CategoryGrid] Total categories (including children):', allCategories.length);
+      logger.debug('ðŸ“¦ [CategoryGrid] All categories:', allCategories.map(c => c.title));
       
       // Set categories immediately so they render
       setCategories(allCategories);
@@ -195,7 +195,7 @@ export function CategoryGrid() {
       const categoryPromises = allCategories.map(async (category) => {
         try {
           // Fetch products to get count and find one with image
-          logger.debug(`🔍 [CategoryGrid] Fetching products for category: "${category.title}" (slug: "${category.slug}")`);
+          logger.debug(`ðŸ” [CategoryGrid] Fetching products for category: "${category.title}" (slug: "${category.slug}")`);
           const productsResponse = await apiClient.get<ProductsResponse>('/api/v1/products', {
             params: {
               category: category.slug,
@@ -204,7 +204,7 @@ export function CategoryGrid() {
             },
           });
           
-          logger.debug(`📦 [CategoryGrid] Response for "${category.title}":`, {
+          logger.debug(`ðŸ“¦ [CategoryGrid] Response for "${category.title}":`, {
             total: productsResponse.meta?.total || 0,
             productsCount: productsResponse.data?.length || 0,
             firstProductId: productsResponse.data?.[0]?.id,
@@ -214,7 +214,7 @@ export function CategoryGrid() {
           
           // If category has 0 products, it might mean category was not found
           if (productsResponse.meta?.total === 0) {
-            console.warn(`⚠️ [CategoryGrid] Category "${category.title}" (${category.slug}) has 0 products - category might not exist in database`);
+            console.warn(`âš ï¸ [CategoryGrid] Category "${category.title}" (${category.slug}) has 0 products - category might not exist in database`);
           }
           
           counts[category.slug] = productsResponse.meta?.total || 0;
@@ -225,9 +225,9 @@ export function CategoryGrid() {
             : null;
           products[category.slug] = productWithImage;
           
-          logger.debug(`✅ [CategoryGrid] Category "${category.title}" (${category.slug}): ${counts[category.slug]} products, selected product: ${productWithImage?.id} (image: ${productWithImage?.image ? 'yes' : 'no'})`);
+          logger.debug(`âœ… [CategoryGrid] Category "${category.title}" (${category.slug}): ${counts[category.slug]} products, selected product: ${productWithImage?.id} (image: ${productWithImage?.image ? 'yes' : 'no'})`);
         } catch (err) {
-          console.error(`❌ [CategoryGrid] Error fetching products for category ${category.slug}:`, err);
+          console.error(`âŒ [CategoryGrid] Error fetching products for category ${category.slug}:`, err);
           // Keep default values (0 and null)
         }
       });
@@ -240,8 +240,8 @@ export function CategoryGrid() {
       setCategoryProducts(products);
       
       // Log final state to verify each category has unique product
-      logger.debug('✅ [CategoryGrid] All categories processed. Total:', allCategories.length);
-      logger.debug('📊 [CategoryGrid] Final category products mapping:', 
+      logger.debug('âœ… [CategoryGrid] All categories processed. Total:', allCategories.length);
+      logger.debug('ðŸ“Š [CategoryGrid] Final category products mapping:', 
         Object.entries(products).map(([slug, product]) => ({
           slug,
           productId: product?.id || 'null',
@@ -253,7 +253,7 @@ export function CategoryGrid() {
       const productIds = Object.values(products).map(p => p?.id).filter(Boolean);
       const uniqueProductIds = new Set(productIds);
       if (productIds.length !== uniqueProductIds.size) {
-        console.warn('⚠️ [CategoryGrid] WARNING: Some categories have the same product!', {
+        console.warn('âš ï¸ [CategoryGrid] WARNING: Some categories have the same product!', {
           totalProducts: productIds.length,
           uniqueProducts: uniqueProductIds.size,
           duplicates: productIds.filter((id, index) => productIds.indexOf(id) !== index)
@@ -273,7 +273,7 @@ export function CategoryGrid() {
   if (loading) {
     return (
       <div className="py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="page-shell">
           <div className="flex justify-center items-center gap-6 md:gap-8 lg:gap-12 flex-wrap">
             {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
               <div key={i} className="flex flex-col items-center gap-3 min-w-[100px]">
@@ -292,14 +292,14 @@ export function CategoryGrid() {
     return null;
   }
 
-  logger.debug('🎨 [CategoryGrid] Rendering categories:', categories.length);
-  logger.debug('🎨 [CategoryGrid] Product counts:', productCounts);
-  logger.debug('🎨 [CategoryGrid] Category products:', Object.keys(categoryProducts).length);
-  logger.debug('🎨 [CategoryGrid] Categories to render:', categories.map(c => c.title));
+  logger.debug('ðŸŽ¨ [CategoryGrid] Rendering categories:', categories.length);
+  logger.debug('ðŸŽ¨ [CategoryGrid] Product counts:', productCounts);
+  logger.debug('ðŸŽ¨ [CategoryGrid] Category products:', Object.keys(categoryProducts).length);
+  logger.debug('ðŸŽ¨ [CategoryGrid] Categories to render:', categories.map(c => c.title));
 
   return (
     <section className="py-12 bg-white border-b border-gray-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="page-shell">
         <div className="flex items-center justify-center gap-6 md:gap-8 lg:gap-12 flex-wrap">
           {categories.map((category) => {
             const productCount = productCounts[category.slug] ?? 0;

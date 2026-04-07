@@ -332,7 +332,7 @@ export default function ProductPage({ params }: ProductPageProps) {
 
   if (loading || !product)
     return (
-      <div className="max-w-7xl mx-auto px-4 py-16 text-center">
+      <div className="page-shell py-16 text-center">
         {t(language, 'common.messages.loading')}
       </div>
     );
@@ -344,7 +344,7 @@ export default function ProductPage({ params }: ProductPageProps) {
   // For now, this demonstrates the structure using the extracted modules
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="page-shell py-12">
       {/* UI will be rendered here - see original file for full implementation */}
       <div>Product Page - Using extracted modules</div>
     </div>

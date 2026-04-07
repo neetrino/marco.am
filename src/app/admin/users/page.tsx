@@ -56,7 +56,7 @@ export default function UsersPage() {
   const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
-      logger.debug('👥 [ADMIN] Fetching users...', { page, search, roleFilter });
+      logger.debug('ðŸ‘¥ [ADMIN] Fetching users...', { page, search, roleFilter });
       
       const response = await apiClient.get<UsersResponse>('/api/v1/admin/users', {
         params: {
@@ -67,11 +67,11 @@ export default function UsersPage() {
         },
       });
 
-      logger.debug('✅ [ADMIN] Users fetched:', response);
+      logger.debug('âœ… [ADMIN] Users fetched:', response);
       setUsers(response.data || []);
       setMeta(response.meta || null);
     } catch (err) {
-      console.error('❌ [ADMIN] Error fetching users:', err);
+      console.error('âŒ [ADMIN] Error fetching users:', err);
     } finally {
       setLoading(false);
     }
@@ -98,7 +98,7 @@ export default function UsersPage() {
   };
 
   const toggleSelectAll = () => {
-    // Ընտրում ենք միայն այն օգտատերերին, որոնք տեսանելի են ընթացիկ ֆիլտրով
+    // Ô¸Õ¶Õ¿Ö€Õ¸Ö‚Õ´ Õ¥Õ¶Ö„ Õ´Õ«Õ¡ÕµÕ¶ Õ¡ÕµÕ¶ Ö…Õ£Õ¿Õ¡Õ¿Õ¥Ö€Õ¥Ö€Õ«Õ¶, Õ¸Ö€Õ¸Õ¶Ö„ Õ¿Õ¥Õ½Õ¡Õ¶Õ¥Õ¬Õ« Õ¥Õ¶ Õ¨Õ¶Õ©Õ¡ÖÕ«Õ¯ Ö†Õ«Õ¬Õ¿Ö€Õ¸Õ¾
     const visibleUsers =
       roleFilter === 'all'
         ? users
@@ -131,7 +131,7 @@ export default function UsersPage() {
       await fetchUsers();
       alert(t('admin.users.bulkDeleteFinished').replace('{success}', (ids.length - failed.length).toString()).replace('{total}', ids.length.toString()));
     } catch (err) {
-      console.error('❌ [ADMIN] Bulk delete users error:', err);
+      console.error('âŒ [ADMIN] Bulk delete users error:', err);
       alert(t('admin.users.failedToDelete'));
     } finally {
       setBulkDeleting(false);
@@ -145,7 +145,7 @@ export default function UsersPage() {
         blocked: newStatus,
       });
       
-      logger.debug(`✅ [ADMIN] User ${newStatus ? 'blocked' : 'unblocked'} successfully`);
+      logger.debug(`âœ… [ADMIN] User ${newStatus ? 'blocked' : 'unblocked'} successfully`);
       
       // Refresh users list
       fetchUsers();
@@ -156,7 +156,7 @@ export default function UsersPage() {
         alert(t('admin.users.userActive').replace('{name}', userName));
       }
     } catch (err: unknown) {
-      console.error('❌ [ADMIN] Error updating user status:', err);
+      console.error('âŒ [ADMIN] Error updating user status:', err);
       alert(t('admin.users.errorUpdatingStatus').replace('{message}', getErrorMessage(err) || t('admin.common.unknownErrorFallback')));
     }
   };
@@ -176,7 +176,7 @@ export default function UsersPage() {
     return null;
   }
 
-  // Տեսանելի օգտատերերի filter Admin / Customer ֆիլտրով
+  // ÕÕ¥Õ½Õ¡Õ¶Õ¥Õ¬Õ« Ö…Õ£Õ¿Õ¡Õ¿Õ¥Ö€Õ¥Ö€Õ« filter Admin / Customer Ö†Õ«Õ¬Õ¿Ö€Õ¸Õ¾
   const filteredUsers =
     roleFilter === 'all'
       ? users
@@ -188,7 +188,7 @@ export default function UsersPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="page-shell">
         <div className="mb-8">
           <button
             onClick={() => router.push('/admin')}
@@ -229,7 +229,7 @@ export default function UsersPage() {
                   onClick={() => {
                     setRoleFilter('all');
                     setPage(1);
-                    logger.debug('👥 [ADMIN] Role filter changed to: all');
+                    logger.debug('ðŸ‘¥ [ADMIN] Role filter changed to: all');
                   }}
                   className={`px-3 py-1 rounded-full transition-all ${
                     roleFilter === 'all'
@@ -244,7 +244,7 @@ export default function UsersPage() {
                   onClick={() => {
                     setRoleFilter('admin');
                     setPage(1);
-                    logger.debug('👥 [ADMIN] Role filter changed to: admin');
+                    logger.debug('ðŸ‘¥ [ADMIN] Role filter changed to: admin');
                   }}
                   className={`px-3 py-1 rounded-full transition-all ${
                     roleFilter === 'admin'
@@ -259,7 +259,7 @@ export default function UsersPage() {
                   onClick={() => {
                     setRoleFilter('customer');
                     setPage(1);
-                    logger.debug('👥 [ADMIN] Role filter changed to: customer');
+                    logger.debug('ðŸ‘¥ [ADMIN] Role filter changed to: customer');
                   }}
                   className={`px-3 py-1 rounded-full transition-all ${
                     roleFilter === 'customer'

@@ -29,12 +29,12 @@ function BrandsSection() {
   const fetchBrands = useCallback(async () => {
     try {
       setLoading(true);
-      logger.debug('🏷️ [ADMIN] Fetching brands...');
+      logger.debug('ðŸ·ï¸ [ADMIN] Fetching brands...');
       const response = await apiClient.get<{ data: Brand[] }>('/api/v1/admin/brands');
       setBrands(response.data || []);
-      logger.debug('✅ [ADMIN] Brands loaded:', response.data?.length || 0);
+      logger.debug('âœ… [ADMIN] Brands loaded:', response.data?.length || 0);
     } catch (err) {
-      console.error('❌ [ADMIN] Error fetching brands:', err);
+      console.error('âŒ [ADMIN] Error fetching brands:', err);
       setBrands([]);
     } finally {
       setLoading(false);
@@ -51,13 +51,13 @@ function BrandsSection() {
     }
 
     try {
-      logger.debug(`🗑️ [ADMIN] Deleting brand: ${brandName} (${brandId})`);
+      logger.debug(`ðŸ—‘ï¸ [ADMIN] Deleting brand: ${brandName} (${brandId})`);
       await apiClient.delete(`/api/v1/admin/brands/${brandId}`);
-      logger.debug('✅ [ADMIN] Brand deleted successfully');
+      logger.debug('âœ… [ADMIN] Brand deleted successfully');
       fetchBrands();
       alert(t('admin.brands.deletedSuccess'));
     } catch (err: unknown) {
-      console.error('❌ [ADMIN] Error deleting brand:', err);
+      console.error('âŒ [ADMIN] Error deleting brand:', err);
       const errorMessage = getClientErrorMessage(err);
       alert(t('admin.brands.errorDeleting') + '\n\n' + errorMessage);
     }
@@ -93,26 +93,26 @@ function BrandsSection() {
     try {
       if (editingBrand) {
         // Update existing brand
-        logger.debug('🔄 [ADMIN] Updating brand:', editingBrand.id);
+        logger.debug('ðŸ”„ [ADMIN] Updating brand:', editingBrand.id);
         await apiClient.put(`/api/v1/admin/brands/${editingBrand.id}`, {
           name: formData.name.trim(),
         });
-        logger.debug('✅ [ADMIN] Brand updated successfully');
+        logger.debug('âœ… [ADMIN] Brand updated successfully');
         alert(t('admin.brands.updatedSuccess'));
       } else {
         // Create new brand
-        logger.debug('➕ [ADMIN] Creating brand:', formData.name);
+        logger.debug('âž• [ADMIN] Creating brand:', formData.name);
         await apiClient.post('/api/v1/admin/brands', {
           name: formData.name.trim(),
         });
-        logger.debug('✅ [ADMIN] Brand created successfully');
+        logger.debug('âœ… [ADMIN] Brand created successfully');
         alert(t('admin.brands.createdSuccess'));
       }
       
       fetchBrands();
       handleCloseModal();
     } catch (err: unknown) {
-      console.error('❌ [ADMIN] Error saving brand:', err);
+      console.error('âŒ [ADMIN] Error saving brand:', err);
       const errorMessage = getClientErrorMessage(err);
       alert(t('admin.brands.errorSaving') + '\n\n' + errorMessage);
     } finally {
@@ -292,7 +292,7 @@ export default function BrandsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="page-shell">
         <div className="mb-8">
           <button
             onClick={() => router.push('/admin')}

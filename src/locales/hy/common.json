@@ -18,7 +18,7 @@
   },
   "navigation": {
     "home": "Գլխավոր",
-    "products": "Ապրանքներ",
+    "products": "Խանութ",
     "categories": "Կատեգորիաներ",
     "cart": "Զամբյուղ",
     "wishlist": "Ցանկությունների ցուցակ",
@@ -29,7 +29,7 @@
     "login": "Մուտք",
     "register": "Գրանցում",
     "about": "Մեր մասին",
-    "contact": "Կապ",
+    "contact": "Կապ մեզ հետ",
     "admin": "Ադմին",
     "adminPanel": "Ադմին էջ",
     "logout": "Ելք",

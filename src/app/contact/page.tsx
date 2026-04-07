@@ -59,10 +59,10 @@ export default function ContactPage() {
         message: '',
       });
       
-      alert(t('contact.form.submitSuccess') || 'Ձեր հաղորդագրությունը հաջողությամբ ուղարկվեց');
+      alert(t('contact.form.submitSuccess') || 'ÕÕ¥Ö€ Õ°Õ¡Õ²Õ¸Ö€Õ¤Õ¡Õ£Ö€Õ¸Ö‚Õ©ÕµÕ¸Ö‚Õ¶Õ¨ Õ°Õ¡Õ»Õ¸Õ²Õ¸Ö‚Õ©ÕµÕ¡Õ´Õ¢ Õ¸Ö‚Õ²Õ¡Ö€Õ¯Õ¾Õ¥Ö');
     } catch (error: unknown) {
       console.error('Error submitting contact form:', error);
-      alert(t('contact.form.submitError') || 'Սխալ: ' + (getErrorMessage(error) || 'Չհաջողվեց ուղարկել հաղորդագրությունը'));
+      alert(t('contact.form.submitError') || 'ÕÕ­Õ¡Õ¬: ' + (getErrorMessage(error) || 'Õ‰Õ°Õ¡Õ»Õ¸Õ²Õ¾Õ¥Ö Õ¸Ö‚Õ²Õ¡Ö€Õ¯Õ¥Õ¬ Õ°Õ¡Õ²Õ¸Ö€Õ¤Õ¡Õ£Ö€Õ¸Ö‚Õ©ÕµÕ¸Ö‚Õ¶Õ¨'));
     } finally {
       setSubmitting(false);
     }
@@ -78,7 +78,7 @@ export default function ContactPage() {
   return (
     <div className="bg-white">
       {/* Top Section: Contact Info and Form */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="page-shell py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Left Side: Contact Information */}
           <div className="space-y-8">
@@ -196,7 +196,7 @@ export default function ContactPage() {
                 className="w-full bg-gray-900 text-white hover:bg-gray-800 rounded-md py-3 font-semibold uppercase tracking-wide"
                 disabled={submitting}
               >
-                {submitting ? (t('contact.form.submitting') || 'Ուղարկվում է...') : t('contact.form.submit')}
+                {submitting ? (t('contact.form.submitting') || 'ÕˆÖ‚Õ²Õ¡Ö€Õ¯Õ¾Õ¸Ö‚Õ´ Õ§...') : t('contact.form.submit')}
               </Button>
             </form>
           </div>

@@ -18,11 +18,11 @@ const SORT_OPTIONS_VALUES: SortOption[] = [
 
 interface ProductsHeaderProps {
   /**
-   * Ընդհանուր ապրանքների քանակը՝ բոլոր էջերում (from API meta.total)
+   * Ô¸Õ¶Õ¤Õ°Õ¡Õ¶Õ¸Ö‚Ö€ Õ¡ÕºÖ€Õ¡Õ¶Ö„Õ¶Õ¥Ö€Õ« Ö„Õ¡Õ¶Õ¡Õ¯Õ¨Õ Õ¢Õ¸Õ¬Õ¸Ö€ Õ§Õ»Õ¥Ö€Õ¸Ö‚Õ´ (from API meta.total)
    */
   total: number;
   /**
-   * Մի էջում ցուցադրվող ապրանքների քանակը (from API meta.limit)
+   * Õ„Õ« Õ§Õ»Õ¸Ö‚Õ´ ÖÕ¸Ö‚ÖÕ¡Õ¤Ö€Õ¾Õ¸Õ² Õ¡ÕºÖ€Õ¡Õ¶Ö„Õ¶Õ¥Ö€Õ« Ö„Õ¡Õ¶Õ¡Õ¯Õ¨ (from API meta.limit)
    */
   perPage: number;
 }
@@ -128,7 +128,7 @@ function ProductsHeaderContent({ total, perPage: _perPage }: ProductsHeaderProps
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-4">
+    <div className="page-shell pt-12 pb-4">
       {/* Desktop: All elements in one horizontal line */}
       <div className="hidden sm:flex sm:items-center sm:justify-between sm:gap-4">
         {/* Left side: Clear filters + All products title */}
@@ -414,7 +414,7 @@ function ProductsHeaderContent({ total, perPage: _perPage }: ProductsHeaderProps
 export function ProductsHeader(props: ProductsHeaderProps) {
   return (
     <Suspense fallback={
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-4">
+      <div className="page-shell pt-12 pb-4">
         <div className="flex justify-end items-center">
           <div className="h-10 w-32 bg-gray-200 rounded animate-pulse"></div>
         </div>

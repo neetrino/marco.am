@@ -238,7 +238,7 @@ export default function ComparePage() {
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="page-shell py-6">
         <div className="text-center py-6">
           <div className="animate-pulse space-y-4">
             <div className="h-6 bg-gray-200 rounded w-1/4 mx-auto"></div>
@@ -250,7 +250,7 @@ export default function ComparePage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="page-shell py-6">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold text-gray-900">{t('common.compare.title')}</h1>
         {products.length > 0 && (
@@ -299,7 +299,7 @@ export default function ComparePage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {/* Изображение */}
+                {/* Ð˜Ð·Ð¾Ð±Ñ€Ð°Ð¶ÐµÐ½Ð¸Ðµ */}
                 <tr className="hover:bg-gray-50 transition-colors">
                   <td className="px-4 py-4 text-sm font-medium text-gray-700 bg-gray-50 sticky left-0 z-10">
                     {t('common.compare.image')}
@@ -328,7 +328,7 @@ export default function ComparePage() {
                   ))}
                 </tr>
 
-                {/* Название */}
+                {/* ÐÐ°Ð·Ð²Ð°Ð½Ð¸Ðµ */}
                 <tr className="hover:bg-gray-50 transition-colors">
                   <td className="px-4 py-4 text-sm font-medium text-gray-700 bg-gray-50 sticky left-0 z-10">
                     {t('common.compare.name')}
@@ -345,7 +345,7 @@ export default function ComparePage() {
                   ))}
                 </tr>
 
-                {/* Бренд */}
+                {/* Ð‘Ñ€ÐµÐ½Ð´ */}
                 <tr className="hover:bg-gray-50 transition-colors">
                   <td className="px-4 py-4 text-sm font-medium text-gray-700 bg-gray-50 sticky left-0 z-10">
                     {t('common.compare.brand')}
@@ -357,7 +357,7 @@ export default function ComparePage() {
                   ))}
                 </tr>
 
-                {/* Цена */}
+                {/* Ð¦ÐµÐ½Ð° */}
                 <tr className="hover:bg-gray-50 transition-colors">
                   <td className="px-4 py-4 text-sm font-medium text-gray-700 bg-gray-50 sticky left-0 z-10">
                     {t('common.compare.price')}
@@ -383,7 +383,7 @@ export default function ComparePage() {
                   ))}
                 </tr>
 
-                {/* Наличие */}
+                {/* ÐÐ°Ð»Ð¸Ñ‡Ð¸Ðµ */}
                 <tr className="hover:bg-gray-50 transition-colors">
                   <td className="px-4 py-4 text-sm font-medium text-gray-700 bg-gray-50 sticky left-0 z-10">
                     {t('common.compare.availability')}
@@ -405,7 +405,7 @@ export default function ComparePage() {
                   ))}
                 </tr>
 
-                {/* Действия */}
+                {/* Ð”ÐµÐ¹ÑÑ‚Ð²Ð¸Ñ */}
                 <tr className="hover:bg-gray-50 transition-colors">
                   <td className="px-4 py-4 text-sm font-medium text-gray-700 bg-gray-50 sticky left-0 z-10">
                     {t('common.compare.actions')}

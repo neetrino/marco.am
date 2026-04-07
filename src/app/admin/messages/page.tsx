@@ -51,7 +51,7 @@ export default function MessagesPage() {
   const fetchMessages = useCallback(async () => {
     try {
       setLoading(true);
-      logger.debug('📧 [ADMIN] Fetching messages...', { page });
+      logger.debug('ðŸ“§ [ADMIN] Fetching messages...', { page });
       
       const response = await apiClient.get<MessagesResponse>('/api/v1/admin/messages', {
         params: {
@@ -60,11 +60,11 @@ export default function MessagesPage() {
         },
       });
 
-      logger.debug('✅ [ADMIN] Messages fetched:', response);
+      logger.debug('âœ… [ADMIN] Messages fetched:', response);
       setMessages(response.data || []);
       setMeta(response.meta || null);
     } catch (err) {
-      console.error('❌ [ADMIN] Error fetching messages:', err);
+      console.error('âŒ [ADMIN] Error fetching messages:', err);
     } finally {
       setLoading(false);
     }
@@ -118,7 +118,7 @@ export default function MessagesPage() {
       await fetchMessages();
       alert(t('admin.messages.deletedSuccess'));
     } catch (err: unknown) {
-      console.error('❌ [ADMIN] Bulk delete messages error:', err);
+      console.error('âŒ [ADMIN] Bulk delete messages error:', err);
       alert(t('admin.messages.failedToDelete') + ': ' + (getErrorMessage(err) || 'Unknown error'));
     } finally {
       setBulkDeleting(false);
@@ -142,7 +142,7 @@ export default function MessagesPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="page-shell">
         <div className="mb-8">
           <button
             onClick={() => router.push('/admin')}

@@ -37,12 +37,12 @@ export default function AdminPanel() {
   useEffect(() => {
     if (!isLoading) {
       if (!isLoggedIn) {
-        logger.debug('❌ [ADMIN] User not logged in, redirecting to login...');
+        logger.debug('âŒ [ADMIN] User not logged in, redirecting to login...');
         router.push('/login');
         return;
       }
       if (!isAdmin) {
-        logger.debug('❌ [ADMIN] User is not admin, redirecting to home...');
+        logger.debug('âŒ [ADMIN] User is not admin, redirecting to home...');
         router.push('/');
         return;
       }
@@ -74,7 +74,7 @@ export default function AdminPanel() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="page-shell">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">{t('admin.dashboard.title')}</h1>

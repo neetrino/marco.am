@@ -50,12 +50,12 @@ export default function DeliveryPage() {
   const fetchDeliverySettings = async () => {
     try {
       setLoading(true);
-      logger.debug('🚚 [ADMIN] Fetching delivery settings...');
+      logger.debug('ðŸšš [ADMIN] Fetching delivery settings...');
       const data = await apiClient.get<DeliverySettings>('/api/v1/admin/delivery');
       setLocations(data.locations || []);
-      logger.debug('✅ [ADMIN] Delivery settings loaded:', data);
+      logger.debug('âœ… [ADMIN] Delivery settings loaded:', data);
     } catch (err: unknown) {
-      console.error('❌ [ADMIN] Error fetching delivery settings:', err);
+      console.error('âŒ [ADMIN] Error fetching delivery settings:', err);
       // Use defaults if error
       setLocations([]);
     } finally {
@@ -66,14 +66,14 @@ export default function DeliveryPage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      logger.debug('🚚 [ADMIN] Saving delivery settings...', { locations });
+      logger.debug('ðŸšš [ADMIN] Saving delivery settings...', { locations });
       await apiClient.put('/api/v1/admin/delivery', { locations });
       alert(t('admin.delivery.savedSuccess'));
-      logger.debug('✅ [ADMIN] Delivery settings saved');
+      logger.debug('âœ… [ADMIN] Delivery settings saved');
       setEditingId(null);
       await fetchDeliverySettings();
     } catch (err: unknown) {
-      console.error('❌ [ADMIN] Error saving delivery settings:', err);
+      console.error('âŒ [ADMIN] Error saving delivery settings:', err);
       const errorMessage = getClientErrorMessage(err) || 'Failed to save delivery settings';
       alert(t('admin.delivery.errorSaving').replace('{message}', errorMessage));
     } finally {
@@ -118,7 +118,7 @@ export default function DeliveryPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="page-shell">
         <div className="flex flex-col lg:flex-row gap-8">
           <div className="lg:hidden mb-6">
             <AdminMenuDrawer tabs={adminTabs} currentPath="/admin/delivery" />

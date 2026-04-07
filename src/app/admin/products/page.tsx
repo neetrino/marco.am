@@ -52,7 +52,7 @@ export default function ProductsPage() {
   useEffect(() => {
     const updateCurrency = () => {
       const newCurrency = getStoredCurrency();
-      logger.debug('💱 [ADMIN PRODUCTS] Currency updated to:', newCurrency);
+      logger.debug('ðŸ’± [ADMIN PRODUCTS] Currency updated to:', newCurrency);
       setCurrency(newCurrency);
     };
     
@@ -66,7 +66,7 @@ export default function ProductsPage() {
     if (typeof window !== 'undefined') {
       window.addEventListener('currency-updated', updateCurrency);
       const handleCurrencyRatesUpdate = () => {
-        logger.debug('💱 [ADMIN PRODUCTS] Currency rates updated, refreshing currency...');
+        logger.debug('ðŸ’± [ADMIN PRODUCTS] Currency rates updated, refreshing currency...');
         updateCurrency();
       };
       window.addEventListener('currency-rates-updated', handleCurrencyRatesUpdate);
@@ -105,12 +105,12 @@ export default function ProductsPage() {
   const fetchCategories = async () => {
     try {
       setCategoriesLoading(true);
-      logger.debug('📂 [ADMIN] Fetching categories...');
+      logger.debug('ðŸ“‚ [ADMIN] Fetching categories...');
       const response = await apiClient.get<{ data: Category[] }>('/api/v1/admin/categories');
       setCategories(response.data || []);
-      logger.debug('✅ [ADMIN] Categories loaded:', response.data?.length || 0);
+      logger.debug('âœ… [ADMIN] Categories loaded:', response.data?.length || 0);
     } catch (err: unknown) {
-      console.error('❌ [ADMIN] Error fetching categories:', err);
+      console.error('âŒ [ADMIN] Error fetching categories:', err);
       setCategories([]);
     } finally {
       setCategoriesLoading(false);
@@ -183,7 +183,7 @@ export default function ProductsPage() {
       setProducts(filteredProducts);
       setMeta(response.meta || null);
     } catch (err: unknown) {
-      console.error('❌ [ADMIN] Error fetching products:', err);
+      console.error('âŒ [ADMIN] Error fetching products:', err);
       alert(t('admin.products.errorLoading').replace('{message}', getErrorMessage(err) || t('admin.common.unknownErrorFallback')));
     } finally {
       setLoading(false);
@@ -201,7 +201,7 @@ export default function ProductsPage() {
     const [field, directionRaw] = sortBy.split('-');
     const direction = directionRaw === 'asc' ? 1 : -1;
 
-    logger.debug('📊 [ADMIN] Applying client-side sort:', { field, direction: directionRaw });
+    logger.debug('ðŸ“Š [ADMIN] Applying client-side sort:', { field, direction: directionRaw });
 
     const cloned = [...products];
 
@@ -275,7 +275,7 @@ export default function ProductsPage() {
         }
       }
 
-      logger.debug('📊 [ADMIN] Sort changed from', current, 'to', next, 'by header click');
+      logger.debug('ðŸ“Š [ADMIN] Sort changed from', current, 'to', next, 'by header click');
       return next;
     });
   };
@@ -319,7 +319,7 @@ export default function ProductsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="page-shell">
         <div className="mb-6">
           <button
             onClick={() => router.push('/admin')}

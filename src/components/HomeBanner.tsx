@@ -43,6 +43,9 @@ const ARM = {
 /** Figma Mask group 1 (305:2146) — background plate. */
 const MASK_BG_W = 1651;
 const MASK_BG_H = 925;
+
+/** Desktop frame max width — aligns with `Header` (`max-w-[1920px]`). */
+const HERO_DESKTOP_MAX_WIDTH_PX = 1920;
 /** Figma Group 9275 reference — overlay scaled to MASK_BG_*. */
 const LAYOUT_REF_W = 1714;
 const LAYOUT_REF_H = 924;
@@ -258,69 +261,85 @@ function HelpPromoEllipse() {
 /**
  * Home page hero banner — background plate from Figma node 305:2146 (Mask group 1).
  * Texture 1651 × 925 px; overlay scaled from Figma ref 1714 × 924 to match.
+ * Large desktop: fluid scale via container `cqw` so the hero fills width up to {@link HERO_DESKTOP_MAX_WIDTH_PX}
+ * (matches header gutters: fluid until `min-[1920px]:px-[151px]`).
  */
 export function HomeBanner() {
   const { t } = useTranslation();
 
+  const heroScale = `scale(calc(100cqw / ${MASK_BG_W}px))`;
+
   return (
-    <section className="relative w-full overflow-hidden">
-      <div
-        className="relative mx-auto w-full"
-        style={{ maxWidth: MASK_BG_W, height: MASK_BG_H }}
-      >
-        {/* Mask group 1 — Figma 305:2146: 1651 × 925 px, rounded texture plate */}
+    <section className="relative w-full overflow-x-hidden">
+      <div className="mx-auto w-full max-w-[1920px] px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 min-[1920px]:px-[151px] [container-type:inline-size]">
         <div
-          className="pointer-events-none absolute left-0 top-0 z-0 max-w-full overflow-hidden rounded-[36px]"
-          style={{ width: MASK_BG_W, height: MASK_BG_H, maxWidth: '100%' }}
+          className="relative w-full overflow-hidden rounded-[36px] shadow-[0_25px_80px_-24px_rgba(15,23,42,0.14)] ring-1 ring-black/[0.06]"
+          style={{ aspectRatio: `${MASK_BG_W} / ${MASK_BG_H}` }}
         >
-          <Image
-            src={ASSETS.bgTexture}
-            alt=""
-            fill
-            className="object-cover object-center"
-            priority
-            sizes="(max-width: 1651px) 100vw, 1651px"
-            unoptimized
-          />
-        </div>
-
-        <div
-          className="relative z-10 h-full"
-          style={{ transform: `translateX(${OVERLAY_SHIFT_X}px)` }}
-        >
-          {/* Large headline — above sofa row, optical balance with mask corner */}
-          <p
-            className={`${montserratArm.className} absolute z-20 whitespace-nowrap font-black antialiased`}
-            style={{ left: bx(162), top: by(88), fontSize: bx(60), lineHeight: `${by(72)}px` }}
-          >
-            <span className="home-banner-hero-stroke text-[#000]">{ARM.free} </span>
-            <span className="home-banner-hero-stroke text-[#FFF]">{ARM.delivery}</span>
-          </p>
-
-          <SofaCard />
-          <DeliveryCard />
-          <ElectronicsCard />
-
-          {/* Promo sub-copy + help CTA; Ellipse 87 to the right of the help button (same row, right-aligned) */}
           <div
-            className="absolute z-20 flex flex-col gap-4"
+            className="absolute left-0 top-0 z-0"
             style={{
-              left: bx(PROMO_COPY_LEFT_REF),
-              right: bx(PROMO_STRIP_RIGHT_REF),
-              top: by(668),
+              width: MASK_BG_W,
+              height: MASK_BG_H,
+              transform: heroScale,
+              transformOrigin: 'top left',
             }}
           >
-            <p className="max-w-[min(560px,calc(100%-2rem))] whitespace-pre-line text-left text-[24px] font-bold leading-[1.15] text-white antialiased [text-shadow:0_1px_2px_rgba(0,0,0,0.25)]">
-              {t('home.hero_banner_promo')}
-            </p>
-            <div className="flex flex-row items-center justify-end gap-3 self-end sm:gap-4">
-              <Link
-                href="/contact"
-                className={`${montserratArm.className} flex h-[56px] w-[311px] shrink-0 flex-row items-center justify-center rounded-[68px] bg-[#2F4B5D] px-8 py-4 text-center text-base font-bold leading-6 text-[#FFF] shadow-[0_4px_24px_0_rgba(150,150,150,0.28)] antialiased`}
+            {/* Mask group 1 — Figma 305:2146: 1651 × 925 px, rounded texture plate */}
+            <div
+              className="pointer-events-none absolute left-0 top-0 z-0 overflow-hidden rounded-[36px]"
+              style={{ width: MASK_BG_W, height: MASK_BG_H }}
+            >
+              <Image
+                src={ASSETS.bgTexture}
+                alt=""
+                fill
+                className="object-cover object-center"
+                priority
+                sizes={`(max-width: 768px) 100vw, (max-width: ${HERO_DESKTOP_MAX_WIDTH_PX}px) 95vw, ${HERO_DESKTOP_MAX_WIDTH_PX}px`}
+                unoptimized
+              />
+            </div>
+
+            <div
+              className="relative z-10 h-full"
+              style={{ transform: `translateX(${OVERLAY_SHIFT_X}px)` }}
+            >
+              {/* Large headline — above sofa row, optical balance with mask corner */}
+              <p
+                className={`${montserratArm.className} absolute z-20 whitespace-nowrap font-black antialiased`}
+                style={{ left: bx(162), top: by(88), fontSize: bx(60), lineHeight: `${by(72)}px` }}
               >
-                {t('home.hero_help_cta')}
-              </Link>
-              <HelpPromoEllipse />
+                <span className="home-banner-hero-stroke text-[#000]">{ARM.free} </span>
+                <span className="home-banner-hero-stroke text-[#FFF]">{ARM.delivery}</span>
+              </p>
+
+              <SofaCard />
+              <DeliveryCard />
+              <ElectronicsCard />
+
+              {/* Promo sub-copy + help CTA; Ellipse 87 to the right of the help button (same row, right-aligned) */}
+              <div
+                className="absolute z-20 flex flex-col gap-4"
+                style={{
+                  left: bx(PROMO_COPY_LEFT_REF),
+                  right: bx(PROMO_STRIP_RIGHT_REF),
+                  top: by(668),
+                }}
+              >
+                <p className="max-w-[min(560px,calc(100%-2rem))] whitespace-pre-line text-left text-[24px] font-bold leading-[1.15] text-white antialiased [text-shadow:0_1px_2px_rgba(0,0,0,0.25)]">
+                  {t('home.hero_banner_promo')}
+                </p>
+                <div className="flex flex-row items-center justify-end gap-3 self-end sm:gap-4">
+                  <Link
+                    href="/contact"
+                    className={`${montserratArm.className} flex h-[56px] w-[311px] shrink-0 flex-row items-center justify-center rounded-[68px] bg-[#2F4B5D] px-8 py-4 text-center text-base font-bold leading-6 text-[#FFF] shadow-[0_4px_24px_0_rgba(150,150,150,0.28)] antialiased`}
+                  >
+                    {t('home.hero_help_cta')}
+                  </Link>
+                  <HelpPromoEllipse />
+                </div>
+              </div>
             </div>
           </div>
         </div>

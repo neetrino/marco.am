@@ -25,13 +25,13 @@ export default function PriceFilterSettingsPage() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   
-  // Храним предыдущее значение stepSize для расчета разницы
+  // Ð¥Ñ€Ð°Ð½Ð¸Ð¼ Ð¿Ñ€ÐµÐ´Ñ‹Ð´ÑƒÑ‰ÐµÐµ Ð·Ð½Ð°Ñ‡ÐµÐ½Ð¸Ðµ stepSize Ð´Ð»Ñ Ñ€Ð°ÑÑ‡ÐµÑ‚Ð° Ñ€Ð°Ð·Ð½Ð¸Ñ†Ñ‹
   const prevStepSizeRef = useRef<string>('');
   const isUpdatingRef = useRef<boolean>(false);
 
   const fetchSettings = useCallback(async () => {
     try {
-      logger.debug('⚙️ [PRICE FILTER SETTINGS] Fetching settings...');
+      logger.debug('âš™ï¸ [PRICE FILTER SETTINGS] Fetching settings...');
       setLoading(true);
       const response = await apiClient.get<{
         minPrice?: number;
@@ -57,9 +57,9 @@ export default function PriceFilterSettingsPage() {
       setStepSizeGEL(per.GEL !== undefined ? per.GEL.toString() : '');
       prevStepSizeRef.current = fallbackStep;
       
-      logger.debug('✅ [PRICE FILTER SETTINGS] Settings loaded:', response);
+      logger.debug('âœ… [PRICE FILTER SETTINGS] Settings loaded:', response);
     } catch (err: unknown) {
-      console.error('❌ [PRICE FILTER SETTINGS] Error fetching settings:', err);
+      console.error('âŒ [PRICE FILTER SETTINGS] Error fetching settings:', err);
       // If settings don't exist, use empty values
       setMinPrice('');
       setMaxPrice('');
@@ -73,13 +73,13 @@ export default function PriceFilterSettingsPage() {
     }
   }, []);
 
-  // Обработчик изменения базового Step Size (USD) - синхронизирует minPrice и maxPrice
+  // ÐžÐ±Ñ€Ð°Ð±Ð¾Ñ‚Ñ‡Ð¸Ðº Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½Ð¸Ñ Ð±Ð°Ð·Ð¾Ð²Ð¾Ð³Ð¾ Step Size (USD) - ÑÐ¸Ð½Ñ…Ñ€Ð¾Ð½Ð¸Ð·Ð¸Ñ€ÑƒÐµÑ‚ minPrice Ð¸ maxPrice
   const handleStepSizeChange = (newValue: string) => {
     if (isUpdatingRef.current) return;
     
     const prevStep = prevStepSizeRef.current;
     
-    // Если предыдущее значение пустое, просто обновляем
+    // Ð•ÑÐ»Ð¸ Ð¿Ñ€ÐµÐ´Ñ‹Ð´ÑƒÑ‰ÐµÐµ Ð·Ð½Ð°Ñ‡ÐµÐ½Ð¸Ðµ Ð¿ÑƒÑÑ‚Ð¾Ðµ, Ð¿Ñ€Ð¾ÑÑ‚Ð¾ Ð¾Ð±Ð½Ð¾Ð²Ð»ÑÐµÐ¼
     if (!prevStep) {
       prevStepSizeRef.current = newValue;
       setStepSizeUSD(newValue);
@@ -89,17 +89,17 @@ export default function PriceFilterSettingsPage() {
     const prevStepNum = parseFloat(prevStep);
     const newStepNum = parseFloat(newValue);
     
-    // Если новое значение невалидно, просто обновляем stepSize
+    // Ð•ÑÐ»Ð¸ Ð½Ð¾Ð²Ð¾Ðµ Ð·Ð½Ð°Ñ‡ÐµÐ½Ð¸Ðµ Ð½ÐµÐ²Ð°Ð»Ð¸Ð´Ð½Ð¾, Ð¿Ñ€Ð¾ÑÑ‚Ð¾ Ð¾Ð±Ð½Ð¾Ð²Ð»ÑÐµÐ¼ stepSize
     if (isNaN(newStepNum) || newValue.trim() === '') {
       prevStepSizeRef.current = newValue;
       setStepSizeUSD(newValue);
       return;
     }
     
-    // Вычисляем разницу
+    // Ð’Ñ‹Ñ‡Ð¸ÑÐ»ÑÐµÐ¼ Ñ€Ð°Ð·Ð½Ð¸Ñ†Ñƒ
     const difference = newStepNum - prevStepNum;
     
-    // Применяем разницу к minPrice и maxPrice, если они заполнены
+    // ÐŸÑ€Ð¸Ð¼ÐµÐ½ÑÐµÐ¼ Ñ€Ð°Ð·Ð½Ð¸Ñ†Ñƒ Ðº minPrice Ð¸ maxPrice, ÐµÑÐ»Ð¸ Ð¾Ð½Ð¸ Ð·Ð°Ð¿Ð¾Ð»Ð½ÐµÐ½Ñ‹
     const prevMin = minPrice.trim();
     const prevMax = maxPrice.trim();
     
@@ -111,14 +111,14 @@ export default function PriceFilterSettingsPage() {
         const newMinNum = prevMinNum + difference;
         const newMaxNum = prevMaxNum + difference;
         
-        // Обновляем все значения
+        // ÐžÐ±Ð½Ð¾Ð²Ð»ÑÐµÐ¼ Ð²ÑÐµ Ð·Ð½Ð°Ñ‡ÐµÐ½Ð¸Ñ
         isUpdatingRef.current = true;
         setStepSizeUSD(newValue);
         setMinPrice(newMinNum > 0 ? newMinNum.toString() : '');
         setMaxPrice(newMaxNum > 0 ? newMaxNum.toString() : '');
         prevStepSizeRef.current = newValue;
         
-        logger.debug('🔄 [PRICE FILTER] StepSize changed:', {
+        logger.debug('ðŸ”„ [PRICE FILTER] StepSize changed:', {
           prevStep: prevStepNum,
           newStep: newStepNum,
           difference,
@@ -128,7 +128,7 @@ export default function PriceFilterSettingsPage() {
           newMax: newMaxNum
         });
         
-        // Сбрасываем флаг после небольшой задержки
+        // Ð¡Ð±Ñ€Ð°ÑÑ‹Ð²Ð°ÐµÐ¼ Ñ„Ð»Ð°Ð³ Ð¿Ð¾ÑÐ»Ðµ Ð½ÐµÐ±Ð¾Ð»ÑŒÑˆÐ¾Ð¹ Ð·Ð°Ð´ÐµÑ€Ð¶ÐºÐ¸
         setTimeout(() => {
           isUpdatingRef.current = false;
         }, 0);
@@ -136,7 +136,7 @@ export default function PriceFilterSettingsPage() {
       }
     }
     
-    // Если min/max не заполнены, просто обновляем stepSize
+    // Ð•ÑÐ»Ð¸ min/max Ð½Ðµ Ð·Ð°Ð¿Ð¾Ð»Ð½ÐµÐ½Ñ‹, Ð¿Ñ€Ð¾ÑÑ‚Ð¾ Ð¾Ð±Ð½Ð¾Ð²Ð»ÑÐµÐ¼ stepSize
     prevStepSizeRef.current = newValue;
     setStepSizeUSD(newValue);
   };
@@ -179,7 +179,7 @@ export default function PriceFilterSettingsPage() {
 
     setSaving(true);
     try {
-      logger.debug('⚙️ [PRICE FILTER SETTINGS] Saving settings...', {
+      logger.debug('âš™ï¸ [PRICE FILTER SETTINGS] Saving settings...', {
         minValue,
         maxValue,
         stepValueUSD,
@@ -207,9 +207,9 @@ export default function PriceFilterSettingsPage() {
       });
       
       alert(t('admin.priceFilter.savedSuccess'));
-      logger.debug('✅ [PRICE FILTER SETTINGS] Settings saved');
+      logger.debug('âœ… [PRICE FILTER SETTINGS] Settings saved');
     } catch (err: unknown) {
-      console.error('❌ [PRICE FILTER SETTINGS] Error saving settings:', err);
+      console.error('âŒ [PRICE FILTER SETTINGS] Error saving settings:', err);
       const errorMessage = getClientErrorMessage(err) || 'Failed to save';
       alert(t('admin.priceFilter.errorSaving').replace('{message}', errorMessage));
     } finally {
@@ -226,12 +226,12 @@ export default function PriceFilterSettingsPage() {
   useEffect(() => {
     if (!isLoading) {
       if (!isLoggedIn) {
-        logger.debug('❌ [PRICE FILTER SETTINGS] User not logged in, redirecting to login...');
+        logger.debug('âŒ [PRICE FILTER SETTINGS] User not logged in, redirecting to login...');
         router.push('/login');
         return;
       }
       if (!isAdmin) {
-        logger.debug('❌ [PRICE FILTER SETTINGS] User is not admin, redirecting to home...');
+        logger.debug('âŒ [PRICE FILTER SETTINGS] User is not admin, redirecting to home...');
         router.push('/');
         return;
       }
@@ -266,7 +266,7 @@ export default function PriceFilterSettingsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="page-shell">
         {/* Header */}
         <div className="mb-8">
           <button

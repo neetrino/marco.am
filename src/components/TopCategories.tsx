@@ -50,7 +50,7 @@ export function TopCategories() {
   if (loading) {
     return (
       <section className="py-12 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="page-shell">
           <div className="flex justify-center items-center gap-8 md:gap-12 lg:gap-16 flex-wrap">
             {[1, 2, 3, 4, 5].map((i) => (
               <div key={i} className="flex flex-col items-center gap-3 min-w-[120px]">
@@ -71,7 +71,7 @@ export function TopCategories() {
 
   return (
     <section className="py-12 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="page-shell">
         <div className="flex justify-center items-center gap-6 md:gap-8 lg:gap-12 xl:gap-16 flex-wrap">
           {topCategories.map((item) => (
             <Link

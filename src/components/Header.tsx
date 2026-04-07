@@ -34,6 +34,13 @@ const headerNavLinks = [
   { href: '/', translationKey: 'common.navigation.reels' },
 ];
 
+/**
+ * Desktop shell: fluid gutters on laptop (lg–xl), full Figma inset from 1920px.
+ * Align HomeBanner outer padding when changing breakpoints.
+ */
+const HEADER_DESKTOP_SHELL_CLASS =
+  'mx-auto w-full max-w-[1920px] px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 min-[1920px]:px-[151px]';
+
 interface Category {
   id: string;
   slug: string;
@@ -710,30 +717,32 @@ export function Header() {
         />
       </Suspense>
 
-      {/* Main Header — Figma desktop (node 242:1773) */}
+      {/* Main Header — Figma: node 111:4293 (row 1), 242:1773 */}
       <div className="hidden lg:block">
-        {/* Row 1: logo, nav, social, phone, addresses */}
+        {/* Row 1: logo | nav | socials | phone + addresses — spacing per Figma 111:4293 */}
         <div className="border-b border-[#ebebeb] bg-white">
-          <div className="mx-auto flex max-w-[1920px] flex-wrap items-center gap-x-[54px] gap-y-2 px-[151px] py-1.5">
+          <div
+            className={`${HEADER_DESKTOP_SHELL_CLASS} flex flex-wrap items-center gap-x-4 gap-y-2.5 py-2 lg:gap-x-5 lg:gap-y-2 xl:flex-nowrap xl:gap-x-7 xl:gap-y-0 xl:py-[6px] 2xl:gap-x-10 min-[1920px]:gap-x-[54px]`}
+          >
             <Link
               href="/"
-              className="flex aspect-[83/73] h-[73px] w-[83px] shrink-0 items-center justify-center"
+              className="flex aspect-[83/73] h-[58px] w-[66px] shrink-0 items-center justify-center lg:h-[64px] lg:w-[72px] xl:h-[68px] xl:w-[77px] min-[1920px]:h-[73px] min-[1920px]:w-[83px]"
               aria-label="MARCO GROUP"
             >
               <MarcoGroupLogo priority />
             </Link>
-            <nav className="flex flex-wrap items-center gap-x-[45px] gap-y-1 text-[16px] font-bold capitalize leading-[18px] text-[#333]">
+            <nav className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 capitalize text-[14px] font-bold leading-snug text-[#333] lg:gap-x-4 lg:text-[15px] lg:leading-[18px] xl:flex-nowrap xl:gap-x-5 xl:text-[16px] xl:leading-[18px] 2xl:gap-x-7 min-[1920px]:gap-x-[45px]">
               {headerNavLinks.map((link) => (
                 <Link
                   key={link.translationKey}
                   href={link.href}
-                  className={`transition-colors hover:text-black ${isNavItemActive(link) ? 'text-[#101010]' : ''}`}
+                  className={`shrink-0 whitespace-nowrap transition-colors hover:text-black ${isNavItemActive(link) ? 'text-[#101010]' : ''}`}
                 >
                   {t(link.translationKey)}
                 </Link>
               ))}
             </nav>
-            <div className="flex items-center gap-4">
+            <div className="flex shrink-0 items-center gap-2.5 sm:gap-3 xl:gap-4">
               <a
                 href={t('contact.social.instagram') || '#'}
                 target="_blank"
@@ -780,8 +789,8 @@ export function Header() {
                 <Phone className="h-4 w-4" />
               </a>
             </div>
-            <div className="ml-auto flex flex-wrap items-center gap-7">
-              <div className="flex items-center gap-2">
+            <div className="flex shrink-0 flex-wrap items-center gap-x-5 gap-y-1.5 lg:gap-x-6 xl:gap-x-[29px]">
+              <div className="flex shrink-0 items-center gap-1.5 whitespace-nowrap sm:gap-2">
                 <svg width="19" height="19" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
                   <path
                     d="M2 3C2 2.44772 2.44772 2 3 2H5.15287C5.64171 2 6.0589 2.35341 6.13927 2.8356L6.87858 7.27147C6.95075 7.70451 6.73206 8.13397 6.3394 8.3303L4.79126 9.10437C5.90715 11.8783 8.12168 14.0929 10.8956 15.2088L11.6697 13.6606C11.866 13.2679 12.2955 13.0493 12.7285 13.1214L17.1644 13.8607C17.6466 13.9411 18 14.3583 18 14.8471V17C18 17.5523 17.5523 18 17 18H15C7.8203 18 2 12.1797 2 5V3Z"
@@ -791,10 +800,13 @@ export function Header() {
                     strokeLinejoin="round"
                   />
                 </svg>
-                <span className="text-[18px] font-medium text-[#333]">{t('contact.phone')}</span>
+                <span className="text-[14px] font-medium text-[#333] lg:text-[15px] min-[1920px]:text-[18px]">{t('contact.phone')}</span>
                 <ChevronDownIcon />
               </div>
-              <Link href="/stores" className="flex items-center gap-2 text-[#333]">
+              <Link
+                href="/stores"
+                className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-[#333] sm:gap-2"
+              >
                 <svg width="16" height="19" viewBox="0 0 16 19" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
                   <path
                     d="M8 0C5.2 0 3 2.2 3 5C3 8.5 8 12 8 12C8 12 13 8.5 13 5C13 2.2 10.8 0 8 0Z"
@@ -803,7 +815,7 @@ export function Header() {
                     fill="none"
                   />
                 </svg>
-                <span className="text-[16px] font-medium">{t('common.header.addresses')}</span>
+                <span className="text-[14px] font-medium lg:text-[15px] min-[1920px]:text-[16px]">{t('common.header.addresses')}</span>
                 <ChevronDownIcon />
               </Link>
             </div>
@@ -811,8 +823,10 @@ export function Header() {
         </div>
 
         {/* Row 2: categories, search, lang/currency, theme, account, compare, wishlist, cart */}
-        <div className="bg-white px-[150px] py-3.5">
-          <div className="mx-auto flex max-w-[1920px] flex-wrap items-center gap-x-[66px] gap-y-3">
+        <div className="bg-white py-3.5">
+          <div
+            className={`${HEADER_DESKTOP_SHELL_CLASS} flex flex-wrap items-center gap-x-[66px] gap-y-3 min-[1920px]:gap-x-[72px]`}
+          >
             <div
               className="relative"
               ref={categoriesMenuRef}
@@ -858,7 +872,10 @@ export function Header() {
               )}
             </div>
 
-            <form onSubmit={handleSearch} className="relative min-w-0 max-w-[700px] flex-1">
+            <form
+              onSubmit={handleSearch}
+              className="relative min-w-0 max-w-[700px] min-[1920px]:max-w-[900px] flex-1"
+            >
               <div className="relative flex h-14 items-center overflow-hidden rounded-[200px] bg-[#f4f4f4] pr-[155px]">
                 <div className="flex flex-1 items-center gap-2 pl-6">
                   <SearchIcon />
@@ -910,7 +927,7 @@ export function Header() {
               />
             </form>
 
-            <div className="flex h-12 items-center gap-[23px]">
+            <div className="flex h-12 shrink-0 items-center gap-[23px] min-[1920px]:gap-[27px]">
               <LocaleCurrencyPill
                 selectedCurrency={selectedCurrency}
                 onCurrencyChange={handleCurrencyChange}
