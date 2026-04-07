@@ -2,10 +2,16 @@
 export const HEADER_REELS_EXTERNAL_HREF = 'https://www.instagram.com/reels/';
 
 /**
- * Horizontal page padding — Figma 111:4293 `px-[151px]`, row 2 111:4273 `px-[150px]` (aligned at max).
+ * Row 1 horizontal padding — Figma 111:4293 `px-[151px]` at max width.
  */
 export const HEADER_FIGMA_PADDING_X_CLASS =
   'px-3 sm:px-5 md:px-7 lg:px-10 xl:px-16 2xl:px-24 min-[1800px]:px-[151px]';
+
+/**
+ * Row 2 horizontal padding — Figma 111:4273 `px-[150px]` at max width (even side inset).
+ */
+export const HEADER_FIGMA_ROW2_PADDING_X_CLASS =
+  'px-3 sm:px-5 md:px-7 lg:px-10 xl:px-16 2xl:px-24 min-[1800px]:px-[150px]';
 
 /** Top row vertical padding — Figma 111:4293 `py-[6px]` */
 export const HEADER_FIGMA_PADDING_Y_CLASS = 'py-1.5';
