@@ -3,10 +3,11 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Montserrat } from 'next/font/google';
+import { CtaArrowCircleIcon } from './icons/CtaArrowCircleIcon';
 import { useTranslation } from '../lib/i18n-client';
 
-/** Figma "Montserrat arm" — Montserrat 700 (same stack as header; Next font types omit `armenian` subset). */
-const homeBannerHelpCtaFont = Montserrat({
+/** Figma "Montserrat arm" — Montserrat 700 (sofa «ԳՆԵԼ ՀԻՄԱ» CTA, help strip; Next types omit `armenian` subset). */
+const homeBannerMontserratArm = Montserrat({
   subsets: ['latin', 'latin-ext', 'cyrillic'],
   weight: ['700'],
 });
@@ -25,8 +26,6 @@ const ASSETS = {
   rightCardBg:   'https://www.figma.com/api/mcp/asset/3f677413-36ef-44bb-a898-711eec0caed7',
   linkIcon1:     'https://www.figma.com/api/mcp/asset/7e5dbdc4-4d4e-47a3-a26b-76000d469a4d',
   linkIcon2:     'https://www.figma.com/api/mcp/asset/01c4ecb0-959a-4403-a191-8d4fe959ea88',
-  ellipseCircle: 'https://www.figma.com/api/mcp/asset/d7223cba-07f9-4b3b-b413-ec910607e32f',
-  arrow:         'https://www.figma.com/api/mcp/asset/787d7226-c78d-4624-853e-0fd084ba6a51',
   /** BANNER2 1 — Figma node 305:2151, downloaded locally (404×557 px). */
   banner2:       '/images/home-banner-305-2151.png',
 } as const;
@@ -111,18 +110,17 @@ function SofaCard() {
 
       <Link
         href="/products"
-        className="absolute overflow-visible rounded-[68px] bg-[#facc15] antialiased"
+        className="absolute flex items-center justify-center overflow-hidden rounded-[68px] bg-[#facc15] py-1 pl-4 pr-14 antialiased"
         style={{ left: x(524), top: by(700), width: bx(243), height: by(56) }}
       >
-        <span className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 font-bold text-[16px] text-black whitespace-nowrap leading-[24px]">
+        <span
+          className={`${homeBannerMontserratArm.className} min-w-0 text-center text-base font-bold leading-6 text-[#000]`}
+        >
           {ARM.gnel} {ARM.hima}
         </span>
-        <div className="absolute top-[4px] size-[48px]" style={{ left: bx(189) }}>
-          <Image src={ASSETS.ellipseCircle} alt="" fill className="object-contain" unoptimized />
-        </div>
-        <div className="absolute top-[22px] size-[12px] flex items-center justify-center -rotate-45" style={{ left: bx(207) }}>
-          <Image src={ASSETS.arrow} alt="" width={16} height={8} className="object-contain" unoptimized />
-        </div>
+        <span className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2">
+          <CtaArrowCircleIcon className="size-12 shrink-0" />
+        </span>
       </Link>
     </>
   );
@@ -278,7 +276,7 @@ export function HomeBanner() {
             </p>
             <Link
               href="/contact"
-              className={`${homeBannerHelpCtaFont.className} flex h-[56px] w-[311px] shrink-0 flex-row items-center justify-center self-end rounded-[68px] bg-[#2F4B5D] px-8 py-4 text-center text-base font-bold leading-6 text-[#FFF] shadow-[0_4px_24px_0_rgba(150,150,150,0.28)] antialiased`}
+              className={`${homeBannerMontserratArm.className} flex h-[56px] w-[311px] shrink-0 flex-row items-center justify-center self-end rounded-[68px] bg-[#2F4B5D] px-8 py-4 text-center text-base font-bold leading-6 text-[#FFF] shadow-[0_4px_24px_0_rgba(150,150,150,0.28)] antialiased`}
             >
               {t('home.hero_help_cta')}
             </Link>
