@@ -12,42 +12,31 @@ const ASSETS = {
   bgTexture:     'https://www.figma.com/api/mcp/asset/b54ee867-ba6c-49b4-a7c4-e5ab1f666b4e',
   sofa:          'https://www.figma.com/api/mcp/asset/1a5ccb5d-3c4f-45e8-8489-29d2d9124fd1',
   sofaCircle:    'https://www.figma.com/api/mcp/asset/2f91b1da-a2d5-43d1-b75f-f8c532cd6471',
-  boxesPhoto:    'https://www.figma.com/api/mcp/asset/4edd1537-ccdc-4093-b73f-bc81d0b2a409',
   truckIcon:     'https://www.figma.com/api/mcp/asset/5249941e-732f-48e2-a3b4-bcadfc9d8ced',
   rightCardBg:   'https://www.figma.com/api/mcp/asset/3f677413-36ef-44bb-a898-711eec0caed7',
   linkIcon1:     'https://www.figma.com/api/mcp/asset/7e5dbdc4-4d4e-47a3-a26b-76000d469a4d',
   linkIcon2:     'https://www.figma.com/api/mcp/asset/01c4ecb0-959a-4403-a191-8d4fe959ea88',
   ellipseCircle: 'https://www.figma.com/api/mcp/asset/d7223cba-07f9-4b3b-b413-ec910607e32f',
   arrow:         'https://www.figma.com/api/mcp/asset/787d7226-c78d-4624-853e-0fd084ba6a51',
+  /** BANNER2 1 — Figma node 305:2151, downloaded locally (404×557 px). */
+  banner2:       '/images/home-banner-305-2151.png',
 } as const;
 
 /**
  * Armenian uppercase text — Unicode escapes keep the source ASCII-safe.
- * Corrections vs previous version: gnel (U+0545→U+0546), hima (U+053E→U+0540, U+0543→U+0544),
- * avelin (U+054D→U+054E, U+0545→U+0546), free/delivery full rewrite.
  */
 const ARM = {
-  // Գnell = Buy: Գ(0533)+Ն(0546)+Ե(0535)+Լ(053C)
   gnel:        '\u0533\u0546\u0535\u053c',
-  // Hima = Now: Հ(0540)+Ի(053B)+Մ(0544)+Ա(0531)
   hima:        '\u0540\u053b\u0544\u0531',
-  // Avelin = More: Ա(0531)+Վ(054E)+Ե(0535)+Լ(053C)+Ի(053B)+Ն(0546)
   avelin:      '\u0531\u054e\u0535\u053c\u053b\u0546',
-  // Անvchair = Free: Ա(0531)+Ն(0546)+Վ(054E)+Ճ(0543)+Ա(0531)+Ռ(054C)
   free:        '\u0531\u0546\u054e\u0543\u0531\u054c',
-  // Arakoum = Delivery: Ա(0531)+Ռ(054C)+Ա(0531)+Ք(0554)+ո(0578)+ւ(0582)+Մ(0544)
   delivery:    '\u0531\u054c\u0531\u0554\u0578\u0582\u0544',
-  // Nor = New: Ն(0546)+Ո(0548)+Ռ(054C)
   nor:         '\u0546\u0548\u054c',
-  // Serndi = Generation: Ս(054D)+Ե(0535)+Ռ(054C)+Ն(0546)+Դ(0534)+Ի(053B)
   serndi:      '\u054d\u0535\u054c\u0546\u0534\u053b',
-  // Smartfonner = Smartphones: Ս+Մ+Ա+Ռ+Տ+Ֆ+Ո+Ն+Ն+Ե+Ռ
   smartphones: '\u054d\u0544\u0531\u054c\u054f\u0556\u0548\u0546\u0546\u0535\u054c',
-  // Ankjunain bazmots (lowercase Armenian)
   sofaName:    '\u0531\u0576\u056f\u0575\u0578\u0582\u0576\u0561\u0575\u056b\u0576 \u0562\u0561\u0566\u0584\u0578\u0581',
 } as const;
 
-/** Figma frame width (px). Content overflows to ~1714 px for the right card. */
 const CANVAS_W = 1440;
 const CANVAS_H = 900;
 
@@ -78,11 +67,6 @@ function SofaCard() {
         <p>Bellini</p>
       </div>
 
-      {/*
-       * Yellow "Buy now" CTA pill (w=182 px from Figma left-[27.29%] to right-[60.05%]).
-       * The ellipse circle is intentionally positioned at left-[189px] — it overflows the right
-       * edge of the 182 px pill, matching the Figma decorative treatment.
-       */}
       <Link
         href="/products"
         className="absolute left-[393px] top-[688px] h-[56px] w-[182px] bg-[#facc15] rounded-[68px] overflow-visible"
@@ -90,11 +74,9 @@ function SofaCard() {
         <span className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 font-bold text-[16px] text-black whitespace-nowrap leading-[24px]">
           {ARM.gnel} {ARM.hima}
         </span>
-        {/* Decorative circle — overflows right edge of the pill */}
         <div className="absolute left-[189px] top-[4px] size-[48px]">
           <Image src={ASSETS.ellipseCircle} alt="" fill className="object-contain" unoptimized />
         </div>
-        {/* Arrow inside the circle */}
         <div className="absolute left-[207px] top-[22px] size-[12px] flex items-center justify-center -rotate-45">
           <Image src={ASSETS.arrow} alt="" width={17} height={8} className="object-contain" unoptimized />
         </div>
@@ -104,40 +86,27 @@ function SofaCard() {
 }
 
 /**
- * Middle card — free-delivery promo with delivery-boxes photo and frosted-glass CTA panel.
+ * Middle card — BANNER2 1 (Figma 305:2151).
+ * Full-bleed raster: boxes photo fills the card, text + truck icon overlaid,
+ * frosted-glass bottom panel with "Buy now" CTA.
  */
 function DeliveryCard() {
   return (
     <>
-      {/* Delivery boxes background photo, clipped to card top radius */}
-      <div className="absolute left-[878px] top-[52px] w-[403px] h-[399px] overflow-hidden rounded-tl-[36px] rounded-tr-[36px]">
-        <Image src={ASSETS.boxesPhoto} alt="" fill className="object-cover" unoptimized />
+      {/* Full card — photo fills all 4 corners (rounded-[36px]) */}
+      <div className="absolute left-[878px] top-[52px] w-[403px] h-[556px] rounded-[36px] overflow-hidden">
+        <Image
+          src={ASSETS.banner2}
+          alt="Անvchair Arakoum"
+          fill
+          className="object-cover object-center"
+          unoptimized
+        />
       </div>
 
-      {/* "ԱՆVCHAIR ARAKOUM" headline — overlaps the boundary of left and middle cards */}
-      <div className="absolute left-[716px] top-[157px] whitespace-nowrap font-black leading-[43px]">
-        <p className="text-[#ffce13] text-[45px]">{ARM.free}</p>
-        <p className="text-white text-[45px]">{ARM.delivery}</p>
-      </div>
-
-      {/* Delivery truck icon — Figma inset-[35.17%_41.13%_56.19%_53.28%] on 1440×900 */}
-      <div className="absolute left-[767px] top-[316px] w-[81px] h-[78px]">
-        <Image src={ASSETS.truckIcon} alt="Free delivery" fill className="object-contain" unoptimized />
-      </div>
-
-      {/* Arrow/link icon */}
+      {/* Arrow/link icon — top-right of card */}
       <div className="absolute left-[1194px] top-[52px] w-[87px] h-[87px]">
         <Image src={ASSETS.linkIcon1} alt="" fill className="object-contain" unoptimized />
-      </div>
-
-      {/* Frosted-glass bottom panel with "Buy now" CTA */}
-      <div className="absolute left-[878px] top-[451px] w-[403px] h-[157px] rounded-bl-[36px] rounded-br-[36px] overflow-hidden backdrop-blur-[5px] bg-[linear-gradient(135.9deg,rgba(255,255,255,0.6)_0%,rgba(153,153,153,0.2)_100%)] flex items-center justify-center">
-        <Link
-          href="/products"
-          className="flex items-center justify-center h-[56px] w-[250px] bg-black text-white rounded-[60px] font-bold text-[16px]"
-        >
-          {ARM.gnel} {ARM.hima}
-        </Link>
       </div>
     </>
   );
@@ -204,7 +173,7 @@ export function HomeBanner() {
           <Image src={ASSETS.bgTexture} alt="" fill className="object-cover" priority unoptimized />
         </div>
 
-        {/* Large headline — top-left corner (Figma left-[8.44%] = 121 px on 1440 canvas) */}
+        {/* Large headline — top-left corner */}
         <p className="absolute left-[121px] top-[88px] whitespace-nowrap font-black text-[60px] leading-[72px]">
           <span className="text-black">{ARM.free} </span>
           <span className="text-white">{ARM.delivery}</span>
@@ -214,7 +183,7 @@ export function HomeBanner() {
         <DeliveryCard />
         <ElectronicsCard />
 
-        {/* Promo sub-copy (Figma left-[43.18%] right-[22.6%] on 1440 canvas) */}
+        {/* Promo sub-copy */}
         <p className="absolute left-[622px] right-[325px] top-[656px] text-white text-[24px] leading-[28px] font-semibold">
           {t('home.hero_subtitle')}
         </p>
