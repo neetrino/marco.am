@@ -60,6 +60,9 @@ const OVERLAY_SHIFT_X = -60;
 /** Extra nudge for the left (sofa) card only — product block vs. dark panel (px). */
 const SOFA_CARD_SHIFT_X = -22;
 
+/** Layout-ref X for `hero_banner_promo` block; increase to move copy toward the right. */
+const PROMO_COPY_LEFT_REF = 880;
+
 /**
  * Left product card — sofa promo with stacked-card depth effect.
  */
@@ -235,14 +238,13 @@ export function HomeBanner() {
           <DeliveryCard />
           <ElectronicsCard />
 
-          {/* Promo sub-copy — centered in lower band (title + subtitle from i18n) */}
-          <div
-            className="absolute left-1/2 max-w-[min(632px,calc(100%-2rem))] -translate-x-1/2 text-center text-white antialiased"
-            style={{ top: by(668) }}
+          {/* Promo sub-copy — lower band; line breaks from i18n (hero_banner_promo) */}
+          <p
+            className="absolute z-20 max-w-[min(560px,calc(100%-2rem))] whitespace-pre-line text-left text-[24px] font-bold leading-[1.15] text-white antialiased [text-shadow:0_1px_2px_rgba(0,0,0,0.25)]"
+            style={{ left: bx(PROMO_COPY_LEFT_REF), top: by(668) }}
           >
-            <p className="text-[24px] font-semibold leading-[30px]">{t('home.hero_title')}</p>
-            <p className="mt-2 text-[20px] font-semibold leading-[28px]">{t('home.hero_subtitle')}</p>
-          </div>
+            {t('home.hero_banner_promo')}
+          </p>
         </div>
       </div>
     </section>
