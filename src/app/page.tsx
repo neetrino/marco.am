@@ -9,7 +9,7 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen">
       <HeroCarousel />
-      <section className="bg-white">
+      <section>
         <HomePromoSection />
       </section>
 
