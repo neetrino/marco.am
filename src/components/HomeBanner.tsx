@@ -24,19 +24,17 @@ const ASSETS = {
   banner2:       '/images/home-banner-305-2151.png',
 } as const;
 
-/**
- * Armenian uppercase text — Unicode escapes keep the source ASCII-safe.
- */
+/** Armenian copy for fixed-layout banner blocks (Figma). */
 const ARM = {
-  gnel:        '\u0533\u0546\u0535\u053c',
-  hima:        '\u0540\u053b\u0544\u0531',
-  avelin:      '\u0531\u054e\u0535\u053c\u053b\u0546',
-  free:        '\u0531\u0546\u054e\u0543\u0531\u054c',
-  delivery:    '\u0531\u054c\u0531\u0554\u0578\u0582\u0544',
-  nor:         '\u0546\u0548\u054c',
-  serndi:      '\u054d\u0535\u054c\u0546\u0534\u053b',
-  smartphones: '\u054d\u0544\u0531\u054c\u054f\u0556\u0548\u0546\u0546\u0535\u054c',
-  sofaName:    '\u0531\u0576\u056f\u0575\u0578\u0582\u0576\u0561\u0575\u056b\u0576 \u0562\u0561\u0566\u0584\u0578\u0581',
+  gnel:        'ԳՆԵԼ',
+  hima:        'ՀԻՄԱ',
+  avelin:      'ԱՎԵԼԻՆ',
+  free:        'ԱՆՎՃԱՐ',
+  delivery:    'ԱՌԱՔՈՒՄ',
+  nor:         'ՆՈՐ',
+  serndi:      'ՍԵՐՆԴԻ',
+  smartphones: 'ՍՄԱՐԹՖՈՆՆԵՐ',
+  sofaName:    'Անկյունային բազմոց',
 } as const;
 
 /** Figma Mask group 1 (305:2146) — background plate. */
@@ -170,7 +168,7 @@ function ElectronicsCard() {
         className="absolute font-black whitespace-nowrap antialiased"
         style={{ left: bx(1350), top: by(378), fontSize: bx(28), lineHeight: `${by(33)}px` }}
       >
-        <p className="text-[#facc15]">{ARM.nor}</p>
+        <p className="text-[#facc15]">նոր</p>
         <p className="text-white">{ARM.serndi}</p>
         <p className="text-white">{ARM.smartphones}</p>
       </div>
