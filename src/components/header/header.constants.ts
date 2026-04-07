@@ -37,10 +37,10 @@ export const HEADER_FIGMA_ROW2_RIGHT_INNER_GAP_CLASS =
   'gap-x-1 md:gap-x-1.5 lg:gap-x-2 xl:gap-x-2.5 min-[1800px]:gap-x-3';
 
 /**
- * Profile + compare + wishlist — single flex row; gap tighter than Figma 214:1054 icon row.
+ * Profile + compare + wishlist — single flex row; only these three share this gap.
  */
 export const HEADER_TOOLBAR_ICON_CLUSTER_CLASS =
-  'flex shrink-0 flex-nowrap items-center gap-1.5';
+  'flex shrink-0 flex-nowrap items-center gap-1';
 
 /**
  * Categories bar + yellow search CTA — symmetric pill (same radius on left and right edges).
@@ -82,14 +82,13 @@ export const HEADER_SEARCH_SUBMIT_CLASS = `flex items-center justify-center self
 /** Language + currency pill — height matches `HEADER_ROW2_BAR_HEIGHT_CLASS` */
 export const HEADER_LOCALE_PILL_HEIGHT_CLASS = HEADER_ROW2_BAR_HEIGHT_CLASS;
 
-/** Figma 214:1054 / 111:4306 frame width 212px */
-export const HEADER_LOCALE_PILL_MIN_WIDTH_CLASS = 'min-w-[212px]';
+/** Slightly under Figma 212px — compact language pill */
+export const HEADER_LOCALE_PILL_MIN_WIDTH_CLASS = 'min-w-[188px]';
 
 /** Figma 111:4306 pill radius */
 export const HEADER_LOCALE_PILL_RADIUS_CLASS = 'rounded-[80px]';
 
-/** Figma 111:4306 horizontal inset */
-export const HEADER_LOCALE_PILL_PADDING_X_CLASS = 'px-[31px]';
+export const HEADER_LOCALE_PILL_PADDING_X_CLASS = 'px-5';
 
 /** Tight rhythm for smaller pill */
 export const HEADER_LOCALE_PILL_INNER_GAP_CLASS = 'gap-1';
