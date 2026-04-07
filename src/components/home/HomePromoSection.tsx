@@ -14,7 +14,7 @@ export function HomePromoSection() {
   return (
     <div className="hero-section-inset pb-10 pt-6 sm:pb-12 sm:pt-8">
       <div
-        className={`home-promo-panel relative overflow-visible rounded-[1.75rem] shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] ${PROMO_SECTION_PADDING_CLASS} pb-16 sm:pb-14 md:pb-12`}
+        className={`home-promo-panel relative overflow-hidden rounded-[1.75rem] shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] ${PROMO_SECTION_PADDING_CLASS} pb-16 sm:pb-14 md:pb-12`}
       >
         <HomePromoYellowHeadline
           emphasisText={t('home.promo_banner_headline_emphasis')}

@@ -38,7 +38,7 @@ export function HeaderSocialCircleLinks({ className = '' }: HeaderSocialCircleLi
         const name = t(ariaKey);
 
         const inner = (
-          <Icon className="h-[18px] w-[18px] text-marco-black" strokeWidth={1.75} aria-hidden />
+          <Icon className="h-4 w-4 text-marco-black" strokeWidth={1.75} aria-hidden />
         );
 
         if (!hasHref) {
@@ -46,7 +46,7 @@ export function HeaderSocialCircleLinks({ className = '' }: HeaderSocialCircleLi
             <span
               key={translationKey}
               role="listitem"
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-marco-gray opacity-50"
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-marco-gray opacity-50"
               aria-label={name}
             >
               {inner}
@@ -61,7 +61,7 @@ export function HeaderSocialCircleLinks({ className = '' }: HeaderSocialCircleLi
             href={href}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-marco-gray text-marco-black transition-colors hover:bg-marco-yellow/40"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-marco-gray text-marco-black transition-colors hover:bg-marco-yellow/40"
             aria-label={name}
           >
             {inner}
