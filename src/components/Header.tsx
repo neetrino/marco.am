@@ -705,10 +705,12 @@ export function Header() {
   };
 
   const socialBtnClass =
-    'flex h-10 w-10 items-center justify-center rounded-full bg-[#f4f4f4] text-[#333] transition-colors hover:bg-black hover:text-white';
+    'flex h-[52px] w-[52px] items-center justify-center rounded-full bg-[#f4f4f4] text-[#333] transition-colors hover:bg-black hover:text-white xl:h-14 xl:w-14 min-[1920px]:h-[60px] min-[1920px]:w-[60px]';
 
   return (
-    <header className={`${headerFont.className} sticky top-0 z-50 border-b border-[#ebebeb] bg-white`}>
+    <header
+      className={`${headerFont.className} sticky top-0 z-50 border-b border-[#ebebeb] bg-white pl-6 lg:pl-10 min-[1920px]:pl-14`}
+    >
       <Suspense fallback={null}>
         <HeaderSearchSync
           setSearchQuery={setSearchQuery}
@@ -722,16 +724,16 @@ export function Header() {
         {/* Row 1: logo | nav | socials | phone + addresses — spacing per Figma 111:4293 */}
         <div className="border-b border-[#ebebeb] bg-white">
           <div
-            className={`${HEADER_DESKTOP_SHELL_CLASS} flex flex-wrap items-center gap-x-4 gap-y-2.5 py-2 lg:gap-x-5 lg:gap-y-2 xl:flex-nowrap xl:gap-x-7 xl:gap-y-0 xl:py-[6px] 2xl:gap-x-10 min-[1920px]:gap-x-[54px]`}
+            className={`${HEADER_DESKTOP_SHELL_CLASS} flex flex-wrap items-center gap-x-5 gap-y-2.5 py-4 lg:gap-x-6 lg:gap-y-2 xl:flex-nowrap xl:gap-x-8 xl:gap-y-0 xl:py-3.5 2xl:gap-x-10 min-[1920px]:gap-x-[54px] min-[1920px]:py-3`}
           >
             <Link
               href="/"
-              className="flex aspect-[83/73] h-[58px] w-[66px] shrink-0 items-center justify-center lg:h-[64px] lg:w-[72px] xl:h-[68px] xl:w-[77px] min-[1920px]:h-[73px] min-[1920px]:w-[83px]"
+              className="flex aspect-[83/73] h-[72px] w-[80px] shrink-0 items-center justify-center lg:h-[78px] lg:w-[86px] xl:h-[82px] xl:w-[92px] min-[1920px]:h-[88px] min-[1920px]:w-[98px]"
               aria-label="MARCO GROUP"
             >
               <MarcoGroupLogo priority />
             </Link>
-            <nav className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 capitalize text-[14px] font-bold leading-snug text-[#333] lg:gap-x-4 lg:text-[15px] lg:leading-[18px] xl:flex-nowrap xl:gap-x-5 xl:text-[16px] xl:leading-[18px] 2xl:gap-x-7 min-[1920px]:gap-x-[45px]">
+            <nav className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 capitalize text-[17px] font-bold leading-snug text-[#333] lg:gap-x-4 lg:text-[18px] lg:leading-tight xl:flex-nowrap xl:gap-x-6 xl:text-[19px] xl:leading-[22px] 2xl:gap-x-7 min-[1920px]:gap-x-[45px] min-[1920px]:text-[20px] min-[1920px]:leading-[24px]">
               {headerNavLinks.map((link) => (
                 <Link
                   key={link.translationKey}
@@ -742,7 +744,7 @@ export function Header() {
                 </Link>
               ))}
             </nav>
-            <div className="flex shrink-0 items-center gap-2.5 sm:gap-3 xl:gap-4">
+            <div className="flex shrink-0 items-center gap-3 sm:gap-3.5 xl:gap-4">
               <a
                 href={t('contact.social.instagram') || '#'}
                 target="_blank"
@@ -750,7 +752,7 @@ export function Header() {
                 className={socialBtnClass}
                 aria-label={t('common.ariaLabels.instagram')}
               >
-                <Instagram className="h-4 w-4" />
+                <Instagram className="h-[22px] w-[22px] xl:h-6 xl:w-6 min-[1920px]:h-[26px] min-[1920px]:w-[26px]" />
               </a>
               <a
                 href={t('contact.social.facebook') || '#'}
@@ -759,7 +761,7 @@ export function Header() {
                 className={socialBtnClass}
                 aria-label={t('common.ariaLabels.facebook')}
               >
-                <Facebook className="h-4 w-4" />
+                <Facebook className="h-[22px] w-[22px] xl:h-6 xl:w-6 min-[1920px]:h-[26px] min-[1920px]:w-[26px]" />
               </a>
               <a
                 href={t('contact.social.telegram') || '#'}
@@ -768,7 +770,7 @@ export function Header() {
                 className={socialBtnClass}
                 aria-label="Telegram"
               >
-                <Send className="h-4 w-4" />
+                <Send className="h-[22px] w-[22px] xl:h-6 xl:w-6 min-[1920px]:h-[26px] min-[1920px]:w-[26px]" />
               </a>
               <a
                 href={t('contact.social.whatsapp') || '#'}
@@ -777,7 +779,7 @@ export function Header() {
                 className={socialBtnClass}
                 aria-label="WhatsApp"
               >
-                <Phone className="h-4 w-4" />
+                <Phone className="h-[22px] w-[22px] xl:h-6 xl:w-6 min-[1920px]:h-[26px] min-[1920px]:w-[26px]" />
               </a>
               <a
                 href={t('contact.social.viber') || '#'}
@@ -786,7 +788,7 @@ export function Header() {
                 className={socialBtnClass}
                 aria-label="Viber"
               >
-                <Phone className="h-4 w-4" />
+                <Phone className="h-[22px] w-[22px] xl:h-6 xl:w-6 min-[1920px]:h-[26px] min-[1920px]:w-[26px]" />
               </a>
             </div>
             <div className="flex shrink-0 flex-wrap items-center gap-x-5 gap-y-1.5 lg:gap-x-6 xl:gap-x-[29px]">
@@ -800,7 +802,7 @@ export function Header() {
                     strokeLinejoin="round"
                   />
                 </svg>
-                <span className="text-[14px] font-medium text-[#333] lg:text-[15px] min-[1920px]:text-[18px]">{t('contact.phone')}</span>
+                <span className="text-[17px] font-medium text-[#333] lg:text-[18px] min-[1920px]:text-[21px]">{t('contact.phone')}</span>
                 <ChevronDownIcon />
               </div>
               <Link
@@ -815,7 +817,7 @@ export function Header() {
                     fill="none"
                   />
                 </svg>
-                <span className="text-[14px] font-medium lg:text-[15px] min-[1920px]:text-[16px]">{t('common.header.addresses')}</span>
+                <span className="text-[17px] font-medium lg:text-[18px] min-[1920px]:text-[19px]">{t('common.header.addresses')}</span>
                 <ChevronDownIcon />
               </Link>
             </div>
@@ -823,7 +825,7 @@ export function Header() {
         </div>
 
         {/* Row 2: categories, search, lang/currency, theme, account, compare, wishlist, cart */}
-        <div className="bg-white py-3.5">
+        <div className="bg-white py-4">
           <div
             className={`${HEADER_DESKTOP_SHELL_CLASS} flex flex-wrap items-center gap-x-[66px] gap-y-3 min-[1920px]:gap-x-[72px]`}
           >

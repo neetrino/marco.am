@@ -3,6 +3,17 @@
 @tailwind utilities;
 
 @layer base {
+  /**
+   * Wide screens: at 100% browser zoom, match the visual density of ~80% zoom
+   * (smaller UI without asking users to change browser zoom). Scoped to lg+ so
+   * mobile tap targets and readability stay unchanged.
+   */
+  @media (min-width: 1024px) {
+    html {
+      zoom: 0.8;
+    }
+  }
+
   body {
     @apply bg-white text-gray-900;
   }
