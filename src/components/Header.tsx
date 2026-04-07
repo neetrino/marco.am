@@ -736,7 +736,7 @@ export function Header() {
           >
             <a
               href={telHref}
-              className="flex items-center gap-1.5 text-sm font-medium leading-[18px] text-marco-text xl:text-base"
+              className="flex items-center gap-1.5 text-sm font-medium leading-[18px] text-marco-text"
             >
               <Phone className="h-[17px] w-[17px] shrink-0" strokeWidth={1.75} aria-hidden />
               <span className="whitespace-nowrap">{phoneDisplay}</span>
@@ -744,7 +744,7 @@ export function Header() {
             </a>
             <Link
               href="/stores"
-              className="flex items-center gap-1.5 text-sm font-medium leading-[18px] text-marco-text transition-opacity hover:opacity-80 xl:text-base"
+              className="flex items-center gap-1.5 text-sm font-medium leading-[18px] text-marco-text transition-opacity hover:opacity-80"
             >
               <MapPin className="h-[17px] w-[17px] shrink-0" strokeWidth={1.75} aria-hidden />
               <span className="whitespace-nowrap">{t('common.navigation.addresses')}</span>
