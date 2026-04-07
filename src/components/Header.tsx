@@ -123,7 +123,7 @@ const WishlistIcon = () => (
 /** Search field icon — compact */
 const SearchIcon = () => (
   <svg
-    className="h-5 w-5 shrink-0"
+    className="h-[18px] w-[18px] shrink-0"
     width="20"
     height="20"
     viewBox="0 0 22 22"

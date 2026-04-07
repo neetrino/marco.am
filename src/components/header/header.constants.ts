@@ -49,12 +49,17 @@ export const HEADER_TOOLBAR_ICON_CLUSTER_CLASS =
 export const HEADER_FIGMA_PILL_RADIUS_CLASS = 'rounded-[89px]';
 
 /**
- * Gray search track — Figma 98:1369 `h-[56px]`; yellow inner CTA is 54px (`HEADER_SEARCH_SUBMIT_HEIGHT_CLASS`).
+ * Row-2 navbar strip — one height for categories, search track, locale pill, toolbar icons, cart.
  */
-export const HEADER_SEARCH_BAR_HEIGHT_CLASS = 'h-14';
+export const HEADER_ROW2_BAR_HEIGHT_CLASS = 'h-11';
 
-/** Yellow «Search» button height — Figma 98:1423 */
-export const HEADER_SEARCH_SUBMIT_HEIGHT_CLASS = 'h-[54px]';
+/**
+ * Gray search track — matches `HEADER_ROW2_BAR_HEIGHT_CLASS`.
+ */
+export const HEADER_SEARCH_BAR_HEIGHT_CLASS = HEADER_ROW2_BAR_HEIGHT_CLASS;
+
+/** Yellow «Search» button — inset in track (42px in 44px bar). */
+export const HEADER_SEARCH_SUBMIT_HEIGHT_CLASS = 'h-[42px]';
 
 /**
  * Search pill spans all space between categories and the right toolbar (stretches to the right).
@@ -71,30 +76,33 @@ export const HEADER_SEARCH_INPUT_PADDING_LEFT_CLASS = 'pl-6';
 export const HEADER_SEARCH_SUBMIT_WIDTH_CLASS = 'w-[155px] max-w-[155px] shrink-0 px-4 sm:px-5';
 
 /**
- * Yellow submit — Figma 98:1423: 54px tall, centered in 56px track; radius matches pill track.
+ * Yellow submit — centered in `HEADER_SEARCH_BAR_HEIGHT_CLASS` track; radius matches pill track.
  */
 export const HEADER_SEARCH_SUBMIT_CLASS = `flex items-center justify-center self-center ${HEADER_SEARCH_SUBMIT_HEIGHT_CLASS} shrink-0 bg-marco-yellow text-sm font-semibold leading-normal text-marco-black transition-[filter] hover:brightness-95 active:brightness-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/15 ${HEADER_FIGMA_PILL_RADIUS_CLASS}`;
 
-/** Language + currency pill — Figma 111:4306 `h-[48px]` */
-export const HEADER_LOCALE_PILL_HEIGHT_CLASS = 'h-[48px]';
+/** Language + currency pill — height matches `HEADER_ROW2_BAR_HEIGHT_CLASS` */
+export const HEADER_LOCALE_PILL_HEIGHT_CLASS = HEADER_ROW2_BAR_HEIGHT_CLASS;
 
-/** Full capsule radius */
-export const HEADER_LOCALE_PILL_RADIUS_CLASS = 'rounded-[72px]';
+export const HEADER_LOCALE_PILL_MIN_WIDTH_CLASS = 'min-w-[176px]';
 
-/** Horizontal rhythm between globe, labels, icons */
-export const HEADER_LOCALE_PILL_INNER_GAP_CLASS = 'gap-2.5 sm:gap-3';
+export const HEADER_LOCALE_PILL_RADIUS_CLASS = 'rounded-[64px]';
+
+export const HEADER_LOCALE_PILL_PADDING_X_CLASS = 'px-4';
+
+/** Tight rhythm for smaller pill */
+export const HEADER_LOCALE_PILL_INNER_GAP_CLASS = 'gap-1';
 
 /** Row 2 vertical padding — Figma 111:4273 `py-[14px]` */
 export const HEADER_FIGMA_ROW2_PADDING_Y_CLASS = 'py-3.5';
 
 /**
- * Category trigger — Figma 98:1403: 251×54, 16px regular, text + chevron, pill radius.
+ * Category trigger — width matches Figma 98:1403; height matches `HEADER_ROW2_BAR_HEIGHT_CLASS`.
  */
-export const HEADER_CATEGORY_BUTTON_CLASS = `gap-2.5 px-5 py-2.5 text-sm font-normal transition-[opacity,filter] hover:opacity-95 active:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${HEADER_FIGMA_PILL_RADIUS_CLASS} md:h-[54px] md:w-[251px] md:max-w-[251px] md:shrink-0 md:justify-between md:px-[42px] md:py-0 md:text-base md:font-normal`;
+export const HEADER_CATEGORY_BUTTON_CLASS = `gap-2.5 px-5 py-2.5 text-sm font-normal transition-[opacity,filter] hover:opacity-95 active:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${HEADER_FIGMA_PILL_RADIUS_CLASS} md:h-11 md:w-[251px] md:max-w-[251px] md:shrink-0 md:justify-between md:px-[42px] md:py-0 md:text-sm md:font-normal`;
 
-/** Toolbar icon hit targets — compact; shrink-0 keeps alignment stable when the row flexes/zooms */
-export const HEADER_TOOLBAR_ICON_BUTTON_CLASS = 'h-10 w-10 shrink-0';
+/** Toolbar icon hit targets — same outer size as `HEADER_ROW2_BAR_HEIGHT_CLASS` */
+export const HEADER_TOOLBAR_ICON_BUTTON_CLASS = 'h-11 w-11 shrink-0';
 
-/** Cart pill — Figma 98:1389: h-[48px], rounded-[68px], ~122px min */
+/** Cart pill — same height as row-2 strip; rounded-[68px], ~122px min */
 export const HEADER_CART_BUTTON_CLASS =
-  'flex h-12 min-w-[122px] items-center justify-center gap-[11px] rounded-[68px] pl-[25px] pr-5 text-base font-bold leading-6 transition-[opacity,filter] hover:opacity-95 active:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25';
+  'flex h-11 min-w-[122px] items-center justify-center gap-[11px] rounded-[68px] pl-[25px] pr-5 text-sm font-bold leading-5 transition-[opacity,filter] hover:opacity-95 active:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25';

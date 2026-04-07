@@ -7,11 +7,21 @@ import { LANGUAGES, type LanguageCode, getStoredLanguage, setStoredLanguage } fr
 import {
   HEADER_LOCALE_PILL_HEIGHT_CLASS,
   HEADER_LOCALE_PILL_INNER_GAP_CLASS,
+  HEADER_LOCALE_PILL_MIN_WIDTH_CLASS,
+  HEADER_LOCALE_PILL_PADDING_X_CLASS,
   HEADER_LOCALE_PILL_RADIUS_CLASS,
 } from './header.constants';
 
 const ChevronDownIcon = () => (
-  <svg width="10" height="10" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+  <svg
+    className="shrink-0 self-center"
+    width="8"
+    height="8"
+    viewBox="0 0 12 12"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden
+  >
     <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
@@ -204,14 +214,14 @@ export function HeaderLocaleCurrencyPill({
         type="button"
         onClick={() => setShowMenu((open) => !open)}
         aria-expanded={showMenu}
-        className={`flex min-w-0 items-center overflow-hidden bg-marco-gray px-5 text-sm font-bold leading-[18px] text-marco-text sm:px-7 ${HEADER_LOCALE_PILL_INNER_GAP_CLASS} ${HEADER_LOCALE_PILL_HEIGHT_CLASS} ${HEADER_LOCALE_PILL_RADIUS_CLASS}`}
+        className={`flex shrink-0 items-center justify-center overflow-hidden bg-marco-gray text-sm font-bold leading-none text-marco-text ${HEADER_LOCALE_PILL_MIN_WIDTH_CLASS} ${HEADER_LOCALE_PILL_PADDING_X_CLASS} ${HEADER_LOCALE_PILL_INNER_GAP_CLASS} ${HEADER_LOCALE_PILL_HEIGHT_CLASS} ${HEADER_LOCALE_PILL_RADIUS_CLASS}`}
       >
-        <Globe className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
-        <span className="whitespace-nowrap">
+        <Globe className="h-[18px] w-[18px] shrink-0 self-center" strokeWidth={1.75} aria-hidden />
+        <span className="inline-flex items-center whitespace-nowrap">
           {getPillLanguageLabel(currentLang)} <span className="font-bold">/</span>
         </span>
-        <Banknote className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
-        <span className="whitespace-nowrap">{selectedCurrency}</span>
+        <Banknote className="h-[18px] w-[18px] shrink-0 self-center" strokeWidth={1.75} aria-hidden />
+        <span className="inline-flex items-center whitespace-nowrap">{selectedCurrency}</span>
         <ChevronDownIcon />
       </button>
       {showMenu && (
