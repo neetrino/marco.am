@@ -6,9 +6,9 @@
 export const PROMO_PANEL_FIGMA_WIDTH_PX = 1651;
 export const PROMO_PANEL_FIGMA_HEIGHT_PX = 925;
 
-/** Yellow brick texture — `public/assets/hero/hero-figma-mask.png`; applied in `.home-promo-panel` (globals.css) */
+/** Yellow brick texture — `public/assets/hero/hero-yellow-brick-wall.png`; applied in `.home-promo-panel` (globals.css) */
 export const PROMO_PANEL_MASK_IMAGE_SRC =
-  '/assets/hero/hero-figma-mask.png' as const;
+  '/assets/hero/hero-yellow-brick-wall.png' as const;
 
 /** Featured armchair — Pexels (allowed in next.config.js) */
 export const PROMO_FEATURED_IMAGE_SRC =

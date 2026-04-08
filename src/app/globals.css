@@ -193,7 +193,7 @@
   background-image:
     radial-gradient(ellipse 85% 55% at 12% 18%, rgba(255, 255, 255, 0.12) 0%, transparent 55%),
     radial-gradient(ellipse 55% 45% at 88% 82%, rgba(0, 0, 0, 0.05) 0%, transparent 52%),
-    url('/assets/hero/hero-figma-mask.png');
+    url('/assets/hero/hero-yellow-brick-wall.png');
   background-size: cover, cover, cover;
   background-position: center, center, center;
   background-repeat: no-repeat;
