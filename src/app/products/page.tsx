@@ -14,10 +14,9 @@ import { CategoryNavigation } from '../../components/CategoryNavigation';
 import { MobileFiltersDrawer } from '../../components/MobileFiltersDrawer';
 import { ProductsFiltersProvider } from '../../components/ProductsFiltersProvider';
 import { MOBILE_FILTERS_EVENT } from '../../lib/events';
+import { HOME_PAGE_CONTAINER_CLASS } from '@/constants/homePageLayout';
 
-const PAGE_CONTAINER = 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8';
-// Container for filters section to align with Header logo (same Y-axis)
-// Header logo uses: pl-2 sm:pl-4 md:pl-6 lg:pl-8
+const PAGE_CONTAINER = HOME_PAGE_CONTAINER_CLASS;
 
 interface Product {
   id: string;
@@ -237,7 +236,7 @@ export default async function ProductsPage({
         />
       </div>
 
-      <div className="max-w-7xl mx-auto pl-2 sm:pl-4 md:pl-6 lg:pl-8 pr-4 sm:pr-6 lg:pr-8 flex flex-col lg:flex-row gap-8">
+      <div className={`${HOME_PAGE_CONTAINER_CLASS} flex flex-col gap-8 lg:flex-row`}>
         <ProductsFiltersProvider
           category={categoryParam}
           search={searchParam}

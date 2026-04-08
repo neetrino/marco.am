@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { getStoredLanguage } from '../lib/language';
 import { t } from '../lib/i18n';
 import { useState, useEffect } from 'react';
+import { HOME_PAGE_CONTAINER_CLASS } from '@/constants/homePageLayout';
 
 interface BreadcrumbItem {
   label: string;
@@ -97,7 +98,7 @@ export function Breadcrumb() {
 
   return (
     <nav className="bg-gray-50 border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+      <div className={`${HOME_PAGE_CONTAINER_CLASS} py-3`}>
         <div className="flex items-center text-sm">
           {breadcrumbs.map((item, index) => (
             <div key={item.href} className="flex items-center">

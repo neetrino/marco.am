@@ -44,8 +44,8 @@ const ARM = {
 const MASK_BG_W = 1651;
 const MASK_BG_H = 925;
 
-/** Desktop frame max width — matches `HOME_PAGE_CONTAINER_CLASS` (`max-w-[1280px]`). */
-const HERO_DESKTOP_MAX_WIDTH_PX = 1280;
+/** Desktop frame max width — matches `HOME_PAGE_CONTAINER_CLASS` (`max-w-[1440px]`). */
+const HERO_DESKTOP_MAX_WIDTH_PX = 1440;
 
 /** Figma Group 9275 reference — overlay scaled to MASK_BG_*. */
 const LAYOUT_REF_W = 1714;

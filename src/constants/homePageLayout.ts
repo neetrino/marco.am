@@ -1,5 +1,5 @@
 /**
- * Single centered content column for the home page — header on `/` uses the same class
- * so the top bar lines up with hero and sections.
+ * Single centered content column — home (`/`) header, hero, sections, and shared layout
+ * use this class so the column aligns to one vertical grid.
  */
-export const HOME_PAGE_CONTAINER_CLASS = 'mx-auto w-full max-w-[1280px] px-4';
+export const HOME_PAGE_CONTAINER_CLASS = 'w-full max-w-[1440px] mx-auto px-4';

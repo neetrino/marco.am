@@ -40,7 +40,7 @@ function AppBannerRaster(props: {
           alt={props.alt}
           fill
           className="object-cover object-center"
-          sizes="(max-width: 1280px) 100vw, 1280px"
+          sizes="(max-width: 1440px) 100vw, 1440px"
           unoptimized
           priority={false}
           onError={props.onError}

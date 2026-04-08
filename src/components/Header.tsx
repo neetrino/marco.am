@@ -19,11 +19,7 @@ import { Instagram, Facebook, Sun, Send, Phone } from 'lucide-react';
 import { CompareIcon } from './icons/CompareIcon';
 import { CartIcon } from './icons/CartIcon';
 import { MarcoGroupLogo } from './MarcoGroupLogo';
-import {
-  HEADER_DESKTOP_SHELL_CLASS,
-  HEADER_TOP_ROW_FRAME_CLASS,
-  HEADER_VIEWPORT_LEFT_INSET_CLASS,
-} from '@/constants/headerLayout';
+import { HEADER_DESKTOP_SHELL_CLASS, HEADER_VIEWPORT_LEFT_INSET_CLASS } from '@/constants/headerLayout';
 import { HOME_PAGE_CONTAINER_CLASS } from '@/constants/homePageLayout';
 
 const headerFont = Montserrat({
@@ -725,105 +721,108 @@ export function Header() {
       <div className="hidden lg:block">
         {/* Row 1: logo | nav | socials | phone + addresses — spacing per Figma 111:4293 */}
         <div className="border-b border-[#ebebeb] bg-white">
-          <div
-            className={`${headerShellClass} ${HEADER_TOP_ROW_FRAME_CLASS} py-4 lg:py-3.5 min-[1920px]:py-[6px]`}
-          >
-            <div className="flex w-full min-w-0 flex-wrap items-center gap-x-5 gap-y-2.5 lg:gap-x-6 lg:gap-y-2 xl:flex-nowrap xl:gap-x-8 xl:gap-y-0 2xl:gap-x-10 min-[1920px]:gap-x-[54px]">
-            <Link
-              href="/"
-              className="flex aspect-[93/73] h-[83px] w-[92px] shrink-0 items-center justify-center lg:h-[90px] lg:w-[99px] xl:h-[94px] xl:w-[106px] min-[1920px]:h-[101px] min-[1920px]:w-[113px]"
-              aria-label="MARCO GROUP"
-            >
-              <MarcoGroupLogo priority />
-            </Link>
-            <nav className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 capitalize text-[17px] font-bold leading-snug text-[#333] lg:gap-x-4 lg:text-[18px] lg:leading-tight xl:flex-nowrap xl:gap-x-6 xl:text-[19px] xl:leading-[22px] 2xl:gap-x-7 min-[1920px]:gap-x-[45px] min-[1920px]:text-[20px] min-[1920px]:leading-[24px]">
-              {headerNavLinks.map((link) => (
-                <Link
-                  key={link.translationKey}
-                  href={link.href}
-                  className={`shrink-0 whitespace-nowrap transition-colors hover:text-black ${isNavItemActive(link) ? 'text-[#101010]' : ''}`}
-                >
-                  {t(link.translationKey)}
-                </Link>
-              ))}
-            </nav>
-            <div className="flex shrink-0 items-center gap-3 sm:gap-3.5 xl:gap-4">
-              <a
-                href={t('contact.social.instagram') || '#'}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={socialBtnClass}
-                aria-label={t('common.ariaLabels.instagram')}
-              >
-                <Instagram className="h-[22px] w-[22px] xl:h-6 xl:w-6 min-[1920px]:h-[26px] min-[1920px]:w-[26px]" />
-              </a>
-              <a
-                href={t('contact.social.facebook') || '#'}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={socialBtnClass}
-                aria-label={t('common.ariaLabels.facebook')}
-              >
-                <Facebook className="h-[22px] w-[22px] xl:h-6 xl:w-6 min-[1920px]:h-[26px] min-[1920px]:w-[26px]" />
-              </a>
-              <a
-                href={t('contact.social.telegram') || '#'}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={socialBtnClass}
-                aria-label="Telegram"
-              >
-                <Send className="h-[22px] w-[22px] xl:h-6 xl:w-6 min-[1920px]:h-[26px] min-[1920px]:w-[26px]" />
-              </a>
-              <a
-                href={t('contact.social.whatsapp') || '#'}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={socialBtnClass}
-                aria-label="WhatsApp"
-              >
-                <Phone className="h-[22px] w-[22px] xl:h-6 xl:w-6 min-[1920px]:h-[26px] min-[1920px]:w-[26px]" />
-              </a>
-              <a
-                href={t('contact.social.viber') || '#'}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={socialBtnClass}
-                aria-label="Viber"
-              >
-                <Phone className="h-[22px] w-[22px] xl:h-6 xl:w-6 min-[1920px]:h-[26px] min-[1920px]:w-[26px]" />
-              </a>
-            </div>
-            <div className="flex shrink-0 flex-wrap items-center gap-x-5 gap-y-1.5 lg:gap-x-6 xl:gap-x-[29px]">
-              <div className="flex shrink-0 items-center gap-1.5 whitespace-nowrap sm:gap-2">
-                <svg width="19" height="19" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                  <path
-                    d="M2 3C2 2.44772 2.44772 2 3 2H5.15287C5.64171 2 6.0589 2.35341 6.13927 2.8356L6.87858 7.27147C6.95075 7.70451 6.73206 8.13397 6.3394 8.3303L4.79126 9.10437C5.90715 11.8783 8.12168 14.0929 10.8956 15.2088L11.6697 13.6606C11.866 13.2679 12.2955 13.0493 12.7285 13.1214L17.1644 13.8607C17.6466 13.9411 18 14.3583 18 14.8471V17C18 17.5523 17.5523 18 17 18H15C7.8203 18 2 12.1797 2 5V3Z"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                <span className="text-[17px] font-medium text-[#333] lg:text-[18px] min-[1920px]:text-[21px]">{t('contact.phone')}</span>
-                <ChevronDownIcon />
-              </div>
+          <div className={`${headerShellClass} py-4`}>
+            <div className="flex w-full min-w-0 flex-nowrap items-center justify-between gap-3 lg:gap-4 xl:gap-6">
               <Link
-                href="/stores"
-                className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-[#333] sm:gap-2"
+                href="/"
+                className="flex aspect-[93/73] h-[83px] w-[92px] shrink-0 items-center justify-center lg:h-[90px] lg:w-[99px] xl:h-[94px] xl:w-[106px] min-[1920px]:h-[101px] min-[1920px]:w-[113px]"
+                aria-label="MARCO GROUP"
               >
-                <svg width="16" height="19" viewBox="0 0 16 19" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                  <path
-                    d="M8 0C5.2 0 3 2.2 3 5C3 8.5 8 12 8 12C8 12 13 8.5 13 5C13 2.2 10.8 0 8 0Z"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    fill="none"
-                  />
-                </svg>
-                <span className="text-[17px] font-medium lg:text-[18px] min-[1920px]:text-[19px]">{t('common.header.addresses')}</span>
-                <ChevronDownIcon />
+                <MarcoGroupLogo priority />
               </Link>
-            </div>
+              <nav
+                className="flex min-h-0 min-w-0 flex-1 flex-nowrap items-center justify-center gap-x-2 px-2 capitalize text-[17px] font-bold leading-snug text-[#333] sm:gap-x-3 sm:px-3 lg:gap-x-4 lg:text-[18px] lg:leading-tight xl:gap-x-5 xl:text-[19px] xl:leading-[22px] 2xl:gap-x-6 min-[1920px]:gap-x-[28px] min-[1920px]:text-[20px] min-[1920px]:leading-[24px]"
+                aria-label="Main"
+              >
+                {headerNavLinks.map((link) => (
+                  <Link
+                    key={link.translationKey}
+                    href={link.href}
+                    className={`shrink-0 whitespace-nowrap transition-colors hover:text-black ${isNavItemActive(link) ? 'text-[#101010]' : ''}`}
+                  >
+                    {t(link.translationKey)}
+                  </Link>
+                ))}
+              </nav>
+              <div className="flex min-w-0 shrink-0 items-center gap-3 sm:gap-4 lg:gap-5 xl:gap-6">
+                <div className="flex shrink-0 items-center gap-2 sm:gap-2.5 xl:gap-3">
+                  <a
+                    href={t('contact.social.instagram') || '#'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={socialBtnClass}
+                    aria-label={t('common.ariaLabels.instagram')}
+                  >
+                    <Instagram className="h-[22px] w-[22px] xl:h-6 xl:w-6 min-[1920px]:h-[26px] min-[1920px]:w-[26px]" />
+                  </a>
+                  <a
+                    href={t('contact.social.facebook') || '#'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={socialBtnClass}
+                    aria-label={t('common.ariaLabels.facebook')}
+                  >
+                    <Facebook className="h-[22px] w-[22px] xl:h-6 xl:w-6 min-[1920px]:h-[26px] min-[1920px]:w-[26px]" />
+                  </a>
+                  <a
+                    href={t('contact.social.telegram') || '#'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={socialBtnClass}
+                    aria-label="Telegram"
+                  >
+                    <Send className="h-[22px] w-[22px] xl:h-6 xl:w-6 min-[1920px]:h-[26px] min-[1920px]:w-[26px]" />
+                  </a>
+                  <a
+                    href={t('contact.social.whatsapp') || '#'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={socialBtnClass}
+                    aria-label="WhatsApp"
+                  >
+                    <Phone className="h-[22px] w-[22px] xl:h-6 xl:w-6 min-[1920px]:h-[26px] min-[1920px]:w-[26px]" />
+                  </a>
+                  <a
+                    href={t('contact.social.viber') || '#'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={socialBtnClass}
+                    aria-label="Viber"
+                  >
+                    <Phone className="h-[22px] w-[22px] xl:h-6 xl:w-6 min-[1920px]:h-[26px] min-[1920px]:w-[26px]" />
+                  </a>
+                </div>
+                <div className="flex shrink-0 flex-nowrap items-center gap-x-4 gap-y-1.5 lg:gap-x-5 xl:gap-x-[29px]">
+                  <div className="flex shrink-0 items-center gap-1.5 whitespace-nowrap sm:gap-2">
+                    <svg width="19" height="19" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                      <path
+                        d="M2 3C2 2.44772 2.44772 2 3 2H5.15287C5.64171 2 6.0589 2.35341 6.13927 2.8356L6.87858 7.27147C6.95075 7.70451 6.73206 8.13397 6.3394 8.3303L4.79126 9.10437C5.90715 11.8783 8.12168 14.0929 10.8956 15.2088L11.6697 13.6606C11.866 13.2679 12.2955 13.0493 12.7285 13.1214L17.1644 13.8607C17.6466 13.9411 18 14.3583 18 14.8471V17C18 17.5523 17.5523 18 17 18H15C7.8203 18 2 12.1797 2 5V3Z"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                    <span className="text-[17px] font-medium text-[#333] lg:text-[18px] min-[1920px]:text-[21px]">{t('contact.phone')}</span>
+                    <ChevronDownIcon />
+                  </div>
+                  <Link
+                    href="/stores"
+                    className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-[#333] sm:gap-2"
+                  >
+                    <svg width="16" height="19" viewBox="0 0 16 19" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                      <path
+                        d="M8 0C5.2 0 3 2.2 3 5C3 8.5 8 12 8 12C8 12 13 8.5 13 5C13 2.2 10.8 0 8 0Z"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        fill="none"
+                      />
+                    </svg>
+                    <span className="text-[17px] font-medium lg:text-[18px] min-[1920px]:text-[19px]">{t('common.header.addresses')}</span>
+                    <ChevronDownIcon />
+                  </Link>
+                </div>
+              </div>
             </div>
           </div>
         </div>

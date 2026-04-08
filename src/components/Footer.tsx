@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Facebook, Instagram, Send } from 'lucide-react';
 import { useTranslation } from '../lib/i18n-client';
 import { MarcoGroupLogo } from './MarcoGroupLogo';
+import { HOME_PAGE_CONTAINER_CLASS } from '@/constants/homePageLayout';
 
 const SOCIAL_BTN =
   'flex h-10 w-10 items-center justify-center rounded-full bg-[#ebebeb] text-[#333] transition-colors hover:bg-[#101010] hover:text-white';
@@ -14,7 +15,7 @@ export function Footer() {
 
   return (
     <footer className="border-t border-[#e5e5e5] bg-[#ebebeb]">
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <div className={`${HOME_PAGE_CONTAINER_CLASS} py-12`}>
         <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
           {/* Company */}
           <div>
