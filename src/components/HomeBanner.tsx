@@ -8,13 +8,11 @@ import { MessageSolidIcon } from './icons/MessageSolidIcon';
 import { useTranslation } from '../lib/i18n-client';
 
 /**
- * Figma MCP asset URLs — refresh from MCP when expired (~7 days).
- * Mask group 1 (305:2146): yellow brick texture · 1651 × 925 px, rounded rect.
- * Overlay is scaled to fit this plate (was laid out in Figma at ~1714×924).
+ * Hero assets. `bgTexture`: yellow brick wall (portrait); `object-cover` crops to banner aspect.
+ * Other URLs — Figma MCP; refresh when expired (~7 days). Overlay ref ~1714×924.
  */
 const ASSETS = {
-  bgTexture:
-    'https://www.figma.com/api/mcp/asset/4b693349-18bc-49ea-9677-6bfbd71d931d',
+  bgTexture: '/images/home-banner-brick-bg.png',
   sofa:          'https://www.figma.com/api/mcp/asset/1a5ccb5d-3c4f-45e8-8489-29d2d9124fd1',
   sofaCircle:    'https://www.figma.com/api/mcp/asset/2f91b1da-a2d5-43d1-b75f-f8c532cd6471',
   truckIcon:     'https://www.figma.com/api/mcp/asset/5249941e-732f-48e2-a3b4-bcadfc9d8ced',
