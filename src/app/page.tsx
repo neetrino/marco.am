@@ -2,6 +2,7 @@ import { HomeBanner } from '../components/HomeBanner';
 import { HomeAppPromoBanner } from '../components/home/HomeAppPromoBanner';
 import { HomeBrandsSection } from '../components/home/HomeBrandsSection';
 import { HomeChatFab } from '../components/home/HomeChatFab';
+import { HomeSpecialOffersSection } from '../components/home/HomeSpecialOffersSection';
 import { HomeProductSection } from '../components/home/HomeProductSection';
 import { HomeReelsSection } from '../components/home/HomeReelsSection';
 import { HomeSecondaryBanners } from '../components/home/HomeSecondaryBanners';
@@ -18,7 +19,7 @@ export default async function HomePage() {
 
           <HomeReelsSection />
 
-          <HomeProductSection titleKey="home.special_offers_title" filter="featured" />
+          <HomeSpecialOffersSection />
 
           <HomeProductSection titleKey="home.new_arrivals_title" filter="new" />
 
