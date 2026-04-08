@@ -1,6 +1,6 @@
 /**
  * Desktop header horizontal layout — non–home pages use this shell; home (`/`) uses
- * `HOME_PAGE_CONTAINER_CLASS` in `homePageLayout.ts` for the same width as page content (max-w-[1440px]).
+ * `HOME_PAGE_CONTAINER_CLASS` in `homePageLayout.ts` for the same width as page content (max-w-[1600px]).
  * @see Header.tsx
  */
 
