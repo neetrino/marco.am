@@ -24,6 +24,7 @@ import {
   HEADER_TOP_ROW_FRAME_CLASS,
   HEADER_VIEWPORT_LEFT_INSET_CLASS,
 } from '@/constants/headerLayout';
+import { HOME_PAGE_CONTAINER_CLASS } from '@/constants/homePageLayout';
 
 const headerFont = Montserrat({
   subsets: ['latin', 'latin-ext', 'cyrillic'],
@@ -355,6 +356,9 @@ function CategoryMenuItem({
 
 export function Header() {
   const pathname = usePathname();
+  const isHomePage = pathname === '/';
+  const headerShellClass = isHomePage ? HOME_PAGE_CONTAINER_CLASS : HEADER_DESKTOP_SHELL_CLASS;
+  const headerViewportInsetClass = isHomePage ? '' : HEADER_VIEWPORT_LEFT_INSET_CLASS;
   const router = useRouter();
   const { isLoggedIn, logout, isAdmin } = useAuth();
   const { t } = useTranslation();
@@ -707,7 +711,7 @@ export function Header() {
 
   return (
     <header
-      className={`${headerFont.className} sticky top-0 z-50 border-b border-[#ebebeb] bg-white ${HEADER_VIEWPORT_LEFT_INSET_CLASS}`}
+      className={`${headerFont.className} sticky top-0 z-50 border-b border-[#ebebeb] bg-white ${headerViewportInsetClass}`}
     >
       <Suspense fallback={null}>
         <HeaderSearchSync
@@ -722,7 +726,7 @@ export function Header() {
         {/* Row 1: logo | nav | socials | phone + addresses — spacing per Figma 111:4293 */}
         <div className="border-b border-[#ebebeb] bg-white">
           <div
-            className={`${HEADER_DESKTOP_SHELL_CLASS} ${HEADER_TOP_ROW_FRAME_CLASS} py-4 lg:py-3.5 min-[1920px]:py-[6px]`}
+            className={`${headerShellClass} ${HEADER_TOP_ROW_FRAME_CLASS} py-4 lg:py-3.5 min-[1920px]:py-[6px]`}
           >
             <div className="flex w-full min-w-0 flex-wrap items-center gap-x-5 gap-y-2.5 lg:gap-x-6 lg:gap-y-2 xl:flex-nowrap xl:gap-x-8 xl:gap-y-0 2xl:gap-x-10 min-[1920px]:gap-x-[54px]">
             <Link
@@ -827,7 +831,7 @@ export function Header() {
         {/* Row 2: categories, search, lang/currency, theme, account, compare, wishlist, cart */}
         <div className="bg-white py-4">
           <div
-            className={`${HEADER_DESKTOP_SHELL_CLASS} flex flex-wrap items-center gap-x-[66px] gap-y-3 min-[1920px]:gap-x-[72px]`}
+            className={`${headerShellClass} flex flex-wrap items-center gap-x-[66px] gap-y-3 min-[1920px]:gap-x-[72px]`}
           >
             <div
               className="relative"
@@ -1035,7 +1039,13 @@ export function Header() {
 
       {/* Main Header — compact (tablet / mobile) */}
       <div className="lg:hidden">
-      <div className="max-w-7xl mx-auto pl-2 sm:pl-4 md:pl-6 lg:pl-8 pr-2 sm:pr-4 md:pr-6 lg:pr-8">
+      <div
+        className={
+          isHomePage
+            ? HOME_PAGE_CONTAINER_CLASS
+            : 'max-w-7xl mx-auto pl-2 sm:pl-4 md:pl-6 lg:pl-8 pr-2 sm:pr-4 md:pr-6 lg:pr-8'
+        }
+      >
         <div className="flex flex-wrap items-center gap-2 sm:gap-4 py-4 md:py-3">
           {/* Logo + Mobile Menu */}
           <div className="flex w-full items-center justify-between md:w-auto md:justify-start">

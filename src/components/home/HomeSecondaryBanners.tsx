@@ -8,8 +8,7 @@ export function HomeSecondaryBanners() {
 
   return (
     <section className="bg-white pb-12 md:pb-16">
-      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
           <Link
             href="/products"
             className="group flex min-h-[180px] flex-col justify-center rounded-[20px] bg-[#2f2f2f] px-8 py-10 transition-opacity hover:opacity-95 md:min-h-[220px]"
@@ -33,7 +32,6 @@ export function HomeSecondaryBanners() {
               {t('home.banner_shop_now')}
             </span>
           </Link>
-        </div>
       </div>
     </section>
   );

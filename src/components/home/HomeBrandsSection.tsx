@@ -52,12 +52,11 @@ export function HomeBrandsSection() {
 
   return (
     <section className="bg-[#f8f8f8] py-10 md:py-14">
-      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
-        <h2 className="text-center text-xl font-black uppercase tracking-wide text-[#101010] md:text-2xl">
-          {t('home.brands_title')}
-        </h2>
+      <h2 className="text-center text-xl font-black uppercase tracking-wide text-[#101010] md:text-2xl">
+        {t('home.brands_title')}
+      </h2>
 
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-4 md:gap-6">
+      <div className="mt-8 flex flex-wrap items-center justify-center gap-4 md:gap-6">
           {loading
             ? Array.from({ length: 4 }).map((_, i) => (
                 <div
@@ -76,14 +75,13 @@ export function HomeBrandsSection() {
               ))}
         </div>
 
-        <div className="mt-10 flex justify-center">
-          <Link
-            href="/products"
-            className="inline-flex min-w-[200px] items-center justify-center rounded-full bg-[#101010] px-10 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-          >
-            {t('common.search.seeAll')}
-          </Link>
-        </div>
+      <div className="mt-10 flex justify-center">
+        <Link
+          href="/products"
+          className="inline-flex min-w-[200px] items-center justify-center rounded-full bg-[#101010] px-10 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+        >
+          {t('common.search.seeAll')}
+        </Link>
       </div>
     </section>
   );

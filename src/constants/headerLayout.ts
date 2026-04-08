@@ -1,5 +1,6 @@
 /**
- * Desktop header horizontal layout — shared by `Header` and `HomeBanner` so edges align.
+ * Desktop header horizontal layout — non–home pages use this shell; home (`/`) uses
+ * `HOME_PAGE_CONTAINER_CLASS` in `homePageLayout.ts` for the same width as page content.
  * @see Header.tsx
  */
 

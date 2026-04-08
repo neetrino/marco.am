@@ -6,10 +6,6 @@ import { montserratArm } from '../fonts/montserrat-arm';
 import { CtaArrowCircleIcon } from './icons/CtaArrowCircleIcon';
 import { MessageSolidIcon } from './icons/MessageSolidIcon';
 import { useTranslation } from '../lib/i18n-client';
-import {
-  HEADER_DESKTOP_SHELL_CLASS,
-  HEADER_VIEWPORT_LEFT_INSET_CLASS,
-} from '@/constants/headerLayout';
 
 /**
  * Figma MCP asset URLs — refresh from MCP when expired (~7 days).
@@ -48,11 +44,8 @@ const ARM = {
 const MASK_BG_W = 1651;
 const MASK_BG_H = 925;
 
-/** Desktop frame max width — aligns with `Header` (`max-w-[1920px]`). */
-const HERO_DESKTOP_MAX_WIDTH_PX = 1200;
-
-/** Pulls the hero plate inward vs the shell — 20px per side. */
-const BANNER_PLATE_SIDE_INSET_CLASS = 'px-[20px]';
+/** Desktop frame max width — matches `HOME_PAGE_CONTAINER_CLASS` (`max-w-[1280px]`). */
+const HERO_DESKTOP_MAX_WIDTH_PX = 1280;
 
 /** Figma Group 9275 reference — overlay scaled to MASK_BG_*. */
 const LAYOUT_REF_W = 1714;
@@ -269,8 +262,7 @@ function HelpPromoEllipse() {
 /**
  * Home page hero banner — background plate from Figma node 305:2146 (Mask group 1).
  * Texture 1651 × 925 px; overlay scaled from Figma ref 1714 × 924 to match.
- * Large desktop: fluid scale via container `cqw` so the hero fills width up to {@link HERO_DESKTOP_MAX_WIDTH_PX}
- * (matches header: viewport left inset + `HEADER_DESKTOP_SHELL_CLASS` gutters).
+ * Large desktop: fluid scale via container `cqw` so the hero fills the shared home content width.
  */
 export function HomeBanner() {
   const { t } = useTranslation();
@@ -279,13 +271,11 @@ export function HomeBanner() {
 
   return (
     <section className="relative w-full overflow-x-hidden">
-      <div className={HEADER_VIEWPORT_LEFT_INSET_CLASS}>
-        <div className={HEADER_DESKTOP_SHELL_CLASS}>
-          <div className={`${BANNER_PLATE_SIDE_INSET_CLASS} [container-type:inline-size]`}>
-          <div
-            className="relative w-full overflow-hidden rounded-[36px] shadow-[0_25px_80px_-24px_rgba(15,23,42,0.14)] ring-1 ring-black/[0.06]"
-            style={{ aspectRatio: `${MASK_BG_W} / ${MASK_BG_H}` }}
-          >
+      <div className="w-full [container-type:inline-size]">
+        <div
+          className="relative w-full overflow-hidden rounded-[36px] shadow-[0_25px_80px_-24px_rgba(15,23,42,0.14)] ring-1 ring-black/[0.06]"
+          style={{ aspectRatio: `${MASK_BG_W} / ${MASK_BG_H}` }}
+        >
             <div
               className="absolute left-0 top-0 z-0"
               style={{
@@ -352,9 +342,7 @@ export function HomeBanner() {
               </div>
             </div>
           </div>
-          </div>
         </div>
-      </div>
       </div>
     </section>
   );

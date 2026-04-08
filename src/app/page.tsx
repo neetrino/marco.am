@@ -5,26 +5,29 @@ import { HomeChatFab } from '../components/home/HomeChatFab';
 import { HomeProductSection } from '../components/home/HomeProductSection';
 import { HomeReelsSection } from '../components/home/HomeReelsSection';
 import { HomeSecondaryBanners } from '../components/home/HomeSecondaryBanners';
+import { HOME_PAGE_CONTAINER_CLASS } from '@/constants/homePageLayout';
 
 export default async function HomePage() {
   return (
     <>
-      <div className="min-h-screen">
-        <section>
-          <HomeBanner />
-        </section>
+      <div className="min-h-screen w-full">
+        <div className={HOME_PAGE_CONTAINER_CLASS}>
+          <section>
+            <HomeBanner />
+          </section>
 
-        <HomeReelsSection />
+          <HomeReelsSection />
 
-        <HomeProductSection titleKey="home.special_offers_title" filter="featured" />
+          <HomeProductSection titleKey="home.special_offers_title" filter="featured" />
 
-        <HomeProductSection titleKey="home.new_arrivals_title" filter="new" />
+          <HomeProductSection titleKey="home.new_arrivals_title" filter="new" />
 
-        <HomeBrandsSection />
+          <HomeBrandsSection />
 
-        <HomeAppPromoBanner />
+          <HomeAppPromoBanner />
 
-        <HomeSecondaryBanners />
+          <HomeSecondaryBanners />
+        </div>
       </div>
       <HomeChatFab />
     </>

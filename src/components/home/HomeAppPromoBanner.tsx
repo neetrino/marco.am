@@ -15,13 +15,11 @@ type BannerMode = 'checking' | 'raster' | 'fallback';
 function BannerSkeleton() {
   return (
     <section className="bg-white py-8 md:py-10">
-      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
-        <div
-          className="animate-pulse rounded-[20px] bg-[#ffca03]"
-          style={{ aspectRatio: `${BANNER_WIDTH} / ${BANNER_HEIGHT}` }}
-          aria-hidden
-        />
-      </div>
+      <div
+        className="animate-pulse rounded-[20px] bg-[#ffca03]"
+        style={{ aspectRatio: `${BANNER_WIDTH} / ${BANNER_HEIGHT}` }}
+        aria-hidden
+      />
     </section>
   );
 }
@@ -33,22 +31,20 @@ function AppBannerRaster(props: {
 }) {
   return (
     <section className="bg-white py-8 md:py-10">
-      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
-        <div
-          className="relative w-full overflow-hidden rounded-[20px] bg-[#ffca03]"
-          style={{ aspectRatio: `${BANNER_WIDTH} / ${BANNER_HEIGHT}` }}
-        >
-          <Image
-            src={props.src}
-            alt={props.alt}
-            fill
-            className="object-cover object-center"
-            sizes="(max-width: 1400px) 100vw, 1400px"
-            unoptimized
-            priority={false}
-            onError={props.onError}
-          />
-        </div>
+      <div
+        className="relative w-full overflow-hidden rounded-[20px] bg-[#ffca03]"
+        style={{ aspectRatio: `${BANNER_WIDTH} / ${BANNER_HEIGHT}` }}
+      >
+        <Image
+          src={props.src}
+          alt={props.alt}
+          fill
+          className="object-cover object-center"
+          sizes="(max-width: 1280px) 100vw, 1280px"
+          unoptimized
+          priority={false}
+          onError={props.onError}
+        />
       </div>
     </section>
   );
@@ -59,9 +55,8 @@ function AppBannerFallback() {
 
   return (
     <section className="bg-white py-8 md:py-10">
-      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
-        <div className="overflow-hidden rounded-[20px] bg-[#ffca03] px-6 py-8 md:px-12 md:py-10">
-          <div className="flex flex-col items-center gap-8 lg:flex-row lg:items-center lg:justify-between">
+      <div className="overflow-hidden rounded-[20px] bg-[#ffca03] px-6 py-8 md:px-12 md:py-10">
+        <div className="flex flex-col items-center gap-8 lg:flex-row lg:items-center lg:justify-between">
             <div className="max-w-xl text-center lg:text-left">
               <h2 className="text-2xl font-black text-[#101010] md:text-3xl">
                 {t('home.app_promo_title')}
@@ -87,13 +82,12 @@ function AppBannerFallback() {
               </div>
             </div>
 
-            <div
-              className="flex h-36 w-36 shrink-0 items-center justify-center rounded-2xl border-2 border-dashed border-[#101010]/30 bg-white md:h-44 md:w-44"
-              role="img"
-              aria-label={t('home.app_qr_aria')}
-            >
-              <span className="text-center text-xs font-medium text-[#666]">QR</span>
-            </div>
+          <div
+            className="flex h-36 w-36 shrink-0 items-center justify-center rounded-2xl border-2 border-dashed border-[#101010]/30 bg-white md:h-44 md:w-44"
+            role="img"
+            aria-label={t('home.app_qr_aria')}
+          >
+            <span className="text-center text-xs font-medium text-[#666]">QR</span>
           </div>
         </div>
       </div>

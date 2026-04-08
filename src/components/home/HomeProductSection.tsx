@@ -92,12 +92,11 @@ export function HomeProductSection({ titleKey, filter }: HomeProductSectionProps
 
   return (
     <section className="bg-white py-10 md:py-14">
-      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
-        <h2 className="text-center text-xl font-black uppercase tracking-wide text-[#101010] md:text-2xl">
-          {title}
-        </h2>
+      <h2 className="text-center text-xl font-black uppercase tracking-wide text-[#101010] md:text-2xl">
+        {title}
+      </h2>
 
-        <div className="mt-8 md:mt-10">
+      <div className="mt-8 md:mt-10">
           {loading ? (
             <div className={GRID_CLASS}>
               {Array.from({ length: PRODUCTS_LIMIT }).map((_, i) => (
@@ -135,14 +134,13 @@ export function HomeProductSection({ titleKey, filter }: HomeProductSectionProps
           )}
         </div>
 
-        <div className="mt-10 flex justify-center">
-          <Link
-            href={seeAllHref}
-            className="inline-flex min-w-[200px] items-center justify-center rounded-full bg-[#101010] px-10 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-          >
-            {t(language, 'common.search.seeAll')}
-          </Link>
-        </div>
+      <div className="mt-10 flex justify-center">
+        <Link
+          href={seeAllHref}
+          className="inline-flex min-w-[200px] items-center justify-center rounded-full bg-[#101010] px-10 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+        >
+          {t(language, 'common.search.seeAll')}
+        </Link>
       </div>
     </section>
   );
