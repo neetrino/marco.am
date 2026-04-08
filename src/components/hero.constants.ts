@@ -7,6 +7,9 @@
 export const HERO_PANEL_ASPECT_W = 141;
 export const HERO_PANEL_ASPECT_H = 79;
 
+/** Panel corner radius — `rounded-[32px]` in `HeroCarousel` (ref. soft brick tile) */
+export const HERO_PANEL_RADIUS_PX = 32;
+
 /** Vertical brick wall — top aligns with hero; bottom crops under `object-cover` + `object-top` */
 export const HERO_PRIMARY_IMAGE_SRC = '/assets/hero/hero-brick-wall-vertical.png' as const;
 
