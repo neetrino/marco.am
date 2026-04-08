@@ -1,7 +1,7 @@
 'use client';
 
 import type { MouseEvent } from 'react';
-import { Heart } from 'lucide-react';
+import { ArrowUpRight, Heart } from 'lucide-react';
 import { formatPrice, type CurrencyCode } from '../../../lib/currency';
 import { t, getProductText } from '../../../lib/i18n';
 import type { LanguageCode } from '../../../lib/language';
@@ -9,6 +9,15 @@ import { sanitizeHtml } from '../../../lib/utils/sanitize';
 import { CompareIcon } from '../../../components/icons/CompareIcon';
 import { ProductAttributesSelector } from './ProductAttributesSelector';
 import type { Product, ProductVariant } from './types';
+
+/** Figma MARCO 305:2096 — pill CTA height (48px icon circle + 4px vertical inset). */
+const PRODUCT_PRIMARY_CTA_HEIGHT_PX = 56;
+/** Figma — trailing icon circle diameter. */
+const PRODUCT_PRIMARY_CTA_ICON_PX = 48;
+/** Space from pill left edge to label start. */
+const PRODUCT_PRIMARY_CTA_PADDING_LEFT_PX = 60;
+/** Space from label block to trailing icon circle. */
+const PRODUCT_PRIMARY_CTA_GAP_TEXT_TO_ICON_PX = 24;
 
 interface ProductInfoAndActionsProps {
   product: Product;
@@ -225,12 +234,38 @@ export function ProductInfoAndActions({
               +
             </button>
           </div>
-          <button 
-            disabled={!canAddToCart || isAddingToCart} 
-            className="flex-1 h-12 bg-gray-900 text-white rounded-xl uppercase font-bold disabled:bg-gray-300 disabled:cursor-not-allowed"
+          <button
+            type="button"
+            disabled={!canAddToCart || isAddingToCart}
+            style={{
+              minHeight: PRODUCT_PRIMARY_CTA_HEIGHT_PX,
+              paddingLeft: PRODUCT_PRIMARY_CTA_PADDING_LEFT_PX,
+              gap: PRODUCT_PRIMARY_CTA_GAP_TEXT_TO_ICON_PX,
+            }}
+            className="flex min-w-0 flex-1 items-center rounded-full bg-marco-yellow py-1 pr-2 text-left font-bold text-marco-black transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0"
             onClick={onAddToCart}
           >
-            {isAddingToCart ? t(language, 'product.adding') : (isOutOfStock ? t(language, 'product.outOfStock') : (isVariationRequired ? getRequiredAttributesMessage() : (hasUnavailableAttributes ? t(language, 'product.outOfStock') : t(language, 'product.addToCart'))))}
+            <span className="min-w-0 flex-1 text-base leading-6">
+              {isAddingToCart
+                ? t(language, 'product.adding')
+                : isOutOfStock
+                  ? t(language, 'product.outOfStock')
+                  : isVariationRequired
+                    ? getRequiredAttributesMessage()
+                    : hasUnavailableAttributes
+                      ? t(language, 'product.outOfStock')
+                      : t(language, 'product.buyNow')}
+            </span>
+            <span
+              className="flex shrink-0 items-center justify-center rounded-full bg-black text-white"
+              style={{
+                width: PRODUCT_PRIMARY_CTA_ICON_PX,
+                height: PRODUCT_PRIMARY_CTA_ICON_PX,
+              }}
+              aria-hidden
+            >
+              <ArrowUpRight className="size-3 stroke-[2.5]" strokeWidth={2.5} />
+            </span>
           </button>
           <button 
             onClick={onCompareToggle} 
