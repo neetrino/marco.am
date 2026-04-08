@@ -47,6 +47,34 @@ export const HERO_PROMO_CHAIR_WIDTH_RATIO = 563.1322631835938 / 631;
 /** Chair bounding height vs stack span (Figma frame height) */
 export const HERO_PROMO_CHAIR_HEIGHT_RATIO = 563.1322631835938 / HERO_PROMO_STACK_SPAN_PX;
 
+/** Figma 101:4024 Group 3 — width matches ellipse; height includes ellipse + handle */
+export const HERO_PROMO_FLOOR_GROUP_WIDTH_PX = 403.66119384765625;
+export const HERO_PROMO_FLOOR_GROUP_HEIGHT_PX = 165.08383178710938;
+
+/** Group 3 vs stack frame */
+export const HERO_PROMO_CHAIR_SHADOW_WIDTH_RATIO = HERO_PROMO_FLOOR_GROUP_WIDTH_PX / 631;
+export const HERO_PROMO_FLOOR_GROUP_HEIGHT_RATIO =
+  HERO_PROMO_FLOOR_GROUP_HEIGHT_PX / HERO_PROMO_STACK_SPAN_PX;
+
+/** Ellipse 101:4025 height share inside Group 3 */
+export const HERO_PROMO_SHADOW_IN_GROUP_HEIGHT_RATIO = 147.012 / HERO_PROMO_FLOOR_GROUP_HEIGHT_PX;
+
+/**
+ * Handle 101:4026 — centered on ellipse; top offset within Group 3 (design px).
+ * Sits on the horizontal “line” of the oval (Figma y 630.12 vs Group 3 top 502.41).
+ */
+export const HERO_PROMO_SLIDER_HANDLE_TOP_PCT =
+  ((630.1226348876953 - 502.4148254394531) / HERO_PROMO_FLOOR_GROUP_HEIGHT_PX) * 100;
+
+export const HERO_PROMO_SLIDER_HANDLE_WIDTH_PCT =
+  (37.376033782958984 / HERO_PROMO_FLOOR_GROUP_WIDTH_PX) * 100;
+
+/**
+ * Lifts the chair from the stack bottom so the silhouette slightly overlaps above the blue band.
+ * Percent of container height (same coordinate space as layer `top` / `height`).
+ */
+export const HERO_PROMO_CHAIR_BOTTOM_OFFSET_PCT = 7;
+
 /** Container `aspect-ratio` — Figma stack width × vertical span */
 export const HERO_PROMO_STACK_CONTAINER_ASPECT_W = 631;
 export const HERO_PROMO_STACK_CONTAINER_ASPECT_H = HERO_PROMO_STACK_SPAN_PX;

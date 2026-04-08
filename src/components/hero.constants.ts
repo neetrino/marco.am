@@ -19,6 +19,14 @@ export const HERO_PROMO_STACK_LAYER_GRAY = '#c7c7c7' as const;
 export const HERO_PROMO_STACK_LAYER_BLUE = '#2f4b5d' as const;
 export const HERO_PROMO_CHAIR_IMAGE_SRC = '/assets/hero/hero-promo-chair-101-4023.png' as const;
 
+/** Figma 101:4025 — elliptical floor shadow under chair */
+export const HERO_PROMO_CHAIR_SHADOW_IMAGE_SRC =
+  '/assets/hero/hero-promo-chair-shadow-101-4025.svg' as const;
+
+/** Figma 101:4026 — round handle (arrows) on floor ellipse, Group 3 */
+export const HERO_PROMO_SLIDER_HANDLE_IMAGE_SRC =
+  '/assets/hero/hero-promo-slider-handle-101-4026.svg' as const;
+
 /** Hero headline box — design size (px); mirrored in `HomePromoYellowHeadline` Tailwind classes */
 export const HERO_HEADLINE_MAX_WIDTH_PX = 580;
 export const HERO_HEADLINE_HEIGHT_PX = 56;
