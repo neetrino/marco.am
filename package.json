@@ -4,7 +4,7 @@
   "private": true,
   "description": "WhiteShop.am — Next.js app at root, pnpm workspace",
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev --webpack",
     "dev:webpack": "next dev --webpack",
     "dev:clean": "node -e \"require('fs').rmSync('.next', {recursive: true, force: true})\" && next dev --turbopack",
     "prebuild": "cd shared/db && pnpm run db:generate",
