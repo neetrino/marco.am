@@ -1,8 +1,10 @@
 'use client';
 
+import { ArrowUpRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { CSSProperties } from 'react';
+import { useTranslation } from '../../lib/i18n-client';
 import {
   HERO_PROMO_CHAIR_IMAGE_SRC,
   HERO_PROMO_CHAIR_SHADOW_IMAGE_SRC,
@@ -125,6 +127,58 @@ function PromoChairAsset({ wrapStyle }: PromoChairOverlayProps) {
   );
 }
 
+/** Figma 101:4035 — two-line caption, white, bottom-left of blue layer */
+function HomePromoStackedProductCardBlueLabel() {
+  const { t } = useTranslation();
+
+  return (
+    <div className="flex min-w-0 max-w-[58%] flex-col gap-0 pr-1 text-left text-white sm:max-w-[55%]">
+      <p className="mb-0 text-xs leading-snug sm:text-base sm:leading-[1.4875]">
+        {t('home.promo_stack_blue_label_line1')}
+      </p>
+      <p className="text-xs leading-snug sm:text-base sm:leading-[1.4875]">
+        {t('home.promo_stack_blue_label_line2')}
+      </p>
+    </div>
+  );
+}
+
+/** Figma 305:2096 — compact pill CTA inside blue layer (bottom-right) */
+function HomePromoStackedProductCardCta() {
+  const { t } = useTranslation();
+
+  return (
+    <div className="inline-flex max-w-[min(100%,11rem)] items-center gap-1 rounded-full bg-marco-yellow py-0.5 pl-2 pr-0.5 shadow-sm transition group-hover:brightness-95 sm:max-w-[13rem] sm:gap-1.5 sm:py-1 sm:pl-2.5 sm:pr-1">
+      <span className="min-w-0 flex-1 truncate px-0.5 text-center text-[10px] font-bold leading-tight text-marco-black sm:text-xs md:text-sm">
+        {t('home.promo_featured_cta')}
+      </span>
+      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-marco-black text-white sm:h-9 sm:w-9">
+        <ArrowUpRight className="h-3 w-3 sm:h-4 sm:w-4" strokeWidth={2.5} aria-hidden />
+      </span>
+    </div>
+  );
+}
+
+function BlueStackLayerWithCta() {
+  const style: CSSProperties = {
+    ...HERO_PROMO_STACK_BLUE_STYLE,
+    backgroundColor: HERO_PROMO_STACK_LAYER_BLUE,
+    borderRadius: HERO_PROMO_STACK_RADIUS_PX,
+    zIndex: 2,
+  };
+
+  return (
+    <div className="absolute left-0 right-0 overflow-hidden" style={style}>
+      <div className="absolute bottom-2 left-2 right-2 z-[4] flex items-end justify-between gap-2 sm:bottom-2.5 sm:left-2.5 sm:right-2.5 md:bottom-3 md:left-3 md:right-3">
+        <HomePromoStackedProductCardBlueLabel />
+        <div className="shrink-0">
+          <HomePromoStackedProductCardCta />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /** Figma 101:4019–101:4026 — stacked rectangles + floor group (ellipse + handle) + chair */
 export function HomePromoStackedProductCard({ ariaLabel }: HomePromoStackedProductCardProps) {
   const aspectStyle: CSSProperties = {
@@ -149,12 +203,12 @@ export function HomePromoStackedProductCard({ ariaLabel }: HomePromoStackedProdu
     <Link
       href="/products"
       aria-label={ariaLabel}
-      className="relative block w-[min(88vw,155px)] sm:w-[194px] md:w-[min(52vw,262px)] lg:w-[min(48vw,328px)] xl:w-[455px]"
+      className="group relative block w-[min(88vw,155px)] sm:w-[194px] md:w-[min(52vw,262px)] lg:w-[min(48vw,328px)] xl:w-[455px]"
     >
       <div className="relative w-full overflow-visible" style={aspectStyle}>
         <StackLayer color={HERO_PROMO_STACK_LAYER_WHITE} layerStyle={HERO_PROMO_STACK_WHITE_STYLE} zIndex={0} />
         <StackLayer color={HERO_PROMO_STACK_LAYER_GRAY} layerStyle={HERO_PROMO_STACK_GRAY_STYLE} zIndex={1} />
-        <StackLayer color={HERO_PROMO_STACK_LAYER_BLUE} layerStyle={HERO_PROMO_STACK_BLUE_STYLE} zIndex={2} />
+        <BlueStackLayerWithCta />
         <PromoChairFloorGroup wrapStyle={floorGroupWrapStyle} />
         <PromoChairAsset wrapStyle={chairWrapStyle} />
       </div>
