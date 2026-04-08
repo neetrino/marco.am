@@ -70,20 +70,16 @@ export const HERO_PROMO_SLIDER_HANDLE_WIDTH_PCT =
   (37.376033782958984 / HERO_PROMO_FLOOR_GROUP_WIDTH_PX) * 100;
 
 /**
- * **Tune chair height (vs blue layer):** raise this number = chair + floor shadow move up together.
- * Uses % of the stacked-card container height (~16px per 5% at lg width). Try 12–22.
+ * **Floor shadow (101:4025) + handle (101:4026) only.** Larger = group sits higher on the card.
+ * Chair position is `HERO_PROMO_CHAIR_BOTTOM_OFFSET_PCT` — decoupled so the ellipse can move without moving the chair.
  */
-export const HERO_PROMO_FLOOR_GROUP_BOTTOM_OFFSET_PCT = 16;
-
-/** Figma baseline lift from stack bottom; keep in sync with `HERO_PROMO_FLOOR_GROUP_BOTTOM_OFFSET_PCT`. */
-const HERO_PROMO_CHAIR_BASE_BOTTOM_OFFSET_PCT = 7;
+export const HERO_PROMO_FLOOR_GROUP_BOTTOM_OFFSET_PCT = 21;
 
 /**
- * Distance from container bottom to chair image box bottom (base + floor offset).
- * Percent of container height (same coordinate space as layer `top` / `height`).
+ * Distance from container bottom to chair image box bottom (percent of container height).
+ * Previously 7 + 16; kept fixed when tuning `HERO_PROMO_FLOOR_GROUP_BOTTOM_OFFSET_PCT`.
  */
-export const HERO_PROMO_CHAIR_BOTTOM_OFFSET_PCT =
-  HERO_PROMO_CHAIR_BASE_BOTTOM_OFFSET_PCT + HERO_PROMO_FLOOR_GROUP_BOTTOM_OFFSET_PCT;
+export const HERO_PROMO_CHAIR_BOTTOM_OFFSET_PCT = 23;
 
 /** Container `aspect-ratio` — Figma stack width × vertical span */
 export const HERO_PROMO_STACK_CONTAINER_ASPECT_W = 631;
