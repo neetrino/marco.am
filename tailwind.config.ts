@@ -1,11 +1,13 @@
 import type { Config } from 'tailwindcss';
 
 const config: Config = {
+  // Use `./shared/ui/*` (no `**`) — on Windows `shared/ui/**/*.js` can match into
+  // `node_modules` and stall Tailwind + first-request compile. Files live at package root only.
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
-    'shared/ui/**/*.{js,ts,jsx,tsx}',
+    './shared/ui/*.{js,ts,jsx,tsx}',
   ],
   theme: {
     extend: {
