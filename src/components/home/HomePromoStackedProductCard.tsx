@@ -49,7 +49,8 @@ function StackLayer({ color, layerStyle, zIndex }: StackLayerProps) {
   return <div className="absolute left-0 right-0 overflow-hidden" style={style} />;
 }
 
-const HERO_PROMO_STACK_IMAGE_SIZES = '(max-width: 640px) 46vw, 340px';
+/** Matches `HERO_PROMO_STACK_LINK_MAX_WIDTH_PX` (631) — Next/Image `sizes` */
+const HERO_PROMO_STACK_IMAGE_SIZES = '(max-width: 640px) 88vw, 631px';
 
 type PromoChairOverlayProps = {
   wrapStyle: CSSProperties;
@@ -145,7 +146,7 @@ export function HomePromoStackedProductCard({ ariaLabel }: HomePromoStackedProdu
     <Link
       href="/products"
       aria-label={ariaLabel}
-      className="relative block w-[min(46vw,220px)] sm:w-[260px] md:w-[300px] lg:w-[340px]"
+      className="relative block w-[min(88vw,220px)] sm:w-[260px] md:w-[min(52vw,380px)] lg:w-[min(48vw,480px)] xl:w-[631px]"
     >
       <div className="relative w-full overflow-visible" style={aspectStyle}>
         <StackLayer color={HERO_PROMO_STACK_LAYER_WHITE} layerStyle={HERO_PROMO_STACK_WHITE_STYLE} zIndex={0} />

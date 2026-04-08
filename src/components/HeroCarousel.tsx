@@ -13,18 +13,22 @@ export function HeroCarousel() {
       <div className="relative aspect-[141/79] min-h-[260px] w-full overflow-hidden rounded-[32px] bg-marco-yellow box-border sm:min-h-[320px] md:min-h-[380px]">
         <HeroCarouselSlides />
         <div className="pointer-events-none absolute inset-0 z-10">
-          <div className="pointer-events-auto absolute left-[40px] top-[36px] w-max max-w-[min(580px,calc(100%-40px-16px))]">
-            <div className="[&_p]:mb-0">
+          {/*
+            Mobile: headline top / card bottom-right (fits short banner).
+            md+: Figma 305 — headline then chair card stacked under «ԱՆՎՃԱՐ ԱՌԱՔՈՒՄ» / FREE DELIVERY.
+          */}
+          <div className="pointer-events-auto absolute inset-0 flex flex-col justify-between pt-9 pl-10 pr-3 pb-3 sm:pr-5 sm:pb-5 md:justify-start md:gap-6 md:pr-7 md:pb-7 lg:gap-7 lg:pr-9 lg:pb-9">
+            <div className="[&_p]:mb-0 w-max max-w-[min(580px,calc(100%-16px))]">
               <HomePromoYellowHeadline
                 emphasisText={t('home.promo_banner_headline_emphasis')}
                 accentText={t('home.promo_banner_headline_accent')}
               />
             </div>
-          </div>
-          <div className="pointer-events-auto absolute bottom-3 right-3 sm:bottom-5 sm:right-5 md:bottom-7 md:right-7 lg:bottom-9 lg:right-9">
-            <HomePromoStackedProductCard
-              ariaLabel={`${t('home.promo_featured_title')}. ${t('home.promo_featured_subtitle')}`}
-            />
+            <div className="self-end md:self-start">
+              <HomePromoStackedProductCard
+                ariaLabel={`${t('home.promo_featured_title')}. ${t('home.promo_featured_subtitle')}`}
+              />
+            </div>
           </div>
         </div>
       </div>

@@ -84,3 +84,6 @@ export const HERO_PROMO_CHAIR_BOTTOM_OFFSET_PCT = 23;
 /** Container `aspect-ratio` — Figma stack width × vertical span */
 export const HERO_PROMO_STACK_CONTAINER_ASPECT_W = 631;
 export const HERO_PROMO_STACK_CONTAINER_ASPECT_H = HERO_PROMO_STACK_SPAN_PX;
+
+/** Figma 305:2147 / stack frame — max link width matches design (px) */
+export const HERO_PROMO_STACK_LINK_MAX_WIDTH_PX = HERO_PROMO_STACK_CONTAINER_ASPECT_W;
