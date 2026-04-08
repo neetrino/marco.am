@@ -16,6 +16,7 @@ import {
 } from '../hero.constants';
 import {
   HERO_PROMO_CHAIR_BOTTOM_OFFSET_PCT,
+  HERO_PROMO_CHAIR_NUDGE_UP_PX,
   HERO_PROMO_CHAIR_GROUP_SCALE,
   HERO_PROMO_CHAIR_HEIGHT_RATIO,
   HERO_PROMO_CHAIR_SHADOW_WIDTH_RATIO,
@@ -73,8 +74,11 @@ function PromoChairFloorGroup({ wrapStyle }: PromoChairOverlayProps) {
 
   return (
     <div
-      className="pointer-events-none absolute left-1/2 z-[3] -translate-x-1/2"
-      style={wrapStyle}
+      className="pointer-events-none absolute left-1/2 z-[3]"
+      style={{
+        ...wrapStyle,
+        transform: `translateX(-50%) translateY(-${HERO_PROMO_CHAIR_NUDGE_UP_PX}px)`,
+      }}
     >
       <div className="relative h-full w-full">
         <div
@@ -119,8 +123,11 @@ function PromoChairFloorGroup({ wrapStyle }: PromoChairOverlayProps) {
 function PromoChairAsset({ wrapStyle }: PromoChairOverlayProps) {
   return (
     <div
-      className="pointer-events-none absolute left-1/2 z-[3] -translate-x-1/2"
-      style={wrapStyle}
+      className="pointer-events-none absolute left-1/2 z-[3]"
+      style={{
+        ...wrapStyle,
+        transform: `translateX(-50%) translateY(-${HERO_PROMO_CHAIR_NUDGE_UP_PX}px)`,
+      }}
     >
       <div className="relative h-full w-full">
         <Image

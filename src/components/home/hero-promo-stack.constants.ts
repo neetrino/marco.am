@@ -81,6 +81,9 @@ export const HERO_PROMO_FLOOR_GROUP_BOTTOM_OFFSET_PCT = 28;
  */
 export const HERO_PROMO_CHAIR_BOTTOM_OFFSET_PCT = 30;
 
+/** Nudge chair + floor arc (shadow + handle) upward vs percent-based layout (px). */
+export const HERO_PROMO_CHAIR_NUDGE_UP_PX = 6;
+
 /**
  * Scales chair + floor overlay vs Figma (1 = design). Lower = smaller asset, more margin inside the stack.
  */
