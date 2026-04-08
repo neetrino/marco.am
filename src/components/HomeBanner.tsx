@@ -64,6 +64,12 @@ const OVERLAY_SHIFT_X = -60;
 /** Extra nudge for the left (sofa) card only — product block vs. dark panel (px). */
 const SOFA_CARD_SHIFT_X = -22;
 
+/**
+ * Vertical nudge for cards right of center (delivery + electronics) and matching bottom strip.
+ * Layout-ref Y delta; scales with `by()`.
+ */
+const RIGHT_OF_CENTER_TOP_NUDGE_REF = 44;
+
 /** Layout-ref X for `hero_banner_promo` block; increase to move copy toward the right. */
 const PROMO_COPY_LEFT_REF = 880;
 
@@ -143,10 +149,12 @@ function SofaCard() {
  * frosted-glass bottom panel with "Buy now" CTA.
  */
 function DeliveryCard() {
+  const y = (n: number) => by(n + RIGHT_OF_CENTER_TOP_NUDGE_REF);
+
   return (
     <>
       {/* Full card — photo fills all 4 corners (rounded-[36px]) */}
-      <div className="absolute overflow-hidden rounded-[36px]" style={{ left: bx(878), top: by(52), width: bx(403), height: by(556) }}>
+      <div className="absolute overflow-hidden rounded-[36px]" style={{ left: bx(878), top: y(52), width: bx(403), height: by(556) }}>
         <Image
           src={ASSETS.banner2}
           alt=""
@@ -157,7 +165,7 @@ function DeliveryCard() {
       </div>
 
       {/* Arrow/link icon — top-right of card */}
-      <div className="absolute" style={{ left: bx(1194), top: by(52), width: bx(87), height: by(87) }}>
+      <div className="absolute" style={{ left: bx(1194), top: y(52), width: bx(87), height: by(87) }}>
         <Image src={ASSETS.linkIcon1} alt="" fill className="object-contain" unoptimized />
       </div>
 
@@ -165,7 +173,7 @@ function DeliveryCard() {
       <Link
         href="/products"
         className={`${montserratArm.className} absolute z-10 flex items-center justify-center rounded-[60px] bg-black pt-[15.929px] pb-[16.071px] pl-[72.5px] pr-[72.5px] text-[16px] font-bold leading-[24px] text-white antialiased`}
-        style={{ left: bx(DELIVERY_BUY_CTA_LEFT_REF), top: by(502) }}
+        style={{ left: bx(DELIVERY_BUY_CTA_LEFT_REF), top: y(502) }}
       >
         {ARM.gnel} {ARM.hima}
       </Link>
@@ -177,17 +185,19 @@ function DeliveryCard() {
  * Right card — new-arrivals promo (flush with texture right edge).
  */
 function ElectronicsCard() {
+  const y = (n: number) => by(n + RIGHT_OF_CENTER_TOP_NUDGE_REF);
+
   return (
     <>
       {/* Pre-masked dark card background */}
-      <div className="absolute" style={{ left: bx(1312), top: by(52), width: bx(402), height: by(556) }}>
+      <div className="absolute" style={{ left: bx(1312), top: y(52), width: bx(402), height: by(556) }}>
         <Image src={ASSETS.rightCardBg} alt="" fill className="object-cover rounded-[36px]" unoptimized />
       </div>
 
       {/* Discount badge — inside the card, top-left */}
       <p
         className="absolute font-black whitespace-nowrap text-[#facc15] antialiased"
-        style={{ left: bx(1350), top: by(137), fontSize: bx(78), lineHeight: `${by(63)}px` }}
+        style={{ left: bx(1350), top: y(137), fontSize: bx(78), lineHeight: `${by(63)}px` }}
       >
         80%
       </p>
@@ -195,7 +205,7 @@ function ElectronicsCard() {
       {/* Product image */}
       <div
         className="absolute"
-        style={{ left: bx(1412), top: by(96), width: bx(389), height: by(366) }}
+        style={{ left: bx(1412), top: y(96), width: bx(389), height: by(366) }}
       >
         <Image src={ASSETS.sofa} alt="Product" fill className="object-cover" unoptimized />
       </div>
@@ -203,7 +213,7 @@ function ElectronicsCard() {
       {/* Sub-headline */}
       <div
         className={`${montserratArm.className} absolute font-black whitespace-nowrap antialiased`}
-        style={{ left: bx(1350), top: by(378), fontSize: bx(28), lineHeight: `${by(33)}px` }}
+        style={{ left: bx(1350), top: y(378), fontSize: bx(28), lineHeight: `${by(33)}px` }}
       >
         <p className="text-[#facc15]">{ARM.nor}</p>
         <p className="text-white">{ARM.serndi}</p>
@@ -214,13 +224,13 @@ function ElectronicsCard() {
       <Link
         href="/products"
         className={`${montserratArm.className} absolute flex items-center justify-center rounded-[60px] bg-white text-[16px] font-bold text-black antialiased`}
-        style={{ left: bx(1394), top: by(502), height: by(56), width: bx(250) }}
+        style={{ left: bx(1394), top: y(502), height: by(56), width: bx(250) }}
       >
         {ARM.avelin}
       </Link>
 
       {/* Arrow/link icon — right edge aligned to card (1312+402) */}
-      <div className="absolute" style={{ left: bx(1628), top: by(53), width: bx(86), height: by(86) }}>
+      <div className="absolute" style={{ left: bx(1628), top: y(53), width: bx(86), height: by(86) }}>
         <Image src={ASSETS.linkIcon2} alt="" fill className="object-contain" unoptimized />
       </div>
     </>
@@ -326,7 +336,7 @@ export function HomeBanner() {
                 style={{
                   left: bx(PROMO_COPY_LEFT_REF),
                   right: bx(PROMO_STRIP_RIGHT_REF),
-                  top: by(668),
+                  top: by(668 + RIGHT_OF_CENTER_TOP_NUDGE_REF),
                 }}
               >
                 <p className="max-w-[min(560px,calc(100%-2rem))] whitespace-pre-line text-left text-[24px] font-bold leading-[1.15] text-white antialiased [text-shadow:0_1px_2px_rgba(0,0,0,0.25)]">
