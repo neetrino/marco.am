@@ -43,14 +43,15 @@ function getPillLanguageLabel(raw: LanguageCode): string {
 interface HeaderLocaleCurrencyPillProps {
   selectedCurrency: CurrencyCode;
   onCurrencyChange: (code: CurrencyCode) => void;
+  /** Server-known language so the first HTML matches SSR + first client paint. Omit to use "en" then sync localStorage in useEffect. */
+  initialLanguage?: LanguageCode;
 }
 
-function getInitialHeaderLang(): LanguageCode {
-  if (typeof window === 'undefined') {
+function normalizeHeaderLang(code: LanguageCode | undefined): LanguageCode {
+  if (!code || code === 'ka') {
     return 'en';
   }
-  const stored = getStoredLanguage();
-  return stored === 'ka' ? 'en' : stored;
+  return code;
 }
 
 interface LocaleCurrencyMenuProps {
@@ -159,6 +160,7 @@ function useLocalePillSyncAndDismiss(
 
 function useLocaleCurrencyPillState(
   onCurrencyChange: (code: CurrencyCode) => void,
+  initialLanguage: LanguageCode | undefined,
 ): {
   showMenu: boolean;
   setShowMenu: React.Dispatch<React.SetStateAction<boolean>>;
@@ -168,8 +170,19 @@ function useLocaleCurrencyPillState(
   handleCurrencySelect: (code: CurrencyCode) => void;
 } {
   const [showMenu, setShowMenu] = useState(false);
-  const [currentLang, setCurrentLang] = useState<LanguageCode>(getInitialHeaderLang);
+  const [currentLang, setCurrentLang] = useState<LanguageCode>(() =>
+    normalizeHeaderLang(initialLanguage ?? 'en'),
+  );
   const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (initialLanguage !== undefined) {
+      return;
+    }
+    const stored = getStoredLanguage();
+    setCurrentLang(normalizeHeaderLang(stored));
+  }, [initialLanguage]);
+
   useLocalePillSyncAndDismiss(menuRef, setShowMenu, setCurrentLang);
 
   const changeLanguage = (langCode: LanguageCode) => {
@@ -204,9 +217,10 @@ function useLocaleCurrencyPillState(
 export function HeaderLocaleCurrencyPill({
   selectedCurrency,
   onCurrencyChange,
+  initialLanguage,
 }: HeaderLocaleCurrencyPillProps) {
   const { showMenu, setShowMenu, currentLang, menuRef, changeLanguage, handleCurrencySelect } =
-    useLocaleCurrencyPillState(onCurrencyChange);
+    useLocaleCurrencyPillState(onCurrencyChange, initialLanguage);
 
   return (
     <div className="relative" ref={menuRef as React.RefObject<HTMLDivElement>}>

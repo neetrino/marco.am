@@ -6,7 +6,7 @@ import { useState, useEffect, useRef, Suspense } from 'react';
 import type { FormEvent, ReactNode, CSSProperties } from 'react';
 import { getStoredCurrency, setStoredCurrency, type CurrencyCode, formatPrice, initializeCurrencyRates, clearCurrencyRatesCache } from '../lib/currency';
 import { useTranslation } from '../lib/i18n-client';
-import { getStoredLanguage } from '../lib/language';
+import { getStoredLanguage, type LanguageCode } from '../lib/language';
 import { useInstantSearch } from './hooks/useInstantSearch';
 import { SearchDropdown } from './SearchDropdown';
 import { useAuth } from '../lib/auth/AuthContext';
@@ -387,7 +387,11 @@ function CategoryMenuItem({
   );
 }
 
-export function Header() {
+type HeaderProps = {
+  initialLanguage?: LanguageCode;
+};
+
+export function Header({ initialLanguage }: HeaderProps) {
   const router = useRouter();
   const { isLoggedIn, logout, isAdmin } = useAuth();
   const { t } = useTranslation();
@@ -890,6 +894,7 @@ export function Header() {
             <HeaderLocaleCurrencyPill
               selectedCurrency={selectedCurrency}
               onCurrencyChange={handleCurrencyChange}
+              initialLanguage={initialLanguage}
             />
             <button
               type="button"

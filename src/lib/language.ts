@@ -8,7 +8,9 @@ export const LANGUAGES = {
 
 export type LanguageCode = keyof typeof LANGUAGES;
 
-const LANGUAGE_STORAGE_KEY = 'shop_language';
+/** Same key for localStorage and optional SSR cookie (`layout`). */
+export const LANGUAGE_PREFERENCE_KEY = 'shop_language';
+const LANGUAGE_STORAGE_KEY = LANGUAGE_PREFERENCE_KEY;
 
 export function getStoredLanguage(): LanguageCode {
   if (typeof window === 'undefined') return 'en';
@@ -21,6 +23,18 @@ export function getStoredLanguage(): LanguageCode {
     // Ignore errors
   }
   return 'en';
+}
+
+/**
+ * Parse language from a cookie or other server-provided string (e.g. layout).
+ * Returns undefined if the value is missing or not a supported code.
+ */
+export function parseLanguageFromServer(raw: string | undefined): LanguageCode | undefined {
+  if (!raw || !(raw in LANGUAGES)) {
+    return undefined;
+  }
+  const code = raw as LanguageCode;
+  return code === 'ka' ? 'en' : code;
 }
 
 export function setStoredLanguage(language: LanguageCode, options?: { skipReload?: boolean }): void {
