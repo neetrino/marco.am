@@ -1,6 +1,6 @@
 /**
  * Home REELS strip — Figma `REELS` frame (214:1057).
- * Thumbnail rings + optional play-badge layers; MCP URLs expire ~7d — re-export from Figma if 404.
+ * Thumbnail rings; MCP URLs expire ~7d — re-export from Figma if 404.
  * @see https://www.figma.com/design/7PlNcJ5BjWztGqYNYfsH2D/MARCO?node-id=214-1057
  *
  * Accent `#ffca03` — use as `bg-[#ffca03]` in `HomeReelsSection`.
@@ -14,9 +14,3 @@ export const REELS_THUMB_IMAGE_URLS = [
   'https://www.figma.com/api/mcp/asset/63acf979-4c06-45e9-a8b4-989d6ea107df',
   'https://www.figma.com/api/mcp/asset/235368a0-602a-486b-ae38-65d546ee1fe5',
 ] as const;
-
-/** Decorative overlays on select thumbnails (Figma `Group` / `Group 9212`). */
-export const REELS_BADGE_OVERLAY_URLS: ReadonlyArray<readonly [number, string]> = [
-  [0, 'https://www.figma.com/api/mcp/asset/56225bf0-354e-4fc1-a62f-8894bb275f63'],
-  [3, 'https://www.figma.com/api/mcp/asset/c1eece6e-68b9-49af-acfc-675e62f5f7c1'],
-];

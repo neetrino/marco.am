@@ -4,18 +4,10 @@ import Image from 'next/image';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { montserratArm } from '@/fonts/montserrat-arm';
-import {
-  REELS_BADGE_OVERLAY_URLS,
-  REELS_THUMB_IMAGE_URLS,
-} from '@/constants/homeReels';
+import { REELS_THUMB_IMAGE_URLS } from '@/constants/homeReels';
 import { useTranslation } from '@/lib/i18n-client';
 
 const REEL_COUNT = REELS_THUMB_IMAGE_URLS.length;
-
-function getBadgeUrl(index: number): string | undefined {
-  const row = REELS_BADGE_OVERLAY_URLS.find(([i]) => i === index);
-  return row?.[1];
-}
 
 export function HomeReelsSection() {
   const { t } = useTranslation();
@@ -99,9 +91,7 @@ export function HomeReelsSection() {
         ref={scrollRef}
         className="scrollbar-hide -mx-1 flex gap-6 overflow-x-auto pb-2 pt-1 md:gap-8 lg:gap-[108px]"
       >
-        {REELS_THUMB_IMAGE_URLS.map((src, i) => {
-          const badge = getBadgeUrl(i);
-          return (
+        {REELS_THUMB_IMAGE_URLS.map((src, i) => (
             <button
               key={src}
               type="button"
@@ -119,25 +109,12 @@ export function HomeReelsSection() {
                     unoptimized
                   />
                 </div>
-                {badge ? (
-                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                    <Image
-                      src={badge}
-                      alt=""
-                      width={56}
-                      height={56}
-                      className="max-h-[40%] max-w-[40%] object-contain opacity-95"
-                      unoptimized
-                    />
-                  </div>
-                ) : null}
               </div>
               <span className="max-w-[160px] text-center text-sm font-normal leading-7 text-[#050401] md:text-[18px]">
                 {captions[i]}
               </span>
             </button>
-          );
-        })}
+        ))}
       </div>
 
       <div className="mt-6 flex justify-center gap-2 md:mt-8" aria-hidden>
