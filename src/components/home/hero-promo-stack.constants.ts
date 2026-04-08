@@ -70,10 +70,20 @@ export const HERO_PROMO_SLIDER_HANDLE_WIDTH_PCT =
   (37.376033782958984 / HERO_PROMO_FLOOR_GROUP_WIDTH_PX) * 100;
 
 /**
- * Lifts the chair from the stack bottom so the silhouette slightly overlaps above the blue band.
+ * **Tune chair height (vs blue layer):** raise this number = chair + floor shadow move up together.
+ * Uses % of the stacked-card container height (~16px per 5% at lg width). Try 12–22.
+ */
+export const HERO_PROMO_FLOOR_GROUP_BOTTOM_OFFSET_PCT = 16;
+
+/** Figma baseline lift from stack bottom; keep in sync with `HERO_PROMO_FLOOR_GROUP_BOTTOM_OFFSET_PCT`. */
+const HERO_PROMO_CHAIR_BASE_BOTTOM_OFFSET_PCT = 7;
+
+/**
+ * Distance from container bottom to chair image box bottom (base + floor offset).
  * Percent of container height (same coordinate space as layer `top` / `height`).
  */
-export const HERO_PROMO_CHAIR_BOTTOM_OFFSET_PCT = 7;
+export const HERO_PROMO_CHAIR_BOTTOM_OFFSET_PCT =
+  HERO_PROMO_CHAIR_BASE_BOTTOM_OFFSET_PCT + HERO_PROMO_FLOOR_GROUP_BOTTOM_OFFSET_PCT;
 
 /** Container `aspect-ratio` — Figma stack width × vertical span */
 export const HERO_PROMO_STACK_CONTAINER_ASPECT_W = 631;
