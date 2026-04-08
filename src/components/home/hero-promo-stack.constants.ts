@@ -73,13 +73,13 @@ export const HERO_PROMO_SLIDER_HANDLE_WIDTH_PCT =
  * **Floor shadow (101:4025) + handle (101:4026) only.** Larger = group sits higher on the card.
  * Chair position is `HERO_PROMO_CHAIR_BOTTOM_OFFSET_PCT` — decoupled so the ellipse can move without moving the chair.
  */
-export const HERO_PROMO_FLOOR_GROUP_BOTTOM_OFFSET_PCT = 21;
+export const HERO_PROMO_FLOOR_GROUP_BOTTOM_OFFSET_PCT = 25;
 
 /**
  * Distance from container bottom to chair image box bottom (percent of container height).
  * Previously 7 + 16; kept fixed when tuning `HERO_PROMO_FLOOR_GROUP_BOTTOM_OFFSET_PCT`.
  */
-export const HERO_PROMO_CHAIR_BOTTOM_OFFSET_PCT = 23;
+export const HERO_PROMO_CHAIR_BOTTOM_OFFSET_PCT = 27;
 
 /**
  * Scales chair + floor overlay vs Figma (1 = design). Lower = smaller asset, more margin inside the stack.
