@@ -27,16 +27,19 @@ export const HERO_PROMO_CHAIR_SHADOW_IMAGE_SRC =
 export const HERO_PROMO_SLIDER_HANDLE_IMAGE_SRC =
   '/assets/hero/hero-promo-slider-handle-101-4026.svg' as const;
 
-/** Figma 305:2151 — free delivery warehouse banner (beside stacked blue card) */
+/** Free delivery tile raster — RGBA, shaped transparency; 404×556 (Figma mask group) */
 export const HERO_FREE_DELIVERY_BANNER_IMAGE_SRC =
-  '/assets/hero/hero-free-delivery-banner-305-2151.png' as const;
+  '/assets/hero/hero-free-delivery-banner-rgba-404x556.png' as const;
 
 /** CTA icon on free-delivery side tile (`HomePromoFreeDeliveryBanner`) — black disc, yellow arrow */
 export const HERO_FREE_DELIVERY_TILE_CTA_ICON_SRC =
   '/assets/hero/hero-promo-free-delivery-cta-icon.png' as const;
 
-/** Height of bottom frosted strip on free-delivery tile (`%` of card) — `backdrop-blur` over raster */
-export const HERO_FREE_DELIVERY_TILE_BOTTOM_FROST_HEIGHT_PERCENT = 35;
+/** Figma 101:4039 / mask — outer `border-radius` on free-delivery card (Subtract group) */
+export const HERO_FREE_DELIVERY_TILE_MASK_CORNER_RADIUS_PX = 36;
+
+/** Figma — concave top-right circular bite (`clip-path` / subtract from rectangle) */
+export const HERO_FREE_DELIVERY_TILE_MASK_BITE_RADIUS_PX = 80;
 
 /** Figma 305:2154 — 80% / smartphones promo tile (beside free-delivery banner) */
 export const HERO_PROMO_SMARTPHONES_BANNER_IMAGE_SRC =
