@@ -20,6 +20,7 @@ import {
   HEADER_CART_BUTTON_CLASS,
   HEADER_CATEGORY_BUTTON_CLASS,
   HEADER_CONTAINER_CLASS,
+  HEADER_ROW2_CONTENT_MAX_WIDTH_CLASS,
   HEADER_FIGMA_CLUSTER_GAP_CLASS,
   HEADER_FIGMA_CONTACT_CLUSTER_GAP_CLASS,
   HEADER_FIGMA_NAV_LINK_GAP_CLASS,
@@ -131,9 +132,9 @@ const WishlistIcon = () => (
 /** Search field icon — compact */
 const SearchIcon = () => (
   <svg
-    className="h-[18px] w-[18px] shrink-0"
-    width="20"
-    height="20"
+    className="h-4 w-4 shrink-0"
+    width="16"
+    height="16"
     viewBox="0 0 22 22"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
@@ -794,11 +795,12 @@ export function Header({ initialLanguage }: HeaderProps) {
 
       {/* Row 2 — Figma 111:4273; right strip 214:1054 (gaps tightened in header.constants) */}
       <div className="w-full border-b bg-white">
-        <div
-          className={`${HEADER_CONTAINER_CLASS} flex w-full min-w-0 flex-col flex-wrap gap-y-2 ${HEADER_FIGMA_ROW2_PADDING_Y_CLASS} md:flex-row md:flex-nowrap md:items-center md:gap-y-0 ${HEADER_FIGMA_ROW2_MAIN_GAP_CLASS}`}
-        >
+        <div className={HEADER_CONTAINER_CLASS}>
           <div
-            className={`flex min-w-0 w-full flex-1 flex-col gap-y-2 sm:flex-row sm:items-center ${HEADER_FIGMA_ROW2_LEFT_INNER_GAP_CLASS}`}
+            className={`${HEADER_ROW2_CONTENT_MAX_WIDTH_CLASS} flex min-w-0 flex-col flex-wrap gap-y-1.5 ${HEADER_FIGMA_ROW2_PADDING_Y_CLASS} md:flex-row md:flex-nowrap md:items-center md:gap-y-0 ${HEADER_FIGMA_ROW2_MAIN_GAP_CLASS}`}
+          >
+          <div
+            className={`flex min-w-0 w-full flex-1 flex-col gap-y-1.5 sm:flex-row sm:items-center ${HEADER_FIGMA_ROW2_LEFT_INNER_GAP_CLASS}`}
           >
           <div ref={productsMenuRef} className="relative w-full shrink-0 sm:w-auto">
             <button
@@ -841,7 +843,7 @@ export function Header({ initialLanguage }: HeaderProps) {
               className={`flex w-full min-w-0 flex-row items-center overflow-hidden bg-marco-gray ${HEADER_FIGMA_PILL_RADIUS_CLASS} ${HEADER_SEARCH_BAR_HEIGHT_CLASS}`}
             >
               <div
-                className={`flex min-h-0 min-w-0 flex-1 items-center self-stretch ${HEADER_SEARCH_ICON_TEXT_GAP_CLASS} ${HEADER_SEARCH_INPUT_PADDING_LEFT_CLASS} pr-3`}
+                className={`flex min-h-0 min-w-0 flex-1 items-center self-stretch ${HEADER_SEARCH_ICON_TEXT_GAP_CLASS} ${HEADER_SEARCH_INPUT_PADDING_LEFT_CLASS} pr-2`}
               >
                 <span className="shrink-0 text-[rgba(33,43,54,0.46)]" aria-hidden>
                   <SearchIcon />
@@ -859,7 +861,7 @@ export function Header({ initialLanguage }: HeaderProps) {
                   }}
                   onKeyDown={searchHandleKeyDown}
                   placeholder={t('common.placeholders.search')}
-                  className="min-h-0 min-w-0 flex-1 border-0 bg-transparent text-sm leading-normal text-marco-text placeholder:text-[rgba(33,43,54,0.46)] focus:outline-none focus:ring-0"
+                  className="min-h-0 min-w-0 flex-1 border-0 bg-transparent text-xs leading-normal text-marco-text placeholder:text-[rgba(33,43,54,0.46)] focus:outline-none focus:ring-0"
                   aria-controls="search-results"
                   aria-autocomplete="list"
                 />
@@ -901,7 +903,7 @@ export function Header({ initialLanguage }: HeaderProps) {
               className={`flex shrink-0 items-center justify-center rounded-full bg-marco-black text-white transition-opacity hover:opacity-90 ${HEADER_TOOLBAR_ICON_BUTTON_CLASS}`}
               aria-label="Theme"
             >
-              <Sun className="h-[18px] w-[18px]" strokeWidth={1.75} aria-hidden />
+              <Sun className="h-4 w-4" strokeWidth={1.75} aria-hidden />
             </button>
             <div className={HEADER_TOOLBAR_ICON_CLUSTER_CLASS}>
               <div className="relative shrink-0" ref={userMenuRef}>
@@ -965,7 +967,7 @@ export function Header({ initialLanguage }: HeaderProps) {
                 href="/compare"
                 className={`relative flex items-center justify-center text-gray-700 transition-colors duration-150 hover:text-gray-900 ${HEADER_TOOLBAR_ICON_BUTTON_CLASS}`}
               >
-                <BadgeIcon icon={<CompareIcon size={16} />} badge={compareCount} />
+                <BadgeIcon icon={<CompareIcon size={14} />} badge={compareCount} />
               </Link>
 
               <Link
@@ -980,14 +982,15 @@ export function Header({ initialLanguage }: HeaderProps) {
               href="/cart"
               className={`relative bg-marco-black text-white ${HEADER_CART_BUTTON_CLASS}`}
             >
-              <CartIcon size={22} className="h-[21px] w-[22px] brightness-0 invert" />
+              <CartIcon size={19} className="h-[18px] w-[19px] brightness-0 invert" />
               <span className="tabular-nums">{formatPrice(cartTotal, selectedCurrency)}</span>
               {cartCount > 0 && (
-                <span className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white">
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[18px] items-center justify-center rounded-full bg-red-600 px-0.5 text-[9px] font-bold text-white">
                   {cartCount > 99 ? '99+' : cartCount}
                 </span>
               )}
             </Link>
+          </div>
           </div>
         </div>
       </div>

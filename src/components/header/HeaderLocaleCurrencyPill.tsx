@@ -228,13 +228,13 @@ export function HeaderLocaleCurrencyPill({
         type="button"
         onClick={() => setShowMenu((open) => !open)}
         aria-expanded={showMenu}
-        className={`flex shrink-0 items-center justify-center overflow-hidden bg-marco-gray text-sm font-bold leading-none text-marco-text ${HEADER_LOCALE_PILL_MIN_WIDTH_CLASS} ${HEADER_LOCALE_PILL_PADDING_X_CLASS} ${HEADER_LOCALE_PILL_INNER_GAP_CLASS} ${HEADER_LOCALE_PILL_HEIGHT_CLASS} ${HEADER_LOCALE_PILL_RADIUS_CLASS}`}
+        className={`flex shrink-0 items-center justify-center overflow-hidden bg-marco-gray text-xs font-bold leading-none text-marco-text ${HEADER_LOCALE_PILL_MIN_WIDTH_CLASS} ${HEADER_LOCALE_PILL_PADDING_X_CLASS} ${HEADER_LOCALE_PILL_INNER_GAP_CLASS} ${HEADER_LOCALE_PILL_HEIGHT_CLASS} ${HEADER_LOCALE_PILL_RADIUS_CLASS}`}
       >
-        <Globe className="h-[18px] w-[18px] shrink-0 self-center" strokeWidth={1.75} aria-hidden />
+        <Globe className="h-4 w-4 shrink-0 self-center" strokeWidth={1.75} aria-hidden />
         <span className="inline-flex items-center whitespace-nowrap">
           {getPillLanguageLabel(currentLang)} <span className="font-bold">/</span>
         </span>
-        <Banknote className="h-[18px] w-[18px] shrink-0 self-center" strokeWidth={1.75} aria-hidden />
+        <Banknote className="h-4 w-4 shrink-0 self-center" strokeWidth={1.75} aria-hidden />
         <span className="inline-flex items-center whitespace-nowrap">{selectedCurrency}</span>
         <ChevronDownIcon />
       </button>
