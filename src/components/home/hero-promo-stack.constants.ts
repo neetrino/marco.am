@@ -21,9 +21,21 @@ export const HERO_PROMO_STACK_GRAY_HEIGHT_PX = 477;
 export const HERO_PROMO_STACK_BLUE_TOP_PX = 804.42236328125 - 679;
 export const HERO_PROMO_STACK_BLUE_HEIGHT_PX = 480.998046875;
 
+/**
+ * Shrinks only the blue layer height; bottom edge stays fixed (Figma alignment).
+ * Does not scale label, CTA, or chair — those stay the same size.
+ */
+export const HERO_PROMO_STACK_BLUE_LAYER_HEIGHT_SCALE = 0.88;
+
 function toPercent(part: number): number {
   return (part / HERO_PROMO_STACK_SPAN_PX) * 100;
 }
+
+const scaledBlueHeightPx =
+  HERO_PROMO_STACK_BLUE_HEIGHT_PX * HERO_PROMO_STACK_BLUE_LAYER_HEIGHT_SCALE;
+const scaledBlueTopPx =
+  HERO_PROMO_STACK_BLUE_TOP_PX +
+  (HERO_PROMO_STACK_BLUE_HEIGHT_PX - scaledBlueHeightPx);
 
 /** CSS percentage strings for `top` / `height` inside the stack container */
 export const HERO_PROMO_STACK_WHITE_STYLE = {
@@ -37,8 +49,8 @@ export const HERO_PROMO_STACK_GRAY_STYLE = {
 } as const;
 
 export const HERO_PROMO_STACK_BLUE_STYLE = {
-  top: `${toPercent(HERO_PROMO_STACK_BLUE_TOP_PX)}%`,
-  height: `${toPercent(HERO_PROMO_STACK_BLUE_HEIGHT_PX)}%`,
+  top: `${toPercent(scaledBlueTopPx)}%`,
+  height: `${toPercent(scaledBlueHeightPx)}%`,
 } as const;
 
 /** Chair image — 101:4023; width vs stack width 631 */
@@ -96,8 +108,8 @@ export const HERO_PROMO_STACK_CONTAINER_ASPECT_H = HERO_PROMO_STACK_SPAN_PX;
 /** Figma 305:2147 / stack frame — max link width matches design (px) */
 export const HERO_PROMO_STACK_LINK_MAX_WIDTH_PX = HERO_PROMO_STACK_CONTAINER_ASPECT_W;
 
-const BLUE_TOP_PCT = toPercent(HERO_PROMO_STACK_BLUE_TOP_PX);
-const BLUE_HEIGHT_PCT = toPercent(HERO_PROMO_STACK_BLUE_HEIGHT_PX);
+const BLUE_TOP_PCT = toPercent(scaledBlueTopPx);
+const BLUE_HEIGHT_PCT = toPercent(scaledBlueHeightPx);
 
 const chairScale = HERO_PROMO_CHAIR_GROUP_SCALE;
 const fgHeightPct = HERO_PROMO_FLOOR_GROUP_HEIGHT_RATIO * chairScale * 100;

@@ -18,6 +18,11 @@ import type { Product, ProductVariant } from './types';
 /** Trailing arrow circle — scales with row-2 bar height (same as qty / toolbar icons and header strip). */
 const PRODUCT_PRIMARY_CTA_ICON_PX = 36;
 
+/** Buy CTA — slightly taller than header row-2 bar; icon nudged left for optical balance. */
+const PRODUCT_BUY_CTA_HEIGHT_CLASS = 'h-12';
+const PRODUCT_BUY_CTA_ICON_PX = 38;
+const PRODUCT_BUY_CTA_ICON_NUDGE_LEFT_CLASS = '-translate-x-2';
+
 /** Figma: offer CTA sits slightly above the purchase row — transform only, layout box unchanged. */
 const PRODUCT_OFFER_CTA_LIFT_CLASS = '-translate-y-1.5 sm:-translate-y-2';
 
@@ -256,7 +261,7 @@ export function ProductInfoAndActions({
             <button
               type="button"
               disabled={!canAddToCart || isAddingToCart}
-              className={`flex min-w-0 flex-1 items-center gap-1.5 bg-marco-yellow pl-3 pr-5 text-left text-sm font-semibold leading-normal text-marco-black transition-[filter,transform] hover:-translate-y-0.5 hover:brightness-95 active:brightness-90 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 disabled:hover:brightness-100 md:max-w-[280px] md:flex-none md:pl-6 ${HEADER_ROW2_BAR_HEIGHT_CLASS} ${HEADER_FIGMA_PILL_RADIUS_CLASS}`}
+              className={`flex min-w-0 flex-1 items-center gap-1.5 bg-marco-yellow pl-4 pr-6 text-left text-sm font-semibold leading-normal text-marco-black transition-[filter,transform] hover:-translate-y-0.5 hover:brightness-95 active:brightness-90 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 disabled:hover:brightness-100 md:max-w-72 md:flex-none md:pl-7 ${PRODUCT_BUY_CTA_HEIGHT_CLASS} ${HEADER_FIGMA_PILL_RADIUS_CLASS}`}
               onClick={onAddToCart}
             >
               <span className="min-w-0 flex-1">
@@ -271,10 +276,10 @@ export function ProductInfoAndActions({
                         : t(language, 'product.buyNow')}
               </span>
               <span
-                className="flex shrink-0 items-center justify-center rounded-full bg-black text-white"
+                className={`flex shrink-0 items-center justify-center rounded-full bg-black text-white ${PRODUCT_BUY_CTA_ICON_NUDGE_LEFT_CLASS}`}
                 style={{
-                  width: PRODUCT_PRIMARY_CTA_ICON_PX,
-                  height: PRODUCT_PRIMARY_CTA_ICON_PX,
+                  width: PRODUCT_BUY_CTA_ICON_PX,
+                  height: PRODUCT_BUY_CTA_ICON_PX,
                 }}
                 aria-hidden
               >
