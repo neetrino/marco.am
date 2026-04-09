@@ -31,6 +31,10 @@ export const HERO_PROMO_SLIDER_HANDLE_IMAGE_SRC =
 export const HERO_FREE_DELIVERY_BANNER_IMAGE_SRC =
   '/assets/hero/hero-free-delivery-banner-305-2151.png' as const;
 
+/** Figma 305:2154 — 80% / smartphones promo tile (beside free-delivery banner) */
+export const HERO_PROMO_SMARTPHONES_BANNER_IMAGE_SRC =
+  '/assets/hero/hero-promo-smartphones-banner-305-2154.png' as const;
+
 /** Hero headline box — design size (px); mirrored in `HomePromoYellowHeadline` Tailwind classes */
 export const HERO_HEADLINE_MAX_WIDTH_PX = 580;
 export const HERO_HEADLINE_HEIGHT_PX = 56;
