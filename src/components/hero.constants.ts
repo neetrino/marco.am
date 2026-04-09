@@ -27,6 +27,10 @@ export const HERO_PROMO_CHAIR_SHADOW_IMAGE_SRC =
 export const HERO_PROMO_SLIDER_HANDLE_IMAGE_SRC =
   '/assets/hero/hero-promo-slider-handle-101-4026.svg' as const;
 
+/** Figma 305:2151 — free delivery warehouse banner (beside stacked blue card) */
+export const HERO_FREE_DELIVERY_BANNER_IMAGE_SRC =
+  '/assets/hero/hero-free-delivery-banner-305-2151.png' as const;
+
 /** Hero headline box — design size (px); mirrored in `HomePromoYellowHeadline` Tailwind classes */
 export const HERO_HEADLINE_MAX_WIDTH_PX = 580;
 export const HERO_HEADLINE_HEIGHT_PX = 56;
