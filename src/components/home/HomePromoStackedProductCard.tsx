@@ -205,7 +205,7 @@ function BlueStackLayerWithCta() {
 
   return (
     <div className="absolute left-0 right-0 overflow-hidden" style={style}>
-      <div className="absolute bottom-2 left-2 right-2 z-[4] flex items-end sm:bottom-2.5 sm:left-2.5 sm:right-2.5 md:bottom-3 md:left-3 md:right-3">
+      <div className="absolute bottom-[20px] right-6 z-[4] flex items-end sm:bottom-[22px] sm:right-6 md:bottom-[45px] md:left-6">
         <HomePromoStackedProductCardBlueLabel />
       </div>
       <div
