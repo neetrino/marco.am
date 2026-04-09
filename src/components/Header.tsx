@@ -708,12 +708,10 @@ export function Header({ initialLanguage }: HeaderProps) {
           categories={categories}
         />
       </Suspense>
-      {/* MARCO — top row (desktop), Figma 111:4293 / nav 111:4294 */}
-      <div
-        className={`hidden w-full border-b border-marco-border bg-white md:block ${HEADER_FIGMA_PADDING_Y_CLASS}`}
-      >
+      {/* MARCO — top row (desktop), Figma 111:4293 / nav 111:4294 — same shell as row 2: full-bleed stripe, padding inside `.marco-header-container` */}
+      <div className="hidden w-full border-b border-marco-border bg-white md:block">
         <div
-          className={`${HEADER_CONTAINER_CLASS} flex min-w-0 flex-nowrap items-center ${HEADER_FIGMA_CLUSTER_GAP_CLASS}`}
+          className={`${HEADER_CONTAINER_CLASS} flex w-full min-w-0 flex-nowrap items-center ${HEADER_FIGMA_PADDING_Y_CLASS} ${HEADER_FIGMA_CLUSTER_GAP_CLASS}`}
         >
           <MarcoLogo />
           <nav
