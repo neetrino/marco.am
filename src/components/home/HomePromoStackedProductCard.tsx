@@ -27,6 +27,9 @@ import {
   HERO_PROMO_STACK_CONTAINER_ASPECT_H,
   HERO_PROMO_STACK_CONTAINER_ASPECT_W,
   HERO_PROMO_STACK_CTA_CENTER_FROM_BLUE_TOP_PCT,
+  HERO_PROMO_STACK_CTA_NUDGE_DOWN_PX,
+  HERO_PROMO_STACK_CTA_RIGHT_BASE_REM,
+  HERO_PROMO_STACK_CTA_RIGHT_EXTRA_PX,
   HERO_PROMO_STACK_GRAY_STYLE,
   HERO_PROMO_STACK_RADIUS_PX,
   HERO_PROMO_SHADOW_IN_GROUP_HEIGHT_RATIO,
@@ -35,7 +38,7 @@ import {
   HERO_PROMO_STACK_WHITE_STYLE,
 } from './hero-promo-stack.constants';
 
-/** CTA label: Figma — Montserrat 700, 16px / 24px (same as design "Montserrat arm"). */
+/** CTA label: Montserrat 700 — compact pill; `sm` breakpoint steps up one size. */
 const montserratCta = Montserrat({
   weight: '700',
   subsets: ['latin', 'cyrillic'],
@@ -161,9 +164,9 @@ function HomePromoStackedProductCardBlueLabel() {
 
 /** Figma 305:2096 — compact pill CTA inside blue layer (bottom-right) */
 /** From pill left edge to first letter of the label (px). */
-const HERO_PROMO_STACK_CTA_LABEL_INSET_LEFT_PX = 60;
+const HERO_PROMO_STACK_CTA_LABEL_INSET_LEFT_PX = 48;
 /** From end of label text to trailing icon circle (px). */
-const HERO_PROMO_STACK_CTA_TEXT_TO_ICON_GAP_PX = 24;
+const HERO_PROMO_STACK_CTA_TEXT_TO_ICON_GAP_PX = 18;
 
 function HomePromoStackedProductCardCta() {
   const { t } = useTranslation();
@@ -175,16 +178,16 @@ function HomePromoStackedProductCardCta() {
 
   return (
     <div
-      className="inline-flex max-w-[min(100%,18rem)] items-center rounded-full bg-marco-yellow py-1 pr-1 shadow-sm transition group-hover:brightness-95 sm:max-w-[22rem] sm:py-1.5"
+      className="inline-flex max-w-[min(100%,16rem)] items-center rounded-full bg-marco-yellow py-0.5 pr-0.5 shadow-sm transition group-hover:brightness-95 sm:max-w-[20rem] sm:py-1"
       style={ctaPillStyle}
     >
       <span
-        className={`${montserratCta.className} min-w-0 flex-1 truncate text-left text-base font-bold leading-6 text-marco-black`}
+        className={`${montserratCta.className} min-w-0 flex-1 truncate text-left text-xs font-bold leading-4 text-marco-black sm:text-sm sm:leading-5`}
       >
         {t('home.promo_featured_cta')}
       </span>
-      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-marco-black text-white sm:h-9 sm:w-9">
-        <ArrowUpRight className="h-3 w-3 sm:h-4 sm:w-4" strokeWidth={2.5} aria-hidden />
+      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-marco-black text-white sm:h-7 sm:w-7">
+        <ArrowUpRight className="h-2.5 w-2.5 sm:h-3 sm:w-3" strokeWidth={2.5} aria-hidden />
       </span>
     </div>
   );
@@ -200,7 +203,8 @@ function BlueStackLayerWithCta() {
 
   const ctaVerticalStyle: CSSProperties = {
     top: `${HERO_PROMO_STACK_CTA_CENTER_FROM_BLUE_TOP_PCT}%`,
-    transform: 'translateY(-50%)',
+    right: `calc(1.5rem + ${HERO_PROMO_STACK_CTA_RIGHT_EXTRA_PX}px)`,
+    transform: `translateY(calc(-50% + ${HERO_PROMO_STACK_CTA_NUDGE_DOWN_PX}px))`,
   };
 
   return (
@@ -208,10 +212,7 @@ function BlueStackLayerWithCta() {
       <div className="absolute bottom-[20px] right-6 z-[4] flex items-end sm:bottom-[22px] sm:right-6 md:bottom-[45px] md:left-6">
         <HomePromoStackedProductCardBlueLabel />
       </div>
-      <div
-        className="absolute right-6 z-[4]"
-        style={ctaVerticalStyle}
-      >
+      <div className="absolute z-[4]" style={ctaVerticalStyle}>
         <HomePromoStackedProductCardCta />
       </div>
     </div>

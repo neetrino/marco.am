@@ -118,3 +118,12 @@ const handleCenterFromStackTopPct = handleTopFromStackTopPct + handleSizePct / 2
  */
 export const HERO_PROMO_STACK_CTA_CENTER_FROM_BLUE_TOP_PCT =
   ((handleCenterFromStackTopPct + 100) / 2 - BLUE_TOP_PCT) / BLUE_HEIGHT_PCT * 100;
+
+/** Matches Tailwind `right-6` before `HERO_PROMO_STACK_CTA_RIGHT_EXTRA_PX`. */
+export const HERO_PROMO_STACK_CTA_RIGHT_BASE_REM = 1.5;
+
+/** Added to the base right inset so the CTA sits slightly left for optical balance. */
+export const HERO_PROMO_STACK_CTA_RIGHT_EXTRA_PX = 3;
+
+/** Added inside `translateY(calc(-50% + …))` to nudge the CTA slightly down. */
+export const HERO_PROMO_STACK_CTA_NUDGE_DOWN_PX = 7;
