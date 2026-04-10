@@ -9,6 +9,8 @@ import {
   HERO_CHAT_PILL_BOX_SHADOW,
   HERO_CHAT_PILL_MAX_WIDTH_PX,
   HERO_CHAT_PILL_MIN_HEIGHT_PX,
+  HERO_CHAT_PILL_PADDING_BLOCK_PX,
+  HERO_CHAT_PILL_PADDING_INLINE_PX,
 } from '../hero.constants';
 
 const HERO_CHAT_CLUSTER_LINK_CLASSNAME =
@@ -39,8 +41,12 @@ export function HomePromoHeroChatFab() {
   return (
     <Link href="/contact" className={HERO_CHAT_CLUSTER_LINK_CLASSNAME}>
       <span
-        className={`inline-flex min-w-0 items-center justify-center px-2.5 py-1.5 sm:px-4 sm:py-2 ${HERO_CHAT_PILL_SURFACE_CLASSNAME}`}
+        className={`inline-flex min-w-0 items-center justify-center ${HERO_CHAT_PILL_SURFACE_CLASSNAME}`}
         style={{
+          paddingLeft: HERO_CHAT_PILL_PADDING_INLINE_PX,
+          paddingRight: HERO_CHAT_PILL_PADDING_INLINE_PX,
+          paddingTop: HERO_CHAT_PILL_PADDING_BLOCK_PX,
+          paddingBottom: HERO_CHAT_PILL_PADDING_BLOCK_PX,
           minHeight: HERO_CHAT_PILL_MIN_HEIGHT_PX,
           maxWidth: `min(${HERO_CHAT_PILL_MAX_WIDTH_PX}px, calc(100vw - 7rem))`,
           borderRadius: HERO_CHAT_PILL_BORDER_RADIUS_PX,

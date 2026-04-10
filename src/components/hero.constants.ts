@@ -117,7 +117,9 @@ export const HERO_CHAT_FAB_MESSAGE_SOLID_PATH_D =
 export const HERO_CHAT_FAB_ICON_FILL = '#2d4656' as const;
 
 /** Figma 101:4068 — pill label left of chat FAB (`bg` = `HERO_PROMO_STACK_LAYER_BLUE`); UI scaled down */
+export const HERO_CHAT_PILL_PADDING_INLINE_PX = 18;
+export const HERO_CHAT_PILL_PADDING_BLOCK_PX = 8;
 export const HERO_CHAT_PILL_MIN_HEIGHT_PX = 40;
-export const HERO_CHAT_PILL_MAX_WIDTH_PX = 232;
+export const HERO_CHAT_PILL_MAX_WIDTH_PX = 236;
 export const HERO_CHAT_PILL_BORDER_RADIUS_PX = 48;
 export const HERO_CHAT_PILL_BOX_SHADOW = '0 4px 24px rgba(150, 150, 150, 0.28)' as const;
