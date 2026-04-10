@@ -13,9 +13,15 @@ export const HERO_PROMO_STACK_SPAN_PX = 804.42236328125 + 480.998046875 - 679;
 export const HERO_PROMO_STACK_WHITE_TOP_PX = 0;
 export const HERO_PROMO_STACK_WHITE_HEIGHT_PX = 475;
 
+/** Moves the white layer up (negative) or down (positive), design px in Figma stack space. */
+export const HERO_PROMO_STACK_WHITE_TOP_NUDGE_PX = -4;
+
 /** Gray — 101:4020 */
 export const HERO_PROMO_STACK_GRAY_TOP_PX = 737 - 679;
 export const HERO_PROMO_STACK_GRAY_HEIGHT_PX = 477;
+
+/** Moves the gray layer up (negative) or down (positive), design px in Figma stack space. */
+export const HERO_PROMO_STACK_GRAY_TOP_NUDGE_PX = 2;
 
 /** Blue — 101:4021 */
 export const HERO_PROMO_STACK_BLUE_TOP_PX = 804.42236328125 - 679;
@@ -25,7 +31,12 @@ export const HERO_PROMO_STACK_BLUE_HEIGHT_PX = 480.998046875;
  * Shrinks only the blue layer height; bottom edge stays fixed (Figma alignment).
  * Does not scale label, CTA, or chair — those stay the same size.
  */
-export const HERO_PROMO_STACK_BLUE_LAYER_HEIGHT_SCALE = 0.88;
+export const HERO_PROMO_STACK_BLUE_LAYER_HEIGHT_SCALE = 0.95;
+
+/**
+ * Moves the blue layer up (negative) or down (positive), design px in Figma stack space.
+ */
+export const HERO_PROMO_STACK_BLUE_TOP_NUDGE_PX = -22;
 
 function toPercent(part: number): number {
   return (part / HERO_PROMO_STACK_SPAN_PX) * 100;
@@ -35,16 +46,23 @@ const scaledBlueHeightPx =
   HERO_PROMO_STACK_BLUE_HEIGHT_PX * HERO_PROMO_STACK_BLUE_LAYER_HEIGHT_SCALE;
 const scaledBlueTopPx =
   HERO_PROMO_STACK_BLUE_TOP_PX +
-  (HERO_PROMO_STACK_BLUE_HEIGHT_PX - scaledBlueHeightPx);
+  (HERO_PROMO_STACK_BLUE_HEIGHT_PX - scaledBlueHeightPx) +
+  HERO_PROMO_STACK_BLUE_TOP_NUDGE_PX;
+
+const scaledWhiteTopPx =
+  HERO_PROMO_STACK_WHITE_TOP_PX + HERO_PROMO_STACK_WHITE_TOP_NUDGE_PX;
+
+const scaledGrayTopPx =
+  HERO_PROMO_STACK_GRAY_TOP_PX + HERO_PROMO_STACK_GRAY_TOP_NUDGE_PX;
 
 /** CSS percentage strings for `top` / `height` inside the stack container */
 export const HERO_PROMO_STACK_WHITE_STYLE = {
-  top: `${toPercent(HERO_PROMO_STACK_WHITE_TOP_PX)}%`,
+  top: `${toPercent(scaledWhiteTopPx)}%`,
   height: `${toPercent(HERO_PROMO_STACK_WHITE_HEIGHT_PX)}%`,
 } as const;
 
 export const HERO_PROMO_STACK_GRAY_STYLE = {
-  top: `${toPercent(HERO_PROMO_STACK_GRAY_TOP_PX)}%`,
+  top: `${toPercent(scaledGrayTopPx)}%`,
   height: `${toPercent(HERO_PROMO_STACK_GRAY_HEIGHT_PX)}%`,
 } as const;
 
@@ -137,5 +155,5 @@ export const HERO_PROMO_STACK_CTA_RIGHT_BASE_REM = 1.5;
 /** Added to the base right inset so the CTA sits slightly left for optical balance. */
 export const HERO_PROMO_STACK_CTA_RIGHT_EXTRA_PX = 3;
 
-/** Added inside `translateY(calc(-50% + …))` to nudge the CTA slightly down. */
-export const HERO_PROMO_STACK_CTA_NUDGE_DOWN_PX = 7;
+/** Added inside `translateY(calc(-50% + …))` — positive nudges down, negative nudges up. */
+export const HERO_PROMO_STACK_CTA_NUDGE_DOWN_PX = -4;
