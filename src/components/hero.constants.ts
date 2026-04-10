@@ -52,12 +52,21 @@ export const HERO_FREE_DELIVERY_TILE_CTA_ANCHOR_FROM_TOP_FRAC = 0.86;
 /** Fine vertical nudge after centering (`translateY`) — px up */
 export const HERO_FREE_DELIVERY_TILE_CTA_NUDGE_UP_PX = 1;
 
-/** Top-right arrow control — compact vs Figma 101:4047 for tile UI */
-export const HERO_FREE_DELIVERY_TILE_ARROW_FRAME_WIDTH_PX = 52;
-export const HERO_FREE_DELIVERY_TILE_ARROW_FRAME_HEIGHT_PX = 54;
+/**
+ * Shared TR icon size — free-delivery tile (black / yellow) + 80% tile (white / black).
+ */
+export const HERO_PROMO_SIDE_TILE_TR_ICON_FRAME_PX = 60;
+export const HERO_PROMO_SIDE_TILE_TR_ICON_GLYPH_PX = 28;
 
-/** Lucide arrow glyph — ~44% of min(frame) */
-export const HERO_FREE_DELIVERY_TILE_ARROW_ICON_PX = 24;
+export const HERO_FREE_DELIVERY_TILE_ARROW_FRAME_WIDTH_PX = HERO_PROMO_SIDE_TILE_TR_ICON_FRAME_PX;
+export const HERO_FREE_DELIVERY_TILE_ARROW_FRAME_HEIGHT_PX = HERO_PROMO_SIDE_TILE_TR_ICON_FRAME_PX;
+export const HERO_FREE_DELIVERY_TILE_ARROW_ICON_PX = HERO_PROMO_SIDE_TILE_TR_ICON_GLYPH_PX;
+
+/** Fine horizontal nudge on free-delivery TR arrow only — positive moves right */
+export const HERO_FREE_DELIVERY_TILE_ARROW_NUDGE_X_PX = 2;
+
+/** Fine vertical nudge — negative moves up */
+export const HERO_FREE_DELIVERY_TILE_ARROW_NUDGE_Y_PX = -1;
 
 /** TR arrow `Link` — free-delivery tile (Figma 101:4047) */
 export const HERO_PROMO_SIDE_TILE_ARROW_LINK_STYLE: CSSProperties = {
@@ -80,8 +89,8 @@ export const HERO_PROMO_SMARTPHONES_TILE_HEIGHT_PX = 497;
  */
 export const HERO_PROMO_SMARTPHONES_TILE_TR_ICON_TOP_PX = 108;
 export const HERO_PROMO_SMARTPHONES_TILE_TR_ICON_RIGHT_PX = 78;
-export const HERO_PROMO_SMARTPHONES_TILE_TR_ICON_FRAME_PX = 60;
-export const HERO_PROMO_SMARTPHONES_TILE_TR_ICON_GLYPH_PX = 28;
+export const HERO_PROMO_SMARTPHONES_TILE_TR_ICON_FRAME_PX = HERO_PROMO_SIDE_TILE_TR_ICON_FRAME_PX;
+export const HERO_PROMO_SMARTPHONES_TILE_TR_ICON_GLYPH_PX = HERO_PROMO_SIDE_TILE_TR_ICON_GLYPH_PX;
 
 /** Free-delivery tile (`HomePromoFreeDeliveryBanner`; 80% tile uses fixed px above) — matches banner raster */
 export const HERO_SIDE_PROMO_TILE_ASPECT_W = 428;

@@ -14,6 +14,8 @@ import {
   HERO_FREE_DELIVERY_TILE_CTA_HEIGHT_PX,
   HERO_FREE_DELIVERY_TILE_CTA_WIDTH_PX,
   HERO_FREE_DELIVERY_TILE_ARROW_ICON_PX,
+  HERO_FREE_DELIVERY_TILE_ARROW_NUDGE_X_PX,
+  HERO_FREE_DELIVERY_TILE_ARROW_NUDGE_Y_PX,
   HERO_FREE_DELIVERY_TILE_MASK_BITE_RADIUS_PX,
   HERO_FREE_DELIVERY_TILE_MASK_CORNER_RADIUS_PX,
   HERO_PROMO_SIDE_TILE_ARROW_LINK_STYLE,
@@ -50,6 +52,11 @@ function buildFreeDeliveryTileMaskClipPath(): string {
 }
 
 const freeDeliveryTileMaskClipPath = buildFreeDeliveryTileMaskClipPath();
+
+const freeDeliveryArrowLinkStyle: CSSProperties = {
+  ...HERO_PROMO_SIDE_TILE_ARROW_LINK_STYLE,
+  transform: `translate(${HERO_FREE_DELIVERY_TILE_ARROW_NUDGE_X_PX}px, ${HERO_FREE_DELIVERY_TILE_ARROW_NUDGE_Y_PX}px)`,
+};
 
 const freeDeliveryCtaButtonStyle: CSSProperties = {
   width: `min(${HERO_FREE_DELIVERY_TILE_CTA_WIDTH_PX}px, calc(100% - 2rem))`,
@@ -97,7 +104,7 @@ export function HomePromoFreeDeliveryBanner() {
         <Link
           href="/products"
           className="absolute right-0 top-0 z-[3] flex max-h-full shrink-0 items-center justify-center rounded-full bg-marco-black text-marco-yellow shadow-md ring-1 ring-white/20 transition hover:brightness-95"
-          style={HERO_PROMO_SIDE_TILE_ARROW_LINK_STYLE}
+          style={freeDeliveryArrowLinkStyle}
           aria-label={t('home.promo_card_arrow_aria')}
         >
           <ArrowUpRight
