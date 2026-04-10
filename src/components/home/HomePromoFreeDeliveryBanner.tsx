@@ -81,14 +81,10 @@ export function HomePromoFreeDeliveryBanner() {
           priority
         />
         <Link
-          href="/delivery"
-          className="absolute inset-0 z-[1]"
-          aria-label={t('home.promo_free_delivery_banner_aria')}
-        />
-        <Link
           href="/products"
           className={`${montserratFreeDeliveryCta.className} absolute z-[2] flex items-center justify-center bg-black px-2.5 text-center text-xs font-bold leading-4 text-white transition hover:brightness-110 sm:text-sm sm:leading-5`}
           style={freeDeliveryCtaButtonStyle}
+          aria-label={t('home.promo_free_delivery_banner_aria')}
         >
           {t('home.promo_free_delivery_banner_cta')}
         </Link>

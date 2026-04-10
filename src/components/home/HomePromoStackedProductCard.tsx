@@ -171,7 +171,11 @@ const HERO_PROMO_STACK_CTA_TEXT_TO_ICON_GAP_PX = 18;
 
 const HERO_PROMO_STACK_CTA_ICON_NUDGE_LEFT_CLASS = '-translate-x-1';
 
-function HomePromoStackedProductCardCta() {
+type HomePromoStackedProductCardCtaProps = {
+  ariaLabel: string;
+};
+
+function HomePromoStackedProductCardCta({ ariaLabel }: HomePromoStackedProductCardCtaProps) {
   const { t } = useTranslation();
 
   const ctaPillStyle: CSSProperties = {
@@ -180,8 +184,10 @@ function HomePromoStackedProductCardCta() {
   };
 
   return (
-    <div
-      className="inline-flex max-w-[min(100%,16rem)] items-center rounded-full bg-marco-yellow py-0.5 pr-0.5 shadow-sm transition group-hover:brightness-95 sm:max-w-[20rem] sm:py-1"
+    <Link
+      href="/products"
+      aria-label={ariaLabel}
+      className="inline-flex max-w-[min(100%,16rem)] items-center rounded-full bg-marco-yellow py-0.5 pr-0.5 shadow-sm transition hover:brightness-95 sm:max-w-[20rem] sm:py-1"
       style={ctaPillStyle}
     >
       <span
@@ -194,11 +200,15 @@ function HomePromoStackedProductCardCta() {
       >
         <ArrowUpRight className="h-2.5 w-2.5 sm:h-3 sm:w-3" strokeWidth={2.5} aria-hidden />
       </span>
-    </div>
+    </Link>
   );
 }
 
-function BlueStackLayerWithCta() {
+type BlueStackLayerWithCtaProps = {
+  ctaAriaLabel: string;
+};
+
+function BlueStackLayerWithCta({ ctaAriaLabel }: BlueStackLayerWithCtaProps) {
   const style: CSSProperties = {
     ...HERO_PROMO_STACK_BLUE_STYLE,
     backgroundColor: HERO_PROMO_STACK_LAYER_BLUE,
@@ -218,7 +228,7 @@ function BlueStackLayerWithCta() {
         <HomePromoStackedProductCardBlueLabel />
       </div>
       <div className="absolute z-[4]" style={ctaVerticalStyle}>
-        <HomePromoStackedProductCardCta />
+        <HomePromoStackedProductCardCta ariaLabel={ctaAriaLabel} />
       </div>
     </div>
   );
@@ -249,19 +259,17 @@ export function HomePromoStackedProductCard({ ariaLabel }: HomePromoStackedProdu
   };
 
   return (
-    <Link
-      href="/products"
-      aria-label={ariaLabel}
-      className="group relative block w-[min(88vw,164px)] sm:w-[206px] md:w-[min(52vw,274px)] lg:w-[min(48vw,342px)] xl:w-[472px]"
+    <div
+      className="relative block w-[min(88vw,164px)] sm:w-[206px] md:w-[min(52vw,274px)] lg:w-[min(48vw,342px)] xl:w-[472px]"
       style={cardRootStyle}
     >
       <div className="relative w-full overflow-visible" style={aspectStyle}>
         <StackLayer color={HERO_PROMO_STACK_LAYER_WHITE} layerStyle={HERO_PROMO_STACK_WHITE_STYLE} zIndex={0} />
         <StackLayer color={HERO_PROMO_STACK_LAYER_GRAY} layerStyle={HERO_PROMO_STACK_GRAY_STYLE} zIndex={1} />
-        <BlueStackLayerWithCta />
+        <BlueStackLayerWithCta ctaAriaLabel={ariaLabel} />
         <PromoChairFloorGroup wrapStyle={floorGroupWrapStyle} />
         <PromoChairAsset wrapStyle={chairWrapStyle} />
       </div>
-    </Link>
+    </div>
   );
 }

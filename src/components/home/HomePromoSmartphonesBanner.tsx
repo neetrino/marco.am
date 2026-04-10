@@ -53,26 +53,24 @@ export function HomePromoSmartphonesBanner() {
   const { t } = useTranslation();
 
   return (
-    <Link
-      href="/products"
-      className="block shrink-0 transition hover:opacity-95"
-      aria-label={t('home.promo_smartphones_banner_aria')}
-    >
+    <div className="block shrink-0">
       <div className="relative isolate shrink-0" style={smartphonesTileFrameStyle}>
         <Image
           src={HERO_PROMO_SMARTPHONES_BANNER_IMAGE_SRC}
           alt=""
           fill
-          className="object-contain object-bottom"
+          className="pointer-events-none object-contain object-bottom"
           sizes={SMARTPHONES_BANNER_IMAGE_SIZES}
           priority
         />
-        <span
-          className={`${montserratSmartphonesCta.className} pointer-events-none absolute z-[2] flex items-center justify-center bg-white text-center text-sm font-bold leading-snug text-black shadow-sm`}
+        <Link
+          href="/products"
+          className={`${montserratSmartphonesCta.className} absolute z-[2] flex items-center justify-center bg-white text-center text-sm font-bold leading-snug text-black shadow-sm transition hover:opacity-95`}
           style={smartphonesCtaPillStyle}
+          aria-label={t('home.promo_smartphones_banner_aria')}
         >
           {t('home.promo_smartphones_banner_cta')}
-        </span>
+        </Link>
         <div
           aria-hidden
           className="pointer-events-none absolute -right-2 -top-3 z-20 aspect-square w-[20%] sm:-right-2.5 sm:-top-4"
@@ -86,6 +84,6 @@ export function HomePromoSmartphonesBanner() {
           />
         </div>
       </div>
-    </Link>
+    </div>
   );
 }
