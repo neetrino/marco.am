@@ -59,7 +59,7 @@ export const HERO_FREE_DELIVERY_TILE_ARROW_FRAME_HEIGHT_PX = 54;
 /** Lucide arrow glyph — ~44% of min(frame) */
 export const HERO_FREE_DELIVERY_TILE_ARROW_ICON_PX = 24;
 
-/** TR arrow `Link` — free-delivery tile + 80% tile (Figma 101:4047 / 305:2130) */
+/** TR arrow `Link` — free-delivery tile (Figma 101:4047) */
 export const HERO_PROMO_SIDE_TILE_ARROW_LINK_STYLE: CSSProperties = {
   width: `${HERO_FREE_DELIVERY_TILE_ARROW_FRAME_WIDTH_PX}px`,
   height: `${HERO_FREE_DELIVERY_TILE_ARROW_FRAME_HEIGHT_PX}px`,
@@ -74,21 +74,14 @@ export const HERO_PROMO_SMARTPHONES_BANNER_IMAGE_SRC =
 export const HERO_PROMO_SMARTPHONES_TILE_WIDTH_PX = 360;
 export const HERO_PROMO_SMARTPHONES_TILE_HEIGHT_PX = 497;
 
-/** Figma 101:4057 — white pill CTA on black 80% tile (`HomePromoSmartphonesBanner`) */
-export const HERO_PROMO_SMARTPHONES_TILE_CTA_LEFT_FRAC = 0.38;
-/** Lower value = visually higher on the tile */
-export const HERO_PROMO_SMARTPHONES_TILE_CTA_ANCHOR_FROM_TOP_FRAC = 0.88;
-export const HERO_PROMO_SMARTPHONES_TILE_CTA_MIN_WIDTH_PX = 176;
-export const HERO_PROMO_SMARTPHONES_TILE_CTA_PADDING_X_PX = 22;
-export const HERO_PROMO_SMARTPHONES_TILE_CTA_PADDING_Y_PX = 9;
-/** Full capsule (thin strip) */
-export const HERO_PROMO_SMARTPHONES_TILE_CTA_BORDER_RADIUS_PX = 9999;
-
-/** Fine shift after anchor + `translate(-50%,-50%)` — positive moves the pill down */
-export const HERO_PROMO_SMARTPHONES_TILE_CTA_NUDGE_DOWN_PX = 8;
-
-/** Fine horizontal shift — positive moves the pill right */
-export const HERO_PROMO_SMARTPHONES_TILE_CTA_NUDGE_X_PX = 6;
+/**
+ * Figma 305:2130 — `Group 9208` top-right control on 80% tile: white circle, black NE arrow.
+ * Position nudged down + left vs corner; size slightly under design px for hero scale.
+ */
+export const HERO_PROMO_SMARTPHONES_TILE_TR_ICON_TOP_PX = 108;
+export const HERO_PROMO_SMARTPHONES_TILE_TR_ICON_RIGHT_PX = 78;
+export const HERO_PROMO_SMARTPHONES_TILE_TR_ICON_FRAME_PX = 60;
+export const HERO_PROMO_SMARTPHONES_TILE_TR_ICON_GLYPH_PX = 28;
 
 /** Free-delivery tile (`HomePromoFreeDeliveryBanner`; 80% tile uses fixed px above) — matches banner raster */
 export const HERO_SIDE_PROMO_TILE_ASPECT_W = 428;
