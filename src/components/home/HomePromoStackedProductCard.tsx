@@ -24,6 +24,7 @@ import {
   HERO_PROMO_FLOOR_GROUP_BOTTOM_OFFSET_PCT,
   HERO_PROMO_FLOOR_GROUP_HEIGHT_RATIO,
   HERO_PROMO_STACK_BLUE_STYLE,
+  HERO_PROMO_STACK_CARD_OFFSET_DOWN_PX,
   HERO_PROMO_STACK_CONTAINER_ASPECT_H,
   HERO_PROMO_STACK_CONTAINER_ASPECT_W,
   HERO_PROMO_STACK_CTA_CENTER_FROM_BLUE_TOP_PCT,
@@ -243,11 +244,16 @@ export function HomePromoStackedProductCard({ ariaLabel }: HomePromoStackedProdu
     height: `${HERO_PROMO_CHAIR_HEIGHT_RATIO * chairScalePct}%`,
   };
 
+  const cardRootStyle: CSSProperties = {
+    transform: `translateY(${HERO_PROMO_STACK_CARD_OFFSET_DOWN_PX}px)`,
+  };
+
   return (
     <Link
       href="/products"
       aria-label={ariaLabel}
       className="group relative block w-[min(88vw,164px)] sm:w-[206px] md:w-[min(52vw,274px)] lg:w-[min(48vw,342px)] xl:w-[472px]"
+      style={cardRootStyle}
     >
       <div className="relative w-full overflow-visible" style={aspectStyle}>
         <StackLayer color={HERO_PROMO_STACK_LAYER_WHITE} layerStyle={HERO_PROMO_STACK_WHITE_STYLE} zIndex={0} />

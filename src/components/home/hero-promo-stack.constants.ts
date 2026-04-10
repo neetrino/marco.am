@@ -126,6 +126,9 @@ export const HERO_PROMO_STACK_CONTAINER_ASPECT_H = HERO_PROMO_STACK_SPAN_PX;
 /** Figma 305:2147 / stack frame — max link width matches design (px) */
 export const HERO_PROMO_STACK_LINK_MAX_WIDTH_PX = HERO_PROMO_STACK_CONTAINER_ASPECT_W;
 
+/** Shifts the entire stacked card (`HomePromoStackedProductCard` root link) down (CSS px). */
+export const HERO_PROMO_STACK_CARD_OFFSET_DOWN_PX = 6;
+
 const BLUE_TOP_PCT = toPercent(scaledBlueTopPx);
 const BLUE_HEIGHT_PCT = toPercent(scaledBlueHeightPx);
 
