@@ -62,6 +62,22 @@ export const HERO_PROMO_SMARTPHONES_TILE_CTA_ICON_SRC =
 export const HERO_PROMO_SMARTPHONES_TILE_WIDTH_PX = 360;
 export const HERO_PROMO_SMARTPHONES_TILE_HEIGHT_PX = 497;
 
+/** Figma 101:4057 — white pill CTA on black 80% tile (`HomePromoSmartphonesBanner`) */
+export const HERO_PROMO_SMARTPHONES_TILE_CTA_LEFT_FRAC = 0.38;
+/** Lower value = visually higher on the tile */
+export const HERO_PROMO_SMARTPHONES_TILE_CTA_ANCHOR_FROM_TOP_FRAC = 0.88;
+export const HERO_PROMO_SMARTPHONES_TILE_CTA_MIN_WIDTH_PX = 176;
+export const HERO_PROMO_SMARTPHONES_TILE_CTA_PADDING_X_PX = 22;
+export const HERO_PROMO_SMARTPHONES_TILE_CTA_PADDING_Y_PX = 9;
+/** Full capsule (thin strip) */
+export const HERO_PROMO_SMARTPHONES_TILE_CTA_BORDER_RADIUS_PX = 9999;
+
+/** Fine shift after anchor + `translate(-50%,-50%)` — positive moves the pill down */
+export const HERO_PROMO_SMARTPHONES_TILE_CTA_NUDGE_DOWN_PX = 8;
+
+/** Fine horizontal shift — positive moves the pill right */
+export const HERO_PROMO_SMARTPHONES_TILE_CTA_NUDGE_X_PX = 6;
+
 /** Free-delivery tile (`HomePromoFreeDeliveryBanner`; 80% tile uses fixed px above) — matches banner raster */
 export const HERO_SIDE_PROMO_TILE_ASPECT_W = 428;
 export const HERO_SIDE_PROMO_TILE_ASPECT_H = 589;
