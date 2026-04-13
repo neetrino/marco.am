@@ -16,6 +16,7 @@ import {
   REELS_LABEL_LINE_HEIGHT_PX,
   REELS_TITLE_ACCENT_WIDTH_REM,
   REELS_TITLE_INSET_LEFT_PX,
+  REELS_TITLE_TO_RAIL_GAP_PX,
   REELS_TITLE_FONT_SIZE_CLAMP,
   REELS_TITLE_LETTER_SPACING_PX,
   REELS_TITLE_LINE_HEIGHT,
@@ -55,7 +56,10 @@ export function HomeReelsSection() {
       aria-labelledby="home-reels-heading"
     >
       <div className={SECTION_CONTAINER_CLASS}>
-        <div className="mb-6 flex flex-row flex-wrap items-end justify-between gap-4">
+        <div
+          className="flex flex-row flex-wrap items-end justify-between gap-4"
+          style={{ marginBottom: `${REELS_TITLE_TO_RAIL_GAP_PX}px` }}
+        >
           <div
             className="min-w-0"
             style={{ paddingLeft: `${REELS_TITLE_INSET_LEFT_PX}px` }}

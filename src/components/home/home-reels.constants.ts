@@ -1,11 +1,11 @@
 /** REELS rail — circle thumbnail size. */
-export const REELS_CIRCLE_SIZE_PX = 112;
+export const REELS_CIRCLE_SIZE_PX = 128;
 
 /** Horizontal gap between reel tiles (circles). */
 export const REELS_ITEM_GAP_PX = 44;
 
 /** Minimum column width for each tile (label uses nowrap; column can grow). */
-export const REELS_COLUMN_MIN_WIDTH_PX = 128;
+export const REELS_COLUMN_MIN_WIDTH_PX = 148;
 
 /** Portion of viewport width to scroll per arrow tap (horizontal strip). */
 export const REELS_SCROLL_FRACTION = 0.9;
@@ -30,6 +30,9 @@ export const REELS_TITLE_ACCENT_WIDTH_REM = 4.75;
 
 /** Nudge title + accent bar slightly right from section alignment. */
 export const REELS_TITLE_INSET_LEFT_PX = 40;
+
+/** Vertical space between the REELS heading row and the circle rail. */
+export const REELS_TITLE_TO_RAIL_GAP_PX = 32;
 
 /** Default destination for reel tiles until category slugs are wired. */
 export const REELS_ITEM_HREF = '/products' as const;
