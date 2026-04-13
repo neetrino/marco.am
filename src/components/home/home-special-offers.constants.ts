@@ -29,13 +29,15 @@ export const SPECIAL_OFFERS_CARD_MAX_WIDTH_PX = 360;
 /** Design reference: fixed card height. */
 export const SPECIAL_OFFERS_CARD_HEIGHT_PX = 480;
 
-/** Bottom-right scallop — circle diameter (same role as `::after` in the design spec). */
-export const SPECIAL_OFFERS_CARD_CORNER_MASK_SIZE_PX = 92;
+/**
+ * Bottom-right scallop — circle diameter. Larger circle = fuller, rounder arc at the corner.
+ */
+export const SPECIAL_OFFERS_CARD_CORNER_MASK_SIZE_PX = 112;
 
 /**
- * Corner mask `translate(28%, 28%)` — offset as percent of the circle’s own size.
+ * Corner mask `translate(x%, y%)` — offset as percent of the circle’s own size (centers the bite).
  */
-export const SPECIAL_OFFERS_CARD_CORNER_MASK_TRANSLATE_PERCENT = 28;
+export const SPECIAL_OFFERS_CARD_CORNER_MASK_TRANSLATE_PERCENT = 25;
 
 /**
  * Corner mask fill — must match `HomeSpecialOffersSection` surface (`bg-white`).
@@ -46,22 +48,22 @@ export const SPECIAL_OFFERS_CARD_CORNER_MASK_BG = '#ffffff';
  * Floating cart — inset from card inner bottom (`position: absolute` on the control).
  * Does not change card height.
  */
-export const SPECIAL_OFFERS_CART_BUTTON_INSET_BOTTOM_PX = 3;
+export const SPECIAL_OFFERS_CART_BUTTON_INSET_BOTTOM_PX = 1;
 
 /** Floating cart — inset from card inner right (shifted toward the edge). */
-export const SPECIAL_OFFERS_CART_BUTTON_INSET_RIGHT_PX = 3;
+export const SPECIAL_OFFERS_CART_BUTTON_INSET_RIGHT_PX = 1;
 
 /** Floating add-to-cart circle (edge length). */
-export const SPECIAL_OFFERS_CART_BUTTON_SIZE_PX = 46;
+export const SPECIAL_OFFERS_CART_BUTTON_SIZE_PX = 58;
 
 /** Inner Figma cart icon — scaled with `SPECIAL_OFFERS_CART_BUTTON_SIZE_PX`. */
-export const SPECIAL_OFFERS_CART_FIGMA_ICON_WIDTH_PX = 19;
+export const SPECIAL_OFFERS_CART_FIGMA_ICON_WIDTH_PX = 24;
 
 /** Inner Figma cart icon — scaled with `SPECIAL_OFFERS_CART_BUTTON_SIZE_PX`. */
-export const SPECIAL_OFFERS_CART_FIGMA_ICON_HEIGHT_PX = 19;
+export const SPECIAL_OFFERS_CART_FIGMA_ICON_HEIGHT_PX = 24;
 
 /** Loading spinner inside the cart control. */
-export const SPECIAL_OFFERS_CART_BUTTON_SPINNER_PX = 17;
+export const SPECIAL_OFFERS_CART_BUTTON_SPINNER_PX = 22;
 
 /**
  * Width reserved beside price text — cart size + small gap so text does not overlap.
@@ -71,6 +73,11 @@ export const SPECIAL_OFFERS_PRICE_ROW_END_PADDING_PX =
 
 /** Image well height inside special-offer card (Figma). */
 export const SPECIAL_OFFERS_IMAGE_WELL_HEIGHT_PX = 212;
+
+/**
+ * Image well corner radius — rounder inner frame (card shell uses 32px; was `rounded-lg` ~8px).
+ */
+export const SPECIAL_OFFERS_IMAGE_WELL_RADIUS_PX = 24;
 
 /** Top padding under card shell before image well (Figma ~17). */
 export const SPECIAL_OFFERS_CARD_PADDING_TOP_PX = 8;

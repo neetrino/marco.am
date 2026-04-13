@@ -5,7 +5,10 @@ import Link from 'next/link';
 
 import { ProductImagePlaceholder } from '../ProductImagePlaceholder';
 
-import { SPECIAL_OFFERS_IMAGE_WELL_HEIGHT_PX } from './home-special-offers.constants';
+import {
+  SPECIAL_OFFERS_IMAGE_WELL_HEIGHT_PX,
+  SPECIAL_OFFERS_IMAGE_WELL_RADIUS_PX,
+} from './home-special-offers.constants';
 
 interface SpecialOfferCardMediaProps {
   slug: string;
@@ -25,8 +28,11 @@ export function SpecialOfferCardMedia({
   return (
     <Link
       href={`/products/${slug}`}
-      className="relative mt-0 flex w-full items-center justify-center overflow-hidden rounded-lg bg-gray-50 p-6"
-      style={{ height: SPECIAL_OFFERS_IMAGE_WELL_HEIGHT_PX }}
+      className="relative mt-0 flex w-full items-center justify-center overflow-hidden bg-gray-50 p-6"
+      style={{
+        height: SPECIAL_OFFERS_IMAGE_WELL_HEIGHT_PX,
+        borderRadius: SPECIAL_OFFERS_IMAGE_WELL_RADIUS_PX,
+      }}
     >
       {showPlaceholder ? (
         <ProductImagePlaceholder
