@@ -135,7 +135,7 @@ export const HERO_SIDE_PROMO_TILE_ASPECT_W = 428;
 export const HERO_SIDE_PROMO_TILE_ASPECT_H = 589;
 
 /**
- * Responsive width shared by both side promo tiles so they stay one size and align.
+ * Responsive width shared by free-delivery + 80% hero tiles so they stay one size and align.
  * `lg+` max 280px (was 236px) for a larger, matched pair.
  */
 export const HERO_SIDE_PROMO_TILE_WIDTH_CLASSNAME =

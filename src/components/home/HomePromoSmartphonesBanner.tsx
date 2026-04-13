@@ -7,18 +7,19 @@ import { Montserrat } from 'next/font/google';
 import type { CSSProperties } from 'react';
 import { useTranslation } from '../../lib/i18n-client';
 import {
+  HERO_FREE_DELIVERY_TILE_TRANSLATE_X_PX,
+  HERO_FREE_DELIVERY_TILE_TRANSLATE_Y_PX,
   HERO_PROMO_SMARTPHONES_BANNER_IMAGE_SRC,
   HERO_PROMO_SMARTPHONES_TILE_CTA_BORDER_RADIUS_PX,
   HERO_PROMO_SMARTPHONES_TILE_CTA_BOTTOM_PX,
   HERO_PROMO_SMARTPHONES_TILE_CTA_LEFT_PX,
   HERO_PROMO_SMARTPHONES_TILE_CTA_PADDING_X_PX,
   HERO_PROMO_SMARTPHONES_TILE_CTA_PADDING_Y_PX,
-  HERO_PROMO_SMARTPHONES_TILE_HEIGHT_PX,
   HERO_PROMO_SMARTPHONES_TILE_TR_ICON_FRAME_PX,
   HERO_PROMO_SMARTPHONES_TILE_TR_ICON_GLYPH_PX,
   HERO_PROMO_SMARTPHONES_TILE_TR_ICON_RIGHT_PX,
   HERO_PROMO_SMARTPHONES_TILE_TR_ICON_TOP_PX,
-  HERO_PROMO_SMARTPHONES_TILE_WIDTH_PX,
+  HERO_SIDE_PROMO_TILE_WIDTH_CLASSNAME,
 } from '../hero.constants';
 
 /** Figma 305:2159 — Montserrat Bold 14 / leading 20 */
@@ -27,12 +28,6 @@ const montserratSmartphonesBottomCta = Montserrat({
   subsets: ['latin', 'cyrillic'],
   display: 'swap',
 });
-
-const smartphonesTileFrameStyle = {
-  width: '100%',
-  maxWidth: HERO_PROMO_SMARTPHONES_TILE_WIDTH_PX,
-  aspectRatio: `${HERO_PROMO_SMARTPHONES_TILE_WIDTH_PX} / ${HERO_PROMO_SMARTPHONES_TILE_HEIGHT_PX}`,
-} as const;
 
 const SMARTPHONES_BANNER_IMAGE_SIZES =
   '(max-width: 768px) 45vw, (max-width: 1024px) 32vw, 360px';
@@ -57,14 +52,20 @@ const smartphonesBottomCtaStyle: CSSProperties = {
 };
 
 /**
- * Smartphones / 80% promo tile — Figma 305:2154 raster; TR control Figma 305:2130 (`Group 9208`).
+ * Desktop hero — 80% promo tile (Figma 305:2154), same row as chair stack + free delivery.
+ * Width matches {@link HERO_SIDE_PROMO_TILE_WIDTH_CLASSNAME}; TR control Figma 305:2130.
  */
 export function HomePromoSmartphonesBanner() {
   const { t } = useTranslation();
 
   return (
-    <div className="block min-w-0 max-w-full shrink">
-      <div className="relative isolate w-full max-w-[min(100%,360px)] shrink-0" style={smartphonesTileFrameStyle}>
+    <div
+      className={`relative isolate shrink-0 bg-transparent ${HERO_SIDE_PROMO_TILE_WIDTH_CLASSNAME}`}
+      style={{
+        transform: `translate(${HERO_FREE_DELIVERY_TILE_TRANSLATE_X_PX}px, ${HERO_FREE_DELIVERY_TILE_TRANSLATE_Y_PX}px)`,
+      }}
+    >
+      <div className="relative isolate aspect-[360/497] w-full">
         <Image
           src={HERO_PROMO_SMARTPHONES_BANNER_IMAGE_SRC}
           alt=""

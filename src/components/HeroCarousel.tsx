@@ -36,31 +36,23 @@ export function HeroCarousel() {
             />
           </div>
         </div>
-        <div className="pointer-events-none absolute inset-0 z-10 hidden min-w-0 flex-col md:flex">
-          {/*
-            Top row must stack above the stacked chair card: large translateY on the card
-            would otherwise paint the raster over the free-delivery + 80% tiles.
-          */}
+        <div className="pointer-events-none absolute inset-0 z-[15] hidden min-w-0 flex-col md:flex">
           <div className="pointer-events-auto relative flex h-full min-h-0 min-w-0 flex-col justify-between gap-6 px-4 pb-6 pt-9 sm:px-5 sm:pb-6 md:px-7 md:pb-9 lg:gap-7 lg:px-9 lg:pb-11">
-            <div className="relative z-20 flex min-w-0 flex-row flex-wrap items-start justify-between gap-x-4 gap-y-4">
-              <div className="min-w-0 max-w-full flex-[1_1_min(580px,100%)] [&_p]:mb-0">
-                <HomePromoYellowHeadline
-                  emphasisText={t('home.promo_banner_headline_emphasis')}
-                  accentText={t('home.promo_banner_headline_accent')}
-                />
-              </div>
-              <div className="flex min-w-0 shrink flex-row flex-wrap items-end justify-end">
-                <HomePromoSmartphonesBanner />
-              </div>
+            <div className="relative z-20 min-w-0 max-w-full flex-[1_1_min(580px,100%)] [&_p]:mb-0">
+              <HomePromoYellowHeadline
+                emphasisText={t('home.promo_banner_headline_emphasis')}
+                accentText={t('home.promo_banner_headline_accent')}
+              />
             </div>
             {/*
-              Sofa/chair stack stays left; free-delivery tile (van art + black CTA) sits to its right.
+              Chair stack + free-delivery + 80% tiles — one row, aligned (see tile transforms in components).
             */}
             <div className="relative z-[5] flex w-full min-w-0 flex-row flex-wrap items-end justify-start gap-4 md:gap-6 lg:gap-8">
               <HomePromoStackedProductCard
                 ariaLabel={`${t('home.promo_featured_title')}. ${t('home.promo_featured_subtitle')}`}
               />
               <HomePromoFreeDeliveryBanner />
+              <HomePromoSmartphonesBanner />
             </div>
           </div>
         </div>
