@@ -8,6 +8,7 @@ import { HomePromoHeroChatFab } from './home/HomePromoHeroChatFab';
 import { HomePromoMobileHeroChair } from './home/HomePromoMobileHeroChair';
 import { HomePromoMobileHeroHeadline } from './home/HomePromoMobileHeroHeadline';
 import { HomePromoMobileHeroSlateCta } from './home/HomePromoMobileHeroSlateCta';
+import { HomePromoMobileHeroSlateLabel } from './home/HomePromoMobileHeroSlateLabel';
 import { HomePromoMobileHeroSlatePanel } from './home/HomePromoMobileHeroSlatePanel';
 import { HomePromoYellowHeadline } from './home/HomePromoYellowHeadline';
 import { HeroCarouselSlides } from './HeroCarouselSlides';
@@ -20,6 +21,7 @@ export function HeroCarousel() {
       <div className="relative aspect-[141/79] min-h-[260px] w-full overflow-hidden rounded-[32px] bg-marco-yellow box-border sm:min-h-[320px] md:min-h-[380px]">
         <HeroCarouselSlides />
         <HomePromoMobileHeroSlatePanel />
+        <HomePromoMobileHeroSlateLabel />
         <HomePromoMobileHeroChair />
         <HomePromoMobileHeroSlateCta />
         <div className="pointer-events-none absolute inset-0 z-[14] flex justify-start md:hidden">

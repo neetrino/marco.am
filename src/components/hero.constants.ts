@@ -167,6 +167,21 @@ export const HERO_MOBILE_SLATE_PANEL_BOX_STYLE: CSSProperties = {
 };
 
 /**
+ * Figma 314:2399 — product label on slate; inset vs slate top-left tuned from export (86, 22) px.
+ */
+export const HERO_MOBILE_SLATE_LABEL_LEFT_PX = 86;
+export const HERO_MOBILE_SLATE_LABEL_TOP_PX = 22;
+export const HERO_MOBILE_SLATE_LABEL_MAX_WIDTH_PX = 112;
+export const HERO_MOBILE_SLATE_LABEL_FONT_SIZE_PX = 14;
+export const HERO_MOBILE_SLATE_LABEL_LINE_HEIGHT_PX = 20;
+export const HERO_MOBILE_SLATE_LABEL_LEFT_FRAC =
+  HERO_MOBILE_SLATE_LABEL_LEFT_PX / HERO_MOBILE_SLATE_PANEL_WIDTH_PX;
+export const HERO_MOBILE_SLATE_LABEL_TOP_FRAC =
+  HERO_MOBILE_SLATE_LABEL_TOP_PX / HERO_MOBILE_SLATE_PANEL_HEIGHT_PX;
+export const HERO_MOBILE_SLATE_LABEL_MAX_WIDTH_FRAC =
+  HERO_MOBILE_SLATE_LABEL_MAX_WIDTH_PX / HERO_MOBILE_SLATE_PANEL_WIDTH_PX;
+
+/**
  * Figma 314:2394 — mobile slate CTA pill (`212×56`, text 314:2395, icon group 314:2396).
  * Width/padding/icon tuned slightly under Figma; nudged vs export for device fit.
  */
