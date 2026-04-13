@@ -165,7 +165,7 @@ export const HERO_PROMO_DESKTOP_SOFA_CARD_EXTRA_TRANSLATE_Y_PX = -80;
  * Desktop hero — sole vertical position for free-delivery / van tile (`HomePromoFreeDeliveryBanner`); negative → up.
  * Not tied to sofa row; tune separately (lower on screen = less negative).
  */
-export const HERO_PROMO_DESKTOP_FREE_DELIVERY_BANNER_TRANSLATE_Y_PX = -431;
+export const HERO_PROMO_DESKTOP_FREE_DELIVERY_BANNER_TRANSLATE_Y_PX = -430;
 
 /**
  * Desktop hero — 80% tile (`layout="corner"`); nudge vs top-right flex slot (px). Positive X → right, negative Y → up.
