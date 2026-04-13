@@ -190,18 +190,25 @@ export const HERO_MOBILE_SLATE_CTA_NUDGE_UP_PX = 5;
 
 /**
  * Figma 314:2385 `Group 9209` — chair + floor graphic; height includes shadow.
+ * Dev: `height` 183.5873260498047 (metadata).
  */
-export const HERO_MOBILE_CHAIR_GROUP_HEIGHT_PX = 203.5873260498047;
+export const HERO_MOBILE_CHAIR_GROUP_HEIGHT_PX = 183.5873260498047;
 
 /**
- * Figma 314:2386 — mobile hero chair (`863-removebg-preview 1`); raster matches {@link HERO_PROMO_CHAIR_IMAGE_SRC}.
- * Crop in frame — Figma dev export percentages. Scaled up vs export so it overlaps slate CTA (z-order).
+ * Figma 314:2386 — mobile hero chair (`863-removebg-preview 1`); raster {@link HERO_PROMO_CHAIR_IMAGE_SRC}.
+ * Dev frame `w`×`h` 244×176.631103515625; image crop `h` 138.14%, `top` −38.05% (same as export).
  */
-export const HERO_MOBILE_CHAIR_FRAME_WIDTH_PX = 270;
-export const HERO_MOBILE_CHAIR_FRAME_HEIGHT_PX = 196.631103515625;
+export const HERO_MOBILE_CHAIR_FRAME_WIDTH_PX = 244;
+export const HERO_MOBILE_CHAIR_FRAME_HEIGHT_PX = 176.631103515625;
 export const HERO_MOBILE_CHAIR_LEFT_FRAC = 6 / HERO_MOBILE_FIGMA_FRAME_WIDTH_PX;
 /** Shift whole chair group left (px) — `translateX(-n)` on mobile hero. */
-export const HERO_MOBILE_CHAIR_GROUP_NUDGE_LEFT_PX = 18;
+export const HERO_MOBILE_CHAIR_GROUP_NUDGE_LEFT_PX = 0;
+/** Positive — shift whole chair + floor group up (px); subtracted in `translateY(down - up)`. */
+export const HERO_MOBILE_CHAIR_GROUP_NUDGE_UP_PX = 0;
+/** Positive — shift whole chair + floor group down (px); added in `translateY(down - up)`. */
+export const HERO_MOBILE_CHAIR_GROUP_NUDGE_DOWN_PX = 6;
+/** Slight scale — “closer” look; paired with bottom `transform-origin` on the group. */
+export const HERO_MOBILE_CHAIR_GROUP_SCALE = 1.06;
 export const HERO_MOBILE_CHAIR_IMAGE_HEIGHT_PCT = 138.14;
 export const HERO_MOBILE_CHAIR_IMAGE_TOP_PCT = -38.05;
 
@@ -219,15 +226,15 @@ export const HERO_MOBILE_FLOOR_SHADOW_HEIGHT_FRAC =
   69.23001098632812 / HERO_MOBILE_CHAIR_GROUP_HEIGHT_PX;
 
 /**
- * Positive — shift floor ellipse + arc knob horizontally (px right) vs Figma-derived `left`;
- * does not move the chair raster.
+ * Horizontal nudge for floor ellipse + arc knob (px); positive = right, negative = left.
+ * Does not move the chair raster.
  */
-export const HERO_MOBILE_FLOOR_ARC_GROUP_NUDGE_RIGHT_PX = 10;
+export const HERO_MOBILE_FLOOR_ARC_GROUP_NUDGE_RIGHT_PX = -2;
 
 /**
- * Positive — shift floor ellipse + arc knob down (px); independent of chair raster.
+ * Vertical nudge for floor ellipse + arc (px); positive = down, negative = up.
  */
-export const HERO_MOBILE_FLOOR_ARC_GROUP_NUDGE_DOWN_PX = 6;
+export const HERO_MOBILE_FLOOR_ARC_GROUP_NUDGE_DOWN_PX = -2;
 
 /** Uniform scale for floor ellipse + knob; applied with bottom-centered `transform-origin` on mobile hero. */
 export const HERO_MOBILE_FLOOR_ARC_GROUP_SCALE = 1.06;
