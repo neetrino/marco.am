@@ -50,6 +50,21 @@
   "feature_best_quality_description": "Это стратегия контента, которая пошла не так с самого начала. Отказ от использования Lorem Ipsum.",
   "feature_free_return_title": "Бесплатный возврат",
   "feature_free_return_description": "Это правда, но этого недостаточно, чтобы вернуть все в нужное русло для текста.",
+  "special_offers": {
+    "title_highlight": "Особые",
+    "title_rest": " предложения",
+    "warranty_line1": "3 ГОДА",
+    "warranty_line2": "ГАРАНТИЯ",
+    "prev_aria": "Прокрутить влево",
+    "next_aria": "Прокрутить вправо",
+    "pagination_aria": "Страницы карусели предложений",
+    "page_first_aria": "На первую страницу",
+    "page_second_aria": "На вторую страницу",
+    "cta": "Смотреть ещё",
+    "error_loading": "Не удалось загрузить предложения",
+    "try_again": "Повторить",
+    "empty": "Сейчас нет особых предложений."
+  },
   "featured_products": {
     "title": "Рекомендуемые товары",
     "subtitle": "Три быстрых выбора: Новинки, Бестселлеры и Рекомендуемые товары",

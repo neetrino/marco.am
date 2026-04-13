@@ -50,6 +50,21 @@
   "feature_best_quality_description": "Սա բովանդակության ռազմավարություն է, որը սխալվել է հենց սկզբից:",
   "feature_free_return_title": "Անվճար վերադարձ",
   "feature_free_return_description": "Ճիշտ է, բայց դա ամենը չէ, ինչ անհրաժեշտ է բաները վերադարձնելու համար:",
+  "special_offers": {
+    "title_highlight": "Հատուկ",
+    "title_rest": " առաջարկներ",
+    "warranty_line1": "3 ՏԱՐԻ",
+    "warranty_line2": "ԵՐԱՇԽԻՔ",
+    "prev_aria": "Տեղափոխել ձախ",
+    "next_aria": "Տեղափոխել աջ",
+    "pagination_aria": "Հատուկ առաջարկների էջացում",
+    "page_first_aria": "Անցնել առաջին էջ",
+    "page_second_aria": "Անցնել երկրորդ էջ",
+    "cta": "Տեսնել ավելին",
+    "error_loading": "Չհաջողվեց բեռնել առաջարկները",
+    "try_again": "Փորձել կրկին",
+    "empty": "Այս պահին հատուկ առաջարկներ չկան։"
+  },
   "featured_products": {
     "title": "Առաջարկվող ապրանքներ",
     "subtitle": "Երեք արագ ընտրություն. Նոր ժամանումներ, Լավագույն վաճառքներ և Առաջարկվող ընտրություններ",

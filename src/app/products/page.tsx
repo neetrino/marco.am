@@ -60,7 +60,8 @@ async function getProducts(
   colors?: string,
   sizes?: string,
   brand?: string,
-  limit: number = 12
+  limit: number = 12,
+  filter?: string
 ): Promise<ProductsResponse> {
   try {
     const language = getStoredLanguage();
@@ -77,6 +78,7 @@ async function getProducts(
     if (colors?.trim()) params.colors = colors.trim();
     if (sizes?.trim()) params.sizes = sizes.trim();
     if (brand?.trim()) params.brand = brand.trim();
+    if (filter?.trim()) params.filter = filter.trim();
 
     const queryString = new URLSearchParams(params).toString();
 
@@ -132,7 +134,8 @@ export default async function ProductsPage({ searchParams }: any) {
     params?.colors,
     params?.sizes,
     params?.brand,
-    perPage
+    perPage,
+    params?.filter
   );
 
   // ------------------------------------

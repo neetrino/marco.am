@@ -3,6 +3,7 @@ import { HomeReelsSection } from '../components/home/HomeReelsSection';
 
 import { FeaturesSection } from '../components/FeaturesSection';
 import { FeaturedProductsTabs } from '../components/FeaturedProductsTabs';
+import { HomeSpecialOffersSection } from '../components/home/HomeSpecialOffersSection';
 
 export default async function HomePage() {
 
@@ -11,6 +12,8 @@ export default async function HomePage() {
       <HeroCarousel />
 
       <HomeReelsSection />
+
+      <HomeSpecialOffersSection />
 
       {/* Featured Products with Tabs */}
       <FeaturedProductsTabs />
