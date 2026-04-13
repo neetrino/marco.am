@@ -17,6 +17,9 @@ import {
   REELS_TITLE_ACCENT_WIDTH_REM,
   REELS_TITLE_INSET_LEFT_PX,
   REELS_TITLE_TO_RAIL_GAP_PX,
+  REELS_CAROUSEL_NAV_INSET_RIGHT_PX,
+  REELS_CAROUSEL_NAV_BUTTON_HEIGHT_PX,
+  REELS_CAROUSEL_NAV_BUTTON_WIDTH_PX,
   REELS_TITLE_FONT_SIZE_CLAMP,
   REELS_TITLE_LETTER_SPACING_PX,
   REELS_TITLE_LINE_HEIGHT,
@@ -42,6 +45,16 @@ const reelsLabelStyle = {
 
 const SECTION_CONTAINER_CLASS =
   'w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8';
+
+const reelsNavButtonStyle = {
+  width: REELS_CAROUSEL_NAV_BUTTON_WIDTH_PX,
+  height: REELS_CAROUSEL_NAV_BUTTON_HEIGHT_PX,
+} as const;
+
+const REELS_NAV_BUTTON_CLASS =
+  'flex shrink-0 items-center justify-center overflow-visible rounded-full border border-gray-200 bg-white p-0 text-marco-black transition-colors hover:bg-marco-yellow';
+
+const REELS_NAV_ICON_CLASS = 'h-3.5 w-3.5 shrink-0';
 
 /**
  * REELS: circular category thumbnails in a centered row with arrow scroll.
@@ -77,22 +90,35 @@ export function HomeReelsSection() {
               aria-hidden
             />
           </div>
-          <div className="flex shrink-0 flex-row gap-2">
+          <div
+            className="flex shrink-0 flex-row gap-2"
+            style={{ marginRight: `${REELS_CAROUSEL_NAV_INSET_RIGHT_PX}px` }}
+          >
             <button
               type="button"
               onClick={scrollPrev}
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white text-marco-black transition-colors hover:bg-marco-yellow"
+              className={REELS_NAV_BUTTON_CLASS}
+              style={reelsNavButtonStyle}
               aria-label={t('home.reels_prev_aria')}
             >
-              <ChevronLeft className="h-3 w-3" strokeWidth={2.5} />
+              <ChevronLeft
+                className={REELS_NAV_ICON_CLASS}
+                strokeWidth={2.5}
+                aria-hidden
+              />
             </button>
             <button
               type="button"
               onClick={scrollNext}
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white text-marco-black transition-colors hover:bg-marco-yellow"
+              className={REELS_NAV_BUTTON_CLASS}
+              style={reelsNavButtonStyle}
               aria-label={t('home.reels_next_aria')}
             >
-              <ChevronRight className="h-3 w-3" strokeWidth={2.5} />
+              <ChevronRight
+                className={REELS_NAV_ICON_CLASS}
+                strokeWidth={2.5}
+                aria-hidden
+              />
             </button>
           </div>
         </div>

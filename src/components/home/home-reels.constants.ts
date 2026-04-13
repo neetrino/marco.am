@@ -34,6 +34,16 @@ export const REELS_TITLE_INSET_LEFT_PX = 40;
 /** Vertical space between the REELS heading row and the circle rail. */
 export const REELS_TITLE_TO_RAIL_GAP_PX = 32;
 
+/** Inset prev/next controls from the section’s right edge (shifts them left). */
+export const REELS_CAROUSEL_NAV_INSET_RIGHT_PX = 32;
+
+/**
+ * Figma 101:2802 — pill-shaped prev/next control (not a circle).
+ * Compact frame; chevrons are sized larger than the pill for emphasis.
+ */
+export const REELS_CAROUSEL_NAV_BUTTON_WIDTH_PX = 34;
+export const REELS_CAROUSEL_NAV_BUTTON_HEIGHT_PX = 22;
+
 /** Default destination for reel tiles until category slugs are wired. */
 export const REELS_ITEM_HREF = '/products' as const;
 
