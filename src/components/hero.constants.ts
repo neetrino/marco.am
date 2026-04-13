@@ -115,8 +115,8 @@ export const HERO_PROMO_SMARTPHONES_TILE_HEIGHT_PX = 497;
  * Figma 305:2130 — `Group 9208` top-right control on 80% tile: white circle, black NE arrow.
  * Lower `top` (px) moves the control up inside the tile frame.
  */
-export const HERO_PROMO_SMARTPHONES_TILE_TR_ICON_TOP_PX = 28;
-export const HERO_PROMO_SMARTPHONES_TILE_TR_ICON_RIGHT_PX = 28;
+export const HERO_PROMO_SMARTPHONES_TILE_TR_ICON_TOP_PX = 110;
+export const HERO_PROMO_SMARTPHONES_TILE_TR_ICON_RIGHT_PX = 84;
 export const HERO_PROMO_SMARTPHONES_TILE_TR_ICON_FRAME_PX = HERO_PROMO_SIDE_TILE_TR_ICON_FRAME_PX;
 export const HERO_PROMO_SMARTPHONES_TILE_TR_ICON_GLYPH_PX = HERO_PROMO_SIDE_TILE_TR_ICON_GLYPH_PX;
 
@@ -135,14 +135,41 @@ export const HERO_SIDE_PROMO_TILE_ASPECT_W = 428;
 export const HERO_SIDE_PROMO_TILE_ASPECT_H = 589;
 
 /**
- * Responsive width shared by free-delivery + 80% hero tiles so they stay one size and align.
+ * Free-delivery van tile width (`HomePromoFreeDeliveryBanner`).
  * `lg+` max 280px (was 236px) for a larger, matched pair.
  */
 export const HERO_SIDE_PROMO_TILE_WIDTH_CLASSNAME =
   'w-[min(42vw,200px)] sm:w-[min(38vw,220px)] md:w-[min(32vw,250px)] lg:w-[280px]' as const;
 
+/**
+ * 80% hero tile — larger than {@link HERO_SIDE_PROMO_TILE_WIDTH_CLASSNAME}; same aspect {@link HERO_SIDE_PROMO_TILE_ASPECT_CLASSNAME}.
+ */
+export const HERO_PROMO_SMARTPHONES_TILE_ROW_WIDTH_CLASSNAME =
+  'w-[min(50vw,256px)] sm:w-[min(46vw,284px)] md:w-[min(40vw,316px)] lg:w-[368px]' as const;
+
 /** Tailwind aspect matching `HERO_SIDE_PROMO_TILE_ASPECT_W`∶`HERO_SIDE_PROMO_TILE_ASPECT_H` */
 export const HERO_SIDE_PROMO_TILE_ASPECT_CLASSNAME = 'aspect-[428/589]' as const;
+
+/**
+ * Desktop hero — vertical nudge for sofa + van row (`HeroCarousel`); negative moves the row up (px).
+ */
+export const HERO_PROMO_DESKTOP_SOFA_VAN_ROW_TRANSLATE_Y_PX = -360;
+
+/**
+ * Extra vertical nudge for sofa card only (`HomePromoStackedProductCard`); negative → up; van tile unchanged.
+ */
+export const HERO_PROMO_DESKTOP_SOFA_CARD_EXTRA_TRANSLATE_Y_PX = -80;
+
+/**
+ * Extra vertical nudge for free-delivery / van tile only (`HomePromoFreeDeliveryBanner`); negative → up; independent of sofa card.
+ */
+export const HERO_PROMO_DESKTOP_FREE_DELIVERY_BANNER_EXTRA_TRANSLATE_Y_PX = -80;
+
+/**
+ * Desktop hero — 80% tile (`layout="corner"`); nudge vs top-right flex slot (px). Positive X → right, negative Y → up.
+ */
+export const HERO_PROMO_SMARTPHONES_CORNER_NUDGE_X_PX = 72;
+export const HERO_PROMO_SMARTPHONES_CORNER_NUDGE_Y_PX = -96;
 
 /** Figma 314:2400 — mobile-only hero headline (Montserrat Black); slightly above base for readability */
 export const HERO_MOBILE_HEADLINE_FONT_SIZE_PX = 38;

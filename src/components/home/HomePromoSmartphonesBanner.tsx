@@ -18,8 +18,9 @@ import {
   HERO_PROMO_SMARTPHONES_TILE_TR_ICON_FRAME_PX,
   HERO_PROMO_SMARTPHONES_TILE_TR_ICON_GLYPH_PX,
   HERO_PROMO_SMARTPHONES_TILE_TR_ICON_RIGHT_PX,
+  HERO_PROMO_SMARTPHONES_TILE_ROW_WIDTH_CLASSNAME,
   HERO_PROMO_SMARTPHONES_TILE_TR_ICON_TOP_PX,
-  HERO_SIDE_PROMO_TILE_WIDTH_CLASSNAME,
+  HERO_SIDE_PROMO_TILE_ASPECT_CLASSNAME,
 } from '../hero.constants';
 
 /** Figma 305:2159 — Montserrat Bold 14 / leading 20 */
@@ -30,7 +31,7 @@ const montserratSmartphonesBottomCta = Montserrat({
 });
 
 const SMARTPHONES_BANNER_IMAGE_SIZES =
-  '(max-width: 768px) 45vw, (max-width: 1024px) 32vw, 360px';
+  '(max-width: 640px) 50vw, (max-width: 768px) 46vw, (max-width: 1024px) 40vw, 368px';
 
 const smartphonesTrIconLinkStyle: CSSProperties = {
   width: `${HERO_PROMO_SMARTPHONES_TILE_TR_ICON_FRAME_PX}px`,
@@ -51,21 +52,33 @@ const smartphonesBottomCtaStyle: CSSProperties = {
   borderRadius: HERO_PROMO_SMARTPHONES_TILE_CTA_BORDER_RADIUS_PX,
 };
 
+type HomePromoSmartphonesBannerProps = {
+  /**
+   * `row` — same translate as free-delivery tile (bottom promo row).
+   * `corner` — no translate; place inside top-right wrapper in `HeroCarousel`.
+   */
+  layout?: 'row' | 'corner';
+};
+
 /**
- * Desktop hero — 80% promo tile (Figma 305:2154), same row as chair stack + free delivery.
- * Width matches {@link HERO_SIDE_PROMO_TILE_WIDTH_CLASSNAME}; TR control Figma 305:2130.
+ * Desktop hero — 80% promo tile (Figma 305:2154).
+ * Wider than van tile ({@link HERO_PROMO_SMARTPHONES_TILE_ROW_WIDTH_CLASSNAME}); aspect {@link HERO_SIDE_PROMO_TILE_ASPECT_CLASSNAME}.
  */
-export function HomePromoSmartphonesBanner() {
+export function HomePromoSmartphonesBanner({ layout = 'row' }: HomePromoSmartphonesBannerProps = {}) {
   const { t } = useTranslation();
+  const rootStyle: CSSProperties | undefined =
+    layout === 'corner'
+      ? undefined
+      : {
+          transform: `translate(${HERO_FREE_DELIVERY_TILE_TRANSLATE_X_PX}px, ${HERO_FREE_DELIVERY_TILE_TRANSLATE_Y_PX}px)`,
+        };
 
   return (
     <div
-      className={`relative isolate shrink-0 bg-transparent ${HERO_SIDE_PROMO_TILE_WIDTH_CLASSNAME}`}
-      style={{
-        transform: `translate(${HERO_FREE_DELIVERY_TILE_TRANSLATE_X_PX}px, ${HERO_FREE_DELIVERY_TILE_TRANSLATE_Y_PX}px)`,
-      }}
+      className={`relative isolate shrink-0 bg-transparent ${HERO_PROMO_SMARTPHONES_TILE_ROW_WIDTH_CLASSNAME}`}
+      style={rootStyle}
     >
-      <div className="relative isolate aspect-[360/497] w-full">
+      <div className={`relative isolate w-full overflow-hidden ${HERO_SIDE_PROMO_TILE_ASPECT_CLASSNAME}`}>
         <Image
           src={HERO_PROMO_SMARTPHONES_BANNER_IMAGE_SRC}
           alt=""
