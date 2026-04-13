@@ -14,11 +14,7 @@ import { apiClient } from '../lib/api-client';
 import { CART_KEY, getCompareCount, getWishlistCount } from '../lib/storageCounts';
 import { MapPin, Phone, Sun } from 'lucide-react';
 import { MarcoLogo } from './header/MarcoLogo';
-import {
-  HeaderLocaleCurrencyPill,
-  MobileDrawerLocaleCurrencySection,
-  MobileHeaderLanguageSwitch,
-} from './header/HeaderLocaleCurrencyPill';
+import { HeaderLocaleCurrencyPill, MobileHeaderLocaleCurrencyButton } from './header/HeaderLocaleCurrencyPill';
 import { HeaderSocialCircleLinks } from './header/HeaderSocialCircleLinks';
 import {
   HEADER_CART_BUTTON_CLASS,
@@ -798,9 +794,11 @@ export function Header({ initialLanguage }: HeaderProps) {
           </svg>
         </button>
         <MarcoLogo />
-        <MobileHeaderLanguageSwitch
+        <MobileHeaderLocaleCurrencyButton
+          selectedCurrency={selectedCurrency}
+          onCurrencyChange={handleCurrencyChange}
           initialLanguage={initialLanguage}
-          ariaLabel={t('common.ariaLabels.languageMenu')}
+          ariaLabel={t('common.ariaLabels.languageCurrencyMenu')}
         />
       </div>
 
@@ -1039,11 +1037,6 @@ export function Header({ initialLanguage }: HeaderProps) {
             <div className="flex-1 overflow-hidden min-h-0">
               <nav className="flex h-full flex-col border-y border-gray-200 text-sm font-semibold uppercase tracking-wide text-gray-800 bg-white">
                 <div className="flex-1 overflow-y-auto divide-y divide-gray-200">
-                  <MobileDrawerLocaleCurrencySection
-                    selectedCurrency={selectedCurrency}
-                    onCurrencyChange={handleCurrencyChange}
-                    initialLanguage={initialLanguage}
-                  />
                   {primaryNavLinks.map((link) => {
                     if (link.translationKey === 'common.navigation.reels') {
                       return (

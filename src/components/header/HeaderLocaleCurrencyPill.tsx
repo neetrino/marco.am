@@ -121,7 +121,7 @@ function LocaleCurrencyMenu({
   onCurrencySelect,
 }: LocaleCurrencyMenuProps) {
   return (
-    <div className="absolute right-0 top-full z-[60] mt-2 w-64 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
+    <div className="absolute right-0 top-full z-[70] mt-2 w-64 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
       <p className="border-b border-gray-100 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
         Language
       </p>
@@ -251,22 +251,24 @@ export function HeaderLocaleCurrencyPill({
   );
 }
 
-/**
- * Inline language + currency lists for the mobile burger drawer (desktop uses {@link HeaderLocaleCurrencyPill}).
- */
-interface MobileHeaderLanguageSwitchProps {
+interface MobileHeaderLocaleCurrencyButtonProps {
+  selectedCurrency: CurrencyCode;
+  onCurrencyChange: (code: CurrencyCode) => void;
   initialLanguage?: LanguageCode;
   ariaLabel: string;
 }
 
 /**
- * Round mobile header control (same shell as burger) — opens language list only.
+ * Mobile header control (dark pill) — same locale + currency menu as desktop {@link HeaderLocaleCurrencyPill}.
  */
-export function MobileHeaderLanguageSwitch({ initialLanguage, ariaLabel }: MobileHeaderLanguageSwitchProps) {
-  const { showMenu, setShowMenu, currentLang, menuRef, changeLanguage } = useLocaleCurrencyPillState(
-    (_code: CurrencyCode) => undefined,
-    initialLanguage,
-  );
+export function MobileHeaderLocaleCurrencyButton({
+  selectedCurrency,
+  onCurrencyChange,
+  initialLanguage,
+  ariaLabel,
+}: MobileHeaderLocaleCurrencyButtonProps) {
+  const { showMenu, setShowMenu, currentLang, menuRef, changeLanguage, handleCurrencySelect } =
+    useLocaleCurrencyPillState(onCurrencyChange, initialLanguage);
 
   return (
     <div className="relative shrink-0" ref={menuRef as React.RefObject<HTMLDivElement>}>
@@ -280,37 +282,13 @@ export function MobileHeaderLanguageSwitch({ initialLanguage, ariaLabel }: Mobil
         <Globe className="h-6 w-6 shrink-0" strokeWidth={1.75} aria-hidden />
       </button>
       {showMenu && (
-        <div className="absolute right-0 top-full z-[70] mt-1 w-52 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
-          <LocaleLanguageRows currentLang={currentLang} onLanguageSelect={changeLanguage} />
-        </div>
+        <LocaleCurrencyMenu
+          currentLang={currentLang}
+          selectedCurrency={selectedCurrency}
+          onLanguageSelect={changeLanguage}
+          onCurrencySelect={handleCurrencySelect}
+        />
       )}
-    </div>
-  );
-}
-
-export function MobileDrawerLocaleCurrencySection({
-  selectedCurrency,
-  onCurrencyChange,
-  initialLanguage,
-}: HeaderLocaleCurrencyPillProps) {
-  const { currentLang, changeLanguage, handleCurrencySelect } = useLocaleCurrencyPillState(
-    onCurrencyChange,
-    initialLanguage,
-  );
-
-  return (
-    <div className="normal-case">
-      <p className="border-b border-gray-100 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
-        Language
-      </p>
-      <LocaleLanguageRows currentLang={currentLang} onLanguageSelect={changeLanguage} />
-      <p className="border-b border-t border-gray-100 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
-        Currency
-      </p>
-      <LocaleCurrencyRows
-        selectedCurrency={selectedCurrency}
-        onCurrencySelect={handleCurrencySelect}
-      />
     </div>
   );
 }
