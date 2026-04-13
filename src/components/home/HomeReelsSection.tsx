@@ -1,0 +1,149 @@
+'use client';
+
+import Image from 'next/image';
+import Link from 'next/link';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Montserrat } from 'next/font/google';
+
+import { useTranslation } from '../../lib/i18n-client';
+import {
+  REELS_CIRCLE_SIZE_PX,
+  REELS_ITEMS,
+  REELS_ITEM_HREF,
+  REELS_LABEL_FONT_SIZE_PX,
+  REELS_LABEL_LINE_HEIGHT_PX,
+  REELS_TITLE_ACCENT_WIDTH_REM,
+  REELS_TITLE_FONT_SIZE_CLAMP,
+  REELS_TITLE_LETTER_SPACING_PX,
+  REELS_TITLE_LINE_HEIGHT,
+} from './home-reels.constants';
+import { useHomeReelsCarousel } from './useHomeReelsCarousel';
+
+const montserratReels = Montserrat({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  display: 'swap',
+});
+
+const reelsTitleStyle = {
+  fontSize: REELS_TITLE_FONT_SIZE_CLAMP,
+  lineHeight: REELS_TITLE_LINE_HEIGHT,
+  letterSpacing: `${REELS_TITLE_LETTER_SPACING_PX}px`,
+} as const;
+
+const reelsLabelStyle = {
+  fontSize: `${REELS_LABEL_FONT_SIZE_PX}px`,
+  lineHeight: `${REELS_LABEL_LINE_HEIGHT_PX}px`,
+} as const;
+
+const SECTION_CONTAINER_CLASS =
+  'w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8';
+
+/**
+ * Figma 214:1057 — REELS: category rail with circular thumbnails, arrows, and pager dots.
+ */
+export function HomeReelsSection() {
+  const { t } = useTranslation();
+  const { scrollerRef, activePageIndex, hasOverflow, scrollPrev, scrollNext } =
+    useHomeReelsCarousel();
+
+  return (
+    <section
+      className={`bg-white py-10 sm:py-12 ${montserratReels.className}`}
+      aria-labelledby="home-reels-heading"
+    >
+      <div className={SECTION_CONTAINER_CLASS}>
+        <div className="mb-8 flex flex-row flex-wrap items-end justify-between gap-4">
+          <div className="min-w-0">
+            <h2
+              id="home-reels-heading"
+              className="font-bold uppercase text-marco-black"
+              style={reelsTitleStyle}
+            >
+              {t('home.reels_title')}
+            </h2>
+            <div
+              className="mt-2 h-1 bg-marco-yellow"
+              style={{ width: `${REELS_TITLE_ACCENT_WIDTH_REM}rem` }}
+              aria-hidden
+            />
+          </div>
+          <div className="flex shrink-0 flex-row gap-2">
+            <button
+              type="button"
+              onClick={scrollPrev}
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-marco-black transition-colors hover:bg-marco-yellow"
+              aria-label={t('home.reels_prev_aria')}
+            >
+              <ChevronLeft className="h-3 w-3" strokeWidth={2.5} />
+            </button>
+            <button
+              type="button"
+              onClick={scrollNext}
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-marco-black transition-colors hover:bg-marco-yellow"
+              aria-label={t('home.reels_next_aria')}
+            >
+              <ChevronRight className="h-3 w-3" strokeWidth={2.5} />
+            </button>
+          </div>
+        </div>
+
+        <div
+          ref={scrollerRef}
+          className="flex min-w-0 flex-row gap-6 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          style={{ scrollSnapType: 'x mandatory' }}
+        >
+          {REELS_ITEMS.map((item) => {
+            const label = t(`home.${item.labelKey}`);
+            return (
+              <Link
+                key={item.labelKey}
+                href={REELS_ITEM_HREF}
+                className="flex min-w-[148px] max-w-[160px] shrink-0 snap-start flex-col items-center gap-3 text-center sm:min-w-[160px]"
+              >
+                <div
+                  className="relative shrink-0 overflow-hidden rounded-full bg-marco-gray ring-4 ring-white drop-shadow-sm"
+                  style={{
+                    width: REELS_CIRCLE_SIZE_PX,
+                    height: REELS_CIRCLE_SIZE_PX,
+                  }}
+                >
+                  <Image
+                    src={item.imageSrc}
+                    alt={label}
+                    width={REELS_CIRCLE_SIZE_PX}
+                    height={REELS_CIRCLE_SIZE_PX}
+                    className="h-full w-full object-cover"
+                    sizes="145px"
+                  />
+                </div>
+                <span
+                  className="font-normal text-marco-black"
+                  style={reelsLabelStyle}
+                >
+                  {label}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+
+        {hasOverflow ? (
+          <div
+            className="flex justify-center gap-2 pt-6"
+            aria-label={t('home.reels_pagination_aria')}
+          >
+            {[0, 1].map((i) => (
+              <span
+                key={i}
+                className={`h-2 w-2 rounded-full ${
+                  i === activePageIndex ? 'bg-marco-black' : 'bg-gray-300'
+                }`}
+              />
+            ))}
+          </div>
+        ) : null}
+      </div>
+    </section>
+  );
+}
