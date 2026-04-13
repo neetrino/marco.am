@@ -8,7 +8,7 @@ export function SpecialOfferCardStars() {
       {Array.from({ length: 5 }).map((_, i) => (
         <Star
           key={i}
-          className="h-3 w-3 shrink-0 fill-marco-yellow text-marco-yellow"
+          className="h-[9.5px] w-[9.5px] shrink-0 fill-marco-yellow text-marco-yellow"
           strokeWidth={0}
           aria-hidden
         />

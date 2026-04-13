@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { SPECIAL_OFFERS_SCROLL_FRACTION } from './home-special-offers.constants';
+import { useSpecialOffersRailSlotWidth } from './useSpecialOffersRailSlotWidth';
 
 function getActivePageIndex(el: HTMLDivElement): 0 | 1 {
   const maxScroll = el.scrollWidth - el.clientWidth;
@@ -10,12 +11,19 @@ function getActivePageIndex(el: HTMLDivElement): 0 | 1 {
   return el.scrollLeft / maxScroll < 0.5 ? 0 : 1;
 }
 
+export interface UseSpecialOffersCarouselOptions {
+  /** When false, scroller is unmounted — clear measured slot width. */
+  isRailVisible: boolean;
+}
+
 /**
- * Horizontal special-offers strip: arrow scroll and two-step pagination (Figma).
+ * Horizontal special-offers strip: arrow scroll, two-step pagination, exact 4-up width (lg+).
  */
-export function useSpecialOffersCarousel() {
+export function useSpecialOffersCarousel(options: UseSpecialOffersCarouselOptions) {
+  const { isRailVisible } = options;
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [activePage, setActivePage] = useState<0 | 1>(0);
+  const railSlotWidthPx = useSpecialOffersRailSlotWidth(scrollerRef, isRailVisible);
 
   const syncActivePage = useCallback(() => {
     const el = scrollerRef.current;
@@ -26,6 +34,9 @@ export function useSpecialOffersCarousel() {
   }, []);
 
   useEffect(() => {
+    if (!isRailVisible) {
+      return;
+    }
     const el = scrollerRef.current;
     if (!el) {
       return;
@@ -40,7 +51,7 @@ export function useSpecialOffersCarousel() {
       el.removeEventListener('scroll', syncActivePage);
       ro.disconnect();
     };
-  }, [syncActivePage]);
+  }, [isRailVisible, syncActivePage]);
 
   const scrollByDirection = useCallback((direction: -1 | 1) => {
     const el = scrollerRef.current;
@@ -63,6 +74,7 @@ export function useSpecialOffersCarousel() {
 
   return {
     scrollerRef,
+    railSlotWidthPx,
     activePage,
     scrollToPage,
     scrollPrev: () => {

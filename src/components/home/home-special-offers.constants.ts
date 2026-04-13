@@ -5,8 +5,11 @@
 /** Horizontal gap between product cards in the carousel. */
 export const SPECIAL_OFFERS_CARD_GAP_PX = 16;
 
-/** Min width of each card column (carousel tile). */
+/** Min width of each card column (carousel tile below lg — horizontal scroll). */
 export const SPECIAL_OFFERS_CARD_MIN_WIDTH_PX = 260;
+
+/** Product cards visible at once in the rail (lg+), aligned with Figma strip. */
+export const SPECIAL_OFFERS_VISIBLE_COLUMNS = 4;
 
 /** Portion of scroller width to move per arrow tap. */
 export const SPECIAL_OFFERS_SCROLL_FRACTION = 0.85;
@@ -17,8 +20,20 @@ export const SPECIAL_OFFERS_TITLE_FONT_SIZE_CLAMP = 'clamp(22px, 4vw, 54px)';
 /** Title tracking from Figma. */
 export const SPECIAL_OFFERS_TITLE_LETTER_SPACING_PX = -0.6;
 
-/** Space between heading row and card rail. */
-export const SPECIAL_OFFERS_TITLE_TO_RAIL_GAP_PX = 24;
+/** Space between heading row and card rail (Figma breathing room). */
+export const SPECIAL_OFFERS_TITLE_TO_RAIL_GAP_PX = 48;
+
+/** Card shell — Figma Product2 fill. */
+export const SPECIAL_OFFERS_CARD_BG = '#f6f6f6';
+
+/** Image well height inside special-offer card (Figma). */
+export const SPECIAL_OFFERS_IMAGE_WELL_HEIGHT_PX = 248;
+
+/** Top padding under card shell before image well (Figma ~17). */
+export const SPECIAL_OFFERS_CARD_PADDING_TOP_PX = 17;
+
+/** Match Tailwind `lg` — fixed four-column rail uses pixel widths from ResizeObserver. */
+export const SPECIAL_OFFERS_RAIL_LG_MIN_WIDTH_PX = 1024;
 
 /** Prev/next control sizing (circular, Figma-aligned). */
 export const SPECIAL_OFFERS_NAV_BUTTON_PX = 40;

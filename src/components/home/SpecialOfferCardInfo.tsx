@@ -19,7 +19,7 @@ export function SpecialOfferCardInfo({
     <div className="mt-3 flex gap-2">
       <div className="min-w-0 flex-1">
         <p
-          className={`text-[12px] font-black uppercase tracking-wide ${brandClass}`}
+          className={`text-[12px] font-black uppercase tracking-[0.6px] ${brandClass}`}
         >
           {product.brand?.name ?? '—'}
         </p>

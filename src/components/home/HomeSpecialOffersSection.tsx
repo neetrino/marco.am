@@ -13,7 +13,6 @@ import { SpecialOfferCard } from './SpecialOfferCard';
 import type { SpecialOfferProduct } from './special-offer-product.types';
 import {
   SPECIAL_OFFERS_CARD_GAP_PX,
-  SPECIAL_OFFERS_CARD_MIN_WIDTH_PX,
   SPECIAL_OFFERS_NAV_BUTTON_PX,
   SPECIAL_OFFERS_PAGINATION_DOT_GAP_PX,
   SPECIAL_OFFERS_PAGINATION_DOT_SIZE_PX,
@@ -38,6 +37,9 @@ const SPECIAL_OFFERS_NAV_BUTTON_CLASS =
 
 const SPECIAL_OFFERS_NAV_ICON_CLASS = 'h-3 w-3 shrink-0 text-marco-black';
 
+const SPECIAL_OFFERS_CARD_SLOT_MOBILE_CLASS =
+  'shrink-0 snap-start min-w-0 w-[min(100%,260px)]';
+
 const PRODUCTS_LIMIT = 8;
 
 interface ProductsResponse {
@@ -54,8 +56,10 @@ export function HomeSpecialOffersSection() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const { scrollerRef, activePage, scrollPrev, scrollNext, scrollToPage } =
-    useSpecialOffersCarousel();
+  const isRailVisible = !error && (loading || products.length > 0);
+
+  const { scrollerRef, railSlotWidthPx, activePage, scrollPrev, scrollNext, scrollToPage } =
+    useSpecialOffersCarousel({ isRailVisible });
 
   useEffect(() => {
     const updateLanguage = () => {
@@ -105,6 +109,15 @@ export function HomeSpecialOffersSection() {
     width: SPECIAL_OFFERS_PAGINATION_DOT_SIZE_PX,
     height: SPECIAL_OFFERS_PAGINATION_DOT_SIZE_PX,
   } as const;
+
+  const railSlotClassName =
+    railSlotWidthPx != null
+      ? 'shrink-0 snap-start min-w-0'
+      : SPECIAL_OFFERS_CARD_SLOT_MOBILE_CLASS;
+  const railSlotStyle =
+    railSlotWidthPx != null
+      ? { width: railSlotWidthPx, flexShrink: 0 as const }
+      : undefined;
 
   return (
     <section
@@ -162,20 +175,7 @@ export function HomeSpecialOffersSection() {
           </div>
         </div>
 
-        {loading ? (
-          <div
-            className="flex flex-row gap-4 overflow-hidden"
-            style={{ gap: `${SPECIAL_OFFERS_CARD_GAP_PX}px` }}
-          >
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div
-                key={i}
-                className="min-h-[420px] flex-1 animate-pulse rounded-[32px] bg-gray-200"
-                style={{ minWidth: SPECIAL_OFFERS_CARD_MIN_WIDTH_PX }}
-              />
-            ))}
-          </div>
-        ) : error ? (
+        {error ? (
           <div className="py-10 text-center">
             <p className="text-red-600">{error}</p>
             <button
@@ -186,7 +186,7 @@ export function HomeSpecialOffersSection() {
               {tr('home.special_offers.try_again')}
             </button>
           </div>
-        ) : products.length === 0 ? (
+        ) : products.length === 0 && !loading ? (
           <p className="py-10 text-center text-gray-500">
             {tr('home.special_offers.empty')}
           </p>
@@ -200,65 +200,68 @@ export function HomeSpecialOffersSection() {
                 scrollSnapType: 'x mandatory',
               }}
             >
-              {products.map((product) => (
+              {loading
+                ? Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className={railSlotClassName} style={railSlotStyle}>
+                      <div className="min-h-[420px] animate-pulse rounded-[32px] bg-gray-200" />
+                    </div>
+                  ))
+                : products.map((product) => (
+                    <div key={product.id} className={railSlotClassName} style={railSlotStyle}>
+                      <SpecialOfferCard product={product} />
+                    </div>
+                  ))}
+            </div>
+
+            {!loading && products.length > 0 ? (
+              <>
                 <div
-                  key={product.id}
-                  className="shrink-0 snap-start"
+                  className="flex flex-row items-center justify-center gap-2.5"
                   style={{
-                    minWidth: `min(100%, ${SPECIAL_OFFERS_CARD_MIN_WIDTH_PX}px)`,
-                    maxWidth: `min(100%, ${SPECIAL_OFFERS_CARD_MIN_WIDTH_PX + 60}px)`,
+                    marginTop: `${SPECIAL_OFFERS_RAIL_TO_PAGINATION_GAP_PX}px`,
+                    gap: `${SPECIAL_OFFERS_PAGINATION_DOT_GAP_PX}px`,
                   }}
+                  role="tablist"
+                  aria-label={tr('home.special_offers.pagination_aria')}
                 >
-                  <SpecialOfferCard product={product} />
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={activePage === 0}
+                    onClick={() => {
+                      scrollToPage(0);
+                    }}
+                    className={`rounded-full transition-colors ${
+                      activePage === 0 ? 'bg-marco-black' : 'bg-gray-300'
+                    }`}
+                    style={paginationDotStyle}
+                    aria-label={tr('home.special_offers.page_first_aria')}
+                  />
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={activePage === 1}
+                    onClick={() => {
+                      scrollToPage(1);
+                    }}
+                    className={`rounded-full transition-colors ${
+                      activePage === 1 ? 'bg-marco-black' : 'bg-gray-300'
+                    }`}
+                    style={paginationDotStyle}
+                    aria-label={tr('home.special_offers.page_second_aria')}
+                  />
                 </div>
-              ))}
-            </div>
 
-            <div
-              className="flex flex-row items-center justify-center gap-2.5"
-              style={{
-                marginTop: `${SPECIAL_OFFERS_RAIL_TO_PAGINATION_GAP_PX}px`,
-                gap: `${SPECIAL_OFFERS_PAGINATION_DOT_GAP_PX}px`,
-              }}
-              role="tablist"
-              aria-label={tr('home.special_offers.pagination_aria')}
-            >
-              <button
-                type="button"
-                role="tab"
-                aria-selected={activePage === 0}
-                onClick={() => {
-                  scrollToPage(0);
-                }}
-                className={`rounded-full transition-colors ${
-                  activePage === 0 ? 'bg-marco-black' : 'bg-gray-300'
-                }`}
-                style={paginationDotStyle}
-                aria-label={tr('home.special_offers.page_first_aria')}
-              />
-              <button
-                type="button"
-                role="tab"
-                aria-selected={activePage === 1}
-                onClick={() => {
-                  scrollToPage(1);
-                }}
-                className={`rounded-full transition-colors ${
-                  activePage === 1 ? 'bg-marco-black' : 'bg-gray-300'
-                }`}
-                style={paginationDotStyle}
-                aria-label={tr('home.special_offers.page_second_aria')}
-              />
-            </div>
-
-            <div className="mt-8 flex justify-center">
-              <Link
-                href="/products?filter=featured"
-                className="inline-flex min-w-[200px] items-center justify-center rounded-full bg-marco-black px-10 py-4 text-base font-bold text-white transition-transform hover:-translate-y-0.5"
-              >
-                {tr('home.special_offers.cta')}
-              </Link>
-            </div>
+                <div className="mt-8 flex justify-center">
+                  <Link
+                    href="/products?filter=featured"
+                    className="inline-flex min-w-[200px] items-center justify-center rounded-full bg-marco-black px-10 py-4 text-base font-bold text-white transition-transform hover:-translate-y-0.5"
+                  >
+                    {tr('home.special_offers.cta')}
+                  </Link>
+                </div>
+              </>
+            ) : null}
           </>
         )}
       </div>

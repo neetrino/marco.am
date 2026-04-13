@@ -1,10 +1,11 @@
 'use client';
 
-import { getSpecialOfferBrandTextClass } from './home-special-offers.constants';
 import {
-  SpecialOfferActionsStack,
-  SpecialOfferWarrantyBadge,
-} from './SpecialOfferCardChrome';
+  getSpecialOfferBrandTextClass,
+  SPECIAL_OFFERS_CARD_BG,
+  SPECIAL_OFFERS_CARD_PADDING_TOP_PX,
+} from './home-special-offers.constants';
+import { SpecialOfferActionsStack } from './SpecialOfferCardChrome';
 import { SpecialOfferCardInfo } from './SpecialOfferCardInfo';
 import { SpecialOfferCardMedia } from './SpecialOfferCardMedia';
 import { SpecialOfferCardPricing } from './SpecialOfferCardPricing';
@@ -42,11 +43,13 @@ export function SpecialOfferCard({ product }: SpecialOfferCardProps) {
   const brandClass = getSpecialOfferBrandTextClass(product.brand?.name);
 
   return (
-    <article className="relative flex min-w-0 flex-col rounded-[32px] bg-marco-gray p-4 pb-5">
-      <SpecialOfferWarrantyBadge
-        line1={t('home.special_offers.warranty_line1')}
-        line2={t('home.special_offers.warranty_line2')}
-      />
+    <article
+      className="relative flex min-w-0 flex-col overflow-visible rounded-[32px] px-4 pb-6"
+      style={{
+        backgroundColor: SPECIAL_OFFERS_CARD_BG,
+        paddingTop: SPECIAL_OFFERS_CARD_PADDING_TOP_PX,
+      }}
+    >
       <SpecialOfferActionsStack
         showDiscountPill={showDiscountPill}
         discountPercent={product.discountPercent}
