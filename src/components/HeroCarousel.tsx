@@ -1,9 +1,9 @@
 'use client';
 
 import {
-  HERO_PROMO_DESKTOP_FREE_DELIVERY_BANNER_EXTRA_TRANSLATE_Y_PX,
+  HERO_PROMO_DESKTOP_FREE_DELIVERY_BANNER_TRANSLATE_Y_PX,
   HERO_PROMO_DESKTOP_SOFA_CARD_EXTRA_TRANSLATE_Y_PX,
-  HERO_PROMO_DESKTOP_SOFA_VAN_ROW_TRANSLATE_Y_PX,
+  HERO_PROMO_DESKTOP_SOFA_ROW_TRANSLATE_Y_PX,
   HERO_PROMO_SMARTPHONES_CORNER_NUDGE_X_PX,
   HERO_PROMO_SMARTPHONES_CORNER_NUDGE_Y_PX,
 } from './hero.constants';
@@ -61,14 +61,11 @@ export function HeroCarousel() {
                 <HomePromoSmartphonesBanner layout="corner" />
               </div>
             </div>
-            <div
-              className="relative z-[5] flex w-full min-w-0 flex-row flex-wrap items-end justify-start gap-4 md:gap-6 lg:gap-8"
-              style={{ transform: `translateY(${HERO_PROMO_DESKTOP_SOFA_VAN_ROW_TRANSLATE_Y_PX}px)` }}
-            >
+            <div className="relative z-[5] flex w-full min-w-0 flex-row flex-wrap items-end justify-start gap-4 md:gap-6 lg:gap-8">
               <div
                 className="shrink-0"
                 style={{
-                  transform: `translateY(${HERO_PROMO_DESKTOP_SOFA_CARD_EXTRA_TRANSLATE_Y_PX}px)`,
+                  transform: `translateY(${HERO_PROMO_DESKTOP_SOFA_ROW_TRANSLATE_Y_PX + HERO_PROMO_DESKTOP_SOFA_CARD_EXTRA_TRANSLATE_Y_PX}px)`,
                 }}
               >
                 <HomePromoStackedProductCard
@@ -78,7 +75,7 @@ export function HeroCarousel() {
               <div
                 className="shrink-0"
                 style={{
-                  transform: `translateY(${HERO_PROMO_DESKTOP_FREE_DELIVERY_BANNER_EXTRA_TRANSLATE_Y_PX}px)`,
+                  transform: `translateY(${HERO_PROMO_DESKTOP_FREE_DELIVERY_BANNER_TRANSLATE_Y_PX}px)`,
                 }}
               >
                 <HomePromoFreeDeliveryBanner />

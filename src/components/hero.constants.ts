@@ -136,10 +136,10 @@ export const HERO_SIDE_PROMO_TILE_ASPECT_H = 589;
 
 /**
  * Free-delivery van tile width (`HomePromoFreeDeliveryBanner`).
- * `lg+` max 280px (was 236px) for a larger, matched pair.
+ * `lg+` ~284px — slightly under 300px for a tighter tile.
  */
 export const HERO_SIDE_PROMO_TILE_WIDTH_CLASSNAME =
-  'w-[min(42vw,200px)] sm:w-[min(38vw,220px)] md:w-[min(32vw,250px)] lg:w-[280px]' as const;
+  'w-[min(42vw,200px)] sm:w-[min(38vw,220px)] md:w-[min(32vw,252px)] lg:w-[284px]' as const;
 
 /**
  * 80% hero tile — larger than {@link HERO_SIDE_PROMO_TILE_WIDTH_CLASSNAME}; same aspect {@link HERO_SIDE_PROMO_TILE_ASPECT_CLASSNAME}.
@@ -151,19 +151,20 @@ export const HERO_PROMO_SMARTPHONES_TILE_ROW_WIDTH_CLASSNAME =
 export const HERO_SIDE_PROMO_TILE_ASPECT_CLASSNAME = 'aspect-[428/589]' as const;
 
 /**
- * Desktop hero — vertical nudge for sofa + van row (`HeroCarousel`); negative moves the row up (px).
+ * Desktop hero — vertical base for sofa card only (`HeroCarousel`); negative → up (px). Independent of van tile.
  */
-export const HERO_PROMO_DESKTOP_SOFA_VAN_ROW_TRANSLATE_Y_PX = -360;
+export const HERO_PROMO_DESKTOP_SOFA_ROW_TRANSLATE_Y_PX = -360;
 
 /**
- * Extra vertical nudge for sofa card only (`HomePromoStackedProductCard`); negative → up; van tile unchanged.
+ * Extra vertical nudge stacked on {@link HERO_PROMO_DESKTOP_SOFA_ROW_TRANSLATE_Y_PX} for `HomePromoStackedProductCard`; negative → up.
  */
 export const HERO_PROMO_DESKTOP_SOFA_CARD_EXTRA_TRANSLATE_Y_PX = -80;
 
 /**
- * Extra vertical nudge for free-delivery / van tile only (`HomePromoFreeDeliveryBanner`); negative → up; independent of sofa card.
+ * Desktop hero — sole vertical position for free-delivery / van tile (`HomePromoFreeDeliveryBanner`); negative → up.
+ * Not tied to sofa row; tune separately (lower on screen = less negative).
  */
-export const HERO_PROMO_DESKTOP_FREE_DELIVERY_BANNER_EXTRA_TRANSLATE_Y_PX = -80;
+export const HERO_PROMO_DESKTOP_FREE_DELIVERY_BANNER_TRANSLATE_Y_PX = -434;
 
 /**
  * Desktop hero — 80% tile (`layout="corner"`); nudge vs top-right flex slot (px). Positive X → right, negative Y → up.
