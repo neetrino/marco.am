@@ -55,7 +55,7 @@ export function HomePromoMobileHeroSlateCta() {
       style={HERO_MOBILE_SLATE_PANEL_BOX_STYLE}
     >
       <div
-        className="flex w-full justify-center px-2 pb-1.5 pt-0"
+        className="pointer-events-none flex w-full justify-center px-2 pb-1.5 pt-0"
         style={{
           transform: `translate(${HERO_MOBILE_SLATE_CTA_NUDGE_RIGHT_PX}px, -${HERO_MOBILE_SLATE_CTA_NUDGE_UP_PX}px)`,
         }}
