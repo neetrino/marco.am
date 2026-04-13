@@ -32,6 +32,9 @@ export const SPECIAL_OFFERS_IMAGE_WELL_HEIGHT_PX = 248;
 /** Top padding under card shell before image well (Figma ~17). */
 export const SPECIAL_OFFERS_CARD_PADDING_TOP_PX = 17;
 
+/** Vertical space between the product image well and the brand/title text block. */
+export const SPECIAL_OFFERS_IMAGE_TO_TEXT_GAP_PX = 24;
+
 /** Match Tailwind `lg` — fixed four-column rail uses pixel widths from ResizeObserver. */
 export const SPECIAL_OFFERS_RAIL_LG_MIN_WIDTH_PX = 1024;
 

@@ -4,6 +4,7 @@ import Link from 'next/link';
 
 import { ProductColors } from '../ProductCard/ProductColors';
 
+import { SPECIAL_OFFERS_IMAGE_TO_TEXT_GAP_PX } from './home-special-offers.constants';
 import type { SpecialOfferProduct } from './special-offer-product.types';
 
 interface SpecialOfferCardInfoProps {
@@ -16,7 +17,10 @@ export function SpecialOfferCardInfo({
   brandClass,
 }: SpecialOfferCardInfoProps) {
   return (
-    <div className="mt-3 flex gap-2">
+    <div
+      className="flex gap-2"
+      style={{ marginTop: `${SPECIAL_OFFERS_IMAGE_TO_TEXT_GAP_PX}px` }}
+    >
       <div className="min-w-0 flex-1">
         <p
           className={`text-[12px] font-black uppercase tracking-[0.6px] ${brandClass}`}
