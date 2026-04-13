@@ -114,9 +114,10 @@ export const HERO_PROMO_SMARTPHONES_TILE_HEIGHT_PX = 497;
 /**
  * Figma 305:2130 — `Group 9208` top-right control on 80% tile: white circle, black NE arrow.
  * Lower `top` (px) moves the control up inside the tile frame.
+ * Lower `right` (px) moves the control toward the right edge of the tile.
  */
-export const HERO_PROMO_SMARTPHONES_TILE_TR_ICON_TOP_PX = 110;
-export const HERO_PROMO_SMARTPHONES_TILE_TR_ICON_RIGHT_PX = 84;
+export const HERO_PROMO_SMARTPHONES_TILE_TR_ICON_TOP_PX = 108;
+export const HERO_PROMO_SMARTPHONES_TILE_TR_ICON_RIGHT_PX = 79;
 export const HERO_PROMO_SMARTPHONES_TILE_TR_ICON_FRAME_PX = HERO_PROMO_SIDE_TILE_TR_ICON_FRAME_PX;
 export const HERO_PROMO_SMARTPHONES_TILE_TR_ICON_GLYPH_PX = HERO_PROMO_SIDE_TILE_TR_ICON_GLYPH_PX;
 
@@ -136,10 +137,10 @@ export const HERO_SIDE_PROMO_TILE_ASPECT_H = 589;
 
 /**
  * Free-delivery van tile width (`HomePromoFreeDeliveryBanner`).
- * `lg+` ~284px — slightly under 300px for a tighter tile.
+ * Fixed caps +3px vs base for a slightly larger tile.
  */
 export const HERO_SIDE_PROMO_TILE_WIDTH_CLASSNAME =
-  'w-[min(42vw,200px)] sm:w-[min(38vw,220px)] md:w-[min(32vw,252px)] lg:w-[284px]' as const;
+  'w-[min(42vw,203px)] sm:w-[min(38vw,223px)] md:w-[min(32vw,255px)] lg:w-[287px]' as const;
 
 /**
  * 80% hero tile — larger than {@link HERO_SIDE_PROMO_TILE_WIDTH_CLASSNAME}; same aspect {@link HERO_SIDE_PROMO_TILE_ASPECT_CLASSNAME}.
@@ -164,12 +165,12 @@ export const HERO_PROMO_DESKTOP_SOFA_CARD_EXTRA_TRANSLATE_Y_PX = -80;
  * Desktop hero — sole vertical position for free-delivery / van tile (`HomePromoFreeDeliveryBanner`); negative → up.
  * Not tied to sofa row; tune separately (lower on screen = less negative).
  */
-export const HERO_PROMO_DESKTOP_FREE_DELIVERY_BANNER_TRANSLATE_Y_PX = -434;
+export const HERO_PROMO_DESKTOP_FREE_DELIVERY_BANNER_TRANSLATE_Y_PX = -431;
 
 /**
  * Desktop hero — 80% tile (`layout="corner"`); nudge vs top-right flex slot (px). Positive X → right, negative Y → up.
  */
-export const HERO_PROMO_SMARTPHONES_CORNER_NUDGE_X_PX = 72;
+export const HERO_PROMO_SMARTPHONES_CORNER_NUDGE_X_PX = 77;
 export const HERO_PROMO_SMARTPHONES_CORNER_NUDGE_Y_PX = -96;
 
 /** Figma 314:2400 — mobile-only hero headline (Montserrat Black); slightly above base for readability */

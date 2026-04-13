@@ -96,7 +96,7 @@ export function HomePromoFreeDeliveryBanner() {
             alt=""
             fill
             className="pointer-events-none z-0 bg-transparent object-cover object-center"
-            sizes="(max-width: 640px) 42vw, (max-width: 768px) 38vw, (max-width: 1024px) 30vw, 284px"
+            sizes="(max-width: 640px) 42vw, (max-width: 768px) 38vw, (max-width: 1024px) 30vw, 287px"
             priority
           />
         </div>
