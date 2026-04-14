@@ -1,131 +1,141 @@
 'use client';
 
-import type { LucideIcon } from 'lucide-react';
-import { Facebook, Instagram, Send } from 'lucide-react';
-
 import { useTranslation } from '../lib/i18n-client';
-import { FOOTER_SOCIAL_BUTTON_CLASS } from './footer.constants';
+import {
+  FOOTER_SOCIAL_TILE_PX,
+  FOOTER_SOCIAL_TILE_PX_COMPACT,
+  FOOTER_SOCIAL_TILE_SPECS,
+  FOOTER_SOCIAL_VIBER_GLYPH_HEIGHT_PX,
+  FOOTER_SOCIAL_VIBER_GLYPH_HEIGHT_PX_COMPACT,
+  FOOTER_SOCIAL_VIBER_GLYPH_WIDTH_PX,
+  FOOTER_SOCIAL_VIBER_GLYPH_WIDTH_PX_COMPACT,
+  FOOTER_SOCIAL_VIBER_SURFACE_CLASS,
+  type FooterSocialTileSpec,
+} from './footer-social.constants';
 
-const WHATSAPP_SOCIAL_ICON_SRC = '/icons/whatsapp.png';
-const VIBER_SOCIAL_ICON_SRC = '/icons/viber.png';
+const FOOTER_SOCIAL_LINK_BASE =
+  'inline-flex shrink-0 items-center justify-center rounded-full transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marco-black';
 
-const SOCIAL_VECTOR_ICON_PX = 18;
+export type FooterSocialLinksDensity = 'default' | 'compact';
 
-const SOCIAL_RASTER_FULL_PX = 40;
-
-const SOCIAL_LUCIDE_CLASS = 'shrink-0 text-marco-black';
-const SOCIAL_RASTER_IMG_CLASS =
-  'size-10 shrink-0 rounded-full object-contain object-center block';
-
-type LucideSocialEntry = {
-  translationKey: string;
-  ariaKey: string;
-  Icon: LucideIcon;
+type FooterSocialLinksProps = {
+  density?: FooterSocialLinksDensity;
 };
 
-type ImageSocialEntry = {
-  translationKey: string;
-  ariaKey: string;
-  imageSrc: string;
+type TileRenderCtx = {
+  tileClass: string;
+  fullSizePx: number;
+  viberW: number;
+  viberH: number;
+  viberImgClass: string;
 };
 
-type SocialEntry = LucideSocialEntry | ImageSocialEntry;
-
-const FOOTER_SOCIAL_ENTRIES: SocialEntry[] = [
-  {
-    translationKey: 'contact.social.instagram',
-    Icon: Instagram,
-    ariaKey: 'common.ariaLabels.instagram',
-  },
-  {
-    translationKey: 'contact.social.facebook',
-    Icon: Facebook,
-    ariaKey: 'common.ariaLabels.facebook',
-  },
-  {
-    translationKey: 'contact.social.telegram',
-    Icon: Send,
-    ariaKey: 'common.ariaLabels.telegram',
-  },
-  {
-    translationKey: 'contact.social.whatsapp',
-    ariaKey: 'common.ariaLabels.whatsapp',
-    imageSrc: WHATSAPP_SOCIAL_ICON_SRC,
-  },
-  {
-    translationKey: 'contact.social.viber',
-    ariaKey: 'common.ariaLabels.viber',
-    imageSrc: VIBER_SOCIAL_ICON_SRC,
-  },
-];
-
-function isRasterEntry(entry: SocialEntry): entry is ImageSocialEntry {
-  return 'imageSrc' in entry;
-}
-
-function SocialGlyph({ entry }: { entry: SocialEntry }) {
-  if (isRasterEntry(entry)) {
+function buildFooterSocialInner(spec: FooterSocialTileSpec, ctx: TileRenderCtx) {
+  const { tileClass, fullSizePx, viberW, viberH, viberImgClass } = ctx;
+  if (spec.kind === 'full') {
     return (
       <img
-        src={entry.imageSrc}
+        src={spec.src}
         alt=""
-        width={SOCIAL_RASTER_FULL_PX}
-        height={SOCIAL_RASTER_FULL_PX}
-        className={SOCIAL_RASTER_IMG_CLASS}
+        width={fullSizePx}
+        height={fullSizePx}
+        className={`block ${tileClass} max-h-none max-w-none shrink-0`}
         aria-hidden
       />
     );
   }
-  const { Icon } = entry;
   return (
-    <Icon size={SOCIAL_VECTOR_ICON_PX} className={SOCIAL_LUCIDE_CLASS} strokeWidth={2} aria-hidden />
+    <img
+      src={spec.src}
+      alt=""
+      width={viberW}
+      height={viberH}
+      className={viberImgClass}
+      aria-hidden
+    />
+  );
+}
+
+function FooterSocialTileControl({
+  spec,
+  href,
+  hasHref,
+  name,
+  ctx,
+}: {
+  spec: FooterSocialTileSpec;
+  href: string;
+  hasHref: boolean;
+  name: string;
+  ctx: TileRenderCtx;
+}) {
+  const { tileClass } = ctx;
+  const surfaceClass =
+    spec.kind === 'full'
+      ? `${FOOTER_SOCIAL_LINK_BASE} ${tileClass} overflow-hidden`
+      : `${FOOTER_SOCIAL_LINK_BASE} flex ${tileClass} items-center justify-center ${FOOTER_SOCIAL_VIBER_SURFACE_CLASS}`;
+  const inner = buildFooterSocialInner(spec, ctx);
+
+  if (!hasHref) {
+    return (
+      <span role="listitem" className={`${surfaceClass} opacity-50`} aria-label={name}>
+        {inner}
+      </span>
+    );
+  }
+
+  return (
+    <a
+      role="listitem"
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={surfaceClass}
+      aria-label={name}
+    >
+      {inner}
+    </a>
   );
 }
 
 /**
- * Footer row — yellow circular controls (Figma 101:2835).
+ * Social row — Figma tiles (black on #FACC15). Use `compact` beside a single-line copyright.
  */
-export function FooterSocialLinks() {
+export function FooterSocialLinks({ density = 'default' }: FooterSocialLinksProps) {
   const { t } = useTranslation();
+  const isCompact = density === 'compact';
+  const tileClass = isCompact ? 'h-7 w-7' : 'h-8 w-8';
+  const gapClass = isCompact ? 'gap-2' : 'gap-3';
+  const ctx: TileRenderCtx = {
+    tileClass,
+    fullSizePx: isCompact ? FOOTER_SOCIAL_TILE_PX_COMPACT : FOOTER_SOCIAL_TILE_PX,
+    viberW: isCompact ? FOOTER_SOCIAL_VIBER_GLYPH_WIDTH_PX_COMPACT : FOOTER_SOCIAL_VIBER_GLYPH_WIDTH_PX,
+    viberH: isCompact ? FOOTER_SOCIAL_VIBER_GLYPH_HEIGHT_PX_COMPACT : FOOTER_SOCIAL_VIBER_GLYPH_HEIGHT_PX,
+    viberImgClass: isCompact
+      ? 'h-4 w-4 shrink-0 object-contain'
+      : 'h-5 w-[18px] shrink-0 object-contain',
+  };
 
   return (
     <div
-      className="flex flex-wrap items-center gap-4"
+      className={`flex flex-wrap items-center ${gapClass}`}
       role="list"
       aria-label={t('common.ariaLabels.socialLinks')}
     >
-      {FOOTER_SOCIAL_ENTRIES.map((entry) => {
-        const { translationKey, ariaKey } = entry;
-        const href = t(translationKey)?.trim();
+      {FOOTER_SOCIAL_TILE_SPECS.map((spec) => {
+        const href = t(spec.translationKey)?.trim();
         const hasHref = href.length > 0 && href !== '#';
-        const name = t(ariaKey);
-        const inner = <SocialGlyph entry={entry} />;
-
-        if (!hasHref) {
-          return (
-            <span
-              key={translationKey}
-              role="listitem"
-              className={`${FOOTER_SOCIAL_BUTTON_CLASS} opacity-50`}
-              aria-label={name}
-            >
-              {inner}
-            </span>
-          );
-        }
+        const name = t(spec.ariaKey);
 
         return (
-          <a
-            key={translationKey}
-            role="listitem"
+          <FooterSocialTileControl
+            key={spec.translationKey}
+            spec={spec}
             href={href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={FOOTER_SOCIAL_BUTTON_CLASS}
-            aria-label={name}
-          >
-            {inner}
-          </a>
+            hasHref={hasHref}
+            name={name}
+            ctx={ctx}
+          />
         );
       })}
     </div>

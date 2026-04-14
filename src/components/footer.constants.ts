@@ -11,10 +11,6 @@ export const FOOTER_MUTED_TEXT_CLASS = 'text-[#6b7280]';
 /** Figma heading text #181111 */
 export const FOOTER_HEADING_TEXT_CLASS = 'text-[#181111]';
 
-/** Figma social / icon accent */
-export const FOOTER_SOCIAL_BUTTON_CLASS =
-  'flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-marco-yellow text-marco-black transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marco-black';
-
 export const NEETRINO_STUDIO_HREF = 'https://neetrino.com/';
 
 export type FooterNavItem = {
