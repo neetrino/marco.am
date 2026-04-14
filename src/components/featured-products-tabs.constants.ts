@@ -16,7 +16,7 @@ export const FEATURED_PRODUCTS_TITLE_BAR_THICKNESS_PX = 4;
 /**
  * Yellow accent width as % of the title line box — shorter than full text (Figma-style stub).
  */
-export const FEATURED_PRODUCTS_TITLE_BAR_WIDTH_PERCENT = 38;
+export const FEATURED_PRODUCTS_TITLE_BAR_WIDTH_PERCENT = 28;
 
 /** Figma title tracking. */
 export const FEATURED_PRODUCTS_TITLE_LETTER_SPACING_PX = -0.6;
