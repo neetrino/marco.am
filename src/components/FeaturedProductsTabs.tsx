@@ -208,7 +208,7 @@ export function FeaturedProductsTabs() {
 
   return (
     <section
-      className={`bg-white py-16 ${montserratFeatured.className}`}
+      className={`bg-white pb-16 pt-4 sm:pt-6 ${montserratFeatured.className}`}
       style={featuredTitleCssVars}
       aria-labelledby="home-featured-products-heading"
     >

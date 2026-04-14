@@ -37,6 +37,7 @@ import {
   SPECIAL_OFFERS_TITLE_LETTER_SPACING_PX,
   SPECIAL_OFFERS_TITLE_TO_RAIL_GAP_PX,
   SPECIAL_OFFERS_TITLE_INSET_LEFT_PX,
+  SPECIAL_OFFERS_PAGINATION_TO_CTA_GAP_PX,
   SPECIAL_OFFERS_MOBILE_GRID_COLUMN_GAP_PX,
   SPECIAL_OFFERS_MOBILE_GRID_PAGE_SIZE,
   SPECIAL_OFFERS_MOBILE_GRID_ROW_GAP_PX,
@@ -161,7 +162,7 @@ export function HomeSpecialOffersSection() {
 
   return (
     <section
-      className={`relative z-10 bg-white pb-10 pt-0 max-md:-mt-6 sm:py-12 ${montserratSpecial.className}`}
+      className={`relative z-10 bg-white pb-4 pt-0 max-md:-mt-6 sm:pt-12 sm:pb-6 ${montserratSpecial.className}`}
       style={{
         ['--special-offers-title-fs' as string]: SPECIAL_OFFERS_TITLE_FONT_SIZE_CLAMP,
         ['--special-offers-title-fs-mobile' as string]:
@@ -379,7 +380,10 @@ export function HomeSpecialOffersSection() {
                   ))}
                 </div>
 
-                <div className="mt-8 flex justify-center">
+                <div
+                  className="flex justify-center"
+                  style={{ marginTop: SPECIAL_OFFERS_PAGINATION_TO_CTA_GAP_PX }}
+                >
                   <Link
                     href="/products?filter=featured"
                     className="inline-flex min-w-[200px] items-center justify-center rounded-full bg-marco-black px-10 py-4 text-base font-bold text-white transition-transform hover:-translate-y-0.5"
