@@ -19,6 +19,7 @@ import {
   HOME_GRADIENT_BANNER_MAX_WIDTH_PX,
   HOME_GRADIENT_BANNER_OFFSET_LEFT_PX,
   HOME_GRADIENT_BANNER_OVERLAY_OPACITY,
+  HOME_GRADIENT_BANNER_SECTION_MARGIN_TOP_PX,
   HOME_GRADIENT_BANNER_RADIUS_PX,
 } from './home-gradient-banner.constants';
 import { HOME_BANNERS_ROW_GAP_PX } from './home-secondary-banner.constants';
@@ -64,7 +65,10 @@ export function HomeGradientBanner({ language }: HomeGradientBannerProps) {
   const headline = t(language, 'home.gradient_banner.headline');
 
   return (
-    <div className="w-full bg-white pb-10 pt-6">
+    <div
+      className="w-full bg-white pb-10 pt-6"
+      style={{ marginTop: `${HOME_GRADIENT_BANNER_SECTION_MARGIN_TOP_PX}px` }}
+    >
       <div
         className={`${HOME_APP_BANNER_INNER_CLASS} grid w-full grid-cols-1 lg:grid-cols-[minmax(0,560px)_minmax(0,1fr)] lg:items-stretch`}
         style={{ gap: `${HOME_BANNERS_ROW_GAP_PX}px` }}

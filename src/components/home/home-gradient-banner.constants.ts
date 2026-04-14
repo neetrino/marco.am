@@ -9,6 +9,9 @@ export const HOME_GRADIENT_BANNER_MAX_WIDTH_PX = 560;
 /** Align with `HomeAppBanner` — same inner container, flush start (no extra nudge). */
 export const HOME_GRADIENT_BANNER_OFFSET_LEFT_PX = 0;
 
+/** Pull gradient + secondary banner block slightly up toward app banner above. */
+export const HOME_GRADIENT_BANNER_SECTION_MARGIN_TOP_PX = -8;
+
 /** Figma 101:4129 — headline fill. */
 export const HOME_GRADIENT_BANNER_HEADLINE_COLOR_HEX = '#fadd1a';
 
