@@ -7,8 +7,8 @@ import {
   FEATURED_PRODUCTS_TITLE_BAR_WIDTH_PERCENT,
   FEATURED_PRODUCTS_TITLE_LETTER_SPACING_PX,
   FEATURED_PRODUCTS_TITLE_TEXT_TO_BAR_GAP_PX,
-  FEATURED_PRODUCTS_TITLE_INSET_LEFT_PX,
 } from '../featured-products-tabs.constants';
+import { HOME_BRANDS_HEADING_TITLE_INSET_LEFT_PX } from './home-brands.constants';
 
 const ROUND_NAV_BUTTON_CLASS =
   'flex shrink-0 items-center justify-center overflow-visible rounded-full border border-gray-200 bg-white p-0 transition-colors hover:border-marco-yellow hover:bg-marco-yellow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marco-black';
@@ -43,7 +43,7 @@ export function HomeBrandsHeading({ language, onPrev, onNext }: HomeBrandsHeadin
 
   return (
     <div className="flex flex-row flex-wrap items-end justify-between gap-4">
-      <div className="min-w-0" style={{ paddingLeft: `${FEATURED_PRODUCTS_TITLE_INSET_LEFT_PX}px` }}>
+      <div className="min-w-0" style={{ paddingLeft: `${HOME_BRANDS_HEADING_TITLE_INSET_LEFT_PX}px` }}>
         <h2
           id="home-brands-heading"
           className="font-bold uppercase text-marco-black [font-size:var(--fp-title-fs)] [line-height:var(--fp-title-lh)]"
@@ -59,7 +59,7 @@ export function HomeBrandsHeading({ language, onPrev, onNext }: HomeBrandsHeadin
           </span>
         </h2>
       </div>
-      <div className="flex shrink-0 flex-row gap-2 max-md:[margin-right:var(--fp-nav-inset-mobile)] md:[margin-right:var(--fp-nav-inset-desktop)]">
+      <div className="flex shrink-0 flex-row gap-2">
         <button
           type="button"
           onClick={onPrev}

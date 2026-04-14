@@ -21,10 +21,14 @@ import {
 } from './home/home-special-offers.constants';
 import {
   HOME_BRANDS_AFTER_CTA_MARGIN_TOP_PX,
+  HOME_BRANDS_BLOCK_PADDING_BOTTOM_PX,
+  HOME_BRANDS_GRID_TO_DOTS_GAP_MOBILE_PX,
+  HOME_BRANDS_GRID_TO_DOTS_GAP_PX,
   HOME_BRANDS_RAIL_SCROLL_PX,
   HOME_BRANDS_TITLE_TO_RAIL_GAP_PX,
 } from './home/home-brands.constants';
 import { HomeBrandsHeading } from './home/HomeBrandsHeading';
+import { HomeBrandsSlide } from './home/HomeBrandsSlide';
 import type { SpecialOfferProduct } from './home/special-offer-product.types';
 
 const FEATURED_OFFERS_GRID_CLASS =
@@ -159,7 +163,10 @@ export function FeaturedProductsStrip({
 
       <div
         className="w-full"
-        style={{ marginTop: `${HOME_BRANDS_AFTER_CTA_MARGIN_TOP_PX}px` }}
+        style={{
+          marginTop: `${HOME_BRANDS_AFTER_CTA_MARGIN_TOP_PX}px`,
+          paddingBottom: `${HOME_BRANDS_BLOCK_PADDING_BOTTOM_PX}px`,
+        }}
       >
         <HomeBrandsHeading
           language={language}
@@ -169,10 +176,38 @@ export function FeaturedProductsStrip({
         <div
           ref={brandsRailRef}
           id="home-brands-rail"
-          className="flex w-full flex-nowrap gap-4 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="w-full"
           style={{ marginTop: `${HOME_BRANDS_TITLE_TO_RAIL_GAP_PX}px` }}
           aria-label={t(language, 'home.brands.rail_aria')}
-        />
+        >
+          <HomeBrandsSlide />
+        </div>
+
+        <div
+          className="flex flex-row items-center justify-center"
+          style={{
+            marginTop: `${isMaxMd ? HOME_BRANDS_GRID_TO_DOTS_GAP_MOBILE_PX : HOME_BRANDS_GRID_TO_DOTS_GAP_PX}px`,
+            gap: `${SPECIAL_OFFERS_PAGINATION_DOT_GAP_PX}px`,
+          }}
+          aria-hidden
+        >
+          {Array.from({ length: FEATURED_PRODUCTS_FOOTER_DOT_COUNT }, (_, i) => (
+            <span
+              key={`brands-footer-dot-${i}`}
+              className={i === 0 ? 'rounded-full bg-marco-black' : 'rounded-full bg-gray-300'}
+              style={featuredFooterDotStyle}
+            />
+          ))}
+        </div>
+
+        <div
+          className="flex justify-center"
+          style={{ marginTop: SPECIAL_OFFERS_PAGINATION_TO_CTA_GAP_PX }}
+        >
+          <Link href="/products" className={SPECIAL_OFFERS_CTA_LINK_CLASS}>
+            {t(language, 'home.special_offers.cta')}
+          </Link>
+        </div>
       </div>
     </>
   );
