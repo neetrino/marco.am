@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useTranslation } from '../../lib/i18n-client';
 
 import {
+  SPECIAL_OFFERS_GALLERY_DOTS_BELOW_WELL_MOBILE_EXTRA_PX,
   SPECIAL_OFFERS_GALLERY_DOTS_BELOW_WELL_PX,
   SPECIAL_OFFERS_GALLERY_DOTS_GAP_PX,
   SPECIAL_OFFERS_GALLERY_DOTS_OVERLAP_PX,
@@ -14,6 +15,7 @@ import {
   SPECIAL_OFFERS_GALLERY_PIP_INACTIVE,
   SPECIAL_OFFERS_GALLERY_PIP_SIZE_PX,
   SPECIAL_OFFERS_IMAGE_NUDGE_LEFT_PX,
+  SPECIAL_OFFERS_IMAGE_TRANSLATE_Y_MOBILE_EXTRA_PX,
   SPECIAL_OFFERS_IMAGE_TRANSLATE_Y_PX,
   SPECIAL_OFFERS_IMAGE_WELL_HEIGHT_PX,
   SPECIAL_OFFERS_IMAGE_WELL_RADIUS_PX,
@@ -25,6 +27,7 @@ interface SpecialOfferImageSliderProps {
   title: string;
   images: string[];
   onImageError: () => void;
+  layout?: 'default' | 'mobileGrid';
 }
 
 function galleryDotAriaLabel(raw: string, n: number, total: number): string {
@@ -37,6 +40,7 @@ interface DotsProps {
   ariaTemplate: string;
   paginationAria: string;
   onPick: (index: number) => void;
+  dotsBelowWellPx: number;
 }
 
 function SpecialOfferGalleryDots({
@@ -45,12 +49,13 @@ function SpecialOfferGalleryDots({
   ariaTemplate,
   paginationAria,
   onPick,
+  dotsBelowWellPx,
 }: DotsProps) {
   return (
     <div
       className="pointer-events-none absolute left-0 right-0 z-20 flex justify-center"
       style={{
-        bottom: -SPECIAL_OFFERS_GALLERY_DOTS_BELOW_WELL_PX,
+        bottom: -dotsBelowWellPx,
         gap: SPECIAL_OFFERS_GALLERY_DOTS_GAP_PX,
       }}
       role="group"
@@ -103,6 +108,7 @@ export function SpecialOfferImageSlider({
   title,
   images,
   onImageError,
+  layout = 'default',
 }: SpecialOfferImageSliderProps) {
   const { t } = useTranslation();
   const { scrollerRef, activeIndex, goToIndex } = useSpecialOfferImageGallery(
@@ -114,6 +120,12 @@ export function SpecialOfferImageSlider({
 
   const wellRadiusPx = SPECIAL_OFFERS_IMAGE_WELL_RADIUS_PX;
   const wellHeightPx = SPECIAL_OFFERS_IMAGE_WELL_HEIGHT_PX;
+  const imageTranslateY =
+    SPECIAL_OFFERS_IMAGE_TRANSLATE_Y_PX +
+    (layout === 'mobileGrid' ? SPECIAL_OFFERS_IMAGE_TRANSLATE_Y_MOBILE_EXTRA_PX : 0);
+  const dotsBelowWellPx =
+    SPECIAL_OFFERS_GALLERY_DOTS_BELOW_WELL_PX +
+    (layout === 'mobileGrid' ? SPECIAL_OFFERS_GALLERY_DOTS_BELOW_WELL_MOBILE_EXTRA_PX : 0);
 
   return (
     <div
@@ -145,7 +157,7 @@ export function SpecialOfferImageSlider({
                   fill
                   className="object-contain mix-blend-multiply"
                   style={{
-                    transform: `translate(-${SPECIAL_OFFERS_IMAGE_NUDGE_LEFT_PX}px, ${SPECIAL_OFFERS_IMAGE_TRANSLATE_Y_PX}px)`,
+                    transform: `translate(-${SPECIAL_OFFERS_IMAGE_NUDGE_LEFT_PX}px, ${imageTranslateY}px)`,
                   }}
                   sizes="(max-width: 1024px) 260px, 20vw"
                   unoptimized
@@ -161,6 +173,7 @@ export function SpecialOfferImageSlider({
         activeIndex={activeIndex}
         ariaTemplate={ariaTemplate}
         paginationAria={paginationAria}
+        dotsBelowWellPx={dotsBelowWellPx}
         onPick={goToIndex}
       />
     </div>

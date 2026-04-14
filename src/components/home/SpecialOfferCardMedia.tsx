@@ -7,6 +7,7 @@ import { ProductImagePlaceholder } from '../ProductImagePlaceholder';
 
 import {
   SPECIAL_OFFERS_IMAGE_NUDGE_LEFT_PX,
+  SPECIAL_OFFERS_IMAGE_TRANSLATE_Y_MOBILE_EXTRA_PX,
   SPECIAL_OFFERS_IMAGE_TRANSLATE_Y_PX,
   SPECIAL_OFFERS_IMAGE_WELL_HEIGHT_PX,
   SPECIAL_OFFERS_IMAGE_WELL_RADIUS_PX,
@@ -19,6 +20,13 @@ interface SpecialOfferCardMediaProps {
   images: string[];
   showPlaceholder: boolean;
   onImageError: () => void;
+  layout?: 'default' | 'mobileGrid';
+}
+
+function imageTranslateYPx(layout: SpecialOfferCardMediaProps['layout']): number {
+  const extra =
+    layout === 'mobileGrid' ? SPECIAL_OFFERS_IMAGE_TRANSLATE_Y_MOBILE_EXTRA_PX : 0;
+  return SPECIAL_OFFERS_IMAGE_TRANSLATE_Y_PX + extra;
 }
 
 export function SpecialOfferCardMedia({
@@ -27,7 +35,9 @@ export function SpecialOfferCardMedia({
   images,
   showPlaceholder,
   onImageError,
+  layout = 'default',
 }: SpecialOfferCardMediaProps) {
+  const translateY = imageTranslateYPx(layout);
   if (showPlaceholder) {
     return (
       <div
@@ -40,7 +50,7 @@ export function SpecialOfferCardMedia({
         <div
           className="h-full w-full"
           style={{
-            transform: `translate(-${SPECIAL_OFFERS_IMAGE_NUDGE_LEFT_PX}px, ${SPECIAL_OFFERS_IMAGE_TRANSLATE_Y_PX}px)`,
+            transform: `translate(-${SPECIAL_OFFERS_IMAGE_NUDGE_LEFT_PX}px, ${translateY}px)`,
           }}
         >
           <ProductImagePlaceholder className="h-full w-full" aria-label={title} />
@@ -52,6 +62,7 @@ export function SpecialOfferCardMedia({
   if (images.length > 1) {
     return (
       <SpecialOfferImageSlider
+        layout={layout}
         slug={slug}
         title={title}
         images={images}
@@ -77,7 +88,7 @@ export function SpecialOfferCardMedia({
         fill
         className="object-contain mix-blend-multiply"
         style={{
-          transform: `translate(-${SPECIAL_OFFERS_IMAGE_NUDGE_LEFT_PX}px, ${SPECIAL_OFFERS_IMAGE_TRANSLATE_Y_PX}px)`,
+          transform: `translate(-${SPECIAL_OFFERS_IMAGE_NUDGE_LEFT_PX}px, ${translateY}px)`,
         }}
         sizes="(max-width: 1024px) 260px, 20vw"
         unoptimized

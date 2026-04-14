@@ -12,10 +12,21 @@ import { useTranslation } from '../../lib/i18n-client';
 
 import type { SpecialOfferProduct } from './special-offer-product.types';
 
+export interface UseSpecialOfferCardOptions {
+  /**
+   * When set, missing API images still show a real image (e.g. unified nature asset);
+   * placeholder only if this URL fails to load.
+   */
+  guaranteedImageSrc?: string | null;
+}
+
 /**
  * Wishlist, compare, cart, and image error state for SpecialOfferCard.
  */
-export function useSpecialOfferCard(product: SpecialOfferProduct) {
+export function useSpecialOfferCard(
+  product: SpecialOfferProduct,
+  options?: UseSpecialOfferCardOptions,
+) {
   const { t } = useTranslation();
   const router = useRouter();
   const currency = useCurrency();
@@ -64,7 +75,9 @@ export function useSpecialOfferCard(product: SpecialOfferProduct) {
   };
 
   const hasGallery =
-    (product.images && product.images.length > 0) || Boolean(product.image);
+    Boolean(options?.guaranteedImageSrc) ||
+    (product.images && product.images.length > 0) ||
+    Boolean(product.image);
   const showPlaceholder = !hasGallery || imageError;
 
   return {

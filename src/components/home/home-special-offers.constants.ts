@@ -2,6 +2,19 @@
  * Home «Special offers» strip — layout and Figma-aligned tokens.
  */
 
+/** Local JPEG — one «nature» photo for every tile when unified mode is on. */
+export const SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC =
+  '/images/home/special-offers-unified-nature.jpg';
+
+/**
+ * When true, product thumbnails from the API are ignored and
+ * {@link SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC} is used instead (same look on every card).
+ * On by default in development; production uses real images unless `NEXT_PUBLIC_SPECIAL_OFFERS_UNIFIED_IMAGE=1`.
+ */
+export const SPECIAL_OFFERS_USE_UNIFIED_NATURE_IMAGE =
+  process.env.NODE_ENV !== 'production' ||
+  process.env.NEXT_PUBLIC_SPECIAL_OFFERS_UNIFIED_IMAGE === '1';
+
 /** Horizontal gap between product cards in the carousel (wider gap → slightly narrower slots, still 4-up). */
 export const SPECIAL_OFFERS_CARD_GAP_PX = 24;
 
@@ -189,6 +202,9 @@ export const SPECIAL_OFFERS_IMAGE_NUDGE_LEFT_PX = 4;
  */
 export const SPECIAL_OFFERS_IMAGE_TRANSLATE_Y_PX = 7;
 
+/** On mobile 2×2 cards — extra downward nudge for product photo (add to translateY). */
+export const SPECIAL_OFFERS_IMAGE_TRANSLATE_Y_MOBILE_EXTRA_PX = 3;
+
 /** Gallery pagination — flex gap between dot hit targets (often 0; use overlap for tighter pips). */
 export const SPECIAL_OFFERS_GALLERY_DOTS_GAP_PX = 0;
 
@@ -201,6 +217,9 @@ export const SPECIAL_OFFERS_GALLERY_DOTS_OVERLAP_PX = 6;
  * How far the gallery dot row sits below the image well bottom (CSS `bottom: -value`).
  */
 export const SPECIAL_OFFERS_GALLERY_DOTS_BELOW_WELL_PX = 30;
+
+/** On mobile 2×2 cards — gallery pips sit slightly lower under the image well. */
+export const SPECIAL_OFFERS_GALLERY_DOTS_BELOW_WELL_MOBILE_EXTRA_PX = 3;
 
 /** Pip diameter — visible circle size. */
 export const SPECIAL_OFFERS_GALLERY_PIP_SIZE_PX = 8;
@@ -250,6 +269,9 @@ export const SPECIAL_OFFERS_ACTIONS_STACK_MOBILE_GRID_EXTRA_RIGHT_PX = 14;
 
 /** Vertical space between the product image well and the brand/title text block. */
 export const SPECIAL_OFFERS_IMAGE_TO_TEXT_GAP_PX = 31;
+
+/** On mobile 2×2 cards — shift brand/title/stars/price block down (translateY). */
+export const SPECIAL_OFFERS_CARD_TEXT_SHIFT_DOWN_MOBILE_PX = 2;
 
 /** Color variant swatches beside brand — Figma `305:2171` (Slide). */
 export const SPECIAL_OFFERS_COLOR_SWATCH_SIZE_PX = 11;
