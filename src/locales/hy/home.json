@@ -90,6 +90,13 @@
     "carousel_prev_aria": "Տեղափոխել ձախ",
     "carousel_next_aria": "Տեղափոխել աջ",
     "rail_aria": "Բրենդների տող"
+  },
+  "app_banner": {
+    "section_aria": "Բջջային հավելված — ներբեռնում",
+    "image_alt": "Ներբեռնեք բջջային հավելվածը"
+  },
+  "gradient_banner": {
+    "aria": "Մարքո — պրոմո բաններ"
   }
 }
 

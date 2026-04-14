@@ -90,6 +90,13 @@
     "carousel_prev_aria": "Scroll brands left",
     "carousel_next_aria": "Scroll brands right",
     "rail_aria": "Brands"
+  },
+  "app_banner": {
+    "section_aria": "Mobile app download",
+    "image_alt": "Download the mobile app"
+  },
+  "gradient_banner": {
+    "aria": "MARCO — promo banner"
   }
 }
 

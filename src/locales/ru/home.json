@@ -90,6 +90,13 @@
     "carousel_prev_aria": "Прокрутить влево",
     "carousel_next_aria": "Прокрутить вправо",
     "rail_aria": "Бренды"
+  },
+  "app_banner": {
+    "section_aria": "Мобильное приложение — скачать",
+    "image_alt": "Скачайте мобильное приложение"
+  },
+  "gradient_banner": {
+    "aria": "MARCO — промо-баннер"
   }
 }
 

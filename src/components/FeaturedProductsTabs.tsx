@@ -9,6 +9,8 @@ import { getStoredLanguage, type LanguageCode } from '../lib/language';
 import { t } from '../lib/i18n';
 import { logger } from '../lib/utils/logger';
 import { FeaturedProductsStrip } from './FeaturedProductsStrip';
+import { HomeAppBanner } from './home/HomeAppBanner';
+import { HomeGradientBanner } from './home/HomeGradientBanner';
 import {
   FEATURED_PRODUCTS_TITLE_BAR_THICKNESS_PX,
   FEATURED_PRODUCTS_TITLE_BAR_WIDTH_PERCENT,
@@ -241,6 +243,9 @@ export function FeaturedProductsTabs() {
           onRetryFetch={() => fetchProducts(FILTER_BY_TAB[activeTab])}
         />
       </div>
+
+      <HomeAppBanner language={language} />
+      <HomeGradientBanner language={language} />
     </section>
   );
 }
