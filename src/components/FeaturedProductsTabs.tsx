@@ -22,6 +22,7 @@ import {
   FEATURED_PRODUCTS_TITLE_INSET_LEFT_PX,
   FEATURED_PRODUCTS_VISIBLE_COUNT,
   FEATURED_HOME_BANNERS_BLOCK_PADDING_Y_CLASS,
+  FEATURED_SECTION_PADDING_BOTTOM_CLASS,
   FEATURED_SECTION_PADDING_TOP_CLASS,
 } from './featured-products-tabs.constants';
 import {
@@ -185,7 +186,7 @@ export function FeaturedProductsTabs() {
 
   return (
     <section
-      className={`bg-white pb-16 ${FEATURED_SECTION_PADDING_TOP_CLASS} ${montserratFeatured.className}`}
+      className={`bg-white ${FEATURED_SECTION_PADDING_BOTTOM_CLASS} ${FEATURED_SECTION_PADDING_TOP_CLASS} ${montserratFeatured.className}`}
       style={featuredTitleCssVars}
       aria-labelledby="home-featured-products-heading"
     >

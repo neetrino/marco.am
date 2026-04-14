@@ -122,7 +122,7 @@ export default function ContactPage() {
                 <p>{t('contact.headquarter.hours.weekdays')}</p>
                 <p>{t('contact.headquarter.hours.saturday')}</p>
               </div>
-              <p className="text-orange-500 hover:text-orange-600 font-medium">
+              <p className="text-orange-500 hover:text-orange-600 font-medium whitespace-pre-line">
                 {t('contact.address')}
               </p>
             </div>

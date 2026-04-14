@@ -7,6 +7,7 @@ import { MapPin } from 'lucide-react';
 import { useTranslation } from '../lib/i18n-client';
 import {
   FOOTER_BRAND_COLUMN_GAP_CLASS,
+  FOOTER_BRAND_DESCRIPTION_OVERLAP_CLASS,
   FOOTER_BRAND_LOGO_BOX_CLASS,
   FOOTER_BRAND_LOGO_SHIFT_CLASS,
   FOOTER_COMPANY_LINKS,
@@ -74,7 +75,11 @@ function FooterContactsColumn() {
           strokeWidth={2}
           aria-hidden
         />
-        <p className={`text-xs leading-relaxed ${FOOTER_MUTED_TEXT_CLASS}`}>{t('contact.address')}</p>
+        <p
+          className={`text-xs leading-relaxed whitespace-pre-line ${FOOTER_MUTED_TEXT_CLASS}`}
+        >
+          {t('contact.address')}
+        </p>
       </div>
       <div className="flex items-start gap-3">
         <img
@@ -142,7 +147,7 @@ export function Footer() {
 
   return (
     <footer className={`${FOOTER_SURFACE_CLASS} border-t border-black/5`}>
-      <div className="mx-auto max-w-7xl px-4 pb-10 pt-12 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 pb-10 pt-8 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 items-start gap-12 md:grid-cols-2 lg:grid-cols-4 lg:gap-10">
           <div
             className={`flex max-w-sm flex-col ${FOOTER_BRAND_COLUMN_GAP_CLASS}`}
@@ -157,7 +162,9 @@ export function Footer() {
                 priority={false}
               />
             </div>
-            <p className={`text-xs leading-relaxed ${FOOTER_MUTED_TEXT_CLASS}`}>
+            <p
+              className={`${FOOTER_BRAND_DESCRIPTION_OVERLAP_CLASS} text-xs leading-relaxed ${FOOTER_SURFACE_CLASS} ${FOOTER_MUTED_TEXT_CLASS}`}
+            >
               {t('common.footer.marco.brandDescription')}
             </p>
           </div>
