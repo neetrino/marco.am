@@ -39,8 +39,17 @@ export const REELS_TITLE_LINE_HEIGHT = '1.05';
 /** Mobile: tighter line box so the yellow bar sits closer to the letters. */
 export const REELS_TITLE_LINE_HEIGHT_MOBILE = '0.92';
 
-/** Mobile: distance (px) between “REE” glyphs and the yellow underline. */
-export const REELS_TITLE_EMPHASIS_UNDERLINE_OFFSET_MOBILE_PX = 8;
+/** Vertical gap (px) between the title glyphs and the yellow bar below. */
+export const REELS_TITLE_TEXT_TO_BAR_GAP_PX = 8;
+
+/** Thickness of the yellow bar (matches former `border-b-4`). */
+export const REELS_TITLE_BAR_THICKNESS_PX = 4;
+
+/**
+ * How far the yellow bar extends past the title box (px). Asymmetric: shorter on the left.
+ */
+export const REELS_TITLE_BAR_EXTEND_LEFT_PX = -2;
+export const REELS_TITLE_BAR_EXTEND_RIGHT_PX = 19;
 
 /** Label (Montserrat Regular). */
 export const REELS_LABEL_FONT_SIZE_PX = 14;
@@ -51,14 +60,14 @@ export const REELS_LABEL_LINE_HEIGHT_PX = 21;
 /** Figma — title tracking. */
 export const REELS_TITLE_LETTER_SPACING_PX = -0.6;
 
-/** First N characters of `reels_title` get the yellow underline (Figma: “REE”). */
-export const REELS_TITLE_EMPHASIS_CHAR_COUNT = 3;
-
 /** Nudge title + accent bar slightly right from section alignment (`md+`). */
 export const REELS_TITLE_INSET_LEFT_PX = 40;
 
 /** Mobile: title flush with section content (no extra inset). */
 export const REELS_TITLE_INSET_LEFT_MOBILE_PX = 0;
+
+/** Mobile (`max-md`): nudge entire REELS block slightly right (visual alignment). */
+export const REELS_MOBILE_SECTION_NUDGE_RIGHT_PX = 13;
 
 /** Vertical space between the REELS heading row and the circle rail. */
 export const REELS_TITLE_TO_RAIL_GAP_PX = 32;

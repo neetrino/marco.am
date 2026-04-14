@@ -14,7 +14,6 @@ import {
   REELS_ITEM_HREF,
   REELS_LABEL_FONT_SIZE_PX,
   REELS_LABEL_LINE_HEIGHT_PX,
-  REELS_TITLE_EMPHASIS_CHAR_COUNT,
   REELS_TITLE_INSET_LEFT_PX,
   REELS_TITLE_INSET_LEFT_MOBILE_PX,
   REELS_TITLE_TO_RAIL_GAP_PX,
@@ -30,7 +29,11 @@ import {
   REELS_TITLE_LETTER_SPACING_PX,
   REELS_TITLE_LINE_HEIGHT,
   REELS_TITLE_LINE_HEIGHT_MOBILE,
-  REELS_TITLE_EMPHASIS_UNDERLINE_OFFSET_MOBILE_PX,
+  REELS_MOBILE_SECTION_NUDGE_RIGHT_PX,
+  REELS_TITLE_TEXT_TO_BAR_GAP_PX,
+  REELS_TITLE_BAR_THICKNESS_PX,
+  REELS_TITLE_BAR_EXTEND_LEFT_PX,
+  REELS_TITLE_BAR_EXTEND_RIGHT_PX,
 } from './home-reels.constants';
 import { useHomeReelsCarousel } from './useHomeReelsCarousel';
 
@@ -45,9 +48,9 @@ const reelsTitleCssVars = {
   ['--reels-title-fs-desktop' as string]: REELS_TITLE_FONT_SIZE_CLAMP,
   ['--reels-title-lh-mobile' as string]: REELS_TITLE_LINE_HEIGHT_MOBILE,
   ['--reels-title-lh-desktop' as string]: REELS_TITLE_LINE_HEIGHT,
-  ['--reels-title-emphasis-underline-offset-mobile' as string]: `${REELS_TITLE_EMPHASIS_UNDERLINE_OFFSET_MOBILE_PX}px`,
   ['--reels-title-inset-mobile' as string]: `${REELS_TITLE_INSET_LEFT_MOBILE_PX}px`,
   ['--reels-title-inset-desktop' as string]: `${REELS_TITLE_INSET_LEFT_PX}px`,
+  ['--reels-mobile-section-nudge-x' as string]: `${REELS_MOBILE_SECTION_NUDGE_RIGHT_PX}px`,
 } as const;
 
 const reelsTitleLetterSpacingStyle = {
@@ -60,7 +63,7 @@ const reelsLabelStyle = {
 } as const;
 
 const SECTION_CONTAINER_CLASS =
-  'w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8';
+  'w-full max-w-7xl mx-auto max-md:translate-x-[var(--reels-mobile-section-nudge-x)] px-4 sm:px-6 lg:px-8';
 
 const reelsNavButtonStyle = {
   width: REELS_CAROUSEL_NAV_BUTTON_WIDTH_PX,
@@ -88,8 +91,6 @@ export function HomeReelsSection() {
     useHomeReelsCarousel();
 
   const fullTitle = t('home.reels_title');
-  const titlePrefix = fullTitle.slice(0, REELS_TITLE_EMPHASIS_CHAR_COUNT);
-  const titleSuffix = fullTitle.slice(REELS_TITLE_EMPHASIS_CHAR_COUNT);
 
   const reelsPaginationAriaKeys = [
     'reels_pagination_go_first',
@@ -114,10 +115,23 @@ export function HomeReelsSection() {
               className="font-bold uppercase text-marco-black max-md:[font-size:var(--reels-title-fs-mobile)] max-md:[line-height:var(--reels-title-lh-mobile)] md:[font-size:var(--reels-title-fs-desktop)] md:[line-height:var(--reels-title-lh-desktop)]"
               style={reelsTitleLetterSpacingStyle}
             >
-              <span className="border-b-4 border-marco-yellow max-md:border-b-0 max-md:underline max-md:decoration-marco-yellow max-md:decoration-4 max-md:[text-underline-offset:var(--reels-title-emphasis-underline-offset-mobile)]">
-                {titlePrefix}
+              <span
+                className="relative inline-block whitespace-nowrap"
+                style={{
+                  paddingBottom: `${REELS_TITLE_TEXT_TO_BAR_GAP_PX + REELS_TITLE_BAR_THICKNESS_PX}px`,
+                }}
+              >
+                {fullTitle}
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute bottom-0 bg-marco-yellow"
+                  style={{
+                    left: `${-REELS_TITLE_BAR_EXTEND_LEFT_PX}px`,
+                    width: `calc(100% + ${REELS_TITLE_BAR_EXTEND_LEFT_PX + REELS_TITLE_BAR_EXTEND_RIGHT_PX}px)`,
+                    height: `${REELS_TITLE_BAR_THICKNESS_PX}px`,
+                  }}
+                />
               </span>
-              <span>{titleSuffix}</span>
             </h2>
           </div>
           <div
