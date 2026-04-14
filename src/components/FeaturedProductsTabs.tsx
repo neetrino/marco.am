@@ -10,7 +10,6 @@ import { t } from '../lib/i18n';
 import { logger } from '../lib/utils/logger';
 import { FeaturedProductsStrip } from './FeaturedProductsStrip';
 import {
-  FEATURED_PRODUCTS_SLIDE_PAGE_COUNT,
   FEATURED_PRODUCTS_TITLE_BAR_THICKNESS_PX,
   FEATURED_PRODUCTS_TITLE_BAR_WIDTH_PERCENT,
   FEATURED_PRODUCTS_TITLE_FONT_SIZE_CLAMP,
@@ -32,7 +31,6 @@ import {
   REELS_CAROUSEL_NAV_INSET_RIGHT_MOBILE_PX,
 } from './home/home-reels.constants';
 import type { SpecialOfferProduct } from './home/special-offer-product.types';
-import { useSpecialOffersCarousel } from './home/useSpecialOffersCarousel';
 import { useIsMaxMd } from './home/use-is-max-md';
 
 const montserratFeatured = Montserrat({
@@ -55,11 +53,8 @@ type FilterType = 'new' | 'featured' | 'bestseller';
 
 const TAB_ORDER: FilterType[] = ['new', 'bestseller', 'featured'];
 
-const TAB_LABEL_KEY: Record<FilterType, string> = {
-  new: 'home.featured_products.tab_new',
-  bestseller: 'home.featured_products.tab_bestseller',
-  featured: 'home.featured_products.tab_featured',
-};
+/** Section heading is always «Նորույթներ»; chevrons only change the product filter below. */
+const FEATURED_SECTION_TITLE_KEY = 'home.featured_products.tab_new';
 
 const FILTER_BY_TAB: Record<FilterType, string> = {
   new: 'new',
@@ -99,7 +94,7 @@ const featuredTitleBarStyle = {
 } as const;
 
 /**
- * «Նորույթներ» — special-offer tiles in a 2-slide rail, dots + CTA like «Հատուկ առաջարկներ».
+ * «Նորույթներ» — static 2×4 grid (md+), decorative dots + «Տեսնել ավելին» CTA.
  */
 export function FeaturedProductsTabs() {
   const isMaxMd = useIsMaxMd();
@@ -108,12 +103,6 @@ export function FeaturedProductsTabs() {
   const [products, setProducts] = useState<SpecialOfferProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const railVisible = !loading && products.length > 0;
-  const { scrollerRef, activePage, scrollToPage } = useSpecialOffersCarousel({
-    isRailVisible: railVisible,
-    paginationPageCount: FEATURED_PRODUCTS_SLIDE_PAGE_COUNT,
-  });
 
   useEffect(() => {
     const updateLanguage = () => {
@@ -131,10 +120,6 @@ export function FeaturedProductsTabs() {
       window.removeEventListener('language-updated', handleLanguageUpdate);
     };
   }, []);
-
-  useEffect(() => {
-    scrollToPage(0);
-  }, [activeTab, scrollToPage]);
 
   const fetchProducts = useCallback(
     async (filter: string | null) => {
@@ -191,7 +176,7 @@ export function FeaturedProductsTabs() {
     fetchProducts('new');
   }, [fetchProducts]);
 
-  const activeHeading = t(language, TAB_LABEL_KEY[activeTab]);
+  const sectionHeading = t(language, FEATURED_SECTION_TITLE_KEY);
   const cardLayout = isMaxMd ? 'mobileGrid' : 'default';
 
   return (
@@ -215,7 +200,7 @@ export function FeaturedProductsTabs() {
               style={featuredTitleLetterSpacingStyle}
             >
               <span className="relative inline-block whitespace-nowrap" style={featuredTitleBarPaddingStyle}>
-                {activeHeading}
+                {sectionHeading}
                 <span
                   aria-hidden
                   className="pointer-events-none absolute bottom-0 bg-marco-yellow"
@@ -252,9 +237,6 @@ export function FeaturedProductsTabs() {
           products={products}
           cardLayout={cardLayout}
           isMaxMd={isMaxMd}
-          scrollerRef={scrollerRef}
-          activePage={activePage}
-          scrollToPage={scrollToPage}
           onRetryFetch={() => fetchProducts(FILTER_BY_TAB[activeTab])}
         />
       </div>

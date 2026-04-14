@@ -27,11 +27,12 @@ export const FEATURED_PRODUCTS_TITLE_TO_GRID_GAP_PX = 42;
 /** Nudge «նորույթներ» heading right from the content edge (px). */
 export const FEATURED_PRODUCTS_TITLE_INSET_LEFT_PX = 16;
 
-/** Same strip as special offers: 4×2 desktop, 2×4 mobile. */
+/**
+ * «Նորույթներ»: 8 cards — 2 rows × 4 columns on md+; 2 columns on mobile.
+ */
 export const FEATURED_PRODUCTS_VISIBLE_COUNT = 8;
 
-/** Cards per horizontal slide (4 + 4 = 8). */
-export const FEATURED_PRODUCTS_CARDS_PER_SLIDE = 4;
-
-/** Slider pagination segments (same as desktop special-offers dot count). */
-export const FEATURED_PRODUCTS_SLIDE_PAGE_COUNT = 2;
+/**
+ * Decorative dots above CTA (visual match to «Հատուկ առաջարկներ»; grid is not paginated).
+ */
+export const FEATURED_PRODUCTS_FOOTER_DOT_COUNT = 2;
