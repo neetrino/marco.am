@@ -203,7 +203,30 @@
     "refundPolicy": "Политика возврата",
     "deliveryTerms": "Условия доставки",
     "copyright": "© {year} Shop. Все права защищены.",
-    "paymentMethods": "Способы оплаты:"
+    "paymentMethods": "Способы оплаты",
+    "marco": {
+      "brandDescription": "Ведущая онлайн-платформа Армении для премиальной электроники и бытовой техники с 2010 года. Качество, которому можно доверять.",
+      "headings": {
+        "company": "Компания",
+        "support": "Поддержка",
+        "contacts": "Контакты"
+      },
+      "links": {
+        "companyAbout": "О нас",
+        "companyStores": "Наши магазины",
+        "companyCareers": "Работа у нас",
+        "companyNews": "Новости и блог",
+        "companyFeedback": "Обратная связь",
+        "supportDelivery": "Доставка и возврат",
+        "supportInstallment": "Условия рассрочки",
+        "supportWarranty": "Официальная гарантия",
+        "supportFaq": "Частые вопросы",
+        "supportService": "Сервисные центры"
+      },
+      "copyrightBefore": "Copyright © {year} | Все права защищены | Создано ",
+      "copyrightAfter": "",
+      "creditStudio": "Neetrino IT Company"
+    }
   },
   "product": {
     "product": "товар",

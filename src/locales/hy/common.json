@@ -204,7 +204,30 @@
     "refundPolicy": "Փոխհատուցման քաղաքականություն",
     "deliveryTerms": "Առաքման պայմաններ",
     "copyright": "© {year} Խանութ: Բոլոր իրավունքները պաշտպանված են:",
-    "paymentMethods": "Վճարման եղանակներ:"
+    "paymentMethods": "Վճարման եղանակներ",
+    "marco": {
+      "brandDescription": "Հայաստանի առաջատար առցանց հարթակը պրեմիում էլեկտրոնիկայի և կենցաղային տեխնիկայի համար սկսած 2010 թվականից: Որակ, որին կարող եք վստահել:",
+      "headings": {
+        "company": "Ընկերություն",
+        "support": "Աջակցություն",
+        "contacts": "Կոնտակտներ"
+      },
+      "links": {
+        "companyAbout": "Մեր մասին",
+        "companyStores": "Մեր խանութները",
+        "companyCareers": "Աշխատանք մեզ մոտ",
+        "companyNews": "Նորություններ և բլոգ",
+        "companyFeedback": "Հետադարձ կապ",
+        "supportDelivery": "Առաքում և վերադարձ",
+        "supportInstallment": "Ապառիկի պայմաններ",
+        "supportWarranty": "Պաշտոնական երաշխիք",
+        "supportFaq": "Հաճախ տրվող հարցեր",
+        "supportService": "Սպասարկման կենտրոններ"
+      },
+      "copyrightBefore": "Copyright © {year} | Բոլոր իրավունքները պաշտպանված են | Ստեղծվել է ",
+      "copyrightAfter": " կողմից",
+      "creditStudio": "Neetrino IT Company"
+    }
   },
   "product": {
     "product": "ապրանք",

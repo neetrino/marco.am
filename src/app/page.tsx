@@ -2,7 +2,6 @@ import { HeroCarousel } from '../components/HeroCarousel';
 import { HomeMobileMessageCta } from '../components/home/HomeMobileMessageCta';
 import { HomeReelsSection } from '../components/home/HomeReelsSection';
 
-import { FeaturesSection } from '../components/FeaturesSection';
 import { FeaturedProductsTabs } from '../components/FeaturedProductsTabs';
 import { HomeSpecialOffersSection } from '../components/home/HomeSpecialOffersSection';
 
@@ -18,11 +17,8 @@ export default async function HomePage() {
 
       <HomeSpecialOffersSection />
 
-      {/* Featured Products with Tabs */}
+      {/* Featured Products with Tabs + two home banners (gradient + secondary) */}
       <FeaturedProductsTabs />
-
-      {/* Features Section */}
-      <FeaturesSection />
     </div>
   );
 }

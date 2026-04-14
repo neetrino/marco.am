@@ -206,7 +206,30 @@
     "refundPolicy": "Refund Policy",
     "deliveryTerms": "Delivery Terms",
     "copyright": "© {year} Shop. All rights reserved.",
-    "paymentMethods": "Payment Methods:"
+    "paymentMethods": "Payment methods",
+    "marco": {
+      "brandDescription": "Armenia's leading online platform for premium electronics and home appliances since 2010. Quality you can trust.",
+      "headings": {
+        "company": "Company",
+        "support": "Support",
+        "contacts": "Contacts"
+      },
+      "links": {
+        "companyAbout": "About us",
+        "companyStores": "Our stores",
+        "companyCareers": "Careers",
+        "companyNews": "News & blog",
+        "companyFeedback": "Contact us",
+        "supportDelivery": "Delivery & returns",
+        "supportInstallment": "Installment terms",
+        "supportWarranty": "Official warranty",
+        "supportFaq": "FAQ",
+        "supportService": "Service centers"
+      },
+      "copyrightBefore": "Copyright © {year} | All rights reserved | Created by ",
+      "copyrightAfter": "",
+      "creditStudio": "Neetrino IT Company"
+    }
   },
   "product": {
     "product": "product",
