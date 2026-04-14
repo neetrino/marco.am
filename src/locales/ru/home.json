@@ -96,7 +96,12 @@
     "image_alt": "Скачайте мобильное приложение"
   },
   "gradient_banner": {
-    "aria": "MARCO — промо-баннер"
+    "aria": "MARCO — промо-баннер",
+    "headline": "BANNER"
+  },
+  "secondary_banner": {
+    "aria": "MARCO — промо-блок",
+    "cta": "ЕЩЁ"
   }
 }
 

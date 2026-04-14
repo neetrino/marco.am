@@ -96,7 +96,12 @@
     "image_alt": "Download the mobile app"
   },
   "gradient_banner": {
-    "aria": "MARCO — promo banner"
+    "aria": "MARCO — promo banner",
+    "headline": "BANNER"
+  },
+  "secondary_banner": {
+    "aria": "MARCO — promotional area",
+    "cta": "MORE"
   }
 }
 
