@@ -48,17 +48,20 @@ export const SPECIAL_OFFERS_SCROLLER_PADDING_BOTTOM_DESKTOP_PX = 4;
 export const SPECIAL_OFFERS_SCROLL_FRACTION = 0.85;
 
 /** Section title (Montserrat Bold) — «Հատուկ առաջարկներ» / special offers heading. */
-export const SPECIAL_OFFERS_TITLE_FONT_SIZE_CLAMP = 'clamp(20px, 3.5vw, 50px)';
+export const SPECIAL_OFFERS_TITLE_FONT_SIZE_CLAMP = 'clamp(17px, 3vw, 42px)';
 
 /** Stacked mobile heading — larger type than `SPECIAL_OFFERS_TITLE_FONT_SIZE_CLAMP` minimum. */
 export const SPECIAL_OFFERS_TITLE_FONT_SIZE_CLAMP_MOBILE =
-  'clamp(27px, 6vw, 50px)';
+  'clamp(22px, 5vw, 42px)';
 
 /** Title tracking from Figma. */
 export const SPECIAL_OFFERS_TITLE_LETTER_SPACING_PX = -0.6;
 
 /** Space between heading row (yellow title line) and card rail. */
 export const SPECIAL_OFFERS_TITLE_TO_RAIL_GAP_PX = 59;
+
+/** Horizontal inset of the title block from the section content edge (px). */
+export const SPECIAL_OFFERS_TITLE_INSET_LEFT_PX = 20;
 
 /**
  * Yellow underline under the highlighted title segment — narrower than the word (`border-b-4` width).

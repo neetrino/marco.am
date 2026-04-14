@@ -72,6 +72,8 @@
   "featured_products": {
     "title": "Рекомендуемые товары",
     "subtitle": "Три быстрых выбора: Новинки, Бестселлеры и Рекомендуемые товары",
+    "carousel_prev_aria": "Предыдущий раздел",
+    "carousel_next_aria": "Следующий раздел",
     "tab_new": "НОВИНКИ",
     "tab_bestseller": "БЕСТСЕЛЛЕРЫ",
     "tab_featured": "РЕКОМЕНДУЕМЫЕ",

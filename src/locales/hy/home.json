@@ -72,7 +72,9 @@
   "featured_products": {
     "title": "Առաջարկվող ապրանքներ",
     "subtitle": "Երեք արագ ընտրություն. Նոր ժամանումներ, Լավագույն վաճառքներ և Առաջարկվող ընտրություններ",
-    "tab_new": "ՆՈՐ",
+    "carousel_prev_aria": "Նախորդ ընտրանք",
+    "carousel_next_aria": "Հաջորդ ընտրանք",
+    "tab_new": "ՆՈՐՈՒՅԹՆԵՐ",
     "tab_bestseller": "ԼԱՎԱԳՈՒՅՆ ՎԱՃԱՌՔ",
     "tab_featured": "ԱՌԱՋԱՐԿՎՈՂ",
     "ariaShowProducts": "Ցուցադրել {label} ապրանքներ",

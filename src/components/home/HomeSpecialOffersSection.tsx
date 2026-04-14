@@ -36,6 +36,7 @@ import {
   SPECIAL_OFFERS_TITLE_HIGHLIGHT_UNDERLINE_WIDTH_PERCENT,
   SPECIAL_OFFERS_TITLE_LETTER_SPACING_PX,
   SPECIAL_OFFERS_TITLE_TO_RAIL_GAP_PX,
+  SPECIAL_OFFERS_TITLE_INSET_LEFT_PX,
   SPECIAL_OFFERS_MOBILE_GRID_COLUMN_GAP_PX,
   SPECIAL_OFFERS_MOBILE_GRID_PAGE_SIZE,
   SPECIAL_OFFERS_MOBILE_GRID_ROW_GAP_PX,
@@ -179,7 +180,10 @@ export function HomeSpecialOffersSection() {
           className="flex flex-row flex-wrap items-end justify-between gap-4"
           style={{ marginBottom: `${SPECIAL_OFFERS_TITLE_TO_RAIL_GAP_PX}px` }}
         >
-          <div className="min-w-0 max-w-full pl-2 sm:pl-6 lg:pl-10">
+          <div
+            className="min-w-0 max-w-full"
+            style={{ paddingLeft: `${SPECIAL_OFFERS_TITLE_INSET_LEFT_PX}px` }}
+          >
             <h2
               id="home-special-offers-heading"
               className="font-bold uppercase text-marco-black max-md:[font-size:var(--special-offers-title-fs-mobile)] md:[font-size:var(--special-offers-title-fs)]"

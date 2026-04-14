@@ -72,7 +72,9 @@
   "featured_products": {
     "title": "Featured Products",
     "subtitle": "Three quick choices: New Arrivals, Best Sellers and Featured Selections",
-    "tab_new": "NEW",
+    "carousel_prev_aria": "Previous selection",
+    "carousel_next_aria": "Next selection",
+    "tab_new": "NEW ARRIVALS",
     "tab_bestseller": "BESTSELLER",
     "tab_featured": "FEATURED",
     "ariaShowProducts": "Show {label} products",

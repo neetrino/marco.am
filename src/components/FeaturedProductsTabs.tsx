@@ -1,11 +1,31 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Montserrat } from 'next/font/google';
+
 import { apiClient } from '../lib/api-client';
 import { getStoredLanguage, type LanguageCode } from '../lib/language';
 import { ProductCard } from './ProductCard';
 import { t } from '../lib/i18n';
+import { logger } from '../lib/utils/logger';
 import type { ProductLabel } from './ProductLabels';
+import {
+  FEATURED_PRODUCTS_NAV_BUTTON_PX,
+  FEATURED_PRODUCTS_TITLE_BAR_THICKNESS_PX,
+  FEATURED_PRODUCTS_TITLE_BAR_WIDTH_PERCENT,
+  FEATURED_PRODUCTS_TITLE_FONT_SIZE_CLAMP,
+  FEATURED_PRODUCTS_TITLE_LETTER_SPACING_PX,
+  FEATURED_PRODUCTS_TITLE_LINE_HEIGHT,
+  FEATURED_PRODUCTS_TITLE_TEXT_TO_BAR_GAP_PX,
+  FEATURED_PRODUCTS_TITLE_TO_GRID_GAP_PX,
+} from './featured-products-tabs.constants';
+
+const montserratFeatured = Montserrat({
+  subsets: ['latin'],
+  weight: ['700'],
+  display: 'swap',
+});
 
 interface Product {
   id: string;
@@ -19,9 +39,12 @@ interface Product {
     id: string;
     name: string;
   } | null;
-  colors?: Array<{ value: string; imageUrl?: string | null; colors?: string[] | null }>; // Available colors from variants with imageUrl and colors hex
-  sizes?: Array<{ value: string; imageUrl?: string | null }>; // Available sizes from variants
-  attributes?: Record<string, Array<{ valueId?: string; value: string; label: string; imageUrl?: string | null; colors?: string[] | null }>>; // Other attributes (not color or size)
+  colors?: Array<{ value: string; imageUrl?: string | null; colors?: string[] | null }>;
+  sizes?: Array<{ value: string; imageUrl?: string | null }>;
+  attributes?: Record<
+    string,
+    Array<{ valueId?: string; value: string; label: string; imageUrl?: string | null; colors?: string[] | null }>
+  >;
   originalPrice?: number | null;
   discountPercent?: number | null;
   labels?: ProductLabel[];
@@ -39,43 +62,68 @@ interface ProductsResponse {
 
 type FilterType = 'new' | 'featured' | 'bestseller';
 
-interface Tab {
-  id: FilterType;
-  label: string;
-  filter: string | null;
-}
-
-// Tabs will be generated dynamically with translations
-
 const PRODUCTS_PER_PAGE = 10;
+
 const MOBILE_GRID_LAYOUT =
   'grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5';
 
+const TAB_ORDER: FilterType[] = ['new', 'bestseller', 'featured'];
+
+const TAB_LABEL_KEY: Record<FilterType, string> = {
+  new: 'home.featured_products.tab_new',
+  bestseller: 'home.featured_products.tab_bestseller',
+  featured: 'home.featured_products.tab_featured',
+};
+
+const FILTER_BY_TAB: Record<FilterType, string> = {
+  new: 'new',
+  bestseller: 'bestseller',
+  featured: 'featured',
+};
+
+const FEATURED_NAV_BUTTON_CLASS =
+  'flex shrink-0 items-center justify-center overflow-visible rounded-full border border-gray-200 bg-white p-0 transition-colors hover:border-marco-yellow hover:bg-marco-yellow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marco-black';
+
+const FEATURED_NAV_ICON_CLASS = 'h-3 w-3 shrink-0 text-marco-black';
+
+const featuredTitleCssVars = {
+  ['--fp-title-fs' as string]: FEATURED_PRODUCTS_TITLE_FONT_SIZE_CLAMP,
+  ['--fp-title-lh' as string]: FEATURED_PRODUCTS_TITLE_LINE_HEIGHT,
+  ['--fp-nav-btn' as string]: `${FEATURED_PRODUCTS_NAV_BUTTON_PX}px`,
+} as const;
+
+const featuredTitleLetterSpacingStyle = {
+  letterSpacing: `${FEATURED_PRODUCTS_TITLE_LETTER_SPACING_PX}px`,
+} as const;
+
+const featuredTitleBarPaddingStyle = {
+  paddingBottom: `${FEATURED_PRODUCTS_TITLE_TEXT_TO_BAR_GAP_PX + FEATURED_PRODUCTS_TITLE_BAR_THICKNESS_PX}px`,
+} as const;
+
+const featuredTitleBarStyle = {
+  left: 0,
+  width: `${FEATURED_PRODUCTS_TITLE_BAR_WIDTH_PERCENT}%`,
+  height: `${FEATURED_PRODUCTS_TITLE_BAR_THICKNESS_PX}px`,
+} as const;
+
 /**
- * FeaturedProductsTabs Component
- * Displays products with tabs for filtering (NEW OFFERS, NEW, FEATURED, TOP SELLERS)
- * Similar to the reference design with underlined active tab
+ * Featured products — Figma header (large title, yellow bar, round prev/next cycling tabs).
  */
 export function FeaturedProductsTabs() {
-  // Use state for language to prevent hydration mismatch
-  // Start with 'en' on server, update on client mount
   const [language, setLanguage] = useState<LanguageCode>('en');
   const [activeTab, setActiveTab] = useState<FilterType>('new');
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Update language on mount and when language changes
   useEffect(() => {
     const updateLanguage = () => {
       const storedLang = getStoredLanguage();
       setLanguage(storedLang);
     };
 
-    // Update immediately on mount
     updateLanguage();
 
-    // Listen to language-updated events
     const handleLanguageUpdate = () => {
       updateLanguage();
     };
@@ -86,113 +134,118 @@ export function FeaturedProductsTabs() {
     };
   }, []);
 
-  // Generate tabs with translations (memoized based on language)
-  const tabs: Tab[] = [
-    { id: 'new', label: t(language, 'home.featured_products.tab_new'), filter: 'new' },
-    { id: 'bestseller', label: t(language, 'home.featured_products.tab_bestseller'), filter: 'bestseller' },
-    { id: 'featured', label: t(language, 'home.featured_products.tab_featured'), filter: 'featured' },
-  ];
+  const fetchProducts = useCallback(
+    async (filter: string | null) => {
+      try {
+        setLoading(true);
+        setError(null);
 
-  /**
-   * Fetch products based on active filter
-   */
-  const fetchProducts = useCallback(async (filter: string | null) => {
-    try {
-      setLoading(true);
-      setError(null);
+        const currentLang = language;
+        const params: Record<string, string> = {
+          page: '1',
+          limit: PRODUCTS_PER_PAGE.toString(),
+          lang: currentLang,
+        };
 
-      const currentLang = language;
-      const params: Record<string, string> = {
-        page: '1',
-        limit: PRODUCTS_PER_PAGE.toString(),
-        lang: currentLang,
-      };
+        if (filter) {
+          params.filter = filter;
+        }
 
-      // Add filter if provided
-      if (filter) {
-        params.filter = filter;
+        const response = await apiClient.get<ProductsResponse>('/api/v1/products', {
+          params,
+        });
+
+        setProducts((response.data || []).slice(0, PRODUCTS_PER_PAGE));
+      } catch (err) {
+        logger.error('[FeaturedProductsTabs] fetch failed', { error: err });
+        setError(t(language, 'home.featured_products.errorLoading'));
+        setProducts([]);
+      } finally {
+        setLoading(false);
       }
+    },
+    [language],
+  );
 
-      const response = await apiClient.get<ProductsResponse>('/api/v1/products', {
-        params,
-      });
+  const handleTabChange = useCallback(
+    (tabId: FilterType) => {
+      setActiveTab(tabId);
+      fetchProducts(FILTER_BY_TAB[tabId]);
+    },
+    [fetchProducts],
+  );
 
-      setProducts((response.data || []).slice(0, PRODUCTS_PER_PAGE));
-    } catch (err) {
-      console.error('[FeaturedProductsTabs] Error:', err);
-      setError(t(language, 'home.featured_products.errorLoading'));
-      setProducts([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [language]);
+  const shiftTab = useCallback(
+    (direction: -1 | 1) => {
+      const index = TAB_ORDER.indexOf(activeTab);
+      const nextId = TAB_ORDER[(index + direction + TAB_ORDER.length) % TAB_ORDER.length];
+      handleTabChange(nextId);
+    },
+    [activeTab, handleTabChange],
+  );
 
-  /**
-   * Handle tab change
-   */
-  const handleTabChange = (tabId: FilterType) => {
-    setActiveTab(tabId);
-    const tab = tabs.find((t) => t.id === tabId);
-    fetchProducts(tab?.filter || null);
-  };
-
-  // Load products on mount (default "NEW")
   useEffect(() => {
     fetchProducts('new');
   }, [fetchProducts]);
 
-  return (
-    <section className="py-16 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Title */}
-        <h2 className="text-3xl font-bold text-gray-900 text-center">
-          {t(language, 'home.featured_products.title')}
-        </h2>
-        <p className="mt-3 mb-8 text-base text-gray-600 text-center">
-          {t(language, 'home.featured_products.subtitle')}
-        </p>
+  const activeHeading = t(language, TAB_LABEL_KEY[activeTab]);
 
-        {/* Tabs Navigation */}
-        <div className="flex justify-center items-center gap-6 md:gap-8 mb-8 flex-wrap">
-          {tabs.map((tab) => {
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => handleTabChange(tab.id)}
-                className={`
-                  relative px-4 py-2 text-sm font-medium transition-colors duration-200
-                  ${isActive 
-                    ? 'text-blue-600' 
-                    : 'text-gray-600 hover:text-gray-900'
-                  }
-                `}
-                aria-label={t(language, 'home.featured_products.ariaShowProducts').replace('{label}', tab.label)}
-                aria-pressed={isActive}
-              >
-                {tab.label}
-                {/* Active indicator - underline */}
-                {isActive && (
-                  <span 
-                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"
-                    aria-hidden="true"
-                  />
-                )}
-              </button>
-            );
-          })}
+  return (
+    <section
+      className={`bg-white py-16 ${montserratFeatured.className}`}
+      style={featuredTitleCssVars}
+      aria-labelledby="home-featured-products-heading"
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div
+          className="flex flex-row flex-wrap items-end justify-between gap-4"
+          style={{ marginBottom: `${FEATURED_PRODUCTS_TITLE_TO_GRID_GAP_PX}px` }}
+        >
+          <div className="min-w-0">
+            <h2
+              id="home-featured-products-heading"
+              className="font-bold uppercase text-marco-black [font-size:var(--fp-title-fs)] [line-height:var(--fp-title-lh)]"
+              style={featuredTitleLetterSpacingStyle}
+            >
+              <span className="relative inline-block whitespace-nowrap" style={featuredTitleBarPaddingStyle}>
+                {activeHeading}
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute bottom-0 bg-marco-yellow"
+                  style={featuredTitleBarStyle}
+                />
+              </span>
+            </h2>
+          </div>
+          <div className="flex shrink-0 flex-row gap-2">
+            <button
+              type="button"
+              onClick={() => shiftTab(-1)}
+              className={`${FEATURED_NAV_BUTTON_CLASS} h-[var(--fp-nav-btn)] w-[var(--fp-nav-btn)]`}
+              aria-label={t(language, 'home.featured_products.carousel_prev_aria')}
+            >
+              <ChevronLeft className={FEATURED_NAV_ICON_CLASS} strokeWidth={2} aria-hidden />
+            </button>
+            <button
+              type="button"
+              onClick={() => shiftTab(1)}
+              className={`${FEATURED_NAV_BUTTON_CLASS} h-[var(--fp-nav-btn)] w-[var(--fp-nav-btn)]`}
+              aria-label={t(language, 'home.featured_products.carousel_next_aria')}
+            >
+              <ChevronRight className={FEATURED_NAV_ICON_CLASS} strokeWidth={2} aria-hidden />
+            </button>
+          </div>
         </div>
 
-        {/* Products Grid */}
         {loading ? (
           <div className={MOBILE_GRID_LAYOUT}>
             {[...Array(PRODUCTS_PER_PAGE)].map((_, i) => (
               <div key={i} className="bg-white rounded-lg overflow-hidden animate-pulse">
-                <div className="aspect-square bg-gray-200"></div>
+                <div className="aspect-square bg-gray-200" />
                 <div className="p-4 space-y-2">
-                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                  <div className="h-5 bg-gray-200 rounded w-1/3"></div>
+                  <div className="h-4 bg-gray-200 rounded w-3/4" />
+                  <div className="h-3 bg-gray-200 rounded w-1/2" />
+                  <div className="h-5 bg-gray-200 rounded w-1/3" />
                 </div>
               </div>
             ))}
@@ -201,10 +254,8 @@ export function FeaturedProductsTabs() {
           <div className="text-center py-12">
             <p className="text-red-600 mb-4">{error}</p>
             <button
-              onClick={() => {
-                const tab = tabs.find((t) => t.id === activeTab);
-                fetchProducts(tab?.filter || null);
-              }}
+              type="button"
+              onClick={() => fetchProducts(FILTER_BY_TAB[activeTab])}
               className="px-4 py-2 bg-gray-900 text-white rounded hover:bg-gray-800 transition-colors"
             >
               {t(language, 'home.featured_products.tryAgain')}
@@ -225,4 +276,3 @@ export function FeaturedProductsTabs() {
     </section>
   );
 }
-
