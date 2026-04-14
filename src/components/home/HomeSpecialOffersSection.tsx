@@ -23,6 +23,7 @@ import {
   SPECIAL_OFFERS_PAGINATION_DOT_SIZE_PX,
   SPECIAL_OFFERS_RAIL_TO_PAGINATION_GAP_PX,
   SPECIAL_OFFERS_TITLE_FONT_SIZE_CLAMP,
+  SPECIAL_OFFERS_TITLE_FONT_SIZE_CLAMP_MOBILE,
   SPECIAL_OFFERS_TITLE_HIGHLIGHT_UNDERLINE_GAP_PX,
   SPECIAL_OFFERS_TITLE_HIGHLIGHT_UNDERLINE_HEIGHT_PX,
   SPECIAL_OFFERS_TITLE_HIGHLIGHT_UNDERLINE_WIDTH_PERCENT,
@@ -107,6 +108,8 @@ export function HomeSpecialOffersSection() {
 
   const titleHighlight = tr('home.special_offers.title_highlight');
   const titleRest = tr('home.special_offers.title_rest');
+  const titleHighlightTrimmed = titleHighlight.trim();
+  const titleRestTrimmed = titleRest.trim();
 
   const specialOffersNavButtonStyle = {
     width: SPECIAL_OFFERS_CAROUSEL_NAV_BUTTON_WIDTH_PX,
@@ -132,7 +135,12 @@ export function HomeSpecialOffersSection() {
 
   return (
     <section
-      className={`bg-white py-10 sm:py-12 ${montserratSpecial.className}`}
+      className={`bg-white pb-10 pt-0 max-md:-mt-3 sm:py-12 ${montserratSpecial.className}`}
+      style={{
+        ['--special-offers-title-fs' as string]: SPECIAL_OFFERS_TITLE_FONT_SIZE_CLAMP,
+        ['--special-offers-title-fs-mobile' as string]:
+          SPECIAL_OFFERS_TITLE_FONT_SIZE_CLAMP_MOBILE,
+      }}
       aria-labelledby="home-special-offers-heading"
     >
       <div className={SECTION_CONTAINER_CLASS}>
@@ -143,27 +151,49 @@ export function HomeSpecialOffersSection() {
           <div className="min-w-0 max-w-full pl-2 sm:pl-6 lg:pl-10">
             <h2
               id="home-special-offers-heading"
-              className="font-bold uppercase text-marco-black"
+              className="font-bold uppercase text-marco-black max-md:[font-size:var(--special-offers-title-fs-mobile)] md:[font-size:var(--special-offers-title-fs)]"
               style={{
-                fontSize: SPECIAL_OFFERS_TITLE_FONT_SIZE_CLAMP,
                 letterSpacing: `${SPECIAL_OFFERS_TITLE_LETTER_SPACING_PX}px`,
                 lineHeight: 1.05,
               }}
             >
-              <span className="relative inline-block text-marco-yellow">
-                {titleHighlight}
-                <span
-                  aria-hidden
-                  className="absolute left-0 bg-marco-yellow"
-                  style={{
-                    top: '100%',
-                    marginTop: SPECIAL_OFFERS_TITLE_HIGHLIGHT_UNDERLINE_GAP_PX,
-                    width: `${SPECIAL_OFFERS_TITLE_HIGHLIGHT_UNDERLINE_WIDTH_PERCENT}%`,
-                    height: SPECIAL_OFFERS_TITLE_HIGHLIGHT_UNDERLINE_HEIGHT_PX,
-                  }}
-                />
+              <span className="max-md:hidden">
+                <span className="relative inline-block text-marco-yellow">
+                  {titleHighlight}
+                  <span
+                    aria-hidden
+                    className="absolute left-0 bg-marco-yellow"
+                    style={{
+                      top: '100%',
+                      marginTop: SPECIAL_OFFERS_TITLE_HIGHLIGHT_UNDERLINE_GAP_PX,
+                      width: `${SPECIAL_OFFERS_TITLE_HIGHLIGHT_UNDERLINE_WIDTH_PERCENT}%`,
+                      height: SPECIAL_OFFERS_TITLE_HIGHLIGHT_UNDERLINE_HEIGHT_PX,
+                    }}
+                  />
+                </span>
+                <span>{titleRest}</span>
               </span>
-              <span>{titleRest}</span>
+              <span className="flex flex-col items-start md:hidden">
+                <span className="text-marco-yellow">{titleHighlightTrimmed}</span>
+                <span
+                  className="relative mt-0.5 inline-block text-marco-black"
+                  style={{
+                    paddingBottom:
+                      SPECIAL_OFFERS_TITLE_HIGHLIGHT_UNDERLINE_GAP_PX +
+                      SPECIAL_OFFERS_TITLE_HIGHLIGHT_UNDERLINE_HEIGHT_PX,
+                  }}
+                >
+                  {titleRestTrimmed}
+                  <span
+                    aria-hidden
+                    className="pointer-events-none absolute bottom-0 left-0 bg-marco-yellow"
+                    style={{
+                      width: `${SPECIAL_OFFERS_TITLE_HIGHLIGHT_UNDERLINE_WIDTH_PERCENT}%`,
+                      height: SPECIAL_OFFERS_TITLE_HIGHLIGHT_UNDERLINE_HEIGHT_PX,
+                    }}
+                  />
+                </span>
+              </span>
             </h2>
           </div>
           <div

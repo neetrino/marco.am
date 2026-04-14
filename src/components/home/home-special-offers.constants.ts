@@ -14,6 +14,10 @@ export const SPECIAL_OFFERS_SCROLL_FRACTION = 0.85;
 /** Section title (Montserrat Bold) — «Հատուկ առաջարկներ» / special offers heading. */
 export const SPECIAL_OFFERS_TITLE_FONT_SIZE_CLAMP = 'clamp(20px, 3.5vw, 50px)';
 
+/** Stacked mobile heading — larger type than `SPECIAL_OFFERS_TITLE_FONT_SIZE_CLAMP` minimum. */
+export const SPECIAL_OFFERS_TITLE_FONT_SIZE_CLAMP_MOBILE =
+  'clamp(27px, 6vw, 50px)';
+
 /** Title tracking from Figma. */
 export const SPECIAL_OFFERS_TITLE_LETTER_SPACING_PX = -0.6;
 
