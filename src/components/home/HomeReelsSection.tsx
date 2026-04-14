@@ -33,7 +33,7 @@ import {
   REELS_TITLE_LINE_HEIGHT,
   REELS_TITLE_LINE_HEIGHT_MOBILE,
   REELS_MOBILE_RAIL_BLEED_LEFT_PX,
-  REELS_MOBILE_SECTION_NUDGE_RIGHT_PX,
+  REELS_MOBILE_TITLE_NUDGE_RIGHT_PX,
   REELS_TITLE_TEXT_TO_BAR_GAP_PX,
   REELS_TITLE_BAR_THICKNESS_PX,
   REELS_TITLE_BAR_EXTEND_LEFT_PX,
@@ -68,7 +68,7 @@ const reelsTitleCssVars = {
   ['--reels-title-lh-desktop' as string]: REELS_TITLE_LINE_HEIGHT,
   ['--reels-title-inset-mobile' as string]: `${REELS_TITLE_INSET_LEFT_MOBILE_PX}px`,
   ['--reels-title-inset-desktop' as string]: `${REELS_TITLE_INSET_LEFT_PX}px`,
-  ['--reels-mobile-section-nudge-x' as string]: `${REELS_MOBILE_SECTION_NUDGE_RIGHT_PX}px`,
+  ['--reels-mobile-title-nudge-x' as string]: `${REELS_MOBILE_TITLE_NUDGE_RIGHT_PX}px`,
   ['--reels-mobile-rail-bleed-left' as string]: `${REELS_MOBILE_RAIL_BLEED_LEFT_PX}px`,
   ['--reels-nav-btn-w' as string]: `${REELS_CAROUSEL_NAV_BUTTON_WIDTH_PX}px`,
   ['--reels-nav-btn-h' as string]: `${REELS_CAROUSEL_NAV_BUTTON_HEIGHT_PX}px`,
@@ -90,9 +90,9 @@ const reelsLabelStyle = {
 const SECTION_CONTAINER_CLASS =
   'w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8';
 
-/** Mobile: shift title + rail + dots; carousel arrows use their own inset (not this translate). */
-const REELS_MOBILE_CONTENT_NUDGE_CLASS =
-  'max-md:translate-x-[var(--reels-mobile-section-nudge-x)]';
+/** Mobile: shift REELS heading + yellow bar only; rail and pagination are not translated. */
+const REELS_MOBILE_TITLE_NUDGE_CLASS =
+  'max-md:translate-x-[var(--reels-mobile-title-nudge-x)]';
 
 /** Pill: default white + gray border; hover filled marco-yellow (like former primary/black fill). */
 const REELS_NAV_BUTTON_CLASS =
@@ -135,7 +135,7 @@ export function HomeReelsSection() {
           style={{ marginBottom: `${REELS_TITLE_TO_RAIL_GAP_PX}px` }}
         >
           <div
-            className={`min-w-0 max-md:[padding-left:var(--reels-title-inset-mobile)] md:[padding-left:var(--reels-title-inset-desktop)] ${REELS_MOBILE_CONTENT_NUDGE_CLASS}`}
+            className={`min-w-0 max-md:[padding-left:var(--reels-title-inset-mobile)] md:[padding-left:var(--reels-title-inset-desktop)] ${REELS_MOBILE_TITLE_NUDGE_CLASS}`}
           >
             <h2
               id="home-reels-heading"
@@ -191,7 +191,7 @@ export function HomeReelsSection() {
 
         <div
           ref={scrollerRef}
-          className={`flex min-w-0 flex-row flex-nowrap justify-start gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] max-md:[margin-left:calc(-1*var(--reels-mobile-rail-bleed-left))] md:justify-center md:gap-11 md:ml-0 [&::-webkit-scrollbar]:hidden ${REELS_MOBILE_CONTENT_NUDGE_CLASS}`}
+          className="flex min-w-0 flex-row flex-nowrap justify-start gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] max-md:[margin-left:calc(-1*var(--reels-mobile-rail-bleed-left))] md:justify-center md:gap-11 md:ml-0 [&::-webkit-scrollbar]:hidden"
           style={{
             scrollSnapType: 'x mandatory',
             ['--reels-mobile-tile-basis' as string]: REELS_MOBILE_TILE_BASIS_CSS,
@@ -243,7 +243,7 @@ export function HomeReelsSection() {
         </div>
 
         <div
-          className={`flex flex-row items-center justify-center ${REELS_MOBILE_CONTENT_NUDGE_CLASS}`}
+          className="flex flex-row items-center justify-center"
           style={{
             marginTop: `${REELS_RAIL_TO_PAGINATION_GAP_PX}px`,
             gap: `${REELS_PAGINATION_DOT_GAP_PX}px`,
