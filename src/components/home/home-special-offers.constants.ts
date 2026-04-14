@@ -88,6 +88,15 @@ export const SPECIAL_OFFERS_WARRANTY_BADGE_MIN_HEIGHT_PX = 35;
 /** Figma `101:3350` — corner radius (`rounded-[16px]`). */
 export const SPECIAL_OFFERS_WARRANTY_BADGE_RADIUS_PX = 14;
 
+/** Warranty pill inset from card top — matches former `top-3`. */
+export const SPECIAL_OFFERS_WARRANTY_BADGE_TOP_INSET_PX = 12;
+
+/** Warranty pill inset from card left — default rail / desktop (`left-3`). */
+export const SPECIAL_OFFERS_WARRANTY_BADGE_LEFT_INSET_PX = 12;
+
+/** Tighter left inset on mobile 2×2 grid (e.g. «3 տարի երաշխիք»). */
+export const SPECIAL_OFFERS_WARRANTY_BADGE_LEFT_INSET_MOBILE_GRID_PX = 6;
+
 /**
  * Bottom-right scallop — circle diameter. Larger circle = fuller, rounder arc at the corner.
  */
@@ -151,13 +160,13 @@ export const SPECIAL_OFFERS_PRICE_ROW_END_PADDING_PX =
   SPECIAL_OFFERS_CART_BUTTON_SIZE_PX + 10;
 
 /** Main price line — Montserrat Black on special-offer cards. */
-export const SPECIAL_OFFERS_PRICE_FONT_SIZE_PX = 18;
+export const SPECIAL_OFFERS_PRICE_FONT_SIZE_PX = 15;
 
 /** Strikethrough compare-at price below main price. */
-export const SPECIAL_OFFERS_OLD_PRICE_FONT_SIZE_PX = 11;
+export const SPECIAL_OFFERS_OLD_PRICE_FONT_SIZE_PX = 10;
 
 /** Line height for main price (px). */
-export const SPECIAL_OFFERS_PRICE_LINE_HEIGHT_PX = 24;
+export const SPECIAL_OFFERS_PRICE_LINE_HEIGHT_PX = 21;
 
 /**
  * Lifts the price row (`mt-auto`) slightly off the card bottom — visual breathing room.
@@ -232,6 +241,12 @@ export const SPECIAL_OFFERS_ACTIONS_STACK_OUTSET_RIGHT_PX = 22;
 
 /** Positive = shift wishlist/compare/discount stack left (adds to CSS `right`). */
 export const SPECIAL_OFFERS_ACTIONS_STACK_SHIFT_LEFT_PX = 3;
+
+/**
+ * Extra CSS `right` on mobile 2×2 grid — shifts heart / compare / discount column left
+ * (under each other, same as desktop, but not flush to the card edge).
+ */
+export const SPECIAL_OFFERS_ACTIONS_STACK_MOBILE_GRID_EXTRA_RIGHT_PX = 14;
 
 /** Vertical space between the product image well and the brand/title text block. */
 export const SPECIAL_OFFERS_IMAGE_TO_TEXT_GAP_PX = 31;

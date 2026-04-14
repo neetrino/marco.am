@@ -130,6 +130,7 @@ export function SpecialOfferCard({
           style={{ paddingTop: SPECIAL_OFFERS_CARD_PADDING_TOP_PX }}
         >
           <SpecialOfferWarrantyBadge
+            layout={layout}
             line1={t('home.special_offers.warranty_line1')}
             line2={t('home.special_offers.warranty_line2')}
           />
@@ -172,6 +173,7 @@ export function SpecialOfferCard({
       />
 
       <SpecialOfferActionsStack
+        layout={layout}
         showDiscountPill={showDiscountPill}
         discountPercent={product.discountPercent}
         isInWishlist={isInWishlist}
