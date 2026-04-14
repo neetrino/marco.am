@@ -66,20 +66,30 @@ export const REELS_TITLE_INSET_LEFT_PX = 40;
 /** Mobile: title flush with section content (no extra inset). */
 export const REELS_TITLE_INSET_LEFT_MOBILE_PX = 0;
 
-/** Mobile (`max-md`): nudge entire REELS block slightly right (visual alignment). */
+/**
+ * Mobile (`max-md`): nudge title, reel rail, and dot pagination right (`translateX`).
+ * Does not affect prev/next arrows — use `REELS_CAROUSEL_NAV_INSET_RIGHT_MOBILE_PX` for those.
+ */
 export const REELS_MOBILE_SECTION_NUDGE_RIGHT_PX = 13;
 
 /** Vertical space between the REELS heading row and the circle rail. */
 export const REELS_TITLE_TO_RAIL_GAP_PX = 32;
 
-/** Inset prev/next controls from the section’s right edge (shifts them left). */
-export const REELS_CAROUSEL_NAV_INSET_RIGHT_PX = 32;
+/** Inset prev/next controls from the section’s right edge (`md+`). */
+export const REELS_CAROUSEL_NAV_INSET_RIGHT_PX = 13;
+
+/** Mobile: inset from the right edge — lower = arrows further right. */
+export const REELS_CAROUSEL_NAV_INSET_RIGHT_MOBILE_PX = 3;
 
 /**
- * Prev/next carousel controls — compact pill (ratio ~1.28).
+ * Prev/next carousel controls — compact pill (ratio ~1.28). Desktop (`md+`).
  */
 export const REELS_CAROUSEL_NAV_BUTTON_WIDTH_PX = 32;
 export const REELS_CAROUSEL_NAV_BUTTON_HEIGHT_PX = 25;
+
+/** Prev/next on mobile — slightly larger than desktop controls. */
+export const REELS_CAROUSEL_NAV_BUTTON_WIDTH_MOBILE_PX = 48;
+export const REELS_CAROUSEL_NAV_BUTTON_HEIGHT_MOBILE_PX = 37;
 
 /** Space between the reel rail and dot pagination. */
 export const REELS_RAIL_TO_PAGINATION_GAP_PX = 20;

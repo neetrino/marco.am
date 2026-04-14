@@ -17,8 +17,11 @@ import {
   REELS_TITLE_INSET_LEFT_PX,
   REELS_TITLE_INSET_LEFT_MOBILE_PX,
   REELS_TITLE_TO_RAIL_GAP_PX,
+  REELS_CAROUSEL_NAV_INSET_RIGHT_MOBILE_PX,
   REELS_CAROUSEL_NAV_INSET_RIGHT_PX,
+  REELS_CAROUSEL_NAV_BUTTON_HEIGHT_MOBILE_PX,
   REELS_CAROUSEL_NAV_BUTTON_HEIGHT_PX,
+  REELS_CAROUSEL_NAV_BUTTON_WIDTH_MOBILE_PX,
   REELS_CAROUSEL_NAV_BUTTON_WIDTH_PX,
   REELS_RAIL_TO_PAGINATION_GAP_PX,
   REELS_PAGINATION_DOT_GAP_PX,
@@ -51,6 +54,12 @@ const reelsTitleCssVars = {
   ['--reels-title-inset-mobile' as string]: `${REELS_TITLE_INSET_LEFT_MOBILE_PX}px`,
   ['--reels-title-inset-desktop' as string]: `${REELS_TITLE_INSET_LEFT_PX}px`,
   ['--reels-mobile-section-nudge-x' as string]: `${REELS_MOBILE_SECTION_NUDGE_RIGHT_PX}px`,
+  ['--reels-nav-btn-w' as string]: `${REELS_CAROUSEL_NAV_BUTTON_WIDTH_PX}px`,
+  ['--reels-nav-btn-h' as string]: `${REELS_CAROUSEL_NAV_BUTTON_HEIGHT_PX}px`,
+  ['--reels-nav-btn-w-mobile' as string]: `${REELS_CAROUSEL_NAV_BUTTON_WIDTH_MOBILE_PX}px`,
+  ['--reels-nav-btn-h-mobile' as string]: `${REELS_CAROUSEL_NAV_BUTTON_HEIGHT_MOBILE_PX}px`,
+  ['--reels-nav-inset-mobile' as string]: `${REELS_CAROUSEL_NAV_INSET_RIGHT_MOBILE_PX}px`,
+  ['--reels-nav-inset-desktop' as string]: `${REELS_CAROUSEL_NAV_INSET_RIGHT_PX}px`,
 } as const;
 
 const reelsTitleLetterSpacingStyle = {
@@ -63,12 +72,11 @@ const reelsLabelStyle = {
 } as const;
 
 const SECTION_CONTAINER_CLASS =
-  'w-full max-w-7xl mx-auto max-md:translate-x-[var(--reels-mobile-section-nudge-x)] px-4 sm:px-6 lg:px-8';
+  'w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8';
 
-const reelsNavButtonStyle = {
-  width: REELS_CAROUSEL_NAV_BUTTON_WIDTH_PX,
-  height: REELS_CAROUSEL_NAV_BUTTON_HEIGHT_PX,
-} as const;
+/** Mobile: shift title + rail + dots; carousel arrows use their own inset (not this translate). */
+const REELS_MOBILE_CONTENT_NUDGE_CLASS =
+  'max-md:translate-x-[var(--reels-mobile-section-nudge-x)]';
 
 /** Pill: default white + gray border; hover filled marco-yellow (like former primary/black fill). */
 const REELS_NAV_BUTTON_CLASS =
@@ -80,7 +88,8 @@ const reelsPaginationDotStyle = {
 } as const;
 
 /** Dark chevrons; readable on yellow hover fill */
-const REELS_NAV_ICON_CLASS = 'h-3 w-3 shrink-0 text-marco-black';
+const REELS_NAV_ICON_CLASS =
+  'h-3 w-3 shrink-0 text-marco-black max-md:h-6 max-md:w-6';
 
 /**
  * REELS: circular category thumbnails in a centered row with arrow scroll.
@@ -109,7 +118,9 @@ export function HomeReelsSection() {
           className="flex flex-row flex-wrap items-end justify-between gap-4"
           style={{ marginBottom: `${REELS_TITLE_TO_RAIL_GAP_PX}px` }}
         >
-          <div className="min-w-0 max-md:[padding-left:var(--reels-title-inset-mobile)] md:[padding-left:var(--reels-title-inset-desktop)]">
+          <div
+            className={`min-w-0 max-md:[padding-left:var(--reels-title-inset-mobile)] md:[padding-left:var(--reels-title-inset-desktop)] ${REELS_MOBILE_CONTENT_NUDGE_CLASS}`}
+          >
             <h2
               id="home-reels-heading"
               className="font-bold uppercase text-marco-black max-md:[font-size:var(--reels-title-fs-mobile)] max-md:[line-height:var(--reels-title-lh-mobile)] md:[font-size:var(--reels-title-fs-desktop)] md:[line-height:var(--reels-title-lh-desktop)]"
@@ -134,15 +145,11 @@ export function HomeReelsSection() {
               </span>
             </h2>
           </div>
-          <div
-            className="flex shrink-0 flex-row gap-2"
-            style={{ marginRight: `${REELS_CAROUSEL_NAV_INSET_RIGHT_PX}px` }}
-          >
+          <div className="flex shrink-0 flex-row gap-2 max-md:[margin-right:var(--reels-nav-inset-mobile)] md:[margin-right:var(--reels-nav-inset-desktop)]">
             <button
               type="button"
               onClick={scrollPrev}
-              className={REELS_NAV_BUTTON_CLASS}
-              style={reelsNavButtonStyle}
+              className={`${REELS_NAV_BUTTON_CLASS} h-[var(--reels-nav-btn-h-mobile)] w-[var(--reels-nav-btn-w-mobile)] md:h-[var(--reels-nav-btn-h)] md:w-[var(--reels-nav-btn-w)]`}
               aria-label={t('home.reels_prev_aria')}
             >
               <ChevronLeft
@@ -154,8 +161,7 @@ export function HomeReelsSection() {
             <button
               type="button"
               onClick={scrollNext}
-              className={REELS_NAV_BUTTON_CLASS}
-              style={reelsNavButtonStyle}
+              className={`${REELS_NAV_BUTTON_CLASS} h-[var(--reels-nav-btn-h-mobile)] w-[var(--reels-nav-btn-w-mobile)] md:h-[var(--reels-nav-btn-h)] md:w-[var(--reels-nav-btn-w)]`}
               aria-label={t('home.reels_next_aria')}
             >
               <ChevronRight
@@ -169,7 +175,7 @@ export function HomeReelsSection() {
 
         <div
           ref={scrollerRef}
-          className="flex min-w-0 flex-row flex-nowrap justify-start gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] md:justify-center md:gap-11 [&::-webkit-scrollbar]:hidden"
+          className={`flex min-w-0 flex-row flex-nowrap justify-start gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] md:justify-center md:gap-11 [&::-webkit-scrollbar]:hidden ${REELS_MOBILE_CONTENT_NUDGE_CLASS}`}
           style={{
             scrollSnapType: 'x mandatory',
             ['--reels-mobile-tile-basis' as string]: REELS_MOBILE_TILE_BASIS_CSS,
@@ -208,7 +214,7 @@ export function HomeReelsSection() {
         </div>
 
         <div
-          className="flex flex-row items-center justify-center"
+          className={`flex flex-row items-center justify-center ${REELS_MOBILE_CONTENT_NUDGE_CLASS}`}
           style={{
             marginTop: `${REELS_RAIL_TO_PAGINATION_GAP_PX}px`,
             gap: `${REELS_PAGINATION_DOT_GAP_PX}px`,
