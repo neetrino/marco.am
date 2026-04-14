@@ -69,9 +69,15 @@ export const REELS_TITLE_INSET_LEFT_MOBILE_PX = 0;
 /**
  * Mobile (`max-md`): nudge title, reel rail, and dot pagination right (`translateX`).
  * Does not affect prev/next arrows — use `REELS_CAROUSEL_NAV_INSET_RIGHT_MOBILE_PX` for those.
+ * Keep at `0` to align the first circle closer to the section’s left edge.
  */
-/** Smaller nudge so the rail reads more centered on narrow screens. */
-export const REELS_MOBILE_SECTION_NUDGE_RIGHT_PX = 6;
+export const REELS_MOBILE_SECTION_NUDGE_RIGHT_PX = 0;
+
+/**
+ * Mobile (`max-md`): negative margin-left on the reel scroller — pulls the first circle
+ * slightly toward the viewport edge (tighter than section padding alone).
+ */
+export const REELS_MOBILE_RAIL_BLEED_LEFT_PX = 6;
 
 /** Vertical space between the REELS heading row and the circle rail. */
 export const REELS_TITLE_TO_RAIL_GAP_PX = 32;

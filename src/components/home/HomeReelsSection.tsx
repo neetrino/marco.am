@@ -32,6 +32,7 @@ import {
   REELS_TITLE_LETTER_SPACING_PX,
   REELS_TITLE_LINE_HEIGHT,
   REELS_TITLE_LINE_HEIGHT_MOBILE,
+  REELS_MOBILE_RAIL_BLEED_LEFT_PX,
   REELS_MOBILE_SECTION_NUDGE_RIGHT_PX,
   REELS_TITLE_TEXT_TO_BAR_GAP_PX,
   REELS_TITLE_BAR_THICKNESS_PX,
@@ -68,6 +69,7 @@ const reelsTitleCssVars = {
   ['--reels-title-inset-mobile' as string]: `${REELS_TITLE_INSET_LEFT_MOBILE_PX}px`,
   ['--reels-title-inset-desktop' as string]: `${REELS_TITLE_INSET_LEFT_PX}px`,
   ['--reels-mobile-section-nudge-x' as string]: `${REELS_MOBILE_SECTION_NUDGE_RIGHT_PX}px`,
+  ['--reels-mobile-rail-bleed-left' as string]: `${REELS_MOBILE_RAIL_BLEED_LEFT_PX}px`,
   ['--reels-nav-btn-w' as string]: `${REELS_CAROUSEL_NAV_BUTTON_WIDTH_PX}px`,
   ['--reels-nav-btn-h' as string]: `${REELS_CAROUSEL_NAV_BUTTON_HEIGHT_PX}px`,
   ['--reels-nav-btn-w-mobile' as string]: `${REELS_CAROUSEL_NAV_BUTTON_WIDTH_MOBILE_PX}px`,
@@ -189,7 +191,7 @@ export function HomeReelsSection() {
 
         <div
           ref={scrollerRef}
-          className={`flex min-w-0 flex-row flex-nowrap justify-start gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] md:justify-center md:gap-11 [&::-webkit-scrollbar]:hidden ${REELS_MOBILE_CONTENT_NUDGE_CLASS}`}
+          className={`flex min-w-0 flex-row flex-nowrap justify-start gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] max-md:[margin-left:calc(-1*var(--reels-mobile-rail-bleed-left))] md:justify-center md:gap-11 md:ml-0 [&::-webkit-scrollbar]:hidden ${REELS_MOBILE_CONTENT_NUDGE_CLASS}`}
           style={{
             scrollSnapType: 'x mandatory',
             ['--reels-mobile-tile-basis' as string]: REELS_MOBILE_TILE_BASIS_CSS,
