@@ -7,6 +7,7 @@ import { t } from '../lib/i18n';
 import type { LanguageCode } from '../lib/language';
 import {
   FEATURED_PRODUCTS_FOOTER_DOT_COUNT,
+  FEATURED_PRODUCTS_GRID_GAP_Y_CLASS,
   FEATURED_PRODUCTS_VISIBLE_COUNT,
 } from './featured-products-tabs.constants';
 import { SpecialOfferCard } from './home/SpecialOfferCard';
@@ -31,8 +32,7 @@ import { HomeBrandsHeading } from './home/HomeBrandsHeading';
 import { HomeBrandsSlide } from './home/HomeBrandsSlide';
 import type { SpecialOfferProduct } from './home/special-offer-product.types';
 
-const FEATURED_OFFERS_GRID_CLASS =
-  'grid grid-cols-2 gap-x-3 gap-y-6 md:grid-cols-4 md:gap-x-6 md:gap-y-6';
+const FEATURED_OFFERS_GRID_CLASS = `grid grid-cols-2 gap-x-3 md:grid-cols-4 md:gap-x-6 ${FEATURED_PRODUCTS_GRID_GAP_Y_CLASS}`;
 
 const featuredCardSkeletonStyle = {
   height: SPECIAL_OFFERS_CARD_HEIGHT_PX,

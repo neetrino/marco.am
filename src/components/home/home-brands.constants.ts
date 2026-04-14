@@ -3,7 +3,7 @@
  */
 
 /** Space between «Տեսնել ավելին» and the Brands heading row. */
-export const HOME_BRANDS_AFTER_CTA_MARGIN_TOP_PX = 144;
+export const HOME_BRANDS_AFTER_CTA_MARGIN_TOP_PX = 64;
 
 /** Gap between Brands title row and the logo grid. */
 export const HOME_BRANDS_TITLE_TO_RAIL_GAP_PX = 56;

@@ -2,6 +2,9 @@
  * Featured products strip — Figma «ՆՈՐՈՒՅԹՆԵՐ» header (node 101:2818): Montserrat title + yellow bar + round nav.
  */
 
+/** Section top padding — larger pushes the «Նորություններ» block slightly lower on the page. */
+export const FEATURED_SECTION_PADDING_TOP_CLASS = 'pt-6 sm:pt-8';
+
 /** Title — slightly smaller than original Figma 54px cap. */
 export const FEATURED_PRODUCTS_TITLE_FONT_SIZE_CLAMP = 'clamp(22px, 3.6vw, 40px)';
 
@@ -31,6 +34,12 @@ export const FEATURED_PRODUCTS_TITLE_INSET_LEFT_PX = 16;
  * «Նորույթներ»: 8 cards — 2 rows × 4 columns on md+; 2 columns on mobile.
  */
 export const FEATURED_PRODUCTS_VISIBLE_COUNT = 8;
+
+/**
+ * Vertical gap between card rows (1st vs 2nd row on md+; between row pairs on mobile).
+ * Tailwind classes — paired with horizontal gaps in `FeaturedProductsStrip`.
+ */
+export const FEATURED_PRODUCTS_GRID_GAP_Y_CLASS = 'gap-y-8 md:gap-y-10';
 
 /**
  * Decorative dots above CTA (visual match to «Հատուկ առաջարկներ»; grid is not paginated).
