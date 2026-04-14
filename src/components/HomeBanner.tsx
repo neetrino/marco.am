@@ -25,8 +25,8 @@ const ASSETS = {
   banner2: '/images/home-banner-305-2151.png',
   /** BANNER3 1 — Figma node 305:2154, downloaded locally (772×834 px). */
   banner3: '/images/home-banner-305-2154.png',
-  /** Ellipse 87 — Figma node 101:4070; soft white circle + shadow. */
-  ellipse87: '/images/home-banner-101-4070.png',
+  /** Ellipse 87 — Figma node 101:4070; soft white circle + shadow (SVG export). */
+  ellipse87: '/images/home-banner-101-4070.svg',
 } as const;
 
 /** Hero overlay copy — paths under `home.hero_banner.*` in locales. */
@@ -285,11 +285,12 @@ function ElectronicsCard({ copy }: { copy: HeroBannerCopy }) {
 
 /**
  * Ellipse 87 (Figma 101:4070) + message icon — to the right of the help CTA, vertically centered.
+ * Wrapped in {@link HelpPromoEllipseButton} for navigation + keyboard focus.
  */
 function HelpPromoEllipse() {
   return (
     <div
-      className="pointer-events-none relative shrink-0"
+      className="relative shrink-0"
       style={{ width: ELLIPSE87_BOX_PX, height: ELLIPSE87_BOX_PX }}
     >
       <div className="relative size-full">
@@ -311,6 +312,19 @@ function HelpPromoEllipse() {
         </div>
       </div>
     </div>
+  );
+}
+
+/** Icon-only control next to the help CTA — same destination as the text link; `Link` for a11y + open in new tab. */
+function HelpPromoEllipseButton({ ariaLabel }: { ariaLabel: string }) {
+  return (
+    <Link
+      href="/contact"
+      aria-label={ariaLabel}
+      className="inline-flex shrink-0 cursor-pointer rounded-full outline-none transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#101010]/30"
+    >
+      <HelpPromoEllipse />
+    </Link>
   );
 }
 
@@ -407,7 +421,7 @@ export function HomeBanner() {
                   >
                     {t('home.hero_help_cta')}
                   </Link>
-                  <HelpPromoEllipse />
+                  <HelpPromoEllipseButton ariaLabel={t('home.chat_fab_aria')} />
                 </div>
               </div>
             </div>
