@@ -48,7 +48,7 @@ export const REELS_TITLE_BAR_THICKNESS_PX = 4;
 /**
  * How far the yellow bar extends past the title box (px). Asymmetric: shorter on the left.
  */
-export const REELS_TITLE_BAR_EXTEND_LEFT_PX = -2;
+export const REELS_TITLE_BAR_EXTEND_LEFT_PX = -1;
 export const REELS_TITLE_BAR_EXTEND_RIGHT_PX = 19;
 
 /** Label (Montserrat Regular). */
