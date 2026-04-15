@@ -10,6 +10,9 @@ import type { SpecialOfferProduct } from './SpecialOfferProductCardTypes';
 
 const STAR_FILL_CLASS = 'text-[#ffca03]';
 
+/** Figma export — thin outline heart (black on transparent); inverted on black button. */
+const SPECIAL_OFFER_WISHLIST_OUTLINE_SRC = '/images/special-offers/wishlist-heart-outline.png' as const;
+
 /** Figma 101:3500 — exact vector path (asset was mis-saved as .png; inline SVG avoids MIME mismatch) */
 function SpecialOfferAddToCartGlyph({ className }: { className?: string }) {
   return (
@@ -46,16 +49,28 @@ export function StarRow() {
   );
 }
 
+/**
+ * Outline from design asset on black button (`brightness-0 invert`);
+ * liked state uses vector fill (no separate asset).
+ */
 function WishlistGlyph({ filled, size }: { filled: boolean; size: number }) {
+  if (!filled) {
+    return (
+      <Image
+        src={SPECIAL_OFFER_WISHLIST_OUTLINE_SRC}
+        alt=""
+        width={size}
+        height={size}
+        className="pointer-events-none shrink-0 brightness-0 invert"
+        aria-hidden
+      />
+    );
+  }
   return (
-    <svg width={size} height={size} viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
       <path
-        d="M10 17L8.55 15.7C4.4 12.2 2 10.1 2 7.5C2 5.4 3.4 4 5.5 4C6.8 4 8.1 4.6 9 5.5C9.9 4.6 11.2 4 12.5 4C14.6 4 16 5.4 16 7.5C16 10.1 13.6 12.2 9.45 15.7L10 17Z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill={filled ? 'currentColor' : 'none'}
+        d="M12 21s-6.716-4.783-9-8.5C.5 9.5.5 6.4 3 4.5 5.2 2.9 8.5 3.5 12 7c3.5-3.5 6.8-4.1 9-2.5 2.5 1.9 2.5 5 0 8-2.284 3.717-9 8.5-9 8.5z"
+        className="fill-white"
       />
     </svg>
   );
@@ -90,20 +105,20 @@ export function SpecialOfferSideActions({
       <button
         type="button"
         onClick={onWishlist}
-        className="flex size-8 items-center justify-center rounded-full bg-white/90 text-[#374151] shadow-sm backdrop-blur-sm transition-colors hover:bg-white md:size-9"
+        className="flex size-9 shrink-0 items-center justify-center rounded-full bg-black text-white shadow-sm transition-opacity hover:opacity-90 md:size-10"
         title={isInWishlist ? t('common.messages.removedFromWishlist') : t('common.messages.addedToWishlist')}
         aria-label={isInWishlist ? t('common.ariaLabels.removeFromWishlist') : t('common.ariaLabels.addToWishlist')}
       >
-        <WishlistGlyph filled={isInWishlist} size={16} />
+        <WishlistGlyph filled={isInWishlist} size={18} />
       </button>
       <button
         type="button"
         onClick={onCompare}
-        className="flex size-8 items-center justify-center rounded-full bg-black text-white shadow-sm transition-opacity hover:opacity-90 md:size-9"
+        className="flex size-9 shrink-0 items-center justify-center rounded-full bg-black text-white shadow-sm transition-opacity hover:opacity-90 md:size-10"
         title={isInCompare ? t('common.messages.removedFromCompare') : t('common.messages.addedToCompare')}
         aria-label={isInCompare ? t('common.ariaLabels.removeFromCompare') : t('common.ariaLabels.addToCompare')}
       >
-        <CompareIcon isActive={isInCompare} size={16} className="text-white" />
+        <CompareIcon isActive={isInCompare} size={18} className="text-white" />
       </button>
       {product.discountPercent != null && product.discountPercent > 0 ? (
         <div className="rounded-full bg-[#ffca03] px-2 py-1">
