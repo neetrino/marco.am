@@ -11,6 +11,7 @@ import { logger } from '../lib/utils/logger';
 import { FeaturedProductsStrip } from './FeaturedProductsStrip';
 import { HomeAppBanner } from './home/HomeAppBanner';
 import { HomeGradientBanner } from './home/HomeGradientBanner';
+import { HomeMobileBannerProductShowcase } from './home/HomeMobileBannerProductShowcase';
 import {
   FEATURED_PRODUCTS_TITLE_BAR_THICKNESS_PX,
   FEATURED_PRODUCTS_TITLE_BAR_WIDTH_PERCENT,
@@ -246,11 +247,16 @@ export function FeaturedProductsTabs() {
         />
       </div>
 
-      <div
-        className={`hidden w-full md:block ${FEATURED_HOME_BANNERS_BLOCK_PADDING_Y_CLASS}`}
-      >
-        <HomeAppBanner language={language} />
-        <HomeGradientBanner language={language} />
+      <div className={`w-full ${FEATURED_HOME_BANNERS_BLOCK_PADDING_Y_CLASS}`}>
+        <div className="hidden md:block">
+          <HomeAppBanner language={language} />
+        </div>
+        <div className="md:hidden">
+          <HomeMobileBannerProductShowcase language={language} />
+        </div>
+        <div className="hidden md:block">
+          <HomeGradientBanner language={language} />
+        </div>
       </div>
     </section>
   );
