@@ -353,7 +353,7 @@ export function HomeSpecialOffersSection() {
             {!loading && products.length > 0 ? (
               <>
                 <div
-                  className="flex flex-row items-center justify-center gap-2.5"
+                  className="flex flex-row items-center justify-center"
                   style={{
                     marginTop: `${isMaxMd ? SPECIAL_OFFERS_SECTION_RAIL_TO_PAGINATION_GAP_MOBILE_PX : SPECIAL_OFFERS_SECTION_RAIL_TO_PAGINATION_GAP_PX}px`,
                     gap: `${SPECIAL_OFFERS_PAGINATION_DOT_GAP_PX}px`,

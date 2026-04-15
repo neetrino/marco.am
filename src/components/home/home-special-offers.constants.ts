@@ -319,7 +319,7 @@ export const SPECIAL_OFFERS_CAROUSEL_NAV_INSET_RIGHT_PX = 32;
 
 /** Dot pagination below the rail. */
 export const SPECIAL_OFFERS_PAGINATION_DOT_SIZE_PX = 8;
-export const SPECIAL_OFFERS_PAGINATION_DOT_GAP_PX = 10;
+export const SPECIAL_OFFERS_PAGINATION_DOT_GAP_PX = 6;
 export const SPECIAL_OFFERS_RAIL_TO_PAGINATION_GAP_PX = 42;
 
 /** Extra space above dot row on `max-md` (2×2 grid + floating cart needs more air). */

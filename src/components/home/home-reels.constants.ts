@@ -105,7 +105,7 @@ export const REELS_PAGINATION_PAGE_COUNT = 3;
 
 /** Dot pagination affordance. */
 export const REELS_PAGINATION_DOT_SIZE_PX = 8;
-export const REELS_PAGINATION_DOT_GAP_PX = 10;
+export const REELS_PAGINATION_DOT_GAP_PX = 6;
 
 /** Default destination for reel tiles until category slugs are wired. */
 export const REELS_ITEM_HREF = '/products' as const;
