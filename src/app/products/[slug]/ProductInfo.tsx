@@ -1,5 +1,6 @@
 'use client';
 
+import { montserratArm } from '../../../fonts/montserrat-arm';
 import { formatPrice } from '../../../lib/currency';
 import type { CurrencyCode } from '../../../lib/currency';
 import { getProductText } from '../../../lib/i18n';
@@ -41,20 +42,22 @@ export function ProductInfo({
         <h1 className="text-4xl font-bold text-gray-900 mb-4">
           {getProductText(language, product.id, 'title') || product.title}
         </h1>
-        <div className="mb-6">
-          <div className="flex flex-col gap-1">
-            {/* Discounted price with discount percentage */}
-            <div className="flex items-center gap-2">
-              <p className="text-3xl font-bold text-gray-900">{formatPrice(price, currency)}</p>
+        <div className="mb-8">
+          <div className="flex flex-col items-start gap-1.5">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <p
+                className={`${montserratArm.className} text-[20px] font-black leading-[28px] text-[#181111] sm:text-[20px]`}
+              >
+                {formatPrice(price, currency)}
+              </p>
               {discountPercent && discountPercent > 0 && (
-                <span className="text-lg font-semibold text-blue-600">
+                <span className="rounded-full bg-blue-50 px-2.5 py-1 text-sm font-semibold leading-none text-blue-600">
                   -{discountPercent}%
                 </span>
               )}
             </div>
-            {/* Original price below discounted price - full width, not inline */}
             {(originalPrice || (compareAtPrice && compareAtPrice > price)) && (
-              <p className="text-xl text-gray-500 line-through decoration-gray-400 mt-1">
+              <p className="text-sm font-medium leading-none text-gray-400 line-through decoration-gray-300 sm:text-base">
                 {formatPrice(originalPrice || compareAtPrice || 0, currency)}
               </p>
             )}

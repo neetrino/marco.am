@@ -115,7 +115,16 @@ export function formatPrice(price: number, currency: CurrencyCode = 'USD'): stri
     minimumFractionDigits,
     maximumFractionDigits,
   }).format(convertedPrice);
-  
+
+  if (currency === 'AMD') {
+    const amdAmount = new Intl.NumberFormat('en-US', {
+      minimumFractionDigits,
+      maximumFractionDigits,
+    }).format(convertedPrice);
+
+    return `${amdAmount} ${CURRENCIES.AMD.symbol}`;
+  }
+
   return formatted;
 }
 
@@ -163,7 +172,16 @@ export function formatPriceInCurrency(price: number, currency: CurrencyCode = 'A
     minimumFractionDigits,
     maximumFractionDigits,
   }).format(price);
-  
+
+  if (currency === 'AMD') {
+    const amdAmount = new Intl.NumberFormat('en-US', {
+      minimumFractionDigits,
+      maximumFractionDigits,
+    }).format(price);
+
+    return `${amdAmount} ${CURRENCIES.AMD.symbol}`;
+  }
+
   return formatted;
 }
 
