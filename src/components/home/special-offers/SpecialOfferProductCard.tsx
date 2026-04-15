@@ -45,7 +45,7 @@ function SpecialOfferProductCardView({ product, logic }: { product: SpecialOffer
 
   return (
     <article
-      className={`${montserratArm.className} relative flex h-full min-h-[420px] flex-col overflow-visible rounded-[32px] bg-[#f6f6f6] shadow-[0_2px_12px_rgba(0,0,0,0.06)] md:min-h-[486px]`}
+      className={`${montserratArm.className} special-offer-card-cutout relative flex h-full min-h-[420px] flex-col overflow-visible rounded-[32px] bg-[#f6f6f6] shadow-[0_2px_12px_rgba(0,0,0,0.06)] md:min-h-[486px]`}
     >
       <SpecialOfferWarrantyBadge line1={t('home.special_offers_warranty_line1')} line2={t('home.special_offers_warranty_line2')} />
       <SpecialOfferSideActions
@@ -57,7 +57,7 @@ function SpecialOfferProductCardView({ product, logic }: { product: SpecialOffer
         t={t}
       />
       <SpecialOfferMedia product={product} showPlaceholder={showPlaceholder} onImageError={() => setImageError(true)} />
-      <div className="flex flex-1 flex-col px-[6%] pb-20 pt-3 md:pt-4">
+      <div className="relative z-[2] flex flex-1 flex-col px-[6%] pb-20 pt-3 md:pt-4">
         {product.brand?.name ? (
           <p className="text-[11px] font-black uppercase tracking-[0.6px] text-[#0f0f0f] md:text-xs">
             {product.brand.name}

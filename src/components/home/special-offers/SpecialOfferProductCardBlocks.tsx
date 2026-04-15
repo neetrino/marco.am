@@ -4,12 +4,29 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { MouseEvent } from 'react';
 import { CompareIcon } from '@/components/icons/CompareIcon';
-import { CartIcon } from '@/components/icons/CartIcon';
 import { ProductImagePlaceholder } from '@/components/ProductImagePlaceholder';
 import { ProductLabels } from '@/components/ProductLabels';
 import type { SpecialOfferProduct } from './SpecialOfferProductCardTypes';
 
 const STAR_FILL_CLASS = 'text-[#ffca03]';
+
+/** Figma 101:3500 — exact vector path (asset was mis-saved as .png; inline SVG avoids MIME mismatch) */
+function SpecialOfferAddToCartGlyph({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24.9919 26"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
+      <path
+        d="M14.4928 9.90476H12.0773V6.19048H8.45411V3.71429H12.0773V0H14.4928V3.71429H18.1159V6.19048H14.4928V9.90476ZM7.24638 26C6.58078 26 6.01181 25.7579 5.53945 25.2737C5.0671 24.7894 4.83092 24.2061 4.83092 23.5238C4.83092 22.8415 5.0671 22.2582 5.53945 21.774C6.01181 21.2897 6.58078 21.0476 7.24638 21.0476C7.91197 21.0476 8.48094 21.2897 8.9533 21.774C9.42566 22.2582 9.66184 22.8415 9.66184 23.5238C9.66184 24.2061 9.42566 24.7894 8.9533 25.2737C8.48094 25.7579 7.91197 26 7.24638 26ZM19.3237 26C18.6581 26 18.0891 25.7579 17.6167 25.2737C17.1444 24.7894 16.9082 24.2061 16.9082 23.5238C16.9082 22.8415 17.1444 22.2582 17.6167 21.774C18.0891 21.2897 18.6581 21.0476 19.3237 21.0476C19.9893 21.0476 20.5582 21.2897 21.0306 21.774C21.503 22.2582 21.7391 22.8415 21.7391 23.5238C21.7391 24.2061 21.503 24.7894 21.0306 25.2737C20.5582 25.7579 19.9893 26 19.3237 26ZM2.41546 3.71429H0V1.2381H3.96135L9.08213 12.381H17.5362L22.2544 3.71429H24.9919L19.6779 13.553C19.4632 13.9712 19.168 14.2904 18.7923 14.5105C18.4165 14.7416 18.0086 14.8571 17.5684 14.8571H8.58293L7.24638 17.3333H21.7391V19.8095H7.24638C6.34461 19.8095 5.65754 19.4078 5.18519 18.6044C4.70209 17.8011 4.68599 16.9867 5.13688 16.1613L6.76328 13.1238L2.41546 3.71429Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
 
 export function StarRow() {
   return (
@@ -107,7 +124,7 @@ export function SpecialOfferMedia({
   onImageError: () => void;
 }) {
   return (
-    <div className="relative z-0 mx-[6%] mt-4 overflow-hidden rounded-lg bg-[#f9fafb] md:mt-[17px]">
+    <div className="relative z-[2] mx-[6%] mt-4 overflow-hidden rounded-lg bg-[#f9fafb] md:mt-[17px]">
       <Link href={`/products/${product.slug}`} className="relative block aspect-[274/248] w-full">
         {showPlaceholder ? (
           <ProductImagePlaceholder className="h-full w-full" aria-label={product.title} />
@@ -148,12 +165,12 @@ export function SpecialOfferCartFab({
       type="button"
       onClick={onCart}
       disabled={!product.inStock || isAddingToCart}
-      className="absolute bottom-4 right-4 z-20 flex size-[54px] items-center justify-center rounded-[31px] border-[3px] border-white bg-[#ffca03] text-[#181111] shadow-md transition-transform hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-50 md:bottom-5 md:right-5 md:size-[62px]"
+      className="absolute bottom-0 right-0 z-20 flex size-[54px] translate-x-1/2 translate-y-1/2 items-center justify-center rounded-full bg-[#ffca03] p-0 text-white shadow-[0_4px_14px_rgba(0,0,0,0.12)] transition-transform hover:scale-[1.03] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#181111] disabled:cursor-not-allowed disabled:opacity-50 md:size-[62px]"
       title={product.inStock ? t('common.buttons.addToCart') : t('common.stock.outOfStock')}
       aria-label={product.inStock ? t('common.ariaLabels.addToCart') : t('common.ariaLabels.outOfStock')}
     >
       {isAddingToCart ? (
-        <svg className="h-6 w-6 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <svg className="h-6 w-6 animate-spin text-[#181111]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
           <path
             className="opacity-75"
@@ -162,7 +179,7 @@ export function SpecialOfferCartFab({
           />
         </svg>
       ) : (
-        <CartIcon size={26} />
+        <SpecialOfferAddToCartGlyph className="h-[22px] w-[21px] md:h-[26px] md:w-[25px]" />
       )}
     </button>
   );

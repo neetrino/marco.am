@@ -86,6 +86,28 @@
     paint-order: stroke fill;
     -webkit-text-stroke: 1.15px currentColor;
   }
+
+  /**
+   * Special-offer product card: bottom-right circular notch (gray card on white page).
+   * Disk uses page background (#fff); children that must sit above use z-[2]+ (see SpecialOfferProductCard).
+   */
+  .special-offer-card-cutout {
+    isolation: isolate;
+  }
+
+  .special-offer-card-cutout::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    width: 5.75rem; /* 92px — outer disk; FAB centers on card corner with same transform */
+    height: 5.75rem;
+    border-radius: 9999px;
+    background-color: rgb(255 255 255);
+    pointer-events: none;
+    transform: translate(50%, 50%);
+  }
 }
 
 /* Policy pages typography & spacing */
