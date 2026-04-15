@@ -8,6 +8,7 @@ import { useTranslation } from '../lib/i18n-client';
 import {
   FOOTER_BRAND_COLUMN_GAP_CLASS,
   FOOTER_BRAND_DESCRIPTION_OVERLAP_CLASS,
+  FOOTER_BRAND_DESCRIPTION_TEXT_CLASS,
   FOOTER_BRAND_LOGO_BOX_CLASS,
   FOOTER_BRAND_LOGO_SHIFT_CLASS,
   FOOTER_COMPANY_LINKS,
@@ -150,7 +151,7 @@ export function Footer() {
       <div className="mx-auto max-w-7xl px-4 pb-10 pt-8 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 items-start gap-12 md:grid-cols-2 lg:grid-cols-4 lg:gap-10">
           <div
-            className={`flex max-w-sm flex-col ${FOOTER_BRAND_COLUMN_GAP_CLASS}`}
+            className={`relative flex max-w-sm flex-col ${FOOTER_BRAND_COLUMN_GAP_CLASS}`}
           >
             <div className={`${FOOTER_BRAND_LOGO_BOX_CLASS} ${FOOTER_BRAND_LOGO_SHIFT_CLASS}`}>
               <Image
@@ -163,7 +164,7 @@ export function Footer() {
               />
             </div>
             <p
-              className={`${FOOTER_BRAND_DESCRIPTION_OVERLAP_CLASS} text-xs leading-relaxed ${FOOTER_SURFACE_CLASS} ${FOOTER_MUTED_TEXT_CLASS}`}
+              className={`${FOOTER_BRAND_DESCRIPTION_OVERLAP_CLASS} ${FOOTER_BRAND_DESCRIPTION_TEXT_CLASS} ${FOOTER_SURFACE_CLASS} ${FOOTER_MUTED_TEXT_CLASS}`}
             >
               {t('common.footer.marco.brandDescription')}
             </p>
