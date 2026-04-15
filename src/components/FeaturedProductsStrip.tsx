@@ -1,34 +1,39 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useRef } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
+import type { CSSProperties } from 'react';
 
+import { chunkArray } from '../lib/chunk-array';
 import { t } from '../lib/i18n';
 import type { LanguageCode } from '../lib/language';
 import {
-  FEATURED_PRODUCTS_DOTS_TO_CTA_GAP_MOBILE_PX,
   FEATURED_PRODUCTS_FOOTER_DOT_COUNT_DESKTOP,
   FEATURED_PRODUCTS_FOOTER_DOT_COUNT_MOBILE,
   FEATURED_PRODUCTS_GRID_GAP_Y_CLASS,
-  FEATURED_PRODUCTS_GRID_TO_DOTS_GAP_MOBILE_PX,
   FEATURED_PRODUCTS_VISIBLE_COUNT,
 } from './featured-products-tabs.constants';
+import { FeaturedNewArrivalsMobileRail } from './home/FeaturedNewArrivalsMobileRail';
 import { SpecialOfferCard } from './home/SpecialOfferCard';
 import {
   SPECIAL_OFFERS_CARD_HEIGHT_PX,
   SPECIAL_OFFERS_CARD_SHELL_RADIUS_PX,
   SPECIAL_OFFERS_CTA_LINK_CLASS,
+  SPECIAL_OFFERS_MOBILE_GRID_COLUMN_GAP_PX,
+  SPECIAL_OFFERS_MOBILE_GRID_PAGE_SIZE,
+  SPECIAL_OFFERS_MOBILE_GRID_ROW_GAP_PX,
+  SPECIAL_OFFERS_MOBILE_PAGINATION_PAGE_COUNT,
   SPECIAL_OFFERS_PAGINATION_DOT_GAP_DESKTOP_PX,
   SPECIAL_OFFERS_PAGINATION_DOT_GAP_MOBILE_PX,
   SPECIAL_OFFERS_PAGINATION_DOT_SIZE_PX,
   SPECIAL_OFFERS_PAGINATION_TO_CTA_GAP_DESKTOP_PX,
-  SPECIAL_OFFERS_PAGINATION_TO_CTA_GAP_MOBILE_PX,
   SPECIAL_OFFERS_RAIL_TO_PAGINATION_GAP_PX,
 } from './home/home-special-offers.constants';
 import {
   HOME_BRANDS_AFTER_CTA_MARGIN_TOP_PX,
   HOME_BRANDS_BLOCK_PADDING_BOTTOM_DESKTOP_PX,
   HOME_BRANDS_BLOCK_PADDING_BOTTOM_MOBILE_PX,
+  HOME_BRANDS_DOTS_TO_CTA_GAP_MOBILE_PX,
   HOME_BRANDS_GRID_TO_DOTS_GAP_MOBILE_PX,
   HOME_BRANDS_GRID_TO_DOTS_GAP_PX,
   HOME_BRANDS_RAIL_SCROLL_PX,
@@ -37,8 +42,12 @@ import {
 import { HomeBrandsHeading } from './home/HomeBrandsHeading';
 import { HomeBrandsSlide } from './home/HomeBrandsSlide';
 import type { SpecialOfferProduct } from './home/special-offer-product.types';
+import { useSpecialOffersCarousel } from './home/useSpecialOffersCarousel';
 
 const FEATURED_OFFERS_GRID_CLASS = `grid grid-cols-2 gap-x-3 md:grid-cols-4 md:gap-x-6 ${FEATURED_PRODUCTS_GRID_GAP_Y_CLASS}`;
+
+const featuredOffersGridStyle = (isMaxMd: boolean): CSSProperties =>
+  isMaxMd ? { rowGap: SPECIAL_OFFERS_MOBILE_GRID_ROW_GAP_PX } : {};
 
 const featuredCardSkeletonStyle = {
   height: SPECIAL_OFFERS_CARD_HEIGHT_PX,
@@ -70,7 +79,7 @@ type FeaturedProductsStripProps = {
 };
 
 /**
- * Static 8-card grid (2 rows on md+), decorative dot row, then CTA — matches «Հատուկ առաջարկներ» rhythm.
+ * `md+`: 8-card grid. `max-md`: 2×2 per slide, horizontal paging (aligned with «Հատուկ առաջարկներ»).
  */
 export function FeaturedProductsStrip({
   language,
@@ -84,18 +93,36 @@ export function FeaturedProductsStrip({
 }: FeaturedProductsStripProps) {
   const ctaHref = `/products?filter=${encodeURIComponent(FILTER_BY_TAB[activeTab])}`;
   const brandsRailRef = useRef<HTMLDivElement | null>(null);
-  const footerDotCount = isMaxMd
+
+  const mobileProductChunks = useMemo(() => {
+    const chunks = chunkArray(products, SPECIAL_OFFERS_MOBILE_GRID_PAGE_SIZE);
+    const padded: SpecialOfferProduct[][] = [...chunks];
+    while (padded.length < SPECIAL_OFFERS_MOBILE_PAGINATION_PAGE_COUNT) {
+      padded.push([]);
+    }
+    return padded.slice(0, SPECIAL_OFFERS_MOBILE_PAGINATION_PAGE_COUNT);
+  }, [products]);
+
+  const isFeaturedRailVisible = isMaxMd && !loading && !error && products.length > 0;
+
+  const {
+    scrollerRef: featuredScrollerRef,
+    activePage: featuredActivePage,
+    scrollToPage: scrollFeaturedToPage,
+  } = useSpecialOffersCarousel({
+    isRailVisible: isFeaturedRailVisible,
+    paginationPageCount: isMaxMd ? SPECIAL_OFFERS_MOBILE_PAGINATION_PAGE_COUNT : 1,
+  });
+
+  const brandsFooterDotCount = isMaxMd
     ? FEATURED_PRODUCTS_FOOTER_DOT_COUNT_MOBILE
     : FEATURED_PRODUCTS_FOOTER_DOT_COUNT_DESKTOP;
 
-  const featuredGridToDotsGapPx = isMaxMd
-    ? FEATURED_PRODUCTS_GRID_TO_DOTS_GAP_MOBILE_PX
-    : SPECIAL_OFFERS_RAIL_TO_PAGINATION_GAP_PX;
-  const featuredDotsToCtaGapPx = isMaxMd
-    ? FEATURED_PRODUCTS_DOTS_TO_CTA_GAP_MOBILE_PX
-    : SPECIAL_OFFERS_PAGINATION_TO_CTA_GAP_DESKTOP_PX;
-  const sharedDotsToCtaGapPx = isMaxMd
-    ? SPECIAL_OFFERS_PAGINATION_TO_CTA_GAP_MOBILE_PX
+  /** `md+` decorative dots — same rail→dots / dots→CTA rhythm as desktop special-offers footer. */
+  const desktopFeaturedRailToDotsGapPx = SPECIAL_OFFERS_RAIL_TO_PAGINATION_GAP_PX;
+  const desktopFeaturedDotsToCtaGapPx = SPECIAL_OFFERS_PAGINATION_TO_CTA_GAP_DESKTOP_PX;
+  const brandsDotsToCtaGapPx = isMaxMd
+    ? HOME_BRANDS_DOTS_TO_CTA_GAP_MOBILE_PX
     : SPECIAL_OFFERS_PAGINATION_TO_CTA_GAP_DESKTOP_PX;
   const paginationDotGapPx = isMaxMd
     ? SPECIAL_OFFERS_PAGINATION_DOT_GAP_MOBILE_PX
@@ -110,8 +137,25 @@ export function FeaturedProductsStrip({
   }, []);
 
   if (loading) {
+    if (isMaxMd) {
+      return (
+        <div
+          className="grid w-full grid-cols-2"
+          style={{
+            columnGap: SPECIAL_OFFERS_MOBILE_GRID_COLUMN_GAP_PX,
+            rowGap: SPECIAL_OFFERS_MOBILE_GRID_ROW_GAP_PX,
+          }}
+        >
+          {Array.from({ length: SPECIAL_OFFERS_MOBILE_GRID_PAGE_SIZE }).map((_, i) => (
+            <div key={`sk-m-${i}`} className="min-w-0">
+              <div className="w-full animate-pulse bg-gray-200" style={featuredCardSkeletonStyle} />
+            </div>
+          ))}
+        </div>
+      );
+    }
     return (
-      <div className={FEATURED_OFFERS_GRID_CLASS}>
+      <div className={FEATURED_OFFERS_GRID_CLASS} style={featuredOffersGridStyle(isMaxMd)}>
         {Array.from({ length: FEATURED_PRODUCTS_VISIBLE_COUNT }).map((__, i) => (
           <div key={`sk-${i}`} className="min-w-0">
             <div className="w-full animate-pulse bg-gray-200" style={featuredCardSkeletonStyle} />
@@ -146,39 +190,53 @@ export function FeaturedProductsStrip({
 
   return (
     <>
-      <div className={FEATURED_OFFERS_GRID_CLASS}>
-        {products.map((product) => (
-          <div key={product.id} className="min-w-0">
-            <SpecialOfferCard product={product} layout={cardLayout} />
+      {isMaxMd ? (
+        <FeaturedNewArrivalsMobileRail
+          productChunks={mobileProductChunks}
+          scrollerRef={featuredScrollerRef}
+          activePage={featuredActivePage}
+          onGoToPage={scrollFeaturedToPage}
+          cardLayout="mobileGrid"
+          language={language}
+          ctaHref={ctaHref}
+        />
+      ) : (
+        <>
+          <div className={FEATURED_OFFERS_GRID_CLASS} style={featuredOffersGridStyle(isMaxMd)}>
+            {products.map((product) => (
+              <div key={product.id} className="min-w-0">
+                <SpecialOfferCard product={product} layout={cardLayout} />
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
 
-      <div
-        className="flex flex-row items-center justify-center"
-        style={{
-          marginTop: `${featuredGridToDotsGapPx}px`,
-          gap: `${paginationDotGapPx}px`,
-        }}
-        aria-hidden
-      >
-        {Array.from({ length: footerDotCount }, (_, i) => (
-          <span
-            key={`featured-footer-dot-${i}`}
-            className={i === 0 ? 'rounded-full bg-marco-black' : 'rounded-full bg-gray-300'}
-            style={featuredFooterDotStyle}
-          />
-        ))}
-      </div>
+          <div
+            className="flex flex-row items-center justify-center"
+            style={{
+              marginTop: `${desktopFeaturedRailToDotsGapPx}px`,
+              gap: `${paginationDotGapPx}px`,
+            }}
+            aria-hidden
+          >
+            {Array.from({ length: FEATURED_PRODUCTS_FOOTER_DOT_COUNT_DESKTOP }, (_, i) => (
+              <span
+                key={`featured-footer-dot-${i}`}
+                className={i === 0 ? 'rounded-full bg-marco-black' : 'rounded-full bg-gray-300'}
+                style={featuredFooterDotStyle}
+              />
+            ))}
+          </div>
 
-      <div
-        className="flex justify-center"
-        style={{ marginTop: featuredDotsToCtaGapPx }}
-      >
-        <Link href={ctaHref} className={SPECIAL_OFFERS_CTA_LINK_CLASS}>
-          {t(language, 'home.special_offers.cta')}
-        </Link>
-      </div>
+          <div
+            className="flex justify-center"
+            style={{ marginTop: desktopFeaturedDotsToCtaGapPx }}
+          >
+            <Link href={ctaHref} className={SPECIAL_OFFERS_CTA_LINK_CLASS}>
+              {t(language, 'home.special_offers.cta')}
+            </Link>
+          </div>
+        </>
+      )}
 
       <div
         className="w-full"
@@ -210,7 +268,7 @@ export function FeaturedProductsStrip({
           }}
           aria-hidden
         >
-          {Array.from({ length: footerDotCount }, (_, i) => (
+          {Array.from({ length: brandsFooterDotCount }, (_, i) => (
             <span
               key={`brands-footer-dot-${i}`}
               className={i === 0 ? 'rounded-full bg-marco-black' : 'rounded-full bg-gray-300'}
@@ -221,7 +279,7 @@ export function FeaturedProductsStrip({
 
         <div
           className="flex justify-center"
-          style={{ marginTop: sharedDotsToCtaGapPx }}
+          style={{ marginTop: brandsDotsToCtaGapPx }}
         >
           <Link href="/products" className={SPECIAL_OFFERS_CTA_LINK_CLASS}>
             {t(language, 'home.special_offers.cta')}

@@ -246,7 +246,9 @@ export function FeaturedProductsTabs() {
         />
       </div>
 
-      <div className={`w-full ${FEATURED_HOME_BANNERS_BLOCK_PADDING_Y_CLASS}`}>
+      <div
+        className={`hidden w-full md:block ${FEATURED_HOME_BANNERS_BLOCK_PADDING_Y_CLASS}`}
+      >
         <HomeAppBanner language={language} />
         <HomeGradientBanner language={language} />
       </div>

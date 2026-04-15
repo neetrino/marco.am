@@ -75,6 +75,7 @@
     "pagination_aria": "New arrivals slider pagination",
     "page_first_aria": "Go to first page",
     "page_second_aria": "Go to second page",
+    "page_third_aria": "Go to third page",
     "carousel_prev_aria": "Previous selection",
     "carousel_next_aria": "Next selection",
     "tab_new": "NEW ARRIVALS",

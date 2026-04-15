@@ -38,7 +38,9 @@ export default async function RootLayout({
               <main className="flex-1 w-full">
                 {children}
               </main>
-              <Footer />
+              <div className="hidden md:block">
+                <Footer />
+              </div>
               <MobileBottomNav />
             </div>
           </ClientProviders>

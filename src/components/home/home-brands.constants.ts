@@ -16,8 +16,13 @@ export const HOME_BRANDS_BLOCK_PADDING_BOTTOM_DESKTOP_PX = 58;
 /** Horizontal scroll step for brand rail navigation (px). */
 export const HOME_BRANDS_RAIL_SCROLL_PX = 280;
 
-/** Space between the brand logo grid and the decorative dots row (larger = dots sit lower). */
-export const HOME_BRANDS_GRID_TO_DOTS_GAP_MOBILE_PX = 80;
+/**
+ * `max-md` — brand logo rail → decorative dots (tighter so dots + CTA sit higher; was 80).
+ */
+export const HOME_BRANDS_GRID_TO_DOTS_GAP_MOBILE_PX = 36;
+
+/** `max-md` — dots → «Տեսնել ավելին» under the brands block. */
+export const HOME_BRANDS_DOTS_TO_CTA_GAP_MOBILE_PX = 24;
 
 /** `md+` — distance from logo rail to dots + CTA (smaller = block sits higher). */
 export const HOME_BRANDS_GRID_TO_DOTS_GAP_PX = 48;

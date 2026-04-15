@@ -75,6 +75,7 @@
     "pagination_aria": "Пагинация слайдера новинок",
     "page_first_aria": "Перейти на первую страницу",
     "page_second_aria": "Перейти на вторую страницу",
+    "page_third_aria": "Перейти на третью страницу",
     "carousel_prev_aria": "Предыдущий раздел",
     "carousel_next_aria": "Следующий раздел",
     "tab_new": "НОВИНКИ",

@@ -42,16 +42,10 @@ export const FEATURED_PRODUCTS_TITLE_INSET_LEFT_PX = 16;
 export const FEATURED_PRODUCTS_VISIBLE_COUNT = 8;
 
 /**
- * Vertical gap between card rows (1st vs 2nd row on md+; between row pairs on mobile).
- * Tailwind classes — paired with horizontal gaps in `FeaturedProductsStrip`.
+ * Vertical gap between card rows on `md+` only. On `max-md`, row gap matches
+ * `SPECIAL_OFFERS_MOBILE_GRID_ROW_GAP_PX` («Հատուկ առաջարկներ») via inline style in `FeaturedProductsStrip`.
  */
-export const FEATURED_PRODUCTS_GRID_GAP_Y_CLASS = 'gap-y-8 md:gap-y-10';
-
-/**
- * «Նորույթներ» `max-md` only — extra grid → dots / dots → first CTA (desktop: `SPECIAL_OFFERS_RAIL_TO_PAGINATION_*` / `SPECIAL_OFFERS_PAGINATION_TO_CTA_GAP_DESKTOP_PX`).
- */
-export const FEATURED_PRODUCTS_GRID_TO_DOTS_GAP_MOBILE_PX = 72;
-export const FEATURED_PRODUCTS_DOTS_TO_CTA_GAP_MOBILE_PX = 42;
+export const FEATURED_PRODUCTS_GRID_GAP_Y_CLASS = 'md:gap-y-10';
 
 /**
  * Decorative dots above CTA (visual match to «Հատուկ առաջարկներ»; grid is not paginated).
