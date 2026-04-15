@@ -49,6 +49,13 @@ export const FOOTER_COPYRIGHT_STRIP_PADDING_TOP_CLASS = 'pt-4';
 export const FOOTER_COPYRIGHT_STRIP_STACK_GAP_CLASS = 'gap-5';
 
 /**
+ * Main footer columns grid — on `lg+`, horizontal gap is larger than vertical (`gap-x-16` vs `gap-y-10`)
+ * so space between Company and Support (and other column pairs) is more pronounced.
+ */
+export const FOOTER_MAIN_GRID_CLASS =
+  'grid grid-cols-1 items-start gap-12 md:grid-cols-2 lg:grid-cols-4 lg:gap-x-16 lg:gap-y-10';
+
+/**
  * Brand logo frame — larger than legacy 91×81; same ~91:81 aspect.
  * Blurb overlays the lower area via {@link FOOTER_BRAND_DESCRIPTION_OVERLAP_CLASS} (logo position unchanged).
  */

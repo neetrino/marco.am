@@ -18,6 +18,7 @@ import {
   FOOTER_COPYRIGHT_STRIP_PADDING_TOP_CLASS,
   FOOTER_COPYRIGHT_STRIP_STACK_GAP_CLASS,
   FOOTER_HEADING_TEXT_CLASS,
+  FOOTER_MAIN_GRID_CLASS,
   FOOTER_NAV_COLUMN_HEADING_LEADING_CLASS,
   FOOTER_NAV_COLUMN_HEADING_LIST_GAP_CLASS,
   FOOTER_NAV_COLUMN_HEADING_TRACK_CLASS,
@@ -164,7 +165,7 @@ export function Footer() {
   return (
     <footer className={`${FOOTER_SURFACE_CLASS} border-t border-black/5`}>
       <div className="mx-auto max-w-7xl px-4 pb-10 pt-8 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 items-start gap-12 md:grid-cols-2 lg:grid-cols-4 lg:gap-10">
+        <div className={FOOTER_MAIN_GRID_CLASS}>
           <div
             className={`relative flex max-w-sm flex-col ${FOOTER_BRAND_COLUMN_GAP_CLASS}`}
           >
