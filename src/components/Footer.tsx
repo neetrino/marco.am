@@ -14,6 +14,9 @@ import {
   FOOTER_COMPANY_LINKS,
   FOOTER_GRID_COMPANY_SUPPORT_WRAPPER_CLASS,
   FOOTER_GRID_CONTACTS_WRAPPER_CLASS,
+  FOOTER_COPYRIGHT_STRIP_MARGIN_TOP_CLASS,
+  FOOTER_COPYRIGHT_STRIP_PADDING_TOP_CLASS,
+  FOOTER_COPYRIGHT_STRIP_STACK_GAP_CLASS,
   FOOTER_HEADING_TEXT_CLASS,
   FOOTER_NAV_COLUMN_HEADING_LEADING_CLASS,
   FOOTER_NAV_COLUMN_HEADING_LIST_GAP_CLASS,
@@ -199,7 +202,9 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col gap-8 border-t border-black/10 pt-8 lg:flex-row lg:items-center lg:justify-between lg:gap-3 xl:gap-5">
+        <div
+          className={`${FOOTER_COPYRIGHT_STRIP_MARGIN_TOP_CLASS} flex flex-col ${FOOTER_COPYRIGHT_STRIP_STACK_GAP_CLASS} border-t border-black/10 ${FOOTER_COPYRIGHT_STRIP_PADDING_TOP_CLASS} lg:flex-row lg:items-center lg:justify-between lg:gap-3 xl:gap-5`}
+        >
           <div className="flex shrink-0 justify-center lg:justify-start">
             <FooterSocialLinks density="compact" />
           </div>

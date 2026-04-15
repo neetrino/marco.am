@@ -41,6 +41,13 @@ export const FOOTER_GRID_COMPANY_SUPPORT_WRAPPER_CLASS =
 export const FOOTER_GRID_CONTACTS_WRAPPER_CLASS =
   'lg:flex lg:w-full lg:justify-end';
 
+/** Space between main footer grid and the copyright separator bar. */
+export const FOOTER_COPYRIGHT_STRIP_MARGIN_TOP_CLASS = 'mt-6';
+/** Padding under the rule, above social / copyright / payments. */
+export const FOOTER_COPYRIGHT_STRIP_PADDING_TOP_CLASS = 'pt-4';
+/** Vertical gap between stacked copyright-row blocks on small screens. */
+export const FOOTER_COPYRIGHT_STRIP_STACK_GAP_CLASS = 'gap-5';
+
 /**
  * Brand logo frame — larger than legacy 91×81; same ~91:81 aspect.
  * Blurb overlays the lower area via {@link FOOTER_BRAND_DESCRIPTION_OVERLAP_CLASS} (logo position unchanged).
