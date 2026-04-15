@@ -13,6 +13,7 @@ import {
   FOOTER_BRAND_LOGO_SHIFT_CLASS,
   FOOTER_COMPANY_LINKS,
   FOOTER_HEADING_TEXT_CLASS,
+  FOOTER_NAV_COLUMN_HEADING_TRACK_CLASS,
   FOOTER_MUTED_TEXT_CLASS,
   FOOTER_SUPPORT_LINKS,
   FOOTER_SURFACE_CLASS,
@@ -41,7 +42,7 @@ function FooterNavColumn({
   return (
     <div className="flex flex-col gap-3">
       <p
-        className={`text-xs font-bold uppercase tracking-[0.05em] ${FOOTER_HEADING_TEXT_CLASS}`}
+        className={`text-xs font-bold uppercase ${FOOTER_NAV_COLUMN_HEADING_TRACK_CLASS} ${FOOTER_HEADING_TEXT_CLASS}`}
       >
         {t(titleKey)}
       </p>

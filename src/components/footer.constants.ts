@@ -11,6 +11,11 @@ export const FOOTER_MUTED_TEXT_CLASS = 'text-[#6b7280]';
 /** Figma heading text #181111 */
 export const FOOTER_HEADING_TEXT_CLASS = 'text-[#181111]';
 
+/**
+ * Company / Support column titles — no extra letter-spacing (see default `tracking-[0.05em]` on Contacts).
+ */
+export const FOOTER_NAV_COLUMN_HEADING_TRACK_CLASS = 'tracking-normal';
+
 export const NEETRINO_STUDIO_HREF = 'https://neetrino.com/';
 
 /**
@@ -33,10 +38,11 @@ export const FOOTER_BRAND_COLUMN_GAP_CLASS = 'gap-0';
 
 /**
  * Brand tagline: anchored to the bottom of the logo frame (`bottom-0`), above the mark (`z-10`).
- * Add `-translate-y-*` if you need to pull the copy up over the logo.
+ * `whitespace-pre` — only `\n` from locale line breaks (no extra wraps like `pre-line`).
+ * `overflow-x-auto` — on very narrow columns, horizontal scroll instead of breaking lines.
  */
 export const FOOTER_BRAND_DESCRIPTION_OVERLAP_CLASS =
-  'absolute bottom-0 left-0 z-10 max-w-[200px] whitespace-pre-line';
+  'absolute bottom-0 left-0 z-10 max-w-full overflow-x-auto whitespace-pre';
 
 /** Smaller than `text-xs` so the blurb stays subtle over the logo. */
 export const FOOTER_BRAND_DESCRIPTION_TEXT_CLASS =
