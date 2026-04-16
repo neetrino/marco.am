@@ -25,7 +25,7 @@
 | Փուլ | Անվանում                         | Փուլի առաջընթաց |
 | ---- | -------------------------------- | --------------- |
 | 1    | Infra & API կոնտրակտ             | `100%`          |
-| 2    | Գլխավոր էջ (Home) — տվյալներ     | `33%`           |
+| 2    | Գլխավոր էջ (Home) — տվյալներ     | `41%`           |
 | 3    | Shop (PLP) — կատալոգ API         | `82%`           |
 | 4    | Ապրանքի էջ (PDP) — մանրամասն API | `84%`           |
 | 5    | Checkout — պատվեր                | `70%`           |
@@ -38,7 +38,7 @@
 | 12   | Site-wide & i18n (API)           | `50%`           |
 
 
-**Ընդհանուր նախագծի առաջընթաց (backend).** `~52%` — *(12 փուլերի միջին տոկոս, մոտավոր)*։
+**Ընդհանուր նախագծի առաջընթաց (backend).** `~53%` — *(12 փուլերի միջին տոկոս, մոտավոր)*։
 
 ---
 
@@ -61,14 +61,14 @@
 
 ## Փուլ 2 — Գլխավոր էջ (Home)
 
-**Փուլի առաջընթաց.** `33%`
+**Փուլի առաջընթաց.** `41%`
 
 
 | ID  | Առաջադրանք (backend)                                                                                                   | Կատարման % | Կարգավիճակ |
 | --- | ---------------------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
 | 2.1 | Hero / banner — CMS կամ admin-ից կառավարելի կոնտենտ, CTA (ցուցակ, ակտիվություն, կարգ)                                  | 10         | ⬜          |
 | 2.2 | Featured products — bestsellers կամ curated list, տվյալներ PDP հղման համար                                             | 85         | 🔄         |
-| 2.3 | Promotions / special offers բլոկի տվյալներ                                                                             | 35         | 🔄         |
+| 2.3 | Promotions / special offers բլոկի տվյալներ                                                                             | 100        | ✅         |
 | 2.4 | «Why choose us» — 3–4 առավելություն (warranty, fast delivery, installment, original products) — CMS կամ structured API | 5          | ⬜          |
 | 2.5 | Հաճախորդների կարծիքների carousel — rating, տեքստ, լուսանկարներ (եթե կան)                                               | 0          | ⬜          |
 | 2.6 | Brand partners — բրենդների մետատվյալներ + լոգո asset URL                                                               | 25         | ⬜          |
@@ -76,7 +76,9 @@
 | 2.8 | Reels section (home) — կարճ ցուցակ / նախադիտում կամ deep link դեպի Reels էջ (տես Փուլ 11)                              | 100        | ✅         |
 
 
-*Նշումներ.* 2.2 — `GET /api/v1/products` + `filter=new|bestseller|featured`։ 2.3 — զեղչերի լոգիկան կա կատալոգի/կարգավորման մակարդակում, առանձին «promo block» API չկա։ Բրենդները DB-ում են, բայց storefront-ի համար հանրային brands API չի երևում (միայն admin)։
+*Նշումներ.* 2.2 — `GET /api/v1/products` + `filter=new|bestseller|featured`։ 2.3 — `GET /api/v1/products` + `filter=promotion` կամ `filter=special_offer` — ակցիայի ապրանքներ՝ ապրանքի `discountPercent > 0`, կատեգորիայի/բրենդի զեղչ admin settings-ից (`categoryDiscounts` / `brandDiscounts`), կամ variant-ում `compareAtPrice > price` (SQL DISTINCT `productId`)։ Home «Հատուկ առաջարկներ» բլոկը կարդում է այս ֆիլտրը; CTA՝ `/products?filter=promotion`։ **Ուշադրություն**՝ միայն **global** զեղչը (առանց ապրանք/կատեգորիա/բրենդ/compare-at) այս ցուցակի մեջ չի ներառվում — ամբողջ կատալոգը չլցնելու համար։ Բրենդները DB-ում են, բայց storefront-ի համար հանրային brands API չի երևում (միայն admin)։
+
+**2.3 ✅ ավարտված (2026-04-16).** `GET /api/v1/products?filter=promotion|special_offer` — տես վերևի *Նշումներ* 2.3 բլոկը; UI՝ `HomeSpecialOffersSection`։
 
 **2.8 ✅ ավարտված (2026-04-16).** Storefront՝ `HomeReelsSection` (գլխավոր) + ներքին `/reels` էջ vertical snap ֆիդ (պաստեր նկարներ, deep link `/reels?i=<index>` home-ի յուրաքանչյուր tile-ից), header-ի «Reels» հղումը՝ `/reels` (ոչ արտաքին URL)։ Սերվերային reels մոդել/API չի ավելացվել — տես Փուլ 11։
 

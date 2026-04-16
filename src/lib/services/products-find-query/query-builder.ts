@@ -90,8 +90,73 @@ async function buildCategoryFilter(
   };
 }
 
+/** Product IDs that have at least one variant with compare-at price above current price (sale price). */
+async function getProductIdsWithVariantSalePrice(): Promise<string[]> {
+  const rows = await db.$queryRaw<{ productId: string }[]>(Prisma.sql`
+    SELECT DISTINCT "productId"
+    FROM "product_variants"
+    WHERE published = true
+      AND "compareAtPrice" IS NOT NULL
+      AND "compareAtPrice" > price
+  `);
+  return rows.map((r) => r.productId);
+}
+
 /**
- * Build filter for new, featured, bestseller
+ * Promotions / special offers: product discount, category/brand discounts from settings,
+ * or variant-level compare-at sale (compareAtPrice > price).
+ */
+async function buildPromotionFilter(
+  existingWhere: Prisma.ProductWhereInput
+): Promise<Prisma.ProductWhereInput> {
+  const discountSettings = await db.settings.findMany({
+    where: {
+      key: { in: ["categoryDiscounts", "brandDiscounts"] },
+    },
+  });
+
+  const categoryDiscountsSetting = discountSettings.find(
+    (s: { key: string; value: unknown }) => s.key === "categoryDiscounts"
+  );
+  const categoryDiscounts = categoryDiscountsSetting
+    ? ((categoryDiscountsSetting.value as Record<string, number>) || {})
+    : {};
+
+  const brandDiscountsSetting = discountSettings.find(
+    (s: { key: string; value: unknown }) => s.key === "brandDiscounts"
+  );
+  const brandDiscounts = brandDiscountsSetting
+    ? ((brandDiscountsSetting.value as Record<string, number>) || {})
+    : {};
+
+  const categoryIdsWithDiscount = Object.entries(categoryDiscounts)
+    .filter(([, v]) => Number(v) > 0)
+    .map(([k]) => k);
+  const brandIdsWithDiscount = Object.entries(brandDiscounts)
+    .filter(([, v]) => Number(v) > 0)
+    .map(([k]) => k);
+
+  const saleProductIds = await getProductIdsWithVariantSalePrice();
+
+  const orConditions: Prisma.ProductWhereInput[] = [{ discountPercent: { gt: 0 } }];
+
+  if (saleProductIds.length > 0) {
+    orConditions.push({ id: { in: saleProductIds } });
+  }
+  if (categoryIdsWithDiscount.length > 0) {
+    orConditions.push({ primaryCategoryId: { in: categoryIdsWithDiscount } });
+  }
+  if (brandIdsWithDiscount.length > 0) {
+    orConditions.push({ brandId: { in: brandIdsWithDiscount } });
+  }
+
+  return {
+    AND: [existingWhere, { OR: orConditions }],
+  };
+}
+
+/**
+ * Build filter for new, featured, bestseller, promotion
  */
 async function buildFilterFilter(
   filter: string,
@@ -101,6 +166,11 @@ async function buildFilterFilter(
   bestsellerProductIds: string[];
 }> {
   const bestsellerProductIds: string[] = [];
+
+  if (filter === "promotion" || filter === "special_offer") {
+    const where = await buildPromotionFilter(existingWhere);
+    return { where, bestsellerProductIds };
+  }
 
   if (filter === "new") {
     const thirtyDaysAgo = new Date();
@@ -237,7 +307,7 @@ export async function buildWhereClause(
     where = { ...where, ...categoryWhere };
   }
 
-  // Add filter for new, featured, bestseller
+  // Add filter for new, featured, bestseller, promotion
   const filterResult = await buildFilterFilter(filter || "", where);
   where = filterResult.where;
   bestsellerProductIds.push(...filterResult.bestsellerProductIds);

@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
 
     const onlyFeatured =
       filters.filter &&
-      ["new", "bestseller", "featured"].includes(filters.filter) &&
+      ["new", "bestseller", "featured", "promotion", "special_offer"].includes(filters.filter) &&
       !filters.category &&
       !filters.search &&
       (filters.limit ?? 12) <= 24;

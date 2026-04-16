@@ -155,7 +155,14 @@ class ProductsFindFilterService {
 
     // Sort
     const { filter, sort = "createdAt" } = filters;
-    if (filter === "bestseller" && bestsellerProductIds.length > 0) {
+    if (filter === "promotion" || filter === "special_offer") {
+      products.sort((a: ProductWithRelations, b: ProductWithRelations) => {
+        const aD = a.discountPercent ?? 0;
+        const bD = b.discountPercent ?? 0;
+        if (bD !== aD) return bD - aD;
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+    } else if (filter === "bestseller" && bestsellerProductIds.length > 0) {
       const rank = new Map<string, number>();
       bestsellerProductIds.forEach((id, index) => rank.set(id, index));
       products.sort((a: ProductWithRelations, b: ProductWithRelations) => {

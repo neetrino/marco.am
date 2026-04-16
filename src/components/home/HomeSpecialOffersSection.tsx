@@ -128,7 +128,7 @@ export function HomeSpecialOffersSection() {
           page: '1',
           limit: String(PRODUCTS_LIMIT),
           lang: language,
-          filter: 'featured',
+          filter: 'promotion',
         },
       });
       setProducts(response.data ?? []);
@@ -399,7 +399,7 @@ export function HomeSpecialOffersSection() {
                   style={{ marginTop: sectionPaginationToCtaGapPx }}
                 >
                   <Link
-                    href="/products?filter=featured"
+                    href="/products?filter=promotion"
                     className={SPECIAL_OFFERS_CTA_LINK_CLASS}
                   >
                     {tr('home.special_offers.cta')}
