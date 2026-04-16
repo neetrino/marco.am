@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { toApiErrorResponse } from "@/lib/api/next-route-error";
 import { authenticateToken } from "@/lib/middleware/auth";
-import { usersService } from "@/lib/services/users.service";
-import { toApiError } from "@/lib/types/errors";
+import { safeParseShippingAddressUpdate } from "@/lib/schemas/shipping-address.schema";
+import { shippingAddressesService } from "@/lib/services/shipping-addresses.service";
 import { logger } from "@/lib/utils/logger";
 
 export async function PUT(
@@ -24,13 +25,27 @@ export async function PUT(
     }
 
     const { addressId } = await params;
-    const data = await req.json();
-    const result = await usersService.updateAddress(user.id, addressId, data);
+    const raw = await req.json();
+    const parsed = safeParseShippingAddressUpdate(raw);
+    if (!parsed.success) {
+      const detail = parsed.error.issues.map((i) => i.message).join("; ");
+      return NextResponse.json(
+        {
+          type: "https://api.shop.am/problems/validation-error",
+          title: "Validation Error",
+          status: 400,
+          detail,
+          instance: req.url,
+        },
+        { status: 400 }
+      );
+    }
+
+    const result = await shippingAddressesService.updateAddress(user.id, addressId, parsed.data);
     return NextResponse.json(result);
-  } catch (error: any) {
-    logger.error("Users addresses error", { error });
-    const apiError = toApiError(error, req.url);
-    return NextResponse.json(apiError, { status: apiError.status || 500 });
+  } catch (error: unknown) {
+    logger.error("Users addresses PUT error", { error });
+    return toApiErrorResponse(error, req.url);
   }
 }
 
@@ -54,12 +69,10 @@ export async function DELETE(
     }
 
     const { addressId } = await params;
-    await usersService.deleteAddress(user.id, addressId);
+    await shippingAddressesService.deleteAddress(user.id, addressId);
     return new NextResponse(null, { status: 204 });
-  } catch (error: any) {
-    logger.error("Users addresses error", { error });
-    const apiError = toApiError(error, req.url);
-    return NextResponse.json(apiError, { status: apiError.status || 500 });
+  } catch (error: unknown) {
+    logger.error("Users addresses DELETE error", { error });
+    return toApiErrorResponse(error, req.url);
   }
 }
-

@@ -30,7 +30,7 @@
 | 4    | Ապրանքի էջ (PDP) — մանրամասն API | `85%`           |
 | 5    | Checkout — պատվեր                | `85%`           |
 | 6    | Վճարման եղանակներ                | `50%`           |
-| 7    | Օգտատիրոջ հաշիվ (Account)        | `91%`           |
+| 7    | Օգտատիրոջ հաշիվ (Account)        | `93%`           |
 | 8    | Admin — catalog & promos         | `42%`           |
 | 9    | Admin — orders                   | `88%`           |
 | 10   | Admin — analytics                | `75%`           |
@@ -168,7 +168,7 @@
 
 ## Փուլ 7 — Account (հաճախորդի պրոֆիլ)
 
-**Փուլի առաջընթաց.** `91%`
+**Փուլի առաջընթաց.** `93%`
 
 
 | ID  | Առաջադրանք (backend)                                                             | Կատարման % | Կարգավիճակ |
@@ -176,11 +176,13 @@
 | 7.1 | Registration / Login — email **կամ** phone, verification flow (եթե պահանջվում է) | 100        | ✅         |
 | 7.2 | Order history — կարգավիճակ, reorder entry point-ի տվյալներ                       | 90         | 🔄         |
 | 7.3 | Reorder — նախորդ պատվերից զամբյուղի prefill / նոր պատվեր                         | 75         | 🔄         |
-| 7.4 | Address management — shipping հասցեների CRUD                                     | 90         | 🔄         |
+| 7.4 | Address management — shipping հասցեների CRUD                                     | 100        | ✅         |
 | 7.5 | Personal data — edit profile, password/security                                  | 100        | ✅         |
 
 
 *Նշումներ.* 7.3 — առանձին reorder endpoint չկա, կլիենտը օգտագործում է զամբյուղի API-ները։
+
+**7.4 ✅ ավարտված (2026-04-16).** Shipping հասցեների CRUD՝ JWT-ով `GET`/`POST /api/v1/users/addresses`, `PUT`/`DELETE /api/v1/users/addresses/[addressId]`, default՝ `PATCH /api/v1/users/addresses/[addressId]/default`։ Zod վալիդացիա (`shipping-address.schema.ts`), սերվերային լոգիկա՝ `shipping-addresses.service.ts` — առաջին հասցեն default, `isDefault: true`-ի դեպքում մյուսները անջատված, default հասցեի նշումը ստուգվում է `userId`-ով (ID-ով կեղծ default անել հնարավոր չէ), ջնջումից հետո մնացածների համար default-ի ապահովում։ `GET /api/v1/users/profile`-ի `addresses` դաշտը նույն մոդելն է։
 
 **7.1 ✅ ավարտված (2026-04-16).** `AUTH_REQUIRE_VERIFICATION` env (`true`/`false`, default `false`) — երբ `true`, գրանցում/մուտքից հետո JWT չի տրվում մինչև OTP հաստատում։ `POST /api/v1/auth/register` կամ `POST /api/v1/auth/login` կարող են վերադարձնել `{ needsVerification, channel, verificationToken }` — 15 րոպե TTL սեսիոն JWT։ `POST /api/v1/auth/verify` (`verificationToken`, `code`) — `{ user, token }` + `emailVerified`/`phoneVerified` թարմացում։ `POST /api/v1/auth/resend-verification` — նոր OTP, 60 վրկ cooldown։ Էլ. փոստ՝ Resend (`RESEND_API_KEY`, `RESEND_FROM_EMAIL`), հեռախոս՝ մինչև SMS ինտեգրացիա՝ սերվերային log (dev)։ DB՝ `auth_verification_codes`։ Storefront՝ `/verify` էջ, `AuthContext` OTP քայլ։
 

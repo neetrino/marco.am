@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { toApiErrorResponse } from "@/lib/api/next-route-error";
 import { authenticateToken } from "@/lib/middleware/auth";
-import { usersService } from "@/lib/services/users.service";
+import { shippingAddressesService } from "@/lib/services/shipping-addresses.service";
+import { logger } from "@/lib/utils/logger";
 
 export async function PATCH(
   req: NextRequest,
@@ -23,11 +24,10 @@ export async function PATCH(
     }
 
     const { addressId } = await params;
-    const result = await usersService.setDefaultAddress(user.id, addressId);
+    const result = await shippingAddressesService.setDefaultAddress(user.id, addressId);
     return NextResponse.json(result);
   } catch (error: unknown) {
-    console.error("❌ [USERS] Error:", error);
+    logger.error("Users addresses default PATCH error", { error });
     return toApiErrorResponse(error, req.url);
   }
 }
-
