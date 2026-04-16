@@ -24,32 +24,28 @@ export function useCarousel({ itemCount, visibleItems, autoRotateInterval = 5000
   // Auto-rotate carousel
   useEffect(() => {
     if (itemCount <= visibleItems || isDragging) return;
-    
+
     const interval = setInterval(() => {
       setCurrentIndex((prevIndex) => {
-        return prevIndex >= maxIndex ? 0 : prevIndex + 1;
+        const clamped = Math.min(prevIndex, maxIndex);
+        return clamped >= maxIndex ? 0 : clamped + 1;
       });
     }, autoRotateInterval);
 
     return () => clearInterval(interval);
   }, [itemCount, visibleItems, isDragging, maxIndex, autoRotateInterval]);
 
-  // Adjust currentIndex when visibleItems changes
-  useEffect(() => {
-    if (currentIndex > maxIndex) {
-      setCurrentIndex(maxIndex);
-    }
-  }, [visibleItems, itemCount, maxIndex, currentIndex]);
-
   const goToPrevious = () => {
     setCurrentIndex((prevIndex) => {
-      return prevIndex === 0 ? maxIndex : prevIndex - 1;
+      const clamped = Math.min(prevIndex, maxIndex);
+      return clamped === 0 ? maxIndex : clamped - 1;
     });
   };
 
   const goToNext = () => {
     setCurrentIndex((prevIndex) => {
-      return prevIndex >= maxIndex ? 0 : prevIndex + 1;
+      const clamped = Math.min(prevIndex, maxIndex);
+      return clamped >= maxIndex ? 0 : clamped + 1;
     });
   };
 

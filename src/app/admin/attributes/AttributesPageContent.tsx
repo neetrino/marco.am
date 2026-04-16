@@ -53,7 +53,7 @@ export function AttributesPageContent() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="page-shell">
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
             <p className="text-sm text-gray-600">{t('admin.attributes.loadingAttributes')}</p>
@@ -65,7 +65,7 @@ export function AttributesPageContent() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="page-shell">
         {/* Header */}
         <div className="mb-8 flex items-center justify-between">
           <div>

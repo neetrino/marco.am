@@ -365,17 +365,27 @@ export type TranslationKey = keyof typeof translations.en;
 export function getTranslation(key: string, language?: LanguageCode): string {
   const lang = language || getStoredLanguage();
   const keys = key.split('.');
-  let value: any = translations[lang];
+  let value: unknown = translations[lang];
   
   for (const k of keys) {
-    if (value && typeof value === 'object' && k in value) {
-      value = value[k as keyof typeof value];
+    if (
+      value !== null &&
+      typeof value === "object" &&
+      !Array.isArray(value) &&
+      k in value
+    ) {
+      value = (value as Record<string, unknown>)[k];
     } else {
       // Fallback to English if translation not found
       value = translations.en;
       for (const k2 of keys) {
-        if (value && typeof value === 'object' && k2 in value) {
-          value = value[k2 as keyof typeof value];
+        if (
+          value !== null &&
+          typeof value === "object" &&
+          !Array.isArray(value) &&
+          k2 in value
+        ) {
+          value = (value as Record<string, unknown>)[k2];
         } else {
           return key;
         }

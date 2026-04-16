@@ -23,9 +23,17 @@ class CategoriesService {
       },
     });
 
+    type CategoryTreeNode = {
+      id: string;
+      slug: string;
+      title: string;
+      fullPath: string;
+      children: CategoryTreeNode[];
+    };
+
     // Build tree structure
-    const categoryMap = new Map();
-    const rootCategories: any[] = [];
+    const categoryMap = new Map<string, CategoryTreeNode>();
+    const rootCategories: CategoryTreeNode[] = [];
 
     categories.forEach((category: {
       id: string;
@@ -37,12 +45,12 @@ class CategoriesService {
         category.translations[0];
       if (!translation) return;
 
-      const categoryData = {
+      const categoryData: CategoryTreeNode = {
         id: category.id,
         slug: translation.slug,
         title: translation.title,
         fullPath: translation.fullPath,
-        children: [] as any[],
+        children: [],
       };
 
       categoryMap.set(category.id, categoryData);

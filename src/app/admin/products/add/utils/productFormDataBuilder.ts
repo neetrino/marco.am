@@ -4,7 +4,8 @@
 
 import type { ProductData, Variant, ProductLabel } from '../types';
 
-interface FormData {
+/** Full add/edit product form state (shared across hooks). */
+export interface AddProductFormState {
   title: string;
   slug: string;
   descriptionHtml: string;
@@ -29,7 +30,7 @@ export function buildFormData(
   featuredIndexFromApi: number,
   mainProductImage: string,
   mergedVariant: Variant
-): FormData {
+): AddProductFormState {
   const brandIds = product.brandId ? [product.brandId] : [];
 
   return {
@@ -52,7 +53,7 @@ export function buildFormData(
         ? normalizedMedia[featuredIndexFromApi >= 0 && featuredIndexFromApi < normalizedMedia.length ? featuredIndexFromApi : 0]
         : mainProductImage || '',
     variants: [mergedVariant],
-    labels: (product.labels || []).map((label: any) => ({
+    labels: (product.labels || []).map((label) => ({
       id: label.id || '',
       type: label.type || 'text',
       value: label.value || '',

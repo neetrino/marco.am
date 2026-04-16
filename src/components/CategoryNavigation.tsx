@@ -45,7 +45,7 @@ function CategoryNavigationContent() {
   };
 
   useEffect(() => {
-    // Обновляем состояние кнопок после загрузки категорий и продуктов
+    // ÐžÐ±Ð½Ð¾Ð²Ð»ÑÐµÐ¼ ÑÐ¾ÑÑ‚Ð¾ÑÐ½Ð¸Ðµ ÐºÐ½Ð¾Ð¿Ð¾Ðº Ð¿Ð¾ÑÐ»Ðµ Ð·Ð°Ð³Ñ€ÑƒÐ·ÐºÐ¸ ÐºÐ°Ñ‚ÐµÐ³Ð¾Ñ€Ð¸Ð¹ Ð¸ Ð¿Ñ€Ð¾Ð´ÑƒÐºÑ‚Ð¾Ð²
     if (!loading && categories.length > 0) {
       setTimeout(() => {
         updateScrollButtons();
@@ -68,7 +68,7 @@ function CategoryNavigationContent() {
 
   return (
     <div className="bg-white border-b border-gray-200 py-3 sm:py-4 md:py-6 w-full">
-      <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8">
+      <div className="page-shell">
         <div className="relative">
           <CategoryScrollButtons
             canScrollLeft={canScrollLeft}

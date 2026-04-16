@@ -1,8 +1,11 @@
+/** Variant-like objects that may carry comma-separated image URLs for submit. */
+export type VariantImageCarrier = { imageUrl?: string };
+
 interface ProcessImagesForSubmitProps {
   imageUrls: string[];
   featuredImageIndex: number;
   mainProductImage: string;
-  variants: any[];
+  variants: VariantImageCarrier[];
 }
 
 export function processImagesForSubmit({
@@ -13,7 +16,7 @@ export function processImagesForSubmit({
 }: ProcessImagesForSubmitProps): {
   finalMedia: string[];
   mainImage: string | null;
-  processedVariants: any[];
+  processedVariants: VariantImageCarrier[];
 } {
   const isBase64Image = (url: string): boolean => {
     return url.startsWith('data:image/');

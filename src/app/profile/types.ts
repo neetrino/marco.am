@@ -42,7 +42,7 @@ export interface OrderItem {
     value?: string;
     label?: string;
     imageUrl?: string;
-    colors?: string[] | any;
+    colors?: string[] | null;
   }>;
 }
 
@@ -65,7 +65,7 @@ export interface OrderDetails {
     email?: string;
     phone?: string;
   };
-  shippingAddress?: any;
+  shippingAddress?: Address | null;
   shippingMethod: string;
   trackingNumber?: string;
   timeline?: Array<{

@@ -132,7 +132,22 @@ async function seedBrands() {
   return ids;
 }
 
+/** Stable placeholder images for list cards (HTTPS; `processImageUrl` accepts full URLs). */
+function seedProductImageUrl(index) {
+  return `https://picsum.photos/seed/marco-home-${index}/640/640`;
+}
+
 async function seedProducts(categoryIds, brandIds) {
+  const existingDemo = await prisma.product.count({
+    where: {
+      translations: { some: { slug: { startsWith: "seed-" } } },
+    },
+  });
+  if (existingDemo > 0) {
+    console.log("[Seed] Products skipped: already have", existingDemo, "demo product(s) (slug seed-*)");
+    return [];
+  }
+
   const titles = [
     "Wireless Earbuds", "Running Shoes", "Cotton T-Shirt", "Desk Lamp", "Yoga Mat",
     "Water Bottle", "Backpack", "Smart Watch", "Sunglasses", "Notebook Set",
@@ -155,13 +170,15 @@ async function seedProducts(categoryIds, brandIds) {
     const brandId = i % 3 === 0 ? brandIds[i % brandIds.length] : null;
     const price = 1999 + (i % 50) * 500;
     const stock = 10 + (i % 91);
-    const featured = i < 10;
+    /** Home «Հատուկ առաջարկներ» uses filter=featured; «Նորություններ» uses last 30 days — new rows qualify. */
+    const featured = i < 12;
     const product = await prisma.product.create({
       data: {
         brandId,
-        media: [],
+        media: [seedProductImageUrl(i)],
         published: true,
         featured,
+        discountPercent: i < 6 && featured ? 10 + (i % 5) : 0,
         publishedAt: new Date(),
         categoryIds: categoryIdsList,
         primaryCategoryId,
@@ -197,10 +214,17 @@ async function seedProducts(categoryIds, brandIds) {
 async function main() {
   console.log("=== Seed start ===");
   try {
-    await seedAdmin();
     const categoryIds = await seedCategories();
     const brandIds = await seedBrands();
     await seedProducts(categoryIds, brandIds);
+    try {
+      await seedAdmin();
+    } catch (adminErr) {
+      console.warn(
+        "[Seed] Admin user step failed (check DB migrations vs schema):",
+        adminErr instanceof Error ? adminErr.message : adminErr
+      );
+    }
     console.log("=== Seed done ===");
   } catch (e) {
     console.error("Seed error:", e);

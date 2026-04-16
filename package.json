@@ -4,9 +4,9 @@
   "private": true,
   "description": "WhiteShop.am — Next.js app at root, pnpm workspace",
   "scripts": {
-    "dev": "next dev",
-    "dev:webpack": "next dev --no-turbo",
-    "dev:clean": "node -e \"require('fs').rmSync('.next', {recursive: true, force: true})\" && next dev",
+    "dev": "next dev --webpack",
+    "dev:webpack": "next dev --webpack",
+    "dev:clean": "node -e \"require('fs').rmSync('.next', {recursive: true, force: true})\" && next dev --turbopack",
     "prebuild": "cd shared/db && pnpm run db:generate",
     "prebuild:migrate": "node src/scripts/run-migrations.js",
     "build": "pnpm run prebuild && next build",

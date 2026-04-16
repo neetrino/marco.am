@@ -4,7 +4,7 @@ class AdminUsersService {
   /**
    * Get users
    */
-  async getUsers(_filters: any) {
+  async getUsers(_filters: Record<string, unknown>) {
     const users = await db.user.findMany({
       where: {
         deletedAt: null,
@@ -46,7 +46,7 @@ class AdminUsersService {
   /**
    * Update user
    */
-  async updateUser(userId: string, data: any) {
+  async updateUser(userId: string, data: { blocked?: boolean; roles?: string[] }) {
     return await db.user.update({
       where: { id: userId },
       data: {

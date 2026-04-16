@@ -210,6 +210,15 @@ class ProductsFiltersService {
     let rangeMin = Infinity;
     let rangeMax = 0;
 
+    type VariantRow = ProductWithRelations["variants"][number];
+    type VariantOptionLike = VariantRow["options"][number] & {
+      attributeKey?: string | null;
+      key?: string | null;
+      attribute?: string | null;
+      value?: string | null;
+      label?: string | null;
+    };
+
     products.forEach((product: ProductWithRelations & { brand?: { id: string; translations?: Array<{ locale: string; name?: string }>; name?: string } | null }) => {
       if (!product || !product.variants || !Array.isArray(product.variants)) {
         return;
@@ -227,11 +236,11 @@ class ProductsFiltersService {
           if (v.price > rangeMax) rangeMax = v.price;
         }
       });
-      product.variants.forEach((variant: any) => {
+      product.variants.forEach((variant: VariantRow) => {
         if (!variant || !variant.options || !Array.isArray(variant.options)) {
           return;
         }
-        variant.options.forEach((option: any) => {
+        variant.options.forEach((option: VariantOptionLike) => {
           if (!option) return;
           
           // Check if it's a color option (support multiple formats)
@@ -250,7 +259,12 @@ class ProductsFiltersService {
               const translation = option.attributeValue.translations?.find((t: { locale: string }) => t.locale === lang) || option.attributeValue.translations?.[0];
               colorValue = translation?.label || option.attributeValue.value || "";
               imageUrl = option.attributeValue.imageUrl || null;
-              colorsHex = option.attributeValue.colors || null;
+              const rawColorsHex = option.attributeValue.colors;
+              colorsHex =
+                Array.isArray(rawColorsHex) &&
+                rawColorsHex.every((c): c is string => typeof c === "string")
+                  ? rawColorsHex
+                  : null;
             } else if (option.value) {
               // Old format: use value directly
               colorValue = option.value.trim();
@@ -312,22 +326,38 @@ class ProductsFiltersService {
       });
       
       // Also check productAttributes for color attribute values with imageUrl and colors
-      if ((product as any).productAttributes && Array.isArray((product as any).productAttributes)) {
-        (product as any).productAttributes.forEach((productAttr: any) => {
-          if (productAttr.attribute?.key === 'color' && productAttr.attribute?.values) {
-            productAttr.attribute.values.forEach((attrValue: any) => {
+      if (product.productAttributes && Array.isArray(product.productAttributes)) {
+        product.productAttributes.forEach((productAttr) => {
+          const pa = productAttr as {
+            attribute?: {
+              key: string;
+              values?: Array<{
+                translations?: Array<{ locale: string; label?: string }>;
+                value?: string;
+                imageUrl?: string | null;
+                colors?: string[] | null | unknown;
+              }>;
+            };
+          };
+          if (pa.attribute?.key === 'color' && pa.attribute?.values) {
+            pa.attribute.values.forEach((attrValue) => {
               const translation = attrValue.translations?.find((t: { locale: string }) => t.locale === lang) || attrValue.translations?.[0];
               const colorValue = translation?.label || attrValue.value || "";
               if (colorValue) {
                 const colorKey = colorValue.toLowerCase();
                 const existing = colorMap.get(colorKey);
                 // Update if we have imageUrl or colors hex and they're not already set
-                if (attrValue.imageUrl || attrValue.colors) {
+                const rawColors = attrValue.colors;
+                const normalizedColors =
+                  Array.isArray(rawColors) && rawColors.every((c): c is string => typeof c === "string")
+                    ? rawColors
+                    : null;
+                if (attrValue.imageUrl || normalizedColors) {
                   colorMap.set(colorKey, {
                     count: existing?.count || 0,
                     label: existing?.label || colorValue,
                     imageUrl: attrValue.imageUrl || existing?.imageUrl || null,
-                    colors: attrValue.colors || existing?.colors || null,
+                    colors: normalizedColors ?? existing?.colors ?? null,
                   });
                 }
               }

@@ -20,6 +20,8 @@ export interface VariantOption {
 export interface ProductVariant {
   id: string;
   sku: string;
+  /** Optional display order from API (not always present on type). */
+  position?: number;
   price: number;
   originalPrice?: number | null;
   compareAtPrice?: number;

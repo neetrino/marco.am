@@ -5,6 +5,9 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from '../../lib/i18n-client';
 import { getStoredLanguage } from '../../lib/language';
 import { loadTranslation } from '../../lib/i18n';
+import enDelivery from '../../locales/en/delivery.json';
+
+type DeliveryJson = typeof enDelivery;
 
 export default function DeliveryPage() {
   const { t } = useTranslation();
@@ -21,7 +24,7 @@ export default function DeliveryPage() {
   useEffect(() => {
     const loadMethods = () => {
       const lang = getStoredLanguage();
-      const deliveryData = loadTranslation(lang, 'delivery') as { methods?: typeof methods } | null;
+      const deliveryData = loadTranslation(lang, 'delivery') as DeliveryJson | null;
       setMethods(deliveryData?.methods ?? []);
     };
     loadMethods();
@@ -108,7 +111,7 @@ export default function DeliveryPage() {
               <ul className="list-disc list-inside text-gray-600 space-y-1">
                 {(() => {
                   const lang = getStoredLanguage();
-                  const deliveryData = loadTranslation(lang, 'delivery');
+                  const deliveryData = loadTranslation(lang, 'delivery') as DeliveryJson | null;
                   const items = deliveryData?.returnPolicy?.returnConditions?.items || [];
                   return Array.isArray(items) ? items.map((item: string, idx: number) => (
                     <li key={idx}>{item}</li>
@@ -121,7 +124,7 @@ export default function DeliveryPage() {
               <ol className="list-decimal list-inside text-gray-600 space-y-1">
                 {(() => {
                   const lang = getStoredLanguage();
-                  const deliveryData = loadTranslation(lang, 'delivery');
+                  const deliveryData = loadTranslation(lang, 'delivery') as DeliveryJson | null;
                   const steps = deliveryData?.returnPolicy?.howToReturn?.steps || [];
                   return Array.isArray(steps) ? steps.map((step: string, idx: number) => (
                     <li key={idx}>{step}</li>
@@ -140,7 +143,7 @@ export default function DeliveryPage() {
               <ul className="list-disc list-inside text-gray-600 space-y-1">
                 {(() => {
                   const lang = getStoredLanguage();
-                  const deliveryData = loadTranslation(lang, 'delivery');
+                  const deliveryData = loadTranslation(lang, 'delivery') as DeliveryJson | null;
                   const items = deliveryData?.returnPolicy?.nonReturnableItems?.items || [];
                   return Array.isArray(items) ? items.map((item: string, idx: number) => (
                     <li key={idx}>{item}</li>

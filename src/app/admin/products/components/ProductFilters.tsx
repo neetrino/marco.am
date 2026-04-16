@@ -1,6 +1,6 @@
 'use client';
 
-import type { FormEvent } from 'react';
+import type { FormEvent, SyntheticEvent } from 'react';
 import { Button } from '@shop/ui';
 import { useTranslation } from '../../../../lib/i18n-client';
 import type { Category } from '../types';
@@ -23,7 +23,7 @@ interface ProductFiltersProps {
   maxPrice: string;
   setMaxPrice: (price: string) => void;
   selectedIds: Set<string>;
-  handleSearch: (e: FormEvent) => void;
+  handleSearch: (e: SyntheticEvent) => void;
   handleBulkDelete: () => void;
   handleClearFilters: () => void;
   bulkDeleting: boolean;
@@ -71,7 +71,7 @@ export function ProductFilters({
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 e.preventDefault();
-                handleSearch(e as any);
+                handleSearch(e);
               }
             }}
             placeholder={t('admin.products.searchPlaceholder')}

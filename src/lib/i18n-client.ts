@@ -15,7 +15,7 @@ import enCommon from '../locales/en/common.json';
 import hyCommon from '../locales/hy/common.json';
 import ruCommon from '../locales/ru/common.json';
 
-const translations: Partial<Record<LanguageCode, any>> = {
+const translations: Partial<Record<LanguageCode, Record<string, unknown>>> = {
   en: { common: enCommon },
   hy: { common: hyCommon },
   ru: { common: ruCommon },

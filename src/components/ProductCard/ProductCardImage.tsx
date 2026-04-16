@@ -33,7 +33,7 @@ export function ProductCardImage({
 
   return (
     <div className="aspect-square bg-gray-100 relative overflow-hidden">
-      <Link href={`/products/${slug}`} className="block w-full h-full">
+      <Link href={`/products/${slug}`} className="relative block h-full w-full">
         {showPlaceholder ? (
           <ProductImagePlaceholder
             className="w-full h-full"

@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { ProductCard } from './ProductCard';
 import { useTranslation } from '../lib/i18n-client';
+import { useProductsViewMode } from './hooks/useProductsViewMode';
 
 interface Product {
   id: string;
@@ -19,8 +20,6 @@ interface Product {
   defaultVariantId?: string | null;
 }
 
-type ViewMode = 'list' | 'grid-2' | 'grid-3';
-
 interface ProductsGridProps {
   products: Product[];
   sortBy?: string;
@@ -28,35 +27,9 @@ interface ProductsGridProps {
 
 export function ProductsGrid({ products, sortBy = 'default' }: ProductsGridProps) {
   const { t } = useTranslation();
-  const [viewMode, setViewMode] = useState<ViewMode>('grid-2');
-  const [sortedProducts, setSortedProducts] = useState<Product[]>(products);
+  const [viewMode] = useProductsViewMode();
 
-  // Load view mode from localStorage
-  useEffect(() => {
-    const stored = localStorage.getItem('products-view-mode');
-    if (stored && ['list', 'grid-2', 'grid-3'].includes(stored)) {
-      setViewMode(stored as ViewMode);
-    } else {
-      // Default to grid-2 if nothing stored
-      setViewMode('grid-2');
-      localStorage.setItem('products-view-mode', 'grid-2');
-    }
-  }, []);
-
-  // Listen for view mode changes
-  useEffect(() => {
-    const handleViewModeChange = (_event: CustomEvent) => {
-      setViewMode((_event as CustomEvent).detail);
-    };
-
-    window.addEventListener('view-mode-changed', handleViewModeChange as (_event: Event) => void);
-    return () => {
-      window.removeEventListener('view-mode-changed', handleViewModeChange as (_event: Event) => void);
-    };
-  }, []);
-
-  // Sort products
-  useEffect(() => {
+  const sortedProducts = useMemo(() => {
     const sorted = [...products];
 
     switch (sortBy) {
@@ -73,14 +46,12 @@ export function ProductsGrid({ products, sortBy = 'default' }: ProductsGridProps
         sorted.sort((a, b) => b.title.localeCompare(a.title));
         break;
       default:
-        // Keep original order
         break;
     }
 
-    setSortedProducts(sorted);
+    return sorted;
   }, [products, sortBy]);
 
-  // Get grid classes based on view mode
   const getGridClasses = () => {
     switch (viewMode) {
       case 'list':
@@ -105,16 +76,15 @@ export function ProductsGrid({ products, sortBy = 'default' }: ProductsGridProps
   return (
     <div className={getGridClasses()}>
       {sortedProducts.map((product) => (
-        <ProductCard 
-          key={product.id} 
+        <ProductCard
+          key={product.id}
           product={{
             ...product,
-            compareAtPrice: product.compareAtPrice ?? undefined
-          }} 
-          viewMode={viewMode} 
+            compareAtPrice: product.compareAtPrice ?? undefined,
+          }}
+          viewMode={viewMode}
         />
       ))}
     </div>
   );
 }
-

@@ -70,7 +70,17 @@ class ProductsFindFilterService {
         }
         
         // Find variants that match ALL specified filters
-        const matchingVariants = variants.filter((variant: any) => {
+        type VariantRow = ProductWithRelations["variants"][number];
+        /** Prisma option row plus legacy attributeKey/value fields */
+        type VariantOptionLike = VariantRow["options"][number] & {
+          attributeKey?: string | null;
+          key?: string | null;
+          attribute?: string | null;
+          value?: string | null;
+          label?: string | null;
+        };
+
+        const matchingVariants = variants.filter((variant: VariantRow) => {
           const options = Array.isArray(variant.options) ? variant.options : [];
           
           if (options.length === 0) {
@@ -78,7 +88,7 @@ class ProductsFindFilterService {
           }
           
           // Helper function to get color value from option (support all formats)
-          const getColorValue = (opt: any, lang: string = 'en'): string | null => {
+          const getColorValue = (opt: VariantOptionLike, lang: string = 'en'): string | null => {
             // New format: Use AttributeValue if available
             if (opt.attributeValue && opt.attributeValue.attribute?.key === "color") {
               const translation = opt.attributeValue.translations?.find((t: { locale: string }) => t.locale === lang) || opt.attributeValue.translations?.[0];
@@ -92,7 +102,7 @@ class ProductsFindFilterService {
           };
           
           // Helper function to get size value from option (support all formats)
-          const getSizeValue = (opt: any, lang: string = 'en'): string | null => {
+          const getSizeValue = (opt: VariantOptionLike, lang: string = 'en'): string | null => {
             // New format: Use AttributeValue if available
             if (opt.attributeValue && opt.attributeValue.attribute?.key === "size") {
               const translation = opt.attributeValue.translations?.find((t: { locale: string }) => t.locale === lang) || opt.attributeValue.translations?.[0];

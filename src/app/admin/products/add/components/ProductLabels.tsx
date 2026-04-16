@@ -8,7 +8,7 @@ interface ProductLabelsProps {
   labels: ProductLabel[];
   onAddLabel: () => void;
   onRemoveLabel: (index: number) => void;
-  onUpdateLabel: (index: number, field: keyof ProductLabel, value: any) => void;
+  onUpdateLabel: (index: number, field: keyof ProductLabel, value: ProductLabel[keyof ProductLabel]) => void;
 }
 
 export function ProductLabels({ labels, onAddLabel, onRemoveLabel, onUpdateLabel }: ProductLabelsProps) {

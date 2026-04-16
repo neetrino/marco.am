@@ -64,6 +64,21 @@ export interface ProductLabel {
   color?: string | null;
 }
 
+/** Variant row returned by admin product API (edit/load). */
+export interface AdminProductVariantRow {
+  id?: string;
+  price?: string | number;
+  compareAtPrice?: string | number;
+  stock?: string | number;
+  sku?: string;
+  color?: string;
+  size?: string;
+  imageUrl?: string;
+  published?: boolean;
+  attributes?: Record<string, unknown>;
+  options?: unknown[];
+}
+
 export interface ProductData {
   id: string;
   title: string;
@@ -77,18 +92,10 @@ export interface ProductData {
   published: boolean;
   featured?: boolean;
   media?: string[];
+  /** Featured/main image URL when stored separately from `media`. */
+  mainProductImage?: string;
   labels?: ProductLabel[];
-  variants?: Array<{
-    id?: string;
-    price: string;
-    compareAtPrice?: string;
-    stock: string;
-    sku?: string;
-    color?: string;
-    size?: string;
-    imageUrl?: string;
-    published?: boolean;
-  }>;
+  variants?: AdminProductVariantRow[];
 }
 
 export interface GeneratedVariant {
@@ -99,6 +106,14 @@ export interface GeneratedVariant {
   stock: string;
   sku: string;
   image: string | null;
+}
+
+/** Simple (non-variable) product price/stock fields in the form. */
+export interface SimpleProductFormData {
+  price: string;
+  compareAtPrice: string;
+  sku: string;
+  quantity: string;
 }
 
 

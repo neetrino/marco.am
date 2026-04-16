@@ -30,7 +30,7 @@ export function OrderDetailsModal({
     return key.charAt(0).toUpperCase() + key.slice(1);
   };
 
-  const getColorsArray = (colors: any): string[] => {
+  const getColorsArray = (colors: unknown): string[] => {
     if (!colors) return [];
     if (Array.isArray(colors)) return colors;
     if (typeof colors === 'string') {

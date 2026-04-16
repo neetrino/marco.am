@@ -4,15 +4,16 @@ import { Card } from '@shop/ui';
 import Link from 'next/link';
 import { useTranslation } from '../../lib/i18n-client';
 import { loadTranslation } from '../../lib/i18n';
-import { getStoredLanguage } from '../../lib/language';
+import enFaq from '../../locales/en/faq.json';
+
+type FaqData = typeof enFaq;
 
 /**
  * FAQ page - displays frequently asked questions
  */
 export default function FAQPage() {
-  const { t } = useTranslation();
-  const lang = getStoredLanguage();
-  const faqData = loadTranslation(lang, 'faq');
+  const { t, lang } = useTranslation();
+  const faqData = loadTranslation(lang, 'faq') as FaqData | null;
   
   const faqs = [
     {
