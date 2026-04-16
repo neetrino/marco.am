@@ -135,7 +135,7 @@ function buildShowcaseChairGroupStyle(): CSSProperties {
     top: 0,
     width: `min(${HOME_MOBILE_BANNER_SHOWCASE_CHAIR_WIDTH_FRAC * HOME_MOBILE_BANNER_SHOWCASE_CARD_WIDTH_PX}px, ${HOME_MOBILE_BANNER_SHOWCASE_CHAIR_WIDTH_FRAC * 100}%)`,
     aspectRatio: `${HERO_MOBILE_CHAIR_FRAME_WIDTH_PX} / ${HERO_MOBILE_CHAIR_GROUP_HEIGHT_PX}`,
-    maxWidth: `min(${HOME_MOBILE_BANNER_SHOWCASE_CHAIR_WIDTH_FRAC * HOME_MOBILE_BANNER_SHOWCASE_CARD_WIDTH_PX}px, calc(100% - 1rem))`,
+    maxWidth: `min(${HOME_MOBILE_BANNER_SHOWCASE_CHAIR_WIDTH_FRAC * HOME_MOBILE_BANNER_SHOWCASE_CARD_WIDTH_PX}px, calc(100% - 0.25rem))`,
     transformOrigin: '50% 100%',
     transform: `translateX(-50%) translateY(${translateY}px) scale(${chairScale})`,
   };
@@ -162,9 +162,10 @@ const showcaseCtaIconFrameStyle: CSSProperties = {
 
 /** Matches `HomePromoMobileHeroSlateLabel` typography (Figma 314:2399). */
 const showcaseLabelStyle: CSSProperties = {
-  fontSize: HERO_MOBILE_SLATE_LABEL_FONT_SIZE_PX,
+  fontSize: HERO_MOBILE_SLATE_LABEL_FONT_SIZE_PX + 1,
   lineHeight: `${HERO_MOBILE_SLATE_LABEL_LINE_HEIGHT_PX}px`,
-  maxWidth: `${HERO_MOBILE_SLATE_LABEL_MAX_WIDTH_PX}px`,
+  width: `${HERO_MOBILE_SLATE_LABEL_MAX_WIDTH_PX}px`,
+  transform: 'translate(14px, 6px)',
 };
 
 const showcaseBleedPaddingStyle: CSSProperties = {
@@ -180,13 +181,14 @@ export function HomeMobileBannerProductShowcase({ language }: HomeMobileBannerPr
   const regionAria = t(language, 'home.promo_featured_title');
 
   const showcaseOuterStyle: CSSProperties = {
+    width: '100%',
     maxWidth: `${HOME_MOBILE_BANNER_SHOWCASE_CARD_MAX_WIDTH_PX}px`,
   };
 
   return (
     <div className={HOME_APP_BANNER_INNER_CLASS}>
       <div
-        className="relative mx-auto w-full overflow-visible pb-1"
+        className="relative mx-auto -mt-8 mb-5 w-full overflow-visible pb-0"
         style={{ ...showcaseBleedPaddingStyle, ...showcaseOuterStyle }}
       >
         <div
@@ -287,7 +289,7 @@ export function HomeMobileBannerProductShowcase({ language }: HomeMobileBannerPr
               </span>
             </Link>
             <div
-              className={`${montserratShowcaseLabel.className} flex shrink-0 flex-col justify-center leading-[0] not-italic text-right text-white`}
+              className={`${montserratShowcaseLabel.className} flex shrink-0 flex-col justify-center leading-[0] not-italic text-left text-white`}
               style={showcaseLabelStyle}
             >
               <p className="mb-0">{t(language, 'home.promo_mobile_slate_label_line1')}</p>

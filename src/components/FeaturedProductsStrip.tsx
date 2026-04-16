@@ -31,6 +31,7 @@ import {
 } from './home/home-special-offers.constants';
 import {
   HOME_BRANDS_AFTER_CTA_MARGIN_TOP_PX,
+  HOME_BRANDS_AFTER_CTA_MARGIN_TOP_MOBILE_PX,
   HOME_BRANDS_BLOCK_PADDING_BOTTOM_DESKTOP_PX,
   HOME_BRANDS_BLOCK_PADDING_BOTTOM_MOBILE_PX,
   HOME_BRANDS_DOTS_TO_CTA_GAP_MOBILE_PX,
@@ -241,7 +242,11 @@ export function FeaturedProductsStrip({
       <div
         className="w-full"
         style={{
-          marginTop: `${HOME_BRANDS_AFTER_CTA_MARGIN_TOP_PX}px`,
+          marginTop: `${
+            isMaxMd
+              ? HOME_BRANDS_AFTER_CTA_MARGIN_TOP_MOBILE_PX
+              : HOME_BRANDS_AFTER_CTA_MARGIN_TOP_PX
+          }px`,
           paddingBottom: `${isMaxMd ? HOME_BRANDS_BLOCK_PADDING_BOTTOM_MOBILE_PX : HOME_BRANDS_BLOCK_PADDING_BOTTOM_DESKTOP_PX}px`,
         }}
       >

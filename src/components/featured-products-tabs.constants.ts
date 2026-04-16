@@ -7,11 +7,11 @@
  */
 export const FEATURED_SECTION_PADDING_TOP_CLASS = 'pt-12 md:pt-8';
 
-/** Space below featured section (above footer). */
-export const FEATURED_SECTION_PADDING_BOTTOM_CLASS = 'pb-[31px]';
+/** Space below featured section (above footer / mobile bottom nav). */
+export const FEATURED_SECTION_PADDING_BOTTOM_CLASS = 'pb-[21px] md:pb-[31px]';
 
 /** Vertical breathing room around app + gradient banners (`md+` top nudged for tighter gap after brands). */
-export const FEATURED_HOME_BANNERS_BLOCK_PADDING_Y_CLASS = 'pt-8 pb-8 md:pt-8 md:pb-10';
+export const FEATURED_HOME_BANNERS_BLOCK_PADDING_Y_CLASS = 'pt-16 pb-2 md:pt-8 md:pb-10';
 
 /** Title — slightly smaller than original Figma 54px cap. */
 export const FEATURED_PRODUCTS_TITLE_FONT_SIZE_CLAMP = 'clamp(22px, 3.6vw, 40px)';

@@ -5,12 +5,12 @@
 /** Figma frame `Group 9300` — width × height (design px). */
 export const HOME_MOBILE_BANNER_SHOWCASE_CARD_WIDTH_PX = 522;
 
-export const HOME_MOBILE_BANNER_SHOWCASE_CARD_HEIGHT_PX = 407.8818359375;
+export const HOME_MOBILE_BANNER_SHOWCASE_CARD_HEIGHT_PX = 372;
 
 /**
  * Mobile: cap rendered width so the slate card is smaller than full content width (design 402px).
  */
-export const HOME_MOBILE_BANNER_SHOWCASE_CARD_MAX_WIDTH_PX = 360;
+export const HOME_MOBILE_BANNER_SHOWCASE_CARD_MAX_WIDTH_PX = 402;
 
 /** Figma `kam-idris` + overlay — `rounded-[20px]`. */
 export const HOME_MOBILE_BANNER_SHOWCASE_RADIUS_PX = 20;
@@ -34,24 +34,25 @@ export const HOME_MOBILE_BANNER_SHOWCASE_BG_SIZE_HEIGHT_PERCENT = 160.875;
  * Chair group width / card — Figma 314:2481 (`327.258` / `402`).
  */
 export const HOME_MOBILE_BANNER_SHOWCASE_CHAIR_WIDTH_FRAC =
-  327.2583312988281 / HOME_MOBILE_BANNER_SHOWCASE_CARD_WIDTH_PX;
+  372 / HOME_MOBILE_BANNER_SHOWCASE_CARD_WIDTH_PX;
 
 /**
  * Top padding on the wrapper so the chair can sit above the photo card without covering the app banner.
  */
-export const HOME_MOBILE_BANNER_SHOWCASE_CHAIR_BLEED_TOP_MIN_PX = 96;
+export const HOME_MOBILE_BANNER_SHOWCASE_CHAIR_BLEED_TOP_MIN_PX = 52;
 
-export const HOME_MOBILE_BANNER_SHOWCASE_CHAIR_BLEED_TOP_MAX_PX = 120;
+export const HOME_MOBILE_BANNER_SHOWCASE_CHAIR_BLEED_TOP_MAX_PX = 52;
 
-export const HOME_MOBILE_BANNER_SHOWCASE_CHAIR_BLEED_TOP_VW = 26;
+export const HOME_MOBILE_BANNER_SHOWCASE_CHAIR_BLEED_TOP_VW = 14;
 
 /** Positive — shifts chair + floor ellipse down into the photo (mobile showcase). */
-export const HOME_MOBILE_BANNER_SHOWCASE_CHAIR_NUDGE_DOWN_PX = 121;
+export const HOME_MOBILE_BANNER_SHOWCASE_CHAIR_NUDGE_DOWN_PX = 29;
 
 /**
- * Extra scale on top of `HERO_MOBILE_CHAIR_GROUP_SCALE` so the chair reads slightly larger in this block.
+ * Extra scale on top of `HERO_MOBILE_CHAIR_GROUP_SCALE` for the mobile showcase sofa.
+ * Reduced slightly so the sofa sits lighter above the bottom nav area.
  */
-export const HOME_MOBILE_BANNER_SHOWCASE_CHAIR_SCALE_MULTIPLIER = 1.38;
+export const HOME_MOBILE_BANNER_SHOWCASE_CHAIR_SCALE_MULTIPLIER = 1.08;
 
 /** Bottom bar — Figma 314:2490. */
 export const HOME_MOBILE_BANNER_SHOWCASE_FOOTER_PAD_X_PX = 22;

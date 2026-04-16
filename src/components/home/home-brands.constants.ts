@@ -3,13 +3,15 @@
  */
 
 /** Space between «Տեսնել ավելին» and the Brands heading row. */
-export const HOME_BRANDS_AFTER_CTA_MARGIN_TOP_PX = 64;
+export const HOME_BRANDS_AFTER_CTA_MARGIN_TOP_PX = 54;
+/** Mobile seam after the final product CTA before the Brands block. */
+export const HOME_BRANDS_AFTER_CTA_MARGIN_TOP_MOBILE_PX = 66;
 
 /** Gap between Brands title row and the logo grid. */
 export const HOME_BRANDS_TITLE_TO_RAIL_GAP_PX = 56;
 
 /** Extra space below the brand logo grid (before app/gradient banners) — `max-md`. */
-export const HOME_BRANDS_BLOCK_PADDING_BOTTOM_MOBILE_PX = 80;
+export const HOME_BRANDS_BLOCK_PADDING_BOTTOM_MOBILE_PX = 10;
 /** `md+` — slightly tighter seam before banner strip. */
 export const HOME_BRANDS_BLOCK_PADDING_BOTTOM_DESKTOP_PX = 58;
 
