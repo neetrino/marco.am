@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import * as jose from "jose";
+import { getCorsAllowedOrigin } from "@/lib/config/deployment-env";
 
 /** Protect /api/v1/admin/* — require valid JWT (signature + expiry). DB check (blocked/deleted) remains in route. */
 async function requireAdminAuth(request: NextRequest): Promise<NextResponse | null> {
@@ -86,10 +87,7 @@ async function checkAuthRateLimit(request: NextRequest): Promise<NextResponse | 
 
 /** CORS: allowed origin from env. For /api/* requests add CORS headers and handle preflight. */
 function getCorsHeaders(): Record<string, string> {
-  const origin =
-    process.env.CORS_ORIGIN ||
-    process.env.NEXT_PUBLIC_APP_URL ||
-    (process.env.NODE_ENV === "development" ? "http://localhost:3000" : "");
+  const origin = getCorsAllowedOrigin();
   return {
     "Access-Control-Allow-Origin": origin || "*",
     "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",

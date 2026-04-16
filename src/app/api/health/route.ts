@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@white-shop/db";
+import { getDeploymentTier } from "@/lib/config/deployment-env";
 
 const HEALTH_CHECK_TIMEOUT_MS = 5000;
 
@@ -22,6 +23,7 @@ export async function GET() {
       {
         status: "ok",
         db: "ok",
+        deployment: getDeploymentTier(),
         latencyMs,
       },
       { status: 200 }

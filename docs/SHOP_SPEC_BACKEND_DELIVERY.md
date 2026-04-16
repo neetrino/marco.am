@@ -24,7 +24,7 @@
 
 | Փուլ | Անվանում                         | Փուլի առաջընթաց |
 | ---- | -------------------------------- | --------------- |
-| 1    | Infra & API կոնտրակտ             | `73%`           |
+| 1    | Infra & API կոնտրակտ             | `100%`          |
 | 2    | Գլխավոր էջ (Home) — տվյալներ     | `23%`           |
 | 3    | Shop (PLP) — կատալոգ API         | `82%`           |
 | 4    | Ապրանքի էջ (PDP) — մանրամասն API | `84%`           |
@@ -44,16 +44,18 @@
 
 ## Փուլ 1 — Infra & API կոնտրակտ
 
-**Փուլի առաջընթաց.** `73%`
+**Փուլի առաջընթաց.** `100%`
 
 
 | ID  | Առաջադրանք (backend)                                                                                      | Կատարման % | Կարգավիճակ |
 | --- | --------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
 | 1.1 | Հաստատել API կոնտրակտը frontend-ի հետ — REST կամ GraphQL, auth headers, սխալների մոդել                    | 100        | ✅         |
-| 1.2 | Միջավայրեր (dev / staging / prod) — env, build/deploy-ին համապատասխան կոնֆիգ (ըստ թիմի պատասխանատվության) | 45         | 🔄         |
+| 1.2 | Միջավայրեր (dev / staging / prod) — env, build/deploy-ին համապատասխան կոնֆիգ (ըստ թիմի պատասխանատվության) | 100        | ✅         |
 
 
 *Նշումներ.* **1.1 ✅ ավարտված (2026-04-16).** Պաշտոնական կոնտրակտ՝ [`docs/API_CONTRACT.md`](./API_CONTRACT.md) (REST JSON, `Authorization: Bearer <JWT>`, RFC7807-անման `type`/`title`/`status`/`detail`/`instance`), մեքենայական սխեմա՝ [`docs/openapi/shop-api.yaml`](./openapi/shop-api.yaml)։ GraphQL չի օգտագործվում։ Implementation՝ `src/app/api` (ներառյալ `v1`), `src/lib/types/errors.ts`։
+
+**1.2 ✅ ավարտված (2026-04-16).** Env-ի մեկ կետ հանրային URL/CORS-ի համար՝ `src/lib/config/deployment-env.ts` (`APP_ENV`, Vercel-ում `VERCEL_ENV` → preview=staging), `getCorsAllowedOrigin()` — `middleware.ts`-ում, `getPublicAppUrl()` — `src/lib/api-client/url-builder.ts`, health-ում `deployment` դաշտ՝ `GET /api/health`։ Կաղապար և միջավայրերի նկարագրություն՝ [`.env.example`](../.env.example)։ Build/deploy՝ `vercel.json` (`pnpm run build`, `output: standalone` — `next.config.js`), թեստեր՝ `src/lib/config/deployment-env.test.ts`։
 
 ---
 
