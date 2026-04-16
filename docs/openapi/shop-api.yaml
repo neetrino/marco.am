@@ -1,0 +1,167 @@
+openapi: 3.0.3
+info:
+  title: Shop Marco API
+  version: 1.0.0
+  description: |
+    REST JSON API for Shop Marco (Next.js App Router under `src/app/api`).
+
+    **GraphQL:** not supported.
+
+    Narrative contract (auth, errors, versioning): `docs/API_CONTRACT.md`.
+
+servers:
+  - url: "{origin}"
+    variables:
+      origin:
+        default: http://localhost:3000
+        description: Deployment origin (scheme + host, no trailing slash).
+
+tags:
+  - name: Health
+    description: Operations and monitoring.
+  - name: Auth
+    description: Registration and login (JWT issuance).
+
+paths:
+  /api/health:
+    get:
+      tags: [Health]
+      summary: Health check with database connectivity
+      operationId: getApiHealth
+      responses:
+        "200":
+          description: Database reachable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthOk"
+        "503":
+          description: Database unavailable or timeout.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthError"
+
+  /api/v1/auth/login:
+    post:
+      tags: [Auth]
+      summary: Login (issues JWT)
+      operationId: postAuthLogin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Authenticated; response includes a JWT for `Authorization` header.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "400":
+          description: Validation or business rule failure.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "401":
+          description: Invalid credentials.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Send `Authorization: Bearer <token>` on protected routes.
+        Tokens are returned from `POST /api/v1/auth/login` and `POST /api/v1/auth/register`.
+
+  schemas:
+    ProblemDetails:
+      type: object
+      description: RFC 7807–aligned problem body (JSON; may be served as application/json).
+      required:
+        - type
+        - title
+        - status
+        - detail
+      properties:
+        type:
+          type: string
+          format: uri
+          example: https://api.shop.am/problems/validation-error
+        title:
+          type: string
+          example: Validation Error
+        status:
+          type: integer
+          format: int32
+          example: 400
+        detail:
+          type: string
+          example: Field 'email' is required
+        instance:
+          type: string
+          format: uri
+          description: Often the request path or a URI identifying this occurrence.
+          example: /api/v1/contact
+
+    HealthOk:
+      type: object
+      required: [status, db, latencyMs]
+      properties:
+        status:
+          type: string
+          example: ok
+        db:
+          type: string
+          example: ok
+        latencyMs:
+          type: integer
+          format: int32
+
+    HealthError:
+      type: object
+      required: [status, db]
+      properties:
+        status:
+          type: string
+          example: error
+        db:
+          type: string
+          example: unavailable
+        detail:
+          type: string
+
+    LoginRequest:
+      type: object
+      description: |
+        Either `email` or `phone` is required together with `password`.
+      properties:
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+          minLength: 1
+        password:
+          type: string
+          minLength: 1
+      additionalProperties: false
+      anyOf:
+        - required: [email, password]
+        - required: [phone, password]
