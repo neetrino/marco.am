@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
     const price = await adminService.getDeliveryPrice(city, country);
 
     return NextResponse.json({ price });
-  } catch (error: unknown) {
+  } catch (error: any) {
     const err = error as { message?: string; stack?: string; code?: string; type?: string; title?: string; status?: number; detail?: string; meta?: unknown };
     logger.error("Delivery price error", {
       message: err?.message,

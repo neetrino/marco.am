@@ -4,8 +4,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../lib/auth/AuthContext';
 import { Card, Button, Input } from '@shop/ui';
-import { apiClient } from '../../../lib/api-client';
+import { apiClient, getApiOrErrorMessage } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
+import { logger } from "@/lib/utils/logger";
 
 interface User {
   id: string;
@@ -54,7 +55,7 @@ export default function UsersPage() {
   const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
-      console.log('👥 [ADMIN] Fetching users...', { page, search, roleFilter });
+      logger.devLog('👥 [ADMIN] Fetching users...', { page, search, roleFilter });
       
       const response = await apiClient.get<UsersResponse>('/api/v1/admin/users', {
         params: {
@@ -65,7 +66,7 @@ export default function UsersPage() {
         },
       });
 
-      console.log('✅ [ADMIN] Users fetched:', response);
+      logger.devLog('✅ [ADMIN] Users fetched:', response);
       setUsers(response.data || []);
       setMeta(response.meta || null);
     } catch (err) {
@@ -79,7 +80,7 @@ export default function UsersPage() {
     if (isLoggedIn && isAdmin) {
       fetchUsers();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [isLoggedIn, isAdmin, page, search, roleFilter]);
 
   const handleSearch = (e: React.FormEvent) => {
@@ -144,7 +145,7 @@ export default function UsersPage() {
         blocked: newStatus,
       });
       
-      console.log(`✅ [ADMIN] User ${newStatus ? 'blocked' : 'unblocked'} successfully`);
+      logger.devLog(`✅ [ADMIN] User ${newStatus ? 'blocked' : 'unblocked'} successfully`);
       
       // Refresh users list
       fetchUsers();
@@ -154,9 +155,9 @@ export default function UsersPage() {
       } else {
         alert(t('admin.users.userActive').replace('{name}', userName));
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('❌ [ADMIN] Error updating user status:', err);
-      alert(t('admin.users.errorUpdatingStatus').replace('{message}', err.message || t('admin.common.unknownErrorFallback')));
+      alert(t('admin.users.errorUpdatingStatus').replace('{message}', getApiOrErrorMessage(err, t('admin.common.unknownErrorFallback'))));
     }
   };
 
@@ -228,7 +229,7 @@ export default function UsersPage() {
                   onClick={() => {
                     setRoleFilter('all');
                     setPage(1);
-                    console.log('👥 [ADMIN] Role filter changed to: all');
+                    logger.devLog('👥 [ADMIN] Role filter changed to: all');
                   }}
                   className={`px-3 py-1 rounded-full transition-all ${
                     roleFilter === 'all'
@@ -243,7 +244,7 @@ export default function UsersPage() {
                   onClick={() => {
                     setRoleFilter('admin');
                     setPage(1);
-                    console.log('👥 [ADMIN] Role filter changed to: admin');
+                    logger.devLog('👥 [ADMIN] Role filter changed to: admin');
                   }}
                   className={`px-3 py-1 rounded-full transition-all ${
                     roleFilter === 'admin'
@@ -258,7 +259,7 @@ export default function UsersPage() {
                   onClick={() => {
                     setRoleFilter('customer');
                     setPage(1);
-                    console.log('👥 [ADMIN] Role filter changed to: customer');
+                    logger.devLog('👥 [ADMIN] Role filter changed to: customer');
                   }}
                   className={`px-3 py-1 rounded-full transition-all ${
                     roleFilter === 'customer'

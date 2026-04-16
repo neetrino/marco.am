@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateToken, requireAdmin } from "@/lib/middleware/auth";
 import { adminService } from "@/lib/services/admin.service";
+import { logger } from "@/lib/utils/logger";
 
 /**
  * PATCH /api/v1/admin/attributes/[id]/values/[valueId]
@@ -28,7 +29,7 @@ export async function PATCH(
     const { id: attributeId, valueId } = await params;
     const body = await req.json();
 
-    console.log('✏️ [ADMIN ATTRIBUTE VALUES] PATCH request:', { attributeId, valueId, body });
+    logger.devLog('✏️ [ADMIN ATTRIBUTE VALUES] PATCH request:', { attributeId, valueId, body });
 
     const result = await adminService.updateAttributeValue(attributeId, valueId, {
       label: body.label,

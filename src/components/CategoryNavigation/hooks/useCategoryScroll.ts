@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { logger } from "@/lib/utils/logger";
 
 /**
  * Hook for managing category navigation scroll state
@@ -24,7 +25,7 @@ export function useCategoryScroll() {
     const canLeft = scrollLeft > 8;
     const canRight = scrollLeft + clientWidth < scrollWidth - 8;
 
-    console.info('[CategoryNavigation] Update scroll buttons:', {
+    logger.devInfo('[CategoryNavigation] Update scroll buttons:', {
       scrollLeft,
       scrollWidth,
       clientWidth,
@@ -71,7 +72,7 @@ export function useCategoryScroll() {
     }
     
     const scrollLeftBefore = container.scrollLeft;
-    console.info('[CategoryNavigation] Scrolling:', { 
+    logger.devInfo('[CategoryNavigation] Scrolling:', { 
       direction: amount > 0 ? 'right' : 'left', 
       amount, 
       scrollLeftBefore,

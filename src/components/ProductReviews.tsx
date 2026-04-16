@@ -43,8 +43,8 @@ export function ProductReviews({ productId, productSlug }: ProductReviewsProps) 
     setReviews,
   });
 
-  // Get user's review if exists
-  const userReview = user ? reviews.find(r => r.userId === user.id) : null;
+  // Get user's review if exists (reserved for future UI)
+  const _userReview = user ? reviews.find(r => r.userId === user.id) : null;
 
   if (loading) {
     return <ProductReviewsLoading />;

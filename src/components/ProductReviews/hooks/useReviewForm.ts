@@ -6,6 +6,7 @@ import { useAuth } from '../../../lib/auth/AuthContext';
 import { useTranslation } from '../../../lib/i18n-client';
 import { apiClient } from '../../../lib/api-client';
 import type { Review } from '../utils';
+import { logger } from "@/lib/utils/logger";
 
 interface UseReviewFormProps {
   productId?: string;
@@ -76,14 +77,14 @@ export function useReviewForm({
         return;
       }
 
-      console.log('📝 [PRODUCT REVIEWS] Submitting review:', { identifier, rating, commentLength: comment.length });
+      logger.devLog('📝 [PRODUCT REVIEWS] Submitting review:', { identifier, rating, commentLength: comment.length });
       
       const newReview = await apiClient.post<Review>(`/api/v1/products/${identifier}/reviews`, {
         rating,
         comment: comment.trim(),
       });
 
-      console.log('✅ [PRODUCT REVIEWS] Review submitted successfully:', newReview.id);
+      logger.devLog('✅ [PRODUCT REVIEWS] Review submitted successfully:', newReview.id);
 
       // Add new review to the list
       setReviews([newReview, ...reviews]);
@@ -112,7 +113,7 @@ export function useReviewForm({
             return;
           }
 
-          console.log('📝 [PRODUCT REVIEWS] Loading existing review for user');
+          logger.devLog('📝 [PRODUCT REVIEWS] Loading existing review for user');
           const existingReview = await apiClient.get<Review>(`/api/v1/products/${identifier}/reviews?my=true`);
           
           if (existingReview) {
@@ -169,14 +170,14 @@ export function useReviewForm({
     setSubmitting(true);
 
     try {
-      console.log('📝 [PRODUCT REVIEWS] Updating review:', { reviewId: editingReviewId, rating, commentLength: comment.length });
+      logger.devLog('📝 [PRODUCT REVIEWS] Updating review:', { reviewId: editingReviewId, rating, commentLength: comment.length });
       
       const updatedReview = await apiClient.put<Review>(`/api/v1/reviews/${editingReviewId}`, {
         rating,
         comment: comment.trim(),
       });
 
-      console.log('✅ [PRODUCT REVIEWS] Review updated successfully:', updatedReview.id);
+      logger.devLog('✅ [PRODUCT REVIEWS] Review updated successfully:', updatedReview.id);
 
       // Update review in the list
       setReviews(reviews.map(r => r.id === editingReviewId ? updatedReview : r));

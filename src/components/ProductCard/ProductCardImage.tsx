@@ -27,7 +27,7 @@ export function ProductCardImage({
   labels,
   imageError,
   onImageError,
-  isCompact = false,
+  isCompact: _isCompact = false,
 }: ProductCardImageProps) {
   const showPlaceholder = !image || imageError;
 

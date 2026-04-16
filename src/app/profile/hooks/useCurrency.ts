@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getStoredCurrency, type CurrencyCode } from '../../../lib/currency';
+import { logger } from "@/lib/utils/logger";
 
 export function useCurrency() {
   const [currency, setCurrency] = useState<CurrencyCode>(() => getStoredCurrency());
@@ -8,7 +9,7 @@ export function useCurrency() {
   useEffect(() => {
     const updateCurrency = () => {
       const newCurrency = getStoredCurrency();
-      console.log('💱 [PROFILE] Currency updated to:', newCurrency);
+      logger.devLog('💱 [PROFILE] Currency updated to:', newCurrency);
       setCurrency(newCurrency);
     };
     
@@ -17,7 +18,7 @@ export function useCurrency() {
     if (typeof window !== 'undefined') {
       window.addEventListener('currency-updated', updateCurrency);
       const handleCurrencyRatesUpdate = () => {
-        console.log('💱 [PROFILE] Currency rates updated, refreshing currency...');
+        logger.devLog('💱 [PROFILE] Currency rates updated, refreshing currency...');
         updateCurrency();
       };
       window.addEventListener('currency-rates-updated', handleCurrencyRatesUpdate);

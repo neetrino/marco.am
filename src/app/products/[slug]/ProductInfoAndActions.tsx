@@ -1,14 +1,30 @@
 'use client';
 
 import type { MouseEvent } from 'react';
-import { Heart } from 'lucide-react';
+import Link from 'next/link';
+import { ArrowUpRight, Heart } from 'lucide-react';
 import { formatPrice, type CurrencyCode } from '../../../lib/currency';
 import { t, getProductText } from '../../../lib/i18n';
 import type { LanguageCode } from '../../../lib/language';
 import { sanitizeHtml } from '../../../lib/utils/sanitize';
 import { CompareIcon } from '../../../components/icons/CompareIcon';
+import {
+  HEADER_FIGMA_PILL_RADIUS_CLASS,
+  HEADER_ROW2_BAR_HEIGHT_CLASS,
+} from '../../../components/header/header.constants';
 import { ProductAttributesSelector } from './ProductAttributesSelector';
 import type { Product, ProductVariant } from './types';
+
+/** Trailing arrow circle — scales with row-2 bar height (same as qty / toolbar icons and header strip). */
+const PRODUCT_PRIMARY_CTA_ICON_PX = 36;
+
+/** Buy CTA — taller row; trailing circle with light left nudge (−4px). */
+const PRODUCT_BUY_CTA_HEIGHT_CLASS = 'h-12';
+const PRODUCT_BUY_CTA_ICON_PX = 38;
+const PRODUCT_BUY_CTA_ICON_NUDGE_LEFT_CLASS = '-translate-x-1';
+
+/** Figma: offer CTA sits slightly above the purchase row — transform only, layout box unchanged. */
+const PRODUCT_OFFER_CTA_LIFT_CLASS = '-translate-y-1.5 sm:-translate-y-2';
 
 interface ProductInfoAndActionsProps {
   product: Product;
@@ -72,8 +88,8 @@ export function ProductInfoAndActions({
   isInWishlist,
   isInCompare,
   showMessage,
-  isLoggedIn,
-  currentVariant,
+  isLoggedIn: _isLoggedIn,
+  currentVariant: _currentVariant,
   attributeGroups,
   selectedColor,
   selectedSize,
@@ -207,43 +223,82 @@ export function ProductInfoAndActions({
             </p>
           </div>
         )}
-        <div className="flex items-center gap-3 pt-4 border-t">
-          <div className="flex items-center border rounded-xl overflow-hidden bg-gray-50">
-            <button 
-              onClick={() => onQuantityAdjust(-1)} 
-              disabled={quantity <= 1}
-              className="w-12 h-12 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+        <div className="flex flex-col gap-4 pb-2 pt-4 border-t sm:flex-row sm:items-end sm:justify-between sm:gap-6 sm:gap-y-3">
+          <Link
+            href={`/contact?product=${encodeURIComponent(product.slug)}`}
+            className={`flex w-full min-w-0 shrink-0 items-center gap-1.5 bg-marco-yellow pl-3 pr-5 text-left text-sm font-semibold leading-normal text-marco-black transition-[filter,transform] hover:-translate-y-2 hover:brightness-95 active:brightness-90 sm:max-w-[280px] sm:pl-6 sm:hover:-translate-y-2.5 ${PRODUCT_OFFER_CTA_LIFT_CLASS} ${HEADER_ROW2_BAR_HEIGHT_CLASS} ${HEADER_FIGMA_PILL_RADIUS_CLASS}`}
+          >
+            <span className="min-w-0 flex-1">{t(language, 'product.makeOffer')}</span>
+            <span
+              className="flex shrink-0 items-center justify-center rounded-full bg-black text-white"
+              style={{
+                width: PRODUCT_PRIMARY_CTA_ICON_PX,
+                height: PRODUCT_PRIMARY_CTA_ICON_PX,
+              }}
+              aria-hidden
             >
-              -
+              <ArrowUpRight className="size-2.5" strokeWidth={2.25} />
+            </span>
+          </Link>
+          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3 sm:justify-end">
+            <div className="flex items-center border rounded-xl overflow-hidden bg-gray-50">
+              <button
+                onClick={() => onQuantityAdjust(-1)}
+                disabled={quantity <= 1}
+                className="w-11 h-11 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                -
+              </button>
+              <div className="w-11 text-center font-bold text-sm">{quantity}</div>
+              <button
+                onClick={() => onQuantityAdjust(1)}
+                disabled={quantity >= maxQuantity}
+                className="w-11 h-11 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                +
+              </button>
+            </div>
+            <button
+              type="button"
+              disabled={!canAddToCart || isAddingToCart}
+              className={`flex min-w-0 flex-1 items-center gap-1.5 bg-marco-yellow pl-4 pr-6 text-left text-sm font-semibold leading-normal text-marco-black transition-[filter,transform] hover:-translate-y-0.5 hover:brightness-95 active:brightness-90 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 disabled:hover:brightness-100 md:max-w-72 md:flex-none md:pl-7 ${PRODUCT_BUY_CTA_HEIGHT_CLASS} ${HEADER_FIGMA_PILL_RADIUS_CLASS}`}
+              onClick={onAddToCart}
+            >
+              <span className="min-w-0 flex-1">
+                {isAddingToCart
+                  ? t(language, 'product.adding')
+                  : isOutOfStock
+                    ? t(language, 'product.outOfStock')
+                    : isVariationRequired
+                      ? getRequiredAttributesMessage()
+                      : hasUnavailableAttributes
+                        ? t(language, 'product.outOfStock')
+                        : t(language, 'product.buyNow')}
+              </span>
+              <span
+                className={`flex shrink-0 items-center justify-center rounded-full bg-black text-white ${PRODUCT_BUY_CTA_ICON_NUDGE_LEFT_CLASS}`}
+                style={{
+                  width: PRODUCT_BUY_CTA_ICON_PX,
+                  height: PRODUCT_BUY_CTA_ICON_PX,
+                }}
+                aria-hidden
+              >
+                <ArrowUpRight className="size-2.5" strokeWidth={2.25} />
+              </span>
             </button>
-            <div className="w-12 text-center font-bold">{quantity}</div>
-            <button 
-              onClick={() => onQuantityAdjust(1)} 
-              disabled={quantity >= maxQuantity}
-              className="w-12 h-12 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+            <button
+              onClick={onCompareToggle}
+              className={`w-11 h-11 rounded-xl border-2 flex items-center justify-center transition-all duration-200 ${isInCompare ? 'border-gray-900 bg-gray-50' : 'border-gray-200 hover:border-gray-300'}`}
             >
-              +
+              <CompareIcon isActive={isInCompare} />
+            </button>
+            <button
+              onClick={onAddToWishlist}
+              className={`w-11 h-11 rounded-xl border-2 flex items-center justify-center ${isInWishlist ? 'border-gray-900 bg-gray-50' : 'border-gray-200'}`}
+            >
+              <Heart fill={isInWishlist ? 'currentColor' : 'none'} />
             </button>
           </div>
-          <button 
-            disabled={!canAddToCart || isAddingToCart} 
-            className="flex-1 h-12 bg-gray-900 text-white rounded-xl uppercase font-bold disabled:bg-gray-300 disabled:cursor-not-allowed"
-            onClick={onAddToCart}
-          >
-            {isAddingToCart ? t(language, 'product.adding') : (isOutOfStock ? t(language, 'product.outOfStock') : (isVariationRequired ? getRequiredAttributesMessage() : (hasUnavailableAttributes ? t(language, 'product.outOfStock') : t(language, 'product.addToCart'))))}
-          </button>
-          <button 
-            onClick={onCompareToggle} 
-            className={`w-12 h-12 rounded-xl border-2 flex items-center justify-center transition-all duration-200 ${isInCompare ? 'border-gray-900 bg-gray-50' : 'border-gray-200 hover:border-gray-300'}`}
-          >
-            <CompareIcon isActive={isInCompare} />
-          </button>
-          <button 
-            onClick={onAddToWishlist} 
-            className={`w-12 h-12 rounded-xl border-2 flex items-center justify-center ${isInWishlist ? 'border-gray-900 bg-gray-50' : 'border-gray-200'}`}
-          >
-            <Heart fill={isInWishlist ? 'currentColor' : 'none'} />
-          </button>
         </div>
       </div>
       {showMessage && <div className="mt-4 p-4 bg-gray-900 text-white rounded-md shadow-lg">{showMessage}</div>}

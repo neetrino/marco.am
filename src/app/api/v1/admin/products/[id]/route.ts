@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateToken, requireAdmin } from "@/lib/middleware/auth";
 import { adminService } from "@/lib/services/admin.service";
+import { logger } from "@/lib/utils/logger";
 
 /**
  * GET /api/v1/admin/products/[id]
@@ -69,7 +70,7 @@ export async function PUT(
 
     const { id } = await params;
     const body = await req.json();
-    console.log("📤 [ADMIN PRODUCTS] PUT request:", { 
+    logger.devLog("📤 [ADMIN PRODUCTS] PUT request:", { 
       id, 
       bodyKeys: Object.keys(body),
       hasVariants: !!body.variants,
@@ -78,7 +79,7 @@ export async function PUT(
     });
 
     const product = await adminService.updateProduct(id, body);
-    console.log("✅ [ADMIN PRODUCTS] Product updated:", { id, productId: product?.id });
+    logger.devLog("✅ [ADMIN PRODUCTS] Product updated:", { id, productId: product?.id });
 
     return NextResponse.json(product);
   } catch (error: any) {
@@ -131,10 +132,10 @@ export async function DELETE(
     }
 
     const { id } = await params;
-    console.log("🗑️ [ADMIN PRODUCTS] DELETE request:", id);
+    logger.devLog("🗑️ [ADMIN PRODUCTS] DELETE request:", id);
 
     await adminService.deleteProduct(id);
-    console.log("✅ [ADMIN PRODUCTS] Product deleted:", id);
+    logger.devLog("✅ [ADMIN PRODUCTS] Product deleted:", id);
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

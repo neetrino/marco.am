@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { Suspense } from 'react';
 import { Button } from '@shop/ui';
-import { apiClient } from '../../lib/api-client';
 import { getStoredLanguage } from '../../lib/language';
 import { t } from '../../lib/i18n';
 import { PriceFilter } from '../../components/PriceFilter';
@@ -10,7 +9,6 @@ import { SizeFilter } from '../../components/SizeFilter';
 import { BrandFilter } from '../../components/BrandFilter';
 import { ProductsHeader } from '../../components/ProductsHeader';
 import { ProductsGrid } from '../../components/ProductsGrid';
-import { CategoryNavigation } from '../../components/CategoryNavigation';
 import { MobileFiltersDrawer } from '../../components/MobileFiltersDrawer';
 import { ProductsFiltersProvider } from '../../components/ProductsFiltersProvider';
 import { MOBILE_FILTERS_EVENT } from '../../lib/events';
@@ -62,7 +60,8 @@ async function getProducts(
   colors?: string,
   sizes?: string,
   brand?: string,
-  limit: number = 12
+  limit: number = 12,
+  filter?: string
 ): Promise<ProductsResponse> {
   try {
     const language = getStoredLanguage();
@@ -79,6 +78,7 @@ async function getProducts(
     if (colors?.trim()) params.colors = colors.trim();
     if (sizes?.trim()) params.sizes = sizes.trim();
     if (brand?.trim()) params.brand = brand.trim();
+    if (filter?.trim()) params.filter = filter.trim();
 
     const queryString = new URLSearchParams(params).toString();
 
@@ -134,7 +134,8 @@ export default async function ProductsPage({ searchParams }: any) {
     params?.colors,
     params?.sizes,
     params?.brand,
-    perPage
+    perPage,
+    params?.filter
   );
 
   // ------------------------------------
@@ -197,9 +198,6 @@ export default async function ProductsPage({ searchParams }: any) {
 
   return (
     <div className="w-full overflow-x-hidden max-w-full">
-      {/* Category Navigation - Full Width */}
-      <CategoryNavigation />
-      
       {/* Products Header - With Container */}
       <div className={PAGE_CONTAINER}>
         <ProductsHeader
@@ -215,7 +213,7 @@ export default async function ProductsPage({ searchParams }: any) {
           minPrice={params?.minPrice}
           maxPrice={params?.maxPrice}
         >
-        <aside className="w-64 hidden lg:block bg-gray-50 rounded-xl flex-shrink-0">
+        <aside className="w-64 hidden lg:block bg-white rounded-xl flex-shrink-0">
           <div className="sticky top-4 p-4 space-y-6">
             <Suspense fallback={<div>{t(language, 'common.messages.loadingFilters')}</div>}>
               <PriceFilter currentMinPrice={params?.minPrice} currentMaxPrice={params?.maxPrice} category={params?.category} search={params?.search} />

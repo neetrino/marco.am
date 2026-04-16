@@ -7,3 +7,13 @@ declare module '*.json' {
   export default value;
 }
 
+declare global {
+  interface Window {
+    /** Set during admin product edit to defer variant → form conversion. */
+    __productVariantsToConvert?: unknown;
+    __productAttributeIds?: string[];
+  }
+}
+
+export {};
+

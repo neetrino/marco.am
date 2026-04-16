@@ -70,7 +70,7 @@ export function BrandFilter({ category, search, minPrice, maxPrice, selectedBran
       const list = response.brands ?? [];
       setBrands(list);
       setFilteredBrands(list);
-    } catch (err) {
+    } catch (_err) {
       setBrands([]);
       setFilteredBrands([]);
     } finally {

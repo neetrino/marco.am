@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { apiClient } from '../../../../../lib/api-client';
+import { apiClient, getApiOrErrorMessage } from '../../../../../lib/api-client';
 import { useTranslation } from '../../../../../lib/i18n-client';
 import type { Attribute } from '../types';
 
@@ -11,7 +11,7 @@ interface UseProductAttributeHandlersProps {
 }
 
 export function useProductAttributeHandlers({
-  attributes,
+  attributes: _attributes,
   setAttributes,
   getColorAttribute,
   getSizeAttribute,
@@ -54,8 +54,8 @@ export function useProductAttributeHandlers({
         setNewColorName('');
         setTimeout(() => setColorMessage(null), 3000);
       }
-    } catch (err: any) {
-      setColorMessage({ type: 'error', text: err.message || t('admin.products.add.failedToAddColor') });
+    } catch (err: unknown) {
+      setColorMessage({ type: 'error', text: getApiOrErrorMessage(err, t('admin.products.add.failedToAddColor')) });
     } finally {
       setAddingColor(false);
     }
@@ -91,8 +91,8 @@ export function useProductAttributeHandlers({
         setNewSizeName('');
         setTimeout(() => setSizeMessage(null), 3000);
       }
-    } catch (err: any) {
-      setSizeMessage({ type: 'error', text: err.message || t('admin.products.add.failedToAddSize') });
+    } catch (err: unknown) {
+      setSizeMessage({ type: 'error', text: getApiOrErrorMessage(err, t('admin.products.add.failedToAddSize')) });
     } finally {
       setAddingSize(false);
     }

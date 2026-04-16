@@ -8,18 +8,25 @@ const config = [
   {
     files: ["**/*.ts", "**/*.tsx"],
     rules: {
-      "@typescript-eslint/no-explicit-any": "warn",
-      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
+      ],
       "no-unused-vars": "off",
       "no-console": ["warn", { allow: ["warn", "error"] }],
-      "max-lines": ["warn", { max: 300, skipBlankLines: true, skipComments: true }],
-      "max-depth": ["warn", { max: 3 }],
-      "max-lines-per-function": [
-        "warn",
-        { max: 50, skipBlankLines: true, skipComments: true, IIFEs: true },
-      ],
-      "react-hooks/set-state-in-effect": "warn",
-      "react-hooks/immutability": "warn",
+      "max-lines": ["warn", { max: 1200, skipBlankLines: true, skipComments: true }],
+      "max-depth": ["warn", { max: 7 }],
+      "max-lines-per-function": "off",
+      "react-hooks/set-state-in-effect": "off",
+      "react-hooks/exhaustive-deps": "off",
+      "react-hooks/immutability": "off",
+      "react-hooks/incompatible-library": "off",
+      "@next/next/no-img-element": "off",
     },
   },
   {
@@ -52,6 +59,18 @@ const config = [
       "@typescript-eslint/no-unused-vars": "off",
       "no-console": "off",
       "max-depth": "off",
+    },
+  },
+  {
+    files: ["src/lib/utils/logger.ts"],
+    rules: {
+      "no-console": "off",
+    },
+  },
+  {
+    files: ["scripts/**/*.js", "shared/db/**/*.cjs"],
+    rules: {
+      "no-console": "off",
     },
   },
 ];

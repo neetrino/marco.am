@@ -3,8 +3,9 @@
  */
 
 import type { ChangeEvent } from 'react';
-import type { Brand, Category, Attribute, GeneratedVariant } from '../types';
+import type { Category, GeneratedVariant } from '../types';
 import { generateSlug } from '../utils/productUtils';
+import { logger } from "@/lib/utils/logger";
 
 interface UseProductFormCallbacksProps {
   formData: {
@@ -29,12 +30,12 @@ export function useProductFormCallbacks({
   categories,
   selectedAttributesForVariants,
   selectedAttributeValueIds,
-  generatedVariants,
+  generatedVariants: _generatedVariants,
   setFormData,
   setSelectedAttributesForVariants,
   setSelectedAttributeValueIds,
   setGeneratedVariants,
-  setSimpleProductData,
+  setSimpleProductData: _setSimpleProductData,
   checkIsClothingCategory,
 }: UseProductFormCallbacksProps) {
   const handleTitleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -86,7 +87,7 @@ export function useProductFormCallbacks({
     };
     setGeneratedVariants((prev) => {
       const updated = [...prev, newVariant];
-      console.log('✅ [VARIANT BUILDER] New manual variant added:', {
+      logger.devLog('✅ [VARIANT BUILDER] New manual variant added:', {
         newVariantId: newVariant.id,
         totalVariants: updated.length,
         manualVariants: updated.filter((v) => v.id !== 'variant-all').length,

@@ -1,209 +1,223 @@
 'use client';
 
-import Link from 'next/link';
 import Image from 'next/image';
-import { useTranslation } from '../lib/i18n-client';
+import Link from 'next/link';
+import { MapPin } from 'lucide-react';
 
+import { useTranslation } from '../lib/i18n-client';
+import {
+  FOOTER_BRAND_COLUMN_GAP_CLASS,
+  FOOTER_BRAND_DESCRIPTION_OVERLAP_CLASS,
+  FOOTER_BRAND_DESCRIPTION_TEXT_CLASS,
+  FOOTER_BRAND_LOGO_BOX_CLASS,
+  FOOTER_BRAND_LOGO_SHIFT_CLASS,
+  FOOTER_COMPANY_LINKS,
+  FOOTER_GRID_COMPANY_SUPPORT_WRAPPER_CLASS,
+  FOOTER_GRID_CONTACTS_WRAPPER_CLASS,
+  FOOTER_COPYRIGHT_STRIP_MARGIN_TOP_CLASS,
+  FOOTER_COPYRIGHT_STRIP_PADDING_TOP_CLASS,
+  FOOTER_COPYRIGHT_STRIP_STACK_GAP_CLASS,
+  FOOTER_HEADING_TEXT_CLASS,
+  FOOTER_MAIN_GRID_CLASS,
+  FOOTER_NAV_COLUMN_HEADING_LEADING_CLASS,
+  FOOTER_NAV_COLUMN_HEADING_LIST_GAP_CLASS,
+  FOOTER_NAV_COLUMN_HEADING_TRACK_CLASS,
+  FOOTER_NAV_COLUMN_LINK_LEADING_CLASS,
+  FOOTER_NAV_COLUMN_LINK_WORD_SPACING_CLASS,
+  FOOTER_NAV_COLUMN_LIST_ITEM_GAP_CLASS,
+  FOOTER_MUTED_TEXT_CLASS,
+  FOOTER_SUPPORT_LINKS,
+  FOOTER_INNER_CONTAINER_CLASS,
+  FOOTER_SURFACE_CLASS,
+  NEETRINO_STUDIO_HREF,
+} from './footer.constants';
+import {
+  FOOTER_CONTACT_MAIL_ICON_CLASS,
+  FOOTER_CONTACT_MAIL_ICON_SRC,
+  FOOTER_CONTACT_PHONE_ICON_CLASS,
+  FOOTER_CONTACT_PHONE_ICON_SRC,
+} from './footer-social.constants';
+import { FooterPaymentLogos } from './FooterPaymentLogos';
+import { FooterSocialLinks } from './FooterSocialLinks';
+
+const FOOTER_LINK_CLASS = `${FOOTER_MUTED_TEXT_CLASS} text-xs transition-colors hover:text-marco-black`;
+
+const FOOTER_NAV_COLUMN_LINK_CLASS = `${FOOTER_LINK_CLASS} ${FOOTER_NAV_COLUMN_LINK_WORD_SPACING_CLASS} ${FOOTER_NAV_COLUMN_LINK_LEADING_CLASS}`;
+
+function FooterNavColumn({
+  titleKey,
+  items,
+}: {
+  titleKey: string;
+  items: readonly { href: string; labelKey: string }[];
+}) {
+  const { t } = useTranslation();
+
+  return (
+    <div
+      className={`inline-flex max-w-full flex-col ${FOOTER_NAV_COLUMN_HEADING_LIST_GAP_CLASS}`}
+    >
+      <p
+        className={`text-xs font-bold uppercase ${FOOTER_NAV_COLUMN_HEADING_LEADING_CLASS} ${FOOTER_NAV_COLUMN_HEADING_TRACK_CLASS} ${FOOTER_HEADING_TEXT_CLASS}`}
+      >
+        {t(titleKey)}
+      </p>
+      <ul className={`flex flex-col ${FOOTER_NAV_COLUMN_LIST_ITEM_GAP_CLASS}`}>
+        {items.map((item) => (
+          <li key={`${item.href}-${item.labelKey}`}>
+            <Link href={item.href} className={FOOTER_NAV_COLUMN_LINK_CLASS}>
+              {t(item.labelKey)}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function FooterContactsColumn() {
+  const { t } = useTranslation();
+  const phoneRaw = t('contact.phone');
+  const telHref = `tel:${phoneRaw.replace(/\s/g, '')}`;
+
+  return (
+    <div className="inline-flex max-w-full flex-col gap-4">
+      <p
+        className={`text-xs font-bold uppercase tracking-[0.05em] ${FOOTER_HEADING_TEXT_CLASS}`}
+      >
+        {t('common.footer.marco.headings.contacts')}
+      </p>
+      <div className="flex items-start gap-3">
+        <MapPin
+          className="mt-0 h-4 w-4 shrink-0 -translate-x-px translate-y-[4px] self-start text-marco-yellow"
+          strokeWidth={2}
+          aria-hidden
+        />
+        <p
+          className={`text-xs leading-relaxed whitespace-pre-line ${FOOTER_MUTED_TEXT_CLASS}`}
+        >
+          {t('contact.address')}
+        </p>
+      </div>
+      <div className="flex items-start gap-3">
+        <img
+          src={FOOTER_CONTACT_PHONE_ICON_SRC}
+          alt=""
+          width={18}
+          height={15}
+          className={FOOTER_CONTACT_PHONE_ICON_CLASS}
+          aria-hidden
+        />
+        <a
+          href={telHref}
+          className="text-xs font-bold text-marco-black transition-colors hover:underline"
+        >
+          {phoneRaw}
+        </a>
+      </div>
+      <div className="flex items-start gap-3">
+        <img
+          src={FOOTER_CONTACT_MAIL_ICON_SRC}
+          alt=""
+          width={20}
+          height={14}
+          className={FOOTER_CONTACT_MAIL_ICON_CLASS}
+          aria-hidden
+        />
+        <a
+          href={`mailto:${t('contact.email')}`}
+          className={`text-xs transition-colors hover:text-marco-black ${FOOTER_MUTED_TEXT_CLASS}`}
+        >
+          {t('contact.email')}
+        </a>
+      </div>
+    </div>
+  );
+}
+
+function FooterCopyright() {
+  const { t } = useTranslation();
+  const year = new Date().getFullYear();
+
+  return (
+    <p className="inline-block text-center text-[9px] leading-tight text-marco-black sm:text-[10px] md:text-[11px] lg:text-xs whitespace-nowrap">
+      <span>
+        {t('common.footer.marco.copyrightBefore').replace('{year}', String(year))}
+      </span>
+      <a
+        href={NEETRINO_STUDIO_HREF}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="font-medium text-marco-black no-underline hover:opacity-80"
+      >
+        {t('common.footer.marco.creditStudio')}
+      </a>
+      <span>{t('common.footer.marco.copyrightAfter')}</span>
+    </p>
+  );
+}
+
+/**
+ * Site-wide footer — MARCO marketing layout (Figma 101:2835).
+ */
 export function Footer() {
   const { t } = useTranslation();
 
   return (
-    <footer className="bg-black border-t border-gray-800">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Company */}
-          <div>
-            <h3 className="text-lg font-semibold text-white mb-4">{t('common.footer.shop')}</h3>
-            <p className="text-sm text-gray-300">
-              {t('common.footer.description')}
+    <footer className={`${FOOTER_SURFACE_CLASS} border-t border-black/5`}>
+      <div className={`${FOOTER_INNER_CONTAINER_CLASS} pb-10 pt-8`}>
+        <div className={FOOTER_MAIN_GRID_CLASS}>
+          <div
+            className={`relative flex max-w-sm flex-col ${FOOTER_BRAND_COLUMN_GAP_CLASS}`}
+          >
+            <div className={`${FOOTER_BRAND_LOGO_BOX_CLASS} ${FOOTER_BRAND_LOGO_SHIFT_CLASS}`}>
+              <Image
+                src="/assets/brand/marco-group-logo.png"
+                alt="MARCO GROUP"
+                fill
+                className="object-contain object-left-top"
+                sizes="200px"
+                priority={false}
+              />
+            </div>
+            <p
+              className={`${FOOTER_BRAND_DESCRIPTION_OVERLAP_CLASS} ${FOOTER_BRAND_DESCRIPTION_TEXT_CLASS} ${FOOTER_SURFACE_CLASS} ${FOOTER_MUTED_TEXT_CLASS}`}
+            >
+              {t('common.footer.marco.brandDescription')}
             </p>
           </div>
 
-          {/* Quick Links */}
-          <div>
-            <h4 className="text-sm font-semibold text-white mb-4">
-              {t('common.footer.quickLinks')}
-            </h4>
-            <ul className="space-y-2">
-              <li>
-                <Link
-                  href="/products"
-                  className="text-sm text-gray-300 hover:text-white transition-colors"
-                >
-                  {t('common.navigation.products')}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/about"
-                  className="text-sm text-gray-300 hover:text-white transition-colors"
-                >
-                  {t('common.navigation.about')}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/contact"
-                  className="text-sm text-gray-300 hover:text-white transition-colors"
-                >
-                  {t('common.navigation.contact')}
-                </Link>
-              </li>
-            </ul>
+          <div className={FOOTER_GRID_COMPANY_SUPPORT_WRAPPER_CLASS}>
+            <FooterNavColumn
+              titleKey="common.footer.marco.headings.company"
+              items={FOOTER_COMPANY_LINKS}
+            />
           </div>
-
-          {/* Legal */}
-          <div>
-            <h4 className="text-sm font-semibold text-white mb-4">{t('common.footer.legal')}</h4>
-            <ul className="space-y-2">
-              <li>
-                <Link
-                  href="/privacy"
-                  className="text-sm text-gray-300 hover:text-white transition-colors"
-                >
-                  {t('common.footer.privacyPolicy')}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/terms"
-                  className="text-sm text-gray-300 hover:text-white transition-colors"
-                >
-                  {t('common.footer.termsOfService')}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/cookies"
-                  className="text-sm text-gray-300 hover:text-white transition-colors"
-                >
-                  {t('common.footer.cookiePolicy')}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/refund-policy"
-                  className="text-sm text-gray-300 hover:text-white transition-colors"
-                >
-                  {t('common.footer.refundPolicy')}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/delivery-terms"
-                  className="text-sm text-gray-300 hover:text-white transition-colors"
-                >
-                  {t('common.footer.deliveryTerms')}
-                </Link>
-              </li>
-            </ul>
+          <div className={FOOTER_GRID_COMPANY_SUPPORT_WRAPPER_CLASS}>
+            <FooterNavColumn
+              titleKey="common.footer.marco.headings.support"
+              items={FOOTER_SUPPORT_LINKS}
+            />
           </div>
-
-          {/* Contact Info */}
-          <div>
-            <h4 className="text-sm font-semibold text-white mb-4">{t('common.footer.contactInfo')}</h4>
-            <ul className="space-y-3">
-              <li className="flex items-start gap-2">
-                <svg
-                  className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
-                <span className="text-sm text-gray-300">{t('contact.address')}</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <svg
-                  className="w-5 h-5 text-gray-400 flex-shrink-0"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                  />
-                </svg>
-                <a
-                  href={`tel:${t('contact.phone')}`}
-                  className="text-sm text-gray-300 hover:text-white transition-colors"
-                >
-                  {t('contact.phone')}
-                </a>
-              </li>
-              <li className="flex items-center gap-2">
-                <svg
-                  className="w-5 h-5 text-gray-400 flex-shrink-0"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                  />
-                </svg>
-                <a
-                  href={`mailto:${t('contact.email')}`}
-                  className="text-sm text-gray-300 hover:text-white transition-colors"
-                >
-                  {t('contact.email')}
-                </a>
-              </li>
-            </ul>
+          <div className={FOOTER_GRID_CONTACTS_WRAPPER_CLASS}>
+            <FooterContactsColumn />
           </div>
         </div>
 
-        {/* Bottom */}
-        <div className="mt-8 pt-8 border-t border-gray-800">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-gray-300">
-              {t('common.footer.copyright').replace('{year}', new Date().getFullYear().toString())}
-            </p>
-            
-            {/* Payment Methods */}
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-400 mr-2">{t('common.footer.paymentMethods')}</span>
-              <div className="flex items-center gap-3">
-                <Image
-                  src="https://static.tert.am/storage/files/tert/2020/04/27/idram_main_visual-770x_.png"
-                  alt="Idram"
-                  width={80}
-                  height={30}
-                  className="h-6 w-auto opacity-80 hover:opacity-100 transition-opacity"
-                  unoptimized
-                />
-                <Image
-                  src="https://finport.am/mcgallery/20190415121452.jpg"
-                  alt="ArCa"
-                  width={80}
-                  height={30}
-                  className="h-6 w-auto opacity-80 hover:opacity-100 transition-opacity"
-                  unoptimized
-                />
-              </div>
-            </div>
+        <div
+          className={`${FOOTER_COPYRIGHT_STRIP_MARGIN_TOP_CLASS} flex flex-col ${FOOTER_COPYRIGHT_STRIP_STACK_GAP_CLASS} border-t border-black/10 ${FOOTER_COPYRIGHT_STRIP_PADDING_TOP_CLASS} lg:flex-row lg:items-center lg:justify-between lg:gap-3 xl:gap-5`}
+        >
+          <div className="flex shrink-0 justify-center lg:justify-start">
+            <FooterSocialLinks density="compact" />
+          </div>
+          <div className="scrollbar-hide flex min-w-0 flex-1 justify-center overflow-x-auto px-1 lg:overflow-visible">
+            <FooterCopyright />
+          </div>
+          <div className="flex shrink-0 justify-center lg:justify-end">
+            <FooterPaymentLogos compact />
           </div>
         </div>
       </div>
     </footer>
   );
 }
-

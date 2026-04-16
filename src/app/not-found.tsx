@@ -13,7 +13,7 @@ export default function NotFound() {
   const { t } = useTranslation();
   
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center bg-white">
       <div className="text-center px-4">
         <h1 className="text-6xl font-bold text-gray-900 mb-4">404</h1>
         <h2 className="text-2xl font-semibold text-gray-700 mb-4">{t('common.notFound.title')}</h2>

@@ -1,5 +1,6 @@
 import { db } from "@white-shop/db";
 import { toSlug } from "@/lib/utils/slug";
+import { logger } from "@/lib/utils/logger";
 
 class AdminBrandsService {
   /**
@@ -113,7 +114,7 @@ class AdminBrandsService {
       logoUrl?: string;
     }
   ) {
-    console.log('🔄 [ADMIN SERVICE] updateBrand called:', brandId, data);
+    logger.devLog('🔄 [ADMIN SERVICE] updateBrand called:', brandId, data);
     
     const brand = await db.brand.findUnique({
       where: { id: brandId },
@@ -201,7 +202,7 @@ class AdminBrandsService {
    * Delete brand (soft delete)
    */
   async deleteBrand(brandId: string) {
-    console.log('🗑️ [ADMIN SERVICE] deleteBrand called:', brandId);
+    logger.devLog('🗑️ [ADMIN SERVICE] deleteBrand called:', brandId);
     
     const brand = await db.brand.findUnique({
       where: { id: brandId },
@@ -242,7 +243,7 @@ class AdminBrandsService {
       },
     });
 
-    console.log('✅ [ADMIN SERVICE] Brand deleted:', brandId);
+    logger.devLog('✅ [ADMIN SERVICE] Brand deleted:', brandId);
     return { success: true };
   }
 }

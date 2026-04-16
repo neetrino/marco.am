@@ -8,7 +8,7 @@
  * Otherwise, use empty string to make relative requests to Next.js API routes.
  */
 
-import { ApiError } from "./api-client/types";
+import { ApiError, getApiOrErrorMessage, getClientErrorDetail, getErrorHttpStatus } from "./api-client/types";
 import type { RequestOptions } from "./api-client/types";
 import { getRequest, postRequest, putRequest, patchRequest, deleteRequest } from "./api-client/http-methods";
 
@@ -43,4 +43,4 @@ class ApiClient {
 }
 
 export const apiClient = new ApiClient(API_BASE_URL);
-export { ApiError };
+export { ApiError, getApiOrErrorMessage, getClientErrorDetail, getErrorHttpStatus };

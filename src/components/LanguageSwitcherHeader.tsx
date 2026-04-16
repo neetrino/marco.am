@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { LANGUAGES, type LanguageCode, getStoredLanguage, setStoredLanguage } from '../lib/language';
+import { logger } from "@/lib/utils/logger";
 
 const ChevronDownIcon = () => (
   <svg width="10" height="10" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -115,7 +116,7 @@ export function LanguageSwitcherHeader() {
    */
   const changeLanguage = (langCode: LanguageCode) => {
     if (typeof window !== 'undefined' && currentLang !== langCode) {
-      console.info('[LanguageSwitcher] Changing language', {
+      logger.devInfo('[LanguageSwitcher] Changing language', {
         from: currentLang,
         to: langCode,
       });

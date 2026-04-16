@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Facebook, Twitter, Linkedin, Instagram } from 'lucide-react';
+import { logger } from "@/lib/utils/logger";
 
 /**
  * Интерфейс для члена команды
@@ -119,7 +120,7 @@ export function TeamCarousel() {
     const maxIndex = Math.max(0, teamMembers.length - visibleCards);
     setCurrentIndex((prevIndex) => {
       if (prevIndex > maxIndex) {
-        console.info('[TeamCarousel] Adjusting index due to visibleCards change:', { 
+        logger.devInfo('[TeamCarousel] Adjusting index due to visibleCards change:', { 
           oldIndex: prevIndex, 
           newIndex: maxIndex 
         });
@@ -131,8 +132,8 @@ export function TeamCarousel() {
 
   // Визуальное логирование для отладки
   useEffect(() => {
-    console.info('[TeamCarousel] Current index changed:', currentIndex);
-    console.info('[TeamCarousel] Visible cards:', visibleCards);
+    logger.devInfo('[TeamCarousel] Current index changed:', currentIndex);
+    logger.devInfo('[TeamCarousel] Visible cards:', visibleCards);
   }, [currentIndex, visibleCards]);
 
   const maxIndex = Math.max(0, teamMembers.length - visibleCards);
@@ -140,7 +141,7 @@ export function TeamCarousel() {
   const goToPrevious = () => {
     setCurrentIndex((prevIndex) => {
       const newIndex = prevIndex === 0 ? maxIndex : prevIndex - 1;
-      console.info('[TeamCarousel] Navigate previous:', { from: prevIndex, to: newIndex });
+      logger.devInfo('[TeamCarousel] Navigate previous:', { from: prevIndex, to: newIndex });
       return newIndex;
     });
   };
@@ -148,13 +149,13 @@ export function TeamCarousel() {
   const goToNext = () => {
     setCurrentIndex((prevIndex) => {
       const newIndex = prevIndex >= maxIndex ? 0 : prevIndex + 1;
-      console.info('[TeamCarousel] Navigate next:', { from: prevIndex, to: newIndex });
+      logger.devInfo('[TeamCarousel] Navigate next:', { from: prevIndex, to: newIndex });
       return newIndex;
     });
   };
 
   const goToSlide = (index: number) => {
-    console.info('[TeamCarousel] Go to slide:', index);
+    logger.devInfo('[TeamCarousel] Go to slide:', index);
     setCurrentIndex(index);
   };
 

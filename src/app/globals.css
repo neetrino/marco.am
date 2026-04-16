@@ -3,6 +3,10 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    scrollbar-gutter: stable;
+  }
+
   body {
     @apply bg-white text-gray-900;
   }
@@ -69,6 +73,178 @@
 }
 
 /* Policy pages typography & spacing */
+/* Home hero — Figma MARCO (305:2146): 65px top, 135px horizontal on large screens */
+.hero-section-inset {
+  padding-top: 2rem; /* 32px mobile */
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .hero-section-inset {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    padding-top: 4rem; /* 64px tablet */
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero-section-inset {
+    padding-top: 65px;
+    padding-left: 135px;
+    padding-right: 135px;
+  }
+}
+
+/**
+ * Header rows (nav + search). Tablet + wide rules in media queries below; desktop 1367+ aligns with `.marco-home-page-shell` / hero.
+ */
+.marco-header-container {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1920px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .marco-header-container {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .marco-header-container {
+    padding-left: 135px;
+    padding-right: 135px;
+  }
+}
+
+
+/**
+ * Footer inner shell — large viewports: `max-w-7xl` + same horizontal padding as `.marco-header-container`.
+ */
+.marco-footer-inner {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 80rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .marco-footer-inner {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .marco-footer-inner {
+    padding-left: 135px;
+    padding-right: 135px;
+  }
+}
+
+/**
+ * Tablet / iPad (768–1366px): centered `max-w-7xl` + symmetric 1rem gutters (like phone).
+ * Overrides 1024px Figma inset on header/footer inner; stripes stay full viewport width.
+ */
+@media (min-width: 768px) and (max-width: 1366px) {
+  .marco-header-container,
+  .marco-footer-inner {
+    max-width: 80rem;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+/**
+ * Wide desktop (1367px+): header / footer — `max-w-7xl` column + 15px inset from viewport edges (both sides).
+ */
+@media (min-width: 1367px) {
+  .marco-header-container,
+  .marco-footer-inner {
+    max-width: 80rem;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+}
+
+/**
+ * Home page sections — matches `.marco-header-container` / footer horizontal rhythm.
+ * Phone: 1rem; narrow phablet 640–767: 1.5rem; tablet/iPad 768–1366: 1rem symmetric; wide 1367+: 15px (see block above).
+ */
+.marco-home-page-shell {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 80rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) and (max-width: 767px) {
+  .marco-home-page-shell {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1366px) {
+  .marco-home-page-shell {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .marco-home-page-shell.marco-home-page-shell--tight-mobile {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+}
+
+/**
+ * Horizontal padding only (nested blocks) — same insets as `.marco-home-page-shell`, no width cap.
+ */
+.marco-home-inner-gutter {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) and (max-width: 767px) {
+  .marco-home-inner-gutter {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1366px) {
+  .marco-home-inner-gutter {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+@media (min-width: 1367px) {
+  .marco-home-page-shell,
+  .marco-home-inner-gutter {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+}
+
 .policy-page {
   max-width: 56rem; /* ~max-w-4xl */
   margin-left: auto;
@@ -136,5 +312,31 @@
 
 .policy-page-inner li + li {
   margin-top: 0.25rem;
+}
+
+/* Home — promotional banner (Figma 305:2146: yellow mask 1651×925 @ x=135 y=65) */
+.home-promo-panel {
+  background-color: #ffca03;
+  background-image:
+    radial-gradient(ellipse 85% 55% at 12% 18%, rgba(255, 255, 255, 0.12) 0%, transparent 55%),
+    radial-gradient(ellipse 55% 45% at 88% 82%, rgba(0, 0, 0, 0.05) 0%, transparent 52%),
+    url('/assets/hero/hero-yellow-brick-wall.png');
+  background-size: cover, cover, cover;
+  background-position: center, center, center;
+  background-repeat: no-repeat;
+  /* Min height = Figma aspect (925/1651) × row width; matches .hero-section-inset gutters */
+  min-height: max(20rem, calc((100vw - 2rem) * 925 / 1651));
+}
+
+@media (min-width: 640px) {
+  .home-promo-panel {
+    min-height: max(22rem, calc((100vw - 3rem) * 925 / 1651));
+  }
+}
+
+@media (min-width: 1024px) {
+  .home-promo-panel {
+    min-height: max(24rem, calc((100vw - 270px) * 925 / 1651));
+  }
 }
 

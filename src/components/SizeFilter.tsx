@@ -65,7 +65,7 @@ export function SizeFilter({ category, search, minPrice, maxPrice, selectedSizes
       const response = await apiClient.get<{ colors: any[]; sizes: SizeOption[] }>('/api/v1/products/filters', { params });
       
       setSizes(response.sizes || []);
-    } catch (error) {
+    } catch (_error) {
       setSizes([]);
     } finally {
       setLoading(false);

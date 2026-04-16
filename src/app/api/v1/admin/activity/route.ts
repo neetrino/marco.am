@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { jsonErrorResponse } from "@/lib/api/json-error-response";
 import { authenticateToken, requireAdmin } from "@/lib/middleware/auth";
 import { adminService } from "@/lib/services/admin.service";
+import { logger } from "@/lib/utils/logger";
 
 /**
  * GET /api/v1/admin/activity
@@ -8,11 +10,11 @@ import { adminService } from "@/lib/services/admin.service";
  */
 export async function GET(req: NextRequest) {
   try {
-    console.log("📋 [ACTIVITY] Request received");
+    logger.devLog("📋 [ACTIVITY] Request received");
     const user = await authenticateToken(req);
     
     if (!user || !requireAdmin(user)) {
-      console.log("❌ [ACTIVITY] Unauthorized or not admin");
+      logger.devLog("❌ [ACTIVITY] Unauthorized or not admin");
       return NextResponse.json(
         {
           type: "https://api.shop.am/problems/forbidden",
@@ -29,23 +31,14 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const limit = parseInt(searchParams.get("limit") || "10", 10);
 
-    console.log(`✅ [ACTIVITY] User authenticated: ${user.id}, limit: ${limit}`);
+    logger.devLog(`✅ [ACTIVITY] User authenticated: ${user.id}, limit: ${limit}`);
     const result = await adminService.getActivity(limit);
-    console.log("✅ [ACTIVITY] Activity data retrieved successfully");
+    logger.devLog("✅ [ACTIVITY] Activity data retrieved successfully");
     
     return NextResponse.json({ data: result });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ [ACTIVITY] Error:", error);
-    return NextResponse.json(
-      {
-        type: error.type || "https://api.shop.am/problems/internal-error",
-        title: error.title || "Internal Server Error",
-        status: error.status || 500,
-        detail: error.detail || error.message || "An error occurred",
-        instance: req.url,
-      },
-      { status: error.status || 500 }
-    );
+    return jsonErrorResponse(error, req.url);
   }
 }
 

@@ -1,25 +1,24 @@
 import { HeroCarousel } from '../components/HeroCarousel';
-import { FeaturesSection } from '../components/FeaturesSection';
-import { TopCategories } from '../components/TopCategories';
+import { HomeMobileMessageCta } from '../components/home/HomeMobileMessageCta';
+import { HomeReelsSection } from '../components/home/HomeReelsSection';
+
 import { FeaturedProductsTabs } from '../components/FeaturedProductsTabs';
+import { HomeSpecialOffersSection } from '../components/home/HomeSpecialOffersSection';
 
 export default async function HomePage() {
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section - Full Width */}
-      <section className="bg-white">
-        <HeroCarousel />
-      </section>
+      <HeroCarousel />
 
-      {/* Top Categories */}
-      <TopCategories />
+      <HomeReelsSection />
 
-      {/* Featured Products with Tabs */}
+      <HomeMobileMessageCta />
+
+      <HomeSpecialOffersSection />
+
+      {/* Featured Products with Tabs + two home banners (gradient + secondary) */}
       <FeaturedProductsTabs />
-
-      {/* Features Section */}
-      <FeaturesSection />
     </div>
   );
 }

@@ -11,6 +11,7 @@ import { TopProductsCard } from './components/TopProductsCard';
 import { UserActivityCard } from './components/UserActivityCard';
 import { QuickActionsCard } from './components/QuickActionsCard';
 import { useAdminDashboard } from './hooks/useAdminDashboard';
+import { logger } from "@/lib/utils/logger";
 
 export default function AdminPanel() {
   const { t } = useTranslation();
@@ -36,12 +37,12 @@ export default function AdminPanel() {
   useEffect(() => {
     if (!isLoading) {
       if (!isLoggedIn) {
-        console.log('❌ [ADMIN] User not logged in, redirecting to login...');
+        logger.devLog('❌ [ADMIN] User not logged in, redirecting to login...');
         router.push('/login');
         return;
       }
       if (!isAdmin) {
-        console.log('❌ [ADMIN] User is not admin, redirecting to home...');
+        logger.devLog('❌ [ADMIN] User is not admin, redirecting to home...');
         router.push('/');
         return;
       }

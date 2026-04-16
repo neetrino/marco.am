@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useRef, ChangeEvent, useEffect } from 'react';
+import { getErrorMessage } from '@/lib/types/errors';
 import { useTranslation } from '../lib/i18n-client';
 import { ColorPaletteSelector } from './ColorPaletteSelector';
+import { logger } from "@/lib/utils/logger";
 
 interface AttributeValueEditModalProps {
   isOpen: boolean;
@@ -25,7 +27,7 @@ export function AttributeValueEditModal({
   isOpen,
   onClose,
   value,
-  attributeId,
+  attributeId: _attributeId,
   onSave,
 }: AttributeValueEditModalProps) {
   const { t } = useTranslation();
@@ -71,9 +73,9 @@ export function AttributeValueEditModal({
       setImageUploading(true);
       const base64 = await fileToBase64(imageFile);
       setImageUrl(base64);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('❌ [ADMIN] Error uploading image:', error);
-      alert(error?.message || t('admin.attributes.valueModal.failedToProcessImage'));
+      alert(getErrorMessage(error) || t('admin.attributes.valueModal.failedToProcessImage'));
     } finally {
       setImageUploading(false);
       if (event.target) {
@@ -94,7 +96,7 @@ export function AttributeValueEditModal({
         colors: colors.length > 0 ? colors : undefined,
         imageUrl: imageUrl,
       };
-      console.log('💾 [ATTRIBUTE VALUE MODAL] Saving value:', {
+      logger.devLog('💾 [ATTRIBUTE VALUE MODAL] Saving value:', {
         valueId: value.id,
         saveData,
         colorsLength: colors.length,
@@ -103,11 +105,11 @@ export function AttributeValueEditModal({
         colorsIsArray: Array.isArray(colors)
       });
       await onSave(saveData);
-      console.log('✅ [ATTRIBUTE VALUE MODAL] Value saved successfully');
+      logger.devLog('✅ [ATTRIBUTE VALUE MODAL] Value saved successfully');
       onClose();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('❌ [ADMIN] Error saving value:', error);
-      alert(error?.message || t('admin.attributes.valueModal.failedToSave'));
+      alert(getErrorMessage(error) || t('admin.attributes.valueModal.failedToSave'));
     } finally {
       setSaving(false);
     }

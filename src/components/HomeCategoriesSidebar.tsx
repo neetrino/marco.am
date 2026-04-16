@@ -98,7 +98,7 @@ export function HomeCategoriesSidebar() {
       }
       
       setProductCounts(counts);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error fetching categories:', err);
     } finally {
       setLoading(false);

@@ -12,7 +12,7 @@
     "login": "Մուտք",
     "register": "Գրանցում",
     "search": "Որոնել",
-    "shopNow": "Գնել հիմա",
+    "shopNow": "ԳՆԵԼ ՀԻՄԱ",
     "viewMore": "Դիտել ավելին",
     "close": "Փակել"
   },
@@ -41,7 +41,11 @@
     "terms": "Պայմաններ",
     "cookies": "Cookie-ներ",
     "delivery": "Առաքում",
-    "stores": "Խանութներ"
+    "stores": "Խանութներ",
+    "shop": "Խանութ",
+    "brands": "Բրենդներ",
+    "reels": "Reels",
+    "addresses": "Հասցեներ"
   },
   "stock": {
     "inStock": "Պահեստում",
@@ -155,6 +159,8 @@
     "addToCompare": "Ավելացնել համեմատման ցուցակ",
     "removeFromCompare": "Հեռացնել համեմատման ցուցակից",
     "outOfStock": "Արտադրված",
+    "languageMenu": "Լեզու ընտրել",
+    "languageCurrencyMenu": "Լեզու և արժույթ",
     "search": "Որոնել",
     "searchPlaceholder": "Որոնել ապրանքներ",
     "openMenu": "Բացել նավիգացիայի մենյու",
@@ -162,6 +168,9 @@
     "instagram": "Instagram",
     "facebook": "Facebook",
     "linkedin": "LinkedIn",
+    "telegram": "Telegram",
+    "whatsapp": "WhatsApp",
+    "viber": "Viber",
     "color": "Գույն: {color}",
     "previousImage": "Նախորդ պատկեր",
     "nextImage": "Հաջորդ պատկեր",
@@ -171,13 +180,18 @@
     "increaseQuantity": "Ավելացնել քանակ",
     "previousThumbnail": "Նախորդ մանրապատկեր",
     "nextThumbnail": "Հաջորդ մանրապատկեր",
-    "fullscreenImage": "Լիաէկրան պատկեր"
+    "fullscreenImage": "Լիաէկրան պատկեր",
+    "socialLinks": "Սոցիալ ցանցեր"
   },
   "placeholders": {
     "search": "Որոնել ապրանքներ"
   },
   "search": {
     "seeAll": "Տեսնել բոլորը"
+  },
+  "menu": {
+    "button": "Մենյու",
+    "title": "Նավիգացիա"
   },
   "defaults": {
     "category": "Մթերք"
@@ -194,7 +208,30 @@
     "refundPolicy": "Փոխհատուցման քաղաքականություն",
     "deliveryTerms": "Առաքման պայմաններ",
     "copyright": "© {year} Խանութ: Բոլոր իրավունքները պաշտպանված են:",
-    "paymentMethods": "Վճարման եղանակներ:"
+    "paymentMethods": "Վճարման եղանակներ",
+    "marco": {
+      "brandDescription": "Հայաստանի առաջատար առցանց\nհարթակը պրեմիում էլեկտրոնիկայի և\nկենցաղային տեխնիկայի համար սկսած\n2010 թվականից: Որակ, որին կարող եք\nվստահել:",
+      "headings": {
+        "company": "Ընկերություն",
+        "support": "Աջակցություն",
+        "contacts": "Կոնտակտներ"
+      },
+      "links": {
+        "companyAbout": "Մեր մասին",
+        "companyStores": "Մեր խանութները",
+        "companyCareers": "Աշխատանք մեզ մոտ",
+        "companyNews": "Նորություններ և բլոգ",
+        "companyFeedback": "Հետադարձ կապ",
+        "supportDelivery": "Առաքում և վերադարձ",
+        "supportInstallment": "Ապառիկի պայմաններ",
+        "supportWarranty": "Պաշտոնական երաշխիք",
+        "supportFaq": "Հաճախ տրվող հարցեր",
+        "supportService": "Սպասարկման կենտրոններ"
+      },
+      "copyrightBefore": "Copyright © {year} | Բոլոր իրավունքները պաշտպանված են | Ստեղծվել է ",
+      "copyrightAfter": " կողմից",
+      "creditStudio": "Neetrino IT Company"
+    }
   },
   "product": {
     "product": "ապրանք",
@@ -211,4 +248,3 @@
     "goHome": "Գնալ գլխավոր էջ"
   }
 }
-

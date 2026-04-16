@@ -1,3 +1,4 @@
+import { getErrorMessage } from "@/lib/types/errors";
 import { db } from "@white-shop/db";
 import * as bcrypt from "bcryptjs";
 
@@ -131,11 +132,11 @@ class UsersService {
           detail: "The old password is incorrect",
         };
       }
-    } catch (bcryptError: any) {
+    } catch (bcryptError: unknown) {
       // Handle bcrypt errors
       console.error("❌ [USERS SERVICE] bcrypt.compare error:", {
         error: bcryptError,
-        message: bcryptError?.message,
+        message: getErrorMessage(bcryptError),
         userId,
         hasOldPassword: !!oldPassword,
         hasPasswordHash: !!user.passwordHash,
@@ -157,10 +158,10 @@ class UsersService {
       });
 
       return { success: true };
-    } catch (hashError: any) {
+    } catch (hashError: unknown) {
       console.error("❌ [USERS SERVICE] bcrypt.hash error:", {
         error: hashError,
-        message: hashError?.message,
+        message: getErrorMessage(hashError),
         userId,
       });
       throw {

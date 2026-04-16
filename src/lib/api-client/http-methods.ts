@@ -4,6 +4,7 @@ import { buildUrl } from "./url-builder";
 import { getHeaders } from "./headers";
 import { handleUnauthorized } from "./auth-utils";
 import { shouldLogError, shouldLogWarning, parseErrorResponse, createApiError } from "./error-handler";
+import { logger } from "@/lib/utils/logger";
 
 /**
  * Handle network errors
@@ -53,7 +54,7 @@ function handleNetworkError(error: unknown, baseUrl: string, url: string): never
 async function handleErrorResponse(
   response: Response,
   url: string,
-  baseUrl: string
+  _baseUrl: string
 ): Promise<never> {
   const isUnauthorized = response.status === 401;
   const isNotFound = response.status === 404;
@@ -103,7 +104,7 @@ export async function getRequest<T>(
   const retryDelay = 1000; // 1 second
   const timeout = 30000; // 30 seconds timeout
   
-  console.log('🌐 [API CLIENT] GET request:', { url, endpoint, baseUrl });
+  logger.devLog('🌐 [API CLIENT] GET request:', { url, endpoint, baseUrl });
   
   let response: Response;
   try {
@@ -131,7 +132,7 @@ export async function getRequest<T>(
     
     // Log response status safely
     try {
-      console.log('🌐 [API CLIENT] GET response status:', response.status, response.statusText || '');
+      logger.devLog('🌐 [API CLIENT] GET response status:', response.status, response.statusText || '');
     } catch {
       console.warn('⚠️ [API CLIENT] Failed to log response status');
     }
@@ -157,7 +158,7 @@ export async function getRequest<T>(
     }
 
     const contentType = response.headers?.get('content-type');
-    console.log('🌐 [API CLIENT] Response content-type:', contentType);
+    logger.devLog('🌐 [API CLIENT] Response content-type:', contentType);
     
     if (!contentType || !contentType.includes('application/json')) {
       const text = await response.text();
@@ -170,7 +171,7 @@ export async function getRequest<T>(
     }
     
     const jsonData = await response.json();
-    console.log('✅ [API CLIENT] GET Response parsed successfully');
+    logger.devLog('✅ [API CLIENT] GET Response parsed successfully');
     
     if (!jsonData) {
       console.warn('⚠️ [API CLIENT] Response data is null or undefined');
@@ -201,7 +202,7 @@ export async function postRequest<T>(
   try {
     const url = buildUrl(baseUrl, endpoint, options?.params);
     
-    console.log('📤 [API CLIENT] POST request:', { url, data: data ? 'provided' : 'none' });
+    logger.devLog('📤 [API CLIENT] POST request:', { url, data: data ? 'provided' : 'none' });
     
     const response = await fetch(url, {
       method: 'POST',
@@ -210,7 +211,7 @@ export async function postRequest<T>(
       ...options,
     });
 
-    console.log('📥 [API CLIENT] Response status:', response.status, response.statusText);
+    logger.devLog('📥 [API CLIENT] Response status:', response.status, response.statusText);
 
     if (!response.ok) {
       const isUnauthorized = response.status === 401;
@@ -225,7 +226,7 @@ export async function postRequest<T>(
 
     try {
       const jsonData = await response.json();
-      console.log('✅ [API CLIENT] Response parsed successfully');
+      logger.devLog('✅ [API CLIENT] Response parsed successfully');
       return jsonData;
     } catch (parseError: unknown) {
       console.error('❌ [API CLIENT] JSON parse error:', parseError);
@@ -269,7 +270,7 @@ export async function putRequest<T>(
 ): Promise<T> {
   const url = buildUrl(baseUrl, endpoint, options?.params);
   
-  console.log('📤 [API CLIENT] PUT request:', { url, endpoint, hasData: !!data });
+  logger.devLog('📤 [API CLIENT] PUT request:', { url, endpoint, hasData: !!data });
   
   const response = await fetch(url, {
     method: 'PUT',
@@ -278,7 +279,7 @@ export async function putRequest<T>(
     ...options,
   });
 
-  console.log('📥 [API CLIENT] PUT response status:', response.status, response.statusText);
+  logger.devLog('📥 [API CLIENT] PUT response status:', response.status, response.statusText);
 
   if (!response.ok) {
     await handleErrorResponse(response, url, baseUrl);
@@ -286,7 +287,7 @@ export async function putRequest<T>(
 
   try {
     const jsonData = await response.json();
-    console.log('✅ [API CLIENT] PUT Response parsed successfully');
+    logger.devLog('✅ [API CLIENT] PUT Response parsed successfully');
     return jsonData;
   } catch (parseError: unknown) {
     console.error('❌ [API CLIENT] PUT JSON parse error:', {

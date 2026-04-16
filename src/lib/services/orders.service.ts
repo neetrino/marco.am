@@ -31,17 +31,6 @@ type CartItemWithRelations = Prisma.CartItemGetPayload<{
   };
 }>;
 
-type ProductVariantWithProduct = Prisma.ProductVariantGetPayload<{
-  include: {
-    product: {
-      include: {
-        translations: true;
-      };
-    };
-    options: true;
-  };
-}>;
-
 type OrderItemWithVariant = Prisma.OrderItemGetPayload<{
   include: {
     variant: {

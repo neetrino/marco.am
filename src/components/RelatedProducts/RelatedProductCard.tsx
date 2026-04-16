@@ -8,6 +8,7 @@ import { CartIcon as CartPngIcon } from '../icons/CartIcon';
 import type { CurrencyCode } from '../../lib/currency';
 import type { LanguageCode } from '../../lib/language';
 import { t } from '../../lib/i18n';
+import { logger } from "@/lib/utils/logger";
 
 interface RelatedProduct {
   id: string;
@@ -77,7 +78,7 @@ export function RelatedProductCard({
               e.stopPropagation();
               return;
             }
-            console.log('[RelatedProducts] Navigating to product:', product.slug);
+            logger.devLog('[RelatedProducts] Navigating to product:', product.slug);
           }}
         >
           <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col h-full">

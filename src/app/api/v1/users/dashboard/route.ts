@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
     logger.info("Dashboard data retrieved successfully");
     
     return NextResponse.json(result);
-  } catch (error: unknown) {
+  } catch (error: any) {
     logger.error("Dashboard error", { error });
     const apiError = toApiError(error, req.url);
     return NextResponse.json(apiError, { status: apiError.status || 500 });

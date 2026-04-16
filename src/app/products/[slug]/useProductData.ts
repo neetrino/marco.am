@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { use } from 'react';
 import type { LanguageCode } from '../../../lib/language';
 import { getStoredLanguage } from '../../../lib/language';
-import { apiClient } from '../../../lib/api-client';
+import { apiClient, getErrorHttpStatus } from '../../../lib/api-client';
 import { getStoredCurrency, type CurrencyCode } from '../../../lib/currency';
 import type { Product } from './types';
 import { RESERVED_ROUTES, WISHLIST_KEY, COMPARE_KEY } from './constants';
@@ -14,6 +14,7 @@ import {
   normalizeUrlForComparison,
   cleanImageUrls,
 } from '../../../lib/utils/image-utils';
+import { logger } from "@/lib/utils/logger";
 
 interface UseProductDataProps {
   params: Promise<{ slug?: string }>;
@@ -63,12 +64,12 @@ export function useProductData({
   const images = useMemo(() => {
     if (!product) return [];
 
-    console.log('🖼️ [PRODUCT IMAGES] Building images array for product:', product.id);
+    logger.devLog('🖼️ [PRODUCT IMAGES] Building images array for product:', product.id);
 
     // Collect all main images (product.media is already cleaned in findBySlug)
     const mainImages = Array.isArray(product.media) ? product.media : [];
     const cleanedMain = cleanImageUrls(mainImages);
-    console.log('🖼️ [PRODUCT IMAGES] Main images from product.media:', cleanedMain.length);
+    logger.devLog('🖼️ [PRODUCT IMAGES] Main images from product.media:', cleanedMain.length);
 
     // Collect all variant images
     const variantImages: any[] = [];
@@ -89,7 +90,7 @@ export function useProductData({
     }
 
     const cleanedVariantImages = cleanImageUrls(variantImages);
-    console.log('🖼️ [PRODUCT IMAGES] Variant images:', cleanedVariantImages.length);
+    logger.devLog('🖼️ [PRODUCT IMAGES] Variant images:', cleanedVariantImages.length);
 
     // Combine all images: main first, then variant images
     // Use array to preserve order, Set to track duplicates
@@ -116,10 +117,10 @@ export function useProductData({
       }
     });
 
-    console.log('🖼️ [PRODUCT IMAGES] Final images count:', allImages.length);
-    console.log('🖼️ [PRODUCT IMAGES] Main images:', cleanedMain.length);
-    console.log('🖼️ [PRODUCT IMAGES] Variant images:', cleanedVariantImages.length);
-    console.log(
+    logger.devLog('🖼️ [PRODUCT IMAGES] Final images count:', allImages.length);
+    logger.devLog('🖼️ [PRODUCT IMAGES] Main images:', cleanedMain.length);
+    logger.devLog('🖼️ [PRODUCT IMAGES] Variant images:', cleanedVariantImages.length);
+    logger.devLog(
       '🖼️ [PRODUCT IMAGES] Unique images after deduplication:',
       allImages.length
     );
@@ -141,14 +142,14 @@ export function useProductData({
         data = await apiClient.get<Product>(`/api/v1/products/${slug}`, {
           params: { lang: currentLang },
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
         // If 404 and not English, try fallback to English
-        if (error?.status === 404 && currentLang !== 'en') {
+        if (getErrorHttpStatus(error) === 404 && currentLang !== 'en') {
           try {
             data = await apiClient.get<Product>(`/api/v1/products/${slug}`, {
               params: { lang: 'en' },
             });
-          } catch (fallbackError) {
+          } catch (_fallbackError) {
             // If English also fails, throw the original error
             throw error;
           }
@@ -162,9 +163,9 @@ export function useProductData({
       // Don't reset image index here - let the component handle it
 
       // Don't set initial variant here - let the component handle it
-    } catch (error: any) {
+    } catch (error: unknown) {
       // If product not found (404), clear product state and show error
-      if (error?.status === 404) {
+      if (getErrorHttpStatus(error) === 404) {
         setProduct(null);
         // Optionally redirect to 404 page or show error message
         // router.push('/404');
@@ -260,7 +261,7 @@ export function useProductData({
           `/api/v1/products/${slug}/reviews`
         );
         setReviews(data || []);
-      } catch (error: any) {
+      } catch (_error: unknown) {
         // If 404, product might not have reviews yet - that's okay
         setReviews([]);
       }
@@ -281,11 +282,11 @@ export function useProductData({
 
   // Placeholder setters for image index and thumbnail start index
   // These will be provided by the component
-  const setCurrentImageIndex = useCallback((index: number) => {
+  const setCurrentImageIndex = useCallback((_index: number) => {
     // This will be overridden by the component
   }, []);
 
-  const setThumbnailStartIndex = useCallback((index: number) => {
+  const setThumbnailStartIndex = useCallback((_index: number) => {
     // This will be overridden by the component
   }, []);
 

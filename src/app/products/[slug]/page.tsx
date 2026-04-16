@@ -1,9 +1,6 @@
 'use client';
 
-import { use } from 'react';
-import { useRouter } from 'next/navigation';
 import { apiClient } from '../../../lib/api-client';
-import { getStoredCurrency } from '../../../lib/currency';
 import { t } from '../../../lib/i18n';
 import { useAuth } from '../../../lib/auth/AuthContext';
 import { RelatedProducts } from '../../../components/RelatedProducts';
@@ -14,7 +11,6 @@ import { useProductPage } from './useProductPage';
 import type { ProductPageProps } from './types';
 
 export default function ProductPage({ params }: ProductPageProps) {
-  const router = useRouter();
   const { isLoggedIn } = useAuth();
   
   const {
@@ -83,7 +79,7 @@ export default function ProductPage({ params }: ProductPageProps) {
       }
       setShowMessage(`${t(language, 'product.addedToCart')} ${quantity} ${t(language, 'product.pcs')}`);
       window.dispatchEvent(new Event('cart-updated'));
-    } catch (err) { 
+    } catch (_err) { 
       setShowMessage(t(language, 'product.errorAddingToCart')); 
     } finally { 
       setIsAddingToCart(false); 

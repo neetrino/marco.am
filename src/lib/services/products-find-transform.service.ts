@@ -224,15 +224,21 @@ class ProductsFindTransformService {
         originalPrice: appliedDiscount > 0 ? originalPrice : variant?.compareAtPrice || null,
         compareAtPrice: variant?.compareAtPrice || null,
         discountPercent: appliedDiscount > 0 ? appliedDiscount : null,
-        image: (() => {
-          // Use unified image utilities to get first valid main image
+        ...(() => {
           if (!Array.isArray(product.media) || product.media.length === 0) {
-            return null;
+            return { image: null as string | null, images: [] as string[] };
           }
-          
-          // Process first image - cast JsonValue to ImageUrlInput
-          const firstImage = processImageUrl(product.media[0] as string | null | undefined | { url?: string; src?: string; value?: string });
-          return firstImage || null;
+          const images = product.media
+            .map((m) =>
+              processImageUrl(
+                m as string | null | undefined | { url?: string; src?: string; value?: string },
+              ),
+            )
+            .filter((url): url is string => Boolean(url));
+          return {
+            image: images[0] ?? null,
+            images,
+          };
         })(),
         inStock: (variant?.stock || 0) > 0,
         labels: (() => {

@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     });
     
     return NextResponse.json(result, { status: 201 });
-  } catch (error: unknown) {
+  } catch (error: any) {
     logger.error("Checkout error", { error });
     if (error instanceof Error) {
       logger.error("Checkout error details", {

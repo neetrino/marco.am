@@ -1,34 +1,53 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Montserrat } from 'next/font/google';
+
 import { apiClient } from '../lib/api-client';
 import { getStoredLanguage, type LanguageCode } from '../lib/language';
-import { ProductCard } from './ProductCard';
 import { t } from '../lib/i18n';
-import type { ProductLabel } from './ProductLabels';
+import { logger } from '../lib/utils/logger';
+import { FeaturedProductsStrip } from './FeaturedProductsStrip';
+import { HomeAppBanner } from './home/HomeAppBanner';
+import { HomeGradientBanner } from './home/HomeGradientBanner';
+import { HomeMobileBannerProductShowcase } from './home/HomeMobileBannerProductShowcase';
+import {
+  FEATURED_PRODUCTS_TITLE_BAR_THICKNESS_PX,
+  FEATURED_PRODUCTS_TITLE_BAR_WIDTH_PERCENT,
+  FEATURED_PRODUCTS_TITLE_FONT_SIZE_CLAMP,
+  FEATURED_PRODUCTS_TITLE_LETTER_SPACING_PX,
+  FEATURED_PRODUCTS_TITLE_LINE_HEIGHT,
+  FEATURED_PRODUCTS_TITLE_TEXT_TO_BAR_GAP_PX,
+  FEATURED_PRODUCTS_TITLE_TO_GRID_GAP_PX,
+  FEATURED_PRODUCTS_TITLE_INSET_LEFT_PX,
+  FEATURED_PRODUCTS_VISIBLE_COUNT,
+  FEATURED_HOME_BANNERS_BLOCK_PADDING_Y_CLASS,
+  FEATURED_SECTION_PADDING_BOTTOM_CLASS,
+  FEATURED_SECTION_PADDING_TOP_CLASS,
+} from './featured-products-tabs.constants';
+import {
+  SPECIAL_OFFERS_CAROUSEL_NAV_BUTTON_HEIGHT_PX,
+  SPECIAL_OFFERS_CAROUSEL_NAV_BUTTON_WIDTH_PX,
+  SPECIAL_OFFERS_CAROUSEL_NAV_INSET_RIGHT_PX,
+} from './home/home-special-offers.constants';
+import { HOME_PAGE_SECTION_SHELL_CLASS } from './home/home-page-section-shell.constants';
+import {
+  REELS_CAROUSEL_NAV_BUTTON_HEIGHT_MOBILE_PX,
+  REELS_CAROUSEL_NAV_BUTTON_WIDTH_MOBILE_PX,
+  REELS_CAROUSEL_NAV_INSET_RIGHT_MOBILE_PX,
+} from './home/home-reels.constants';
+import type { SpecialOfferProduct } from './home/special-offer-product.types';
+import { useIsMaxMd } from './home/use-is-max-md';
 
-interface Product {
-  id: string;
-  slug: string;
-  title: string;
-  price: number;
-  compareAtPrice?: number | null;
-  image: string | null;
-  inStock: boolean;
-  brand: {
-    id: string;
-    name: string;
-  } | null;
-  colors?: Array<{ value: string; imageUrl?: string | null; colors?: string[] | null }>; // Available colors from variants with imageUrl and colors hex
-  sizes?: Array<{ value: string; imageUrl?: string | null }>; // Available sizes from variants
-  attributes?: Record<string, Array<{ valueId?: string; value: string; label: string; imageUrl?: string | null; colors?: string[] | null }>>; // Other attributes (not color or size)
-  originalPrice?: number | null;
-  discountPercent?: number | null;
-  labels?: ProductLabel[];
-}
+const montserratFeatured = Montserrat({
+  subsets: ['latin'],
+  weight: ['700'],
+  display: 'swap',
+});
 
 interface ProductsResponse {
-  data: Product[];
+  data: SpecialOfferProduct[];
   meta: {
     total: number;
     page: number;
@@ -39,43 +58,66 @@ interface ProductsResponse {
 
 type FilterType = 'new' | 'featured' | 'bestseller';
 
-interface Tab {
-  id: FilterType;
-  label: string;
-  filter: string | null;
-}
+const TAB_ORDER: FilterType[] = ['new', 'bestseller', 'featured'];
 
-// Tabs will be generated dynamically with translations
+/** Section heading is always «Նորույթներ»; chevrons only change the product filter below. */
+const FEATURED_SECTION_TITLE_KEY = 'home.featured_products.tab_new';
 
-const PRODUCTS_PER_PAGE = 10;
-const MOBILE_GRID_LAYOUT =
-  'grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5';
+const FILTER_BY_TAB: Record<FilterType, string> = {
+  new: 'new',
+  bestseller: 'bestseller',
+  featured: 'featured',
+};
+
+const FEATURED_NAV_BUTTON_CLASS =
+  'flex shrink-0 items-center justify-center overflow-visible rounded-full border border-gray-200 bg-white p-0 transition-colors hover:border-marco-yellow hover:bg-marco-yellow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marco-black';
+
+const FEATURED_NAV_ICON_CLASS =
+  'h-3 w-3 shrink-0 text-marco-black max-md:h-5 max-md:w-5';
+
+const featuredTitleCssVars = {
+  ['--fp-title-fs' as string]: FEATURED_PRODUCTS_TITLE_FONT_SIZE_CLAMP,
+  ['--fp-title-lh' as string]: FEATURED_PRODUCTS_TITLE_LINE_HEIGHT,
+  ['--fp-nav-btn-w-mobile' as string]: `${REELS_CAROUSEL_NAV_BUTTON_WIDTH_MOBILE_PX}px`,
+  ['--fp-nav-btn-h-mobile' as string]: `${REELS_CAROUSEL_NAV_BUTTON_HEIGHT_MOBILE_PX}px`,
+  ['--fp-nav-btn-w' as string]: `${SPECIAL_OFFERS_CAROUSEL_NAV_BUTTON_WIDTH_PX}px`,
+  ['--fp-nav-btn-h' as string]: `${SPECIAL_OFFERS_CAROUSEL_NAV_BUTTON_HEIGHT_PX}px`,
+  ['--fp-nav-inset-mobile' as string]: `${REELS_CAROUSEL_NAV_INSET_RIGHT_MOBILE_PX}px`,
+  ['--fp-nav-inset-desktop' as string]: `${SPECIAL_OFFERS_CAROUSEL_NAV_INSET_RIGHT_PX}px`,
+} as const;
+
+const featuredTitleLetterSpacingStyle = {
+  letterSpacing: `${FEATURED_PRODUCTS_TITLE_LETTER_SPACING_PX}px`,
+} as const;
+
+const featuredTitleBarPaddingStyle = {
+  paddingBottom: `${FEATURED_PRODUCTS_TITLE_TEXT_TO_BAR_GAP_PX + FEATURED_PRODUCTS_TITLE_BAR_THICKNESS_PX}px`,
+} as const;
+
+const featuredTitleBarStyle = {
+  left: 0,
+  width: `${FEATURED_PRODUCTS_TITLE_BAR_WIDTH_PERCENT}%`,
+  height: `${FEATURED_PRODUCTS_TITLE_BAR_THICKNESS_PX}px`,
+} as const;
 
 /**
- * FeaturedProductsTabs Component
- * Displays products with tabs for filtering (NEW OFFERS, NEW, FEATURED, TOP SELLERS)
- * Similar to the reference design with underlined active tab
+ * «Նորույթներ» — static 2×4 grid (md+), decorative dots + «Տեսնել ավելին» CTA.
  */
 export function FeaturedProductsTabs() {
-  // Use state for language to prevent hydration mismatch
-  // Start with 'en' on server, update on client mount
+  const isMaxMd = useIsMaxMd();
   const [language, setLanguage] = useState<LanguageCode>('en');
   const [activeTab, setActiveTab] = useState<FilterType>('new');
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<SpecialOfferProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Update language on mount and when language changes
   useEffect(() => {
     const updateLanguage = () => {
-      const storedLang = getStoredLanguage();
-      setLanguage(storedLang);
+      setLanguage(getStoredLanguage());
     };
 
-    // Update immediately on mount
     updateLanguage();
 
-    // Listen to language-updated events
     const handleLanguageUpdate = () => {
       updateLanguage();
     };
@@ -86,143 +128,137 @@ export function FeaturedProductsTabs() {
     };
   }, []);
 
-  // Generate tabs with translations (memoized based on language)
-  const tabs: Tab[] = [
-    { id: 'new', label: t(language, 'home.featured_products.tab_new'), filter: 'new' },
-    { id: 'bestseller', label: t(language, 'home.featured_products.tab_bestseller'), filter: 'bestseller' },
-    { id: 'featured', label: t(language, 'home.featured_products.tab_featured'), filter: 'featured' },
-  ];
+  const fetchProducts = useCallback(
+    async (filter: string | null) => {
+      try {
+        setLoading(true);
+        setError(null);
 
-  /**
-   * Fetch products based on active filter
-   */
-  const fetchProducts = useCallback(async (filter: string | null) => {
-    try {
-      setLoading(true);
-      setError(null);
+        const currentLang = language;
+        const params: Record<string, string> = {
+          page: '1',
+          limit: String(FEATURED_PRODUCTS_VISIBLE_COUNT),
+          lang: currentLang,
+        };
 
-      const currentLang = language;
-      const params: Record<string, string> = {
-        page: '1',
-        limit: PRODUCTS_PER_PAGE.toString(),
-        lang: currentLang,
-      };
+        if (filter) {
+          params.filter = filter;
+        }
 
-      // Add filter if provided
-      if (filter) {
-        params.filter = filter;
+        const response = await apiClient.get<ProductsResponse>('/api/v1/products', {
+          params,
+        });
+
+        const rows = response.data ?? [];
+        setProducts(rows.slice(0, FEATURED_PRODUCTS_VISIBLE_COUNT));
+      } catch (err) {
+        logger.error('[FeaturedProductsTabs] fetch failed', { error: err });
+        setError(t(language, 'home.featured_products.errorLoading'));
+        setProducts([]);
+      } finally {
+        setLoading(false);
       }
+    },
+    [language],
+  );
 
-      const response = await apiClient.get<ProductsResponse>('/api/v1/products', {
-        params,
-      });
+  const handleTabChange = useCallback(
+    (tabId: FilterType) => {
+      setActiveTab(tabId);
+      fetchProducts(FILTER_BY_TAB[tabId]);
+    },
+    [fetchProducts],
+  );
 
-      setProducts((response.data || []).slice(0, PRODUCTS_PER_PAGE));
-    } catch (err) {
-      console.error('[FeaturedProductsTabs] Error:', err);
-      setError(t(language, 'home.featured_products.errorLoading'));
-      setProducts([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [language]);
+  const shiftTab = useCallback(
+    (direction: -1 | 1) => {
+      const index = TAB_ORDER.indexOf(activeTab);
+      const nextId = TAB_ORDER[(index + direction + TAB_ORDER.length) % TAB_ORDER.length];
+      handleTabChange(nextId);
+    },
+    [activeTab, handleTabChange],
+  );
 
-  /**
-   * Handle tab change
-   */
-  const handleTabChange = (tabId: FilterType) => {
-    setActiveTab(tabId);
-    const tab = tabs.find((t) => t.id === tabId);
-    fetchProducts(tab?.filter || null);
-  };
-
-  // Load products on mount (default "NEW")
   useEffect(() => {
     fetchProducts('new');
   }, [fetchProducts]);
 
+  const sectionHeading = t(language, FEATURED_SECTION_TITLE_KEY);
+  const cardLayout = isMaxMd ? 'mobileGrid' : 'default';
+
   return (
-    <section className="py-16 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Title */}
-        <h2 className="text-3xl font-bold text-gray-900 text-center">
-          {t(language, 'home.featured_products.title')}
-        </h2>
-        <p className="mt-3 mb-8 text-base text-gray-600 text-center">
-          {t(language, 'home.featured_products.subtitle')}
-        </p>
-
-        {/* Tabs Navigation */}
-        <div className="flex justify-center items-center gap-6 md:gap-8 mb-8 flex-wrap">
-          {tabs.map((tab) => {
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => handleTabChange(tab.id)}
-                className={`
-                  relative px-4 py-2 text-sm font-medium transition-colors duration-200
-                  ${isActive 
-                    ? 'text-blue-600' 
-                    : 'text-gray-600 hover:text-gray-900'
-                  }
-                `}
-                aria-label={t(language, 'home.featured_products.ariaShowProducts').replace('{label}', tab.label)}
-                aria-pressed={isActive}
-              >
-                {tab.label}
-                {/* Active indicator - underline */}
-                {isActive && (
-                  <span 
-                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"
-                    aria-hidden="true"
-                  />
-                )}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Products Grid */}
-        {loading ? (
-          <div className={MOBILE_GRID_LAYOUT}>
-            {[...Array(PRODUCTS_PER_PAGE)].map((_, i) => (
-              <div key={i} className="bg-white rounded-lg overflow-hidden animate-pulse">
-                <div className="aspect-square bg-gray-200"></div>
-                <div className="p-4 space-y-2">
-                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                  <div className="h-5 bg-gray-200 rounded w-1/3"></div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : error ? (
-          <div className="text-center py-12">
-            <p className="text-red-600 mb-4">{error}</p>
-            <button
-              onClick={() => {
-                const tab = tabs.find((t) => t.id === activeTab);
-                fetchProducts(tab?.filter || null);
-              }}
-              className="px-4 py-2 bg-gray-900 text-white rounded hover:bg-gray-800 transition-colors"
+    <section
+      className={`bg-white ${FEATURED_SECTION_PADDING_BOTTOM_CLASS} ${FEATURED_SECTION_PADDING_TOP_CLASS} ${montserratFeatured.className}`}
+      style={featuredTitleCssVars}
+      aria-labelledby="home-featured-products-heading"
+    >
+      <div className={HOME_PAGE_SECTION_SHELL_CLASS}>
+        <div
+          className="flex flex-row flex-wrap items-end justify-between gap-4"
+          style={{ marginBottom: `${FEATURED_PRODUCTS_TITLE_TO_GRID_GAP_PX}px` }}
+        >
+          <div
+            className="min-w-0"
+            style={{ paddingLeft: `${FEATURED_PRODUCTS_TITLE_INSET_LEFT_PX}px` }}
+          >
+            <h2
+              id="home-featured-products-heading"
+              className="font-bold uppercase text-marco-black [font-size:var(--fp-title-fs)] [line-height:var(--fp-title-lh)]"
+              style={featuredTitleLetterSpacingStyle}
             >
-              {t(language, 'home.featured_products.tryAgain')}
+              <span className="relative inline-block whitespace-nowrap" style={featuredTitleBarPaddingStyle}>
+                {sectionHeading}
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute bottom-0 bg-marco-yellow"
+                  style={featuredTitleBarStyle}
+                />
+              </span>
+            </h2>
+          </div>
+          <div className="flex shrink-0 flex-row gap-2 max-md:[margin-right:var(--fp-nav-inset-mobile)] md:[margin-right:var(--fp-nav-inset-desktop)]">
+            <button
+              type="button"
+              onClick={() => shiftTab(-1)}
+              className={`${FEATURED_NAV_BUTTON_CLASS} h-[var(--fp-nav-btn-h-mobile)] w-[var(--fp-nav-btn-w-mobile)] md:h-[var(--fp-nav-btn-h)] md:w-[var(--fp-nav-btn-w)]`}
+              aria-label={t(language, 'home.featured_products.carousel_prev_aria')}
+            >
+              <ChevronLeft className={FEATURED_NAV_ICON_CLASS} strokeWidth={2} aria-hidden />
+            </button>
+            <button
+              type="button"
+              onClick={() => shiftTab(1)}
+              className={`${FEATURED_NAV_BUTTON_CLASS} h-[var(--fp-nav-btn-h-mobile)] w-[var(--fp-nav-btn-w-mobile)] md:h-[var(--fp-nav-btn-h)] md:w-[var(--fp-nav-btn-w)]`}
+              aria-label={t(language, 'home.featured_products.carousel_next_aria')}
+            >
+              <ChevronRight className={FEATURED_NAV_ICON_CLASS} strokeWidth={2} aria-hidden />
             </button>
           </div>
-        ) : products.length > 0 ? (
-          <div className={MOBILE_GRID_LAYOUT}>
-            {products.slice(0, PRODUCTS_PER_PAGE).map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            <p className="text-gray-500">{t(language, 'home.featured_products.noProducts')}</p>
-          </div>
-        )}
+        </div>
+
+        <FeaturedProductsStrip
+          language={language}
+          activeTab={activeTab}
+          loading={loading}
+          error={error}
+          products={products}
+          cardLayout={cardLayout}
+          isMaxMd={isMaxMd}
+          onRetryFetch={() => fetchProducts(FILTER_BY_TAB[activeTab])}
+        />
+      </div>
+
+      <div className={`w-full ${FEATURED_HOME_BANNERS_BLOCK_PADDING_Y_CLASS}`}>
+        <div className="hidden md:block">
+          <HomeAppBanner language={language} />
+        </div>
+        <div className="md:hidden">
+          <HomeMobileBannerProductShowcase language={language} />
+        </div>
+        <div className="hidden md:block">
+          <HomeGradientBanner language={language} />
+        </div>
       </div>
     </section>
   );
 }
-

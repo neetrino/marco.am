@@ -1,4 +1,5 @@
 import React from 'react';
+import { logger } from "@/lib/utils/logger";
 
 export type ProductLabelPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 
@@ -26,7 +27,7 @@ export const ProductLabels: React.FC<ProductLabelsProps> = ({ labels }) => {
   if (!labels || labels.length === 0) return null;
 
   // Փոքր logging, որ հեշտ լինի debug անել label-ների խնդիրները
-  console.info('[UI][ProductLabels] Rendering labels', {
+  logger.devInfo('[UI][ProductLabels] Rendering labels', {
     total: labels.length,
     positions: labels.map((l) => l.position),
   });

@@ -165,7 +165,7 @@ export function CartTable({
     <div className="lg:col-span-2">
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         {/* Table Header */}
-        <div className="hidden md:grid md:grid-cols-12 gap-4 px-6 py-4 bg-gray-50 border-b border-gray-200">
+        <div className="hidden md:grid md:grid-cols-12 gap-4 px-6 py-4 bg-white border-b border-gray-200">
           <div className="md:col-span-6">
             <span className="text-sm font-semibold text-gray-900 uppercase tracking-wide">{t('common.messages.product')}</span>
           </div>

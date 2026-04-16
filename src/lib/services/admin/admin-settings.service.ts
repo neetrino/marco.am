@@ -1,4 +1,5 @@
 import { db } from "@white-shop/db";
+import { logger } from "@/lib/utils/logger";
 
 class AdminSettingsService {
   /**
@@ -41,7 +42,7 @@ class AdminSettingsService {
    * Update settings
    */
   async updateSettings(data: any) {
-    console.log('⚙️ [ADMIN SERVICE] Updating settings...', data);
+    logger.devLog('⚙️ [ADMIN SERVICE] Updating settings...', data);
     
     // Update global discount
     if (data.globalDiscount !== undefined) {
@@ -58,7 +59,7 @@ class AdminSettingsService {
           description: 'Global discount percentage for all products',
         },
       });
-      console.log('✅ [ADMIN SERVICE] Global discount updated:', globalDiscountValue);
+      logger.devLog('✅ [ADMIN SERVICE] Global discount updated:', globalDiscountValue);
     }
     
     // Update category discounts
@@ -75,7 +76,7 @@ class AdminSettingsService {
           description: 'Discount percentages by category ID',
         },
       });
-      console.log('✅ [ADMIN SERVICE] Category discounts updated:', data.categoryDiscounts);
+      logger.devLog('✅ [ADMIN SERVICE] Category discounts updated:', data.categoryDiscounts);
     }
     
     // Update brand discounts
@@ -92,7 +93,7 @@ class AdminSettingsService {
           description: 'Discount percentages by brand ID',
         },
       });
-      console.log('✅ [ADMIN SERVICE] Brand discounts updated:', data.brandDiscounts);
+      logger.devLog('✅ [ADMIN SERVICE] Brand discounts updated:', data.brandDiscounts);
     }
     
     // Update default currency
@@ -110,7 +111,7 @@ class AdminSettingsService {
           description: 'Default currency for admin product pricing (USD, AMD, EUR)',
         },
       });
-      console.log('✅ [ADMIN SERVICE] Default currency updated:', currencyValue);
+      logger.devLog('✅ [ADMIN SERVICE] Default currency updated:', currencyValue);
     }
     
     // Update currency rates
@@ -127,7 +128,7 @@ class AdminSettingsService {
           description: 'Currency exchange rates relative to USD (USD, AMD, EUR, RUB, GEL)',
         },
       });
-      console.log('✅ [ADMIN SERVICE] Currency rates updated:', data.currencyRates);
+      logger.devLog('✅ [ADMIN SERVICE] Currency rates updated:', data.currencyRates);
     }
     
     return { success: true };
@@ -137,13 +138,13 @@ class AdminSettingsService {
    * Get price filter settings
    */
   async getPriceFilterSettings() {
-    console.log('⚙️ [ADMIN SERVICE] Fetching price filter settings...');
+    logger.devLog('⚙️ [ADMIN SERVICE] Fetching price filter settings...');
     const setting = await db.settings.findUnique({
       where: { key: 'price-filter' },
     });
 
     if (!setting) {
-      console.log('✅ [ADMIN SERVICE] Price filter settings not found, returning defaults');
+      logger.devLog('✅ [ADMIN SERVICE] Price filter settings not found, returning defaults');
       return {
         minPrice: null,
         maxPrice: null,
@@ -163,7 +164,7 @@ class AdminSettingsService {
         GEL?: number;
       };
     };
-    console.log('✅ [ADMIN SERVICE] Price filter settings loaded:', value);
+    logger.devLog('✅ [ADMIN SERVICE] Price filter settings loaded:', value);
     return {
       minPrice: value.minPrice ?? null,
       maxPrice: value.maxPrice ?? null,
@@ -186,7 +187,7 @@ class AdminSettingsService {
       GEL?: number | null;
     } | null;
   }) {
-    console.log('⚙️ [ADMIN SERVICE] Updating price filter settings...', data);
+    logger.devLog('⚙️ [ADMIN SERVICE] Updating price filter settings...', data);
     
     const value: {
       minPrice?: number;
@@ -241,7 +242,7 @@ class AdminSettingsService {
       },
     });
 
-    console.log('✅ [ADMIN SERVICE] Price filter settings updated:', setting);
+    logger.devLog('✅ [ADMIN SERVICE] Price filter settings updated:', setting);
     const stored = setting.value as any;
     return {
       success: true,

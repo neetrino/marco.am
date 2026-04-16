@@ -6,10 +6,12 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Button } from '@shop/ui';
 import { apiClient } from '../../lib/api-client';
+import { getErrorMessage } from '@/lib/types/errors';
 import { formatPrice, getStoredCurrency } from '../../lib/currency';
 import { getStoredLanguage } from '../../lib/language';
 import { useTranslation } from '../../lib/i18n-client';
 import { useAuth } from '../../lib/auth/AuthContext';
+import { logger } from "@/lib/utils/logger";
 
 interface Product {
   id: string;
@@ -59,7 +61,7 @@ export default function WishlistPage() {
    */
   const fetchWishlistProducts = useCallback(async (idsToLoad: string[]) => {
     if (idsToLoad.length === 0) {
-      console.info('[Wishlist] Skip fetch because ids array is empty');
+      logger.devInfo('[Wishlist] Skip fetch because ids array is empty');
       setProducts([]);
       setLoading(false);
       return;
@@ -67,7 +69,7 @@ export default function WishlistPage() {
 
     try {
       setLoading(true);
-      console.info(`[Wishlist] Fetching ${idsToLoad.length} products for render`);
+      logger.devInfo(`[Wishlist] Fetching ${idsToLoad.length} products for render`);
       const languagePreference = getStoredLanguage();
       const response = await apiClient.get<{
         data: Product[];
@@ -129,7 +131,7 @@ export default function WishlistPage() {
   }, [fetchWishlistProducts]);
 
   const handleRemove = (productId: string) => {
-    console.info(`[Wishlist] Removing product ${productId} from wishlist UI`);
+    logger.devInfo(`[Wishlist] Removing product ${productId} from wishlist UI`);
     
     // Mark as local update to prevent re-fetch in event handler
     isLocalUpdateRef.current = true;
@@ -195,9 +197,10 @@ export default function WishlistPage() {
 
       // Trigger cart update event
       window.dispatchEvent(new Event('cart-updated'));
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error adding to cart:', error);
-      if (error.message?.includes('401') || error.message?.includes('Unauthorized')) {
+      const msg = getErrorMessage(error);
+      if (msg.includes('401') || msg.includes('Unauthorized')) {
         router.push(`/login?redirect=/wishlist`);
       }
     } finally {
@@ -243,7 +246,7 @@ export default function WishlistPage() {
           {/* Products Table */}
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
           {/* Table Header */}
-          <div className="hidden md:grid md:grid-cols-12 gap-4 px-6 py-4 bg-gray-50 border-b border-gray-200">
+          <div className="hidden md:grid md:grid-cols-12 gap-4 px-6 py-4 bg-white border-b border-gray-200">
             <div className="md:col-span-5">
               <span className="text-sm font-semibold text-gray-900 uppercase tracking-wide">{t('common.wishlist.tableHeaders.productName')}</span>
             </div>

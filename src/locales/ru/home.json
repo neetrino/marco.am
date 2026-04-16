@@ -3,6 +3,46 @@
   "hero_subtitle": "Откройте для себя удивительные товары и эксклюзивные предложения. Покупайте последние тренды и найдите все необходимое в одном месте.",
   "hero_button_products": "ТОВАРЫ",
   "hero_button_view_more": "УЗНАТЬ БОЛЬШЕ",
+  "promo_banner_headline_emphasis": "БЕСПЛАТНАЯ",
+  "promo_banner_headline_accent": "ДОСТАВКА",
+  "promo_featured_title": "Комфорт в каждой детали",
+  "promo_featured_subtitle": "Коллекция кресел премиум-класса — для вашей гостиной.",
+  "promo_featured_cta": "КУПИТЬ СЕЙЧАС",
+  "promo_mobile_slate_label_line1": "Угловой",
+  "promo_mobile_slate_label_line2": "диван",
+  "promo_mobile_slate_label_line3": "Беллини",
+  "promo_stack_blue_label_line1": "Угловой диван",
+  "promo_stack_blue_label_line2": "Беллини",
+  "promo_stack_discount_line1": "Ощутите силу технологии: Получите",
+  "promo_stack_discount_line2": "скидку до 20% на предварительные",
+  "promo_stack_discount_line3": "заказы сегодня",
+  "promo_card_one_pill": "Всё для гостиной",
+  "promo_card_two_cta": "Смотреть акции",
+  "promo_discount_label": "80%",
+  "promo_copy_line_1": "Ограниченные предложения на избранную мебель и декор.",
+  "promo_copy_line_2": "Обновите дом с подборкой товаров и ценами для участников.",
+  "promo_section_cta": "Смотреть кампанию",
+  "promo_chat_aria": "Открыть чат поддержки",
+  "promo_chat_pill_label": "Чем можем помочь?",
+  "promo_card_arrow_aria": "Открыть акцию",
+  "promo_free_delivery_banner_aria": "Бесплатная доставка — информация о доставке",
+  "promo_free_delivery_banner_cta": "КУПИТЬ СЕЙЧАС",
+  "promo_side_card_two_aria": "Бесплатная доставка — перейти к товарам",
+  "promo_smartphones_banner_aria": "Акция — перейти к товарам",
+  "promo_smartphones_banner_cta": "ЕЩЁ",
+  "reels_title": "REELS",
+  "reels_prev_aria": "Прокрутить влево",
+  "reels_next_aria": "Прокрутить вправо",
+  "reels_pagination_aria": "Навигация по Reels",
+  "reels_pagination_go_first": "Перейти на первую страницу",
+  "reels_pagination_go_second": "Перейти на вторую страницу",
+  "reels_pagination_go_third": "Перейти на третью страницу",
+  "reels_item_washing_machines": "Стиральные машины",
+  "reels_item_vacuum_cleaners": "Пылесосы",
+  "reels_item_small_appliances": "Мелкая техника",
+  "reels_item_smart_tv": "Смарт TV",
+  "reels_item_refrigerators": "Холодильники",
+  "reels_item_air_conditioners": "Кондиционеры",
   "features_title": "Мы предоставляем товары высокого качества",
   "features_subtitle": "Клиент, который недоволен по причине, это проблема, клиент, который недоволен, хотя он или она не может",
   "feature_fast_delivery_title": "Быстрая доставка",
@@ -11,9 +51,33 @@
   "feature_best_quality_description": "Это стратегия контента, которая пошла не так с самого начала. Отказ от использования Lorem Ipsum.",
   "feature_free_return_title": "Бесплатный возврат",
   "feature_free_return_description": "Это правда, но этого недостаточно, чтобы вернуть все в нужное русло для текста.",
+  "special_offers": {
+    "title_highlight": "Особые",
+    "title_rest": " предложения",
+    "warranty_line1": "3 ГОДА",
+    "warranty_line2": "ГАРАНТИЯ",
+    "prev_aria": "Прокрутить влево",
+    "next_aria": "Прокрутить вправо",
+    "pagination_aria": "Страницы карусели предложений",
+    "page_first_aria": "На первую страницу",
+    "page_second_aria": "На вторую страницу",
+    "page_third_aria": "На третью страницу",
+    "cta": "Смотреть ещё",
+    "error_loading": "Не удалось загрузить предложения",
+    "try_again": "Повторить",
+    "empty": "Сейчас нет особых предложений.",
+    "gallery_dot_aria": "Показать фото {{n}} из {{total}}",
+    "gallery_pagination_aria": "Фотографии товара"
+  },
   "featured_products": {
     "title": "Рекомендуемые товары",
     "subtitle": "Три быстрых выбора: Новинки, Бестселлеры и Рекомендуемые товары",
+    "pagination_aria": "Пагинация слайдера новинок",
+    "page_first_aria": "Перейти на первую страницу",
+    "page_second_aria": "Перейти на вторую страницу",
+    "page_third_aria": "Перейти на третью страницу",
+    "carousel_prev_aria": "Предыдущий раздел",
+    "carousel_next_aria": "Следующий раздел",
     "tab_new": "НОВИНКИ",
     "tab_bestseller": "БЕСТСЕЛЛЕРЫ",
     "tab_featured": "РЕКОМЕНДУЕМЫЕ",
@@ -21,9 +85,25 @@
     "errorLoading": "Не удалось загрузить товары",
     "tryAgain": "Попробовать снова",
     "noProducts": "В этой категории нет товаров."
+  },
+  "brands": {
+    "title": "БРЕНДЫ",
+    "carousel_prev_aria": "Прокрутить влево",
+    "carousel_next_aria": "Прокрутить вправо",
+    "rail_aria": "Бренды"
+  },
+  "app_banner": {
+    "section_aria": "Мобильное приложение — скачать",
+    "image_alt": "Скачайте мобильное приложение"
+  },
+  "gradient_banner": {
+    "aria": "MARCO — промо-баннер",
+    "headline": "BANNER"
+  },
+  "secondary_banner": {
+    "aria": "MARCO — промо-блок",
+    "cta": "ЕЩЁ"
   }
 }
-
-
 
 

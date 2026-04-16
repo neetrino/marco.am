@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { apiClient } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
 import type { DashboardData } from '../types';
+import { logger } from "@/lib/utils/logger";
 
 interface UseDashboardProps {
   isLoggedIn: boolean;
@@ -23,11 +24,11 @@ export function useDashboard({
 
   const loadDashboard = useCallback(async () => {
     try {
-      console.log('📊 [PROFILE] Loading dashboard data...');
+      logger.devLog('📊 [PROFILE] Loading dashboard data...');
       setDashboardLoading(true);
       onError('');
       const data = await apiClient.get<DashboardData>('/api/v1/users/dashboard');
-      console.log('✅ [PROFILE] Dashboard data loaded:', data);
+      logger.devLog('✅ [PROFILE] Dashboard data loaded:', data);
       setDashboardData(data);
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : String(err);

@@ -7,10 +7,12 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Button } from '@shop/ui';
 import { apiClient } from '../../lib/api-client';
+import { getErrorMessage } from '@/lib/types/errors';
 import { formatPrice, getStoredCurrency } from '../../lib/currency';
 import { getStoredLanguage } from '../../lib/language';
 import { useTranslation } from '../../lib/i18n-client';
 import { useAuth } from '../../lib/auth/AuthContext';
+import { logger } from "@/lib/utils/logger";
 
 interface Product {
   id: string;
@@ -62,7 +64,7 @@ export default function ComparePage() {
    */
   const fetchCompareProducts = useCallback(async (idsToLoad: string[]) => {
     if (idsToLoad.length === 0) {
-      console.info('[Compare] Skip fetch because ids array is empty');
+      logger.devInfo('[Compare] Skip fetch because ids array is empty');
       setProducts([]);
       setLoading(false);
       return;
@@ -70,7 +72,7 @@ export default function ComparePage() {
 
     try {
       setLoading(true);
-      console.info(`[Compare] Fetching ${idsToLoad.length} products for render`);
+      logger.devInfo(`[Compare] Fetching ${idsToLoad.length} products for render`);
       const languagePreference = getStoredLanguage();
       const response = await apiClient.get<{
         data: Product[];
@@ -150,7 +152,7 @@ export default function ComparePage() {
     e.preventDefault();
     e.stopPropagation();
     
-    console.info(`[Compare] Removing product ${productId} from compare UI`);
+    logger.devInfo(`[Compare] Removing product ${productId} from compare UI`);
     
     // Mark as local update to prevent re-fetch in event handler
     isLocalUpdateRef.current = true;
@@ -219,9 +221,10 @@ export default function ComparePage() {
 
       // Trigger cart update event
       window.dispatchEvent(new Event('cart-updated'));
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error adding to cart:', error);
-      if (error.message?.includes('401') || error.message?.includes('Unauthorized')) {
+      const msg = getErrorMessage(error);
+      if (msg.includes('401') || msg.includes('Unauthorized')) {
         router.push(`/login?redirect=/compare`);
       }
     } finally {

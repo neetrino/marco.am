@@ -6,6 +6,7 @@ import { useTranslation } from '../../../../../lib/i18n-client';
 import { getColorHex } from '../../../../../lib/colorMap';
 import { CURRENCIES, type CurrencyCode } from '../../../../../lib/currency';
 import type { Attribute, GeneratedVariant } from '../types';
+import { logger } from "@/lib/utils/logger";
 
 interface VariantBuilderProps {
   generatedVariants: GeneratedVariant[];
@@ -32,7 +33,7 @@ export function VariantBuilder({
   attributes,
   selectedAttributesForVariants,
   isEditMode,
-  hasVariantsToLoad,
+  hasVariantsToLoad: _hasVariantsToLoad,
   defaultCurrency,
   imageUploadLoading,
   slug,
@@ -412,7 +413,7 @@ export function VariantBuilder({
               <Button
                 type="button"
                 onClick={() => {
-                  console.log('✅ [VARIANT BUILDER] Variants ready for submission:', generatedVariants);
+                  logger.devLog('✅ [VARIANT BUILDER] Variants ready for submission:', generatedVariants);
                 }}
               >
                 {t('admin.products.add.variantsReady') || 'Variants Ready'}

@@ -4,9 +4,10 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../lib/auth/AuthContext';
 import { Card, Button } from '@shop/ui';
-import { apiClient } from '../../../lib/api-client';
+import { apiClient, getApiOrErrorMessage } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
 import { clearCurrencyRatesCache } from '../../../lib/currency';
+import { logger } from "@/lib/utils/logger";
 
 interface Settings {
   defaultCurrency?: string;
@@ -51,7 +52,7 @@ export default function SettingsPage() {
   const fetchSettings = async () => {
     try {
       setLoading(true);
-      console.log('⚙️ [ADMIN] Fetching settings...');
+      logger.devLog('⚙️ [ADMIN] Fetching settings...');
       const data = await apiClient.get<Settings>('/api/v1/admin/settings');
       setSettings({
         defaultCurrency: data.defaultCurrency || 'AMD',
@@ -66,8 +67,8 @@ export default function SettingsPage() {
           GEL: 2.7,
         },
       });
-      console.log('✅ [ADMIN] Settings loaded:', data);
-    } catch (err: any) {
+      logger.devLog('✅ [ADMIN] Settings loaded:', data);
+    } catch (err: unknown) {
       console.error('❌ [ADMIN] Error fetching settings:', err);
       // Use defaults if error
       setSettings({
@@ -88,7 +89,7 @@ export default function SettingsPage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      console.log('⚙️ [ADMIN] Saving settings...', settings);
+      logger.devLog('⚙️ [ADMIN] Saving settings...', settings);
 
       // Ensure all currency rates have valid values before saving
       const currencyRatesToSave = {
@@ -105,22 +106,22 @@ export default function SettingsPage() {
       });
       
       // Clear currency rates cache to force reload
-      console.log('🔄 [ADMIN] Clearing currency rates cache...');
+      logger.devLog('🔄 [ADMIN] Clearing currency rates cache...');
       clearCurrencyRatesCache();
       
       // Wait a bit to ensure cache is cleared, then dispatch event again
       setTimeout(() => {
         if (typeof window !== 'undefined') {
-          console.log('🔄 [ADMIN] Dispatching currency-rates-updated event...');
+          logger.devLog('🔄 [ADMIN] Dispatching currency-rates-updated event...');
           window.dispatchEvent(new Event('currency-rates-updated'));
         }
       }, 100);
       
       alert(t('admin.settings.savedSuccess'));
-      console.log('✅ [ADMIN] Settings saved, currency rates:', currencyRatesToSave);
-    } catch (err: any) {
+      logger.devLog('✅ [ADMIN] Settings saved, currency rates:', currencyRatesToSave);
+    } catch (err: unknown) {
       console.error('❌ [ADMIN] Error saving settings:', err);
-      const errorMessage = err.response?.data?.detail || err.message || 'Failed to save settings';
+      const errorMessage = getApiOrErrorMessage(err, 'Failed to save settings');
       alert(t('admin.settings.errorSaving').replace('{message}', errorMessage));
     } finally {
       setSaving(false);

@@ -4,6 +4,7 @@ import { Button } from '@shop/ui';
 import { useTranslation } from '../../../../../lib/i18n-client';
 import { getColorHex } from '../../../../../lib/colorMap';
 import type { Attribute, GeneratedVariant } from '../types';
+import { logger } from "@/lib/utils/logger";
 
 interface ValueSelectionModalProps {
   openValueModal: { variantId: string; attributeId: string } | null;
@@ -86,7 +87,7 @@ export function ValueSelectionModal({
     // Update variant first (to preserve dropdown state)
     onVariantUpdate((prev) => {
       const updated = prev.map((v) => (v.id === variant.id ? { ...v, selectedValueIds: newIds } : v));
-      console.log('✅ [VARIANT BUILDER] Value selection updated:', {
+      logger.devLog('✅ [VARIANT BUILDER] Value selection updated:', {
         variantId: variant.id,
         isAutoVariant,
         valueId,

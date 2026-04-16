@@ -75,7 +75,7 @@ export async function GET(req: NextRequest) {
         totalPages,
       },
     });
-  } catch (error: unknown) {
+  } catch (error: any) {
     logger.error("Admin messages error", { error });
     if (error instanceof Error) {
       logger.error("Admin messages error stack", { stack: error.stack });
@@ -137,7 +137,7 @@ export async function DELETE(req: NextRequest) {
         deletedCount: result.count,
       },
     });
-  } catch (error: unknown) {
+  } catch (error: any) {
     logger.error("Admin messages delete error", { error });
     const apiError = toApiError(error, req.url);
     return NextResponse.json(apiError, { status: apiError.status || 500 });

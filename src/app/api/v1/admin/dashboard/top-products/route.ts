@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateToken, requireAdmin } from "@/lib/middleware/auth";
 import { adminService } from "@/lib/services/admin.service";
+import { logger } from "@/lib/utils/logger";
 
 /**
  * GET /api/v1/admin/dashboard/top-products
@@ -8,11 +9,11 @@ import { adminService } from "@/lib/services/admin.service";
  */
 export async function GET(req: NextRequest) {
   try {
-    console.log("📊 [TOP-PRODUCTS] Request received");
+    logger.devLog("📊 [TOP-PRODUCTS] Request received");
     const user = await authenticateToken(req);
     
     if (!user || !requireAdmin(user)) {
-      console.log("❌ [TOP-PRODUCTS] Unauthorized or not admin");
+      logger.devLog("❌ [TOP-PRODUCTS] Unauthorized or not admin");
       return NextResponse.json(
         {
           type: "https://api.shop.am/problems/forbidden",
@@ -29,9 +30,9 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const limit = parseInt(searchParams.get("limit") || "5", 10);
 
-    console.log(`✅ [TOP-PRODUCTS] User authenticated: ${user.id}, limit: ${limit}`);
+    logger.devLog(`✅ [TOP-PRODUCTS] User authenticated: ${user.id}, limit: ${limit}`);
     const result = await adminService.getTopProducts(limit);
-    console.log("✅ [TOP-PRODUCTS] Top products retrieved successfully");
+    logger.devLog("✅ [TOP-PRODUCTS] Top products retrieved successfully");
     
     return NextResponse.json({ data: result });
   } catch (error: any) {

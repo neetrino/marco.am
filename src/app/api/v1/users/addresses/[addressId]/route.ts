@@ -27,7 +27,7 @@ export async function PUT(
     const data = await req.json();
     const result = await usersService.updateAddress(user.id, addressId, data);
     return NextResponse.json(result);
-  } catch (error: unknown) {
+  } catch (error: any) {
     logger.error("Users addresses error", { error });
     const apiError = toApiError(error, req.url);
     return NextResponse.json(apiError, { status: apiError.status || 500 });
@@ -56,7 +56,7 @@ export async function DELETE(
     const { addressId } = await params;
     await usersService.deleteAddress(user.id, addressId);
     return new NextResponse(null, { status: 204 });
-  } catch (error: unknown) {
+  } catch (error: any) {
     logger.error("Users addresses error", { error });
     const apiError = toApiError(error, req.url);
     return NextResponse.json(apiError, { status: apiError.status || 500 });

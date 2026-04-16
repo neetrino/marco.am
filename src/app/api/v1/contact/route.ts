@@ -104,7 +104,7 @@ export async function POST(req: NextRequest) {
       },
       { status: 201 }
     );
-  } catch (error: unknown) {
+  } catch (error: any) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logger.error("Contact form error", { error });
     return NextResponse.json(

@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/auth/AuthContext';
 import { apiClient } from '@/lib/api-client';
 import { CURRENCIES, type CurrencyCode } from '@/lib/currency';
 import type { Brand, Category, Attribute } from '../types';
+import { logger } from "@/lib/utils/logger";
 
 interface UseProductDataLoadingProps {
   isLoggedIn: boolean;
@@ -75,7 +75,7 @@ export function useProductDataLoading({
         const currency = (settingsRes.defaultCurrency || 'AMD') as CurrencyCode;
         if (currency in CURRENCIES) {
           setDefaultCurrency(currency);
-          console.log('✅ [ADMIN] Default currency loaded:', currency);
+          logger.devLog('✅ [ADMIN] Default currency loaded:', currency);
         }
       } catch (err) {
         console.error('❌ [ADMIN] Error loading default currency:', err);
@@ -92,7 +92,7 @@ export function useProductDataLoading({
   useEffect(() => {
     const fetchData = async () => {
       try {
-        console.log('📥 [ADMIN] Fetching brands, categories, and attributes...');
+        logger.devLog('📥 [ADMIN] Fetching brands, categories, and attributes...');
         const [brandsRes, categoriesRes, attributesRes] = await Promise.all([
           apiClient.get<{ data: Brand[] }>('/api/v1/admin/brands'),
           apiClient.get<{ data: Category[] }>('/api/v1/admin/categories'),
@@ -101,14 +101,14 @@ export function useProductDataLoading({
         setBrands(brandsRes.data || []);
         setCategories(categoriesRes.data || []);
         setAttributes(attributesRes.data || []);
-        console.log('✅ [ADMIN] Data fetched:', {
+        logger.devLog('✅ [ADMIN] Data fetched:', {
           brands: brandsRes.data?.length || 0,
           categories: categoriesRes.data?.length || 0,
           attributes: attributesRes.data?.length || 0,
         });
         // Debug: Log attributes details
         if (attributesRes.data && attributesRes.data.length > 0) {
-          console.log('📋 [ADMIN] Attributes loaded:', attributesRes.data.map(attr => ({
+          logger.devLog('📋 [ADMIN] Attributes loaded:', attributesRes.data.map(attr => ({
             id: attr.id,
             key: attr.key,
             name: attr.name,
@@ -128,19 +128,19 @@ export function useProductDataLoading({
           if (!colorAttr) {
             console.warn('⚠️ [ADMIN] Color attribute not found in loaded attributes!');
           } else {
-            console.log('✅ [ADMIN] Color attribute found:', { id: colorAttr.id, valuesCount: colorAttr.values?.length || 0 });
+            logger.devLog('✅ [ADMIN] Color attribute found:', { id: colorAttr.id, valuesCount: colorAttr.values?.length || 0 });
           }
           if (!sizeAttr) {
             console.warn('⚠️ [ADMIN] Size attribute not found in loaded attributes!');
           } else {
-            console.log('✅ [ADMIN] Size attribute found:', { id: sizeAttr.id, valuesCount: sizeAttr.values?.length || 0 });
+            logger.devLog('✅ [ADMIN] Size attribute found:', { id: sizeAttr.id, valuesCount: sizeAttr.values?.length || 0 });
           }
         } else {
           console.warn('⚠️ [ADMIN] No attributes loaded! This may cause issues with variant builder.');
         }
         // Debug: Log categories with requiresSizes
         if (categoriesRes.data) {
-          console.log('📋 [ADMIN] Categories with requiresSizes:', 
+          logger.devLog('📋 [ADMIN] Categories with requiresSizes:', 
             categoriesRes.data.map(cat => ({ 
               id: cat.id, 
               title: cat.title, 
@@ -148,7 +148,7 @@ export function useProductDataLoading({
             }))
           );
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('❌ [ADMIN] Error fetching data:', err);
       }
     };

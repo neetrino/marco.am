@@ -4,6 +4,7 @@ import { processImageUrl } from '../../../lib/utils/image-utils';
 import { t, getAttributeLabel } from '../../../lib/i18n';
 import type { LanguageCode } from '../../../lib/language';
 import type { Product, ProductVariant } from './types';
+import { logger } from "@/lib/utils/logger";
 
 interface AttributeGroupValue {
   valueId?: string;
@@ -72,9 +73,9 @@ export function ProductAttributesSelector({
   getOptionValue,
 }: ProductAttributesSelectorProps) {
   const attributeGroupsEntries = Array.from(attributeGroups.entries());
-  console.log('🎨 [PRODUCT ATTRIBUTES SELECTOR] attributeGroups entries:', attributeGroupsEntries.length);
-  console.log('🎨 [PRODUCT ATTRIBUTES SELECTOR] attributeGroups keys:', Array.from(attributeGroups.keys()));
-  console.log('🎨 [PRODUCT ATTRIBUTES SELECTOR] product.productAttributes:', product?.productAttributes);
+  logger.devLog('🎨 [PRODUCT ATTRIBUTES SELECTOR] attributeGroups entries:', attributeGroupsEntries.length);
+  logger.devLog('🎨 [PRODUCT ATTRIBUTES SELECTOR] attributeGroups keys:', Array.from(attributeGroups.keys()));
+  logger.devLog('🎨 [PRODUCT ATTRIBUTES SELECTOR] product.productAttributes:', product?.productAttributes);
   
   return (
     <div className="mt-8 p-4 bg-white border border-gray-200 rounded-2xl space-y-4">
@@ -107,7 +108,7 @@ export function ProductAttributesSelector({
                     const isSelected = selectedColor === g.value?.toLowerCase().trim();
                     // IMPORTANT: Don't disable based on stock - show all colors, even if stock is 0
                     // Stock is just informational, not a reason to hide the option
-                    const isDisabled = false; // Always show all colors
+                    // Always show all colors (no stock-based disable in this block)
                     // Process imageUrl to ensure it's in the correct format
                     const processedImageUrl = g.imageUrl ? processImageUrl(g.imageUrl) : null;
                     const hasImage = processedImageUrl && processedImageUrl.trim() !== '';
@@ -148,7 +149,7 @@ export function ProductAttributesSelector({
                                 (e.target as HTMLImageElement).style.display = 'none';
                               }}
                               onLoad={() => {
-                                console.log(`✅ [COLOR IMAGE] Successfully loaded image for color "${g.value}":`, processedImageUrl);
+                                logger.devLog(`✅ [COLOR IMAGE] Successfully loaded image for color "${g.value}":`, processedImageUrl);
                               }}
                             />
                           ) : null}
@@ -171,7 +172,7 @@ export function ProductAttributesSelector({
                     const isSelected = selectedSize === g.value.toLowerCase().trim();
                     // IMPORTANT: Don't disable based on stock - show all sizes, even if stock is 0
                     // Stock is just informational, not a reason to hide the option
-                    const isDisabled = false; // Always show all sizes
+                    // Always show all sizes (no stock-based disable in this block)
                     
                     // Process imageUrl to ensure it's in the correct format
                     const processedImageUrl = g.imageUrl ? processImageUrl(g.imageUrl) : null;
@@ -217,7 +218,7 @@ export function ProductAttributesSelector({
                               (e.target as HTMLImageElement).style.display = 'none';
                             }}
                             onLoad={() => {
-                              console.log(`✅ [SIZE IMAGE] Successfully loaded image for size "${g.value}":`, processedImageUrl);
+                              logger.devLog(`✅ [SIZE IMAGE] Successfully loaded image for size "${g.value}":`, processedImageUrl);
                             }}
                           />
                         )}
@@ -299,7 +300,7 @@ export function ProductAttributesSelector({
                               (e.target as HTMLImageElement).style.display = 'none';
                             }}
                             onLoad={() => {
-                              console.log(`✅ [ATTRIBUTE IMAGE] Successfully loaded image for attribute "${attrKey}" value "${g.value}":`, processedImageUrl);
+                              logger.devLog(`✅ [ATTRIBUTE IMAGE] Successfully loaded image for attribute "${attrKey}" value "${g.value}":`, processedImageUrl);
                             }}
                           />
                         ) : hasColors && colorHex ? (

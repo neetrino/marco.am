@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useAuth } from '../../../../lib/auth/AuthContext';
 import { useTranslation } from '../../../../lib/i18n-client';
 import { PageHeader } from './components/PageHeader';
@@ -23,7 +23,6 @@ import { isClothingCategory as checkIsClothingCategory, generateSlug } from './u
 function AddProductPageContent() {
   const { t } = useTranslation();
   const { isLoggedIn, isAdmin, isLoading } = useAuth();
-  const router = useRouter();
   const searchParams = useSearchParams();
   const productId = searchParams.get('id');
   const isEditMode = !!productId;
@@ -108,7 +107,7 @@ function AddProductPageContent() {
   });
 
   const {
-    addImageUrl,
+    addImageUrl: _addImageUrl,
     removeImageUrl,
     setFeaturedImage,
     handleUploadImages,

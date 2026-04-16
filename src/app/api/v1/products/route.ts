@@ -55,7 +55,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(result, {
       headers: { "X-Cache": "MISS" },
     });
-  } catch (error: unknown) {
+  } catch (error: any) {
     const err = error as { type?: string; title?: string; status?: number; detail?: string; message?: string };
     console.error("❌ [PRODUCTS] Error:", error);
     return NextResponse.json(

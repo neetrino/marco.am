@@ -147,7 +147,7 @@ export async function POST(req: NextRequest) {
     logger.info("Admin upload images: done", { count: urls.length, totalTime });
 
     return NextResponse.json({ urls }, { status: 200 });
-  } catch (error: unknown) {
+  } catch (error: any) {
     const totalTime = Date.now() - requestStartTime;
     const err = error as { message?: string; status?: number; type?: string; title?: string; detail?: string };
     logger.error("Admin upload images: POST error", {

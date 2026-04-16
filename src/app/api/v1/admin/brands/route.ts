@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateToken, requireAdmin } from "@/lib/middleware/auth";
 import { adminService } from "@/lib/services/admin.service";
+import { logger } from "@/lib/utils/logger";
 
 /**
  * GET /api/v1/admin/brands
@@ -60,10 +61,10 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    console.log("📤 [ADMIN BRANDS] POST request:", body);
+    logger.devLog("📤 [ADMIN BRANDS] POST request:", body);
 
     const result = await adminService.createBrand(body);
-    console.log("✅ [ADMIN BRANDS] Brand created:", result.data.id);
+    logger.devLog("✅ [ADMIN BRANDS] Brand created:", result.data.id);
 
     return NextResponse.json(result, { status: 201 });
   } catch (error: any) {

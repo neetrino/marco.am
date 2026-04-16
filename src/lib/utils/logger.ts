@@ -44,6 +44,37 @@ class Logger {
     // Alias for info in development
     this.info(message, context);
   }
+
+  /**
+   * Development-only multi-arg passthrough (replaces scattered console.log).
+   */
+  devLog(...args: unknown[]): void {
+    if (!this.isDevelopment()) return;
+    console.log(...args);
+  }
+
+  /**
+   * Development-only passthrough for console.info-style messages.
+   */
+  devInfo(...args: unknown[]): void {
+    if (!this.isDevelopment()) return;
+    console.info(...args);
+  }
+
+  /**
+   * Development-only passthrough for console.debug-style messages.
+   */
+  devDebug(...args: unknown[]): void {
+    if (!this.isDevelopment()) return;
+    console.debug(...args);
+  }
+
+  /**
+   * Logs in all environments (e.g. service lifecycle / Redis ready).
+   */
+  alwaysInfo(message: string, context?: LogContext): void {
+    console.info(this.formatMessage('info', message, context));
+  }
 }
 
 export const logger = new Logger();

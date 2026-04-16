@@ -42,7 +42,7 @@ export function useVariantValidation({
         }
         skuSet.add(variantSku);
         
-        const categoryRequiresSizes = isClothingCategory();
+        const _categoryRequiresSizes = isClothingCategory();
         const colorData = variant.colors && variant.colors.length > 0 ? variant.colors : [];
         
         if (colorData.length > 0) {

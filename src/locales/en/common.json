@@ -12,7 +12,7 @@
     "login": "Login",
     "register": "Register",
     "search": "Search",
-    "shopNow": "Shop Now",
+    "shopNow": "SHOP NOW",
     "viewMore": "View More",
     "close": "Close"
   },
@@ -41,7 +41,11 @@
     "terms": "Terms",
     "cookies": "Cookies",
     "delivery": "Delivery",
-    "stores": "Stores"
+    "stores": "Stores",
+    "shop": "Shop",
+    "brands": "Brands",
+    "reels": "Reels",
+    "addresses": "Addresses"
   },
   "stock": {
     "inStock": "In Stock",
@@ -157,6 +161,8 @@
     "addToCompare": "Add to compare",
     "removeFromCompare": "Remove from compare",
     "outOfStock": "Out of stock",
+    "languageMenu": "Choose language",
+    "languageCurrencyMenu": "Language and currency",
     "search": "Search",
     "searchPlaceholder": "Search products",
     "openMenu": "Open navigation menu",
@@ -164,6 +170,9 @@
     "instagram": "Instagram",
     "facebook": "Facebook",
     "linkedin": "LinkedIn",
+    "telegram": "Telegram",
+    "whatsapp": "WhatsApp",
+    "viber": "Viber",
     "color": "Color: {color}",
     "previousImage": "Previous image",
     "nextImage": "Next image",
@@ -173,13 +182,18 @@
     "increaseQuantity": "Increase quantity",
     "previousThumbnail": "Previous thumbnail",
     "nextThumbnail": "Next thumbnail",
-    "fullscreenImage": "Fullscreen image"
+    "fullscreenImage": "Fullscreen image",
+    "socialLinks": "Social networks"
   },
   "placeholders": {
     "search": "Search products"
   },
   "search": {
     "seeAll": "See all"
+  },
+  "menu": {
+    "button": "Menu",
+    "title": "Navigation"
   },
   "defaults": {
     "category": "Grocery"
@@ -196,7 +210,30 @@
     "refundPolicy": "Refund Policy",
     "deliveryTerms": "Delivery Terms",
     "copyright": "© {year} Shop. All rights reserved.",
-    "paymentMethods": "Payment Methods:"
+    "paymentMethods": "Payment methods",
+    "marco": {
+      "brandDescription": "Armenia's leading online platform for premium electronics and home appliances since 2010. Quality you can trust.",
+      "headings": {
+        "company": "Company",
+        "support": "Support",
+        "contacts": "Contacts"
+      },
+      "links": {
+        "companyAbout": "About us",
+        "companyStores": "Our stores",
+        "companyCareers": "Careers",
+        "companyNews": "News & blog",
+        "companyFeedback": "Contact us",
+        "supportDelivery": "Delivery & returns",
+        "supportInstallment": "Installment terms",
+        "supportWarranty": "Official warranty",
+        "supportFaq": "FAQ",
+        "supportService": "Service centers"
+      },
+      "copyrightBefore": "Copyright © {year} | All rights reserved | Created by ",
+      "copyrightAfter": "",
+      "creditStudio": "Neetrino IT Company"
+    }
   },
   "product": {
     "product": "product",
@@ -213,7 +250,6 @@
     "goHome": "Go Home"
   }
 }
-
 
 
 

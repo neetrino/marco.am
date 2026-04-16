@@ -23,7 +23,7 @@ export function ReviewList({
   showForm,
   onEditReview,
   onShowForm,
-  onLoginRequired,
+  onLoginRequired: _onLoginRequired,
 }: ReviewListProps) {
   const { t } = useTranslation();
 

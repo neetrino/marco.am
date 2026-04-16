@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateToken, requireAdmin } from "@/lib/middleware/auth";
 import { adminService } from "@/lib/services/admin.service";
+import { logger } from "@/lib/utils/logger";
 
 /**
  * GET /api/v1/admin/categories/[id]
@@ -82,10 +83,10 @@ export async function PUT(
 
     const { id } = await params;
     const body = await req.json();
-    console.log("📝 [ADMIN CATEGORIES] PUT request:", { id, body });
+    logger.devLog("📝 [ADMIN CATEGORIES] PUT request:", { id, body });
 
     const result = await adminService.updateCategory(id, body);
-    console.log("✅ [ADMIN CATEGORIES] Category updated:", id);
+    logger.devLog("✅ [ADMIN CATEGORIES] Category updated:", id);
 
     return NextResponse.json(result);
   } catch (error: any) {
@@ -127,10 +128,10 @@ export async function DELETE(
     }
 
     const { id } = await params;
-    console.log("🗑️ [ADMIN CATEGORIES] DELETE request:", id);
+    logger.devLog("🗑️ [ADMIN CATEGORIES] DELETE request:", id);
 
     await adminService.deleteCategory(id);
-    console.log("✅ [ADMIN CATEGORIES] Category deleted:", id);
+    logger.devLog("✅ [ADMIN CATEGORIES] Category deleted:", id);
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

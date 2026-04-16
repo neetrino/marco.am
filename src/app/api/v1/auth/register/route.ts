@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     }
     const result = await authService.register(parsed.data);
     return NextResponse.json(result, { status: 201 });
-  } catch (error: unknown) {
+  } catch (error: any) {
     logger.error("Registration error", { error });
     const apiError = toApiError(error, req.url);
     return NextResponse.json(apiError, { status: apiError.status || 500 });

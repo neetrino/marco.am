@@ -12,18 +12,39 @@ interface ProductColorsProps {
   colors: Array<string | ColorData>;
   isCompact?: boolean;
   maxVisible?: number;
+  /**
+   * Special-offers tile — Figma `305:2171`: fixed px size + gap (overrides `isCompact` wh/h).
+   */
+  swatchSizePx?: number;
+  gapPx?: number;
 }
 
 /**
  * Component for displaying product color options
  */
-export function ProductColors({ colors, isCompact = false, maxVisible = 6 }: ProductColorsProps) {
+export function ProductColors({
+  colors,
+  isCompact = false,
+  maxVisible = 6,
+  swatchSizePx,
+  gapPx,
+}: ProductColorsProps) {
   if (!colors || colors.length === 0) {
     return null;
   }
 
+  const useFigmaSwatches =
+    typeof swatchSizePx === 'number' && typeof gapPx === 'number';
+
   return (
-    <div className={`flex items-center gap-1.5 ${isCompact ? 'mb-1' : 'mb-2'} flex-wrap`}>
+    <div
+      className={`flex flex-wrap items-center ${
+        useFigmaSwatches
+          ? 'mb-0'
+          : `gap-1.5 ${isCompact ? 'mb-1' : 'mb-2'}`
+      }`}
+      style={useFigmaSwatches ? { gap: gapPx } : undefined}
+    >
       {colors.slice(0, maxVisible).map((colorData, index) => {
         const colorValue = typeof colorData === 'string' ? colorData : colorData.value;
         const imageUrl = typeof colorData === 'object' ? colorData.imageUrl : null;
@@ -37,8 +58,29 @@ export function ProductColors({ colors, isCompact = false, maxVisible = 6 }: Pro
         return (
           <div
             key={index}
-            className={`${isCompact ? 'w-4 h-4' : 'w-5 h-5'} rounded-full border border-gray-300 flex-shrink-0 overflow-hidden`}
-            style={imageUrl ? {} : { backgroundColor: colorHex }}
+            className={`rounded-full border border-gray-300 flex-shrink-0 overflow-hidden ${
+              useFigmaSwatches ? '' : isCompact ? 'h-4 w-4' : 'h-5 w-5'
+            }`}
+            style={
+              useFigmaSwatches
+                ? imageUrl
+                  ? {
+                      width: swatchSizePx,
+                      height: swatchSizePx,
+                      minWidth: swatchSizePx,
+                      minHeight: swatchSizePx,
+                    }
+                  : {
+                      width: swatchSizePx,
+                      height: swatchSizePx,
+                      minWidth: swatchSizePx,
+                      minHeight: swatchSizePx,
+                      backgroundColor: colorHex,
+                    }
+                : imageUrl
+                  ? {}
+                  : { backgroundColor: colorHex }
+            }
             title={colorValue}
             aria-label={`Color: ${colorValue}`}
           >

@@ -1,4 +1,5 @@
 import { db } from "@white-shop/db";
+import { logger } from "@/lib/utils/logger";
 
 class AdminProductsDeleteService {
   /**
@@ -33,7 +34,7 @@ class AdminProductsDeleteService {
    * Update product discount
    */
   async updateProductDiscount(productId: string, discountPercent: number) {
-    console.log('💰 [ADMIN PRODUCTS DELETE SERVICE] updateProductDiscount called:', { productId, discountPercent });
+    logger.devLog('💰 [ADMIN PRODUCTS DELETE SERVICE] updateProductDiscount called:', { productId, discountPercent });
     
     const product = await db.product.findUnique({
       where: { id: productId },
@@ -50,7 +51,7 @@ class AdminProductsDeleteService {
     }
 
     const clampedDiscount = Math.max(0, Math.min(100, discountPercent));
-    console.log('💰 [ADMIN PRODUCTS DELETE SERVICE] Updating product discount:', {
+    logger.devLog('💰 [ADMIN PRODUCTS DELETE SERVICE] Updating product discount:', {
       productId,
       oldDiscount: product.discountPercent,
       newDiscount: clampedDiscount,
@@ -63,7 +64,7 @@ class AdminProductsDeleteService {
       },
     });
 
-    console.log('✅ [ADMIN PRODUCTS DELETE SERVICE] Product discount updated successfully:', {
+    logger.devLog('✅ [ADMIN PRODUCTS DELETE SERVICE] Product discount updated successfully:', {
       productId,
       discountPercent: updated.discountPercent,
     });

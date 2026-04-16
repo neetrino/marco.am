@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { useTranslation } from '../lib/i18n-client';
+import { logger } from "@/lib/utils/logger";
 
 interface MobileFiltersDrawerProps {
   title?: string;
@@ -16,13 +17,12 @@ interface MobileFiltersDrawerProps {
  */
 export function MobileFiltersDrawer({
   title,
-  triggerLabel,
+  triggerLabel: _triggerLabel,
   children,
   openEventName,
 }: MobileFiltersDrawerProps) {
   const { t } = useTranslation();
   const defaultTitle = title || t('products.mobileFilters.title');
-  const defaultTriggerLabel = triggerLabel || t('products.mobileFilters.title');
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -40,7 +40,7 @@ export function MobileFiltersDrawer({
     if (!openEventName) return;
 
     const handleExternalToggle = () => {
-      console.debug('[MobileFiltersDrawer] external toggle received');
+      logger.devDebug('[MobileFiltersDrawer] external toggle received');
       setOpen((prev) => !prev);
     };
 

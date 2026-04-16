@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateToken, requireAdmin } from "@/lib/middleware/auth";
 import { adminService } from "@/lib/services/admin.service";
+import { logger } from "@/lib/utils/logger";
 
 export async function GET(req: NextRequest) {
   try {
@@ -38,7 +39,7 @@ export async function GET(req: NextRequest) {
       ...(sortOrder && { sortOrder: sortOrder as 'asc' | 'desc' }),
     };
 
-    console.log('📦 [ADMIN ORDERS] GET request with filters:', filters);
+    logger.devLog('📦 [ADMIN ORDERS] GET request with filters:', filters);
     const result = await adminService.getOrders(filters);
     return NextResponse.json(result);
   } catch (error: any) {

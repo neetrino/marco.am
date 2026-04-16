@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { reviewsService } from "@/lib/services/reviews.service";
 import { authenticateToken } from "@/lib/middleware/auth";
+import { logger } from "@/lib/utils/logger";
 
 export const dynamic = "force-dynamic";
 
@@ -31,7 +32,7 @@ export async function PUT(
     const { reviewId } = await params;
     const body = await req.json();
 
-    console.log('📝 [REVIEWS API] PUT request:', { reviewId, userId: user.id, rating: body.rating });
+    logger.devLog('📝 [REVIEWS API] PUT request:', { reviewId, userId: user.id, rating: body.rating });
 
     // Validate request body
     if (body.rating !== undefined && (typeof body.rating !== 'number' || body.rating < 1 || body.rating > 5)) {
@@ -53,7 +54,7 @@ export async function PUT(
       comment: body.comment,
     });
 
-    console.log('✅ [REVIEWS API] Review updated:', review.id);
+    logger.devLog('✅ [REVIEWS API] Review updated:', review.id);
 
     return NextResponse.json(review);
   } catch (error: any) {
@@ -97,11 +98,11 @@ export async function DELETE(
 
     const { reviewId } = await params;
 
-    console.log('📝 [REVIEWS API] DELETE request:', { reviewId, userId: user.id });
+    logger.devLog('📝 [REVIEWS API] DELETE request:', { reviewId, userId: user.id });
 
     await reviewsService.deleteReview(reviewId, user.id);
 
-    console.log('✅ [REVIEWS API] Review deleted:', reviewId);
+    logger.devLog('✅ [REVIEWS API] Review deleted:', reviewId);
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

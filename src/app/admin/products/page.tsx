@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '../../../lib/auth/AuthContext';
-import { apiClient } from '../../../lib/api-client';
+import { apiClient, getApiOrErrorMessage } from '../../../lib/api-client';
 import { AdminMenuDrawer } from '../../../components/AdminMenuDrawer';
 import { getAdminMenuTABS } from '../admin-menu.config';
 import { useTranslation } from '../../../lib/i18n-client';
@@ -12,6 +12,7 @@ import { ProductFilters } from './components/ProductFilters';
 import { ProductsTable } from './components/ProductsTable';
 import { useProductHandlers } from './hooks/useProductHandlers';
 import type { Product, ProductsResponse, Category } from './types';
+import { logger } from "@/lib/utils/logger";
 
 export default function ProductsPage() {
   const { t } = useTranslation();
@@ -34,7 +35,7 @@ export default function ProductsPage() {
   const [sortBy, setSortBy] = useState<string>('createdAt-desc');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
-  const [togglingAllFeatured, setTogglingAllFeatured] = useState(false);
+  const [_togglingAllFeatured, setTogglingAllFeatured] = useState(false);
   const [currency, setCurrency] = useState<CurrencyCode>('USD');
 
   useEffect(() => {
@@ -50,7 +51,7 @@ export default function ProductsPage() {
   useEffect(() => {
     const updateCurrency = () => {
       const newCurrency = getStoredCurrency();
-      console.log('💱 [ADMIN PRODUCTS] Currency updated to:', newCurrency);
+      logger.devLog('💱 [ADMIN PRODUCTS] Currency updated to:', newCurrency);
       setCurrency(newCurrency);
     };
     
@@ -64,7 +65,7 @@ export default function ProductsPage() {
     if (typeof window !== 'undefined') {
       window.addEventListener('currency-updated', updateCurrency);
       const handleCurrencyRatesUpdate = () => {
-        console.log('💱 [ADMIN PRODUCTS] Currency rates updated, refreshing currency...');
+        logger.devLog('💱 [ADMIN PRODUCTS] Currency rates updated, refreshing currency...');
         updateCurrency();
       };
       window.addEventListener('currency-rates-updated', handleCurrencyRatesUpdate);
@@ -103,11 +104,11 @@ export default function ProductsPage() {
   const fetchCategories = async () => {
     try {
       setCategoriesLoading(true);
-      console.log('📂 [ADMIN] Fetching categories...');
+      logger.devLog('📂 [ADMIN] Fetching categories...');
       const response = await apiClient.get<{ data: Category[] }>('/api/v1/admin/categories');
       setCategories(response.data || []);
-      console.log('✅ [ADMIN] Categories loaded:', response.data?.length || 0);
-    } catch (err: any) {
+      logger.devLog('✅ [ADMIN] Categories loaded:', response.data?.length || 0);
+    } catch (err: unknown) {
       console.error('❌ [ADMIN] Error fetching categories:', err);
       setCategories([]);
     } finally {
@@ -119,7 +120,7 @@ export default function ProductsPage() {
     if (isLoggedIn && isAdmin) {
       fetchProducts();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [isLoggedIn, isAdmin, page, search, selectedCategories, skuSearch, stockFilter, sortBy, minPrice, maxPrice]);
 
   const fetchProducts = async () => {
@@ -181,9 +182,9 @@ export default function ProductsPage() {
 
       setProducts(filteredProducts);
       setMeta(response.meta || null);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('❌ [ADMIN] Error fetching products:', err);
-      alert(t('admin.products.errorLoading').replace('{message}', err.message || t('admin.common.unknownErrorFallback')));
+      alert(t('admin.products.errorLoading').replace('{message}', getApiOrErrorMessage(err, t('admin.common.unknownErrorFallback'))));
     } finally {
       setLoading(false);
     }
@@ -200,7 +201,7 @@ export default function ProductsPage() {
     const [field, directionRaw] = sortBy.split('-');
     const direction = directionRaw === 'asc' ? 1 : -1;
 
-    console.log('📊 [ADMIN] Applying client-side sort:', { field, direction: directionRaw });
+    logger.devLog('📊 [ADMIN] Applying client-side sort:', { field, direction: directionRaw });
 
     const cloned = [...products];
 
@@ -274,7 +275,7 @@ export default function ProductsPage() {
         }
       }
 
-      console.log('📊 [ADMIN] Sort changed from', current, 'to', next, 'by header click');
+      logger.devLog('📊 [ADMIN] Sort changed from', current, 'to', next, 'by header click');
       return next;
     });
   };

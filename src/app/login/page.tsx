@@ -4,10 +4,12 @@ import { useState, FormEvent, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Button, Input, Card } from '@shop/ui';
 import Link from 'next/link';
+import { getErrorMessage } from '@/lib/types/errors';
 import { useAuth } from '../../lib/auth/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '../../lib/i18n-client';
 import { Eye, EyeOff } from 'lucide-react';
+import { logger } from "@/lib/utils/logger";
 
 function LoginPageContent() {
   const { t } = useTranslation();
@@ -28,7 +30,7 @@ function LoginPageContent() {
     setError(null);
     setIsSubmitting(true);
 
-    console.log('🔐 [LOGIN PAGE] Form submitted');
+    logger.devLog('🔐 [LOGIN PAGE] Form submitted');
 
     // Validation
     if (!emailOrPhone.trim()) {
@@ -44,14 +46,14 @@ function LoginPageContent() {
     }
 
     try {
-      console.log('📤 [LOGIN PAGE] Calling login function...');
+      logger.devLog('📤 [LOGIN PAGE] Calling login function...');
       await login(emailOrPhone.trim(), password);
-      console.log('✅ [LOGIN PAGE] Login successful, redirecting to:', redirectTo);
+      logger.devLog('✅ [LOGIN PAGE] Login successful, redirecting to:', redirectTo);
       // Redirect to the specified page or home
       router.push(redirectTo);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('❌ [LOGIN PAGE] Login error:', err);
-      setError(err.message || t('login.errors.loginFailed'));
+      setError(getErrorMessage(err) || t('login.errors.loginFailed'));
     } finally {
       setIsSubmitting(false);
     }

@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
       limit: limit ? parseInt(limit, 10) : undefined,
     });
     return NextResponse.json(result);
-  } catch (error: unknown) {
+  } catch (error: any) {
     logger.error("Orders list error", { error });
     const apiError = toApiError(error, req.url);
     return NextResponse.json(apiError, { status: apiError.status ?? 500 });

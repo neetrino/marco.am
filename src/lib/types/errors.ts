@@ -94,6 +94,33 @@ export function toApiError(error: unknown, instance?: string): ApiError {
   };
 }
 
+/**
+ * Safe message extraction for catch blocks (unknown errors).
+ */
+export function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  if (typeof error === 'string') {
+    return error;
+  }
+  if (typeof error === 'object' && error !== null && 'message' in error) {
+    const m = (error as { message: unknown }).message;
+    if (typeof m === 'string') {
+      return m;
+    }
+  }
+  return 'Unknown error';
+}
 
-
+/**
+ * Prisma-style error code when present (e.g. P2002).
+ */
+export function getPrismaErrorCode(error: unknown): string | undefined {
+  if (typeof error === 'object' && error !== null && 'code' in error) {
+    const c = (error as { code: unknown }).code;
+    return typeof c === 'string' ? c : undefined;
+  }
+  return undefined;
+}
 

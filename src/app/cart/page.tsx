@@ -59,7 +59,7 @@ export default function CartPage() {
       setLoading(true);
       const cartData = await fetchCart(isLoggedIn, t);
       setCart(cartData);
-    } catch (error: unknown) {
+    } catch (_error: unknown) {
       setCart(null);
     } finally {
       setLoading(false);

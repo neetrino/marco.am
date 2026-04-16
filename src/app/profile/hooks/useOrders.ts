@@ -3,6 +3,7 @@ import { useRouter } from 'next/navigation';
 import { apiClient } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
 import type { OrderDetails, OrderListItem, ProfileTab } from '../types';
+import { logger } from "@/lib/utils/logger";
 
 interface OrdersMeta {
   total: number;
@@ -113,7 +114,7 @@ export function useOrders({
 
     setIsReordering(true);
     try {
-      console.log('[Profile][ReOrder] Starting re-order for order:', selectedOrder.number);
+      logger.devLog('[Profile][ReOrder] Starting re-order for order:', selectedOrder.number);
       
       let addedCount = 0;
       let skippedCount = 0;
@@ -141,7 +142,7 @@ export function useOrders({
             quantity: item.quantity,
           });
           addedCount++;
-          console.log('[Profile][ReOrder] Added item to cart:', item.productTitle);
+          logger.devLog('[Profile][ReOrder] Added item to cart:', item.productTitle);
         } catch (error: unknown) {
           console.error('[Profile][ReOrder] Error adding item to cart:', error);
           skippedCount++;

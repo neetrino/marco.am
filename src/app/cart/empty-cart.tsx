@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { Button } from '@shop/ui';
+import { CartIcon } from '../../components/icons/CartIcon';
 
 interface EmptyCartProps {
   t: (key: string) => string;
@@ -14,13 +14,9 @@ export function EmptyCart({ t }: EmptyCartProps) {
       <h1 className="text-3xl font-bold text-gray-900 mb-8">{t('common.cart.title')}</h1>
       <div className="text-center py-16">
         <div className="max-w-md mx-auto">
-          <Image
-            src="https://cdn-icons-png.flaticon.com/512/3081/3081986.png"
-            alt={t('common.cart.empty')}
-            width={96}
-            height={96}
-            className="mx-auto mb-4"
-          />
+          <div className="mx-auto mb-4 flex justify-center text-gray-400" aria-hidden>
+            <CartIcon size={96} />
+          </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
             {t('common.cart.empty')}
           </h2>

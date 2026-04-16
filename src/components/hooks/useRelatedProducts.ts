@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { apiClient } from '../../lib/api-client';
-import { getStoredLanguage, type LanguageCode } from '../../lib/language';
+import { type LanguageCode } from '../../lib/language';
+import { logger } from "@/lib/utils/logger";
 
 interface RelatedProduct {
   id: string;
@@ -57,9 +58,9 @@ export function useRelatedProducts({ categorySlug, currentProductId, language }:
         
         if (categorySlug) {
           params.category = categorySlug;
-          console.log('[RelatedProducts] Fetching related products for category:', categorySlug);
+          logger.devLog('[RelatedProducts] Fetching related products for category:', categorySlug);
         } else {
-          console.log('[RelatedProducts] No categorySlug, fetching all products');
+          logger.devLog('[RelatedProducts] No categorySlug, fetching all products');
         }
         
         const response = await apiClient.get<{
@@ -71,12 +72,12 @@ export function useRelatedProducts({ categorySlug, currentProductId, language }:
           params,
         });
 
-        console.log('[RelatedProducts] Received products:', response.data.length);
+        logger.devLog('[RelatedProducts] Received products:', response.data.length);
         // Filter out current product and take exactly 10
         const filtered = response.data.filter(p => p.id !== currentProductId);
-        console.log('[RelatedProducts] After filtering current product:', filtered.length);
+        logger.devLog('[RelatedProducts] After filtering current product:', filtered.length);
         const finalProducts = filtered.slice(0, 10);
-        console.log('[RelatedProducts] Final products to display:', finalProducts.length);
+        logger.devLog('[RelatedProducts] Final products to display:', finalProducts.length);
         setProducts(finalProducts);
       } catch (error) {
         console.error('[RelatedProducts] Error fetching related products:', error);

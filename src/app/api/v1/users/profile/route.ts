@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
 
     const result = await usersService.getProfile(user.id);
     return NextResponse.json(result);
-  } catch (error: unknown) {
+  } catch (error: any) {
     logger.error("Users profile error", { error });
     const apiError = toApiError(error, req.url);
     return NextResponse.json(apiError, { status: apiError.status || 500 });
@@ -48,7 +48,7 @@ export async function PUT(req: NextRequest) {
     const data = await req.json();
     const result = await usersService.updateProfile(user.id, data);
     return NextResponse.json(result);
-  } catch (error: unknown) {
+  } catch (error: any) {
     logger.error("Users profile error", { error });
     const apiError = toApiError(error, req.url);
     return NextResponse.json(apiError, { status: apiError.status || 500 });

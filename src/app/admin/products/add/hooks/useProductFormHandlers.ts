@@ -7,6 +7,7 @@ import { useVariantConversionToFormData } from './useVariantConversionToFormData
 import { useVariantValidation } from './useVariantValidation';
 import { processImagesForSubmit } from './useImageProcessingForSubmit';
 import { createAndSubmitPayload } from './useProductPayloadCreation';
+import { logger } from "@/lib/utils/logger";
 
 interface UseProductFormHandlersProps {
   formData: {
@@ -108,7 +109,7 @@ export function useProductFormHandlers({
     setLoading(true);
 
     try {
-      console.log('📝 [ADMIN] Submitting product form:', formData);
+      logger.devLog('📝 [ADMIN] Submitting product form:', formData);
 
       // Create brand and category if needed
       const brandCategoryResult = await createBrandAndCategory();
@@ -137,7 +138,7 @@ export function useProductFormHandlers({
       const variantSkuSet = new Set<string>();
 
       if (productType === 'simple') {
-        console.log('📦 [ADMIN] Processing Simple Product');
+        logger.devLog('📦 [ADMIN] Processing Simple Product');
         const priceUSD = convertPrice(parseFloat(simpleProductData.price), defaultCurrency, 'USD');
         const compareAtPriceUSD = simpleProductData.compareAtPrice && simpleProductData.compareAtPrice.trim() !== ''
           ? convertPrice(parseFloat(simpleProductData.compareAtPrice), defaultCurrency, 'USD')
@@ -153,14 +154,14 @@ export function useProductFormHandlers({
         }
         variants.push(simpleVariant);
         variantSkuSet.add(simpleProductData.sku.trim());
-        console.log('✅ [ADMIN] Simple product variant created:', simpleVariant);
+        logger.devLog('✅ [ADMIN] Simple product variant created:', simpleVariant);
       } else {
         // Variable products variant processing (simplified - full logic remains in original)
         const useGeneratedVariants = generatedVariants.length > 0 && selectedAttributesForVariants.size > 0;
         
         if (useGeneratedVariants) {
-          console.log('📦 [ADMIN] Using generatedVariants format:', generatedVariants.length, 'variants');
-          const sizeAttribute = getSizeAttribute();
+          logger.devLog('📦 [ADMIN] Using generatedVariants format:', generatedVariants.length, 'variants');
+          const _sizeAttribute = getSizeAttribute();
           
           generatedVariants.forEach((genVariant, variantIndex) => {
             const variantPriceUSD = convertPrice(parseFloat(genVariant.price || '0'), defaultCurrency, 'USD');
@@ -263,7 +264,7 @@ export function useProductFormHandlers({
           });
         } else {
           // Legacy formData.variants processing (simplified)
-          console.log('📦 [ADMIN] Using formData.variants format (legacy)');
+          logger.devLog('📦 [ADMIN] Using formData.variants format (legacy)');
           currentFormData.variants.forEach((variant, variantIndex) => {
             const variantPriceUSD = convertPrice(parseFloat(variant.price || '0'), defaultCurrency, 'USD');
             const baseVariantData: any = { price: variantPriceUSD, published: true };
@@ -388,7 +389,7 @@ export function useProductFormHandlers({
         setLoading,
         router,
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('❌ [ADMIN] Error saving product:', err);
     } finally {
       setLoading(false);

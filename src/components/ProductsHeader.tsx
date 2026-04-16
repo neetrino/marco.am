@@ -7,6 +7,16 @@ import { useTranslation } from '../lib/i18n-client';
 type ViewMode = 'list' | 'grid-2' | 'grid-3';
 type SortOption = 'default' | 'price-asc' | 'price-desc' | 'name-asc' | 'name-desc';
 
+/** Figma MARCO 101:2802 — size-10, rounded-full, border-gray-200, hover:bg-primary hover:text-white */
+const VIEW_TOGGLE_BASE =
+  'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border bg-white transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marco-black';
+
+function viewToggleClass(isActive: boolean): string {
+  return isActive
+    ? `${VIEW_TOGGLE_BASE} border-primary bg-primary text-white`
+    : `${VIEW_TOGGLE_BASE} border-gray-200 text-gray-400 hover:border-primary hover:bg-primary hover:text-white`;
+}
+
 interface ProductsHeaderProps {
   /**
    * Ընդհանուր ապրանքների քանակը՝ բոլոր էջերում (from API meta.total)
@@ -18,7 +28,7 @@ interface ProductsHeaderProps {
   perPage: number;
 }
 
-function ProductsHeaderContent({ total, perPage }: ProductsHeaderProps) {
+function ProductsHeaderContent({ total, perPage: _perPage }: ProductsHeaderProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { t } = useTranslation();
@@ -192,12 +202,9 @@ function ProductsHeaderContent({ total, perPage }: ProductsHeaderProps) {
           <div className="flex items-center gap-1">
             {/* List View */}
             <button
+              type="button"
               onClick={() => handleViewModeChange('list')}
-              className={`rounded-lg p-2 transition-colors ${
-                viewMode === 'list'
-                  ? 'bg-gray-100 text-gray-900'
-                  : 'text-gray-400 hover:text-gray-600'
-              }`}
+              className={viewToggleClass(viewMode === 'list')}
               aria-label={t('products.header.viewModes.list')}
             >
               <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -209,12 +216,9 @@ function ProductsHeaderContent({ total, perPage }: ProductsHeaderProps) {
             
             {/* Grid View (2x2) */}
             <button
+              type="button"
               onClick={() => handleViewModeChange('grid-2')}
-              className={`rounded-lg p-2 transition-all ${
-                viewMode === 'grid-2'
-                  ? 'bg-gray-100 text-gray-900'
-                  : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
-              }`}
+              className={viewToggleClass(viewMode === 'grid-2')}
               aria-label={t('products.header.viewModes.grid2')}
             >
               <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -227,12 +231,9 @@ function ProductsHeaderContent({ total, perPage }: ProductsHeaderProps) {
 
             {/* Grid View (3x3) */}
             <button
+              type="button"
               onClick={() => handleViewModeChange('grid-3')}
-              className={`rounded-lg p-2 transition-all ${
-                viewMode === 'grid-3'
-                  ? 'bg-gray-100 text-gray-900'
-                  : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
-              }`}
+              className={viewToggleClass(viewMode === 'grid-3')}
               aria-label={t('products.header.viewModes.grid3')}
             >
               <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -340,12 +341,9 @@ function ProductsHeaderContent({ total, perPage }: ProductsHeaderProps) {
             {/* View Mode Icons */}
             <div className="flex items-center gap-1">
               <button
+                type="button"
                 onClick={() => handleViewModeChange('list')}
-                className={`rounded-lg p-2 transition-colors ${
-                  viewMode === 'list'
-                    ? 'bg-gray-100 text-gray-900'
-                    : 'text-gray-400 hover:text-gray-600'
-                }`}
+                className={viewToggleClass(viewMode === 'list')}
                 aria-label={t('products.header.viewModes.list')}
               >
                 <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -355,12 +353,9 @@ function ProductsHeaderContent({ total, perPage }: ProductsHeaderProps) {
                 </svg>
               </button>
               <button
+                type="button"
                 onClick={() => handleViewModeChange('grid-2')}
-                className={`rounded-lg p-2 transition-all ${
-                  viewMode === 'grid-2'
-                    ? 'bg-gray-100 text-gray-900'
-                    : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
-                }`}
+                className={viewToggleClass(viewMode === 'grid-2')}
                 aria-label={t('products.header.viewModes.grid2')}
               >
                 <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">

@@ -9,6 +9,21 @@ export const CURRENCIES = {
 
 export type CurrencyCode = keyof typeof CURRENCIES;
 
+/**
+ * Localized digits only (no currency code/symbol) — grouping for display.
+ */
+function formatAmountDigits(value: number): string {
+  return new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value);
+}
+
+/** Unicode symbol for UI (not ISO code like AMD/RUB). */
+export function getCurrencySymbol(currency: CurrencyCode): string {
+  return CURRENCIES[currency].symbol;
+}
+
 // Cache for currency rates from API
 let currencyRatesCache: Record<string, number> | null = null;
 let currencyRatesCacheTime: number = 0;
@@ -104,19 +119,9 @@ export function formatPrice(price: number, currency: CurrencyCode = 'USD'): stri
   }
   
   const convertedPrice = price * rate;
-  
-  // Show all currencies without decimals (remove .00)
-  const minimumFractionDigits = 0;
-  const maximumFractionDigits = 0;
-  
-  const formatted = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: currencyInfo.code,
-    minimumFractionDigits,
-    maximumFractionDigits,
-  }).format(convertedPrice);
-  
-  return formatted;
+  const amount = formatAmountDigits(convertedPrice);
+  const symbol = currencyInfo.symbol;
+  return `${amount}\u00a0${symbol}`;
 }
 
 /**
@@ -152,19 +157,9 @@ export function convertPrice(price: number, fromCurrency: CurrencyCode, toCurren
  */
 export function formatPriceInCurrency(price: number, currency: CurrencyCode = 'AMD'): string {
   const currencyInfo = CURRENCIES[currency];
-  
-  // Show all currencies without decimals (remove .00)
-  const minimumFractionDigits = 0;
-  const maximumFractionDigits = 0;
-  
-  const formatted = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: currencyInfo.code,
-    minimumFractionDigits,
-    maximumFractionDigits,
-  }).format(price);
-  
-  return formatted;
+  const amount = formatAmountDigits(price);
+  const symbol = currencyInfo.symbol;
+  return `${amount}\u00a0${symbol}`;
 }
 
 

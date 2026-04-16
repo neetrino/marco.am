@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateToken, requireAdmin } from "@/lib/middleware/auth";
 import { adminService } from "@/lib/services/admin.service";
+import { logger } from "@/lib/utils/logger";
 
 /**
  * GET /api/v1/admin/delivery
@@ -22,9 +23,9 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    console.log("🚚 [ADMIN DELIVERY] GET request");
+    logger.devLog("🚚 [ADMIN DELIVERY] GET request");
     const settings = await adminService.getDeliverySettings();
-    console.log("✅ [ADMIN DELIVERY] Delivery settings fetched");
+    logger.devLog("✅ [ADMIN DELIVERY] Delivery settings fetched");
 
     return NextResponse.json(settings);
   } catch (error: any) {
@@ -74,10 +75,10 @@ export async function PUT(req: NextRequest) {
     }
 
     const body = await req.json();
-    console.log("🚚 [ADMIN DELIVERY] PUT request:", body);
+    logger.devLog("🚚 [ADMIN DELIVERY] PUT request:", body);
 
     const settings = await adminService.updateDeliverySettings(body);
-    console.log("✅ [ADMIN DELIVERY] Delivery settings updated");
+    logger.devLog("✅ [ADMIN DELIVERY] Delivery settings updated");
 
     return NextResponse.json(settings);
   } catch (error: any) {

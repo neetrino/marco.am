@@ -12,7 +12,7 @@
     "login": "Войти",
     "register": "Зарегистрироваться",
     "search": "Поиск",
-    "shopNow": "Купить сейчас",
+    "shopNow": "КУПИТЬ СЕЙЧАС",
     "viewMore": "Узнать больше",
     "close": "Закрыть"
   },
@@ -41,7 +41,11 @@
     "terms": "Условия",
     "cookies": "Файлы cookie",
     "delivery": "Доставка",
-    "stores": "Магазины"
+    "stores": "Магазины",
+    "shop": "Магазин",
+    "brands": "Бренды",
+    "reels": "Reels",
+    "addresses": "Адреса"
   },
   "stock": {
     "inStock": "В наличии",
@@ -157,6 +161,8 @@
     "addToCompare": "Добавить к сравнению",
     "removeFromCompare": "Удалить из сравнения",
     "outOfStock": "Нет в наличии",
+    "languageMenu": "Выбор языка",
+    "languageCurrencyMenu": "Язык и валюта",
     "search": "Поиск",
     "searchPlaceholder": "Поиск товаров",
     "openMenu": "Открыть меню навигации",
@@ -164,19 +170,27 @@
     "instagram": "Instagram",
     "facebook": "Facebook",
     "linkedin": "LinkedIn",
+    "telegram": "Telegram",
+    "whatsapp": "WhatsApp",
+    "viber": "Viber",
     "color": "Цвет: {color}",
     "previousImage": "Предыдущее изображение",
     "nextImage": "Следующее изображение",
     "goToSlide": "Перейти к слайду {number}",
     "previousThumbnail": "Предыдущая миниатюра",
     "nextThumbnail": "Следующая миниатюра",
-    "fullscreenImage": "Полноэкранное изображение"
+    "fullscreenImage": "Полноэкранное изображение",
+    "socialLinks": "Социальные сети"
   },
   "placeholders": {
     "search": "Поиск товаров"
   },
   "search": {
     "seeAll": "Показать все"
+  },
+  "menu": {
+    "button": "Меню",
+    "title": "Навигация"
   },
   "defaults": {
     "category": "Бакалея"
@@ -193,7 +207,30 @@
     "refundPolicy": "Политика возврата",
     "deliveryTerms": "Условия доставки",
     "copyright": "© {year} Shop. Все права защищены.",
-    "paymentMethods": "Способы оплаты:"
+    "paymentMethods": "Способы оплаты",
+    "marco": {
+      "brandDescription": "Ведущая онлайн-платформа Армении для премиальной электроники и бытовой техники с 2010 года. Качество, которому можно доверять.",
+      "headings": {
+        "company": "Компания",
+        "support": "Поддержка",
+        "contacts": "Контакты"
+      },
+      "links": {
+        "companyAbout": "О нас",
+        "companyStores": "Наши магазины",
+        "companyCareers": "Работа у нас",
+        "companyNews": "Новости и блог",
+        "companyFeedback": "Обратная связь",
+        "supportDelivery": "Доставка и возврат",
+        "supportInstallment": "Условия рассрочки",
+        "supportWarranty": "Официальная гарантия",
+        "supportFaq": "Частые вопросы",
+        "supportService": "Сервисные центры"
+      },
+      "copyrightBefore": "Copyright © {year} | Все права защищены | Создано ",
+      "copyrightAfter": "",
+      "creditStudio": "Neetrino IT Company"
+    }
   },
   "product": {
     "product": "товар",
@@ -210,4 +247,3 @@
     "goHome": "На главную"
   }
 }
-

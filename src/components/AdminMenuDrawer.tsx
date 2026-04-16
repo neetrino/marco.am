@@ -3,6 +3,8 @@
 import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { logger } from "@/lib/utils/logger";
+import { useTranslation } from '../lib/i18n-client';
 
 export interface AdminMenuItem {
   id: string;
@@ -23,10 +25,11 @@ interface AdminMenuDrawerProps {
 export function AdminMenuDrawer({ tabs, currentPath }: AdminMenuDrawerProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (open) {
-      console.info('[AdminMenuDrawer] Locking body scroll for open drawer');
+      logger.devInfo('[AdminMenuDrawer] Locking body scroll for open drawer');
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
@@ -41,7 +44,7 @@ export function AdminMenuDrawer({ tabs, currentPath }: AdminMenuDrawerProps) {
    * Handles navigation button clicks inside the drawer.
    */
   const handleNavigate = (path: string) => {
-    console.info('[AdminMenuDrawer] Navigating to admin path', { path });
+    logger.devInfo('[AdminMenuDrawer] Navigating to admin path', { path });
     router.push(path);
     setOpen(false);
   };
@@ -51,7 +54,7 @@ export function AdminMenuDrawer({ tabs, currentPath }: AdminMenuDrawerProps) {
       <button
         type="button"
         onClick={() => {
-          console.info('[AdminMenuDrawer] Toggling drawer', { open: !open });
+          logger.devInfo('[AdminMenuDrawer] Toggling drawer', { open: !open });
           setOpen(true);
         }}
         className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold uppercase tracking-wide text-gray-800 shadow-sm"
@@ -59,14 +62,14 @@ export function AdminMenuDrawer({ tabs, currentPath }: AdminMenuDrawerProps) {
         <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M4 6H20M4 12H16M4 18H12" />
         </svg>
-        Menu
+        {t('common.menu.button')}
       </button>
 
       {open && (
         <div
           className="fixed inset-0 z-50 flex bg-black/40 backdrop-blur-sm"
           onClick={() => {
-            console.info('[AdminMenuDrawer] Closing drawer from backdrop');
+            logger.devInfo('[AdminMenuDrawer] Closing drawer from backdrop');
             setOpen(false);
           }}
         >
@@ -77,15 +80,15 @@ export function AdminMenuDrawer({ tabs, currentPath }: AdminMenuDrawerProps) {
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4">
-              <p className="text-lg font-semibold text-gray-900">Admin Navigation</p>
+              <p className="text-lg font-semibold text-gray-900">{t('common.menu.title')}</p>
               <button
                 type="button"
                 onClick={() => {
-                  console.info('[AdminMenuDrawer] Closing drawer from close button');
+                  logger.devInfo('[AdminMenuDrawer] Closing drawer from close button');
                   setOpen(false);
                 }}
                 className="h-10 w-10 rounded-full border border-gray-200 text-gray-600 hover:border-gray-300 hover:text-gray-900"
-                aria-label="Close admin menu"
+                aria-label="Закрыть меню админки"
               >
                 <svg className="mx-auto h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -127,5 +130,3 @@ export function AdminMenuDrawer({ tabs, currentPath }: AdminMenuDrawerProps) {
     </div>
   );
 }
-
-

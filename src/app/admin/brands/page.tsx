@@ -4,10 +4,11 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '../../../lib/auth/AuthContext';
 import { Card, Button } from '@shop/ui';
-import { apiClient } from '../../../lib/api-client';
+import { apiClient, getApiOrErrorMessage } from '../../../lib/api-client';
 import { AdminMenuDrawer } from '../../../components/AdminMenuDrawer';
 import { getAdminMenuTABS } from '../admin-menu.config';
 import { useTranslation } from '../../../lib/i18n-client';
+import { logger } from "@/lib/utils/logger";
 
 interface Brand {
   id: string;
@@ -27,10 +28,10 @@ function BrandsSection() {
   const fetchBrands = useCallback(async () => {
     try {
       setLoading(true);
-      console.log('🏷️ [ADMIN] Fetching brands...');
+      logger.devLog('🏷️ [ADMIN] Fetching brands...');
       const response = await apiClient.get<{ data: Brand[] }>('/api/v1/admin/brands');
       setBrands(response.data || []);
-      console.log('✅ [ADMIN] Brands loaded:', response.data?.length || 0);
+      logger.devLog('✅ [ADMIN] Brands loaded:', response.data?.length || 0);
     } catch (err) {
       console.error('❌ [ADMIN] Error fetching brands:', err);
       setBrands([]);
@@ -49,23 +50,14 @@ function BrandsSection() {
     }
 
     try {
-      console.log(`🗑️ [ADMIN] Deleting brand: ${brandName} (${brandId})`);
+      logger.devLog(`🗑️ [ADMIN] Deleting brand: ${brandName} (${brandId})`);
       await apiClient.delete(`/api/v1/admin/brands/${brandId}`);
-      console.log('✅ [ADMIN] Brand deleted successfully');
+      logger.devLog('✅ [ADMIN] Brand deleted successfully');
       fetchBrands();
       alert(t('admin.brands.deletedSuccess'));
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('❌ [ADMIN] Error deleting brand:', err);
-      let errorMessage = 'Unknown error occurred';
-      if (err.data?.detail) {
-        errorMessage = err.data.detail;
-      } else if (err.detail) {
-        errorMessage = err.detail;
-      } else if (err.message) {
-        errorMessage = err.message;
-      } else if (err.response?.data?.detail) {
-        errorMessage = err.response.data.detail;
-      }
+      const errorMessage = getApiOrErrorMessage(err, 'Unknown error occurred');
       alert(t('admin.brands.errorDeleting') + '\n\n' + errorMessage);
     }
   };
@@ -100,36 +92,27 @@ function BrandsSection() {
     try {
       if (editingBrand) {
         // Update existing brand
-        console.log('🔄 [ADMIN] Updating brand:', editingBrand.id);
+        logger.devLog('🔄 [ADMIN] Updating brand:', editingBrand.id);
         await apiClient.put(`/api/v1/admin/brands/${editingBrand.id}`, {
           name: formData.name.trim(),
         });
-        console.log('✅ [ADMIN] Brand updated successfully');
+        logger.devLog('✅ [ADMIN] Brand updated successfully');
         alert(t('admin.brands.updatedSuccess'));
       } else {
         // Create new brand
-        console.log('➕ [ADMIN] Creating brand:', formData.name);
+        logger.devLog('➕ [ADMIN] Creating brand:', formData.name);
         await apiClient.post('/api/v1/admin/brands', {
           name: formData.name.trim(),
         });
-        console.log('✅ [ADMIN] Brand created successfully');
+        logger.devLog('✅ [ADMIN] Brand created successfully');
         alert(t('admin.brands.createdSuccess'));
       }
       
       fetchBrands();
       handleCloseModal();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('❌ [ADMIN] Error saving brand:', err);
-      let errorMessage = 'Unknown error occurred';
-      if (err.data?.detail) {
-        errorMessage = err.data.detail;
-      } else if (err.detail) {
-        errorMessage = err.detail;
-      } else if (err.message) {
-        errorMessage = err.message;
-      } else if (err.response?.data?.detail) {
-        errorMessage = err.response.data.detail;
-      }
+      const errorMessage = getApiOrErrorMessage(err, 'Unknown error occurred');
       alert(t('admin.brands.errorSaving') + '\n\n' + errorMessage);
     } finally {
       setSubmitting(false);

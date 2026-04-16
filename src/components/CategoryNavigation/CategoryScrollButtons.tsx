@@ -1,6 +1,7 @@
 'use client';
 
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { logger } from "@/lib/utils/logger";
 
 interface CategoryScrollButtonsProps {
   canScrollLeft: boolean;
@@ -28,7 +29,7 @@ export function CategoryScrollButtons({
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          console.info('[CategoryNavigation] Left arrow clicked, canScrollLeft:', canScrollLeft);
+          logger.devInfo('[CategoryNavigation] Left arrow clicked, canScrollLeft:', canScrollLeft);
           if (canScrollLeft) {
             onScrollLeft();
           }
@@ -50,7 +51,7 @@ export function CategoryScrollButtons({
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          console.info('[CategoryNavigation] Right arrow clicked, canScrollRight:', canScrollRight);
+          logger.devInfo('[CategoryNavigation] Right arrow clicked, canScrollRight:', canScrollRight);
           if (canScrollRight) {
             onScrollRight();
           }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateToken, requireAdmin } from "@/lib/middleware/auth";
 import { adminService } from "@/lib/services/admin.service";
+import { logger } from "@/lib/utils/logger";
 
 /**
  * GET /api/v1/admin/settings/price-filter
@@ -8,10 +9,10 @@ import { adminService } from "@/lib/services/admin.service";
  */
 export async function GET(req: NextRequest) {
   try {
-    console.log('⚙️ [PRICE FILTER API] GET request received');
+    logger.devLog('⚙️ [PRICE FILTER API] GET request received');
     const user = await authenticateToken(req);
     if (!user || !requireAdmin(user)) {
-      console.log('❌ [PRICE FILTER API] Unauthorized access attempt');
+      logger.devLog('❌ [PRICE FILTER API] Unauthorized access attempt');
       return NextResponse.json(
         {
           type: "https://api.shop.am/problems/forbidden",
@@ -25,7 +26,7 @@ export async function GET(req: NextRequest) {
     }
 
     const result = await adminService.getPriceFilterSettings();
-    console.log('✅ [PRICE FILTER API] Settings retrieved:', result);
+    logger.devLog('✅ [PRICE FILTER API] Settings retrieved:', result);
     return NextResponse.json(result);
   } catch (error: any) {
     console.error("❌ [PRICE FILTER API] GET Error:", error);
@@ -48,10 +49,10 @@ export async function GET(req: NextRequest) {
  */
 export async function PUT(req: NextRequest) {
   try {
-    console.log('⚙️ [PRICE FILTER API] PUT request received');
+    logger.devLog('⚙️ [PRICE FILTER API] PUT request received');
     const user = await authenticateToken(req);
     if (!user || !requireAdmin(user)) {
-      console.log('❌ [PRICE FILTER API] Unauthorized access attempt');
+      logger.devLog('❌ [PRICE FILTER API] Unauthorized access attempt');
       return NextResponse.json(
         {
           type: "https://api.shop.am/problems/forbidden",
@@ -65,7 +66,7 @@ export async function PUT(req: NextRequest) {
     }
 
     const data = await req.json();
-    console.log('📤 [PRICE FILTER API] Update data received:', data);
+    logger.devLog('📤 [PRICE FILTER API] Update data received:', data);
     
     // Validate input
     if (data.minPrice !== null && data.minPrice !== undefined && (typeof data.minPrice !== 'number' || data.minPrice < 0)) {
@@ -169,7 +170,7 @@ export async function PUT(req: NextRequest) {
     }
 
     const result = await adminService.updatePriceFilterSettings(data);
-    console.log('✅ [PRICE FILTER API] Settings updated:', result);
+    logger.devLog('✅ [PRICE FILTER API] Settings updated:', result);
     return NextResponse.json(result);
   } catch (error: any) {
     console.error("❌ [PRICE FILTER API] PUT Error:", error);

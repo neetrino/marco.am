@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { apiClient } from '../../../lib/api-client';
 import { getStoredLanguage } from '../../../lib/language';
 import type { Category } from '../utils';
+import { logger } from "@/lib/utils/logger";
 
 interface Product {
   id: string;
@@ -55,12 +56,12 @@ export function useCategoryProducts(categories: Category[], t: (path: string) =>
               params.category = category.slug;
             }
 
-            console.log(`🔍 [CategoryNavigation] Fetching products for category: "${category.title}" (slug: "${category.slug}")`, params);
+            logger.devLog(`🔍 [CategoryNavigation] Fetching products for category: "${category.title}" (slug: "${category.slug}")`, params);
             const productsResponse = await apiClient.get<ProductsResponse>('/api/v1/products', {
               params,
             });
             
-            console.log(`📦 [CategoryNavigation] Response for "${category.title}":`, {
+            logger.devLog(`📦 [CategoryNavigation] Response for "${category.title}":`, {
               total: productsResponse.meta?.total || 0,
               productsCount: productsResponse.data?.length || 0,
               firstProductId: productsResponse.data?.[0]?.id,
@@ -78,7 +79,7 @@ export function useCategoryProducts(categories: Category[], t: (path: string) =>
               : null;
             products[category.slug] = productWithImage;
             
-            console.log(`✅ [CategoryNavigation] Category "${category.title}" (${category.slug}): selected product: ${productWithImage?.id} (image: ${productWithImage?.image ? 'yes' : 'no'})`);
+            logger.devLog(`✅ [CategoryNavigation] Category "${category.title}" (${category.slug}): selected product: ${productWithImage?.id} (image: ${productWithImage?.image ? 'yes' : 'no'})`);
           } catch (err) {
             console.error(`❌ [CategoryNavigation] Error fetching product for category ${category.slug}:`, err);
             products[category.slug] = null;
@@ -89,8 +90,8 @@ export function useCategoryProducts(categories: Category[], t: (path: string) =>
         setCategoryProducts(products);
         
         // Log final state to verify each category has unique product
-        console.log('✅ [CategoryNavigation] All categories processed');
-        console.log('📊 [CategoryNavigation] Final category products mapping:', 
+        logger.devLog('✅ [CategoryNavigation] All categories processed');
+        logger.devLog('📊 [CategoryNavigation] Final category products mapping:', 
           Object.entries(products).map(([slug, product]) => ({
             slug,
             productId: product?.id || 'null',

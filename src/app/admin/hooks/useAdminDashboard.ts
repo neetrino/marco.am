@@ -4,6 +4,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { apiClient } from '../../../lib/api-client';
+import { logger } from "@/lib/utils/logger";
 
 interface Stats {
   users: { total: number };
@@ -84,11 +85,11 @@ export function useAdminDashboard({ isLoggedIn, isAdmin, isLoading }: UseAdminDa
 
   const fetchStats = useCallback(async () => {
     try {
-      console.log('📊 [ADMIN] Fetching statistics...');
+      logger.devLog('📊 [ADMIN] Fetching statistics...');
       setStatsLoading(true);
 
       const data = await apiClient.get<Stats>('/api/v1/admin/stats');
-      console.log('✅ [ADMIN] Statistics fetched:', data);
+      logger.devLog('✅ [ADMIN] Statistics fetched:', data);
 
       if (data && typeof data === 'object') {
         setStats(data);
@@ -113,13 +114,13 @@ export function useAdminDashboard({ isLoggedIn, isAdmin, isLoading }: UseAdminDa
 
   const fetchActivity = useCallback(async () => {
     try {
-      console.log('📋 [ADMIN] Fetching recent activity...');
+      logger.devLog('📋 [ADMIN] Fetching recent activity...');
       setActivityLoading(true);
 
       const response = await apiClient.get<{ data: ActivityItem[] }>('/api/v1/admin/activity', {
         params: { limit: '10' },
       });
-      console.log('✅ [ADMIN] Activity fetched:', response);
+      logger.devLog('✅ [ADMIN] Activity fetched:', response);
 
       if (response && response.data && Array.isArray(response.data)) {
         setActivity(response.data);
@@ -143,7 +144,7 @@ export function useAdminDashboard({ isLoggedIn, isAdmin, isLoading }: UseAdminDa
 
   const fetchRecentOrders = useCallback(async () => {
     try {
-      console.log('📋 [ADMIN] Fetching recent orders...');
+      logger.devLog('📋 [ADMIN] Fetching recent orders...');
       setRecentOrdersLoading(true);
       const response = await apiClient.get<{ data: RecentOrder[] }>('/api/v1/admin/dashboard/recent-orders', {
         params: { limit: '5' },
@@ -163,7 +164,7 @@ export function useAdminDashboard({ isLoggedIn, isAdmin, isLoading }: UseAdminDa
 
   const fetchTopProducts = useCallback(async () => {
     try {
-      console.log('📊 [ADMIN] Fetching top products...');
+      logger.devLog('📊 [ADMIN] Fetching top products...');
       setTopProductsLoading(true);
       const response = await apiClient.get<{ data: TopProduct[] }>('/api/v1/admin/dashboard/top-products', {
         params: { limit: '5' },
@@ -183,7 +184,7 @@ export function useAdminDashboard({ isLoggedIn, isAdmin, isLoading }: UseAdminDa
 
   const fetchUserActivity = useCallback(async () => {
     try {
-      console.log('👥 [ADMIN] Fetching user activity...');
+      logger.devLog('👥 [ADMIN] Fetching user activity...');
       setUserActivityLoading(true);
       const response = await apiClient.get<{ data: UserActivity }>('/api/v1/admin/dashboard/user-activity', {
         params: { limit: '10' },

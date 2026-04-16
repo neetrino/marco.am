@@ -40,7 +40,7 @@ function CategoriesSidebarContent() {
 
       const categoriesList = response.data || [];
       setCategories(categoriesList);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error fetching categories:', err);
     } finally {
       setLoading(false);
