@@ -3,6 +3,7 @@
 import { UseFormRegister, UseFormSetValue, UseFormHandleSubmit, FieldErrors } from 'react-hook-form';
 import { ShippingAddressModal } from './components/ShippingAddressModal';
 import { CardDetailsModal } from './components/CardDetailsModal';
+import type { ShippingMethodId } from '../../lib/constants/shipping-method';
 import { CheckoutFormData, Cart } from './types';
 
 interface CheckoutModalsProps {
@@ -15,7 +16,7 @@ interface CheckoutModalsProps {
   handleSubmit: UseFormHandleSubmit<CheckoutFormData>;
   errors: FieldErrors<CheckoutFormData>;
   isSubmitting: boolean;
-  shippingMethod: 'pickup' | 'delivery';
+  shippingMethod: ShippingMethodId;
   paymentMethod: 'idram' | 'arca' | 'cash_on_delivery';
   shippingCity: string | undefined;
   cart: Cart | null;

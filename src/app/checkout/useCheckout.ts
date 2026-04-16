@@ -12,6 +12,7 @@ import { useCart } from './hooks/useCart';
 import { useUserProfile } from './hooks/useUserProfile';
 import { useOrderSubmission } from './hooks/useOrderSubmission';
 import { useOrderSummary } from './hooks/useOrderSummary';
+import { isCourierShipping } from '../../lib/constants/shipping-method';
 import type { CheckoutFormData } from './types';
 
 export function useCheckout() {
@@ -107,7 +108,7 @@ export function useCheckout() {
   const handlePlaceOrder = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (shippingMethod === 'delivery') {
+    if (isCourierShipping(shippingMethod)) {
       const formData = watch();
       const hasShippingAddress = formData.shippingAddress && formData.shippingAddress.trim().length > 0;
       const hasShippingCity = formData.shippingCity && formData.shippingCity.trim().length > 0;

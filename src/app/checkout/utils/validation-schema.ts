@@ -14,7 +14,7 @@ export function useCheckoutSchema() {
     notes: z
       .string()
       .max(MAX_ORDER_NOTES_LENGTH, t('checkout.errors.notesTooLong')),
-    shippingMethod: z.enum(['pickup', 'delivery'], {
+    shippingMethod: z.enum(['pickup', 'courier'], {
       message: t('checkout.errors.selectShippingMethod'),
     }),
     paymentMethod: z.enum(['idram', 'arca', 'cash_on_delivery'], {
@@ -27,7 +27,7 @@ export function useCheckoutSchema() {
     cardCvv: z.string().optional(),
     cardHolderName: z.string().optional(),
   }).refine((data) => {
-    if (data.shippingMethod === 'delivery') {
+    if (data.shippingMethod === 'courier') {
       return data.shippingAddress && data.shippingAddress.trim().length > 0;
     }
     return true;
@@ -35,7 +35,7 @@ export function useCheckoutSchema() {
     message: t('checkout.errors.addressRequired'),
     path: ['shippingAddress'],
   }).refine((data) => {
-    if (data.shippingMethod === 'delivery') {
+    if (data.shippingMethod === 'courier') {
       return data.shippingCity && data.shippingCity.trim().length > 0;
     }
     return true;

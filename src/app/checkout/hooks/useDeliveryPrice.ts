@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { apiClient } from '../../../lib/api-client';
+import { isCourierShipping } from '../../../lib/constants/shipping-method';
 
 export function useDeliveryPrice(
-  shippingMethod: 'pickup' | 'delivery',
+  shippingMethod: string,
   shippingCity: string | undefined
 ) {
   const [deliveryPrice, setDeliveryPrice] = useState<number | null>(null);
@@ -10,7 +11,7 @@ export function useDeliveryPrice(
 
   useEffect(() => {
     const fetchDeliveryPrice = async () => {
-      if (shippingMethod === 'delivery' && shippingCity && shippingCity.trim().length > 0) {
+      if (isCourierShipping(shippingMethod) && shippingCity && shippingCity.trim().length > 0) {
         setLoadingDeliveryPrice(true);
         try {
           const response = await apiClient.get<{ price: number }>('/api/v1/delivery/price', {

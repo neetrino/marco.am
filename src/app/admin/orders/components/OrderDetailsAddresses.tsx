@@ -3,6 +3,7 @@
 import { useTranslation } from '../../../../lib/i18n-client';
 import { Card } from '@shop/ui';
 import { CurrencyCode } from '../../../../lib/currency';
+import { isCourierShipping } from '../../../../lib/constants/shipping-method';
 import type { OrderDetails } from '../useOrders';
 
 interface OrderDetailsAddressesProps {
@@ -24,11 +25,11 @@ export function OrderDetailsAddresses({ orderDetails, formatCurrency }: OrderDet
               {t('admin.orders.orderDetails.pickup')}
             </div>
           </div>
-        ) : orderDetails.shippingMethod === 'delivery' && orderDetails.shippingAddress ? (
+        ) : isCourierShipping(orderDetails.shippingMethod) && orderDetails.shippingAddress ? (
           <div className="text-sm text-gray-700 space-y-1">
             <div className="mb-2">
               <span className="font-medium">{t('admin.orders.orderDetails.shippingMethod')}</span>{' '}
-              {t('checkout.shipping.delivery')}
+              {t('checkout.shipping.courier')}
             </div>
             {(orderDetails.shippingAddress.address || orderDetails.shippingAddress.addressLine1) && (
               <div>
@@ -62,8 +63,8 @@ export function OrderDetailsAddresses({ orderDetails, formatCurrency }: OrderDet
                 {t('admin.orders.orderDetails.shippingMethod')}{' '}
                 {orderDetails.shippingMethod === 'pickup'
                   ? t('admin.orders.orderDetails.pickup')
-                  : orderDetails.shippingMethod === 'delivery'
-                  ? t('checkout.shipping.delivery')
+                  : isCourierShipping(orderDetails.shippingMethod)
+                  ? t('checkout.shipping.courier')
                   : orderDetails.shippingMethod}
               </p>
             )}

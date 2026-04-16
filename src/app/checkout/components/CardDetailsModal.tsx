@@ -6,6 +6,7 @@ import { useTranslation } from '../../../lib/i18n-client';
 import { PaymentMethodLogo } from './PaymentMethodLogo';
 import { CardInputFields } from './CardInputFields';
 import { OrderSummaryModal } from './OrderSummaryModal';
+import type { ShippingMethodId } from '../../../lib/constants/shipping-method';
 import { CheckoutFormData, Cart } from '../types';
 
 interface CardDetailsModalProps {
@@ -17,7 +18,7 @@ interface CardDetailsModalProps {
   errors: FieldErrors<CheckoutFormData>;
   isSubmitting: boolean;
   paymentMethod: 'idram' | 'arca' | 'cash_on_delivery';
-  shippingMethod: 'pickup' | 'delivery';
+  shippingMethod: ShippingMethodId;
   shippingCity?: string;
   cart: Cart | null;
   orderSummary: {

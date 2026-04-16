@@ -2,6 +2,7 @@
 
 import { useTranslation } from '../../../lib/i18n-client';
 import { formatPriceInCurrency } from '../../../lib/currency';
+import type { ShippingMethodId } from '../../../lib/constants/shipping-method';
 import { Cart } from '../types';
 
 interface OrderSummaryModalProps {
@@ -13,7 +14,7 @@ interface OrderSummaryModalProps {
     totalDisplay: number;
   };
   currency: 'USD' | 'AMD' | 'EUR' | 'RUB' | 'GEL';
-  shippingMethod: 'pickup' | 'delivery';
+  shippingMethod: ShippingMethodId;
   shippingCity?: string;
   loadingDeliveryPrice: boolean;
   deliveryPrice: number | null;
@@ -40,7 +41,7 @@ export function OrderSummaryModal({
       ? t('checkout.shipping.loading')
       : deliveryPrice !== null
         ? formatPriceInCurrency(orderSummary.shippingDisplay, currency) + 
-          (shippingCity ? ` (${shippingCity})` : ` (${t('checkout.shipping.delivery')})`)
+          (shippingCity ? ` (${shippingCity})` : ` (${t('checkout.shipping.courier')})`)
         : t('checkout.shipping.enterCity');
 
   return (

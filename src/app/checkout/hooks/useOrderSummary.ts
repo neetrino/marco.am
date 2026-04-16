@@ -1,10 +1,11 @@
 import { useMemo } from 'react';
+import { isCourierShipping, type ShippingMethodId } from '../../../lib/constants/shipping-method';
 import { convertPrice } from '../../../lib/currency';
 import type { Cart } from '../types';
 
 interface UseOrderSummaryProps {
   cart: Cart | null;
-  shippingMethod: 'pickup' | 'delivery';
+  shippingMethod: ShippingMethodId;
   deliveryPrice: number | null;
   currency: 'USD' | 'AMD' | 'EUR' | 'RUB' | 'GEL';
 }
@@ -31,7 +32,7 @@ export function useOrderSummary({
 
     const subtotalAMD = convertPrice(cart.totals.subtotal, 'USD', 'AMD');
     const taxAMD = convertPrice(cart.totals.tax, 'USD', 'AMD');
-    const shippingAMD = shippingMethod === 'delivery' && deliveryPrice !== null ? deliveryPrice : 0;
+    const shippingAMD = isCourierShipping(shippingMethod) && deliveryPrice !== null ? deliveryPrice : 0;
     const totalAMD = subtotalAMD + taxAMD + shippingAMD;
     
     const subtotalDisplay = currency === 'AMD' ? subtotalAMD : convertPrice(subtotalAMD, 'AMD', currency);

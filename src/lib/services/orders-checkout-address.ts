@@ -1,4 +1,5 @@
 import type { Prisma } from "@prisma/client";
+import { isCourierShipping } from "../constants/shipping-method";
 import type { CheckoutData } from "../types/checkout";
 
 /**
@@ -24,7 +25,7 @@ export function buildOrderAddressJson(
     base.lastName = ln;
   }
 
-  if (shippingMethod === "delivery" && shippingAddress) {
+  if (isCourierShipping(shippingMethod) && shippingAddress) {
     const city = shippingAddress.city?.trim() ?? "";
     const line = (
       shippingAddress.addressLine1 ??

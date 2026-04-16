@@ -3,6 +3,7 @@
 import { Card, Button } from '@shop/ui';
 import { useTranslation } from '../../lib/i18n-client';
 import { formatPriceInCurrency } from '../../lib/currency';
+import type { ShippingMethodId } from '../../lib/constants/shipping-method';
 import type { Cart } from './types';
 
 interface OrderSummaryProps {
@@ -14,7 +15,7 @@ interface OrderSummaryProps {
     totalDisplay: number;
   };
   currency: 'USD' | 'AMD' | 'EUR' | 'RUB' | 'GEL';
-  shippingMethod: 'pickup' | 'delivery';
+  shippingMethod: ShippingMethodId;
   shippingCity: string | undefined;
   loadingDeliveryPrice: boolean;
   deliveryPrice: number | null;
@@ -54,7 +55,7 @@ export function OrderSummary({
                 : loadingDeliveryPrice
                   ? t('checkout.shipping.loading')
                   : deliveryPrice !== null
-                    ? formatPriceInCurrency(orderSummary.shippingDisplay, currency) + (shippingCity ? ` (${shippingCity})` : ` (${t('checkout.shipping.delivery')})`)
+                    ? formatPriceInCurrency(orderSummary.shippingDisplay, currency) + (shippingCity ? ` (${shippingCity})` : ` (${t('checkout.shipping.courier')})`)
                     : t('checkout.shipping.enterCity')}
             </span>
           </div>

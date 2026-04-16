@@ -1,5 +1,6 @@
-    import { Button, Card } from '@shop/ui';
+import { Button, Card } from '@shop/ui';
 import { formatPriceInCurrency, convertPrice, type CurrencyCode } from '../../lib/currency';
+import { isCourierShipping } from '../../lib/constants/shipping-method';
 import { getStatusColor, getPaymentStatusColor, getColorValue } from './utils';
 import type { OrderDetails } from './types';
 
@@ -280,12 +281,12 @@ export function OrderDetailsModal({
                       <div>
                         <span className="font-medium">{t('profile.orderDetails.method')}: </span>
                         <span className="capitalize">
-                          {selectedOrder.shippingMethod === 'delivery' ? t('profile.orderDetails.delivery') : 
+                          {isCourierShipping(selectedOrder.shippingMethod) ? t('profile.orderDetails.delivery') : 
                            selectedOrder.shippingMethod === 'pickup' ? t('profile.orderDetails.pickup') : 
                            selectedOrder.shippingMethod || t('profile.orderDetails.notSpecified')}
                         </span>
                       </div>
-                      {selectedOrder.shippingMethod === 'delivery' && selectedOrder.shippingAddress && (
+                      {isCourierShipping(selectedOrder.shippingMethod) && selectedOrder.shippingAddress && (
                         <div className="mt-3 pt-3 border-t border-gray-200">
                           <p className="font-medium text-gray-900 mb-2">{t('profile.orderDetails.deliveryAddress')}:</p>
                           <div className="text-gray-600">

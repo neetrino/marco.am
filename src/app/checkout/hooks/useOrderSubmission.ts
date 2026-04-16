@@ -40,7 +40,7 @@ export function useOrderSubmission({
         cartId = 'guest-cart';
       }
 
-      const shippingAddress = data.shippingMethod === 'delivery' && 
+      const shippingAddress = data.shippingMethod === 'courier' && 
         data.shippingAddress && 
         data.shippingCity
         ? {
@@ -49,7 +49,7 @@ export function useOrderSubmission({
           }
         : undefined;
 
-      const shippingAmount = data.shippingMethod === 'delivery' && deliveryPrice !== null ? deliveryPrice : 0;
+      const shippingAmount = data.shippingMethod === 'courier' && deliveryPrice !== null ? deliveryPrice : 0;
 
       const trimmedNotes = data.notes.trim();
       const response = await apiClient.post<{

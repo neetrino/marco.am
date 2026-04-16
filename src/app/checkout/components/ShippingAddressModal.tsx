@@ -6,6 +6,7 @@ import { useTranslation } from '../../../lib/i18n-client';
 import { ContactInformation } from './ContactInformation';
 import { CardInputFields } from './CardInputFields';
 import { OrderSummaryModal } from './OrderSummaryModal';
+import type { ShippingMethodId } from '../../../lib/constants/shipping-method';
 import { CheckoutFormData, Cart } from '../types';
 
 interface ShippingAddressModalProps {
@@ -16,7 +17,7 @@ interface ShippingAddressModalProps {
   handleSubmit: UseFormHandleSubmit<CheckoutFormData>;
   errors: FieldErrors<CheckoutFormData>;
   isSubmitting: boolean;
-  shippingMethod: 'pickup' | 'delivery';
+  shippingMethod: ShippingMethodId;
   paymentMethod: 'idram' | 'arca' | 'cash_on_delivery';
   cart: Cart | null;
   orderSummary: {
@@ -78,7 +79,7 @@ export function ShippingAddressModal({
       >
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-gray-900">
-            {shippingMethod === 'delivery' 
+            {shippingMethod === 'courier' 
               ? t('checkout.modals.completeOrder') 
               : t('checkout.modals.confirmOrder')}
           </h2>
@@ -99,7 +100,7 @@ export function ShippingAddressModal({
           isSubmitting={isSubmitting}
         />
 
-        {shippingMethod === 'delivery' ? (
+        {shippingMethod === 'courier' ? (
           <>
             <div className="mb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('checkout.shippingAddress')}</h3>

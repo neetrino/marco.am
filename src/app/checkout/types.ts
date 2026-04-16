@@ -1,3 +1,5 @@
+import type { ShippingMethodId } from '../../lib/constants/shipping-method';
+
 export type CheckoutFormData = {
   firstName: string;
   lastName: string;
@@ -5,7 +7,7 @@ export type CheckoutFormData = {
   phone: string;
   /** Optional order notes (delivery instructions, etc.) */
   notes: string;
-  shippingMethod: 'pickup' | 'delivery';
+  shippingMethod: ShippingMethodId;
   paymentMethod: 'idram' | 'arca' | 'cash_on_delivery';
   shippingAddress?: string;
   shippingCity?: string;

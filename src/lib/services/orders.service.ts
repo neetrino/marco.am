@@ -5,6 +5,7 @@ import type { CheckoutData } from "../types/checkout";
 import { logger } from "../utils/logger";
 import { adminDeliveryService } from "./admin/admin-delivery.service";
 import { extractMediaUrl } from "../utils/extractMediaUrl";
+import { normalizeShippingMethod } from "../constants/shipping-method";
 import { buildOrderAddressJson } from "./orders-checkout-address";
 
 const MAX_ORDER_NOTES_LENGTH = 2000;
@@ -67,10 +68,11 @@ class OrdersService {
         firstName,
         lastName,
         notes: rawNotes,
-        shippingMethod = 'pickup',
+        shippingMethod: rawShippingMethod = 'pickup',
         shippingAddress,
         paymentMethod = 'idram',
       } = data;
+      const shippingMethod = normalizeShippingMethod(rawShippingMethod);
       // shippingAmount is ignored — computed server-side from shippingMethod and address
 
       // Validate required fields
@@ -299,7 +301,7 @@ class OrdersService {
       const discountAmount = 0; // TODO: Implement discount/coupon logic
       // Shipping: computed server-side only (never trust client-provided amount)
       let shippingAmount = 0;
-      if (shippingMethod === 'delivery' && shippingAddress?.city?.trim()) {
+      if (shippingMethod === 'courier' && shippingAddress?.city?.trim()) {
         const country = (shippingAddress.countryCode ?? 'Armenia').toString();
         shippingAmount = await adminDeliveryService.getDeliveryPrice(
           shippingAddress.city.trim(),

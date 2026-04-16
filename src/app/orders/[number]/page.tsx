@@ -12,6 +12,7 @@ import { OrderStatus } from './components/OrderStatus';
 import { OrderItems } from './components/OrderItems';
 import { ShippingAddress } from './components/ShippingAddress';
 import { OrderSummary } from './components/OrderSummary';
+import { isCourierShipping } from '../../../lib/constants/shipping-method';
 import type { Order } from './types';
 
 export default function OrderPage() {
@@ -51,7 +52,7 @@ export default function OrderPage() {
       const response = await apiClient.get<Order>(`/api/v1/orders/${params.number}`);
       setOrder(response);
       
-      if (response.shippingMethod === 'delivery' && response.shippingAddress?.city) {
+      if (isCourierShipping(response.shippingMethod) && response.shippingAddress?.city) {
         fetchShippingPrice(response.shippingAddress.city);
       } else {
         setCalculatedShipping(null);
