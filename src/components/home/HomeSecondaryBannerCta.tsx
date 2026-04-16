@@ -56,8 +56,9 @@ const slateCtaIconFrameStyle: CSSProperties = {
   marginLeft: HOME_SECONDARY_BANNER_CTA_ICON_MARGIN_LEFT_PX,
 };
 
-function omitMaxWidth(style: CSSProperties): CSSProperties {
-  const { maxWidth: _omit, ...rest } = style;
+/** EN/RU desktop: Tailwind sets height/radius at `lg`; strip so inline `height` does not block `lg:h-*`. */
+function omitMaxWidthHeightRadius(style: CSSProperties): CSSProperties {
+  const { maxWidth: _mw, height: _h, minHeight: _mh, borderRadius: _br, ...rest } = style;
   return rest;
 }
 
@@ -91,17 +92,34 @@ export function HomeSecondaryBannerCta({ language }: HomeSecondaryBannerCtaProps
 
   const linkStyle: CSSProperties = isHy
     ? slateCtaLinkStyleBase
-    : language === 'en'
-      ? omitMaxWidth(slateCtaLinkStyle)
+    : language === 'en' || language === 'ru'
+      ? omitMaxWidthHeightRadius(slateCtaLinkStyle)
       : slateCtaLinkStyle;
 
-  /** English: narrower pill on `lg` — `154px` = `HOME_BANNERS_CTA_MAX_WIDTH_EN_DESKTOP_PX` in `home-banners-cta.constants`. */
-  const enDesktopPillClass = language === 'en' && !isHy ? 'max-w-[170px] lg:max-w-[154px]' : '';
+  /** Shared `lg` sizing for EN/RU compact pills — height literals match `HOME_SECONDARY_BANNER_CTA_HEIGHT_EN_DESKTOP_PX`. */
+  const secondaryBannerCompactDesktopPillBase =
+    'h-12 min-h-12 max-w-[170px] rounded-[24px] lg:h-[45px] lg:min-h-[45px] lg:rounded-[22.5px]';
+
+  /**
+   * English: `lg:max-w` must match `HOME_SECONDARY_BANNER_CTA_MAX_WIDTH_EN_DESKTOP_PX` (148).
+   */
+  const enDesktopPillClass =
+    language === 'en' && !isHy
+      ? `${secondaryBannerCompactDesktopPillBase} lg:max-w-[148px]`
+      : '';
+
+  /**
+   * Russian: `lg:max-w` must match `HOME_SECONDARY_BANNER_CTA_MAX_WIDTH_RU_DESKTOP_PX` (140).
+   */
+  const ruDesktopPillClass =
+    language === 'ru' && !isHy
+      ? `${secondaryBannerCompactDesktopPillBase} lg:max-w-[140px]`
+      : '';
 
   return (
     <Link
       href={HOME_SECONDARY_BANNER_CTA_HREF}
-      className={`${montserratSlateCta.className} group pointer-events-auto flex w-full max-w-full shrink-0 items-center bg-black font-bold text-white transition hover:-translate-y-0.5 hover:bg-red-700 hover:text-white active:translate-y-px focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marco-black ${hyDesktopPillClass} ${enDesktopPillClass}`}
+      className={`${montserratSlateCta.className} group pointer-events-auto flex w-full max-w-full shrink-0 items-center bg-black font-bold text-white transition hover:-translate-y-0.5 hover:bg-red-700 hover:text-white active:translate-y-px focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marco-black ${hyDesktopPillClass} ${enDesktopPillClass} ${ruDesktopPillClass}`}
       style={linkStyle}
       aria-label={ariaLabel}
     >
@@ -118,20 +136,31 @@ export function HomeSecondaryBannerCta({ language }: HomeSecondaryBannerCtaProps
         {label}
       </span>
       <span
-        className={`flex shrink-0 items-center justify-center rounded-full bg-marco-yellow text-marco-black transition group-hover:bg-white group-hover:text-red-700 ${hyDesktopIconTranslateClass}`}
+        className={`flex shrink-0 items-center justify-center rounded-full bg-marco-yellow text-marco-black transition group-hover:bg-white group-hover:text-red-700 ${hyDesktopIconTranslateClass} ${
+          language === 'ru' && !isHy
+            ? 'h-9 w-9 lg:!h-[34px] lg:!w-[34px] lg:translate-x-[4px]'
+            : ''
+        }`}
         style={
           isHy
             ? {
                 ...slateCtaIconFrameBaseStyle,
                 marginLeft: HOME_SECONDARY_BANNER_CTA_ICON_MARGIN_LEFT_PX,
               }
-            : slateCtaIconFrameStyle
+            : language === 'ru'
+              ? { marginLeft: HOME_SECONDARY_BANNER_CTA_ICON_MARGIN_LEFT_PX }
+              : slateCtaIconFrameStyle
         }
         aria-hidden
       >
         <ArrowUpRight
-          width={HOME_BANNERS_CTA_ARROW_ICON_PX}
-          height={HOME_BANNERS_CTA_ARROW_ICON_PX}
+          className={
+            language === 'ru' && !isHy
+              ? 'h-[18px] w-[18px] lg:h-[17px] lg:w-[17px]'
+              : undefined
+          }
+          width={language === 'ru' && !isHy ? undefined : HOME_BANNERS_CTA_ARROW_ICON_PX}
+          height={language === 'ru' && !isHy ? undefined : HOME_BANNERS_CTA_ARROW_ICON_PX}
           strokeWidth={2.5}
         />
       </span>

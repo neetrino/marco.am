@@ -93,8 +93,8 @@ export function HomeGradientBannerCta({ language }: HomeGradientBannerCtaProps) 
         ? omitMaxWidth(slateCtaLinkStyle)
         : slateCtaLinkStyle;
 
-  /** English: narrower pill on `lg` (`max-w` from right) — `154px` = `HOME_BANNERS_CTA_MAX_WIDTH_EN_DESKTOP_PX`. */
-  const enDesktopPillClass = language === 'en' ? 'max-w-[170px] lg:max-w-[154px]' : '';
+  /** English: narrower pill on `lg` — literal must match `HOME_GRADIENT_BANNER_CTA_MAX_WIDTH_EN_DESKTOP_PX` (Tailwind JIT). */
+  const enDesktopPillClass = language === 'en' ? 'max-w-[170px] lg:max-w-[162px]' : '';
 
   /**
    * Russian: label sizes from `HOME_BANNERS_CTA_*` / `HOME_GRADIENT_BANNER_CTA_LABEL_*_RU_DESKTOP_*` (Tailwind literals for JIT).
@@ -113,7 +113,13 @@ export function HomeGradientBannerCta({ language }: HomeGradientBannerCtaProps) 
       : '';
 
   /** Desktop (`lg`) only: black chip `translateX` — matches `HOME_GRADIENT_BANNER_CTA_ICON_CIRCLE_NUDGE_LEFT_RU_DESKTOP_PX`. */
-  const iconRuDesktopTranslateClass = language === 'ru' ? 'lg:-translate-x-[3px]' : '';
+  const iconRuDesktopTranslateClass = language === 'ru' ? 'lg:-translate-x-[4px]' : '';
+
+  /**
+   * Russian: label `translateX` — `-17px` = `LABEL_NUDGE_LEFT_PX` + `LABEL_NUDGE_LEFT_RU_EXTRA_PX`; `lg` `-18px` adds `LABEL_NUDGE_LEFT_RU_DESKTOP_EXTRA_PX`.
+   */
+  const labelRuTranslateClass =
+    language === 'ru' ? 'translate-x-[-17px] lg:translate-x-[-18px]' : '';
 
   const iconHyDesktopTranslateClass = language === 'hy' ? 'lg:translate-x-[12px]' : '';
 
@@ -125,9 +131,9 @@ export function HomeGradientBannerCta({ language }: HomeGradientBannerCtaProps) 
       aria-label={ariaLabel}
     >
       <span
-        className={`${language === 'hy' ? `${labelSpanClassName} ${labelHyDesktopClass}` : labelSpanClassName}`}
+        className={`${labelSpanClassName} ${language === 'hy' ? labelHyDesktopClass : ''} ${labelRuTranslateClass}`}
         style={
-          language === 'hy'
+          language === 'hy' || language === 'ru'
             ? undefined
             : {
                 transform: `translateX(${labelNudgeLeftPx}px)`,
