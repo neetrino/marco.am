@@ -176,6 +176,14 @@ export const HERO_PROMO_SMARTPHONES_CORNER_NUDGE_Y_PX = -96;
 /** Figma 314:2400 — mobile-only hero headline (Montserrat Black); tuned down vs Figma so one-line pair centers on narrow widths */
 export const HERO_MOBILE_HEADLINE_FONT_SIZE_PX = 34;
 export const HERO_MOBILE_HEADLINE_LINE_HEIGHT_PX = 34;
+
+/** Armenian (`hy`) — «Անվճար / Առաքում» on mobile hero (tuned vs default 34px). */
+export const HERO_MOBILE_HEADLINE_HY_FONT_SIZE_PX = 30;
+export const HERO_MOBILE_HEADLINE_HY_LINE_HEIGHT_PX = 32;
+
+/** Horizontal gap between the two headline words on mobile (`hy`). */
+export const HERO_MOBILE_HEADLINE_HY_WORD_GAP_REM = 0.5;
+
 /** Nudge headline left vs padding (px) */
 export const HERO_MOBILE_HEADLINE_NUDGE_LEFT_PX = 2;
 
@@ -239,8 +247,50 @@ export const HERO_MOBILE_SLATE_CTA_PILL_RADIUS_PX = HERO_MOBILE_SLATE_CTA_HEIGHT
 /** Left inset — larger = label + icon chip sit further right inside the pill. */
 export const HERO_MOBILE_SLATE_CTA_PADDING_LEFT_PX = 38;
 export const HERO_MOBILE_SLATE_CTA_PADDING_RIGHT_PX = 0;
-export const HERO_MOBILE_SLATE_CTA_LABEL_ICON_GAP_PX = 7;
+export const HERO_MOBILE_SLATE_CTA_LABEL_ICON_GAP_PX = 11;
+
+/** Armenian (`hy`) — extra air between label and arrow chip (mobile hero CTA). */
+export const HERO_MOBILE_SLATE_CTA_HY_LABEL_ICON_GAP_PX = 16;
 export const HERO_MOBILE_SLATE_CTA_ARROW_ICON_PX = 21;
+
+/**
+ * English (`en`) — «Buy now» pill slightly smaller than default (mobile hero).
+ */
+export const HERO_MOBILE_SLATE_CTA_EN_WIDTH_PX = 168;
+export const HERO_MOBILE_SLATE_CTA_EN_HEIGHT_PX = 48;
+export const HERO_MOBILE_SLATE_CTA_EN_ICON_CIRCLE_PX = 38;
+export const HERO_MOBILE_SLATE_CTA_EN_PILL_RADIUS_PX = HERO_MOBILE_SLATE_CTA_EN_HEIGHT_PX / 2;
+export const HERO_MOBILE_SLATE_CTA_EN_PADDING_LEFT_PX = 30;
+export const HERO_MOBILE_SLATE_CTA_EN_ARROW_ICON_PX = 19;
+/** Shift black arrow chip vs default placement (px). */
+export const HERO_MOBILE_SLATE_CTA_EN_ICON_NUDGE_X_PX = 0;
+
+/**
+ * Russian (`ru`) — mobile hero «Купить сейчас» pill smaller than default (between default and `hy`).
+ */
+export const HERO_MOBILE_SLATE_CTA_RU_WIDTH_PX = 172;
+export const HERO_MOBILE_SLATE_CTA_RU_HEIGHT_PX = 48;
+export const HERO_MOBILE_SLATE_CTA_RU_ICON_CIRCLE_PX = 38;
+export const HERO_MOBILE_SLATE_CTA_RU_PILL_RADIUS_PX = HERO_MOBILE_SLATE_CTA_RU_HEIGHT_PX / 2;
+export const HERO_MOBILE_SLATE_CTA_RU_PADDING_LEFT_PX = 26;
+export const HERO_MOBILE_SLATE_CTA_RU_ARROW_ICON_PX = 19;
+
+/** Russian — shift black arrow chip left (px, negative = left). */
+export const HERO_MOBILE_SLATE_CTA_RU_ICON_NUDGE_X_PX = -4;
+
+/**
+ * Armenian (`hy`) — «Գնել հիմա» pill slightly smaller than default mobile CTA.
+ */
+export const HERO_MOBILE_SLATE_CTA_HY_WIDTH_PX = 168;
+export const HERO_MOBILE_SLATE_CTA_HY_HEIGHT_PX = 46;
+export const HERO_MOBILE_SLATE_CTA_HY_ICON_CIRCLE_PX = 36;
+export const HERO_MOBILE_SLATE_CTA_HY_PILL_RADIUS_PX = HERO_MOBILE_SLATE_CTA_HY_HEIGHT_PX / 2;
+export const HERO_MOBILE_SLATE_CTA_HY_PADDING_LEFT_PX = 28;
+export const HERO_MOBILE_SLATE_CTA_HY_ARROW_ICON_PX = 18;
+
+/** Armenian — shift black arrow chip left vs default placement (px, negative = left). */
+export const HERO_MOBILE_SLATE_CTA_HY_ICON_NUDGE_X_PX = -5;
+
 /**
  * Negative margin on the arrow chip — pulls the black circle toward the label.
  */

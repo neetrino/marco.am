@@ -62,10 +62,33 @@ export const HOME_MOBILE_BANNER_SHOWCASE_FOOTER_PAD_BOTTOM_PX = 20;
 export const HOME_MOBILE_BANNER_SHOWCASE_FOOTER_PAD_TOP_PX = 8;
 
 /**
+ * Russian (`ru`): shift the yellow CTA slightly left and down (mobile showcase, above bottom nav).
+ */
+export const HOME_MOBILE_BANNER_SHOWCASE_CTA_RU_NUDGE_X_PX = -6;
+export const HOME_MOBILE_BANNER_SHOWCASE_CTA_RU_NUDGE_Y_PX = 5;
+
+/**
+ * Russian — label `translateX` uses `HOME_GRADIENT_BANNER_CTA_LABEL_NUDGE_LEFT_PX - N`; lower N = text further right (was 17).
+ */
+export const HOME_MOBILE_BANNER_SHOWCASE_CTA_RU_LABEL_NUDGE_SUBTRACT_PX = 16;
+
+/**
  * Armenian (`hy`): shift the yellow CTA slightly left and down in the bottom bar (mobile showcase).
  */
 export const HOME_MOBILE_BANNER_SHOWCASE_CTA_HY_NUDGE_X_PX = -8;
 export const HOME_MOBILE_BANNER_SHOWCASE_CTA_HY_NUDGE_Y_PX = 6;
+
+/**
+ * English (`en`): shift the yellow CTA left and down in the bottom bar (mobile showcase, above bottom nav).
+ */
+export const HOME_MOBILE_BANNER_SHOWCASE_CTA_EN_NUDGE_X_PX = -10;
+export const HOME_MOBILE_BANNER_SHOWCASE_CTA_EN_NUDGE_Y_PX = 8;
+
+/**
+ * English (`en`) — white sofa copy block (`showcaseLabelStyle`); default row is `translate(14px, 6px)`.
+ */
+export const HOME_MOBILE_BANNER_SHOWCASE_LABEL_EN_TRANSLATE_X_PX = 32;
+export const HOME_MOBILE_BANNER_SHOWCASE_LABEL_EN_TRANSLATE_Y_PX = 14;
 
 export const HOME_MOBILE_BANNER_SHOWCASE_IMAGE_SIZES =
   '(max-width: 768px) 85vw, 402px' as const;

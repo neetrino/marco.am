@@ -61,6 +61,13 @@ import {
   HOME_MOBILE_BANNER_SHOWCASE_CHAIR_NUDGE_DOWN_PX,
   HOME_MOBILE_BANNER_SHOWCASE_CHAIR_SCALE_MULTIPLIER,
   HOME_MOBILE_BANNER_SHOWCASE_CHAIR_WIDTH_FRAC,
+  HOME_MOBILE_BANNER_SHOWCASE_CTA_RU_LABEL_NUDGE_SUBTRACT_PX,
+  HOME_MOBILE_BANNER_SHOWCASE_CTA_RU_NUDGE_X_PX,
+  HOME_MOBILE_BANNER_SHOWCASE_CTA_RU_NUDGE_Y_PX,
+  HOME_MOBILE_BANNER_SHOWCASE_CTA_EN_NUDGE_X_PX,
+  HOME_MOBILE_BANNER_SHOWCASE_CTA_EN_NUDGE_Y_PX,
+  HOME_MOBILE_BANNER_SHOWCASE_LABEL_EN_TRANSLATE_X_PX,
+  HOME_MOBILE_BANNER_SHOWCASE_LABEL_EN_TRANSLATE_Y_PX,
   HOME_MOBILE_BANNER_SHOWCASE_CTA_HY_NUDGE_X_PX,
   HOME_MOBILE_BANNER_SHOWCASE_CTA_HY_NUDGE_Y_PX,
   HOME_MOBILE_BANNER_SHOWCASE_FOOTER_PAD_BOTTOM_PX,
@@ -284,18 +291,31 @@ export function HomeMobileBannerProductShowcase({ language }: HomeMobileBannerPr
                   : isEnglish
                     ? `${HOME_BANNERS_CTA_LABEL_LINE_HEIGHT_PX + 1}px`
                     : `${HOME_BANNERS_CTA_LABEL_LINE_HEIGHT_PX}px`,
-                ...(isArmenian
+                ...(isRussian
                   ? {
-                      transform: `translate(${HOME_MOBILE_BANNER_SHOWCASE_CTA_HY_NUDGE_X_PX}px, ${HOME_MOBILE_BANNER_SHOWCASE_CTA_HY_NUDGE_Y_PX}px)`,
+                      transform: `translate(${HOME_MOBILE_BANNER_SHOWCASE_CTA_RU_NUDGE_X_PX}px, ${HOME_MOBILE_BANNER_SHOWCASE_CTA_RU_NUDGE_Y_PX}px)`,
                     }
-                  : {}),
+                  : isArmenian
+                    ? {
+                        transform: `translate(${HOME_MOBILE_BANNER_SHOWCASE_CTA_HY_NUDGE_X_PX}px, ${HOME_MOBILE_BANNER_SHOWCASE_CTA_HY_NUDGE_Y_PX}px)`,
+                      }
+                    : isEnglish
+                      ? {
+                          transform: `translate(${HOME_MOBILE_BANNER_SHOWCASE_CTA_EN_NUDGE_X_PX}px, ${HOME_MOBILE_BANNER_SHOWCASE_CTA_EN_NUDGE_Y_PX}px)`,
+                        }
+                      : {}),
               }}
               aria-label={ctaAria}
             >
               <span
                 className="min-w-0 shrink whitespace-nowrap text-left"
                 style={{
-                  transform: `translateX(${isRussian ? HOME_GRADIENT_BANNER_CTA_LABEL_NUDGE_LEFT_PX - 17 : HOME_GRADIENT_BANNER_CTA_LABEL_NUDGE_LEFT_PX}px)`,
+                  transform: `translateX(${
+                    isRussian
+                      ? HOME_GRADIENT_BANNER_CTA_LABEL_NUDGE_LEFT_PX -
+                        HOME_MOBILE_BANNER_SHOWCASE_CTA_RU_LABEL_NUDGE_SUBTRACT_PX
+                      : HOME_GRADIENT_BANNER_CTA_LABEL_NUDGE_LEFT_PX
+                  }px)`,
                 }}
               >
                 {ctaLabel}
@@ -320,7 +340,14 @@ export function HomeMobileBannerProductShowcase({ language }: HomeMobileBannerPr
             </Link>
             <div
               className={`${montserratShowcaseLabel.className} flex shrink-0 flex-col justify-center leading-[0] not-italic text-left text-white`}
-              style={showcaseLabelStyle}
+              style={{
+                ...showcaseLabelStyle,
+                ...(isEnglish
+                  ? {
+                      transform: `translate(${HOME_MOBILE_BANNER_SHOWCASE_LABEL_EN_TRANSLATE_X_PX}px, ${HOME_MOBILE_BANNER_SHOWCASE_LABEL_EN_TRANSLATE_Y_PX}px)`,
+                    }
+                  : {}),
+              }}
             >
               <p className="mb-0">{t(language, 'home.promo_mobile_slate_label_line1')}</p>
               <p className="mb-0">{t(language, 'home.promo_mobile_slate_label_line2')}</p>

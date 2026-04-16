@@ -2,6 +2,9 @@
 
 import {
   HERO_MOBILE_HEADLINE_FONT_SIZE_PX,
+  HERO_MOBILE_HEADLINE_HY_FONT_SIZE_PX,
+  HERO_MOBILE_HEADLINE_HY_LINE_HEIGHT_PX,
+  HERO_MOBILE_HEADLINE_HY_WORD_GAP_REM,
   HERO_MOBILE_HEADLINE_LINE_HEIGHT_PX,
 } from '../hero.constants';
 import { useTranslation } from '../../lib/i18n-client';
@@ -26,6 +29,11 @@ const mobileHeadlineTypographyEn = {
   lineHeight: `${HERO_MOBILE_HEADLINE_LINE_HEIGHT_PX + 2}px`,
 } as const;
 
+const mobileHeadlineTypographyHy = {
+  fontSize: `${HERO_MOBILE_HEADLINE_HY_FONT_SIZE_PX}px`,
+  lineHeight: `${HERO_MOBILE_HEADLINE_HY_LINE_HEIGHT_PX}px`,
+} as const;
+
 /** MARCO — Figma 314:2400: black + white two-word headline on mobile hero only. */
 export function HomePromoMobileHeroHeadline({
   emphasisText,
@@ -37,7 +45,9 @@ export function HomePromoMobileHeroHeadline({
       ? mobileHeadlineTypographyRu
       : lang === 'en'
         ? mobileHeadlineTypographyEn
-        : mobileHeadlineTypography;
+        : lang === 'hy'
+          ? mobileHeadlineTypographyHy
+          : mobileHeadlineTypography;
 
   if (lang === 'ru') {
     return (
@@ -61,7 +71,14 @@ export function HomePromoMobileHeroHeadline({
   return (
     <p
       className="pointer-events-none box-border flex w-full max-w-full min-w-0 flex-row flex-nowrap items-baseline justify-center font-black tracking-tight sm:gap-x-1.5"
-      style={{ columnGap: lang === 'en' ? '0.55rem' : '0.25rem' }}
+      style={{
+        columnGap:
+          lang === 'en'
+            ? '0.55rem'
+            : lang === 'hy'
+              ? `${HERO_MOBILE_HEADLINE_HY_WORD_GAP_REM}rem`
+              : '0.25rem',
+      }}
     >
       <span className="shrink-0 text-marco-black" style={headlineTypography}>
         {emphasisText}
