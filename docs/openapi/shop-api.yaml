@@ -21,6 +21,8 @@ tags:
     description: Operations and monitoring.
   - name: Auth
     description: Registration and login (JWT issuance).
+  - name: Orders
+    description: Customer orders and reorder-to-cart.
 
 paths:
   /api/health:
@@ -170,6 +172,49 @@ paths:
                     type: boolean
         "429":
           description: Resend cooldown (60s between sends).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+
+  /api/v1/orders/{number}/reorder:
+    post:
+      tags: [Orders]
+      summary: Prefill cart from a past order (reorder)
+      operationId: postOrderReorder
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: number
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Order number belonging to the authenticated user.
+      responses:
+        "200":
+          description: |
+            Cart updated. Response includes `orderNumber`, `added` (lines merged into the cart),
+            `skipped` (lines not added with a reason), and `cart` (same structure as `GET /api/v1/cart`).
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "400":
+          description: Order has no line items.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "401":
+          description: Missing or invalid JWT.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "404":
+          description: Order not found for this user.
           content:
             application/json:
               schema:
