@@ -3,7 +3,7 @@
   "hero_subtitle": "Discover amazing products and exclusive offers. Shop the latest trends and find everything you need in one place.",
   "hero_button_products": "PRODUCTS",
   "hero_button_view_more": "VIEW MORE",
-  "promo_banner_headline_emphasis": "FREE",
+  "promo_banner_headline_emphasis": "FREE ",
   "promo_banner_headline_accent": "DELIVERY",
   "promo_featured_title": "Comfort in every detail",
   "promo_featured_subtitle": "Premium armchair collection — designed for your living space.",
@@ -105,7 +105,6 @@
     "cta": "MORE"
   }
 }
-
 
 
 

@@ -191,6 +191,10 @@
   "search": {
     "seeAll": "See all"
   },
+  "menu": {
+    "button": "Menu",
+    "title": "Navigation"
+  },
   "defaults": {
     "category": "Grocery"
   },
@@ -246,7 +250,6 @@
     "goHome": "Go Home"
   }
 }
-
 
 
 

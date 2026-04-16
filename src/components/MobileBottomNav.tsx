@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import { getWishlistCount } from '../lib/storageCounts';
 import { logger } from '@/lib/utils/logger';
+import { useTranslation } from '../lib/i18n-client';
 import {
   MobileNavCartLinearIcon,
   MobileNavHomeBoldIcon,
@@ -108,6 +109,7 @@ function NavItemLink({ item, pathname, wishlistCount }: NavItemLinkProps) {
 export function MobileBottomNav() {
   const pathname = usePathname();
   const [wishlistCount, setWishlistCount] = useState(0);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const updateCounts = () => {
@@ -123,12 +125,12 @@ export function MobileBottomNav() {
 
   const navItems: MobileNavItem[] = useMemo(
     () => [
-      { label: 'Home', href: '/', icon: 'home' },
-      { label: 'Wishlist', href: '/wishlist', icon: 'wishlist', badge: 'wishlist' },
-      { label: 'Cart', href: '/cart', icon: 'cart' },
-      { label: 'Profile', href: '/profile', icon: 'profile' },
+      { label: t('common.navigation.home'), href: '/', icon: 'home' },
+      { label: t('common.navigation.wishlist'), href: '/wishlist', icon: 'wishlist', badge: 'wishlist' },
+      { label: t('common.navigation.cart'), href: '/cart', icon: 'cart' },
+      { label: t('common.navigation.profile'), href: '/profile', icon: 'profile' },
     ],
-    [],
+    [t],
   );
 
   return (

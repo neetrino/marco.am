@@ -21,7 +21,7 @@ export const HOME_BANNERS_CTA_ARROW_ICON_PX = 18;
 /** Overlap of icon circle into label area (same idea as hero slate CTA). */
 export const HOME_BANNERS_CTA_ICON_PULL_LEFT_PX = 2;
 
-/** Label — slightly under `text-base` (16px) for a subtle shrink vs hero CTA. */
-export const HOME_BANNERS_CTA_LABEL_FONT_SIZE_PX = 15;
+/** Label — slightly smaller on mobile so long localized CTAs fit more comfortably. */
+export const HOME_BANNERS_CTA_LABEL_FONT_SIZE_PX = 13;
 
 export const HOME_BANNERS_CTA_LABEL_LINE_HEIGHT_PX = 20;

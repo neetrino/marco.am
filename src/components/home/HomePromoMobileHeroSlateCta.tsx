@@ -47,7 +47,10 @@ const slateCtaIconFrameStyle: CSSProperties = {
  * Figma 314:2394 — yellow pill + black arrow chip; `z-[12]` under chair (`z-[13]`) so legs overlap CTA.
  */
 export function HomePromoMobileHeroSlateCta() {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
+  const isRussian = lang === 'ru';
+  const isArmenian = lang === 'hy';
+  const isEnglish = lang === 'en';
 
   return (
     <div
@@ -62,14 +65,27 @@ export function HomePromoMobileHeroSlateCta() {
       >
         <Link
           href="/products"
-          className={`${montserratSlateCta.className} group pointer-events-auto flex w-full max-w-full shrink-0 items-center bg-marco-yellow text-base font-bold leading-6 text-marco-black transition hover:-translate-y-0.5 hover:bg-red-700 hover:text-white active:translate-y-px`}
+          className={`${montserratSlateCta.className} group pointer-events-auto flex w-full max-w-full shrink-0 items-center bg-marco-yellow ${
+            isRussian ? 'text-[13px] font-bold leading-[18px]' : 'text-base font-bold leading-6'
+          } text-marco-black transition hover:-translate-y-0.5 hover:bg-red-700 hover:text-white active:translate-y-px`}
           style={slateCtaLinkStyle}
           aria-label={`${t('home.promo_featured_cta')}. ${t('home.promo_featured_title')}`}
         >
-          <span className="min-w-0 shrink whitespace-nowrap text-left">{t('home.promo_featured_cta')}</span>
+          <span
+            className={`min-w-0 shrink whitespace-nowrap text-left ${isRussian ? '-translate-x-6' : isEnglish ? '-translate-x-2' : ''}`}
+            style={isArmenian ? { transform: 'translateX(-4px)' } : undefined}
+          >
+            {t('home.promo_featured_cta')}
+          </span>
           <span
             className="flex shrink-0 items-center justify-center rounded-full bg-marco-black text-white transition group-hover:bg-white group-hover:text-red-700"
-            style={slateCtaIconFrameStyle}
+            style={
+              isRussian
+                ? { ...slateCtaIconFrameStyle, transform: 'translateX(-6px)' }
+                : isEnglish
+                  ? { ...slateCtaIconFrameStyle, transform: 'translateX(-4px)' }
+                  : slateCtaIconFrameStyle
+            }
             aria-hidden
           >
             <ArrowUpRight

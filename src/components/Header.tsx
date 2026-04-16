@@ -42,6 +42,7 @@ import {
 } from './header/header.constants';
 import { CompareIcon } from './icons/CompareIcon';
 import { CartIcon } from './icons/CartIcon';
+import { MobileNavCartLinearIcon } from './mobile-bottom-nav-icons';
 
 /** Top row + mobile drawer — MARCO nav (Figma 101:2027) */
 type PrimaryNavLink =
@@ -1020,7 +1021,7 @@ export function Header({ initialLanguage }: HeaderProps) {
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4">
-              <p className="text-lg font-semibold text-gray-900">Navigation</p>
+              <p className="text-lg font-semibold text-gray-900">{t('common.menu.title')}</p>
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen(false)}
@@ -1123,7 +1124,7 @@ export function Header({ initialLanguage }: HeaderProps) {
                   >
                     <span className="flex items-center gap-2 normal-case font-medium text-gray-700">
                       <CompareIcon size={18} />
-                      Compare
+                      {t('common.navigation.compare')}
                     </span>
                     {compareCount > 0 && (
                       <span className="rounded-full bg-gray-900 px-2 py-0.5 text-xs font-semibold text-white">
@@ -1138,8 +1139,8 @@ export function Header({ initialLanguage }: HeaderProps) {
                     className="flex items-center justify-between px-4 py-3 hover:bg-gray-50"
                   >
                     <span className="flex items-center gap-2 normal-case font-medium text-gray-700">
-                      <CartIcon size={19} />
-                      Cart
+                      <MobileNavCartLinearIcon className="h-[19px] w-[19px]" />
+                      {t('common.navigation.cart')}
                     </span>
                     {cartCount > 0 && (
                       <span className="rounded-full bg-gray-900 px-2 py-0.5 text-xs font-semibold text-white">
@@ -1157,7 +1158,7 @@ export function Header({ initialLanguage }: HeaderProps) {
                       >
                         <span className="flex items-center gap-2">
                           <ProfileIconFilled />
-                          Profile
+                          {t('common.navigation.profile')}
                         </span>
                         <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -1169,7 +1170,7 @@ export function Header({ initialLanguage }: HeaderProps) {
                           onClick={() => setMobileMenuOpen(false)}
                           className="flex items-center justify-between px-4 py-3 hover:bg-blue-50 normal-case text-blue-700"
                         >
-                          <span>Admin Panel</span>
+                          <span>{t('common.navigation.adminPanel')}</span>
                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                           </svg>
@@ -1182,7 +1183,7 @@ export function Header({ initialLanguage }: HeaderProps) {
                         }}
                         className="flex w-full items-center justify-between px-4 py-3 text-left text-red-600 hover:bg-red-50 normal-case font-semibold"
                       >
-                        Logout
+                        {t('common.navigation.logout')}
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
@@ -1195,7 +1196,7 @@ export function Header({ initialLanguage }: HeaderProps) {
                         onClick={() => setMobileMenuOpen(false)}
                         className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 normal-case text-gray-800"
                       >
-                        <span>Login</span>
+                        <span>{t('common.navigation.login')}</span>
                         <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
@@ -1205,7 +1206,7 @@ export function Header({ initialLanguage }: HeaderProps) {
                         onClick={() => setMobileMenuOpen(false)}
                         className="flex items-center justify-between px-4 py-3 hover:bg-gray-900 hover:text-white normal-case text-gray-900 font-semibold"
                       >
-                        <span>Create account</span>
+                        <span>{t('register.form.createAccount')}</span>
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
@@ -1226,4 +1227,3 @@ export function Header({ initialLanguage }: HeaderProps) {
     </header>
   );
 }
-

@@ -150,8 +150,8 @@ const showcaseCtaLinkStyle: CSSProperties = {
   paddingLeft: HOME_BANNERS_CTA_PADDING_LEFT_PX,
   paddingRight: HOME_BANNERS_CTA_PADDING_RIGHT_PX,
   gap: HOME_BANNERS_CTA_LABEL_ICON_GAP_PX,
-  fontSize: HOME_BANNERS_CTA_LABEL_FONT_SIZE_PX,
-  lineHeight: `${HOME_BANNERS_CTA_LABEL_LINE_HEIGHT_PX}px`,
+  fontSize: 12,
+  lineHeight: '16px',
 };
 
 const showcaseCtaIconFrameStyle: CSSProperties = {
@@ -179,6 +179,8 @@ export function HomeMobileBannerProductShowcase({ language }: HomeMobileBannerPr
   const ctaLabel = t(language, 'home.promo_featured_cta');
   const ctaAria = `${ctaLabel}. ${t(language, 'home.promo_featured_title')}`;
   const regionAria = t(language, 'home.promo_featured_title');
+  const isRussian = language === 'ru';
+  const isArmenian = language === 'hy';
 
   const showcaseOuterStyle: CSSProperties = {
     width: '100%',
@@ -265,20 +267,24 @@ export function HomeMobileBannerProductShowcase({ language }: HomeMobileBannerPr
             <Link
               href="/products"
               className={`${montserratShowcaseCta.className} group pointer-events-auto flex min-w-0 shrink-0 items-center bg-marco-yellow font-bold text-marco-black transition hover:-translate-y-0.5 hover:bg-red-700 hover:text-white active:translate-y-px`}
-              style={showcaseCtaLinkStyle}
+              style={{
+                ...showcaseCtaLinkStyle,
+                fontSize: isRussian ? 12 : isArmenian ? 15 : HOME_BANNERS_CTA_LABEL_FONT_SIZE_PX,
+                lineHeight: isRussian ? '16px' : `${HOME_BANNERS_CTA_LABEL_LINE_HEIGHT_PX}px`,
+              }}
               aria-label={ctaAria}
             >
               <span
                 className="min-w-0 shrink whitespace-nowrap text-left"
                 style={{
-                  transform: `translateX(${HOME_GRADIENT_BANNER_CTA_LABEL_NUDGE_LEFT_PX}px)`,
+                  transform: `translateX(${isRussian ? HOME_GRADIENT_BANNER_CTA_LABEL_NUDGE_LEFT_PX - 17 : HOME_GRADIENT_BANNER_CTA_LABEL_NUDGE_LEFT_PX}px)`,
                 }}
               >
                 {ctaLabel}
               </span>
               <span
                 className="flex shrink-0 items-center justify-center rounded-full bg-marco-black text-white transition group-hover:bg-white group-hover:text-red-700"
-                style={showcaseCtaIconFrameStyle}
+                style={isRussian ? { ...showcaseCtaIconFrameStyle, transform: 'translateX(-6px)' } : showcaseCtaIconFrameStyle}
                 aria-hidden
               >
                 <ArrowUpRight
