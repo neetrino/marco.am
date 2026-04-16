@@ -7,20 +7,26 @@ export const HEADER_REELS_EXTERNAL_HREF = 'https://www.instagram.com/reels/';
  */
 export const HEADER_CONTAINER_CLASS = 'marco-header-container';
 
-/** Top row vertical padding — Figma 111:4293 `py-[6px]` */
-export const HEADER_FIGMA_PADDING_Y_CLASS = 'py-1.5';
+/** Top row vertical padding — same as row 2 so both header stripes match height */
+export const HEADER_FIGMA_PADDING_Y_CLASS = 'py-2';
 
-/** Gap between logo / nav / social / contact — scales down on smaller desktop to avoid horizontal scroll */
-export const HEADER_FIGMA_CLUSTER_GAP_CLASS =
-  'md:gap-x-4 lg:gap-x-6 xl:gap-x-10 2xl:gap-x-[54px]';
+/**
+ * Gap between main cluster and contact block (row 1).
+ * Slightly tighter so a larger phone↔addresses gap fits without horizontal overflow.
+ */
+export const HEADER_FIGMA_CLUSTER_GAP_CLASS = 'gap-x-2';
 
-/** Horizontal gap between primary nav links — full Figma spacing only on wide screens */
-export const HEADER_FIGMA_NAV_LINK_GAP_CLASS =
-  'gap-x-3 md:gap-x-4 lg:gap-x-6 xl:gap-x-8 2xl:gap-x-[45px]';
+/** Space from MARCO logo to first primary nav link (row 1) */
+export const HEADER_LOGO_TO_NAV_GAP_CLASS = 'ml-[54px]';
 
-/** Gap between phone and addresses — tight cluster */
-export const HEADER_FIGMA_CONTACT_CLUSTER_GAP_CLASS =
-  'gap-x-1 md:gap-x-1.5 lg:gap-x-2.5 xl:gap-x-3 2xl:gap-x-4';
+/** Horizontal gap between primary nav links — fixed (45px) */
+export const HEADER_FIGMA_NAV_LINK_GAP_CLASS = 'gap-x-[45px]';
+
+/** Space from last primary nav link (e.g. Reels) to social icons (row 1) */
+export const HEADER_NAV_TO_SOCIAL_GAP_CLASS = 'ml-[54px]';
+
+/** Gap between phone number and addresses link (row 1) */
+export const HEADER_FIGMA_CONTACT_CLUSTER_GAP_CLASS = 'gap-x-6';
 
 /** Categories + search — 22px gap (row on `sm+`, column on narrow) */
 export const HEADER_FIGMA_ROW2_LEFT_INNER_GAP_CLASS =
