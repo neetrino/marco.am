@@ -14,7 +14,7 @@ jobs:
 
       # Pin pnpm 9.x so CI does not run pnpm 11 bootstrap (can mis-read v9
       # lockfiles as ERR_PNPM_BROKEN_LOCKFILE). Must run before setup-node cache.
-      - uses: pnpm/action-setup@v5
+      - uses: pnpm/action-setup@v6
         with:
           version: 9.14.2
           run_install: false
