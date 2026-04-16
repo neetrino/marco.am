@@ -38,3 +38,25 @@ export function safeParseLogin(body: unknown): ReturnType<typeof loginSchema.saf
 export function safeParseRegister(body: unknown): ReturnType<typeof registerSchema.safeParse> {
   return registerSchema.safeParse(body);
 }
+
+const verifySchema = z.object({
+  verificationToken: z.string().min(10),
+  code: z.string().min(4).max(12),
+});
+
+const resendVerificationSchema = z.object({
+  verificationToken: z.string().min(10),
+});
+
+export type VerifyBody = z.infer<typeof verifySchema>;
+export type ResendVerificationBody = z.infer<typeof resendVerificationSchema>;
+
+export function safeParseVerify(body: unknown): ReturnType<typeof verifySchema.safeParse> {
+  return verifySchema.safeParse(body);
+}
+
+export function safeParseResendVerification(
+  body: unknown
+): ReturnType<typeof resendVerificationSchema.safeParse> {
+  return resendVerificationSchema.safeParse(body);
+}

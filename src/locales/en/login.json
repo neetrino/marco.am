@@ -17,6 +17,22 @@
     "emailOrPhoneRequired": "Please enter your email or phone number",
     "passwordRequired": "Please enter your password",
     "loginFailed": "Login failed. Please try again."
+  },
+  "verify": {
+    "title": "Verify your account",
+    "subtitleEmail": "Enter the 6-digit code we sent to your email.",
+    "subtitlePhone": "Enter the 6-digit code we sent to your phone number.",
+    "codeLabel": "Verification code",
+    "submit": "Verify",
+    "submitting": "Verifying...",
+    "resend": "Resend code",
+    "resendWait": "Wait",
+    "backToLogin": "Back to sign in",
+    "errors": {
+      "codeRequired": "Please enter the verification code",
+      "sessionExpired": "Verification session expired. Please sign in again.",
+      "failed": "Verification failed. Please try again."
+    }
   }
 }
 

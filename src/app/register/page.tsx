@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, FormEvent } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button, Input, Card } from '@shop/ui';
 import Link from 'next/link';
 import { getErrorMessage } from '@/lib/types/errors';
@@ -24,6 +25,7 @@ export default function RegisterPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { register, isLoading } = useAuth();
+  const router = useRouter();
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -90,23 +92,22 @@ export default function RegisterPage() {
         lastName: lastName.trim() || 'not provided',
       });
       
-      await register({
+      const flow = await register({
         email: email.trim() || undefined,
         phone: phone.trim() || undefined,
         password,
         firstName: firstName.trim() || undefined,
         lastName: lastName.trim() || undefined,
       });
-      
+
+      if (flow.status === 'needs_verification') {
+        logger.devLog('✅ [REGISTER PAGE] Verification required, redirecting...');
+        router.push('/verify');
+        return;
+      }
+
       logger.devLog('✅ [REGISTER PAGE] Registration successful, redirecting...');
-      // Redirect is handled by AuthContext
-      // But we can also redirect here as a fallback
-      setTimeout(() => {
-        if (window.location.pathname === '/register') {
-          logger.devLog('🔄 [REGISTER PAGE] Fallback redirect to home...');
-          window.location.href = '/';
-        }
-      }, 1000);
+      router.push('/');
     } catch (err: unknown) {
       console.error('❌ [REGISTER PAGE] Registration error:', err);
       console.error('❌ [REGISTER PAGE] Error details:', {

@@ -1,7 +1,18 @@
 import * as bcrypt from "bcryptjs";
-import * as jwt from "jsonwebtoken";
 import { db } from "@white-shop/db";
 import { logger } from "../utils/logger";
+import { isAuthVerificationRequired } from "../constants/auth-verification";
+import {
+  type VerificationChannel,
+  signVerificationSessionToken,
+} from "../auth/verification-session-token";
+import { createOtpChallenge } from "./auth-otp.service";
+import { deliverVerificationCode } from "./verification-delivery.service";
+import { buildAuthSuccessPayload, type AuthSuccessPayload } from "./auth-session.service";
+import {
+  verifyCredentialsWithOtp,
+  resendVerificationOtp,
+} from "./auth-verification-flow.service";
 
 export interface RegisterData {
   email?: string;
@@ -17,31 +28,40 @@ export interface LoginData {
   password: string;
 }
 
-export interface AuthResponse {
-  user: {
-    id: string;
-    email: string | null;
-    phone: string | null;
-    firstName: string | null;
-    lastName: string | null;
-    roles: string[];
-  };
-  token: string;
+export type AuthSuccess = AuthSuccessPayload;
+
+export type AuthPendingVerification = {
+  needsVerification: true;
+  channel: VerificationChannel;
+  verificationToken: string;
+};
+
+export type RegisterResult = AuthSuccess | AuthPendingVerification;
+export type LoginResult = AuthSuccess | AuthPendingVerification;
+
+function normalizeEmail(email?: string): string | undefined {
+  const t = email?.trim().toLowerCase();
+  return t || undefined;
+}
+
+function normalizePhone(phone?: string): string | undefined {
+  const t = phone?.trim();
+  return t || undefined;
 }
 
 class AuthService {
-  /**
-   * Register new user
-   */
-  async register(data: RegisterData): Promise<AuthResponse> {
+  async register(data: RegisterData): Promise<RegisterResult> {
+    const email = normalizeEmail(data.email);
+    const phone = normalizePhone(data.phone);
+
     logger.debug("Auth registration attempt", {
-      hasEmail: !!data.email,
-      hasPhone: !!data.phone,
+      hasEmail: !!email,
+      hasPhone: !!phone,
       hasFirstName: !!data.firstName,
       hasLastName: !!data.lastName,
     });
 
-    if (!data.email && !data.phone) {
+    if (!email && !phone) {
       throw {
         status: 400,
         type: "https://api.shop.am/problems/validation-error",
@@ -59,12 +79,11 @@ class AuthService {
       };
     }
 
-    // Check if user already exists
     const existingUser = await db.user.findFirst({
       where: {
         OR: [
-          ...(data.email ? [{ email: data.email }] : []),
-          ...(data.phone ? [{ phone: data.phone }] : []),
+          ...(email ? [{ email }] : []),
+          ...(phone ? [{ phone }] : []),
         ],
         deletedAt: null,
       },
@@ -81,21 +100,24 @@ class AuthService {
       };
     }
 
-    // Hash password
     const passwordHash = await bcrypt.hash(data.password, 10);
+    const requireVerification = isAuthVerificationRequired();
+    const emailVerified = Boolean(email && !requireVerification);
+    const phoneVerified = Boolean(phone && !requireVerification);
 
-    // Create user
     let user;
     try {
       user = await db.user.create({
         data: {
-          email: data.email || null,
-          phone: data.phone || null,
+          email: email || null,
+          phone: phone || null,
           passwordHash,
           firstName: data.firstName || null,
           lastName: data.lastName || null,
           locale: "en",
           roles: ["customer"],
+          emailVerified,
+          phoneVerified,
         },
         select: {
           id: true,
@@ -111,7 +133,6 @@ class AuthService {
       const err = error as { code?: string };
       logger.error("Auth user creation failed", { error: err });
       if (err.code === "P2002") {
-        // Prisma unique constraint error
         throw {
           status: 409,
           type: "https://api.shop.am/problems/conflict",
@@ -122,44 +143,37 @@ class AuthService {
       throw error;
     }
 
-    // Generate JWT token
-    if (!process.env.JWT_SECRET) {
-      logger.error("Auth config error: JWT_SECRET is not set");
-      throw {
-        status: 500,
-        type: "https://api.shop.am/problems/internal-error",
-        title: "Internal Server Error",
-        detail: "Server configuration error",
+    if (requireVerification) {
+      const channel: VerificationChannel = email ? "email" : "phone";
+      const target = email || phone;
+      if (!target) {
+        throw {
+          status: 400,
+          type: "https://api.shop.am/problems/validation-error",
+          title: "Validation failed",
+          detail: "Either email or phone is required",
+        };
+      }
+      const plain = await createOtpChallenge(user.id, channel);
+      await deliverVerificationCode(channel, target, plain);
+      const verificationToken = signVerificationSessionToken(user.id, channel);
+      return {
+        needsVerification: true,
+        channel,
+        verificationToken,
       };
     }
 
-    const token = jwt.sign(
-      { userId: user.id },
-      process.env.JWT_SECRET as string,
-      { expiresIn: process.env.JWT_EXPIRES_IN || "7d" } as jwt.SignOptions
-    );
-    logger.info("Auth registration success", { userId: user.id });
-
-    return {
-      user: {
-        id: user.id,
-        email: user.email,
-        phone: user.phone,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        roles: user.roles,
-      },
-      token,
-    };
+    return buildAuthSuccessPayload(user.id);
   }
 
-  /**
-   * Login user
-   */
-  async login(data: LoginData): Promise<AuthResponse> {
-    logger.debug("Auth login attempt", { hasEmail: !!data.email, hasPhone: !!data.phone });
+  async login(data: LoginData): Promise<LoginResult> {
+    const email = normalizeEmail(data.email);
+    const phone = normalizePhone(data.phone);
 
-    if (!data.email && !data.phone) {
+    logger.debug("Auth login attempt", { hasEmail: !!email, hasPhone: !!phone });
+
+    if (!email && !phone) {
       throw {
         status: 400,
         type: "https://api.shop.am/problems/validation-error",
@@ -177,12 +191,11 @@ class AuthService {
       };
     }
 
-    // Find user
     const user = await db.user.findFirst({
       where: {
         OR: [
-          ...(data.email ? [{ email: data.email }] : []),
-          ...(data.phone ? [{ phone: data.phone }] : []),
+          ...(email ? [{ email }] : []),
+          ...(phone ? [{ phone }] : []),
         ],
         deletedAt: null,
       },
@@ -195,6 +208,8 @@ class AuthService {
         passwordHash: true,
         roles: true,
         blocked: true,
+        emailVerified: true,
+        phoneVerified: true,
       },
     });
 
@@ -208,7 +223,6 @@ class AuthService {
       };
     }
 
-    // Check password
     const isValidPassword = await bcrypt.compare(
       data.password,
       user.passwordHash
@@ -234,37 +248,39 @@ class AuthService {
       };
     }
 
-    // Generate JWT token
-    if (!process.env.JWT_SECRET) {
-      throw {
-        status: 500,
-        type: "https://api.shop.am/problems/internal-error",
-        title: "Internal Server Error",
-        detail: "Server configuration error",
-      };
+    const requireVerification = isAuthVerificationRequired();
+    if (requireVerification) {
+      const channel: VerificationChannel = email ? "email" : "phone";
+      const needsOtp =
+        (channel === "email" && Boolean(user.email) && !user.emailVerified) ||
+        (channel === "phone" && Boolean(user.phone) && !user.phoneVerified);
+
+      if (needsOtp) {
+        const target = channel === "email" ? user.email! : user.phone!;
+        const plain = await createOtpChallenge(user.id, channel);
+        await deliverVerificationCode(channel, target, plain);
+        const verificationToken = signVerificationSessionToken(user.id, channel);
+        return {
+          needsVerification: true,
+          channel,
+          verificationToken,
+        };
+      }
     }
 
-    const token = jwt.sign(
-      { userId: user.id },
-      process.env.JWT_SECRET as string,
-      { expiresIn: process.env.JWT_EXPIRES_IN || "7d" } as jwt.SignOptions
-    );
+    return buildAuthSuccessPayload(user.id);
+  }
 
-    logger.info("Auth login success", { userId: user.id });
+  async verifyWithCode(
+    verificationToken: string,
+    code: string
+  ): Promise<AuthSuccess> {
+    return verifyCredentialsWithOtp(verificationToken, code);
+  }
 
-    return {
-      user: {
-        id: user.id,
-        email: user.email,
-        phone: user.phone,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        roles: user.roles,
-      },
-      token,
-    };
+  async resendVerification(verificationToken: string): Promise<void> {
+    return resendVerificationOtp(verificationToken);
   }
 }
 
 export const authService = new AuthService();
-

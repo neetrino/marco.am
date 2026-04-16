@@ -6,9 +6,10 @@ import { apiClient, ApiError, getClientErrorDetail, getErrorHttpStatus } from '.
 import { getErrorMessage } from '../types/errors';
 import { logger } from "@/lib/utils/logger";
 
-/**
- * User interface
- */
+/** Session storage keys for OTP step (same-tab only). */
+export const AUTH_VERIFICATION_TOKEN_KEY = 'auth_verification_token';
+export const AUTH_VERIFICATION_CHANNEL_KEY = 'auth_verification_channel';
+
 interface User {
   id: string;
   email?: string;
@@ -18,24 +19,6 @@ interface User {
   roles?: string[];
 }
 
-/**
- * Auth Context interface
- */
-interface AuthContextType {
-  user: User | null;
-  token: string | null;
-  isLoggedIn: boolean;
-  isLoading: boolean;
-  isAdmin: boolean;
-  roles: string[];
-  login: (_emailOrPhone: string, _password: string) => Promise<void>;
-  register: (_data: RegisterData) => Promise<void>;
-  logout: () => void;
-}
-
-/**
- * Register data interface
- */
 interface RegisterData {
   email?: string;
   phone?: string;
@@ -44,12 +27,27 @@ interface RegisterData {
   lastName?: string;
 }
 
-/**
- * Auth response from API
- */
 interface AuthResponse {
   user: User;
   token: string;
+}
+
+export type AuthFlowResult =
+  | { status: 'authenticated' }
+  | { status: 'needs_verification' };
+
+interface AuthContextType {
+  user: User | null;
+  token: string | null;
+  isLoggedIn: boolean;
+  isLoading: boolean;
+  isAdmin: boolean;
+  roles: string[];
+  login: (_emailOrPhone: string, _password: string) => Promise<AuthFlowResult>;
+  register: (_data: RegisterData) => Promise<AuthFlowResult>;
+  completeVerification: (_code: string, _redirectTo?: string) => Promise<void>;
+  resendVerificationCode: () => Promise<void>;
+  logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -57,19 +55,56 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const AUTH_TOKEN_KEY = 'auth_token';
 const AUTH_USER_KEY = 'auth_user';
 
-/**
- * Auth Provider component
- */
+function isPendingVerification(
+  x: unknown
+): x is { needsVerification: true; channel: 'email' | 'phone'; verificationToken: string } {
+  return (
+    typeof x === 'object' &&
+    x !== null &&
+    'needsVerification' in x &&
+    (x as { needsVerification?: boolean }).needsVerification === true &&
+    typeof (x as { verificationToken?: string }).verificationToken === 'string' &&
+    ((x as { channel?: string }).channel === 'email' ||
+      (x as { channel?: string }).channel === 'phone')
+  );
+}
+
+function isAuthSuccess(x: unknown): x is AuthResponse {
+  return (
+    typeof x === 'object' &&
+    x !== null &&
+    'token' in x &&
+    'user' in x &&
+    typeof (x as AuthResponse).token === 'string'
+  );
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  // Load auth state from localStorage on mount
+  const persistSession = (response: AuthResponse) => {
+    localStorage.setItem(AUTH_TOKEN_KEY, response.token);
+    localStorage.setItem(AUTH_USER_KEY, JSON.stringify(response.user));
+    setToken(response.token);
+    setUser(response.user);
+    window.dispatchEvent(new Event('auth-updated'));
+  };
+
+  const clearVerificationSession = () => {
+    try {
+      sessionStorage.removeItem(AUTH_VERIFICATION_TOKEN_KEY);
+      sessionStorage.removeItem(AUTH_VERIFICATION_CHANNEL_KEY);
+    } catch {
+      /* ignore */
+    }
+  };
+
   useEffect(() => {
     logger.devLog('🔐 [AUTH] Loading auth state from localStorage...');
-    
+
     const loadAuthState = async () => {
       try {
         const storedToken = localStorage.getItem(AUTH_TOKEN_KEY);
@@ -77,9 +112,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (storedToken && storedUser) {
           logger.devLog('✅ [AUTH] Found stored auth data');
-          const parsedUser = JSON.parse(storedUser);
-          
-          // If user doesn't have roles, fetch from API
+          const parsedUser = JSON.parse(storedUser) as User;
+
           if (!parsedUser.roles || !Array.isArray(parsedUser.roles)) {
             logger.devLog('⚠️ [AUTH] User data missing roles, fetching from API...');
             try {
@@ -90,18 +124,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 logger.devLog('✅ [AUTH] Roles updated from API:', profileData.roles);
               }
             } catch (fetchError) {
-              console.error('❌ [AUTH] Failed to fetch user roles:', fetchError);
+              logger.devLog('❌ [AUTH] Failed to fetch user roles', { fetchError });
             }
           }
-          
+
           setToken(storedToken);
           setUser(parsedUser);
         } else {
           logger.devLog('ℹ️ [AUTH] No stored auth data found');
         }
       } catch (error) {
-        console.error('❌ [AUTH] Error loading auth state:', error);
-        // Clear corrupted data
+        logger.devLog('❌ [AUTH] Error loading auth state', { error });
         localStorage.removeItem(AUTH_TOKEN_KEY);
         localStorage.removeItem(AUTH_USER_KEY);
       } finally {
@@ -112,45 +145,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loadAuthState();
   }, []);
 
-  /**
-   * Login user
-   */
-  const login = async (emailOrPhone: string, password: string) => {
-    logger.devLog('🔐 [AUTH] Login attempt:', { emailOrPhone: emailOrPhone ? 'provided' : 'not provided', password: password ? 'provided' : 'not provided' });
-    
+  const login = async (emailOrPhone: string, password: string): Promise<AuthFlowResult> => {
+    logger.devLog('🔐 [AUTH] Login attempt:', {
+      emailOrPhone: emailOrPhone ? 'provided' : 'not provided',
+      password: password ? 'provided' : 'not provided',
+    });
+
     try {
       setIsLoading(true);
 
-      // Determine if it's email or phone
       const isEmail = emailOrPhone.includes('@');
       const requestData = isEmail
         ? { email: emailOrPhone, password }
         : { phone: emailOrPhone, password };
 
       logger.devLog('📤 [AUTH] Sending login request to API...');
-      const response = await apiClient.post<AuthResponse>('/api/v1/auth/login', requestData, {
-        skipAuth: true, // Don't send token for login
-      });
+      const response = await apiClient.post<unknown>(
+        '/api/v1/auth/login',
+        requestData,
+        { skipAuth: true }
+      );
 
-      logger.devLog('✅ [AUTH] Login successful:', { 
-        userId: response.user.id,
-        roles: response.user.roles,
-        isAdmin: response.user.roles?.includes('admin')
-      });
+      if (isPendingVerification(response)) {
+        sessionStorage.setItem(AUTH_VERIFICATION_TOKEN_KEY, response.verificationToken);
+        sessionStorage.setItem(AUTH_VERIFICATION_CHANNEL_KEY, response.channel);
+        return { status: 'needs_verification' };
+      }
 
-      // Store auth data
-      localStorage.setItem(AUTH_TOKEN_KEY, response.token);
-      localStorage.setItem(AUTH_USER_KEY, JSON.stringify(response.user));
+      if (!isAuthSuccess(response)) {
+        throw new Error('Invalid response from server');
+      }
 
-      setToken(response.token);
-      setUser(response.user);
-
-      // Trigger auth update event
-      window.dispatchEvent(new Event('auth-updated'));
-
-      // Don't redirect here - let the login page handle redirect based on query params
+      logger.devLog('✅ [AUTH] Login successful:', { userId: response.user.id });
+      persistSession(response);
+      return { status: 'authenticated' };
     } catch (error: unknown) {
-      console.error('❌ [AUTH] Login error:', error);
+      logger.devLog('❌ [AUTH] Login error', { error });
 
       let errorMessage = 'Login failed. Please try again.';
 
@@ -184,62 +214,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  /**
-   * Register new user
-   */
-  const register = async (data: RegisterData) => {
-    logger.devLog('🔐 [AUTH] Registration attempt:', { 
+  const register = async (data: RegisterData): Promise<AuthFlowResult> => {
+    logger.devLog('🔐 [AUTH] Registration attempt:', {
       email: data.email || 'not provided',
       phone: data.phone || 'not provided',
       hasFirstName: !!data.firstName,
-      hasLastName: !!data.lastName
+      hasLastName: !!data.lastName,
     });
 
     try {
       setIsLoading(true);
 
       logger.devLog('📤 [AUTH] Sending registration request to API...', { data });
-      const response = await apiClient.post<AuthResponse>('/api/v1/auth/register', data, {
-        skipAuth: true, // Don't send token for registration
-      });
+      const response = await apiClient.post<unknown>(
+        '/api/v1/auth/register',
+        data,
+        { skipAuth: true }
+      );
 
-      logger.devLog('✅ [AUTH] Registration response received:', response);
+      if (isPendingVerification(response)) {
+        sessionStorage.setItem(AUTH_VERIFICATION_TOKEN_KEY, response.verificationToken);
+        sessionStorage.setItem(AUTH_VERIFICATION_CHANNEL_KEY, response.channel);
+        return { status: 'needs_verification' };
+      }
 
-      if (!response || !response.user || !response.token) {
-        console.error('❌ [AUTH] Invalid response structure:', response);
+      if (!isAuthSuccess(response)) {
         throw new Error('Invalid response from server');
       }
 
       logger.devLog('✅ [AUTH] Registration successful:', { userId: response.user.id });
 
-      // Store auth data
       try {
-        localStorage.setItem(AUTH_TOKEN_KEY, response.token);
-        localStorage.setItem(AUTH_USER_KEY, JSON.stringify(response.user));
+        persistSession(response);
         logger.devLog('💾 [AUTH] Auth data stored in localStorage');
       } catch (storageError) {
-        console.error('❌ [AUTH] Failed to store auth data:', storageError);
+        logger.devLog('❌ [AUTH] Failed to store auth data', { storageError });
         throw new Error('Failed to save authentication data');
       }
 
-      setToken(response.token);
-      setUser(response.user);
-
-      // Trigger auth update event
-      window.dispatchEvent(new Event('auth-updated'));
-
-      logger.devLog('🔄 [AUTH] Redirecting to home page...');
-      // Redirect to home page
-      router.push('/');
+      return { status: 'authenticated' };
     } catch (error: unknown) {
-      console.error('❌ [AUTH] Registration error:', error);
-      if (error instanceof Error) {
-        console.error('❌ [AUTH] Error details:', {
-          message: error.message,
-          stack: error.stack,
-          name: error.name,
-        });
-      }
+      logger.devLog('❌ [AUTH] Registration error', { error });
 
       let errorMessage = 'Registration failed. Please try again.';
 
@@ -272,57 +287,87 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      console.error('❌ [AUTH] Final error message:', errorMessage);
       throw new Error(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
-  /**
-   * Logout user
-   */
+  const completeVerification = async (code: string, redirectTo = '/') => {
+    const verificationToken = sessionStorage.getItem(AUTH_VERIFICATION_TOKEN_KEY);
+    if (!verificationToken) {
+      throw new Error('Verification session expired. Please sign in again.');
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await apiClient.post<unknown>(
+        '/api/v1/auth/verify',
+        { verificationToken, code: code.trim() },
+        { skipAuth: true }
+      );
+
+      if (!isAuthSuccess(response)) {
+        throw new Error('Invalid response from server');
+      }
+
+      persistSession(response);
+      clearVerificationSession();
+      router.push(redirectTo);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const resendVerificationCode = async () => {
+    const verificationToken = sessionStorage.getItem(AUTH_VERIFICATION_TOKEN_KEY);
+    if (!verificationToken) {
+      throw new Error('Verification session expired. Please sign in again.');
+    }
+
+    await apiClient.post(
+      '/api/v1/auth/resend-verification',
+      { verificationToken },
+      { skipAuth: true }
+    );
+  };
+
   const logout = () => {
     logger.devLog('🔐 [AUTH] Logging out...');
-    
-    // Clear auth data
+
     localStorage.removeItem(AUTH_TOKEN_KEY);
     localStorage.removeItem(AUTH_USER_KEY);
+    clearVerificationSession();
 
     setToken(null);
     setUser(null);
 
-    // Trigger auth update event
     window.dispatchEvent(new Event('auth-updated'));
 
-    // Redirect to home page
     router.push('/');
   };
 
-  // Calculate roles and admin status
   const roles = user && Array.isArray(user.roles) ? user.roles : [];
   const isAdmin = roles.includes('admin');
-  
-  // Debug logging and ensure roles are loaded
+
   useEffect(() => {
     if (user && token) {
       const userRoles = Array.isArray(user.roles) ? user.roles : [];
       const userIsAdmin = userRoles.includes('admin');
-      
+
       logger.devLog('🔍 [AUTH] User state updated:', {
         userId: user.id,
         roles: user.roles,
         rolesArray: userRoles,
         isAdmin: userIsAdmin,
         rolesType: typeof user.roles,
-        rolesIsArray: Array.isArray(user.roles)
+        rolesIsArray: Array.isArray(user.roles),
       });
-      
-      // If user doesn't have roles, fetch from API
+
       if (!user.roles || !Array.isArray(user.roles) || user.roles.length === 0) {
         logger.devLog('⚠️ [AUTH] User missing roles, fetching from API...');
         apiClient.get<{ roles: string[] }>('/api/v1/users/profile')
-          .then(profileData => {
+          .then((profileData) => {
             if (profileData.roles && Array.isArray(profileData.roles)) {
               const updatedUser = { ...user, roles: profileData.roles };
               setUser(updatedUser);
@@ -330,8 +375,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               logger.devLog('✅ [AUTH] Roles updated from API:', profileData.roles);
             }
           })
-          .catch(error => {
-            console.error('❌ [AUTH] Failed to fetch user roles:', error);
+          .catch((error) => {
+            logger.devLog('❌ [AUTH] Failed to fetch user roles', { error });
           });
       }
     }
@@ -346,15 +391,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     roles,
     login,
     register,
+    completeVerification,
+    resendVerificationCode,
     logout,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-/**
- * Hook to use auth context
- */
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
@@ -362,4 +406,3 @@ export function useAuth() {
   }
   return context;
 }
-

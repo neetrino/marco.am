@@ -47,9 +47,12 @@ function LoginPageContent() {
 
     try {
       logger.devLog('📤 [LOGIN PAGE] Calling login function...');
-      await login(emailOrPhone.trim(), password);
+      const flow = await login(emailOrPhone.trim(), password);
+      if (flow.status === 'needs_verification') {
+        router.push(`/verify?redirect=${encodeURIComponent(redirectTo)}`);
+        return;
+      }
       logger.devLog('✅ [LOGIN PAGE] Login successful, redirecting to:', redirectTo);
-      // Redirect to the specified page or home
       router.push(redirectTo);
     } catch (err: unknown) {
       console.error('❌ [LOGIN PAGE] Login error:', err);

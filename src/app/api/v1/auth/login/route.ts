@@ -25,8 +25,15 @@ export async function POST(req: NextRequest) {
       );
     }
     const result = await authService.login(parsed.data);
+    if ("needsVerification" in result && result.needsVerification) {
+      return NextResponse.json({
+        needsVerification: true,
+        channel: result.channel,
+        verificationToken: result.verificationToken,
+      });
+    }
     return NextResponse.json(result);
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error("Login error", { error });
     const apiError = toApiError(error, req.url);
     return NextResponse.json(apiError, { status: apiError.status || 500 });

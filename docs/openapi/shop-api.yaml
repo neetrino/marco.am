@@ -45,7 +45,7 @@ paths:
   /api/v1/auth/login:
     post:
       tags: [Auth]
-      summary: Login (issues JWT)
+      summary: Login (issues JWT or OTP challenge)
       operationId: postAuthLogin
       requestBody:
         required: true
@@ -55,7 +55,9 @@ paths:
               $ref: "#/components/schemas/LoginRequest"
       responses:
         "200":
-          description: Authenticated; response includes a JWT for `Authorization` header.
+          description: |
+            Either `{ user, token }`, or when `AUTH_REQUIRE_VERIFICATION=true` and the identifier
+            is not yet verified, `{ needsVerification, channel, verificationToken }`.
           content:
             application/json:
               schema:
@@ -80,6 +82,99 @@ paths:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
 
+  /api/v1/auth/register:
+    post:
+      tags: [Auth]
+      summary: Register (issues JWT or OTP challenge)
+      operationId: postAuthRegister
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "201":
+          description: |
+            Account created. Either `{ user, token }` or, when `AUTH_REQUIRE_VERIFICATION=true`,
+            `{ needsVerification, channel, verificationToken }` for `POST /api/v1/auth/verify`.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "400":
+          description: Validation error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+
+  /api/v1/auth/verify:
+    post:
+      tags: [Auth]
+      summary: Submit email/phone OTP and receive JWT
+      operationId: postAuthVerify
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [verificationToken, code]
+              properties:
+                verificationToken:
+                  type: string
+                code:
+                  type: string
+      responses:
+        "200":
+          description: Authenticated; `{ user, token }`.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        "400":
+          description: Invalid code or validation error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+
+  /api/v1/auth/resend-verification:
+    post:
+      tags: [Auth]
+      summary: Resend OTP (same verification session)
+      operationId: postAuthResendVerification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [verificationToken]
+              properties:
+                verificationToken:
+                  type: string
+      responses:
+        "200":
+          description: `{ ok: true }` if a new code was sent.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+        "429":
+          description: Resend cooldown (60s between sends).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+
 components:
   securitySchemes:
     bearerAuth:
@@ -88,7 +183,8 @@ components:
       bearerFormat: JWT
       description: |
         Send `Authorization: Bearer <token>` on protected routes.
-        Tokens are returned from `POST /api/v1/auth/login` and `POST /api/v1/auth/register`.
+        Tokens are returned from `POST /api/v1/auth/login`, `POST /api/v1/auth/register`
+        (when verification is off), and `POST /api/v1/auth/verify` after OTP.
 
   schemas:
     ProblemDetails:

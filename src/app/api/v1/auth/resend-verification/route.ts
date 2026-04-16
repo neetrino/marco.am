@@ -2,17 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { authService } from "@/lib/services/auth.service";
 import { toApiError } from "@/lib/types/errors";
 import { logger } from "@/lib/utils/logger";
-import { safeParseRegister } from "@/lib/schemas/auth.schema";
+import { safeParseResendVerification } from "@/lib/schemas/auth.schema";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const parsed = safeParseRegister(body);
+    const parsed = safeParseResendVerification(body);
     if (!parsed.success) {
       const first = parsed.error.flatten().fieldErrors;
-      const detail = Object.entries(first)
-        .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(", ") : v}`)
-        .join("; ") || parsed.error.message;
+      const detail =
+        Object.entries(first)
+          .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(", ") : v}`)
+          .join("; ") || parsed.error.message;
       return NextResponse.json(
         {
           type: "https://api.shop.am/problems/validation-error",
@@ -24,22 +25,11 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    const result = await authService.register(parsed.data);
-    if ("needsVerification" in result && result.needsVerification) {
-      return NextResponse.json(
-        {
-          needsVerification: true,
-          channel: result.channel,
-          verificationToken: result.verificationToken,
-        },
-        { status: 201 }
-      );
-    }
-    return NextResponse.json(result, { status: 201 });
+    await authService.resendVerification(parsed.data.verificationToken);
+    return NextResponse.json({ ok: true });
   } catch (error: unknown) {
-    logger.error("Registration error", { error });
+    logger.error("Auth resend verification error", { error });
     const apiError = toApiError(error, req.url);
     return NextResponse.json(apiError, { status: apiError.status || 500 });
   }
 }
-

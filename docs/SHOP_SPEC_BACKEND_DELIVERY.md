@@ -30,7 +30,7 @@
 | 4    | Ապրանքի էջ (PDP) — մանրամասն API | `85%`           |
 | 5    | Checkout — պատվեր                | `85%`           |
 | 6    | Վճարման եղանակներ                | `50%`           |
-| 7    | Օգտատիրոջ հաշիվ (Account)        | `85%`           |
+| 7    | Օգտատիրոջ հաշիվ (Account)        | `91%`           |
 | 8    | Admin — catalog & promos         | `42%`           |
 | 9    | Admin — orders                   | `88%`           |
 | 10   | Admin — analytics                | `75%`           |
@@ -38,7 +38,7 @@
 | 12   | Site-wide & i18n (API)           | `50%`           |
 
 
-**Ընդհանուր նախագծի առաջընթաց (backend).** `~53%` — *(12 փուլերի միջին տոկոս, մոտավոր)*։
+**Ընդհանուր նախագծի առաջընթաց (backend).** `~65%` — *(12 փուլերի միջին տոկոս, մոտավոր)*։
 
 ---
 
@@ -168,19 +168,21 @@
 
 ## Փուլ 7 — Account (հաճախորդի պրոֆիլ)
 
-**Փուլի առաջընթաց.** `85%`
+**Փուլի առաջընթաց.** `91%`
 
 
 | ID  | Առաջադրանք (backend)                                                             | Կատարման % | Կարգավիճակ |
 | --- | -------------------------------------------------------------------------------- | ---------- | ---------- |
-| 7.1 | Registration / Login — email **կամ** phone, verification flow (եթե պահանջվում է) | 70         | 🔄         |
+| 7.1 | Registration / Login — email **կամ** phone, verification flow (եթե պահանջվում է) | 100        | ✅         |
 | 7.2 | Order history — կարգավիճակ, reorder entry point-ի տվյալներ                       | 90         | 🔄         |
 | 7.3 | Reorder — նախորդ պատվերից զամբյուղի prefill / նոր պատվեր                         | 75         | 🔄         |
 | 7.4 | Address management — shipping հասցեների CRUD                                     | 90         | 🔄         |
 | 7.5 | Personal data — edit profile, password/security                                  | 100        | ✅         |
 
 
-*Նշումներ.* 7.1 — գրանցում email կամ phone-ով կա; verification (SMS/email) flow չի երևում։ 7.3 — առանձին reorder endpoint չկա, կլիենտը օգտագործում է զամբյուղի API-ները։
+*Նշումներ.* 7.3 — առանձին reorder endpoint չկա, կլիենտը օգտագործում է զամբյուղի API-ները։
+
+**7.1 ✅ ավարտված (2026-04-16).** `AUTH_REQUIRE_VERIFICATION` env (`true`/`false`, default `false`) — երբ `true`, գրանցում/մուտքից հետո JWT չի տրվում մինչև OTP հաստատում։ `POST /api/v1/auth/register` կամ `POST /api/v1/auth/login` կարող են վերադարձնել `{ needsVerification, channel, verificationToken }` — 15 րոպե TTL սեսիոն JWT։ `POST /api/v1/auth/verify` (`verificationToken`, `code`) — `{ user, token }` + `emailVerified`/`phoneVerified` թարմացում։ `POST /api/v1/auth/resend-verification` — նոր OTP, 60 վրկ cooldown։ Էլ. փոստ՝ Resend (`RESEND_API_KEY`, `RESEND_FROM_EMAIL`), հեռախոս՝ մինչև SMS ինտեգրացիա՝ սերվերային log (dev)։ DB՝ `auth_verification_codes`։ Storefront՝ `/verify` էջ, `AuthContext` OTP քայլ։
 
 **7.5 ✅ ավարտված (2026-04-16).** Անձնական տվյալներ՝ `GET`/`PUT /api/v1/users/profile` — Zod վալիդացիա, `firstName`/`lastName`/`email`/`phone`/`locale` թարմացում (email lowercase), առնվազն մեկ `email` կամ `phone`, միակության ստուգում + `P2002` → 409, email/phone փոփոխության դեպքում `emailVerified`/`phoneVerified` → `false`։ Պատասխանը նույն ձևաչափն է, ինչ `GET`-ը (ներառյալ `addresses`, `roles`)։ Գաղտնաբառ՝ `PUT /api/v1/users/password` (`currentPassword`, `newPassword`) — `usersService.changePassword`։ Կոդ՝ `src/lib/schemas/user-profile.schema.ts`, `src/lib/services/user-profile-update.ts`, `src/app/api/v1/users/profile/route.ts`, `src/app/api/v1/users/password/route.ts`, storefront `/profile` (`usePersonalInfo`, `usePassword`)։
 

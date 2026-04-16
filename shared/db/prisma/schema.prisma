@@ -31,12 +31,28 @@ model User {
   updatedAt            DateTime  @updatedAt
 
   // Relations
-  carts  Cart[]
-  orders Order[]
-  reviews ProductReview[]
+  carts                 Cart[]
+  orders                Order[]
+  reviews               ProductReview[]
+  authVerificationCodes AuthVerificationCode[]
 
   @@index([deletedAt])
   @@map("users")
+}
+
+model AuthVerificationCode {
+  id        String   @id @default(cuid())
+  userId    String
+  channel   String
+  codeHash  String
+  expiresAt DateTime
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("auth_verification_codes")
 }
 
 model Address {
