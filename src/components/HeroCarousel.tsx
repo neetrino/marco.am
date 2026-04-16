@@ -5,6 +5,7 @@ import {
   HERO_PROMO_DESKTOP_FREE_DELIVERY_BANNER_TRANSLATE_Y_PX,
   HERO_PROMO_DESKTOP_SOFA_CARD_EXTRA_TRANSLATE_Y_PX,
   HERO_PROMO_DESKTOP_SOFA_ROW_TRANSLATE_Y_PX,
+  HERO_PROMO_DESKTOP_SOFA_CARD_RU_EXTRA_TRANSLATE_Y_PX,
   HERO_PROMO_SMARTPHONES_CORNER_NUDGE_X_PX,
   HERO_PROMO_SMARTPHONES_CORNER_NUDGE_Y_PX,
 } from './hero.constants';
@@ -32,7 +33,12 @@ const heroDesktopCompositionStyle: CSSProperties = {
 };
 
 export function HeroCarousel() {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
+
+  const sofaRowTranslateYPx =
+    HERO_PROMO_DESKTOP_SOFA_ROW_TRANSLATE_Y_PX +
+    HERO_PROMO_DESKTOP_SOFA_CARD_EXTRA_TRANSLATE_Y_PX +
+    (lang === 'ru' ? HERO_PROMO_DESKTOP_SOFA_CARD_RU_EXTRA_TRANSLATE_Y_PX : 0);
 
   return (
     <div className={HERO_PAGE_CONTAINER_CLASS} id="hero">
@@ -75,7 +81,7 @@ export function HeroCarousel() {
               <div
                 className="shrink-0"
                 style={{
-                  transform: `translateY(${HERO_PROMO_DESKTOP_SOFA_ROW_TRANSLATE_Y_PX + HERO_PROMO_DESKTOP_SOFA_CARD_EXTRA_TRANSLATE_Y_PX}px)`,
+                  transform: `translateY(${sofaRowTranslateYPx}px)`,
                 }}
               >
                 <HomePromoStackedProductCard

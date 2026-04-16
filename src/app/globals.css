@@ -97,8 +97,7 @@
 }
 
 /**
- * Header rows (nav + search) — same max-width and horizontal inset as `.hero-section-inset`.
- * Single shell so both rows share identical left/right edges at any zoom or viewport width.
+ * Header rows (nav + search). Tablet + wide rules in media queries below; desktop 1367+ aligns with `.marco-home-page-shell` / hero.
  */
 .marco-header-container {
   box-sizing: border-box;
@@ -168,8 +167,22 @@
 }
 
 /**
+ * Wide desktop (1367px+): header / footer — `max-w-7xl` column + 15px inset from viewport edges (both sides).
+ */
+@media (min-width: 1367px) {
+  .marco-header-container,
+  .marco-footer-inner {
+    max-width: 80rem;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+}
+
+/**
  * Home page sections — matches `.marco-header-container` / footer horizontal rhythm.
- * Phone: 1rem; narrow phablet 640–767: 1.5rem; tablet/iPad 768–1366: 1rem symmetric; wide 1367+: flush (max-w-7xl only).
+ * Phone: 1rem; narrow phablet 640–767: 1.5rem; tablet/iPad 768–1366: 1rem symmetric; wide 1367+: 15px (see block above).
  */
 .marco-home-page-shell {
   box-sizing: border-box;
@@ -192,13 +205,6 @@
   .marco-home-page-shell {
     padding-left: 1rem;
     padding-right: 1rem;
-  }
-}
-
-@media (min-width: 1367px) {
-  .marco-home-page-shell {
-    padding-left: 0;
-    padding-right: 0;
   }
 }
 
@@ -232,9 +238,10 @@
 }
 
 @media (min-width: 1367px) {
+  .marco-home-page-shell,
   .marco-home-inner-gutter {
-    padding-left: 0;
-    padding-right: 0;
+    padding-left: 15px;
+    padding-right: 15px;
   }
 }
 

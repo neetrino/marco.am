@@ -6,6 +6,12 @@ export const HOME_BANNERS_CTA_HEIGHT_PX = 48;
 
 export const HOME_BANNERS_CTA_WIDTH_PX = 170;
 
+/**
+ * English (`en`) — desktop (`lg` ≥ 1200px): narrower pill than `HOME_BANNERS_CTA_WIDTH_PX` (trim from right).
+ * Tailwind `lg:max-w-[…px]` on gradient + secondary banner CTAs must match.
+ */
+export const HOME_BANNERS_CTA_MAX_WIDTH_EN_DESKTOP_PX = 154;
+
 export const HOME_BANNERS_CTA_ICON_CIRCLE_PX = 36;
 
 export const HOME_BANNERS_CTA_PILL_RADIUS_PX = HOME_BANNERS_CTA_HEIGHT_PX / 2;

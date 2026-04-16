@@ -5,7 +5,7 @@
 /** Figma fill: #f2f2f2 */
 export const FOOTER_SURFACE_CLASS = 'bg-[#f2f2f2]';
 
-/** Inner wrapper — `.marco-footer-inner` in `globals.css` (full-bleed on iPad; inset on wide desktop). */
+/** Inner wrapper — `.marco-footer-inner` in `globals.css` (tablet shell; 1367+ same `max-w-7xl` as hero / header). */
 export const FOOTER_INNER_CONTAINER_CLASS = 'marco-footer-inner';
 
 /** Figma secondary text #6b7280 */

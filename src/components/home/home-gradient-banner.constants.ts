@@ -36,6 +36,46 @@ export const HOME_GRADIENT_BANNER_HEADLINE_LINE_HEIGHT_RATIO = '0.91';
  */
 export const HOME_GRADIENT_BANNER_CTA_LABEL_NUDGE_LEFT_PX = -6;
 
+/**
+ * Russian (`ru`) — extra `translateX` on the label (px). Negative moves text left; slightly less than before.
+ */
+export const HOME_GRADIENT_BANNER_CTA_LABEL_NUDGE_LEFT_RU_EXTRA_PX = -11;
+
+/**
+ * Russian (`ru`) — extra pull on the black arrow chip toward the left (px), added to `HOME_BANNERS_CTA_ICON_PULL_LEFT_PX`.
+ */
+export const HOME_GRADIENT_BANNER_CTA_ICON_PULL_LEFT_RU_EXTRA_PX = 8;
+
+/** Russian (`ru`) — black circle + glyph slightly smaller than default banner CTA. */
+export const HOME_GRADIENT_BANNER_CTA_ICON_CIRCLE_RU_PX = 34;
+
+export const HOME_GRADIENT_BANNER_CTA_ARROW_ICON_RU_PX = 17;
+
+/**
+ * Russian (`ru`) — banner 1 CTA label on desktop (`lg` ≥ 1200px): smaller than `HOME_BANNERS_CTA_LABEL_FONT_SIZE_PX`.
+ * Tailwind classes in `HomeGradientBannerCta` must match these values.
+ */
+export const HOME_GRADIENT_BANNER_CTA_LABEL_FONT_SIZE_RU_DESKTOP_PX = 12;
+
+export const HOME_GRADIENT_BANNER_CTA_LABEL_LINE_HEIGHT_RU_DESKTOP_PX = 18;
+
+/**
+ * Russian (`ru`) — desktop only: extra `translateX` on the black chip only (px). Negative = left.
+ * Must match `lg:-translate-x-[…px]` in `HomeGradientBannerCta`.
+ */
+export const HOME_GRADIENT_BANNER_CTA_ICON_CIRCLE_NUDGE_LEFT_RU_DESKTOP_PX = 3;
+
+/**
+ * Armenian (`hy`) — desktop (`lg`): added to `HOME_GRADIENT_BANNER_CTA_LABEL_NUDGE_LEFT_PX` for label `translateX` (px). Positive = right.
+ * Tailwind `lg:translate-x-[…px]` net = base (-6) + this value; literals in `HomeGradientBannerCta` must match.
+ */
+export const HOME_GRADIENT_BANNER_CTA_LABEL_NUDGE_LEFT_HY_DESKTOP_EXTRA_PX = 8;
+
+/**
+ * Armenian (`hy`) — desktop: extra `translateX` on black chip (px). Positive = right. Tailwind `lg:translate-x-[…px]` must match.
+ */
+export const HOME_GRADIENT_BANNER_CTA_ICON_CIRCLE_NUDGE_RIGHT_HY_DESKTOP_PX = 12;
+
 /** CTA row nudge from bottom-left anchor: positive X = right, negative Y = up. */
 export const HOME_GRADIENT_BANNER_CTA_ROW_OFFSET_X_PX = 30;
 

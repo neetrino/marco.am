@@ -3,7 +3,7 @@ export const HEADER_REELS_EXTERNAL_HREF = 'https://www.instagram.com/reels/';
 
 /**
  * Shared width + horizontal padding for both header rows — `.marco-header-container` in `globals.css`.
- * Keeps nav and search aligned with the hero gutters; do not add separate px-* on those rows.
+ * Wide desktop (1367px+): same `max-w-7xl` column as hero (no extra 1920px / 135px inset).
  */
 export const HEADER_CONTAINER_CLASS = 'marco-header-container';
 

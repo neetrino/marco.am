@@ -35,6 +35,35 @@ export const HOME_SECONDARY_BANNER_CTA_ICON_MARGIN_LEFT_PX = 23;
 /** Visual nudge for CTA label only (`translateX`); does not move the yellow chip. */
 export const HOME_SECONDARY_BANNER_CTA_LABEL_NUDGE_RIGHT_PX = 6;
 
+/**
+ * Armenian (`hy`) — desktop (`lg`): label `translateX` at `lg` (px). Positive = right. Tailwind `lg:translate-x-[…px]` must match.
+ */
+export const HOME_SECONDARY_BANNER_CTA_LABEL_TRANSLATE_X_HY_DESKTOP_PX = 14;
+
+/**
+ * Armenian (`hy`) — desktop: label size (px). Tailwind `lg:text-*` / `lg:leading-*` must match.
+ */
+export const HOME_SECONDARY_BANNER_CTA_LABEL_FONT_SIZE_HY_DESKTOP_PX = 15;
+
+export const HOME_SECONDARY_BANNER_CTA_LABEL_LINE_HEIGHT_HY_DESKTOP_PX = 22;
+
+/**
+ * Armenian (`hy`) — secondary banner CTA on desktop (`lg` ≥ 1200px): narrower pill than `HOME_BANNERS_CTA_WIDTH_PX`.
+ * Tailwind `lg:max-w-[…px]` in `HomeSecondaryBannerCta` must match.
+ */
+export const HOME_SECONDARY_BANNER_CTA_MAX_WIDTH_HY_DESKTOP_PX = 158;
+
+/**
+ * Armenian (`hy`) — desktop: left padding inside pill (px). Tailwind `lg:pl-[…px]` must match.
+ */
+export const HOME_SECONDARY_BANNER_CTA_PADDING_LEFT_HY_DESKTOP_PX = 26;
+
+/**
+ * Armenian (`hy`) — desktop (`lg`): extra `translateX` on yellow chip (px). Negative = left.
+ * Applied on top of inline `margin-left: HOME_SECONDARY_BANNER_CTA_ICON_MARGIN_LEFT_PX` (23). Tailwind `lg:-translate-x-[…px]` must match absolute value.
+ */
+export const HOME_SECONDARY_BANNER_CTA_ICON_TRANSLATE_X_HY_DESKTOP_PX = -3;
+
 /** Whole CTA row offset: positive X = right, negative Y = up. */
 export const HOME_SECONDARY_BANNER_CTA_ROW_OFFSET_X_PX = 19;
 

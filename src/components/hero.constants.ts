@@ -162,6 +162,11 @@ export const HERO_PROMO_DESKTOP_SOFA_ROW_TRANSLATE_Y_PX = -360;
 export const HERO_PROMO_DESKTOP_SOFA_CARD_EXTRA_TRANSLATE_Y_PX = -80;
 
 /**
+ * Russian (`ru`) desktop only — extra `translateY` on the sofa row (px). Positive moves the card down vs en/hy.
+ */
+export const HERO_PROMO_DESKTOP_SOFA_CARD_RU_EXTRA_TRANSLATE_Y_PX = 45;
+
+/**
  * Desktop hero — sole vertical position for free-delivery / van tile (`HomePromoFreeDeliveryBanner`); negative → up.
  * Not tied to sofa row; tune separately (lower on screen = less negative).
  */
