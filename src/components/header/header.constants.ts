@@ -25,8 +25,14 @@ export const HEADER_FIGMA_NAV_LINK_GAP_CLASS = 'gap-x-[45px]';
 /** Space from last primary nav link (e.g. Reels) to social icons (row 1) */
 export const HEADER_NAV_TO_SOCIAL_GAP_CLASS = 'ml-[54px]';
 
-/** Gap between phone number and addresses link (row 1) */
-export const HEADER_FIGMA_CONTACT_CLUSTER_GAP_CLASS = 'gap-x-6';
+/** Gap between phone block and addresses block (row 1) — Figma 214:1051 */
+export const HEADER_FIGMA_CONTACT_CLUSTER_GAP_CLASS = 'gap-x-[29px]';
+
+/** Handset icon ↔ phone number (tighter than Figma spec — UX) */
+export const HEADER_FIGMA_CONTACT_PHONE_ICON_TEXT_GAP_CLASS = 'gap-2';
+
+/** Pin icon ↔ address label (matches phone row tightness) */
+export const HEADER_FIGMA_CONTACT_ADDRESS_ICON_TEXT_GAP_CLASS = 'gap-2';
 
 /** Categories + search — 22px gap (row on `sm+`, column on narrow) */
 export const HEADER_FIGMA_ROW2_LEFT_INNER_GAP_CLASS =

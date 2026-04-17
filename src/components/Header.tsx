@@ -12,7 +12,7 @@ import { SearchDropdown } from './SearchDropdown';
 import { useAuth } from '../lib/auth/AuthContext';
 import { apiClient } from '../lib/api-client';
 import { CART_KEY, getCompareCount, getWishlistCount } from '../lib/storageCounts';
-import { MapPin, Phone, Sun } from 'lucide-react';
+import { ChevronDown, MapPin, Phone, Sun } from 'lucide-react';
 import { MarcoLogo } from './header/MarcoLogo';
 import { HeaderLocaleCurrencyPill, MobileHeaderLocaleCurrencyButton } from './header/HeaderLocaleCurrencyPill';
 import { HeaderSocialCircleLinks } from './header/HeaderSocialCircleLinks';
@@ -21,7 +21,9 @@ import {
   HEADER_CATEGORY_BUTTON_CLASS,
   HEADER_CONTAINER_CLASS,
   HEADER_FIGMA_CLUSTER_GAP_CLASS,
+  HEADER_FIGMA_CONTACT_ADDRESS_ICON_TEXT_GAP_CLASS,
   HEADER_FIGMA_CONTACT_CLUSTER_GAP_CLASS,
+  HEADER_FIGMA_CONTACT_PHONE_ICON_TEXT_GAP_CLASS,
   HEADER_LOGO_TO_NAV_GAP_CLASS,
   HEADER_FIGMA_NAV_LINK_GAP_CLASS,
   HEADER_NAV_TO_SOCIAL_GAP_CLASS,
@@ -758,17 +760,25 @@ export function Header({ initialLanguage }: HeaderProps) {
           >
             <a
               href={telHref}
-              className="flex h-10 shrink-0 -translate-x-0.5 items-center gap-1 text-xs font-medium leading-[18px] text-marco-text"
+              className={`flex h-10 shrink-0 items-center ${HEADER_FIGMA_CONTACT_PHONE_ICON_TEXT_GAP_CLASS} text-marco-text transition-opacity hover:opacity-80`}
             >
-              <Phone className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
-              <span className="whitespace-nowrap">{phoneDisplay}</span>
+              <Phone className="size-[19px] shrink-0" strokeWidth={1.75} aria-hidden />
+              <span className="inline-flex items-center gap-1">
+                <span className="whitespace-nowrap text-[13px] font-medium leading-[13px]">{phoneDisplay}</span>
+                <ChevronDown className="h-3 w-3 shrink-0 text-marco-text opacity-80" strokeWidth={2.25} aria-hidden />
+              </span>
             </a>
             <Link
               href="/stores"
-              className="flex h-10 shrink-0 items-center gap-1.5 text-xs font-medium leading-[18px] text-marco-text transition-opacity hover:opacity-80"
+              className={`flex h-10 shrink-0 items-center ${HEADER_FIGMA_CONTACT_ADDRESS_ICON_TEXT_GAP_CLASS} text-marco-text transition-opacity hover:opacity-80`}
             >
-              <MapPin className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
-              <span className="whitespace-nowrap">{t('common.navigation.addresses')}</span>
+              <MapPin className="size-[19px] shrink-0" strokeWidth={1.75} aria-hidden />
+              <span className="inline-flex items-center gap-1">
+                <span className="whitespace-nowrap text-xs font-medium leading-[13px]">
+                  {t('common.navigation.addresses')}
+                </span>
+                <ChevronDown className="h-3 w-3 shrink-0 text-marco-text opacity-80" strokeWidth={2.25} aria-hidden />
+              </span>
             </Link>
           </div>
         </div>
