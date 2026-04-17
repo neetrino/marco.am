@@ -13,7 +13,22 @@
     "color": {
       "title": "Colors",
       "noColors": "No colors available",
-      "loading": "Loading..."
+      "loading": "Loading...",
+      "palette": {
+        "red": "Red",
+        "green": "Green",
+        "brown": "Brown",
+        "gray": "Gray",
+        "burgundy": "Burgundy",
+        "orange": "Orange",
+        "blue": "Blue",
+        "black": "Black",
+        "silver": "Silver",
+        "yellow": "Yellow",
+        "pink": "Pink",
+        "white": "White",
+        "mint": "Mint"
+      }
     },
     "size": {
       "title": "Size",

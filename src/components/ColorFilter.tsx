@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { apiClient } from '../lib/api-client';
 import { getStoredLanguage } from '../lib/language';
@@ -14,7 +14,6 @@ interface ColorFilterProps {
   search?: string;
   minPrice?: string;
   maxPrice?: string;
-  selectedColors?: string[];
 }
 
 interface ColorOption {
@@ -25,14 +24,46 @@ interface ColorOption {
   colors?: string[] | null;
 }
 
-export function ColorFilter({ category, search, minPrice, maxPrice, selectedColors = [] }: ColorFilterProps) {
+/** Shown when the filters API returns no color facets so the block still appears under brands. */
+const FALLBACK_COLOR_VALUES = [
+  'red',
+  'green',
+  'brown',
+  'gray',
+  'burgundy',
+  'orange',
+  'blue',
+  'black',
+  'silver',
+  'yellow',
+  'pink',
+  'white',
+  'mint',
+] as const;
+
+function isLightHex(hex: string): boolean {
+  const raw = hex.replace('#', '').trim();
+  const full =
+    raw.length === 3 ? raw.split('').map((c) => c + c).join('') : raw;
+  if (full.length !== 6) return false;
+  const n = parseInt(full, 16);
+  if (Number.isNaN(n)) return false;
+  const r = (n >> 16) & 255;
+  const g = (n >> 8) & 255;
+  const b = n & 255;
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.62;
+}
+
+export function ColorFilter({ category, search, minPrice, maxPrice }: ColorFilterProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const filtersContext = useProductsFilters();
   const { t } = useTranslation();
   const [colors, setColors] = useState<ColorOption[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selected, setSelected] = useState<string[]>(selectedColors);
+  const [optimisticValues, setOptimisticValues] = useState<string[] | null>(null);
+  const [, startTransition] = useTransition();
 
   useEffect(() => {
     if (filtersContext?.data?.colors) {
@@ -47,26 +78,43 @@ export function ColorFilter({ category, search, minPrice, maxPrice, selectedColo
     }
   }, [category, search, minPrice, maxPrice, filtersContext?.data?.colors, filtersContext?.loading, filtersContext === null]);
 
+  const colorsQs = searchParams.get('colors');
+  const selectedFromUrl = useMemo(
+    () =>
+      colorsQs
+        ? colorsQs.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean)
+        : [],
+    [colorsQs]
+  );
+
+  const selectedValues = optimisticValues ?? selectedFromUrl;
+
+  const displayColors = useMemo((): ColorOption[] => {
+    if (colors.length > 0) return colors;
+    return FALLBACK_COLOR_VALUES.map((value) => ({
+      value,
+      label: t(`products.filters.color.palette.${value}`),
+      count: 0,
+      imageUrl: null,
+      colors: null,
+    }));
+  }, [colors, t]);
+
   useEffect(() => {
-    setSelected(selectedColors);
-  }, [selectedColors]);
+    setOptimisticValues(null);
+  }, [colorsQs]);
 
   const fetchColors = async () => {
     try {
       setLoading(true);
       const language = getStoredLanguage();
-      const params: Record<string, string> = {
-        lang: language,
-      };
-
+      const params: Record<string, string> = { lang: language };
       if (category) params.category = category;
       if (search) params.search = search;
       if (minPrice) params.minPrice = minPrice;
       if (maxPrice) params.maxPrice = maxPrice;
-
-      const response = await apiClient.get<{ colors: ColorOption[]; sizes: unknown[] }>('/api/v1/products/filters', { params });
-
-      setColors(response.colors || []);
+      const response = await apiClient.get<{ colors: ColorOption[] }>('/api/v1/products/filters', { params });
+      setColors(response.colors ?? []);
     } catch (_error) {
       setColors([]);
     } finally {
@@ -75,100 +123,123 @@ export function ColorFilter({ category, search, minPrice, maxPrice, selectedColo
   };
 
   const handleColorToggle = (colorValue: string) => {
-    const newSelected = selected.includes(colorValue)
-      ? selected.filter((c) => c !== colorValue)
-      : [...selected, colorValue];
-
-    setSelected(newSelected);
-    applyFilters(newSelected);
-  };
-
-  const applyFilters = (colorsToApply: string[]) => {
     const params = new URLSearchParams(searchParams.toString());
-
-    if (colorsToApply.length > 0) {
-      params.set('colors', colorsToApply.join(','));
+    const key = colorValue.toLowerCase();
+    const fromUrl =
+      optimisticValues ??
+      params.get('colors')?.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean) ??
+      [];
+    const idx = fromUrl.indexOf(key);
+    const next = idx >= 0 ? fromUrl.filter((_, i) => i !== idx) : [...fromUrl, key];
+    setOptimisticValues(next);
+    if (next.length > 0) {
+      params.set('colors', next.join(','));
     } else {
       params.delete('colors');
     }
-
     params.delete('page');
-
-    router.push(`/products?${params.toString()}`);
+    const qs = params.toString();
+    startTransition(() => {
+      router.push(qs ? `/products?${qs}` : '/products');
+    });
   };
 
   if (loading) {
     return (
       <section className="mb-4 border-b border-solid border-[#e2e8f0] pb-4">
-        <h3
-          className={`${productsFiltersSectionFont.className} mb-4 text-base font-semibold leading-6 tracking-[-0.31px] text-[#1d293d]`}
-        >
-          {t('products.filters.color.title')}
-        </h3>
-        <div className="text-sm text-[#62748e]">{t('products.filters.color.loading')}</div>
-      </section>
-    );
-  }
-
-  if (colors.length === 0) {
-    return (
-      <section className="mb-4 border-b border-solid border-[#e2e8f0] pb-4">
-        <h3
-          className={`${productsFiltersSectionFont.className} mb-4 text-base font-semibold leading-6 tracking-[-0.31px] text-[#1d293d]`}
-        >
-          {t('products.filters.color.title')}
-        </h3>
-        <p className="text-sm text-[#62748e]">{t('products.filters.color.noColors')}</p>
+        <div className="flex flex-col gap-4">
+          <h3
+            className={`${productsFiltersSectionFont.className} text-base font-semibold leading-6 tracking-[-0.31px] text-black`}
+          >
+            {t('products.filters.color.title')}
+          </h3>
+          <div className="text-sm text-[#62748e]">{t('products.filters.color.loading')}</div>
+        </div>
       </section>
     );
   }
 
   return (
     <section className="mb-4 border-b border-solid border-[#e2e8f0] pb-4">
-      <h3
-        className={`${productsFiltersSectionFont.className} mb-4 text-base font-semibold leading-6 tracking-[-0.31px] text-[#1d293d]`}
-      >
-        {t('products.filters.color.title')}
-      </h3>
+      <div className="flex flex-col gap-4">
+        <h3
+          className={`${productsFiltersSectionFont.className} text-base font-semibold leading-6 tracking-[-0.31px] text-black`}
+        >
+          {t('products.filters.color.title')}
+        </h3>
 
-      <div className="flex flex-wrap justify-start gap-x-[22px] gap-y-3">
-        {colors.map((color) => {
-          const isSelected = selected.includes(color.value);
-          const colorHex =
-            color.colors && Array.isArray(color.colors) && color.colors.length > 0
-              ? color.colors[0]
-              : getColorHex(color.label);
-          const hasImage = color.imageUrl && color.imageUrl.trim() !== '';
+        <div className="flex flex-wrap justify-center gap-x-[22px] gap-y-3">
+          {displayColors.map((color) => {
+            const isSelected = selectedValues.includes(color.value.toLowerCase());
+            const fromValue = getColorHex(color.value);
+            const colorHex =
+              color.colors && Array.isArray(color.colors) && color.colors.length > 0
+                ? color.colors[0]
+                : fromValue !== '#CCCCCC'
+                  ? fromValue
+                  : getColorHex(color.label);
+            const hasImage = Boolean(color.imageUrl?.trim());
+            const light = isLightHex(colorHex);
+            const checkIconClass = hasImage
+              ? 'text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)]'
+              : light
+                ? 'text-marco-black'
+                : 'text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.45)]';
 
-          return (
-            <button
-              key={color.value}
-              type="button"
-              onClick={() => handleColorToggle(color.value)}
-              aria-pressed={isSelected}
-              aria-label={color.label}
-              title={color.label}
-              className={`relative h-8 w-8 shrink-0 overflow-hidden rounded-full transition-[box-shadow,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/30 ${
-                isSelected ? 'ring-2 ring-marco-black ring-offset-2' : 'ring-1 ring-[#e2e8f0] hover:ring-[#cad5e2]'
-              }`}
-              style={hasImage ? undefined : { backgroundColor: colorHex }}
-            >
-              {hasImage ? (
-                <img
-                  src={color.imageUrl!}
-                  alt=""
-                  className="size-full object-cover"
-                  onError={(e) => {
-                    const el = e.target as HTMLImageElement;
-                    el.style.display = 'none';
-                    const parent = el.parentElement;
-                    if (parent) parent.style.backgroundColor = colorHex;
-                  }}
-                />
-              ) : null}
-            </button>
-          );
-        })}
+            return (
+              <button
+                key={color.value}
+                type="button"
+                onClick={() => handleColorToggle(color.value)}
+                aria-pressed={isSelected}
+                aria-label={color.label}
+                title={color.label}
+                className={`relative size-8 shrink-0 overflow-hidden rounded-full transition-[box-shadow,transform] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/30 ${
+                  isSelected
+                    ? 'ring-2 ring-marco-black ring-offset-2'
+                    : 'ring-1 ring-[#e2e8f0] hover:ring-[#cad5e2]'
+                }`}
+                style={hasImage ? undefined : { backgroundColor: colorHex }}
+              >
+                {hasImage ? (
+                  <img
+                    src={color.imageUrl!}
+                    alt=""
+                    className="size-full object-cover"
+                    onError={(e) => {
+                      const el = e.target as HTMLImageElement;
+                      el.style.display = 'none';
+                      const parent = el.parentElement;
+                      if (parent) parent.style.backgroundColor = colorHex;
+                    }}
+                  />
+                ) : null}
+                {isSelected ? (
+                  <span
+                    className="pointer-events-none absolute inset-0 flex items-center justify-center"
+                    aria-hidden
+                  >
+                    <svg
+                      width="14"
+                      height="12"
+                      viewBox="0 0 12 10"
+                      fill="none"
+                      className={checkIconClass}
+                    >
+                      <path
+                        d="M1 5l3.5 3.5L11 1"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </span>
+                ) : null}
+              </button>
+            );
+          })}
+        </div>
       </div>
     </section>
   );

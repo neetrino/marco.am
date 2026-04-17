@@ -9,6 +9,7 @@ import { t } from '../../lib/i18n';
 import { PriceFilter } from '../../components/PriceFilter';
 import { BrandFilter } from '../../components/BrandFilter';
 import { CategoryFilter } from '../../components/CategoryFilter';
+import { ColorFilter } from '../../components/ColorFilter';
 import { ProductsHeader } from '../../components/ProductsHeader';
 import { ProductsGrid } from '../../components/ProductsGrid';
 import { MobileFiltersDrawer } from '../../components/MobileFiltersDrawer';
@@ -214,7 +215,7 @@ export default async function ProductsPage({ searchParams }: any) {
           maxPrice={params?.maxPrice}
         >
         <aside className="hidden shrink-0 bg-white lg:flex lg:w-[20rem]">
-          <div className="sticky top-4 flex min-h-0 min-w-0 flex-1 flex-col px-5 pb-4 pt-6 lg:px-6">
+          <div className="sticky top-4 flex min-h-0 min-w-0 flex-1 flex-col pb-4 pt-6 lg:pl-0 lg:pr-6">
             <div className="mb-6 flex flex-col gap-1">
               <h2
                 className={`${productsFiltersSectionFont.className} text-base font-semibold leading-6 tracking-[-0.31px] text-[#0f172b]`}
@@ -234,6 +235,7 @@ export default async function ProductsPage({ searchParams }: any) {
                 maxPrice={params?.maxPrice}
               />
               <BrandFilter category={params?.category} search={params?.search} minPrice={params?.minPrice} maxPrice={params?.maxPrice} />
+              <ColorFilter category={params?.category} search={params?.search} minPrice={params?.minPrice} maxPrice={params?.maxPrice} />
             </Suspense>
           </div>
           <div
@@ -292,6 +294,7 @@ export default async function ProductsPage({ searchParams }: any) {
               maxPrice={params?.maxPrice}
             />
             <BrandFilter category={params?.category} search={params?.search} minPrice={params?.minPrice} maxPrice={params?.maxPrice} />
+            <ColorFilter category={params?.category} search={params?.search} minPrice={params?.minPrice} maxPrice={params?.maxPrice} />
           </Suspense>
         </div>
       </MobileFiltersDrawer>
