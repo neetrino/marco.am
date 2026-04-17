@@ -25,6 +25,8 @@ tags:
     description: Customer orders and reorder-to-cart.
   - name: Wishlist
     description: Saved products per user (JWT) or guest session (cookie / header).
+  - name: Site
+    description: Site-wide public endpoints (contact form, etc.).
 
 paths:
   /api/health:
@@ -419,6 +421,47 @@ paths:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
 
+  /api/v1/contact:
+    post:
+      tags: [Site]
+      summary: Submit contact form
+      operationId: postContact
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContactFormRequest"
+      responses:
+        "201":
+          description: Message stored in `contact_messages`.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/ContactMessageCreated"
+        "400":
+          description: Validation failed, honeypot triggered, or captcha rejected.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "429":
+          description: Too many submissions from this client (rate limit).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "500":
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+
 components:
   securitySchemes:
     bearerAuth:
@@ -623,6 +666,47 @@ components:
           minimum: 0
         guestWishlistFound:
           type: boolean
+
+    ContactFormRequest:
+      type: object
+      required: [name, email, subject, message]
+      properties:
+        name:
+          type: string
+          maxLength: 120
+        email:
+          type: string
+          maxLength: 254
+        subject:
+          type: string
+          maxLength: 200
+        message:
+          type: string
+          maxLength: 5000
+        website:
+          type: string
+          description: Honeypot field — must be empty.
+        turnstileToken:
+          type: string
+          description: Cloudflare Turnstile token; required when `TURNSTILE_SECRET_KEY` is set.
+
+    ContactMessageCreated:
+      type: object
+      required: [id, name, email, subject, message, createdAt]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        subject:
+          type: string
+        message:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
 
     LoginRequest:
       type: object

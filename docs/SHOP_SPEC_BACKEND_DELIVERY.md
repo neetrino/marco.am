@@ -35,7 +35,7 @@
 | 9    | Admin — orders                   | `88%`           |
 | 10   | Admin — analytics                | `75%`           |
 | 11   | Reels                            | `0%`            |
-| 12   | Site-wide & i18n (API)           | `58%`           |
+| 12   | Site-wide & i18n (API)           | `62%`           |
 
 
 **Ընդհանուր նախագծի առաջընթաց (backend).** `~65%` — *(12 փուլերի միջին տոկոս, մոտավոր)*։
@@ -279,7 +279,7 @@
 | 12.3 | Compare products — spec diff-ի համար ցուցակ, max N ապրանք                                             | 25         | ⬜          |
 | 12.4 | About Us, Contact Us, brand pages — CMS կամ static content API                                        | 15         | ⬜          |
 | 12.5 | Legal pages — Privacy, Terms, Refund, Delivery Policy (**per locale**)                                | 15         | ⬜          |
-| 12.6 | Contact form — validation, spam protection                                                            | 70         | 🔄         |
+| 12.6 | Contact form — validation, spam protection                                                            | 100        | ✅         |
 | 12.7 | i18n — AM primary, RU, EN — թարգմանվող էնտիտիների սխեմա, API-ում locale / `Accept-Language`, fallback | 75         | 🔄         |
 | 12.8 | Admin — թարգմանությունների խմբագրում կամ import workflow (եթե պահանջվում է)                           | 70         | 🔄         |
 | 12.9 | SEO structured data — backend-ից անհրաժեշտ մետատվյալներ (ըստ frontend պայմանագրի)                     | 70         | 🔄         |
@@ -287,7 +287,9 @@
 
 **12.2 ✅ ավարտված (2026-04-17).** Wishlist-ը պահվում է PostgreSQL-ում (`wishlists`, `wishlist_items`)։ Մուտք գործած օգտատիրոջ համար՝ `userId` (մեկ ցուցակ)։ Հյուրի համար՝ `sessionToken` + `Set-Cookie: shop_wishlist_session` (կամ `x-wishlist-session`)։ Միայն **published** և չջնջված ապրանքներ։ `POST /api/v1/wishlist/merge` — հյուրի ցուցակը միացնել JWT օգտատիրոջը (կրկնվող productId-ները բաց են թողնվում)։ OpenAPI՝ `docs/openapi/shop-api.yaml`։
 
-*Նշումներ.* 12.1 — `/api/search/instant`։ 12.2 — **սերվերային persist**՝ `GET`/`POST /api/v1/wishlist`, `DELETE /api/v1/wishlist/{productId}`, `POST /api/v1/wishlist/merge` (JWT) — DB `wishlists` / `wishlist_items`, հյուրի համար `shop_wishlist_session` cookie կամ `x-wishlist-session` header։ 12.3 — հիմնականում localStorage, ոչ թե սերվերային persist։ 12.6 — `POST /api/v1/contact` վալիդացիայով; spam guard (captcha/rate limit) որպես լիարժեք լուծում չի երևում։
+*Նշումներ.* 12.1 — `/api/search/instant`։ 12.2 — **սերվերային persist**՝ `GET`/`POST /api/v1/wishlist`, `DELETE /api/v1/wishlist/{productId}`, `POST /api/v1/wishlist/merge` (JWT) — DB `wishlists` / `wishlist_items`, հյուրի համար `shop_wishlist_session` cookie կամ `x-wishlist-session` header։ 12.3 — հիմնականում localStorage, ոչ թե սերվերային persist։
+
+**12.6 ✅ ավարտված (2026-04-17).** `POST /api/v1/contact` — **Zod** վալիդացիա (`name`, `email`, `subject`, `message` — երկարության վերին սահմաններ), **honeypot** `website` դաշտ (ոչ դատարկ՝ `400` ընդհանուր հաղորդագրությամբ, DB գրառում չի կատարվում), **rate limit**՝ մինչև 5 ուղարկում/ժամ IP-ի հիման վրա (`x-forwarded-for` / `x-real-ip`) — **Upstash Ratelimit** (`UPSTASH_REDIS_REST_*`), այլապես **in-memory** fallback (dev/մեկ instance)։ **Cloudflare Turnstile** — կամընտիր՝ երբ `TURNSTILE_SECRET_KEY` է սահմանված, մարմնում պահանջվում է `turnstileToken` (սերվերը verify-ում է `siteverify` API-ով)։ Կոդ՝ `src/lib/schemas/contact-form.schema.ts`, `contact-rate-limit.service.ts`, `contact-turnstile.service.ts`, `src/app/api/v1/contact/route.ts`։
 
 ---
 
