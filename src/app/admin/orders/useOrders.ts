@@ -355,10 +355,13 @@ export function useOrders() {
       setUpdatingStatuses((prev) => new Set(prev).add(orderId));
       setUpdateMessage(null);
 
-      // Update order status via API
-      await apiClient.put(`/api/v1/admin/orders/${orderId}`, {
-        status: newStatus,
-      });
+      // Update order status via API (response matches GET detail — includes auditTrail)
+      const updated = await apiClient.put<OrderDetails>(
+        `/api/v1/admin/orders/${orderId}`,
+        {
+          status: newStatus,
+        }
+      );
 
       logger.devLog('✅ [ADMIN] Order status updated successfully');
 
@@ -368,6 +371,10 @@ export function useOrders() {
           order.id === orderId ? { ...order, status: newStatus } : order
         )
       );
+
+      if (selectedOrderId === orderId) {
+        setOrderDetails(updated);
+      }
 
       // Show success message
       setUpdateMessage({ type: 'success', text: t('admin.orders.statusUpdated') });
@@ -397,10 +404,12 @@ export function useOrders() {
       setUpdatingPaymentStatuses((prev) => new Set(prev).add(orderId));
       setUpdateMessage(null);
 
-      // Update order payment status via API
-      await apiClient.put(`/api/v1/admin/orders/${orderId}`, {
-        paymentStatus: newPaymentStatus,
-      });
+      const updated = await apiClient.put<OrderDetails>(
+        `/api/v1/admin/orders/${orderId}`,
+        {
+          paymentStatus: newPaymentStatus,
+        }
+      );
 
       logger.devLog('✅ [ADMIN] Order payment status updated successfully');
 
@@ -410,6 +419,10 @@ export function useOrders() {
           order.id === orderId ? { ...order, paymentStatus: newPaymentStatus } : order
         )
       );
+
+      if (selectedOrderId === orderId) {
+        setOrderDetails(updated);
+      }
 
       // Show success message
       setUpdateMessage({ type: 'success', text: t('admin.orders.paymentStatusUpdated') });
