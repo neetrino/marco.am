@@ -35,6 +35,12 @@ export const FOOTER_NAV_COLUMN_LINK_LEADING_CLASS = 'leading-tight';
 export const NEETRINO_STUDIO_HREF = 'https://neetrino.com/';
 
 /**
+ * iPad two-column band (`md`–`lg`): center column copy in the cell (not flush to gutter).
+ */
+export const FOOTER_TABLET_COLUMN_CENTER_CLASS =
+  'md:max-[1023px]:items-center md:max-[1023px]:text-center';
+
+/**
  * Company / Support grid cells only: flush right on `lg+`, nudged left vs the strip edge (tune `-translate-x-*`).
  */
 export const FOOTER_GRID_COMPANY_SUPPORT_WRAPPER_CLASS =
@@ -56,7 +62,7 @@ export const FOOTER_COPYRIGHT_STRIP_STACK_GAP_CLASS = 'gap-5';
  * so space between Company and Support (and other column pairs) is more pronounced.
  */
 export const FOOTER_MAIN_GRID_CLASS =
-  'grid grid-cols-1 items-start gap-12 md:grid-cols-2 lg:grid-cols-4 lg:gap-x-16 lg:gap-y-10';
+  'grid grid-cols-1 items-start gap-12 md:grid-cols-2 md:max-[1023px]:justify-items-center lg:grid-cols-4 lg:justify-items-stretch lg:gap-x-16 lg:gap-y-10';
 
 /**
  * Brand logo frame — larger than legacy 91×81; same ~91:81 aspect.
@@ -67,11 +73,11 @@ export const FOOTER_BRAND_LOGO_BOX_CLASS =
 
 /**
  * Lifts the MARCO mark: stronger from `md` so its top lines up with the Company column heading;
- * single-column layout keeps a smaller nudge.
- * `-translate-x-*` moves only the logo frame; brand copy stays column-left (`absolute left-0`).
+ * single-column layout keeps a smaller nudge. `-translate-x-*` moves only the logo frame.
+ * `md:max-[1023px]:translate-x-0` — iPad 2-col: logo centered; `lg:` restores Figma nudge.
  */
 export const FOOTER_BRAND_LOGO_SHIFT_CLASS =
-  '-translate-x-[38px] max-md:-translate-y-[25px] md:-translate-y-[48px]';
+  '-translate-x-[38px] max-md:-translate-y-[25px] md:-translate-y-[48px] md:max-[1023px]:translate-x-0 lg:-translate-x-[38px]';
 
 /** No flex gap — blurb is absolutely positioned over the lower part of the logo frame. */
 export const FOOTER_BRAND_COLUMN_GAP_CLASS = 'gap-0';
@@ -80,9 +86,10 @@ export const FOOTER_BRAND_COLUMN_GAP_CLASS = 'gap-0';
  * Brand tagline: anchored above the bottom of the logo column (`bottom-[21px]`).
  * `whitespace-pre` — only `\n` from locale line breaks (no extra wraps like `pre-line`).
  * `overflow-x-auto` — on very narrow columns, horizontal scroll instead of breaking lines.
+ * `scrollbar-hide` — suppresses the visible scrollbar track under the text (same utility as copyright row).
  */
 export const FOOTER_BRAND_DESCRIPTION_OVERLAP_CLASS =
-  'absolute bottom-[21px] left-0 z-10 max-w-full overflow-x-auto whitespace-pre';
+  'absolute bottom-[21px] left-0 z-10 max-w-full overflow-x-auto whitespace-pre scrollbar-hide md:max-[1023px]:left-1/2 md:max-[1023px]:-translate-x-1/2 md:max-[1023px]:text-center';
 
 /** Smaller than `text-xs` so the blurb stays subtle over the logo. */
 export const FOOTER_BRAND_DESCRIPTION_TEXT_CLASS =

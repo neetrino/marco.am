@@ -29,6 +29,7 @@ import {
   FOOTER_SUPPORT_LINKS,
   FOOTER_INNER_CONTAINER_CLASS,
   FOOTER_SURFACE_CLASS,
+  FOOTER_TABLET_COLUMN_CENTER_CLASS,
   NEETRINO_STUDIO_HREF,
 } from './footer.constants';
 import {
@@ -55,7 +56,7 @@ function FooterNavColumn({
 
   return (
     <div
-      className={`inline-flex max-w-full flex-col ${FOOTER_NAV_COLUMN_HEADING_LIST_GAP_CLASS}`}
+      className={`inline-flex max-w-full flex-col ${FOOTER_NAV_COLUMN_HEADING_LIST_GAP_CLASS} ${FOOTER_TABLET_COLUMN_CENTER_CLASS}`}
     >
       <p
         className={`text-xs font-bold uppercase ${FOOTER_NAV_COLUMN_HEADING_LEADING_CLASS} ${FOOTER_NAV_COLUMN_HEADING_TRACK_CLASS} ${FOOTER_HEADING_TEXT_CLASS}`}
@@ -81,13 +82,13 @@ function FooterContactsColumn() {
   const telHref = `tel:${phoneRaw.replace(/\s/g, '')}`;
 
   return (
-    <div className="inline-flex max-w-full flex-col gap-4">
+    <div className={`inline-flex max-w-full flex-col gap-4 ${FOOTER_TABLET_COLUMN_CENTER_CLASS}`}>
       <p
         className={`text-xs font-bold uppercase tracking-[0.05em] ${FOOTER_HEADING_TEXT_CLASS}`}
       >
         {t('common.footer.marco.headings.contacts')}
       </p>
-      <div className="flex items-start gap-3">
+      <div className="flex items-start gap-3 md:max-[1023px]:justify-center">
         <MapPin
           className="mt-0 h-4 w-4 shrink-0 -translate-x-px translate-y-[4px] self-start text-marco-yellow"
           strokeWidth={2}
@@ -99,7 +100,7 @@ function FooterContactsColumn() {
           {t('contact.address')}
         </p>
       </div>
-      <div className="flex items-start gap-3">
+      <div className="flex items-start gap-3 md:max-[1023px]:justify-center">
         <img
           src={FOOTER_CONTACT_PHONE_ICON_SRC}
           alt=""
@@ -115,7 +116,7 @@ function FooterContactsColumn() {
           {phoneRaw}
         </a>
       </div>
-      <div className="flex items-start gap-3">
+      <div className="flex items-start gap-3 md:max-[1023px]:justify-center">
         <img
           src={FOOTER_CONTACT_MAIL_ICON_SRC}
           alt=""
@@ -168,14 +169,14 @@ export function Footer() {
       <div className={`${FOOTER_INNER_CONTAINER_CLASS} pb-10 pt-8`}>
         <div className={FOOTER_MAIN_GRID_CLASS}>
           <div
-            className={`relative flex max-w-sm flex-col ${FOOTER_BRAND_COLUMN_GAP_CLASS}`}
+            className={`relative flex max-w-sm flex-col md:max-[1023px]:items-center ${FOOTER_BRAND_COLUMN_GAP_CLASS}`}
           >
             <div className={`${FOOTER_BRAND_LOGO_BOX_CLASS} ${FOOTER_BRAND_LOGO_SHIFT_CLASS}`}>
               <Image
                 src="/assets/brand/marco-group-logo.png"
                 alt="MARCO GROUP"
                 fill
-                className="object-contain object-left-top"
+                className="object-contain object-left-top md:max-[1023px]:object-center"
                 sizes="200px"
                 priority={false}
               />
