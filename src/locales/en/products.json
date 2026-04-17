@@ -22,6 +22,9 @@
     }
   },
   "header": {
+    "breadcrumbNavLabel": "Breadcrumb",
+    "breadcrumbHome": "Home",
+    "breadcrumbShop": "Shop",
     "shopWordmark": "SHOP",
     "allProducts": "All Products ({total})",
     "clearFilters": "Clear Filters",

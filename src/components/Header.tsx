@@ -47,7 +47,7 @@ import {
   HEADER_COMPACT_PRIMARY_NAV_MAX_WIDTH_PX,
 } from './header/header.constants';
 import { CompareIcon } from './icons/CompareIcon';
-import { CartIcon } from './icons/CartIcon';
+import { HeaderNavbarCartIcon } from './icons/HeaderNavbarCartIcon';
 import { MobileNavCartLinearIcon } from './mobile-bottom-nav-icons';
 
 /** Top row + mobile drawer — MARCO nav (Figma 101:2027) */
@@ -1093,7 +1093,7 @@ export function Header({ initialLanguage }: HeaderProps) {
               href="/cart"
               className={`relative bg-marco-black text-white ${HEADER_CART_BUTTON_CLASS}`}
             >
-              <CartIcon size={19} className="h-[18px] w-[19px] text-white" />
+              <HeaderNavbarCartIcon className="h-[21px] w-[22px] shrink-0 text-white" />
               <span className="tabular-nums">{formatPrice(cartTotal, selectedCurrency)}</span>
               {cartCount > 0 && (
                 <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[18px] items-center justify-center rounded-full bg-red-600 px-0.5 text-[9px] font-bold text-white">

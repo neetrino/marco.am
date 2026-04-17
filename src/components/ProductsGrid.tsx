@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from '../lib/i18n-client';
 import type { ProductLabel } from './ProductLabels';
+import { ProductCard } from './ProductCard';
 import { SpecialOfferCard } from './home/SpecialOfferCard';
 import type { SpecialOfferProduct } from './home/special-offer-product.types';
 import { useIsMaxMd } from './home/use-is-max-md';
@@ -143,13 +144,21 @@ export function ProductsGrid({ products, sortBy = 'default' }: ProductsGridProps
       {sortedProducts.map((product) => (
         <div
           key={product.id}
-          className="flex min-w-0 justify-end pr-2 sm:pr-3 md:pr-4"
+          className={
+            viewMode === 'list'
+              ? 'min-w-0 w-full'
+              : 'flex min-w-0 justify-end pr-2 sm:pr-3 md:pr-4'
+          }
         >
-          <SpecialOfferCard
-            product={toSpecialOfferProduct(product)}
-            layout={specialOfferLayout}
-            align="end"
-          />
+          {viewMode === 'list' ? (
+            <ProductCard product={product} viewMode="list" />
+          ) : (
+            <SpecialOfferCard
+              product={toSpecialOfferProduct(product)}
+              layout={specialOfferLayout}
+              align="end"
+            />
+          )}
         </div>
       ))}
     </div>

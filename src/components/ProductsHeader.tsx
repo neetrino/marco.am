@@ -1,6 +1,7 @@
 'use client';
 
 import { Montserrat } from 'next/font/google';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect, useRef, Suspense } from 'react';
 import { useTranslation } from '../lib/i18n-client';
@@ -17,6 +18,9 @@ const PRODUCTS_PAGE_TITLE_CLASS = `${productsShopTitleFont.className} text-[#181
 /** Figma 218:2274 — yellow bar under title: h-1 w-20, marco yellow, mt-2 */
 const PRODUCTS_PAGE_TITLE_UNDERLINE_CLASS =
   'mt-2 h-1 w-20 shrink-0 rounded-sm bg-marco-yellow';
+
+/** Figma 218:2270 — breadcrumb above wordmark: #afafaf home link, #333 « / » + current */
+const PRODUCTS_PAGE_BREADCRUMB_CLASS = `${productsShopTitleFont.className} text-xs font-bold leading-snug`;
 
 type ViewMode = 'list' | 'grid-2' | 'grid-3';
 type SortOption = 'default' | 'price-asc' | 'price-desc' | 'name-asc' | 'name-desc';
@@ -95,15 +99,34 @@ function ProductsShopTitleBlock({ total }: { readonly total: number }) {
   const { t } = useTranslation();
   return (
     <div className="flex flex-col items-start">
-      <h1 className={PRODUCTS_PAGE_TITLE_CLASS}>
-        <span aria-hidden className="block">
-          {t('products.header.shopWordmark')}
-        </span>
-        <span className="sr-only">
-          {t('products.header.allProducts').replace('{total}', String(total))}
-        </span>
-      </h1>
-      <span className={PRODUCTS_PAGE_TITLE_UNDERLINE_CLASS} aria-hidden />
+      <nav
+        aria-label={t('products.header.breadcrumbNavLabel')}
+        className="mb-[12px] w-full min-w-0 md:mb-[16px]"
+      >
+        <p className={PRODUCTS_PAGE_BREADCRUMB_CLASS}>
+          <Link
+            href="/"
+            className="text-[#afafaf] transition-colors hover:text-[#333] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/20 focus-visible:ring-offset-2"
+          >
+            {t('products.header.breadcrumbHome')}
+          </Link>
+          <span className="text-[#333]">
+            {' '}
+            / {t('products.header.breadcrumbShop')}
+          </span>
+        </p>
+      </nav>
+      <div className="flex flex-col items-start gap-3">
+        <h1 className={PRODUCTS_PAGE_TITLE_CLASS}>
+          <span aria-hidden className="block">
+            {t('products.header.shopWordmark')}
+          </span>
+          <span className="sr-only">
+            {t('products.header.allProducts').replace('{total}', String(total))}
+          </span>
+        </h1>
+        <span className={PRODUCTS_PAGE_TITLE_UNDERLINE_CLASS} aria-hidden />
+      </div>
     </div>
   );
 }
@@ -213,7 +236,7 @@ function ProductsHeaderContent({ total }: ProductsHeaderProps) {
   };
 
   return (
-    <div className="marco-header-container pt-12 pb-4">
+    <div className="marco-header-container pb-4 pt-[58px]">
       {/* Desktop: All elements in one horizontal line */}
       <div className="hidden sm:flex sm:items-center sm:justify-between sm:gap-4">
         {/* Left side: Clear filters + All products title */}
@@ -441,7 +464,7 @@ function ProductsHeaderContent({ total }: ProductsHeaderProps) {
 export function ProductsHeader(props: ProductsHeaderProps) {
   return (
     <Suspense fallback={
-      <div className="marco-header-container pt-12 pb-4">
+      <div className="marco-header-container pb-4 pt-[58px]">
         <div className="flex justify-end items-center">
           <div
             className="h-10 min-w-[160px] animate-pulse rounded-full bg-marco-black/20"

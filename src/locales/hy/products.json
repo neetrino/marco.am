@@ -22,6 +22,9 @@
     }
   },
   "header": {
+    "breadcrumbNavLabel": "Ուղի",
+    "breadcrumbHome": "Գլխավոր",
+    "breadcrumbShop": "Խանութ",
     "shopWordmark": "ԽԱՆՈՒԹ",
     "allProducts": "Բոլոր ապրանքները ({total})",
     "clearFilters": "Մաքրել ֆիլտրերը",

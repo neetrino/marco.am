@@ -22,6 +22,9 @@
     }
   },
   "header": {
+    "breadcrumbNavLabel": "Навигация",
+    "breadcrumbHome": "Главная",
+    "breadcrumbShop": "Магазин",
     "shopWordmark": "МАГАЗИН",
     "allProducts": "Все товары ({total})",
     "clearFilters": "Очистить фильтры",
