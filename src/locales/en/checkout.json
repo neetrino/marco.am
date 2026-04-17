@@ -35,7 +35,7 @@
     "storePickup": "Store Pickup",
     "storePickupDescription": "Pick up your order from our store (Free)",
     "courier": "Courier delivery",
-    "courierDescription": "Delivery to your address — pricing follows admin delivery rules (e.g. partner courier).",
+    "courierDescription": "Delivery to your address — pricing follows admin delivery rules (e.g. Yandex Delivery or another partner courier).",
     "delivery": "Delivery",
     "deliveryDescription": "We will deliver your order to your address",
     "freePickup": "Free (Store Pickup)",

@@ -54,7 +54,7 @@ export default function DeliveryPage() {
       setLocations(data.locations || []);
       logger.devLog('✅ [ADMIN] Delivery settings loaded:', data);
     } catch (err: unknown) {
-      console.error('❌ [ADMIN] Error fetching delivery settings:', err);
+      logger.error('Admin delivery settings fetch failed', { error: err });
       // Use defaults if error
       setLocations([]);
     } finally {
@@ -72,7 +72,7 @@ export default function DeliveryPage() {
       setEditingId(null);
       await fetchDeliverySettings();
     } catch (err: unknown) {
-      console.error('❌ [ADMIN] Error saving delivery settings:', err);
+      logger.error('Admin delivery settings save failed', { error: err });
       const errorMessage = getApiOrErrorMessage(err, 'Failed to save delivery settings');
       alert(t('admin.delivery.errorSaving').replace('{message}', errorMessage));
     } finally {

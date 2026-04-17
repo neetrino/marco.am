@@ -10,6 +10,7 @@ import { normalizeShippingMethod } from "../constants/shipping-method";
 import { buildOrderAddressJson } from "./orders-checkout-address";
 import { validateCheckoutCustomer } from "./orders-checkout-validation";
 import { buildCustomerOrderLinks } from "../constants/customer-order-api-paths";
+import { cartService } from "./cart.service";
 
 const orderNumberId = customAlphabet("0123456789ABCDEFGHJKLMNPQRSTUVWXYZ", 10);
 
@@ -58,8 +59,9 @@ type OrderItemWithVariant = Prisma.OrderItemGetPayload<{
 class OrdersService {
   /**
    * Create order (checkout)
+   * @param checkoutLocale — used for cart pricing (discount rules) and persisted `customerLocale`
    */
-  async checkout(data: CheckoutData, userId?: string) {
+  async checkout(data: CheckoutData, userId?: string, checkoutLocale = "en") {
     try {
       const {
         cartId,
@@ -126,6 +128,19 @@ class OrdersService {
           };
         }
 
+        const { cart: pricedCart } = await cartService.getCart(userId, checkoutLocale);
+        if (pricedCart.id !== cartId) {
+          throw {
+            status: 400,
+            type: "https://api.shop.am/problems/validation-error",
+            title: "Cart mismatch",
+            detail: "cartId does not match the current user's cart",
+          };
+        }
+        const unitPriceByVariantId = new Map(
+          pricedCart.items.map((line) => [line.variant.id, line.price] as const)
+        );
+
         // Format cart items
         logger.debug('Processing cart items', { count: cart.items.length });
         
@@ -177,8 +192,12 @@ class OrdersService {
               };
             }
 
-            // Use current variant price from DB (ignore priceSnapshot to prevent outdated/abused prices)
-            const currentPrice = Number(variant.price);
+            // Align line unit price with cart / checkout totals (admin + product discounts)
+            const fromCart = unitPriceByVariantId.get(variant.id);
+            const currentPrice =
+              typeof fromCart === "number" && Number.isFinite(fromCart)
+                ? fromCart
+                : Number(variant.price);
             const cartItem = {
               variantId: variant.id,
               productId: product.id,
@@ -318,7 +337,7 @@ class OrdersService {
             currency: 'AMD',
             customerEmail: email,
             customerPhone: phone,
-            customerLocale: 'en', // TODO: Get from request
+            customerLocale: checkoutLocale,
             shippingMethod,
             shippingAddress: shippingAddressJson,
             billingAddress: billingAddressJson,

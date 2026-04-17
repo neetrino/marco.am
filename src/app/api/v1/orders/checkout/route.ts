@@ -9,7 +9,11 @@ export async function POST(req: NextRequest) {
     logger.info("Checkout request received");
     const user = await authenticateToken(req);
     const data = await req.json();
-    
+    const acceptLang =
+      req.headers.get("accept-language")?.split(",")[0]?.trim().split("-")[0] ??
+      "en";
+    const checkoutLocale = user?.locale ?? acceptLang;
+
     logger.debug("Checkout data", {
       userId: user?.id,
       cartId: data.cartId,
@@ -19,8 +23,8 @@ export async function POST(req: NextRequest) {
       paymentMethod: data.paymentMethod,
       shippingMethod: data.shippingMethod,
     });
-    
-    const result = await ordersService.checkout(data, user?.id);
+
+    const result = await ordersService.checkout(data, user?.id, checkoutLocale);
     
     logger.info("Checkout successful", {
       orderNumber: result.order?.number,
