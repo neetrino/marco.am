@@ -4,16 +4,22 @@
     "panelSubtitle": "Найдите то, что вам подходит",
     "price": {
       "title": "Цена",
-      "priceLabel": "Цена:"
+      "priceLabel": "Цена:",
+      "loading": "Загрузка...",
+      "noRange": "Нет цен в каталоге"
     },
     "category": {
       "title": "Категории",
-      "loading": "Загрузка..."
+      "loading": "Загрузка...",
+      "clear": "Сбросить",
+      "clearAria": "Сбросить фильтр по категории"
     },
     "color": {
       "title": "Цвета",
       "noColors": "Цвета недоступны",
       "loading": "Загрузка...",
+      "clear": "Сбросить",
+      "clearAria": "Сбросить фильтр по цвету",
       "palette": {
         "red": "Красный",
         "green": "Зелёный",
@@ -39,7 +45,9 @@
       "title": "Бренды",
       "searchPlaceholder": "Найти бренд",
       "noBrands": "Бренды не найдены",
-      "loading": "Загрузка..."
+      "loading": "Загрузка...",
+      "clear": "Сбросить",
+      "clearAria": "Сбросить фильтр по бренду"
     }
   },
   "header": {

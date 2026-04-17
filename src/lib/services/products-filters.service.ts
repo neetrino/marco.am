@@ -403,7 +403,7 @@ class ProductsFiltersService {
         .filter((b): b is { id: string; name: string; count: number } => b !== null)
         .sort((a, b) => a.name.localeCompare(b.name));
       const priceMin = rangeMin === Infinity ? 0 : Math.floor(rangeMin / 1000) * 1000;
-      const priceMax = rangeMax === 0 ? 100000 : Math.ceil(rangeMax / 1000) * 1000;
+      const priceMax = rangeMax === 0 ? 0 : Math.ceil(rangeMax / 1000) * 1000;
       let stepSize: number | null = null;
       let stepSizePerCurrency: Record<string, number> | null = null;
       try {
@@ -435,7 +435,7 @@ class ProductsFiltersService {
         sizes: [],
         brands: [],
         categories: [],
-        priceRange: { min: 0, max: 100000, stepSize: null, stepSizePerCurrency: null },
+        priceRange: { min: 0, max: 0, stepSize: null, stepSizePerCurrency: null },
       };
     }
   }
@@ -511,7 +511,8 @@ class ProductsFiltersService {
     });
 
     minPrice = minPrice === Infinity ? 0 : Math.floor(minPrice / 1000) * 1000;
-    maxPrice = maxPrice === 0 ? 100000 : Math.ceil(maxPrice / 1000) * 1000;
+    // No products / no prices: keep 0 — UI must not show a fake cap (e.g. 100000) that mismatches real catalog
+    maxPrice = maxPrice === 0 ? 0 : Math.ceil(maxPrice / 1000) * 1000;
 
     // Load price filter settings to provide optional step sizes per currency
     let stepSize: number | null = null;

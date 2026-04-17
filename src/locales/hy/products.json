@@ -4,16 +4,22 @@
     "panelSubtitle": "Գտեք ձեզ ամենահարմարը",
     "price": {
       "title": "Գին",
-      "priceLabel": "Գին:"
+      "priceLabel": "Գին:",
+      "loading": "Բեռնվում է...",
+      "noRange": "Գներ չկան"
     },
     "category": {
       "title": "Կատեգորիաներ",
-      "loading": "Բեռնվում է..."
+      "loading": "Բեռնվում է...",
+      "clear": "Մաքրել",
+      "clearAria": "Մաքրել կատեգորիայի ֆիլտրը"
     },
     "color": {
       "title": "Գույներ",
       "noColors": "Գույներ չկան",
       "loading": "Բեռնվում է...",
+      "clear": "Մաքրել",
+      "clearAria": "Մաքրել գույնի ֆիլտրը",
       "palette": {
         "red": "Կարմիր",
         "green": "Կանաչ",
@@ -39,7 +45,9 @@
       "title": "Բրենդներ",
       "searchPlaceholder": "Գտնել բրենդ",
       "noBrands": "Բրենդներ չգտնվեցին",
-      "loading": "Բեռնվում է..."
+      "loading": "Բեռնվում է...",
+      "clear": "Մաքրել",
+      "clearAria": "Մաքրել բրենդի ֆիլտրը"
     }
   },
   "header": {

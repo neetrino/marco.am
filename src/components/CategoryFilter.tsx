@@ -104,6 +104,19 @@ export function CategoryFilter({
     });
   };
 
+  const handleClearCategories = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('category');
+    params.delete('page');
+    setOptimisticSlugs([]);
+    const qs = params.toString();
+    startTransition(() => {
+      router.push(qs ? `/products?${qs}` : '/products');
+    });
+  };
+
+  const hasCategorySelection = selectedSlugs.length > 0;
+
   if (loading) {
     return (
       <section className="mb-4 border-b border-solid border-[#e2e8f0] pb-4">
@@ -123,11 +136,23 @@ export function CategoryFilter({
 
   return (
     <section className="mb-4 border-b border-solid border-[#e2e8f0] pb-4">
-      <h3
-        className={`${productsFiltersSectionFont.className} mb-4 text-base font-semibold leading-6 tracking-[-0.31px] text-black`}
-      >
-        {t('products.filters.category.title')}
-      </h3>
+      <div className="mb-4 flex min-h-6 items-center justify-between gap-2">
+        <h3
+          className={`${productsFiltersSectionFont.className} min-w-0 text-base font-semibold leading-6 tracking-[-0.31px] text-black`}
+        >
+          {t('products.filters.category.title')}
+        </h3>
+        {hasCategorySelection ? (
+          <button
+            type="button"
+            onClick={handleClearCategories}
+            className="shrink-0 whitespace-nowrap rounded-sm text-sm font-semibold leading-5 tracking-[-0.15px] text-marco-yellow transition-[filter,opacity] hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/25"
+            aria-label={t('products.filters.category.clearAria')}
+          >
+            {t('products.filters.category.clear')}
+          </button>
+        ) : null}
+      </div>
 
       <div className={`flex flex-col gap-3 ${PRODUCTS_FILTER_LIST_SCROLL_CLASS}`}>
         {categories.map((item) => {

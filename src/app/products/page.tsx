@@ -204,7 +204,7 @@ export default async function ProductsPage({ searchParams }: any) {
   );
 
   return (
-    <div className="w-full max-w-full overflow-x-hidden pb-24 md:pb-32 lg:pb-40">
+    <div className="w-full max-w-full pb-24 md:pb-32 lg:pb-40">
       <ProductsHeader total={productsData.meta.total} />
 
       <div className={`${PRODUCTS_PAGE_SHELL} flex flex-col lg:flex-row gap-8`}>
@@ -214,35 +214,33 @@ export default async function ProductsPage({ searchParams }: any) {
           minPrice={params?.minPrice}
           maxPrice={params?.maxPrice}
         >
-        <aside className="hidden shrink-0 bg-white lg:block lg:w-[20rem]">
-          <div className="sticky top-4 flex min-h-0 min-w-0 flex-col">
-            <div className="border-r border-solid border-[#e2e8f0] pb-6 pt-6 lg:pl-0 lg:pr-6">
-              <div className="mb-6 flex flex-col gap-1">
-                <h2
-                  className={`${productsFiltersSectionFont.className} text-base font-semibold leading-6 tracking-[-0.31px] text-[#0f172b]`}
-                >
-                  {t(language, 'products.filters.panelTitle')}
-                </h2>
-                <p className="text-sm font-normal leading-5 tracking-[-0.15px] text-[#62748e]">
-                  {t(language, 'products.filters.panelSubtitle')}
-                </p>
-              </div>
-              <Suspense fallback={<div>{t(language, 'common.messages.loadingFilters')}</div>}>
-                <PriceFilter currentMinPrice={params?.minPrice} currentMaxPrice={params?.maxPrice} category={params?.category} search={params?.search} />
-                <CategoryFilter
-                  category={params?.category}
-                  search={params?.search}
-                  minPrice={params?.minPrice}
-                  maxPrice={params?.maxPrice}
-                />
-                <BrandFilter category={params?.category} search={params?.search} minPrice={params?.minPrice} maxPrice={params?.maxPrice} />
-                <ColorFilter category={params?.category} search={params?.search} minPrice={params?.minPrice} maxPrice={params?.maxPrice} />
-              </Suspense>
+        <aside className="hidden shrink-0 bg-white lg:sticky lg:top-4 lg:z-10 lg:self-start lg:block lg:w-[20rem]">
+          <div className="border-r border-solid border-[#e2e8f0] pb-6 pt-6 lg:pl-0 lg:pr-6">
+            <div className="mb-6 flex flex-col gap-1">
+              <h2
+                className={`${productsFiltersSectionFont.className} text-base font-semibold leading-6 tracking-[-0.31px] text-[#0f172b]`}
+              >
+                {t(language, 'products.filters.panelTitle')}
+              </h2>
+              <p className="text-sm font-normal leading-5 tracking-[-0.15px] text-[#62748e]">
+                {t(language, 'products.filters.panelSubtitle')}
+              </p>
             </div>
+            <Suspense fallback={<div>{t(language, 'common.messages.loadingFilters')}</div>}>
+              <PriceFilter currentMinPrice={params?.minPrice} currentMaxPrice={params?.maxPrice} category={params?.category} search={params?.search} />
+              <CategoryFilter
+                category={params?.category}
+                search={params?.search}
+                minPrice={params?.minPrice}
+                maxPrice={params?.maxPrice}
+              />
+              <BrandFilter category={params?.category} search={params?.search} minPrice={params?.minPrice} maxPrice={params?.maxPrice} />
+              <ColorFilter category={params?.category} search={params?.search} minPrice={params?.minPrice} maxPrice={params?.maxPrice} />
+            </Suspense>
           </div>
         </aside>
 
-        <div className="flex-1 min-w-0 w-full lg:w-auto py-4 overflow-x-hidden">
+        <div className="flex-1 min-w-0 w-full overflow-x-hidden lg:w-auto py-4">
 
           {normalizedProducts.length > 0 ? (
             <>

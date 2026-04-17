@@ -23,6 +23,12 @@ interface PriceRange {
   stepSizePerCurrency?: Partial<Record<CurrencyCode, number>> | null;
 }
 
+/** Clamp numeric filter values to catalog bounds (same units as variant.price in DB — USD base; UI converts via formatPrice). */
+function clampToRange(n: number, lo: number, hi: number): number {
+  if (!Number.isFinite(n)) return lo;
+  return Math.max(lo, Math.min(hi, n));
+}
+
 export function PriceFilter({ currentMinPrice, currentMaxPrice, category }: PriceFilterProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -30,32 +36,31 @@ export function PriceFilter({ currentMinPrice, currentMaxPrice, category }: Pric
   const { t } = useTranslation();
   const [priceRange, setPriceRange] = useState<PriceRange>({
     min: 0,
-    max: 100000,
+    max: 0,
     stepSize: null,
     stepSizePerCurrency: null,
   });
-  const [minPrice, setMinPrice] = useState(currentMinPrice ? parseFloat(currentMinPrice) : 0);
-  const [maxPrice, setMaxPrice] = useState(currentMaxPrice ? parseFloat(currentMaxPrice) : 100000);
-  const [isDragging, setIsDragging] = useState<'max' | null>(null);
-  const [currency, setCurrency] = useState<CurrencyCode>('USD'); // Default для SSR
+  const [minPrice, setMinPrice] = useState(0);
+  const [maxPrice, setMaxPrice] = useState(0);
+  const [isDragging, setIsDragging] = useState<'min' | 'max' | null>(null);
+  const [currency, setCurrency] = useState<CurrencyCode>('USD');
+  const [standaloneLoading, setStandaloneLoading] = useState(() => filtersContext === null);
   const sliderRef = useRef<HTMLDivElement>(null);
+  const dragRef = useRef<'min' | 'max' | null>(null);
 
-  // Helper function to round value to step size
+  const rangeLoading = filtersContext ? filtersContext.loading : standaloneLoading;
+  const rangeReady = !rangeLoading && priceRange.max > 0;
+
   const roundToStep = (value: number, step: number | null | undefined): number => {
     if (!step || step <= 0) return Math.round(value);
     return Math.round(value / step) * step;
   };
 
-  // Загружаем валюту только на клиенте, чтобы избежать проблем с гидратацией
   useEffect(() => {
     const updateCurrency = () => {
       setCurrency(getStoredCurrency());
     };
-    
-    // Загружаем валюту при монтировании
     updateCurrency();
-    
-    // Слушаем изменения валюты
     if (typeof window !== 'undefined') {
       window.addEventListener('currency-updated', updateCurrency);
       return () => {
@@ -66,41 +71,46 @@ export function PriceFilter({ currentMinPrice, currentMaxPrice, category }: Pric
 
   useEffect(() => {
     if (filtersContext?.data?.priceRange) {
-      const pr = filtersContext.data.priceRange;
-      setPriceRange(pr as PriceRange);
-      setMinPrice(pr.min);
-      if (!currentMaxPrice) setMaxPrice(pr.max);
+      setPriceRange(filtersContext.data.priceRange as PriceRange);
       return;
     }
     if (filtersContext === null) {
-      fetchPriceRange();
+      const run = async () => {
+        setStandaloneLoading(true);
+        try {
+          const language = getStoredLanguage();
+          const params: Record<string, string> = { lang: language };
+          if (category) params.category = category;
+          const response = await apiClient.get<PriceRange>('/api/v1/products/price-range', { params });
+          setPriceRange(response);
+        } catch (error) {
+          console.error('Error fetching price range:', error);
+        } finally {
+          setStandaloneLoading(false);
+        }
+      };
+      void run();
     }
   }, [category, filtersContext?.data?.priceRange, filtersContext === null]);
 
   useEffect(() => {
-    // Single thumb: min is always catalog floor (left edge), not draggable
-    setMinPrice(priceRange.min);
-    if (currentMaxPrice) {
-      setMaxPrice(parseFloat(currentMaxPrice));
-    } else {
-      setMaxPrice(priceRange.max);
-    }
-  }, [currentMaxPrice, priceRange]);
+    const lo = priceRange.min;
+    const hi = priceRange.max;
+    if (hi <= 0) return;
 
-  const fetchPriceRange = async () => {
-    try {
-      const language = getStoredLanguage();
-      const params: Record<string, string> = { lang: language };
-      if (category) params.category = category;
-
-      const response = await apiClient.get<PriceRange>('/api/v1/products/price-range', { params });
-      setPriceRange(response);
-      setMinPrice(response.min);
-      if (!currentMaxPrice) setMaxPrice(response.max);
-    } catch (error) {
-      console.error('Error fetching price range:', error);
+    let nextMin = currentMinPrice ? parseFloat(currentMinPrice) : lo;
+    let nextMax = currentMaxPrice ? parseFloat(currentMaxPrice) : hi;
+    if (Number.isNaN(nextMin)) nextMin = lo;
+    if (Number.isNaN(nextMax)) nextMax = hi;
+    nextMin = clampToRange(nextMin, lo, hi);
+    nextMax = clampToRange(nextMax, lo, hi);
+    if (nextMin > nextMax) {
+      nextMin = lo;
+      nextMax = hi;
     }
-  };
+    setMinPrice(nextMin);
+    setMaxPrice(nextMax);
+  }, [currentMinPrice, currentMaxPrice, priceRange.min, priceRange.max]);
 
   const resolveStepSize = (): number => {
     const perCurrency = priceRange.stepSizePerCurrency || {};
@@ -115,44 +125,58 @@ export function PriceFilter({ currentMinPrice, currentMaxPrice, category }: Pric
   };
 
   const getPercentage = (value: number) => {
-    return ((value - priceRange.min) / (priceRange.max - priceRange.min)) * 100;
+    const span = priceRange.max - priceRange.min;
+    if (span <= 0) return priceRange.max > 0 ? 50 : 0;
+    return ((value - priceRange.min) / span) * 100;
   };
 
-  const handleMouseDown = () => {
-    setIsDragging('max');
+  const handleMouseDown = (which: 'min' | 'max') => {
+    dragRef.current = which;
+    setIsDragging(which);
   };
 
   const updatePrice = (clientX: number) => {
-    if (!sliderRef.current) return;
+    const which = dragRef.current;
+    if (!sliderRef.current || !which) return;
+
+    const span = priceRange.max - priceRange.min;
+    if (span <= 0) return;
 
     const rect = sliderRef.current.getBoundingClientRect();
     const percentage = Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100));
-    const value = priceRange.min + (percentage / 100) * (priceRange.max - priceRange.min);
+    const value = priceRange.min + (percentage / 100) * span;
     const step = resolveStepSize();
     const roundedValue = roundToStep(value, step);
 
-    if (isDragging === 'max') {
-      const currentMin = typeof minPrice === 'number' && !isNaN(minPrice) ? minPrice : priceRange.min;
+    const currentMin = typeof minPrice === 'number' && !isNaN(minPrice) ? minPrice : priceRange.min;
+    const currentMax = typeof maxPrice === 'number' && !isNaN(maxPrice) ? maxPrice : priceRange.max;
+
+    if (which === 'min') {
+      const newMin = Math.max(priceRange.min, Math.min(roundedValue, currentMax - step));
+      setMinPrice(newMin);
+    } else {
       const newMax = Math.min(priceRange.max, Math.max(roundedValue, currentMin + step));
       setMaxPrice(newMax);
     }
   };
 
   const handleMouseMove = (e: MouseEvent) => {
-    if (!isDragging) return;
+    if (!dragRef.current) return;
     updatePrice(e.clientX);
   };
 
   const handleTouchMove = (e: TouchEvent) => {
-    if (!isDragging || e.touches.length === 0) return;
+    if (!dragRef.current || e.touches.length === 0) return;
     updatePrice(e.touches[0].clientX);
   };
 
   const handleMouseUp = () => {
+    dragRef.current = null;
     setIsDragging(null);
   };
 
   const handleTouchEnd = () => {
+    dragRef.current = null;
     setIsDragging(null);
   };
 
@@ -171,36 +195,43 @@ export function PriceFilter({ currentMinPrice, currentMaxPrice, category }: Pric
     }
   }, [isDragging, minPrice, maxPrice, priceRange]);
 
-  // Auto-apply filter when dragging ends
   useEffect(() => {
-    if (!isDragging) {
-      // Only apply if values have changed from initial/default
-      const shouldApplyMax = maxPrice !== priceRange.max;
+    if (isDragging || priceRange.max <= 0) return;
 
-      if (shouldApplyMax || searchParams.get('minPrice')) {
-        const params = new URLSearchParams(searchParams.toString());
+    const shouldApplyMin = minPrice !== priceRange.min;
+    const shouldApplyMax = maxPrice !== priceRange.max;
+
+    if (
+      shouldApplyMin ||
+      shouldApplyMax ||
+      searchParams.get('minPrice') ||
+      searchParams.get('maxPrice')
+    ) {
+      const params = new URLSearchParams(searchParams.toString());
+
+      if (shouldApplyMin) {
+        params.set('minPrice', minPrice.toString());
+      } else {
         params.delete('minPrice');
-
-        if (shouldApplyMax) {
-          params.set('maxPrice', maxPrice.toString());
-        } else {
-          params.delete('maxPrice');
-        }
-        
-        // Reset page to 1 when filters change
-        params.delete('page');
-        
-        // Use a small delay to debounce rapid changes
-        const timeoutId = setTimeout(() => {
-          router.push(`/products?${params.toString()}`);
-        }, 300);
-        
-        return () => clearTimeout(timeoutId);
       }
-    }
-  }, [isDragging, maxPrice, priceRange, searchParams, router]);
 
-  // Используем функцию форматирования из currency.ts для консистентности
+      if (shouldApplyMax) {
+        params.set('maxPrice', maxPrice.toString());
+      } else {
+        params.delete('maxPrice');
+      }
+
+      params.delete('page');
+
+      const timeoutId = setTimeout(() => {
+        router.push(`/products?${params.toString()}`);
+      }, 300);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [isDragging, minPrice, maxPrice, priceRange, searchParams, router]);
+
+  /** Slider + API use DB units (USD); formatPrice converts to the selected display currency (e.g. AMD). */
   const formatPrice = (price: number) => {
     if (typeof price !== 'number' || isNaN(price) || !isFinite(price)) {
       return formatCurrencyPrice(0, currency);
@@ -208,12 +239,24 @@ export function PriceFilter({ currentMinPrice, currentMaxPrice, category }: Pric
     return formatCurrencyPrice(price, currency);
   };
 
-  const safeMinPrice: number = typeof minPrice === 'number' && !isNaN(minPrice) && isFinite(minPrice) ? minPrice : 0;
-  const safeMaxPrice: number = typeof maxPrice === 'number' && !isNaN(maxPrice) && isFinite(maxPrice) ? maxPrice : 100000;
-  
-  const maxPercentage = getPercentage(safeMaxPrice);
+  const safeMinPrice: number =
+    typeof minPrice === 'number' && !isNaN(minPrice) && isFinite(minPrice) ? minPrice : priceRange.min;
+  const safeMaxPrice: number =
+    typeof maxPrice === 'number' && !isNaN(maxPrice) && isFinite(maxPrice) ? maxPrice : priceRange.max;
 
-  const rangeLabel = `${formatPrice(Number(safeMinPrice) || 0)} - ${formatPrice(Number(safeMaxPrice) || 100000)}`;
+  const span = priceRange.max - priceRange.min;
+  const singlePricePoint = span <= 0 && priceRange.max > 0;
+  const minPercentage = singlePricePoint ? 50 : getPercentage(safeMinPrice);
+  const maxPercentage = singlePricePoint ? 50 : getPercentage(safeMaxPrice);
+
+  let rangeLabel: string;
+  if (rangeLoading) {
+    rangeLabel = t('products.filters.price.loading');
+  } else if (!rangeReady) {
+    rangeLabel = t('products.filters.price.noRange');
+  } else {
+    rangeLabel = `${formatPrice(safeMinPrice)} - ${formatPrice(safeMaxPrice)}`;
+  }
 
   return (
     <section className="mb-4 border-b border-solid border-[#e2e8f0] pb-4">
@@ -230,42 +273,69 @@ export function PriceFilter({ currentMinPrice, currentMaxPrice, category }: Pric
 
       <div
         ref={sliderRef}
-        className="relative h-2 w-full cursor-pointer rounded-full bg-[#e2e8f0]"
+        className={`relative h-2 w-full rounded-full bg-[#e2e8f0] ${rangeReady ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}
         onMouseDown={(e) => {
+          if (!rangeReady || span <= 0) return;
           const rect = sliderRef.current?.getBoundingClientRect();
           if (!rect) return;
-          const percentage = ((e.clientX - rect.left) / rect.width) * 100;
-          const value = priceRange.min + (percentage / 100) * (priceRange.max - priceRange.min);
+          const clickPct = ((e.clientX - rect.left) / rect.width) * 100;
+          const value = priceRange.min + (clickPct / 100) * span;
           const step = resolveStepSize();
           const roundedValue = roundToStep(value, step);
-          const currentMin = typeof minPrice === 'number' && !isNaN(minPrice) ? minPrice : priceRange.min;
-          const newMax = Math.min(priceRange.max, Math.max(roundedValue, currentMin + step));
-          setMaxPrice(newMax);
-          handleMouseDown();
+          const distMin = Math.abs(clickPct - minPercentage);
+          const distMax = Math.abs(clickPct - maxPercentage);
+          if (distMin <= distMax) {
+            const newMin = Math.max(priceRange.min, Math.min(roundedValue, safeMaxPrice - step));
+            setMinPrice(newMin);
+            handleMouseDown('min');
+          } else {
+            const newMax = Math.min(priceRange.max, Math.max(roundedValue, safeMinPrice + step));
+            setMaxPrice(newMax);
+            handleMouseDown('max');
+          }
         }}
       >
-        <div
-          className="absolute top-0 h-full rounded-full bg-marco-yellow"
-          style={{
-            left: 0,
-            width: `${maxPercentage}%`,
-          }}
-        />
+        {rangeReady ? (
+          <>
+            <div
+              className="absolute top-0 h-full rounded-full bg-marco-yellow"
+              style={
+                singlePricePoint
+                  ? { left: 0, width: '100%' }
+                  : {
+                      left: `${minPercentage}%`,
+                      width: `${Math.max(0, maxPercentage - minPercentage)}%`,
+                    }
+              }
+            />
 
-        <div
-          className="absolute z-10 h-4 w-4 cursor-grab rounded-full border border-solid border-[#e2e8f0] bg-white shadow-sm active:cursor-grabbing"
-          style={{ left: `${maxPercentage}%`, top: '50%', transform: 'translate(-50%, -50%)' }}
-          onMouseDown={(e) => {
-            e.stopPropagation();
-            handleMouseDown();
-          }}
-          onTouchStart={(e) => {
-            e.stopPropagation();
-            handleMouseDown();
-          }}
-        />
+            <div
+              className="absolute z-10 h-4 w-4 cursor-grab rounded-full border border-solid border-[#e2e8f0] bg-white shadow-sm active:cursor-grabbing"
+              style={{ left: `${minPercentage}%`, top: '50%', transform: 'translate(-50%, -50%)' }}
+              onMouseDown={(e) => {
+                e.stopPropagation();
+                handleMouseDown('min');
+              }}
+              onTouchStart={(e) => {
+                e.stopPropagation();
+                handleMouseDown('min');
+              }}
+            />
+            <div
+              className="absolute z-10 h-4 w-4 cursor-grab rounded-full border border-solid border-[#e2e8f0] bg-white shadow-sm active:cursor-grabbing"
+              style={{ left: `${maxPercentage}%`, top: '50%', transform: 'translate(-50%, -50%)' }}
+              onMouseDown={(e) => {
+                e.stopPropagation();
+                handleMouseDown('max');
+              }}
+              onTouchStart={(e) => {
+                e.stopPropagation();
+                handleMouseDown('max');
+              }}
+            />
+          </>
+        ) : null}
       </div>
     </section>
   );
 }
-

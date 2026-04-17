@@ -66,7 +66,7 @@ const DEFAULT_FILTERS: ProductsFiltersData = {
   sizes: [],
   brands: [],
   categories: [],
-  priceRange: { min: 0, max: 100000, stepSize: null, stepSizePerCurrency: null },
+  priceRange: { min: 0, max: 0, stepSize: null, stepSizePerCurrency: null },
 };
 
 interface ProductsFiltersProviderProps {

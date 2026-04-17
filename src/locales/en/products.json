@@ -4,16 +4,22 @@
     "panelSubtitle": "Find what fits you best",
     "price": {
       "title": "Price",
-      "priceLabel": "Price:"
+      "priceLabel": "Price:",
+      "loading": "Loading...",
+      "noRange": "No prices in catalog"
     },
     "category": {
       "title": "Categories",
-      "loading": "Loading..."
+      "loading": "Loading...",
+      "clear": "Clear",
+      "clearAria": "Clear category filter"
     },
     "color": {
       "title": "Colors",
       "noColors": "No colors available",
       "loading": "Loading...",
+      "clear": "Clear",
+      "clearAria": "Clear color filter",
       "palette": {
         "red": "Red",
         "green": "Green",
@@ -39,7 +45,9 @@
       "title": "Brands",
       "searchPlaceholder": "Find brand",
       "noBrands": "No brands found",
-      "loading": "Loading..."
+      "loading": "Loading...",
+      "clear": "Clear",
+      "clearAria": "Clear brand filter"
     }
   },
   "header": {
