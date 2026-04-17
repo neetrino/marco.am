@@ -51,6 +51,7 @@ import {
 import { HOME_PAGE_SECTION_SHELL_TIGHT_MOBILE_CLASS } from './home-page-section-shell.constants';
 import { useIsMaxMd } from './use-is-max-md';
 import { useSpecialOffersCarousel } from './useSpecialOffersCarousel';
+import { SPECIAL_OFFERS_PRODUCTS_LIMIT } from '@/constants/specialOffersSection';
 
 const montserratSpecial = Montserrat({
   subsets: ['latin', 'latin-ext'],
@@ -70,8 +71,6 @@ const SPECIAL_OFFERS_NAV_ICON_CLASS =
 
 /** Sub-lg (`railSlotWidthPx === null`), non-mobile-grid: one tile width per slide (`md`–`lg`). */
 const SPECIAL_OFFERS_RAIL_SUB_LG_LINEAR_CLASS = `shrink-0 snap-start min-w-0 flex-[0_0_min(100%,${SPECIAL_OFFERS_CARD_MAX_WIDTH_PX}px)] max-w-[min(100%,${SPECIAL_OFFERS_CARD_MAX_WIDTH_PX}px)]`;
-
-const PRODUCTS_LIMIT = 12;
 
 const PAGINATION_ARIA_KEYS = [
   'page_first_aria',
@@ -126,7 +125,7 @@ export function HomeSpecialOffersSection() {
       const response = await apiClient.get<ProductsResponse>('/api/v1/products', {
         params: {
           page: '1',
-          limit: String(PRODUCTS_LIMIT),
+          limit: String(SPECIAL_OFFERS_PRODUCTS_LIMIT),
           lang: language,
           filter: 'promotion',
         },

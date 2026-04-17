@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { productsService } from "@/lib/services/products.service";
 import { cacheService } from "@/lib/services/cache.service";
+import { logger } from "@/lib/utils/logger";
 
 const PRODUCTS_CACHE_TTL = 120; // 2 minutes
 const FEATURED_CACHE_TTL = 600; // 10 minutes for home featured tabs (new/bestseller/featured)
@@ -55,9 +56,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(result, {
       headers: { "X-Cache": "MISS" },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    logger.error("Products API error", { error });
     const err = error as { type?: string; title?: string; status?: number; detail?: string; message?: string };
-    console.error("❌ [PRODUCTS] Error:", error);
     return NextResponse.json(
       {
         type: err.type || "https://api.shop.am/problems/internal-error",
