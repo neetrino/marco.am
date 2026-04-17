@@ -15,6 +15,7 @@ export interface ProductFilters {
   sort?: string;
   page?: number;
   limit?: number;
+  cursor?: string;
   lang?: string;
   technicalSpecs?: TechnicalSpecFilters;
 }

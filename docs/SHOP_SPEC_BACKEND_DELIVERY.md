@@ -26,7 +26,7 @@
 | ---- | -------------------------------- | --------------- |
 | 1    | Infra & API կոնտրակտ             | `100%`          |
 | 2    | Գլխավոր էջ (Home) — տվյալներ     | `100%`          |
-| 3    | Shop (PLP) — կատալոգ API         | `98%`           |
+| 3    | Shop (PLP) — կատալոգ API         | `100%`          |
 | 4    | Ապրանքի էջ (PDP) — մանրամասն API | `85%`           |
 | 5    | Checkout — պատվեր                | `89%`           |
 | 6    | Վճարման եղանակներ                | `50%`           |
@@ -98,7 +98,7 @@
 
 ## Փուլ 3 — Shop (Product listing)
 
-**Փուլի առաջընթաց.** `98%`
+**Փուլի առաջընթաց.** `100%`
 
 
 | ID  | Առաջադրանք (backend)                                                                 | Կատարման % | Կարգավիճակ |
@@ -107,7 +107,7 @@
 | 3.2 | Sorting — price ASC/DESC, newest, popular                                            | 100        | ✅          |
 | 3.3 | Filters — brand, price range, category                                               | 100        | ✅          |
 | 3.4 | Filters — technical specs (faceted կամ step filters, schema-ից դինամիկ)              | 100        | ✅          |
-| 3.5 | Pagination կամ cursor API — infinite scroll / SEO-ի համար էջավորում                  | 90         | 🔄         |
+| 3.5 | Pagination կամ cursor API — infinite scroll / SEO-ի համար էջավորում                  | 100        | ✅          |
 
 
 *Նշումներ.* 3.4 — իրականացված է schema-driven faceted API (`technicalSpecs`) և դինամիկ query filtering (`spec.<attributeKey>=value1,value2`, նաև `specs` JSON), որտեղ filterable տեխնիկական ատրիբուտները կարդացվում են schema/DB-ից (`attributes.filterable=true`, բացառում՝ `color`/`size`)։
@@ -119,6 +119,8 @@
 **3.3 ✅ ավարտված (2026-04-17).** `GET /api/v1/products` filter-ները կայունացվել են `brand`/`price range`/`category` պահանջի համար՝ (1) `brand`-ը այժմ ընդունում է ինչպես `brandId`, այնպես էլ brand slug/անուն (comma-separated բազմակի արժեքներով), (2) `category`-ն աջակցում է բազմակի արժեքների (`category=phones,laptops`), slug **կամ** category id, և ավտոմատ ներառում է ենթակատեգորիաները, (3) `minPrice`/`maxPrice`/`page`/`limit` query-ները նորմալացվում են (invalid/negative արժեքները անտեսվում են, `minPrice > maxPrice` դեպքում սահմանները փոխվում են), (4) `GET /api/v1/products/filters` պատասխանը վերադարձնում է նաև `categories` ֆասետ (`id`, `slug`, `name`, `count`)։
 
 **3.4 ✅ ավարտված (2026-04-17).** Տեխնիկական filter-ները դարձել են **դինամիկ schema-ից**․ `GET /api/v1/products/filters` պատասխանում ավելացվել է `technicalSpecs[]` ֆասետների բլոկ (`key`, `label`, `type`, `values[]`), որը հաշվարկվում է `product_variants.options -> attribute_values -> attributes` շղթայից և ներառում է միայն `attributes.filterable=true` տեխնիկական ատրիբուտները (բացի `color`/`size`)։ `GET /api/v1/products`-ը հիմա ընդունում է դինամիկ query-ներ `spec.<attributeKey>=...` (օր. `spec.ram=8gb,16gb`) և `specs` JSON fallback, ու կիրառում է AND-by-attribute filtering (յուրաքանչյուր attribute-ի համար՝ OR-by-values)։
+
+**3.5 ✅ ավարտված (2026-04-17).** `GET /api/v1/products`-ում ավելացվել է `cursor` query-ի աջակցություն՝ **SEO pagination** (`page`/`limit`) թողնելով backward-compatible։ Response `meta`-ն հիմա վերադարձնում է նաև `hasNextPage` և `nextCursor` (opaque base64url cursor՝ offset-ի հիմքով), ինչը կարելի է անմիջապես օգտագործել infinite scroll-ի համար (`?limit=12&cursor=<nextCursor>`)։ Անվավեր cursor-ի դեպքում fallback-ը անվտանգ է՝ առաջին էջ (offset=0)։
 
 ---
 

@@ -36,6 +36,7 @@ export async function GET(req: NextRequest) {
       Number.isInteger(parsedLimit) && parsedLimit > 0
         ? Math.min(parsedLimit, 200)
         : 12;
+    const cursor = searchParams.get("cursor") || undefined;
 
     const technicalSpecs = parseTechnicalSpecFiltersFromSearchParams(searchParams);
     const filters = {
@@ -50,6 +51,7 @@ export async function GET(req: NextRequest) {
       sort: searchParams.get("sort") || "createdAt",
       page,
       limit,
+      cursor,
       lang: searchParams.get("lang") || "en",
       technicalSpecs,
     };

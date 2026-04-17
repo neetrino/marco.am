@@ -2,6 +2,31 @@ import { ProductFilters } from "./products-find-query.service";
 import { productsFindQueryService } from "./products-find-query.service";
 import { productsFindFilterService } from "./products-find-filter.service";
 import { productsFindTransformService } from "./products-find-transform.service";
+import {
+  decodeProductCursor,
+  encodeProductCursor,
+} from "./products-pagination-cursor";
+
+interface ProductsMeta {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  nextCursor: string | null;
+}
+
+function buildProductsMeta(total: number, limit: number, page: number, start: number): ProductsMeta {
+  const hasNextPage = start + limit < total;
+  return {
+    total,
+    page,
+    limit,
+    totalPages: Math.ceil(total / limit),
+    hasNextPage,
+    nextCursor: hasNextPage ? encodeProductCursor(start + limit) : null,
+  };
+}
 
 class ProductsFindService {
   /**
@@ -13,7 +38,11 @@ class ProductsFindService {
       limit = 12,
       lang = "en",
       sort,
+      cursor,
     } = filters;
+    const cursorOffset = decodeProductCursor(cursor);
+    const start = cursor ? cursorOffset : (page - 1) * limit;
+    const normalizedPage = cursor ? Math.floor(start / limit) + 1 : page;
 
     // Step 1: Build query and fetch products from database
     const { products, bestsellerProductIds, total: totalFromQuery } =
@@ -29,7 +58,6 @@ class ProductsFindService {
     // Step 3: Pagination — use server total when provided (no filters), else client slice
     const total =
       totalFromQuery !== undefined ? totalFromQuery : filteredProducts.length;
-    const start = (page - 1) * limit;
     const paginatedProducts =
       totalFromQuery !== undefined
         ? filteredProducts
@@ -50,12 +78,7 @@ class ProductsFindService {
       });
       return {
         data: transformedAll.slice(start, start + limit),
-        meta: {
-          total,
-          page,
-          limit,
-          totalPages: Math.ceil(total / limit),
-        },
+        meta: buildProductsMeta(total, limit, normalizedPage, start),
       };
     }
 
@@ -63,12 +86,7 @@ class ProductsFindService {
 
     return {
       data,
-      meta: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      },
+      meta: buildProductsMeta(total, limit, normalizedPage, start),
     };
   }
 }
