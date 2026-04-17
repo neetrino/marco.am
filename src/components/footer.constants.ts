@@ -35,20 +35,21 @@ export const FOOTER_NAV_COLUMN_LINK_LEADING_CLASS = 'leading-tight';
 export const NEETRINO_STUDIO_HREF = 'https://neetrino.com/';
 
 /**
- * iPad two-column band (`md`–`lg`): center column copy in the cell (not flush to gutter).
+ * iPad / iPad Pro (through 1366px): center column copy in the cell (not flush to gutters).
+ * Wide desktop (1367+): left-aligned columns again.
  */
 export const FOOTER_TABLET_COLUMN_CENTER_CLASS =
-  'md:max-[1023px]:items-center md:max-[1023px]:text-center';
+  'md:max-[1023px]:items-center md:max-[1023px]:text-center min-[1024px]:max-[1366px]:items-center min-[1024px]:max-[1366px]:text-center';
 
 /**
- * Company / Support grid cells only: flush right on `lg+`, nudged left vs the strip edge (tune `-translate-x-*`).
+ * Company / Support grid cells: centered on iPad Pro band; flush right + nudge only on wide desktop.
  */
 export const FOOTER_GRID_COMPANY_SUPPORT_WRAPPER_CLASS =
-  'lg:flex lg:w-full lg:justify-end lg:-translate-x-[49px]';
+  'lg:flex lg:w-full min-[1024px]:max-[1366px]:translate-x-0 min-[1024px]:max-[1366px]:justify-center min-[1367px]:justify-end min-[1367px]:-translate-x-[49px]';
 
-/** Contacts column: push block to the right edge of the grid cell on `lg+`. */
+/** Contacts column: centered on iPad Pro band; aligned to cell end on wide desktop. */
 export const FOOTER_GRID_CONTACTS_WRAPPER_CLASS =
-  'lg:flex lg:w-full lg:justify-end';
+  'lg:flex lg:w-full min-[1024px]:max-[1366px]:justify-center min-[1367px]:justify-end';
 
 /** Space between main footer grid and the copyright separator bar. */
 export const FOOTER_COPYRIGHT_STRIP_MARGIN_TOP_CLASS = 'mt-6';
@@ -58,11 +59,10 @@ export const FOOTER_COPYRIGHT_STRIP_PADDING_TOP_CLASS = 'pt-4';
 export const FOOTER_COPYRIGHT_STRIP_STACK_GAP_CLASS = 'gap-5';
 
 /**
- * Main footer columns grid — on `lg+`, horizontal gap is larger than vertical (`gap-x-16` vs `gap-y-10`)
- * so space between Company and Support (and other column pairs) is more pronounced.
+ * Main footer columns grid — iPad Pro (1024–1366): centered cells; 1367+ Figma stretch alignment.
  */
 export const FOOTER_MAIN_GRID_CLASS =
-  'grid grid-cols-1 items-start gap-12 md:grid-cols-2 md:max-[1023px]:justify-items-center lg:grid-cols-4 lg:justify-items-stretch lg:gap-x-16 lg:gap-y-10';
+  'grid grid-cols-1 items-start gap-12 md:grid-cols-2 md:max-[1023px]:justify-items-center lg:grid-cols-4 min-[1024px]:max-[1366px]:justify-items-center min-[1367px]:justify-items-stretch lg:gap-x-16 lg:gap-y-10';
 
 /**
  * Brand logo frame — larger than legacy 91×81; same ~91:81 aspect.
@@ -74,10 +74,10 @@ export const FOOTER_BRAND_LOGO_BOX_CLASS =
 /**
  * Lifts the MARCO mark: stronger from `md` so its top lines up with the Company column heading;
  * single-column layout keeps a smaller nudge. `-translate-x-*` moves only the logo frame.
- * `md:max-[1023px]:translate-x-0` — iPad 2-col: logo centered; `lg:` restores Figma nudge.
+ * `md:max-[1023px]` / `min-[1024px]:max-[1366px]` — iPad / iPad Pro: logo centered; 1367+ restores Figma nudge.
  */
 export const FOOTER_BRAND_LOGO_SHIFT_CLASS =
-  '-translate-x-[38px] max-md:-translate-y-[25px] md:-translate-y-[48px] md:max-[1023px]:translate-x-0 lg:-translate-x-[38px]';
+  '-translate-x-[38px] max-md:-translate-y-[25px] md:-translate-y-[48px] md:max-[1023px]:translate-x-0 min-[1024px]:max-[1366px]:translate-x-0 min-[1367px]:-translate-x-[38px]';
 
 /** No flex gap — blurb is absolutely positioned over the lower part of the logo frame. */
 export const FOOTER_BRAND_COLUMN_GAP_CLASS = 'gap-0';
@@ -89,7 +89,7 @@ export const FOOTER_BRAND_COLUMN_GAP_CLASS = 'gap-0';
  * `scrollbar-hide` — suppresses the visible scrollbar track under the text (same utility as copyright row).
  */
 export const FOOTER_BRAND_DESCRIPTION_OVERLAP_CLASS =
-  'absolute bottom-[21px] left-0 z-10 max-w-full overflow-x-auto whitespace-pre scrollbar-hide md:max-[1023px]:left-1/2 md:max-[1023px]:-translate-x-1/2 md:max-[1023px]:text-center';
+  'absolute bottom-[21px] left-0 z-10 max-w-full overflow-x-auto whitespace-pre scrollbar-hide md:max-[1023px]:left-1/2 md:max-[1023px]:-translate-x-1/2 md:max-[1023px]:text-center min-[1024px]:max-[1366px]:left-1/2 min-[1024px]:max-[1366px]:-translate-x-1/2 min-[1024px]:max-[1366px]:text-center';
 
 /** Smaller than `text-xs` so the blurb stays subtle over the logo. */
 export const FOOTER_BRAND_DESCRIPTION_TEXT_CLASS =

@@ -54,10 +54,10 @@ export const HEADER_ROW2_SEARCH_TO_LOCALE_GAP_PX = 52;
 
 /**
  * Between (categories+search) and right toolbar.
- * Tablet (through iPad Pro landscape): tighter; wide desktop: Figma 52px.
+ * Tablet (through iPad Pro landscape): slightly looser than 16px so search ↔ theme breathes; wide desktop: Figma 52px.
  * Must stay in sync with `HEADER_ROW2_SEARCH_TO_LOCALE_GAP_PX` (Tailwind JIT needs a static arbitrary value).
  */
-export const HEADER_FIGMA_ROW2_MAIN_GAP_CLASS = 'md:max-[1366px]:gap-x-4 min-[1367px]:gap-x-[52px]';
+export const HEADER_FIGMA_ROW2_MAIN_GAP_CLASS = 'md:max-[1366px]:gap-x-5 min-[1367px]:gap-x-[52px]';
 
 /**
  * Locale / theme / icons / cart — Figma 214:1054 `gap-[23px]`; reduced for denser toolbar.
@@ -100,6 +100,75 @@ export const HEADER_SEARCH_BAR_HEIGHT_CLASS = HEADER_ROW2_BAR_HEIGHT_CLASS;
 
 /** Yellow «Search» button — same height as gray search track */
 export const HEADER_SEARCH_SUBMIT_HEIGHT_CLASS = HEADER_ROW2_BAR_HEIGHT_CLASS;
+
+/**
+ * Row-2 «tablet» density: viewport ≤ {@link HEADER_TABLET_ROW2_MAX_WIDTH_PX}, or **any width** on iPadOS
+ * (so iPad Pro in wide split / Stage Manager still matches iPad, not the 1367px+ desktop strip).
+ */
+export function isHeaderRow2TabletLike(
+  viewportWidth: number | null,
+  isIpadOs: boolean
+): boolean {
+  if (isIpadOs) {
+    return true;
+  }
+  if (viewportWidth === null) {
+    return false;
+  }
+  return viewportWidth <= HEADER_TABLET_ROW2_MAX_WIDTH_PX;
+}
+
+export function getHeaderFigmaRow2LeftInnerGapClass(tabletLike: boolean): string {
+  return tabletLike
+    ? 'gap-y-[22px] gap-x-[22px] sm:gap-y-0 md:gap-x-3'
+    : 'gap-y-[22px] gap-x-[22px] sm:gap-y-0 min-[1367px]:gap-x-[22px]';
+}
+
+export function getHeaderFigmaRow2MainGapClass(tabletLike: boolean): string {
+  if (tabletLike) {
+    return 'md:gap-x-5';
+  }
+  return 'md:max-[1366px]:gap-x-5 min-[1367px]:gap-x-[52px]';
+}
+
+export function getHeaderSearchFormRadiusClass(tabletLike: boolean): string {
+  return tabletLike
+    ? `${HEADER_FIGMA_PILL_RADIUS_CLASS} md:rounded-[64px]`
+    : HEADER_FIGMA_PILL_RADIUS_CLASS;
+}
+
+export function getHeaderSearchIconTextGapClass(tabletLike: boolean): string {
+  return tabletLike
+    ? 'gap-1.5 md:gap-1'
+    : 'gap-1.5 min-[1367px]:gap-1.5';
+}
+
+export function getHeaderSearchInputPaddingLeftClass(tabletLike: boolean): string {
+  return tabletLike ? 'pl-4 md:pl-3' : 'pl-4 min-[1367px]:pl-4';
+}
+
+export function getHeaderSearchInputInnerEndPadClass(tabletLike: boolean): string {
+  return tabletLike ? 'pr-2 md:pr-1.5' : 'pr-2 min-[1367px]:pr-2';
+}
+
+export function getHeaderSearchSubmitWidthClass(tabletLike: boolean): string {
+  return tabletLike
+    ? 'w-[118px] max-w-[118px] shrink-0 px-2.5 sm:px-3 md:w-[88px] md:max-w-[88px] md:px-1.5'
+    : 'w-[118px] max-w-[118px] shrink-0 px-2.5 sm:px-3 min-[1367px]:w-[132px] min-[1367px]:max-w-[132px] min-[1367px]:px-3.5';
+}
+
+export function getHeaderSearchSubmitClass(tabletLike: boolean): string {
+  const radius = getHeaderSearchFormRadiusClass(tabletLike);
+  const textShrink = tabletLike ? 'md:text-[11px]' : '';
+  return `flex items-center justify-center self-center ${HEADER_SEARCH_SUBMIT_HEIGHT_CLASS} shrink-0 bg-marco-yellow text-xs font-semibold leading-normal text-marco-black transition-[filter] hover:brightness-95 active:brightness-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/15 ${textShrink} ${radius}`.trim();
+}
+
+export function getHeaderCategoryButtonClass(tabletLike: boolean): string {
+  const base = `gap-1 px-3 py-2 text-xs font-normal transition-[opacity,filter] hover:opacity-95 active:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 ${HEADER_FIGMA_PILL_RADIUS_CLASS} md:h-10 md:shrink-0 md:py-0 md:text-xs md:font-medium`;
+  return tabletLike
+    ? `${base} md:w-[140px] md:max-w-[140px] md:px-2.5 md:gap-1`
+    : `${base} min-[1367px]:w-[184px] min-[1367px]:max-w-[184px] min-[1367px]:px-4 min-[1367px]:gap-1.5`;
+}
 
 /**
  * Search pill spans the flex slot between categories and the right toolbar (full width).

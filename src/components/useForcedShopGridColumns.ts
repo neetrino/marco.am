@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { getIsIpadOs } from '../lib/is-ipad-os';
 
 /**
  * Shop grid lock on iPadOS and other coarse-pointer tablets:
@@ -19,10 +20,7 @@ export function useForcedShopGridColumns(): 2 | 3 | null {
         setCols(null);
         return;
       }
-      const isIpadOs =
-        /iPad/u.test(navigator.userAgent) ||
-        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-      if (isIpadOs) {
+      if (getIsIpadOs()) {
         setCols(w >= 1024 ? 3 : 2);
         return;
       }
