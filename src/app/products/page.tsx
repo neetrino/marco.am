@@ -7,8 +7,6 @@ import {
 } from '../../lib/language';
 import { t } from '../../lib/i18n';
 import { PriceFilter } from '../../components/PriceFilter';
-import { ColorFilter } from '../../components/ColorFilter';
-import { SizeFilter } from '../../components/SizeFilter';
 import { BrandFilter } from '../../components/BrandFilter';
 import { CategoryFilter } from '../../components/CategoryFilter';
 import { ProductsHeader } from '../../components/ProductsHeader';
@@ -170,11 +168,7 @@ export default async function ProductsPage({ searchParams }: any) {
   }));
 
   // FILTERS
-  const colors = params?.colors;
-  const sizes = params?.sizes;
   const brands = params?.brand;
-  const selectedColors = colors ? colors.split(',').map((c: string) => c.trim().toLowerCase()) : [];
-  const selectedSizes = sizes ? sizes.split(',').map((s: string) => s.trim()) : [];
   const selectedBrands = brands ? brands.split(',').map((b: string) => b.trim()) : [];
   const categoryParam = params?.category?.toString().trim();
   const selectedCategorySlugs = categoryParam
@@ -249,8 +243,6 @@ export default async function ProductsPage({ searchParams }: any) {
                 selectedSlugs={selectedCategorySlugs}
               />
               <BrandFilter category={params?.category} search={params?.search} minPrice={params?.minPrice} maxPrice={params?.maxPrice} selectedBrands={selectedBrands} />
-              <ColorFilter category={params?.category} search={params?.search} minPrice={params?.minPrice} maxPrice={params?.maxPrice} selectedColors={selectedColors} />
-              <SizeFilter category={params?.category} search={params?.search} minPrice={params?.minPrice} maxPrice={params?.maxPrice} selectedSizes={selectedSizes} />
             </Suspense>
           </div>
         </aside>
@@ -306,8 +298,6 @@ export default async function ProductsPage({ searchParams }: any) {
               selectedSlugs={selectedCategorySlugs}
             />
             <BrandFilter category={params?.category} search={params?.search} minPrice={params?.minPrice} maxPrice={params?.maxPrice} selectedBrands={selectedBrands} />
-            <ColorFilter category={params?.category} search={params?.search} minPrice={params?.minPrice} maxPrice={params?.maxPrice} selectedColors={selectedColors} />
-            <SizeFilter category={params?.category} search={params?.search} minPrice={params?.minPrice} maxPrice={params?.maxPrice} selectedSizes={selectedSizes} />
           </Suspense>
         </div>
       </MobileFiltersDrawer>

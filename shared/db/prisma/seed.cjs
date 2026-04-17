@@ -37,10 +37,14 @@ const CATEGORIES = [
   { slug: "accessories", title: "Accessories" },
 ];
 
+/** Shop filter brands (Figma / product listing) */
 const BRANDS = [
-  { slug: "acme", name: "Acme" },
-  { slug: "brand-x", name: "Brand X" },
-  { slug: "prime", name: "Prime" },
+  { slug: "apple", name: "Apple" },
+  { slug: "samsung", name: "Samsung" },
+  { slug: "xiaomi", name: "Xiaomi" },
+  { slug: "oneplus", name: "OnePlus" },
+  { slug: "google", name: "Google" },
+  { slug: "sony", name: "Sony" },
 ];
 
 function slugify(text) {

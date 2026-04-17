@@ -187,10 +187,21 @@ class ProductsFiltersService {
         categoryCountMap.set(id, (categoryCountMap.get(id) || 0) + 1);
       });
       if (product.brand?.id) {
-        const name = (product.brand as { translations?: Array<{ locale: string; name?: string }>; name?: string }).translations?.find((t: { locale: string }) => t.locale === lang)?.name || (product.brand as { name?: string }).name || '';
+        const b = product.brand as {
+          id: string;
+          slug?: string;
+          translations?: Array<{ locale: string; name: string }>;
+        };
+        const tr =
+          b.translations?.find((t) => t.locale === lang) ?? b.translations?.[0];
+        const name = (tr?.name?.trim() || b.slug || '').trim();
         if (name) {
           const existing = brandMap.get(product.brand.id);
-          brandMap.set(product.brand.id, { id: product.brand.id, name, count: (existing?.count || 0) + 1 });
+          brandMap.set(product.brand.id, {
+            id: product.brand.id,
+            name,
+            count: (existing?.count || 0) + 1,
+          });
         }
       }
       product.variants.forEach((v: { price?: number }) => {

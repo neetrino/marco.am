@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { apiClient } from '../lib/api-client';
 import { getStoredLanguage } from '../lib/language';
 import { useTranslation } from '../lib/i18n-client';
-import { useProductsFilters } from './ProductsFiltersProvider';
+import { useProductsFilters, type BrandOption } from './ProductsFiltersProvider';
 import { productsFiltersSectionFont } from '../lib/products-filters-typography';
 import { ProductsFilterCheckboxVisual } from './ProductsFilterCheckbox';
 
@@ -15,12 +15,6 @@ interface BrandFilterProps {
   minPrice?: string;
   maxPrice?: string;
   selectedBrands?: string[];
-}
-
-interface BrandOption {
-  id: string;
-  name: string;
-  count: number;
 }
 
 const FILTER_LIST_SCROLL =
@@ -85,7 +79,7 @@ export function BrandFilter({ category, search, minPrice, maxPrice, selectedBran
     return (
       <section className="mb-4 border-b border-solid border-[#e2e8f0] pb-4">
         <h3
-          className={`${productsFiltersSectionFont.className} mb-4 text-base font-semibold leading-6 tracking-[-0.31px] text-[#1d293d]`}
+          className={`${productsFiltersSectionFont.className} mb-4 text-base font-semibold leading-6 tracking-[-0.31px] text-black`}
         >
           {t('products.filters.brand.title')}
         </h3>
@@ -101,7 +95,7 @@ export function BrandFilter({ category, search, minPrice, maxPrice, selectedBran
   return (
     <section className="mb-4 border-b border-solid border-[#e2e8f0] pb-4">
       <h3
-        className={`${productsFiltersSectionFont.className} mb-4 text-base font-semibold leading-6 tracking-[-0.31px] text-[#1d293d]`}
+        className={`${productsFiltersSectionFont.className} mb-4 text-base font-semibold leading-6 tracking-[-0.31px] text-black`}
       >
         {t('products.filters.brand.title')}
       </h3>
