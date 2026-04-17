@@ -7,6 +7,11 @@ import {
   buildOrderUpdatePatch,
 } from "./order-update-patch";
 import type { Order } from "@prisma/client";
+import {
+  buildCashPaymentPatch,
+  isCashPaymentMethod,
+  resolveCashOrderPaymentStatus,
+} from "./cash-payment-flow";
 
 function rethrowUpdateOrderFailure(orderId: string, error: unknown): never {
   if (error && typeof error === "object" && "status" in error && "type" in error) {
@@ -51,10 +56,22 @@ function rethrowUpdateOrderFailure(orderId: string, error: unknown): never {
 async function persistOrderUpdate(
   orderId: string,
   existing: Pick<Order, "status" | "paymentStatus" | "fulfillmentStatus">,
+  payment: { id: string; method: string | null; provider: string | null } | null,
   data: UpdateOrderData,
   context?: UpdateOrderContext
 ) {
-  assertValidOrderUpdateData(data);
+  const resolvedData: UpdateOrderData = {
+    ...data,
+    paymentStatus: resolveCashOrderPaymentStatus({
+      paymentMethod: payment?.method,
+      paymentProvider: payment?.provider,
+      requestedStatus: data.status,
+      requestedPaymentStatus: data.paymentStatus,
+      existingPaymentStatus: existing.paymentStatus,
+    }),
+  };
+
+  assertValidOrderUpdateData(resolvedData);
 
   const patch = buildOrderUpdatePatch(
     {
@@ -62,7 +79,7 @@ async function persistOrderUpdate(
       paymentStatus: existing.paymentStatus,
       fulfillmentStatus: existing.fulfillmentStatus,
     },
-    data
+    resolvedData
   );
 
   if (!patch) {
@@ -72,21 +89,37 @@ async function persistOrderUpdate(
   const { updateData, changes } = patch;
   const updatedFieldKeys = Object.keys(updateData);
 
-  await db.order.update({
-    where: { id: orderId },
-    data: updateData,
-  });
+  await db.$transaction(async (tx) => {
+    await tx.order.update({
+      where: { id: orderId },
+      data: updateData,
+    });
 
-  await db.orderEvent.create({
-    data: {
-      orderId,
-      type: "order_updated",
-      userId: context?.actorUserId ?? undefined,
+    if (
+      payment &&
+      isCashPaymentMethod(payment.method ?? payment.provider) &&
+      typeof updateData.paymentStatus === "string"
+    ) {
+      const cashPaymentPatch = buildCashPaymentPatch(updateData.paymentStatus);
+      if (cashPaymentPatch) {
+        await tx.payment.update({
+          where: { id: payment.id },
+          data: cashPaymentPatch,
+        });
+      }
+    }
+
+    await tx.orderEvent.create({
       data: {
-        changes,
-        updatedFields: updatedFieldKeys,
+        orderId,
+        type: "order_updated",
+        userId: context?.actorUserId ?? undefined,
+        data: {
+          changes,
+          updatedFields: updatedFieldKeys,
+        },
       },
-    },
+    });
   });
 
   return getOrderById(orderId);
@@ -224,6 +257,17 @@ export async function updateOrder(
   try {
     const existing = await db.order.findUnique({
       where: { id: orderId },
+      include: {
+        payments: {
+          select: {
+            id: true,
+            method: true,
+            provider: true,
+          },
+          orderBy: { createdAt: "asc" },
+          take: 1,
+        },
+      },
     });
 
     if (!existing) {
@@ -235,7 +279,13 @@ export async function updateOrder(
       };
     }
 
-    return await persistOrderUpdate(orderId, existing, data, context);
+    return await persistOrderUpdate(
+      orderId,
+      existing,
+      existing.payments[0] ?? null,
+      data,
+      context
+    );
   } catch (error: unknown) {
     rethrowUpdateOrderFailure(orderId, error);
   }

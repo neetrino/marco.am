@@ -197,16 +197,18 @@
 
 ## Փուլ 6 — Վճարման եղանակներ
 
-**Փուլի առաջընթաց.** `88%`
+**Փուլի առաջընթաց.** `100%`
 
 
 | ID  | Առաջադրանք (backend)                                                    | Կատարման % | Կարգավիճակ |
 | --- | ----------------------------------------------------------------------- | ---------- | ---------- |
 | 6.1 | Քարտային վճարում — PSP ինտեգրացիա, session/webhook, կարգավիճակների flow | 100        | ✅          |
-| 6.2 | Կանխիկ վճարում — պատվերի մեթոդ, կարգավիճակների flow                     | 75         | 🔄         |
+| 6.2 | Կանխիկ վճարում — պատվերի մեթոդ, կարգավիճակների flow                     | 100        | ✅          |
 
 
 *Նշումներ.* `Payment` գրառում է ստեղծվում, իսկ `card`-ի դեպքում checkout-ը հիմա ստեղծում է PSP session (`providerTransactionId`, `idempotencyKey`, `providerResponse`) և վերադարձնում է `payment.paymentUrl` + `expiresAt`։ Ավելացված է webhook endpoint՝ `POST /api/v1/payments/webhook` (`x-psp-signature` HMAC SHA-256 validation)՝ event-ներով `payment.processing|succeeded|failed|cancelled|expired`, որոնք թարմացնում են `payments.status`, `orders.paymentStatus`, `orders.status`, `paidAt/failedAt` և գրում `order_events` (`payment_webhook_processed`)։ Local/dev fallback-ի համար ավելացվել է `GET /api/v1/payments/mock-hosted?session=...&status=succeeded|failed|cancelled|expired`՝ mock hosted redirect flow։
+
+**6.2 ✅ ավարտված (2026-04-17).** Cash (`payment.method/provider = cash|cash_on_delivery|cod`) պատվերների status flow-ը ամրացվել է admin update հոսքում (`PUT /api/v1/supersudo/orders/[id]`)։ Երբ admin-ը cash պատվերը դարձնում է `completed`, backend-ը ավտոմատ սինք է անում `orders.paymentStatus -> paid` (եթե explicit value չի փոխանցվել) և նույն transaction-ում թարմացնում է `payments.status` + timestamp-ները (`completedAt/failedAt`)։ `cancelled` դեպքում payment status-ը սինք է գնում `failed`։ Քարտային պատվերների վրա այս ավտոմատ rule-երը չեն տարածվում։ Թեստեր՝ `cash-payment-flow.test.ts`։
 
 ---
 
