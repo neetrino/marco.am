@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 import { ArrowLeft, Heart } from 'lucide-react';
 import { Montserrat } from 'next/font/google';
 
@@ -27,7 +27,7 @@ export function ReelsVerticalFeed({ initialIndex }: ReelsVerticalFeedProps) {
   const { t } = useTranslation();
   const [liked, setLiked] = useState<Record<number, boolean>>({});
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const id = `reel-slide-${initialIndex}`;
     const el = document.getElementById(id);
     el?.scrollIntoView({ block: 'start' });
