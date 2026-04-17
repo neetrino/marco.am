@@ -1,21 +1,23 @@
 {
   "filters": {
+    "panelTitle": "Filters",
+    "panelSubtitle": "Find what fits you best",
     "price": {
-      "title": "Filter by Price",
+      "title": "Price",
       "priceLabel": "Price:"
     },
     "color": {
-      "title": "Filter by Color",
+      "title": "Colors",
       "noColors": "No colors available",
       "loading": "Loading..."
     },
     "size": {
-      "title": "Filter by Size",
+      "title": "Size",
       "noSizes": "No sizes available",
       "loading": "Loading..."
     },
     "brand": {
-      "title": "Filter by Brand",
+      "title": "Brands",
       "searchPlaceholder": "Find brand",
       "noBrands": "No brands found",
       "loading": "Loading..."

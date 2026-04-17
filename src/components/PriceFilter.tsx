@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Card } from '@shop/ui';
 import { apiClient } from '../lib/api-client';
+import { productsFiltersSectionFont } from '../lib/products-filters-typography';
 import { getStoredLanguage } from '../lib/language';
 import { getStoredCurrency, formatPrice as formatCurrencyPrice, type CurrencyCode } from '../lib/currency';
 import { useTranslation } from '../lib/i18n-client';
@@ -228,90 +228,81 @@ export function PriceFilter({ currentMinPrice, currentMaxPrice, category }: Pric
   const minPercentage = getPercentage(safeMinPrice);
   const maxPercentage = getPercentage(safeMaxPrice);
 
-  return (
-    <Card className="p-4 mb-6">
-      <h3 className="text-base font-bold text-gray-800 mb-4 text-center uppercase tracking-wide">{t('products.filters.price.title')}</h3>
-      
-      {/* Range Slider */}
-      <div className="mb-4">
-        <div
-          ref={sliderRef}
-          className="relative h-1 bg-gray-200 cursor-pointer"
-          onMouseDown={(e) => {
-            const rect = sliderRef.current?.getBoundingClientRect();
-            if (!rect) return;
-            const percentage = ((e.clientX - rect.left) / rect.width) * 100;
-    const value = priceRange.min + (percentage / 100) * (priceRange.max - priceRange.min);
-    const step = resolveStepSize();
-            const roundedValue = roundToStep(value, step);
-            
-            const currentMin = typeof minPrice === 'number' && !isNaN(minPrice) ? minPrice : priceRange.min;
-            const currentMax = typeof maxPrice === 'number' && !isNaN(maxPrice) ? maxPrice : priceRange.max;
-            
-            if (Math.abs(roundedValue - currentMin) < Math.abs(roundedValue - currentMax)) {
-              const newMin = Math.max(priceRange.min, Math.min(roundedValue, currentMax - step));
-              setMinPrice(newMin);
-              handleMouseDown('min');
-            } else {
-              const newMax = Math.min(priceRange.max, Math.max(roundedValue, currentMin + step));
-              setMaxPrice(newMax);
-              handleMouseDown('max');
-            }
-          }}
-        >
-          {/* Active range - light blue */}
-          <div
-            className="absolute h-1 bg-sky-400"
-            style={{
-              left: `${minPercentage}%`,
-              width: `${maxPercentage - minPercentage}%`,
-            }}
-          />
-          
-          {/* Min handle - T-shaped marker */}
-          <div
-            className="absolute cursor-grab active:cursor-grabbing z-10"
-            style={{ left: `${minPercentage}%`, top: '50%', transform: 'translate(-50%, -50%)' }}
-            onMouseDown={(e) => {
-              e.stopPropagation();
-              handleMouseDown('min');
-            }}
-            onTouchStart={(e) => {
-              e.stopPropagation();
-              handleMouseDown('min');
-            }}
-          >
-            {/* T-shaped marker - vertical line extending above and below the horizontal line */}
-            <div className="w-1 h-5 bg-sky-400" />
-          </div>
-          
-          {/* Max handle - T-shaped marker */}
-          <div
-            className="absolute cursor-grab active:cursor-grabbing z-10"
-            style={{ left: `${maxPercentage}%`, top: '50%', transform: 'translate(-50%, -50%)' }}
-            onMouseDown={(e) => {
-              e.stopPropagation();
-              handleMouseDown('max');
-            }}
-            onTouchStart={(e) => {
-              e.stopPropagation();
-              handleMouseDown('max');
-            }}
-          >
-            {/* T-shaped marker - vertical line extending above and below the horizontal line */}
-            <div className="w-1 h-5 bg-sky-400" />
-          </div>
-        </div>
-      </div>
+  const rangeLabel = `${formatPrice(Number(safeMinPrice) || 0)} - ${formatPrice(Number(safeMaxPrice) || 100000)}`;
 
-      {/* Price Display */}
-      <div className="text-gray-700 text-center">
-        <span className="text-sm text-gray-500">{t('products.filters.price.priceLabel')} </span>
-        <span className="text-sm font-semibold text-gray-900">
-          {formatPrice(Number(safeMinPrice) || 0)} - {formatPrice(Number(safeMaxPrice) || 100000)}
+  return (
+    <section className="mb-4 border-b border-solid border-[#e2e8f0] pb-4">
+      <div className="mb-4 flex h-6 w-full items-center justify-between gap-2">
+        <span
+          className={`${productsFiltersSectionFont.className} shrink-0 text-base font-semibold leading-6 tracking-[-0.31px] text-[#314158]`}
+        >
+          {t('products.filters.price.title')}
+        </span>
+        <span className="truncate text-right text-base font-bold leading-6 tracking-[-0.31px] text-black">
+          {rangeLabel}
         </span>
       </div>
-    </Card>
+
+      <div
+        ref={sliderRef}
+        className="relative h-2 w-full cursor-pointer rounded-full bg-[#e2e8f0]"
+        onMouseDown={(e) => {
+          const rect = sliderRef.current?.getBoundingClientRect();
+          if (!rect) return;
+          const percentage = ((e.clientX - rect.left) / rect.width) * 100;
+          const value = priceRange.min + (percentage / 100) * (priceRange.max - priceRange.min);
+          const step = resolveStepSize();
+          const roundedValue = roundToStep(value, step);
+
+          const currentMin = typeof minPrice === 'number' && !isNaN(minPrice) ? minPrice : priceRange.min;
+          const currentMax = typeof maxPrice === 'number' && !isNaN(maxPrice) ? maxPrice : priceRange.max;
+
+          if (Math.abs(roundedValue - currentMin) < Math.abs(roundedValue - currentMax)) {
+            const newMin = Math.max(priceRange.min, Math.min(roundedValue, currentMax - step));
+            setMinPrice(newMin);
+            handleMouseDown('min');
+          } else {
+            const newMax = Math.min(priceRange.max, Math.max(roundedValue, currentMin + step));
+            setMaxPrice(newMax);
+            handleMouseDown('max');
+          }
+        }}
+      >
+        <div
+          className="absolute top-0 h-full rounded-full bg-marco-yellow"
+          style={{
+            left: `${minPercentage}%`,
+            width: `${Math.max(0, maxPercentage - minPercentage)}%`,
+          }}
+        />
+
+        <div
+          className="absolute z-10 h-4 w-4 cursor-grab rounded-full border border-solid border-[#e2e8f0] bg-white shadow-sm active:cursor-grabbing"
+          style={{ left: `${minPercentage}%`, top: '50%', transform: 'translate(-50%, -50%)' }}
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            handleMouseDown('min');
+          }}
+          onTouchStart={(e) => {
+            e.stopPropagation();
+            handleMouseDown('min');
+          }}
+        />
+
+        <div
+          className="absolute z-10 h-4 w-4 cursor-grab rounded-full border border-solid border-[#e2e8f0] bg-white shadow-sm active:cursor-grabbing"
+          style={{ left: `${maxPercentage}%`, top: '50%', transform: 'translate(-50%, -50%)' }}
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            handleMouseDown('max');
+          }}
+          onTouchStart={(e) => {
+            e.stopPropagation();
+            handleMouseDown('max');
+          }}
+        />
+      </div>
+    </section>
   );
 }
 

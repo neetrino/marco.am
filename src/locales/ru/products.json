@@ -1,21 +1,23 @@
 {
   "filters": {
+    "panelTitle": "Фильтры",
+    "panelSubtitle": "Найдите то, что вам подходит",
     "price": {
-      "title": "Фильтр по цене",
+      "title": "Цена",
       "priceLabel": "Цена:"
     },
     "color": {
-      "title": "Фильтр по цвету",
+      "title": "Цвета",
       "noColors": "Цвета недоступны",
       "loading": "Загрузка..."
     },
     "size": {
-      "title": "Фильтр по размеру",
+      "title": "Размер",
       "noSizes": "Размеры недоступны",
       "loading": "Загрузка..."
     },
     "brand": {
-      "title": "Фильтр по бренду",
+      "title": "Бренды",
       "searchPlaceholder": "Найти бренд",
       "noBrands": "Бренды не найдены",
       "loading": "Загрузка..."

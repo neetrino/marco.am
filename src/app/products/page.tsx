@@ -14,6 +14,7 @@ import { ProductsHeader } from '../../components/ProductsHeader';
 import { ProductsGrid } from '../../components/ProductsGrid';
 import { MobileFiltersDrawer } from '../../components/MobileFiltersDrawer';
 import { ProductsFiltersProvider } from '../../components/ProductsFiltersProvider';
+import { productsFiltersSectionFont } from '../../lib/products-filters-typography';
 import {
   ProductsPagination,
   type PaginationSlotItem,
@@ -221,13 +222,23 @@ export default async function ProductsPage({ searchParams }: any) {
           minPrice={params?.minPrice}
           maxPrice={params?.maxPrice}
         >
-        <aside className="w-64 hidden lg:block bg-white rounded-xl flex-shrink-0">
-          <div className="sticky top-4 p-4 space-y-6">
+        <aside className="hidden w-64 shrink-0 bg-white lg:block">
+          <div className="sticky top-4 px-6 pb-4 pt-6">
+            <div className="mb-6 flex flex-col gap-1">
+              <h2
+                className={`${productsFiltersSectionFont.className} text-base font-semibold leading-6 tracking-[-0.31px] text-[#0f172b]`}
+              >
+                {t(language, 'products.filters.panelTitle')}
+              </h2>
+              <p className="text-sm font-normal leading-5 tracking-[-0.15px] text-[#62748e]">
+                {t(language, 'products.filters.panelSubtitle')}
+              </p>
+            </div>
             <Suspense fallback={<div>{t(language, 'common.messages.loadingFilters')}</div>}>
               <PriceFilter currentMinPrice={params?.minPrice} currentMaxPrice={params?.maxPrice} category={params?.category} search={params?.search} />
+              <BrandFilter category={params?.category} search={params?.search} minPrice={params?.minPrice} maxPrice={params?.maxPrice} selectedBrands={selectedBrands} />
               <ColorFilter category={params?.category} search={params?.search} minPrice={params?.minPrice} maxPrice={params?.maxPrice} selectedColors={selectedColors} />
               <SizeFilter category={params?.category} search={params?.search} minPrice={params?.minPrice} maxPrice={params?.maxPrice} selectedSizes={selectedSizes} />
-              <BrandFilter category={params?.category} search={params?.search} minPrice={params?.minPrice} maxPrice={params?.maxPrice} selectedBrands={selectedBrands} />
             </Suspense>
           </div>
         </aside>
@@ -262,12 +273,22 @@ export default async function ProductsPage({ searchParams }: any) {
 
       {/* Mobile Filters Drawer */}
       <MobileFiltersDrawer openEventName={MOBILE_FILTERS_EVENT}>
-        <div className="p-4 space-y-6">
+        <div className="space-y-0 px-4 pb-4 pt-2">
+          <div className="mb-6 flex flex-col gap-1">
+            <h2
+              className={`${productsFiltersSectionFont.className} text-base font-semibold leading-6 tracking-[-0.31px] text-[#0f172b]`}
+            >
+              {t(language, 'products.filters.panelTitle')}
+            </h2>
+            <p className="text-sm font-normal leading-5 tracking-[-0.15px] text-[#62748e]">
+              {t(language, 'products.filters.panelSubtitle')}
+            </p>
+          </div>
           <Suspense fallback={<div>{t(language, 'common.messages.loadingFilters')}</div>}>
             <PriceFilter currentMinPrice={params?.minPrice} currentMaxPrice={params?.maxPrice} category={params?.category} search={params?.search} />
+            <BrandFilter category={params?.category} search={params?.search} minPrice={params?.minPrice} maxPrice={params?.maxPrice} selectedBrands={selectedBrands} />
             <ColorFilter category={params?.category} search={params?.search} minPrice={params?.minPrice} maxPrice={params?.maxPrice} selectedColors={selectedColors} />
             <SizeFilter category={params?.category} search={params?.search} minPrice={params?.minPrice} maxPrice={params?.maxPrice} selectedSizes={selectedSizes} />
-            <BrandFilter category={params?.category} search={params?.search} minPrice={params?.minPrice} maxPrice={params?.maxPrice} selectedBrands={selectedBrands} />
           </Suspense>
         </div>
       </MobileFiltersDrawer>
