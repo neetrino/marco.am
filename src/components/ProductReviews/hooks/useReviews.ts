@@ -63,6 +63,17 @@ export function useReviews(productId?: string, productSlug?: string) {
     void loadReviews();
   }, [loadReviews]);
 
+  useEffect(() => {
+    const handleReviewUpdate = () => {
+      void loadReviews();
+    };
+    if (typeof window === 'undefined') {
+      return;
+    }
+    window.addEventListener('review-updated', handleReviewUpdate);
+    return () => window.removeEventListener('review-updated', handleReviewUpdate);
+  }, [loadReviews]);
+
   return {
     reviews,
     aggregate,

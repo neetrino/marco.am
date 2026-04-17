@@ -3,26 +3,33 @@
 import { Button } from '@shop/ui';
 import { useAuth } from '../lib/auth/AuthContext';
 import { useTranslation } from '../lib/i18n-client';
-import { useReviews } from './ProductReviews/hooks/useReviews';
 import { useReviewForm } from './ProductReviews/hooks/useReviewForm';
 import { ReviewSummary } from './ProductReviews/ReviewSummary';
 import { ReviewForm } from './ProductReviews/ReviewForm';
 import { ReviewList } from './ProductReviews/ReviewList';
 import { ProductReviewsLoading } from './ProductReviews/ProductReviewsLoading';
+import type { Review } from './ProductReviews/utils';
+import type { ProductReviewsAggregate } from '@/lib/types/product-reviews';
 
 interface ProductReviewsProps {
-  productId?: string; // For backward compatibility
-  productSlug?: string; // Preferred: use slug for API calls
+  productId?: string;
+  productSlug?: string;
+  reviews: Review[];
+  aggregate: ProductReviewsAggregate;
+  loading: boolean;
+  loadReviews: () => void | Promise<void>;
 }
 
-export function ProductReviews({ productId, productSlug }: ProductReviewsProps) {
+export function ProductReviews({
+  productId,
+  productSlug,
+  reviews,
+  aggregate,
+  loading,
+  loadReviews,
+}: ProductReviewsProps) {
   const { isLoggedIn, user } = useAuth();
   const { t } = useTranslation();
-  
-  const { reviews, aggregate, loading, loadReviews } = useReviews(
-    productId,
-    productSlug
-  );
 
   const {
     showForm,
@@ -46,7 +53,9 @@ export function ProductReviews({ productId, productSlug }: ProductReviewsProps) 
     productId,
     productSlug,
     reviews,
-    onReviewUpdated: () => loadReviews(),
+    onReviewUpdated: () => {
+      void loadReviews();
+    },
   });
 
   // Get user's review if exists (reserved for future UI)

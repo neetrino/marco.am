@@ -34,7 +34,11 @@ export default function ProductPage({ params }: ProductPageProps) {
     isInCompare,
     quantity,
     reviews,
+    aggregate,
+    reviewsLoading,
+    reloadProductReviews,
     averageRating,
+    reviewCount,
     slug,
     attributeGroups,
     colorGroups,
@@ -118,7 +122,7 @@ export default function ProductPage({ params }: ProductPageProps) {
             currency={currency}
             language={language}
             averageRating={averageRating}
-            reviewsCount={reviews.length}
+            reviewsCount={reviewCount}
             quantity={quantity}
             maxQuantity={maxQuantity}
             isOutOfStock={isOutOfStock}
@@ -152,7 +156,14 @@ export default function ProductPage({ params }: ProductPageProps) {
       </div>
 
       <div id="product-reviews" className="mt-24 scroll-mt-24">
-        <ProductReviews productSlug={slug} productId={product.id} />
+        <ProductReviews
+          productSlug={slug}
+          productId={product.id}
+          reviews={reviews}
+          aggregate={aggregate}
+          loading={reviewsLoading}
+          loadReviews={reloadProductReviews}
+        />
       </div>
       <div className="mt-16">
         <RelatedProducts categorySlug={product.categories?.[0]?.slug} currentProductId={product.id} />

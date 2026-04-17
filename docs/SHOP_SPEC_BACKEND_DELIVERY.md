@@ -49,15 +49,13 @@
 
 | ID  | Առաջադրանք (backend)                                                                                      | Կատարման % | Կարգավիճակ |
 | --- | --------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
-| 1.1 | Հաստատել API կոնտրակտը frontend-ի հետ — REST կամ GraphQL, auth headers, սխալների մոդել                    | 100        | ✅         |
-| 1.2 | Միջավայրեր (dev / staging / prod) — env, build/deploy-ին համապատասխան կոնֆիգ (ըստ թիմի պատասխանատվության) | 100        | ✅         |
+| 1.1 | Հաստատել API կոնտրակտը frontend-ի հետ — REST կամ GraphQL, auth headers, սխալների մոդել                    | 100        | ✅          |
+| 1.2 | Միջավայրեր (dev / staging / prod) — env, build/deploy-ին համապատասխան կոնֆիգ (ըստ թիմի պատասխանատվության) | 100        | ✅          |
 
 
-*Նշումներ.* **1.1 ✅ ավարտված (2026-04-16).** Պաշտոնական կոնտրակտ՝ [`docs/API_CONTRACT.md`](./API_CONTRACT.md) (REST JSON, `Authorization: Bearer <JWT>`, RFC7807-անման `type`/`title`/`status`/`detail`/`instance`), մեքենայական սխեմա՝ [`docs/openapi/shop-api.yaml`](./openapi/shop-api.yaml)։ GraphQL չի օգտագործվում։ Implementation՝ `src/app/api` (ներառյալ `v1`), `src/lib/types/errors.ts`։
+*Նշումներ.* **1.1 ✅ ավարտված (2026-04-16).** Պաշտոնական կոնտրակտ՝ `[docs/API_CONTRACT.md](./API_CONTRACT.md)` (REST JSON, `Authorization: Bearer <JWT>`, RFC7807-անման `type`/`title`/`status`/`detail`/`instance`), մեքենայական սխեմա՝ `[docs/openapi/shop-api.yaml](./openapi/shop-api.yaml)`։ GraphQL չի օգտագործվում։ Implementation՝ `src/app/api` (ներառյալ `v1`), `src/lib/types/errors.ts`։
 
-**1.1 — frontend համապատասխանության ստուգում (2026-04-17).** Storefront `src/lib/api-client/headers.ts` — `Authorization: Bearer <token>` (`getHeaders` / `http-methods.ts`); սխալի մարմին՝ `error-handler.ts` → `createApiError` / `getClientErrorDetail` — նախընտրում է RFC7807 `detail`, հետո `message`։ Պակասներ չեն հայտնաբերվել (թիմային «հաստատում» փաստաթղթից դուրս — codebase-ում կոնտրակտը համաձայնեցված է)։
-
-**1.2 ✅ ավարտված (2026-04-16).** Env-ի մեկ կետ հանրային URL/CORS-ի համար՝ `src/lib/config/deployment-env.ts` (`APP_ENV`, Vercel-ում `VERCEL_ENV` → preview=staging), `getCorsAllowedOrigin()` — `middleware.ts`-ում, `getPublicAppUrl()` — `src/lib/api-client/url-builder.ts`, health-ում `deployment` դաշտ՝ `GET /api/health`։ Կաղապար և միջավայրերի նկարագրություն՝ [`.env.example`](../.env.example)։ Build/deploy՝ `vercel.json` (`pnpm run build`, `output: standalone` — `next.config.js`), թեստեր՝ `src/lib/config/deployment-env.test.ts`։
+**1.2 ✅ ավարտված (2026-04-16).** Env-ի մեկ կետ հանրային URL/CORS-ի համար՝ `src/lib/config/deployment-env.ts` (`APP_ENV`, Vercel-ում `VERCEL_ENV` → preview=staging), `getCorsAllowedOrigin()` — `middleware.ts`-ում, `getPublicAppUrl()` — `src/lib/api-client/url-builder.ts`, health-ում `deployment` դաշտ՝ `GET /api/health`։ Կաղապար և միջավայրերի նկարագրություն՝ `[.env.example](../.env.example)`։ Build/deploy՝ `vercel.json` (`pnpm run build`, `output: standalone` — `next.config.js`), թեստեր՝ `src/lib/config/deployment-env.test.ts`։
 
 ---
 
@@ -70,12 +68,12 @@
 | --- | ---------------------------------------------------------------------------------------------------------------------- | ---------- | ---------- |
 | 2.1 | Hero / banner — CMS կամ admin-ից կառավարելի կոնտենտ, CTA (ցուցակ, ակտիվություն, կարգ)                                  | 10         | ⬜          |
 | 2.2 | Featured products — bestsellers կամ curated list, տվյալներ PDP հղման համար                                             | 85         | 🔄         |
-| 2.3 | Promotions / special offers բլոկի տվյալներ                                                                             | 100        | ✅         |
+| 2.3 | Promotions / special offers բլոկի տվյալներ                                                                             | 100        | ✅          |
 | 2.4 | «Why choose us» — 3–4 առավելություն (warranty, fast delivery, installment, original products) — CMS կամ structured API | 5          | ⬜          |
 | 2.5 | Հաճախորդների կարծիքների carousel — rating, տեքստ, լուսանկարներ (եթե կան)                                               | 0          | ⬜          |
 | 2.6 | Brand partners — բրենդների մետատվյալներ + լոգո asset URL                                                               | 25         | ⬜          |
 | 2.7 | Footer — կոնտակտ, սոց հղումներ, քարտեզ embed, legal/quick links (կոնֆիգ/CMS endpoint)                                  | 5          | ⬜          |
-| 2.8 | Reels section (home) — կարճ ցուցակ / նախադիտում կամ deep link դեպի Reels էջ (տես Փուլ 11)                              | 100        | ✅         |
+| 2.8 | Reels section (home) — կարճ ցուցակ / նախադիտում կամ deep link դեպի Reels էջ (տես Փուլ 11)                              | 100        | ✅          |
 
 
 *Նշումներ.* 2.2 — `GET /api/v1/products` + `filter=new|bestseller|featured`։ 2.3 — `GET /api/v1/products` + `filter=promotion` կամ `filter=special_offer` — ակցիայի ապրանքներ՝ ապրանքի `discountPercent > 0`, կատեգորիայի/բրենդի զեղչ admin settings-ից (`categoryDiscounts` / `brandDiscounts`), կամ variant-ում `compareAtPrice > price` (SQL DISTINCT `productId`)։ Home «Հատուկ առաջարկներ» բլոկը կարդում է այս ֆիլտրը; CTA՝ `/products?filter=promotion`։ **Ուշադրություն**՝ միայն **global** զեղչը (առանց ապրանք/կատեգորիա/բրենդ/compare-at) այս ցուցակի մեջ չի ներառվում — ամբողջ կատալոգը չլցնելու համար։ Բրենդները DB-ում են, բայց storefront-ի համար հանրային brands API չի երևում (միայն admin)։
@@ -118,7 +116,7 @@
 | 4.5 | Quantity + Add to cart — զամբյուղի API (կլիենտ state-ի հետ համաձայնեցված)           | 90         | 🔄         |
 | 4.6 | Պահեստի կարգավիճակ — in stock / out of stock                                        | 90         | 🔄         |
 | 4.7 | Related products — recommendation rule (կատեգորիա/բրենդ/այլ)                        | 55         | 🔄         |
-| 4.8 | Reviews — rating aggregate, ցուցակ, review submit (policy + auth, եթե պահանջվում է) | 100        | ✅         |
+| 4.8 | Reviews — rating aggregate, ցուցակ, review submit (policy + auth, եթե պահանջվում է) | 100        | ✅          |
 
 
 *Նշումներ.* 4.7 — առաջարկը հիմնականում կլիենտում է (`/api/v1/products` + category, առանց առանձին recommendation endpoint-ի)։
@@ -134,10 +132,10 @@
 
 | ID  | Առաջադրանք (backend)                                                             | Կատարման % | Կարգավիճակ |
 | --- | -------------------------------------------------------------------------------- | ---------- | ---------- |
-| 5.1 | Պատվերի սևագիր / validate — անուն, ազգանուն, հեռախոս, email, հասցե, նշումներ     | 100        | ✅         |
-| 5.2 | Delivery method — ինտեգրացիայի hint (օր. Yandex delivery) + admin business rules | 100        | ✅         |
-| 5.3 | Delivery cost և order total — դինամիկ վերահաշվարկ API                            | 100        | ✅         |
-| 5.4 | Payment method ընտրություն — card vs cash, order payload                         | 100        | ✅         |
+| 5.1 | Պատվերի սևագիր / validate — անուն, ազգանուն, հեռախոս, email, հասցե, նշումներ     | 100        | ✅          |
+| 5.2 | Delivery method — ինտեգրացիայի hint (օր. Yandex delivery) + admin business rules | 100        | ✅          |
+| 5.3 | Delivery cost և order total — դինամիկ վերահաշվարկ API                            | 100        | ✅          |
+| 5.4 | Payment method ընտրություն — card vs cash, order payload                         | 100        | ✅          |
 | 5.5 | Order confirmation — order ID, summary (email/SMS — եթե scope-ում է)             | 60         | 🔄         |
 | 5.6 | Validation և error handling — client + server միասնական մոդել                    | 75         | 🔄         |
 | 5.7 | Սերվերային գնային վերահսկում — զամբյուղի հետ համաձայնեցում                       | 85         | 🔄         |
@@ -147,11 +145,11 @@
 
 **5.1 ✅ ավարտված (2026-04-16).** Storefront `CheckoutForm` — անուն/ազգանուն, հեռախոս, email, առաքման հասցե (փողոց + քաղաք, երբ `courier`), նշումներ (`notes`, մինչև 2000 նիշ)։ `POST /api/v1/orders/checkout` մարմնում `firstName`/`lastName`/`notes` + `shippingAddress`։ Սերվեր՝ `Order.notes`, հասցեի JSON (`buildOrderAddressJson` — `firstName`/`lastName`/`addressLine1`/`city`)։
 
-**5.2 ✅ ավարտված (2026-04-16).** Առաքման եղանակի ընտրություն checkout-ում՝ **`pickup`** (խանութից վերցնել) կամ **`courier`** (կուրիերով առաքում) — `CheckoutForm` radio, `shippingMethod` դաշտը API payload-ում։ Հին արժեք **`delivery`** սերվերում նորմալացվում է `courier`-ի (`normalizeShippingMethod` — `src/lib/constants/shipping-method.ts`)։ `courier`-ի դեպքում պահանջվում են հասցե + քաղաք, առաքման արժեքը հաշվարկվում է սերվերում `adminDeliveryService.getDeliveryPrice`-ով (քաղաք, երկիր) — նախադիտում storefront-ում `GET /api/v1/delivery/price`։ Թարգմանություններ՝ `checkout.shipping.courier` / `courierDescription` (hint՝ admin կանոններ / գործընկեր կուրիեր, ոչ թե լիարժեք Yandex API ինտեգրացիա)։
+**5.2 ✅ ավարտված (2026-04-16).** Առաքման եղանակի ընտրություն checkout-ում՝ `**pickup`** (խանութից վերցնել) կամ `**courier**` (կուրիերով առաքում) — `CheckoutForm` radio, `shippingMethod` դաշտը API payload-ում։ Հին արժեք `**delivery**` սերվերում նորմալացվում է `courier`-ի (`normalizeShippingMethod` — `src/lib/constants/shipping-method.ts`)։ `courier`-ի դեպքում պահանջվում են հասցե + քաղաք, առաքման արժեքը հաշվարկվում է սերվերում `adminDeliveryService.getDeliveryPrice`-ով (քաղաք, երկիր) — նախադիտում storefront-ում `GET /api/v1/delivery/price`։ Թարգմանություններ՝ `checkout.shipping.courier` / `courierDescription` (hint՝ admin կանոններ / գործընկեր կուրիեր, ոչ թե լիարժեք Yandex API ինտեգրացիա)։
 
-**5.3 ✅ ավարտված (2026-04-16).** **`POST /api/v1/checkout/totals`** — դինամիկ ենթագումար + առաքում + հարկ (0) + ընդհանուր **AMD**-ով (նույն բանաձևը, ինչ `POST /api/v1/orders/checkout` գնահատում է)։ Մարմին՝ `shippingMethod`, `country`/`city` (courier-ի համար), `cartId` (JWT-ով միացնելիս) կամ `items[]` (հյուր)։ Իրականացում՝ `checkoutTotalsService` (`cartService.getCart` զեղչերով միացնելիս, հյուր՝ variant-ի DB գին) + `adminDeliveryService.getDeliveryPrice`։ Storefront՝ `useCheckoutTotals` (debounce) + ամփոփման UI-ը ցուցադրում է արդյունքը; fallback՝ `useOrderSummary`-ում զամբյուղի AMD-ում ենթագումար, եթե POST-ը դեռ չի կանչվել։
+**5.3 ✅ ավարտված (2026-04-16).** `**POST /api/v1/checkout/totals`** — դինամիկ ենթագումար + առաքում + հարկ (0) + ընդհանուր **AMD**-ով (նույն բանաձևը, ինչ `POST /api/v1/orders/checkout` գնահատում է)։ Մարմին՝ `shippingMethod`, `country`/`city` (courier-ի համար), `cartId` (JWT-ով միացնելիս) կամ `items[]` (հյուր)։ Իրականացում՝ `checkoutTotalsService` (`cartService.getCart` զեղչերով միացնելիս, հյուր՝ variant-ի DB գին) + `adminDeliveryService.getDeliveryPrice`։ Storefront՝ `useCheckoutTotals` (debounce) + ամփոփման UI-ը ցուցադրում է արդյունքը; fallback՝ `useOrderSummary`-ում զամբյուղի AMD-ում ենթագումար, եթե POST-ը դեռ չի կանչվել։
 
-**5.4 ✅ ավարտված (2026-04-17).** Վճարման եղանակի ընտրություն checkout-ում՝ **`card`** (բանկային քարտ, առցանց) կամ **`cash`** (կանխիկ) — `CheckoutForm` radio, `paymentMethod` դաշտը `POST /api/v1/orders/checkout` մարմնում։ Սերվեր՝ `resolveCheckoutPaymentMethod` / `normalizeCheckoutPaymentMethod` (`src/lib/constants/checkout-payment-method.ts`) — հին արժեքներ **`idram`** / **`arca`** → `card`, **`cash_on_delivery`** → `cash`; դատարկ/բացակայող → `cash`։ `Payment` գրառումը պահում է `provider`/`method` = canonical արժեքը; `nextAction`՝ `card` → `redirect_to_payment`, `cash` → `view_order`։ Vitest՝ `checkout-payment-method.test.ts`։
+**5.4 ✅ ավարտված (2026-04-17).** Վճարման եղանակի ընտրություն checkout-ում՝ `**card`** (բանկային քարտ, առցանց) կամ `**cash**` (կանխիկ) — `CheckoutForm` radio, `paymentMethod` դաշտը `POST /api/v1/orders/checkout` մարմնում։ Սերվեր՝ `resolveCheckoutPaymentMethod` / `normalizeCheckoutPaymentMethod` (`src/lib/constants/checkout-payment-method.ts`) — հին արժեքներ `**idram**` / `**arca**` → `card`, `**cash_on_delivery**` → `cash`; դատարկ/բացակայող → `cash`։ `Payment` գրառումը պահում է `provider`/`method` = canonical արժեքը; `nextAction`՝ `card` → `redirect_to_payment`, `cash` → `view_order`։ Vitest՝ `checkout-payment-method.test.ts`։
 
 ---
 
@@ -177,16 +175,16 @@
 
 | ID  | Առաջադրանք (backend)                                                             | Կատարման % | Կարգավիճակ |
 | --- | -------------------------------------------------------------------------------- | ---------- | ---------- |
-| 7.1 | Registration / Login — email **կամ** phone, verification flow (եթե պահանջվում է) | 100        | ✅         |
-| 7.2 | Order history — կարգավիճակ, reorder entry point-ի տվյալներ                       | 100        | ✅         |
-| 7.3 | Reorder — նախորդ պատվերից զամբյուղի prefill / նոր պատվեր                         | 100        | ✅         |
-| 7.4 | Address management — shipping հասցեների CRUD                                     | 100        | ✅         |
-| 7.5 | Personal data — edit profile, password/security                                  | 100        | ✅         |
+| 7.1 | Registration / Login — email **կամ** phone, verification flow (եթե պահանջվում է) | 100        | ✅          |
+| 7.2 | Order history — կարգավիճակ, reorder entry point-ի տվյալներ                       | 100        | ✅          |
+| 7.3 | Reorder — նախորդ պատվերից զամբյուղի prefill / նոր պատվեր                         | 100        | ✅          |
+| 7.4 | Address management — shipping հասցեների CRUD                                     | 100        | ✅          |
+| 7.5 | Personal data — edit profile, password/security                                  | 100        | ✅          |
 
 
 *Նշումներ.* 7.3 — `POST /api/v1/orders/{number}/reorder` (JWT) — պատվերի տողերը ավելացվում են զամբյուղում (`cartService.addItem`), հասանելիության սահմաններով (published, stock); պատասխանում `added` / `skipped` + թարմ `cart` (ինչպես `GET /api/v1/cart`)։
 
-**7.2 ✅ ավարտված (2026-04-16, backend ստուգում 2026-04-17).** `GET /api/v1/orders` (JWT) — պատմության ցուցակ՝ `status`, `paymentStatus`, `fulfillmentStatus`, գումարներ, `itemsCount`, `createdAt` (ISO8601), և **`links`**՝ `{ self: { method: GET, href }, reorder: { method: POST, href } }` (href-երը `/api/v1/orders/<number>` և `/api/v1/orders/<number>/reorder`)։ Նույն **`links`** դաշտը ավելացված է `GET /api/v1/orders/[number]` պատասխանին և `GET /api/v1/users/dashboard`-ի `recentOrders` տողերին։ OpenAPI՝ `OrderListResponse` / `CustomerOrderLinks` (`docs/openapi/shop-api.yaml`)։ Սերվերում `page`/`limit` query-ի անվավեր արժեքները (`NaN`, բացասական) անտեսվում են — fallback `1` / `20` (`orders.service.ts` `list`)։ Vitest՝ `src/lib/constants/customer-order-api-paths.test.ts` (3 թեստ) անցել է։
+**7.2 ✅ ավարտված (2026-04-16, backend ստուգում 2026-04-17).** `GET /api/v1/orders` (JWT) — պատմության ցուցակ՝ `status`, `paymentStatus`, `fulfillmentStatus`, գումարներ, `itemsCount`, `createdAt` (ISO8601), և `**links`**՝ `{ self: { method: GET, href }, reorder: { method: POST, href } }` (href-երը `/api/v1/orders/<number>` և `/api/v1/orders/<number>/reorder`)։ Նույն `**links**` դաշտը ավելացված է `GET /api/v1/orders/[number]` պատասխանին և `GET /api/v1/users/dashboard`-ի `recentOrders` տողերին։ OpenAPI՝ `OrderListResponse` / `CustomerOrderLinks` (`docs/openapi/shop-api.yaml`)։ Սերվերում `page`/`limit` query-ի անվավեր արժեքները (`NaN`, բացասական) անտեսվում են — fallback `1` / `20` (`orders.service.ts` `list`)։ Vitest՝ `src/lib/constants/customer-order-api-paths.test.ts` (3 թեստ) անցել է։
 
 **7.3 ✅ ավարտված (2026-04-16).** `POST /api/v1/orders/[number]/reorder` — նախորդ պատվերի `OrderItem` տողերից զամբյուղի լցում (`src/lib/services/cart-reorder.service.ts` → `cartService.addItem`). Չլրացված տողերը `skipped`-ում են `no_variant` | `variant_not_found` | `unpublished` | `out_of_stock` պատճառներով։ Դատարկ պատվերի դեպքում `400`։
 
@@ -224,9 +222,9 @@
 
 | ID  | Առաջադրանք (backend)                                        | Կատարման % | Կարգավիճակ |
 | --- | ----------------------------------------------------------- | ---------- | ---------- |
-| 9.1 | Orders list — filters: New, In process, Delivered, Canceled | 100        | ✅         |
-| 9.2 | Order details — line items, customer, payment, delivery     | 100        | ✅         |
-| 9.3 | Order status updates — audit trail կամ timestamp            | 100        | ✅         |
+| 9.1 | Orders list — filters: New, In process, Delivered, Canceled | 100        | ✅          |
+| 9.2 | Order details — line items, customer, payment, delivery     | 100        | ✅          |
+| 9.3 | Order status updates — audit trail կամ timestamp            | 100        | ✅          |
 | 9.4 | Admin comment field — internal notes                        | 90         | 🔄         |
 
 
@@ -236,7 +234,7 @@
 
 **9.2 ✅ ավարտված (2026-04-17).** Admin պատվերի մանրամասների մոդալ՝ `GET /api/v1/admin/orders/[id]` (նույն պատասխանը, ինչ արդեն էր) + UI բաժիններ՝ **ամփոփում** (կարգավիճակներ, tracking, ամսաթվեր), **տողեր** (SKU, քանակ, գին, variant options, նկարի thumbnail), **հաճախորդ** (հաշվի + հյուր checkout՝ անուն/email/հեռախոս billing/shipping JSON-ից), **վճարում** (provider, method, գումար, կարգավիճակ, քարտ), **առաքում** (pickup/courier, հասցե, երկիր), **գումարներ**, **նշումներ**, **audit trail**։ Բեռնման ժամանակ մոդալը ցուցադրվում է spinner-ով (`setOrderDetails(null)` նոր բացման ժամանակ)։ API-ում `formatOrderForDetail` — `trackingNumber`, `fulfilledAt`, line `price`/`imageUrl`։ Կոդ՝ `OrderDetailsModal.tsx`, `OrderDetailsMeta`, `OrderDetailsItems`, `OrderDetailsCustomer`, `OrderDetailsPayment`, `OrderDetailsDelivery`, `OrderDetailsTotals`, `OrderDetailsNotes`, `order-details-display.ts`, `order-formatter.ts`։
 
-**9.3 ✅ ավարտված (2026-04-17).** Admin `PUT /api/v1/admin/orders/[id]`-ի ժամանակ կարգավիճակների փոփոխությունները գրանցվում են `order_events`-ում՝ **`changes`** (from/to `status`, `paymentStatus`, `fulfillmentStatus`), `updatedFields`, **`userId`** (ընթացիկ ադմին JWT), ISO **`createdAt`**։ Նույն արժեքի վրա no-op թարմացում event չի ստեղծվում։ `GET /api/v1/admin/orders/[id]` պատասխանում **`auditTrail`**՝ `{ id, type, createdAt, data, actor }` (actor՝ `users`-ից email/անուն)։ Checkout-ի `order_created` event-ը ներառվում է timeline-ում։ Admin UI՝ `OrderDetailsAuditTrail`։ Vitest՝ `audit-trail-lines.test.ts`։
+**9.3 ✅ ավարտված (2026-04-17).** Admin `PUT /api/v1/admin/orders/[id]`-ի ժամանակ կարգավիճակների փոփոխությունները գրանցվում են `order_events`-ում՝ `**changes`** (from/to `status`, `paymentStatus`, `fulfillmentStatus`), `updatedFields`, `**userId**` (ընթացիկ ադմին JWT), ISO `**createdAt**`։ Նույն արժեքի վրա no-op թարմացում event չի ստեղծվում։ `GET /api/v1/admin/orders/[id]` պատասխանում `**auditTrail**`՝ `{ id, type, createdAt, data, actor }` (actor՝ `users`-ից email/անուն)։ Checkout-ի `order_created` event-ը ներառվում է timeline-ում։ Admin UI՝ `OrderDetailsAuditTrail`։ Vitest՝ `audit-trail-lines.test.ts`։
 
 ---
 
@@ -248,10 +246,10 @@
 | ID   | Առաջադրանք (backend)                                          | Կատարման % | Կարգավիճակ |
 | ---- | ------------------------------------------------------------- | ---------- | ---------- |
 | 10.1 | Sales KPIs — total orders, revenue, AOV                       | 85         | 🔄         |
-| 10.2 | Order status breakdown — by status, today / week / month      | 100        | ✅         |
-| 10.3 | Product analytics — top 5 best sellers, least selling         | 100        | ✅         |
-| 10.4 | Stock analytics — low stock, out of stock lists               | 100        | ✅         |
-| 10.5 | Customer analytics — new vs repeat, top customers by spend    | 100        | ✅         |
+| 10.2 | Order status breakdown — by status, today / week / month      | 100        | ✅          |
+| 10.3 | Product analytics — top 5 best sellers, least selling         | 100        | ✅          |
+| 10.4 | Stock analytics — low stock, out of stock lists               | 100        | ✅          |
+| 10.5 | Customer analytics — new vs repeat, top customers by spend    | 100        | ✅          |
 | 10.6 | Dashboard widgets — today’s sales, monthly sales, top product | 85         | 🔄         |
 
 
@@ -261,9 +259,9 @@
 
 **10.4 ✅ ավարտված (2026-04-17).** `GET /api/v1/admin/analytics/stock` (JWT + admin) — վերադարձնում է `outOfStock` և `lowStock` ցուցակներ (տողեր՝ variant/product/sku/stock, բրենդի անուն ընտրված `locale`-ով, նկարի URL) և `total` հաշվիչներ pagination-ի (`limit`/`offset`) համար։ «Ցածր պաշար»՝ `1 … threshold−1` հատ պաշար (default `threshold=10`, `src/lib/constants/low-stock-threshold.ts`), «Ավարտված»՝ `stock === 0`։ Միայն **published** variant-ներ, **չջնջված** ապրանքներ։
 
-**10.3 ✅ ավարտված (2026-04-17).** `GET /api/v1/admin/analytics` (նույն JWT + admin, `period` / `startDate` / `endDate`) — պատասխանում **`topProducts`**՝ **թոփ 5** ապրանք **վաճառված քանակով** (բոլոր variant-ների գումար, ապրանքային ագրեգացիա), **`leastSellingProducts`**՝ **թոփ 5 ամենցածր** արտահայտված քանակով՝ **առանց կրկնվելու** `topProducts`-ի հետ (մնացած ապրանքներից)։ Տողերում՝ `productId`, `title`, `sku` (բազմակի variant-ի դեպքում sentinel `Multiple SKUs`), `totalQuantity`, `totalRevenue`, `orderCount`, `image`։ Կոդ՝ `product-sales-analytics.ts`, `PRODUCT_ANALYTICS_RANK_LIMIT` (`product-analytics.ts`), Admin UI՝ `TopProducts` + `LeastSellingProducts`։ Vitest՝ `product-sales-analytics.test.ts`։
+**10.3 ✅ ավարտված (2026-04-17).** `GET /api/v1/admin/analytics` (նույն JWT + admin, `period` / `startDate` / `endDate`) — պատասխանում `**topProducts`**՝ **թոփ 5** ապրանք **վաճառված քանակով** (բոլոր variant-ների գումար, ապրանքային ագրեգացիա), `**leastSellingProducts`**՝ **թոփ 5 ամենցածր** արտահայտված քանակով՝ **առանց կրկնվելու** `topProducts`-ի հետ (մնացած ապրանքներից)։ Տողերում՝ `productId`, `title`, `sku` (բազմակի variant-ի դեպքում sentinel `Multiple SKUs`), `totalQuantity`, `totalRevenue`, `orderCount`, `image`։ Կոդ՝ `product-sales-analytics.ts`, `PRODUCT_ANALYTICS_RANK_LIMIT` (`product-analytics.ts`), Admin UI՝ `TopProducts` + `LeastSellingProducts`։ Vitest՝ `product-sales-analytics.test.ts`։
 
-**10.5 ✅ ավարտված (2026-04-17).** `GET /api/v1/admin/analytics` պատասխանի մեջ **`customerAnalytics`** — **`newVsRepeat`**՝ նոր հաճախորդներ (առաջին պատվերը երբևէ ընկնում է ընտրած `dateRange`-ում), կրկնվող (պատվեր էր մինչև պատուհանի սկիզբը և նորից պատվերել է պատուհանում), պատվերների քանակներ նոր/կրկնվող բաժանումով, `ordersUnattributed` (առանց `userId` և email), և **`topCustomersBySpend`**՝ մինչև **10** հաճախորդ **վճարված** (`paymentStatus=paid`) պատվերների գումարով ընտրած ժամանակահատվածում (նույն պատուհանը, ինչ KPI եկամուտը)։ Հաճախորդի ինքնություն՝ `userId`, այլապես նորմալացված `customerEmail`։ Կոդ՝ `customer-identity.ts`, `customer-analytics.ts`, `TOP_CUSTOMERS_BY_SPEND_LIMIT`, Admin Analytics UI՝ `CustomerAnalytics`։
+**10.5 ✅ ավարտված (2026-04-17).** `GET /api/v1/admin/analytics` պատասխանի մեջ `**customerAnalytics`** — `**newVsRepeat**`՝ նոր հաճախորդներ (առաջին պատվերը երբևէ ընկնում է ընտրած `dateRange`-ում), կրկնվող (պատվեր էր մինչև պատուհանի սկիզբը և նորից պատվերել է պատուհանում), պատվերների քանակներ նոր/կրկնվող բաժանումով, `ordersUnattributed` (առանց `userId` և email), և `**topCustomersBySpend**`՝ մինչև **10** հաճախորդ **վճարված** (`paymentStatus=paid`) պատվերների գումարով ընտրած ժամանակահատվածում (նույն պատուհանը, ինչ KPI եկամուտը)։ Հաճախորդի ինքնություն՝ `userId`, այլապես նորմալացված `customerEmail`։ Կոդ՝ `customer-identity.ts`, `customer-analytics.ts`, `TOP_CUSTOMERS_BY_SPEND_LIMIT`, Admin Analytics UI՝ `CustomerAnalytics`։
 
 ---
 
@@ -297,7 +295,7 @@
 | 12.3 | Compare products — spec diff-ի համար ցուցակ, max N ապրանք                                             | 25         | ⬜          |
 | 12.4 | About Us, Contact Us, brand pages — CMS կամ static content API                                        | 15         | ⬜          |
 | 12.5 | Legal pages — Privacy, Terms, Refund, Delivery Policy (**per locale**)                                | 15         | ⬜          |
-| 12.6 | Contact form — validation, spam protection                                                            | 100        | ✅         |
+| 12.6 | Contact form — validation, spam protection                                                            | 100        | ✅          |
 | 12.7 | i18n — AM primary, RU, EN — թարգմանվող էնտիտիների սխեմա, API-ում locale / `Accept-Language`, fallback | 75         | 🔄         |
 | 12.8 | Admin — թարգմանությունների խմբագրում կամ import workflow (եթե պահանջվում է)                           | 70         | 🔄         |
 | 12.9 | SEO structured data — backend-ից անհրաժեշտ մետատվյալներ (ըստ frontend պայմանագրի)                     | 70         | 🔄         |
@@ -307,7 +305,7 @@
 
 *Նշումներ.* 12.1 — `/api/search/instant`։ 12.2 — **սերվերային persist**՝ `GET`/`POST /api/v1/wishlist`, `DELETE /api/v1/wishlist/{productId}`, `POST /api/v1/wishlist/merge` (JWT) — DB `wishlists` / `wishlist_items`, հյուրի համար `shop_wishlist_session` cookie կամ `x-wishlist-session` header։ 12.3 — հիմնականում localStorage, ոչ թե սերվերային persist։
 
-**12.6 ✅ ավարտված (2026-04-17).** `POST /api/v1/contact` — **Zod** վալիդացիա (`name`, `email`, `subject`, `message` — երկարության վերին սահմաններ), **honeypot** `website` դաշտ (ոչ դատարկ՝ `400` ընդհանուր հաղորդագրությամբ, DB գրառում չի կատարվում), **rate limit**՝ մինչև 5 ուղարկում/ժամ IP-ի հիման վրա (`x-forwarded-for` / `x-real-ip`) — **Upstash Ratelimit** (`UPSTASH_REDIS_REST_*`), այլապես **in-memory** fallback (dev/մեկ instance)։ **Cloudflare Turnstile** — կամընտիր՝ երբ `TURNSTILE_SECRET_KEY` է սահմանված, մարմնում պահանջվում է `turnstileToken` (սերվերը verify-ում է `siteverify` API-ով)։ Կոդ՝ `src/lib/schemas/contact-form.schema.ts`, `contact-rate-limit.service.ts`, `contact-turnstile.service.ts`, `src/app/api/v1/contact/route.ts`։
+**12.6 ✅ ավարտված (2026-04-17).** `POST /api/v1/contact` — **Zod** վալիդացիա (`name`, `email`, `subject`, `message` — երկարության վերին սահմաններ), **honeypot** `website` դաշտ (ոչ դատարկ՝ `400` ընդհանուր հաղորդագրությամբ, DB գրառում չի կատարվում), **rate limit**՝ մինչև 5 ուղարկում/ժամ IP-ի հիման վրա (`x-forwarded-for` / `x-real-ip`) — **Upstash Ratelimit** (`UPSTASH_REDIS_REST_`*), այլապես **in-memory** fallback (dev/մեկ instance)։ **Cloudflare Turnstile** — կամընտիր՝ երբ `TURNSTILE_SECRET_KEY` է սահմանված, մարմնում պահանջվում է `turnstileToken` (սերվերը verify-ում է `siteverify` API-ով)։ Կոդ՝ `src/lib/schemas/contact-form.schema.ts`, `contact-rate-limit.service.ts`, `contact-turnstile.service.ts`, `src/app/api/v1/contact/route.ts`։
 
 ---
 

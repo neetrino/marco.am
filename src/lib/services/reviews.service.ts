@@ -135,10 +135,6 @@ class ReviewsService {
   }
 
   /**
-   * Get review statistics for a product
-   * @param productId - Product ID
-   */
-  /**
    * True if the user has a non-cancelled order that includes this product (via variant).
    */
   async hasUserPurchasedProduct(userId: string, productId: string): Promise<boolean> {

@@ -8,7 +8,7 @@ import { useAttributeGroups } from './useAttributeGroups';
 import { useProductImages } from './hooks/useProductImages';
 import { useProductFetch } from './hooks/useProductFetch';
 import { useWishlistCompare } from './hooks/useWishlistCompare';
-import { useProductReviews } from './hooks/useProductReviews';
+import { useReviews } from '../../../components/ProductReviews/hooks/useReviews';
 import { useVariantSelection } from './hooks/useVariantSelection';
 import { useProductActions } from './hooks/useProductActions';
 import { useProductQuantity } from './hooks/useProductQuantity';
@@ -91,10 +91,15 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
     productId: product?.id || null,
   });
 
-  const { reviews, averageRating } = useProductReviews({
-    slug,
-    productId: product?.id || null,
-  });
+  const {
+    reviews,
+    aggregate,
+    loading: reviewsLoading,
+    loadReviews: reloadProductReviews,
+  } = useReviews(product?.id, slug);
+
+  const averageRating = aggregate.averageRating;
+  const reviewCount = aggregate.reviewCount;
 
   const { handleAddToWishlist, handleCompareToggle } = useProductActions({
     productId: product?.id || null,
@@ -179,7 +184,11 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
     isInCompare,
     quantity,
     reviews,
+    aggregate,
+    reviewsLoading,
+    reloadProductReviews,
     averageRating,
+    reviewCount,
     slug,
     attributeGroups,
     colorGroups,
