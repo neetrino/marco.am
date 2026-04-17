@@ -21,6 +21,8 @@ export function OrderDetailsTotals({
   }
 
   const oc = (orderDetails.totals.currency || orderDetails.currency || 'AMD') as CurrencyCode;
+  const ship = orderDetails.shippingAddress as { city?: string } | null | undefined;
+  const shipCity = ship?.city?.trim() ?? '';
 
   return (
     <Card className="p-4 md:p-6">
@@ -42,7 +44,7 @@ export function OrderDetailsTotals({
             {orderDetails.shippingMethod === 'pickup'
               ? t('checkout.shipping.freePickup')
               : formatCurrency(orderDetails.totals.shipping, oc, 'AMD') +
-                (orderDetails.shippingAddress?.city ? ` (${orderDetails.shippingAddress.city})` : '')}
+                (shipCity ? ` (${shipCity})` : '')}
           </span>
         </div>
         <div className="flex justify-between text-sm text-gray-700">

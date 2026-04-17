@@ -69,8 +69,8 @@ export interface OrderDetails {
     firstName: string | null;
     lastName: string | null;
   } | null;
-  billingAddress?: any | null;
-  shippingAddress?: any | null;
+  billingAddress?: unknown;
+  shippingAddress?: unknown;
   shippingMethod?: string | null;
   notes?: string | null;
   adminNotes?: string | null;
@@ -97,7 +97,7 @@ export interface OrderDetails {
       value?: string;
       label?: string;
       imageUrl?: string;
-      colors?: string[] | any;
+      colors?: unknown;
     }>;
   }>;
   createdAt: string;
