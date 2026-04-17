@@ -13,6 +13,7 @@ import { StatsCards } from './components/StatsCards';
 import { TopProducts } from './components/TopProducts';
 import { TopCategories } from './components/TopCategories';
 import { OrdersByDayChart } from './components/OrdersByDayChart';
+import { OrderStatusBreakdown } from './components/OrderStatusBreakdown';
 
 export default function AnalyticsPage() {
   const { t } = useTranslation();
@@ -22,7 +23,7 @@ export default function AnalyticsPage() {
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
 
-  const { analytics, totalUsers, loading } = useAnalytics({
+  const { analytics, orderStatusBreakdown, totalUsers, loading } = useAnalytics({
     period,
     startDate,
     endDate,
@@ -82,6 +83,10 @@ export default function AnalyticsPage() {
             ) : analytics ? (
               <>
                 <StatsCards analytics={analytics} totalUsers={totalUsers} />
+
+                {orderStatusBreakdown ? (
+                  <OrderStatusBreakdown data={orderStatusBreakdown} />
+                ) : null}
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                   <TopProducts products={analytics.topProducts} />

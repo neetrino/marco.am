@@ -93,7 +93,16 @@
     "clickToViewAllOrders": "Սեղմեք բոլոր պատվերները դիտելու համար",
     "clickToViewPaidOrders": "Սեղմեք վճարված պատվերները դիտելու համար",
     "totalRegisteredUsers": "Ընդամենը գրանցված օգտատերեր",
-    "skuLabel": "SKU"
+    "skuLabel": "SKU",
+    "orderStatusBreakdownTitle": "Պատվերներ ըստ կարգավիճակի",
+    "orderStatusBreakdownHint": "Հաշվարկը՝ պատվերի ստեղծման ժամանակով յուրաքանչյուր ժամանակահատվածում։",
+    "orderStatusColumn": "Կարգավիճակ",
+    "orderStatusPending": "Սպասման",
+    "orderStatusProcessing": "Ընթացքում",
+    "orderStatusCompleted": "Ավարտված",
+    "orderStatusCancelled": "Չեղարկված",
+    "orderStatusOther": "Այլ",
+    "orderStatusTotal": "Ընդամենը"
   },
   "attributes": {
     "title": "Ատրիբուտներ",

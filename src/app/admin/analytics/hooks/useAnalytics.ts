@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { apiClient } from '../../../../lib/api-client';
 import { logger } from '../../../../lib/utils/logger';
 import { useTranslation } from '../../../../lib/i18n-client';
-import type { AnalyticsData, AdminStatsSummary } from '../types';
+import type { AnalyticsData, AdminStatsSummary, OrderStatusBreakdownData } from '../types';
 
 interface UseAnalyticsParams {
   period: string;
@@ -14,6 +14,7 @@ interface UseAnalyticsParams {
 
 interface UseAnalyticsReturn {
   analytics: AnalyticsData | null;
+  orderStatusBreakdown: OrderStatusBreakdownData | null;
   totalUsers: number | null;
   loading: boolean;
   error: string | null;
@@ -31,6 +32,8 @@ export function useAnalytics({
 }: UseAnalyticsParams): UseAnalyticsReturn {
   const { t } = useTranslation();
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
+  const [orderStatusBreakdown, setOrderStatusBreakdown] =
+    useState<OrderStatusBreakdownData | null>(null);
   const [totalUsers, setTotalUsers] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -53,12 +56,30 @@ export function useAnalytics({
           params.endDate = endDate;
         }
 
-        const response = await apiClient.get<AnalyticsData>('/api/v1/admin/analytics', {
-          params,
-        });
-        
-        logger.info('Analytics data loaded', { period, hasData: !!response });
-        setAnalytics(response);
+        const [analyticsResult, breakdownResult] = await Promise.allSettled([
+          apiClient.get<AnalyticsData>('/api/v1/admin/analytics', {
+            params,
+          }),
+          apiClient.get<OrderStatusBreakdownData>(
+            '/api/v1/admin/analytics/order-status-breakdown'
+          ),
+        ]);
+
+        if (analyticsResult.status === 'fulfilled') {
+          logger.info('Analytics data loaded', { period, hasData: !!analyticsResult.value });
+          setAnalytics(analyticsResult.value);
+        } else {
+          throw analyticsResult.reason;
+        }
+
+        if (breakdownResult.status === 'fulfilled') {
+          setOrderStatusBreakdown(breakdownResult.value);
+        } else {
+          logger.error('Order status breakdown request failed', {
+            error: breakdownResult.reason,
+          });
+          setOrderStatusBreakdown(null);
+        }
       } catch (err: unknown) {
         logger.error('Error fetching analytics', { error: err });
         
@@ -81,6 +102,7 @@ export function useAnalytics({
         }
         
         setError(errorMessage);
+        setOrderStatusBreakdown(null);
         alert(`${t('admin.common.error')}: ${errorMessage}`);
       } finally {
         setLoading(false);
@@ -104,7 +126,7 @@ export function useAnalytics({
     fetchAdminStats();
   }, [isLoggedIn, isAdmin, period, startDate, endDate, t]);
 
-  return { analytics, totalUsers, loading, error };
+  return { analytics, orderStatusBreakdown, totalUsers, loading, error };
 }
 
 

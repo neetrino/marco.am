@@ -41,6 +41,21 @@ export interface AdminStatsSummary {
   };
 }
 
+export interface OrderStatusBreakdownData {
+  windows: Array<{
+    period: "today" | "week" | "month";
+    dateRange: { start: string; end: string };
+    byStatus: {
+      pending: number;
+      processing: number;
+      completed: number;
+      cancelled: number;
+      other: number;
+    };
+    totalOrders: number;
+  }>;
+}
+
 
 
 

@@ -93,7 +93,16 @@
     "clickToViewAllOrders": "Нажмите, чтобы просмотреть все заказы",
     "clickToViewPaidOrders": "Нажмите, чтобы просмотреть оплаченные заказы",
     "totalRegisteredUsers": "Всего зарегистрированных пользователей",
-    "skuLabel": "SKU"
+    "skuLabel": "SKU",
+    "orderStatusBreakdownTitle": "Заказы по статусу",
+    "orderStatusBreakdownHint": "Подсчёт по времени создания заказа в каждом периоде.",
+    "orderStatusColumn": "Статус",
+    "orderStatusPending": "Новый",
+    "orderStatusProcessing": "В обработке",
+    "orderStatusCompleted": "Выполнен",
+    "orderStatusCancelled": "Отменён",
+    "orderStatusOther": "Прочее",
+    "orderStatusTotal": "Всего"
   },
   "attributes": {
     "title": "Атрибуты",
