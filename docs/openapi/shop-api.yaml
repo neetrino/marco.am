@@ -23,6 +23,8 @@ tags:
     description: Registration and login (JWT issuance).
   - name: Orders
     description: Customer orders and reorder-to-cart.
+  - name: Wishlist
+    description: Saved products per user (JWT) or guest session (cookie / header).
 
 paths:
   /api/health:
@@ -293,6 +295,130 @@ paths:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
 
+  /api/v1/wishlist:
+    get:
+      tags: [Wishlist]
+      summary: List wishlist items (authenticated user or guest session)
+      operationId: getWishlist
+      parameters:
+        - name: lang
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [en, hy, ru]
+          description: Catalog locale for titles/slugs when the caller is not authenticated (defaults to `en`).
+      responses:
+        "200":
+          description: |
+            `{ wishlist: { id, items[] } }` — each item includes `productId`, `title`, `slug`, `image`, `addedAt` (ISO8601).
+            Guests receive `Set-Cookie` for `shop_wishlist_session` (HttpOnly) or may send `x-wishlist-session` instead.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WishlistResponse"
+        "500":
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+    post:
+      tags: [Wishlist]
+      summary: Add a product to the wishlist
+      operationId: postWishlistItem
+      parameters:
+        - name: lang
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [en, hy, ru]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WishlistAddRequest"
+      responses:
+        "201":
+          description: Updated wishlist payload (same shape as GET).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WishlistResponse"
+        "400":
+          description: Validation error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "404":
+          description: Product not published or missing.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "422":
+          description: Wishlist size limit reached.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+
+  /api/v1/wishlist/{productId}:
+    delete:
+      tags: [Wishlist]
+      summary: Remove a product from the wishlist
+      operationId: deleteWishlistItem
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: lang
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [en, hy, ru]
+      responses:
+        "200":
+          description: Updated wishlist payload.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WishlistResponse"
+        "500":
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+
+  /api/v1/wishlist/merge:
+    post:
+      tags: [Wishlist]
+      summary: Merge guest wishlist into the authenticated user
+      operationId: postWishlistMerge
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: |
+            `{ mergedItems, guestWishlistFound }` — clears guest session cookie when a session token was sent.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WishlistMergeResponse"
+        "401":
+          description: Missing or invalid JWT.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+
 components:
   securitySchemes:
     bearerAuth:
@@ -446,6 +572,57 @@ components:
               type: integer
             totalPages:
               type: integer
+
+    WishlistAddRequest:
+      type: object
+      required: [productId]
+      additionalProperties: false
+      properties:
+        productId:
+          type: string
+          minLength: 1
+
+    WishlistItemRow:
+      type: object
+      required: [productId, title, slug, image, addedAt]
+      properties:
+        productId:
+          type: string
+        title:
+          type: string
+        slug:
+          type: string
+        image:
+          type: string
+          nullable: true
+        addedAt:
+          type: string
+          format: date-time
+
+    WishlistResponse:
+      type: object
+      required: [wishlist]
+      properties:
+        wishlist:
+          type: object
+          required: [id, items]
+          properties:
+            id:
+              type: string
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/WishlistItemRow"
+
+    WishlistMergeResponse:
+      type: object
+      required: [mergedItems, guestWishlistFound]
+      properties:
+        mergedItems:
+          type: integer
+          minimum: 0
+        guestWishlistFound:
+          type: boolean
 
     LoginRequest:
       type: object
