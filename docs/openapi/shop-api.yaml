@@ -581,6 +581,85 @@ paths:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
 
+  /api/v1/home/brand-partners:
+    get:
+      tags: [Home]
+      summary: Home brand partners rail (localized metadata, logo URLs, PLP links)
+      operationId: getHomeBrandPartners
+      parameters:
+        - name: locale
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [en, hy, ru]
+            default: en
+      responses:
+        "200":
+          description: Section title and brands for the requested locale (`logoUrl` may be null if unset in admin).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BrandPartnersPublicResponse"
+        "500":
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+
+  /api/v1/supersudo/home-brand-partners:
+    get:
+      tags: [Home]
+      summary: Full home brand partners document (all locales) for admin
+      operationId: getSupersudoHomeBrandPartners
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Stored JSON document (`settings.key = homeBrandPartners`).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BrandPartnersStorageDocument"
+        "403":
+          description: Not an admin.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+    put:
+      tags: [Home]
+      summary: Replace home brand partners document (validated)
+      operationId: putSupersudoHomeBrandPartners
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BrandPartnersStorageDocument"
+      responses:
+        "200":
+          description: Saved document (echo).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BrandPartnersStorageDocument"
+        "400":
+          description: Validation error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "403":
+          description: Not an admin.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+
   /api/v1/contact:
     post:
       tags: [Site]
@@ -1018,6 +1097,71 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/CustomerReviewsPublicItem"
+
+    BrandPartnersPublicBrand:
+      type: object
+      required: [id, slug, name, description, logoUrl, href]
+      properties:
+        id:
+          type: string
+        slug:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        logoUrl:
+          type: string
+          nullable: true
+        href:
+          type: string
+          description: Product listing URL with brand id filter (e.g. `/products?brand=<id>`).
+        logoScale:
+          type: string
+          enum: [default, large]
+
+    BrandPartnersPublicResponse:
+      type: object
+      required: [sectionTitle, brands]
+      properties:
+        sectionTitle:
+          type: string
+        brands:
+          type: array
+          items:
+            $ref: "#/components/schemas/BrandPartnersPublicBrand"
+
+    BrandPartnersStorageEntry:
+      type: object
+      required: [id, brandId, active, sortOrder]
+      properties:
+        id:
+          type: string
+        brandId:
+          type: string
+        active:
+          type: boolean
+        sortOrder:
+          type: integer
+        logoScale:
+          type: string
+          enum: [default, large]
+
+    BrandPartnersStorageDocument:
+      type: object
+      required: [version, sectionTitle, entries]
+      properties:
+        version:
+          type: integer
+          enum: [1]
+        sectionTitle:
+          $ref: "#/components/schemas/CustomerReviewsSectionTitleTriple"
+        entries:
+          type: array
+          maxItems: 48
+          items:
+            $ref: "#/components/schemas/BrandPartnersStorageEntry"
 
     CustomerReviewsStorageItem:
       type: object

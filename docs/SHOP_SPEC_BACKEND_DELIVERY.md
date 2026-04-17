@@ -25,7 +25,7 @@
 | Փուլ | Անվանում                         | Փուլի առաջընթաց |
 | ---- | -------------------------------- | --------------- |
 | 1    | Infra & API կոնտրակտ             | `100%`          |
-| 2    | Գլխավոր էջ (Home) — տվյալներ     | `91%`           |
+| 2    | Գլխավոր էջ (Home) — տվյալներ     | `88%`           |
 | 3    | Shop (PLP) — կատալոգ API         | `82%`           |
 | 4    | Ապրանքի էջ (PDP) — մանրամասն API | `85%`           |
 | 5    | Checkout — պատվեր                | `89%`           |
@@ -61,7 +61,7 @@
 
 ## Փուլ 2 — Գլխավոր էջ (Home)
 
-**Փուլի առաջընթաց.** `91%`
+**Փուլի առաջընթաց.** `88%`
 
 
 | ID  | Առաջադրանք (backend)                                                                                                   | Կատարման % | Կարգավիճակ |
@@ -71,12 +71,14 @@
 | 2.3 | Promotions / special offers բլոկի տվյալներ                                                                             | 100        | ✅          |
 | 2.4 | «Why choose us» — 3–4 առավելություն (warranty, fast delivery, installment, original products) — CMS կամ structured API | 100        | ✅          |
 | 2.5 | Հաճախորդների կարծիքների carousel — rating, տեքստ, լուսանկարներ (եթե կան)                                               | 100        | ✅          |
-| 2.6 | Brand partners — բրենդների մետատվյալներ + լոգո asset URL                                                               | 25         | ⬜          |
+| 2.6 | Brand partners — բրենդների մետատվյալներ + լոգո asset URL                                                               | 100        | ✅          |
 | 2.7 | Footer — կոնտակտ, սոց հղումներ, քարտեզ embed, legal/quick links (կոնֆիգ/CMS endpoint)                                  | 5          | ⬜          |
 | 2.8 | Reels section (home) — կարճ ցուցակ / նախադիտում կամ deep link դեպի Reels էջ (տես Փուլ 11)                              | 100        | ✅          |
 
 
-*Նշումներ.* 2.2 — `GET /api/v1/products` + `filter=new|bestseller|featured` (տես **2.2** ներքևի ✅ բլոկը)։ 2.3 — `GET /api/v1/products` + `filter=promotion` կամ `filter=special_offer` — ակցիայի ապրանքներ՝ ապրանքի `discountPercent > 0`, կատեգորիայի/բրենդի զեղչ admin settings-ից (`categoryDiscounts` / `brandDiscounts`), կամ variant-ում `compareAtPrice > price` (SQL DISTINCT `productId`)։ Home «Հատուկ առաջարկներ» բլոկը կարդում է այս ֆիլտրը; CTA՝ `/products?filter=promotion`։ **Ուշադրություն**՝ միայն **global** զեղչը (առանց ապրանք/կատեգորիա/բրենդ/compare-at) այս ցուցակի մեջ չի ներառվում — ամբողջ կատալոգը չլցնելու համար։ Բրենդները DB-ում են, բայց storefront-ի համար հանրային brands API չի երևում (միայն admin)։
+*Նշումներ.* 2.2 — `GET /api/v1/products` + `filter=new|bestseller|featured` (տես **2.2** ներքևի ✅ բլոկը)։ 2.3 — `GET /api/v1/products` + `filter=promotion` կամ `filter=special_offer` — ակցիայի ապրանքներ՝ ապրանքի `discountPercent > 0`, կատեգորիայի/բրենդի զեղչ admin settings-ից (`categoryDiscounts` / `brandDiscounts`), կամ variant-ում `compareAtPrice > price` (SQL DISTINCT `productId`)։ Home «Հատուկ առաջարկներ» բլոկը կարդում է այս ֆիլտրը; CTA՝ `/products?filter=promotion`։ **Ուշադրություն**՝ միայն **global** զեղչը (առանց ապրանք/կատեգորիա/բրենդ/compare-at) այս ցուցակի մեջ չի ներառվում — ամբողջ կատալոգը չլցնելու համար։
+
+**2.6 ✅ ավարտված (2026-04-17).** `settings.key = homeBrandPartners` (JSON, Zod `homeBrandPartnersStorageSchema`) — բաժնի վերնագիր AM/RU/EN, ցուցակ՝ `id`, `brandId`, `active`, `sortOrder`, կամընտիր `logoScale` (`default` \| `large`)։ **Դատարկ `entries`** — ցուցադրվում են բոլոր **published** բրենդները (`slug` կարգով)։ Հանրային՝ `GET /api/v1/home/brand-partners?locale=en|hy|ru` — մեկ լեզվով վերնագիր + անուն/նկարագրություն (բրենդի թարգմանություններից, fallback), `logoUrl`, `href` → `/products?brand=<brandId>`։ Admin՝ `GET`/`PUT /api/v1/supersudo/home-brand-partners` (JWT admin)։ Storefront՝ `FeaturedProductsTabs` → `HomeBrandsSlide` + վերնագիր `HomeBrandsHeading` (API-ից կամ i18n fallback); լոգոյի բացակայության դեպքում՝ տեքստային անուն։ OpenAPI՝ `BrandPartnersPublicResponse` / `BrandPartnersStorageDocument`։
 
 **2.2 ✅ ավարտված (2026-04-17).** Հանրային `GET /api/v1/products` — `filter=new` (ստեղծման ամսաթիվ՝ վերջին 30 օրը), `filter=bestseller` (տողային վաճառք `order_items`-ից, կարգ՝ ընդհանուր քանակով; պատվերների բացակայության դեպքում դատարկ ցուցակ, ոչ ամբողջ կատալոգը), `filter=featured` (curated՝ `Product.featured = true`)։ Յուրաքանչյուր ապրանքի JSON-ում `slug` և `href` (`/products/<slug>`) PDP հղման համար (`products-find-transform.service.ts`)։ Storefront՝ `FeaturedProductsTabs` (tabs՝ new / bestseller / featured), `HomeProductSection` (`filter`: `featured` \| `new`)։ Route cache՝ home featured tab-ների համար մինչև 10 րոպե TTL (`FEATURED_CACHE_TTL` — `src/app/api/v1/products/route.ts`)։
 

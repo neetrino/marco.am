@@ -33,13 +33,15 @@ type HomeBrandsHeadingProps = {
   language: LanguageCode;
   onPrev: () => void;
   onNext: () => void;
+  /** When set (e.g. from `GET /api/v1/home/brand-partners`), overrides i18n title. */
+  sectionTitle?: string;
 };
 
 /**
  * «ԲՐԵՆԴՆԵՐ» row — matches Figma 101:4077 (Montserrat bar + round chevrons).
  */
-export function HomeBrandsHeading({ language, onPrev, onNext }: HomeBrandsHeadingProps) {
-  const title = t(language, 'home.brands.title');
+export function HomeBrandsHeading({ language, onPrev, onNext, sectionTitle }: HomeBrandsHeadingProps) {
+  const title = sectionTitle?.trim() ? sectionTitle.trim() : t(language, 'home.brands.title');
 
   return (
     <div className="flex flex-row flex-wrap items-end justify-between gap-4">

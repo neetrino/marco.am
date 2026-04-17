@@ -1,4 +1,7 @@
 import Image from 'next/image';
+import Link from 'next/link';
+
+import type { HomeBrandPartnerPublicItem } from '@/lib/types/home-brand-partners-public';
 
 import {
   HOME_BRAND_LOGO_CLASS_DEFAULT,
@@ -31,10 +34,65 @@ function brandSlideCardPaddingClass(logoScale: HomeBrandLogoScale | undefined): 
     : 'px-2 py-4 sm:px-3 sm:py-5';
 }
 
+type HomeBrandsSlideProps = {
+  /** From public API; when null or empty, static Figma placeholders are used. */
+  partners: HomeBrandPartnerPublicItem[] | null;
+};
+
+function PartnerLogo({
+  partner,
+  logoScale,
+}: {
+  partner: HomeBrandPartnerPublicItem;
+  logoScale: HomeBrandLogoScale | undefined;
+}) {
+  const url = partner.logoUrl?.trim();
+  if (!url) {
+    return (
+      <span
+        className={`line-clamp-2 text-center text-xs font-semibold uppercase leading-tight text-marco-black sm:text-sm ${brandSlideLogoClass(logoScale)}`}
+      >
+        {partner.name}
+      </span>
+    );
+  }
+
+  return (
+    <img
+      src={url}
+      alt={partner.name}
+      className={brandSlideLogoClass(logoScale)}
+      loading="lazy"
+      decoding="async"
+    />
+  );
+}
+
 /**
  * Brand logo cards — Figma 101:4108; responsive grid so four logos fit without horizontal scroll (md+).
  */
-export function HomeBrandsSlide() {
+export function HomeBrandsSlide({ partners }: HomeBrandsSlideProps) {
+  if (partners && partners.length > 0) {
+    return (
+      <div
+        className="grid w-full grid-cols-2 md:grid-cols-4"
+        style={gridStyle}
+      >
+        {partners.map((partner) => (
+          <Link
+            key={partner.id}
+            href={partner.href}
+            className={`flex w-full min-w-0 items-center justify-center overflow-hidden ${brandSlideCardPaddingClass(partner.logoScale)}`}
+            style={brandCardShellStyle}
+            aria-label={partner.name}
+          >
+            <PartnerLogo partner={partner} logoScale={partner.logoScale} />
+          </Link>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div
       className="grid w-full grid-cols-2 md:grid-cols-4"

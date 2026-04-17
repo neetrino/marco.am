@@ -7,6 +7,7 @@ import type { CSSProperties } from 'react';
 import { chunkArray } from '../lib/chunk-array';
 import { t } from '../lib/i18n';
 import type { LanguageCode } from '../lib/language';
+import type { HomeBrandPartnerPublicItem } from '@/lib/types/home-brand-partners-public';
 import {
   FEATURED_PRODUCTS_FOOTER_DOT_COUNT_DESKTOP,
   FEATURED_PRODUCTS_FOOTER_DOT_COUNT_MOBILE,
@@ -77,6 +78,10 @@ type FeaturedProductsStripProps = {
   cardLayout: 'default' | 'mobileGrid';
   isMaxMd: boolean;
   onRetryFetch: () => void;
+  /** Home brand partners rail; null = use static placeholders in `HomeBrandsSlide`. */
+  homeBrandPartners: HomeBrandPartnerPublicItem[] | null;
+  /** When API returns a section title, show it on the brands heading. */
+  homeBrandPartnersSectionTitle?: string | null;
 };
 
 /**
@@ -91,6 +96,8 @@ export function FeaturedProductsStrip({
   cardLayout,
   isMaxMd,
   onRetryFetch,
+  homeBrandPartners,
+  homeBrandPartnersSectionTitle,
 }: FeaturedProductsStripProps) {
   const ctaHref = `/products?filter=${encodeURIComponent(FILTER_BY_TAB[activeTab])}`;
   const brandsRailRef = useRef<HTMLDivElement | null>(null);
@@ -254,6 +261,7 @@ export function FeaturedProductsStrip({
           language={language}
           onPrev={() => scrollBrandsRail(-1)}
           onNext={() => scrollBrandsRail(1)}
+          sectionTitle={homeBrandPartnersSectionTitle ?? undefined}
         />
         <div
           ref={brandsRailRef}
@@ -262,7 +270,7 @@ export function FeaturedProductsStrip({
           style={{ marginTop: `${HOME_BRANDS_TITLE_TO_RAIL_GAP_PX}px` }}
           aria-label={t(language, 'home.brands.rail_aria')}
         >
-          <HomeBrandsSlide />
+          <HomeBrandsSlide partners={homeBrandPartners} />
         </div>
 
         <div
