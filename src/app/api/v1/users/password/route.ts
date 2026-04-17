@@ -68,7 +68,7 @@ export async function PUT(req: NextRequest) {
 
     const result = await usersService.changePassword(user.id, oldPassword.trim(), newPassword.trim());
     return NextResponse.json(result);
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error("Password change error", { error });
     if (error instanceof Error) {
       logger.error("Password change error details", {

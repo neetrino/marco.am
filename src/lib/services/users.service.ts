@@ -107,19 +107,12 @@ class UsersService {
       };
     }
 
+    let isValid: boolean;
     try {
-      const isValid = await bcrypt.compare(oldPassword.trim(), user.passwordHash);
-      if (!isValid) {
-        throw {
-          status: 401,
-          type: "https://api.shop.am/problems/unauthorized",
-          title: "Invalid password",
-          detail: "The old password is incorrect",
-        };
-      }
-    } catch (bcryptError: unknown) {
+      isValid = await bcrypt.compare(oldPassword.trim(), user.passwordHash);
+    } catch (compareError: unknown) {
       logger.error("UsersService changePassword: bcrypt.compare failed", {
-        message: getErrorMessage(bcryptError),
+        message: getErrorMessage(compareError),
         userId,
         hasOldPassword: !!oldPassword,
         hasPasswordHash: !!user.passwordHash,
@@ -129,6 +122,15 @@ class UsersService {
         type: "https://api.shop.am/problems/internal-error",
         title: "Internal Server Error",
         detail: "Failed to verify password",
+      };
+    }
+
+    if (!isValid) {
+      throw {
+        status: 401,
+        type: "https://api.shop.am/problems/unauthorized",
+        title: "Invalid password",
+        detail: "The old password is incorrect",
       };
     }
 
