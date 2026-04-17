@@ -55,6 +55,8 @@
 
 *Նշումներ.* **1.1 ✅ ավարտված (2026-04-16).** Պաշտոնական կոնտրակտ՝ [`docs/API_CONTRACT.md`](./API_CONTRACT.md) (REST JSON, `Authorization: Bearer <JWT>`, RFC7807-անման `type`/`title`/`status`/`detail`/`instance`), մեքենայական սխեմա՝ [`docs/openapi/shop-api.yaml`](./openapi/shop-api.yaml)։ GraphQL չի օգտագործվում։ Implementation՝ `src/app/api` (ներառյալ `v1`), `src/lib/types/errors.ts`։
 
+**1.1 — frontend համապատասխանության ստուգում (2026-04-17).** Storefront `src/lib/api-client/headers.ts` — `Authorization: Bearer <token>` (`getHeaders` / `http-methods.ts`); սխալի մարմին՝ `error-handler.ts` → `createApiError` / `getClientErrorDetail` — նախընտրում է RFC7807 `detail`, հետո `message`։ Պակասներ չեն հայտնաբերվել (թիմային «հաստատում» փաստաթղթից դուրս — codebase-ում կոնտրակտը համաձայնեցված է)։
+
 **1.2 ✅ ավարտված (2026-04-16).** Env-ի մեկ կետ հանրային URL/CORS-ի համար՝ `src/lib/config/deployment-env.ts` (`APP_ENV`, Vercel-ում `VERCEL_ENV` → preview=staging), `getCorsAllowedOrigin()` — `middleware.ts`-ում, `getPublicAppUrl()` — `src/lib/api-client/url-builder.ts`, health-ում `deployment` դաշտ՝ `GET /api/health`։ Կաղապար և միջավայրերի նկարագրություն՝ [`.env.example`](../.env.example)։ Build/deploy՝ `vercel.json` (`pnpm run build`, `output: standalone` — `next.config.js`), թեստեր՝ `src/lib/config/deployment-env.test.ts`։
 
 ---
