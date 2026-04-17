@@ -1,16 +1,19 @@
 import { useRouter } from 'next/navigation';
 import { apiClient } from '../../../lib/api-client';
-import { getApiOrErrorMessage } from '../../../lib/api-client/types';
 import { useTranslation } from '../../../lib/i18n-client';
 import { clearGuestCart } from '../checkoutUtils';
 import type { CheckoutTotalsResponse } from '../../../lib/types/checkout-totals';
 import type { CheckoutFormData, Cart, CartItem } from '../types';
+import type { CheckoutFormFieldName } from '../utils/checkout-api-errors';
+import { parseCheckoutSubmissionError } from '../utils/checkout-api-errors';
 
 interface UseOrderSubmissionProps {
   cart: Cart | null;
   isLoggedIn: boolean;
   checkoutTotals: CheckoutTotalsResponse | null;
   setError: (error: string | null) => void;
+  clearFieldErrors: () => void;
+  setFieldError: (field: CheckoutFormFieldName, message: string) => void;
 }
 
 export function useOrderSubmission({
@@ -18,12 +21,15 @@ export function useOrderSubmission({
   isLoggedIn,
   checkoutTotals,
   setError,
+  clearFieldErrors,
+  setFieldError,
 }: UseOrderSubmissionProps) {
   const router = useRouter();
   const { t } = useTranslation();
 
   const submitOrder = async (data: CheckoutFormData) => {
     setError(null);
+    clearFieldErrors();
 
     try {
       if (!cart) {
@@ -97,9 +103,11 @@ export function useOrderSubmission({
 
       router.push(`/orders/${response.order.number}`);
     } catch (err: unknown) {
-      setError(
-        getApiOrErrorMessage(err, t('checkout.errors.failedToCreateOrder'))
-      );
+      const parsedError = parseCheckoutSubmissionError(err, t);
+      parsedError.fieldErrors.forEach((fieldError) => {
+        setFieldError(fieldError.field, fieldError.message);
+      });
+      setError(parsedError.globalError);
     }
   };
 

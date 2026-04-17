@@ -34,6 +34,8 @@ export function useCheckout() {
     formState: { errors, isSubmitting },
     setValue,
     watch,
+    setError: setFormFieldError,
+    clearErrors,
   } = useForm<CheckoutFormData>({
     resolver: zodResolver(checkoutSchema),
     defaultValues: {
@@ -71,6 +73,9 @@ export function useCheckout() {
     isLoggedIn,
     checkoutTotals,
     setError,
+    clearFieldErrors: () => clearErrors(),
+    setFieldError: (field, message) =>
+      setFormFieldError(field, { type: "server", message }),
   });
 
   const { orderSummary } = useOrderSummary({

@@ -29,7 +29,9 @@ describe("validateCheckoutCustomer", () => {
       );
       expect.fail("expected throw");
     } catch (e: unknown) {
-      expect((e as { detail?: string }).detail).toMatch(/Shipping address and city/);
+      const err = e as { detail?: string; errors?: Array<{ field?: string }> };
+      expect(err.detail).toMatch(/Shipping address|City/);
+      expect(err.errors?.map((item) => item.field)).toContain("shippingCity");
     }
   });
 
@@ -58,7 +60,30 @@ describe("validateCheckoutCustomer", () => {
       validateCheckoutCustomer({ ...base, lastName: "  " }, "pickup");
       expect.fail("expected throw");
     } catch (e: unknown) {
-      expect((e as { detail?: string }).detail).toMatch(/First name and last name/);
+      const err = e as { detail?: string; errors?: Array<{ field?: string; code?: string }> };
+      expect(err.detail).toMatch(/Last name/);
+      expect(err.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ field: "lastName", code: "required_last_name" }),
+        ])
+      );
+    }
+  });
+
+  it("rejects too long notes", () => {
+    try {
+      validateCheckoutCustomer(
+        { ...base, notes: "x".repeat(2001) },
+        "pickup"
+      );
+      expect.fail("expected throw");
+    } catch (e: unknown) {
+      const err = e as { errors?: Array<{ field?: string; code?: string }> };
+      expect(err.errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ field: "notes", code: "notes_too_long" }),
+        ])
+      );
     }
   });
 });

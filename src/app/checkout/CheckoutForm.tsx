@@ -149,13 +149,12 @@ export function CheckoutForm({
       {shippingMethod === 'courier' && (
         <Card className="p-6" data-shipping-section>
           <h2 className="text-xl font-semibold text-gray-900 mb-6">{t('checkout.shippingAddress')}</h2>
-          {(error && error.includes('shipping address')) || (errors.shippingAddress || errors.shippingCity) ? (
+          {(error || errors.shippingAddress || errors.shippingCity) ? (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
               <p className="text-sm text-red-600">
-                {error && error.includes('shipping address') 
-                  ? error 
-                  : (errors.shippingAddress?.message || 
-                     errors.shippingCity?.message)}
+                {errors.shippingAddress?.message ||
+                  errors.shippingCity?.message ||
+                  error}
               </p>
             </div>
           ) : null}
@@ -167,7 +166,7 @@ export function CheckoutForm({
                 placeholder={t('checkout.placeholders.address')}
                 {...register('shippingAddress', {
                   onChange: () => {
-                    if (error && error.includes('shipping address')) {
+                    if (error) {
                       setError(null);
                     }
                   }
@@ -183,7 +182,7 @@ export function CheckoutForm({
                 placeholder={t('checkout.placeholders.city')}
                 {...register('shippingCity', {
                   onChange: () => {
-                    if (error && error.includes('shipping address')) {
+                    if (error) {
                       setError(null);
                     }
                   }
