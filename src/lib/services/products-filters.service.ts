@@ -2,6 +2,11 @@ import { db } from "@white-shop/db";
 import { Prisma } from "@prisma/client";
 import { adminService } from "./admin.service";
 import { ProductWithRelations } from "./products-find-query.service";
+import type { TechnicalSpecFilters } from "./products-find-query/types";
+import {
+  productMatchesTechnicalSpecs,
+  type TechnicalSpecFacet,
+} from "./products-technical-filters";
 
 class ProductsFiltersService {
   private splitCategoryTokens(category?: string): string[] {
@@ -98,6 +103,63 @@ class ProductsFiltersService {
     return allChildIds;
   }
 
+  private normalizeTechnicalSpecFilters(
+    technicalSpecs?: TechnicalSpecFilters
+  ): TechnicalSpecFilters {
+    if (!technicalSpecs) {
+      return {};
+    }
+
+    const normalized: TechnicalSpecFilters = {};
+    for (const [key, values] of Object.entries(technicalSpecs)) {
+      const normalizedKey = key.trim().toLowerCase();
+      if (!normalizedKey || normalizedKey === "color" || normalizedKey === "size") {
+        continue;
+      }
+      const normalizedValues = Array.isArray(values)
+        ? values
+            .map((value) => value.trim().toLowerCase())
+            .filter((value) => value.length > 0)
+        : [];
+      if (normalizedValues.length > 0) {
+        normalized[normalizedKey] = Array.from(new Set(normalizedValues));
+      }
+    }
+    return normalized;
+  }
+
+  private async loadFilterableAttributeMeta(lang: string) {
+    const attributes = await db.attribute.findMany({
+      where: {
+        filterable: true,
+        key: {
+          notIn: ["color", "size"],
+        },
+      },
+      include: {
+        translations: true,
+      },
+      orderBy: [{ position: "asc" }, { key: "asc" }],
+    });
+
+    return new Map(
+      attributes.map((attribute) => {
+        const localizedName =
+          attribute.translations.find((translation) => translation.locale === lang)?.name ??
+          attribute.translations[0]?.name ??
+          attribute.key;
+        return [
+          attribute.key.toLowerCase(),
+          {
+            key: attribute.key.toLowerCase(),
+            label: localizedName,
+            type: attribute.type || "select",
+          },
+        ] as const;
+      })
+    );
+  }
+
   /**
    * Get available filters (colors and sizes)
    */
@@ -107,6 +169,7 @@ class ProductsFiltersService {
     minPrice?: number;
     maxPrice?: number;
     lang?: string;
+    technicalSpecs?: TechnicalSpecFilters;
   }) {
     try {
       const where: Prisma.ProductWhereInput = {
@@ -245,6 +308,12 @@ class ProductsFiltersService {
         products = [];
       }
 
+      const lang = filters.lang || "en";
+      const normalizedTechnicalSpecs = this.normalizeTechnicalSpecFilters(
+        filters.technicalSpecs
+      );
+      const filterableAttributeMeta = await this.loadFilterableAttributeMeta(lang);
+
     // Filter by price in memory
     if (filters.minPrice || filters.maxPrice) {
       const min = filters.minPrice || 0;
@@ -260,10 +329,15 @@ class ProductsFiltersService {
       });
     }
 
+    if (Object.keys(normalizedTechnicalSpecs).length > 0) {
+      products = products.filter((product: ProductWithRelations) =>
+        productMatchesTechnicalSpecs(product, normalizedTechnicalSpecs)
+      );
+    }
+
     // Collect colors and sizes from variants
     // Use Map with lowercase key to merge colors with different cases
     // Store both count, canonical label, imageUrl and colors hex
-    const lang = filters.lang || 'en';
     const colorMap = new Map<string, { 
       count: number; 
       label: string; 
@@ -273,6 +347,15 @@ class ProductsFiltersService {
     const sizeMap = new Map<string, number>();
     const brandMap = new Map<string, { id: string; name: string; count: number }>();
     const categoryMap = new Map<string, { id: string; slug: string; name: string; count: number }>();
+    const technicalFacetMap = new Map<
+      string,
+      {
+        key: string;
+        label: string;
+        type: string;
+        values: Map<string, { value: string; label: string; count: number }>;
+      }
+    >();
     let rangeMin = Infinity;
     let rangeMax = 0;
 
@@ -331,6 +414,45 @@ class ProductsFiltersService {
         }
         variant.options.forEach((option: VariantOptionLike) => {
           if (!option) return;
+          const rawTechnicalKey =
+            option.attributeValue?.attribute?.key ||
+            option.attributeKey ||
+            option.key ||
+            option.attribute;
+          const technicalKey = rawTechnicalKey?.trim().toLowerCase();
+          if (technicalKey && filterableAttributeMeta.has(technicalKey)) {
+            const attrMeta = filterableAttributeMeta.get(technicalKey);
+            const rawTechnicalLabel =
+              option.attributeValue?.translations?.find(
+                (translation: { locale: string }) => translation.locale === lang
+              )?.label ||
+              option.attributeValue?.translations?.[0]?.label ||
+              option.attributeValue?.value ||
+              option.value ||
+              option.label;
+            const technicalLabel = rawTechnicalLabel?.trim();
+            if (technicalLabel && attrMeta) {
+              const normalizedValue = technicalLabel.toLowerCase();
+              let facet = technicalFacetMap.get(technicalKey);
+              if (!facet) {
+                facet = {
+                  key: attrMeta.key,
+                  label: attrMeta.label,
+                  type: attrMeta.type,
+                  values: new Map<string, { value: string; label: string; count: number }>(),
+                };
+                technicalFacetMap.set(technicalKey, facet);
+              }
+              const existingFacetValue = facet.values.get(normalizedValue);
+              facet.values.set(normalizedValue, {
+                value: normalizedValue,
+                label:
+                  existingFacetValue?.label ??
+                  technicalLabel,
+                count: (existingFacetValue?.count || 0) + 1,
+              });
+            }
+          }
           
           // Check if it's a color option (support multiple formats)
           const isColor = option.attributeKey === "color" || 
@@ -492,6 +614,19 @@ class ProductsFiltersService {
       const categories = Array.from(categoryMap.values()).sort((a, b) =>
         a.name.localeCompare(b.name)
       );
+      const technicalSpecs: TechnicalSpecFacet[] = Array.from(
+        technicalFacetMap.values()
+      )
+        .map((facet) => ({
+          key: facet.key,
+          label: facet.label,
+          type: facet.type,
+          values: Array.from(facet.values.values()).sort((a, b) =>
+            a.label.localeCompare(b.label)
+          ),
+        }))
+        .filter((facet) => facet.values.length > 0)
+        .sort((a, b) => a.label.localeCompare(b.label));
       const priceMin = rangeMin === Infinity ? 0 : Math.floor(rangeMin / 1000) * 1000;
       const priceMax = rangeMax === 0 ? 100000 : Math.ceil(rangeMax / 1000) * 1000;
       let stepSize: number | null = null;
@@ -516,6 +651,7 @@ class ProductsFiltersService {
         sizes,
         brands,
         categories,
+        technicalSpecs,
         priceRange: { min: priceMin, max: priceMax, stepSize, stepSizePerCurrency },
       };
     } catch (error) {
@@ -525,6 +661,7 @@ class ProductsFiltersService {
         sizes: [],
         brands: [],
         categories: [],
+        technicalSpecs: [],
         priceRange: { min: 0, max: 100000, stepSize: null, stepSizePerCurrency: null },
       };
     }

@@ -2,6 +2,7 @@ import { buildWhereClause } from "./products-find-query/query-builder";
 import { executeProductQuery } from "./products-find-query/query-executor";
 import { db } from "@white-shop/db";
 import type { ProductFilters, ProductWithRelations } from "./products-find-query/types";
+import { hasTechnicalSpecFilters } from "./products-technical-filters";
 
 /**
  * Service for building and executing product find queries
@@ -39,6 +40,7 @@ class ProductsFindQueryService {
       filters.minPrice != null ||
       filters.maxPrice != null ||
       Boolean(filters.colors || filters.sizes || filters.brand) ||
+      hasTechnicalSpecFilters(filters.technicalSpecs) ||
       requiresSortOverFetch;
 
     if (!needOverFetch) {

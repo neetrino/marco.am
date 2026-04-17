@@ -1,4 +1,5 @@
 import type { ProductFilters, ProductWithRelations } from "./products-find-query/types";
+import { productMatchesTechnicalSpecs } from "./products-technical-filters";
 
 /**
  * Normalize comma-separated filter values and drop placeholders like "undefined" or "null".
@@ -66,7 +67,7 @@ class ProductsFindFilterService {
     filters: ProductFilters,
     bestsellerProductIds: string[]
   ): ProductWithRelations[] {
-    const { minPrice, maxPrice, colors, sizes, brand } = filters;
+    const { minPrice, maxPrice, colors, sizes, brand, technicalSpecs } = filters;
 
     // Filter by price
     if (minPrice || maxPrice) {
@@ -200,6 +201,12 @@ class ProductsFindFilterService {
         const hasMatch = matchingVariants.length > 0;
         return hasMatch;
       });
+    }
+
+    if (technicalSpecs && Object.keys(technicalSpecs).length > 0) {
+      products = products.filter((product: ProductWithRelations) =>
+        productMatchesTechnicalSpecs(product, technicalSpecs)
+      );
     }
 
     // Sort

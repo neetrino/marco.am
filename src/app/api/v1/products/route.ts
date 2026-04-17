@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { productsService } from "@/lib/services/products.service";
 import { cacheService } from "@/lib/services/cache.service";
 import { logger } from "@/lib/utils/logger";
+import { parseTechnicalSpecFiltersFromSearchParams } from "@/lib/services/products-technical-filters";
 
 const PRODUCTS_CACHE_TTL = 120; // 2 minutes
 const FEATURED_CACHE_TTL = 600; // 10 minutes for home featured tabs (new/bestseller/featured)
@@ -36,6 +37,7 @@ export async function GET(req: NextRequest) {
         ? Math.min(parsedLimit, 200)
         : 12;
 
+    const technicalSpecs = parseTechnicalSpecFiltersFromSearchParams(searchParams);
     const filters = {
       category: searchParams.get("category") || undefined,
       search: searchParams.get("search") || undefined,
@@ -49,6 +51,7 @@ export async function GET(req: NextRequest) {
       page,
       limit,
       lang: searchParams.get("lang") || "en",
+      technicalSpecs,
     };
 
     const cacheKey = `products:${searchParams.toString()}`;

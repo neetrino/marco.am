@@ -61,6 +61,7 @@ async function getProducts(
   colors?: string,
   sizes?: string,
   brand?: string,
+  technicalSpecs?: Record<string, string>,
   limit: number = 12,
   filter?: string,
   sort?: string
@@ -80,6 +81,14 @@ async function getProducts(
     if (colors?.trim()) params.colors = colors.trim();
     if (sizes?.trim()) params.sizes = sizes.trim();
     if (brand?.trim()) params.brand = brand.trim();
+    if (technicalSpecs) {
+      for (const [key, value] of Object.entries(technicalSpecs)) {
+        if (!key.trim() || !value.trim()) {
+          continue;
+        }
+        params[`spec.${key}`] = value;
+      }
+    }
     if (filter?.trim()) params.filter = filter.trim();
     if (sort?.trim()) params.sort = sort.trim();
 
@@ -124,6 +133,22 @@ export default async function ProductsPage({ searchParams }: any) {
     : null;
   const perPage = parsedLimit ? Math.min(parsedLimit, 200) : 12;
 
+  const technicalSpecParams = Object.entries(params).reduce<Record<string, string>>(
+    (acc, [key, value]) => {
+      if (!key.startsWith("spec.") || typeof value !== "string") {
+        return acc;
+      }
+      const attributeKey = key.slice("spec.".length).trim().toLowerCase();
+      const attributeValue = value.trim();
+      if (!attributeKey || !attributeValue) {
+        return acc;
+      }
+      acc[attributeKey] = attributeValue;
+      return acc;
+    },
+    {}
+  );
+
   const productsData = await getProducts(
     page,
     params?.search,
@@ -133,6 +158,7 @@ export default async function ProductsPage({ searchParams }: any) {
     params?.colors,
     params?.sizes,
     params?.brand,
+    technicalSpecParams,
     perPage,
     params?.filter,
     params?.sort

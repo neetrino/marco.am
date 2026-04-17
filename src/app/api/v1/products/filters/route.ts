@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { toApiErrorResponse } from "@/lib/api/next-route-error";
 import { productsService } from "@/lib/services/products.service";
+import { parseTechnicalSpecFiltersFromSearchParams } from "@/lib/services/products-technical-filters";
 
 export async function GET(req: NextRequest) {
   try {
@@ -40,6 +41,7 @@ export async function GET(req: NextRequest) {
           : undefined;
       })(),
       lang: searchParams.get("lang") || "en",
+      technicalSpecs: parseTechnicalSpecFiltersFromSearchParams(searchParams),
     };
 
     const result = await productsService.getFilters(filters);

@@ -45,11 +45,25 @@ export interface PriceRangeOption {
   stepSizePerCurrency?: Record<string, number> | null;
 }
 
+export interface TechnicalSpecFilterOption {
+  value: string;
+  label: string;
+  count: number;
+}
+
+export interface TechnicalSpecFilterGroup {
+  key: string;
+  label: string;
+  type: string;
+  values: TechnicalSpecFilterOption[];
+}
+
 export interface ProductsFiltersData {
   colors: ColorOption[];
   sizes: SizeOption[];
   brands: BrandOption[];
   categories: CategoryOption[];
+  technicalSpecs: TechnicalSpecFilterGroup[];
   priceRange: PriceRangeOption;
 }
 
@@ -67,6 +81,7 @@ const DEFAULT_FILTERS: ProductsFiltersData = {
   sizes: [],
   brands: [],
   categories: [],
+  technicalSpecs: [],
   priceRange: { min: 0, max: 100000, stepSize: null, stepSizePerCurrency: null },
 };
 
@@ -105,6 +120,7 @@ export function ProductsFiltersProvider({
         sizes: res.sizes ?? [],
         brands: res.brands ?? [],
         categories: res.categories ?? [],
+        technicalSpecs: res.technicalSpecs ?? [],
         priceRange: res.priceRange ?? DEFAULT_FILTERS.priceRange,
       });
     } catch {

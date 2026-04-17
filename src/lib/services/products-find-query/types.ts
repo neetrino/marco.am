@@ -16,7 +16,10 @@ export interface ProductFilters {
   page?: number;
   limit?: number;
   lang?: string;
+  technicalSpecs?: TechnicalSpecFilters;
 }
+
+export type TechnicalSpecFilters = Record<string, string[]>;
 
 /**
  * Type for product with all relations needed for find query service
