@@ -240,9 +240,16 @@
     "products": "products"
   },
   "pagination": {
-    "previous": "Previous",
+    "first": "First",
+    "last": "Last",
+    "previous": "Back",
     "next": "Next",
-    "pageOf": "Page {page} of {totalPages}"
+    "pageOf": "Page {page} of {totalPages}",
+    "navAriaLabel": "Pagination",
+    "firstAria": "Go to first page",
+    "lastAria": "Go to last page",
+    "previousAria": "Go to previous page",
+    "nextAria": "Go to next page"
   },
   "notFound": {
     "title": "Page Not Found",

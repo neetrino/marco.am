@@ -41,6 +41,8 @@ export function setStoredLanguage(language: LanguageCode, options?: { skipReload
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(LANGUAGE_STORAGE_KEY, language);
+    const maxAge = 60 * 60 * 24 * 365;
+    document.cookie = `${LANGUAGE_STORAGE_KEY}=${encodeURIComponent(language)};path=/;max-age=${maxAge};SameSite=Lax`;
     window.dispatchEvent(new Event('language-updated'));
     // Only reload if skipReload is not true
     if (!options?.skipReload) {

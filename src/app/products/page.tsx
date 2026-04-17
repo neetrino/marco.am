@@ -1,7 +1,10 @@
-import Link from 'next/link';
+import { cookies } from 'next/headers';
 import { Suspense } from 'react';
-import { Button } from '@shop/ui';
-import { getStoredLanguage } from '../../lib/language';
+import {
+  LANGUAGE_PREFERENCE_KEY,
+  parseLanguageFromServer,
+  type LanguageCode,
+} from '../../lib/language';
 import { t } from '../../lib/i18n';
 import { PriceFilter } from '../../components/PriceFilter';
 import { ColorFilter } from '../../components/ColorFilter';
@@ -11,6 +14,10 @@ import { ProductsHeader } from '../../components/ProductsHeader';
 import { ProductsGrid } from '../../components/ProductsGrid';
 import { MobileFiltersDrawer } from '../../components/MobileFiltersDrawer';
 import { ProductsFiltersProvider } from '../../components/ProductsFiltersProvider';
+import {
+  ProductsPagination,
+  type PaginationSlotItem,
+} from '../../components/products/ProductsPagination';
 import { MOBILE_FILTERS_EVENT } from '../../lib/events';
 
 /** Same horizontal rhythm as navbar: `.marco-header-container` (see `globals.css`) */
@@ -60,10 +67,10 @@ async function getProducts(
   sizes?: string,
   brand?: string,
   limit: number = 12,
-  filter?: string
+  filter?: string,
+  language: LanguageCode = 'en'
 ): Promise<ProductsResponse> {
   try {
-    const language = getStoredLanguage();
     const params: Record<string, string> = {
       page: page.toString(),
       limit: limit.toString(),
@@ -116,6 +123,10 @@ async function getProducts(
  * PAGE
  */
 export default async function ProductsPage({ searchParams }: any) {
+  const cookieStore = await cookies();
+  const language: LanguageCode =
+    parseLanguageFromServer(cookieStore.get(LANGUAGE_PREFERENCE_KEY)?.value) ?? 'en';
+
   const params = searchParams ? await searchParams : {};
   const page = parseInt(params?.page || "1", 10);
   const limitParam = params?.limit?.toString().trim();
@@ -134,7 +145,8 @@ export default async function ProductsPage({ searchParams }: any) {
     params?.sizes,
     params?.brand,
     perPage,
-    params?.filter
+    params?.filter,
+    language
   );
 
   // ------------------------------------
@@ -192,11 +204,14 @@ export default async function ProductsPage({ searchParams }: any) {
     return out;
   };
 
-  // Get language for translations
-  const language = getStoredLanguage();
+  const paginationSlotItems: PaginationSlotItem[] = getPaginationPages().map((item) =>
+    item === 'ellipsis'
+      ? { kind: 'ellipsis' }
+      : { kind: 'page', page: item, href: buildPaginationUrl(item) }
+  );
 
   return (
-    <div className="w-full overflow-x-hidden max-w-full">
+    <div className="w-full max-w-full overflow-x-hidden pb-24 md:pb-32 lg:pb-40">
       <ProductsHeader total={productsData.meta.total} />
 
       <div className={`${PRODUCTS_PAGE_SHELL} flex flex-col lg:flex-row gap-8`}>
@@ -224,68 +239,17 @@ export default async function ProductsPage({ searchParams }: any) {
               <ProductsGrid products={normalizedProducts} sortBy={params?.sort || "default"} />
 
               {productsData.meta.totalPages > 1 && (
-                <nav
-                  className="mt-10 flex flex-wrap items-center justify-center gap-2"
-                  aria-label="Pagination"
-                >
-                  {page > 1 ? (
-                    <Link href={buildPaginationUrl(page - 1)}>
-                      <Button
-                        variant="outline"
-                        className="min-w-[90px] rounded-lg border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-700 shadow-sm transition hover:border-neutral-400 hover:bg-neutral-50"
-                      >
-                        {t(language, 'common.pagination.previous')}
-                      </Button>
-                    </Link>
-                  ) : (
-                    <span className="min-w-[90px] rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-2 text-center text-sm font-medium text-neutral-400">
-                      {t(language, 'common.pagination.previous')}
-                    </span>
+                <ProductsPagination
+                  page={page}
+                  totalPages={productsData.meta.totalPages}
+                  hrefFirst={buildPaginationUrl(1)}
+                  hrefBack={buildPaginationUrl(Math.max(1, page - 1))}
+                  hrefNext={buildPaginationUrl(
+                    Math.min(productsData.meta.totalPages, page + 1)
                   )}
-
-                  <div className="flex items-center gap-1">
-                    {getPaginationPages().map((item, idx) =>
-                      item === "ellipsis" ? (
-                        <span key={`ellipsis-${idx}`} className="px-2 text-neutral-400" aria-hidden>
-                          …
-                        </span>
-                      ) : (
-                        <span key={item}>
-                          {item === page ? (
-                            <span
-                              className="flex h-9 min-w-[2.25rem] items-center justify-center rounded-lg bg-neutral-800 px-3 py-1.5 text-sm font-semibold text-white shadow-sm"
-                              aria-current="page"
-                            >
-                              {item}
-                            </span>
-                          ) : (
-                            <Link
-                              href={buildPaginationUrl(item)}
-                              className="flex h-9 min-w-[2.25rem] items-center justify-center rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-sm font-medium text-neutral-700 shadow-sm transition hover:border-neutral-400 hover:bg-neutral-50"
-                            >
-                              {item}
-                            </Link>
-                          )}
-                        </span>
-                      )
-                    )}
-                  </div>
-
-                  {page < productsData.meta.totalPages ? (
-                    <Link href={buildPaginationUrl(page + 1)}>
-                      <Button
-                        variant="outline"
-                        className="min-w-[90px] rounded-lg border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-700 shadow-sm transition hover:border-neutral-400 hover:bg-neutral-50"
-                      >
-                        {t(language, 'common.pagination.next')}
-                      </Button>
-                    </Link>
-                  ) : (
-                    <span className="min-w-[90px] rounded-lg border border-neutral-200 bg-neutral-50 px-4 py-2 text-center text-sm font-medium text-neutral-400">
-                      {t(language, 'common.pagination.next')}
-                    </span>
-                  )}
-                </nav>
+                  hrefLast={buildPaginationUrl(productsData.meta.totalPages)}
+                  slotItems={paginationSlotItems}
+                />
               )}
             </>
           ) : (
