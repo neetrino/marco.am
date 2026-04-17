@@ -8,6 +8,24 @@ import { logger } from "../../utils/logger";
 import { getOutOfStockLabel } from "./utils";
 import type { ProductWithFullRelations, ProductVariantWithOptions } from "./types";
 
+type ProductTranslationShape = {
+  locale: string;
+  title?: string | null;
+  slug?: string | null;
+  subtitle?: string | null;
+  descriptionHtml?: string | null;
+  seoTitle?: string | null;
+  seoDescription?: string | null;
+};
+
+type ProductDescriptionI18nMap = Record<
+  string,
+  {
+    shortDescription: string | null;
+    fullDescription: string | null;
+  }
+>;
+
 type ProductGalleryImage = {
   url: string;
   type: "image";
@@ -454,6 +472,40 @@ function transformProductAttributes(
   return [];
 }
 
+function resolveProductTranslation(
+  translations: ProductTranslationShape[],
+  lang: string
+): ProductTranslationShape | null {
+  const exactMatch = translations.find((item) => item.locale === lang);
+  if (exactMatch) {
+    return exactMatch;
+  }
+
+  const englishFallback = translations.find((item) => item.locale === "en");
+  if (englishFallback) {
+    return englishFallback;
+  }
+
+  return translations[0] ?? null;
+}
+
+function buildProductDescriptionI18nMap(
+  translations: ProductTranslationShape[]
+): ProductDescriptionI18nMap {
+  return translations.reduce<ProductDescriptionI18nMap>((acc, item) => {
+    if (!item.locale) {
+      return acc;
+    }
+
+    acc[item.locale] = {
+      shortDescription: item.subtitle ?? null,
+      fullDescription: item.descriptionHtml ?? null,
+    };
+
+    return acc;
+  }, {});
+}
+
 /**
  * Transform product data to response format
  */
@@ -462,8 +514,10 @@ export async function transformProduct(
   lang: string = "en"
 ) {
   // Get translations
-  const translations = Array.isArray(product.translations) ? product.translations : [];
-  const translation = translations.find((t: { locale: string }) => t.locale === lang) || translations[0] || null;
+  const translations = Array.isArray(product.translations)
+    ? (product.translations as ProductTranslationShape[])
+    : [];
+  const translation = resolveProductTranslation(translations, lang);
   
   // Get brand translation
   const brandTranslations = product.brand && Array.isArray(product.brand.translations)
@@ -501,13 +555,21 @@ export async function transformProduct(
 
   const gallery = transformGallery(product, translation?.title || null);
   const media = gallery.map((item) => item.url);
+  const descriptionI18n = buildProductDescriptionI18nMap(translations);
 
   return {
     id: product.id,
     slug: translation?.slug || "",
     title: translation?.title || "",
     subtitle: translation?.subtitle || null,
+    shortDescription: translation?.subtitle || null,
     description: translation?.descriptionHtml || null,
+    fullDescription: translation?.descriptionHtml || null,
+    i18n: {
+      requestedLocale: lang,
+      availableLocales: Object.keys(descriptionI18n),
+      descriptions: descriptionI18n,
+    },
     brand: product.brand
       ? {
           id: product.brand.id,

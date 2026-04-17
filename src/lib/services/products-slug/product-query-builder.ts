@@ -76,11 +76,10 @@ const getProductAttributesInclude = () => ({
 /**
  * Base where clause for product queries
  */
-const getBaseWhere = (slug: string, lang: string) => ({
+const getBaseWhere = (slug: string, _lang: string) => ({
   translations: {
     some: {
       slug,
-      locale: lang,
     },
   },
   published: true,

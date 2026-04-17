@@ -11,8 +11,8 @@ import { db } from "@white-shop/db";
 
 import { getCustomerAnalytics } from "./customer-analytics";
 
-const orderFindMany = vi.mocked(db.order.findMany);
-const userFindMany = vi.mocked(db.user.findMany);
+const orderFindMany = db.order.findMany as unknown as ReturnType<typeof vi.fn>;
+const userFindMany = db.user.findMany as unknown as ReturnType<typeof vi.fn>;
 
 describe("getCustomerAnalytics", () => {
   beforeEach(() => {

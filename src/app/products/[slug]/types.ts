@@ -72,7 +72,20 @@ export interface Product {
   slug: string;
   title: string;
   subtitle?: string;
+  shortDescription?: string | null;
   description?: string;
+  fullDescription?: string | null;
+  i18n?: {
+    requestedLocale: string;
+    availableLocales: string[];
+    descriptions: Record<
+      string,
+      {
+        shortDescription: string | null;
+        fullDescription: string | null;
+      }
+    >;
+  };
   media: ProductMedia[] | string[];
   variants: ProductVariant[];
   labels?: ProductLabel[];

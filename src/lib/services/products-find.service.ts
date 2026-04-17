@@ -69,7 +69,10 @@ class ProductsFindService {
       totalFromQuery === undefined &&
       (sort === "price-asc" || sort === "price-desc" || sort === "price")
     ) {
-      const transformedAll = await productsFindTransformService.transformProducts(filteredProducts, lang);
+      const transformedAll = (await productsFindTransformService.transformProducts(
+        filteredProducts,
+        lang
+      )) as Array<{ price: number }>;
       transformedAll.sort((a: { price: number }, b: { price: number }) => {
         if (sort === "price-asc") {
           return a.price - b.price;

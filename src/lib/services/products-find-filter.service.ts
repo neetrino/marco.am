@@ -92,17 +92,23 @@ class ProductsFindFilterService {
         }
 
         const brandTranslations = product.brand?.translations ?? [];
-        const matchesSlug = brandTranslations.some((translation) => {
-          const slug = translation.slug?.trim().toLowerCase();
-          return Boolean(slug) && brandTokens.normalized.has(slug);
-        });
+        const brandSlug = product.brand?.slug?.trim().toLowerCase();
+        const matchesSlug = brandSlug
+          ? brandTokens.normalized.has(brandSlug)
+          : false;
 
         if (matchesSlug) {
           return true;
         }
 
-        const fallbackBrandName = product.brand?.name?.trim().toLowerCase();
-        return Boolean(fallbackBrandName) && brandTokens.normalized.has(fallbackBrandName);
+        const fallbackBrandName = brandTranslations
+          .find((translation) => translation.name?.trim())
+          ?.name?.trim()
+          .toLowerCase();
+        if (!fallbackBrandName) {
+          return false;
+        }
+        return brandTokens.normalized.has(fallbackBrandName);
       });
     }
 

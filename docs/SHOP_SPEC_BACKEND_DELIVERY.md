@@ -126,13 +126,13 @@
 
 ## Փուլ 4 — Product (PDP)
 
-**Փուլի առաջընթաց.** `87%`
+**Փուլի առաջընթաց.** `91%`
 
 
 | ID  | Առաջադրանք (backend)                                                                | Կատարման % | Կարգավիճակ |
 | --- | ----------------------------------------------------------------------------------- | ---------- | ---------- |
 | 4.1 | Product gallery — մի քանի պատկերներ, metadata                                       | 100        | ✅          |
-| 4.2 | Կարճ և լիարժեք նկարագրություն (i18n դաշտեր)                                         | 85         | 🔄         |
+| 4.2 | Կարճ և լիարժեք նկարագրություն (i18n դաշտեր)                                         | 100        | ✅          |
 | 4.3 | Technical specifications table — structured attributes                              | 85         | 🔄         |
 | 4.4 | Գնային դաշտեր — current price, old price, discount badge inputs                     | 90         | 🔄         |
 | 4.5 | Quantity + Add to cart — զամբյուղի API (կլիենտ state-ի հետ համաձայնեցված)           | 90         | 🔄         |
@@ -144,6 +144,8 @@
 *Նշումներ.* 4.7 — առաջարկը հիմնականում կլիենտում է (`/api/v1/products` + category, առանց առանձին recommendation endpoint-ի)։
 
 **4.1 ✅ ավարտված (2026-04-17).** `GET /api/v1/products/[slug]` պատասխանում gallery-ն դարձել է կառուցվածքային՝ ավելացվել է `gallery[]` դաշտ, որտեղ յուրաքանչյուր նկար ունի metadata (`url`, `alt`, `title`, `mimeType`, `width`, `height`, `isPrimary`, `position`, `source`, `metadata`)։ Միաժամանակ պահպանվել է backward-compatible `media` դաշտը որպես URL-ների զանգված (`media = gallery.map(url)`), որպեսզի եղած client-երը չկոտրվեն։ Gallery-ն մաքրում/վալիդացնում է URL-ները, հեռացնում variant պատկերների duplicate-ները և ապահովում է առնվազն մեկ `isPrimary=true` պատկեր։
+
+**4.2 ✅ ավարտված (2026-04-17).** `GET /api/v1/products/[slug]?lang=<locale>` PDP պատասխանում ավելացվել են հստակ i18n նկարագրության դաշտեր՝ `shortDescription` (product translation `subtitle`) և `fullDescription` (product translation `descriptionHtml`)՝ պահելով backward-compatible `subtitle` և `description` դաշտերը։ Ավելացվել է նաև `i18n` բլոկ՝ `{ requestedLocale, availableLocales, descriptions }`, որտեղ `descriptions[locale] = { shortDescription, fullDescription }` բոլոր հասանելի թարգմանությունների համար։ Locale fallback-ը կայունացվել է՝ `requested locale` → `en` → առաջին հասանելի translation։
 
 **4.8 ✅ ավարտված (2026-04-16).** `GET /api/v1/products/[slug]/reviews` — վերադարձնում է `{ reviews, aggregate }` (միջին գնահատական, քանակ, աստղերի բաշխում) + հրապարակված կարծիքների ցուցակ։ `POST` — JWT, `policyAccepted: true` (UI-ում checkbox + `/terms` հղում), մարմնում `rating` + `comment`։ Պրոդում կամընտիր `REVIEW_REQUIRE_PURCHASE=true` — կարծիք միայն այն օգտատիրոջ համար, ում մոտ կա չչեղարկված պատվեր ապրանքով (variant → product)։ `reviews.service.ts`, PDP `ProductReviews` / `ReviewSummary` / `useReviews`։
 

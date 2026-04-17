@@ -390,7 +390,7 @@ class ProductsFiltersService {
           category.translations?.find((translation) => translation.locale === lang) ??
           category.translations?.[0];
         const categorySlug = localizedTranslation?.slug?.trim();
-        const categoryName = localizedTranslation?.name?.trim();
+        const categoryName = localizedTranslation?.title?.trim();
         if (!categorySlug || !categoryName) {
           continue;
         }
