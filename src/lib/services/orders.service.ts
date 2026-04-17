@@ -14,6 +14,7 @@ import type { AdminOrderListStatus } from "../constants/admin-order-list-status"
 import { cartService } from "./cart.service";
 import { deliverOrderConfirmation } from "./order-confirmation-delivery.service";
 import { resolveGuestCheckoutItems } from "./checkout-guest-items.service";
+import { createCardPaymentSession } from "./payment-psp.service";
 
 const orderNumberId = customAlphabet("0123456789ABCDEFGHJKLMNPQRSTUVWXYZ", 10);
 
@@ -387,6 +388,24 @@ class OrdersService {
         { timeout: 10000, maxWait: 5000 }
       );
 
+      let cardSession:
+        | {
+            provider: string;
+            paymentUrl: string;
+            expiresAt: string;
+          }
+        | null = null;
+
+      if (paymentMethod === "card") {
+        cardSession = await createCardPaymentSession({
+          paymentId: order.payment.id,
+          orderId: order.order.id,
+          orderNumber: order.order.number,
+          amount: Number(order.order.total),
+          currency: order.order.currency,
+        });
+      }
+
       const confirmationNotifications = await deliverOrderConfirmation({
         orderNumber: order.order.number,
         total: Number(order.order.total),
@@ -406,9 +425,9 @@ class OrdersService {
           currency: order.order.currency,
         },
         payment: {
-          provider: order.payment.provider,
-          paymentUrl: null, // TODO: Generate payment URL for Idram/ArCa
-          expiresAt: null, // TODO: Set expiration if needed
+          provider: cardSession?.provider ?? order.payment.provider,
+          paymentUrl: cardSession?.paymentUrl ?? null,
+          expiresAt: cardSession?.expiresAt ?? null,
         },
         nextAction:
           paymentMethod === 'card' ? 'redirect_to_payment' : 'view_order',

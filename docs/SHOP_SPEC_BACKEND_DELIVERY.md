@@ -29,7 +29,7 @@
 | 3    | Shop (PLP) — կատալոգ API         | `100%`          |
 | 4    | Ապրանքի էջ (PDP) — մանրամասն API | `100%`          |
 | 5    | Checkout — պատվեր                | `100%`          |
-| 6    | Վճարման եղանակներ                | `50%`           |
+| 6    | Վճարման եղանակներ                | `88%`           |
 | 7    | Օգտատիրոջ հաշիվ (Account)        | `100%`          |
 | 8    | Admin — catalog & promos         | `42%`           |
 | 9    | Admin — orders                   | `98%`           |
@@ -197,16 +197,16 @@
 
 ## Փուլ 6 — Վճարման եղանակներ
 
-**Փուլի առաջընթաց.** `50%`
+**Փուլի առաջընթաց.** `88%`
 
 
 | ID  | Առաջադրանք (backend)                                                    | Կատարման % | Կարգավիճակ |
 | --- | ----------------------------------------------------------------------- | ---------- | ---------- |
-| 6.1 | Քարտային վճարում — PSP ինտեգրացիա, session/webhook, կարգավիճակների flow | 25         | ⬜          |
+| 6.1 | Քարտային վճարում — PSP ինտեգրացիա, session/webhook, կարգավիճակների flow | 100        | ✅          |
 | 6.2 | Կանխիկ վճարում — պատվերի մեթոդ, կարգավիճակների flow                     | 75         | 🔄         |
 
 
-*Նշումներ.* `Payment` գրառում է ստեղծվում; `paymentUrl` և PSP webhook — `TODO`/բացակայում են։
+*Նշումներ.* `Payment` գրառում է ստեղծվում, իսկ `card`-ի դեպքում checkout-ը հիմա ստեղծում է PSP session (`providerTransactionId`, `idempotencyKey`, `providerResponse`) և վերադարձնում է `payment.paymentUrl` + `expiresAt`։ Ավելացված է webhook endpoint՝ `POST /api/v1/payments/webhook` (`x-psp-signature` HMAC SHA-256 validation)՝ event-ներով `payment.processing|succeeded|failed|cancelled|expired`, որոնք թարմացնում են `payments.status`, `orders.paymentStatus`, `orders.status`, `paidAt/failedAt` և գրում `order_events` (`payment_webhook_processed`)։ Local/dev fallback-ի համար ավելացվել է `GET /api/v1/payments/mock-hosted?session=...&status=succeeded|failed|cancelled|expired`՝ mock hosted redirect flow։
 
 ---
 
