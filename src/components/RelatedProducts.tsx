@@ -15,15 +15,14 @@ import { CarouselNavigation } from './RelatedProducts/CarouselNavigation';
 import { CarouselDots } from './RelatedProducts/CarouselDots';
 
 interface RelatedProductsProps {
-  categorySlug?: string;
-  currentProductId: string;
+  productSlug: string;
 }
 
 /**
  * RelatedProducts component - displays products from the same category in a carousel
  * Shown at the bottom of the single product page
  */
-export function RelatedProducts({ categorySlug, currentProductId }: RelatedProductsProps) {
+export function RelatedProducts({ productSlug }: RelatedProductsProps) {
   const router = useRouter();
   const { isLoggedIn } = useAuth();
   const [language, setLanguage] = useState<LanguageCode>('en');
@@ -31,7 +30,7 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
   
   const visibleCards = useVisibleCards();
-  const { products, loading } = useRelatedProducts({ categorySlug, currentProductId, language });
+  const { products, loading } = useRelatedProducts({ productSlug, language });
   
   const {
     currentIndex,

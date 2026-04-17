@@ -27,7 +27,7 @@
 | 1    | Infra & API կոնտրակտ             | `100%`          |
 | 2    | Գլխավոր էջ (Home) — տվյալներ     | `100%`          |
 | 3    | Shop (PLP) — կատալոգ API         | `100%`          |
-| 4    | Ապրանքի էջ (PDP) — մանրամասն API | `94%`           |
+| 4    | Ապրանքի էջ (PDP) — մանրամասն API | `100%`          |
 | 5    | Checkout — պատվեր                | `89%`           |
 | 6    | Վճարման եղանակներ                | `50%`           |
 | 7    | Օգտատիրոջ հաշիվ (Account)        | `100%`          |
@@ -126,7 +126,7 @@
 
 ## Փուլ 4 — Product (PDP)
 
-**Փուլի առաջընթաց.** `94%`
+**Փուլի առաջընթաց.** `100%`
 
 
 | ID  | Առաջադրանք (backend)                                                                | Կատարման % | Կարգավիճակ |
@@ -137,11 +137,11 @@
 | 4.4 | Գնային դաշտեր — current price, old price, discount badge inputs                     | 100        | ✅          |
 | 4.5 | Quantity + Add to cart — զամբյուղի API (կլիենտ state-ի հետ համաձայնեցված)           | 100        | ✅          |
 | 4.6 | Պահեստի կարգավիճակ — in stock / out of stock                                        | 100        | ✅          |
-| 4.7 | Related products — recommendation rule (կատեգորիա/բրենդ/այլ)                        | 55         | 🔄         |
+| 4.7 | Related products — recommendation rule (կատեգորիա/բրենդ/այլ)                        | 100        | ✅          |
 | 4.8 | Reviews — rating aggregate, ցուցակ, review submit (policy + auth, եթե պահանջվում է) | 100        | ✅          |
 
 
-*Նշումներ.* 4.7 — առաջարկը հիմնականում կլիենտում է (`/api/v1/products` + category, առանց առանձին recommendation endpoint-ի)։
+*Նշումներ.* 4.7 — իրականացված է backend recommendation chain-ով (`category` → `brand` → `other`)՝ առանձին endpoint-ով `GET /api/v1/products/[slug]/related?lang=<locale>&limit=10`։
 
 **4.1 ✅ ավարտված (2026-04-17).** `GET /api/v1/products/[slug]` պատասխանում gallery-ն դարձել է կառուցվածքային՝ ավելացվել է `gallery[]` դաշտ, որտեղ յուրաքանչյուր նկար ունի metadata (`url`, `alt`, `title`, `mimeType`, `width`, `height`, `isPrimary`, `position`, `source`, `metadata`)։ Միաժամանակ պահպանվել է backward-compatible `media` դաշտը որպես URL-ների զանգված (`media = gallery.map(url)`), որպեսզի եղած client-երը չկոտրվեն։ Gallery-ն մաքրում/վալիդացնում է URL-ները, հեռացնում variant պատկերների duplicate-ները և ապահովում է առնվազն մեկ `isPrimary=true` պատկեր։
 
@@ -154,6 +154,8 @@
 **4.5 ✅ ավարտված (2026-04-17).** `POST /api/v1/cart/items`-ում ավելացվել է `quantity`-ի խիստ validation (`positive integer`) և պահեստի սահմանափակման վերահսկում՝ ընդհանուր cart քանակի հաշվարկով (`existing + requested <= stock`)։ PDP (`src/app/products/[slug]/page.tsx`) add-to-cart հոսքը հիմա ուղարկում է ընտրված `quantity`-ը և `cart-updated` custom event-ով վերադարձնում է state-sync տվյալներ (`optimisticAdd` / `cartSummary`)՝ Header badge/total-ը անմիջապես համաժամեցնելու համար թե՛ login, թե՛ guest դեպքերում։ Guest cart-ում նույնպես ավելացվել է նույն variant-ի `stock`-ի գերազանցման պաշտպանություն և local summary հաշվարկ (`itemsCount`, `total`)։
 
 **4.6 ✅ ավարտված (2026-04-17).** `GET /api/v1/products/[slug]?lang=<locale>` PDP պատասխանում ավելացվել է հստակ պահեստային կարգավիճակի մոդել՝ product մակարդակով `inStock`, `stockStatus` (`in_stock`/`out_of_stock`) և `stockQuantity` (բոլոր variant-ների դրական stock-ի գումար), իսկ variant մակարդակով՝ `inStock` + `stockStatus` դաշտեր։ Storefront PDP-ում (`ProductInfoAndActions`) հիմա ցուցադրվում է տեսանելի badge՝ `In stock` կամ `Out of stock` (լեզվային թարգմանություններով `common.stock.*`)՝ ընտրված variant-ի հասանելիության հիման վրա։
+
+**4.7 ✅ ավարտված (2026-04-17).** Ավելացվել է backend recommendation service՝ `productsRelatedService` և route `GET /api/v1/products/[slug]/related`։ Կանոնը աշխատում է փուլային՝ **(1) նույն կատեգորիա** (`sort=popular`), **(2) նույն բրենդ** (`sort=popular`), **(3) այլ ապրանքներ** (`sort=popular`)՝ մինչև պահանջվող `limit` (default 10, max 24)։ Ընթացիկ PDP ապրանքը սերվերում բացառվում է, duplicate-ները դեդուպ են `id`-ով, և response-ում տրվում է item-level `recommendationRule` + `meta.rules` հաշվարկ (`category`/`brand`/`other`)։ Storefront related hook-ը տեղափոխվել է նոր endpoint-ի վրա (`useRelatedProducts`), և PDP-ից փոխանցվում է `productSlug`։
 
 **4.8 ✅ ավարտված (2026-04-16).** `GET /api/v1/products/[slug]/reviews` — վերադարձնում է `{ reviews, aggregate }` (միջին գնահատական, քանակ, աստղերի բաշխում) + հրապարակված կարծիքների ցուցակ։ `POST` — JWT, `policyAccepted: true` (UI-ում checkbox + `/terms` հղում), մարմնում `rating` + `comment`։ Պրոդում կամընտիր `REVIEW_REQUIRE_PURCHASE=true` — կարծիք միայն այն օգտատիրոջ համար, ում մոտ կա չչեղարկված պատվեր ապրանքով (variant → product)։ `reviews.service.ts`, PDP `ProductReviews` / `ReviewSummary` / `useReviews`։
 
