@@ -119,7 +119,22 @@
     "noTopCustomers": "No paid orders in this period.",
     "topCustomersColumnCustomer": "Customer",
     "topCustomersColumnSpend": "Spend",
-    "topCustomersColumnOrders": "Orders"
+    "topCustomersColumnOrders": "Orders",
+    "stockTitle": "Stock",
+    "stockHint": "Published variants only. Low stock: quantities from 1 to {max} (threshold setting {threshold}).",
+    "stockLoading": "Loading stock lists...",
+    "stockLoadFailed": "Stock lists could not be loaded. Other analytics above are still shown.",
+    "stockOutOfStockTitle": "Out of stock",
+    "stockOutOfStockHint": "Variants with stock 0.",
+    "stockLowStockTitle": "Low stock",
+    "stockLowStockHint": "Quantities from 1 to {max}.",
+    "stockEmptyOut": "No out-of-stock variants.",
+    "stockEmptyLow": "No low-stock variants.",
+    "stockColumnProduct": "Product",
+    "stockColumnBrand": "Brand",
+    "stockColumnStock": "Stock",
+    "stockColumnReserved": "Reserved",
+    "stockShowing": "Showing {shown} of {total} variants."
   },
   "attributes": {
     "title": "Attributes",

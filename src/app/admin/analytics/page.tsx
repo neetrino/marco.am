@@ -6,6 +6,7 @@ import { useAuth } from '../../../lib/auth/AuthContext';
 import { Card } from '@shop/ui';
 import { useTranslation } from '../../../lib/i18n-client';
 import { useAnalytics } from './hooks/useAnalytics';
+import { useStockAnalytics } from './hooks/useStockAnalytics';
 import { AnalyticsHeader } from './components/AnalyticsHeader';
 import { AdminSidebar } from './components/AdminSidebar';
 import { PeriodSelector } from './components/PeriodSelector';
@@ -16,9 +17,10 @@ import { TopCategories } from './components/TopCategories';
 import { OrdersByDayChart } from './components/OrdersByDayChart';
 import { OrderStatusBreakdown } from './components/OrderStatusBreakdown';
 import { CustomerAnalytics } from './components/CustomerAnalytics';
+import { StockAnalyticsSection } from './components/StockAnalyticsSection';
 
 export default function AnalyticsPage() {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const { isLoggedIn, isAdmin, isLoading } = useAuth();
   const router = useRouter();
   const [period, setPeriod] = useState<string>('week');
@@ -37,6 +39,16 @@ export default function AnalyticsPage() {
     endDate,
     isLoggedIn: isLoggedIn ?? false,
     isAdmin: isAdmin ?? false,
+  });
+
+  const {
+    stockAnalytics,
+    loading: stockLoading,
+    failed: stockFailed,
+  } = useStockAnalytics({
+    isLoggedIn: isLoggedIn ?? false,
+    isAdmin: isAdmin ?? false,
+    locale: lang,
   });
 
   useEffect(() => {
@@ -88,39 +100,49 @@ export default function AnalyticsPage() {
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
                 <p className="text-gray-600">{t('admin.analytics.loadingAnalytics')}</p>
               </div>
-            ) : analytics ? (
-              <>
-                <StatsCards analytics={analytics} totalUsers={totalUsers} />
-
-                {orderStatusBreakdownFailed ? (
-                  <Card className="p-4 mb-6 border border-amber-200 bg-amber-50">
-                    <p className="text-sm text-amber-950">
-                      {t('admin.analytics.orderStatusBreakdownLoadFailed')}
-                    </p>
-                  </Card>
-                ) : null}
-
-                {orderStatusBreakdown ? (
-                  <OrderStatusBreakdown data={orderStatusBreakdown} />
-                ) : null}
-
-                <CustomerAnalytics data={analytics.customerAnalytics} />
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                  <TopProducts products={analytics.topProducts} />
-                  <LeastSellingProducts products={analytics.leastSellingProducts} />
-                </div>
-
-                <div className="mb-6">
-                  <TopCategories categories={analytics.topCategories} />
-                </div>
-
-                <OrdersByDayChart ordersByDay={analytics.ordersByDay} />
-              </>
             ) : (
-              <Card className="p-6">
-                <p className="text-gray-600 text-center">{t('admin.analytics.noAnalyticsData')}</p>
-              </Card>
+              <>
+                {analytics ? (
+                  <>
+                    <StatsCards analytics={analytics} totalUsers={totalUsers} />
+
+                    {orderStatusBreakdownFailed ? (
+                      <Card className="p-4 mb-6 border border-amber-200 bg-amber-50">
+                        <p className="text-sm text-amber-950">
+                          {t('admin.analytics.orderStatusBreakdownLoadFailed')}
+                        </p>
+                      </Card>
+                    ) : null}
+
+                    {orderStatusBreakdown ? (
+                      <OrderStatusBreakdown data={orderStatusBreakdown} />
+                    ) : null}
+
+                    <CustomerAnalytics data={analytics.customerAnalytics} />
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                      <TopProducts products={analytics.topProducts} />
+                      <LeastSellingProducts products={analytics.leastSellingProducts} />
+                    </div>
+
+                    <div className="mb-6">
+                      <TopCategories categories={analytics.topCategories} />
+                    </div>
+
+                    <OrdersByDayChart ordersByDay={analytics.ordersByDay} />
+                  </>
+                ) : (
+                  <Card className="p-6 mb-6">
+                    <p className="text-gray-600 text-center">{t('admin.analytics.noAnalyticsData')}</p>
+                  </Card>
+                )}
+
+                <StockAnalyticsSection
+                  data={stockAnalytics}
+                  loading={stockLoading}
+                  failed={stockFailed}
+                />
+              </>
             )}
           </div>
         </div>

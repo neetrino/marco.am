@@ -119,7 +119,22 @@
     "noTopCustomers": "Нет оплаченных заказов за этот период.",
     "topCustomersColumnCustomer": "Клиент",
     "topCustomersColumnSpend": "Сумма",
-    "topCustomersColumnOrders": "Заказов"
+    "topCustomersColumnOrders": "Заказов",
+    "stockTitle": "Склад",
+    "stockHint": "Только опубликованные варианты. Низкий остаток: количество от 1 до {max} (порог {threshold}).",
+    "stockLoading": "Загрузка списков остатков...",
+    "stockLoadFailed": "Списки остатков не загрузились. Остальная аналитика выше отображается.",
+    "stockOutOfStockTitle": "Нет в наличии",
+    "stockOutOfStockHint": "Варианты с остатком 0.",
+    "stockLowStockTitle": "Низкий остаток",
+    "stockLowStockHint": "Количество от 1 до {max}.",
+    "stockEmptyOut": "Нет вариантов без остатка.",
+    "stockEmptyLow": "Нет вариантов с низким остатком.",
+    "stockColumnProduct": "Товар",
+    "stockColumnBrand": "Бренд",
+    "stockColumnStock": "Остаток",
+    "stockColumnReserved": "Резерв",
+    "stockShowing": "Показано {shown} из {total} вариантов."
   },
   "attributes": {
     "title": "Атрибуты",

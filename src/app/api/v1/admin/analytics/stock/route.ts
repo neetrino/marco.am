@@ -104,14 +104,6 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    logger.devLog("📦 [ADMIN STOCK ANALYTICS]", {
-      userId: user.id,
-      locale,
-      lowStockThreshold,
-      limit,
-      offset,
-    });
-
     const result = await adminService.getStockAnalytics({
       locale,
       lowStockThreshold,

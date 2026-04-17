@@ -119,7 +119,22 @@
     "noTopCustomers": "Այս ժամանակահատվածում վճարված պատվերներ չկան։",
     "topCustomersColumnCustomer": "Հաճախորդ",
     "topCustomersColumnSpend": "Ծախս",
-    "topCustomersColumnOrders": "Պատվերներ"
+    "topCustomersColumnOrders": "Պատվերներ",
+    "stockTitle": "Պաշար",
+    "stockHint": "Միայն հրապարակված variant-ներ։ Ցածր պաշար՝ 1–{max} հատ (շեմ՝ {threshold})։",
+    "stockLoading": "Պաշարի ցուցակների բեռնում...",
+    "stockLoadFailed": "Պաշարի ցուցակները չբեռնվեցին։ Վերևի վիճակագրությունը ցուցադրվում է։",
+    "stockOutOfStockTitle": "Ավարտված",
+    "stockOutOfStockHint": "Պաշար 0։",
+    "stockLowStockTitle": "Ցածր պաշար",
+    "stockLowStockHint": "Քանակ՝ 1–{max}։",
+    "stockEmptyOut": "Ավարտված variant չկա։",
+    "stockEmptyLow": "Ցածր պաշարով variant չկա։",
+    "stockColumnProduct": "Ապրանք",
+    "stockColumnBrand": "Բրենդ",
+    "stockColumnStock": "Պաշար",
+    "stockColumnReserved": "Պահված",
+    "stockShowing": "Ցուցադրվում է {shown}՝ {total} variant-ից։"
   },
   "attributes": {
     "title": "Ատրիբուտներ",

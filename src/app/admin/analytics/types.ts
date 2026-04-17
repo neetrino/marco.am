@@ -82,6 +82,33 @@ export interface OrderStatusBreakdownData {
   }>;
 }
 
+/** GET /api/v1/admin/analytics/stock */
+export interface StockAnalyticsVariantRow {
+  variantId: string;
+  productId: string;
+  sku: string | null;
+  stock: number;
+  stockReserved: number;
+  productTitle: string;
+  productSlug: string;
+  brandName: string | null;
+  imageUrl: string | null;
+  updatedAt: string;
+}
+
+export interface StockAnalyticsData {
+  locale: string;
+  lowStockThreshold: number;
+  outOfStock: {
+    total: number;
+    items: StockAnalyticsVariantRow[];
+  };
+  lowStock: {
+    total: number;
+    items: StockAnalyticsVariantRow[];
+  };
+}
+
 
 
 
