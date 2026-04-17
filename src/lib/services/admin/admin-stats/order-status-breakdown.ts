@@ -22,7 +22,7 @@ export type OrderStatusBreakdownWindow = {
 };
 
 /**
- * Response for `GET /api/v1/admin/analytics/order-status-breakdown` (admin analytics UI).
+ * Response for `GET /api/v1/supersudo/analytics/order-status-breakdown` (admin analytics UI).
  */
 export type OrderStatusBreakdownResponse = {
   windows: [OrderStatusBreakdownWindow, OrderStatusBreakdownWindow, OrderStatusBreakdownWindow];
