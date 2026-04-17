@@ -6,7 +6,6 @@
     "emailOrPhonePlaceholder": "your@email.com or +374 XX XXX XXX",
     "password": "Password",
     "passwordPlaceholder": "••••••••",
-    "rememberMe": "Remember me",
     "forgotPassword": "Forgot password?",
     "submit": "Sign In",
     "submitting": "Signing in...",
@@ -33,6 +32,12 @@
       "sessionExpired": "Verification session expired. Please sign in again.",
       "failed": "Verification failed. Please try again."
     }
+  },
+  "forgotPasswordPage": {
+    "title": "Reset your password",
+    "body": "Self-service password reset is not available yet. Please contact us and we will help you regain access to your account.",
+    "contactCta": "Contact support",
+    "backToLogin": "Back to sign in"
   }
 }
 

@@ -6,7 +6,6 @@
     "emailOrPhonePlaceholder": "your@email.com или +7 XXX XXX XX XX",
     "password": "Пароль",
     "passwordPlaceholder": "••••••••",
-    "rememberMe": "Запомнить меня",
     "forgotPassword": "Забыли пароль?",
     "submit": "Войти",
     "submitting": "Вход...",
@@ -33,6 +32,12 @@
       "sessionExpired": "Сессия подтверждения истекла. Войдите снова.",
       "failed": "Не удалось подтвердить. Попробуйте снова."
     }
+  },
+  "forgotPasswordPage": {
+    "title": "Восстановление пароля",
+    "body": "Самостоятельный сброс пароля пока недоступен. Свяжитесь с нами — мы поможем восстановить доступ к аккаунту.",
+    "contactCta": "Связаться с поддержкой",
+    "backToLogin": "Назад ко входу"
   }
 }
 

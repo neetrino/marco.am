@@ -16,7 +16,6 @@ function LoginPageContent() {
   const [emailOrPhone, setEmailOrPhone] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -55,7 +54,9 @@ function LoginPageContent() {
       logger.devLog('✅ [LOGIN PAGE] Login successful, redirecting to:', redirectTo);
       router.push(redirectTo);
     } catch (err: unknown) {
-      console.error('❌ [LOGIN PAGE] Login error:', err);
+      logger.error('Login page submission failed', {
+        message: err instanceof Error ? err.message : getErrorMessage(err),
+      });
       setError(getErrorMessage(err) || t('login.errors.loginFailed'));
     } finally {
       setIsSubmitting(false);
@@ -126,17 +127,7 @@ function LoginPageContent() {
               </button>
             </div>
           </div>
-          <div className="flex items-center justify-between">
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                disabled={isSubmitting || isLoading}
-              />
-              <span className="ml-2 text-sm text-gray-600">{t('login.form.rememberMe')}</span>
-            </label>
+          <div className="flex justify-end">
             <Link
               href="/forgot-password"
               className="text-sm text-blue-600 hover:underline"
@@ -157,7 +148,14 @@ function LoginPageContent() {
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
             {t('login.form.noAccount')}{' '}
-            <Link href="/register" className="text-blue-600 hover:underline font-medium">
+            <Link
+              href={
+                redirectTo === '/'
+                  ? '/register'
+                  : `/register?redirect=${encodeURIComponent(redirectTo)}`
+              }
+              className="text-blue-600 hover:underline font-medium"
+            >
               {t('login.form.signUp')}
             </Link>
           </p>
