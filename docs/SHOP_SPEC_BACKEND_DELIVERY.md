@@ -33,7 +33,7 @@
 | 7    | Օգտատիրոջ հաշիվ (Account)        | `100%`          |
 | 8    | Admin — catalog & promos         | `42%`           |
 | 9    | Admin — orders                   | `88%`           |
-| 10   | Admin — analytics                | `75%`           |
+| 10   | Admin — analytics                | `79%`           |
 | 11   | Reels                            | `0%`            |
 | 12   | Site-wide & i18n (API)           | `62%`           |
 
@@ -240,12 +240,14 @@
 | 10.1 | Sales KPIs — total orders, revenue, AOV                       | 85         | 🔄         |
 | 10.2 | Order status breakdown — by status, today / week / month      | 80         | 🔄         |
 | 10.3 | Product analytics — top 5 best sellers, least selling         | 85         | 🔄         |
-| 10.4 | Stock analytics — low stock, out of stock lists               | 75         | 🔄         |
+| 10.4 | Stock analytics — low stock, out of stock lists               | 100        | ✅         |
 | 10.5 | Customer analytics — new vs repeat, top customers by spend    | 40         | 🔄         |
 | 10.6 | Dashboard widgets — today’s sales, monthly sales, top product | 85         | 🔄         |
 
 
 *Նշումներ.* `admin/stats`, `admin/analytics`, dashboard երթուղիներ; 10.5-ը spec-ի լիությամբ մասնակի է։
+
+**10.4 ✅ ավարտված (2026-04-17).** `GET /api/v1/admin/analytics/stock` (JWT + admin) — վերադարձնում է `outOfStock` և `lowStock` ցուցակներ (տողեր՝ variant/product/sku/stock, բրենդի անուն ընտրված `locale`-ով, նկարի URL) և `total` հաշվիչներ pagination-ի (`limit`/`offset`) համար։ «Ցածր պաշար»՝ `1 … threshold−1` հատ պաշար (default `threshold=10`, `src/lib/constants/low-stock-threshold.ts`), «Ավարտված»՝ `stock === 0`։ Միայն **published** variant-ներ, **չջնջված** ապրանքներ։
 
 ---
 

@@ -1,5 +1,7 @@
 import { db } from "@white-shop/db";
 
+import { DEFAULT_LOW_STOCK_THRESHOLD } from "@/lib/constants/low-stock-threshold";
+
 /**
  * Get dashboard stats
  */
@@ -14,10 +16,10 @@ export async function getStats() {
     where: { deletedAt: null },
   });
 
-  // Count products with low stock (stock < 10)
+  // Count variants with low stock (stock < threshold), published only; includes out-of-stock (0)
   const lowStockProducts = await db.productVariant.count({
     where: {
-      stock: { lt: 10 },
+      stock: { lt: DEFAULT_LOW_STOCK_THRESHOLD },
       published: true,
     },
   });

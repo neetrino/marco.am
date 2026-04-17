@@ -4,6 +4,7 @@ import { getRecentOrders } from "./admin-stats/recent-orders";
 import { getTopProducts } from "./admin-stats/top-products";
 import { getActivity } from "./admin-stats/activity";
 import { getAnalytics } from "./admin-stats/analytics";
+import { getStockAnalytics } from "./admin-stats/stock-analytics";
 
 /**
  * Service for admin statistics operations
@@ -49,6 +50,18 @@ class AdminStatsService {
    */
   async getAnalytics(period: string = 'week', startDate?: string, endDate?: string) {
     return getAnalytics(period, startDate, endDate);
+  }
+
+  /**
+   * Low stock and out-of-stock variant lists (admin).
+   */
+  async getStockAnalytics(params: {
+    locale: string;
+    lowStockThreshold: number;
+    limit: number;
+    offset: number;
+  }) {
+    return getStockAnalytics(params);
   }
 }
 
