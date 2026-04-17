@@ -167,14 +167,6 @@ export default async function ProductsPage({ searchParams }: any) {
     labels: p.labels ?? []            // ⭐ Add labels array (includes "Out of Stock" label)
   }));
 
-  // FILTERS
-  const brands = params?.brand;
-  const selectedBrands = brands ? brands.split(',').map((b: string) => b.trim()) : [];
-  const categoryParam = params?.category?.toString().trim();
-  const selectedCategorySlugs = categoryParam
-    ? categoryParam.split(',').map((s: string) => s.trim()).filter(Boolean)
-    : [];
-
   // PAGINATION: 12 per page by default, preserve limit in URLs
   const buildPaginationUrl = (num: number) => {
     const q = new URLSearchParams();
@@ -240,9 +232,8 @@ export default async function ProductsPage({ searchParams }: any) {
                 search={params?.search}
                 minPrice={params?.minPrice}
                 maxPrice={params?.maxPrice}
-                selectedSlugs={selectedCategorySlugs}
               />
-              <BrandFilter category={params?.category} search={params?.search} minPrice={params?.minPrice} maxPrice={params?.maxPrice} selectedBrands={selectedBrands} />
+              <BrandFilter category={params?.category} search={params?.search} minPrice={params?.minPrice} maxPrice={params?.maxPrice} />
             </Suspense>
           </div>
           <div
@@ -299,9 +290,8 @@ export default async function ProductsPage({ searchParams }: any) {
               search={params?.search}
               minPrice={params?.minPrice}
               maxPrice={params?.maxPrice}
-              selectedSlugs={selectedCategorySlugs}
             />
-            <BrandFilter category={params?.category} search={params?.search} minPrice={params?.minPrice} maxPrice={params?.maxPrice} selectedBrands={selectedBrands} />
+            <BrandFilter category={params?.category} search={params?.search} minPrice={params?.minPrice} maxPrice={params?.maxPrice} />
           </Suspense>
         </div>
       </MobileFiltersDrawer>

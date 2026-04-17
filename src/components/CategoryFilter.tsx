@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { apiClient } from '../lib/api-client';
 import { getStoredLanguage } from '../lib/language';
 import { useTranslation } from '../lib/i18n-client';
 import { useProductsFilters } from './ProductsFiltersProvider';
 import { productsFiltersSectionFont } from '../lib/products-filters-typography';
+import { PRODUCTS_FILTER_LIST_SCROLL_CLASS } from '../lib/products-filter-list-scroll';
 import { ProductsFilterCheckboxVisual } from './ProductsFilterCheckbox';
 
 interface CategoryFilterProps {
@@ -14,7 +15,6 @@ interface CategoryFilterProps {
   search?: string;
   minPrice?: string;
   maxPrice?: string;
-  selectedSlugs?: string[];
 }
 
 interface CategoryOption {
@@ -23,15 +23,11 @@ interface CategoryOption {
   count: number;
 }
 
-const FILTER_LIST_SCROLL =
-  'max-h-[200px] overflow-y-auto pr-1 [scrollbar-width:thin] [scrollbar-color:#e2e8f0_transparent] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#e2e8f0]';
-
 export function CategoryFilter({
   category,
   search,
   minPrice,
   maxPrice,
-  selectedSlugs = [],
 }: CategoryFilterProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -39,6 +35,9 @@ export function CategoryFilter({
   const { t } = useTranslation();
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [loading, setLoading] = useState(true);
+  /** Instant UI while URL / RSC catch up after `router.push` */
+  const [optimisticSlugs, setOptimisticSlugs] = useState<string[] | null>(null);
+  const [, startTransition] = useTransition();
 
   useEffect(() => {
     if (filtersContext?.data?.categories) {
@@ -71,18 +70,38 @@ export function CategoryFilter({
     }
   };
 
+  /** URL is source of truth (avoids stale server props); slugs compared case-insensitively */
+  const categoryQs = searchParams.get('category');
+  const selectedFromUrl = useMemo(
+    () => (categoryQs ? categoryQs.split(',').map((s) => s.trim()).filter(Boolean) : []),
+    [categoryQs]
+  );
+
+  const selectedSlugs = optimisticSlugs ?? selectedFromUrl;
+
+  useEffect(() => {
+    setOptimisticSlugs(null);
+  }, [categoryQs]);
+
   const handleToggle = (slug: string) => {
     const params = new URLSearchParams(searchParams.toString());
-    const next = selectedSlugs.includes(slug)
-      ? selectedSlugs.filter((s) => s !== slug)
-      : [...selectedSlugs, slug];
+    const fromUrl =
+      optimisticSlugs ??
+      params.get('category')?.split(',').map((s) => s.trim()).filter(Boolean) ??
+      [];
+    const idx = fromUrl.findIndex((s) => s.toLowerCase() === slug.toLowerCase());
+    const next = idx >= 0 ? fromUrl.filter((_, i) => i !== idx) : [...fromUrl, slug];
+    setOptimisticSlugs(next);
     if (next.length > 0) {
       params.set('category', next.join(','));
     } else {
       params.delete('category');
     }
     params.delete('page');
-    router.push(`/products?${params.toString()}`);
+    const qs = params.toString();
+    startTransition(() => {
+      router.push(qs ? `/products?${qs}` : '/products');
+    });
   };
 
   if (loading) {
@@ -110,20 +129,22 @@ export function CategoryFilter({
         {t('products.filters.category.title')}
       </h3>
 
-      <div className={`flex flex-col gap-3 ${FILTER_LIST_SCROLL}`}>
+      <div className={`flex flex-col gap-3 ${PRODUCTS_FILTER_LIST_SCROLL_CLASS}`}>
         {categories.map((item) => {
-          const isSelected = selectedSlugs.includes(item.slug);
+          const isSelected = selectedSlugs.some(
+            (s) => s.toLowerCase() === item.slug.toLowerCase()
+          );
 
           return (
             <button
               key={item.slug}
               type="button"
               onClick={() => handleToggle(item.slug)}
-              className="flex w-full min-w-0 items-center gap-3 text-left transition-opacity hover:opacity-90"
+              className="flex w-full min-w-0 items-center gap-3 text-left transition-[opacity,color] duration-200 ease-out hover:opacity-90"
             >
-              <ProductsFilterCheckboxVisual checked={isSelected} />
+              <ProductsFilterCheckboxVisual checked={isSelected} variant="checkmark" />
               <span
-                className={`min-w-0 flex-1 truncate text-base leading-6 tracking-[0.16px] ${
+                className={`min-w-0 flex-1 truncate text-base leading-6 tracking-[0.16px] transition-colors duration-200 ease-out ${
                   isSelected ? 'text-[#314158]' : 'text-[#5d7285]'
                 }`}
               >

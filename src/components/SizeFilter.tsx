@@ -7,6 +7,7 @@ import { getStoredLanguage } from '../lib/language';
 import { useTranslation } from '../lib/i18n-client';
 import { useProductsFilters } from './ProductsFiltersProvider';
 import { productsFiltersSectionFont } from '../lib/products-filters-typography';
+import { PRODUCTS_FILTER_LIST_SCROLL_CLASS } from '../lib/products-filter-list-scroll';
 import { ProductsFilterCheckboxVisual } from './ProductsFilterCheckbox';
 
 interface SizeFilterProps {
@@ -22,8 +23,6 @@ interface SizeOption {
   count: number;
 }
 
-const FILTER_LIST_SCROLL =
-  'max-h-[200px] overflow-y-auto pr-1 [scrollbar-width:thin] [scrollbar-color:#e2e8f0_transparent] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#e2e8f0]';
 
 export function SizeFilter({ category, search, minPrice, maxPrice, selectedSizes = [] }: SizeFilterProps) {
   const router = useRouter();
@@ -131,7 +130,7 @@ export function SizeFilter({ category, search, minPrice, maxPrice, selectedSizes
         {t('products.filters.size.title')}
       </h3>
 
-      <div className={`flex flex-col gap-3 ${FILTER_LIST_SCROLL}`}>
+      <div className={`flex flex-col gap-3 ${PRODUCTS_FILTER_LIST_SCROLL_CLASS}`}>
         {sizes.map((size) => {
           const isSelected = selected.includes(size.value);
 
