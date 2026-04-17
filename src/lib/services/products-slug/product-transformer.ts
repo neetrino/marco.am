@@ -6,6 +6,10 @@ import {
 } from "../../utils/image-utils";
 import { logger } from "../../utils/logger";
 import { getOutOfStockLabel } from "./utils";
+import {
+  buildTechnicalSpecifications,
+  type ProductAttributeForTechnicalSpecification,
+} from "./technical-specifications";
 import type { ProductWithFullRelations, ProductVariantWithOptions } from "./types";
 
 type ProductTranslationShape = {
@@ -556,6 +560,14 @@ export async function transformProduct(
   const gallery = transformGallery(product, translation?.title || null);
   const media = gallery.map((item) => item.url);
   const descriptionI18n = buildProductDescriptionI18nMap(translations);
+  const productAttributesForTechnicalSpecifications = (
+    product as { productAttributes?: ProductAttributeForTechnicalSpecification[] }
+  ).productAttributes;
+  const technicalSpecifications = buildTechnicalSpecifications(
+    productAttributesForTechnicalSpecifications,
+    product.variants,
+    lang
+  );
 
   return {
     id: product.id,
@@ -591,6 +603,7 @@ export async function transformProduct(
     ) : [],
     globalDiscount: globalDiscount > 0 ? globalDiscount : null,
     productDiscount: productDiscount > 0 ? productDiscount : null,
+    technicalSpecifications,
     seo: {
       title: translation?.seoTitle || translation?.title,
       description: translation?.seoDescription || null,
