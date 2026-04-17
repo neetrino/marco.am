@@ -1,6 +1,6 @@
 'use client';
 
-import type { FormEvent, SyntheticEvent } from 'react';
+import type { SyntheticEvent } from 'react';
 import { Button } from '@shop/ui';
 import { useTranslation } from '../../../../lib/i18n-client';
 import type { Category } from '../types';

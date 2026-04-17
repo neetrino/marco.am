@@ -4,6 +4,76 @@ import { adminService } from "./admin.service";
 import { ProductWithRelations } from "./products-find-query.service";
 
 class ProductsFiltersService {
+  private splitCategoryTokens(category?: string): string[] {
+    if (!category || typeof category !== "string") {
+      return [];
+    }
+    return category
+      .split(",")
+      .map((token) => token.trim())
+      .filter((token) => token.length > 0);
+  }
+
+  private async resolveCategoryIds(category: string, lang: string): Promise<string[]> {
+    const categoryTokens = this.splitCategoryTokens(category);
+    if (categoryTokens.length === 0) {
+      return [];
+    }
+
+    const allIds = new Set<string>();
+    for (const token of categoryTokens) {
+      let categoryDoc = await db.category.findFirst({
+        where: {
+          id: token,
+          published: true,
+          deletedAt: null,
+        },
+        select: { id: true },
+      });
+
+      if (!categoryDoc) {
+        categoryDoc = await db.category.findFirst({
+          where: {
+            translations: {
+              some: {
+                slug: token,
+                locale: lang,
+              },
+            },
+            published: true,
+            deletedAt: null,
+          },
+          select: { id: true },
+        });
+      }
+
+      if (!categoryDoc) {
+        categoryDoc = await db.category.findFirst({
+          where: {
+            translations: {
+              some: {
+                slug: token,
+              },
+            },
+            published: true,
+            deletedAt: null,
+          },
+          select: { id: true },
+        });
+      }
+
+      if (!categoryDoc) {
+        continue;
+      }
+
+      allIds.add(categoryDoc.id);
+      const childIds = await this.getAllChildCategoryIds(categoryDoc.id);
+      childIds.forEach((childId) => allIds.add(childId));
+    }
+
+    return Array.from(allIds);
+  }
+
   /**
    * Get all child category IDs recursively
    */
@@ -83,30 +153,16 @@ class ProductsFiltersService {
       // Add category filter
       if (filters.category) {
         try {
-          const categoryDoc = await db.category.findFirst({
-            where: {
-              translations: {
-                some: {
-                  slug: filters.category,
-                  locale: filters.lang || "en",
-                },
-              },
-              published: true,
-              deletedAt: null,
-            },
-          });
-
-          if (categoryDoc && categoryDoc.id) {
-            // Get all child categories (subcategories) recursively
-            const childCategoryIds = await this.getAllChildCategoryIds(categoryDoc.id);
-            const allCategoryIds = [categoryDoc.id, ...childCategoryIds];
-
-            // Build OR conditions
+          const allCategoryIds = await this.resolveCategoryIds(
+            filters.category,
+            filters.lang || "en"
+          );
+          if (allCategoryIds.length > 0) {
             const categoryConditions = allCategoryIds.flatMap((catId: string) => [
               { primaryCategoryId: catId },
               { categoryIds: { has: catId } },
             ]);
-            
+
             if (where.OR) {
               where.AND = [
                 { OR: where.OR },
@@ -168,6 +224,15 @@ class ProductsFiltersService {
                 },
               },
             },
+            categories: {
+              where: {
+                published: true,
+                deletedAt: null,
+              },
+              include: {
+                translations: true,
+              },
+            },
           },
         })) as unknown as ProductWithRelations[];
       } catch (dbError) {
@@ -207,6 +272,7 @@ class ProductsFiltersService {
     }>();
     const sizeMap = new Map<string, number>();
     const brandMap = new Map<string, { id: string; name: string; count: number }>();
+    const categoryMap = new Map<string, { id: string; slug: string; name: string; count: number }>();
     let rangeMin = Infinity;
     let rangeMax = 0;
 
@@ -229,6 +295,29 @@ class ProductsFiltersService {
           const existing = brandMap.get(product.brand.id);
           brandMap.set(product.brand.id, { id: product.brand.id, name, count: (existing?.count || 0) + 1 });
         }
+      }
+      const productCategories = Array.isArray(product.categories)
+        ? product.categories
+        : [];
+      for (const category of productCategories) {
+        if (!category?.id) {
+          continue;
+        }
+        const localizedTranslation =
+          category.translations?.find((translation) => translation.locale === lang) ??
+          category.translations?.[0];
+        const categorySlug = localizedTranslation?.slug?.trim();
+        const categoryName = localizedTranslation?.name?.trim();
+        if (!categorySlug || !categoryName) {
+          continue;
+        }
+        const existingCategory = categoryMap.get(category.id);
+        categoryMap.set(category.id, {
+          id: category.id,
+          slug: categorySlug,
+          name: categoryName,
+          count: (existingCategory?.count || 0) + 1,
+        });
       }
       product.variants.forEach((v: { price?: number }) => {
         if (typeof v?.price === 'number') {
@@ -400,6 +489,9 @@ class ProductsFiltersService {
       colors.sort((a: { label: string }, b: { label: string }) => a.label.localeCompare(b.label));
 
       const brands = Array.from(brandMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+      const categories = Array.from(categoryMap.values()).sort((a, b) =>
+        a.name.localeCompare(b.name)
+      );
       const priceMin = rangeMin === Infinity ? 0 : Math.floor(rangeMin / 1000) * 1000;
       const priceMax = rangeMax === 0 ? 100000 : Math.ceil(rangeMax / 1000) * 1000;
       let stepSize: number | null = null;
@@ -423,6 +515,7 @@ class ProductsFiltersService {
         colors,
         sizes,
         brands,
+        categories,
         priceRange: { min: priceMin, max: priceMax, stepSize, stepSizePerCurrency },
       };
     } catch (error) {
@@ -431,6 +524,7 @@ class ProductsFiltersService {
         colors: [],
         sizes: [],
         brands: [],
+        categories: [],
         priceRange: { min: 0, max: 100000, stepSize: null, stepSizePerCurrency: null },
       };
     }
@@ -446,22 +540,16 @@ class ProductsFiltersService {
     };
 
     if (filters.category) {
-      const categoryDoc = await db.category.findFirst({
-        where: {
-          translations: {
-            some: {
-              slug: filters.category,
-              locale: filters.lang || "en",
-            },
-          },
-        },
-      });
+      const allCategoryIds = await this.resolveCategoryIds(
+        filters.category,
+        filters.lang || "en"
+      );
 
-      if (categoryDoc) {
-        where.OR = [
-          { primaryCategoryId: categoryDoc.id },
-          { categoryIds: { has: categoryDoc.id } },
-        ];
+      if (allCategoryIds.length > 0) {
+        where.OR = allCategoryIds.flatMap((categoryId) => [
+          { primaryCategoryId: categoryId },
+          { categoryIds: { has: categoryId } },
+        ]);
       }
     }
 

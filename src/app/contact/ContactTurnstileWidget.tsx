@@ -2,12 +2,6 @@
 
 import { useEffect, useRef } from "react";
 
-function useStableCallback<T extends (token: string | null) => void>(cb: T) {
-  const ref = useRef(cb);
-  ref.current = cb;
-  return ref;
-}
-
 const TURNSTILE_SCRIPT_SRC =
   "https://challenges.cloudflare.com/turnstile/v0/api.js";
 
@@ -59,7 +53,11 @@ export function ContactTurnstileWidget({
 }: TurnstileWidgetProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const widgetIdRef = useRef<string | null>(null);
-  const onTokenChangeRef = useStableCallback(onTokenChange);
+  const onTokenChangeRef = useRef(onTokenChange);
+
+  useEffect(() => {
+    onTokenChangeRef.current = onTokenChange;
+  }, [onTokenChange]);
 
   useEffect(() => {
     if (!siteKey.trim()) {

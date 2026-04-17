@@ -22,6 +22,15 @@ const normalizeFilterList = (
   return items;
 };
 
+const normalizeBrandTokens = (brand?: string): { raw: Set<string>; normalized: Set<string> } => {
+  const rawList = normalizeFilterList(brand);
+  const normalizedList = normalizeFilterList(brand, (token) => token.toLowerCase());
+  return {
+    raw: new Set(rawList),
+    normalized: new Set(normalizedList),
+  };
+};
+
 type SupportedSort = "newest" | "popular" | "price-asc" | "price-desc";
 
 function resolveSort(sort?: string): SupportedSort {
@@ -74,12 +83,26 @@ class ProductsFindFilterService {
     }
 
     // Filter by brand(s) - support multiple brands (comma-separated)
-    const brandList = normalizeFilterList(brand);
-    if (brandList.length > 0) {
-      products = products.filter(
-        (product: ProductWithRelations) => 
-          product.brandId && brandList.includes(product.brandId)
-      );
+    const brandTokens = normalizeBrandTokens(brand);
+    if (brandTokens.raw.size > 0 || brandTokens.normalized.size > 0) {
+      products = products.filter((product: ProductWithRelations) => {
+        if (product.brandId && brandTokens.raw.has(product.brandId)) {
+          return true;
+        }
+
+        const brandTranslations = product.brand?.translations ?? [];
+        const matchesSlug = brandTranslations.some((translation) => {
+          const slug = translation.slug?.trim().toLowerCase();
+          return Boolean(slug) && brandTokens.normalized.has(slug);
+        });
+
+        if (matchesSlug) {
+          return true;
+        }
+
+        const fallbackBrandName = product.brand?.name?.trim().toLowerCase();
+        return Boolean(fallbackBrandName) && brandTokens.normalized.has(fallbackBrandName);
+      });
     }
 
     // Filter by colors and sizes together if both are provided.

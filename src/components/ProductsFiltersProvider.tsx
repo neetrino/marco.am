@@ -31,6 +31,13 @@ export interface BrandOption {
   count: number;
 }
 
+export interface CategoryOption {
+  id: string;
+  slug: string;
+  name: string;
+  count: number;
+}
+
 export interface PriceRangeOption {
   min: number;
   max: number;
@@ -42,6 +49,7 @@ export interface ProductsFiltersData {
   colors: ColorOption[];
   sizes: SizeOption[];
   brands: BrandOption[];
+  categories: CategoryOption[];
   priceRange: PriceRangeOption;
 }
 
@@ -58,6 +66,7 @@ const DEFAULT_FILTERS: ProductsFiltersData = {
   colors: [],
   sizes: [],
   brands: [],
+  categories: [],
   priceRange: { min: 0, max: 100000, stepSize: null, stepSizePerCurrency: null },
 };
 
@@ -95,6 +104,7 @@ export function ProductsFiltersProvider({
         colors: res.colors ?? [],
         sizes: res.sizes ?? [],
         brands: res.brands ?? [],
+        categories: res.categories ?? [],
         priceRange: res.priceRange ?? DEFAULT_FILTERS.priceRange,
       });
     } catch {

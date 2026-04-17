@@ -25,12 +25,20 @@ export async function GET(req: NextRequest) {
     const filters = {
       category: searchParams.get("category") || undefined,
       search: searchParams.get("search") || undefined,
-      minPrice: searchParams.get("minPrice")
-        ? parseFloat(searchParams.get("minPrice")!)
-        : undefined,
-      maxPrice: searchParams.get("maxPrice")
-        ? parseFloat(searchParams.get("maxPrice")!)
-        : undefined,
+      minPrice: (() => {
+        const raw = searchParams.get("minPrice");
+        const parsed = raw ? Number(raw) : undefined;
+        return typeof parsed === "number" && Number.isFinite(parsed) && parsed >= 0
+          ? parsed
+          : undefined;
+      })(),
+      maxPrice: (() => {
+        const raw = searchParams.get("maxPrice");
+        const parsed = raw ? Number(raw) : undefined;
+        return typeof parsed === "number" && Number.isFinite(parsed) && parsed >= 0
+          ? parsed
+          : undefined;
+      })(),
       lang: searchParams.get("lang") || "en",
     };
 

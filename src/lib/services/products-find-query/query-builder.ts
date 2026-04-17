@@ -52,23 +52,33 @@ async function buildCategoryFilter(
   lang: string,
   existingWhere: Prisma.ProductWhereInput
 ): Promise<Prisma.ProductWhereInput | null> {
-  const categoryDoc = await findCategoryBySlug(category, lang);
+  const categoryTokens = category
+    .split(",")
+    .map((token) => token.trim())
+    .filter((token) => token.length > 0);
+  const categoryIds = new Set<string>();
 
-  if (!categoryDoc) {
-    return null; // Category not found - return null to indicate empty result
+  for (const token of categoryTokens) {
+    const categoryDoc = await findCategoryBySlug(token, lang);
+    if (!categoryDoc) {
+      continue;
+    }
+
+    categoryIds.add(categoryDoc.id);
+    const childCategoryIds = await getAllChildCategoryIds(categoryDoc.id);
+    childCategoryIds.forEach((childId) => categoryIds.add(childId));
   }
 
-  // Get all child categories (subcategories) recursively
-  const childCategoryIds = await getAllChildCategoryIds(categoryDoc.id);
-  const allCategoryIds = [categoryDoc.id, ...childCategoryIds];
-  
-  logger.debug('Category IDs to include', {
-    parent: categoryDoc.id,
-    children: childCategoryIds,
-    total: allCategoryIds.length
+  if (categoryIds.size === 0) {
+    return null;
+  }
+
+  const allCategoryIds = Array.from(categoryIds);
+  logger.debug("Category IDs to include", {
+    requestedCategory: category,
+    total: allCategoryIds.length,
   });
-  
-  // Build OR conditions for all categories (parent + children)
+
   const categoryConditions = allCategoryIds.flatMap((catId: string) => [
     { primaryCategoryId: catId },
     { categoryIds: { has: catId } },

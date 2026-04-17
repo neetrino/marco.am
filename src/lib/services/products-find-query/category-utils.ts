@@ -33,8 +33,21 @@ export async function findCategoryBySlug(
   lang: string
 ): Promise<{ id: string } | null> {
   logger.debug('Looking for category', { category: categorySlug, lang });
-  
   let categoryDoc = await db.category.findFirst({
+    where: {
+      id: categorySlug,
+      published: true,
+      deletedAt: null,
+    },
+    select: { id: true },
+  });
+
+  if (categoryDoc) {
+    logger.info("Category resolved by id", { id: categoryDoc.id });
+    return categoryDoc;
+  }
+
+  categoryDoc = await db.category.findFirst({
     where: {
       translations: {
         some: {
