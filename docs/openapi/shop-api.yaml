@@ -27,6 +27,8 @@ tags:
     description: Saved products per user (JWT) or guest session (cookie / header).
   - name: Site
     description: Site-wide public endpoints (contact form, etc.).
+  - name: Home
+    description: Home page structured CMS content (public + supersudo admin).
 
 paths:
   /api/health:
@@ -421,6 +423,85 @@ paths:
               schema:
                 $ref: "#/components/schemas/ProblemDetails"
 
+  /api/v1/home/why-choose-us:
+    get:
+      tags: [Home]
+      summary: Home «Why choose us» block (locale-resolved copy + icon keys)
+      operationId: getHomeWhyChooseUs
+      parameters:
+        - name: locale
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [en, hy, ru]
+            default: en
+      responses:
+        "200":
+          description: Section title and active items for the requested locale.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WhyChooseUsPublicResponse"
+        "500":
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+
+  /api/v1/supersudo/why-choose-us:
+    get:
+      tags: [Home]
+      summary: Full Why choose us document (all locales) for admin
+      operationId: getSupersudoWhyChooseUs
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Stored JSON document (`settings.key = homeWhyChooseUs`).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WhyChooseUsStorageDocument"
+        "403":
+          description: Not an admin.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+    put:
+      tags: [Home]
+      summary: Replace Why choose us document (validated)
+      operationId: putSupersudoWhyChooseUs
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WhyChooseUsStorageDocument"
+      responses:
+        "200":
+          description: Saved document (echo).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WhyChooseUsStorageDocument"
+        "400":
+          description: Validation error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+        "403":
+          description: Not an admin.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetails"
+
   /api/v1/contact:
     post:
       tags: [Site]
@@ -707,6 +788,83 @@ components:
         createdAt:
           type: string
           format: date-time
+
+    WhyChooseUsLocaleTriple:
+      type: object
+      required: [en, hy, ru]
+      properties:
+        en:
+          type: string
+          maxLength: 200
+        hy:
+          type: string
+          maxLength: 200
+        ru:
+          type: string
+          maxLength: 200
+
+    WhyChooseUsIconKey:
+      type: string
+      enum: [warranty, fast_delivery, installment, original]
+
+    WhyChooseUsPublicItem:
+      type: object
+      required: [id, title, body, iconKey, sortOrder]
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        body:
+          type: string
+        iconKey:
+          $ref: "#/components/schemas/WhyChooseUsIconKey"
+        sortOrder:
+          type: integer
+
+    WhyChooseUsPublicResponse:
+      type: object
+      required: [sectionTitle, items]
+      properties:
+        sectionTitle:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/WhyChooseUsPublicItem"
+
+    WhyChooseUsStorageItem:
+      type: object
+      required: [id, title, body, iconKey, active, sortOrder]
+      properties:
+        id:
+          type: string
+        title:
+          $ref: "#/components/schemas/WhyChooseUsLocaleTriple"
+        body:
+          $ref: "#/components/schemas/WhyChooseUsLocaleTriple"
+        iconKey:
+          $ref: "#/components/schemas/WhyChooseUsIconKey"
+        active:
+          type: boolean
+        sortOrder:
+          type: integer
+
+    WhyChooseUsStorageDocument:
+      type: object
+      required: [version, sectionTitle, items]
+      properties:
+        version:
+          type: integer
+          enum: [1]
+        sectionTitle:
+          $ref: "#/components/schemas/WhyChooseUsLocaleTriple"
+        items:
+          type: array
+          minItems: 1
+          maxItems: 8
+          items:
+            $ref: "#/components/schemas/WhyChooseUsStorageItem"
 
     LoginRequest:
       type: object
