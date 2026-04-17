@@ -128,7 +128,10 @@
     "previous": "Previous",
     "next": "Next",
     "item": "item",
-    "items": "items"
+    "items": "items",
+    "filterByStatus": "Filter orders by status",
+    "noOrdersInFilter": "No orders with this status",
+    "showAllOrders": "Show all orders"
   },
   "orderDetails": {
     "title": "Order #",

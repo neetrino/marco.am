@@ -10,6 +10,7 @@ import { normalizeShippingMethod } from "../constants/shipping-method";
 import { buildOrderAddressJson } from "./orders-checkout-address";
 import { validateCheckoutCustomer } from "./orders-checkout-validation";
 import { buildCustomerOrderLinks } from "../constants/customer-order-api-paths";
+import type { AdminOrderListStatus } from "../constants/admin-order-list-status";
 import { cartService } from "./cart.service";
 
 const orderNumberId = customAlphabet("0123456789ABCDEFGHJKLMNPQRSTUVWXYZ", 10);
@@ -503,7 +504,10 @@ class OrdersService {
   /**
    * Get user orders list (paginated)
    */
-  async list(userId: string, options?: { page?: number; limit?: number }) {
+  async list(
+    userId: string,
+    options?: { page?: number; limit?: number; status?: AdminOrderListStatus }
+  ) {
     const page =
       typeof options?.page === "number" &&
       Number.isFinite(options.page) &&
@@ -519,9 +523,15 @@ class OrdersService {
     const limit = Math.min(100, Math.max(1, limitRaw));
     const skip = (page - 1) * limit;
 
+    const status = options?.status;
+    const where = {
+      userId,
+      ...(status ? { status } : {}),
+    };
+
     const [orders, total] = await Promise.all([
       db.order.findMany({
-        where: { userId },
+        where,
         include: {
           items: { select: { id: true } },
         },
@@ -529,7 +539,7 @@ class OrdersService {
         skip,
         take: limit,
       }),
-      db.order.count({ where: { userId } }),
+      db.order.count({ where }),
     ]);
 
     return {

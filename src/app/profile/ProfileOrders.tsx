@@ -1,5 +1,10 @@
 import Link from 'next/link';
 import { Button, Card } from '@shop/ui';
+import {
+  ADMIN_ORDER_LIST_STATUS_VALUES,
+  isAdminOrderListStatus,
+} from '@/lib/constants/admin-order-list-status';
+import { ADMIN_ORDER_STATUS_I18N_KEY } from '../supersudo/orders/utils/order-status-labels';
 import { formatPriceInCurrency, convertPrice, type CurrencyCode } from '../../lib/currency';
 import { getStatusColor, getPaymentStatusColor, getFulfillmentStatusColor } from './utils';
 import type { OrderListItem } from './types';
@@ -15,6 +20,8 @@ interface ProfileOrdersProps {
     limit: number;
     totalPages: number;
   } | null;
+  ordersStatusFilter: string;
+  onOrdersStatusFilterChange: (value: string) => void;
   currency: CurrencyCode;
   onOrderClick: (orderNumber: string, e: React.MouseEvent<HTMLAnchorElement>) => void;
   t: (key: string) => string;
@@ -26,14 +33,51 @@ export function ProfileOrders({
   ordersPage,
   setOrdersPage,
   ordersMeta,
+  ordersStatusFilter,
+  onOrdersStatusFilterChange,
   currency,
   onOrderClick,
   t,
 }: ProfileOrdersProps) {
+  const statusFilterButtons = (
+    <div
+      className="flex flex-wrap gap-2 mb-6"
+      role="group"
+      aria-label={t('profile.orders.filterByStatus')}
+    >
+      <button
+        type="button"
+        onClick={() => onOrdersStatusFilterChange('')}
+        className={`px-3 py-2 rounded-md text-sm font-medium border transition-colors ${
+          ordersStatusFilter === ''
+            ? 'bg-blue-600 text-white border-blue-600'
+            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+        }`}
+      >
+        {t('admin.orders.allStatuses')}
+      </button>
+      {ADMIN_ORDER_LIST_STATUS_VALUES.map((value) => (
+        <button
+          key={value}
+          type="button"
+          onClick={() => onOrdersStatusFilterChange(value)}
+          className={`px-3 py-2 rounded-md text-sm font-medium border transition-colors ${
+            ordersStatusFilter === value
+              ? 'bg-blue-600 text-white border-blue-600'
+              : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+          }`}
+        >
+          {t(ADMIN_ORDER_STATUS_I18N_KEY[value])}
+        </button>
+      ))}
+    </div>
+  );
+
   if (ordersLoading) {
     return (
       <Card className="p-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-6">{t('profile.orders.title')}</h2>
+        {statusFilterButtons}
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
             <div key={i} className="animate-pulse">
@@ -49,8 +93,23 @@ export function ProfileOrders({
     return (
       <Card className="p-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-6">{t('profile.orders.title')}</h2>
+        {statusFilterButtons}
         <div className="text-center py-12">
-          <p className="text-gray-600 mb-4">{t('profile.orders.noOrders')}</p>
+          <p className="text-gray-600 mb-4">
+            {ordersStatusFilter
+              ? t('profile.orders.noOrdersInFilter')
+              : t('profile.orders.noOrders')}
+          </p>
+          {ordersStatusFilter ? (
+            <Button
+              type="button"
+              variant="outline"
+              className="mr-2"
+              onClick={() => onOrdersStatusFilterChange('')}
+            >
+              {t('profile.orders.showAllOrders')}
+            </Button>
+          ) : null}
           <Link href="/products">
             <Button variant="primary">{t('profile.dashboard.startShopping')}</Button>
           </Link>
@@ -62,6 +121,7 @@ export function ProfileOrders({
   return (
     <Card className="p-6">
       <h2 className="text-xl font-semibold text-gray-900 mb-6">{t('profile.orders.title')}</h2>
+      {statusFilterButtons}
       <div className="space-y-4">
         {orders.map((order) => (
           <Link
@@ -77,7 +137,9 @@ export function ProfileOrders({
                   <div>
                     <p className="text-[11px] uppercase tracking-wide text-gray-500 mb-0.5">{t('profile.dashboard.orderStatus')}</p>
                     <span className={`px-2 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(order.status)}`}>
-                      {order.status}
+                      {isAdminOrderListStatus(order.status)
+                        ? t(ADMIN_ORDER_STATUS_I18N_KEY[order.status])
+                        : order.status}
                     </span>
                   </div>
                       <div>

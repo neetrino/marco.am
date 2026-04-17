@@ -52,6 +52,8 @@ function ProfilePageContent() {
     ordersPage,
     setOrdersPage,
     ordersMeta,
+    ordersStatusFilter,
+    handleOrdersStatusFilterChange,
     selectedOrder,
     setSelectedOrder,
     orderDetailsLoading,
@@ -202,6 +204,8 @@ function ProfilePageContent() {
               ordersPage={ordersPage}
               setOrdersPage={setOrdersPage}
               ordersMeta={ordersMeta}
+              ordersStatusFilter={ordersStatusFilter}
+              onOrdersStatusFilterChange={handleOrdersStatusFilterChange}
               currency={currency}
               onOrderClick={handleOrderClick}
               t={t}

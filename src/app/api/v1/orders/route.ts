@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateToken } from "@/lib/middleware/auth";
+import { isAdminOrderListStatus } from "@/lib/constants/admin-order-list-status";
 import { ordersService } from "@/lib/services/orders.service";
 import { toApiError } from "@/lib/types/errors";
 import { logger } from "@/lib/utils/logger";
@@ -22,9 +23,13 @@ export async function GET(req: NextRequest) {
 
     const page = req.nextUrl.searchParams.get("page");
     const limit = req.nextUrl.searchParams.get("limit");
+    const rawStatus = req.nextUrl.searchParams.get("status");
+    const status =
+      rawStatus && isAdminOrderListStatus(rawStatus) ? rawStatus : undefined;
     const result = await ordersService.list(user.id, {
       page: page ? parseInt(page, 10) : undefined,
       limit: limit ? parseInt(limit, 10) : undefined,
+      ...(status ? { status } : {}),
     });
     return NextResponse.json(result);
   } catch (error: unknown) {

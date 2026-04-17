@@ -135,6 +135,8 @@ export function useProfilePage() {
     ordersPage: orders.ordersPage,
     setOrdersPage: orders.setOrdersPage,
     ordersMeta: orders.ordersMeta,
+    ordersStatusFilter: orders.ordersStatusFilter,
+    handleOrdersStatusFilterChange: orders.handleOrdersStatusFilterChange,
     
     // Order details
     selectedOrder: orders.selectedOrder,

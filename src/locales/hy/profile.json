@@ -128,7 +128,10 @@
     "previous": "Նախորդ",
     "next": "Հաջորդ",
     "item": "ապրանք",
-    "items": "ապրանք"
+    "items": "ապրանք",
+    "filterByStatus": "Զտել պատվերները ըստ կարգավիճակի",
+    "noOrdersInFilter": "Այս կարգավիճակով պատվերներ չկան",
+    "showAllOrders": "Ցուցադրել բոլորը"
   },
   "orderDetails": {
     "title": "Պատվեր #",

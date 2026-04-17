@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, type MouseEvent } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { apiClient } from '../../../lib/api-client';
 import { postCustomerReorder } from '@/lib/orders/post-customer-reorder';
+import { isAdminOrderListStatus } from '@/lib/constants/admin-order-list-status';
 import { useTranslation } from '../../../lib/i18n-client';
 import type { OrderDetails, OrderListItem, ProfileTab } from '../types';
 import { logger } from "@/lib/utils/logger";
@@ -29,8 +30,13 @@ export function useOrders({
   onSuccess,
 }: UseOrdersProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { t } = useTranslation();
-  
+
+  const [ordersStatusFilter, setOrdersStatusFilter] = useState(() => {
+    const raw = searchParams.get('status');
+    return raw && isAdminOrderListStatus(raw) ? raw : '';
+  });
   const [orders, setOrders] = useState<OrderListItem[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
   const [ordersPage, setOrdersPage] = useState(1);
@@ -54,6 +60,16 @@ export function useOrders({
     };
   }, [selectedOrder]);
 
+  useEffect(() => {
+    const raw = searchParams.get('status');
+    const next = raw && isAdminOrderListStatus(raw) ? raw : '';
+    setOrdersStatusFilter((prev) => (prev === next ? prev : next));
+  }, [searchParams]);
+
+  useEffect(() => {
+    setOrdersPage(1);
+  }, [ordersStatusFilter]);
+
   const loadOrders = useCallback(async () => {
     try {
       setOrdersLoading(true);
@@ -65,6 +81,7 @@ export function useOrders({
         params: {
           page: ordersPage.toString(),
           limit: '20',
+          ...(ordersStatusFilter ? { status: ordersStatusFilter } : {}),
         },
       });
       setOrders(response.data || []);
@@ -76,7 +93,27 @@ export function useOrders({
     } finally {
       setOrdersLoading(false);
     }
-  }, [ordersPage, t, onError]);
+  }, [ordersPage, ordersStatusFilter, t, onError]);
+
+  const handleOrdersStatusFilterChange = useCallback(
+    (value: string) => {
+      setOrdersPage(1);
+      const next = value && isAdminOrderListStatus(value) ? value : '';
+      setOrdersStatusFilter(next);
+      const params = new URLSearchParams(searchParams.toString());
+      params.set('tab', 'orders');
+      if (next) {
+        params.set('status', next);
+      } else {
+        params.delete('status');
+      }
+      const qs = params.toString();
+      router.push(qs ? `/profile?${qs}` : '/profile?tab=orders', {
+        scroll: false,
+      });
+    },
+    [router, searchParams]
+  );
 
   // Load orders when orders tab is active
   useEffect(() => {
@@ -150,6 +187,8 @@ export function useOrders({
     ordersPage,
     setOrdersPage,
     ordersMeta,
+    ordersStatusFilter,
+    handleOrdersStatusFilterChange,
     selectedOrder,
     setSelectedOrder,
     orderDetailsLoading,

@@ -128,7 +128,10 @@
     "previous": "Предыдущая",
     "next": "Следующая",
     "item": "товар",
-    "items": "товаров"
+    "items": "товаров",
+    "filterByStatus": "Фильтр заказов по статусу",
+    "noOrdersInFilter": "Нет заказов с этим статусом",
+    "showAllOrders": "Показать все заказы"
   },
   "orderDetails": {
     "title": "Заказ #",
