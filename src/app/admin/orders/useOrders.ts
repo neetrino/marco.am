@@ -7,6 +7,9 @@ import { getErrorMessage } from '@/lib/types/errors';
 import { useTranslation } from '../../../lib/i18n-client';
 import { formatPriceInCurrency, convertPrice, getStoredCurrency, initializeCurrencyRates, CurrencyCode } from '../../../lib/currency';
 import { logger } from "@/lib/utils/logger";
+import type { OrderAuditEntry } from "./types/order-audit";
+
+export type { OrderAuditEntry };
 
 export interface Order {
   id: string;
@@ -96,6 +99,7 @@ export interface OrderDetails {
   }>;
   createdAt: string;
   updatedAt?: string;
+  auditTrail?: OrderAuditEntry[];
 }
 
 export function useOrders() {

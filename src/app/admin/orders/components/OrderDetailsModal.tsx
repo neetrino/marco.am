@@ -6,6 +6,7 @@ import { OrderDetailsSummary } from './OrderDetailsSummary';
 import { OrderDetailsAddresses } from './OrderDetailsAddresses';
 import { OrderDetailsTotals } from './OrderDetailsTotals';
 import { OrderDetailsItems } from './OrderDetailsItems';
+import { OrderDetailsAuditTrail } from './OrderDetailsAuditTrail';
 import type { OrderDetails } from '../useOrders';
 
 interface OrderDetailsModalProps {
@@ -81,6 +82,7 @@ export function OrderDetailsModal({
                 orderDetails={orderDetails}
                 formatCurrency={formatCurrency}
               />
+              <OrderDetailsAuditTrail orderDetails={orderDetails} />
             </div>
           )}
         </div>

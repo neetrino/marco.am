@@ -86,7 +86,9 @@ export async function PUT(
     const body = await req.json();
     logger.devLog("📤 [ADMIN ORDERS] PUT request:", { id, body });
 
-    const order = await adminService.updateOrder(id, body);
+    const order = await adminService.updateOrder(id, body, {
+      actorUserId: user.id,
+    });
     logger.devLog("✅ [ADMIN ORDERS] Order updated:", id);
 
     return NextResponse.json(order);

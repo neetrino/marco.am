@@ -638,7 +638,19 @@
       "qty": "Քանակ",
       "price": "Գին",
       "totalCol": "Ընդամենը",
-      "noItemsFound": "Այս պատվերի համար ապրանքներ չեն գտնվել"
+      "noItemsFound": "Այս պատվերի համար ապրանքներ չեն գտնվել",
+      "auditTrail": {
+        "title": "Գործունեություն և կարգավիճակի պատմություն",
+        "empty": "Դեռ գրանցված իրադարձություններ չկան։",
+        "actorUnknown": "Վճարում / համակարգ",
+        "orderCreated": "Պատվերը ստեղծվել է ({source})",
+        "orderCreatedFallback": "Պատվերը ստեղծվել է",
+        "changeStatus": "Կարգավիճակ՝ {from} → {to}",
+        "changePayment": "Վճարման կարգավիճակ՝ {from} → {to}",
+        "changeFulfillment": "Կատարում՝ {from} → {to}",
+        "updatedUnknown": "Պատվերը թարմացվել է (մանրամասները հասանելի չեն)",
+        "genericEvent": "Իրադարձություն՝ {type}"
+      }
     }
   },
   "messages": {

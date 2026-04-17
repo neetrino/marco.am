@@ -638,7 +638,19 @@
       "qty": "Кол-во",
       "price": "Цена",
       "totalCol": "Итого",
-      "noItemsFound": "Товары для этого заказа не найдены"
+      "noItemsFound": "Товары для этого заказа не найдены",
+      "auditTrail": {
+        "title": "Активность и история статусов",
+        "empty": "Записей о событиях пока нет.",
+        "actorUnknown": "Оформление / система",
+        "orderCreated": "Заказ создан ({source})",
+        "orderCreatedFallback": "Заказ создан",
+        "changeStatus": "Статус: {from} → {to}",
+        "changePayment": "Статус оплаты: {from} → {to}",
+        "changeFulfillment": "Выполнение: {from} → {to}",
+        "updatedUnknown": "Заказ обновлён (детали недоступны)",
+        "genericEvent": "Событие: {type}"
+      }
     },
     "showingPage": "Показана страница {page} из {totalPages} ({total} всего)",
     "previous": "Предыдущая",

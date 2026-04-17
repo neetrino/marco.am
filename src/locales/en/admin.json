@@ -638,7 +638,19 @@
       "qty": "Qty",
       "price": "Price",
       "totalCol": "Total",
-      "noItemsFound": "No items found for this order"
+      "noItemsFound": "No items found for this order",
+      "auditTrail": {
+        "title": "Activity & status history",
+        "empty": "No recorded events yet.",
+        "actorUnknown": "Checkout / system",
+        "orderCreated": "Order created ({source})",
+        "orderCreatedFallback": "Order created",
+        "changeStatus": "Status: {from} → {to}",
+        "changePayment": "Payment status: {from} → {to}",
+        "changeFulfillment": "Fulfillment: {from} → {to}",
+        "updatedUnknown": "Order updated (details unavailable)",
+        "genericEvent": "Event: {type}"
+      }
     },
     "showingPage": "Showing page {page} of {totalPages} ({total} total)",
     "previous": "Previous",

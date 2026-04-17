@@ -1,6 +1,10 @@
 import { getOrders, getOrderById } from "./admin-orders/order-operations";
 import { deleteOrder, updateOrder } from "./admin-orders/order-mutations";
-import type { OrderFilters, UpdateOrderData } from "./admin-orders/types";
+import type {
+  OrderFilters,
+  UpdateOrderContext,
+  UpdateOrderData,
+} from "./admin-orders/types";
 
 /**
  * Service for admin order operations
@@ -31,8 +35,12 @@ class AdminOrdersService {
   /**
    * Update order
    */
-  async updateOrder(orderId: string, data: UpdateOrderData) {
-    return updateOrder(orderId, data);
+  async updateOrder(
+    orderId: string,
+    data: UpdateOrderData,
+    context?: UpdateOrderContext
+  ) {
+    return updateOrder(orderId, data, context);
   }
 }
 

@@ -20,6 +20,13 @@ export interface UpdateOrderData {
   fulfillmentStatus?: string;
 }
 
+/**
+ * Optional context when an admin updates an order (audit trail).
+ */
+export interface UpdateOrderContext {
+  actorUserId?: string;
+}
+
 
 
 

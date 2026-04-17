@@ -3,6 +3,7 @@ import { logger } from "../../../utils/logger";
 import type { OrderFilters } from "./types";
 import { buildOrderWhereClause, buildOrderByClause } from "./query-builder";
 import { formatOrderForList, formatOrderForDetail } from "./order-formatter";
+import { formatOrderAuditTrail } from "./order-audit-formatter";
 
 /**
  * Get orders with filters and pagination
@@ -98,6 +99,9 @@ export async function getOrderById(orderId: string) {
         },
       },
       payments: true,
+      events: {
+        orderBy: { createdAt: "desc" },
+      },
     },
   });
 
@@ -110,7 +114,32 @@ export async function getOrderById(orderId: string) {
     };
   }
 
-  return formatOrderForDetail(order);
+  const events = order.events ?? [];
+  const actorIds = [
+    ...new Set(
+      events
+        .map((e) => e.userId)
+        .filter((id): id is string => typeof id === "string" && id.length > 0)
+    ),
+  ];
+  const actors =
+    actorIds.length > 0
+      ? await db.user.findMany({
+          where: { id: { in: actorIds } },
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+          },
+        })
+      : [];
+  const actorsById = Object.fromEntries(actors.map((a) => [a.id, a]));
+
+  return {
+    ...formatOrderForDetail(order),
+    auditTrail: formatOrderAuditTrail(events, actorsById),
+  };
 }
 
 
