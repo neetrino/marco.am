@@ -12,12 +12,38 @@ export type LanguageCode = keyof typeof LANGUAGES;
 export const LANGUAGE_PREFERENCE_KEY = 'shop_language';
 const LANGUAGE_STORAGE_KEY = LANGUAGE_PREFERENCE_KEY;
 
+/**
+ * Read `shop_language` from `document.cookie` (set by server / Header).
+ * Used when localStorage is empty so client matches SSR locale (e.g. Armenian).
+ */
+function readLanguageFromCookie(): LanguageCode | null {
+  if (typeof document === 'undefined') {
+    return null;
+  }
+  const prefix = `${LANGUAGE_STORAGE_KEY}=`;
+  const row = document.cookie.split('; ').find((c) => c.startsWith(prefix));
+  if (!row) {
+    return null;
+  }
+  const raw = decodeURIComponent(row.slice(prefix.length));
+  if (!raw || !(raw in LANGUAGES)) {
+    return null;
+  }
+  const code = raw as LanguageCode;
+  return code === 'ka' ? 'en' : code;
+}
+
 export function getStoredLanguage(): LanguageCode {
   if (typeof window === 'undefined') return 'en';
   try {
     const stored = localStorage.getItem(LANGUAGE_STORAGE_KEY);
     if (stored && stored in LANGUAGES) {
-      return stored as LanguageCode;
+      const code = stored as LanguageCode;
+      return code === 'ka' ? 'en' : code;
+    }
+    const fromCookie = readLanguageFromCookie();
+    if (fromCookie) {
+      return fromCookie;
     }
   } catch {
     // Ignore errors

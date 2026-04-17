@@ -10,6 +10,7 @@ import { PriceFilter } from '../../components/PriceFilter';
 import { ColorFilter } from '../../components/ColorFilter';
 import { SizeFilter } from '../../components/SizeFilter';
 import { BrandFilter } from '../../components/BrandFilter';
+import { CategoryFilter } from '../../components/CategoryFilter';
 import { ProductsHeader } from '../../components/ProductsHeader';
 import { ProductsGrid } from '../../components/ProductsGrid';
 import { MobileFiltersDrawer } from '../../components/MobileFiltersDrawer';
@@ -175,6 +176,10 @@ export default async function ProductsPage({ searchParams }: any) {
   const selectedColors = colors ? colors.split(',').map((c: string) => c.trim().toLowerCase()) : [];
   const selectedSizes = sizes ? sizes.split(',').map((s: string) => s.trim()) : [];
   const selectedBrands = brands ? brands.split(',').map((b: string) => b.trim()) : [];
+  const categoryParam = params?.category?.toString().trim();
+  const selectedCategorySlugs = categoryParam
+    ? categoryParam.split(',').map((s: string) => s.trim()).filter(Boolean)
+    : [];
 
   // PAGINATION: 12 per page by default, preserve limit in URLs
   const buildPaginationUrl = (num: number) => {
@@ -236,6 +241,13 @@ export default async function ProductsPage({ searchParams }: any) {
             </div>
             <Suspense fallback={<div>{t(language, 'common.messages.loadingFilters')}</div>}>
               <PriceFilter currentMinPrice={params?.minPrice} currentMaxPrice={params?.maxPrice} category={params?.category} search={params?.search} />
+              <CategoryFilter
+                category={params?.category}
+                search={params?.search}
+                minPrice={params?.minPrice}
+                maxPrice={params?.maxPrice}
+                selectedSlugs={selectedCategorySlugs}
+              />
               <BrandFilter category={params?.category} search={params?.search} minPrice={params?.minPrice} maxPrice={params?.maxPrice} selectedBrands={selectedBrands} />
               <ColorFilter category={params?.category} search={params?.search} minPrice={params?.minPrice} maxPrice={params?.maxPrice} selectedColors={selectedColors} />
               <SizeFilter category={params?.category} search={params?.search} minPrice={params?.minPrice} maxPrice={params?.maxPrice} selectedSizes={selectedSizes} />
@@ -286,6 +298,13 @@ export default async function ProductsPage({ searchParams }: any) {
           </div>
           <Suspense fallback={<div>{t(language, 'common.messages.loadingFilters')}</div>}>
             <PriceFilter currentMinPrice={params?.minPrice} currentMaxPrice={params?.maxPrice} category={params?.category} search={params?.search} />
+            <CategoryFilter
+              category={params?.category}
+              search={params?.search}
+              minPrice={params?.minPrice}
+              maxPrice={params?.maxPrice}
+              selectedSlugs={selectedCategorySlugs}
+            />
             <BrandFilter category={params?.category} search={params?.search} minPrice={params?.minPrice} maxPrice={params?.maxPrice} selectedBrands={selectedBrands} />
             <ColorFilter category={params?.category} search={params?.search} minPrice={params?.minPrice} maxPrice={params?.maxPrice} selectedColors={selectedColors} />
             <SizeFilter category={params?.category} search={params?.search} minPrice={params?.minPrice} maxPrice={params?.maxPrice} selectedSizes={selectedSizes} />

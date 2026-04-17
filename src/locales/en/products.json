@@ -6,6 +6,10 @@
       "title": "Price",
       "priceLabel": "Price:"
     },
+    "category": {
+      "title": "Categories",
+      "loading": "Loading..."
+    },
     "color": {
       "title": "Colors",
       "noColors": "No colors available",

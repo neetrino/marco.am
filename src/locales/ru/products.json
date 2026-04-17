@@ -6,6 +6,10 @@
       "title": "Цена",
       "priceLabel": "Цена:"
     },
+    "category": {
+      "title": "Категории",
+      "loading": "Загрузка..."
+    },
     "color": {
       "title": "Цвета",
       "noColors": "Цвета недоступны",

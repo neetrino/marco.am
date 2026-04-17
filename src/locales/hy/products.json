@@ -6,6 +6,10 @@
       "title": "Գին",
       "priceLabel": "Գին:"
     },
+    "category": {
+      "title": "Կատեգորիաներ",
+      "loading": "Բեռնվում է..."
+    },
     "color": {
       "title": "Գույներ",
       "noColors": "Գույներ չկան",

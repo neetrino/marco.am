@@ -156,11 +156,6 @@ function ProductsHeaderContent({ total }: ProductsHeaderProps) {
     { value: 'name-desc', label: t('products.header.sort.nameDesc') },
   ];
 
-  const hasActiveFilters = (() => {
-    const filterKeys = ['search', 'category', 'minPrice', 'maxPrice', 'colors', 'sizes', 'brand'];
-    return filterKeys.some((key) => !!searchParams.get(key));
-  })();
-
   // Load view mode from localStorage
   useEffect(() => {
     const stored = localStorage.getItem('products-view-mode');
@@ -223,50 +218,12 @@ function ProductsHeaderContent({ total }: ProductsHeaderProps) {
     router.push(`/products?${params.toString()}`);
   };
 
-  const handleClearFilters = () => {
-    const params = new URLSearchParams(searchParams.toString());
-    const filterKeys = ['search', 'category', 'minPrice', 'maxPrice', 'colors', 'sizes', 'brand'];
-
-    filterKeys.forEach((key) => params.delete(key));
-    // Reset page when filters are cleared
-    params.delete('page');
-
-    const queryString = params.toString();
-    router.push(queryString ? `/products?${queryString}` : '/products');
-  };
-
   return (
     <div className="marco-header-container pb-4 pt-[58px]">
       {/* Desktop: All elements in one horizontal line */}
       <div className="hidden sm:flex sm:items-center sm:justify-between sm:gap-4">
-        {/* Left side: Clear filters + All products title */}
-        <div className="flex items-center gap-4">
-          {hasActiveFilters && (
-            <button
-              type="button"
-              onClick={handleClearFilters}
-              className="inline-flex items-center gap-2 text-sm text-gray-900 hover:text-gray-700 transition-colors"
-            >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="text-gray-900"
-              >
-                <path
-                  d="M12 4L4 12M4 4L12 12"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              <span>{t('products.header.clearFilters')}</span>
-            </button>
-          )}
-
+        {/* Left side: SHOP wordmark only (Figma) */}
+        <div className="flex items-center">
           <ProductsShopTitleBlock total={total} />
         </div>
 
