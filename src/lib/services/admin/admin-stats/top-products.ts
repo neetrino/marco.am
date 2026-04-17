@@ -3,7 +3,7 @@ import { db } from "@white-shop/db";
 /**
  * Extract image from product media
  */
-function extractImageFromMedia(media: unknown[] | undefined): string | null {
+export function extractImageFromMedia(media: unknown[] | undefined): string | null {
   if (!Array.isArray(media) || media.length === 0) {
     return null;
   }

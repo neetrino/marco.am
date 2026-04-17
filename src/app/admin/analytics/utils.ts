@@ -1,3 +1,15 @@
+import { MULTIPLE_SKUS_LABEL } from "@/lib/constants/product-analytics";
+
+/**
+ * Localized SKU label for product-level analytics (multi-variant sales).
+ */
+export function formatAnalyticsSku(
+  sku: string,
+  t: (key: string) => string
+): string {
+  return sku === MULTIPLE_SKUS_LABEL ? t("admin.analytics.multipleSkus") : sku;
+}
+
 /**
  * Format currency amount
  */

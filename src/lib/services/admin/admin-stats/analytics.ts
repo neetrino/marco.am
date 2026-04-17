@@ -1,71 +1,9 @@
 import { db } from "@white-shop/db";
 import { calculateDateRange } from "./analytics-date-range";
-
-/**
- * Calculate top products from orders
- */
-function calculateTopProducts(orders: Array<{
-  items: Array<{
-    variantId: string | null;
-    variant?: {
-      product?: {
-        id: string;
-        translations?: Array<{ title: string }>;
-        media?: Array<{ url?: string }>;
-      };
-    } | null;
-    productTitle?: string;
-    sku?: string;
-    quantity: number;
-    total: number;
-  }>;
-}>): Array<{
-  variantId: string;
-  productId: string;
-  title: string;
-  sku: string;
-  totalQuantity: number;
-  totalRevenue: number;
-  orderCount: number;
-  image?: string | null;
-}> {
-  const productMap = new Map<string, {
-    variantId: string;
-    productId: string;
-    title: string;
-    sku: string;
-    totalQuantity: number;
-    totalRevenue: number;
-    orderCount: number;
-    image?: string | null;
-  }>();
-
-  orders.forEach((order) => {
-    order.items.forEach((item) => {
-      if (item.variantId) {
-        const key = item.variantId;
-        const existing = productMap.get(key) || {
-          variantId: item.variantId,
-          productId: item.variant?.product?.id || '',
-          title: item.productTitle || 'Unknown Product',
-          sku: item.sku || 'N/A',
-          totalQuantity: 0,
-          totalRevenue: 0,
-          orderCount: 0,
-          image: null,
-        };
-        existing.totalQuantity += item.quantity;
-        existing.totalRevenue += item.total;
-        existing.orderCount += 1;
-        productMap.set(key, existing);
-      }
-    });
-  });
-
-  return Array.from(productMap.values())
-    .sort((a, b) => b.totalRevenue - a.totalRevenue)
-    .slice(0, 10);
-}
+import {
+  aggregateProductSales,
+  pickBestAndLeastSelling,
+} from "./product-sales-analytics";
 
 /**
  * Calculate top categories from orders
@@ -210,8 +148,8 @@ export async function getAnalytics(period: string = 'week', startDate?: string, 
     .filter((o: { paymentStatus: string }) => o.paymentStatus === 'paid')
     .reduce((sum: number, o: { total: number }) => sum + o.total, 0);
 
-  // Calculate top products
-  const topProducts = calculateTopProducts(orders as Parameters<typeof calculateTopProducts>[0]);
+  const productRows = aggregateProductSales(orders);
+  const { bestSelling, leastSelling } = pickBestAndLeastSelling(productRows);
 
   // Calculate top categories
   const topCategories = calculateTopCategories(orders as Parameters<typeof calculateTopCategories>[0]);
@@ -232,7 +170,8 @@ export async function getAnalytics(period: string = 'week', startDate?: string, 
       pendingOrders,
       completedOrders,
     },
-    topProducts,
+    topProducts: bestSelling,
+    leastSellingProducts: leastSelling,
     topCategories,
     ordersByDay,
   };

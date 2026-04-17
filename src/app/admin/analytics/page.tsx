@@ -11,6 +11,7 @@ import { AdminSidebar } from './components/AdminSidebar';
 import { PeriodSelector } from './components/PeriodSelector';
 import { StatsCards } from './components/StatsCards';
 import { TopProducts } from './components/TopProducts';
+import { LeastSellingProducts } from './components/LeastSellingProducts';
 import { TopCategories } from './components/TopCategories';
 import { OrdersByDayChart } from './components/OrdersByDayChart';
 import { OrderStatusBreakdown } from './components/OrderStatusBreakdown';
@@ -90,6 +91,10 @@ export default function AnalyticsPage() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                   <TopProducts products={analytics.topProducts} />
+                  <LeastSellingProducts products={analytics.leastSellingProducts} />
+                </div>
+
+                <div className="mb-6">
                   <TopCategories categories={analytics.topCategories} />
                 </div>
 

@@ -12,7 +12,15 @@ export interface AnalyticsData {
     completedOrders: number;
   };
   topProducts: Array<{
-    variantId: string;
+    productId: string;
+    title: string;
+    sku: string;
+    totalQuantity: number;
+    totalRevenue: number;
+    orderCount: number;
+    image?: string | null;
+  }>;
+  leastSellingProducts: Array<{
     productId: string;
     title: string;
     sku: string;
