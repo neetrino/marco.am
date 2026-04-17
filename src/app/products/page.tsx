@@ -270,26 +270,24 @@ export default async function ProductsPage({ searchParams }: any) {
 
       {/* Mobile Filters Drawer */}
       <MobileFiltersDrawer openEventName={MOBILE_FILTERS_EVENT}>
-        <div className="space-y-0 px-4 pb-4 pt-2">
-          <div className="mb-6 flex flex-col gap-1">
-            <h2
-              className={`${productsFiltersSectionFont.className} text-base font-semibold leading-6 tracking-[-0.31px] text-[#0f172b]`}
-            >
-              {t(language, 'products.filters.panelTitle')}
-            </h2>
+        <div className="space-y-0 px-4 pb-4 pt-0">
+          <div className="mb-5">
             <p className="text-sm font-normal leading-5 tracking-[-0.15px] text-[#62748e]">
               {t(language, 'products.filters.panelSubtitle')}
             </p>
           </div>
           <Suspense fallback={<div>{t(language, 'common.messages.loadingFilters')}</div>}>
             <PriceFilter currentMinPrice={params?.minPrice} currentMaxPrice={params?.maxPrice} category={params?.category} search={params?.search} />
+            <div className="h-6 shrink-0" aria-hidden />
             <CategoryFilter
               category={params?.category}
               search={params?.search}
               minPrice={params?.minPrice}
               maxPrice={params?.maxPrice}
             />
+            <div className="h-6 shrink-0" aria-hidden />
             <BrandFilter category={params?.category} search={params?.search} minPrice={params?.minPrice} maxPrice={params?.maxPrice} />
+            <div className="h-6 shrink-0" aria-hidden />
             <ColorFilter category={params?.category} search={params?.search} minPrice={params?.minPrice} maxPrice={params?.maxPrice} />
           </Suspense>
         </div>

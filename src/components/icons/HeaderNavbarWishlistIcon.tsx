@@ -1,30 +1,36 @@
 interface HeaderNavbarWishlistIconProps {
   /**
    * Utility classes — use `text-*` for color (`currentColor`).
-   * Figma MARCO `111:4288` — header row wishlist / likes outline.
+   * Figma MARCO `242:1774` / Frame `111:4285` (Frame 9223 strip) — wishlist outline heart.
    */
   className?: string;
+  /**
+   * Stroke width; Figma toolbar strip uses ~1.8 to match compare glyph.
+   */
+  strokeWidth?: number;
 }
 
-const VIEWBOX_W = 22;
-const VIEWBOX_H = 19;
+const VIEWBOX = 24;
 
 /**
- * Navbar wishlist (likes) — outline heart matching header toolbar row (Figma Frame 9223).
+ * Navbar wishlist heart — outline matching header icon strip (Figma MARCO Frame 9223, node 242:1774).
  */
-export function HeaderNavbarWishlistIcon({ className = '' }: HeaderNavbarWishlistIconProps) {
+export function HeaderNavbarWishlistIcon({
+  className = '',
+  strokeWidth = 1.8,
+}: HeaderNavbarWishlistIconProps) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      viewBox={`0 0 ${VIEWBOX_W} ${VIEWBOX_H}`}
+      viewBox={`0 0 ${VIEWBOX} ${VIEWBOX}`}
       fill="none"
       className={className}
       aria-hidden
     >
       <path
-        d="M6.5 1C3.4625 1 1 3.43911 1 6.44777C1 11.8955 7.5 16.848 11 18C14.5 16.848 21 11.8955 21 6.44777C21 3.43911 18.5375 1 15.5 1C13.64 1 11.995 1.91473 11 3.31481C10.4928 2.59936 9.81897 2.01547 9.03568 1.61254C8.25238 1.20961 7.38263 0.999507 6.5 1Z"
+        d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
         stroke="currentColor"
-        strokeWidth={2}
+        strokeWidth={strokeWidth}
         strokeLinecap="round"
         strokeLinejoin="round"
       />

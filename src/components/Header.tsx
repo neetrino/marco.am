@@ -1062,7 +1062,7 @@ export function Header({ initialLanguage }: HeaderProps) {
                 className={`relative flex items-center justify-center text-gray-700 transition-colors duration-150 hover:text-gray-900 ${HEADER_TOOLBAR_ICON_BUTTON_CLASS}`}
               >
                 <BadgeIcon
-                  icon={<HeaderNavbarWishlistIcon className="h-[16px] w-[18px] shrink-0" />}
+                  icon={<HeaderNavbarWishlistIcon className="h-[18px] w-[18px] shrink-0" />}
                   badge={wishlistCount}
                 />
               </Link>
@@ -1184,7 +1184,7 @@ export function Header({ initialLanguage }: HeaderProps) {
                     className="flex items-center justify-between px-4 py-3 hover:bg-gray-50"
                   >
                     <span className="flex items-center gap-2 normal-case font-medium text-gray-700">
-                      <HeaderNavbarWishlistIcon className="h-[16px] w-[18px] shrink-0" />
+                      <HeaderNavbarWishlistIcon className="h-[18px] w-[18px] shrink-0" />
                       {t('common.navigation.wishlist')}
                     </span>
                     {wishlistCount > 0 && (

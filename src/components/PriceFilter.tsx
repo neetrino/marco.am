@@ -3,7 +3,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { apiClient } from '../lib/api-client';
-import { productsFiltersSectionFont } from '../lib/products-filters-typography';
+import {
+  PRODUCTS_FILTER_SECTION_SHELL_CLASS,
+  productsFiltersSectionFont,
+} from '../lib/products-filters-typography';
 import { getStoredLanguage } from '../lib/language';
 import { getStoredCurrency, formatPrice as formatCurrencyPrice, type CurrencyCode } from '../lib/currency';
 import { useTranslation } from '../lib/i18n-client';
@@ -259,14 +262,14 @@ export function PriceFilter({ currentMinPrice, currentMaxPrice, category }: Pric
   }
 
   return (
-    <section className="mb-4 border-b border-solid border-[#e2e8f0] pb-4">
-      <div className="mb-4 flex h-6 w-full items-center justify-between gap-2">
+    <section className={PRODUCTS_FILTER_SECTION_SHELL_CLASS}>
+      <div className="mb-3 flex min-h-6 w-full min-w-0 flex-row items-center justify-between gap-2 lg:mb-4">
         <span
-          className={`${productsFiltersSectionFont.className} shrink-0 text-base font-semibold leading-6 tracking-[-0.31px] text-[#314158]`}
+          className={`${productsFiltersSectionFont.className} shrink-0 text-sm font-semibold leading-6 tracking-[-0.31px] text-[#314158] lg:text-base`}
         >
           {t('products.filters.price.title')}
         </span>
-        <span className="truncate text-right text-base font-bold leading-6 tracking-[-0.31px] text-black">
+        <span className="min-w-0 flex-1 truncate text-right text-xs font-bold leading-6 tracking-[-0.31px] text-black lg:text-base">
           {rangeLabel}
         </span>
       </div>

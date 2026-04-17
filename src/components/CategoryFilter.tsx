@@ -6,7 +6,10 @@ import { apiClient } from '../lib/api-client';
 import { getStoredLanguage } from '../lib/language';
 import { useTranslation } from '../lib/i18n-client';
 import { useProductsFilters } from './ProductsFiltersProvider';
-import { productsFiltersSectionFont } from '../lib/products-filters-typography';
+import {
+  PRODUCTS_FILTER_SECTION_SHELL_CLASS,
+  productsFiltersSectionFont,
+} from '../lib/products-filters-typography';
 import { PRODUCTS_FILTER_LIST_SCROLL_CLASS } from '../lib/products-filter-list-scroll';
 import { ProductsFilterCheckboxVisual } from './ProductsFilterCheckbox';
 
@@ -119,7 +122,7 @@ export function CategoryFilter({
 
   if (loading) {
     return (
-      <section className="mb-4 border-b border-solid border-[#e2e8f0] pb-4">
+      <section className={PRODUCTS_FILTER_SECTION_SHELL_CLASS}>
         <h3
           className={`${productsFiltersSectionFont.className} mb-4 text-base font-semibold leading-6 tracking-[-0.31px] text-black`}
         >
@@ -135,7 +138,7 @@ export function CategoryFilter({
   }
 
   return (
-    <section className="mb-4 border-b border-solid border-[#e2e8f0] pb-4">
+    <section className={PRODUCTS_FILTER_SECTION_SHELL_CLASS}>
       <div className="mb-4 flex min-h-6 items-center justify-between gap-2">
         <h3
           className={`${productsFiltersSectionFont.className} min-w-0 text-base font-semibold leading-6 tracking-[-0.31px] text-black`}

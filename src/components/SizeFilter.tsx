@@ -6,7 +6,11 @@ import { apiClient } from '../lib/api-client';
 import { getStoredLanguage } from '../lib/language';
 import { useTranslation } from '../lib/i18n-client';
 import { useProductsFilters } from './ProductsFiltersProvider';
-import { productsFiltersSectionFont } from '../lib/products-filters-typography';
+import {
+  PRODUCTS_FILTER_SECTION_SHELL_CLASS,
+  PRODUCTS_FILTER_SECTION_SHELL_LAST_CLASS,
+  productsFiltersSectionFont,
+} from '../lib/products-filters-typography';
 import { PRODUCTS_FILTER_LIST_SCROLL_CLASS } from '../lib/products-filter-list-scroll';
 import { ProductsFilterCheckboxVisual } from './ProductsFilterCheckbox';
 
@@ -98,7 +102,7 @@ export function SizeFilter({ category, search, minPrice, maxPrice, selectedSizes
 
   if (loading) {
     return (
-      <section className="mb-4 border-b border-solid border-[#e2e8f0] pb-4">
+      <section className={PRODUCTS_FILTER_SECTION_SHELL_CLASS}>
         <h3
           className={`${productsFiltersSectionFont.className} mb-4 text-base font-semibold leading-6 tracking-[-0.31px] text-[#1d293d]`}
         >
@@ -111,7 +115,7 @@ export function SizeFilter({ category, search, minPrice, maxPrice, selectedSizes
 
   if (sizes.length === 0) {
     return (
-      <section className="mb-0 border-b border-solid border-[#e2e8f0] pb-4 last:border-b-0">
+      <section className="mb-0 border-b border-solid border-[#e2e8f0] pb-4 max-lg:pb-5 last:border-b-0">
         <h3
           className={`${productsFiltersSectionFont.className} mb-4 text-base font-semibold leading-6 tracking-[-0.31px] text-[#1d293d]`}
         >
@@ -123,7 +127,7 @@ export function SizeFilter({ category, search, minPrice, maxPrice, selectedSizes
   }
 
   return (
-    <section className="mb-4 border-b border-solid border-[#e2e8f0] pb-4 last:mb-0 last:border-b-0">
+    <section className={PRODUCTS_FILTER_SECTION_SHELL_LAST_CLASS}>
       <h3
         className={`${productsFiltersSectionFont.className} mb-4 text-base font-semibold leading-6 tracking-[-0.31px] text-[#1d293d]`}
       >

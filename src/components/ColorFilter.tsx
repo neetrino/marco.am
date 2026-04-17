@@ -7,7 +7,10 @@ import { getStoredLanguage } from '../lib/language';
 import { getColorHex } from '../lib/colorMap';
 import { useTranslation } from '../lib/i18n-client';
 import { useProductsFilters } from './ProductsFiltersProvider';
-import { productsFiltersSectionFont } from '../lib/products-filters-typography';
+import {
+  PRODUCTS_FILTER_SECTION_SHELL_CLASS,
+  productsFiltersSectionFont,
+} from '../lib/products-filters-typography';
 
 interface ColorFilterProps {
   category?: string;
@@ -159,7 +162,7 @@ export function ColorFilter({ category, search, minPrice, maxPrice }: ColorFilte
 
   if (loading) {
     return (
-      <section className="mb-4 border-b border-solid border-[#e2e8f0] pb-4">
+      <section className={PRODUCTS_FILTER_SECTION_SHELL_CLASS}>
         <div className="flex flex-col gap-4">
           <h3
             className={`${productsFiltersSectionFont.className} text-base font-semibold leading-6 tracking-[-0.31px] text-black`}
@@ -173,7 +176,7 @@ export function ColorFilter({ category, search, minPrice, maxPrice }: ColorFilte
   }
 
   return (
-    <section className="mb-4 border-b border-solid border-[#e2e8f0] pb-4">
+    <section className={PRODUCTS_FILTER_SECTION_SHELL_CLASS}>
       <div className="flex flex-col gap-4">
         <div className="flex min-h-6 items-center justify-between gap-2">
           <h3
