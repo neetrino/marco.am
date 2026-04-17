@@ -1,9 +1,7 @@
 'use client';
 
 import { useState, type MouseEvent } from 'react';
-import { useRouter } from 'next/navigation';
 
-import { useAuth } from '../../lib/auth/AuthContext';
 import { useCurrency } from '../hooks/useCurrency';
 import { useWishlist } from '../hooks/useWishlist';
 import { useCompare } from '../hooks/useCompare';
@@ -28,9 +26,7 @@ export function useSpecialOfferCard(
   options?: UseSpecialOfferCardOptions,
 ) {
   const { t } = useTranslation();
-  const router = useRouter();
   const currency = useCurrency();
-  const { isLoggedIn } = useAuth();
   const { isInWishlist, toggleWishlist } = useWishlist(product.id);
   const { isInCompare, toggleCompare } = useCompare(product.id);
   const { isAddingToCart, addToCart } = useAddToCart({
@@ -55,11 +51,7 @@ export function useSpecialOfferCard(
   const handleWishlist = (e: MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!isLoggedIn) {
-      router.push('/login?redirect=/products');
-      return;
-    }
-    toggleWishlist();
+    void toggleWishlist();
   };
 
   const handleCompare = (e: MouseEvent) => {

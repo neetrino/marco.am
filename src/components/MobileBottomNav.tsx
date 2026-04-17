@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
-import { getWishlistCount } from '../lib/storageCounts';
+import { getStoredLanguage } from '../lib/language';
+import { fetchWishlistItemCount } from '../lib/wishlist/wishlist-client';
 import { logger } from '@/lib/utils/logger';
 import { useTranslation } from '../lib/i18n-client';
 import {
@@ -112,15 +113,25 @@ export function MobileBottomNav() {
   const { t } = useTranslation();
 
   useEffect(() => {
-    const updateCounts = () => {
-      const wishlist = getWishlistCount();
-      logger.devDebug('[MobileBottomNav] wishlist count refreshed', { wishlist });
-      setWishlistCount(wishlist);
+    const updateCounts = async () => {
+      try {
+        const wishlist = await fetchWishlistItemCount(getStoredLanguage());
+        logger.devDebug('[MobileBottomNav] wishlist count refreshed', { wishlist });
+        setWishlistCount(wishlist);
+      } catch {
+        setWishlistCount(0);
+      }
     };
 
-    updateCounts();
+    void updateCounts();
     window.addEventListener('wishlist-updated', updateCounts);
-    return () => window.removeEventListener('wishlist-updated', updateCounts);
+    window.addEventListener('auth-updated', updateCounts);
+    window.addEventListener('language-updated', updateCounts);
+    return () => {
+      window.removeEventListener('wishlist-updated', updateCounts);
+      window.removeEventListener('auth-updated', updateCounts);
+      window.removeEventListener('language-updated', updateCounts);
+    };
   }, []);
 
   const navItems: MobileNavItem[] = useMemo(

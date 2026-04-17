@@ -11,7 +11,8 @@ import { useInstantSearch } from './hooks/useInstantSearch';
 import { SearchDropdown } from './SearchDropdown';
 import { useAuth } from '../lib/auth/AuthContext';
 import { apiClient } from '../lib/api-client';
-import { CART_KEY, getCompareCount, getWishlistCount } from '../lib/storageCounts';
+import { CART_KEY, getCompareCount } from '../lib/storageCounts';
+import { fetchWishlistItemCount } from '../lib/wishlist/wishlist-client';
 import { MapPin, Phone, Sun } from 'lucide-react';
 import { MarcoLogo } from './header/MarcoLogo';
 import { HeaderLocaleCurrencyPill, MobileHeaderLocaleCurrencyButton } from './header/HeaderLocaleCurrencyPill';
@@ -494,10 +495,19 @@ export function Header({ initialLanguage }: HeaderProps) {
     }
   };
 
-  // Load wishlist and compare counts from localStorage
+  // Load wishlist (API) and compare counts from localStorage
   useEffect(() => {
+    const refreshWishlistBadge = async () => {
+      try {
+        const n = await fetchWishlistItemCount(getStoredLanguage());
+        setWishlistCount(n);
+      } catch {
+        setWishlistCount(0);
+      }
+    };
+
     const updateCounts = () => {
-      setWishlistCount(getWishlistCount());
+      void refreshWishlistBadge();
       setCompareCount(getCompareCount());
     };
 
@@ -506,11 +516,15 @@ export function Header({ initialLanguage }: HeaderProps) {
 
     // Listen for updates
     const handleWishlistUpdate = () => {
-      setWishlistCount(getWishlistCount());
+      void refreshWishlistBadge();
     };
 
     const handleCompareUpdate = () => {
       setCompareCount(getCompareCount());
+    };
+
+    const handleLanguageUpdate = () => {
+      void refreshWishlistBadge();
     };
 
     const handleAuthUpdate = () => {
@@ -536,12 +550,14 @@ export function Header({ initialLanguage }: HeaderProps) {
 
     window.addEventListener('wishlist-updated', handleWishlistUpdate);
     window.addEventListener('compare-updated', handleCompareUpdate);
+    window.addEventListener('language-updated', handleLanguageUpdate);
     window.addEventListener('auth-updated', handleAuthUpdate);
     window.addEventListener('cart-updated', handleCartUpdate);
 
     return () => {
       window.removeEventListener('wishlist-updated', handleWishlistUpdate);
       window.removeEventListener('compare-updated', handleCompareUpdate);
+      window.removeEventListener('language-updated', handleLanguageUpdate);
       window.removeEventListener('auth-updated', handleAuthUpdate);
       window.removeEventListener('cart-updated', handleCartUpdate);
     };

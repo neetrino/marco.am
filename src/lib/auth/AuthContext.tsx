@@ -5,6 +5,12 @@ import { useRouter } from 'next/navigation';
 import { apiClient, ApiError, getClientErrorDetail, getErrorHttpStatus } from '../api-client';
 import { getErrorMessage } from '../types/errors';
 import { logger } from "@/lib/utils/logger";
+import { getStoredLanguage } from '../language';
+import {
+  invalidateWishlistCache,
+  mergeGuestWishlistAfterAuth,
+  migrateLegacyWishlistFromLocalStorage,
+} from '../wishlist/wishlist-client';
 
 /** Session storage keys for OTP step (same-tab only). */
 export const AUTH_VERIFICATION_TOKEN_KEY = 'auth_verification_token';
@@ -93,6 +99,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     window.dispatchEvent(new Event('auth-updated'));
   };
 
+  const syncWishlistAfterAuth = async (): Promise<void> => {
+    const lang = getStoredLanguage();
+    await migrateLegacyWishlistFromLocalStorage(lang);
+    await mergeGuestWishlistAfterAuth();
+  };
+
   const clearVerificationSession = () => {
     try {
       sessionStorage.removeItem(AUTH_VERIFICATION_TOKEN_KEY);
@@ -178,6 +190,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       logger.devLog('✅ [AUTH] Login successful:', { userId: response.user.id });
       persistSession(response);
+      void syncWishlistAfterAuth();
       return { status: 'authenticated' };
     } catch (error: unknown) {
       logger.devLog('❌ [AUTH] Login error', { error });
@@ -246,6 +259,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       try {
         persistSession(response);
+        void syncWishlistAfterAuth();
         logger.devLog('💾 [AUTH] Auth data stored in localStorage');
       } catch (storageError) {
         logger.devLog('❌ [AUTH] Failed to store auth data', { storageError });
@@ -313,6 +327,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       persistSession(response);
       clearVerificationSession();
+      await syncWishlistAfterAuth();
       router.push(redirectTo);
     } finally {
       setIsLoading(false);
@@ -342,6 +357,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(null);
     setUser(null);
 
+    invalidateWishlistCache();
     window.dispatchEvent(new Event('auth-updated'));
 
     router.push('/');

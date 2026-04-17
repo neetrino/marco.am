@@ -1,65 +1,67 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-
-const WISHLIST_KEY = 'shop_wishlist';
+import { useState, useEffect, useCallback } from 'react';
+import {
+  addWishlistItemClient,
+  fetchWishlistProductIds,
+  removeWishlistItemClient,
+} from '@/lib/wishlist/wishlist-client';
+import { getStoredLanguage, type LanguageCode } from '@/lib/language';
+import { logger } from '@/lib/utils/logger';
 
 /**
- * Hook for managing wishlist state for a product
- * @param productId - The product ID to check/manage
- * @returns Object with wishlist state and toggle function
+ * Wishlist toggle backed by `GET`/`POST`/`DELETE` `/api/v1/wishlist` (guest cookie or JWT user).
  */
 export function useWishlist(productId: string) {
   const [isInWishlist, setIsInWishlist] = useState(false);
+  const [language, setLanguage] = useState<LanguageCode>(() => getStoredLanguage());
+
+  const refresh = useCallback(async () => {
+    try {
+      const ids = await fetchWishlistProductIds(language);
+      setIsInWishlist(ids.includes(productId));
+    } catch (error: unknown) {
+      logger.devLog('[useWishlist] refresh failed', { error });
+      setIsInWishlist(false);
+    }
+  }, [productId, language]);
 
   useEffect(() => {
-    const checkWishlist = () => {
-      if (typeof window === 'undefined') return;
-      try {
-        const stored = localStorage.getItem(WISHLIST_KEY);
-        const wishlist = stored ? JSON.parse(stored) : [];
-        setIsInWishlist(wishlist.includes(productId));
-      } catch {
-        setIsInWishlist(false);
-      }
+    const onLang = () => setLanguage(getStoredLanguage());
+    window.addEventListener('language-updated', onLang);
+    return () => window.removeEventListener('language-updated', onLang);
+  }, []);
+
+  useEffect(() => {
+    void refresh();
+  }, [refresh]);
+
+  useEffect(() => {
+    const onUpdate = () => {
+      void refresh();
     };
-
-    checkWishlist();
-
-    const handleWishlistUpdate = () => checkWishlist();
-    window.addEventListener('wishlist-updated', handleWishlistUpdate);
-
+    window.addEventListener('wishlist-updated', onUpdate);
+    window.addEventListener('auth-updated', onUpdate);
     return () => {
-      window.removeEventListener('wishlist-updated', handleWishlistUpdate);
+      window.removeEventListener('wishlist-updated', onUpdate);
+      window.removeEventListener('auth-updated', onUpdate);
     };
-  }, [productId]);
+  }, [refresh]);
 
-  const toggleWishlist = () => {
-    if (typeof window === 'undefined') return;
-    
+  const toggleWishlist = async () => {
     try {
-      const stored = localStorage.getItem(WISHLIST_KEY);
-      const wishlist: string[] = stored ? JSON.parse(stored) : [];
-      
       if (isInWishlist) {
-        const updated = wishlist.filter((id) => id !== productId);
-        localStorage.setItem(WISHLIST_KEY, JSON.stringify(updated));
+        await removeWishlistItemClient(productId, language);
         setIsInWishlist(false);
       } else {
-        wishlist.push(productId);
-        localStorage.setItem(WISHLIST_KEY, JSON.stringify(wishlist));
+        await addWishlistItemClient(productId, language);
         setIsInWishlist(true);
       }
-      
-      window.dispatchEvent(new Event('wishlist-updated'));
-    } catch (error) {
-      console.error('Error updating wishlist:', error);
+    } catch (error: unknown) {
+      logger.error('Wishlist toggle failed', { error });
+      void refresh();
     }
   };
 
   return { isInWishlist, toggleWishlist };
 }
-
-
-
-
