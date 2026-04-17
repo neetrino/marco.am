@@ -3,19 +3,23 @@
 import type { ReactNode } from 'react';
 import { HeaderNavbarProfileIcon } from '../icons/HeaderNavbarProfileIcon';
 
-/** Categories dropdown chevron */
+/** Categories dropdown chevron — larger on wide desktop (nudged left); stroke stays thin, not bold. */
 export function HeaderChevronDownIcon() {
   return (
     <svg
-      className="shrink-0"
-      width="10"
-      height="10"
+      className="h-2.5 w-2.5 shrink-0 min-[1367px]:-ml-2 min-[1367px]:h-5 min-[1367px]:w-5"
       viewBox="0 0 12 12"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden
     >
-      <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d="M3 4.5L6 7.5L9 4.5"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="[stroke-width:1.5px] min-[1367px]:[stroke-width:1.1px]"
+      />
     </svg>
   );
 }
