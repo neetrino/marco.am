@@ -758,7 +758,7 @@ export function Header({ initialLanguage }: HeaderProps) {
           >
             <a
               href={telHref}
-              className="flex h-10 shrink-0 items-center gap-1.5 text-xs font-medium leading-[18px] text-marco-text"
+              className="flex h-10 shrink-0 -translate-x-0.5 items-center gap-1 text-xs font-medium leading-[18px] text-marco-text"
             >
               <Phone className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
               <span className="whitespace-nowrap">{phoneDisplay}</span>
