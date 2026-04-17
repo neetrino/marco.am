@@ -136,6 +136,72 @@ async function seedBrands() {
   return ids;
 }
 
+/**
+ * One demo product per shop brand — idempotent (skip if slug `seed-demo-{brandSlug}` exists).
+ * For QA until real catalog is imported.
+ */
+async function seedBrandDemoProducts(categoryIds) {
+  if (!categoryIds.length) {
+    console.log("[Seed] Brand demo products: skipped (no categories)");
+    return;
+  }
+  const primaryCategoryId = categoryIds[0];
+  const categoryIdsList = [primaryCategoryId];
+  let created = 0;
+  for (let i = 0; i < BRANDS.length; i++) {
+    const { slug: brandSlug, name: brandName } = BRANDS[i];
+    const productSlug = `seed-demo-${brandSlug}`;
+    const existingTr = await prisma.productTranslation.findFirst({
+      where: { locale: "en", slug: productSlug },
+    });
+    if (existingTr) {
+      continue;
+    }
+    const brand = await prisma.brand.findUnique({ where: { slug: brandSlug } });
+    if (!brand) {
+      console.warn("[Seed] Brand demo: brand not found:", brandSlug);
+      continue;
+    }
+    const title = `Demo product (${brandName})`;
+    const sku = `DEMO-${brandSlug.toUpperCase().replace(/-/g, "")}`;
+    const price = 9990 + i * 1000;
+    await prisma.product.create({
+      data: {
+        brandId: brand.id,
+        media: [],
+        published: true,
+        featured: false,
+        publishedAt: new Date(),
+        categoryIds: categoryIdsList,
+        primaryCategoryId,
+        attributeIds: [],
+        categories: { connect: categoryIdsList.map((id) => ({ id })) },
+        translations: {
+          create: {
+            locale: "en",
+            title,
+            slug: productSlug,
+            subtitle: `Placeholder for ${brandName} — replace when importing real catalog.`,
+            descriptionHtml: `<p>Seed demo product for brand filter QA.</p>`,
+          },
+        },
+        variants: {
+          create: {
+            price,
+            compareAtPrice: Math.round(price * 1.1),
+            stock: 99,
+            sku,
+            position: 0,
+            published: true,
+          },
+        },
+      },
+    });
+    created += 1;
+  }
+  console.log("[Seed] Brand demo products (new):", created);
+}
+
 async function seedProducts(categoryIds, brandIds) {
   const titles = [
     "Wireless Earbuds", "Running Shoes", "Cotton T-Shirt", "Desk Lamp", "Yoga Mat",
@@ -204,6 +270,7 @@ async function main() {
     await seedAdmin();
     const categoryIds = await seedCategories();
     const brandIds = await seedBrands();
+    await seedBrandDemoProducts(categoryIds);
     await seedProducts(categoryIds, brandIds);
     console.log("=== Seed done ===");
   } catch (e) {

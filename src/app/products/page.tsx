@@ -221,8 +221,8 @@ export default async function ProductsPage({ searchParams }: any) {
           minPrice={params?.minPrice}
           maxPrice={params?.maxPrice}
         >
-        <aside className="hidden w-64 shrink-0 bg-white lg:block">
-          <div className="sticky top-4 px-6 pb-4 pt-6">
+        <aside className="hidden shrink-0 bg-white lg:flex lg:w-[20rem]">
+          <div className="sticky top-4 flex min-h-0 min-w-0 flex-1 flex-col px-5 pb-4 pt-6 lg:px-6">
             <div className="mb-6 flex flex-col gap-1">
               <h2
                 className={`${productsFiltersSectionFont.className} text-base font-semibold leading-6 tracking-[-0.31px] text-[#0f172b]`}
@@ -245,6 +245,10 @@ export default async function ProductsPage({ searchParams }: any) {
               <BrandFilter category={params?.category} search={params?.search} minPrice={params?.minPrice} maxPrice={params?.maxPrice} selectedBrands={selectedBrands} />
             </Suspense>
           </div>
+          <div
+            className="hidden w-px shrink-0 self-stretch bg-[#e2e8f0] lg:block"
+            aria-hidden
+          />
         </aside>
 
         <div className="flex-1 min-w-0 w-full lg:w-auto py-4 overflow-x-hidden">

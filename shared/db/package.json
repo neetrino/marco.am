@@ -11,6 +11,7 @@
     "db:migrate:deploy": "prisma migrate deploy",
     "db:studio": "prisma studio",
     "db:seed": "prisma db seed",
+    "db:seed:apple": "node prisma/seed-apple-product.cjs",
     "postinstall": "prisma generate"
   },
   "prisma": {

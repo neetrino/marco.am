@@ -380,7 +380,28 @@ class ProductsFiltersService {
       // Sort colors alphabetically
       colors.sort((a: { label: string }, b: { label: string }) => a.label.localeCompare(b.label));
 
-      const brands = Array.from(brandMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+      // Shop sidebar: list all published brands from DB, counts from current product facet (not only brands that appear in the capped sample)
+      const publishedBrands = await db.brand.findMany({
+        where: { published: true, deletedAt: null },
+        include: { translations: true },
+      });
+      const brands = publishedBrands
+        .map((row) => {
+          const tr =
+            row.translations.find((t) => t.locale === lang) ?? row.translations[0];
+          const name = (tr?.name?.trim() || row.slug || '').trim();
+          if (!name) {
+            return null;
+          }
+          const facet = brandMap.get(row.id);
+          return {
+            id: row.id,
+            name,
+            count: facet?.count ?? 0,
+          };
+        })
+        .filter((b): b is { id: string; name: string; count: number } => b !== null)
+        .sort((a, b) => a.name.localeCompare(b.name));
       const priceMin = rangeMin === Infinity ? 0 : Math.floor(rangeMin / 1000) * 1000;
       const priceMax = rangeMax === 0 ? 100000 : Math.ceil(rangeMax / 1000) * 1000;
       let stepSize: number | null = null;

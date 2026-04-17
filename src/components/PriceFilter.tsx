@@ -36,7 +36,7 @@ export function PriceFilter({ currentMinPrice, currentMaxPrice, category }: Pric
   });
   const [minPrice, setMinPrice] = useState(currentMinPrice ? parseFloat(currentMinPrice) : 0);
   const [maxPrice, setMaxPrice] = useState(currentMaxPrice ? parseFloat(currentMaxPrice) : 100000);
-  const [isDragging, setIsDragging] = useState<'min' | 'max' | null>(null);
+  const [isDragging, setIsDragging] = useState<'max' | null>(null);
   const [currency, setCurrency] = useState<CurrencyCode>('USD'); // Default для SSR
   const sliderRef = useRef<HTMLDivElement>(null);
 
@@ -68,7 +68,7 @@ export function PriceFilter({ currentMinPrice, currentMaxPrice, category }: Pric
     if (filtersContext?.data?.priceRange) {
       const pr = filtersContext.data.priceRange;
       setPriceRange(pr as PriceRange);
-      if (!currentMinPrice) setMinPrice(pr.min);
+      setMinPrice(pr.min);
       if (!currentMaxPrice) setMaxPrice(pr.max);
       return;
     }
@@ -78,17 +78,14 @@ export function PriceFilter({ currentMinPrice, currentMaxPrice, category }: Pric
   }, [category, filtersContext?.data?.priceRange, filtersContext === null]);
 
   useEffect(() => {
-    if (currentMinPrice) {
-      setMinPrice(parseFloat(currentMinPrice));
-    } else {
-      setMinPrice(priceRange.min);
-    }
+    // Single thumb: min is always catalog floor (left edge), not draggable
+    setMinPrice(priceRange.min);
     if (currentMaxPrice) {
       setMaxPrice(parseFloat(currentMaxPrice));
     } else {
       setMaxPrice(priceRange.max);
     }
-  }, [currentMinPrice, currentMaxPrice, priceRange]);
+  }, [currentMaxPrice, priceRange]);
 
   const fetchPriceRange = async () => {
     try {
@@ -98,7 +95,7 @@ export function PriceFilter({ currentMinPrice, currentMaxPrice, category }: Pric
 
       const response = await apiClient.get<PriceRange>('/api/v1/products/price-range', { params });
       setPriceRange(response);
-      if (!currentMinPrice) setMinPrice(response.min);
+      setMinPrice(response.min);
       if (!currentMaxPrice) setMaxPrice(response.max);
     } catch (error) {
       console.error('Error fetching price range:', error);
@@ -121,8 +118,8 @@ export function PriceFilter({ currentMinPrice, currentMaxPrice, category }: Pric
     return ((value - priceRange.min) / (priceRange.max - priceRange.min)) * 100;
   };
 
-  const handleMouseDown = (type: 'min' | 'max') => {
-    setIsDragging(type);
+  const handleMouseDown = () => {
+    setIsDragging('max');
   };
 
   const updatePrice = (clientX: number) => {
@@ -134,11 +131,7 @@ export function PriceFilter({ currentMinPrice, currentMaxPrice, category }: Pric
     const step = resolveStepSize();
     const roundedValue = roundToStep(value, step);
 
-    if (isDragging === 'min') {
-      const currentMax = typeof maxPrice === 'number' && !isNaN(maxPrice) ? maxPrice : priceRange.max;
-      const newMin = Math.max(priceRange.min, Math.min(roundedValue, currentMax - step));
-      setMinPrice(newMin);
-    } else if (isDragging === 'max') {
+    if (isDragging === 'max') {
       const currentMin = typeof minPrice === 'number' && !isNaN(minPrice) ? minPrice : priceRange.min;
       const newMax = Math.min(priceRange.max, Math.max(roundedValue, currentMin + step));
       setMaxPrice(newMax);
@@ -182,19 +175,12 @@ export function PriceFilter({ currentMinPrice, currentMaxPrice, category }: Pric
   useEffect(() => {
     if (!isDragging) {
       // Only apply if values have changed from initial/default
-      const shouldApplyMin = minPrice !== priceRange.min;
       const shouldApplyMax = maxPrice !== priceRange.max;
-      
-      if (shouldApplyMin || shouldApplyMax) {
-        // Ստեղծում ենք նոր URLSearchParams URL-ի հիման վրա, որպեսզի պահպանենք բոլոր params-ները
+
+      if (shouldApplyMax || searchParams.get('minPrice')) {
         const params = new URLSearchParams(searchParams.toString());
-        
-        if (shouldApplyMin) {
-          params.set('minPrice', minPrice.toString());
-        } else {
-          params.delete('minPrice');
-        }
-        
+        params.delete('minPrice');
+
         if (shouldApplyMax) {
           params.set('maxPrice', maxPrice.toString());
         } else {
@@ -212,7 +198,7 @@ export function PriceFilter({ currentMinPrice, currentMaxPrice, category }: Pric
         return () => clearTimeout(timeoutId);
       }
     }
-  }, [isDragging, minPrice, maxPrice, priceRange, searchParams, router]);
+  }, [isDragging, maxPrice, priceRange, searchParams, router]);
 
   // Используем функцию форматирования из currency.ts для консистентности
   const formatPrice = (price: number) => {
@@ -225,7 +211,6 @@ export function PriceFilter({ currentMinPrice, currentMaxPrice, category }: Pric
   const safeMinPrice: number = typeof minPrice === 'number' && !isNaN(minPrice) && isFinite(minPrice) ? minPrice : 0;
   const safeMaxPrice: number = typeof maxPrice === 'number' && !isNaN(maxPrice) && isFinite(maxPrice) ? maxPrice : 100000;
   
-  const minPercentage = getPercentage(safeMinPrice);
   const maxPercentage = getPercentage(safeMaxPrice);
 
   const rangeLabel = `${formatPrice(Number(safeMinPrice) || 0)} - ${formatPrice(Number(safeMaxPrice) || 100000)}`;
@@ -253,39 +238,17 @@ export function PriceFilter({ currentMinPrice, currentMaxPrice, category }: Pric
           const value = priceRange.min + (percentage / 100) * (priceRange.max - priceRange.min);
           const step = resolveStepSize();
           const roundedValue = roundToStep(value, step);
-
           const currentMin = typeof minPrice === 'number' && !isNaN(minPrice) ? minPrice : priceRange.min;
-          const currentMax = typeof maxPrice === 'number' && !isNaN(maxPrice) ? maxPrice : priceRange.max;
-
-          if (Math.abs(roundedValue - currentMin) < Math.abs(roundedValue - currentMax)) {
-            const newMin = Math.max(priceRange.min, Math.min(roundedValue, currentMax - step));
-            setMinPrice(newMin);
-            handleMouseDown('min');
-          } else {
-            const newMax = Math.min(priceRange.max, Math.max(roundedValue, currentMin + step));
-            setMaxPrice(newMax);
-            handleMouseDown('max');
-          }
+          const newMax = Math.min(priceRange.max, Math.max(roundedValue, currentMin + step));
+          setMaxPrice(newMax);
+          handleMouseDown();
         }}
       >
         <div
           className="absolute top-0 h-full rounded-full bg-marco-yellow"
           style={{
-            left: `${minPercentage}%`,
-            width: `${Math.max(0, maxPercentage - minPercentage)}%`,
-          }}
-        />
-
-        <div
-          className="absolute z-10 h-4 w-4 cursor-grab rounded-full border border-solid border-[#e2e8f0] bg-white shadow-sm active:cursor-grabbing"
-          style={{ left: `${minPercentage}%`, top: '50%', transform: 'translate(-50%, -50%)' }}
-          onMouseDown={(e) => {
-            e.stopPropagation();
-            handleMouseDown('min');
-          }}
-          onTouchStart={(e) => {
-            e.stopPropagation();
-            handleMouseDown('min');
+            left: 0,
+            width: `${maxPercentage}%`,
           }}
         />
 
@@ -294,11 +257,11 @@ export function PriceFilter({ currentMinPrice, currentMaxPrice, category }: Pric
           style={{ left: `${maxPercentage}%`, top: '50%', transform: 'translate(-50%, -50%)' }}
           onMouseDown={(e) => {
             e.stopPropagation();
-            handleMouseDown('max');
+            handleMouseDown();
           }}
           onTouchStart={(e) => {
             e.stopPropagation();
-            handleMouseDown('max');
+            handleMouseDown();
           }}
         />
       </div>
