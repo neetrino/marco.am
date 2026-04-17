@@ -126,7 +126,7 @@
 
 ## Փուլ 4 — Product (PDP)
 
-**Փուլի առաջընթաց.** `92%`
+**Փուլի առաջընթաց.** `93%`
 
 
 | ID  | Առաջադրանք (backend)                                                                | Կատարման % | Կարգավիճակ |
@@ -135,7 +135,7 @@
 | 4.2 | Կարճ և լիարժեք նկարագրություն (i18n դաշտեր)                                         | 100        | ✅          |
 | 4.3 | Technical specifications table — structured attributes                              | 100        | ✅          |
 | 4.4 | Գնային դաշտեր — current price, old price, discount badge inputs                     | 100        | ✅          |
-| 4.5 | Quantity + Add to cart — զամբյուղի API (կլիենտ state-ի հետ համաձայնեցված)           | 90         | 🔄         |
+| 4.5 | Quantity + Add to cart — զամբյուղի API (կլիենտ state-ի հետ համաձայնեցված)           | 100        | ✅          |
 | 4.6 | Պահեստի կարգավիճակ — in stock / out of stock                                        | 90         | 🔄         |
 | 4.7 | Related products — recommendation rule (կատեգորիա/բրենդ/այլ)                        | 55         | 🔄         |
 | 4.8 | Reviews — rating aggregate, ցուցակ, review submit (policy + auth, եթե պահանջվում է) | 100        | ✅          |
@@ -150,6 +150,8 @@
 **4.3 ✅ ավարտված (2026-04-17).** `GET /api/v1/products/[slug]?lang=<locale>` PDP պատասխանում ավելացվել է `technicalSpecifications[]` դաշտ՝ table-ready structured attributes ձևաչափով՝ `{ key, name, values[], value }`։ Տվյալը հավաքվում է `productAttributes`-ից (թարգմանված attribute name/label-ներով), իսկ դրանց բացակայության դեպքում fallback է variant option-ներից։ Կրկնվող արժեքները դեդուպ են արվում case-insensitive, իսկ ոչ-տեխնիկական `color`/`size` հատկանիշները դուրս են թողնվում, որպեսզի PDP-ի technical specs table-ը ստանա մաքուր structured տվյալ։
 
 **4.4 ✅ ավարտված (2026-04-17).** `GET /api/v1/products/[slug]?lang=<locale>` PDP պատասխանում գնի դաշտերը ստանդարտացվել են՝ ինչպես top-level, այնպես էլ variant մակարդակով․ ավելացվել են `currentPrice`, `oldPrice`, `discountBadge` (`{ type: "percentage", value, label }`) և `pricing` summary բլոկը։ `oldPrice`-ը վերադարձվում է միայն այն դեպքում, երբ այն իրականում մեծ է `currentPrice`-ից, իսկ `discountBadge`-ը հաշվարկվում է product/category/brand/global discount-ից կամ fallback՝ `compareAtPrice` տարբերությունից։ Գոյություն ունեցող `price` / `originalPrice` / `compareAtPrice` դաշտերը պահպանվել են backward-compatible։
+
+**4.5 ✅ ավարտված (2026-04-17).** `POST /api/v1/cart/items`-ում ավելացվել է `quantity`-ի խիստ validation (`positive integer`) և պահեստի սահմանափակման վերահսկում՝ ընդհանուր cart քանակի հաշվարկով (`existing + requested <= stock`)։ PDP (`src/app/products/[slug]/page.tsx`) add-to-cart հոսքը հիմա ուղարկում է ընտրված `quantity`-ը և `cart-updated` custom event-ով վերադարձնում է state-sync տվյալներ (`optimisticAdd` / `cartSummary`)՝ Header badge/total-ը անմիջապես համաժամեցնելու համար թե՛ login, թե՛ guest դեպքերում։ Guest cart-ում նույնպես ավելացվել է նույն variant-ի `stock`-ի գերազանցման պաշտպանություն և local summary հաշվարկ (`itemsCount`, `total`)։
 
 **4.8 ✅ ավարտված (2026-04-16).** `GET /api/v1/products/[slug]/reviews` — վերադարձնում է `{ reviews, aggregate }` (միջին գնահատական, քանակ, աստղերի բաշխում) + հրապարակված կարծիքների ցուցակ։ `POST` — JWT, `policyAccepted: true` (UI-ում checkbox + `/terms` հղում), մարմնում `rating` + `comment`։ Պրոդում կամընտիր `REVIEW_REQUIRE_PURCHASE=true` — կարծիք միայն այն օգտատիրոջ համար, ում մոտ կա չչեղարկված պատվեր ապրանքով (variant → product)։ `reviews.service.ts`, PDP `ProductReviews` / `ReviewSummary` / `useReviews`։
 

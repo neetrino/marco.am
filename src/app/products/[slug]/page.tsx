@@ -69,21 +69,69 @@ export default function ProductPage({ params }: ProductPageProps) {
     if (!canAddToCart || !product || !currentVariant) return;
     setIsAddingToCart(true);
     try {
+      const unitPrice = price;
+      window.dispatchEvent(
+        new CustomEvent('cart-updated', {
+          detail: { optimisticAdd: { quantity, price: unitPrice } },
+        })
+      );
+
       if (!isLoggedIn) {
         const stored = localStorage.getItem('shop_cart_guest');
-        const cart = stored ? JSON.parse(stored) : [];
-        const existing = cart.find((i: unknown): i is { variantId: string; quantity: number; productId?: string; productSlug?: string } => 
-          typeof i === 'object' && i !== null && 'variantId' in i && i.variantId === currentVariant.id
-        );
-        if (existing) existing.quantity += quantity;
-        else cart.push({ productId: product.id, productSlug: product.slug, variantId: currentVariant.id, quantity });
+        const cart: Array<{
+          productId: string;
+          productSlug?: string;
+          variantId: string;
+          quantity: number;
+          price?: number;
+        }> = stored ? JSON.parse(stored) : [];
+        const existing = cart.find((item) => item.variantId === currentVariant.id);
+        const nextQuantity = (existing?.quantity ?? 0) + quantity;
+        if (nextQuantity > currentVariant.stock) {
+          setShowMessage(t(language, 'common.alerts.noMoreStockAvailable'));
+          return;
+        }
+
+        if (existing) {
+          existing.quantity = nextQuantity;
+          existing.productSlug = product.slug;
+          existing.price = unitPrice;
+        } else {
+          cart.push({
+            productId: product.id,
+            productSlug: product.slug,
+            variantId: currentVariant.id,
+            quantity,
+            price: unitPrice,
+          });
+        }
+
         localStorage.setItem('shop_cart_guest', JSON.stringify(cart));
+        const guestItemsCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+        const guestTotal = cart.reduce((sum, item) => sum + (item.price ?? 0) * item.quantity, 0);
+        window.dispatchEvent(
+          new CustomEvent('cart-updated', {
+            detail: { itemsCount: guestItemsCount, total: guestTotal },
+          })
+        );
       } else {
-        await apiClient.post('/api/v1/cart/items', { productId: product.id, variantId: currentVariant.id, quantity });
+        const response = await apiClient.post<{
+          cartSummary?: { itemsCount: number; total: number };
+        }>('/api/v1/cart/items', {
+          productId: product.id,
+          variantId: currentVariant.id,
+          quantity,
+        });
+        window.dispatchEvent(
+          new CustomEvent('cart-updated', {
+            detail: response.cartSummary ?? null,
+          })
+        );
       }
+
       setShowMessage(`${t(language, 'product.addedToCart')} ${quantity} ${t(language, 'product.pcs')}`);
-      window.dispatchEvent(new Event('cart-updated'));
     } catch (_err) { 
+      window.dispatchEvent(new Event('cart-updated'));
       setShowMessage(t(language, 'product.errorAddingToCart')); 
     } finally { 
       setIsAddingToCart(false); 

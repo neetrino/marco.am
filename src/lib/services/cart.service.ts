@@ -202,6 +202,14 @@ class CartService {
         detail: "variantId and productId are required",
       };
     }
+    if (!Number.isInteger(quantity) || quantity < 1) {
+      throw {
+        status: 400,
+        type: "https://api.shop.am/problems/validation-error",
+        title: "Validation failed",
+        detail: "quantity must be a positive integer",
+      };
+    }
 
     const [cart, variant] = await Promise.all([
       db.cart.findFirst({
