@@ -13,15 +13,15 @@ interface CategoryItemProps {
 
 export function CategoryItem({ category, parentCategory, onEdit, onDelete }: CategoryItemProps) {
   const { t } = useTranslation();
+  const depthPrefix = category.level > 0 ? `${'— '.repeat(category.level)} ` : '';
 
   return (
     <div
       className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-      style={{ paddingLeft: `${16 + category.level * 24}px` }}
     >
       <div className="flex-1">
         <div className="flex items-center gap-2">
-          <div className="text-sm font-medium text-gray-900">{category.title}</div>
+          <div className="text-sm font-medium text-gray-900">{`${depthPrefix}${category.title}`}</div>
           {category.requiresSizes && (
             <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">
               Sizes

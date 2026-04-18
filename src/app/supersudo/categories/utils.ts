@@ -47,6 +47,63 @@ export function buildCategoryTree(categories: Category[]): CategoryWithLevel[] {
   return flattenTree(rootCategories);
 }
 
+/**
+ * Get all descendant IDs for the provided category.
+ */
+export function getDescendantIds(categories: Category[], categoryId: string): Set<string> {
+  const childrenByParentId = new Map<string, string[]>();
+
+  categories.forEach((category) => {
+    if (!category.parentId) {
+      return;
+    }
+
+    const siblings = childrenByParentId.get(category.parentId) ?? [];
+    siblings.push(category.id);
+    childrenByParentId.set(category.parentId, siblings);
+  });
+
+  const descendants = new Set<string>();
+  const stack = [...(childrenByParentId.get(categoryId) ?? [])];
+
+  while (stack.length > 0) {
+    const currentId = stack.pop();
+    if (!currentId || descendants.has(currentId)) {
+      continue;
+    }
+
+    descendants.add(currentId);
+    const childIds = childrenByParentId.get(currentId) ?? [];
+    stack.push(...childIds);
+  }
+
+  return descendants;
+}
+
+/**
+ * Get all ancestor IDs for the provided category.
+ */
+export function getAncestorIds(categories: Category[], categoryId: string): Set<string> {
+  const parentByCategoryId = new Map<string, string | null>();
+  categories.forEach((category) => {
+    parentByCategoryId.set(category.id, category.parentId);
+  });
+
+  const ancestors = new Set<string>();
+  let currentParentId = parentByCategoryId.get(categoryId) ?? null;
+
+  while (currentParentId) {
+    if (ancestors.has(currentParentId)) {
+      break;
+    }
+
+    ancestors.add(currentParentId);
+    currentParentId = parentByCategoryId.get(currentParentId) ?? null;
+  }
+
+  return ancestors;
+}
+
 
 
 

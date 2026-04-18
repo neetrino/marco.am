@@ -2,6 +2,7 @@
 
 import { Button, Input } from '@shop/ui';
 import { useTranslation } from '../../../../lib/i18n-client';
+import { buildCategoryTree, getAncestorIds, getDescendantIds } from '../utils';
 import type { Category, CategoryFormData } from '../types';
 
 interface EditCategoryModalProps {
@@ -28,6 +29,17 @@ export function EditCategoryModal({
   const { t } = useTranslation();
 
   if (!isOpen || !editingCategory) return null;
+
+  const descendantIds = getDescendantIds(categories, editingCategory.id);
+  const ancestorIds = getAncestorIds(categories, editingCategory.id);
+  const parentCandidates = buildCategoryTree(categories).filter(
+    (category) =>
+      category.id !== editingCategory.id && !descendantIds.has(category.id),
+  );
+  const subcategoryCandidates = buildCategoryTree(categories).filter(
+    (category) =>
+      category.id !== editingCategory.id && !ancestorIds.has(category.id),
+  );
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -56,16 +68,36 @@ export function EditCategoryModal({
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">{t('admin.categories.rootCategory')}</option>
-              {categories
-                .filter((cat) => 
-                  cat.id !== editingCategory.id && !cat.parentId
-                )
-                .map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.title}
-                  </option>
-                ))}
+              {parentCandidates.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {`${'— '.repeat(category.level)}${category.title}`}
+                </option>
+              ))}
             </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {t('admin.categories.seoTitle')}
+            </label>
+            <Input
+              type="text"
+              value={formData.seoTitle}
+              onChange={(e) => onFormDataChange({ ...formData, seoTitle: e.target.value })}
+              placeholder={t('admin.categories.seoTitlePlaceholder')}
+              className="w-full"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {t('admin.categories.seoDescription')}
+            </label>
+            <textarea
+              value={formData.seoDescription}
+              onChange={(e) => onFormDataChange({ ...formData, seoDescription: e.target.value })}
+              placeholder={t('admin.categories.seoDescriptionPlaceholder')}
+              rows={3}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
+            />
           </div>
           <div>
             <label className="flex items-center gap-2 cursor-pointer">
@@ -82,15 +114,13 @@ export function EditCategoryModal({
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Subcategories
+              {t('admin.categories.subcategories')}
             </label>
             <div className="max-h-60 overflow-y-auto border border-gray-300 rounded-md p-3 space-y-2">
-              {categories
-                .filter((cat) => cat.id !== editingCategory.id)
-                .map((cat) => {
-                  const isChecked = formData.subcategoryIds.includes(cat.id);
+              {subcategoryCandidates.map((category) => {
+                  const isChecked = formData.subcategoryIds.includes(category.id);
                   return (
-                    <label key={cat.id} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                    <label key={category.id} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
                       <input
                         type="checkbox"
                         checked={isChecked}
@@ -98,26 +128,27 @@ export function EditCategoryModal({
                           if (e.target.checked) {
                             onFormDataChange({
                               ...formData,
-                              subcategoryIds: [...formData.subcategoryIds, cat.id],
+                              subcategoryIds: [...formData.subcategoryIds, category.id],
                             });
                           } else {
                             onFormDataChange({
                               ...formData,
-                              subcategoryIds: formData.subcategoryIds.filter(id => id !== cat.id),
+                              subcategoryIds: formData.subcategoryIds.filter(id => id !== category.id),
                             });
                           }
                         }}
                         className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                       />
-                      <span className="text-sm text-gray-700">{cat.title}</span>
+                      <span className="text-sm text-gray-700">
+                        {`${'— '.repeat(category.level)}${category.title}`}
+                      </span>
                     </label>
                   );
                 })}
-              {categories.filter((cat) => 
-                cat.id !== editingCategory.id && 
-                cat.parentId !== editingCategory.id
-              ).length === 0 && (
-                <p className="text-sm text-gray-500">No available categories to assign as subcategories</p>
+              {subcategoryCandidates.length === 0 && (
+                <p className="text-sm text-gray-500">
+                  {t('admin.categories.noSubcategoryCandidates')}
+                </p>
               )}
             </div>
           </div>

@@ -3,7 +3,7 @@
 > Աղբյուր. `[shop-marco-code-plan.md](./shop-marco-code-plan.md)` (functional spec) — **backend** շերտին և API/CMS պահանջվող կետերը։  
 > Ճարտարապետության ամփոփում. `[BACKEND_ARCHITECTURE.md](./BACKEND_ARCHITECTURE.md)`
 
-**Վերջին թարմացում.** 2026-04-18 (փուլ 8 — promo codes/discounts)
+**Վերջին թարմացում.** 2026-04-18 (փուլ 8 — categories tree/seo)
 
 **Արվածության գնահատում.** Կոդբազայի աուդիտ (`shared/db/prisma/schema.prisma`, `src/app/api/`**, `src/lib/services/`**) — տոկոսները արտահայտում են **ընթացիկ repo-ում իմպլեմենտացիայի** համապատասխանությունը spec-ի backend պահանջին (ոչ թե դիզայն/QA փուլը)։
 
@@ -31,14 +31,14 @@
 | 5    | Checkout — պատվեր                | `100%`          |
 | 6    | Վճարման եղանակներ                | `100%`          |
 | 7    | Օգտատիրոջ հաշիվ (Account)        | `100%`          |
-| 8    | Admin — catalog & promos         | `84%`           |
+| 8    | Admin — catalog & promos         | `100%`          |
 | 9    | Admin — orders                   | `98%`           |
 | 10   | Admin — analytics                | `95%`           |
 | 11   | Reels                            | `0%`            |
 | 12   | Site-wide & i18n (API)           | `62%`           |
 
 
-**Ընդհանուր նախագծի առաջընթաց (backend).** `~69%` — *(12 փուլերի միջին տոկոս, մոտավոր)*։
+**Ընդհանուր նախագծի առաջընթաց (backend).** `~70%` — *(12 փուլերի միջին տոկոս, մոտավոր)*։
 
 ---
 
@@ -242,7 +242,7 @@
 
 ## Փուլ 8 — Admin: catalog & promos
 
-**Փուլի առաջընթաց.** `98%`
+**Փուլի առաջընթաց.** `100%`
 
 
 | ID  | Առաջադրանք (backend)                                                                                                  | Կատարման % | Կարգավիճակ |
@@ -252,7 +252,7 @@
 | 8.3 | Delivery rules — Retail-only → Yandex delivery; Wholesale կամ mixed cart → free delivery (**սերվերային enforcement**) | 100        | ✅          |
 | 8.4 | Promo codes և discounts — rules, limits, date ranges                                                                  | 100        | ✅          |
 | 8.5 | Banner management — slots, scheduling, links                                                                          | 100        | ✅          |
-| 8.6 | Categories management — tree, SEO fields                                                                              | 90         | 🔄         |
+| 8.6 | Categories management — tree, SEO fields                                                                              | 100        | ✅          |
 
 
 *Նշումներ.* 8.4 — այժմ կան նաև admin-managed promo code-ներ (`settings.key = promoCodes`)՝ կանոններով (`percentage`/`fixed`, scope `all|retail|wholesale`, `minSubtotal`), սահմանափակումներով (`usageLimitTotal`, `usageLimitPerUser`) և ժամանակային պատուհաններով (`startsAt`, `endsAt`)։ Coupon կիրառումը կապված է checkout totals/order checkout հոսքերին, և կիրառված `couponCode`-ը պահպանվում է պատվերում usage-limit enforcement-ի համար։
@@ -266,6 +266,8 @@
 **8.4 ✅ ավարտված (2026-04-18).** Ավելացվել է promo engine (`src/lib/services/promo-codes.service.ts`) և Admin API promo code-ների կառավարման համար (`GET`/`PUT /api/v1/supersudo/promo-codes`, `DELETE /api/v1/supersudo/promo-codes/[id]`)՝ settings JSON պահեստով (`promoCodes`)։ Checkout preview/order creation հոսքերում (`POST /api/v1/checkout/totals`, `POST /api/v1/orders/checkout`) coupon code-ը հիմա իրականում կիրառվում է սերվերում՝ rule/limit/date-range validation-ով, discount հաշվարկով (`percentage`/`fixed`, optional cap), scope ստուգմամբ (`all|retail|wholesale`) և usage-limit enforcement-ով (`orders` աղյուսակի `couponCode`)։ Ավելացվել է cart coupon API՝ `PUT`/`DELETE /api/v1/cart/coupon`, ինչպես նաև order schema/migration՝ `Order.couponCode` + `shared/db/prisma/migrations/20260418121000_add_order_coupon_code`։
 
 **8.5 ✅ ավարտված (2026-04-18).** Ավելացվել է admin-managed banner համակարգ settings պահեստով (`settings.key = banners`)՝ slot-aware կոնֆիգուրացիայով, scheduling պատուհաններով և անվտանգ link վալիդացիայով։ Admin API՝ `GET`/`PUT /api/v1/supersudo/banners` (JWT + admin, ամբողջ document read/write)։ Public API՝ `GET /api/v1/banners?slot=<slot>&locale=<en|hy|ru>[&at=<ISO8601>]`՝ վերադարձնում է միայն տվյալ slot-ի `active` և schedule-ում ընկած banner-ները՝ sort order-ով։ Իրականացում՝ `src/lib/constants/banner-management.ts`, `src/lib/schemas/banner-management.schema.ts`, `src/lib/services/banner-management.service.ts`, route-ներ՝ `src/app/api/v1/supersudo/banners/route.ts` և `src/app/api/v1/banners/route.ts`։ Vitest՝ `src/lib/schemas/banner-management.schema.test.ts`։ Admin ինտեգրման payload/API օրինակներ՝ `docs/BANNER_MANAGEMENT_API_EXAMPLES.md`։
+
+**8.6 ✅ ավարտված (2026-04-18).** Category admin management-ը ամբողջացվել է tree + SEO պահանջով․ admin category CRUD-ը հիմա վերադարձնում/ընդունում է SEO դաշտեր (`seoTitle`, `seoDescription`) և պահպանում դրանք `category_translations`-ում, ինչպես նաև ծառի վերակառուցման ժամանակ ավտոմատ վերահաշվում է `fullPath`-ը subtree-ի համար (ներառյալ parent փոխելու և subcategory reassignment սցենարները)։ Tree integrity validation-ը խստացվել է՝ parent/subcategory օպերացիաներում արգելելով ցիկլերը (ancestor↔descendant), չգոյություն ունեցող parent/subcategory id-ները և դատարկ վերնագրերը։ Admin UI (`/supersudo/categories`) add/edit մոդալներում ավելացվել են SEO input-ներ, parent/subcategory ընտրությունը դարձել է hierarchical (multi-level tree), իսկ inline style indentation-ը փոխարինվել է tree-prefix ցուցադրմամբ։
 
 ---
 

@@ -23,6 +23,8 @@ interface UseCategoryActionsReturn {
 
 const initialFormData: CategoryFormData = {
   title: '',
+  seoTitle: '',
+  seoDescription: '',
   parentId: '',
   requiresSizes: false,
   subcategoryIds: [],
@@ -53,6 +55,8 @@ export function useCategoryActions(): UseCategoryActionsReturn {
     try {
       await apiClient.post('/api/v1/supersudo/categories', {
         title: formData.title.trim(),
+        seoTitle: formData.seoTitle.trim() || undefined,
+        seoDescription: formData.seoDescription.trim() || undefined,
         parentId: formData.parentId || undefined,
         requiresSizes: formData.requiresSizes,
         locale: 'en',
@@ -83,6 +87,8 @@ export function useCategoryActions(): UseCategoryActionsReturn {
       
       setFormData({
         title: category.title,
+        seoTitle: categoryWithChildren.seoTitle || '',
+        seoDescription: categoryWithChildren.seoDescription || '',
         parentId: category.parentId || '',
         requiresSizes: category.requiresSizes || false,
         subcategoryIds: categoryWithChildren.children?.map(child => child.id) || [],
@@ -91,6 +97,8 @@ export function useCategoryActions(): UseCategoryActionsReturn {
       logger.error('Error fetching category children', { error: err });
       setFormData({
         title: category.title,
+        seoTitle: category.seoTitle || '',
+        seoDescription: category.seoDescription || '',
         parentId: category.parentId || '',
         requiresSizes: category.requiresSizes || false,
         subcategoryIds: [],
@@ -110,6 +118,8 @@ export function useCategoryActions(): UseCategoryActionsReturn {
     try {
       await apiClient.put(`/api/v1/supersudo/categories/${editingCategory.id}`, {
         title: formData.title.trim(),
+        seoTitle: formData.seoTitle.trim() || null,
+        seoDescription: formData.seoDescription.trim() || null,
         parentId: formData.parentId || null,
         requiresSizes: formData.requiresSizes,
         subcategoryIds: formData.subcategoryIds,
