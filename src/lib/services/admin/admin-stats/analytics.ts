@@ -144,12 +144,17 @@ export async function getAnalytics(period: string = 'week', startDate?: string, 
 
   // Calculate order statistics
   const totalOrders = orders.length;
-  const paidOrders = orders.filter((o: { paymentStatus: string }) => o.paymentStatus === 'paid').length;
+  const paidOrdersList = orders.filter(
+    (o: { paymentStatus: string }) => o.paymentStatus === 'paid'
+  );
+  const paidOrders = paidOrdersList.length;
   const pendingOrders = orders.filter((o: { status: string }) => o.status === 'pending').length;
   const completedOrders = orders.filter((o: { status: string }) => o.status === 'completed').length;
-  const totalRevenue = orders
-    .filter((o: { paymentStatus: string }) => o.paymentStatus === 'paid')
-    .reduce((sum: number, o: { total: number }) => sum + o.total, 0);
+  const totalRevenue = paidOrdersList.reduce(
+    (sum: number, o: { total: number }) => sum + o.total,
+    0
+  );
+  const averageOrderValue = paidOrders > 0 ? totalRevenue / paidOrders : 0;
 
   const productRows = aggregateProductSales(orders);
   const { bestSelling, leastSelling } = pickBestAndLeastSelling(productRows);
@@ -169,6 +174,7 @@ export async function getAnalytics(period: string = 'week', startDate?: string, 
     orders: {
       totalOrders,
       totalRevenue,
+      averageOrderValue,
       paidOrders,
       pendingOrders,
       completedOrders,

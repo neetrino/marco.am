@@ -7,6 +7,7 @@ export interface AnalyticsData {
   orders: {
     totalOrders: number;
     totalRevenue: number;
+    averageOrderValue: number;
     paidOrders: number;
     pendingOrders: number;
     completedOrders: number;

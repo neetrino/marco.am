@@ -16,7 +16,7 @@ export function StatsCards({ analytics, totalUsers }: StatsCardsProps) {
   const router = useRouter();
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
       <Card 
         className="p-6 bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 hover:shadow-lg hover:scale-105 hover:border-blue-400 transition-all duration-200 group cursor-pointer relative"
         onClick={() => router.push('/supersudo/orders')}
@@ -60,6 +60,23 @@ export function StatsCards({ analytics, totalUsers }: StatsCardsProps) {
       </Card>
 
       <Card 
+        className="p-6 bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 hover:shadow-lg hover:scale-105 hover:border-purple-400 transition-all duration-200 group cursor-default relative"
+        title={t('admin.analytics.averageOrderValue')}
+      >
+        <div className="flex items-center justify-between mb-3">
+          <div className="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8V7m0 1v8m0 0v1m0-1a3.49 3.49 0 01-2.604-1.095M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+        </div>
+        <p className="text-sm font-medium text-purple-700 mb-1">{t('admin.analytics.averageOrderValue')}</p>
+        <p className="text-2xl font-bold text-purple-900">
+          {formatCurrency(analytics.orders.averageOrderValue)}
+        </p>
+      </Card>
+
+      <Card
         className="p-6 bg-gradient-to-br from-indigo-50 to-indigo-100 border-indigo-200 hover:shadow-lg hover:scale-105 hover:border-indigo-400 transition-all duration-200 group cursor-default relative"
         title={t('admin.analytics.totalRegisteredUsers')}
       >

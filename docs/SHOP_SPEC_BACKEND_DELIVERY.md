@@ -33,7 +33,7 @@
 | 7    | Օգտատիրոջ հաշիվ (Account)        | `100%`          |
 | 8    | Admin — catalog & promos         | `100%`          |
 | 9    | Admin — orders                   | `100%`          |
-| 10   | Admin — analytics                | `95%`           |
+| 10   | Admin — analytics                | `100%`          |
 | 11   | Reels                            | `0%`            |
 | 12   | Site-wide & i18n (API)           | `62%`           |
 
@@ -298,17 +298,17 @@
 
 ## Փուլ 10 — Admin: analytics
 
-**Փուլի առաջընթաց.** `95%`
+**Փուլի առաջընթաց.** `100%`
 
 
 | ID   | Առաջադրանք (backend)                                          | Կատարման % | Կարգավիճակ |
 | ---- | ------------------------------------------------------------- | ---------- | ---------- |
-| 10.1 | Sales KPIs — total orders, revenue, AOV                       | 85         | 🔄         |
+| 10.1 | Sales KPIs — total orders, revenue, AOV                       | 100        | ✅          |
 | 10.2 | Order status breakdown — by status, today / week / month      | 100        | ✅          |
 | 10.3 | Product analytics — top 5 best sellers, least selling         | 100        | ✅          |
 | 10.4 | Stock analytics — low stock, out of stock lists               | 100        | ✅          |
 | 10.5 | Customer analytics — new vs repeat, top customers by spend    | 100        | ✅          |
-| 10.6 | Dashboard widgets — today’s sales, monthly sales, top product | 85         | 🔄         |
+| 10.6 | Dashboard widgets — today’s sales, monthly sales, top product | 100        | ✅          |
 
 
 *Նշումներ.* `admin/stats`, `admin/analytics`, `GET .../admin/analytics/order-status-breakdown`, dashboard երթուղիներ։
@@ -320,6 +320,10 @@
 **10.3 ✅ ավարտված (2026-04-17).** `GET /api/v1/admin/analytics` (նույն JWT + admin, `period` / `startDate` / `endDate`) — պատասխանում `**topProducts`**՝ թոփ 5 ապրանք վաճառված քանակով (բոլոր variant-ների գումար, ապրանքային ագրեգացիա), `**leastSellingProducts`**՝ **թոփ 5 ամենցածր** արտահայտված քանակով՝ **առանց կրկնվելու** `topProducts`-ի հետ (մնացած ապրանքներից)։ Տողերում՝ `productId`, `title`, `sku` (բազմակի variant-ի դեպքում sentinel `Multiple SKUs`), `totalQuantity`, `totalRevenue`, `orderCount`, `image`։ Կոդ՝ `product-sales-analytics.ts`, `PRODUCT_ANALYTICS_RANK_LIMIT` (`product-analytics.ts`), Admin UI՝ `TopProducts` + `LeastSellingProducts`։ Vitest՝ `product-sales-analytics.test.ts`։
 
 **10.5 ✅ ավարտված (2026-04-17).** `GET /api/v1/admin/analytics` պատասխանի մեջ `**customerAnalytics`** — `**newVsRepeat`**՝ նոր հաճախորդներ (առաջին պատվերը երբևէ ընկնում է ընտրած `dateRange`-ում), կրկնվող (պատվեր էր մինչև պատուհանի սկիզբը և նորից պատվերել է պատուհանում), պատվերների քանակներ նոր/կրկնվող բաժանումով, `ordersUnattributed` (առանց `userId` և email), և `**topCustomersBySpend**`՝ մինչև **10** հաճախորդ **վճարված** (`paymentStatus=paid`) պատվերների գումարով ընտրած ժամանակահատվածում (նույն պատուհանը, ինչ KPI եկամուտը)։ Հաճախորդի ինքնություն՝ `userId`, այլապես նորմալացված `customerEmail`։ Կոդ՝ `customer-identity.ts`, `customer-analytics.ts`, `TOP_CUSTOMERS_BY_SPEND_LIMIT`, Admin Analytics UI՝ `CustomerAnalytics`։
+
+**10.1 ✅ ավարտված (2026-04-18).** Sales KPI-ները ամբողջացվել են `GET /api/v1/supersudo/analytics` endpoint-ում՝ `orders.totalOrders`, `orders.totalRevenue`, `orders.averageOrderValue (AOV)` (`AOV = paid revenue / paid orders`, 0՝ եթե paid order չկա)։ Analytics UI `StatsCards`-ում ավելացվել է առանձին AOV քարտ (total orders + revenue + AOV + total users), թարմացվել են `en/hy/ru` թարգմանությունները։
+
+**10.6 ✅ ավարտված (2026-04-18).** Admin dashboard stats API-ն (`GET /api/v1/supersudo/stats`) հիմա վերադարձնում է `salesWidgets` բլոկ՝ `todaySales`, `monthlySales`, `topProduct` (ընթացիկ ամսվա վճարված պատվերներից)։ Dashboard UI (`StatsGrid`) ավելացվել են widget-ներ՝ **today’s sales**, **monthly sales**, **top product**՝ paid-order count-ով և locale-aware արժույթով։
 
 ---
 

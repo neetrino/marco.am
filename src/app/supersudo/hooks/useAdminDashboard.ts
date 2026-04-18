@@ -11,6 +11,25 @@ interface Stats {
   products: { total: number; lowStock: number };
   orders: { total: number; recent: number; pending: number };
   revenue: { total: number; currency: string };
+  salesWidgets: {
+    todaySales: {
+      revenue: number;
+      paidOrders: number;
+      currency: string;
+    };
+    monthlySales: {
+      revenue: number;
+      paidOrders: number;
+      currency: string;
+    };
+    topProduct: {
+      productId: string;
+      title: string;
+      totalQuantity: number;
+      totalRevenue: number;
+      currency: string;
+    } | null;
+  };
 }
 
 interface ActivityItem {
