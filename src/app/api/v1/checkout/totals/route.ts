@@ -10,6 +10,8 @@ const bodySchema = z.object({
   city: z.string().optional(),
   country: z.string().optional(),
   cartId: z.string().optional(),
+  couponCode: z.string().trim().min(1).max(64).optional(),
+  customerEmail: z.string().email().optional(),
   items: z
     .array(
       z.object({
@@ -55,6 +57,7 @@ export async function POST(req: NextRequest) {
         userId: user.id,
         locale,
         cartId: body.cartId,
+        couponCode: body.couponCode,
         shippingMethod: body.shippingMethod,
         city: body.city,
         country: body.country,
@@ -78,6 +81,8 @@ export async function POST(req: NextRequest) {
     const result = await checkoutTotalsService.compute({
       locale,
       guestItems: body.items,
+      couponCode: body.couponCode,
+      customerEmail: body.customerEmail,
       shippingMethod: body.shippingMethod,
       city: body.city,
       country: body.country,

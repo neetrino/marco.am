@@ -3,7 +3,7 @@
 > Աղբյուր. `[shop-marco-code-plan.md](./shop-marco-code-plan.md)` (functional spec) — **backend** շերտին և API/CMS պահանջվող կետերը։  
 > Ճարտարապետության ամփոփում. `[BACKEND_ARCHITECTURE.md](./BACKEND_ARCHITECTURE.md)`
 
-**Վերջին թարմացում.** 2026-04-17 (փուլ 2 — footer/CMS)
+**Վերջին թարմացում.** 2026-04-18 (փուլ 8 — promo codes/discounts)
 
 **Արվածության գնահատում.** Կոդբազայի աուդիտ (`shared/db/prisma/schema.prisma`, `src/app/api/`**, `src/lib/services/`**) — տոկոսները արտահայտում են **ընթացիկ repo-ում իմպլեմենտացիայի** համապատասխանությունը spec-ի backend պահանջին (ոչ թե դիզայն/QA փուլը)։
 
@@ -31,14 +31,14 @@
 | 5    | Checkout — պատվեր                | `100%`          |
 | 6    | Վճարման եղանակներ                | `100%`          |
 | 7    | Օգտատիրոջ հաշիվ (Account)        | `100%`          |
-| 8    | Admin — catalog & promos         | `73%`           |
+| 8    | Admin — catalog & promos         | `84%`           |
 | 9    | Admin — orders                   | `98%`           |
 | 10   | Admin — analytics                | `95%`           |
 | 11   | Reels                            | `0%`            |
 | 12   | Site-wide & i18n (API)           | `62%`           |
 
 
-**Ընդհանուր նախագծի առաջընթաց (backend).** `~68%` — *(12 փուլերի միջին տոկոս, մոտավոր)*։
+**Ընդհանուր նախագծի առաջընթաց (backend).** `~69%` — *(12 փուլերի միջին տոկոս, մոտավոր)*։
 
 ---
 
@@ -242,7 +242,7 @@
 
 ## Փուլ 8 — Admin: catalog & promos
 
-**Փուլի առաջընթաց.** `73%`
+**Փուլի առաջընթաց.** `84%`
 
 
 | ID  | Առաջադրանք (backend)                                                                                                  | Կատարման % | Կարգավիճակ |
@@ -250,18 +250,20 @@
 | 8.1 | Product CRUD — images, specs, pricing, stock, brand, categories                                                       | 100        | ✅          |
 | 8.2 | Product class — Retail / Wholesale դաշտ SKU/ապրանքի վրա                                                               | 100        | ✅          |
 | 8.3 | Delivery rules — Retail-only → Yandex delivery; Wholesale կամ mixed cart → free delivery (**սերվերային enforcement**) | 100        | ✅          |
-| 8.4 | Promo codes և discounts — rules, limits, date ranges                                                                  | 30         | ⬜          |
+| 8.4 | Promo codes և discounts — rules, limits, date ranges                                                                  | 100        | ✅          |
 | 8.5 | Banner management — slots, scheduling, links                                                                          | 15         | ⬜          |
 | 8.6 | Categories management — tree, SEO fields                                                                              | 90         | 🔄         |
 
 
-*Նշումներ.* 8.4 — կան global/category/brand զեղչերի կարգավորումներ; checkout-ում coupon-ը `TODO` է, `couponCode` դաշտը ամբողջությամբ չի կապված։
+*Նշումներ.* 8.4 — այժմ կան նաև admin-managed promo code-ներ (`settings.key = promoCodes`)՝ կանոններով (`percentage`/`fixed`, scope `all|retail|wholesale`, `minSubtotal`), սահմանափակումներով (`usageLimitTotal`, `usageLimitPerUser`) և ժամանակային պատուհաններով (`startsAt`, `endsAt`)։ Coupon կիրառումը կապված է checkout totals/order checkout հոսքերին, և կիրառված `couponCode`-ը պահպանվում է պատվերում usage-limit enforcement-ի համար։
 
 **8.1 ✅ ավարտված (2026-04-17).** Admin product CRUD-ի catalog endpoint-ը (`GET /api/v1/supersudo/products`) ամբողջացվել է պահանջվող դաշտերի filtering-ի համար՝ ավելացվել է `brand` (multi-value) ֆիլտրը, ակտիվացվել է `minPrice`/`maxPrice` price range filtering-ը variant գնի հիմքով, իսկ կոմբինացված search+category հարցումներում fixed է boolean լոգիկան (`AND` semantics՝ նախկին սխալ լայն `OR`-ի փոխարեն)։ Արդյունքում admin catalog-ը կայուն է `images/specs/pricing/stock/brand/categories` կառավարման հոսքի համար՝ create/update/delete-ի կողքին։
 
 **8.2 ✅ ավարտված (2026-04-17).** Ավելացվել է `ProductClass` enum (`retail`/`wholesale`) և պարտադիր դաշտեր թե՛ ապրանքի (`Product.productClass`), թե՛ SKU/variant-ի (`ProductVariant.productClass`) վրա (`shared/db/prisma/schema.prisma`, migration՝ `20260417153000_add_product_class_to_product_and_variant`)։ Admin create/update API-ները (`POST/PUT /api/v1/supersudo/products`) ընդունում և վալիդացնում են `productClass` և `variants[].productClass` արժեքները, իսկ create/update service-ները պահպանում են դաշտը DB-ում՝ variant մակարդակում fallback անելով product class-ին։ Admin read/list պատասխանում վերադարձվում է `productClass` թե՛ product, թե՛ variant object-ներում, և admin add/edit form-ում ավելացվել է `Product class` selector (Retail/Wholesale), որն ուղարկվում է payload-ով։
 
 **8.3 ✅ ավարտված (2026-04-18).** Delivery rule enforcement-ը միավորված է սերվերային checkout հոսքերում՝ մեկ resolver-ով (`src/lib/services/checkout-delivery-rules.service.ts`)։ Կանոնը կիրառվում է թե՛ preview totals endpoint-ում (`POST /api/v1/checkout/totals`), թե՛ order creation-ում (`POST /api/v1/orders/checkout`)՝ cart line-երի `productClass`-ի հիմքով․ `retail-only` cart → courier delivery արժեքը հաշվարկվում է `adminDeliveryService.getDeliveryPrice`-ով (Yandex-priced flow), իսկ `wholesale-only` կամ `mixed` cart → courier delivery-ը հարկադրաբար `0` է (free delivery)։ Enforcement-ը client payload-ից անկախ է, և order event-ում պահպանվում է `shippingPricingRuleApplied` audit marker (`retail_yandex` / `wholesale_or_mixed_free`)։
+
+**8.4 ✅ ավարտված (2026-04-18).** Ավելացվել է promo engine (`src/lib/services/promo-codes.service.ts`) և Admin API promo code-ների կառավարման համար (`GET`/`PUT /api/v1/supersudo/promo-codes`, `DELETE /api/v1/supersudo/promo-codes/[id]`)՝ settings JSON պահեստով (`promoCodes`)։ Checkout preview/order creation հոսքերում (`POST /api/v1/checkout/totals`, `POST /api/v1/orders/checkout`) coupon code-ը հիմա իրականում կիրառվում է սերվերում՝ rule/limit/date-range validation-ով, discount հաշվարկով (`percentage`/`fixed`, optional cap), scope ստուգմամբ (`all|retail|wholesale`) և usage-limit enforcement-ով (`orders` աղյուսակի `couponCode`)։ Ավելացվել է cart coupon API՝ `PUT`/`DELETE /api/v1/cart/coupon`, ինչպես նաև order schema/migration՝ `Order.couponCode` + `shared/db/prisma/migrations/20260418121000_add_order_coupon_code`։
 
 ---
 

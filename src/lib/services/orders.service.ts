@@ -17,6 +17,7 @@ import { resolveGuestCheckoutItems } from "./checkout-guest-items.service";
 import { createCardPaymentSession } from "./payment-psp.service";
 import { shouldChargeCourierShipping } from "./checkout-delivery-rules.service";
 import { resolveProductClass, type ProductClass } from "../constants/product-class";
+import { promoCodesService } from "./promo-codes.service";
 
 const orderNumberId = customAlphabet("0123456789ABCDEFGHJKLMNPQRSTUVWXYZ", 10);
 
@@ -75,6 +76,7 @@ class OrdersService {
         shippingMethod: rawShippingMethod = 'pickup',
         shippingAddress,
         paymentMethod: rawPaymentMethod,
+        couponCode,
       } = data;
       const shippingMethod = normalizeShippingMethod(rawShippingMethod);
       const paymentMethod = resolveCheckoutPaymentMethod(rawPaymentMethod);
@@ -253,7 +255,14 @@ class OrdersService {
 
       // Calculate totals
       const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-      const discountAmount = 0; // TODO: Implement discount/coupon logic
+      const promoDiscount = await promoCodesService.resolveDiscount({
+        couponCode,
+        subtotal,
+        userId,
+        customerEmail: email,
+        productClasses: cartItems.map((item) => item.productClass),
+      });
+      const discountAmount = promoDiscount.discountAmount;
       // Shipping: computed server-side only (never trust client-provided amount)
       let shippingAmount = 0;
       const shouldChargeShipping = shouldChargeCourierShipping(
@@ -290,6 +299,7 @@ class OrdersService {
             fulfillmentStatus: 'unfulfilled',
             subtotal,
             discountAmount,
+            couponCode: promoDiscount.couponCode,
             shippingAmount,
             taxAmount,
             total,

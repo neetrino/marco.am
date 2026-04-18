@@ -1,6 +1,8 @@
 import { db } from "@white-shop/db";
 import { logger } from "../utils/logger";
 import { extractMediaUrl } from "../utils/extractMediaUrl";
+import { promoCodesService } from "./promo-codes.service";
+import { resolveProductClass } from "../constants/product-class";
 
 class CartService {
   /**
@@ -98,6 +100,7 @@ class CartService {
           discountPercent?: number;
           primaryCategoryId?: string | null;
           brandId?: string | null;
+          productClass?: string | null;
           translations: Array<{ locale: string; title?: string; slug?: string }>;
         };
         variant: {
@@ -106,6 +109,7 @@ class CartService {
           stock: number;
           price: number;
           compareAtPrice?: number | null;
+          productClass?: string | null;
         };
       }) => {
         const product = item.product;
@@ -146,6 +150,7 @@ class CartService {
 
         return {
           id: item.id,
+          productClass: resolveProductClass(variant?.productClass ?? product?.productClass),
           variant: {
             id: variant?.id ?? item.variantId,
             sku: variant?.sku ?? "",
@@ -166,22 +171,57 @@ class CartService {
     );
 
     const subtotal = itemsWithDetails.reduce((sum, item) => sum + item.total, 0);
+    const productClasses = itemsWithDetails.map((item) => item.productClass);
+    let promoDiscount = { couponCode: null as string | null, discountAmount: 0 };
+    try {
+      promoDiscount = await promoCodesService.resolveDiscount({
+        couponCode: cart.couponCode,
+        subtotal,
+        userId,
+        productClasses,
+      });
+    } catch {
+      promoDiscount = { couponCode: null, discountAmount: 0 };
+    }
+    const total = subtotal - promoDiscount.discountAmount;
 
     return {
       cart: {
         id: cart.id,
+        couponCode: promoDiscount.couponCode,
         items: itemsWithDetails,
         totals: {
           subtotal,
-          discount: 0,
+          discount: promoDiscount.discountAmount,
           shipping: 0,
           tax: 0,
-          total: subtotal,
+          total,
           currency: "AMD",
         },
         itemsCount: itemsWithDetails.reduce((sum, item) => sum + item.quantity, 0),
       },
     };
+  }
+
+  async setCouponCode(userId: string, rawCode: string) {
+    const couponCode = await promoCodesService.ensureCouponCanBeStored(rawCode);
+    const cart = await db.cart.findFirst({ where: { userId }, select: { id: true } });
+    if (!cart) {
+      await this.getCart(userId);
+    }
+    await db.cart.updateMany({
+      where: { userId },
+      data: { couponCode },
+    });
+    return this.getCart(userId);
+  }
+
+  async clearCouponCode(userId: string) {
+    await db.cart.updateMany({
+      where: { userId },
+      data: { couponCode: null },
+    });
+    return this.getCart(userId);
   }
 
   /**

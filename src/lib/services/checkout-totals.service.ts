@@ -10,12 +10,15 @@ import {
 } from "./checkout-guest-items.service";
 import { shouldChargeCourierShipping } from "./checkout-delivery-rules.service";
 import { resolveProductClass } from "../constants/product-class";
+import { promoCodesService } from "./promo-codes.service";
 
 export type ComputeCheckoutTotalsInput = {
   userId?: string;
   locale: string;
   cartId?: string;
   guestItems?: GuestCheckoutItemInput[];
+  couponCode?: string;
+  customerEmail?: string;
   shippingMethod: string;
   city?: string;
   country?: string;
@@ -31,6 +34,7 @@ class CheckoutTotalsService {
     const city = input.city?.trim();
 
     let subtotal = 0;
+    let appliedCouponCode = input.couponCode;
     let productClasses: string[] = [];
 
     if (input.userId) {
@@ -55,6 +59,7 @@ class CheckoutTotalsService {
       const rawCart = await db.cart.findFirst({
         where: { id: cart.id, userId: input.userId },
         select: {
+          couponCode: true,
           items: {
             select: {
               variant: { select: { productClass: true } },
@@ -66,6 +71,9 @@ class CheckoutTotalsService {
       productClasses = (rawCart?.items ?? []).map((item) =>
         resolveProductClass(item.variant?.productClass ?? item.product?.productClass)
       );
+      if (!appliedCouponCode) {
+        appliedCouponCode = rawCart?.couponCode ?? undefined;
+      }
     } else if (input.guestItems && input.guestItems.length > 0) {
       const guestItems = await resolveGuestCheckoutItems(input.guestItems, input.locale);
       subtotal = guestItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -79,7 +87,14 @@ class CheckoutTotalsService {
       };
     }
 
-    const discountAmount = 0;
+    const promoDiscount = await promoCodesService.resolveDiscount({
+      couponCode: appliedCouponCode,
+      subtotal,
+      userId: input.userId,
+      customerEmail: input.customerEmail,
+      productClasses,
+    });
+    const discountAmount = promoDiscount.discountAmount;
     let shippingAmount = 0;
     const shouldChargeShipping = shouldChargeCourierShipping(productClasses);
     if (shippingMethod === "courier" && city && shouldChargeShipping) {
