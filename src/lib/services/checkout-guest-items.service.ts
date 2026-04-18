@@ -1,5 +1,9 @@
 import { db } from "@white-shop/db";
 import { extractMediaUrl } from "../utils/extractMediaUrl";
+import {
+  resolveProductClass,
+  type ProductClass,
+} from "../constants/product-class";
 
 export type GuestCheckoutItemInput = {
   productId: string;
@@ -18,6 +22,7 @@ export type ResolvedGuestCheckoutItem = {
   productId: string;
   quantity: number;
   price: number;
+  productClass: ProductClass;
   productTitle: string;
   variantTitle?: string;
   sku: string;
@@ -139,6 +144,9 @@ export async function resolveGuestCheckoutItems(
       productId: variant.product.id,
       quantity: item.quantity,
       price: Number(variant.price),
+      productClass: resolveProductClass(
+        variant.productClass ?? variant.product.productClass
+      ),
       productTitle: translation?.title ?? "Unknown Product",
       variantTitle,
       sku: variant.sku ?? "",

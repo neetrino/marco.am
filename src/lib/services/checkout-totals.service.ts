@@ -3,10 +3,13 @@ import { logger } from "../utils/logger";
 import type { CheckoutTotalsResponse } from "../types/checkout-totals";
 import { adminDeliveryService } from "./admin/admin-delivery.service";
 import { cartService } from "./cart.service";
+import { db } from "@white-shop/db";
 import {
   resolveGuestCheckoutItems,
   type GuestCheckoutItemInput,
 } from "./checkout-guest-items.service";
+import { shouldChargeCourierShipping } from "./checkout-delivery-rules.service";
+import { resolveProductClass } from "../constants/product-class";
 
 export type ComputeCheckoutTotalsInput = {
   userId?: string;
@@ -28,6 +31,7 @@ class CheckoutTotalsService {
     const city = input.city?.trim();
 
     let subtotal = 0;
+    let productClasses: string[] = [];
 
     if (input.userId) {
       const { cart } = await cartService.getCart(input.userId, input.locale);
@@ -48,9 +52,24 @@ class CheckoutTotalsService {
         };
       }
       subtotal = cart.totals.subtotal;
+      const rawCart = await db.cart.findFirst({
+        where: { id: cart.id, userId: input.userId },
+        select: {
+          items: {
+            select: {
+              variant: { select: { productClass: true } },
+              product: { select: { productClass: true } },
+            },
+          },
+        },
+      });
+      productClasses = (rawCart?.items ?? []).map((item) =>
+        resolveProductClass(item.variant?.productClass ?? item.product?.productClass)
+      );
     } else if (input.guestItems && input.guestItems.length > 0) {
       const guestItems = await resolveGuestCheckoutItems(input.guestItems, input.locale);
       subtotal = guestItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      productClasses = guestItems.map((item) => item.productClass);
     } else {
       throw {
         status: 400,
@@ -62,7 +81,8 @@ class CheckoutTotalsService {
 
     const discountAmount = 0;
     let shippingAmount = 0;
-    if (shippingMethod === "courier" && city) {
+    const shouldChargeShipping = shouldChargeCourierShipping(productClasses);
+    if (shippingMethod === "courier" && city && shouldChargeShipping) {
       shippingAmount = await adminDeliveryService.getDeliveryPrice(city, country);
       if (shippingAmount < 0) {
         shippingAmount = 0;
@@ -76,6 +96,7 @@ class CheckoutTotalsService {
       shippingAmount,
       total,
       shippingMethod,
+      shouldChargeShipping,
     });
 
     return {

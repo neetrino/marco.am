@@ -15,6 +15,8 @@ import { cartService } from "./cart.service";
 import { deliverOrderConfirmation } from "./order-confirmation-delivery.service";
 import { resolveGuestCheckoutItems } from "./checkout-guest-items.service";
 import { createCardPaymentSession } from "./payment-psp.service";
+import { shouldChargeCourierShipping } from "./checkout-delivery-rules.service";
+import { resolveProductClass, type ProductClass } from "../constants/product-class";
 
 const orderNumberId = customAlphabet("0123456789ABCDEFGHJKLMNPQRSTUVWXYZ", 10);
 
@@ -90,6 +92,7 @@ class OrdersService {
         productId: string;
         quantity: number;
         price: number;
+        productClass: ProductClass;
         productTitle: string;
         variantTitle?: string;
         sku: string;
@@ -207,6 +210,9 @@ class OrdersService {
               productId: product.id,
               quantity: item.quantity,
               price: currentPrice,
+              productClass: resolveProductClass(
+                variant.productClass ?? product.productClass
+              ),
               productTitle: translation?.title || 'Unknown Product',
               variantTitle,
               sku: variant.sku || '',
@@ -250,7 +256,14 @@ class OrdersService {
       const discountAmount = 0; // TODO: Implement discount/coupon logic
       // Shipping: computed server-side only (never trust client-provided amount)
       let shippingAmount = 0;
-      if (shippingMethod === 'courier' && shippingAddress?.city?.trim()) {
+      const shouldChargeShipping = shouldChargeCourierShipping(
+        cartItems.map((item) => item.productClass)
+      );
+      if (
+        shippingMethod === 'courier' &&
+        shippingAddress?.city?.trim() &&
+        shouldChargeShipping
+      ) {
         const country = (shippingAddress.countryCode ?? 'Armenia').toString();
         shippingAmount = await adminDeliveryService.getDeliveryPrice(
           shippingAddress.city.trim(),
@@ -307,6 +320,9 @@ class OrdersService {
                   source: userId ? 'user' : 'guest',
                   paymentMethod,
                   shippingMethod,
+                  shippingPricingRuleApplied: shouldChargeShipping
+                    ? "retail_yandex"
+                    : "wholesale_or_mixed_free",
                 },
               },
             },
