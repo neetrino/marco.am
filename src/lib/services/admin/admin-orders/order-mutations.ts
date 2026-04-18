@@ -3,6 +3,7 @@ import { logger } from "../../../utils/logger";
 import type { UpdateOrderContext, UpdateOrderData } from "./types";
 import { getOrderById } from "./order-operations";
 import {
+  assertValidAdminNotesUpdate,
   assertValidOrderUpdateData,
   buildOrderUpdatePatch,
 } from "./order-update-patch";
@@ -55,7 +56,7 @@ function rethrowUpdateOrderFailure(orderId: string, error: unknown): never {
 
 async function persistOrderUpdate(
   orderId: string,
-  existing: Pick<Order, "status" | "paymentStatus" | "fulfillmentStatus">,
+  existing: Pick<Order, "status" | "paymentStatus" | "fulfillmentStatus" | "adminNotes">,
   payment: { id: string; method: string | null; provider: string | null } | null,
   data: UpdateOrderData,
   context?: UpdateOrderContext
@@ -72,12 +73,14 @@ async function persistOrderUpdate(
   };
 
   assertValidOrderUpdateData(resolvedData);
+  assertValidAdminNotesUpdate(resolvedData);
 
   const patch = buildOrderUpdatePatch(
     {
       status: existing.status,
       paymentStatus: existing.paymentStatus,
       fulfillmentStatus: existing.fulfillmentStatus,
+      adminNotes: existing.adminNotes,
     },
     resolvedData
   );

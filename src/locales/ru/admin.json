@@ -660,6 +660,11 @@
       "notesSection": "Примечания",
       "customerNotes": "Примечания клиента",
       "internalNotes": "Внутренние примечания",
+      "internalNotesPlaceholder": "Добавьте внутреннюю заметку для администраторов...",
+      "saveInternalNotes": "Сохранить внутренние примечания",
+      "savingInternalNotes": "Сохранение примечаний...",
+      "internalNotesSaved": "Внутренние примечания сохранены",
+      "internalNotesSaveFailed": "Не удалось сохранить внутренние примечания. Попробуйте ещё раз.",
       "thumbnail": "Фото",
       "customer": "Клиент",
       "shippingAddress": "Адрес доставки",
@@ -688,6 +693,7 @@
         "changeStatus": "Статус: {from} → {to}",
         "changePayment": "Статус оплаты: {from} → {to}",
         "changeFulfillment": "Выполнение: {from} → {to}",
+        "changeInternalNotes": "Внутренние примечания: {from} → {to}",
         "updatedUnknown": "Заказ обновлён (детали недоступны)",
         "genericEvent": "Событие: {type}"
       }

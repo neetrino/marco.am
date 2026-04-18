@@ -660,6 +660,11 @@
       "notesSection": "Նշումներ",
       "customerNotes": "Հաճախորդի նշումներ",
       "internalNotes": "Ներքին նշումներ",
+      "internalNotesPlaceholder": "Ավելացրեք փակ ներքին նշում ադմինների համար...",
+      "saveInternalNotes": "Պահել ներքին նշումները",
+      "savingInternalNotes": "Նշումները պահպանվում են...",
+      "internalNotesSaved": "Ներքին նշումները պահպանվեցին",
+      "internalNotesSaveFailed": "Չհաջողվեց պահպանել ներքին նշումները։ Խնդրում ենք կրկին փորձել։",
       "thumbnail": "Նկ.",
       "customer": "Հաճախորդ",
       "shippingAddress": "Առաքման հասցե",
@@ -688,6 +693,7 @@
         "changeStatus": "Կարգավիճակ՝ {from} → {to}",
         "changePayment": "Վճարման կարգավիճակ՝ {from} → {to}",
         "changeFulfillment": "Կատարում՝ {from} → {to}",
+        "changeInternalNotes": "Ներքին նշումներ՝ {from} → {to}",
         "updatedUnknown": "Պատվերը թարմացվել է (մանրամասները հասանելի չեն)",
         "genericEvent": "Իրադարձություն՝ {type}"
       }

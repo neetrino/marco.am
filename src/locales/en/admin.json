@@ -660,6 +660,11 @@
       "notesSection": "Notes",
       "customerNotes": "Customer notes",
       "internalNotes": "Internal notes",
+      "internalNotesPlaceholder": "Add private note for admin operators...",
+      "saveInternalNotes": "Save internal notes",
+      "savingInternalNotes": "Saving notes...",
+      "internalNotesSaved": "Internal notes saved",
+      "internalNotesSaveFailed": "Failed to save internal notes. Please try again.",
       "thumbnail": "Img",
       "customer": "Customer",
       "shippingAddress": "Shipping Address",
@@ -688,6 +693,7 @@
         "changeStatus": "Status: {from} → {to}",
         "changePayment": "Payment status: {from} → {to}",
         "changeFulfillment": "Fulfillment: {from} → {to}",
+        "changeInternalNotes": "Internal notes: {from} → {to}",
         "updatedUnknown": "Order updated (details unavailable)",
         "genericEvent": "Event: {type}"
       }

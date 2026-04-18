@@ -15,6 +15,8 @@ describe("getAuditDetailLines", () => {
         "Payment: {from} → {to}",
       "admin.orders.orderDetails.auditTrail.changeFulfillment":
         "Fulfillment: {from} → {to}",
+      "admin.orders.orderDetails.auditTrail.changeInternalNotes":
+        "Internal notes: {from} → {to}",
       "admin.orders.orderDetails.auditTrail.updatedUnknown": "Updated",
       "admin.orders.orderDetails.auditTrail.genericEvent": "Event {type}",
     };
@@ -48,6 +50,23 @@ describe("getAuditDetailLines", () => {
     };
     expect(getAuditDetailLines(entry, t)).toEqual([
       "Status: pending → processing",
+    ]);
+  });
+
+  it("describes internal notes updates", () => {
+    const entry: OrderAuditEntry = {
+      id: "3",
+      type: "order_updated",
+      createdAt: "",
+      data: {
+        changes: {
+          adminNotes: { from: null, to: "Call customer before dispatch" },
+        },
+      },
+      actor: null,
+    };
+    expect(getAuditDetailLines(entry, t)).toEqual([
+      "Internal notes: — → Call customer before dispatch",
     ]);
   });
 });

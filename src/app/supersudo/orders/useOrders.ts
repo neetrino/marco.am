@@ -134,6 +134,7 @@ export function useOrders() {
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
   const [loadingOrderDetails, setLoadingOrderDetails] = useState(false);
+  const [savingAdminNotes, setSavingAdminNotes] = useState(false);
 
   // Initialize filters from URL params on mount and when URL changes
   useEffect(() => {
@@ -262,6 +263,39 @@ export function useOrders() {
   const handleCloseModal = () => {
     setSelectedOrderId(null);
     setOrderDetails(null);
+  };
+
+  const handleAdminNotesSave = async (adminNotes: string) => {
+    if (!selectedOrderId) {
+      return;
+    }
+
+    try {
+      setSavingAdminNotes(true);
+      setUpdateMessage(null);
+      const updated = await apiClient.put<OrderDetails>(
+        `/api/v1/supersudo/orders/${selectedOrderId}`,
+        {
+          adminNotes,
+        }
+      );
+      setOrderDetails(updated);
+      setUpdateMessage({
+        type: 'success',
+        text: t('admin.orders.orderDetails.internalNotesSaved'),
+      });
+      setTimeout(() => setUpdateMessage(null), 3000);
+    } catch (err: unknown) {
+      logger.error('Admin order internal notes update failed', { error: err });
+      setUpdateMessage({
+        type: 'error',
+        text: t('admin.orders.orderDetails.internalNotesSaveFailed'),
+      });
+      setTimeout(() => setUpdateMessage(null), 5000);
+      throw err;
+    } finally {
+      setSavingAdminNotes(false);
+    }
   };
 
 
@@ -464,6 +498,7 @@ export function useOrders() {
     selectedOrderId,
     orderDetails,
     loadingOrderDetails,
+    savingAdminNotes,
     // Actions
     setStatusFilter,
     setPaymentStatusFilter,
@@ -479,6 +514,7 @@ export function useOrders() {
     handleBulkDelete,
     handleStatusChange,
     handlePaymentStatusChange,
+    handleAdminNotesSave,
     router,
     searchParams,
   };

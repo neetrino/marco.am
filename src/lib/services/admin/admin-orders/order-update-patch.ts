@@ -72,6 +72,7 @@ type OrderScalars = {
   status: string;
   paymentStatus: string;
   fulfillmentStatus: string;
+  adminNotes: string | null;
 };
 
 export type OrderUpdatePatch = {
@@ -79,6 +80,7 @@ export type OrderUpdatePatch = {
     status?: string;
     paymentStatus?: string;
     fulfillmentStatus?: string;
+    adminNotes?: string | null;
     fulfilledAt?: Date;
     cancelledAt?: Date;
     paidAt?: Date;
@@ -87,8 +89,24 @@ export type OrderUpdatePatch = {
     status?: { from: string; to: string };
     paymentStatus?: { from: string; to: string };
     fulfillmentStatus?: { from: string; to: string };
+    adminNotes?: { from: string | null; to: string | null };
   };
 };
+
+const MAX_ADMIN_NOTES_LENGTH = 4000;
+
+function normalizeAdminNotes(
+  value: string | null | undefined
+): string | null | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+  if (value === null) {
+    return null;
+  }
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
 
 /**
  * Builds Prisma update payload and change log only for fields that actually differ.
@@ -136,9 +154,46 @@ export function buildOrderUpdatePatch(
     };
   }
 
+  if (data.adminNotes !== undefined) {
+    const nextAdminNotes = normalizeAdminNotes(data.adminNotes);
+    const currentAdminNotes = normalizeAdminNotes(existing.adminNotes);
+    if (nextAdminNotes !== currentAdminNotes) {
+      updateData.adminNotes = nextAdminNotes ?? null;
+      changes.adminNotes = {
+        from: currentAdminNotes ?? null,
+        to: nextAdminNotes ?? null,
+      };
+    }
+  }
+
   if (Object.keys(updateData).length === 0) {
     return null;
   }
 
   return { updateData, changes };
+}
+
+/**
+ * Throws RFC7807-shaped errors when admin notes exceed safe limits.
+ */
+export function assertValidAdminNotesUpdate(data: UpdateOrderData): void {
+  if (data.adminNotes === undefined || data.adminNotes === null) {
+    return;
+  }
+  if (typeof data.adminNotes !== "string") {
+    throw {
+      status: 400,
+      type: "https://api.shop.am/problems/validation-error",
+      title: "Validation Error",
+      detail: "Invalid adminNotes. Must be a string or null.",
+    };
+  }
+  if (data.adminNotes.length > MAX_ADMIN_NOTES_LENGTH) {
+    throw {
+      status: 400,
+      type: "https://api.shop.am/problems/validation-error",
+      title: "Validation Error",
+      detail: `adminNotes is too long. Max length is ${MAX_ADMIN_NOTES_LENGTH} characters.`,
+    };
+  }
 }

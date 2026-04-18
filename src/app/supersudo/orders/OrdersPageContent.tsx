@@ -27,6 +27,7 @@ export function OrdersPageContent() {
     selectedOrderId,
     orderDetails,
     loadingOrderDetails,
+    savingAdminNotes,
     setStatusFilter,
     setPaymentStatusFilter,
     setSearchQuery,
@@ -40,6 +41,7 @@ export function OrdersPageContent() {
     handleBulkDelete,
     handleStatusChange,
     handlePaymentStatusChange,
+    handleAdminNotesSave,
     router,
     searchParams,
   } = useOrders();
@@ -103,6 +105,8 @@ export function OrdersPageContent() {
           <OrderDetailsModal
             orderDetails={orderDetails}
             loading={loadingOrderDetails}
+            savingAdminNotes={savingAdminNotes}
+            onSaveAdminNotes={handleAdminNotesSave}
             onClose={handleCloseModal}
             formatCurrency={formatCurrency}
           />

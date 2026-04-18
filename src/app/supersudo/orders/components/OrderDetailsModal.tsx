@@ -15,6 +15,8 @@ import type { OrderDetails } from '../useOrders';
 interface OrderDetailsModalProps {
   orderDetails: OrderDetails | null;
   loading: boolean;
+  savingAdminNotes: boolean;
+  onSaveAdminNotes: (adminNotes: string) => Promise<void>;
   onClose: () => void;
   formatCurrency: (amount: number, orderCurrency?: string, fromCurrency?: CurrencyCode) => string;
 }
@@ -22,6 +24,8 @@ interface OrderDetailsModalProps {
 export function OrderDetailsModal({
   orderDetails,
   loading,
+  savingAdminNotes,
+  onSaveAdminNotes,
   onClose,
   formatCurrency,
 }: OrderDetailsModalProps) {
@@ -70,7 +74,11 @@ export function OrderDetailsModal({
               </div>
               <OrderDetailsDelivery orderDetails={orderDetails} />
               <OrderDetailsTotals orderDetails={orderDetails} formatCurrency={formatCurrency} />
-              <OrderDetailsNotes orderDetails={orderDetails} />
+              <OrderDetailsNotes
+                orderDetails={orderDetails}
+                saving={savingAdminNotes}
+                onSaveAdminNotes={onSaveAdminNotes}
+              />
               <OrderDetailsAuditTrail orderDetails={orderDetails} />
             </div>
           ) : (

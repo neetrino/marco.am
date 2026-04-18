@@ -3,7 +3,7 @@
 > Աղբյուր. `[shop-marco-code-plan.md](./shop-marco-code-plan.md)` (functional spec) — **backend** շերտին և API/CMS պահանջվող կետերը։  
 > Ճարտարապետության ամփոփում. `[BACKEND_ARCHITECTURE.md](./BACKEND_ARCHITECTURE.md)`
 
-**Վերջին թարմացում.** 2026-04-18 (փուլ 8 — categories tree/seo)
+**Վերջին թարմացում.** 2026-04-18 (փուլ 9 — admin internal order notes)
 
 **Արվածության գնահատում.** Կոդբազայի աուդիտ (`shared/db/prisma/schema.prisma`, `src/app/api/`**, `src/lib/services/`**) — տոկոսները արտահայտում են **ընթացիկ repo-ում իմպլեմենտացիայի** համապատասխանությունը spec-ի backend պահանջին (ոչ թե դիզայն/QA փուլը)։
 
@@ -32,7 +32,7 @@
 | 6    | Վճարման եղանակներ                | `100%`          |
 | 7    | Օգտատիրոջ հաշիվ (Account)        | `100%`          |
 | 8    | Admin — catalog & promos         | `100%`          |
-| 9    | Admin — orders                   | `98%`           |
+| 9    | Admin — orders                   | `100%`          |
 | 10   | Admin — analytics                | `95%`           |
 | 11   | Reels                            | `0%`            |
 | 12   | Site-wide & i18n (API)           | `62%`           |
@@ -273,7 +273,7 @@
 
 ## Փուլ 9 — Admin: orders
 
-**Փուլի առաջընթաց.** `98%`
+**Փուլի առաջընթաց.** `100%`
 
 
 | ID  | Առաջադրանք (backend)                                        | Կատարման % | Կարգավիճակ |
@@ -281,7 +281,7 @@
 | 9.1 | Orders list — filters: New, In process, Delivered, Canceled | 100        | ✅          |
 | 9.2 | Order details — line items, customer, payment, delivery     | 100        | ✅          |
 | 9.3 | Order status updates — audit trail կամ timestamp            | 100        | ✅          |
-| 9.4 | Admin comment field — internal notes                        | 90         | 🔄         |
+| 9.4 | Admin comment field — internal notes                        | 100        | ✅          |
 
 
 *Նշումներ.* `OrderEvent` և `adminNotes` դաշտեր կան։
@@ -291,6 +291,8 @@
 **9.2 ✅ ավարտված (2026-04-17).** Admin պատվերի մանրամասների մոդալ՝ `GET /api/v1/admin/orders/[id]` (նույն պատասխանը, ինչ արդեն էր) + UI բաժիններ՝ **ամփոփում** (կարգավիճակներ, tracking, ամսաթվեր), **տողեր** (SKU, քանակ, գին, variant options, նկարի thumbnail), **հաճախորդ** (հաշվի + հյուր checkout՝ անուն/email/հեռախոս billing/shipping JSON-ից), **վճարում** (provider, method, գումար, կարգավիճակ, քարտ), **առաքում** (pickup/courier, հասցե, երկիր), **գումարներ**, **նշումներ**, **audit trail**։ Բեռնման ժամանակ մոդալը ցուցադրվում է spinner-ով (`setOrderDetails(null)` նոր բացման ժամանակ)։ API-ում `formatOrderForDetail` — `trackingNumber`, `fulfilledAt`, line `price`/`imageUrl`։ Կոդ՝ `OrderDetailsModal.tsx`, `OrderDetailsMeta`, `OrderDetailsItems`, `OrderDetailsCustomer`, `OrderDetailsPayment`, `OrderDetailsDelivery`, `OrderDetailsTotals`, `OrderDetailsNotes`, `order-details-display.ts`, `order-formatter.ts`։
 
 **9.3 ✅ ավարտված (2026-04-17).** Admin `PUT /api/v1/admin/orders/[id]`-ի ժամանակ կարգավիճակների փոփոխությունները գրանցվում են `order_events`-ում՝ `**changes`** (from/to `status`, `paymentStatus`, `fulfillmentStatus`), `updatedFields`, `**userId`** (ընթացիկ ադմին JWT), ISO `**createdAt**`։ Նույն արժեքի վրա no-op թարմացում event չի ստեղծվում։ `GET /api/v1/admin/orders/[id]` պատասխանում `**auditTrail**`՝ `{ id, type, createdAt, data, actor }` (actor՝ `users`-ից email/անուն)։ Checkout-ի `order_created` event-ը ներառվում է timeline-ում։ Admin UI՝ `OrderDetailsAuditTrail`։ Vitest՝ `audit-trail-lines.test.ts`։
+
+**9.4 ✅ ավարտված (2026-04-18).** `PUT /api/v1/supersudo/orders/[id]` update payload-ը հիմա աջակցում է `adminNotes` (`string | null`)՝ validation-ով (max 4000 chars, դատարկ string → `null`) և no-op diff logic-ով (`buildOrderUpdatePatch`)։ Փոփոխությունը պահվում է `orders.adminNotes`-ում և նույն transaction-ում գրանցվում է `order_events` audit trail-ում `changes.adminNotes` (`from`/`to`) + `updatedFields`։ Admin UI (`OrderDetailsNotes`) ներսում ներքին նշումները դարձան editable textarea + save action, իսկ timeline-ում ավելացվեց human-readable event տող՝ `Internal notes: {from} → {to}`։
 
 ---
 

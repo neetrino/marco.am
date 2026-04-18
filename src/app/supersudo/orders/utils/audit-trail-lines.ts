@@ -43,6 +43,7 @@ export function getAuditDetailLines(
         status?: { from: string; to: string };
         paymentStatus?: { from: string; to: string };
         fulfillmentStatus?: { from: string; to: string };
+        adminNotes?: { from: string | null; to: string | null };
       };
       previousStatus?: string;
       newStatus?: string;
@@ -73,6 +74,14 @@ export function getAuditDetailLines(
             to: d.changes.fulfillmentStatus.to,
           }
         )
+      );
+    }
+    if (d.changes?.adminNotes) {
+      lines.push(
+        interpolate(t("admin.orders.orderDetails.auditTrail.changeInternalNotes"), {
+          from: d.changes.adminNotes.from ?? "—",
+          to: d.changes.adminNotes.to ?? "—",
+        })
       );
     }
     if (
