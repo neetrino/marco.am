@@ -7,7 +7,7 @@ alwaysApply: false
 # React and Next.js
 
 - **Server Components by default** — add `'use client'` only when you need hooks, browser APIs, or event handlers.
-- **Named exports** for components; no default exports for route components if project forbids (see `00-core.mdc`).
+- **Named exports** for all components and modules. **Exception (framework-required):** App Router special files must use `export default` per Next.js convention — `page`, `layout`, `template`, `default`, `loading`, `error`, `global-error`, `not-found`, `manifest`, `sitemap`, `robots`, `opengraph-image`, `twitter-image`, `icon`, `apple-icon`. Route handlers (`route.ts`) export named HTTP verbs (`GET`, `POST`, …), not default. The ESLint config carves out exactly this list; everything else stays named.
 - **Colocate** feature code; avoid prop-drilling hell — use composition or context sparingly.
 - **Server state** — fetch on server or React Query on client per `16-state-management.mdc`.
 - **`next/image`** for images; **`next/link`** for navigation.

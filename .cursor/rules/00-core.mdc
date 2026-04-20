@@ -44,7 +44,7 @@ Understand the ask → inspect existing code → propose for large/risky changes
 ## Always
 
 - TypeScript **strict**; explicit types at boundaries.
-- **Named exports** (no default exports).
+- **Named exports** (no default exports). **Exception:** Next.js App Router framework-required files (`page`, `layout`, `template`, `default`, `loading`, `error`, `global-error`, `not-found`, `route`, `manifest`, `sitemap`, `robots`, `opengraph-image`, `twitter-image`, `icon`, `apple-icon`) must use `export default` per Next.js convention — this is enforced as an ESLint override, not a violation.
 - **Validate** external input at boundaries.
 - **Handle errors** with logging; no silent swallow in production paths.
 - **JSDoc** on exported public APIs where non-obvious.

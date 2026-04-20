@@ -12,7 +12,7 @@
     "build": "pnpm run prebuild && next build",
     "build:with-migrate": "pnpm run prebuild:migrate && next build",
     "start": "next start",
-    "lint": "eslint . --max-warnings 2000",
+    "lint": "eslint . --max-warnings 252",
     "lint:next": "next lint",
     "test": "vitest run",
     "test:watch": "vitest",
