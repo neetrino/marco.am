@@ -47,7 +47,7 @@ export function HeroCarousel() {
             />
             <div
               className="h-full min-w-0 rounded-[30px] bg-cover bg-center bg-no-repeat"
-              style={{ backgroundImage: `url(${HERO_DESKTOP_LEFT_BOTTOM_BG})` }}
+              style={{ backgroundImage: `url(${HERO_DESKTOP_LEFT_BOTTOM_BG})`, backgroundPosition: 'center 58%' }}
               aria-label="Xming projector"
             />
           </div>
