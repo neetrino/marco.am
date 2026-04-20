@@ -32,18 +32,18 @@ export const HOME_BRAND_LOGO_CLASS_DEFAULT =
 export const HOME_BRAND_LOGO_CLASS_LARGE =
   'h-auto max-h-11 w-auto max-w-full object-contain sm:max-h-12 md:max-h-14';
 
-/** Raster exports from Figma (PNG); paths under `public/assets/brands/`. */
+/** Brand logo assets under `public/assets/brands/`. */
 export const HOME_BRAND_SLIDE_ENTRIES: readonly HomeBrandSlideEntry[] = [
   {
     id: 'hisense',
-    src: '/assets/brands/hisense.png',
+    src: '/assets/brands/hisense.svg',
     width: 487,
     height: 78,
     alt: 'Hisense',
   },
   {
     id: 'samsung',
-    src: '/assets/brands/samsung.png',
+    src: '/assets/brands/samsung.svg',
     width: 422,
     height: 140,
     alt: 'Samsung',
@@ -51,7 +51,7 @@ export const HOME_BRAND_SLIDE_ENTRIES: readonly HomeBrandSlideEntry[] = [
   },
   {
     id: 'lg',
-    src: '/assets/brands/lg.png',
+    src: '/assets/brands/lg-figma.png',
     width: 351,
     height: 161,
     alt: 'LG',
@@ -59,9 +59,39 @@ export const HOME_BRAND_SLIDE_ENTRIES: readonly HomeBrandSlideEntry[] = [
   },
   {
     id: 'panasonic',
-    src: '/assets/brands/panasonic.png',
+    src: '/assets/brands/panasonic-figma.png',
     width: 495,
     height: 79,
     alt: 'Panasonic',
+  },
+  {
+    id: 'toshiba',
+    src: '/assets/brands/toshiba.svg',
+    width: 800,
+    height: 122,
+    alt: 'TOSHIBA',
+  },
+  {
+    id: 'midea',
+    src: '/assets/brands/midea.svg',
+    width: 114,
+    height: 44,
+    alt: 'MIDEA',
+    logoScale: 'large',
+  },
+  {
+    id: 'braun',
+    src: '/assets/brands/braun.svg',
+    width: 399,
+    height: 169,
+    alt: 'BRAUN',
+    logoScale: 'large',
+  },
+  {
+    id: 'bosch',
+    src: '/assets/brands/bosch.svg',
+    width: 500,
+    height: 114,
+    alt: 'BOSCH',
   },
 ];

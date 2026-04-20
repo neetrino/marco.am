@@ -5,7 +5,6 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Montserrat } from 'next/font/google';
 
 import { apiClient } from '../lib/api-client';
-import type { HomeBrandPartnersPublicPayload } from '@/lib/types/home-brand-partners-public';
 import { getStoredLanguage, type LanguageCode } from '../lib/language';
 import { t } from '../lib/i18n';
 import { logger } from '../lib/utils/logger';
@@ -55,13 +54,6 @@ interface ProductsResponse {
     limit: number;
     totalPages: number;
   };
-}
-
-function hasAtLeastOneBrandLogo(payload: HomeBrandPartnersPublicPayload): boolean {
-  return payload.brands.some((brand) => {
-    const logoUrl = brand.logoUrl;
-    return typeof logoUrl === 'string' && logoUrl.trim().length > 0;
-  });
 }
 
 type FilterType = 'new' | 'featured' | 'bestseller';
@@ -118,7 +110,6 @@ export function FeaturedProductsTabs() {
   const [products, setProducts] = useState<SpecialOfferProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [brandPartners, setBrandPartners] = useState<HomeBrandPartnersPublicPayload | null>(null);
 
   useEffect(() => {
     const updateLanguage = () => {
@@ -192,31 +183,6 @@ export function FeaturedProductsTabs() {
     fetchProducts('new');
   }, [fetchProducts]);
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await apiClient.get<HomeBrandPartnersPublicPayload>(
-          '/api/v1/home/brand-partners',
-          { params: { locale: language } },
-        );
-        if (!cancelled) {
-          // If the API returns brands without logos, fall back to static
-          // home placeholders (historical design assets in HomeBrandsSlide).
-          setBrandPartners(hasAtLeastOneBrandLogo(res) ? res : null);
-        }
-      } catch (err) {
-        logger.warn('[FeaturedProductsTabs] home brand partners fetch failed', { error: err });
-        if (!cancelled) {
-          setBrandPartners(null);
-        }
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [language]);
-
   const sectionHeading = t(language, FEATURED_SECTION_TITLE_KEY);
   const cardLayout = isMaxMd ? 'mobileGrid' : 'default';
 
@@ -279,8 +245,8 @@ export function FeaturedProductsTabs() {
           cardLayout={cardLayout}
           isMaxMd={isMaxMd}
           onRetryFetch={() => fetchProducts(FILTER_BY_TAB[activeTab])}
-          homeBrandPartners={brandPartners?.brands ?? null}
-          homeBrandPartnersSectionTitle={brandPartners?.sectionTitle ?? null}
+          homeBrandPartners={null}
+          homeBrandPartnersSectionTitle={null}
         />
       </div>
 

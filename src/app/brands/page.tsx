@@ -12,6 +12,8 @@ type BrandLogoCard = {
   logoSrc?: string;
   logoWidth?: number;
   logoHeight?: number;
+  logoClassName?: string;
+  cardClassName?: string;
   wordmarkClassName?: string;
 };
 
@@ -195,6 +197,8 @@ const BRAND_LOGO_CARDS: readonly BrandLogoCard[] = [
     logoSrc: '/assets/brands/geepas.png',
     logoWidth: 2000,
     logoHeight: 738,
+    logoClassName: 'max-h-24 md:max-h-28',
+    cardClassName: 'px-2 py-2',
   },
   {
     id: 'lectrolux',
@@ -250,7 +254,7 @@ function BrandLogo({ brand }: { brand: BrandLogoCard }) {
         alt={brand.label}
         width={brand.logoWidth}
         height={brand.logoHeight}
-        className="h-auto max-h-14 w-auto max-w-full object-contain md:max-h-16"
+        className={`h-auto max-h-14 w-auto max-w-full object-contain md:max-h-16 ${brand.logoClassName ?? ''}`}
       />
     );
   }
@@ -284,7 +288,7 @@ export default async function BrandsPage() {
             <Link
               key={brand.id}
               href={brandHref(brand.hrefToken)}
-              className="group flex min-h-[136px] items-center justify-center rounded-2xl border border-marco-border bg-white px-6 py-5 transition-colors hover:border-marco-black/30 hover:bg-gray-50"
+              className={`group flex min-h-[136px] items-center justify-center rounded-2xl border border-marco-border bg-white px-6 py-5 transition-colors hover:border-marco-black/30 hover:bg-gray-50 ${brand.cardClassName ?? ''}`}
               aria-label={brand.label}
             >
               <BrandLogo brand={brand} />

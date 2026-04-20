@@ -137,28 +137,27 @@ export function FeaturedProductsStrip({
     if (!el) {
       return;
     }
-    el.scrollBy({ left: direction * HOME_BRANDS_RAIL_SCROLL_PX, behavior: 'smooth' });
+    const pageStep = Math.max(el.clientWidth, HOME_BRANDS_RAIL_SCROLL_PX);
+    el.scrollBy({ left: direction * pageStep, behavior: 'smooth' });
   }, []);
 
+  let featuredContent: JSX.Element;
   if (loading) {
-    if (isMaxMd) {
-      return (
-        <div
-          className="grid w-full grid-cols-2"
-          style={{
-            columnGap: SPECIAL_OFFERS_MOBILE_GRID_COLUMN_GAP_PX,
-            rowGap: SPECIAL_OFFERS_MOBILE_GRID_ROW_GAP_PX,
-          }}
-        >
-          {Array.from({ length: SPECIAL_OFFERS_MOBILE_GRID_PAGE_SIZE }).map((_, i) => (
-            <div key={`sk-m-${i}`} className="min-w-0">
-              <div className="w-full animate-pulse bg-gray-200" style={featuredCardSkeletonStyle} />
-            </div>
-          ))}
-        </div>
-      );
-    }
-    return (
+    featuredContent = isMaxMd ? (
+      <div
+        className="grid w-full grid-cols-2"
+        style={{
+          columnGap: SPECIAL_OFFERS_MOBILE_GRID_COLUMN_GAP_PX,
+          rowGap: SPECIAL_OFFERS_MOBILE_GRID_ROW_GAP_PX,
+        }}
+      >
+        {Array.from({ length: SPECIAL_OFFERS_MOBILE_GRID_PAGE_SIZE }).map((_, i) => (
+          <div key={`sk-m-${i}`} className="min-w-0">
+            <div className="w-full animate-pulse bg-gray-200" style={featuredCardSkeletonStyle} />
+          </div>
+        ))}
+      </div>
+    ) : (
       <div className={FEATURED_OFFERS_GRID_CLASS} style={featuredOffersGridStyle(isMaxMd)}>
         {Array.from({ length: FEATURED_PRODUCTS_VISIBLE_COUNT }).map((__, i) => (
           <div key={`sk-${i}`} className="min-w-0">
@@ -167,10 +166,8 @@ export function FeaturedProductsStrip({
         ))}
       </div>
     );
-  }
-
-  if (error) {
-    return (
+  } else if (error) {
+    featuredContent = (
       <div className="text-center py-12">
         <p className="text-red-600 mb-4">{error}</p>
         <button
@@ -182,65 +179,65 @@ export function FeaturedProductsStrip({
         </button>
       </div>
     );
-  }
-
-  if (products.length === 0) {
-    return (
+  } else if (products.length === 0) {
+    featuredContent = (
       <div className="text-center py-12">
         <p className="text-gray-500">{t(language, 'home.featured_products.noProducts')}</p>
       </div>
+    );
+  } else {
+    featuredContent = isMaxMd ? (
+      <FeaturedNewArrivalsMobileRail
+        productChunks={mobileProductChunks}
+        scrollerRef={featuredScrollerRef}
+        activePage={featuredActivePage}
+        onGoToPage={scrollFeaturedToPage}
+        cardLayout="mobileGrid"
+        language={language}
+        ctaHref={ctaHref}
+      />
+    ) : (
+      <>
+        <div className={FEATURED_OFFERS_GRID_CLASS} style={featuredOffersGridStyle(isMaxMd)}>
+          {products.map((product) => (
+            <div key={product.id} className="min-w-0">
+              <SpecialOfferCard product={product} layout={cardLayout} />
+            </div>
+          ))}
+        </div>
+
+        <div
+          className="flex flex-row items-center justify-center"
+          style={{
+            marginTop: `${desktopFeaturedRailToDotsGapPx}px`,
+            gap: `${paginationDotGapPx}px`,
+          }}
+          aria-hidden
+        >
+          {Array.from({ length: FEATURED_PRODUCTS_FOOTER_DOT_COUNT_DESKTOP }, (_, i) => (
+            <span
+              key={`featured-footer-dot-${i}`}
+              className={i === 0 ? 'rounded-full bg-marco-black' : 'rounded-full bg-gray-300'}
+              style={featuredFooterDotStyle}
+            />
+          ))}
+        </div>
+
+        <div
+          className="flex justify-center"
+          style={{ marginTop: desktopFeaturedDotsToCtaGapPx }}
+        >
+          <Link href={ctaHref} className={SPECIAL_OFFERS_CTA_LINK_CLASS}>
+            {t(language, 'home.special_offers.cta')}
+          </Link>
+        </div>
+      </>
     );
   }
 
   return (
     <>
-      {isMaxMd ? (
-        <FeaturedNewArrivalsMobileRail
-          productChunks={mobileProductChunks}
-          scrollerRef={featuredScrollerRef}
-          activePage={featuredActivePage}
-          onGoToPage={scrollFeaturedToPage}
-          cardLayout="mobileGrid"
-          language={language}
-          ctaHref={ctaHref}
-        />
-      ) : (
-        <>
-          <div className={FEATURED_OFFERS_GRID_CLASS} style={featuredOffersGridStyle(isMaxMd)}>
-            {products.map((product) => (
-              <div key={product.id} className="min-w-0">
-                <SpecialOfferCard product={product} layout={cardLayout} />
-              </div>
-            ))}
-          </div>
-
-          <div
-            className="flex flex-row items-center justify-center"
-            style={{
-              marginTop: `${desktopFeaturedRailToDotsGapPx}px`,
-              gap: `${paginationDotGapPx}px`,
-            }}
-            aria-hidden
-          >
-            {Array.from({ length: FEATURED_PRODUCTS_FOOTER_DOT_COUNT_DESKTOP }, (_, i) => (
-              <span
-                key={`featured-footer-dot-${i}`}
-                className={i === 0 ? 'rounded-full bg-marco-black' : 'rounded-full bg-gray-300'}
-                style={featuredFooterDotStyle}
-              />
-            ))}
-          </div>
-
-          <div
-            className="flex justify-center"
-            style={{ marginTop: desktopFeaturedDotsToCtaGapPx }}
-          >
-            <Link href={ctaHref} className={SPECIAL_OFFERS_CTA_LINK_CLASS}>
-              {t(language, 'home.special_offers.cta')}
-            </Link>
-          </div>
-        </>
-      )}
+      {featuredContent}
 
       <div
         className="w-full"
@@ -262,7 +259,7 @@ export function FeaturedProductsStrip({
         <div
           ref={brandsRailRef}
           id="home-brands-rail"
-          className="w-full"
+          className="w-full overflow-x-auto scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           style={{ marginTop: `${HOME_BRANDS_TITLE_TO_RAIL_GAP_PX}px` }}
           aria-label={t(language, 'home.brands.rail_aria')}
         >
