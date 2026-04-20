@@ -1,54 +1,73 @@
-# Նախագծի տեխզադրանք
+# Նախագծի տեխզադրանք — Shop Marco
 
-> Լրացրու՛ այս ֆայլը զարգացումը սկսելուց առաջ։
-> Լրացնելուց հետո — ուղարկի՛ր AI-ասիստենտին անալիզի և մեկնարկի համար `21-project-onboarding.mdc`-ի համաձայն։
+> Փաստերն ըստ repo-ի ընթացիկ կոդի և `docs/API_CONTRACT.md` / `docs/BACKEND_ARCHITECTURE.md`։ Ինչ որ բան բիզնեսով հաստատված չէ — նշված է **TBD**։
 
 ---
 
 ## Նկարագրություն
 
-[Ինչ նախագիծ է, 2–3 նախադասություն։ Ինչ խնդիր է լուծում։]
+**Shop Marco** — բազմալեզու e-commerce հարթակ (Next.js 16 App Router)՝ ապրանքների կատալոգով, զամբյուղով և պատվերի հոսքով, օգտատիրոջ հաշվարկով (login/register), ակնարկներով (reviews), ինչպես նաև **`/supersudo` վարչական միջավայրով** (ապրանքներ, պատվերներ, կատեգորիաներ, բրենդներ, հաղորդագրություններ, վերլուծություն և այլն)։ HTTP API-ն REST JSON է՝ **`/api/v1/...`** տակ (մանրամասները՝ `docs/API_CONTRACT.md`)։
+
+**Արտադրանքի հանրային անվանումը և դոմենը** (ընդդեմ `whiteshop.am` package անվան repo-ում) — **TBD** (հաստատել սեփականատիրոջ կողմից)։
 
 ## Թիրախային լսարան
 
-[Ում համար է արտադրանքը։ Հիմնական օգտատիրոջ սցենարներ։]
+- **Վերջնական օգտվողներ** — ապրանքներ գնող օգտատերեր (կատալոգ, զամբյուղ, checkout, պատվերների պատմություն, wishlist, աջակցություն)։
+- **Բովանդակության / օպերացիայի խումբ** — ադմինիստրատորներ `supersudo` միջավայրում։
+
+Լocale-ների ճշգրիտ ցանկը և i18n քաղաքականությունը — **TBD** (կոդում կա լեզվի տրամաբանություն; մանրամասները հաստատել թիմով)։
 
 ## Հիմնական ֆունկցիաներ (առաջնայնացված)
 
-1. [Ֆունկցիա] — առաջնայնություն. բարձր
-2. [Ֆունկցիա] — առաջնայնություն. միջին
-3. [Ֆունկցիա] — առաջնայնություն. ցածր
+1. **Կատալոգ և ֆիլտրեր** (կատեգորիաներ, բրենդներ, ատրիբուտներ) — առաջնայնություն՝ բարձր  
+2. **Զամբյուղ, checkout, պատվերներ** — բարձր  
+3. **Օգտվողի հաշիվ, պրոֆիլ, wishlist** — միջին  
+4. **Ակնարկներ (reviews), reels, աջակցության/քաղաքականության էջեր** — միջին  
+5. **Admin (`/supersudo`)** — բարձր (օպերացիոն կառավարում)
 
-## Stack (եթե որոշված է)
+## Stack (ըստ repo-ի)
 
-- **Տարբերակ A** — fullstack Next.js Vercel-ում
-- **Տարբերակ B** — Next.js frontend + NestJS backend (Render / Fly.io)
-- Եթե որոշված չէ — AI-ն կառաջարկի ֆունկցիաների հիման վրա
+- **Monorepo** — `pnpm` workspace (`pnpm-workspace.yaml`, root `package.json`)  
+- **App** — Next.js **16.x** (App Router), React 18, TypeScript strict  
+- **Ոճեր** — Tailwind CSS 3.x (root devDependencies)  
+- **UI** — `@shop/ui`, `@shop/design-tokens` workspace packages  
+- **Տվյալների շերտ** — PostgreSQL + Prisma (`@white-shop/db`, `shared/db/prisma`)  
+- **API** — Next.js Route Handlers `src/app/api/v1/**`  
+- **Auth** — JWT Bearer (տես `docs/API_CONTRACT.md` բաժին 2)  
+- **Արտաքին SDK-ներ** — `@aws-sdk/client-s3` (object storage), `@upstash/redis` / `@upstash/ratelimit`, `jose`, `bcryptjs` և այլն (`package.json`)
+
+Նշում. Արտաքին ինտեգրացիաների (վճարային, email PS) **կոնկրետ մատակարարները** — **TBD**, եթե չեն արձանագրված deploy/env փաստաթղթերում։
 
 ## Դիզայն
 
-- Figma. [հղում]
-- UI Kit / դիզայն-համակարգ. [եթե կա]
+- Figma. **TBD**
+- UI Kit — `@shop/ui` + design tokens (`shared/design-tokens`)
 
-## Ինտեգրացիաներ
+## Ինտեգրացիաներ (վիճակը ըստ կոդի/փաստաթղթերի)
 
-- [ ] Վճարային համակարգ (Stripe / YooKassa / այլ)
-- [ ] Email  mailing (Resend / SendGrid / այլ)
-- [ ] Աուտենտիֆիկացիա (Auth.js / Clerk / այլ)
-- [ ] Ֆայլերի պահոց (Cloudflare R2 — լռելյայն)
-- [ ] Արտաքին API. [թվարկել]
+- [x] Աուտենտիֆիկացիա — JWT (REST), մանրամասները `API_CONTRACT.md`  
+- [x] Ֆայլերի/օբյեկտների պահոց — S3-համատեղելի (`@aws-sdk/client-s3`) — bucket/credentials՝ env  
+- [x] Cache / rate limit — Upstash (ըստ կարգավորման)  
+- [ ] Վճարային համակարգ (PSP) — **TBD** (checkout կոդ կա; պայմանագիր հաստատել)  
+- [ ] Email / տրանզակցիոն նամակներ — **TBD**
 
 ## Կոնտենտի լեզու
 
-- Ինտերֆեյսի հիմնական լեզու. [hy / en / բազմալեզու]
-- Պե՞տք է ինտերնացիոնալացում (i18n). այո / ոչ
+- **Ինտերֆեյսի բազային լեզուներ** — repo-ում կան բազմալեզու/string resources; մեկ primary marketing լեզու — **TBD**  
+- **i18n** — կիրառվում է (լեզվի preference / բազմալեզու դաշտեր) — մանրամասները **TBD**
 
 ## Սահմանափակումներ
 
-- Ժամկետներ. [ամսաթիվ կամ «առանց դեդլայնի»]
-- Բյուջե. [եթե կան սահմանափակումներ վճարովի սերվիսների համար]
-- Տեխնիկական. [եթե կան — օր. պարտադիր հոստինգ, legacy API]
+- **Deploy** — տվյալ host-ը և production URL-ը **TBD**։ Repo-ում կա Vercel-ին համապատասխան env/կառուցվածք (`deployment-env`, `vercel.json` — տես կոդը)։  
+- **Ժամկետներ / բյուջե** — **TBD**
 
 ## Լրացուցիչ
 
-[Ցանկացած լրացուցիչ տեղեկություն, որը կարևոր է հաշվի առնել։]
+- Նորմատիվ բազա (`eslint.config.mjs`, `.cursor/rules/`) — տես repo root և `docs/TECH_CARD.md`։
+
+## Կապված փաստաթղթեր
+
+- [`TECH_CARD.md`](./TECH_CARD.md)  
+- [`01-ARCHITECTURE.md`](./01-ARCHITECTURE.md)  
+- [`API_CONTRACT.md`](./API_CONTRACT.md)  
+- [`BACKEND_ARCHITECTURE.md`](./BACKEND_ARCHITECTURE.md)
