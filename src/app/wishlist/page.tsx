@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -12,11 +12,7 @@ import { getStoredLanguage } from '../../lib/language';
 import { useTranslation } from '../../lib/i18n-client';
 import { useAuth } from '../../lib/auth/AuthContext';
 import { logger } from "@/lib/utils/logger";
-import {
-  ensureLegacyWishlistMigratedForGuest,
-  fetchWishlistProductIds,
-  removeWishlistItemClient,
-} from '@/lib/wishlist/wishlist-client';
+import { SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC } from '../../components/home/home-special-offers.constants';
 
 interface Product {
   id: string;
@@ -34,6 +30,18 @@ interface Product {
   } | null;
 }
 
+const WISHLIST_KEY = 'shop_wishlist';
+
+function getWishlist(): string[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const stored = localStorage.getItem(WISHLIST_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
+  }
+}
+
 /**
  * Wishlist page that shows saved products and supports lightweight CRUD actions.
  */
@@ -43,68 +51,73 @@ export default function WishlistPage() {
   const { t } = useTranslation();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [wishlistIds, setWishlistIds] = useState<string[]>([]);
   const [currency, setCurrency] = useState(getStoredCurrency());
   const [addingToCart, setAddingToCart] = useState<Set<string>>(new Set());
+  const displayImageSrc = SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC;
+  // Track if we updated locally to prevent unnecessary re-fetch
+  const isLocalUpdateRef = useRef(false);
+
   /**
    * Fetches wishlist products for provided ids and updates component state.
    */
-  const fetchWishlistProducts = useCallback(
-    async (idsToLoad: string[], options?: { showLoading?: boolean }) => {
-      const showLoading = options?.showLoading !== false;
-      if (idsToLoad.length === 0) {
-        logger.devInfo('[Wishlist] Skip fetch because ids array is empty');
-        setProducts([]);
-        setLoading(false);
-        return;
-      }
+  const fetchWishlistProducts = useCallback(async (idsToLoad: string[]) => {
+    if (idsToLoad.length === 0) {
+      logger.devInfo('[Wishlist] Skip fetch because ids array is empty');
+      setProducts([]);
+      setLoading(false);
+      return;
+    }
 
-      try {
-        if (showLoading) setLoading(true);
-        logger.devInfo(`[Wishlist] Fetching ${idsToLoad.length} products for render`);
-        const languagePreference = getStoredLanguage();
-        const response = await apiClient.get<{
-          data: Product[];
-          meta: {
-            total: number;
-            page: number;
-            limit: number;
-            totalPages: number;
-          };
-        }>('/api/v1/products', {
-          params: {
-            limit: '1000',
-            lang: languagePreference,
-          },
-        });
+    try {
+      setLoading(true);
+      logger.devInfo(`[Wishlist] Fetching ${idsToLoad.length} products for render`);
+      const languagePreference = getStoredLanguage();
+      const response = await apiClient.get<{
+        data: Product[];
+        meta: {
+          total: number;
+          page: number;
+          limit: number;
+          totalPages: number;
+        };
+      }>('/api/v1/products', {
+        params: {
+          limit: '1000',
+          lang: languagePreference,
+        },
+      });
 
-        const wishlistProducts = response.data.filter((product) =>
-          idsToLoad.includes(product.id)
-        );
-        setProducts(wishlistProducts);
-      } catch (error: unknown) {
-        logger.error('[Wishlist] Error fetching wishlist products', { error });
-      } finally {
-        if (showLoading) setLoading(false);
-      }
-    },
-    []
-  );
+      const wishlistProducts = response.data.filter((product) =>
+        idsToLoad.includes(product.id)
+      );
+      setProducts(wishlistProducts);
+    } catch (error) {
+      console.error('[Wishlist] Error fetching wishlist products:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const bootstrap = async () => {
-      const lang = getStoredLanguage();
-      await ensureLegacyWishlistMigratedForGuest(lang);
-      const ids = await fetchWishlistProductIds(lang);
-      await fetchWishlistProducts(ids);
-    };
-    void bootstrap();
+    // Get wishlist IDs from localStorage
+    const ids = getWishlist();
+    setWishlistIds(ids);
+    fetchWishlistProducts(ids);
 
+    // Listen for wishlist updates from other components (header, etc.)
+    // But don't re-fetch if we already updated locally
     const handleWishlistUpdate = () => {
-      void (async () => {
-        const lang = getStoredLanguage();
-        const ids = await fetchWishlistProductIds(lang);
-        await fetchWishlistProducts(ids, { showLoading: false });
-      })();
+      // If we just updated locally, skip re-fetch to avoid page reload
+      if (isLocalUpdateRef.current) {
+        isLocalUpdateRef.current = false;
+        return;
+      }
+      
+      // Only re-fetch if update came from external source (another component)
+      const updatedIds = getWishlist();
+      setWishlistIds(updatedIds);
+      fetchWishlistProducts(updatedIds);
     };
 
     const handleCurrencyUpdate = () => {
@@ -113,23 +126,32 @@ export default function WishlistPage() {
 
     window.addEventListener('wishlist-updated', handleWishlistUpdate);
     window.addEventListener('currency-updated', handleCurrencyUpdate);
-    window.addEventListener('language-updated', handleWishlistUpdate);
-    window.addEventListener('auth-updated', handleWishlistUpdate);
     return () => {
       window.removeEventListener('wishlist-updated', handleWishlistUpdate);
       window.removeEventListener('currency-updated', handleCurrencyUpdate);
-      window.removeEventListener('language-updated', handleWishlistUpdate);
-      window.removeEventListener('auth-updated', handleWishlistUpdate);
     };
   }, [fetchWishlistProducts]);
 
-  const handleRemove = async (productId: string) => {
+  const handleRemove = (productId: string) => {
     logger.devInfo(`[Wishlist] Removing product ${productId} from wishlist UI`);
-    try {
-      await removeWishlistItemClient(productId, getStoredLanguage());
-    } catch (error: unknown) {
-      logger.error('[Wishlist] Remove failed', { error });
-    }
+    
+    // Mark as local update to prevent re-fetch in event handler
+    isLocalUpdateRef.current = true;
+    
+    // Optimistic update: remove from UI immediately (no loading state, no page reload)
+    const updatedIds = wishlistIds.filter((id) => id !== productId);
+    const updatedProducts = products.filter((p) => p.id !== productId);
+    
+    // Update localStorage first
+    localStorage.setItem(WISHLIST_KEY, JSON.stringify(updatedIds));
+    
+    // Update state immediately (no page reload, no loading spinner)
+    setWishlistIds(updatedIds);
+    setProducts(updatedProducts);
+    
+    // Dispatch event for other components (header, etc.) - but our handler won't re-fetch
+    // because isLocalUpdateRef.current is true
+    window.dispatchEvent(new Event('wishlist-updated'));
   };
 
   const handleAddToCart = async (product: Product) => {
@@ -178,7 +200,7 @@ export default function WishlistPage() {
       // Trigger cart update event
       window.dispatchEvent(new Event('cart-updated'));
     } catch (error: unknown) {
-      logger.error('[Wishlist] Add to cart failed', { error });
+      console.error('Error adding to cart:', error);
       const msg = getErrorMessage(error);
       if (msg.includes('401') || msg.includes('Unauthorized')) {
         router.push(`/login?redirect=/wishlist`);
@@ -254,22 +276,14 @@ export default function WishlistPage() {
                     href={`/products/${product.slug}`}
                     className="w-20 h-20 bg-gray-100 rounded-lg flex-shrink-0 relative overflow-hidden"
                   >
-                    {product.image ? (
-                      <Image
-                        src={product.image}
-                        alt={product.title}
-                        fill
-                        className="object-cover"
-                        sizes="80px"
-                        unoptimized
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                        <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                      </div>
-                    )}
+                    <Image
+                      src={displayImageSrc}
+                      alt={product.title}
+                      fill
+                      className="object-cover"
+                      sizes="80px"
+                      unoptimized
+                    />
                   </Link>
                   <div className="flex-1 min-w-0">
                     <Link

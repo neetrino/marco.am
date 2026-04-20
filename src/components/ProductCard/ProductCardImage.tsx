@@ -5,6 +5,7 @@ import Image from "next/image";
 import { ProductLabels } from "../ProductLabels";
 import { ProductImagePlaceholder } from "../ProductImagePlaceholder";
 import type { ProductLabel } from "../ProductLabels";
+import { SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC } from "../home/home-special-offers.constants";
 
 interface ProductCardImageProps {
   slug: string;
@@ -22,14 +23,15 @@ interface ProductCardImageProps {
  */
 export function ProductCardImage({
   slug,
-  image,
+  image: _image,
   title,
   labels,
   imageError,
   onImageError,
   isCompact: _isCompact = false,
 }: ProductCardImageProps) {
-  const showPlaceholder = !image || imageError;
+  const displayImageSrc = SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC;
+  const showPlaceholder = imageError;
 
   return (
     <div className="aspect-square bg-gray-100 relative overflow-hidden">
@@ -41,10 +43,10 @@ export function ProductCardImage({
           />
         ) : (
           <Image
-            src={image}
+            src={displayImageSrc}
             alt={title}
             fill
-            className="object-cover"
+            className="object-cover object-center"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
             unoptimized
             onError={onImageError}

@@ -2,83 +2,8 @@ import { db } from "@white-shop/db";
 import { Prisma } from "@prisma/client";
 import { adminService } from "./admin.service";
 import { ProductWithRelations } from "./products-find-query.service";
-import type { TechnicalSpecFilters } from "./products-find-query/types";
-import {
-  productMatchesTechnicalSpecs,
-  type TechnicalSpecFacet,
-} from "./products-technical-filters";
 
 class ProductsFiltersService {
-  private splitCategoryTokens(category?: string): string[] {
-    if (!category || typeof category !== "string") {
-      return [];
-    }
-    return category
-      .split(",")
-      .map((token) => token.trim())
-      .filter((token) => token.length > 0);
-  }
-
-  private async resolveCategoryIds(category: string, lang: string): Promise<string[]> {
-    const categoryTokens = this.splitCategoryTokens(category);
-    if (categoryTokens.length === 0) {
-      return [];
-    }
-
-    const allIds = new Set<string>();
-    for (const token of categoryTokens) {
-      let categoryDoc = await db.category.findFirst({
-        where: {
-          id: token,
-          published: true,
-          deletedAt: null,
-        },
-        select: { id: true },
-      });
-
-      if (!categoryDoc) {
-        categoryDoc = await db.category.findFirst({
-          where: {
-            translations: {
-              some: {
-                slug: token,
-                locale: lang,
-              },
-            },
-            published: true,
-            deletedAt: null,
-          },
-          select: { id: true },
-        });
-      }
-
-      if (!categoryDoc) {
-        categoryDoc = await db.category.findFirst({
-          where: {
-            translations: {
-              some: {
-                slug: token,
-              },
-            },
-            published: true,
-            deletedAt: null,
-          },
-          select: { id: true },
-        });
-      }
-
-      if (!categoryDoc) {
-        continue;
-      }
-
-      allIds.add(categoryDoc.id);
-      const childIds = await this.getAllChildCategoryIds(categoryDoc.id);
-      childIds.forEach((childId) => allIds.add(childId));
-    }
-
-    return Array.from(allIds);
-  }
-
   /**
    * Get all child category IDs recursively
    */
@@ -103,63 +28,6 @@ class ProductsFiltersService {
     return allChildIds;
   }
 
-  private normalizeTechnicalSpecFilters(
-    technicalSpecs?: TechnicalSpecFilters
-  ): TechnicalSpecFilters {
-    if (!technicalSpecs) {
-      return {};
-    }
-
-    const normalized: TechnicalSpecFilters = {};
-    for (const [key, values] of Object.entries(technicalSpecs)) {
-      const normalizedKey = key.trim().toLowerCase();
-      if (!normalizedKey || normalizedKey === "color" || normalizedKey === "size") {
-        continue;
-      }
-      const normalizedValues = Array.isArray(values)
-        ? values
-            .map((value) => value.trim().toLowerCase())
-            .filter((value) => value.length > 0)
-        : [];
-      if (normalizedValues.length > 0) {
-        normalized[normalizedKey] = Array.from(new Set(normalizedValues));
-      }
-    }
-    return normalized;
-  }
-
-  private async loadFilterableAttributeMeta(lang: string) {
-    const attributes = await db.attribute.findMany({
-      where: {
-        filterable: true,
-        key: {
-          notIn: ["color", "size"],
-        },
-      },
-      include: {
-        translations: true,
-      },
-      orderBy: [{ position: "asc" }, { key: "asc" }],
-    });
-
-    return new Map(
-      attributes.map((attribute) => {
-        const localizedName =
-          attribute.translations.find((translation) => translation.locale === lang)?.name ??
-          attribute.translations[0]?.name ??
-          attribute.key;
-        return [
-          attribute.key.toLowerCase(),
-          {
-            key: attribute.key.toLowerCase(),
-            label: localizedName,
-            type: attribute.type || "select",
-          },
-        ] as const;
-      })
-    );
-  }
-
   /**
    * Get available filters (colors and sizes)
    */
@@ -169,7 +37,6 @@ class ProductsFiltersService {
     minPrice?: number;
     maxPrice?: number;
     lang?: string;
-    technicalSpecs?: TechnicalSpecFilters;
   }) {
     try {
       const where: Prisma.ProductWhereInput = {
@@ -213,36 +80,7 @@ class ProductsFiltersService {
         ];
       }
 
-      // Add category filter
-      if (filters.category) {
-        try {
-          const allCategoryIds = await this.resolveCategoryIds(
-            filters.category,
-            filters.lang || "en"
-          );
-          if (allCategoryIds.length > 0) {
-            const categoryConditions = allCategoryIds.flatMap((catId: string) => [
-              { primaryCategoryId: catId },
-              { categoryIds: { has: catId } },
-            ]);
-
-            if (where.OR) {
-              where.AND = [
-                { OR: where.OR },
-                {
-                  OR: categoryConditions,
-                },
-              ];
-              delete where.OR;
-            } else {
-              where.OR = categoryConditions;
-            }
-          }
-        } catch (categoryError) {
-          console.error('❌ [PRODUCTS FILTERS SERVICE] Error fetching category:', categoryError);
-          // Continue without category filter if there's an error
-        }
-      }
+      // Category filter is omitted so facet counts (including category list) match search scope.
 
       // Get products with variants (capped for filter computation)
       const FILTERS_PRODUCTS_LIMIT = 500;
@@ -287,15 +125,6 @@ class ProductsFiltersService {
                 },
               },
             },
-            categories: {
-              where: {
-                published: true,
-                deletedAt: null,
-              },
-              include: {
-                translations: true,
-              },
-            },
           },
         })) as unknown as ProductWithRelations[];
       } catch (dbError) {
@@ -307,12 +136,6 @@ class ProductsFiltersService {
       if (!products || !Array.isArray(products)) {
         products = [];
       }
-
-      const lang = filters.lang || "en";
-      const normalizedTechnicalSpecs = this.normalizeTechnicalSpecFilters(
-        filters.technicalSpecs
-      );
-      const filterableAttributeMeta = await this.loadFilterableAttributeMeta(lang);
 
     // Filter by price in memory
     if (filters.minPrice || filters.maxPrice) {
@@ -329,15 +152,10 @@ class ProductsFiltersService {
       });
     }
 
-    if (Object.keys(normalizedTechnicalSpecs).length > 0) {
-      products = products.filter((product: ProductWithRelations) =>
-        productMatchesTechnicalSpecs(product, normalizedTechnicalSpecs)
-      );
-    }
-
     // Collect colors and sizes from variants
     // Use Map with lowercase key to merge colors with different cases
     // Store both count, canonical label, imageUrl and colors hex
+    const lang = filters.lang || 'en';
     const colorMap = new Map<string, { 
       count: number; 
       label: string; 
@@ -346,61 +164,45 @@ class ProductsFiltersService {
     }>();
     const sizeMap = new Map<string, number>();
     const brandMap = new Map<string, { id: string; name: string; count: number }>();
-    const categoryMap = new Map<string, { id: string; slug: string; name: string; count: number }>();
-    const technicalFacetMap = new Map<
-      string,
-      {
-        key: string;
-        label: string;
-        type: string;
-        values: Map<string, { value: string; label: string; count: number }>;
-      }
-    >();
+    const categoryCountMap = new Map<string, number>();
     let rangeMin = Infinity;
     let rangeMax = 0;
-
-    type VariantRow = ProductWithRelations["variants"][number];
-    type VariantOptionLike = VariantRow["options"][number] & {
-      attributeKey?: string | null;
-      key?: string | null;
-      attribute?: string | null;
-      value?: string | null;
-      label?: string | null;
-    };
 
     products.forEach((product: ProductWithRelations & { brand?: { id: string; translations?: Array<{ locale: string; name?: string }>; name?: string } | null }) => {
       if (!product || !product.variants || !Array.isArray(product.variants)) {
         return;
       }
+      const catProduct = product as ProductWithRelations & {
+        primaryCategoryId?: string | null;
+        categoryIds?: string[];
+      };
+      const categoryIdsForProduct = new Set<string>();
+      if (catProduct.primaryCategoryId) {
+        categoryIdsForProduct.add(catProduct.primaryCategoryId);
+      }
+      (catProduct.categoryIds || []).forEach((id) => {
+        categoryIdsForProduct.add(id);
+      });
+      categoryIdsForProduct.forEach((id) => {
+        categoryCountMap.set(id, (categoryCountMap.get(id) || 0) + 1);
+      });
       if (product.brand?.id) {
-        const name = (product.brand as { translations?: Array<{ locale: string; name?: string }>; name?: string }).translations?.find((t: { locale: string }) => t.locale === lang)?.name || (product.brand as { name?: string }).name || '';
+        const b = product.brand as {
+          id: string;
+          slug?: string;
+          translations?: Array<{ locale: string; name: string }>;
+        };
+        const tr =
+          b.translations?.find((t) => t.locale === lang) ?? b.translations?.[0];
+        const name = (tr?.name?.trim() || b.slug || '').trim();
         if (name) {
           const existing = brandMap.get(product.brand.id);
-          brandMap.set(product.brand.id, { id: product.brand.id, name, count: (existing?.count || 0) + 1 });
+          brandMap.set(product.brand.id, {
+            id: product.brand.id,
+            name,
+            count: (existing?.count || 0) + 1,
+          });
         }
-      }
-      const productCategories = Array.isArray(product.categories)
-        ? product.categories
-        : [];
-      for (const category of productCategories) {
-        if (!category?.id) {
-          continue;
-        }
-        const localizedTranslation =
-          category.translations?.find((translation) => translation.locale === lang) ??
-          category.translations?.[0];
-        const categorySlug = localizedTranslation?.slug?.trim();
-        const categoryName = localizedTranslation?.title?.trim();
-        if (!categorySlug || !categoryName) {
-          continue;
-        }
-        const existingCategory = categoryMap.get(category.id);
-        categoryMap.set(category.id, {
-          id: category.id,
-          slug: categorySlug,
-          name: categoryName,
-          count: (existingCategory?.count || 0) + 1,
-        });
       }
       product.variants.forEach((v: { price?: number }) => {
         if (typeof v?.price === 'number') {
@@ -408,51 +210,12 @@ class ProductsFiltersService {
           if (v.price > rangeMax) rangeMax = v.price;
         }
       });
-      product.variants.forEach((variant: VariantRow) => {
+      product.variants.forEach((variant: any) => {
         if (!variant || !variant.options || !Array.isArray(variant.options)) {
           return;
         }
-        variant.options.forEach((option: VariantOptionLike) => {
+        variant.options.forEach((option: any) => {
           if (!option) return;
-          const rawTechnicalKey =
-            option.attributeValue?.attribute?.key ||
-            option.attributeKey ||
-            option.key ||
-            option.attribute;
-          const technicalKey = rawTechnicalKey?.trim().toLowerCase();
-          if (technicalKey && filterableAttributeMeta.has(technicalKey)) {
-            const attrMeta = filterableAttributeMeta.get(technicalKey);
-            const rawTechnicalLabel =
-              option.attributeValue?.translations?.find(
-                (translation: { locale: string }) => translation.locale === lang
-              )?.label ||
-              option.attributeValue?.translations?.[0]?.label ||
-              option.attributeValue?.value ||
-              option.value ||
-              option.label;
-            const technicalLabel = rawTechnicalLabel?.trim();
-            if (technicalLabel && attrMeta) {
-              const normalizedValue = technicalLabel.toLowerCase();
-              let facet = technicalFacetMap.get(technicalKey);
-              if (!facet) {
-                facet = {
-                  key: attrMeta.key,
-                  label: attrMeta.label,
-                  type: attrMeta.type,
-                  values: new Map<string, { value: string; label: string; count: number }>(),
-                };
-                technicalFacetMap.set(technicalKey, facet);
-              }
-              const existingFacetValue = facet.values.get(normalizedValue);
-              facet.values.set(normalizedValue, {
-                value: normalizedValue,
-                label:
-                  existingFacetValue?.label ??
-                  technicalLabel,
-                count: (existingFacetValue?.count || 0) + 1,
-              });
-            }
-          }
           
           // Check if it's a color option (support multiple formats)
           const isColor = option.attributeKey === "color" || 
@@ -470,12 +233,7 @@ class ProductsFiltersService {
               const translation = option.attributeValue.translations?.find((t: { locale: string }) => t.locale === lang) || option.attributeValue.translations?.[0];
               colorValue = translation?.label || option.attributeValue.value || "";
               imageUrl = option.attributeValue.imageUrl || null;
-              const rawColorsHex = option.attributeValue.colors;
-              colorsHex =
-                Array.isArray(rawColorsHex) &&
-                rawColorsHex.every((c): c is string => typeof c === "string")
-                  ? rawColorsHex
-                  : null;
+              colorsHex = option.attributeValue.colors || null;
             } else if (option.value) {
               // Old format: use value directly
               colorValue = option.value.trim();
@@ -537,38 +295,22 @@ class ProductsFiltersService {
       });
       
       // Also check productAttributes for color attribute values with imageUrl and colors
-      if (product.productAttributes && Array.isArray(product.productAttributes)) {
-        product.productAttributes.forEach((productAttr) => {
-          const pa = productAttr as {
-            attribute?: {
-              key: string;
-              values?: Array<{
-                translations?: Array<{ locale: string; label?: string }>;
-                value?: string;
-                imageUrl?: string | null;
-                colors?: string[] | null | unknown;
-              }>;
-            };
-          };
-          if (pa.attribute?.key === 'color' && pa.attribute?.values) {
-            pa.attribute.values.forEach((attrValue) => {
+      if ((product as any).productAttributes && Array.isArray((product as any).productAttributes)) {
+        (product as any).productAttributes.forEach((productAttr: any) => {
+          if (productAttr.attribute?.key === 'color' && productAttr.attribute?.values) {
+            productAttr.attribute.values.forEach((attrValue: any) => {
               const translation = attrValue.translations?.find((t: { locale: string }) => t.locale === lang) || attrValue.translations?.[0];
               const colorValue = translation?.label || attrValue.value || "";
               if (colorValue) {
                 const colorKey = colorValue.toLowerCase();
                 const existing = colorMap.get(colorKey);
                 // Update if we have imageUrl or colors hex and they're not already set
-                const rawColors = attrValue.colors;
-                const normalizedColors =
-                  Array.isArray(rawColors) && rawColors.every((c): c is string => typeof c === "string")
-                    ? rawColors
-                    : null;
-                if (attrValue.imageUrl || normalizedColors) {
+                if (attrValue.imageUrl || attrValue.colors) {
                   colorMap.set(colorKey, {
                     count: existing?.count || 0,
                     label: existing?.label || colorValue,
                     imageUrl: attrValue.imageUrl || existing?.imageUrl || null,
-                    colors: normalizedColors ?? existing?.colors ?? null,
+                    colors: attrValue.colors || existing?.colors || null,
                   });
                 }
               }
@@ -577,6 +319,34 @@ class ProductsFiltersService {
         });
       }
     });
+
+    const categoryIdsWithProducts = Array.from(categoryCountMap.keys());
+    let categories: Array<{ slug: string; title: string; count: number }> = [];
+    if (categoryIdsWithProducts.length > 0) {
+      const categoryRows = await db.category.findMany({
+        where: {
+          id: { in: categoryIdsWithProducts },
+          published: true,
+          deletedAt: null,
+        },
+        include: { translations: true },
+        orderBy: { position: "asc" },
+      });
+      categories = categoryRows
+        .map((cat) => {
+          const tr =
+            cat.translations.find((t) => t.locale === lang) || cat.translations[0];
+          if (!tr) {
+            return null;
+          }
+          const count = categoryCountMap.get(cat.id) || 0;
+          if (count === 0) {
+            return null;
+          }
+          return { slug: tr.slug, title: tr.title, count };
+        })
+        .filter((c): c is { slug: string; title: string; count: number } => c !== null);
+    }
 
     // Convert maps to arrays
     const colors: Array<{ value: string; label: string; count: number; imageUrl?: string | null; colors?: string[] | null }> = Array.from(
@@ -610,25 +380,30 @@ class ProductsFiltersService {
       // Sort colors alphabetically
       colors.sort((a: { label: string }, b: { label: string }) => a.label.localeCompare(b.label));
 
-      const brands = Array.from(brandMap.values()).sort((a, b) => a.name.localeCompare(b.name));
-      const categories = Array.from(categoryMap.values()).sort((a, b) =>
-        a.name.localeCompare(b.name)
-      );
-      const technicalSpecs: TechnicalSpecFacet[] = Array.from(
-        technicalFacetMap.values()
-      )
-        .map((facet) => ({
-          key: facet.key,
-          label: facet.label,
-          type: facet.type,
-          values: Array.from(facet.values.values()).sort((a, b) =>
-            a.label.localeCompare(b.label)
-          ),
-        }))
-        .filter((facet) => facet.values.length > 0)
-        .sort((a, b) => a.label.localeCompare(b.label));
+      // Shop sidebar: list all published brands from DB, counts from current product facet (not only brands that appear in the capped sample)
+      const publishedBrands = await db.brand.findMany({
+        where: { published: true, deletedAt: null },
+        include: { translations: true },
+      });
+      const brands = publishedBrands
+        .map((row) => {
+          const tr =
+            row.translations.find((t) => t.locale === lang) ?? row.translations[0];
+          const name = (tr?.name?.trim() || row.slug || '').trim();
+          if (!name) {
+            return null;
+          }
+          const facet = brandMap.get(row.id);
+          return {
+            id: row.id,
+            name,
+            count: facet?.count ?? 0,
+          };
+        })
+        .filter((b): b is { id: string; name: string; count: number } => b !== null)
+        .sort((a, b) => a.name.localeCompare(b.name));
       const priceMin = rangeMin === Infinity ? 0 : Math.floor(rangeMin / 1000) * 1000;
-      const priceMax = rangeMax === 0 ? 100000 : Math.ceil(rangeMax / 1000) * 1000;
+      const priceMax = rangeMax === 0 ? 0 : Math.ceil(rangeMax / 1000) * 1000;
       let stepSize: number | null = null;
       let stepSizePerCurrency: Record<string, number> | null = null;
       try {
@@ -651,7 +426,6 @@ class ProductsFiltersService {
         sizes,
         brands,
         categories,
-        technicalSpecs,
         priceRange: { min: priceMin, max: priceMax, stepSize, stepSizePerCurrency },
       };
     } catch (error) {
@@ -661,8 +435,7 @@ class ProductsFiltersService {
         sizes: [],
         brands: [],
         categories: [],
-        technicalSpecs: [],
-        priceRange: { min: 0, max: 100000, stepSize: null, stepSizePerCurrency: null },
+        priceRange: { min: 0, max: 0, stepSize: null, stepSizePerCurrency: null },
       };
     }
   }
@@ -677,16 +450,39 @@ class ProductsFiltersService {
     };
 
     if (filters.category) {
-      const allCategoryIds = await this.resolveCategoryIds(
-        filters.category,
-        filters.lang || "en"
-      );
-
-      if (allCategoryIds.length > 0) {
-        where.OR = allCategoryIds.flatMap((categoryId) => [
-          { primaryCategoryId: categoryId },
-          { categoryIds: { has: categoryId } },
+      const slugs = filters.category
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
+      const perSlugTrees: Prisma.ProductWhereInput[] = [];
+      for (const slug of slugs) {
+        const categoryDoc = await db.category.findFirst({
+          where: {
+            translations: {
+              some: {
+                slug,
+                locale: filters.lang || "en",
+              },
+            },
+            published: true,
+            deletedAt: null,
+          },
+        });
+        if (!categoryDoc) {
+          continue;
+        }
+        const childCategoryIds = await this.getAllChildCategoryIds(categoryDoc.id);
+        const allCategoryIds = [categoryDoc.id, ...childCategoryIds];
+        const categoryConditions = allCategoryIds.flatMap((catId: string) => [
+          { primaryCategoryId: catId },
+          { categoryIds: { has: catId } },
         ]);
+        perSlugTrees.push({ OR: categoryConditions });
+      }
+      if (perSlugTrees.length === 1) {
+        where.OR = (perSlugTrees[0] as { OR: Prisma.ProductWhereInput[] }).OR;
+      } else if (perSlugTrees.length > 1) {
+        where.OR = perSlugTrees;
       }
     }
 
@@ -715,7 +511,8 @@ class ProductsFiltersService {
     });
 
     minPrice = minPrice === Infinity ? 0 : Math.floor(minPrice / 1000) * 1000;
-    maxPrice = maxPrice === 0 ? 100000 : Math.ceil(maxPrice / 1000) * 1000;
+    // No products / no prices: keep 0 — UI must not show a fake cap (e.g. 100000) that mismatches real catalog
+    maxPrice = maxPrice === 0 ? 0 : Math.ceil(maxPrice / 1000) * 1000;
 
     // Load price filter settings to provide optional step sizes per currency
     let stepSize: number | null = null;

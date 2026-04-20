@@ -1,35 +1,68 @@
 {
   "filters": {
+    "panelTitle": "Фильтры",
+    "panelSubtitle": "Найдите то, что вам подходит",
     "price": {
-      "title": "Фильтр по цене",
-      "priceLabel": "Цена:"
+      "title": "Цена",
+      "priceLabel": "Цена:",
+      "loading": "Загрузка...",
+      "noRange": "Нет цен в каталоге"
+    },
+    "category": {
+      "title": "Категории",
+      "loading": "Загрузка...",
+      "clear": "Сбросить",
+      "clearAria": "Сбросить фильтр по категории"
     },
     "color": {
-      "title": "Фильтр по цвету",
+      "title": "Цвета",
       "noColors": "Цвета недоступны",
-      "loading": "Загрузка..."
+      "loading": "Загрузка...",
+      "clear": "Сбросить",
+      "clearAria": "Сбросить фильтр по цвету",
+      "palette": {
+        "red": "Красный",
+        "green": "Зелёный",
+        "brown": "Коричневый",
+        "gray": "Серый",
+        "burgundy": "Бордовый",
+        "orange": "Оранжевый",
+        "blue": "Синий",
+        "black": "Чёрный",
+        "silver": "Серебристый",
+        "yellow": "Жёлтый",
+        "pink": "Розовый",
+        "white": "Белый",
+        "mint": "Мятный"
+      }
     },
     "size": {
-      "title": "Фильтр по размеру",
+      "title": "Размер",
       "noSizes": "Размеры недоступны",
       "loading": "Загрузка..."
     },
     "brand": {
-      "title": "Фильтр по бренду",
+      "title": "Бренды",
       "searchPlaceholder": "Найти бренд",
       "noBrands": "Бренды не найдены",
-      "loading": "Загрузка..."
+      "loading": "Загрузка...",
+      "clear": "Сбросить",
+      "clearAria": "Сбросить фильтр по бренду"
     }
   },
   "header": {
+    "breadcrumbNavLabel": "Навигация",
+    "breadcrumbHome": "Главная",
+    "breadcrumbShop": "Магазин",
+    "shopWordmark": "МАГАЗИН",
     "allProducts": "Все товары ({total})",
     "clearFilters": "Очистить фильтры",
     "show": "Показать",
     "all": "Все",
     "sort": {
       "default": "Сортировка по умолчанию",
-      "newest": "Сначала новые",
-      "popular": "Популярные",
+      "bestsellers": "Бестселлеры",
+      "curatedList": "Рекомендуемое",
       "priceAsc": "Цена: от низкой к высокой",
       "priceDesc": "Цена: от высокой к низкой",
       "nameAsc": "Название: А-Я",

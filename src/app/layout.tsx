@@ -6,11 +6,14 @@ import './globals.css';
 import { ClientProviders } from '../components/ClientProviders';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
-import { Breadcrumb } from '../components/Breadcrumb';
 import { MobileBottomNav } from '../components/MobileBottomNav';
 import { MOBILE_NAV_LAYOUT_PADDING_BOTTOM } from '../components/mobile-bottom-nav.constants';
-import { LANGUAGE_PREFERENCE_KEY, parseLanguageFromServer } from '../lib/language';
-import { siteFooterService } from '../lib/services/site-footer.service';
+import {
+  LANGUAGE_PREFERENCE_KEY,
+  parseLanguageFromServer,
+  type LanguageCode,
+} from '../lib/language';
+import { LanguagePreferenceProvider } from '../lib/language-context';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -25,16 +28,14 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const cookieStore = await cookies();
-  const initialLanguage = parseLanguageFromServer(
-    cookieStore.get(LANGUAGE_PREFERENCE_KEY)?.value,
-  );
-  const footerLocale = initialLanguage ?? 'en';
-  const initialFooter = await siteFooterService.getPublicPayload(footerLocale);
+  const initialLanguage: LanguageCode =
+    parseLanguageFromServer(cookieStore.get(LANGUAGE_PREFERENCE_KEY)?.value) ?? 'en';
 
   return (
-    <html lang="en" className="h-full">
+    <html lang={initialLanguage} className="h-full">
       <body className={`${inter.className} bg-white text-gray-900 antialiased min-h-full`}>
         <Suspense fallback={null}>
+          <LanguagePreferenceProvider initialLanguage={initialLanguage}>
           <ClientProviders>
             <div
               className="flex min-h-screen flex-col max-lg:[padding-bottom:var(--mobile-nav-pb)] lg:pb-0"
@@ -45,18 +46,19 @@ export default async function RootLayout({
               }
             >
               <Header initialLanguage={initialLanguage} />
-              <Breadcrumb />
               <main className="flex-1 w-full">
                 {children}
               </main>
               <div className="hidden md:block">
-                <Footer initialFooter={initialFooter} />
+                <Footer />
               </div>
               <MobileBottomNav />
             </div>
           </ClientProviders>
+          </LanguagePreferenceProvider>
         </Suspense>
       </body>
     </html>
   );
 }
+

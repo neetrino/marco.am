@@ -12,19 +12,15 @@ export const HERO_PANEL_ASPECT_H = 79;
 /** Panel corner radius — `rounded-[32px]` in `HeroCarousel` (ref. soft brick tile) */
 export const HERO_PANEL_RADIUS_PX = 32;
 
-import {
-  HERO_FALLBACK_DESKTOP_IMAGE_SRC,
-  HERO_FALLBACK_MOBILE_IMAGE_SRC,
-} from "@/lib/constants/hero-fallback-images";
-
 /** Vertical brick wall — top aligns with hero; bottom crops under `object-cover` + `object-top` */
-export const HERO_PRIMARY_IMAGE_SRC = HERO_FALLBACK_DESKTOP_IMAGE_SRC;
+export const HERO_PRIMARY_IMAGE_SRC = '/assets/hero/hero-brick-wall-vertical.png' as const;
 
 /**
  * Mobile hero raster — Figma 314:2380 (full-bleed yellow brick texture).
  * `md+` uses {@link HERO_PRIMARY_IMAGE_SRC} in `HeroCarouselSlides`.
  */
-export const HERO_MOBILE_PRIMARY_IMAGE_SRC = HERO_FALLBACK_MOBILE_IMAGE_SRC;
+export const HERO_MOBILE_PRIMARY_IMAGE_SRC =
+  '/assets/hero/hero-yellow-brick-wall.png' as const;
 
 /** Figma 101:4019–101:4021 — stacked layer fills + 101:4023 chair asset */
 export const HERO_PROMO_STACK_LAYER_WHITE = '#ffffff' as const;

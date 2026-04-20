@@ -45,7 +45,13 @@
     "shop": "Խանութ",
     "brands": "Բրենդներ",
     "reels": "Reels",
-    "addresses": "Հասցեներ"
+    "addresses": "Հասցեներ",
+    "categoriesMegaMenu": {
+      "viewProducts": "Դիտել բոլոր ապրանքները",
+      "subcategories": "Ենթաբաժիններ",
+      "productsWord": "ԱՊՐԱՆՔ",
+      "emptySubcategories": "Ենթաբաժիններ դեռ չկան։ Ավելացրեք դրանք ադմինից կամ գործարկեք seed։"
+    }
   },
   "stock": {
     "inStock": "Պահեստում",
@@ -243,9 +249,16 @@
     "products": "ապրանք"
   },
   "pagination": {
-    "previous": "Նախորդ",
-    "next": "Հաջորդ",
-    "pageOf": "Էջ {page} {totalPages}-ից"
+    "first": "Առաջին",
+    "last": "Վերջին",
+    "previous": "Հետ",
+    "next": "Առաջ",
+    "pageOf": "Էջ {page} {totalPages}-ից",
+    "navAriaLabel": "Էջերի ընտրություն",
+    "firstAria": "Անցնել առաջին էջ",
+    "lastAria": "Անցնել վերջին էջ",
+    "previousAria": "Անցնել նախորդ էջ",
+    "nextAria": "Անցնել հաջորդ էջ"
   },
   "notFound": {
     "title": "Էջը չի գտնվել",

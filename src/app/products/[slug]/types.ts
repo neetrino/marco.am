@@ -117,6 +117,7 @@ export interface Product {
   brand?: {
     id: string;
     name: string;
+    logo?: string | null;
   };
   categories?: Array<{
     id: string;

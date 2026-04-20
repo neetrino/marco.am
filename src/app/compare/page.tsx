@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type { MouseEvent } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -12,13 +12,37 @@ import { formatPrice, getStoredCurrency } from '../../lib/currency';
 import { getStoredLanguage } from '../../lib/language';
 import { useTranslation } from '../../lib/i18n-client';
 import { useAuth } from '../../lib/auth/AuthContext';
-import { logger } from '@/lib/utils/logger';
-import {
-  fetchComparePayload,
-  removeCompareItemClient,
-  type CompareClientItem,
-  type CompareClientSpecRow,
-} from '@/lib/compare/compare-client';
+import { logger } from "@/lib/utils/logger";
+import { SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC } from '../../components/home/home-special-offers.constants';
+
+interface Product {
+  id: string;
+  slug: string;
+  title: string;
+  price: number;
+  originalPrice: number | null;
+  compareAtPrice: number | null;
+  discountPercent: number | null;
+  image: string | null;
+  inStock: boolean;
+  brand: {
+    id: string;
+    name: string;
+  } | null;
+  description?: string;
+}
+
+const COMPARE_KEY = 'shop_compare';
+
+function getCompare(): string[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const stored = localStorage.getItem(COMPARE_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
+  }
+}
 
 
 /**
@@ -28,48 +52,82 @@ export default function ComparePage() {
   const router = useRouter();
   const { isLoggedIn } = useAuth();
   const { t } = useTranslation();
-  const [products, setProducts] = useState<CompareClientItem[]>([]);
-  const [specRows, setSpecRows] = useState<CompareClientSpecRow[]>([]);
-  const [maxItems, setMaxItems] = useState(4);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [compareIds, setCompareIds] = useState<string[]>([]);
   const [currency, setCurrency] = useState(getStoredCurrency());
   const [addingToCart, setAddingToCart] = useState<Set<string>>(new Set());
+  const displayImageSrc = SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC;
+  // Track if we updated locally to prevent unnecessary re-fetch
+  const isLocalUpdateRef = useRef(false);
 
   /**
-   * Fetch compare payload from API and update UI state.
+   * Fetch compare products for provided ids and update UI state.
    */
-  const fetchCompareData = useCallback(async () => {
+  const fetchCompareProducts = useCallback(async (idsToLoad: string[]) => {
+    if (idsToLoad.length === 0) {
+      logger.devInfo('[Compare] Skip fetch because ids array is empty');
+      setProducts([]);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
-      logger.devInfo('[Compare] Fetching compare payload');
+      logger.devInfo(`[Compare] Fetching ${idsToLoad.length} products for render`);
       const languagePreference = getStoredLanguage();
-      const response = await fetchComparePayload(languagePreference);
-      setProducts(response.compare.items);
-      setSpecRows(response.specRows);
-      setMaxItems(response.compare.maxItems);
+      const response = await apiClient.get<{
+        data: Product[];
+        meta: {
+          total: number;
+          page: number;
+          limit: number;
+          totalPages: number;
+        };
+      }>('/api/v1/products', {
+        params: {
+          limit: '1000',
+          lang: languagePreference,
+        },
+      });
+
+      const compareProducts = response.data.filter((product) =>
+        idsToLoad.includes(product.id)
+      );
+      setProducts(compareProducts);
     } catch (error) {
-      logger.error('[Compare] Error fetching compare payload', { error });
-      setProducts([]);
-      setSpecRows([]);
+      console.error('[Compare] Error fetching compare products:', error);
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    void fetchCompareData();
+    // Get compare IDs from localStorage
+    const ids = getCompare();
+    setCompareIds(ids);
+    fetchCompareProducts(ids);
 
+    // Listen for compare updates from other components (header, etc.)
+    // But don't re-fetch if we already updated locally
     const handleCompareUpdate = () => {
-      void fetchCompareData();
+      // If we just updated locally, skip re-fetch to avoid page reload
+      if (isLocalUpdateRef.current) {
+        isLocalUpdateRef.current = false;
+        return;
+      }
+      
+      // Only re-fetch if update came from external source (another component)
+      const updatedIds = getCompare();
+      setCompareIds(updatedIds);
+      fetchCompareProducts(updatedIds);
     };
 
     window.addEventListener('compare-updated', handleCompareUpdate);
-    window.addEventListener('auth-updated', handleCompareUpdate);
     return () => {
       window.removeEventListener('compare-updated', handleCompareUpdate);
-      window.removeEventListener('auth-updated', handleCompareUpdate);
     };
-  }, [fetchCompareData]);
+  }, [fetchCompareProducts]);
 
   // Listen for currency and language updates
   useEffect(() => {
@@ -78,7 +136,10 @@ export default function ComparePage() {
     };
 
     const handleLanguageUpdate = () => {
-      void fetchCompareData();
+      // Reload products with new language preference
+      // Get current IDs from localStorage to avoid dependency on state
+      const currentIds = getCompare();
+      fetchCompareProducts(currentIds);
     };
 
     window.addEventListener('currency-updated', handleCurrencyUpdate);
@@ -87,43 +148,34 @@ export default function ComparePage() {
       window.removeEventListener('currency-updated', handleCurrencyUpdate);
       window.removeEventListener('language-updated', handleLanguageUpdate);
     };
-  }, [fetchCompareData]);
+  }, [fetchCompareProducts]);
 
-  const handleRemove = async (e: MouseEvent, productId: string) => {
+  const handleRemove = (e: MouseEvent, productId: string) => {
     e.preventDefault();
     e.stopPropagation();
-
+    
     logger.devInfo(`[Compare] Removing product ${productId} from compare UI`);
-
-    const previousProducts = products;
-    setProducts((current) => current.filter((item) => item.productId !== productId));
-    setSpecRows((current) =>
-      current
-        .map((row) => ({
-          ...row,
-          valuesByProductId: Object.fromEntries(
-            Object.entries(row.valuesByProductId).filter(
-              ([id]) => id !== productId
-            )
-          ),
-        }))
-        .filter((row) =>
-          Object.values(row.valuesByProductId).some(
-            (value) => typeof value === 'string' && value.trim().length > 0
-          )
-        )
-    );
-
-    try {
-      await removeCompareItemClient(productId, getStoredLanguage());
-    } catch (error: unknown) {
-      logger.error('[Compare] Remove failed, restoring previous state', { error });
-      setProducts(previousProducts);
-      void fetchCompareData();
-    }
+    
+    // Mark as local update to prevent re-fetch in event handler
+    isLocalUpdateRef.current = true;
+    
+    // Optimistic update: remove from UI immediately (no loading state, no page reload)
+    const updatedIds = compareIds.filter((id) => id !== productId);
+    const updatedProducts = products.filter((p) => p.id !== productId);
+    
+    // Update localStorage first
+    localStorage.setItem(COMPARE_KEY, JSON.stringify(updatedIds));
+    
+    // Update state immediately (no page reload, no loading spinner)
+    setCompareIds(updatedIds);
+    setProducts(updatedProducts);
+    
+    // Dispatch event for other components (header, etc.) - but our handler won't re-fetch
+    // because isLocalUpdateRef.current is true
+    window.dispatchEvent(new Event('compare-updated'));
   };
 
-  const handleAddToCart = async (e: MouseEvent, product: CompareClientItem) => {
+  const handleAddToCart = async (e: MouseEvent, product: Product) => {
     e.preventDefault();
     e.stopPropagation();
     
@@ -136,7 +188,7 @@ export default function ComparePage() {
       return;
     }
 
-    setAddingToCart((prev) => new Set(prev).add(product.productId));
+    setAddingToCart(prev => new Set(prev).add(product.id));
 
     try {
       // Get product details to get variant ID
@@ -151,9 +203,7 @@ export default function ComparePage() {
         }>;
       }
 
-      const productDetails = await apiClient.get<ProductDetails>(
-        `/api/v1/products/${product.slug}`
-      );
+      const productDetails = await apiClient.get<ProductDetails>(`/api/v1/products/${product.slug}`);
 
       if (!productDetails.variants || productDetails.variants.length === 0) {
         alert(t('common.alerts.noVariantsAvailable'));
@@ -165,7 +215,7 @@ export default function ComparePage() {
       await apiClient.post(
         '/api/v1/cart/items',
         {
-          productId: product.productId,
+          productId: product.id,
           variantId: variantId,
           quantity: 1,
         }
@@ -182,7 +232,7 @@ export default function ComparePage() {
     } finally {
       setAddingToCart(prev => {
         const next = new Set(prev);
-        next.delete(product.productId);
+        next.delete(product.id);
         return next;
       });
     }
@@ -207,10 +257,7 @@ export default function ComparePage() {
         <h1 className="text-2xl font-bold text-gray-900">{t('common.compare.title')}</h1>
         {products.length > 0 && (
           <p className="text-sm text-gray-600">
-            {products.length} of {maxItems}{' '}
-            {products.length === 1
-              ? t('common.compare.product')
-              : t('common.compare.products')}
+            {products.length} of 4 {products.length === 1 ? t('common.compare.product') : t('common.compare.products')}
           </p>
         )}
       </div>
@@ -226,11 +273,11 @@ export default function ComparePage() {
                   </th>
                   {products.map((product) => (
                     <th
-                      key={product.productId}
+                      key={product.id}
                       className="px-4 py-3 text-center text-sm font-semibold text-gray-700 min-w-[220px] relative"
                     >
                       <button
-                        onClick={(e) => void handleRemove(e, product.productId)}
+                        onClick={(e) => handleRemove(e, product.id)}
                         className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-all"
                         title={t('common.buttons.remove')}
                         aria-label={t('common.buttons.remove')}
@@ -260,23 +307,17 @@ export default function ComparePage() {
                     {t('common.compare.image')}
                   </td>
                   {products.map((product) => (
-                    <td key={product.productId} className="px-4 py-4 text-center">
+                    <td key={product.id} className="px-4 py-4 text-center">
                       <Link href={`/products/${product.slug}`} className="inline-block">
                         <div className="w-32 h-32 mx-auto bg-gray-100 rounded-lg overflow-hidden relative">
-                          {product.image ? (
-                            <Image
-                              src={product.image}
-                              alt={product.title}
-                              fill
-                              className="object-cover"
-                              sizes="128px"
-                              unoptimized
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                              <span className="text-gray-400 text-xs">{t('common.messages.noImage')}</span>
-                            </div>
-                          )}
+                          <Image
+                            src={displayImageSrc}
+                            alt={product.title}
+                            fill
+                            className="object-cover"
+                            sizes="128px"
+                            unoptimized
+                          />
                         </div>
                       </Link>
                     </td>
@@ -289,7 +330,7 @@ export default function ComparePage() {
                     {t('common.compare.name')}
                   </td>
                   {products.map((product) => (
-                    <td key={product.productId} className="px-4 py-4">
+                    <td key={product.id} className="px-4 py-4">
                       <Link
                         href={`/products/${product.slug}`}
                         className="text-base font-semibold text-gray-900 hover:text-blue-600 transition-colors block text-center"
@@ -306,7 +347,7 @@ export default function ComparePage() {
                     {t('common.compare.brand')}
                   </td>
                   {products.map((product) => (
-                    <td key={product.productId} className="px-4 py-4 text-center text-sm text-gray-600">
+                    <td key={product.id} className="px-4 py-4 text-center text-sm text-gray-600">
                       {product.brand ? product.brand.name : '-'}
                     </td>
                   ))}
@@ -318,7 +359,7 @@ export default function ComparePage() {
                     {t('common.compare.price')}
                   </td>
                   {products.map((product) => (
-                    <td key={product.productId} className="px-4 py-4 text-center">
+                    <td key={product.id} className="px-4 py-4 text-center">
                       <div className="flex items-center justify-center gap-3">
                         <p className="text-lg font-bold text-gray-900 select-none">
                           {formatPrice(product.price, currency)}
@@ -344,7 +385,7 @@ export default function ComparePage() {
                     {t('common.compare.availability')}
                   </td>
                   {products.map((product) => (
-                    <td key={product.productId} className="px-4 py-4 text-center">
+                    <td key={product.id} className="px-4 py-4 text-center">
                       <span
                         className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
                           product.inStock
@@ -360,30 +401,13 @@ export default function ComparePage() {
                   ))}
                 </tr>
 
-                {specRows.map((specRow) => (
-                  <tr key={specRow.key} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-4 py-4 text-sm font-medium text-gray-700 bg-gray-50 sticky left-0 z-10">
-                      {specRow.name}
-                    </td>
-                    {products.map((product) => (
-                      <td
-                        key={`${specRow.key}-${product.productId}`}
-                        className={`px-4 py-4 text-center text-sm ${
-                          specRow.different ? 'text-gray-900 font-semibold' : 'text-gray-600'
-                        }`}
-                      >
-                        {specRow.valuesByProductId[product.productId] ?? '-'}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-
+                {/* Действия */}
                 <tr className="hover:bg-gray-50 transition-colors">
                   <td className="px-4 py-4 text-sm font-medium text-gray-700 bg-gray-50 sticky left-0 z-10">
                     {t('common.compare.actions')}
                   </td>
                   {products.map((product) => (
-                    <td key={product.productId} className="px-4 py-4 text-center">
+                    <td key={product.id} className="px-4 py-4 text-center">
                       <div className="flex flex-col gap-2 items-center">
                         <Link
                           href={`/products/${product.slug}`}
@@ -393,11 +417,11 @@ export default function ComparePage() {
                         </Link>
                         {product.inStock && (
                           <button
-                            onClick={(e) => void handleAddToCart(e, product)}
-                            disabled={addingToCart.has(product.productId)}
+                            onClick={(e) => handleAddToCart(e, product)}
+                            disabled={addingToCart.has(product.id)}
                             className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            {addingToCart.has(product.productId)
+                            {addingToCart.has(product.id)
                               ? t('common.messages.adding')
                               : t('common.buttons.addToCart')}
                           </button>
@@ -442,4 +466,4 @@ export default function ComparePage() {
       )}
     </div>
   );
-}
+}  

@@ -1,35 +1,68 @@
 {
   "filters": {
+    "panelTitle": "Filters",
+    "panelSubtitle": "Find what fits you best",
     "price": {
-      "title": "Filter by Price",
-      "priceLabel": "Price:"
+      "title": "Price",
+      "priceLabel": "Price:",
+      "loading": "Loading...",
+      "noRange": "No prices in catalog"
+    },
+    "category": {
+      "title": "Categories",
+      "loading": "Loading...",
+      "clear": "Clear",
+      "clearAria": "Clear category filter"
     },
     "color": {
-      "title": "Filter by Color",
+      "title": "Colors",
       "noColors": "No colors available",
-      "loading": "Loading..."
+      "loading": "Loading...",
+      "clear": "Clear",
+      "clearAria": "Clear color filter",
+      "palette": {
+        "red": "Red",
+        "green": "Green",
+        "brown": "Brown",
+        "gray": "Gray",
+        "burgundy": "Burgundy",
+        "orange": "Orange",
+        "blue": "Blue",
+        "black": "Black",
+        "silver": "Silver",
+        "yellow": "Yellow",
+        "pink": "Pink",
+        "white": "White",
+        "mint": "Mint"
+      }
     },
     "size": {
-      "title": "Filter by Size",
+      "title": "Size",
       "noSizes": "No sizes available",
       "loading": "Loading..."
     },
     "brand": {
-      "title": "Filter by Brand",
+      "title": "Brands",
       "searchPlaceholder": "Find brand",
       "noBrands": "No brands found",
-      "loading": "Loading..."
+      "loading": "Loading...",
+      "clear": "Clear",
+      "clearAria": "Clear brand filter"
     }
   },
   "header": {
+    "breadcrumbNavLabel": "Breadcrumb",
+    "breadcrumbHome": "Home",
+    "breadcrumbShop": "Shop",
+    "shopWordmark": "SHOP",
     "allProducts": "All Products ({total})",
     "clearFilters": "Clear Filters",
     "show": "Show",
     "all": "All",
     "sort": {
       "default": "Default Sort",
-      "newest": "Newest",
-      "popular": "Popular",
+      "bestsellers": "Bestsellers",
+      "curatedList": "Curated List",
       "priceAsc": "Price: Low to High",
       "priceDesc": "Price: High to Low",
       "nameAsc": "Name: A-Z",

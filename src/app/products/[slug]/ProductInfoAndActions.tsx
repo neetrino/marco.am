@@ -1,7 +1,7 @@
 'use client';
 
 import type { MouseEvent } from 'react';
-import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowUpRight, Heart } from 'lucide-react';
 import { formatPrice, type CurrencyCode } from '../../../lib/currency';
 import { t, getProductText } from '../../../lib/i18n';
@@ -10,21 +10,14 @@ import { sanitizeHtml } from '../../../lib/utils/sanitize';
 import { CompareIcon } from '../../../components/icons/CompareIcon';
 import {
   HEADER_FIGMA_PILL_RADIUS_CLASS,
-  HEADER_ROW2_BAR_HEIGHT_CLASS,
 } from '../../../components/header/header.constants';
 import { ProductAttributesSelector } from './ProductAttributesSelector';
 import type { Product, ProductVariant } from './types';
 
-/** Trailing arrow circle — scales with row-2 bar height (same as qty / toolbar icons and header strip). */
-const PRODUCT_PRIMARY_CTA_ICON_PX = 36;
-
 /** Buy CTA — taller row; trailing circle with light left nudge (−4px). */
 const PRODUCT_BUY_CTA_HEIGHT_CLASS = 'h-12';
-const PRODUCT_BUY_CTA_ICON_PX = 38;
-const PRODUCT_BUY_CTA_ICON_NUDGE_LEFT_CLASS = '-translate-x-1';
-
-/** Figma: offer CTA sits slightly above the purchase row — transform only, layout box unchanged. */
-const PRODUCT_OFFER_CTA_LIFT_CLASS = '-translate-y-1.5 sm:-translate-y-2';
+const PRODUCT_BUY_CTA_ICON_PX = 36;
+const PRODUCT_BUY_CTA_ICON_NUDGE_LEFT_CLASS = 'translate-x-2';
 
 interface ProductInfoAndActionsProps {
   product: Product;
@@ -72,7 +65,7 @@ export function ProductInfoAndActions({
   price,
   originalPrice,
   compareAtPrice,
-  discountPercent,
+  discountPercent: _discountPercent,
   currency,
   language,
   averageRating,
@@ -107,27 +100,46 @@ export function ProductInfoAndActions({
   getOptionValue,
   getRequiredAttributesMessage,
 }: ProductInfoAndActionsProps) {
+  const rawDescription = getProductText(language, product.id, 'longDescription') || product.description || '';
+  const sanitizedDescription = sanitizeHtml(rawDescription);
+  const hasDescription = sanitizedDescription
+    .replace(/<[^>]*>/g, '')
+    .replace(/&nbsp;/gi, ' ')
+    .trim().length > 0;
+  const hasAttributeSelectors =
+    attributeGroups.size > 0 ||
+    colorGroups.length > 0 ||
+    (!product?.productAttributes && sizeGroups.length > 0);
+
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1">
-        {product.brand && <p className="text-sm text-gray-500 mb-2">{product.brand.name}</p>}
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">
+        {product.brand && (
+          <div className="mb-2 flex items-center gap-2">
+            {product.brand.logo && (
+              <Image
+                src={product.brand.logo}
+                alt={product.brand.name}
+                width={20}
+                height={20}
+                className="h-5 w-5 rounded-sm object-contain"
+              />
+            )}
+            <p className="text-sm text-gray-500">{product.brand.name}</p>
+          </div>
+        )}
+        <h1 className="text-4xl font-bold text-marco-black mb-4">
           {getProductText(language, product.id, 'title') || product.title}
         </h1>
         <div className="mb-6">
           <div className="flex flex-col gap-1">
             {/* Discounted price with discount percentage */}
             <div className="flex items-center gap-2">
-              <p className="text-3xl font-bold text-gray-900">{formatPrice(price, currency as CurrencyCode)}</p>
-              {discountPercent && discountPercent > 0 && (
-                <span className="text-lg font-semibold text-blue-600">
-                  -{discountPercent}%
-                </span>
-              )}
+              <p className="text-3xl font-bold text-marco-black">{formatPrice(price, currency as CurrencyCode)}</p>
             </div>
             {/* Original price below discounted price - full width, not inline */}
             {(originalPrice || (compareAtPrice && compareAtPrice > price)) && (
-              <p className="text-xl text-gray-500 line-through decoration-gray-400 mt-1">
+              <p className="mt-1 ml-px text-xl text-gray-500 line-through decoration-gray-400">
                 {formatPrice(originalPrice || compareAtPrice || 0, currency as CurrencyCode)}
               </p>
             )}
@@ -140,43 +152,11 @@ export function ProductInfoAndActions({
             {isOutOfStock ? t(language, 'common.stock.outOfStock') : t(language, 'common.stock.inStock')}
           </p>
         </div>
-        <div className="text-gray-600 mb-8 prose prose-sm" dangerouslySetInnerHTML={{ __html: sanitizeHtml(getProductText(language, product.id, 'longDescription') || product.description || '') }} />
-
-        {/* Attributes Section */}
-        <div className="mb-8">
-          <ProductAttributesSelector
-            product={product}
-            attributeGroups={attributeGroups}
-            selectedColor={selectedColor}
-            selectedSize={selectedSize}
-            selectedAttributeValues={selectedAttributeValues}
-            unavailableAttributes={unavailableAttributes}
-            colorGroups={colorGroups}
-            sizeGroups={sizeGroups}
-            language={language}
-            quantity={quantity}
-            maxQuantity={maxQuantity}
-            isOutOfStock={isOutOfStock}
-            isVariationRequired={isVariationRequired}
-            hasUnavailableAttributes={hasUnavailableAttributes}
-            canAddToCart={canAddToCart}
-            isAddingToCart={isAddingToCart}
-            showMessage={showMessage}
-            onColorSelect={onColorSelect}
-            onSizeSelect={onSizeSelect}
-            onAttributeValueSelect={onAttributeValueSelect}
-            onQuantityAdjust={onQuantityAdjust}
-            onAddToCart={onAddToCart}
-            getOptionValue={getOptionValue}
-            getRequiredAttributesMessage={getRequiredAttributesMessage}
-          />
-        </div>
-
         {/* Rating Section */}
-        <div className="mt-8 p-4 bg-white border border-gray-200 rounded-2xl space-y-4">
-          <div className="flex items-center gap-2 pb-3 border-b border-gray-200">
+        <div className="mb-6 p-4 bg-white rounded-2xl space-y-4">
+          <div className="flex items-center gap-2 pb-3">
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 -ml-[17px]">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <svg
                     key={star}
@@ -192,18 +172,57 @@ export function ProductInfoAndActions({
                   </svg>
                 ))}
               </div>
-              <span className="text-sm font-semibold text-gray-900">
+              <span className="text-sm font-semibold text-marco-black">
                 {averageRating > 0 ? averageRating.toFixed(1) : '0.0'}
               </span>
             </div>
-            <span 
+            <span
               onClick={onScrollToReviews}
-              className="text-sm text-gray-600 cursor-pointer hover:text-gray-900 hover:underline transition-colors"
+              className="text-sm text-gray-600 cursor-pointer hover:text-marco-black hover:underline transition-colors"
             >
               ({reviewsCount} {reviewsCount === 1 ? t(language, 'common.reviews.review') : t(language, 'common.reviews.reviews')})
             </span>
           </div>
         </div>
+        {hasDescription && (
+          <div
+            className="-mt-[19px] text-gray-600 mb-8 prose prose-sm"
+            dangerouslySetInnerHTML={{ __html: sanitizedDescription }}
+          />
+        )}
+
+        {/* Attributes Section */}
+        {hasAttributeSelectors && (
+          <div className="mb-8">
+            <ProductAttributesSelector
+              product={product}
+              attributeGroups={attributeGroups}
+              selectedColor={selectedColor}
+              selectedSize={selectedSize}
+              selectedAttributeValues={selectedAttributeValues}
+              unavailableAttributes={unavailableAttributes}
+              colorGroups={colorGroups}
+              sizeGroups={sizeGroups}
+              language={language}
+              quantity={quantity}
+              maxQuantity={maxQuantity}
+              isOutOfStock={isOutOfStock}
+              isVariationRequired={isVariationRequired}
+              hasUnavailableAttributes={hasUnavailableAttributes}
+              canAddToCart={canAddToCart}
+              isAddingToCart={isAddingToCart}
+              showMessage={showMessage}
+              onColorSelect={onColorSelect}
+              onSizeSelect={onSizeSelect}
+              onAttributeValueSelect={onAttributeValueSelect}
+              onQuantityAdjust={onQuantityAdjust}
+              onAddToCart={onAddToCart}
+              getOptionValue={getOptionValue}
+              getRequiredAttributesMessage={getRequiredAttributesMessage}
+            />
+          </div>
+        )}
+
       </div>
       
       {/* Action Buttons - Aligned with bottom of image */}
@@ -230,45 +249,12 @@ export function ProductInfoAndActions({
             </p>
           </div>
         )}
-        <div className="flex flex-col gap-4 pb-2 pt-4 border-t sm:flex-row sm:items-end sm:justify-between sm:gap-6 sm:gap-y-3">
-          <Link
-            href={`/contact?product=${encodeURIComponent(product.slug)}`}
-            className={`flex w-full min-w-0 shrink-0 items-center gap-1.5 bg-marco-yellow pl-3 pr-5 text-left text-sm font-semibold leading-normal text-marco-black transition-[filter,transform] hover:-translate-y-2 hover:brightness-95 active:brightness-90 sm:max-w-[280px] sm:pl-6 sm:hover:-translate-y-2.5 ${PRODUCT_OFFER_CTA_LIFT_CLASS} ${HEADER_ROW2_BAR_HEIGHT_CLASS} ${HEADER_FIGMA_PILL_RADIUS_CLASS}`}
-          >
-            <span className="min-w-0 flex-1">{t(language, 'product.makeOffer')}</span>
-            <span
-              className="flex shrink-0 items-center justify-center rounded-full bg-black text-white"
-              style={{
-                width: PRODUCT_PRIMARY_CTA_ICON_PX,
-                height: PRODUCT_PRIMARY_CTA_ICON_PX,
-              }}
-              aria-hidden
-            >
-              <ArrowUpRight className="size-2.5" strokeWidth={2.25} />
-            </span>
-          </Link>
-          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3 sm:justify-end">
-            <div className="flex items-center border rounded-xl overflow-hidden bg-gray-50">
-              <button
-                onClick={() => onQuantityAdjust(-1)}
-                disabled={quantity <= 1}
-                className="w-11 h-11 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                -
-              </button>
-              <div className="w-11 text-center font-bold text-sm">{quantity}</div>
-              <button
-                onClick={() => onQuantityAdjust(1)}
-                disabled={quantity >= maxQuantity}
-                className="w-11 h-11 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                +
-              </button>
-            </div>
+        <div className="flex -translate-y-0.5 border-t pb-2 pt-7">
+          <div className="flex w-full min-w-0 flex-nowrap items-center gap-3">
             <button
               type="button"
               disabled={!canAddToCart || isAddingToCart}
-              className={`flex min-w-0 flex-1 items-center gap-1.5 bg-marco-yellow pl-4 pr-6 text-left text-sm font-semibold leading-normal text-marco-black transition-[filter,transform] hover:-translate-y-0.5 hover:brightness-95 active:brightness-90 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 disabled:hover:brightness-100 md:max-w-72 md:flex-none md:pl-7 ${PRODUCT_BUY_CTA_HEIGHT_CLASS} ${HEADER_FIGMA_PILL_RADIUS_CLASS}`}
+                className={`flex min-w-0 flex-1 items-center gap-1.5 bg-marco-yellow pl-4 pr-4 text-left text-sm font-semibold leading-normal text-marco-black transition-[filter,transform] hover:-translate-y-0.5 hover:brightness-95 active:brightness-90 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 disabled:hover:brightness-100 md:max-w-72 md:flex-none md:pl-7 ${PRODUCT_BUY_CTA_HEIGHT_CLASS} ${HEADER_FIGMA_PILL_RADIUS_CLASS}`}
               onClick={onAddToCart}
             >
               <span className="min-w-0 flex-1">
@@ -290,25 +276,42 @@ export function ProductInfoAndActions({
                 }}
                 aria-hidden
               >
-                <ArrowUpRight className="size-2.5" strokeWidth={2.25} />
+                <ArrowUpRight className="size-3.5" strokeWidth={2.5} />
               </span>
             </button>
+            <div className="ml-auto flex h-11 shrink-0 items-center overflow-hidden rounded-xl border-2 border-gray-200 bg-white">
+              <button
+                onClick={() => onQuantityAdjust(-1)}
+                disabled={quantity <= 1}
+                className="flex h-11 w-11 items-center justify-center disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                -
+              </button>
+              <div className="w-11 text-center text-sm font-bold">{quantity}</div>
+              <button
+                onClick={() => onQuantityAdjust(1)}
+                disabled={quantity >= maxQuantity}
+                className="flex h-11 w-11 items-center justify-center disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                +
+              </button>
+            </div>
             <button
               onClick={onCompareToggle}
-              className={`w-11 h-11 rounded-xl border-2 flex items-center justify-center transition-all duration-200 ${isInCompare ? 'border-gray-900 bg-gray-50' : 'border-gray-200 hover:border-gray-300'}`}
+              className={`w-11 h-11 shrink-0 rounded-xl border-2 flex items-center justify-center transition-all duration-200 ${isInCompare ? 'border-marco-black bg-gray-50' : 'border-gray-200 hover:border-gray-300'}`}
             >
               <CompareIcon isActive={isInCompare} />
             </button>
             <button
               onClick={onAddToWishlist}
-              className={`w-11 h-11 rounded-xl border-2 flex items-center justify-center ${isInWishlist ? 'border-gray-900 bg-gray-50' : 'border-gray-200'}`}
+              className={`w-11 h-11 shrink-0 rounded-xl border-2 flex items-center justify-center ${isInWishlist ? 'border-marco-black bg-gray-50' : 'border-gray-200'}`}
             >
               <Heart fill={isInWishlist ? 'currentColor' : 'none'} />
             </button>
           </div>
         </div>
       </div>
-      {showMessage && <div className="mt-4 p-4 bg-gray-900 text-white rounded-md shadow-lg">{showMessage}</div>}
+      {showMessage && <div className="mt-4 p-4 bg-marco-black text-white rounded-md shadow-lg">{showMessage}</div>}
     </div>
   );
 }

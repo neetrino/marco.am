@@ -16,6 +16,7 @@ class CategoriesService {
           include: {
             translations: true,
           },
+          orderBy: { position: "asc" },
         },
       },
       orderBy: {
@@ -23,17 +24,9 @@ class CategoriesService {
       },
     });
 
-    type CategoryTreeNode = {
-      id: string;
-      slug: string;
-      title: string;
-      fullPath: string;
-      children: CategoryTreeNode[];
-    };
-
     // Build tree structure
-    const categoryMap = new Map<string, CategoryTreeNode>();
-    const rootCategories: CategoryTreeNode[] = [];
+    const categoryMap = new Map();
+    const rootCategories: any[] = [];
 
     categories.forEach((category: {
       id: string;
@@ -45,12 +38,13 @@ class CategoriesService {
         category.translations[0];
       if (!translation) return;
 
-      const categoryData: CategoryTreeNode = {
+      const categoryData = {
         id: category.id,
         slug: translation.slug,
         title: translation.title,
         fullPath: translation.fullPath,
-        children: [],
+        productCount: 0,
+        children: [] as any[],
       };
 
       categoryMap.set(category.id, categoryData);
@@ -73,6 +67,31 @@ class CategoriesService {
         }
       }
     });
+
+    const allIds = Array.from(categoryMap.keys()) as string[];
+    if (allIds.length > 0) {
+      const counts = await db.product.groupBy({
+        by: ["primaryCategoryId"],
+        where: {
+          published: true,
+          deletedAt: null,
+          primaryCategoryId: { in: allIds },
+        },
+        _count: { id: true },
+      });
+      const countMap = new Map<string, number>();
+      for (const row of counts) {
+        if (row.primaryCategoryId) {
+          countMap.set(row.primaryCategoryId, row._count.id);
+        }
+      }
+      for (const id of allIds) {
+        const node = categoryMap.get(id) as { productCount: number } | undefined;
+        if (node) {
+          node.productCount = countMap.get(id) ?? 0;
+        }
+      }
+    }
 
     return {
       data: rootCategories,

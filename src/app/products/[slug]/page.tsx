@@ -7,6 +7,7 @@ import { RelatedProducts } from '../../../components/RelatedProducts';
 import { ProductReviews } from '../../../components/ProductReviews';
 import { ProductImageGallery } from './ProductImageGallery';
 import { ProductInfoAndActions } from './ProductInfoAndActions';
+import { ProductSpecifications } from './ProductSpecifications';
 import { useProductPage } from './useProductPage';
 import type { ProductPageProps } from './types';
 
@@ -34,11 +35,7 @@ export default function ProductPage({ params }: ProductPageProps) {
     isInCompare,
     quantity,
     reviews,
-    aggregate,
-    reviewsLoading,
-    reloadProductReviews,
     averageRating,
-    reviewCount,
     slug,
     attributeGroups,
     colorGroups,
@@ -69,69 +66,21 @@ export default function ProductPage({ params }: ProductPageProps) {
     if (!canAddToCart || !product || !currentVariant) return;
     setIsAddingToCart(true);
     try {
-      const unitPrice = price;
-      window.dispatchEvent(
-        new CustomEvent('cart-updated', {
-          detail: { optimisticAdd: { quantity, price: unitPrice } },
-        })
-      );
-
       if (!isLoggedIn) {
         const stored = localStorage.getItem('shop_cart_guest');
-        const cart: Array<{
-          productId: string;
-          productSlug?: string;
-          variantId: string;
-          quantity: number;
-          price?: number;
-        }> = stored ? JSON.parse(stored) : [];
-        const existing = cart.find((item) => item.variantId === currentVariant.id);
-        const nextQuantity = (existing?.quantity ?? 0) + quantity;
-        if (nextQuantity > currentVariant.stock) {
-          setShowMessage(t(language, 'common.alerts.noMoreStockAvailable'));
-          return;
-        }
-
-        if (existing) {
-          existing.quantity = nextQuantity;
-          existing.productSlug = product.slug;
-          existing.price = unitPrice;
-        } else {
-          cart.push({
-            productId: product.id,
-            productSlug: product.slug,
-            variantId: currentVariant.id,
-            quantity,
-            price: unitPrice,
-          });
-        }
-
+        const cart = stored ? JSON.parse(stored) : [];
+        const existing = cart.find((i: unknown): i is { variantId: string; quantity: number; productId?: string; productSlug?: string } => 
+          typeof i === 'object' && i !== null && 'variantId' in i && i.variantId === currentVariant.id
+        );
+        if (existing) existing.quantity += quantity;
+        else cart.push({ productId: product.id, productSlug: product.slug, variantId: currentVariant.id, quantity });
         localStorage.setItem('shop_cart_guest', JSON.stringify(cart));
-        const guestItemsCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-        const guestTotal = cart.reduce((sum, item) => sum + (item.price ?? 0) * item.quantity, 0);
-        window.dispatchEvent(
-          new CustomEvent('cart-updated', {
-            detail: { itemsCount: guestItemsCount, total: guestTotal },
-          })
-        );
       } else {
-        const response = await apiClient.post<{
-          cartSummary?: { itemsCount: number; total: number };
-        }>('/api/v1/cart/items', {
-          productId: product.id,
-          variantId: currentVariant.id,
-          quantity,
-        });
-        window.dispatchEvent(
-          new CustomEvent('cart-updated', {
-            detail: response.cartSummary ?? null,
-          })
-        );
+        await apiClient.post('/api/v1/cart/items', { productId: product.id, variantId: currentVariant.id, quantity });
       }
-
       setShowMessage(`${t(language, 'product.addedToCart')} ${quantity} ${t(language, 'product.pcs')}`);
-    } catch (_err) { 
       window.dispatchEvent(new Event('cart-updated'));
+    } catch (_err) { 
       setShowMessage(t(language, 'product.errorAddingToCart')); 
     } finally { 
       setIsAddingToCart(false); 
@@ -141,15 +90,15 @@ export default function ProductPage({ params }: ProductPageProps) {
 
   if (loading || !product) {
     return (
-      <div className="page-shell py-16 text-center">
+      <div className="marco-header-container py-16 text-center">
         {t(language, 'common.messages.loading')}
       </div>
     );
   }
 
   return (
-    <div className="page-shell py-12">
-      <div className="grid grid-cols-1 lg:grid-cols-[55%_45%] gap-12 items-start">
+    <div className="marco-header-container py-12">
+      <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-[minmax(0,11fr)_minmax(0,9fr)]">
         <ProductImageGallery
           images={images}
           product={product}
@@ -170,7 +119,7 @@ export default function ProductPage({ params }: ProductPageProps) {
             currency={currency}
             language={language}
             averageRating={averageRating}
-            reviewsCount={reviewCount}
+            reviewsCount={reviews.length}
             quantity={quantity}
             maxQuantity={maxQuantity}
             isOutOfStock={isOutOfStock}
@@ -203,18 +152,13 @@ export default function ProductPage({ params }: ProductPageProps) {
           />
       </div>
 
+      <ProductSpecifications product={product} language={language} />
+
       <div id="product-reviews" className="mt-24 scroll-mt-24">
-        <ProductReviews
-          productSlug={slug}
-          productId={product.id}
-          reviews={reviews}
-          aggregate={aggregate}
-          loading={reviewsLoading}
-          loadReviews={reloadProductReviews}
-        />
+        <ProductReviews productSlug={slug} productId={product.id} />
       </div>
       <div className="mt-16">
-        <RelatedProducts productSlug={product.slug} />
+        <RelatedProducts categorySlug={product.categories?.[0]?.slug} currentProductId={product.id} />
       </div>
     </div>
   );

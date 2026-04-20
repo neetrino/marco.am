@@ -45,6 +45,10 @@ interface SpecialOfferCardProps {
    * `mobileGrid` — 2×2 home strip: card fills the grid cell (no 252px cap).
    */
   layout?: 'default' | 'mobileGrid';
+  /**
+   * `end` — align tile to the right of the cell (e.g. products catalog). Default: centered (`mx-auto`).
+   */
+  align?: 'center' | 'end';
 }
 
 /**
@@ -53,6 +57,7 @@ interface SpecialOfferCardProps {
 export function SpecialOfferCard({
   product,
   layout = 'default',
+  align = 'center',
 }: SpecialOfferCardProps) {
   const useUnifiedNature = SPECIAL_OFFERS_USE_UNIFIED_NATURE_IMAGE;
 
@@ -101,9 +106,12 @@ export function SpecialOfferCard({
       ? { transform: `translateY(${SPECIAL_OFFERS_CARD_TEXT_SHIFT_DOWN_MOBILE_PX}px)` }
       : undefined;
 
+  const shellAlignClass =
+    align === 'end' ? 'ml-auto mr-0' : 'mx-auto';
+
   return (
     <div
-      className="relative z-10 mx-auto min-w-0 w-full max-w-full hover:z-30 focus-within:z-30"
+      className={`relative z-10 min-w-0 w-full max-w-full font-sans hover:z-30 focus-within:z-30 ${shellAlignClass}`}
       style={{
         ...shellMaxWidthStyle,
         ['--so-cart-bottom-mobile' as string]: `${SPECIAL_OFFERS_CART_BUTTON_MOBILE_BOTTOM_PX}px`,

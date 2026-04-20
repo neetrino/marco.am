@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useCallback, useMemo, useRef } from 'react';
 import type { CSSProperties } from 'react';
 
-import { chunkArray } from '../lib/chunk-array';
+import { chunkArray, padChunksToMinimumCount } from '../lib/chunk-array';
 import { t } from '../lib/i18n';
 import type { LanguageCode } from '../lib/language';
 import type { HomeBrandPartnerPublicItem } from '@/lib/types/home-brand-partners-public';
@@ -104,11 +104,7 @@ export function FeaturedProductsStrip({
 
   const mobileProductChunks = useMemo(() => {
     const chunks = chunkArray(products, SPECIAL_OFFERS_MOBILE_GRID_PAGE_SIZE);
-    const padded: SpecialOfferProduct[][] = [...chunks];
-    while (padded.length < SPECIAL_OFFERS_MOBILE_PAGINATION_PAGE_COUNT) {
-      padded.push([]);
-    }
-    return padded.slice(0, SPECIAL_OFFERS_MOBILE_PAGINATION_PAGE_COUNT);
+    return padChunksToMinimumCount(chunks, SPECIAL_OFFERS_MOBILE_PAGINATION_PAGE_COUNT);
   }, [products]);
 
   const isFeaturedRailVisible = isMaxMd && !loading && !error && products.length > 0;

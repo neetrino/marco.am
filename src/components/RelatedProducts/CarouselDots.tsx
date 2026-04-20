@@ -14,7 +14,7 @@ export function CarouselDots({ totalItems, visibleItems, currentIndex, onDotClic
   const totalPages = Math.ceil(totalItems / visibleItems);
 
   return (
-    <div className="flex justify-center gap-2 mt-6">
+    <div className="mt-6 flex justify-center gap-2">
       {Array.from({ length: totalPages }).map((_, index) => {
         const startIndex = index * visibleItems;
         const endIndex = Math.min(startIndex + visibleItems, totalItems);
@@ -24,11 +24,10 @@ export function CarouselDots({ totalItems, visibleItems, currentIndex, onDotClic
           <button
             key={index}
             onClick={() => onDotClick(startIndex)}
-            className={`h-2 rounded-full transition-all duration-300 ${
-              isActive
-                ? 'bg-gray-900 w-8'
-                : 'bg-gray-300 hover:bg-gray-400 w-2'
+            className={`rounded-full transition-colors ${
+              isActive ? 'bg-marco-black' : 'bg-gray-300'
             }`}
+            style={{ width: 8, height: 8 }}
             aria-label={`Go to slide ${index + 1}`}
           />
         );

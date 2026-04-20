@@ -2,8 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { AuthProvider } from '../lib/auth/AuthContext';
-import { LanguageHtmlUpdater } from './LanguageHtmlUpdater';
-import { LanguageRouterRefresh } from './LanguageRouterRefresh';
+import { LanguagePreferenceCookieSync } from './LanguagePreferenceCookieSync';
 import { ToastContainer } from './Toast';
 
 /**
@@ -13,8 +12,7 @@ import { ToastContainer } from './Toast';
 export function ClientProviders({ children }: { children: ReactNode }) {
   return (
     <AuthProvider>
-      <LanguageHtmlUpdater />
-      <LanguageRouterRefresh />
+      <LanguagePreferenceCookieSync />
       {children}
       <ToastContainer />
     </AuthProvider>

@@ -12,15 +12,38 @@ export type LanguageCode = keyof typeof LANGUAGES;
 export const LANGUAGE_PREFERENCE_KEY = 'shop_language';
 const LANGUAGE_STORAGE_KEY = LANGUAGE_PREFERENCE_KEY;
 
-/** Default locale for static labels when no user preference is available. */
-export const DEFAULT_LANGUAGE: LanguageCode = 'en';
+/**
+ * Read `shop_language` from `document.cookie` (set by server / Header).
+ * Used when localStorage is empty so client matches SSR locale (e.g. Armenian).
+ */
+function readLanguageFromCookie(): LanguageCode | null {
+  if (typeof document === 'undefined') {
+    return null;
+  }
+  const prefix = `${LANGUAGE_STORAGE_KEY}=`;
+  const row = document.cookie.split('; ').find((c) => c.startsWith(prefix));
+  if (!row) {
+    return null;
+  }
+  const raw = decodeURIComponent(row.slice(prefix.length));
+  if (!raw || !(raw in LANGUAGES)) {
+    return null;
+  }
+  const code = raw as LanguageCode;
+  return code === 'ka' ? 'en' : code;
+}
 
 export function getStoredLanguage(): LanguageCode {
   if (typeof window === 'undefined') return 'en';
   try {
     const stored = localStorage.getItem(LANGUAGE_STORAGE_KEY);
     if (stored && stored in LANGUAGES) {
-      return stored as LanguageCode;
+      const code = stored as LanguageCode;
+      return code === 'ka' ? 'en' : code;
+    }
+    const fromCookie = readLanguageFromCookie();
+    if (fromCookie) {
+      return fromCookie;
     }
   } catch {
     // Ignore errors
@@ -40,50 +63,12 @@ export function parseLanguageFromServer(raw: string | undefined): LanguageCode |
   return code === 'ka' ? 'en' : code;
 }
 
-/** How long the locale cookie is kept (must match typical “remember language” UX). */
-const LANGUAGE_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
-
-/**
- * Read the `shop_language` cookie in the browser. Returns `null` if missing or invalid.
- */
-export function readLanguageCookie(): LanguageCode | null {
-  if (typeof document === 'undefined') return null;
-  const prefix = `${LANGUAGE_PREFERENCE_KEY}=`;
-  const segment = document.cookie.split('; ').find((row) => row.startsWith(prefix));
-  if (!segment) return null;
-  let raw = segment.slice(prefix.length);
-  try {
-    raw = decodeURIComponent(raw);
-  } catch {
-    // keep raw as-is
-  }
-  const parsed = parseLanguageFromServer(raw);
-  return parsed ?? null;
-}
-
-/**
- * Sync locale to the cookie so the server layout/RSC can read it on the next request.
- */
-export function persistLanguageCookie(language: LanguageCode): void {
-  if (typeof document === 'undefined') return;
-  const secure = typeof window !== 'undefined' && window.location.protocol === 'https:';
-  const value = encodeURIComponent(language);
-  const attrs = [
-    `${LANGUAGE_PREFERENCE_KEY}=${value}`,
-    'path=/',
-    `max-age=${LANGUAGE_COOKIE_MAX_AGE_SECONDS}`,
-    'SameSite=Lax',
-  ];
-  if (secure) {
-    attrs.push('Secure');
-  }
-  document.cookie = attrs.join('; ');
-}
-
 export function setStoredLanguage(language: LanguageCode, options?: { skipReload?: boolean }): void {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(LANGUAGE_STORAGE_KEY, language);
+    const maxAge = 60 * 60 * 24 * 365;
+    document.cookie = `${LANGUAGE_STORAGE_KEY}=${encodeURIComponent(language)};path=/;max-age=${maxAge};SameSite=Lax`;
     window.dispatchEvent(new Event('language-updated'));
     // Only reload if skipReload is not true
     if (!options?.skipReload) {

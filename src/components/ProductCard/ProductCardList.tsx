@@ -10,6 +10,7 @@ import { CartIcon as CartPngIcon } from '../icons/CartIcon';
 import { ProductColors } from './ProductColors';
 import type { CurrencyCode } from '../../lib/currency';
 import type { ProductLabel } from '../ProductLabels';
+import { SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC } from '../home/home-special-offers.constants';
 
 interface WishlistIconProps {
   filled?: boolean;
@@ -70,6 +71,7 @@ export function ProductCardList({
   onAddToCart,
 }: ProductCardListProps) {
   const { t } = useTranslation();
+  const displayImageSrc = SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC;
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:bg-gray-50 transition-colors">
@@ -79,12 +81,12 @@ export function ProductCardList({
           href={`/products/${product.slug}`}
           className="w-20 h-20 bg-gray-100 rounded-lg flex-shrink-0 relative overflow-hidden self-start sm:self-center"
         >
-          {product.image && !imageError ? (
+          {!imageError ? (
             <Image
-              src={product.image}
+              src={displayImageSrc}
               alt={product.title}
               fill
-              className="object-cover"
+              className="object-cover object-center"
               sizes="80px"
               unoptimized
               onError={onImageError}

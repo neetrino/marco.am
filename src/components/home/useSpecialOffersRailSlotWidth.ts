@@ -7,7 +7,7 @@ import {
 } from './home-special-offers.constants';
 
 /**
- * Pixel width for each special-offers card so exactly four fit in the scroller (lg+).
+ * Pixel width for each special-offers card so exactly four fit in the scroller (`md+`, see {@link SPECIAL_OFFERS_RAIL_LG_MIN_WIDTH_PX}).
  */
 export function useSpecialOffersRailSlotWidth(
   scrollerRef: RefObject<HTMLDivElement | null>,

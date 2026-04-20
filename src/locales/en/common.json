@@ -45,7 +45,13 @@
     "shop": "Shop",
     "brands": "Brands",
     "reels": "Reels",
-    "addresses": "Addresses"
+    "addresses": "Addresses",
+    "categoriesMegaMenu": {
+      "viewProducts": "View all products",
+      "subcategories": "Subcategories",
+      "productsWord": "products",
+      "emptySubcategories": "No subcategories yet. Add child categories in the admin or run the database seed."
+    }
   },
   "stock": {
     "inStock": "In Stock",
@@ -245,9 +251,16 @@
     "products": "products"
   },
   "pagination": {
-    "previous": "Previous",
+    "first": "First",
+    "last": "Last",
+    "previous": "Back",
     "next": "Next",
-    "pageOf": "Page {page} of {totalPages}"
+    "pageOf": "Page {page} of {totalPages}",
+    "navAriaLabel": "Pagination",
+    "firstAria": "Go to first page",
+    "lastAria": "Go to last page",
+    "previousAria": "Go to previous page",
+    "nextAria": "Go to next page"
   },
   "notFound": {
     "title": "Page Not Found",

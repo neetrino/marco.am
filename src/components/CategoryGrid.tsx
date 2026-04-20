@@ -8,6 +8,7 @@ import Image from 'next/image';
 import { apiClient } from '../lib/api-client';
 import { getStoredLanguage } from '../lib/language';
 import { logger } from "@/lib/utils/logger";
+import { SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC } from './home/home-special-offers.constants';
 
 interface Category {
   id: string;
@@ -38,7 +39,7 @@ interface ProductsResponse {
 /**
  * Get icon for category based on title/slug
  */
-function getCategoryIcon(categoryTitle: string, categorySlug: string): ReactNode {
+function _getCategoryIcon(categoryTitle: string, categorySlug: string): ReactNode {
   const title = categoryTitle.toLowerCase();
   const slug = categorySlug.toLowerCase();
 
@@ -153,6 +154,7 @@ export function CategoryGrid() {
   const [loading, setLoading] = useState(true);
   const [productCounts, setProductCounts] = useState<Record<string, number>>({});
   const [categoryProducts, setCategoryProducts] = useState<Record<string, Product | null>>({});
+  const displayImageSrc = SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC;
 
   useEffect(() => {
     fetchCategories();
@@ -303,7 +305,7 @@ export function CategoryGrid() {
         <div className="flex items-center justify-center gap-6 md:gap-8 lg:gap-12 flex-wrap">
           {categories.map((category) => {
             const productCount = productCounts[category.slug] ?? 0;
-            const product = categoryProducts[category.slug];
+            const _product = categoryProducts[category.slug];
             
             return (
               <Link
@@ -317,20 +319,16 @@ export function CategoryGrid() {
               >
                 {/* Product Image or Icon */}
                 <div className="transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1 relative">
-                  {product?.image ? (
-                    <div className="w-20 h-20 rounded-lg overflow-hidden bg-white shadow-md border-2 border-gray-200 group-hover:border-gray-400 transition-all duration-300">
-                      <Image
-                        src={product.image}
-                        alt={category.title}
-                        width={80}
-                        height={80}
-                        className="w-full h-full object-cover scale-110 group-hover:scale-125 transition-transform duration-300"
-                        unoptimized
-                      />
-                    </div>
-                  ) : (
-                    getCategoryIcon(category.title, category.slug)
-                  )}
+                  <div className="w-20 h-20 rounded-lg overflow-hidden bg-white shadow-md border-2 border-gray-200 group-hover:border-gray-400 transition-all duration-300">
+                    <Image
+                      src={displayImageSrc}
+                      alt={category.title}
+                      width={80}
+                      height={80}
+                      className="w-full h-full object-cover scale-110 group-hover:scale-125 transition-transform duration-300"
+                      unoptimized
+                    />
+                  </div>
                 </div>
                 
                 {/* Category Name */}

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import type { Ref } from 'react';
 
+import { padChunkToSize } from '../../lib/chunk-array';
 import { t } from '../../lib/i18n';
 import type { LanguageCode } from '../../lib/language';
 import { SpecialOfferCard } from './SpecialOfferCard';
@@ -14,16 +15,13 @@ import {
   SPECIAL_OFFERS_MOBILE_GRID_PAGE_SIZE,
   SPECIAL_OFFERS_MOBILE_GRID_ROW_GAP_PX,
   SPECIAL_OFFERS_MOBILE_GRID_SCROLLER_PADDING_BOTTOM_PX,
+  SPECIAL_OFFERS_MOBILE_SCROLLER_CLASS,
   SPECIAL_OFFERS_PAGINATION_DOT_GAP_MOBILE_PX,
   SPECIAL_OFFERS_PAGINATION_DOT_SIZE_PX,
   SPECIAL_OFFERS_SECTION_PAGINATION_TO_CTA_GAP_MOBILE_PX,
   SPECIAL_OFFERS_SECTION_RAIL_TO_PAGINATION_GAP_MOBILE_PX,
 } from './home-special-offers.constants';
 import type { SpecialOfferProduct } from './special-offer-product.types';
-
-/** Same scroller shell as `HomeSpecialOffersSection` — dots + CTA sit outside this div (no overlap with card overflow). */
-const FEATURED_MOBILE_SCROLLER_CLASS =
-  'flex min-w-0 flex-row flex-nowrap overflow-x-auto overflow-y-hidden overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
 
 const FEATURED_PAGE_ARIA_KEYS = [
   'page_first_aria',
@@ -40,17 +38,6 @@ function featuredPageAriaPath(index: number): string {
   return index < FEATURED_PAGE_ARIA_KEYS.length
     ? `home.featured_products.${FEATURED_PAGE_ARIA_KEYS[index]}`
     : 'home.featured_products.pagination_aria';
-}
-
-function slotsForMobilePage(
-  chunk: SpecialOfferProduct[],
-  pageSize: number,
-): (SpecialOfferProduct | null)[] {
-  const slots: (SpecialOfferProduct | null)[] = [...chunk];
-  while (slots.length < pageSize) {
-    slots.push(null);
-  }
-  return slots.slice(0, pageSize);
 }
 
 type FeaturedNewArrivalsMobileRailProps = {
@@ -79,7 +66,7 @@ export function FeaturedNewArrivalsMobileRail({
     <>
       <div
         ref={scrollerRef}
-        className={FEATURED_MOBILE_SCROLLER_CLASS}
+        className={SPECIAL_OFFERS_MOBILE_SCROLLER_CLASS}
         style={{
           gap: `${SPECIAL_OFFERS_CARD_GAP_PX}px`,
           scrollSnapType: 'x mandatory',
@@ -95,7 +82,7 @@ export function FeaturedNewArrivalsMobileRail({
               rowGap: SPECIAL_OFFERS_MOBILE_GRID_ROW_GAP_PX,
             }}
           >
-            {slotsForMobilePage(chunk, SPECIAL_OFFERS_MOBILE_GRID_PAGE_SIZE).map(
+            {padChunkToSize(chunk, SPECIAL_OFFERS_MOBILE_GRID_PAGE_SIZE).map(
               (product, slotIndex) => (
                 <div
                   key={product?.id ?? `featured-slot-${pageIndex}-${slotIndex}`}
