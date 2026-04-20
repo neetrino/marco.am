@@ -21,7 +21,7 @@ export function HeroCarousel() {
 
   return (
     <div className={HERO_PAGE_CONTAINER_CLASS} id="hero">
-      <div className="relative aspect-[141/79] min-h-[260px] w-full min-w-0 overflow-hidden rounded-[32px] box-border sm:min-h-[320px] md:aspect-[141/68] md:min-h-0">
+      <div className="relative aspect-[141/79] min-h-[260px] w-full min-w-0 overflow-hidden rounded-[32px] bg-marco-yellow box-border sm:min-h-[320px] md:aspect-[141/68] md:min-h-0 md:bg-transparent">
         <div className="md:hidden">
           <HeroCarouselSlides />
           <HomePromoMobileHeroSlatePanel />

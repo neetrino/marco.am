@@ -20,7 +20,7 @@ export const HERO_PRIMARY_IMAGE_SRC = '/assets/hero/hero-brick-wall-vertical.png
  * `md+` uses {@link HERO_PRIMARY_IMAGE_SRC} in `HeroCarouselSlides`.
  */
 export const HERO_MOBILE_PRIMARY_IMAGE_SRC =
-  '/assets/hero/hero-mobile-brick-wall-314-2380.jpg' as const;
+  '/assets/hero/hero-yellow-brick-wall.png' as const;
 
 /** Figma 101:4019–101:4021 — stacked layer fills + 101:4023 chair asset */
 export const HERO_PROMO_STACK_LAYER_WHITE = '#ffffff' as const;
