@@ -32,10 +32,7 @@ export function HeaderProfileIconOutline() {
 
 export function HeaderProfileIconFilled() {
   return (
-    <div className="relative flex h-[16px] w-[16px] items-center justify-center">
-      <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 opacity-90 shadow-md transition-opacity duration-200 group-hover:opacity-100" />
-      <HeaderNavbarProfileIcon className={`relative z-10 text-white ${HEADER_PROFILE_ICON_CLASS}`} />
-    </div>
+    <HeaderNavbarProfileIcon className={`text-marco-black ${HEADER_PROFILE_ICON_CLASS}`} />
   );
 }
 
@@ -71,14 +68,13 @@ export function HeaderBadgeIcon({ icon, badge = 0, className = '', iconClassName
         <span
           className="
       absolute
-      -top-5
-      -right-5
-      bg-gradient-to-br from-red-500 to-red-600
-      text-white text-[10px] font-bold
-      rounded-full min-w-[20px] h-5 px-1.5
+      -top-[13px]
+      -right-[13px]
+      bg-red-600
+      text-white text-[9px] font-bold
+      rounded-full min-w-[18px] h-4 px-0.5
       flex items-center justify-center
-      leading-none shadow-lg border-2 border-white
-      animate-pulse
+      leading-none
     "
         >
           {badge > 99 ? '99+' : badge}
