@@ -1,8 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ProductCard } from './ProductCard';
 import { useTranslation } from '../lib/i18n-client';
+import type { ProductLabel } from './ProductLabels';
+import { ProductCard } from './ProductCard';
+import { SpecialOfferCard } from './home/SpecialOfferCard';
+import type { SpecialOfferProduct } from './home/special-offer-product.types';
+import { useIsMaxMd } from './home/use-is-max-md';
+import { useForcedShopGridColumns } from './useForcedShopGridColumns';
 
 interface Product {
   id: string;
@@ -17,6 +22,33 @@ interface Product {
     name: string;
   } | null;
   defaultVariantId?: string | null;
+  labels?: ProductLabel[];
+  colors?: Array<{ value: string; imageUrl?: string | null; colors?: string[] | null }>;
+}
+
+function toSpecialOfferProduct(p: Product): SpecialOfferProduct {
+  const compareAt = p.compareAtPrice ?? null;
+  let discountPercent: number | null = null;
+  if (compareAt != null && compareAt > p.price) {
+    discountPercent = Math.round(((compareAt - p.price) / compareAt) * 100);
+  }
+  return {
+    id: p.id,
+    slug: p.slug,
+    title: p.title,
+    price: p.price,
+    compareAtPrice: compareAt ?? undefined,
+    originalPrice: compareAt ?? undefined,
+    image: p.image,
+    images: p.image ? [p.image] : undefined,
+    inStock: p.inStock,
+    brand: p.brand,
+    defaultVariantId: p.defaultVariantId ?? undefined,
+    discountPercent,
+    labels: p.labels,
+    reviewCount: undefined,
+    colors: p.colors,
+  };
 }
 
 type ViewMode = 'list' | 'grid-2' | 'grid-3';
@@ -28,6 +60,10 @@ interface ProductsGridProps {
 
 export function ProductsGrid({ products, sortBy = 'default' }: ProductsGridProps) {
   const { t } = useTranslation();
+  const isMaxMd = useIsMaxMd();
+  const forcedShopCols = useForcedShopGridColumns();
+  /** Same as home featured strip: `default` (fixed card width) on md+, `mobileGrid` on small screens */
+  const specialOfferLayout = isMaxMd ? 'mobileGrid' : 'default';
   const [viewMode, setViewMode] = useState<ViewMode>('grid-2');
   const [sortedProducts, setSortedProducts] = useState<Product[]>(products);
 
@@ -80,17 +116,29 @@ export function ProductsGrid({ products, sortBy = 'default' }: ProductsGridProps
     setSortedProducts(sorted);
   }, [products, sortBy]);
 
-  // Get grid classes based on view mode
+  /** Tighter on smallest phones; roomier gaps on mobile shop before `md` desktop columns */
+  const gridGapClass = 'gap-x-4 gap-y-12 md:gap-x-6 md:gap-y-12';
+
+  /**
+   * Touch iPad / tablet (see `useForcedShopGridColumns`): fixed 2 or 3 columns, no list mode.
+   * Otherwise: user-selected view mode.
+   */
   const getGridClasses = () => {
+    if (forcedShopCols === 2) {
+      return `grid grid-cols-2 ${gridGapClass}`;
+    }
+    if (forcedShopCols === 3) {
+      return `grid grid-cols-3 ${gridGapClass}`;
+    }
     switch (viewMode) {
       case 'list':
-        return 'grid grid-cols-1 gap-4';
+        return `grid grid-cols-1 ${gridGapClass}`;
       case 'grid-2':
-        return 'grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3';
+        return `grid grid-cols-2 md:grid-cols-3 ${gridGapClass}`;
       case 'grid-3':
-        return 'grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4';
+        return `grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 ${gridGapClass}`;
       default:
-        return 'grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4';
+        return `grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 ${gridGapClass}`;
     }
   };
 
@@ -102,17 +150,29 @@ export function ProductsGrid({ products, sortBy = 'default' }: ProductsGridProps
     );
   }
 
+  const useListLayout = forcedShopCols === null && viewMode === 'list';
+
   return (
     <div className={getGridClasses()}>
       {sortedProducts.map((product) => (
-        <ProductCard 
-          key={product.id} 
-          product={{
-            ...product,
-            compareAtPrice: product.compareAtPrice ?? undefined
-          }} 
-          viewMode={viewMode} 
-        />
+        <div
+          key={product.id}
+          className={
+            useListLayout
+              ? 'min-w-0 w-full'
+              : 'flex min-w-0 justify-end pr-2 sm:pr-3 md:pr-4'
+          }
+        >
+          {useListLayout ? (
+            <ProductCard product={product} viewMode="list" />
+          ) : (
+            <SpecialOfferCard
+              product={toSpecialOfferProduct(product)}
+              layout={specialOfferLayout}
+              align="end"
+            />
+          )}
+        </div>
       ))}
     </div>
   );

@@ -80,50 +80,7 @@ class ProductsFiltersService {
         ];
       }
 
-      // Add category filter
-      if (filters.category) {
-        try {
-          const categoryDoc = await db.category.findFirst({
-            where: {
-              translations: {
-                some: {
-                  slug: filters.category,
-                  locale: filters.lang || "en",
-                },
-              },
-              published: true,
-              deletedAt: null,
-            },
-          });
-
-          if (categoryDoc && categoryDoc.id) {
-            // Get all child categories (subcategories) recursively
-            const childCategoryIds = await this.getAllChildCategoryIds(categoryDoc.id);
-            const allCategoryIds = [categoryDoc.id, ...childCategoryIds];
-
-            // Build OR conditions
-            const categoryConditions = allCategoryIds.flatMap((catId: string) => [
-              { primaryCategoryId: catId },
-              { categoryIds: { has: catId } },
-            ]);
-            
-            if (where.OR) {
-              where.AND = [
-                { OR: where.OR },
-                {
-                  OR: categoryConditions,
-                },
-              ];
-              delete where.OR;
-            } else {
-              where.OR = categoryConditions;
-            }
-          }
-        } catch (categoryError) {
-          console.error('❌ [PRODUCTS FILTERS SERVICE] Error fetching category:', categoryError);
-          // Continue without category filter if there's an error
-        }
-      }
+      // Category filter is omitted so facet counts (including category list) match search scope.
 
       // Get products with variants (capped for filter computation)
       const FILTERS_PRODUCTS_LIMIT = 500;
@@ -207,6 +164,7 @@ class ProductsFiltersService {
     }>();
     const sizeMap = new Map<string, number>();
     const brandMap = new Map<string, { id: string; name: string; count: number }>();
+    const categoryCountMap = new Map<string, number>();
     let rangeMin = Infinity;
     let rangeMax = 0;
 
@@ -214,11 +172,36 @@ class ProductsFiltersService {
       if (!product || !product.variants || !Array.isArray(product.variants)) {
         return;
       }
+      const catProduct = product as ProductWithRelations & {
+        primaryCategoryId?: string | null;
+        categoryIds?: string[];
+      };
+      const categoryIdsForProduct = new Set<string>();
+      if (catProduct.primaryCategoryId) {
+        categoryIdsForProduct.add(catProduct.primaryCategoryId);
+      }
+      (catProduct.categoryIds || []).forEach((id) => {
+        categoryIdsForProduct.add(id);
+      });
+      categoryIdsForProduct.forEach((id) => {
+        categoryCountMap.set(id, (categoryCountMap.get(id) || 0) + 1);
+      });
       if (product.brand?.id) {
-        const name = (product.brand as { translations?: Array<{ locale: string; name?: string }>; name?: string }).translations?.find((t: { locale: string }) => t.locale === lang)?.name || (product.brand as { name?: string }).name || '';
+        const b = product.brand as {
+          id: string;
+          slug?: string;
+          translations?: Array<{ locale: string; name: string }>;
+        };
+        const tr =
+          b.translations?.find((t) => t.locale === lang) ?? b.translations?.[0];
+        const name = (tr?.name?.trim() || b.slug || '').trim();
         if (name) {
           const existing = brandMap.get(product.brand.id);
-          brandMap.set(product.brand.id, { id: product.brand.id, name, count: (existing?.count || 0) + 1 });
+          brandMap.set(product.brand.id, {
+            id: product.brand.id,
+            name,
+            count: (existing?.count || 0) + 1,
+          });
         }
       }
       product.variants.forEach((v: { price?: number }) => {
@@ -337,6 +320,34 @@ class ProductsFiltersService {
       }
     });
 
+    const categoryIdsWithProducts = Array.from(categoryCountMap.keys());
+    let categories: Array<{ slug: string; title: string; count: number }> = [];
+    if (categoryIdsWithProducts.length > 0) {
+      const categoryRows = await db.category.findMany({
+        where: {
+          id: { in: categoryIdsWithProducts },
+          published: true,
+          deletedAt: null,
+        },
+        include: { translations: true },
+        orderBy: { position: "asc" },
+      });
+      categories = categoryRows
+        .map((cat) => {
+          const tr =
+            cat.translations.find((t) => t.locale === lang) || cat.translations[0];
+          if (!tr) {
+            return null;
+          }
+          const count = categoryCountMap.get(cat.id) || 0;
+          if (count === 0) {
+            return null;
+          }
+          return { slug: tr.slug, title: tr.title, count };
+        })
+        .filter((c): c is { slug: string; title: string; count: number } => c !== null);
+    }
+
     // Convert maps to arrays
     const colors: Array<{ value: string; label: string; count: number; imageUrl?: string | null; colors?: string[] | null }> = Array.from(
       colorMap.entries()
@@ -369,9 +380,30 @@ class ProductsFiltersService {
       // Sort colors alphabetically
       colors.sort((a: { label: string }, b: { label: string }) => a.label.localeCompare(b.label));
 
-      const brands = Array.from(brandMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+      // Shop sidebar: list all published brands from DB, counts from current product facet (not only brands that appear in the capped sample)
+      const publishedBrands = await db.brand.findMany({
+        where: { published: true, deletedAt: null },
+        include: { translations: true },
+      });
+      const brands = publishedBrands
+        .map((row) => {
+          const tr =
+            row.translations.find((t) => t.locale === lang) ?? row.translations[0];
+          const name = (tr?.name?.trim() || row.slug || '').trim();
+          if (!name) {
+            return null;
+          }
+          const facet = brandMap.get(row.id);
+          return {
+            id: row.id,
+            name,
+            count: facet?.count ?? 0,
+          };
+        })
+        .filter((b): b is { id: string; name: string; count: number } => b !== null)
+        .sort((a, b) => a.name.localeCompare(b.name));
       const priceMin = rangeMin === Infinity ? 0 : Math.floor(rangeMin / 1000) * 1000;
-      const priceMax = rangeMax === 0 ? 100000 : Math.ceil(rangeMax / 1000) * 1000;
+      const priceMax = rangeMax === 0 ? 0 : Math.ceil(rangeMax / 1000) * 1000;
       let stepSize: number | null = null;
       let stepSizePerCurrency: Record<string, number> | null = null;
       try {
@@ -393,6 +425,7 @@ class ProductsFiltersService {
         colors,
         sizes,
         brands,
+        categories,
         priceRange: { min: priceMin, max: priceMax, stepSize, stepSizePerCurrency },
       };
     } catch (error) {
@@ -401,7 +434,8 @@ class ProductsFiltersService {
         colors: [],
         sizes: [],
         brands: [],
-        priceRange: { min: 0, max: 100000, stepSize: null, stepSizePerCurrency: null },
+        categories: [],
+        priceRange: { min: 0, max: 0, stepSize: null, stepSizePerCurrency: null },
       };
     }
   }
@@ -416,22 +450,39 @@ class ProductsFiltersService {
     };
 
     if (filters.category) {
-      const categoryDoc = await db.category.findFirst({
-        where: {
-          translations: {
-            some: {
-              slug: filters.category,
-              locale: filters.lang || "en",
+      const slugs = filters.category
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
+      const perSlugTrees: Prisma.ProductWhereInput[] = [];
+      for (const slug of slugs) {
+        const categoryDoc = await db.category.findFirst({
+          where: {
+            translations: {
+              some: {
+                slug,
+                locale: filters.lang || "en",
+              },
             },
+            published: true,
+            deletedAt: null,
           },
-        },
-      });
-
-      if (categoryDoc) {
-        where.OR = [
-          { primaryCategoryId: categoryDoc.id },
-          { categoryIds: { has: categoryDoc.id } },
-        ];
+        });
+        if (!categoryDoc) {
+          continue;
+        }
+        const childCategoryIds = await this.getAllChildCategoryIds(categoryDoc.id);
+        const allCategoryIds = [categoryDoc.id, ...childCategoryIds];
+        const categoryConditions = allCategoryIds.flatMap((catId: string) => [
+          { primaryCategoryId: catId },
+          { categoryIds: { has: catId } },
+        ]);
+        perSlugTrees.push({ OR: categoryConditions });
+      }
+      if (perSlugTrees.length === 1) {
+        where.OR = (perSlugTrees[0] as { OR: Prisma.ProductWhereInput[] }).OR;
+      } else if (perSlugTrees.length > 1) {
+        where.OR = perSlugTrees;
       }
     }
 
@@ -460,7 +511,8 @@ class ProductsFiltersService {
     });
 
     minPrice = minPrice === Infinity ? 0 : Math.floor(minPrice / 1000) * 1000;
-    maxPrice = maxPrice === 0 ? 100000 : Math.ceil(maxPrice / 1000) * 1000;
+    // No products / no prices: keep 0 — UI must not show a fake cap (e.g. 100000) that mismatches real catalog
+    maxPrice = maxPrice === 0 ? 0 : Math.ceil(maxPrice / 1000) * 1000;
 
     // Load price filter settings to provide optional step sizes per currency
     let stepSize: number | null = null;

@@ -5,21 +5,9 @@
  * This file contains React hooks that can only be used in Client Components
  */
 
-import { useMemo, useCallback, useState, useEffect } from 'react';
-import { type LanguageCode } from './language';
-import { getStoredLanguage } from './language';
-import { t, getProductText, getAttributeLabel, clearTranslationCache, type ProductField } from './i18n';
-
-// Import translations to check available languages
-import enCommon from '../locales/en/common.json';
-import hyCommon from '../locales/hy/common.json';
-import ruCommon from '../locales/ru/common.json';
-
-const translations: Partial<Record<LanguageCode, any>> = {
-  en: { common: enCommon },
-  hy: { common: hyCommon },
-  ru: { common: ruCommon },
-};
+import { useMemo, useCallback, useContext } from 'react';
+import { t, getProductText, getAttributeLabel, type ProductField } from './i18n';
+import { LanguagePreferenceContext } from './language-context';
 
 /**
  * React hook for translations in client components
@@ -34,39 +22,7 @@ const translations: Partial<Record<LanguageCode, any>> = {
  * ```
  */
 export function useTranslation() {
-  // Always start with 'en' to prevent hydration mismatch
-  // The language will be updated after mount in useEffect
-  const [lang, setLang] = useState<LanguageCode>('en');
-
-  // Listen to language changes and update state reactively
-  useEffect(() => {
-    // Update language on mount to ensure we have the latest from localStorage
-    const updateLanguage = () => {
-      const storedLang = getStoredLanguage();
-      const newLang: LanguageCode = (storedLang && storedLang in translations) ? storedLang : 'en';
-      setLang((currentLang) => {
-        if (newLang !== currentLang) {
-          // Clear translation cache when language changes
-          clearTranslationCache();
-          return newLang;
-        }
-        return currentLang;
-      });
-    };
-
-    // Update immediately on mount
-    updateLanguage();
-
-    // Listen to language-updated events
-    const handleLanguageUpdate = () => {
-      updateLanguage();
-    };
-
-    window.addEventListener('language-updated', handleLanguageUpdate);
-    return () => {
-      window.removeEventListener('language-updated', handleLanguageUpdate);
-    };
-  }, []); // Empty dependency array - only run on mount/unmount
+  const lang = useContext(LanguagePreferenceContext);
 
   // Memoized translation function with validation
   const translate = useCallback(

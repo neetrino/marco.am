@@ -6,9 +6,6 @@ import Link from 'next/link';
 import { ProductImagePlaceholder } from '../ProductImagePlaceholder';
 
 import {
-  SPECIAL_OFFERS_IMAGE_NUDGE_LEFT_PX,
-  SPECIAL_OFFERS_IMAGE_TRANSLATE_Y_MOBILE_EXTRA_PX,
-  SPECIAL_OFFERS_IMAGE_TRANSLATE_Y_PX,
   SPECIAL_OFFERS_IMAGE_WELL_HEIGHT_PX,
   SPECIAL_OFFERS_IMAGE_WELL_RADIUS_PX,
 } from './home-special-offers.constants';
@@ -23,12 +20,6 @@ interface SpecialOfferCardMediaProps {
   layout?: 'default' | 'mobileGrid';
 }
 
-function imageTranslateYPx(layout: SpecialOfferCardMediaProps['layout']): number {
-  const extra =
-    layout === 'mobileGrid' ? SPECIAL_OFFERS_IMAGE_TRANSLATE_Y_MOBILE_EXTRA_PX : 0;
-  return SPECIAL_OFFERS_IMAGE_TRANSLATE_Y_PX + extra;
-}
-
 export function SpecialOfferCardMedia({
   slug,
   title,
@@ -37,7 +28,11 @@ export function SpecialOfferCardMedia({
   onImageError,
   layout = 'default',
 }: SpecialOfferCardMediaProps) {
-  const translateY = imageTranslateYPx(layout);
+  const translateY = 0;
+  const nudgeLeftPx = 0;
+  const imageFillClass = 'object-cover object-center';
+  const imageWellPaddingClass = 'p-0';
+  const imageWellBgClass = 'bg-transparent';
   if (showPlaceholder) {
     return (
       <div
@@ -50,7 +45,7 @@ export function SpecialOfferCardMedia({
         <div
           className="h-full w-full"
           style={{
-            transform: `translate(-${SPECIAL_OFFERS_IMAGE_NUDGE_LEFT_PX}px, ${translateY}px)`,
+            transform: `translate(-${nudgeLeftPx}px, ${translateY}px)`,
           }}
         >
           <ProductImagePlaceholder className="h-full w-full" aria-label={title} />
@@ -76,7 +71,7 @@ export function SpecialOfferCardMedia({
   return (
     <Link
       href={`/products/${slug}`}
-      className="relative z-0 mt-0 flex w-full items-center justify-center overflow-hidden bg-white p-6 max-md:z-20"
+      className={`relative z-0 mt-0 flex w-full items-center justify-center overflow-hidden ${imageWellBgClass} ${imageWellPaddingClass} max-md:z-20`}
       style={{
         height: SPECIAL_OFFERS_IMAGE_WELL_HEIGHT_PX,
         borderRadius: SPECIAL_OFFERS_IMAGE_WELL_RADIUS_PX,
@@ -86,9 +81,9 @@ export function SpecialOfferCardMedia({
         src={singleSrc}
         alt={title}
         fill
-        className="object-contain mix-blend-multiply"
+        className={imageFillClass}
         style={{
-          transform: `translate(-${SPECIAL_OFFERS_IMAGE_NUDGE_LEFT_PX}px, ${translateY}px)`,
+          transform: `translate(-${nudgeLeftPx}px, ${translateY}px)`,
         }}
         sizes="(max-width: 1024px) 260px, 20vw"
         unoptimized

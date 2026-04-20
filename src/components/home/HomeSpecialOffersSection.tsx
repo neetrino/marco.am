@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Montserrat } from 'next/font/google';
 
-import { chunkArray } from '../../lib/chunk-array';
+import { chunkArray, padChunkToSize, padChunksToMinimumCount } from '../../lib/chunk-array';
 import { apiClient } from '../../lib/api-client';
 import { getStoredLanguage, type LanguageCode } from '../../lib/language';
 import { t } from '../../lib/i18n';
@@ -46,9 +46,10 @@ import {
   SPECIAL_OFFERS_MOBILE_GRID_ROW_GAP_PX,
   SPECIAL_OFFERS_MOBILE_GRID_SCROLLER_PADDING_BOTTOM_PX,
   SPECIAL_OFFERS_MOBILE_PAGINATION_PAGE_COUNT,
+  SPECIAL_OFFERS_MOBILE_SCROLLER_CLASS,
   SPECIAL_OFFERS_SCROLLER_PADDING_BOTTOM_DESKTOP_PX,
 } from './home-special-offers.constants';
-import { HOME_PAGE_SECTION_SHELL_TIGHT_MOBILE_CLASS } from './home-page-section-shell.constants';
+import { HOME_PAGE_SECTION_SHELL_CLASS } from './home-page-section-shell.constants';
 import { useIsMaxMd } from './use-is-max-md';
 import { useSpecialOffersCarousel } from './useSpecialOffersCarousel';
 
@@ -58,7 +59,8 @@ const montserratSpecial = Montserrat({
   display: 'swap',
 });
 
-const SECTION_CONTAINER_CLASS = HOME_PAGE_SECTION_SHELL_TIGHT_MOBILE_CLASS;
+/** Same horizontal shell as «Նորույթներ» (`FeaturedProductsTabs`) for matching card width on mobile. */
+const SECTION_CONTAINER_CLASS = HOME_PAGE_SECTION_SHELL_CLASS;
 
 /** Pill: default white + gray border; hover marco-yellow — same as REELS. */
 const SPECIAL_OFFERS_NAV_BUTTON_CLASS =
@@ -103,10 +105,10 @@ export function HomeSpecialOffersSection() {
   const { scrollerRef, railSlotWidthPx, activePage, scrollPrev, scrollNext, scrollToPage } =
     useSpecialOffersCarousel({ isRailVisible, paginationPageCount });
 
-  const productChunks = useMemo(
-    () => chunkArray(products, SPECIAL_OFFERS_MOBILE_GRID_PAGE_SIZE),
-    [products],
-  );
+  const productChunks = useMemo(() => {
+    const chunks = chunkArray(products, SPECIAL_OFFERS_MOBILE_GRID_PAGE_SIZE);
+    return padChunksToMinimumCount(chunks, SPECIAL_OFFERS_MOBILE_PAGINATION_PAGE_COUNT);
+  }, [products]);
 
   useEffect(() => {
     const updateLanguage = () => {
@@ -293,7 +295,7 @@ export function HomeSpecialOffersSection() {
           <>
             <div
               ref={scrollerRef}
-              className="flex min-w-0 flex-row flex-nowrap gap-4 overflow-x-auto overflow-y-hidden overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              className={SPECIAL_OFFERS_MOBILE_SCROLLER_CLASS}
               style={{
                 gap: `${SPECIAL_OFFERS_CARD_GAP_PX}px`,
                 scrollSnapType: 'x mandatory',
@@ -312,7 +314,7 @@ export function HomeSpecialOffersSection() {
                     }}
                   >
                     {Array.from({ length: SPECIAL_OFFERS_MOBILE_GRID_PAGE_SIZE }).map((_, i) => (
-                      <div key={i} className="flex min-w-0">
+                      <div key={i} className="min-w-0">
                         <div
                           className="h-full w-full min-w-0 animate-pulse bg-gray-200"
                           style={{
@@ -347,11 +349,24 @@ export function HomeSpecialOffersSection() {
                       rowGap: SPECIAL_OFFERS_MOBILE_GRID_ROW_GAP_PX,
                     }}
                   >
-                    {chunk.map((product) => (
-                      <div key={product.id} className="min-w-0">
-                        <SpecialOfferCard layout="mobileGrid" product={product} />
-                      </div>
-                    ))}
+                    {padChunkToSize(chunk, SPECIAL_OFFERS_MOBILE_GRID_PAGE_SIZE).map(
+                      (product, slotIndex) => (
+                        <div
+                          key={product?.id ?? `special-offers-slot-${pageIndex}-${slotIndex}`}
+                          className="min-w-0"
+                        >
+                          {product ? (
+                            <SpecialOfferCard layout="mobileGrid" product={product} />
+                          ) : (
+                            <div
+                              className="min-w-0"
+                              style={{ minHeight: SPECIAL_OFFERS_CARD_HEIGHT_PX }}
+                              aria-hidden
+                            />
+                          )}
+                        </div>
+                      ),
+                    )}
                   </div>
                 ))
               ) : (

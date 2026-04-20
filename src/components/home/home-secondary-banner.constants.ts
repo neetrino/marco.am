@@ -2,6 +2,9 @@
  * Figma 307:2232 — pale panel beside gradient banner (`kam-idris…` frame).
  */
 
+/** English (`en`) — banner 2 CTA on desktop (`lg`): pill height (px). Tailwind `lg:h-[…px]` / `lg:min-h-[…px]` / `lg:rounded-[…px]` in `HomeSecondaryBannerCta` must match. */
+export const HOME_SECONDARY_BANNER_CTA_HEIGHT_EN_DESKTOP_PX = 45;
+
 export const HOME_SECONDARY_BANNER_BG_HEX = '#d8e4f2';
 
 export const HOME_SECONDARY_BANNER_RADIUS_PX = 16;
@@ -28,6 +31,35 @@ export const HOME_SECONDARY_BANNER_HEADLINE_LINE_HEIGHT_RATIO = '0.91';
 
 /** Secondary CTA target — pill size from `home-banners-cta.constants`. */
 export const HOME_SECONDARY_BANNER_CTA_HREF = '/products';
+
+/**
+ * English (`en`) — banner 2 CTA on desktop (`lg`): compact width for short «More» copy (px).
+ * Tailwind `lg:max-w-[…px]` in `HomeSecondaryBannerCta` must match.
+ */
+export const HOME_SECONDARY_BANNER_CTA_MAX_WIDTH_EN_DESKTOP_PX = 148;
+
+/**
+ * Russian (`ru`) — banner 2 CTA on desktop (`lg`): compact pill width (px), same height as EN (`HOME_SECONDARY_BANNER_CTA_HEIGHT_EN_DESKTOP_PX`).
+ * Tailwind `lg:max-w-[…px]` in `HomeSecondaryBannerCta` must match.
+ */
+export const HOME_SECONDARY_BANNER_CTA_MAX_WIDTH_RU_DESKTOP_PX = 140;
+
+/**
+ * Russian (`ru`) — banner 2 yellow chip on desktop (`lg`): diameter (px). Slightly smaller than `HOME_BANNERS_CTA_ICON_CIRCLE_PX` (36).
+ * Tailwind `lg:w-[…px]` / `lg:h-[…px]` on the chip in `HomeSecondaryBannerCta` must match.
+ */
+export const HOME_SECONDARY_BANNER_CTA_ICON_CIRCLE_RU_DESKTOP_PX = 34;
+
+/**
+ * Russian (`ru`) — banner 2 arrow icon on desktop (`lg`) — px. Tailwind `lg:w-[…px]` / `lg:h-[…px]` on `ArrowUpRight` must match.
+ */
+export const HOME_SECONDARY_BANNER_CTA_ARROW_ICON_RU_DESKTOP_PX = 17;
+
+/**
+ * Russian (`ru`) — banner 2 yellow chip on desktop (`lg`): `translateX` (px). Positive = right.
+ * Tailwind `lg:translate-x-[…px]` on the chip in `HomeSecondaryBannerCta` must match.
+ */
+export const HOME_SECONDARY_BANNER_CTA_ICON_TRANSLATE_X_RU_DESKTOP_PX = 4;
 
 /** `margin-left` on yellow chip (px) — shift right; scaled with `HOME_BANNERS_CTA_*`. */
 export const HOME_SECONDARY_BANNER_CTA_ICON_MARGIN_LEFT_PX = 23;

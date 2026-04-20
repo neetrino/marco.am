@@ -390,7 +390,7 @@ export function ProductAttributesSelector({
                   }`}
                 >
                   <div className="flex flex-col text-center">
-                    <span className={`text-sm font-medium ${isDisabled ? 'text-gray-400' : 'text-gray-900'}`}>{getAttributeLabel(language, 'size', g.size)}</span>
+                    <span className={`text-sm font-medium ${isDisabled ? 'text-gray-400' : 'text-marco-black'}`}>{getAttributeLabel(language, 'size', g.size)}</span>
                     {displayStock > 0 && (
                       <span className={`text-xs ${isDisabled ? 'text-gray-300' : 'text-gray-500'}`}>{displayStock} {t(language, 'product.pcs')}</span>
                     )}

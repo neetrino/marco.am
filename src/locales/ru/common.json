@@ -45,7 +45,13 @@
     "shop": "Магазин",
     "brands": "Бренды",
     "reels": "Reels",
-    "addresses": "Адреса"
+    "addresses": "Адреса",
+    "categoriesMegaMenu": {
+      "viewProducts": "Смотреть все товары",
+      "subcategories": "Подкатегории",
+      "productsWord": "товаров",
+      "emptySubcategories": "Подкатегорий пока нет. Добавьте их в админке или выполните seed базы."
+    }
   },
   "stock": {
     "inStock": "В наличии",
@@ -237,9 +243,16 @@
     "products": "товаров"
   },
   "pagination": {
-    "previous": "Предыдущая",
-    "next": "Следующая",
-    "pageOf": "Страница {page} из {totalPages}"
+    "first": "Первая",
+    "last": "Последняя",
+    "previous": "Назад",
+    "next": "Далее",
+    "pageOf": "Страница {page} из {totalPages}",
+    "navAriaLabel": "Навигация по страницам",
+    "firstAria": "На первую страницу",
+    "lastAria": "На последнюю страницу",
+    "previousAria": "На предыдущую страницу",
+    "nextAria": "На следующую страницу"
   },
   "notFound": {
     "title": "Страница не найдена",

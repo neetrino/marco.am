@@ -6,6 +6,7 @@ import { ProductLabels } from "../../../components/ProductLabels";
 import { ProductImagePlaceholder } from "../../../components/ProductImagePlaceholder";
 import { t } from "../../../lib/i18n";
 import type { LanguageCode } from "../../../lib/language";
+import { SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC } from "../../../components/home/home-special-offers.constants";
 import type { Product } from "./types";
 
 interface ProductImageGalleryProps {
@@ -33,17 +34,34 @@ export function ProductImageGallery({
 }: ProductImageGalleryProps) {
   const [showZoom, setShowZoom] = useState(false);
   const [failedIndices, setFailedIndices] = useState<Set<number>>(new Set());
+  const gallerySize = Math.max(images.length, 1);
+  const unifiedImages = Array.from({ length: gallerySize }, () => SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC);
 
   const markFailed = (index: number) => {
     setFailedIndices((prev) => new Set(prev).add(index));
   };
 
   const mainImageFailed = failedIndices.has(currentImageIndex);
-  const currentSrc = images[currentImageIndex];
+  const currentSrc = unifiedImages[currentImageIndex] ?? SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC;
+  const hasMultipleImages = unifiedImages.length > 1;
+
+  const goToPreviousImage = () => {
+    if (!hasMultipleImages) return;
+    const prevIndex =
+      currentImageIndex === 0 ? unifiedImages.length - 1 : currentImageIndex - 1;
+    onImageIndexChange(prevIndex);
+  };
+
+  const goToNextImage = () => {
+    if (!hasMultipleImages) return;
+    const nextIndex =
+      currentImageIndex === unifiedImages.length - 1 ? 0 : currentImageIndex + 1;
+    onImageIndexChange(nextIndex);
+  };
 
   // Auto-scroll thumbnails to show selected image
   useEffect(() => {
-    if (images.length > THUMBNAILS_PER_VIEW) {
+    if (unifiedImages.length > THUMBNAILS_PER_VIEW) {
       if (currentImageIndex < thumbnailStartIndex) {
         // Selected image is above visible range - scroll up
         onThumbnailStartIndexChange(currentImageIndex);
@@ -52,10 +70,13 @@ export function ProductImageGallery({
         onThumbnailStartIndexChange(currentImageIndex - THUMBNAILS_PER_VIEW + 1);
       }
     }
-  }, [currentImageIndex, images.length, thumbnailStartIndex, onThumbnailStartIndexChange]);
+  }, [currentImageIndex, unifiedImages.length, thumbnailStartIndex, onThumbnailStartIndexChange]);
 
   // Show only 3 thumbnails at a time, scrollable with navigation arrows
-  const visibleThumbnails = images.slice(thumbnailStartIndex, thumbnailStartIndex + THUMBNAILS_PER_VIEW);
+  const visibleThumbnails = unifiedImages.slice(
+    thumbnailStartIndex,
+    thumbnailStartIndex + THUMBNAILS_PER_VIEW
+  );
 
   return (
     <>
@@ -72,7 +93,7 @@ export function ProductImageGallery({
                   onClick={() => onImageIndexChange(actualIndex)}
                   className={`relative w-full aspect-[3/4] rounded-lg overflow-hidden border bg-white transition-all duration-300 flex-shrink-0 ${
                     isActive 
-                      ? "border-gray-400 shadow-[0_2px_8px_rgba(0,0,0,0.12)] ring-2 ring-gray-300" 
+                      ? "border-[3px] border-marco-yellow" 
                       : "border-gray-200 hover:border-gray-300 hover:shadow-[0_2px_6px_rgba(0,0,0,0.08)]"
                   }`}
                 >
@@ -91,83 +112,12 @@ export function ProductImageGallery({
             })}
           </div>
           
-          {/* Navigation Arrows - Scroll thumbnails */}
-          {images.length > THUMBNAILS_PER_VIEW && (
-            <div className="flex flex-row gap-1.5 justify-center">
-              <button 
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  // Scroll thumbnails up
-                  const newStart = Math.max(0, thumbnailStartIndex - 1);
-                  onThumbnailStartIndexChange(newStart);
-                  // Also update current image if needed
-                  if (currentImageIndex > newStart + THUMBNAILS_PER_VIEW - 1) {
-                    onImageIndexChange(newStart + THUMBNAILS_PER_VIEW - 1);
-                  } else if (currentImageIndex < newStart) {
-                    onImageIndexChange(newStart);
-                  }
-                }}
-                disabled={thumbnailStartIndex <= 0}
-                className="w-9 h-9 rounded border transition-all duration-200 flex items-center justify-center border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-200 hover:shadow-[0_1px_3px_rgba(0,0,0,0.1)] disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-gray-100 disabled:hover:border-gray-300 disabled:hover:shadow-none bg-gray-100"
-                aria-label={t(language, 'common.ariaLabels.previousThumbnail')}
-              >
-                <svg 
-                  className="w-4 h-4" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
-                >
-                  <path 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    strokeWidth={2.5} 
-                    d="M5 15l7-7 7 7" 
-                  />
-                </svg>
-              </button>
-              <button 
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  // Scroll thumbnails down
-                  const newStart = Math.min(images.length - THUMBNAILS_PER_VIEW, thumbnailStartIndex + 1);
-                  onThumbnailStartIndexChange(newStart);
-                  // Also update current image if needed
-                  if (currentImageIndex < newStart) {
-                    onImageIndexChange(newStart);
-                  } else if (currentImageIndex > newStart + THUMBNAILS_PER_VIEW - 1) {
-                    onImageIndexChange(newStart + THUMBNAILS_PER_VIEW - 1);
-                  }
-                }}
-                disabled={thumbnailStartIndex >= images.length - THUMBNAILS_PER_VIEW}
-                className="w-9 h-9 rounded border transition-all duration-200 flex items-center justify-center border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-200 hover:shadow-[0_1px_3px_rgba(0,0,0,0.1)] disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-gray-100 disabled:hover:border-gray-300 disabled:hover:shadow-none bg-gray-100"
-                aria-label={t(language, 'common.ariaLabels.nextThumbnail')}
-              >
-                <svg 
-                  className="w-4 h-4" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
-                >
-                  <path 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    strokeWidth={2.5} 
-                    d="M19 9l-7 7-7-7" 
-                  />
-                </svg>
-              </button>
-            </div>
-          )}
         </div>
         
         {/* Right Column - Main Image */}
         <div className="flex-1">
           <div className="relative aspect-square bg-white rounded-lg overflow-hidden group shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
-          {images.length > 0 && !mainImageFailed ? (
+          {unifiedImages.length > 0 && !mainImageFailed ? (
             <img 
               src={currentSrc} 
               alt={product.title} 
@@ -183,7 +133,7 @@ export function ProductImageGallery({
           
           {/* Discount Badge on Image - Blue circle in top-right */}
           {discountPercent && (
-            <div className="absolute top-4 right-4 w-14 h-14 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold z-10 shadow-[0_2px_8px_rgba(37,99,235,0.3)]">
+            <div className="absolute top-4 right-4 w-14 h-14 bg-marco-yellow text-marco-black rounded-full flex items-center justify-center text-sm font-bold z-10 shadow-[0_2px_8px_rgba(0,0,0,0.2)]">
               -{discountPercent}%
             </div>
           )}
@@ -201,12 +151,38 @@ export function ProductImageGallery({
               <Maximize2 className="w-5 h-5 text-gray-800" />
             </button>
           </div>
+
+          {/* Hover-only gallery navigation on main image */}
+          {hasMultipleImages && (
+            <>
+              <button
+                type="button"
+                onClick={goToPreviousImage}
+                className="pointer-events-none absolute left-4 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-gray-800 shadow-[0_2px_8px_rgba(0,0,0,0.18)] backdrop-blur-sm opacity-0 transition-all duration-200 group-hover:pointer-events-auto group-hover:opacity-100 hover:bg-white"
+                aria-label={t(language, 'common.ariaLabels.previousThumbnail')}
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                onClick={goToNextImage}
+                className="pointer-events-none absolute right-4 top-1/2 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-gray-800 shadow-[0_2px_8px_rgba(0,0,0,0.18)] backdrop-blur-sm opacity-0 transition-all duration-200 group-hover:pointer-events-auto group-hover:opacity-100 hover:bg-white"
+                aria-label={t(language, 'common.ariaLabels.nextThumbnail')}
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </>
+          )}
           </div>
         </div>
       </div>
 
       {/* Zoom Modal */}
-      {showZoom && images.length > 0 && !failedIndices.has(currentImageIndex) && (
+      {showZoom && unifiedImages.length > 0 && !failedIndices.has(currentImageIndex) && (
         <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4" onClick={() => setShowZoom(false)}>
           <img src={currentSrc} alt="" className="max-w-full max-h-full object-contain" />
           <button 

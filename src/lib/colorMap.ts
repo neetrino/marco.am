@@ -35,6 +35,7 @@ const COLOR_MAP: Record<string, string> = {
   lavender: '#E6E6FA',
   peach: '#FFE5B4',
   mint: '#98FB98',
+  burgundy: '#722F37',
   ivory: '#FFFFF0',
   cream: '#FFFDD0',
 };

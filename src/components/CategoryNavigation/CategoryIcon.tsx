@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { getCategoryIcon, type Category } from './utils';
+import { SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC } from '../home/home-special-offers.constants';
 
 interface Product {
   id: string;
@@ -20,7 +21,7 @@ interface CategoryIconProps {
 /**
  * Component for displaying category icon/image
  */
-export function CategoryIcon({ category, product, isActive, t }: CategoryIconProps) {
+export function CategoryIcon({ category, product: _product, isActive, t }: CategoryIconProps) {
   const title = category.title.toLowerCase();
   const slug = category.slug.toLowerCase();
 
@@ -29,27 +30,21 @@ export function CategoryIcon({ category, product, isActive, t }: CategoryIconPro
     return <>{getCategoryIcon(category.title, category.slug, isActive, t)}</>;
   }
 
-  // Regular categories show product image or placeholder
+  const displayImageSrc = SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC;
+
+  // Regular categories always show unified image
   return (
     <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white border-2 flex items-center justify-center overflow-hidden transition-all ${
       isActive ? 'border-gray-400 shadow-md' : 'border-gray-200'
     }`}>
-      {product?.image ? (
-        <Image
-          src={product.image}
-          alt={category.title}
-          width={80}
-          height={80}
-          className="w-full h-full object-cover"
-          unoptimized
-        />
-      ) : (
-        <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-          <svg className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-          </svg>
-        </div>
-      )}
+      <Image
+        src={displayImageSrc}
+        alt={category.title}
+        width={80}
+        height={80}
+        className="w-full h-full object-cover"
+        unoptimized
+      />
     </div>
   );
 }

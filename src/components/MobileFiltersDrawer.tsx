@@ -51,14 +51,14 @@ export function MobileFiltersDrawer({
   }, [openEventName]);
 
   return (
-    <div className="lg:hidden">
+    <div className="min-[744px]:hidden">
       {open && (
         <div
           className="fixed inset-0 z-50 flex bg-black/40 backdrop-blur-sm"
           onClick={() => setOpen(false)}
         >
           <div
-            className="h-full min-h-screen w-1/2 min-w-[16rem] max-w-full bg-white flex flex-col shadow-2xl"
+            className="flex h-full min-h-screen w-[min(78vw,20rem)] min-w-[16rem] max-w-full flex-col bg-white shadow-2xl"
             role="dialog"
             aria-modal="true"
             onClick={(event) => event.stopPropagation()}
@@ -77,7 +77,7 @@ export function MobileFiltersDrawer({
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-5 py-6 space-y-6">{children}</div>
+            <div className="flex-1 overflow-y-auto px-5 pb-6 pt-4">{children}</div>
           </div>
         </div>
       )}

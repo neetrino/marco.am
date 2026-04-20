@@ -29,6 +29,7 @@ import {
   FOOTER_SUPPORT_LINKS,
   FOOTER_INNER_CONTAINER_CLASS,
   FOOTER_SURFACE_CLASS,
+  FOOTER_TABLET_COLUMN_CENTER_CLASS,
   NEETRINO_STUDIO_HREF,
 } from './footer.constants';
 import {
@@ -55,7 +56,7 @@ function FooterNavColumn({
 
   return (
     <div
-      className={`inline-flex max-w-full flex-col ${FOOTER_NAV_COLUMN_HEADING_LIST_GAP_CLASS}`}
+      className={`inline-flex max-w-full flex-col ${FOOTER_NAV_COLUMN_HEADING_LIST_GAP_CLASS} ${FOOTER_TABLET_COLUMN_CENTER_CLASS}`}
     >
       <p
         className={`text-xs font-bold uppercase ${FOOTER_NAV_COLUMN_HEADING_LEADING_CLASS} ${FOOTER_NAV_COLUMN_HEADING_TRACK_CLASS} ${FOOTER_HEADING_TEXT_CLASS}`}
@@ -81,13 +82,13 @@ function FooterContactsColumn() {
   const telHref = `tel:${phoneRaw.replace(/\s/g, '')}`;
 
   return (
-    <div className="inline-flex max-w-full flex-col gap-4">
+    <div className={`inline-flex max-w-full flex-col gap-4 ${FOOTER_TABLET_COLUMN_CENTER_CLASS}`}>
       <p
         className={`text-xs font-bold uppercase tracking-[0.05em] ${FOOTER_HEADING_TEXT_CLASS}`}
       >
         {t('common.footer.marco.headings.contacts')}
       </p>
-      <div className="flex items-start gap-3">
+        <div className="flex items-start gap-3 md:max-[1023px]:justify-center min-[1024px]:max-[1366px]:justify-center">
         <MapPin
           className="mt-0 h-4 w-4 shrink-0 -translate-x-px translate-y-[4px] self-start text-marco-yellow"
           strokeWidth={2}
@@ -99,7 +100,7 @@ function FooterContactsColumn() {
           {t('contact.address')}
         </p>
       </div>
-      <div className="flex items-start gap-3">
+        <div className="flex items-start gap-3 md:max-[1023px]:justify-center min-[1024px]:max-[1366px]:justify-center">
         <img
           src={FOOTER_CONTACT_PHONE_ICON_SRC}
           alt=""
@@ -115,7 +116,7 @@ function FooterContactsColumn() {
           {phoneRaw}
         </a>
       </div>
-      <div className="flex items-start gap-3">
+        <div className="flex items-start gap-3 md:max-[1023px]:justify-center min-[1024px]:max-[1366px]:justify-center">
         <img
           src={FOOTER_CONTACT_MAIL_ICON_SRC}
           alt=""
@@ -168,14 +169,14 @@ export function Footer() {
       <div className={`${FOOTER_INNER_CONTAINER_CLASS} pb-10 pt-8`}>
         <div className={FOOTER_MAIN_GRID_CLASS}>
           <div
-            className={`relative flex max-w-sm flex-col ${FOOTER_BRAND_COLUMN_GAP_CLASS}`}
+            className={`relative flex max-w-sm flex-col md:max-[1023px]:items-center min-[1024px]:max-[1366px]:items-center ${FOOTER_BRAND_COLUMN_GAP_CLASS}`}
           >
             <div className={`${FOOTER_BRAND_LOGO_BOX_CLASS} ${FOOTER_BRAND_LOGO_SHIFT_CLASS}`}>
               <Image
                 src="/assets/brand/marco-group-logo.png"
                 alt="MARCO GROUP"
                 fill
-                className="object-contain object-left-top"
+                className="object-contain object-left-top md:max-[1023px]:object-center min-[1024px]:max-[1366px]:object-center"
                 sizes="200px"
                 priority={false}
               />
@@ -205,15 +206,15 @@ export function Footer() {
         </div>
 
         <div
-          className={`${FOOTER_COPYRIGHT_STRIP_MARGIN_TOP_CLASS} flex flex-col ${FOOTER_COPYRIGHT_STRIP_STACK_GAP_CLASS} border-t border-black/10 ${FOOTER_COPYRIGHT_STRIP_PADDING_TOP_CLASS} lg:flex-row lg:items-center lg:justify-between lg:gap-3 xl:gap-5`}
+          className={`${FOOTER_COPYRIGHT_STRIP_MARGIN_TOP_CLASS} flex flex-col ${FOOTER_COPYRIGHT_STRIP_STACK_GAP_CLASS} border-t border-black/10 ${FOOTER_COPYRIGHT_STRIP_PADDING_TOP_CLASS} lg:flex-row lg:items-center lg:gap-3 xl:gap-5 min-[1024px]:max-[1366px]:justify-center min-[1367px]:justify-between`}
         >
-          <div className="flex shrink-0 justify-center lg:justify-start">
+          <div className="flex shrink-0 justify-center min-[1367px]:justify-start">
             <FooterSocialLinks density="compact" />
           </div>
           <div className="scrollbar-hide flex min-w-0 flex-1 justify-center overflow-x-auto px-1 lg:overflow-visible">
             <FooterCopyright />
           </div>
-          <div className="flex shrink-0 justify-center lg:justify-end">
+          <div className="flex shrink-0 justify-center min-[1367px]:justify-end">
             <FooterPaymentLogos compact />
           </div>
         </div>

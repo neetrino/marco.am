@@ -91,7 +91,7 @@ export function SpecialOfferActionsStack({
 
   return (
     <div
-      className="absolute z-40 flex flex-col items-end gap-2"
+      className="absolute z-50 flex flex-col items-end gap-2"
       style={{
         top:
           SPECIAL_OFFERS_ACTIONS_STACK_TOP_FROM_CARD_OUTER_PX -

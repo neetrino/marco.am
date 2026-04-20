@@ -9,6 +9,7 @@ import type { CurrencyCode } from '../../lib/currency';
 import type { LanguageCode } from '../../lib/language';
 import { t } from '../../lib/i18n';
 import { logger } from "@/lib/utils/logger";
+import { SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC } from '../home/home-special-offers.constants';
 
 interface RelatedProduct {
   id: string;
@@ -57,7 +58,8 @@ export function RelatedProductCard({
   imageError,
   width,
 }: RelatedProductCardProps) {
-  const hasImage = product.image && !imageError;
+  const hasImage = !imageError;
+  const displayImageSrc = SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC;
   const categoryName = product.categories && product.categories.length > 0 
     ? product.categories.map(c => c.title).join(', ')
     : product.brand?.name || 'Product';
@@ -86,7 +88,7 @@ export function RelatedProductCard({
             <div className="relative aspect-square bg-gray-100 overflow-hidden flex-shrink-0">
               {hasImage ? (
                 <Image
-                  src={product.image!}
+                  src={displayImageSrc}
                   alt={product.title}
                   fill
                   className="object-cover group-hover:scale-105 transition-transform duration-300"

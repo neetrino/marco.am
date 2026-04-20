@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { apiClient } from '../lib/api-client';
 import { getStoredLanguage } from '../lib/language';
+import { SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC } from './home/home-special-offers.constants';
 
 interface Category {
   id: string;
@@ -41,6 +42,7 @@ export function HomeCategoriesSidebar() {
   const [hoveredProduct, setHoveredProduct] = useState<Product | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [previewPosition, setPreviewPosition] = useState({ top: 0, left: 0 });
+  const displayImageSrc = SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC;
   const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
@@ -306,7 +308,7 @@ export function HomeCategoriesSidebar() {
       </div>
 
       {/* Product Preview on Hover */}
-      {hoveredCategory && hoveredProduct && hoveredProduct.image && (
+      {hoveredCategory && hoveredProduct && (
         <div
           ref={previewRef}
           className="absolute z-50 bg-white rounded-lg shadow-xl border border-gray-200 p-4 w-48"
@@ -326,7 +328,7 @@ export function HomeCategoriesSidebar() {
         >
           <div className="relative w-full h-32 mb-2 rounded overflow-hidden bg-gray-100">
             <Image
-              src={hoveredProduct.image}
+              src={displayImageSrc}
               alt={hoveredProduct.title}
               fill
               className="object-cover"

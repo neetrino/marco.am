@@ -1,18 +1,15 @@
 'use client';
 
-import { useState, useEffect, type MouseEvent } from 'react';
-import { useRouter } from 'next/navigation';
-import { apiClient } from '../lib/api-client';
-import { getStoredCurrency } from '../lib/currency';
+import { useState, useEffect } from 'react';
 import { getStoredLanguage, type LanguageCode } from '../lib/language';
 import { t } from '../lib/i18n';
-import { useAuth } from '../lib/auth/AuthContext';
 import { useRelatedProducts } from './hooks/useRelatedProducts';
 import { useCarousel } from './hooks/useCarousel';
 import { useVisibleCards } from './hooks/useVisibleCards';
-import { RelatedProductCard } from './RelatedProducts/RelatedProductCard';
 import { CarouselNavigation } from './RelatedProducts/CarouselNavigation';
 import { CarouselDots } from './RelatedProducts/CarouselDots';
+import { SpecialOfferCard } from './home/SpecialOfferCard';
+import type { SpecialOfferProduct } from './home/special-offer-product.types';
 
 interface RelatedProductsProps {
   categorySlug?: string;
@@ -24,11 +21,7 @@ interface RelatedProductsProps {
  * Shown at the bottom of the single product page
  */
 export function RelatedProducts({ categorySlug, currentProductId }: RelatedProductsProps) {
-  const router = useRouter();
-  const { isLoggedIn } = useAuth();
   const [language, setLanguage] = useState<LanguageCode>('en');
-  const [addingToCart, setAddingToCart] = useState<Set<string>>(new Set());
-  const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
   
   const visibleCards = useVisibleCards();
   const { products, loading } = useRelatedProducts({ categorySlug, currentProductId, language });
@@ -50,6 +43,36 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
     handleWheel,
   } = useCarousel({ itemCount: products.length, visibleItems: visibleCards });
 
+  function toSpecialOfferProduct(product: (typeof products)[number]): SpecialOfferProduct {
+    const compareAt = product.compareAtPrice ?? product.originalPrice ?? null;
+    let discountPercent = product.discountPercent ?? null;
+    if (discountPercent == null && compareAt != null && compareAt > product.price) {
+      discountPercent = Math.round(((compareAt - product.price) / compareAt) * 100);
+    }
+    return {
+      id: product.id,
+      slug: product.slug,
+      title: product.title,
+      price: product.price,
+      compareAtPrice: compareAt ?? undefined,
+      originalPrice: compareAt ?? undefined,
+      discountPercent,
+      image: product.image,
+      images: product.image ? [product.image] : undefined,
+      inStock: product.inStock,
+      brand: product.brand ?? null,
+      labels: undefined,
+      reviewCount: undefined,
+      defaultVariantId: undefined,
+      colors:
+        product.variants?.map((variant, idx) => ({
+          value: variant.options?.[0]?.value ?? String(idx),
+          imageUrl: null,
+          colors: null,
+        })) ?? undefined,
+    };
+  }
+
   // Initialize language from localStorage after mount to prevent hydration mismatch
   useEffect(() => {
     setLanguage(getStoredLanguage());
@@ -63,81 +86,6 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
       window.removeEventListener('language-updated', handleLanguageUpdate);
     };
   }, []);
-
-  /**
-   * Handle adding product to cart
-   */
-  const handleAddToCart = async (e: MouseEvent, product: typeof products[0]) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (!product.inStock) {
-      return;
-    }
-
-    if (!isLoggedIn) {
-      router.push(`/login?redirect=/products/${product.slug}`);
-      return;
-    }
-
-    setAddingToCart(prev => new Set(prev).add(product.id));
-
-    try {
-      // Get product details to get variant ID
-      interface ProductDetails {
-        id: string;
-        slug: string;
-        variants?: Array<{
-          id: string;
-          sku: string;
-          price: number;
-          stock: number;
-          available: boolean;
-        }>;
-      }
-
-      const encodedSlug = encodeURIComponent(product.slug.trim());
-      const productDetails = await apiClient.get<ProductDetails>(`/api/v1/products/${encodedSlug}`);
-
-      if (!productDetails.variants || productDetails.variants.length === 0) {
-        alert('No variants available');
-        return;
-      }
-
-      const variantId = productDetails.variants[0].id;
-      
-      await apiClient.post(
-        '/api/v1/cart/items',
-        {
-          productId: product.id,
-          variantId: variantId,
-          quantity: 1,
-        }
-      );
-
-      // Trigger cart update event
-      window.dispatchEvent(new Event('cart-updated'));
-    } catch (error: unknown) {
-      console.error('[RelatedProducts] Error adding to cart:', error);
-      const err = error as { message?: string };
-      if (err.message?.includes('401') || err.message?.includes('Unauthorized')) {
-        router.push(`/login?redirect=/products/${product.slug}`);
-      } else {
-        alert('Failed to add product to cart. Please try again.');
-      }
-    } finally {
-      setAddingToCart(prev => {
-        const next = new Set(prev);
-        next.delete(product.id);
-        return next;
-      });
-    }
-  };
-
-  const currency = getStoredCurrency();
-  const handleImageError = (productId: string) => {
-    setImageErrors(prev => new Set(prev).add(productId));
-  };
 
   // Always show the section, even if no products (will show loading or empty state)
   return (
@@ -185,18 +133,19 @@ export function RelatedProducts({ categorySlug, currentProductId }: RelatedProdu
                 }}
               >
                 {products.map((product) => (
-                  <RelatedProductCard
+                  <div
                     key={product.id}
-                    product={product}
-                    currency={currency}
-                    language={language}
-                    isAddingToCart={addingToCart.has(product.id)}
-                    hasMoved={hasMoved}
-                    onAddToCart={handleAddToCart}
-                    onImageError={handleImageError}
-                    imageError={imageErrors.has(product.id)}
-                    width={`${100 / visibleCards}%`}
-                  />
+                    className="h-full flex-shrink-0 px-3"
+                    style={{ width: `${100 / visibleCards}%` }}
+                    onClickCapture={(event) => {
+                      if (hasMoved) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                      }
+                    }}
+                  >
+                    <SpecialOfferCard product={toSpecialOfferProduct(product)} />
+                  </div>
                 ))}
               </div>
             </div>

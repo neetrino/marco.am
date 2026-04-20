@@ -205,7 +205,7 @@ export function HomeReelsSection() {
 
         <div
           ref={scrollerRef}
-          className="flex min-w-0 flex-row flex-nowrap justify-start gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] max-md:[margin-left:calc(-1*var(--reels-mobile-rail-bleed-left))] md:justify-center md:gap-11 md:ml-0 [&::-webkit-scrollbar]:hidden"
+          className="flex min-w-0 flex-row flex-nowrap justify-start gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] max-md:[margin-left:calc(-1*var(--reels-mobile-rail-bleed-left))] md:gap-11 md:ml-0 md:[padding-left:var(--reels-title-inset-desktop)] [&::-webkit-scrollbar]:hidden"
           style={{
             scrollSnapType: 'x mandatory',
             ['--reels-mobile-tile-basis' as string]: REELS_MOBILE_TILE_BASIS_CSS,

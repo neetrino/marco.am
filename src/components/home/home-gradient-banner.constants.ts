@@ -63,7 +63,13 @@ export const HOME_GRADIENT_BANNER_CTA_LABEL_LINE_HEIGHT_RU_DESKTOP_PX = 18;
  * Russian (`ru`) — desktop only: extra `translateX` on the black chip only (px). Negative = left.
  * Must match `lg:-translate-x-[…px]` in `HomeGradientBannerCta`.
  */
-export const HOME_GRADIENT_BANNER_CTA_ICON_CIRCLE_NUDGE_LEFT_RU_DESKTOP_PX = 3;
+export const HOME_GRADIENT_BANNER_CTA_ICON_CIRCLE_NUDGE_LEFT_RU_DESKTOP_PX = 4;
+
+/**
+ * Russian (`ru`) — desktop (`lg`): extra label `translateX` vs non-`lg` (px). Negative = left.
+ * Non-`lg` net = `LABEL_NUDGE_LEFT_PX` + `LABEL_NUDGE_LEFT_RU_EXTRA_PX`; `lg` adds this value.
+ */
+export const HOME_GRADIENT_BANNER_CTA_LABEL_NUDGE_LEFT_RU_DESKTOP_EXTRA_PX = -1;
 
 /**
  * Armenian (`hy`) — desktop (`lg`): added to `HOME_GRADIENT_BANNER_CTA_LABEL_NUDGE_LEFT_PX` for label `translateX` (px). Positive = right.
@@ -80,6 +86,12 @@ export const HOME_GRADIENT_BANNER_CTA_ICON_CIRCLE_NUDGE_RIGHT_HY_DESKTOP_PX = 12
 export const HOME_GRADIENT_BANNER_CTA_ROW_OFFSET_X_PX = 30;
 
 export const HOME_GRADIENT_BANNER_CTA_ROW_OFFSET_Y_PX = -10;
+
+/**
+ * English (`en`) — banner 1 «Buy now» pill on desktop (`lg` ≥ 1200px): `max-width` (px).
+ * Must match `lg:max-w-[…px]` on the CTA `Link` in `HomeGradientBannerCta` (Tailwind JIT).
+ */
+export const HOME_GRADIENT_BANNER_CTA_MAX_WIDTH_EN_DESKTOP_PX = 162;
 
 /** Slightly taller than 56/32 — a bit more visual mass. */
 export const HOME_GRADIENT_BANNER_ASPECT_RATIO = '56 / 34';

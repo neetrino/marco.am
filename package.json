@@ -4,9 +4,9 @@
   "private": true,
   "description": "WhiteShop.am — Next.js app at root, pnpm workspace",
   "scripts": {
-    "dev": "next dev",
-    "dev:webpack": "next dev --no-turbo",
-    "dev:clean": "node -e \"require('fs').rmSync('.next', {recursive: true, force: true})\" && next dev",
+    "dev": "next dev -p 3000",
+    "dev:webpack": "next dev --no-turbo -p 3000",
+    "dev:clean": "node -e \"require('fs').rmSync('.next', {recursive: true, force: true})\" && next dev -p 3000",
     "prebuild": "cd shared/db && pnpm run db:generate",
     "prebuild:migrate": "node src/scripts/run-migrations.js",
     "build": "pnpm run prebuild && next build",
@@ -24,6 +24,7 @@
     "db:migrate": "pnpm --filter @white-shop/db db:migrate",
     "db:studio": "pnpm --filter @white-shop/db db:studio",
     "db:seed": "node shared/db/prisma/seed.cjs",
+    "db:seed:apple": "node shared/db/prisma/seed-apple-product.cjs",
     "db:migrate:deploy": "node src/scripts/run-migrations.js"
   },
   "dependencies": {

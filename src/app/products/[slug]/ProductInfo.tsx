@@ -26,7 +26,7 @@ export function ProductInfo({
   price,
   originalPrice,
   compareAtPrice,
-  discountPercent,
+  discountPercent: _discountPercent,
   currency,
   language,
   averageRating,
@@ -34,23 +34,25 @@ export function ProductInfo({
   scrollToReviews,
   t,
 }: ProductInfoProps) {
+  const rawDescription = getProductText(language, product.id, 'longDescription') || product.description || '';
+  const sanitizedDescription = sanitizeHtml(rawDescription);
+  const hasDescription = sanitizedDescription
+    .replace(/<[^>]*>/g, '')
+    .replace(/&nbsp;/gi, ' ')
+    .trim().length > 0;
+
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1">
         {product.brand && <p className="text-sm text-gray-500 mb-2">{product.brand.name}</p>}
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">
+        <h1 className="text-4xl font-bold text-marco-black mb-4">
           {getProductText(language, product.id, 'title') || product.title}
         </h1>
         <div className="mb-6">
           <div className="flex flex-col gap-1">
             {/* Discounted price with discount percentage */}
             <div className="flex items-center gap-2">
-              <p className="text-3xl font-bold text-gray-900">{formatPrice(price, currency)}</p>
-              {discountPercent && discountPercent > 0 && (
-                <span className="text-lg font-semibold text-blue-600">
-                  -{discountPercent}%
-                </span>
-              )}
+              <p className="text-3xl font-bold text-marco-black">{formatPrice(price, currency)}</p>
             </div>
             {/* Original price below discounted price - full width, not inline */}
             {(originalPrice || (compareAtPrice && compareAtPrice > price)) && (
@@ -60,7 +62,12 @@ export function ProductInfo({
             )}
           </div>
         </div>
-        <div className="text-gray-600 mb-8 prose prose-sm" dangerouslySetInnerHTML={{ __html: sanitizeHtml(getProductText(language, product.id, 'longDescription') || product.description || '') }} />
+        {hasDescription && (
+          <div
+            className="text-gray-600 mb-8 prose prose-sm"
+            dangerouslySetInnerHTML={{ __html: sanitizedDescription }}
+          />
+        )}
 
         <div className="mt-8 p-4 bg-white border border-gray-200 rounded-2xl space-y-4">
           {/* Rating Section */}
@@ -82,13 +89,13 @@ export function ProductInfo({
                   </svg>
                 ))}
               </div>
-              <span className="text-sm font-semibold text-gray-900">
+              <span className="text-sm font-semibold text-marco-black">
                 {averageRating > 0 ? averageRating.toFixed(1) : '0.0'}
               </span>
             </div>
             <span 
               onClick={scrollToReviews}
-              className="text-sm text-gray-600 cursor-pointer hover:text-gray-900 hover:underline transition-colors"
+              className="text-sm text-gray-600 cursor-pointer hover:text-marco-black hover:underline transition-colors"
             >
               ({reviewsCount} {reviewsCount === 1 ? t(language, 'common.reviews.review') : t(language, 'common.reviews.reviews')})
             </span>

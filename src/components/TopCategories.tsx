@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { apiClient } from '../lib/api-client';
 import { getStoredLanguage } from '../lib/language';
 import { useTranslation } from '../lib/i18n-client';
+import { SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC } from './home/home-special-offers.constants';
 
 interface TopCategoryItem {
   id: string;
@@ -25,6 +26,7 @@ export function TopCategories() {
   const router = useRouter();
   const [topCategories, setTopCategories] = useState<TopCategoryItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const displayImageSrc = SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC;
 
   useEffect(() => {
     fetchTopCategories();
@@ -83,24 +85,16 @@ export function TopCategories() {
               className="flex flex-col items-center gap-3 group cursor-pointer transition-all duration-300 hover:scale-105 min-w-[120px] outline-none focus:outline-none hover:outline-none focus-visible:outline-none ring-0 focus:ring-0 hover:ring-0"
             >
               <div className="transition-all duration-300 group-hover:shadow-lg group-hover:-translate-y-1 relative outline-none">
-                {item.image ? (
-                  <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-100 shadow-md transition-all duration-300 flex items-center justify-center outline-none ring-0">
-                    <Image
-                      src={item.image}
-                      alt={item.title}
-                      width={96}
-                      height={96}
-                      className="w-full h-full object-cover scale-110 group-hover:scale-125 transition-transform duration-300 outline-none"
-                      unoptimized
-                    />
-                  </div>
-                ) : (
-                  <div className="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center shadow-md transition-all duration-300 outline-none ring-0">
-                    <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-                    </svg>
-                  </div>
-                )}
+                <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-100 shadow-md transition-all duration-300 flex items-center justify-center outline-none ring-0">
+                  <Image
+                    src={displayImageSrc}
+                    alt={item.title}
+                    width={96}
+                    height={96}
+                    className="w-full h-full object-cover scale-110 group-hover:scale-125 transition-transform duration-300 outline-none"
+                    unoptimized
+                  />
+                </div>
               </div>
               <span className="text-sm font-semibold text-gray-900 text-center max-w-[140px] group-hover:text-gray-700 transition-colors">
                 {item.title}
