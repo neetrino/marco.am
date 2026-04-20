@@ -158,7 +158,7 @@ export default function ProductPage({ params }: ProductPageProps) {
         <ProductReviews productSlug={slug} productId={product.id} />
       </div>
       <div className="mt-16">
-        <RelatedProducts categorySlug={product.categories?.[0]?.slug} currentProductId={product.id} />
+        <RelatedProducts currentProductSlug={slug} />
       </div>
     </div>
   );

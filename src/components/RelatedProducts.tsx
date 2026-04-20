@@ -12,19 +12,18 @@ import { SpecialOfferCard } from './home/SpecialOfferCard';
 import type { SpecialOfferProduct } from './home/special-offer-product.types';
 
 interface RelatedProductsProps {
-  categorySlug?: string;
-  currentProductId: string;
+  currentProductSlug: string;
 }
 
 /**
  * RelatedProducts component - displays products from the same category in a carousel
  * Shown at the bottom of the single product page
  */
-export function RelatedProducts({ categorySlug, currentProductId }: RelatedProductsProps) {
+export function RelatedProducts({ currentProductSlug }: RelatedProductsProps) {
   const [language, setLanguage] = useState<LanguageCode>('en');
   
   const visibleCards = useVisibleCards();
-  const { products, loading } = useRelatedProducts({ categorySlug, currentProductId, language });
+  const { products, loading } = useRelatedProducts({ productSlug: currentProductSlug, language });
   
   const {
     currentIndex,

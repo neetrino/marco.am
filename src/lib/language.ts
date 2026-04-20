@@ -7,6 +7,7 @@ export const LANGUAGES = {
 } as const;
 
 export type LanguageCode = keyof typeof LANGUAGES;
+export const DEFAULT_LANGUAGE: LanguageCode = 'en';
 
 /** Same key for localStorage and optional SSR cookie (`layout`). */
 export const LANGUAGE_PREFERENCE_KEY = 'shop_language';
@@ -33,8 +34,20 @@ function readLanguageFromCookie(): LanguageCode | null {
   return code === 'ka' ? 'en' : code;
 }
 
+export function readLanguageCookie(): LanguageCode | null {
+  return readLanguageFromCookie();
+}
+
+export function persistLanguageCookie(language: LanguageCode): void {
+  if (typeof document === 'undefined') {
+    return;
+  }
+  const maxAge = 60 * 60 * 24 * 365;
+  document.cookie = `${LANGUAGE_STORAGE_KEY}=${encodeURIComponent(language)};path=/;max-age=${maxAge};SameSite=Lax`;
+}
+
 export function getStoredLanguage(): LanguageCode {
-  if (typeof window === 'undefined') return 'en';
+  if (typeof window === 'undefined') return DEFAULT_LANGUAGE;
   try {
     const stored = localStorage.getItem(LANGUAGE_STORAGE_KEY);
     if (stored && stored in LANGUAGES) {
@@ -48,7 +61,7 @@ export function getStoredLanguage(): LanguageCode {
   } catch {
     // Ignore errors
   }
-  return 'en';
+  return DEFAULT_LANGUAGE;
 }
 
 /**
