@@ -24,7 +24,17 @@ const PRODUCTS_PAGE_TITLE_UNDERLINE_CLASS =
 const PRODUCTS_PAGE_BREADCRUMB_CLASS = `${productsShopTitleFont.className} text-xs font-bold leading-snug`;
 
 type ViewMode = 'list' | 'grid-2' | 'grid-3';
-type SortOption = 'default' | 'price-asc' | 'price-desc' | 'name-asc' | 'name-desc';
+type SortOption =
+  | 'default'
+  | 'price-asc'
+  | 'price-desc'
+  | 'name-asc'
+  | 'name-desc'
+  | 'bestsellers'
+  | 'curated';
+type SortParamOption = Exclude<SortOption, 'bestsellers' | 'curated'>;
+type FilterParamOption = Extract<SortOption, 'bestsellers' | 'curated'>;
+type SortMenuOption = Exclude<SortOption, 'default'>;
 
 /** Figma MARCO 218:2319 — sliders / sort control, white on dark trigger */
 function ProductsSortSlidersIcon({ className }: { readonly className?: string }) {
@@ -158,12 +168,13 @@ function ProductsHeaderContent({ total }: ProductsHeaderProps) {
   const sortDropdownRef = useRef<HTMLDivElement>(null);
   const mobileSortDropdownRef = useRef<HTMLDivElement>(null);
 
-  const sortOptions: { value: SortOption; label: string }[] = [
-    { value: 'default', label: t('products.header.sort.default') },
-    { value: 'price-asc', label: t('products.header.sort.priceAsc') },
-    { value: 'price-desc', label: t('products.header.sort.priceDesc') },
-    { value: 'name-asc', label: t('products.header.sort.nameAsc') },
-    { value: 'name-desc', label: t('products.header.sort.nameDesc') },
+  const sortOptions: { value: SortMenuOption; label: string; mode: 'sort' | 'filter' }[] = [
+    { value: 'bestsellers', label: t('products.header.sort.bestsellers'), mode: 'filter' },
+    { value: 'curated', label: t('products.header.sort.curatedList'), mode: 'filter' },
+    { value: 'price-asc', label: t('products.header.sort.priceAsc'), mode: 'sort' },
+    { value: 'price-desc', label: t('products.header.sort.priceDesc'), mode: 'sort' },
+    { value: 'name-asc', label: t('products.header.sort.nameAsc'), mode: 'sort' },
+    { value: 'name-desc', label: t('products.header.sort.nameDesc'), mode: 'sort' },
   ];
 
   // Load view mode from localStorage
@@ -180,10 +191,22 @@ function ProductsHeaderContent({ total }: ProductsHeaderProps) {
 
   // Load sort from URL params
   useEffect(() => {
-    const sortParam = searchParams.get('sort') as SortOption;
-    if (sortParam && sortOptions.some(opt => opt.value === sortParam)) {
-      setSortBy(sortParam);
+    const filterParam = searchParams.get('filter');
+    if (filterParam === 'bestseller') {
+      setSortBy('bestsellers');
+      return;
     }
+    if (filterParam === 'featured') {
+      setSortBy('curated');
+      return;
+    }
+
+    const sortParam = searchParams.get('sort') as SortOption | null;
+    if (sortParam && sortOptions.some((opt) => opt.value === sortParam)) {
+      setSortBy(sortParam);
+      return;
+    }
+    setSortBy('default');
   }, [searchParams]);
 
   // Close dropdown when clicking outside
@@ -211,16 +234,27 @@ function ProductsHeaderContent({ total }: ProductsHeaderProps) {
     window.dispatchEvent(new CustomEvent('view-mode-changed', { detail: mode }));
   };
 
-  const handleSortChange = (option: SortOption) => {
+  const handleSortChange = (option: SortMenuOption) => {
     setSortBy(option);
     setShowSortDropdown(false);
     
     // Update URL with sort parameter
     const params = new URLSearchParams(searchParams.toString());
-    if (option === 'default') {
+    const selected = sortOptions.find((entry) => entry.value === option);
+
+    if (!selected) {
       params.delete('sort');
+      params.delete('filter');
+    } else if (selected.mode === 'sort') {
+      params.set('sort', selected.value as SortParamOption);
+      params.delete('filter');
     } else {
-      params.set('sort', option);
+      params.delete('sort');
+      const filterValue: Record<FilterParamOption, 'bestseller' | 'featured'> = {
+        bestsellers: 'bestseller',
+        curated: 'featured',
+      };
+      params.set('filter', filterValue[selected.value as FilterParamOption]);
     }
     // Reset to page 1 when sorting changes
     params.delete('page');

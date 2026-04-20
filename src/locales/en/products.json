@@ -61,6 +61,8 @@
     "all": "All",
     "sort": {
       "default": "Default Sort",
+      "bestsellers": "Bestsellers",
+      "curatedList": "Curated List",
       "priceAsc": "Price: Low to High",
       "priceDesc": "Price: High to Low",
       "nameAsc": "Name: A-Z",
