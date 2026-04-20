@@ -51,7 +51,7 @@ export function HomeCustomerReviewsSection({
 
   return (
     <section
-      className={`${HOME_PAGE_SECTION_SHELL_CLASS} bg-gray-50 py-10 sm:py-14`}
+      className={`${HOME_PAGE_SECTION_SHELL_CLASS} py-10 sm:py-14`}
       aria-labelledby="home-customer-reviews-heading"
     >
       <h2
