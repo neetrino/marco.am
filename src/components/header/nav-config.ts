@@ -8,7 +8,7 @@ export const primaryNavLinks: PrimaryNavLink[] = [
   { href: '/', translationKey: 'common.navigation.home' },
   { href: '/about', translationKey: 'common.navigation.about' },
   { href: '/products', translationKey: 'common.navigation.shop' },
-  { href: '/products', translationKey: 'common.navigation.brands' },
+  { href: '/brands', translationKey: 'common.navigation.brands' },
   { href: '/contact', translationKey: 'common.navigation.contact' },
   { href: HEADER_REELS_EXTERNAL_HREF, translationKey: 'common.navigation.reels', external: true },
 ];

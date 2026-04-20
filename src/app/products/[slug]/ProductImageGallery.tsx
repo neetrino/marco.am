@@ -183,7 +183,7 @@ export function ProductImageGallery({
           
           {/* Discount Badge on Image - Blue circle in top-right */}
           {discountPercent && (
-            <div className="absolute top-4 right-4 w-14 h-14 bg-marco-black text-white rounded-full flex items-center justify-center text-sm font-bold z-10 shadow-[0_2px_8px_rgba(0,0,0,0.3)]">
+            <div className="absolute top-4 right-4 w-14 h-14 bg-marco-yellow text-marco-black rounded-full flex items-center justify-center text-sm font-bold z-10 shadow-[0_2px_8px_rgba(0,0,0,0.2)]">
               -{discountPercent}%
             </div>
           )}

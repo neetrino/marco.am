@@ -119,11 +119,6 @@ export function ProductInfoAndActions({
             {/* Discounted price with discount percentage */}
             <div className="flex items-center gap-2">
               <p className="text-3xl font-bold text-marco-black">{formatPrice(price, currency as CurrencyCode)}</p>
-              {discountPercent && discountPercent > 0 && (
-                <span className="text-lg font-semibold text-marco-black">
-                  -{discountPercent}%
-                </span>
-              )}
             </div>
             {/* Original price below discounted price - full width, not inline */}
             {(originalPrice || (compareAtPrice && compareAtPrice > price)) && (
