@@ -210,9 +210,13 @@ export function useHeaderData() {
 
     if (mobileMenuOpen) {
       const previousOverflow = document.body.style.overflow;
+      const previousPointerEvents = document.body.style.pointerEvents;
       document.body.style.overflow = 'hidden';
+      /** Block taps reaching page content under the mobile drawer (images, links). */
+      document.body.style.pointerEvents = 'none';
       return () => {
         document.body.style.overflow = previousOverflow;
+        document.body.style.pointerEvents = previousPointerEvents;
       };
     }
   }, [mobileMenuOpen]);

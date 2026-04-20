@@ -1,5 +1,6 @@
 'use client';
 
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { CompareIcon } from '../icons/CompareIcon';
 import { HeaderNavbarWishlistIcon } from '../icons/HeaderNavbarWishlistIcon';
@@ -34,15 +35,15 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
     return null;
   }
 
-  return (
+  const drawer = (
     <div
-      className={`fixed inset-0 z-50 flex bg-black/40 backdrop-blur-sm ${compactPrimaryNav ? '' : 'md:hidden'}`}
+      className={`pointer-events-auto fixed inset-0 z-[200] flex touch-none bg-black/40 backdrop-blur-sm ${compactPrimaryNav ? '' : 'md:hidden'}`}
       role="dialog"
       aria-modal="true"
       onClick={() => setMobileMenuOpen(false)}
     >
       <div
-        className="h-full min-h-screen w-1/2 min-w-[16rem] max-w-full bg-white flex flex-col shadow-2xl"
+        className="flex h-full min-h-screen w-1/2 min-w-[16rem] max-w-full touch-auto flex-col bg-white shadow-2xl"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4">
@@ -251,4 +252,10 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
       </div>
     </div>
   );
+
+  if (typeof document === 'undefined') {
+    return null;
+  }
+
+  return createPortal(drawer, document.body);
 }
