@@ -28,7 +28,7 @@ export default async function HomePage() {
     <div className="min-h-screen">
       <HeroCarousel />
 
-      <div className="mt-8 sm:mt-10 md:mt-12">
+      <div className="mt-6 sm:mt-8 md:mt-10">
         <HomeReelsSection items={reelsFeed.items} />
       </div>
 
