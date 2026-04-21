@@ -102,15 +102,15 @@ export function QuickSettingsContent({
       backLabel={t('admin.common.backToAdmin')}
       onBack={() => router.push('/supersudo')}
     >
-      <Card className="admin-card mb-5 bg-white border-gray-200">
-        <div className="mb-4 flex items-center justify-between">
+      <Card className="admin-card mb-6 overflow-hidden border-slate-200/80 bg-gradient-to-br from-white via-white to-slate-50 shadow-[0_14px_36px_rgba(15,23,42,0.08)]">
+        <div className="mb-5 flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-gray-900">{t('admin.quickSettings.quickSettingsTitle')}</h2>
-            <p className="mt-1 text-sm text-gray-600">{t('admin.quickSettings.quickSettingsSubtitle')}</p>
+            <h2 className="text-lg font-semibold tracking-tight text-slate-900">{t('admin.quickSettings.quickSettingsTitle')}</h2>
+            <p className="mt-1 text-sm text-slate-600">{t('admin.quickSettings.quickSettingsSubtitle')}</p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
           <GlobalDiscountCard
             globalDiscount={globalDiscount}
             setGlobalDiscount={setGlobalDiscount}
