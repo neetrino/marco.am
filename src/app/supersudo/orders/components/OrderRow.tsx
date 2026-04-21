@@ -47,7 +47,7 @@ export function OrderRow({
   };
 
   return (
-    <tr className="transition-colors hover:bg-slate-50/70">
+    <tr className="group transition-colors hover:bg-amber-50/50">
       <td className="px-2.5 py-2.5">
         <input
           type="checkbox"
@@ -61,7 +61,7 @@ export function OrderRow({
         className="cursor-pointer whitespace-nowrap px-3 py-2.5"
         onClick={onViewDetails}
       >
-        <div className="inline-flex max-w-full rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold tracking-wide text-slate-700">
+        <div className="inline-flex max-w-full rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold tracking-wide text-slate-700 transition-colors group-hover:bg-amber-100 group-hover:text-amber-900">
           <span className="truncate">#{order.number}</span>
         </div>
       </td>
@@ -69,13 +69,13 @@ export function OrderRow({
         className="cursor-pointer px-3 py-2.5"
         onClick={onViewDetails}
       >
-        <div className="truncate text-sm font-semibold leading-5 text-slate-900">
+        <div className="truncate text-sm font-semibold leading-5 text-slate-900 transition-colors group-hover:text-amber-900">
           {[order.customerFirstName, order.customerLastName].filter(Boolean).join(' ') || t('admin.orders.unknownCustomer')}
         </div>
         {order.customerPhone && (
           <div className="truncate text-xs text-slate-500">{order.customerPhone}</div>
         )}
-        <div className="truncate text-[11px] text-slate-500">
+        <div className="truncate text-[11px] text-slate-500 transition-colors group-hover:text-amber-700">
           {t('admin.orders.viewOrderDetails')}
         </div>
       </td>

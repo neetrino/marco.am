@@ -239,7 +239,7 @@ export function ProductsTable({
               </thead>
               <tbody className="divide-y divide-slate-200 bg-white">
                 {sortedProducts.map((product) => (
-                  <tr key={product.id} className="transition-colors hover:bg-slate-50/90">
+                  <tr key={product.id} className="group transition-colors hover:bg-amber-50/50">
                     <td className="py-3 pl-6 pr-3">
                       <input
                         type="checkbox"
@@ -259,7 +259,9 @@ export function ProductsTable({
                           />
                         )}
                         <div>
-                          <div className="text-sm font-semibold text-slate-900">{product.title}</div>
+                          <div className="text-sm font-semibold text-slate-900 transition-colors group-hover:text-amber-900">
+                            {product.title}
+                          </div>
                           <div className="text-xs text-slate-500">{product.slug}</div>
                         </div>
                       </div>
