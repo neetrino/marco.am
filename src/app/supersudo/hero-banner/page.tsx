@@ -104,6 +104,9 @@ export default function HeroBannerPage() {
     return null;
   }
 
+  const hasDesktopImage = form.desktopImageUrl.trim().length > 0;
+  const hasMobileImage = form.mobileImageUrl.trim().length > 0;
+
   return (
     <AdminPageLayout
       currentPath={currentPath}
@@ -114,88 +117,114 @@ export default function HeroBannerPage() {
       backLabel={t('admin.heroBanner.backToAdmin')}
       onBack={() => router.push('/supersudo')}
     >
-            <Card className="admin-card mb-5">
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    {t('admin.heroBanner.desktopImageUrl')}
-                  </label>
-                  <input
-                    type="url"
-                    value={form.desktopImageUrl}
-                    onChange={(event) =>
-                      setForm((prev) => ({
-                        ...prev,
-                        desktopImageUrl: event.target.value,
-                      }))
-                    }
-                    className="admin-field"
-                    placeholder={t('admin.heroBanner.imageUrlPlaceholder')}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    {t('admin.heroBanner.mobileImageUrl')}
-                  </label>
-                  <input
-                    type="url"
-                    value={form.mobileImageUrl}
-                    onChange={(event) =>
-                      setForm((prev) => ({
-                        ...prev,
-                        mobileImageUrl: event.target.value,
-                      }))
-                    }
-                    className="admin-field"
-                    placeholder={t('admin.heroBanner.imageUrlPlaceholder')}
-                  />
-                </div>
-              </div>
-            </Card>
-
-            <Card className="admin-card mb-5">
-              <h2 className="mb-4 text-lg font-semibold text-gray-900">{t('admin.heroBanner.previewTitle')}</h2>
-              <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-                <div>
-                  <p className="text-sm text-gray-600 mb-2">{t('admin.heroBanner.desktopPreview')}</p>
-                  {form.desktopImageUrl.trim() ? (
-                    <img
-                      src={form.desktopImageUrl}
-                      alt={t('admin.heroBanner.desktopPreview')}
-                      className="w-full h-52 object-cover rounded-lg border border-gray-200"
-                    />
-                  ) : (
-                    <div className="w-full h-52 rounded-lg border border-dashed border-gray-300 bg-gray-100 flex items-center justify-center text-gray-500 text-sm">
-                      {t('admin.heroBanner.noImageSelected')}
-                    </div>
-                  )}
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600 mb-2">{t('admin.heroBanner.mobilePreview')}</p>
-                  {form.mobileImageUrl.trim() ? (
-                    <img
-                      src={form.mobileImageUrl}
-                      alt={t('admin.heroBanner.mobilePreview')}
-                      className="w-full h-52 object-cover rounded-lg border border-gray-200"
-                    />
-                  ) : (
-                    <div className="w-full h-52 rounded-lg border border-dashed border-gray-300 bg-gray-100 flex items-center justify-center text-gray-500 text-sm">
-                      {t('admin.heroBanner.noImageSelected')}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </Card>
-
-            <div className="flex gap-3">
-              <Button variant="primary" onClick={handleSave} disabled={saving}>
-                {saving ? t('admin.heroBanner.saving') : t('admin.heroBanner.save')}
-              </Button>
-              <Button variant="ghost" onClick={() => router.push('/supersudo')} disabled={saving}>
-                {t('admin.heroBanner.cancel')}
-              </Button>
+      <div className="space-y-5">
+        <Card className="admin-card border border-amber-100/80 bg-gradient-to-r from-amber-50 via-white to-orange-50 shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="mb-1 text-xs font-semibold uppercase tracking-[0.12em] text-amber-700/90">
+                Home Page Visual
+              </p>
+              <h2 className="text-lg font-semibold text-slate-900">{t('admin.heroBanner.title')}</h2>
+              <p className="mt-1 text-sm text-slate-600">{t('admin.heroBanner.subtitle')}</p>
             </div>
+            <span className="rounded-full border border-amber-200 bg-white/90 px-3 py-1 text-xs font-medium text-amber-800 shadow-sm">
+              Banner Manager
+            </span>
+          </div>
+        </Card>
+
+        <Card className="admin-card border border-slate-100 bg-white/95 shadow-sm">
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+            <div className="space-y-2">
+              <label className="block text-xs font-semibold uppercase tracking-[0.08em] text-slate-600">
+                {t('admin.heroBanner.desktopImageUrl')}
+              </label>
+              <input
+                type="url"
+                value={form.desktopImageUrl}
+                onChange={(event) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    desktopImageUrl: event.target.value,
+                  }))
+                }
+                className="admin-field rounded-xl border-slate-200 bg-white shadow-sm transition duration-200 placeholder:text-slate-400 focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+                placeholder={t('admin.heroBanner.imageUrlPlaceholder')}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-xs font-semibold uppercase tracking-[0.08em] text-slate-600">
+                {t('admin.heroBanner.mobileImageUrl')}
+              </label>
+              <input
+                type="url"
+                value={form.mobileImageUrl}
+                onChange={(event) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    mobileImageUrl: event.target.value,
+                  }))
+                }
+                className="admin-field rounded-xl border-slate-200 bg-white shadow-sm transition duration-200 placeholder:text-slate-400 focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+                placeholder={t('admin.heroBanner.imageUrlPlaceholder')}
+              />
+            </div>
+          </div>
+        </Card>
+
+        <Card className="admin-card border border-slate-100 bg-white shadow-sm">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-slate-900">{t('admin.heroBanner.previewTitle')}</h2>
+            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
+              Live Preview
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-3">
+              <p className="mb-2 text-sm font-medium text-slate-700">{t('admin.heroBanner.desktopPreview')}</p>
+              {hasDesktopImage ? (
+                <img
+                  src={form.desktopImageUrl}
+                  alt={t('admin.heroBanner.desktopPreview')}
+                  className="h-56 w-full rounded-xl border border-slate-200 object-cover shadow-sm"
+                />
+              ) : (
+                <div className="flex h-56 w-full items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white text-sm text-slate-500">
+                  {t('admin.heroBanner.noImageSelected')}
+                </div>
+              )}
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-3">
+              <p className="mb-2 text-sm font-medium text-slate-700">{t('admin.heroBanner.mobilePreview')}</p>
+              {hasMobileImage ? (
+                <img
+                  src={form.mobileImageUrl}
+                  alt={t('admin.heroBanner.mobilePreview')}
+                  className="h-56 w-full rounded-xl border border-slate-200 object-cover shadow-sm"
+                />
+              ) : (
+                <div className="flex h-56 w-full items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white text-sm text-slate-500">
+                  {t('admin.heroBanner.noImageSelected')}
+                </div>
+              )}
+            </div>
+          </div>
+        </Card>
+
+        <div className="sticky bottom-4 z-10 rounded-2xl border border-slate-200 bg-white/90 p-3 shadow-lg backdrop-blur">
+          <div className="flex flex-wrap justify-end gap-3">
+            <Button variant="ghost" onClick={() => router.push('/supersudo')} disabled={saving}>
+              {t('admin.heroBanner.cancel')}
+            </Button>
+            <Button variant="primary" onClick={handleSave} disabled={saving}>
+              {saving ? t('admin.heroBanner.saving') : t('admin.heroBanner.save')}
+            </Button>
+          </div>
+        </div>
+      </div>
     </AdminPageLayout>
   );
 }
