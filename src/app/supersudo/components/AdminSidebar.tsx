@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AdminMenuDrawer } from '../../../components/AdminMenuDrawer';
 import { getAdminMenuTABS } from '../admin-menu.config';
+import { getStoredLanguage, setStoredLanguage, type LanguageCode } from '../../../lib/language';
 
 interface AdminSidebarProps {
   currentPath: string;
@@ -13,6 +14,8 @@ interface AdminSidebarProps {
 
 const PRODUCT_SUBMENU_ITEM_IDS = new Set(['categories', 'brands', 'attributes']);
 const PRODUCT_SECTION_PATHS = ['/supersudo/products', '/supersudo/categories', '/supersudo/brands', '/supersudo/attributes'] as const;
+const ADMIN_LANGUAGES = ['en', 'hy', 'ru'] as const;
+type AdminLanguageCode = (typeof ADMIN_LANGUAGES)[number];
 
 export function AdminSidebar({ currentPath, router, t }: AdminSidebarProps) {
   const adminTabs = getAdminMenuTABS(t);
@@ -20,6 +23,10 @@ export function AdminSidebar({ currentPath, router, t }: AdminSidebarProps) {
     (path) => currentPath === path || currentPath.startsWith(`${path}/`),
   );
   const [isProductsExpanded, setIsProductsExpanded] = useState(isProductsSectionActive);
+  const [currentLanguage, setCurrentLanguage] = useState<AdminLanguageCode>(() => {
+    const stored = getStoredLanguage();
+    return stored === 'en' || stored === 'hy' || stored === 'ru' ? stored : 'en';
+  });
 
   useEffect(() => {
     if (isProductsSectionActive) {
@@ -27,17 +34,37 @@ export function AdminSidebar({ currentPath, router, t }: AdminSidebarProps) {
     }
   }, [isProductsSectionActive]);
 
+  useEffect(() => {
+    const syncLanguage = () => {
+      const stored = getStoredLanguage();
+      setCurrentLanguage(stored === 'en' || stored === 'hy' || stored === 'ru' ? stored : 'en');
+    };
+
+    window.addEventListener('language-updated', syncLanguage);
+    return () => {
+      window.removeEventListener('language-updated', syncLanguage);
+    };
+  }, []);
+
+  const handleLanguageChange = (language: AdminLanguageCode) => {
+    if (currentLanguage === language) {
+      return;
+    }
+    setCurrentLanguage(language);
+    setStoredLanguage(language as LanguageCode, { skipReload: true });
+  };
+
   return (
     <>
       <div className="lg:hidden mb-6">
         <AdminMenuDrawer tabs={adminTabs} currentPath={currentPath} />
       </div>
       <aside className="hidden lg:block lg:w-64 flex-shrink-0">
-        <nav className="fixed left-0 top-0 z-40 h-screen w-64 overflow-y-auto border-r border-marco-border bg-white/95 p-3 shadow-[0_8px_24px_rgba(16,16,16,0.06)] backdrop-blur-sm">
+        <nav className="fixed left-0 top-0 z-40 flex h-screen w-64 flex-col border-r border-marco-border bg-white/95 p-3 shadow-[0_8px_24px_rgba(16,16,16,0.06)] backdrop-blur-sm">
           <div className="mb-3 border-b border-marco-border pb-3">
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-marco-text/70">Admin Panel</p>
           </div>
-          <div className="space-y-1">
+          <div className="flex-1 space-y-1 overflow-y-auto">
           {adminTabs.map((tab) => {
             const isProductsItem = tab.id === 'products';
             const isProductSubmenuItem = PRODUCT_SUBMENU_ITEM_IDS.has(tab.id);
@@ -130,6 +157,28 @@ export function AdminSidebar({ currentPath, router, t }: AdminSidebarProps) {
               </button>
             );
           })}
+          </div>
+          <div className="mt-3 border-t border-marco-border pt-3">
+            <div className="grid grid-cols-3 gap-2">
+              {ADMIN_LANGUAGES.map((language) => {
+                const isActive = language === currentLanguage;
+                return (
+                  <button
+                    key={language}
+                    type="button"
+                    onClick={() => handleLanguageChange(language)}
+                    aria-pressed={isActive}
+                    className={`rounded-lg px-2 py-2 text-xs font-semibold uppercase tracking-wide transition-colors ${
+                      isActive
+                        ? 'bg-marco-yellow text-marco-black shadow-sm'
+                        : 'border border-marco-border text-marco-text hover:bg-marco-gray hover:text-marco-black'
+                    }`}
+                  >
+                    {language}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </nav>
       </aside>
