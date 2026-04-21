@@ -376,11 +376,15 @@ export default function WishlistPage() {
             <h2 className="text-2xl font-bold text-gray-900 mb-2">
               {t('common.wishlist.empty')}
             </h2>
-            <p className="text-gray-600 mb-6 text-left relative -left-[215px]">
+            <p className="text-gray-600 my-6 text-center mx-auto">
               {t('common.wishlist.emptyDescription')}
             </p>
             <Link href="/products">
-              <Button variant="primary" size="lg">
+              <Button
+                variant="primary"
+                size="lg"
+                className="!bg-black !text-white !rounded-full !h-12 !px-10 inline-flex items-center justify-center leading-none whitespace-nowrap !hover:bg-black/90 transition-colors"
+              >
                 {t('common.buttons.browseProducts')}
               </Button>
             </Link>
