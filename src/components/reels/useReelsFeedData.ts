@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { apiClient } from '../../lib/api-client';
 import type { PublicReelItem } from '../../lib/schemas/reels-management.schema';
 
 export type ReelInteractionState = PublicReelItem & {
@@ -98,15 +99,9 @@ export function useReelsFeedData(items: PublicReelItem[]): UseReelsFeedDataResul
     const controller = new AbortController();
     const syncFeedLikes = async () => {
       try {
-        const response = await fetch('/api/v1/reels', {
-          method: 'GET',
-          credentials: 'same-origin',
+        const payload = await apiClient.get<PublicReelsApiResponse>('/api/v1/reels', {
           signal: controller.signal,
         });
-        if (!response.ok) {
-          return;
-        }
-        const payload = (await response.json()) as PublicReelsApiResponse;
         setReelItems((prev) => mergeServerLikeState(prev, payload.items));
       } catch {
         // Keep SSR state on failure.
@@ -141,14 +136,10 @@ export function useReelsFeedData(items: PublicReelItem[]): UseReelsFeedDataResul
       setPendingLikeById((prev) => ({ ...prev, [reelId]: true }));
 
       try {
-        const response = await fetch(`/api/v1/reels/${reelId}/like`, {
-          method,
-          credentials: 'same-origin',
-        });
-        if (!response.ok) {
-          throw new Error('Like mutation failed');
-        }
-        const payload = (await response.json()) as ReelLikeMutationPayload;
+        const payload =
+          method === 'POST'
+            ? await apiClient.post<ReelLikeMutationPayload>(`/api/v1/reels/${reelId}/like`)
+            : await apiClient.delete<ReelLikeMutationPayload>(`/api/v1/reels/${reelId}/like`);
         if (pendingLikeTokenRef.current[reelId] === token) {
           setReelLikeState(reelId, payload);
         }
