@@ -14,6 +14,9 @@ export interface AdminMenuItem {
   isSubCategory?: boolean;
 }
 
+const PRODUCT_SUBMENU_ITEM_IDS = new Set(['categories', 'brands', 'attributes']);
+const PRODUCT_SECTION_PATHS = ['/supersudo/products', '/supersudo/categories', '/supersudo/brands', '/supersudo/attributes'] as const;
+
 interface AdminMenuDrawerProps {
   tabs: AdminMenuItem[];
   currentPath: string;
@@ -25,6 +28,7 @@ interface AdminMenuDrawerProps {
 export function AdminMenuDrawer({ tabs, currentPath }: AdminMenuDrawerProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [isProductsExpanded, setIsProductsExpanded] = useState(false);
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -98,8 +102,19 @@ export function AdminMenuDrawer({ tabs, currentPath }: AdminMenuDrawerProps) {
 
             <div className="flex-1 overflow-y-auto divide-y divide-marco-border/80">
               {tabs.map((tab) => {
-                const isActive =
-                  tab.path === '/'
+                const isProductsItem = tab.id === 'products';
+                const isProductSubmenuItem = PRODUCT_SUBMENU_ITEM_IDS.has(tab.id);
+
+                if (isProductSubmenuItem && !isProductsExpanded) {
+                  return null;
+                }
+
+                const isProductsSectionActive = PRODUCT_SECTION_PATHS.some(
+                  (path) => currentPath === path || currentPath.startsWith(`${path}/`),
+                );
+                const isActive = isProductsItem
+                  ? isProductsSectionActive
+                  : tab.path === '/'
                     ? currentPath === '/'
                     : currentPath === tab.path ||
                       (tab.path === '/supersudo' && currentPath === '/supersudo') ||
@@ -108,7 +123,14 @@ export function AdminMenuDrawer({ tabs, currentPath }: AdminMenuDrawerProps) {
                 return (
                   <button
                     key={tab.id}
-                    onClick={() => handleNavigate(tab.path)}
+                    onClick={() => {
+                      if (isProductsItem) {
+                        setIsProductsExpanded((prev) => !prev);
+                        return;
+                      }
+
+                      handleNavigate(tab.path);
+                    }}
                     className={`group flex w-full items-center justify-between px-4 py-3 text-left text-sm font-semibold transition-colors ${
                       tab.isSubCategory ? 'pl-9' : ''
                     } ${
@@ -133,7 +155,16 @@ export function AdminMenuDrawer({ tabs, currentPath }: AdminMenuDrawerProps) {
                       viewBox="0 0 24 24"
                       stroke="currentColor"
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      {isProductsItem ? (
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d={isProductsExpanded ? 'M19 9l-7 7-7-7' : 'M9 5l7 7-7 7'}
+                        />
+                      ) : (
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      )}
                     </svg>
                   </button>
                 );

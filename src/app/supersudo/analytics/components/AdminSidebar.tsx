@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { AdminMenuDrawer } from '../../../../components/AdminMenuDrawer';
 import { getAdminMenuTABS } from '../../admin-menu.config';
@@ -8,10 +9,14 @@ interface AdminSidebarProps {
   t: (key: string) => string;
 }
 
+const PRODUCT_SUBMENU_ITEM_IDS = new Set(['categories', 'brands', 'attributes']);
+const PRODUCT_SECTION_PATHS = ['/supersudo/products', '/supersudo/categories', '/supersudo/brands', '/supersudo/attributes'] as const;
+
 export function AdminSidebar({ t }: AdminSidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
   const adminTabs = getAdminMenuTABS(t);
+  const [isProductsExpanded, setIsProductsExpanded] = useState(false);
   return (
     <>
       <div className="lg:hidden mb-6">
@@ -24,18 +29,35 @@ export function AdminSidebar({ t }: AdminSidebarProps) {
           </div>
           <div className="space-y-1">
           {adminTabs.map((tab) => {
-            const isActive = tab.path === '/'
-              ? pathname === '/'
-              : pathname === tab.path ||
-                (tab.path === '/supersudo' && pathname === '/supersudo') ||
-                (tab.path !== '/supersudo' && pathname?.startsWith(tab.path));
+            const isProductsItem = tab.id === 'products';
+            const isProductSubmenuItem = PRODUCT_SUBMENU_ITEM_IDS.has(tab.id);
+
+            if (isProductSubmenuItem && !isProductsExpanded) {
+              return null;
+            }
+
+            const isProductsSectionActive = PRODUCT_SECTION_PATHS.some(
+              (path) => pathname === path || pathname?.startsWith(`${path}/`),
+            );
+            const isActive = isProductsItem
+              ? isProductsSectionActive
+              : tab.path === '/'
+                ? pathname === '/'
+                : pathname === tab.path ||
+                  (tab.path === '/supersudo' && pathname === '/supersudo') ||
+                  (tab.path !== '/supersudo' && pathname?.startsWith(tab.path));
             return (
               <button
                 key={tab.id}
                 onClick={() => {
+                  if (isProductsItem) {
+                    setIsProductsExpanded((prev) => !prev);
+                    return;
+                  }
+
                   router.push(tab.path);
                 }}
-                className={`group w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors duration-200 ${
+                className={`group w-full flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors duration-200 ${
                   tab.isSubCategory ? 'pl-9' : ''
                 } ${
                   isActive
@@ -43,14 +65,31 @@ export function AdminSidebar({ t }: AdminSidebarProps) {
                     : 'text-marco-text hover:bg-marco-gray hover:text-marco-black'
                 }`}
               >
-                <span
-                  className={`flex-shrink-0 transition-colors ${
-                    isActive ? 'text-marco-black' : 'text-marco-text/70 group-hover:text-marco-black'
-                  }`}
-                >
-                  {tab.icon}
+                <span className="flex items-center gap-3">
+                  <span
+                    className={`flex-shrink-0 transition-colors ${
+                      isActive ? 'text-marco-black' : 'text-marco-text/70 group-hover:text-marco-black'
+                    }`}
+                  >
+                    {tab.icon}
+                  </span>
+                  <span className="text-left">{tab.label}</span>
                 </span>
-                <span className="text-left">{tab.label}</span>
+                {isProductsItem && (
+                  <svg
+                    className={`h-4 w-4 ${isActive ? 'text-marco-black' : 'text-marco-text/50 group-hover:text-marco-black'}`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d={isProductsExpanded ? 'M19 9l-7 7-7-7' : 'M9 5l7 7-7 7'}
+                    />
+                  </svg>
+                )}
               </button>
             );
           })}
