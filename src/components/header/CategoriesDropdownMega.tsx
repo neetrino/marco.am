@@ -1,6 +1,6 @@
 'use client';
 
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from '../../lib/i18n-client';
 import { LanguagePreferenceContext } from '../../lib/language-context';
 import type { Category } from './category-nav-types';
@@ -8,6 +8,14 @@ import { CategoryMegaSubcategoryPills } from './CategoryMegaSubcategoryPills';
 import { CategoryDropdownPromoBanner } from './CategoryDropdownPromoBanner';
 import { resolveCategoryNavPresentation } from './categoryNavPresentation';
 import { headerCategoryNavFont } from './headerCategoryNavTypography';
+
+const EXTRA_BOTTOM_CATEGORY: Category = {
+  id: '__extra-climate__',
+  slug: '__extra-climate__',
+  title: 'Օդորակիչներ և տաքացուցիչներ',
+  fullPath: 'Օդորակիչներ և տաքացուցիչներ',
+  children: [],
+};
 
 export function CategoriesDropdownMega({
   categories,
@@ -18,18 +26,22 @@ export function CategoriesDropdownMega({
 }) {
   const lang = useContext(LanguagePreferenceContext);
   const { t } = useTranslation();
-  const [selectedSlug, setSelectedSlug] = useState<string>(() => categories[0]?.slug ?? '');
+  const categoriesWithExtra = useMemo(
+    () => [...categories, EXTRA_BOTTOM_CATEGORY],
+    [categories]
+  );
+  const [selectedSlug, setSelectedSlug] = useState<string>(() => categoriesWithExtra[0]?.slug ?? '');
 
   useEffect(() => {
-    if (categories.length === 0) {
+    if (categoriesWithExtra.length === 0) {
       return;
     }
     setSelectedSlug((prev) =>
-      prev && categories.some((c) => c.slug === prev) ? prev : categories[0].slug
+      prev && categoriesWithExtra.some((c) => c.slug === prev) ? prev : categoriesWithExtra[0].slug
     );
-  }, [categories]);
+  }, [categoriesWithExtra]);
 
-  const selected = categories.find((c) => c.slug === selectedSlug) ?? categories[0];
+  const selected = categoriesWithExtra.find((c) => c.slug === selectedSlug) ?? categoriesWithExtra[0];
   if (!selected) {
     return null;
   }
@@ -38,8 +50,8 @@ export function CategoriesDropdownMega({
 
   return (
     <div className="flex h-full min-h-0 w-full min-w-0 flex-col divide-y divide-marco-border overflow-hidden rounded-[13px] bg-marco-gray shadow-2xl md:flex-row md:divide-x md:divide-y-0">
-      <div className="flex min-h-0 w-full shrink-0 flex-col gap-[16px] overflow-y-auto rounded-t-[13px] bg-marco-gray py-6 pl-4 pr-2 md:h-full md:w-[320px] md:min-w-[320px] md:max-w-[320px] md:rounded-l-[13px] md:rounded-r-[13px] md:rounded-t-none md:py-[29px] md:pl-[25px] md:pr-[25px]">
-        {categories.map((category) => {
+      <div className="flex min-h-0 w-full shrink-0 flex-col gap-[16px] overflow-y-auto rounded-t-[13px] bg-marco-gray py-6 pl-4 pr-2 md:h-full md:w-[360px] md:min-w-[360px] md:max-w-[360px] md:rounded-l-[13px] md:rounded-r-[13px] md:rounded-t-none md:py-[29px] md:pl-[25px] md:pr-[25px]">
+        {categoriesWithExtra.map((category) => {
           const isSelected = category.slug === selectedSlug;
           const row = resolveCategoryNavPresentation(category.slug, category.title, lang);
           const RowLucide = row.icon.kind === 'lucide' ? row.icon.Icon : null;
