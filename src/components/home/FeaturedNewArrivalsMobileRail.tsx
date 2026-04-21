@@ -85,7 +85,7 @@ export function FeaturedNewArrivalsMobileRail({
             {padChunkToSize(chunk, SPECIAL_OFFERS_MOBILE_GRID_PAGE_SIZE).map(
               (product, slotIndex) => (
                 <div
-                  key={product?.id ?? `featured-slot-${pageIndex}-${slotIndex}`}
+                  key={`featured-slot-${pageIndex}-${slotIndex}-${product?.id ?? 'empty'}`}
                   className="min-w-0"
                 >
                   {product ? (

@@ -57,10 +57,11 @@ export function ProductCardActions({
     <>
       {/* Compare Icon */}
       <button
+        type="button"
         onClick={onCompareToggle}
         className={`${buttonSize} rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
           isInCompare
-            ? 'border-red-600 bg-red-600 text-white shadow-lg'
+            ? 'border-marco-yellow bg-marco-yellow text-marco-black shadow-lg'
             : 'border-gray-200 text-gray-700 bg-white hover:border-gray-300 hover:bg-gray-50'
         }`}
         title={isInCompare ? t('common.messages.removedFromCompare') : t('common.messages.addedToCompare')}
@@ -71,6 +72,7 @@ export function ProductCardActions({
 
       {/* Wishlist Icon */}
       <button
+        type="button"
         onClick={onWishlistToggle}
         className={`${buttonSize} rounded-full flex items-center justify-center transition-all duration-200 ${
           isInWishlist
@@ -102,6 +104,7 @@ export function ProductCardActions({
       {actions}
       {/* Cart Icon */}
       <button
+        type="button"
         onClick={onAddToCart}
         disabled={!inStock || isAddingToCart}
         className={`${buttonSize} rounded-full flex items-center justify-center transition-all duration-200 ${

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from '../../lib/i18n-client';
 import { getStoredLanguage } from '@/lib/language';
 import {
@@ -22,17 +22,45 @@ export function useCompare(productId: string) {
   const { t } = useTranslation();
   const [isInCompare, setIsInCompare] = useState(false);
   const [isToggling, setIsToggling] = useState(false);
+  const isMountedRef = useRef(true);
+  const isTogglingRef = useRef(false);
 
   useEffect(() => {
-    const checkCompare = async () => {
-      try {
-        const compare = await fetchCompareProductIds(getStoredLanguage());
-        setIsInCompare(compare.includes(productId));
-      } catch {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    isTogglingRef.current = isToggling;
+  }, [isToggling]);
+
+  const checkCompare = useCallback(async () => {
+    if (!productId) {
+      if (isMountedRef.current) {
         setIsInCompare(false);
       }
-    };
+      return;
+    }
+    if (isTogglingRef.current) {
+      return;
+    }
+    try {
+      const compare = await fetchCompareProductIds(getStoredLanguage());
+      if (!isMountedRef.current || isTogglingRef.current) {
+        return;
+      }
+      setIsInCompare(compare.includes(productId));
+    } catch {
+      if (!isMountedRef.current || isTogglingRef.current) {
+        return;
+      }
+      setIsInCompare(false);
+    }
+  }, [productId]);
 
+  useEffect(() => {
     void checkCompare();
 
     const handleCompareUpdate = () => {
@@ -47,16 +75,21 @@ export function useCompare(productId: string) {
       window.removeEventListener('auth-updated', handleCompareUpdate);
       window.removeEventListener('language-updated', handleCompareUpdate);
     };
-  }, [productId]);
+  }, [checkCompare]);
 
   const toggleCompare = async () => {
-    if (isToggling) {
+    if (!productId) {
+      return;
+    }
+    if (isTogglingRef.current) {
       return;
     }
 
     const language = getStoredLanguage();
-    const nextValue = !isInCompare;
+    const previousValue = isInCompare;
+    const nextValue = !previousValue;
     const delta = nextValue ? 1 : -1;
+    isTogglingRef.current = true;
     setIsToggling(true);
     setIsInCompare(nextValue);
     window.dispatchEvent(
@@ -69,7 +102,9 @@ export function useCompare(productId: string) {
       if (nextValue) {
         const compare = await fetchCompareProductIds(language);
         if (compare.length >= MAX_COMPARE_ITEMS) {
-          setIsInCompare(false);
+          if (isMountedRef.current) {
+            setIsInCompare(previousValue);
+          }
           window.dispatchEvent(
             new CustomEvent('compare-optimistic-updated', {
               detail: { delta: -delta },
@@ -83,7 +118,9 @@ export function useCompare(productId: string) {
         await removeCompareItemClient(productId, language);
       }
     } catch (error: unknown) {
-      setIsInCompare(!nextValue);
+      if (isMountedRef.current) {
+        setIsInCompare(previousValue);
+      }
       window.dispatchEvent(
         new CustomEvent('compare-optimistic-updated', {
           detail: { delta: -delta },
@@ -94,7 +131,11 @@ export function useCompare(productId: string) {
       }
       /* ignore compare toggle errors in card widgets */
     } finally {
-      setIsToggling(false);
+      isTogglingRef.current = false;
+      if (isMountedRef.current) {
+        setIsToggling(false);
+      }
+      void checkCompare();
     }
   };
 

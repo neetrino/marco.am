@@ -149,10 +149,11 @@ export function ProductCardList({
           <div className="flex items-center gap-2 self-start sm:self-center">
             {/* Compare Icon */}
             <button
+              type="button"
               onClick={onCompareToggle}
               className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
                 isInCompare
-                  ? 'border-red-600 bg-red-600 text-white shadow-lg'
+                  ? 'border-marco-yellow bg-marco-yellow text-marco-black shadow-lg'
                   : 'border-gray-200 text-gray-700 bg-white hover:border-gray-300 hover:bg-gray-50'
               }`}
               title={isInCompare ? t('common.messages.removedFromCompare') : t('common.messages.addedToCompare')}
@@ -163,6 +164,7 @@ export function ProductCardList({
 
             {/* Wishlist Icon */}
             <button
+              type="button"
               onClick={onWishlistToggle}
               className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center transition-all duration-200 ${
                 isInWishlist
@@ -177,6 +179,7 @@ export function ProductCardList({
 
             {/* Cart Icon */}
             <button
+              type="button"
               onClick={onAddToCart}
               disabled={!product.inStock || isAddingToCart}
               className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center transition-all duration-200 ${

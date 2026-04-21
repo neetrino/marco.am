@@ -7,6 +7,7 @@ import { getStoredLanguage, type LanguageCode } from '@/lib/language';
 import { t } from '@/lib/i18n';
 import { ProductCard } from '@/components/ProductCard';
 import { logger } from '@/lib/utils/logger';
+import { dedupeCardProductsByTitle } from '@/lib/dedupeCardProductsByTitle';
 import type { ProductLabel } from '@/components/ProductLabels';
 import { montserratArm } from '@/fonts/montserrat-arm';
 import { useTranslation } from '@/lib/i18n-client';
@@ -91,7 +92,8 @@ export function HomeProductSection({ titleKey, filter }: HomeProductSectionProps
           filter,
         },
       });
-      setProducts((response.data || []).slice(0, fetchLimit));
+      const uniqueProducts = dedupeCardProductsByTitle(response.data || []);
+      setProducts(uniqueProducts.slice(0, fetchLimit));
       setPageIndex(0);
     } catch (err) {
       logger.error('[HomeProductSection] fetch failed', { err, filter });
@@ -176,9 +178,9 @@ export function HomeProductSection({ titleKey, filter }: HomeProductSectionProps
         ) : products.length > 0 ? (
           <>
             <div className={NEW_ARRIVALS_GRID_CLASS}>
-              {pageProducts.map((product) => (
+              {pageProducts.map((product, index) => (
                 <SpecialOfferProductCard
-                  key={product.id}
+                  key={`home-new-product-${product.id}-${index}`}
                   product={product as SpecialOfferProduct}
                   sideActionStack="compare-first"
                   contentLayout="news"
@@ -256,8 +258,8 @@ export function HomeProductSection({ titleKey, filter }: HomeProductSectionProps
           </div>
         ) : products.length > 0 ? (
           <div className={LEGACY_GRID_CLASS}>
-            {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
+            {products.map((product, index) => (
+              <ProductCard key={`home-featured-product-${product.id}-${index}`} product={product} />
             ))}
           </div>
         ) : (

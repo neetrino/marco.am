@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslation } from '../lib/i18n-client';
+import { dedupeCardProductsByTitle } from '../lib/dedupeCardProductsByTitle';
 import type { ProductLabel } from './ProductLabels';
 import { ProductCard } from './ProductCard';
 import { SpecialOfferCard } from './home/SpecialOfferCard';
@@ -113,7 +114,7 @@ export function ProductsGrid({ products, sortBy = 'default' }: ProductsGridProps
         break;
     }
 
-    setSortedProducts(sorted);
+    setSortedProducts(dedupeCardProductsByTitle(sorted));
   }, [products, sortBy]);
 
   /** Tighter on smallest phones; roomier gaps on mobile shop before `md` desktop columns */

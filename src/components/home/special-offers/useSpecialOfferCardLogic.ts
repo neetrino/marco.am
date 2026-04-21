@@ -58,19 +58,19 @@ export function useSpecialOfferCardLogic(product: SpecialOfferProduct): CardLogi
       router.push('/login?redirect=/products');
       return;
     }
-    toggleWishlist();
+    void toggleWishlist();
   };
 
   const handleCompare = (e: MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    toggleCompare();
+    void toggleCompare();
   };
 
   const handleCart = (e: MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart();
+    void addToCart();
   };
 
   const showPlaceholder = !product.image || imageError;

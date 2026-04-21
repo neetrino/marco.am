@@ -198,9 +198,9 @@ export function RelatedProducts({ currentProductSlug }: RelatedProductsProps) {
                   transition: isDragging ? 'none' : 'transform 0.5s ease-in-out',
                 }}
               >
-                {products.map((product) => (
+                {products.map((product, index) => (
                   <div
-                    key={product.id}
+                    key={`related-product-${product.id}-${index}`}
                     className="h-full flex-shrink-0 px-2 md:px-3"
                     style={{ width: `${100 / visibleCards}%` }}
                     onClickCapture={(event) => {

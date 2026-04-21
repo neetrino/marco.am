@@ -358,7 +358,7 @@ export function ProductInfoAndActions({
             </div>
             <button
               onClick={onCompareToggle}
-              className={`w-10 h-10 shrink-0 rounded-xl border-2 flex items-center justify-center transition-all duration-200 ${isInCompare ? 'border-marco-black bg-gray-50' : 'border-gray-200 hover:border-gray-300'}`}
+              className={`w-10 h-10 shrink-0 rounded-xl border-2 flex items-center justify-center transition-all duration-200 ${isInCompare ? 'border-marco-yellow bg-yellow-50 text-marco-black' : 'border-gray-200 hover:border-gray-300'}`}
             >
               <CompareIcon isActive={isInCompare} />
             </button>

@@ -76,13 +76,13 @@ function WishlistGlyph({ filled, size }: { filled: boolean; size: number }) {
   );
 }
 
-/** Compare glyph that can switch to red when active (same cue as wishlist heart). */
+/** Compare glyph that switches to yellow when active. */
 function CompareCircleGlyph({ isActive }: { isActive: boolean }) {
   return (
     <CompareIcon
       isActive={isActive}
       size={18}
-      className={isActive ? 'text-red-500' : 'text-white'}
+      className={isActive ? 'text-marco-yellow' : 'text-white'}
     />
   );
 }
@@ -133,7 +133,7 @@ export function SpecialOfferSideActions({
       type="button"
       onClick={onCompare}
       className={`flex size-9 shrink-0 items-center justify-center overflow-visible rounded-full p-0 shadow-sm transition-opacity hover:opacity-90 md:size-10 ${
-        isInCompare ? 'ring-2 ring-red-500/50 ring-offset-2 ring-offset-[#f6f6f6]' : ''
+        isInCompare ? 'ring-2 ring-marco-yellow/60 ring-offset-2 ring-offset-[#f6f6f6]' : ''
       }`}
       title={isInCompare ? t('common.messages.removedFromCompare') : t('common.messages.addedToCompare')}
       aria-label={isInCompare ? t('common.ariaLabels.removeFromCompare') : t('common.ariaLabels.addToCompare')}

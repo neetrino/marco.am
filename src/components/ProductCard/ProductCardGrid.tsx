@@ -99,6 +99,7 @@ export function ProductCardGrid({
       {/* Cart Button in Price Row */}
       <div className={`px-4 pb-4 flex items-center justify-end ${isCompact ? 'gap-2' : 'gap-4'}`}>
         <button
+          type="button"
           onClick={onAddToCart}
           disabled={!product.inStock || isAddingToCart}
           className={`${isCompact ? 'w-10 h-10' : 'w-12 h-12'} rounded-full flex items-center justify-center transition-all duration-200 ${

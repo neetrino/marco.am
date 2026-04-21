@@ -87,8 +87,6 @@ export function useHeaderStorageCounts(
       const detail = (event as CustomEvent<{ delta?: number }>).detail;
       const delta = detail?.delta;
       if (typeof delta === 'number') {
-        // Invalidate older async syncs so they don't overwrite optimistic UI.
-        wishlistSyncSeqRef.current += 1;
         setWishlistCount((prev) => Math.max(0, prev + delta));
       }
     };
@@ -96,12 +94,9 @@ export function useHeaderStorageCounts(
       const detail = (event as CustomEvent<{ delta?: number }>).detail;
       const delta = detail?.delta;
       if (typeof delta === 'number') {
-        // Invalidate older async syncs so they don't overwrite optimistic UI.
-        compareSyncSeqRef.current += 1;
         setCompareCount((prev) => Math.max(0, prev + delta));
       }
     };
-
     window.addEventListener('wishlist-updated', handleWishlistUpdate);
     window.addEventListener('compare-updated', handleCompareUpdate);
     window.addEventListener('auth-updated', handleAuthUpdate);

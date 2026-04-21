@@ -123,7 +123,7 @@ export function SpecialOfferActionsStack({
         <CompareIcon
           isActive={isInCompare}
           size={16}
-          className={isInCompare ? 'text-red-500' : '!text-white'}
+          className={isInCompare ? 'text-marco-yellow' : '!text-white'}
         />
       </button>
       {showDiscountPill ? (

@@ -8,6 +8,7 @@ import { apiClient } from '../lib/api-client';
 import { getStoredLanguage, type LanguageCode } from '../lib/language';
 import { t } from '../lib/i18n';
 import { logger } from '../lib/utils/logger';
+import { dedupeCardProductsByTitle } from '../lib/dedupeCardProductsByTitle';
 import { FeaturedProductsStrip } from './FeaturedProductsStrip';
 import { HomeAppBanner } from './home/HomeAppBanner';
 import { HomeGradientBanner } from './home/HomeGradientBanner';
@@ -149,7 +150,7 @@ export function FeaturedProductsTabs() {
           params,
         });
 
-        const rows = response.data ?? [];
+        const rows = dedupeCardProductsByTitle(response.data ?? []);
         setProducts(rows.slice(0, FEATURED_PRODUCTS_VISIBLE_COUNT));
       } catch (err) {
         logger.error('[FeaturedProductsTabs] fetch failed', { error: err });

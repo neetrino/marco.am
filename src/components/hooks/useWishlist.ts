@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   addWishlistItemClient,
   fetchWishlistProductIds,
@@ -16,13 +16,41 @@ export function useWishlist(productId: string) {
   const [isInWishlist, setIsInWishlist] = useState(false);
   const [language, setLanguage] = useState<LanguageCode>(() => getStoredLanguage());
   const [isToggling, setIsToggling] = useState(false);
+  const isMountedRef = useRef(true);
+  const isTogglingRef = useRef(false);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    isTogglingRef.current = isToggling;
+  }, [isToggling]);
 
   const refresh = useCallback(async () => {
+    if (!productId) {
+      if (isMountedRef.current) {
+        setIsInWishlist(false);
+      }
+      return;
+    }
+    if (isTogglingRef.current) {
+      return;
+    }
     try {
       const ids = await fetchWishlistProductIds(language);
+      if (!isMountedRef.current || isTogglingRef.current) {
+        return;
+      }
       setIsInWishlist(ids.includes(productId));
     } catch (error: unknown) {
       logger.devLog('[useWishlist] refresh failed', { error });
+      if (!isMountedRef.current || isTogglingRef.current) {
+        return;
+      }
       setIsInWishlist(false);
     }
   }, [productId, language]);
@@ -50,12 +78,17 @@ export function useWishlist(productId: string) {
   }, [refresh]);
 
   const toggleWishlist = async () => {
-    if (isToggling) {
+    if (!productId) {
+      return;
+    }
+    if (isTogglingRef.current) {
       return;
     }
 
-    const nextValue = !isInWishlist;
+    const previousValue = isInWishlist;
+    const nextValue = !previousValue;
     const delta = nextValue ? 1 : -1;
+    isTogglingRef.current = true;
     setIsToggling(true);
     setIsInWishlist(nextValue);
     window.dispatchEvent(
@@ -71,7 +104,9 @@ export function useWishlist(productId: string) {
         await removeWishlistItemClient(productId, language);
       }
     } catch (error: unknown) {
-      setIsInWishlist(!nextValue);
+      if (isMountedRef.current) {
+        setIsInWishlist(previousValue);
+      }
       window.dispatchEvent(
         new CustomEvent('wishlist-optimistic-updated', {
           detail: { delta: -delta },
@@ -80,7 +115,11 @@ export function useWishlist(productId: string) {
       logger.error('Wishlist toggle failed', { error });
       void refresh();
     } finally {
-      setIsToggling(false);
+      isTogglingRef.current = false;
+      if (isMountedRef.current) {
+        setIsToggling(false);
+      }
+      void refresh();
     }
   };
 

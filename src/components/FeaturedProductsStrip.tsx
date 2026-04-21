@@ -201,8 +201,8 @@ export function FeaturedProductsStrip({
     ) : (
       <>
         <div className={FEATURED_OFFERS_GRID_CLASS} style={featuredOffersGridStyle(isMaxMd)}>
-          {products.map((product) => (
-            <div key={product.id} className="min-w-0">
+          {products.map((product, index) => (
+            <div key={`featured-strip-product-${product.id}-${index}`} className="min-w-0">
               <SpecialOfferCard product={product} layout={cardLayout} />
             </div>
           ))}
