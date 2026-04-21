@@ -177,6 +177,7 @@
   .admin-main {
     min-width: 0;
     flex: 1;
+    padding-top: 0.75rem;
   }
 
   .admin-card {
@@ -238,6 +239,10 @@
 
   .admin-shell {
     gap: 1.5rem;
+  }
+
+  .admin-main {
+    padding-top: 1rem;
   }
 }
 
