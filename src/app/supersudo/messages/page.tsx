@@ -97,6 +97,10 @@ export default function MessagesPage() {
     });
   };
 
+  const handleClearSelection = () => {
+    setSelectedIds(new Set());
+  };
+
   const handleBulkDelete = async () => {
     if (selectedIds.size === 0) return;
     if (!confirm(t('admin.messages.deleteConfirm').replace('{count}', selectedIds.size.toString()))) return;
@@ -152,75 +156,123 @@ export default function MessagesPage() {
       title={t('admin.messages.title')}
       backLabel={t('admin.messages.backToAdmin')}
       onBack={() => router.push('/supersudo')}
+      headerActions={
+        selectedIds.size > 0 ? (
+          <button
+            type="button"
+            onClick={handleClearSelection}
+            className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 transition-colors hover:border-slate-300 hover:text-slate-900"
+          >
+            {t('admin.products.clearAll')}
+          </button>
+        ) : undefined
+      }
     >
-            <Card className="admin-table-card">
+      <div className="mb-4 flex items-center justify-between rounded-2xl border border-slate-200/80 bg-white/95 px-4 py-3 shadow-sm shadow-slate-200/60">
+        <p className="text-sm font-medium text-slate-600">{t('admin.messages.title')}</p>
+        <p className="text-sm text-slate-500">
+          {t('admin.messages.selectedMessages').replace('{count}', selectedIds.size.toString())}
+        </p>
+      </div>
+
+      <Card className="admin-table-card overflow-hidden rounded-2xl border-slate-200/80 shadow-md shadow-slate-200/60">
               {loading ? (
-                <div className="text-center py-8">
+                <div className="p-8 text-center">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
                   <p className="text-gray-600">{t('admin.messages.loadingMessages')}</p>
                 </div>
               ) : messages.length === 0 ? (
-                <div className="text-center py-8">
+                <div className="p-8 text-center">
                   <p className="text-gray-600">{t('admin.messages.noMessages')}</p>
                 </div>
               ) : (
                 <>
+                  <div className="border-b border-slate-200 bg-slate-50/60 px-6 py-4">
+                    <div
+                      className={`flex items-center justify-between rounded-xl border px-4 py-3 transition-all ${
+                        selectedIds.size > 0
+                          ? 'border-amber-200/80 bg-amber-50/80 shadow-sm'
+                          : 'border-slate-200 bg-white'
+                      }`}
+                    >
+                      <div className={`text-sm font-medium ${selectedIds.size > 0 ? 'text-amber-900' : 'text-slate-600'}`}>
+                        {t('admin.messages.selectedMessages').replace('{count}', selectedIds.size.toString())}
+                      </div>
+                      <Button
+                        variant="outline"
+                        onClick={handleBulkDelete}
+                        disabled={selectedIds.size === 0 || bulkDeleting}
+                        className={
+                          selectedIds.size > 0
+                            ? 'border-amber-300 bg-white text-amber-900 hover:bg-amber-100'
+                            : 'border-slate-200 bg-white text-slate-400'
+                        }
+                      >
+                        {bulkDeleting ? t('admin.messages.deleting') : t('admin.messages.deleteSelected')}
+                      </Button>
+                    </div>
+                  </div>
+
                   <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
+                    <table className="min-w-full divide-y divide-slate-200">
+                      <thead className="bg-slate-50/85">
                         <tr>
-                          <th className="px-4 py-3">
+                          <th className="w-14 py-2.5 text-center align-middle">
                             <input
                               type="checkbox"
                               aria-label={t('admin.messages.selectAll')}
                               checked={messages.length > 0 && messages.every(m => selectedIds.has(m.id))}
                               onChange={toggleSelectAll}
+                              className="mx-auto h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-500"
                             />
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="whitespace-nowrap py-3 pl-6 pr-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
                             {t('admin.messages.name')}
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="whitespace-nowrap py-3 pl-6 pr-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
                             {t('admin.messages.email')}
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="whitespace-nowrap py-3 pl-6 pr-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
                             {t('admin.messages.subject')}
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="whitespace-nowrap py-3 pl-6 pr-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
                             {t('admin.messages.message')}
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="whitespace-nowrap py-3 pl-6 pr-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
                             {t('admin.messages.date')}
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
+                      <tbody className="divide-y divide-slate-200 bg-white">
                         {messages.map((message) => (
-                          <tr key={message.id} className="hover:bg-gray-50">
-                            <td className="px-4 py-4">
+                          <tr key={message.id} className="group transition-colors hover:bg-amber-50/50">
+                            <td className="w-14 py-3 text-center align-middle">
                               <input
                                 type="checkbox"
                                 aria-label={t('admin.messages.selectMessage').replace('{email}', message.email)}
                                 checked={selectedIds.has(message.id)}
                                 onChange={() => toggleSelect(message.id)}
+                                className="mx-auto h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-500"
                               />
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm font-medium text-gray-900">
+                            <td className="whitespace-nowrap py-3 pl-6 pr-3">
+                              <div className="text-sm font-semibold text-slate-900 transition-colors group-hover:text-amber-900">
                                 {message.name}
                               </div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-900">{message.email}</div>
+                            <td className="whitespace-nowrap py-3 pl-6 pr-3">
+                              <div className="text-sm text-slate-700">{message.email}</div>
                             </td>
-                            <td className="px-6 py-4">
-                              <div className="text-sm text-gray-900">{message.subject}</div>
+                            <td className="py-3 pl-6 pr-3">
+                              <div className="max-w-[14rem] truncate text-sm font-medium text-slate-800">
+                                {message.subject}
+                              </div>
                             </td>
-                            <td className="px-6 py-4">
-                              <div className="text-sm text-gray-900 max-w-md truncate">{message.message}</div>
+                            <td className="py-3 pl-6 pr-3">
+                              <div className="max-w-[22rem] truncate text-sm text-slate-700">{message.message}</div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {new Date(message.createdAt).toLocaleDateString()}
+                            <td className="whitespace-nowrap py-3 pl-6 pr-3 text-sm text-slate-600">
+                              {new Date(message.createdAt).toLocaleDateString('hy-AM')}
                             </td>
                           </tr>
                         ))}
@@ -229,8 +281,8 @@ export default function MessagesPage() {
                   </div>
 
                   {meta && meta.totalPages > 1 && (
-                    <div className="mt-6 flex items-center justify-between">
-                      <div className="text-sm text-gray-700">
+                    <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50/60 px-6 py-4">
+                      <div className="text-sm font-medium text-slate-700">
                         {t('admin.messages.showingPage').replace('{page}', meta.page.toString()).replace('{totalPages}', meta.totalPages.toString()).replace('{total}', meta.total.toString())}
                       </div>
                       <div className="flex gap-2">
@@ -238,6 +290,7 @@ export default function MessagesPage() {
                           variant="ghost"
                           onClick={() => setPage((p) => Math.max(1, p - 1))}
                           disabled={page === 1}
+                          className="rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 disabled:opacity-50"
                         >
                           {t('admin.messages.previous')}
                         </Button>
@@ -245,22 +298,13 @@ export default function MessagesPage() {
                           variant="ghost"
                           onClick={() => setPage((p) => Math.min(meta.totalPages, p + 1))}
                           disabled={page === meta.totalPages}
+                          className="rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 disabled:opacity-50"
                         >
                           {t('admin.messages.next')}
                         </Button>
                       </div>
                     </div>
                   )}
-                  <div className="mt-4 flex items-center justify-between">
-                    <div className="text-sm text-gray-700">{t('admin.messages.selectedMessages').replace('{count}', selectedIds.size.toString())}</div>
-                    <Button
-                      variant="outline"
-                      onClick={handleBulkDelete}
-                      disabled={selectedIds.size === 0 || bulkDeleting}
-                    >
-                      {bulkDeleting ? t('admin.messages.deleting') : t('admin.messages.deleteSelected')}
-                    </Button>
-                  </div>
                 </>
               )}
             </Card>
