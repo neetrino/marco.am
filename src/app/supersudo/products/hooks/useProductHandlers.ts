@@ -6,13 +6,16 @@ import { logger } from "@/lib/utils/logger";
 
 interface UseProductHandlersProps {
   products: Product[];
-  setProducts: (products: Product[]) => void;
+  setProducts: (products: Product[] | ((prev: Product[]) => Product[])) => void;
   fetchProducts: () => Promise<void>;
   selectedIds: Set<string>;
   setSelectedIds: (ids: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
   setPage: (page: number | ((prev: number) => number)) => void;
   setBulkDeleting: (deleting: boolean) => void;
   setTogglingAllFeatured: (toggling: boolean) => void;
+  setDeletingIds: (ids: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
+  setUpdatingPublishedIds: (ids: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
+  setUpdatingFeaturedIds: (ids: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
 }
 
 export function useProductHandlers({
@@ -24,6 +27,9 @@ export function useProductHandlers({
   setPage,
   setBulkDeleting,
   setTogglingAllFeatured,
+  setDeletingIds,
+  setUpdatingPublishedIds,
+  setUpdatingFeaturedIds,
 }: UseProductHandlersProps) {
   const { t } = useTranslation();
 
@@ -77,21 +83,31 @@ export function useProductHandlers({
     }
 
     try {
+      setDeletingIds((prev) => new Set(prev).add(productId));
       await apiClient.delete(`/api/v1/supersudo/products/${productId}`);
       logger.devLog('✅ [ADMIN] Product deleted successfully');
-      
-      // Refresh products list
-      fetchProducts();
-      
-      alert(t('admin.products.deletedSuccess'));
+
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        next.delete(productId);
+        return next;
+      });
+      _setProducts((prev) => prev.filter((product) => product.id !== productId));
     } catch (err: unknown) {
       console.error('❌ [ADMIN] Error deleting product:', err);
       alert(t('admin.products.errorDeleting').replace('{message}', getApiOrErrorMessage(err, t('admin.common.unknownErrorFallback'))));
+    } finally {
+      setDeletingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(productId);
+        return next;
+      });
     }
   };
 
-  const handleTogglePublished = async (productId: string, currentStatus: boolean, productTitle: string) => {
+  const handleTogglePublished = async (productId: string, currentStatus: boolean, _productTitle: string) => {
     try {
+      setUpdatingPublishedIds((prev) => new Set(prev).add(productId));
       const newStatus = !currentStatus;
       
       // При изменении только статуса published, отправляем только статус
@@ -106,23 +122,27 @@ export function useProductHandlers({
       await apiClient.put(`/api/v1/supersudo/products/${productId}`, updateData);
       
       logger.devLog(`✅ [ADMIN] Product ${newStatus ? 'published' : 'unpublished'} successfully`);
-      
-      // Refresh products list
-      fetchProducts();
-      
-      if (newStatus) {
-        alert(t('admin.products.productPublished').replace('{title}', productTitle));
-      } else {
-        alert(t('admin.products.productDraft').replace('{title}', productTitle));
-      }
+
+      _setProducts((prev) =>
+        prev.map((product) =>
+          product.id === productId ? { ...product, published: newStatus } : product
+        )
+      );
     } catch (err: unknown) {
       console.error('❌ [ADMIN] Error updating product status:', err);
       alert(t('admin.products.errorUpdatingStatus').replace('{message}', getApiOrErrorMessage(err, t('admin.common.unknownErrorFallback'))));
+    } finally {
+      setUpdatingPublishedIds((prev) => {
+        const next = new Set(prev);
+        next.delete(productId);
+        return next;
+      });
     }
   };
 
   const handleToggleFeatured = async (productId: string, currentStatus: boolean, _productTitle: string) => {
     try {
+      setUpdatingFeaturedIds((prev) => new Set(prev).add(productId));
       const newStatus = !currentStatus;
       
       const updateData = {
@@ -134,12 +154,21 @@ export function useProductHandlers({
       await apiClient.put(`/api/v1/supersudo/products/${productId}`, updateData);
       
       logger.devLog(`✅ [ADMIN] Product ${newStatus ? 'marked as featured' : 'removed from featured'} successfully`);
-      
-      // Refresh products list
-      fetchProducts();
+
+      _setProducts((prev) =>
+        prev.map((product) =>
+          product.id === productId ? { ...product, featured: newStatus } : product
+        )
+      );
     } catch (err: unknown) {
       console.error('❌ [ADMIN] Error updating product featured status:', err);
       alert(t('admin.products.errorUpdatingFeatured').replace('{message}', getApiOrErrorMessage(err, t('admin.common.unknownErrorFallback'))));
+    } finally {
+      setUpdatingFeaturedIds((prev) => {
+        const next = new Set(prev);
+        next.delete(productId);
+        return next;
+      });
     }
   };
 

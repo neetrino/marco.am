@@ -8,6 +8,7 @@ import { useTranslation } from '../../../lib/i18n-client';
 import { getStoredCurrency, initializeCurrencyRates, type CurrencyCode } from '../../../lib/currency';
 import { AdminPageLayout } from '../components/AdminPageLayout';
 import { ProductFilters } from './components/ProductFilters';
+import { BulkSelectionControls } from './components/BulkSelectionControls';
 import { ProductsTable } from './components/ProductsTable';
 import { useProductHandlers } from './hooks/useProductHandlers';
 import type { Product, ProductsResponse, Category } from './types';
@@ -35,6 +36,9 @@ export default function ProductsPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [_togglingAllFeatured, setTogglingAllFeatured] = useState(false);
+  const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
+  const [updatingPublishedIds, setUpdatingPublishedIds] = useState<Set<string>>(new Set());
+  const [updatingFeaturedIds, setUpdatingFeaturedIds] = useState<Set<string>>(new Set());
   const [currency, setCurrency] = useState<CurrencyCode>('USD');
 
   useEffect(() => {
@@ -288,6 +292,9 @@ export default function ProductsPage() {
     setPage,
     setBulkDeleting,
     setTogglingAllFeatured,
+    setDeletingIds,
+    setUpdatingPublishedIds,
+    setUpdatingFeaturedIds,
   });
 
   const handleClearFilters = () => {
@@ -328,7 +335,7 @@ export default function ProductsPage() {
           <button
             type="button"
             onClick={handleClearFilters}
-            className="text-sm font-medium text-gray-600 underline hover:text-gray-900"
+            className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 transition-colors hover:border-slate-300 hover:text-slate-900"
           >
             {t('admin.products.clearAll')}
           </button>
@@ -352,18 +359,18 @@ export default function ProductsPage() {
         setMinPrice={setMinPrice}
         maxPrice={maxPrice}
         setMaxPrice={setMaxPrice}
-        selectedIds={selectedIds}
         handleSearch={handlers.handleSearch}
-        handleBulkDelete={handlers.handleBulkDelete}
         handleClearFilters={handleClearFilters}
-        bulkDeleting={bulkDeleting}
         setPage={setPage}
       />
 
-      <div className="mb-4">
+      <div className="mb-4 flex items-center justify-between rounded-2xl border border-slate-200/80 bg-white/95 px-4 py-3 shadow-sm shadow-slate-200/60">
+        <p className="text-sm font-medium text-slate-600">
+          {t('admin.products.title')}
+        </p>
         <button
           onClick={() => router.push('/supersudo/products/add')}
-          className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-marco-yellow px-4 text-sm font-medium text-marco-black transition-colors hover:brightness-95"
+          className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-marco-yellow px-4 text-sm font-semibold text-marco-black transition-all hover:-translate-y-0.5 hover:brightness-95"
         >
           <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -371,6 +378,12 @@ export default function ProductsPage() {
           {t('admin.products.addNewProduct')}
         </button>
       </div>
+
+      <BulkSelectionControls
+        selectedCount={selectedIds.size}
+        onBulkDelete={handlers.handleBulkDelete}
+        bulkDeleting={bulkDeleting}
+      />
 
       <ProductsTable
         loading={loading}
@@ -385,6 +398,9 @@ export default function ProductsPage() {
         handleDeleteProduct={handlers.handleDeleteProduct}
         handleTogglePublished={handlers.handleTogglePublished}
         handleToggleFeatured={handlers.handleToggleFeatured}
+        deletingIds={deletingIds}
+        updatingPublishedIds={updatingPublishedIds}
+        updatingFeaturedIds={updatingFeaturedIds}
         meta={meta}
         page={page}
         setPage={setPage}

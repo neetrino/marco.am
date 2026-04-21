@@ -59,7 +59,7 @@ export function OrdersPageContent() {
       backLabel={t('admin.orders.backToAdmin')}
       onBack={() => router.push('/supersudo')}
     >
-      <div className="space-y-5 rounded-2xl border border-slate-200/70 bg-gradient-to-b from-white to-slate-50/60 p-4 shadow-sm sm:p-5">
+      <div className="space-y-5">
         <OrdersFilters
           statusFilter={statusFilter}
           paymentStatusFilter={paymentStatusFilter}
