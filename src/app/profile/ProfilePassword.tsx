@@ -30,6 +30,7 @@ export function ProfilePassword({
           value={passwordForm.currentPassword}
           onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
           placeholder={t('profile.password.currentPasswordPlaceholder')}
+          className="!rounded-full !px-5 !py-3"
           required
         />
         <Input
@@ -38,6 +39,7 @@ export function ProfilePassword({
           value={passwordForm.newPassword}
           onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
           placeholder={t('profile.password.newPasswordPlaceholder')}
+          className="!rounded-full !px-5 !py-3"
           required
         />
         <Input
@@ -46,10 +48,16 @@ export function ProfilePassword({
           value={passwordForm.confirmPassword}
           onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
           placeholder={t('profile.password.confirmPasswordPlaceholder')}
+          className="!rounded-full !px-5 !py-3"
           required
         />
         <div className="pt-4">
-          <Button type="submit" variant="primary" disabled={savingPassword}>
+          <Button
+            type="submit"
+            variant="primary"
+            disabled={savingPassword}
+            className="!rounded-full !px-6 !py-3 !bg-marco-black !text-white !hover:bg-marco-black hover:opacity-90 transition-opacity"
+          >
             {savingPassword ? t('profile.password.changing') : t('profile.password.change')}
           </Button>
         </div>

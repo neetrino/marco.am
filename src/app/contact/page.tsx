@@ -148,7 +148,7 @@ export default function ContactPage() {
                   required
                   value={formData.name}
                   onChange={handleChange}
-                  className="w-full"
+                  className="w-full !rounded-full !px-5 !py-3"
                   placeholder={t('contact.form.namePlaceholder')}
                 />
               </div>
@@ -163,7 +163,7 @@ export default function ContactPage() {
                   required
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full"
+                  className="w-full !rounded-full !px-5 !py-3"
                   placeholder={t('contact.form.emailPlaceholder')}
                 />
               </div>
@@ -178,7 +178,7 @@ export default function ContactPage() {
                   required
                   value={formData.subject}
                   onChange={handleChange}
-                  className="w-full"
+                  className="w-full !rounded-full !px-5 !py-3"
                   placeholder={t('contact.form.subjectPlaceholder')}
                 />
               </div>
@@ -192,14 +192,14 @@ export default function ContactPage() {
                   rows={6}
                   value={formData.message}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  className="w-full px-5 py-3 border border-gray-300 rounded-[28px] focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                   placeholder={t('contact.form.messagePlaceholder')}
                 />
               </div>
               <Button
                 type="submit"
                 variant="primary"
-                className="w-full !bg-marco-black !text-white hover:!brightness-95 focus:!ring-marco-black rounded-md py-3 font-semibold uppercase tracking-wide"
+                className="w-full !rounded-full !bg-marco-black !text-white hover:!brightness-95 focus:!ring-marco-black !py-3 font-semibold uppercase tracking-wide"
                 disabled={submitting}
               >
                 {submitting ? (t('contact.form.submitting') || 'Ուղարկվում է...') : t('contact.form.submit')}

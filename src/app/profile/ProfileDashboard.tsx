@@ -123,8 +123,11 @@ export function ProfileDashboard({
         {dashboardData.recentOrders.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-gray-600 mb-4">{t('profile.dashboard.noOrders')}</p>
-            <Link href="/products">
-              <Button variant="primary">{t('profile.dashboard.startShopping')}</Button>
+            <Link
+              href="/products"
+              className="inline-flex items-center px-6 py-3 text-sm font-medium rounded-full bg-marco-black text-white hover:opacity-90 transition-opacity"
+            >
+              {t('profile.dashboard.startShopping')}
             </Link>
           </div>
         ) : (
@@ -195,37 +198,43 @@ export function ProfileDashboard({
       <Card className="p-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">{t('profile.dashboard.quickActions')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Button
-            variant="outline"
+          <button
+            type="button"
             onClick={() => onTabChange('orders')}
-            className="justify-start"
+            className="inline-flex w-full items-center justify-center whitespace-nowrap rounded-full border border-gray-300 bg-white px-5 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
           >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-            </svg>
-            {t('profile.dashboard.viewAllOrders')}
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => onTabChange('addresses')}
-            className="justify-start"
-          >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            {t('profile.dashboard.manageAddresses')}
-          </Button>
-          <Link href="/products">
-            <Button
-              variant="outline"
-              className="w-full justify-start"
-            >
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+            <span className="inline-flex items-center gap-2 whitespace-nowrap">
+              <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
-              {t('profile.dashboard.continueShopping')}
-            </Button>
+              <span className="whitespace-nowrap">{t('profile.dashboard.viewAllOrders')}</span>
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={() => onTabChange('addresses')}
+            className="inline-flex w-full items-center justify-center whitespace-nowrap rounded-full border border-gray-300 bg-white px-5 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+          >
+            <span className="inline-flex items-center gap-2 whitespace-nowrap">
+              <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <span className="whitespace-nowrap">{t('profile.dashboard.manageAddresses')}</span>
+            </span>
+          </button>
+          <Link
+            href="/products"
+            className="inline-flex w-full items-center justify-center whitespace-nowrap rounded-full border border-gray-300 bg-white px-5 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+          >
+            <span className="inline-flex items-center gap-2 whitespace-nowrap">
+              <span className="inline-flex items-center gap-2 whitespace-nowrap">
+                <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+                <span className="whitespace-nowrap">{t('profile.dashboard.continueShopping')}</span>
+              </span>
+            </span>
           </Link>
         </div>
       </Card>

@@ -49,6 +49,7 @@ export function ProfileAddresses({
               onResetForm();
               setShowAddressForm(!showAddressForm);
             }}
+            className="!rounded-full !px-6 !py-3 !bg-marco-black !text-white !hover:bg-marco-black hover:opacity-90 transition-opacity"
           >
             {showAddressForm ? t('profile.addresses.form.cancel') : `+ ${t('profile.addresses.addNew')}`}
           </Button>

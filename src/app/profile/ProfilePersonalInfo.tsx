@@ -34,12 +34,14 @@ export function ProfilePersonalInfo({
             value={personalInfo.firstName}
             onChange={(e) => setPersonalInfo({ ...personalInfo, firstName: e.target.value })}
             placeholder={t('profile.personal.firstNamePlaceholder')}
+            className="!rounded-full !px-5 !py-3"
           />
           <Input
             label={t('profile.personal.lastName')}
             value={personalInfo.lastName}
             onChange={(e) => setPersonalInfo({ ...personalInfo, lastName: e.target.value })}
             placeholder={t('profile.personal.lastNamePlaceholder')}
+            className="!rounded-full !px-5 !py-3"
           />
         </div>
         <Input
@@ -48,6 +50,7 @@ export function ProfilePersonalInfo({
           value={personalInfo.email}
           onChange={(e) => setPersonalInfo({ ...personalInfo, email: e.target.value })}
           placeholder={t('profile.personal.emailPlaceholder')}
+          className="!rounded-full !px-5 !py-3"
         />
         <Input
           label={t('profile.personal.phone')}
@@ -55,14 +58,21 @@ export function ProfilePersonalInfo({
           value={personalInfo.phone}
           onChange={(e) => setPersonalInfo({ ...personalInfo, phone: e.target.value })}
           placeholder={t('profile.personal.phonePlaceholder')}
+          className="!rounded-full !px-5 !py-3"
         />
         <div className="flex items-center gap-2 pt-4">
-          <Button type="submit" variant="primary" disabled={savingPersonal}>
+          <Button
+            type="submit"
+            variant="primary"
+            disabled={savingPersonal}
+            className="!rounded-full !px-6 !py-3 !bg-marco-black !text-white !hover:bg-marco-black hover:opacity-90 transition-opacity"
+          >
             {savingPersonal ? t('profile.personal.saving') : t('profile.personal.save')}
           </Button>
           <Button
             type="button"
             variant="outline"
+            className="!rounded-full !px-6 !py-3"
             onClick={() => {
               setPersonalInfo({
                 firstName: profile?.firstName || '',
