@@ -396,7 +396,7 @@ export default function ComparePage() {
                           <button
                             onClick={(e) => handleAddToCart(e, product)}
                             disabled={addingToCart.has(product.id)}
-                            className="px-4 py-2 bg-marco-yellow text-marco-black text-sm font-bold rounded-2xl hover:brightness-95 transition-[filter] disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="inline-flex items-center justify-center h-10 px-6 bg-marco-yellow text-marco-black text-sm font-bold rounded-full whitespace-nowrap hover:brightness-95 transition-[filter] disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             {addingToCart.has(product.id)
                               ? t('common.messages.adding')

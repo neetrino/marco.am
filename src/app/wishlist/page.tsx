@@ -338,7 +338,7 @@ export default function WishlistPage() {
                     variant="primary"
                     onClick={() => handleAddToCart(product)}
                     disabled={!product.inStock || addingToCart.has(product.id)}
-                    className="!bg-marco-yellow !text-marco-black rounded-xl px-4 py-2 font-semibold uppercase text-sm !hover:bg-marco-yellow hover:brightness-95 transition-[filter] disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="!bg-marco-yellow !text-marco-black !rounded-full !h-10 !px-6 inline-flex items-center justify-center whitespace-nowrap font-semibold uppercase text-sm !hover:bg-marco-yellow hover:brightness-95 transition-[filter] disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {addingToCart.has(product.id) ? t('common.messages.adding') : t('common.buttons.addToCart')}
                   </Button>
