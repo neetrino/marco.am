@@ -49,6 +49,8 @@ export function HomeCustomerReviewsSection({
     return null;
   }
 
+  const centerTrackOnDesktop = data.items.length <= 3;
+
   return (
     <section
       className={`${HOME_PAGE_SECTION_SHELL_CLASS} py-10 sm:py-14`}
@@ -71,7 +73,9 @@ export function HomeCustomerReviewsSection({
 
         <div
           ref={trackRef}
-          className="flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className={`flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${
+            centerTrackOnDesktop ? 'md:justify-center' : ''
+          }`}
         >
           {data.items.map((item) => (
             <ReviewCard key={item.id} item={item} />
