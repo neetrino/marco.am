@@ -49,7 +49,7 @@ function getModerationTone(status: string): string {
 
 export default function ReelsPage() {
   const { t } = useTranslation();
-  const { isLoggedIn, isAdmin, isLoading } = useAuth();
+  const { user, isLoggedIn, isAdmin, isLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const currentPath = pathname || '/supersudo/reels';
@@ -149,10 +149,10 @@ export default function ReelsPage() {
           active: true,
           sortOrder: maxSortOrder + 1,
           moderation: {
-            status: 'pending',
+            status: 'approved',
             note: null,
-            moderatedAt: null,
-            moderatedBy: null,
+            moderatedAt: new Date().toISOString(),
+            moderatedBy: user?.id ?? 'admin',
           },
         },
       ],
@@ -161,6 +161,29 @@ export default function ReelsPage() {
     await persistStorage(nextStorage);
     setForm(EMPTY_FORM);
     setIsAddFormOpen(false);
+  };
+
+  const handlePublishNow = async (reelId: string) => {
+    if (!storage || saving) {
+      return;
+    }
+    const nextStorage: ReelsManagementStorage = {
+      ...storage,
+      items: storage.items.map((item) =>
+        item.id === reelId
+          ? {
+              ...item,
+              moderation: {
+                ...item.moderation,
+                status: 'approved',
+                moderatedAt: new Date().toISOString(),
+                moderatedBy: user?.id ?? 'admin',
+              },
+            }
+          : item,
+      ),
+    };
+    await persistStorage(nextStorage);
   };
 
   const handleDelete = async (reelId: string) => {
@@ -397,6 +420,15 @@ export default function ReelsPage() {
                       <p className="text-sm font-semibold text-gray-800">
                         {t('admin.reels.likes')}: {likesByReelId[item.id] ?? 0}
                       </p>
+                      {item.moderation.status !== 'approved' ? (
+                        <button
+                          onClick={() => void handlePublishNow(item.id)}
+                          disabled={saving}
+                          className="mt-2 block w-full rounded-lg border border-marco-yellow/60 bg-marco-yellow/20 px-3 py-1.5 text-xs font-semibold text-marco-black transition hover:bg-marco-yellow/35 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          Publish now
+                        </button>
+                      ) : null}
                       <button
                         onClick={() => void handleDelete(item.id)}
                         disabled={saving}

@@ -29,6 +29,34 @@ function getVideoExtension(mimeType: string): string {
   }
 }
 
+function hasBytesSequence(buffer: Buffer, value: string): boolean {
+  return buffer.includes(Buffer.from(value, "ascii"));
+}
+
+/**
+ * Minimal codec guard for MP4/MOV uploads.
+ * Browsers can fail to play HEVC/H.265 (`hvc1`/`hev1`) in many environments,
+ * so we allow AVC/H.264 (`avc1`) and reject likely unsupported HEVC payloads.
+ */
+function validateUploadedVideoCodec(fileBuffer: Buffer, mimeType: string): string | null {
+  if (mimeType !== "video/mp4" && mimeType !== "video/quicktime") {
+    return null;
+  }
+
+  const hasHevcMarker =
+    hasBytesSequence(fileBuffer, "hvc1") || hasBytesSequence(fileBuffer, "hev1");
+  if (hasHevcMarker) {
+    return "Unsupported video codec. Please upload H.264/AVC MP4 (not HEVC/H.265).";
+  }
+
+  const hasAvcMarker = hasBytesSequence(fileBuffer, "avc1");
+  if (!hasAvcMarker) {
+    return "Could not verify a browser-safe H.264 codec. Please upload H.264/AVC MP4.";
+  }
+
+  return null;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const user = await authenticateToken(req);
@@ -102,6 +130,20 @@ export async function POST(req: NextRequest) {
 
     const arrayBuffer = await file.arrayBuffer();
     const fileBuffer = Buffer.from(arrayBuffer);
+    const codecError = validateUploadedVideoCodec(fileBuffer, file.type);
+    if (codecError) {
+      return NextResponse.json(
+        {
+          type: "https://api.shop.am/problems/validation-error",
+          title: "Validation Error",
+          status: 400,
+          detail: codecError,
+          instance: req.url,
+        },
+        { status: 400 },
+      );
+    }
+
     const ext = getVideoExtension(file.type);
     const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
     const key = `reels/${date}-${nanoid(10)}.${ext}`;

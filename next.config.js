@@ -1,6 +1,24 @@
 /** @type {import('next').NextConfig} */
 const path = require('path');
 
+function getPublicR2Origin() {
+  const raw = process.env.R2_PUBLIC_URL;
+  if (!raw) {
+    return null;
+  }
+  try {
+    return new URL(raw).origin;
+  } catch {
+    return null;
+  }
+}
+
+const r2Origin = getPublicR2Origin();
+const mediaSources = ["'self'", 'blob:', 'https:'];
+if (r2Origin) {
+  mediaSources.push(r2Origin);
+}
+
 const nextConfig = {
   reactStrictMode: true,
   // Скрыть индикатор "Compiling..." в углу в dev — не мешает на экране
@@ -30,6 +48,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: https: blob:",
+              `media-src ${mediaSources.join(' ')}`,
               "connect-src 'self' https:",
               "frame-ancestors 'none'",
             ].join('; '),
