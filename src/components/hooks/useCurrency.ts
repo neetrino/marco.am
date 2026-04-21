@@ -1,16 +1,18 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getStoredCurrency } from '../../lib/currency';
+import { getStoredCurrency, type CurrencyCode } from '../../lib/currency';
 
 /**
  * Hook for managing currency state
  * @returns Current currency code
  */
 export function useCurrency() {
-  const [currency, setCurrency] = useState(getStoredCurrency());
+  // Keep SSR and first client render identical; hydrate real value after mount.
+  const [currency, setCurrency] = useState<CurrencyCode>('AMD');
 
   useEffect(() => {
+    setCurrency(getStoredCurrency());
     const handleCurrencyUpdate = () => {
       setCurrency(getStoredCurrency());
     };

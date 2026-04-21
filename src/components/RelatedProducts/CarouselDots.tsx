@@ -14,7 +14,7 @@ export function CarouselDots({ totalItems, visibleItems, currentIndex, onDotClic
   const totalPages = Math.ceil(totalItems / visibleItems);
 
   return (
-    <div className="mt-6 flex justify-center gap-2">
+    <div className="mt-8 flex justify-center gap-2">
       {Array.from({ length: totalPages }).map((_, index) => {
         const startIndex = index * visibleItems;
         const endIndex = Math.min(startIndex + visibleItems, totalItems);

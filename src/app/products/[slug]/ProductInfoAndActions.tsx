@@ -1,6 +1,7 @@
 'use client';
 
 import type { MouseEvent } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { ArrowUpRight, Heart } from 'lucide-react';
 import { formatPrice, type CurrencyCode } from '../../../lib/currency';
@@ -100,7 +101,11 @@ export function ProductInfoAndActions({
   getOptionValue,
   getRequiredAttributesMessage,
 }: ProductInfoAndActionsProps) {
+  const buyNowLabelSlotRef = useRef<HTMLSpanElement | null>(null);
+  const buyNowLabelProbeRef = useRef<HTMLSpanElement | null>(null);
+  const [useShortHyBuyLabel, setUseShortHyBuyLabel] = useState(false);
   const rawDescription = getProductText(language, product.id, 'longDescription') || product.description || '';
+  const buyNowFullLabel = t(language, 'product.buyNow');
   const sanitizedDescription = sanitizeHtml(rawDescription);
   const hasDescription = sanitizedDescription
     .replace(/<[^>]*>/g, '')
@@ -110,6 +115,37 @@ export function ProductInfoAndActions({
     attributeGroups.size > 0 ||
     colorGroups.length > 0 ||
     (!product?.productAttributes && sizeGroups.length > 0);
+
+  useEffect(() => {
+    if (language !== 'hy') {
+      setUseShortHyBuyLabel(false);
+      return;
+    }
+
+    const syncHyBuyLabel = () => {
+      const slot = buyNowLabelSlotRef.current;
+      const probe = buyNowLabelProbeRef.current;
+      if (!slot || !probe) {
+        return;
+      }
+      if (!window.matchMedia('(max-width: 767px)').matches) {
+        setUseShortHyBuyLabel(false);
+        return;
+      }
+      setUseShortHyBuyLabel(probe.offsetWidth > slot.clientWidth);
+    };
+
+    syncHyBuyLabel();
+    const resizeObserver = new ResizeObserver(syncHyBuyLabel);
+    if (buyNowLabelSlotRef.current) {
+      resizeObserver.observe(buyNowLabelSlotRef.current);
+    }
+    window.addEventListener('resize', syncHyBuyLabel);
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener('resize', syncHyBuyLabel);
+    };
+  }, [language, buyNowFullLabel, quantity, isOutOfStock, isVariationRequired, hasUnavailableAttributes]);
 
   return (
     <div className="flex flex-col h-full">
@@ -260,10 +296,24 @@ export function ProductInfoAndActions({
             <button
               type="button"
               disabled={!canAddToCart || isAddingToCart}
-                className={`flex min-w-0 flex-1 items-center gap-1.5 bg-marco-yellow pl-4 pr-4 text-left text-sm font-semibold leading-normal text-marco-black transition-[filter,transform] hover:-translate-y-0.5 hover:brightness-95 active:brightness-90 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 disabled:hover:brightness-100 md:max-w-72 md:flex-none md:pl-7 ${PRODUCT_BUY_CTA_HEIGHT_CLASS} ${HEADER_FIGMA_PILL_RADIUS_CLASS}`}
+                className={`flex min-w-0 flex-1 items-center gap-1.5 bg-marco-yellow pl-4 pr-4 text-left text-sm font-bold leading-normal text-marco-black transition-[filter,transform] hover:-translate-y-0.5 hover:brightness-95 active:brightness-90 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 disabled:hover:brightness-100 md:max-w-72 md:flex-none md:pl-7 ${PRODUCT_BUY_CTA_HEIGHT_CLASS} ${HEADER_FIGMA_PILL_RADIUS_CLASS}`}
               onClick={onAddToCart}
             >
-              <span className="min-w-0 flex-1">
+              <span
+                ref={buyNowLabelSlotRef}
+                className={`min-w-0 flex-1 whitespace-nowrap truncate ${
+                  language === 'hy' ? '-ml-0.5 pl-0 md:ml-0 md:pl-2' : 'pl-2'
+                }`}
+              >
+                {language === 'hy' ? (
+                  <span
+                    ref={buyNowLabelProbeRef}
+                    className="pointer-events-none absolute invisible whitespace-nowrap"
+                    aria-hidden
+                  >
+                    {buyNowFullLabel}
+                  </span>
+                ) : null}
                 {isAddingToCart
                   ? t(language, 'product.adding')
                   : isOutOfStock
@@ -272,7 +322,11 @@ export function ProductInfoAndActions({
                       ? getRequiredAttributesMessage()
                       : hasUnavailableAttributes
                         ? t(language, 'product.outOfStock')
-                        : t(language, 'product.buyNow')}
+                        : language === 'hy'
+                          ? useShortHyBuyLabel
+                            ? 'Գնել'
+                            : buyNowFullLabel
+                          : buyNowFullLabel}
               </span>
               <span
                 className={`flex shrink-0 items-center justify-center rounded-full bg-black text-white ${PRODUCT_BUY_CTA_ICON_NUDGE_LEFT_CLASS}`}
@@ -285,32 +339,32 @@ export function ProductInfoAndActions({
                 <ArrowUpRight className="size-3.5" strokeWidth={2.5} />
               </span>
             </button>
-            <div className="ml-auto flex h-11 shrink-0 items-center overflow-hidden rounded-xl border-2 border-gray-200 bg-white">
+            <div className="ml-auto flex h-10 shrink-0 items-center overflow-hidden rounded-xl border-2 border-gray-200 bg-white">
               <button
                 onClick={() => onQuantityAdjust(-1)}
                 disabled={quantity <= 1}
-                className="flex h-11 w-11 items-center justify-center disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-10 w-7 items-center justify-center text-sm disabled:cursor-not-allowed disabled:opacity-50"
               >
                 -
               </button>
-              <div className="w-11 text-center text-sm font-bold">{quantity}</div>
+              <div className="w-7 text-center text-sm font-bold">{quantity}</div>
               <button
                 onClick={() => onQuantityAdjust(1)}
                 disabled={quantity >= maxQuantity}
-                className="flex h-11 w-11 items-center justify-center disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-10 w-7 items-center justify-center text-sm disabled:cursor-not-allowed disabled:opacity-50"
               >
                 +
               </button>
             </div>
             <button
               onClick={onCompareToggle}
-              className={`w-11 h-11 shrink-0 rounded-xl border-2 flex items-center justify-center transition-all duration-200 ${isInCompare ? 'border-marco-black bg-gray-50' : 'border-gray-200 hover:border-gray-300'}`}
+              className={`w-10 h-10 shrink-0 rounded-xl border-2 flex items-center justify-center transition-all duration-200 ${isInCompare ? 'border-marco-black bg-gray-50' : 'border-gray-200 hover:border-gray-300'}`}
             >
               <CompareIcon isActive={isInCompare} />
             </button>
             <button
               onClick={onAddToWishlist}
-              className={`w-11 h-11 shrink-0 rounded-xl border-2 flex items-center justify-center ${isInWishlist ? 'border-marco-black bg-gray-50' : 'border-gray-200'}`}
+              className={`w-10 h-10 shrink-0 rounded-xl border-2 flex items-center justify-center ${isInWishlist ? 'border-marco-black bg-gray-50' : 'border-gray-200'}`}
             >
               <Heart fill={isInWishlist ? 'currentColor' : 'none'} />
             </button>
