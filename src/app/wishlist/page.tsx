@@ -234,7 +234,7 @@ export default function WishlistPage() {
       {products.length > 0 ? (
         <>
           {/* Total Count Section */}
-          <div className="px-6 py-4 mb-6">
+          <div className="py-4 mb-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -338,7 +338,7 @@ export default function WishlistPage() {
                     variant="primary"
                     onClick={() => handleAddToCart(product)}
                     disabled={!product.inStock || addingToCart.has(product.id)}
-                    className="bg-marco-yellow !text-marco-black rounded-xl px-4 py-2 font-semibold uppercase text-sm hover:brightness-95 transition-[filter] disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="!bg-marco-yellow !text-marco-black rounded-xl px-4 py-2 font-semibold uppercase text-sm !hover:bg-marco-yellow hover:brightness-95 transition-[filter] disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {addingToCart.has(product.id) ? t('common.messages.adding') : t('common.buttons.addToCart')}
                   </Button>
