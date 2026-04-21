@@ -14,7 +14,7 @@ interface ProfileHeaderProps {
 export function ProfileHeader({ profile, tabs, activeTab, onTabChange, t }: ProfileHeaderProps) {
   return (
     <>
-      <div className="lg:w-64 flex-shrink-0">
+      <div className="lg:w-96 flex-shrink-0">
         {/* Profile Header Section */}
         <Card className="mb-4 p-4">
           <div className="flex flex-row items-center gap-4">
@@ -54,13 +54,13 @@ export function ProfileHeader({ profile, tabs, activeTab, onTabChange, t }: Prof
               <button
                 key={tab.id}
                 onClick={() => onTabChange(tab.id)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-md text-sm font-medium transition-all ${
+                className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium transition-all ${
                   activeTab === tab.id
-                    ? 'bg-gray-900 text-white'
-                    : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                    ? 'bg-marco-yellow text-marco-black rounded-full'
+                    : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 rounded-full'
                 }`}
               >
-                <span className={`flex-shrink-0 ${activeTab === tab.id ? 'text-white' : 'text-gray-500'}`}>
+                <span className={`flex-shrink-0 ${activeTab === tab.id ? 'text-marco-black' : 'text-gray-500'}`}>
                   {tab.icon}
                 </span>
                 <span className="text-left">{tab.label}</span>
@@ -71,7 +71,7 @@ export function ProfileHeader({ profile, tabs, activeTab, onTabChange, t }: Prof
       </div>
 
       {/* Mobile Menu Drawer */}
-      <div className="lg:hidden mb-6">
+      <div className="lg:hidden mb-3">
         <ProfileMenuDrawer
           tabs={tabs}
           activeTab={activeTab}

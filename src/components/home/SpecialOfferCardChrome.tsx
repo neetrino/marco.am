@@ -120,7 +120,11 @@ export function SpecialOfferActionsStack({
         className="flex h-8 w-8 items-center justify-center rounded-full bg-marco-black text-white shadow-sm transition-colors hover:bg-marco-text"
         aria-label={compareAria}
       >
-        <CompareIcon isActive={isInCompare} size={16} className="!text-white" />
+        <CompareIcon
+          isActive={isInCompare}
+          size={16}
+          className={isInCompare ? 'text-marco-yellow' : '!text-white'}
+        />
       </button>
       {showDiscountPill ? (
         <div className="rounded-full bg-marco-yellow px-2 py-1 text-[10px] font-bold text-white">

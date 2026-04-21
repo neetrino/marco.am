@@ -1,7 +1,7 @@
 'use client';
 
 import type { LanguageCode } from '../../lib/language';
-import { Suspense, useLayoutEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { SearchDropdown } from '../SearchDropdown';
 import { CategoriesDropdownMega } from './CategoriesDropdownMega';
@@ -72,8 +72,8 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
       return;
     }
 
-    /** Space between categories button and mega menu (bridge keeps hover path continuous). */
-    const gapPx = 14;
+    /** Keep dropdown visibly lower than the navbar. */
+    const gapPx = 10;
 
     const updateLayout = () => {
       const trigger = categoriesTriggerRef.current;
@@ -117,6 +117,19 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
     return () => {
       window.removeEventListener('scroll', updateLayout, true);
       window.removeEventListener('resize', updateLayout);
+    };
+  }, [showProductsMenu]);
+
+  useEffect(() => {
+    if (!showProductsMenu || typeof document === 'undefined') {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
     };
   }, [showProductsMenu]);
 
@@ -169,7 +182,15 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
                 >
                   {t('common.navigation.categories')}
                 </span>
-                <HeaderChevronDownIcon />
+                <span className="inline-flex w-2.5 shrink-0 items-center justify-center md:w-4 min-[1367px]:w-5" aria-hidden>
+                  <span
+                    className={`inline-flex origin-center transform-gpu transition-transform duration-300 ease-out ${
+                      showProductsMenu ? 'rotate-180' : 'rotate-0'
+                    }`}
+                  >
+                    <HeaderChevronDownIcon />
+                  </span>
+                </span>
               </button>
               {showProductsMenu && categoriesDropdownLayout && (
                 <>

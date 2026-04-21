@@ -3,6 +3,7 @@
 import { useState, useEffect, use, useCallback } from 'react';
 import { getStoredCurrency } from '../../../lib/currency';
 import { getStoredLanguage, type LanguageCode } from '../../../lib/language';
+import type { CurrencyCode } from '../../../lib/currency';
 import { t } from '../../../lib/i18n';
 import { useAttributeGroups } from './useAttributeGroups';
 import { useProductImages } from './hooks/useProductImages';
@@ -15,7 +16,8 @@ import { useProductQuantity } from './hooks/useProductQuantity';
 import { useProductCalculations } from './hooks/useProductCalculations';
 export function useProductPage(params: Promise<{ slug?: string }>) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [currency, setCurrency] = useState(getStoredCurrency());
+  // Keep first SSR and client render identical to prevent hydration mismatch.
+  const [currency, setCurrency] = useState<CurrencyCode>('AMD');
   const [language, setLanguage] = useState<LanguageCode>('en');
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [showMessage, setShowMessage] = useState<string | null>(null);
@@ -116,6 +118,7 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
   }, []);
 
   useEffect(() => {
+    setCurrency(getStoredCurrency());
     const handleCurrencyUpdate = () => setCurrency(getStoredCurrency());
     const handleCurrencyRatesUpdate = () => setCurrency(getStoredCurrency());
     

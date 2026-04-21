@@ -18,13 +18,14 @@ const NAV_ROWS: ReadonlyArray<{
 }> = [
   {
     slugs: [
+      'electronics',
       'furniture-hardware',
       'furniture-accessories',
       'cabinet-hardware',
       'furniture-making',
       'kkhuyqi-patrastman',
     ],
-    figmaIconSrc: '/images/category-nav/furniture-hardware.png',
+    figmaIconSrc: '/images/category-nav/furniture-hardware.svg',
     labels: {
       hy: 'Կահույքի պատրաստման պարագաներ',
       en: 'Furniture manufacturing accessories',
@@ -54,8 +55,8 @@ const NAV_ROWS: ReadonlyArray<{
     },
   },
   {
-    slugs: ['furniture', 'kkhuyq', 'home-furniture'],
-    figmaIconSrc: '/images/category-nav/furniture.png',
+    slugs: ['furniture', 'clothing', 'kkhuyq', 'home-furniture'],
+    figmaIconSrc: '/images/category-nav/furniture.svg',
     labels: {
       hy: 'Կահույք',
       en: 'Furniture',
@@ -81,6 +82,76 @@ const NAV_ROWS: ReadonlyArray<{
         hy: 'Վերաիմաստավորեք տարածքը մեր ընտրանքով՝ որակ, հարմարավետություն և ժամանակակից էլեգանտություն։',
         en: 'Redefine your space with our premium selection—quality comfort meets modern elegance.',
         ru: 'Обновите интерьер с нашей коллекцией: комфорт, качество и современный стиль.',
+      },
+    },
+  },
+  {
+    slugs: ['shoes'],
+    figmaIconSrc: '/images/category-nav/kitchen-appliances.svg',
+    labels: {
+      hy: 'Խոշոր կենցաղային տեխնիկա',
+      en: 'Large home appliances',
+      ru: 'Крупная бытовая техника',
+    },
+    descriptions: {
+      hy: 'Լվացքի և սушիչ մեքենաներ, սառնարաններ և այլ խոշոր տեխնիկա՝ հուսալի աշխատանքի և երկար ծառայության ժամկետի համար։',
+      en: 'Washing machines, dryers, refrigerators and other large appliances built for reliability and performance.',
+      ru: 'Стиральные и сушильные машины, холодильники и другая крупная техника для быта.',
+    },
+    promo: {
+      badge: {
+        hy: 'Սահմանափակ առաջարկ',
+        en: 'Limited time offer',
+        ru: 'Ограниченное предложение',
+      },
+      headline: {
+        hy: 'Խոշոր տեխնիկա՝ էներգաարդյունավետ մոդելներ',
+        en: 'Large appliances: energy‑smart picks for your home',
+        ru: 'Крупная техника: энергоэффективные решения',
+      },
+      subline: {
+        hy: 'Սառնարաններ, լվացքի մեքենաներ և ավելին՝ հուսալի բրենդներից։',
+        en: 'Fridges, washers and more from brands you can trust.',
+        ru: 'Холодильники, стиральные машины и другое от проверенных брендов.',
+      },
+    },
+  },
+  {
+    slugs: [
+      'home-and-garden',
+      'home and garden',
+      'home-&-garden',
+      'home_garden',
+      'home-garden',
+      'homegarden',
+      'garden',
+    ],
+    figmaIconSrc: '/images/category-nav/home-and-garden.svg',
+    labels: {
+      hy: 'Խոհանոցային տեխնիկա',
+      en: 'Kitchen appliances',
+      ru: 'Кухонная техника',
+    },
+    descriptions: {
+      hy: 'Խոհանոցային տեխնիկա՝ հավաքման, ստեղծագործության և ամենօրյա պատրաստման համար։ Պրեմիում բրենդներ և մատչելի լուծումներ։',
+      en: 'Appliances for cooking, baking and everyday prep. Premium brands and practical options.',
+      ru: 'Техника для приготовления пищи и ежедневного ухода: премиальные и доступные решения.',
+    },
+    promo: {
+      badge: {
+        hy: 'Սահմանափակ առաջարկ',
+        en: 'Limited time offer',
+        ru: 'Ограниченное предложение',
+      },
+      headline: {
+        hy: 'Խոհանոցային նորույթներ՝ հատուկ գներ',
+        en: 'Kitchen upgrades at special prices',
+        ru: 'Новинки для кухни по специальным ценам',
+      },
+      subline: {
+        hy: 'Պատրաստեք, թխեք և պահեք՝ մեկ տեղից։ Ընտրեք ձեր խոհանոցին համապատասխան տեխնիկա։',
+        en: 'Cook, bake and store with gear that fits your kitchen workflow.',
+        ru: 'Готовьте и храните продукты с техникой под ваш кухонный сценарий.',
       },
     },
   },
@@ -122,8 +193,13 @@ const NAV_ROWS: ReadonlyArray<{
     },
   },
   {
-    slugs: ['kitchen-appliances', 'kitchen', 'patuhanakan-tekhnika', 'refrigerators'],
-    figmaIconSrc: '/images/category-nav/kitchen-appliances.png',
+    slugs: [
+      'kitchen-appliances',
+      'kitchen',
+      'patuhanakan-tekhnika',
+      'refrigerators',
+    ],
+    figmaIconSrc: '/images/category-nav/kitchen-appliances.svg',
     labels: {
       hy: 'Խոհանոցային տեխնիկա',
       en: 'Kitchen appliances',
@@ -149,6 +225,130 @@ const NAV_ROWS: ReadonlyArray<{
         hy: 'Պատրաստեք, թխեք և պահեք՝ մեկ տեղից։ Ընտրեք ձեր խոհանոցին համապատասխան տեխնիկա։',
         en: 'Cook, bake and store with gear that fits your kitchen workflow.',
         ru: 'Готовьте и храните продукты с техникой под ваш кухонный сценарий.',
+      },
+    },
+  },
+  {
+    slugs: ['sports'],
+    figmaIconSrc: '/images/category-nav/sports.svg',
+    labels: {
+      hy: 'Աուդիո և վիդեո համակարգեր',
+      en: 'Audio and video systems',
+      ru: 'Аудио- и видеотехника',
+    },
+    descriptions: {
+      hy: 'Հեռուստացույցներ, սաունդբարեր, ակուստիկա և աքսեսուարներ՝ տեսնելու և լսելու համար հարմար հավաքածու։',
+      en: 'TVs, soundbars, speakers and accessories for immersive home entertainment.',
+      ru: 'Телевизоры, саундбары, акустика и аксессуары для домашнего кино и музыки.',
+    },
+    promo: {
+      badge: {
+        hy: 'Սահմանափակ առաջարկ',
+        en: 'Limited time offer',
+        ru: 'Ограниченное предложение',
+      },
+      headline: {
+        hy: 'Տեսա-աուդիո համակարգեր՝ կինոյի համար տանը',
+        en: 'Audio & video: cinema‑quality at home',
+        ru: 'Аудио и видео: кинотеатр у вас дома',
+      },
+      subline: {
+        hy: 'Պարզ, հզոր ձայն և պատկեր՝ ֆիլմերի և խաղերի համար։',
+        en: 'Crisp picture and powerful sound for movies, shows and games.',
+        ru: 'Чёткая картина и мощный звук для фильмов и игр.',
+      },
+    },
+  },
+  {
+    slugs: ['books'],
+    figmaIconSrc: '/images/category-nav/books.svg',
+    labels: {
+      hy: 'Ջրի դիսպենսերներ',
+      en: 'Water dispensers',
+      ru: 'Кулеры и диспенсеры воды',
+    },
+    descriptions: {
+      hy: 'Ջրի դիսպենսերներ և կուլերներ՝ մաքուր, հարմար հավաքածու տան և գրասենյակի համար։',
+      en: 'Water dispensers and coolers for clean drinking water at home or in the office.',
+      ru: 'Кулеры и диспенсеры для чистой питьевой воды дома и в офисе.',
+    },
+    promo: {
+      badge: {
+        hy: 'Սահմանափակ առաջարկ',
+        en: 'Limited time offer',
+        ru: 'Ограниченное предложение',
+      },
+      headline: {
+        hy: 'Մաքուր ջուր ամեն օր՝ հարմար դիսպենսերներով',
+        en: 'Clean water every day—smart dispensers & coolers',
+        ru: 'Чистая вода каждый день — кулеры и диспенсеры',
+      },
+      subline: {
+        hy: 'Հարմար լուծումներ տան և աշխատանքային տարածքի համար։',
+        en: 'Convenient solutions for home and workspace hydration.',
+        ru: 'Удобные решения для дома и офиса.',
+      },
+    },
+  },
+  {
+    slugs: ['accessories'],
+    figmaIconSrc: '/images/category-nav/accessories.svg',
+    labels: {
+      hy: 'Կենցաղային տեխնիկա',
+      en: 'Home appliances',
+      ru: 'Мелкая бытовая техника',
+    },
+    descriptions: {
+      hy: 'Մանր կենցաղային տեխնիկա՝ խոհանոցի, մաքրության և հարմարավետության համար։',
+      en: 'Small appliances for the kitchen, cleaning and everyday convenience.',
+      ru: 'Мелкая техника для кухни, уборки и повседневного комфорта.',
+    },
+    promo: {
+      badge: {
+        hy: 'Սահմանափակ առաջարկ',
+        en: 'Limited time offer',
+        ru: 'Ограниченное предложение',
+      },
+      headline: {
+        hy: 'Մանր տեխնիկա՝ ամենօրյա հարմարավետության համար',
+        en: 'Small appliances for everyday ease',
+        ru: 'Мелкая техника для повседневного комфорта',
+      },
+      subline: {
+        hy: 'Խոհանոց, մաքրություն և ավելին՝ մեկ կտորով։',
+        en: 'Kitchen helpers, cleaning tools and more in one place.',
+        ru: 'Кухня, уборка и другое — всё в одном месте.',
+      },
+    },
+  },
+  {
+    slugs: ['__extra-climate__'],
+    figmaIconSrc: '/images/category-nav/climate-extra.svg',
+    labels: {
+      hy: 'Օդորակիչներ և տաքացուցիչներ',
+      en: 'Air conditioners and heaters',
+      ru: 'Кондиционеры и обогреватели',
+    },
+    descriptions: {
+      hy: 'Կլիմայի կարգավորում՝ օդորակիչներ, տաքացուցիչներ և լուծումներ ամեն սեզոնի համար։',
+      en: 'Climate control: air conditioners, heaters and solutions for year-round comfort.',
+      ru: 'Климатическая техника: кондиционеры, обогреватели и комфорт в любой сезон.',
+    },
+    promo: {
+      badge: {
+        hy: 'Սահմանափակ առաջարկ',
+        en: 'Limited time offer',
+        ru: 'Ограниченное предложение',
+      },
+      headline: {
+        hy: 'Կլիմա ամբողջ տարվա համար՝ օդորակիչներ և տաքացուցիչներ',
+        en: 'Climate comfort year‑round—AC & heaters',
+        ru: 'Комфорт круглый год — кондиционеры и обогреватели',
+      },
+      subline: {
+        hy: 'Պահեք իդեալական ջերմաստիճանը տանը ցանկացած եղանակին։',
+        en: 'Keep the perfect temperature at home in any season.',
+        ru: 'Поддерживайте комфортную температуру в любое время года.',
       },
     },
   },
@@ -296,9 +496,21 @@ const NAV_ROWS: ReadonlyArray<{
 ];
 
 const SLUG_TO_ROW = new Map<string, (typeof NAV_ROWS)[number]>();
+
+function normalizeCategoryKey(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/&/g, 'and')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
 for (const row of NAV_ROWS) {
   for (const s of row.slugs) {
-    SLUG_TO_ROW.set(s.toLowerCase(), row);
+    const lowered = s.toLowerCase();
+    SLUG_TO_ROW.set(lowered, row);
+    SLUG_TO_ROW.set(normalizeCategoryKey(lowered), row);
   }
 }
 
@@ -353,7 +565,12 @@ export function resolveCategoryNavPresentation(
   readonly description: string;
   readonly promo: CategoryNavPromo;
 } {
-  const row = SLUG_TO_ROW.get(slug.trim().toLowerCase());
+  const normalizedSlug = normalizeCategoryKey(slug);
+  const normalizedTitle = normalizeCategoryKey(apiTitle);
+  const row =
+    SLUG_TO_ROW.get(slug.trim().toLowerCase()) ??
+    SLUG_TO_ROW.get(normalizedSlug) ??
+    SLUG_TO_ROW.get(normalizedTitle);
   if (!row) {
     const desc = labelForLang(FALLBACK_DESCRIPTION, lang).replace('{name}', apiTitle);
     return {

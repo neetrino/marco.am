@@ -64,14 +64,14 @@ export function ProductCard({ product, viewMode = 'grid-3' }: ProductCardProps) 
   const handleCompareToggle = (e: MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    toggleCompare();
+    void toggleCompare();
   };
 
   // Handle add to cart
   const handleAddToCart = (e: MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart();
+    void addToCart();
   };
 
   // List view layout

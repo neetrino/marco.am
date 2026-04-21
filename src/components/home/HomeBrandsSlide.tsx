@@ -39,6 +39,14 @@ type HomeBrandsSlideProps = {
   partners: HomeBrandPartnerPublicItem[] | null;
 };
 
+function chunkIntoPages<T>(items: readonly T[], pageSize: number): T[][] {
+  const pages: T[][] = [];
+  for (let i = 0; i < items.length; i += pageSize) {
+    pages.push(items.slice(i, i + pageSize));
+  }
+  return pages;
+}
+
 function PartnerLogo({
   partner,
   logoScale,
@@ -72,46 +80,52 @@ function PartnerLogo({
  * Brand logo cards — Figma 101:4108; responsive grid so four logos fit without horizontal scroll (md+).
  */
 export function HomeBrandsSlide({ partners }: HomeBrandsSlideProps) {
+  const hasPartners = partners && partners.length > 0;
+  const partnerPages = hasPartners ? chunkIntoPages(partners, 4) : [];
+  const fallbackPages = chunkIntoPages(HOME_BRAND_SLIDE_ENTRIES, 4);
+
   if (partners && partners.length > 0) {
     return (
-      <div
-        className="grid w-full grid-cols-2 md:grid-cols-4"
-        style={gridStyle}
-      >
-        {partners.map((partner) => (
-          <Link
-            key={partner.id}
-            href={partner.href}
-            className={`flex w-full min-w-0 items-center justify-center overflow-hidden ${brandSlideCardPaddingClass(partner.logoScale)}`}
-            style={brandCardShellStyle}
-            aria-label={partner.name}
-          >
-            <PartnerLogo partner={partner} logoScale={partner.logoScale} />
-          </Link>
+      <div className="flex w-full shrink-0 snap-x snap-mandatory gap-3">
+        {partnerPages.map((page, pageIndex) => (
+          <div key={`partners-page-${pageIndex}`} className="grid w-full shrink-0 snap-start grid-cols-2 md:grid-cols-4" style={gridStyle}>
+            {page.map((partner) => (
+              <Link
+                key={partner.id}
+                href={partner.href}
+                className={`flex w-full min-w-0 items-center justify-center overflow-hidden ${brandSlideCardPaddingClass(partner.logoScale)}`}
+                style={brandCardShellStyle}
+                aria-label={partner.name}
+              >
+                <PartnerLogo partner={partner} logoScale={partner.logoScale} />
+              </Link>
+            ))}
+          </div>
         ))}
       </div>
     );
   }
 
   return (
-    <div
-      className="grid w-full grid-cols-2 md:grid-cols-4"
-      style={gridStyle}
-    >
-      {HOME_BRAND_SLIDE_ENTRIES.map((entry) => (
-        <div
-          key={entry.id}
-          className={`flex w-full min-w-0 items-center justify-center overflow-hidden ${brandSlideCardPaddingClass(entry.logoScale)}`}
-          style={brandCardShellStyle}
-        >
-          <Image
-            src={entry.src}
-            alt={entry.alt}
-            width={entry.width}
-            height={entry.height}
-            className={brandSlideLogoClass(entry.logoScale)}
-            sizes="(max-width: 768px) 120px, 25vw"
-          />
+    <div className="flex w-full shrink-0 snap-x snap-mandatory gap-3">
+      {fallbackPages.map((page, pageIndex) => (
+        <div key={`fallback-page-${pageIndex}`} className="grid w-full shrink-0 snap-start grid-cols-2 md:grid-cols-4" style={gridStyle}>
+          {page.map((entry) => (
+            <div
+              key={entry.id}
+              className={`flex w-full min-w-0 items-center justify-center overflow-hidden ${brandSlideCardPaddingClass(entry.logoScale)}`}
+              style={brandCardShellStyle}
+            >
+              <Image
+                src={entry.src}
+                alt={entry.alt}
+                width={entry.width}
+                height={entry.height}
+                className={brandSlideLogoClass(entry.logoScale)}
+                sizes="(max-width: 768px) 120px, 25vw"
+              />
+            </div>
+          ))}
         </div>
       ))}
     </div>

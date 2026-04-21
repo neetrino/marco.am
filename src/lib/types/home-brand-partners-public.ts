@@ -8,7 +8,7 @@ export type HomeBrandPartnerPublicItem = {
   description: string | null;
   /** Absolute or site-relative logo asset URL; null if unset in admin. */
   logoUrl: string | null;
-  /** PLP deep link with brand id filter. */
+  /** Destination route for partner card (usually PLP deep link with brand filter). */
   href: string;
   logoScale?: HomeBrandPartnerLogoScale;
 };

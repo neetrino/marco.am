@@ -13,7 +13,7 @@ export function useVisibleCards() {
     const updateVisibleCards = () => {
       const width = window.innerWidth;
       if (width < 640) {
-        setVisibleCards(1); // mobile
+        setVisibleCards(2); // mobile
       } else if (width < 1024) {
         setVisibleCards(2); // tablet
       } else if (width < 1280) {

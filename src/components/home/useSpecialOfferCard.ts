@@ -57,13 +57,13 @@ export function useSpecialOfferCard(
   const handleCompare = (e: MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    toggleCompare();
+    void toggleCompare();
   };
 
   const handleCart = (e: MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart();
+    void addToCart();
   };
 
   const hasGallery =

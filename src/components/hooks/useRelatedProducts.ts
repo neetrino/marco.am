@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { apiClient } from '../../lib/api-client';
 import { type LanguageCode } from '../../lib/language';
 import { logger } from "@/lib/utils/logger";
+import { dedupeCardProductsByTitle } from '../../lib/dedupeCardProductsByTitle';
 
 interface RelatedProduct {
   id: string;
@@ -68,8 +69,9 @@ export function useRelatedProducts({ productSlug, language }: UseRelatedProducts
           params,
         });
 
+        const uniqueProducts = dedupeCardProductsByTitle(response.data);
         logger.devLog("[RelatedProducts] Received products:", response.data.length);
-        setProducts(response.data.slice(0, 10));
+        setProducts(uniqueProducts.slice(0, 10));
       } catch (error) {
         console.error("[RelatedProducts] Error fetching related products:", error);
         setProducts([]);

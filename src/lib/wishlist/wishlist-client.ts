@@ -34,6 +34,28 @@ function dispatchWishlistUpdated(): void {
   window.dispatchEvent(new Event('wishlist-updated'));
 }
 
+function addWishlistIdToCache(lang: string, productId: string): void {
+  const current = cacheByLang.get(lang);
+  if (!current) {
+    return;
+  }
+  if (current.includes(productId)) {
+    return;
+  }
+  cacheByLang.set(lang, [...current, productId]);
+}
+
+function removeWishlistIdFromCache(lang: string, productId: string): void {
+  const current = cacheByLang.get(lang);
+  if (!current) {
+    return;
+  }
+  cacheByLang.set(
+    lang,
+    current.filter((id) => id !== productId)
+  );
+}
+
 /**
  * Returns product IDs in the current wishlist (guest cookie or authenticated user).
  */
@@ -74,7 +96,8 @@ export async function addWishlistItemClient(productId: string, lang: string): Pr
     { productId },
     { params: { lang }, credentials: 'include' }
   );
-  invalidateWishlistCache();
+  inflightByLang.delete(lang);
+  addWishlistIdToCache(lang, productId);
   dispatchWishlistUpdated();
 }
 
@@ -83,7 +106,8 @@ export async function removeWishlistItemClient(productId: string, lang: string):
     params: { lang },
     credentials: 'include',
   });
-  invalidateWishlistCache();
+  inflightByLang.delete(lang);
+  removeWishlistIdFromCache(lang, productId);
   dispatchWishlistUpdated();
 }
 

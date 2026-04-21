@@ -59,6 +59,28 @@ function dispatchCompareUpdated(): void {
   window.dispatchEvent(new Event('compare-updated'));
 }
 
+function addCompareIdToCache(lang: string, productId: string): void {
+  const current = cacheByLang.get(lang);
+  if (!current) {
+    return;
+  }
+  if (current.includes(productId)) {
+    return;
+  }
+  cacheByLang.set(lang, [...current, productId]);
+}
+
+function removeCompareIdFromCache(lang: string, productId: string): void {
+  const current = cacheByLang.get(lang);
+  if (!current) {
+    return;
+  }
+  cacheByLang.set(
+    lang,
+    current.filter((id) => id !== productId)
+  );
+}
+
 /**
  * Returns product IDs in the current compare list (guest cookie or authenticated user).
  */
@@ -100,7 +122,8 @@ export async function addCompareItemClient(productId: string, lang: string): Pro
     { productId },
     { params: { lang }, credentials: 'include' }
   );
-  invalidateCompareCache();
+  inflightByLang.delete(lang);
+  addCompareIdToCache(lang, productId);
   dispatchCompareUpdated();
 }
 
@@ -109,7 +132,8 @@ export async function removeCompareItemClient(productId: string, lang: string): 
     params: { lang },
     credentials: 'include',
   });
-  invalidateCompareCache();
+  inflightByLang.delete(lang);
+  removeCompareIdFromCache(lang, productId);
   dispatchCompareUpdated();
 }
 

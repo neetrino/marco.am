@@ -1,19 +1,20 @@
 import { ApiError } from "./types";
 
 /**
- * Check if error should be logged (skip 401 and 404 errors)
+ * Check if error should be logged (skip expected status codes)
  * 401 - authentication errors are expected
  * 404 - resource not found is expected (e.g., product doesn't exist)
+ * 422 - validation/business-rule errors are expected in some flows (e.g. compare cap)
  */
 export function shouldLogError(status: number): boolean {
-  return status !== 401 && status !== 404;
+  return status !== 401 && status !== 404 && status !== 422;
 }
 
 /**
- * Check if error should be logged as warning (404 Not Found)
+ * Check if error should be logged as warning (expected, non-fatal HTTP responses)
  */
 export function shouldLogWarning(status: number): boolean {
-  return status === 404;
+  return status === 404 || status === 422;
 }
 
 /**

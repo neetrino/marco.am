@@ -85,6 +85,22 @@ class Logger {
   }
 
   /**
+   * Development-only passthrough for console.warn-style messages.
+   */
+  devWarn(...args: unknown[]): void {
+    if (!this.isDevelopment()) return;
+    console.warn(...args);
+  }
+
+  /**
+   * Development-only passthrough for console.error-style messages.
+   */
+  devError(...args: unknown[]): void {
+    if (!this.isDevelopment()) return;
+    console.error(...args);
+  }
+
+  /**
    * Logs in all environments (e.g. service lifecycle / Redis ready).
    */
   alwaysInfo(message: string, context?: LogContext): void {

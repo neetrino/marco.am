@@ -48,9 +48,9 @@ export function ProfileOrders({
       <button
         type="button"
         onClick={() => onOrdersStatusFilterChange('')}
-        className={`px-3 py-2 rounded-md text-sm font-medium border transition-colors ${
+        className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
           ordersStatusFilter === ''
-            ? 'bg-blue-600 text-white border-blue-600'
+            ? 'bg-marco-yellow text-marco-black border-marco-yellow'
             : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
         }`}
       >
@@ -61,9 +61,9 @@ export function ProfileOrders({
           key={value}
           type="button"
           onClick={() => onOrdersStatusFilterChange(value)}
-          className={`px-3 py-2 rounded-md text-sm font-medium border transition-colors ${
+          className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
             ordersStatusFilter === value
-              ? 'bg-blue-600 text-white border-blue-600'
+              ? 'bg-marco-yellow text-marco-black border-marco-yellow'
               : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
           }`}
         >
@@ -104,14 +104,17 @@ export function ProfileOrders({
             <Button
               type="button"
               variant="outline"
-              className="mr-2"
+              className="mr-2 rounded-full px-4"
               onClick={() => onOrdersStatusFilterChange('')}
             >
               {t('profile.orders.showAllOrders')}
             </Button>
           ) : null}
-          <Link href="/products">
-            <Button variant="primary">{t('profile.dashboard.startShopping')}</Button>
+          <Link
+            href="/products"
+            className="inline-flex items-center px-6 py-3 text-sm font-medium rounded-full bg-marco-black text-white hover:opacity-90 transition-opacity"
+          >
+            {t('profile.dashboard.startShopping')}
           </Link>
         </div>
       </Card>
@@ -194,6 +197,7 @@ export function ProfileOrders({
               <Button
                 variant="outline"
                 size="sm"
+                className="rounded-full px-4"
                 onClick={() => setOrdersPage(prev => Math.max(1, prev - 1))}
                 disabled={ordersPage === 1 || ordersLoading}
               >
@@ -202,6 +206,7 @@ export function ProfileOrders({
               <Button
                 variant="outline"
                 size="sm"
+                className="rounded-full px-4"
                 onClick={() => setOrdersPage(prev => Math.min(ordersMeta.totalPages, prev + 1))}
                 disabled={ordersPage === ordersMeta.totalPages || ordersLoading}
               >

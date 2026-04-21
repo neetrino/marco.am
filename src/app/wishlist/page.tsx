@@ -13,6 +13,11 @@ import { useTranslation } from '../../lib/i18n-client';
 import { useAuth } from '../../lib/auth/AuthContext';
 import { logger } from "@/lib/utils/logger";
 import { SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC } from '../../components/home/home-special-offers.constants';
+import {
+  ensureLegacyWishlistMigratedForGuest,
+  fetchWishlistPayload,
+  removeWishlistItemClient,
+} from '@/lib/wishlist/wishlist-client';
 
 interface Product {
   id: string;
@@ -28,18 +33,6 @@ interface Product {
     id: string;
     name: string;
   } | null;
-}
-
-const WISHLIST_KEY = 'shop_wishlist';
-
-function getWishlist(): string[] {
-  if (typeof window === 'undefined') return [];
-  try {
-    const stored = localStorage.getItem(WISHLIST_KEY);
-    return stored ? JSON.parse(stored) : [];
-  } catch {
-    return [];
-  }
 }
 
 /**
@@ -61,18 +54,21 @@ export default function WishlistPage() {
   /**
    * Fetches wishlist products for provided ids and updates component state.
    */
-  const fetchWishlistProducts = useCallback(async (idsToLoad: string[]) => {
-    if (idsToLoad.length === 0) {
-      logger.devInfo('[Wishlist] Skip fetch because ids array is empty');
-      setProducts([]);
-      setLoading(false);
-      return;
-    }
-
+  const fetchWishlistProducts = useCallback(async () => {
     try {
       setLoading(true);
-      logger.devInfo(`[Wishlist] Fetching ${idsToLoad.length} products for render`);
       const languagePreference = getStoredLanguage();
+      await ensureLegacyWishlistMigratedForGuest(languagePreference);
+      const payload = await fetchWishlistPayload(languagePreference);
+      const idsToLoad = payload.wishlist.items.map((item) => item.productId);
+      setWishlistIds(idsToLoad);
+      if (idsToLoad.length === 0) {
+        logger.devInfo('[Wishlist] Skip fetch because ids array is empty');
+        setProducts([]);
+        return;
+      }
+
+      logger.devInfo(`[Wishlist] Fetching ${idsToLoad.length} products for render`);
       const response = await apiClient.get<{
         data: Product[];
         meta: {
@@ -88,22 +84,26 @@ export default function WishlistPage() {
         },
       });
 
+      const positionById = new Map(idsToLoad.map((id, index) => [id, index] as const));
       const wishlistProducts = response.data.filter((product) =>
         idsToLoad.includes(product.id)
-      );
+      ).sort((a, b) => {
+        const aPos = positionById.get(a.id) ?? Number.MAX_SAFE_INTEGER;
+        const bPos = positionById.get(b.id) ?? Number.MAX_SAFE_INTEGER;
+        return aPos - bPos;
+      });
       setProducts(wishlistProducts);
     } catch (error) {
       console.error('[Wishlist] Error fetching wishlist products:', error);
+      setProducts([]);
+      setWishlistIds([]);
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    // Get wishlist IDs from localStorage
-    const ids = getWishlist();
-    setWishlistIds(ids);
-    fetchWishlistProducts(ids);
+    void fetchWishlistProducts();
 
     // Listen for wishlist updates from other components (header, etc.)
     // But don't re-fetch if we already updated locally
@@ -115,20 +115,23 @@ export default function WishlistPage() {
       }
       
       // Only re-fetch if update came from external source (another component)
-      const updatedIds = getWishlist();
-      setWishlistIds(updatedIds);
-      fetchWishlistProducts(updatedIds);
+      void fetchWishlistProducts();
     };
 
     const handleCurrencyUpdate = () => {
       setCurrency(getStoredCurrency());
     };
+    const handleLanguageUpdate = () => {
+      void fetchWishlistProducts();
+    };
 
     window.addEventListener('wishlist-updated', handleWishlistUpdate);
     window.addEventListener('currency-updated', handleCurrencyUpdate);
+    window.addEventListener('language-updated', handleLanguageUpdate);
     return () => {
       window.removeEventListener('wishlist-updated', handleWishlistUpdate);
       window.removeEventListener('currency-updated', handleCurrencyUpdate);
+      window.removeEventListener('language-updated', handleLanguageUpdate);
     };
   }, [fetchWishlistProducts]);
 
@@ -142,16 +145,15 @@ export default function WishlistPage() {
     const updatedIds = wishlistIds.filter((id) => id !== productId);
     const updatedProducts = products.filter((p) => p.id !== productId);
     
-    // Update localStorage first
-    localStorage.setItem(WISHLIST_KEY, JSON.stringify(updatedIds));
-    
     // Update state immediately (no page reload, no loading spinner)
     setWishlistIds(updatedIds);
     setProducts(updatedProducts);
-    
-    // Dispatch event for other components (header, etc.) - but our handler won't re-fetch
-    // because isLocalUpdateRef.current is true
-    window.dispatchEvent(new Event('wishlist-updated'));
+
+    void removeWishlistItemClient(productId, getStoredLanguage()).catch((error) => {
+      logger.devWarn('[Wishlist] Failed to remove wishlist item on server, restoring state', { error });
+      isLocalUpdateRef.current = false;
+      void fetchWishlistProducts();
+    });
   };
 
   const handleAddToCart = async (product: Product) => {
@@ -232,7 +234,7 @@ export default function WishlistPage() {
       {products.length > 0 ? (
         <>
           {/* Total Count Section */}
-          <div className="px-6 py-4 mb-6">
+          <div className="py-4 mb-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -252,10 +254,10 @@ export default function WishlistPage() {
             <div className="md:col-span-5">
               <span className="text-sm font-semibold text-gray-900 uppercase tracking-wide">{t('common.wishlist.tableHeaders.productName')}</span>
             </div>
-            <div className="md:col-span-2 text-center">
+            <div className="md:col-span-2 text-center md:-ml-[83px]">
               <span className="text-sm font-semibold text-gray-900 uppercase tracking-wide">{t('common.wishlist.tableHeaders.unitPrice')}</span>
             </div>
-            <div className="md:col-span-2 text-center">
+            <div className="md:col-span-2 text-center md:-ml-[32px]">
               <span className="text-sm font-semibold text-gray-900 uppercase tracking-wide">{t('common.wishlist.tableHeaders.stockStatus')}</span>
             </div>
             <div className="md:col-span-3 text-center">
@@ -296,9 +298,9 @@ export default function WishlistPage() {
                 </div>
 
                 {/* Unit Price */}
-                <div className="md:col-span-2 flex items-center justify-center md:justify-start">
-                  <div className="flex items-center gap-3">
-                    <span className="text-base font-semibold text-blue-600">
+                <div className="md:col-span-2 flex items-center justify-start">
+                  <div className="flex flex-col items-start gap-1">
+                    <span className="text-base font-bold text-marco-black">
                       {formatPrice(product.price, currency)}
                     </span>
                     {(product.originalPrice && product.originalPrice > product.price) && (
@@ -315,7 +317,7 @@ export default function WishlistPage() {
                 </div>
 
                 {/* Stock Status */}
-                <div className="md:col-span-2 flex items-center justify-center">
+                <div className="md:col-span-2 flex items-center justify-center md:-ml-[32px]">
                   {product.inStock ? (
                     <span className="text-sm font-medium text-green-600 flex items-center gap-1">
                       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -331,18 +333,18 @@ export default function WishlistPage() {
                 </div>
 
                 {/* Action */}
-                <div className="md:col-span-3 flex items-center justify-center gap-3">
+                <div className="md:col-span-3 flex items-center justify-end gap-3 md:-mr-[10px]">
                   <Button
                     variant="primary"
                     onClick={() => handleAddToCart(product)}
                     disabled={!product.inStock || addingToCart.has(product.id)}
-                    className="bg-green-600 hover:bg-green-700 text-white rounded-md px-4 py-2 font-semibold uppercase text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="!bg-marco-yellow !text-marco-black rounded-xl px-4 py-2 font-semibold uppercase text-sm !hover:bg-marco-yellow hover:brightness-95 transition-[filter] disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {addingToCart.has(product.id) ? t('common.messages.adding') : t('common.buttons.addToCart')}
                   </Button>
                   <button
                     onClick={() => handleRemove(product.id)}
-                    className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-50 text-gray-400 hover:text-red-600 transition-colors"
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:bg-marco-yellow hover:text-marco-black transition-colors"
                     aria-label={t('common.ariaLabels.removeFromWishlist')}
                   >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -374,11 +376,15 @@ export default function WishlistPage() {
             <h2 className="text-2xl font-bold text-gray-900 mb-2">
               {t('common.wishlist.empty')}
             </h2>
-            <p className="text-gray-600 mb-6">
+            <p className="text-gray-600 my-6 text-center mx-auto">
               {t('common.wishlist.emptyDescription')}
             </p>
             <Link href="/products">
-              <Button variant="primary" size="lg">
+              <Button
+                variant="primary"
+                size="lg"
+                className="!bg-black !text-white !rounded-full !h-12 !px-10 inline-flex items-center justify-center leading-none whitespace-nowrap !hover:bg-black/90 transition-colors"
+              >
                 {t('common.buttons.browseProducts')}
               </Button>
             </Link>
