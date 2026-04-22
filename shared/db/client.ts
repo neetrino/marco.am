@@ -9,7 +9,21 @@ const globalForPrisma = globalThis as typeof globalThis & {
   prismaResolvedDatabaseUrl?: string;
 };
 
-const NEON_CONNECT_TIMEOUT_SEC = "10";
+/** Pooled Neon after idle: first TCP + TLS can approach 10s; Prisma P1001 matches this window if too tight. */
+const NEON_CONNECT_TIMEOUT_DEV_SEC = "30";
+const NEON_CONNECT_TIMEOUT_PROD_SEC = "10";
+
+function resolveNeonConnectTimeoutSec(): string {
+  const fromEnv =
+    process.env["NEON_CONNECT_TIMEOUT_SEC"] ??
+    process.env["PRISMA_NEON_CONNECT_TIMEOUT_SEC"];
+  if (fromEnv !== undefined && /^\d+$/.test(fromEnv.trim())) {
+    return fromEnv.trim();
+  }
+  return process.env.NODE_ENV === "development"
+    ? NEON_CONNECT_TIMEOUT_DEV_SEC
+    : NEON_CONNECT_TIMEOUT_PROD_SEC;
+}
 /** Prisma pool wait (seconds). Default 10 is too low when many routes run in parallel with a tiny pool. */
 const NEON_POOL_TIMEOUT_SEC = "30";
 
@@ -59,7 +73,7 @@ function ensureNeonPoolSettings(databaseUrl: string): string {
       u.searchParams.set("sslmode", "require");
     }
     if (!u.searchParams.has("connect_timeout")) {
-      u.searchParams.set("connect_timeout", NEON_CONNECT_TIMEOUT_SEC);
+      u.searchParams.set("connect_timeout", resolveNeonConnectTimeoutSec());
     }
     if (!u.searchParams.has("pool_timeout")) {
       u.searchParams.set("pool_timeout", NEON_POOL_TIMEOUT_SEC);
