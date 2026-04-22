@@ -9,6 +9,33 @@ import { useTranslation } from '../../../lib/i18n-client';
 import { AdminPageLayout } from '../components/AdminPageLayout';
 import { logger } from "@/lib/utils/logger";
 
+const currencyFields = [
+  {
+    key: 'USD',
+    labelKey: 'admin.priceFilter.stepSizeUsd',
+    placeholder: '100',
+    hint: 'Base currency',
+  },
+  {
+    key: 'AMD',
+    labelKey: 'admin.priceFilter.stepSizeAmd',
+    placeholder: '5000',
+    hint: 'Armenian dram',
+  },
+  {
+    key: 'RUB',
+    labelKey: 'admin.priceFilter.stepSizeRub',
+    placeholder: '500',
+    hint: 'Russian ruble',
+  },
+  {
+    key: 'GEL',
+    labelKey: 'admin.priceFilter.stepSizeGel',
+    placeholder: '10',
+    hint: 'Georgian lari',
+  },
+] as const;
+
 export default function PriceFilterSettingsPage() {
   const { t } = useTranslation();
   const { isLoggedIn, isAdmin, isLoading } = useAuth();
@@ -253,6 +280,28 @@ export default function PriceFilterSettingsPage() {
     return null; // Will redirect
   }
 
+  const rangeIsConfigured = minPrice.trim() !== '' && maxPrice.trim() !== '';
+  const configuredCurrencies = [
+    stepSizeUSD,
+    stepSizeAMD,
+    stepSizeRUB,
+    stepSizeGEL,
+  ].filter((value) => value.trim() !== '').length;
+
+  const stepValues: Record<(typeof currencyFields)[number]['key'], string> = {
+    USD: stepSizeUSD,
+    AMD: stepSizeAMD,
+    RUB: stepSizeRUB,
+    GEL: stepSizeGEL,
+  };
+
+  const setStepValue: Record<(typeof currencyFields)[number]['key'], (value: string) => void> = {
+    USD: handleStepSizeChange,
+    AMD: setStepSizeAMD,
+    RUB: setStepSizeRUB,
+    GEL: setStepSizeGEL,
+  };
+
   return (
     <AdminPageLayout
       currentPath={currentPath}
@@ -263,132 +312,267 @@ export default function PriceFilterSettingsPage() {
       backLabel={t('admin.common.backToAdmin')}
       onBack={() => router.push('/supersudo')}
     >
-            <Card className="admin-card">
-              <div className="mb-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-2">{t('admin.priceFilter.priceFilterDefaultRange')}</h2>
-                <p className="text-sm text-gray-600">
+      <div className="space-y-6 pb-8">
+        <section className="overflow-hidden rounded-[28px] border border-marco-border/80 bg-gradient-to-br from-white via-marco-gray/50 to-marco-yellow/15 shadow-[0_18px_45px_rgba(16,16,16,0.08)]">
+          <div className="grid gap-6 p-5 sm:p-6 xl:grid-cols-[1.2fr_0.8fr]">
+            <div className="space-y-4">
+              <div className="inline-flex items-center gap-2 rounded-full border border-marco-yellow/50 bg-marco-yellow/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-marco-black">
+                <span className="h-2 w-2 rounded-full bg-marco-yellow" />
+                Price Filter Studio
+              </div>
+              <div className="space-y-2">
+                <h2 className="text-2xl font-semibold text-marco-black sm:text-3xl">
+                  {t('admin.priceFilter.priceFilterDefaultRange')}
+                </h2>
+                <p className="max-w-2xl text-sm leading-6 text-marco-text/75 sm:text-base">
                   {t('admin.priceFilter.stepSizeDescription')}
                 </p>
               </div>
 
-              {loading ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-                  <p className="text-gray-600">{t('admin.priceFilter.loadingSettings')}</p>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="rounded-2xl border border-marco-border/80 bg-white/85 p-4 shadow-sm">
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-marco-text/60">
+                    Default Range
+                  </p>
+                  <p className="mt-2 text-lg font-semibold text-marco-black">
+                    {rangeIsConfigured ? `${minPrice} - ${maxPrice}` : 'Not configured'}
+                  </p>
                 </div>
-              ) : (
-                <div className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        {t('admin.priceFilter.stepSizeUsd')}
-                      </label>
-                      <Input
-                        type="number"
-                        value={stepSizeUSD}
-                        onChange={(e) => handleStepSizeChange(e.target.value)}
-                        placeholder="100"
-                        min="1"
-                        step="1"
-                        className="w-full"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        {t('admin.priceFilter.stepSizeAmd')}
-                      </label>
-                      <Input
-                        type="number"
-                        value={stepSizeAMD}
-                        onChange={(e) => setStepSizeAMD(e.target.value)}
-                        placeholder="5000"
-                        min="1"
-                        step="1"
-                        className="w-full"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        {t('admin.priceFilter.stepSizeRub')}
-                      </label>
-                      <Input
-                        type="number"
-                        value={stepSizeRUB}
-                        onChange={(e) => setStepSizeRUB(e.target.value)}
-                        placeholder="500"
-                        min="1"
-                        step="1"
-                        className="w-full"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        {t('admin.priceFilter.stepSizeGel')}
-                      </label>
-                      <Input
-                        type="number"
-                        value={stepSizeGEL}
-                        onChange={(e) => setStepSizeGEL(e.target.value)}
-                        placeholder="10"
-                        min="1"
-                        step="1"
-                        className="w-full"
-                      />
-                    </div>
-                  </div>
+                <div className="rounded-2xl border border-marco-border/80 bg-white/85 p-4 shadow-sm">
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-marco-text/60">
+                    Active Currencies
+                  </p>
+                  <p className="mt-2 text-lg font-semibold text-marco-black">
+                    {configuredCurrencies}/4
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-marco-border/80 bg-white/85 p-4 shadow-sm">
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-marco-text/60">
+                    Base Step
+                  </p>
+                  <p className="mt-2 text-lg font-semibold text-marco-black">
+                    {stepSizeUSD.trim() || 'Not set'}
+                  </p>
+                </div>
+              </div>
+            </div>
 
-                  <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-                    <div className="flex items-start gap-3">
-                      <svg className="mt-0.5 h-5 w-5 flex-shrink-0 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <div className="text-sm text-gray-800">
-                        <p className="font-medium mb-1">{t('admin.priceFilter.howItWorks')}</p>
-                        <ul className="list-inside list-disc space-y-1 text-gray-700">
-                          <li>{t('admin.priceFilter.stepSizeControls')}</li>
-                          <li>{t('admin.priceFilter.differentStepSizes')}</li>
-                          <li>{t('admin.priceFilter.defaultRange')}</li>
-                          <li>{t('admin.priceFilter.usersCanAdjust')}</li>
-                          <li>{t('admin.priceFilter.changesTakeEffect')}</li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
+            <div className="rounded-[24px] border border-marco-yellow/40 bg-gradient-to-br from-white via-[#fffdf4] to-marco-yellow/20 p-5 text-marco-black shadow-[0_16px_40px_rgba(247,206,63,0.18)]">
+              <div className="mb-4 flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-marco-text/60">
+                    Live Preview
+                  </p>
+                  <h3 className="mt-2 text-xl font-semibold">Customer filter feel</h3>
+                </div>
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-marco-yellow/50 bg-marco-yellow text-marco-black shadow-[0_10px_24px_rgba(247,206,63,0.3)]">
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                  </svg>
+                </div>
+              </div>
 
-                  <div className="flex gap-3">
-                    <Button
-                      variant="primary"
-                      onClick={handleSave}
-                      disabled={saving}
-                      className="px-6"
-                    >
-                      {saving ? (
-                        <div className="flex items-center gap-2">
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                          <span>{t('admin.priceFilter.saving')}</span>
+              <div className="space-y-4">
+                <div className="rounded-2xl border border-marco-yellow/30 bg-white/90 p-4 shadow-sm">
+                  <div className="mb-3 flex items-center justify-between text-sm">
+                    <span className="text-marco-text/70">Range</span>
+                    <span className="font-semibold text-marco-black">
+                      {rangeIsConfigured ? `${minPrice} - ${maxPrice}` : 'Flexible'}
+                    </span>
+                  </div>
+                  <div className="h-3 rounded-full bg-marco-gray">
+                    <div className="h-3 w-2/3 rounded-full bg-marco-yellow" />
+                  </div>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {currencyFields.map((field) => (
+                    <div key={field.key} className="rounded-2xl border border-marco-yellow/25 bg-white/85 p-3 shadow-sm">
+                      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-marco-text/55">
+                        {field.key}
+                      </p>
+                      <p className="mt-2 text-base font-semibold text-marco-black">
+                        {stepValues[field.key].trim() || '--'}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+          <Card className="admin-card overflow-hidden border-marco-border/70 bg-white/95 p-0 shadow-sm">
+            <div className="border-b border-marco-border/70 bg-gradient-to-r from-white via-marco-gray/40 to-white px-6 py-5">
+              <div className="mb-4 h-1 w-14 rounded-full bg-gradient-to-r from-marco-yellow to-marco-black/30" />
+              <h3 className="text-xl font-semibold text-marco-black">
+                Configure Filter Range
+              </h3>
+              <p className="mt-1 text-sm text-marco-text/70">
+                Set the public-facing default range and step sizes for every supported currency.
+              </p>
+            </div>
+
+            {loading ? (
+              <div className="py-12 text-center">
+                <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-b-2 border-marco-black"></div>
+                <p className="text-marco-text/75">{t('admin.priceFilter.loadingSettings')}</p>
+              </div>
+            ) : (
+              <div className="space-y-8 p-6">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="rounded-2xl border border-marco-border/80 bg-white/90 p-4 shadow-sm">
+                    <label className="mb-2 block text-sm font-medium text-marco-text/80">
+                      Minimum Price
+                    </label>
+                    <Input
+                      type="number"
+                      value={minPrice}
+                      onChange={(e) => setMinPrice(e.target.value)}
+                      placeholder="0"
+                      min="0"
+                      step="1"
+                      className="w-full"
+                    />
+                    <p className="mt-2 text-xs text-marco-text/60">
+                      Lower boundary shown when shoppers first open the price filter.
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-marco-border/80 bg-white/90 p-4 shadow-sm">
+                    <label className="mb-2 block text-sm font-medium text-marco-text/80">
+                      Maximum Price
+                    </label>
+                    <Input
+                      type="number"
+                      value={maxPrice}
+                      onChange={(e) => setMaxPrice(e.target.value)}
+                      placeholder="1000"
+                      min="0"
+                      step="1"
+                      className="w-full"
+                    />
+                    <p className="mt-2 text-xs text-marco-text/60">
+                      Upper boundary used to build the initial customer filter range.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm font-semibold text-marco-black">Step Size By Currency</p>
+                    <p className="mt-1 text-sm text-marco-text/70">
+                      Use a smaller step for denser filters and a bigger step for faster browsing.
+                    </p>
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {currencyFields.map((field) => (
+                      <div
+                        key={field.key}
+                        className="group rounded-2xl border border-marco-border/80 bg-gradient-to-br from-white to-marco-gray/35 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-marco-yellow/60 hover:shadow-[0_12px_28px_rgba(16,16,16,0.08)]"
+                      >
+                        <div className="mb-3 flex items-center justify-between gap-3">
+                          <div>
+                            <label className="block text-sm font-medium text-marco-black">
+                              {t(field.labelKey)}
+                            </label>
+                            <p className="mt-1 text-xs uppercase tracking-[0.14em] text-marco-text/55">
+                              {field.hint}
+                            </p>
+                          </div>
+                          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-marco-yellow/25 text-sm font-semibold text-marco-black transition-colors group-hover:bg-marco-yellow/40">
+                            {field.key}
+                          </div>
                         </div>
-                      ) : (
-                        t('admin.priceFilter.saveSettings')
-                      )}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      onClick={() => {
-                        setMinPrice('');
-                        setMaxPrice('');
-                        setStepSizeUSD('');
-                        setStepSizeAMD('');
-                        setStepSizeRUB('');
-                        setStepSizeGEL('');
-                        prevStepSizeRef.current = '';
-                      }}
-                    >
-                      {t('admin.priceFilter.clear')}
-                    </Button>
+                        <Input
+                          type="number"
+                          value={stepValues[field.key]}
+                          onChange={(e) => setStepValue[field.key](e.target.value)}
+                          placeholder={field.placeholder}
+                          min="1"
+                          step="1"
+                          className="w-full"
+                        />
+                      </div>
+                    ))}
                   </div>
                 </div>
-              )}
+
+                <div className="flex flex-wrap gap-3 border-t border-marco-border/70 pt-2">
+                  <Button
+                    variant="primary"
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="inline-flex h-11 items-center rounded-xl bg-marco-yellow px-5 text-sm font-semibold text-marco-black transition-all hover:-translate-y-0.5 hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {saving ? (
+                      <div className="flex items-center gap-2">
+                        <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-marco-black"></div>
+                        <span>{t('admin.priceFilter.saving')}</span>
+                      </div>
+                    ) : (
+                      t('admin.priceFilter.saveSettings')
+                    )}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      setMinPrice('');
+                      setMaxPrice('');
+                      setStepSizeUSD('');
+                      setStepSizeAMD('');
+                      setStepSizeRUB('');
+                      setStepSizeGEL('');
+                      prevStepSizeRef.current = '';
+                    }}
+                    className="inline-flex h-11 items-center rounded-xl border border-marco-border bg-white px-5 text-sm font-medium text-marco-text transition-colors hover:bg-marco-gray hover:text-marco-black"
+                  >
+                    {t('admin.priceFilter.clear')}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </Card>
+
+          <div className="space-y-6">
+            <Card className="admin-card overflow-hidden border-marco-border/70 bg-white/95 p-6 shadow-sm">
+              <div className="mb-4 h-1 w-14 rounded-full bg-gradient-to-r from-marco-yellow to-marco-black/30" />
+              <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-marco-yellow/25 text-marco-black">
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-marco-black">{t('admin.priceFilter.howItWorks')}</h3>
+                  <p className="mt-1 text-sm text-marco-text/70">
+                    These settings shape the first impression of your storefront filters.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-5 space-y-3">
+                {[
+                  t('admin.priceFilter.stepSizeControls'),
+                  t('admin.priceFilter.differentStepSizes'),
+                  t('admin.priceFilter.defaultRange'),
+                  t('admin.priceFilter.usersCanAdjust'),
+                  t('admin.priceFilter.changesTakeEffect'),
+                ].map((item) => (
+                  <div
+                    key={item}
+                    className="flex items-start gap-3 rounded-2xl border border-marco-border/70 bg-marco-gray/30 px-4 py-3"
+                  >
+                    <span className="mt-1 h-2.5 w-2.5 rounded-full bg-marco-yellow" />
+                    <p className="text-sm leading-6 text-marco-text/85">{item}</p>
+                  </div>
+                ))}
+              </div>
             </Card>
+
+          </div>
+        </div>
+      </div>
     </AdminPageLayout>
   );
 }
