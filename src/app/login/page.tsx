@@ -11,6 +11,31 @@ import { useTranslation } from '../../lib/i18n-client';
 import { Eye, EyeOff } from 'lucide-react';
 import { logger } from "@/lib/utils/logger";
 
+type AuthStorageUser = {
+  roles?: string[];
+};
+
+const AUTH_USER_KEY = 'auth_user';
+const SUPERSUDO_ROUTE = '/supersudo';
+
+function getPostLoginRedirect(redirectTo: string): string {
+  try {
+    const rawUser = localStorage.getItem(AUTH_USER_KEY);
+    if (!rawUser) {
+      return redirectTo;
+    }
+
+    const parsed = JSON.parse(rawUser) as AuthStorageUser;
+    if (Array.isArray(parsed.roles) && parsed.roles.includes('admin')) {
+      return SUPERSUDO_ROUTE;
+    }
+  } catch {
+    // Fallback to regular redirect when storage payload is invalid.
+  }
+
+  return redirectTo;
+}
+
 function LoginPageContent() {
   const { t } = useTranslation();
   const [emailOrPhone, setEmailOrPhone] = useState('');
@@ -51,8 +76,9 @@ function LoginPageContent() {
         router.push(`/verify?redirect=${encodeURIComponent(redirectTo)}`);
         return;
       }
-      logger.devLog('✅ [LOGIN PAGE] Login successful, redirecting to:', redirectTo);
-      router.push(redirectTo);
+      const postLoginRedirect = getPostLoginRedirect(redirectTo);
+      logger.devLog('✅ [LOGIN PAGE] Login successful, redirecting to:', postLoginRedirect);
+      router.push(postLoginRedirect);
     } catch (err: unknown) {
       logger.error('Login page submission failed', {
         message: err instanceof Error ? err.message : getErrorMessage(err),
@@ -66,7 +92,7 @@ function LoginPageContent() {
   // Redirect if already logged in
   useEffect(() => {
     if (isLoggedIn && !isLoading) {
-      router.push(redirectTo);
+      router.push(getPostLoginRedirect(redirectTo));
     }
   }, [isLoggedIn, isLoading, redirectTo, router]);
 

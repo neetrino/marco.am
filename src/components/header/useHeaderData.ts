@@ -24,6 +24,7 @@ export function useHeaderData() {
   const [cartCount, setCartCount] = useState(0);
   const [cartTotal, setCartTotal] = useState(0);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showLocaleCurrencyMenu, setShowLocaleCurrencyMenu] = useState(false);
   const [showProductsMenu, setShowProductsMenu] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedCurrency, setSelectedCurrency] = useState<CurrencyCode>('AMD');
@@ -274,6 +275,8 @@ export function useHeaderData() {
     cartTotal,
     showUserMenu,
     setShowUserMenu,
+    showLocaleCurrencyMenu,
+    setShowLocaleCurrencyMenu,
     showProductsMenu,
     setShowProductsMenu,
     mobileMenuOpen,

@@ -146,7 +146,7 @@ export function MobileBottomNav() {
 
   return (
     <nav
-      className="lg:hidden fixed bottom-0 left-0 right-0 z-40 w-full bg-white pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]"
+      className="lg:hidden fixed bottom-0 left-0 right-0 z-50 w-full bg-white pb-[max(0.5rem,env(safe-area-inset-bottom,0px))]"
       style={{ boxShadow: MOBILE_NAV_BOX_SHADOW }}
       aria-label="Primary"
     >

@@ -39,6 +39,9 @@ export function Header({ initialLanguage }: HeaderProps) {
     setSelectedCategory,
     categories,
     showProductsMenu,
+    showUserMenu,
+    showLocaleCurrencyMenu,
+    setShowLocaleCurrencyMenu,
     setMobileMenuOpen,
     mobileMenuOpen,
     selectedCurrency,
@@ -81,7 +84,6 @@ export function Header({ initialLanguage }: HeaderProps) {
   const row2HiddenPx = Math.round(row2HeightPx * effectiveScrollProgress);
   const row2MaxHeightPx = Math.max(0, row2HeightPx - row2HiddenPx);
   const row2MarginTopPx = -row2HiddenPx;
-  const row2IsInteractive = effectiveScrollProgress < 0.95;
   const row2MaxHeightStyle = row2HeightPx > 0 ? `${row2MaxHeightPx}px` : undefined;
 
   return (
@@ -134,17 +136,18 @@ export function Header({ initialLanguage }: HeaderProps) {
           onCurrencyChange={handleCurrencyChange}
           initialLanguage={initialLanguage}
           ariaLabel={t('common.ariaLabels.languageCurrencyMenu')}
+          onMenuOpenChange={setShowLocaleCurrencyMenu}
         />
       </div>
 
       <div
         ref={row2WrapperRef}
-        className={`${showProductsMenu ? 'overflow-visible' : 'overflow-hidden'} will-change-[max-height]`}
+        className={`${
+          showProductsMenu || showUserMenu || showLocaleCurrencyMenu ? 'overflow-visible' : 'overflow-hidden'
+        } will-change-[max-height]`}
         style={{
           maxHeight: row2MaxHeightStyle,
-          pointerEvents: row2IsInteractive ? 'auto' : 'none',
         }}
-        aria-hidden={!row2IsInteractive}
       >
         <div ref={row2ContentRef} style={{ marginTop: `${row2MarginTopPx}px` }}>
           <HeaderRow2

@@ -46,6 +46,7 @@ interface HeaderLocaleCurrencyPillProps {
   onCurrencyChange: (code: CurrencyCode) => void;
   /** Server-known language so the first HTML matches SSR + first client paint. Omit to use "en" then sync localStorage in useEffect. */
   initialLanguage?: LanguageCode;
+  onMenuOpenChange?: (isOpen: boolean) => void;
 }
 
 function normalizeHeaderLang(code: LanguageCode | undefined): LanguageCode {
@@ -219,9 +220,17 @@ export function HeaderLocaleCurrencyPill({
   selectedCurrency,
   onCurrencyChange,
   initialLanguage,
+  onMenuOpenChange,
 }: HeaderLocaleCurrencyPillProps) {
   const { showMenu, setShowMenu, currentLang, menuRef, changeLanguage, handleCurrencySelect } =
     useLocaleCurrencyPillState(onCurrencyChange, initialLanguage);
+
+  useEffect(() => {
+    onMenuOpenChange?.(showMenu);
+    return () => {
+      onMenuOpenChange?.(false);
+    };
+  }, [onMenuOpenChange, showMenu]);
 
   return (
     <div className="relative" ref={menuRef as React.RefObject<HTMLDivElement>}>
@@ -256,6 +265,7 @@ interface MobileHeaderLocaleCurrencyButtonProps {
   onCurrencyChange: (code: CurrencyCode) => void;
   initialLanguage?: LanguageCode;
   ariaLabel: string;
+  onMenuOpenChange?: (isOpen: boolean) => void;
 }
 
 /**
@@ -266,9 +276,17 @@ export function MobileHeaderLocaleCurrencyButton({
   onCurrencyChange,
   initialLanguage,
   ariaLabel,
+  onMenuOpenChange,
 }: MobileHeaderLocaleCurrencyButtonProps) {
   const { showMenu, setShowMenu, currentLang, menuRef, changeLanguage, handleCurrencySelect } =
     useLocaleCurrencyPillState(onCurrencyChange, initialLanguage);
+
+  useEffect(() => {
+    onMenuOpenChange?.(showMenu);
+    return () => {
+      onMenuOpenChange?.(false);
+    };
+  }, [onMenuOpenChange, showMenu]);
 
   return (
     <div className="relative shrink-0" ref={menuRef as React.RefObject<HTMLDivElement>}>
