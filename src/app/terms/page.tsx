@@ -1,140 +1,130 @@
 'use client';
 
 import { Card } from '@shop/ui';
-import { useTranslation } from '../../lib/i18n-client';
 
 /**
  * Terms of Service page - displays terms and conditions
  */
 export default function TermsPage() {
-  const { t } = useTranslation();
   return (
-    <div className="policy-page">
-      <div className="policy-page-inner">
-        <h1 className="text-4xl font-bold text-gray-900">{t('terms.title')}</h1>
-        <p className="text-gray-600">
-          {t('terms.lastUpdated')}{' '}
-          {new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
-        </p>
-      
-        <div className="mt-8 space-y-6">
-        <Card className="p-6">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('terms.agreementToTerms.title')}</h2>
-          <p className="text-gray-600 mb-4">
-            {t('terms.agreementToTerms.description1')}
-          </p>
-          <p className="text-gray-600">
-            {t('terms.agreementToTerms.description2')}
-          </p>
-     
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <h1 className="text-4xl font-bold text-gray-900 mb-8">Օգտագործման Պայմաններ</h1>
 
-      
-          <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('terms.useLicense.title')}</h2>
-          <p className="text-gray-600 mb-4">
-            {t('terms.useLicense.description')}
-          </p>
-          <ul className="list-disc list-inside text-gray-600 space-y-1 ml-4">
-            <li>{t('terms.useLicense.restrictions.modify')}</li>
-            <li>{t('terms.useLicense.restrictions.commercial')}</li>
-            <li>{t('terms.useLicense.restrictions.reverse')}</li>
-            <li>{t('terms.useLicense.restrictions.copyright')}</li>
-            <li>{t('terms.useLicense.restrictions.transfer')}</li>
-          </ul>
-       
+      <div className="space-y-8">
+        <Card className="p-6 space-y-5">
+          <section className="space-y-2">
+            <h2 className="text-2xl font-semibold text-gray-900">Ներածություն</h2>
+            <p className="text-gray-600">
+              Այս Օգտագործման Պայմանները կարգավորում են Marco կայքի օգտագործումը: Կայքը մուտք գործելով և
+              օգտագործելով՝ դուք համաձայնվում եք ենթարկվել այս պայմաններին: Եթե համաձայն չեք այս պայմաններից
+              որևէ մեկի հետ, խնդրում ենք չօգտագործել մեր կայքը:
+            </p>
+          </section>
 
-       
-          <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('terms.accountRegistration.title')}</h2>
-          <p className="text-gray-600 mb-4">
-            {t('terms.accountRegistration.description')}
-          </p>
-          <ul className="list-disc list-inside text-gray-600 space-y-1 ml-4">
-            <li>{t('terms.accountRegistration.requirements.accurate')}</li>
-            <li>{t('terms.accountRegistration.requirements.maintain')}</li>
-            <li>{t('terms.accountRegistration.requirements.security')}</li>
-            <li>{t('terms.accountRegistration.requirements.responsibility')}</li>
-            <li>{t('terms.accountRegistration.requirements.notify')}</li>
-          </ul>
-   
+          <section className="space-y-3">
+            <h2 className="text-2xl font-semibold text-gray-900">Կայքի Օգտագործում</h2>
+            <ul className="list-disc list-inside text-gray-600 space-y-2">
+              <li>
+                <span className="font-semibold text-gray-900">Պատշաճ տարիքը:</span> Դուք պետք է լինեք
+                առնվազն 18 տարեկան, որպեսզի կարողանաք կատարել գնումներ մեր կայքից:
+              </li>
+              <li>
+                <span className="font-semibold text-gray-900">Հաշվի Պատասխանատվություն:</span> Դուք
+                պատասխանատու եք ձեր հաշվի տվյալների գաղտնիության պահպանման համար և ձեր հաշվից կատարվող
+                բոլոր գործողությունների համար:
+              </li>
+            </ul>
+          </section>
 
-      
-          <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('terms.productInformation.title')}</h2>
-          <p className="text-gray-600 mb-4">
-            {t('terms.productInformation.description1')}
-          </p>
-          <p className="text-gray-600">
-            {t('terms.productInformation.description2')}
-          </p>
-     
+          <section className="space-y-2">
+            <h2 className="text-2xl font-semibold text-gray-900">Ապրանքի Տեղեկատվություն</h2>
+            <p className="text-gray-600">
+              Մենք անում ենք ամեն ինչ՝ ապրանքների ճշգրիտ նկարագրություններ, պատկերներ և գներ ներկայացնելու
+              համար: Սակայն, մենք չենք երաշխավորում, որ կայքի ապրանքների նկարագրությունները կամ այլ
+              բովանդակությունը չեն պարունակում սխալներ: Եթե մեր կայքում առաջարկվող ապրանքը չի
+              համապատասխանում նկարագրությանը, ապա այն վերադարձնելն է միակ լուծումը:
+            </p>
+          </section>
 
-      
-          <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('terms.pricingAndPayment.title')}</h2>
-          <p className="text-gray-600 mb-4">
-            {t('terms.pricingAndPayment.description1')}
-          </p>
-          <p className="text-gray-600 mb-4">
-            {t('terms.pricingAndPayment.description2')}
-          </p>
-          <p className="text-gray-600">
-            {t('terms.pricingAndPayment.description3')}
-          </p>
-     
+          <section className="space-y-3">
+            <h2 className="text-2xl font-semibold text-gray-900">Պատվերներ և Վճարում</h2>
+            <ul className="list-disc list-inside text-gray-600 space-y-2">
+              <li>
+                <span className="font-semibold text-gray-900">Պատվերի Ընդունում:</span> Մենք իրավունք ունենք
+                մերժելու կամ չեղարկելու ցանկացած պատվեր՝ մեր հայեցողությամբ:
+              </li>
+              <li>
+                <span className="font-semibold text-gray-900">Գնագոյացում:</span> Գները ենթակա են
+                փոփոխության առանց նախնական ծանուցման: Պատվերի համար կիրառվող գինը կլինի գնումի պահին
+                գործող գինը:
+              </li>
+              <li>
+                <span className="font-semibold text-gray-900">Վճարման Մեթոդներ:</span> Մենք ընդունում ենք
+                տարբեր վճարման մեթոդներ, և վճարումը պետք է ստացվի, մինչև պատվերը կուղարկվի:
+              </li>
+            </ul>
+          </section>
 
-          <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('terms.shippingAndDelivery.title')}</h2>
-          <p className="text-gray-600 mb-4">
-            {t('terms.shippingAndDelivery.description1')}
-          </p>
-          <p className="text-gray-600">
-            {t('terms.shippingAndDelivery.description2')}
-          </p>
+          <section className="space-y-2">
+            <h2 className="text-2xl font-semibold text-gray-900">Առաքում և Մատակարարում</h2>
+            <p className="text-gray-600">
+              Մենք ամեն ինչ կանենք, որ ձեր պատվերը մատակարարվի կանխատեսված ժամկետում: Սակայն, հնարավոր են
+              ուշացումներ, և մենք չենք կրում պատասխանատվություն նման ուշացումների համար:
+            </p>
+          </section>
 
-          <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('terms.returnsAndRefunds.title')}</h2>
-          <p className="text-gray-600 mb-4">
-            {t('terms.returnsAndRefunds.description1')}
-          </p>
-          <p className="text-gray-600">
-            {t('terms.returnsAndRefunds.description2')}
-          </p>
+          <section className="space-y-2">
+            <h2 className="text-2xl font-semibold text-gray-900">Վերադարձ և Փոխհատուցում</h2>
+            <p className="text-gray-600">
+              Խնդրում ենք դիմել մեր Վերադարձի Քաղաքականությանը՝ ապրանքները վերադարձնելու և փոխհատուցում
+              ստանալու գործընթացի համար:
+            </p>
+          </section>
 
-          <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('terms.prohibitedUses.title')}</h2>
-          <p className="text-gray-600 mb-2">{t('terms.prohibitedUses.description')}</p>
-          <ul className="list-disc list-inside text-gray-600 space-y-1 ml-4">
-            <li>{t('terms.prohibitedUses.items.violate')}</li>
-            <li>{t('terms.prohibitedUses.items.transmit')}</li>
-            <li>{t('terms.prohibitedUses.items.impersonate')}</li>
-            <li>{t('terms.prohibitedUses.items.infringe')}</li>
-            <li>{t('terms.prohibitedUses.items.automated')}</li>
-          </ul>
-    
+          <section className="space-y-2">
+            <h2 className="text-2xl font-semibold text-gray-900">Պատասխանատվության Սահմանափակում</h2>
+            <p className="text-gray-600">
+              Մեր պատասխանատվությունը սահմանափակվում է ձեր կողմից պատվիրված ապրանքի գնով: Մենք չենք կրում
+              պատասխանատվություն որևէ անուղղակի, պատահական կամ հետևանքային վնասների համար, որոնք առաջացել
+              են կայքի օգտագործման արդյունքում:
+            </p>
+          </section>
 
-       
-          <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('terms.limitationOfLiability.title')}</h2>
-          <p className="text-gray-600">
-            {t('terms.limitationOfLiability.description')}
-          </p>
-    
-          <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('terms.revisionsAndErrata.title')}</h2>
-          <p className="text-gray-600">
-            {t('terms.revisionsAndErrata.description')}
-          </p>
- 
+          <section className="space-y-2">
+            <h2 className="text-2xl font-semibold text-gray-900">Կառավարող Իրավունք</h2>
+            <p className="text-gray-600">
+              Այս Օգտագործման Պայմանները կարգավորվում են Հայաստանի Հանրապետության օրենքներով: Այս
+              պայմաններից առաջացած ցանկացած վեճ կքննարկվի Հայաստանի Հանրապետության դատարանների իրավասության
+              ներքո:
+            </p>
+          </section>
 
-        
-          <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('terms.governingLaw.title')}</h2>
-          <p className="text-gray-600">
-            {t('terms.governingLaw.description')}
-          </p>
-     
-
-       
-          <h2 className="text-2xl font-semibold text-gray-900 mb-4">{t('terms.contactInformation.title')}</h2>
-          <p className="text-gray-600">
-            {t('terms.contactInformation.description')}{' '}
-            <a href="mailto:marcofurniture@mail.ru" className="text-blue-600 hover:underline">
-              marcofurniture@mail.ru
-            </a>
-          </p>
+          <section className="space-y-3">
+            <h2 className="text-2xl font-semibold text-gray-900">Առաքում և Մատակարարում</h2>
+            <p className="text-gray-600">
+              Մենք պարտավորվում ենք ձեր պատվերը մատակարարել արագ և ապահով կերպով: Առաքման ժամկետները
+              կախված են ընտրած ապրանքից և առաքման վայրից: Սովորաբար, պատվերները մատակարարվում են 3-5
+              աշխատանքային օրվա ընթացքում:
+            </p>
+            <ul className="list-disc list-inside text-gray-600 space-y-2">
+              <li>
+                <span className="font-semibold text-gray-900">Առաքման տարբերակներ:</span> Առաքումն
+                իրականացվում է մեր գործընկեր առաքման ծառայությունների միջոցով:
+              </li>
+              <li>
+                <span className="font-semibold text-gray-900">Ուշացումներ:</span> Չնայած մեր ջանքերին,
+                հնարավոր են ուշացումներ եղանակային պայմանների պատճառով:
+              </li>
+              <li>
+                Առաքումը կատարվում է անվճար մինչև 20 կմ, իսկ 20կմ-ից հետո 1կմ-ի արժեքը կազմում 150 դրամ։
+              </li>
+            </ul>
+            <p className="text-gray-600">
+              Խնդրում ենք կապ հաստատել մեր հաճախորդների սպասարկման թիմի հետ՝ առաքման հարցերով կամ այլ
+              մանրամասների համար:
+            </p>
+          </section>
         </Card>
-        </div>
       </div>
     </div>
   );

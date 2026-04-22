@@ -47,14 +47,14 @@ export const FOOTER_SUPPORT_LINKS = [
   },
   { href: '/faq', labelKey: 'common.footer.marco.links.supportFaq' },
   {
-    href: '/installment-terms',
+    href: '/privacy',
     labelKey: 'common.footer.marco.links.supportInstallment',
   },
   {
-    href: '/warranty',
+    href: '/terms',
     labelKey: 'common.footer.marco.links.supportWarranty',
   },
-  { href: '/service-centers', labelKey: 'common.footer.marco.links.supportService' },
+  { href: '/refund-policy', labelKey: 'common.footer.marco.links.supportService' },
 ] as const;
 
 export const NEETRINO_STUDIO_HREF = 'https://neetrino.com/';
