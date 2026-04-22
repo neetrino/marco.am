@@ -112,11 +112,11 @@ export function BrandFilter({ category, search, minPrice, maxPrice }: BrandFilte
     return (
       <section className={PRODUCTS_FILTER_SECTION_SHELL_CLASS}>
         <h3
-          className={`${productsFiltersSectionFont.className} mb-4 text-base font-semibold leading-6 tracking-[-0.31px] text-black`}
+          className={`${productsFiltersSectionFont.className} mb-4 text-base font-semibold leading-6 tracking-[-0.31px] text-black dark:text-white`}
         >
           {t('products.filters.brand.title')}
         </h3>
-        <div className="text-sm text-[#62748e]">{t('products.filters.brand.loading')}</div>
+        <div className="text-sm text-[#62748e] dark:text-white/72">{t('products.filters.brand.loading')}</div>
       </section>
     );
   }
@@ -129,7 +129,7 @@ export function BrandFilter({ category, search, minPrice, maxPrice }: BrandFilte
     <section className={PRODUCTS_FILTER_SECTION_SHELL_CLASS}>
       <div className="mb-4 flex min-h-6 items-center justify-between gap-2">
         <h3
-          className={`${productsFiltersSectionFont.className} min-w-0 text-base font-semibold leading-6 tracking-[-0.31px] text-black`}
+          className={`${productsFiltersSectionFont.className} min-w-0 text-base font-semibold leading-6 tracking-[-0.31px] text-black dark:text-white`}
         >
           {t('products.filters.brand.title')}
         </h3>
@@ -159,12 +159,12 @@ export function BrandFilter({ category, search, minPrice, maxPrice }: BrandFilte
               <ProductsFilterCheckboxVisual checked={isSelected} />
               <span
                 className={`min-w-0 flex-1 truncate text-base leading-6 tracking-[0.16px] transition-colors duration-200 ease-out ${
-                  isSelected ? 'text-[#314158]' : 'text-[#5d7285]'
+                  isSelected ? 'text-[#314158] dark:text-white' : 'text-[#5d7285] dark:text-white/78'
                 }`}
               >
                 {brand.name}
               </span>
-              <span className="shrink-0 text-base leading-6 tracking-[-0.31px] text-[#90a1b9]">
+              <span className="shrink-0 text-base leading-6 tracking-[-0.31px] text-[#90a1b9] dark:text-white/68">
                 ({brand.count})
               </span>
             </button>

@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { AuthProvider } from '../lib/auth/AuthContext';
 import { LanguagePreferenceCookieSync } from './LanguagePreferenceCookieSync';
 import { ToastContainer } from './Toast';
+import { ThemeProvider } from './theme/ThemeProvider';
 
 /**
  * ClientProviders component
@@ -11,10 +12,12 @@ import { ToastContainer } from './Toast';
  */
 export function ClientProviders({ children }: { children: ReactNode }) {
   return (
-    <AuthProvider>
-      <LanguagePreferenceCookieSync />
-      {children}
-      <ToastContainer />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <LanguagePreferenceCookieSync />
+        {children}
+        <ToastContainer />
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

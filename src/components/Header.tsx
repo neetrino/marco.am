@@ -93,7 +93,7 @@ export function Header({ initialLanguage }: HeaderProps) {
   }
 
   return (
-    <header className="sticky top-0 z-50 border-b border-marco-border bg-white shadow-sm backdrop-blur-sm">
+    <header className="sticky top-0 z-50 border-b border-marco-border bg-white shadow-sm backdrop-blur-sm dark:border-white/10 dark:bg-[var(--app-bg)]">
       <Suspense fallback={null}>
         <HeaderSearchSync
           setSearchQuery={setSearchQuery}
@@ -102,7 +102,7 @@ export function Header({ initialLanguage }: HeaderProps) {
         />
       </Suspense>
       {!compactPrimaryNav && (
-        <div className="w-full border-b border-marco-border bg-white">
+        <div className="w-full border-b border-marco-border bg-white dark:border-white/10 dark:bg-[var(--app-bg)]">
           <HeaderDesktopTopRow innerRef={desktopTopRowInnerRef} />
         </div>
       )}

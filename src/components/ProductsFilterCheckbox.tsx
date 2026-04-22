@@ -21,11 +21,11 @@ export function ProductsFilterCheckboxVisual({
       className={`flex size-5 shrink-0 items-center justify-center rounded border-2 border-solid transition-colors duration-200 ease-out ${
         isCheckmark
           ? checked
-            ? 'border-marco-black bg-white'
-            : 'border-[#cad5e2] bg-white'
+            ? 'border-marco-black bg-white dark:border-white dark:bg-transparent'
+            : 'border-[#cad5e2] bg-white dark:border-white/75 dark:bg-transparent'
           : checked
-            ? 'border-marco-black bg-marco-black'
-            : 'border-[#cad5e2] bg-white'
+            ? 'border-marco-black bg-marco-black dark:border-white dark:bg-white'
+            : 'border-[#cad5e2] bg-white dark:border-white/75 dark:bg-transparent'
       }`}
       aria-hidden
     >
@@ -36,7 +36,7 @@ export function ProductsFilterCheckboxVisual({
           viewBox="0 0 12 10"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          className={isCheckmark ? 'text-marco-black' : 'text-white'}
+          className={isCheckmark ? 'text-marco-black dark:text-white' : 'text-white dark:text-[#050505]'}
         >
           <path
             d="M1 5l3.5 3.5L11 1"

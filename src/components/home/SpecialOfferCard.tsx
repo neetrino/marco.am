@@ -145,8 +145,9 @@ export function SpecialOfferCard({
           style={{
             width: SPECIAL_OFFERS_CARD_CORNER_MASK_SIZE_PX,
             height: SPECIAL_OFFERS_CARD_CORNER_MASK_SIZE_PX,
-            backgroundColor: SPECIAL_OFFERS_CARD_CORNER_MASK_BG,
+            backgroundColor: 'var(--special-offers-card-cutout-bg)',
             transform: `translate(${cornerTranslate}, ${cornerTranslate})`,
+            boxShadow: '0 0 0 1px var(--special-offers-card-cutout-bg)',
           }}
         />
         {showMobileBottomNotch ? (
@@ -156,9 +157,10 @@ export function SpecialOfferCard({
             style={{
               width: `min(100%, ${SPECIAL_OFFERS_CARD_MOBILE_NOTCH_WIDTH_PX}px)`,
               height: SPECIAL_OFFERS_CARD_MOBILE_NOTCH_HEIGHT_PX,
-              backgroundColor: SPECIAL_OFFERS_CARD_CORNER_MASK_BG,
+              backgroundColor: 'var(--special-offers-card-cutout-bg)',
               borderTopLeftRadius: SPECIAL_OFFERS_CARD_MOBILE_NOTCH_TOP_RADIUS_PX,
               borderTopRightRadius: SPECIAL_OFFERS_CARD_MOBILE_NOTCH_TOP_RADIUS_PX,
+              boxShadow: '0 0 0 1px var(--special-offers-card-cutout-bg)',
             }}
           />
         ) : null}

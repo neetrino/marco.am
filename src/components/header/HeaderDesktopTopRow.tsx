@@ -42,7 +42,7 @@ export function HeaderDesktopTopRow({ innerRef }: HeaderDesktopTopRowProps) {
       <div className="flex min-w-0 flex-1 flex-nowrap items-center">
         <MarcoLogo />
         <nav
-          className={`flex h-10 shrink-0 flex-nowrap items-center ${HEADER_LOGO_TO_NAV_GAP_CLASS} ${HEADER_FIGMA_NAV_LINK_GAP_CLASS} text-xs font-bold capitalize leading-[18px] text-marco-text`}
+          className={`flex h-10 shrink-0 flex-nowrap items-center ${HEADER_LOGO_TO_NAV_GAP_CLASS} ${HEADER_FIGMA_NAV_LINK_GAP_CLASS} text-xs font-bold capitalize leading-[18px] text-marco-text dark:text-white/88`}
           aria-label="Main"
         >
           {primaryNavLinks.map((item) => {
@@ -54,7 +54,7 @@ export function HeaderDesktopTopRow({ innerRef }: HeaderDesktopTopRowProps) {
                   href={item.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex h-10 shrink-0 items-center whitespace-nowrap transition-opacity hover:opacity-80"
+                  className="inline-flex h-10 shrink-0 items-center whitespace-nowrap transition-colors hover:text-marco-black dark:hover:text-white"
                 >
                   {label}
                 </a>
@@ -64,7 +64,7 @@ export function HeaderDesktopTopRow({ innerRef }: HeaderDesktopTopRowProps) {
               <Link
                 key={item.translationKey}
                 href={item.href}
-                className="inline-flex h-10 shrink-0 items-center whitespace-nowrap transition-opacity hover:opacity-80"
+                className="inline-flex h-10 shrink-0 items-center whitespace-nowrap transition-colors hover:text-marco-black dark:hover:text-white"
               >
                 {label}
               </Link>
@@ -83,24 +83,24 @@ export function HeaderDesktopTopRow({ innerRef }: HeaderDesktopTopRowProps) {
       >
         <a
           href={telHref}
-          className={`flex h-10 shrink-0 items-center ${HEADER_FIGMA_CONTACT_PHONE_ICON_TEXT_GAP_CLASS} text-marco-text transition-opacity hover:opacity-80`}
+          className={`flex h-10 shrink-0 items-center ${HEADER_FIGMA_CONTACT_PHONE_ICON_TEXT_GAP_CLASS} text-marco-text transition-colors hover:text-marco-black dark:text-white/82 dark:hover:text-white`}
         >
           <Phone className="size-[19px] shrink-0" strokeWidth={1.75} aria-hidden />
           <span className="inline-flex items-center gap-1">
             <span className="whitespace-nowrap text-[13px] font-medium leading-[13px]">{phoneDisplay}</span>
-            <ChevronDown className="h-3 w-3 shrink-0 text-marco-text opacity-80" strokeWidth={2.25} aria-hidden />
+            <ChevronDown className="h-3 w-3 shrink-0 text-marco-text opacity-80 dark:text-white/70" strokeWidth={2.25} aria-hidden />
           </span>
         </a>
         <Link
           href="/stores"
-          className={`flex h-10 shrink-0 items-center ${HEADER_FIGMA_CONTACT_ADDRESS_ICON_TEXT_GAP_CLASS} text-marco-text transition-opacity hover:opacity-80`}
+          className={`flex h-10 shrink-0 items-center ${HEADER_FIGMA_CONTACT_ADDRESS_ICON_TEXT_GAP_CLASS} text-marco-text transition-colors hover:text-marco-black dark:text-white/82 dark:hover:text-white`}
         >
           <MapPin className="size-[19px] shrink-0" strokeWidth={1.75} aria-hidden />
           <span className="inline-flex items-center gap-1">
             <span className="whitespace-nowrap text-xs font-medium leading-[13px]">
               {t('common.navigation.addresses')}
             </span>
-            <ChevronDown className="h-3 w-3 shrink-0 text-marco-text opacity-80" strokeWidth={2.25} aria-hidden />
+            <ChevronDown className="h-3 w-3 shrink-0 text-marco-text opacity-80 dark:text-white/70" strokeWidth={2.25} aria-hidden />
           </span>
         </Link>
       </div>

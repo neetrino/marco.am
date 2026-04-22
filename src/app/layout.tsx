@@ -2,6 +2,7 @@ import React, { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
 import { Inter } from 'next/font/google';
+import Script from 'next/script';
 import './globals.css';
 import { ClientProviders } from '../components/ClientProviders';
 import { Header } from '../components/Header';
@@ -32,29 +33,47 @@ export default async function RootLayout({
     parseLanguageFromServer(cookieStore.get(LANGUAGE_PREFERENCE_KEY)?.value) ?? 'en';
 
   return (
-    <html lang={initialLanguage} className="h-full">
-      <body className={`${inter.className} bg-white text-gray-900 antialiased min-h-full`}>
+    <html lang={initialLanguage} className="h-full" suppressHydrationWarning>
+      <body className={`${inter.className} min-h-full bg-[var(--app-bg)] text-[var(--app-text)] antialiased transition-colors duration-200`}>
+        <Script id="theme-init" strategy="beforeInteractive">
+          {`
+            (() => {
+              try {
+                const storageKey = 'marco-theme';
+                const stored = localStorage.getItem(storageKey);
+                const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const theme = stored === 'light' || stored === 'dark'
+                  ? stored
+                  : (systemDark ? 'dark' : 'light');
+                const root = document.documentElement;
+                root.classList.toggle('dark', theme === 'dark');
+                root.dataset.theme = theme;
+                root.style.colorScheme = theme;
+              } catch {}
+            })();
+          `}
+        </Script>
         <Suspense fallback={null}>
           <LanguagePreferenceProvider initialLanguage={initialLanguage}>
-          <ClientProviders>
-            <div
-              className="flex min-h-screen flex-col max-lg:[padding-bottom:var(--mobile-nav-pb)] lg:pb-0"
-              style={
-                {
-                  ['--mobile-nav-pb' as string]: MOBILE_NAV_LAYOUT_PADDING_BOTTOM,
-                } as React.CSSProperties
-              }
-            >
-              <Header initialLanguage={initialLanguage} />
-              <main className="flex-1 w-full">
-                {children}
-              </main>
-              <div className="hidden md:block">
-                <Footer />
+            <ClientProviders>
+              <div
+                className="flex min-h-screen flex-col bg-[var(--app-bg)] max-lg:[padding-bottom:var(--mobile-nav-pb)] lg:pb-0"
+                style={
+                  {
+                    ['--mobile-nav-pb' as string]: MOBILE_NAV_LAYOUT_PADDING_BOTTOM,
+                  } as React.CSSProperties
+                }
+              >
+                <Header initialLanguage={initialLanguage} />
+                <main className="flex-1 w-full bg-[var(--app-bg)]">
+                  {children}
+                </main>
+                <div className="hidden md:block">
+                  <Footer />
+                </div>
+                <MobileBottomNav />
               </div>
-              <MobileBottomNav />
-            </div>
-          </ClientProviders>
+            </ClientProviders>
           </LanguagePreferenceProvider>
         </Suspense>
       </body>

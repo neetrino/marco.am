@@ -123,7 +123,9 @@ export function SpecialOfferActionsStack({
         <CompareIcon
           isActive={isInCompare}
           size={16}
-          className={isInCompare ? 'text-marco-yellow' : '!text-white'}
+          className={isInCompare ? 'text-marco-yellow dark:text-marco-yellow' : ''}
+          style={!isInCompare ? { color: '#050505' } : undefined}
+          color={!isInCompare ? '#050505' : undefined}
         />
       </button>
       {showDiscountPill ? (

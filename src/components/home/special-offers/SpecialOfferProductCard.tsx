@@ -78,7 +78,7 @@ function SpecialOfferProductCardView({
 
   return (
     <article
-      className={`${montserratArm.className} special-offer-card-cutout relative mx-auto flex h-full w-full max-w-[306px] min-h-[420px] flex-col overflow-visible rounded-[32px] bg-[#f6f6f6] shadow-[0_2px_12px_rgba(0,0,0,0.06)] md:mx-0 md:w-[306px] md:max-w-none md:min-h-[486px] md:shrink-0`}
+      className={`${montserratArm.className} special-offer-card-cutout relative mx-auto flex h-full w-full max-w-[306px] min-h-[420px] flex-col overflow-visible rounded-[32px] bg-[#f6f6f6] shadow-[0_2px_12px_rgba(0,0,0,0.06)] dark:bg-[#0a0a0a] dark:shadow-[0_6px_24px_rgba(0,0,0,0.3)] md:mx-0 md:w-[306px] md:max-w-none md:min-h-[486px] md:shrink-0`}
     >
       {showWarrantyBadge ? (
         <SpecialOfferWarrantyBadge line1={t('home.special_offers_warranty_line1')} line2={t('home.special_offers_warranty_line2')} />
@@ -109,7 +109,7 @@ function SpecialOfferProductCardView({
               ) : null}
             </div>
             <Link href={`/products/${product.slug}`} className="mt-2 block">
-              <h3 className="line-clamp-2 text-left text-[13px] font-bold leading-5 text-[#181111] md:text-sm md:leading-5">
+              <h3 className="line-clamp-2 text-left text-[13px] font-bold leading-5 text-[#181111] dark:text-white md:text-sm md:leading-5">
                 {product.title}
               </h3>
             </Link>
@@ -122,7 +122,7 @@ function SpecialOfferProductCardView({
               </p>
             ) : null}
             <Link href={`/products/${product.slug}`} className="mt-2 block">
-              <h3 className="line-clamp-2 text-left text-[13px] font-bold leading-5 text-[#181111] md:text-sm md:leading-5">
+              <h3 className="line-clamp-2 text-left text-[13px] font-bold leading-5 text-[#181111] dark:text-white md:text-sm md:leading-5">
                 {product.title}
               </h3>
             </Link>
@@ -137,9 +137,9 @@ function SpecialOfferProductCardView({
           <StarRow />
         </div>
         <div className="mt-3 flex flex-wrap items-end gap-2">
-          <p className="text-lg font-black text-[#181111] md:text-xl">{formatPrice(product.price, currency)}</p>
+          <p className="text-lg font-black text-[#181111] dark:text-white md:text-xl">{formatPrice(product.price, currency)}</p>
           {strikePrice != null ? (
-            <span className="text-xs text-[#9ca3af] line-through md:text-sm">{formatPrice(strikePrice, currency)}</span>
+            <span className="text-xs text-[#9ca3af] dark:text-white/55 line-through md:text-sm">{formatPrice(strikePrice, currency)}</span>
           ) : null}
         </div>
       </div>

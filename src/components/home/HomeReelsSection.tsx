@@ -164,7 +164,7 @@ export function HomeReelsSection({ items }: HomeReelsSectionProps) {
 
   return (
     <section
-      className={`bg-white py-8 sm:py-10 ${montserratReels.className}`}
+      className={`bg-[var(--app-bg)] py-8 sm:py-10 ${montserratReels.className}`}
       style={reelsTitleCssVars}
       aria-labelledby="home-reels-heading"
     >

@@ -165,11 +165,11 @@ export function ColorFilter({ category, search, minPrice, maxPrice }: ColorFilte
       <section className={PRODUCTS_FILTER_SECTION_SHELL_CLASS}>
         <div className="flex flex-col gap-4">
           <h3
-            className={`${productsFiltersSectionFont.className} text-base font-semibold leading-6 tracking-[-0.31px] text-black`}
+            className={`${productsFiltersSectionFont.className} text-base font-semibold leading-6 tracking-[-0.31px] text-black dark:text-white`}
           >
             {t('products.filters.color.title')}
           </h3>
-          <div className="text-sm text-[#62748e]">{t('products.filters.color.loading')}</div>
+          <div className="text-sm text-[#62748e] dark:text-white/72">{t('products.filters.color.loading')}</div>
         </div>
       </section>
     );
@@ -180,7 +180,7 @@ export function ColorFilter({ category, search, minPrice, maxPrice }: ColorFilte
       <div className="flex flex-col gap-4">
         <div className="flex min-h-6 items-center justify-between gap-2">
           <h3
-            className={`${productsFiltersSectionFont.className} min-w-0 text-base font-semibold leading-6 tracking-[-0.31px] text-black`}
+            className={`${productsFiltersSectionFont.className} min-w-0 text-base font-semibold leading-6 tracking-[-0.31px] text-black dark:text-white`}
           >
             {t('products.filters.color.title')}
           </h3>

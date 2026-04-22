@@ -122,7 +122,10 @@ function LocaleCurrencyMenu({
   onCurrencySelect,
 }: LocaleCurrencyMenuProps) {
   return (
-    <div className="absolute right-0 top-full z-[70] mt-2 w-64 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl">
+    <div
+      data-theme-static="true"
+      className="absolute right-0 top-full z-[70] mt-2 w-64 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl"
+    >
       <p className="border-b border-gray-100 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
         Language
       </p>
@@ -233,11 +236,16 @@ export function HeaderLocaleCurrencyPill({
   }, [onMenuOpenChange, showMenu]);
 
   return (
-    <div className="relative" ref={menuRef as React.RefObject<HTMLDivElement>}>
+    <div
+      className="relative"
+      ref={menuRef as React.RefObject<HTMLDivElement>}
+      data-theme-static="true"
+    >
       <button
         type="button"
         onClick={() => setShowMenu((open) => !open)}
         aria-expanded={showMenu}
+        data-theme-static="true"
         className={`flex shrink-0 items-center justify-center overflow-hidden bg-marco-gray text-xs font-bold leading-none text-marco-text ${HEADER_LOCALE_PILL_MIN_WIDTH_CLASS} ${HEADER_LOCALE_PILL_PADDING_X_CLASS} ${HEADER_LOCALE_PILL_INNER_GAP_CLASS} ${HEADER_LOCALE_PILL_HEIGHT_CLASS} ${HEADER_LOCALE_PILL_RADIUS_CLASS}`}
       >
         <Globe className="h-4 w-4 shrink-0 self-center" strokeWidth={1.75} aria-hidden />
@@ -289,12 +297,17 @@ export function MobileHeaderLocaleCurrencyButton({
   }, [onMenuOpenChange, showMenu]);
 
   return (
-    <div className="relative shrink-0" ref={menuRef as React.RefObject<HTMLDivElement>}>
+    <div
+      className="relative shrink-0"
+      ref={menuRef as React.RefObject<HTMLDivElement>}
+      data-theme-static="true"
+    >
       <button
         type="button"
         onClick={() => setShowMenu((open) => !open)}
         aria-expanded={showMenu}
         aria-label={ariaLabel}
+        data-theme-static="true"
         className={HEADER_MOBILE_HEADER_ROUND_CONTROL_CLASS}
       >
         <Globe className="h-6 w-6 shrink-0" strokeWidth={1.75} aria-hidden />

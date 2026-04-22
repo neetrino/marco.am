@@ -2,17 +2,17 @@
  * MARCO home footer (Figma 101:2835) — layout tokens and nav specs.
  */
 
-/** Figma fill: #f2f2f2 */
-export const FOOTER_SURFACE_CLASS = 'bg-[#f2f2f2]';
+/** Footer surface: matches the site page surface in dark mode. */
+export const FOOTER_SURFACE_CLASS = 'bg-[#f2f2f2] dark:bg-[var(--app-surface)]';
 
 /** Inner wrapper — `.marco-footer-inner` in `globals.css` (tablet shell; 1367+ same `max-w-7xl` as hero / header). */
 export const FOOTER_INNER_CONTAINER_CLASS = 'marco-footer-inner';
 
-/** Figma secondary text #6b7280 */
-export const FOOTER_MUTED_TEXT_CLASS = 'text-[#6b7280]';
+/** Footer secondary text. */
+export const FOOTER_MUTED_TEXT_CLASS = 'text-[#6b7280] dark:text-[#cfcfcf]';
 
-/** Figma heading text #181111 */
-export const FOOTER_HEADING_TEXT_CLASS = 'text-[#181111]';
+/** Footer heading text. */
+export const FOOTER_HEADING_TEXT_CLASS = 'text-[#181111] dark:text-white';
 
 /**
  * Company / Support column titles — no extra letter-spacing (see default `tracking-[0.05em]` on Contacts).

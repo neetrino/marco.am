@@ -14,7 +14,7 @@ const productsShopTitleFont = Montserrat({
 });
 
 /** Figma 218:2275 — wordmark, slightly smaller than 54px spec */
-const PRODUCTS_PAGE_TITLE_CLASS = `${productsShopTitleFont.className} text-[#181111] uppercase font-bold leading-none tracking-[-0.6px] whitespace-nowrap text-[clamp(1.25rem,3.2vw,1.75rem)] sm:text-3xl lg:text-[36px]`;
+const PRODUCTS_PAGE_TITLE_CLASS = `${productsShopTitleFont.className} text-[#181111] dark:text-white uppercase font-bold leading-none tracking-[-0.6px] whitespace-nowrap text-[clamp(1.25rem,3.2vw,1.75rem)] sm:text-3xl lg:text-[36px]`;
 
 /** Figma 218:2274 — yellow bar under title: h-1 w-20, marco yellow, mt-2 */
 const PRODUCTS_PAGE_TITLE_UNDERLINE_CLASS =
@@ -93,7 +93,7 @@ const SORT_TRIGGER_CLASS =
 
 /** Dropdown aligns to trigger width (`w-full` inside `relative w-max` wrapper) */
 const SORT_DROPDOWN_PANEL_CLASS =
-  'absolute top-full right-0 z-50 mt-2 w-full min-w-0 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg';
+  'absolute top-full right-0 z-50 mt-2 w-full min-w-0 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg dark:border-white/10 dark:bg-[var(--app-surface)]';
 
 /** Each option row matches trigger height (40px) and horizontal padding */
 const SORT_DROPDOWN_ITEM_CLASS =
@@ -110,8 +110,8 @@ const VIEW_TOGGLE_SEGMENT_BASE =
 
 function viewToggleSegmentClass(isActive: boolean): string {
   return isActive
-    ? `${VIEW_TOGGLE_SEGMENT_BASE} bg-[#f5f5f5] text-marco-black`
-    : `${VIEW_TOGGLE_SEGMENT_BASE} text-marco-black hover:bg-[#fafafa]`;
+    ? `${VIEW_TOGGLE_SEGMENT_BASE} bg-[#f5f5f5] text-marco-black dark:bg-white dark:text-[#050505]`
+    : `${VIEW_TOGGLE_SEGMENT_BASE} text-marco-black dark:text-white hover:bg-[#fafafa] dark:hover:bg-white/10`;
 }
 
 function ProductsShopTitleBlock({ total }: { readonly total: number }) {
@@ -125,11 +125,11 @@ function ProductsShopTitleBlock({ total }: { readonly total: number }) {
         <p className={PRODUCTS_PAGE_BREADCRUMB_CLASS}>
           <Link
             href="/"
-            className="text-[#afafaf] transition-colors hover:text-[#333] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/20 focus-visible:ring-offset-2"
+            className="text-[#afafaf] dark:text-white/78 transition-colors hover:text-[#333] dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/20 focus-visible:ring-offset-2"
           >
             {t('products.header.breadcrumbHome')}
           </Link>
-          <span className="text-[#333]">
+          <span className="text-[#333] dark:text-white/44">
             {' '}
             / {t('products.header.breadcrumbShop')}
           </span>
@@ -314,6 +314,7 @@ function ProductsHeaderContent({ total }: ProductsHeaderProps) {
               type="button"
               onClick={() => setShowSortDropdown(!showSortDropdown)}
               className={SORT_TRIGGER_CLASS}
+              data-theme-static="true"
               aria-expanded={showSortDropdown}
             >
               <span className="flex min-w-0 flex-1 items-center gap-2">
@@ -344,8 +345,8 @@ function ProductsHeaderContent({ total }: ProductsHeaderProps) {
                     onClick={() => handleSortChange(option.value)}
                     className={`${SORT_DROPDOWN_ITEM_CLASS} ${
                       sortBy === option.value
-                        ? 'bg-gray-100 font-semibold text-gray-900'
-                        : 'text-gray-700 hover:bg-gray-50'
+                        ? 'bg-gray-100 font-semibold text-gray-900 dark:bg-white/10 dark:text-white'
+                        : 'text-gray-700 dark:text-white/82 hover:bg-gray-50 dark:hover:bg-white/5'
                     }`}
                   >
                     {option.label}
@@ -369,7 +370,7 @@ function ProductsHeaderContent({ total }: ProductsHeaderProps) {
           <button
             type="button"
             onClick={() => window.dispatchEvent(new Event('mobile:filters-toggle'))}
-            className="inline-flex shrink-0 items-center gap-2 rounded-[30px] border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-900 transition-colors hover:bg-gray-50"
+            className="inline-flex shrink-0 items-center gap-2 rounded-[30px] border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-900 transition-colors hover:bg-gray-50 dark:border-white/10 dark:bg-black dark:text-white dark:hover:bg-white/5"
           >
             <svg
               width="18"
@@ -392,6 +393,7 @@ function ProductsHeaderContent({ total }: ProductsHeaderProps) {
                 type="button"
                 onClick={() => setShowSortDropdown(!showSortDropdown)}
                 className={`${SORT_TRIGGER_CLASS} max-w-full`}
+                data-theme-static="true"
                 aria-expanded={showSortDropdown}
               >
                 <span className="flex min-w-0 flex-1 items-center gap-2">
@@ -422,8 +424,8 @@ function ProductsHeaderContent({ total }: ProductsHeaderProps) {
                       onClick={() => handleSortChange(option.value)}
                       className={`${SORT_DROPDOWN_ITEM_CLASS} ${
                         sortBy === option.value
-                          ? 'bg-gray-100 font-semibold text-gray-900'
-                          : 'text-gray-700 hover:bg-gray-50'
+                          ? 'bg-gray-100 font-semibold text-gray-900 dark:bg-white/10 dark:text-white'
+                          : 'text-gray-700 dark:text-white/82 hover:bg-gray-50 dark:hover:bg-white/5'
                       }`}
                     >
                       {option.label}

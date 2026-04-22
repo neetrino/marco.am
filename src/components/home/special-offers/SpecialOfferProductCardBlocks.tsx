@@ -82,7 +82,9 @@ function CompareCircleGlyph({ isActive }: { isActive: boolean }) {
     <CompareIcon
       isActive={isActive}
       size={18}
-      className={isActive ? 'text-marco-yellow' : 'text-white'}
+      className={isActive ? 'text-marco-yellow' : ''}
+      style={!isActive ? { color: '#050505' } : undefined}
+      color={!isActive ? '#050505' : undefined}
     />
   );
 }
@@ -132,7 +134,7 @@ export function SpecialOfferSideActions({
       key="compare"
       type="button"
       onClick={onCompare}
-      className={`flex size-9 shrink-0 items-center justify-center overflow-visible rounded-full p-0 shadow-sm transition-opacity hover:opacity-90 md:size-10 ${
+      className={`flex size-9 shrink-0 items-center justify-center overflow-visible rounded-full bg-black p-0 text-white shadow-sm transition-opacity hover:opacity-90 md:size-10 ${
         isInCompare ? 'ring-2 ring-marco-yellow/60 ring-offset-2 ring-offset-[#f6f6f6]' : ''
       }`}
       title={isInCompare ? t('common.messages.removedFromCompare') : t('common.messages.addedToCompare')}

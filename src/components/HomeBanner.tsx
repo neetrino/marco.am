@@ -269,7 +269,7 @@ function ElectronicsCard({ copy }: { copy: HeroBannerCopy }) {
       {/* White "More" CTA — slightly left of center; row aligned with BANNER2 black CTA */}
       <Link
         href="/products"
-        className={`${montserratArm.className} absolute z-10 flex items-center justify-center rounded-[60px] bg-white text-[16px] font-bold text-black antialiased`}
+        className={`${montserratArm.className} absolute z-10 flex items-center justify-center rounded-[60px] bg-black text-[16px] font-bold text-white antialiased transition-opacity hover:opacity-90`}
         style={{
           left: bx(ELECTRONICS_BUY_CTA_LEFT_REF - ELECTRONICS_MORE_CTA_NUDGE_LEFT_REF),
           top: y(540),
@@ -290,11 +290,11 @@ function ElectronicsCard({ copy }: { copy: HeroBannerCopy }) {
 function HelpPromoEllipse() {
   return (
     <div
-      className="relative shrink-0"
+      className="relative shrink-0 rounded-full dark:bg-[var(--app-surface)] dark:shadow-[0_10px_28px_rgba(0,0,0,0.38)]"
       style={{ width: ELLIPSE87_BOX_PX, height: ELLIPSE87_BOX_PX }}
     >
       <div className="relative size-full">
-        <div className="absolute inset-[-24%]">
+        <div className="absolute inset-[-24%] dark:opacity-0">
           <div className="relative size-full">
             <Image
               src={ASSETS.ellipse87}
@@ -305,7 +305,7 @@ function HelpPromoEllipse() {
             />
           </div>
         </div>
-        <div className="absolute inset-0 z-10 flex items-center justify-center text-[#2F4B5D]">
+        <div className="absolute inset-0 z-10 flex items-center justify-center text-[#2F4B5D] dark:text-white">
           <div style={{ width: ELLIPSE87_ICON_PX, height: ELLIPSE87_ICON_PX }}>
             <MessageSolidIcon className="size-full shrink-0" />
           </div>
@@ -352,12 +352,12 @@ export function HomeBanner() {
 
   return (
     <section
-      className="relative w-full overflow-x-hidden"
+      className="relative w-full overflow-x-hidden bg-transparent dark:bg-[var(--app-bg)]"
       style={{ marginTop: HOME_HERO_BANNER_HEADER_GAP_PX }}
     >
       <div className="w-full [container-type:inline-size]">
         <div
-          className="relative w-full overflow-hidden rounded-[36px]"
+          className="relative w-full overflow-hidden rounded-[36px] bg-transparent dark:bg-[var(--app-surface)]"
           style={{ aspectRatio: `${MASK_BG_W} / ${MASK_BG_H}` }}
         >
             <div
