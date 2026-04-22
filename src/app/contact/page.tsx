@@ -20,21 +20,6 @@ const CONTACT_PAGE_MAIL_ICON_CLASS =
 const CONTACT_DIVIDER_BASE_CLASS = 'ml-0 block h-px shrink-0 self-start bg-black/15';
 const CONTACT_DIVIDER_CLASS =
   `${CONTACT_DIVIDER_BASE_CLASS} w-[17.5rem] sm:w-[20rem]`;
-const CONTACT_LOCATIONS = [
-  {
-    address: 'ք. Երևան Ալեք Մանուկյան 23',
-    phones: ['+374 93 52 04 06', '+374 98 19 04 06', '011 52 04 06'],
-  },
-  {
-    address: 'Արգավանդի Օրբելականյան 1',
-    phones: ['+374 93 58 04 09', '+374 41 34 04 06', '+374 77 64 04 06'],
-  },
-  {
-    address: 'Գ. Փարաքար Մերկուր Մաճառի 1',
-    phones: ['+374 77 51 04 06'],
-  },
-] as const;
-
 const CONTACT_EMAILS = ['marcogrouparmenia@mail.ru', 'marcofurniture@mail.ru'] as const;
 
 export default function ContactPage() {
