@@ -236,10 +236,10 @@
         "companyNews": "News & blog",
         "companyFeedback": "Contact us",
         "supportDelivery": "Delivery & returns",
-        "supportInstallment": "Installment terms",
-        "supportWarranty": "Official warranty",
+        "supportInstallment": "Privacy Policy",
+        "supportWarranty": "Terms of Use",
         "supportFaq": "FAQ",
-        "supportService": "Service centers"
+        "supportService": "Refund Policy"
       },
       "copyrightBefore": "Copyright © {year} | All rights reserved | Created by ",
       "copyrightAfter": "",
@@ -268,7 +268,6 @@
     "goHome": "Go Home"
   }
 }
-
 
 
 

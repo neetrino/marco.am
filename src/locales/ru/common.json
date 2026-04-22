@@ -233,10 +233,10 @@
         "companyNews": "Новости и блог",
         "companyFeedback": "Обратная связь",
         "supportDelivery": "Доставка и возврат",
-        "supportInstallment": "Условия рассрочки",
-        "supportWarranty": "Официальная гарантия",
+        "supportInstallment": "Политика конфиденциальности",
+        "supportWarranty": "Условия использования",
         "supportFaq": "Частые вопросы",
-        "supportService": "Сервисные центры"
+        "supportService": "Политика возврата"
       },
       "copyrightBefore": "Copyright © {year} | Все права защищены | Создано ",
       "copyrightAfter": "",
