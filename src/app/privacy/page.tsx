@@ -1,125 +1,105 @@
 'use client';
 
 import { Card } from '@shop/ui';
-import { useTranslation } from '../../lib/i18n-client';
-import Link from 'next/link';
 
 /**
  * Privacy Policy page - displays privacy policy information
  */
 export default function PrivacyPage() {
-  const { t } = useTranslation();
   return (
-    <div className="policy-page">
-      <div className="policy-page-inner">
-        <h1 className="text-4xl font-bold text-gray-900">{t('privacy.title')}</h1>
-        <p className="text-gray-600">
-          {t('privacy.lastUpdated')}{' '}
-          {new Date().toLocaleDateString(undefined, {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-          })}
-        </p>
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <h1 className="text-4xl font-bold text-gray-900 mb-8">Գաղտնիության Քաղաքականություն</h1>
 
-        <div className="mt-8 space-y-6">
-          <Card className="p-6">
-            <h2 className="text-2xl font-semibold text-gray-900">{t('privacy.introduction.title')}</h2>
+      <div className="space-y-8">
+        <Card className="p-6 space-y-5">
+          <section className="space-y-2">
+            <h2 className="text-2xl font-semibold text-gray-900">Ներածություն</h2>
             <p className="text-gray-600">
-              {t('privacy.introduction.description1')}
+              Ձեր գաղտնիությունը մեզ համար կարևոր է: Այս Գաղտնիության Քաղաքականությունը նկարագրում է, թե
+              ինչպես ենք մենք հավաքում, օգտագործում և պաշտպանում ձեր անձնական տվյալները, երբ այցելում եք
+              մեր կայքը և կատարում գնումներ: Կայքն օգտագործելով՝ դուք համաձայնվում եք այս քաղաքականության
+              մեջ նշված պայմաններին:
             </p>
-            <p className="text-gray-600">
-              {t('privacy.introduction.description2')}
-            </p>
+          </section>
 
-            <h2 className="text-2xl font-semibold text-gray-900">{t('privacy.informationWeCollect.title')}</h2>
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">{t('privacy.informationWeCollect.personalInformation.title')}</h3>
-                <p className="text-gray-600">
-                  {t('privacy.informationWeCollect.personalInformation.description')}
-                </p>
-                <ul className="list-disc list-inside text-gray-600 ml-4">
-                  <li>{t('privacy.informationWeCollect.personalInformation.items.register')}</li>
-                  <li>{t('privacy.informationWeCollect.personalInformation.items.order')}</li>
-                  <li>{t('privacy.informationWeCollect.personalInformation.items.newsletter')}</li>
-                  <li>{t('privacy.informationWeCollect.personalInformation.items.contact')}</li>
-                  <li>{t('privacy.informationWeCollect.personalInformation.items.surveys')}</li>
-                </ul>
-                <p className="text-gray-600">
-                  {t('privacy.informationWeCollect.personalInformation.details')}
-                </p>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">{t('privacy.informationWeCollect.automaticallyCollected.title')}</h3>
-                <p className="text-gray-600">
-                  {t('privacy.informationWeCollect.automaticallyCollected.description')}
-                </p>
-              </div>
-            </div>
-
-            <h2 className="text-2xl font-semibold text-gray-900">{t('privacy.howWeUse.title')}</h2>
-            <p className="text-gray-600">{t('privacy.howWeUse.description')}</p>
-            <ul className="list-disc list-inside text-gray-600 ml-4">
-              <li>{t('privacy.howWeUse.items.process')}</li>
-              <li>{t('privacy.howWeUse.items.confirmations')}</li>
-              <li>{t('privacy.howWeUse.items.support')}</li>
-              <li>{t('privacy.howWeUse.items.marketing')}</li>
-              <li>{t('privacy.howWeUse.items.improve')}</li>
-              <li>{t('privacy.howWeUse.items.fraud')}</li>
-              <li>{t('privacy.howWeUse.items.legal')}</li>
-            </ul>
-
-            <h2 className="text-2xl font-semibold text-gray-900">{t('privacy.informationSharing.title')}</h2>
-            <p className="text-gray-600">
-              {t('privacy.informationSharing.description')}
-            </p>
-            <ul className="list-disc list-inside text-gray-600 ml-4">
+          <section className="space-y-3">
+            <h2 className="text-2xl font-semibold text-gray-900">Հավաքվող Տեղեկատվություն</h2>
+            <ul className="list-disc list-inside text-gray-600 space-y-2">
               <li>
-                {t('privacy.informationSharing.items.providers')}
+                <span className="font-semibold text-gray-900">Անձնական Տվյալներ:</span> Երբ դուք ստեղծում եք
+                հաշիվ կամ գնում եք կատարում, մենք հավաքում ենք ձեր անունը, էլեկտրոնային փոստի հասցեն,
+                հեռախոսահամարը և առաքման հասցեն:
               </li>
-              <li>{t('privacy.informationSharing.items.law')}</li>
-              <li>{t('privacy.informationSharing.items.transfer')}</li>
-              <li>{t('privacy.informationSharing.items.consent')}</li>
+              <li>
+                <span className="font-semibold text-gray-900">Վճարման Տեղեկատվություն:</span> Մենք հավաքում
+                ենք վճարման տվյալներ, ներառյալ վարկային քարտի համարները՝ միայն գործարքները մշակելու
+                նպատակով: Այս տվյալները անվտանգ մշակվում են և երբեք չեն պահպանվում մեր սերվերներում:
+              </li>
+              <li>
+                <span className="font-semibold text-gray-900">Բրաուզինգի Տեղեկատվություն:</span> Մենք կարող
+                ենք հավաքել ձեր բրաուզինգի վարքագծի մասին տեղեկատվություն, ինչպիսիք են՝ IP հասցեն,
+                բրաուզերի տեսակը և այցելած էջերը՝ մեր ծառայությունները բարելավելու նպատակով:
+              </li>
             </ul>
+          </section>
 
-            <h2 className="text-2xl font-semibold text-gray-900">{t('privacy.dataSecurity.title')}</h2>
-            <p className="text-gray-600">
-              {t('privacy.dataSecurity.description')}
-            </p>
-
-            <h2 className="text-2xl font-semibold text-gray-900">{t('privacy.yourRights.title')}</h2>
-            <p className="text-gray-600">{t('privacy.yourRights.description')}</p>
-            <ul className="list-disc list-inside text-gray-600 ml-4">
-              <li>{t('privacy.yourRights.items.access')}</li>
-              <li>{t('privacy.yourRights.items.correct')}</li>
-              <li>{t('privacy.yourRights.items.delete')}</li>
-              <li>{t('privacy.yourRights.items.object')}</li>
-              <li>{t('privacy.yourRights.items.portability')}</li>
-              <li>{t('privacy.yourRights.items.withdraw')}</li>
+          <section className="space-y-3">
+            <h2 className="text-2xl font-semibold text-gray-900">Ինչպես ենք Մենք Օգտագործում Ձեր Տեղեկատվությունը</h2>
+            <ul className="list-disc list-inside text-gray-600 space-y-2">
+              <li>
+                <span className="font-semibold text-gray-900">Պատվերներ Մշակելու Համար:</span> Ձեր անձնական
+                տվյալները օգտագործվում են ձեր պատվերները լրացնելու և առաքելու համար:
+              </li>
+              <li>
+                <span className="font-semibold text-gray-900">Հաղորդակցվելու Համար:</span> Մենք կարող ենք
+                օգտագործել ձեր կոնտակտային տվյալները՝ պատվերի թարմացումներ, խթանման առաջարկներ և
+                տեղեկագրեր ուղարկելու համար:
+              </li>
+              <li>
+                <span className="font-semibold text-gray-900">Ծառայությունները Բարելավելու Համար:</span> Ձեր
+                բրաուզինգի տվյալները մեզ օգնում են բարելավել մեր կայքը և ծառայությունները՝ ավելի լավ
+                համապատասխանեցնելով ձեր կարիքներին:
+              </li>
             </ul>
+          </section>
 
-            <h2 className="text-2xl font-semibold text-gray-900">{t('privacy.cookies.title')}</h2>
+          <section className="space-y-2">
+            <h2 className="text-2xl font-semibold text-gray-900">Տվյալների Պաշտպանություն</h2>
             <p className="text-gray-600">
-              {t('privacy.cookies.description1')}
+              Մենք օգտագործում ենք ոլորտի ստանդարտ անվտանգության միջոցներ՝ ձեր տվյալները չարտոնված մուտքից,
+              հրապարակումից կամ փոփոխումից պաշտպանելու համար: Ձեր վճարման տվյալները ծածկագրված են և
+              մշակվում են անվտանգ կապուղիներով:
             </p>
-            <p className="text-gray-600">
-              {t('privacy.cookies.description2')}{' '}
-              <Link href="/cookies" className="text-blue-600 hover:underline">
-                {t('privacy.cookies.linkText')}
-              </Link>
-              .
-            </p>
+          </section>
 
-            <h2 className="text-2xl font-semibold text-gray-900">{t('privacy.contact.title')}</h2>
+          <section className="space-y-2">
+            <h2 className="text-2xl font-semibold text-gray-900">Երրորդ Կողմ Ծառայություններ</h2>
             <p className="text-gray-600">
-              {t('privacy.contact.description')}{' '}
-              <a href="mailto:privacy@whiteshop.com" className="text-blue-600 hover:underline">
-                privacy@whiteshop.com
-              </a>
+              Մենք կարող ենք կիսվել ձեր տվյալներով երրորդ կողմերի հետ, որոնք աջակցում են վճարումների
+              մշակմանը, պատվերների առաքմանը կամ կայքի երթևեկության վերլուծությանը: Այս երրորդ կողմերը
+              կապ են հաստատել գաղտնիության պայմանագրերով և իրավունք ունեն օգտագործել ձեր տվյալները միայն
+              իրենց կոնկրետ ծառայությունները կատարելու համար:
             </p>
-          </Card>
-        </div>
+          </section>
+
+          <section className="space-y-2">
+            <h2 className="text-2xl font-semibold text-gray-900">Ձեր Իրավունքները</h2>
+            <p className="text-gray-600">
+              Դուք իրավունք ունեք մուտք գործելու, ուղղելու կամ ջնջելու ձեր անձնական տվյալները: Եթե ցանկանում
+              եք իրականացնել այս իրավունքները, խնդրում ենք կապ հաստատել մեզ հետ՝ օգտագործելով մեր կայքում
+              նշված տեղեկատվությունը:
+            </p>
+          </section>
+
+          <section className="space-y-2">
+            <h2 className="text-2xl font-semibold text-gray-900">Քաղաքականության Փոփոխություններ</h2>
+            <p className="text-gray-600">
+              Մենք կարող ենք ժամանակ առ ժամանակ թարմացնել այս Գաղտնիության Քաղաքականությունը: Ցանկացած
+              փոփոխություն կհրապարակվի այս էջում, և կայքն օգտագործելը շարունակելու դեպքում կնկատի ձեր
+              համաձայնությունը թարմացված քաղաքականությանը:
+            </p>
+          </section>
+        </Card>
       </div>
     </div>
   );

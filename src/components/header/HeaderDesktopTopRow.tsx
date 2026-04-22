@@ -30,7 +30,17 @@ type HeaderDesktopTopRowProps = {
 export function HeaderDesktopTopRow({ innerRef }: HeaderDesktopTopRowProps) {
   const hideHeaderSocialLinks = useShouldHideHeaderSocialLinks();
   const { t } = useTranslation();
-  const phoneDisplay = t('contact.phone');
+  const phoneMask = t('contact.phone');
+  const replacementDigits = '60500406';
+  let nextDigitIndex = 0;
+  const phoneDisplay = phoneMask.replace(/X/gu, () => {
+    const digit = replacementDigits[nextDigitIndex];
+    if (digit === undefined) {
+      return '';
+    }
+    nextDigitIndex += 1;
+    return digit;
+  });
   const telHref =
     phoneDisplay.length > 0 ? `tel:${phoneDisplay.replace(/[^\d+]/gu, '')}` : 'tel:';
 

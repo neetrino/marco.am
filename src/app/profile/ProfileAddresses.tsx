@@ -41,14 +41,15 @@ export function ProfileAddresses({
   return (
     <div className="space-y-6">
       <Card className="p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">{t('profile.addresses.title')}</h2>
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="text-xl font-semibold text-gray-900 text-center sm:text-left">{t('profile.addresses.title')}</h2>
           <Button
             variant="primary"
             onClick={() => {
               onResetForm();
               setShowAddressForm(!showAddressForm);
             }}
+            className="mt-1 w-full sm:mt-0 sm:w-auto !rounded-full !px-6 !py-3 !bg-marco-black !text-white !hover:bg-marco-black hover:opacity-90 transition-opacity"
           >
             {showAddressForm ? t('profile.addresses.form.cancel') : `+ ${t('profile.addresses.addNew')}`}
           </Button>

@@ -14,6 +14,11 @@ import { useTranslation } from '../../lib/i18n-client';
 import { useAuth } from '../../lib/auth/AuthContext';
 import { logger } from "@/lib/utils/logger";
 import { SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC } from '../../components/home/home-special-offers.constants';
+import {
+  ensureLegacyCompareMigratedForGuest,
+  fetchComparePayload,
+  removeCompareItemClient,
+} from '@/lib/compare/compare-client';
 
 interface Product {
   id: string;
@@ -30,18 +35,6 @@ interface Product {
     name: string;
   } | null;
   description?: string;
-}
-
-const COMPARE_KEY = 'shop_compare';
-
-function getCompare(): string[] {
-  if (typeof window === 'undefined') return [];
-  try {
-    const stored = localStorage.getItem(COMPARE_KEY);
-    return stored ? JSON.parse(stored) : [];
-  } catch {
-    return [];
-  }
 }
 
 
@@ -64,49 +57,38 @@ export default function ComparePage() {
   /**
    * Fetch compare products for provided ids and update UI state.
    */
-  const fetchCompareProducts = useCallback(async (idsToLoad: string[]) => {
-    if (idsToLoad.length === 0) {
-      logger.devInfo('[Compare] Skip fetch because ids array is empty');
-      setProducts([]);
-      setLoading(false);
-      return;
-    }
-
+  const fetchCompareProducts = useCallback(async () => {
     try {
       setLoading(true);
-      logger.devInfo(`[Compare] Fetching ${idsToLoad.length} products for render`);
       const languagePreference = getStoredLanguage();
-      const response = await apiClient.get<{
-        data: Product[];
-        meta: {
-          total: number;
-          page: number;
-          limit: number;
-          totalPages: number;
-        };
-      }>('/api/v1/products', {
-        params: {
-          limit: '1000',
-          lang: languagePreference,
-        },
-      });
-
-      const compareProducts = response.data.filter((product) =>
-        idsToLoad.includes(product.id)
-      );
+      await ensureLegacyCompareMigratedForGuest(languagePreference);
+      const payload = await fetchComparePayload(languagePreference);
+      const compareProducts: Product[] = payload.compare.items.map((item) => ({
+        id: item.productId,
+        slug: item.slug,
+        title: item.title,
+        price: item.price,
+        originalPrice: item.originalPrice,
+        compareAtPrice: item.compareAtPrice,
+        discountPercent: item.discountPercent,
+        image: item.image,
+        inStock: item.inStock,
+        brand: item.brand,
+      }));
+      logger.devInfo(`[Compare] Loaded ${compareProducts.length} compare products`);
+      setCompareIds(compareProducts.map((product) => product.id));
       setProducts(compareProducts);
     } catch (error) {
       console.error('[Compare] Error fetching compare products:', error);
+      setProducts([]);
+      setCompareIds([]);
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    // Get compare IDs from localStorage
-    const ids = getCompare();
-    setCompareIds(ids);
-    fetchCompareProducts(ids);
+    void fetchCompareProducts();
 
     // Listen for compare updates from other components (header, etc.)
     // But don't re-fetch if we already updated locally
@@ -116,11 +98,9 @@ export default function ComparePage() {
         isLocalUpdateRef.current = false;
         return;
       }
-      
+
       // Only re-fetch if update came from external source (another component)
-      const updatedIds = getCompare();
-      setCompareIds(updatedIds);
-      fetchCompareProducts(updatedIds);
+      void fetchCompareProducts();
     };
 
     window.addEventListener('compare-updated', handleCompareUpdate);
@@ -137,9 +117,7 @@ export default function ComparePage() {
 
     const handleLanguageUpdate = () => {
       // Reload products with new language preference
-      // Get current IDs from localStorage to avoid dependency on state
-      const currentIds = getCompare();
-      fetchCompareProducts(currentIds);
+      void fetchCompareProducts();
     };
 
     window.addEventListener('currency-updated', handleCurrencyUpdate);
@@ -163,16 +141,15 @@ export default function ComparePage() {
     const updatedIds = compareIds.filter((id) => id !== productId);
     const updatedProducts = products.filter((p) => p.id !== productId);
     
-    // Update localStorage first
-    localStorage.setItem(COMPARE_KEY, JSON.stringify(updatedIds));
-    
     // Update state immediately (no page reload, no loading spinner)
     setCompareIds(updatedIds);
     setProducts(updatedProducts);
-    
-    // Dispatch event for other components (header, etc.) - but our handler won't re-fetch
-    // because isLocalUpdateRef.current is true
-    window.dispatchEvent(new Event('compare-updated'));
+
+    void removeCompareItemClient(productId, getStoredLanguage()).catch((error) => {
+      logger.devWarn('[Compare] Failed to remove compare item on server, restoring state', { error });
+      isLocalUpdateRef.current = false;
+      void fetchCompareProducts();
+    });
   };
 
   const handleAddToCart = async (e: MouseEvent, product: Product) => {
@@ -240,7 +217,7 @@ export default function ComparePage() {
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center py-6">
           <div className="animate-pulse space-y-4">
             <div className="h-6 bg-gray-200 rounded w-1/4 mx-auto"></div>
@@ -252,12 +229,12 @@ export default function ComparePage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold text-gray-900">{t('common.compare.title')}</h1>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">{t('common.compare.title')}</h1>
         {products.length > 0 && (
           <p className="text-sm text-gray-600">
-            {products.length} of 4 {products.length === 1 ? t('common.compare.product') : t('common.compare.products')}
+            {products.length}/4
           </p>
         )}
       </div>
@@ -278,7 +255,7 @@ export default function ComparePage() {
                     >
                       <button
                         onClick={(e) => handleRemove(e, product.id)}
-                        className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-all"
+                        className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center text-gray-400 hover:text-marco-black hover:bg-marco-yellow rounded-full transition-all"
                         title={t('common.buttons.remove')}
                         aria-label={t('common.buttons.remove')}
                       >
@@ -360,7 +337,7 @@ export default function ComparePage() {
                   </td>
                   {products.map((product) => (
                     <td key={product.id} className="px-4 py-4 text-center">
-                      <div className="flex items-center justify-center gap-3">
+                      <div className="flex flex-col items-center justify-center gap-1">
                         <p className="text-lg font-bold text-gray-900 select-none">
                           {formatPrice(product.price, currency)}
                         </p>
@@ -408,10 +385,10 @@ export default function ComparePage() {
                   </td>
                   {products.map((product) => (
                     <td key={product.id} className="px-4 py-4 text-center">
-                      <div className="flex flex-col gap-2 items-center">
+                      <div className="flex flex-col gap-3 items-center">
                         <Link
                           href={`/products/${product.slug}`}
-                          className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                          className="text-sm text-marco-black hover:opacity-80 font-medium transition-opacity"
                         >
                           {t('common.compare.viewDetails')}
                         </Link>
@@ -419,7 +396,7 @@ export default function ComparePage() {
                           <button
                             onClick={(e) => handleAddToCart(e, product)}
                             disabled={addingToCart.has(product.id)}
-                            className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="inline-flex items-center justify-center h-10 px-6 bg-marco-yellow text-marco-black text-sm font-bold rounded-full whitespace-nowrap hover:brightness-95 transition-[filter] disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             {addingToCart.has(product.id)
                               ? t('common.messages.adding')
@@ -435,10 +412,10 @@ export default function ComparePage() {
           </div>
         </div>
       ) : (
-        <div className="text-center py-8">
+        <div className="text-center py-16">
           <div className="max-w-md mx-auto">
             <svg
-              className="mx-auto h-16 w-16 text-gray-400 mb-3"
+              className="mx-auto h-24 w-24 text-gray-400 mb-4"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -450,14 +427,18 @@ export default function ComparePage() {
                 d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"
               />
             </svg>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
               {t('common.compare.empty')}
             </h2>
-            <p className="text-sm text-gray-600 mb-4">
+            <p className="text-gray-600 my-6 text-center mx-auto">
               {t('common.compare.emptyDescription')}
             </p>
             <Link href="/products">
-              <Button variant="primary" size="md">
+              <Button
+                variant="primary"
+                size="lg"
+                className="!bg-black !text-white !rounded-full !h-12 !px-10 inline-flex items-center justify-center leading-none whitespace-nowrap !hover:bg-black/90 transition-colors"
+              >
                 {t('common.compare.browseProducts')}
               </Button>
             </Link>

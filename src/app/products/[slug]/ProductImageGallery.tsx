@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import { Maximize2 } from "lucide-react";
 import { ProductLabels } from "../../../components/ProductLabels";
 import { ProductImagePlaceholder } from "../../../components/ProductImagePlaceholder";
@@ -15,7 +16,7 @@ interface ProductImageGalleryProps {
   discountPercent: number | null;
   language: LanguageCode;
   currentImageIndex: number;
-  onImageIndexChange: (index: number) => void;
+  onImageIndexChange: Dispatch<SetStateAction<number>>;
   thumbnailStartIndex: number;
   onThumbnailStartIndexChange: (index: number) => void;
 }
@@ -50,6 +51,13 @@ export function ProductImageGallery({
     const prevIndex =
       currentImageIndex === 0 ? unifiedImages.length - 1 : currentImageIndex - 1;
     onImageIndexChange(prevIndex);
+    if (unifiedImages.length > THUMBNAILS_PER_VIEW) {
+      if (prevIndex < thumbnailStartIndex) {
+        onThumbnailStartIndexChange(prevIndex);
+      } else if (prevIndex >= thumbnailStartIndex + THUMBNAILS_PER_VIEW) {
+        onThumbnailStartIndexChange(prevIndex - THUMBNAILS_PER_VIEW + 1);
+      }
+    }
   };
 
   const goToNextImage = () => {
@@ -57,6 +65,13 @@ export function ProductImageGallery({
     const nextIndex =
       currentImageIndex === unifiedImages.length - 1 ? 0 : currentImageIndex + 1;
     onImageIndexChange(nextIndex);
+    if (unifiedImages.length > THUMBNAILS_PER_VIEW) {
+      if (nextIndex < thumbnailStartIndex) {
+        onThumbnailStartIndexChange(nextIndex);
+      } else if (nextIndex >= thumbnailStartIndex + THUMBNAILS_PER_VIEW) {
+        onThumbnailStartIndexChange(nextIndex - THUMBNAILS_PER_VIEW + 1);
+      }
+    }
   };
 
   // Auto-scroll thumbnails to show selected image
@@ -80,30 +95,30 @@ export function ProductImageGallery({
 
   return (
     <>
-      <div className="flex gap-6 items-start">
-        {/* Left Column - Thumbnails (Vertical) - Show 3 at a time, scrollable */}
-        <div className="flex flex-col gap-4 w-28 flex-shrink-0">
-          <div className="flex flex-col gap-4 flex-1 overflow-hidden">
+      <div className="flex flex-col gap-4 md:flex-row md:items-start md:gap-6">
+        {/* Left Column - Desktop Thumbnails (Vertical) */}
+        <div className="hidden w-28 shrink-0 flex-col gap-4 md:flex">
+          <div className="flex flex-1 flex-col gap-4 overflow-hidden">
             {visibleThumbnails.map((image, index) => {
               const actualIndex = thumbnailStartIndex + index;
               const isActive = actualIndex === currentImageIndex;
               return (
-                <button 
+                <button
                   key={actualIndex}
                   onClick={() => onImageIndexChange(actualIndex)}
                   className={`relative w-full aspect-[3/4] rounded-lg overflow-hidden border bg-white transition-all duration-300 flex-shrink-0 ${
-                    isActive 
-                      ? "border-[3px] border-marco-yellow" 
+                    isActive
+                      ? "border-[3px] border-marco-yellow"
                       : "border-gray-200 hover:border-gray-300 hover:shadow-[0_2px_6px_rgba(0,0,0,0.08)]"
                   }`}
                 >
                   {failedIndices.has(actualIndex) ? (
                     <ProductImagePlaceholder className="w-full h-full" aria-label="" />
                   ) : (
-                    <img 
-                      src={image} 
-                      alt="" 
-                      className="w-full h-full object-cover transition-transform duration-300" 
+                    <img
+                      src={image}
+                      alt=""
+                      className="w-full h-full object-cover transition-transform duration-300"
                       onError={() => markFailed(actualIndex)}
                     />
                   )}
@@ -111,11 +126,10 @@ export function ProductImageGallery({
               );
             })}
           </div>
-          
         </div>
-        
-        {/* Right Column - Main Image */}
-        <div className="flex-1">
+
+        {/* Main Image */}
+        <div className="mx-auto w-full max-w-[420px] md:mx-0 md:max-w-none md:flex-1">
           <div className="relative aspect-square bg-white rounded-lg overflow-hidden group shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
           {unifiedImages.length > 0 && !mainImageFailed ? (
             <img 
@@ -177,6 +191,39 @@ export function ProductImageGallery({
               </button>
             </>
           )}
+          </div>
+        </div>
+
+        {/* Mobile Thumbnails (Horizontal Scroll) */}
+        <div className="md:hidden">
+          <div className="overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="flex w-max min-w-full justify-center gap-3 px-1">
+              {unifiedImages.map((image, index) => {
+                const isActive = index === currentImageIndex;
+                return (
+                  <button
+                    key={index}
+                    onClick={() => onImageIndexChange(index)}
+                    className={`relative w-[58px] aspect-[3/4] shrink-0 overflow-hidden rounded-lg border bg-white transition-all duration-300 ${
+                      isActive
+                        ? "border-[3px] border-marco-yellow"
+                        : "border-gray-200 hover:border-gray-300 hover:shadow-[0_2px_6px_rgba(0,0,0,0.08)]"
+                    }`}
+                  >
+                    {failedIndices.has(index) ? (
+                      <ProductImagePlaceholder className="w-full h-full" aria-label="" />
+                    ) : (
+                      <img
+                        src={image}
+                        alt=""
+                        className="w-full h-full object-cover transition-transform duration-300"
+                        onError={() => markFailed(index)}
+                      />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>

@@ -4,7 +4,7 @@ import type { MouseEvent } from 'react';
 import { ProductCardImage } from './ProductCardImage';
 import { ProductCardInfo } from './ProductCardInfo';
 import { ProductCardActions } from './ProductCardActions';
-import { CartIcon as CartPngIcon } from '../icons/CartIcon';
+import { HeaderNavbarCartIcon } from '../icons/HeaderNavbarCartIcon';
 import { useTranslation } from '../../lib/i18n-client';
 import type { CurrencyCode } from '../../lib/currency';
 import type { ProductLabel } from '../ProductLabels';
@@ -99,12 +99,13 @@ export function ProductCardGrid({
       {/* Cart Button in Price Row */}
       <div className={`px-4 pb-4 flex items-center justify-end ${isCompact ? 'gap-2' : 'gap-4'}`}>
         <button
+          type="button"
           onClick={onAddToCart}
           disabled={!product.inStock || isAddingToCart}
-          className={`${isCompact ? 'w-10 h-10' : 'w-12 h-12'} rounded-full flex items-center justify-center transition-all duration-200 ${
+          className={`${isCompact ? 'w-10 h-10' : 'w-12 h-12'} rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
             product.inStock && !isAddingToCart
-              ? 'bg-transparent text-gray-600 hover:bg-green-600 hover:text-white hover:shadow-md'
-              : 'bg-transparent text-gray-400 cursor-not-allowed'
+              ? 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50'
+              : 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
           }`}
           title={product.inStock ? t('common.buttons.addToCart') : t('common.stock.outOfStock')}
           aria-label={product.inStock ? t('common.ariaLabels.addToCart') : t('common.ariaLabels.outOfStock')}
@@ -115,7 +116,7 @@ export function ProductCardGrid({
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
           ) : (
-            <CartPngIcon size={isCompact ? 18 : 24} />
+            <HeaderNavbarCartIcon className={isCompact ? 'h-[18px] w-[18px]' : 'h-[22px] w-[21px]'} />
           )}
         </button>
       </div>

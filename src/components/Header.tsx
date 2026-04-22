@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useLayoutEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import type { LanguageCode } from '../lib/language';
 import { useTranslation } from '../lib/i18n-client';
@@ -22,11 +22,17 @@ type HeaderProps = {
   initialLanguage?: LanguageCode;
 };
 
+const HEADER_ROW2_HIDE_SCROLL_DISTANCE_PX = 120;
+
 export function Header({ initialLanguage }: HeaderProps) {
   const pathname = usePathname();
   const data = useHeaderData();
   const layout = useHeaderLayoutMetrics();
   const { t } = useTranslation();
+  const [row2ScrollProgress, setRow2ScrollProgress] = useState(0);
+  const [row2HeightPx, setRow2HeightPx] = useState(0);
+  const row2WrapperRef = useRef<HTMLDivElement>(null);
+  const row2ContentRef = useRef<HTMLDivElement>(null);
 
   if (pathname?.startsWith('/supersudo')) {
     return null;
@@ -38,11 +44,51 @@ export function Header({ initialLanguage }: HeaderProps) {
     setSearchQuery,
     setSelectedCategory,
     categories,
+    showProductsMenu,
     setMobileMenuOpen,
     mobileMenuOpen,
     selectedCurrency,
     handleCurrencyChange,
   } = data;
+
+  useLayoutEffect(() => {
+    const syncRow2Visibility = () => {
+      const nextProgress = Math.min(window.scrollY / HEADER_ROW2_HIDE_SCROLL_DISTANCE_PX, 1);
+      setRow2ScrollProgress(nextProgress);
+    };
+
+    syncRow2Visibility();
+    window.addEventListener('scroll', syncRow2Visibility, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', syncRow2Visibility);
+    };
+  }, []);
+
+  useLayoutEffect(() => {
+    const node = row2ContentRef.current;
+    if (!node) {
+      return;
+    }
+
+    const syncHeight = () => {
+      setRow2HeightPx(node.scrollHeight);
+    };
+
+    syncHeight();
+    const observer = new ResizeObserver(syncHeight);
+    observer.observe(node);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  const effectiveScrollProgress = showProductsMenu ? 0 : row2ScrollProgress;
+  const row2HiddenPx = Math.round(row2HeightPx * effectiveScrollProgress);
+  const row2MaxHeightPx = Math.max(0, row2HeightPx - row2HiddenPx);
+  const row2MarginTopPx = -row2HiddenPx;
+  const row2IsInteractive = effectiveScrollProgress < 0.95;
+  const row2MaxHeightStyle = row2HeightPx > 0 ? `${row2MaxHeightPx}px` : undefined;
 
   return (
     <header className="sticky top-0 z-50 border-b border-marco-border bg-white shadow-sm backdrop-blur-sm">
@@ -97,12 +143,24 @@ export function Header({ initialLanguage }: HeaderProps) {
         />
       </div>
 
-      <HeaderRow2
-        data={data}
-        layout={layout}
-        compactPrimaryNav={compactPrimaryNav}
-        initialLanguage={initialLanguage}
-      />
+      <div
+        ref={row2WrapperRef}
+        className={`${showProductsMenu ? 'overflow-visible' : 'overflow-hidden'} will-change-[max-height]`}
+        style={{
+          maxHeight: row2MaxHeightStyle,
+          pointerEvents: row2IsInteractive ? 'auto' : 'none',
+        }}
+        aria-hidden={!row2IsInteractive}
+      >
+        <div ref={row2ContentRef} style={{ marginTop: `${row2MarginTopPx}px` }}>
+          <HeaderRow2
+            data={data}
+            layout={layout}
+            compactPrimaryNav={compactPrimaryNav}
+            initialLanguage={initialLanguage}
+          />
+        </div>
+      </div>
 
       <HeaderMobileDrawer data={data} compactPrimaryNav={compactPrimaryNav} />
     </header>

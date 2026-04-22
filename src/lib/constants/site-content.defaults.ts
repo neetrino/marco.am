@@ -62,7 +62,7 @@ export const SITE_CONTENT_DEFAULT_STORAGE: SiteContentStorage = {
       en: "+374 XX XXX XXX",
     },
     phoneTel: "+37400000000",
-    email: "info@shop.am",
+    email: "marcofurniture@mail.ru",
     address: {
       hy: "Աբովյան փող. 1/1, Երևան,\nՀայաստան",
       ru: "ул. Абовяна 1/1, Ереван,\nАрмения",

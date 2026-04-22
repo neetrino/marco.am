@@ -5,29 +5,11 @@ import Image from 'next/image';
 import type { MouseEvent } from 'react';
 import { formatPrice } from '../../lib/currency';
 import { useTranslation } from '../../lib/i18n-client';
-import { CompareIcon } from '../icons/CompareIcon';
-import { CartIcon as CartPngIcon } from '../icons/CartIcon';
 import { ProductColors } from './ProductColors';
+import { ProductCardActions } from './ProductCardActions';
 import type { CurrencyCode } from '../../lib/currency';
 import type { ProductLabel } from '../ProductLabels';
 import { SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC } from '../home/home-special-offers.constants';
-
-interface WishlistIconProps {
-  filled?: boolean;
-}
-
-const WishlistIcon = ({ filled = false }: WishlistIconProps) => (
-  <svg width="24" height="24" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path 
-      d="M10 17L8.55 15.7C4.4 12.2 2 10.1 2 7.5C2 5.4 3.4 4 5.5 4C6.8 4 8.1 4.6 9 5.5C9.9 4.6 11.2 4 12.5 4C14.6 4 16 5.4 16 7.5C16 10.1 13.6 12.2 9.45 15.7L10 17Z" 
-      stroke="currentColor" 
-      strokeWidth="1.8" 
-      strokeLinecap="round" 
-      strokeLinejoin="round" 
-      fill={filled ? "currentColor" : "none"} 
-    />
-  </svg>
-);
 
 interface ProductCardListProps {
   product: {
@@ -75,11 +57,11 @@ export function ProductCardList({
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:bg-gray-50 transition-colors">
-      <div className="flex flex-col sm:flex-row sm:items-center gap-4 px-4 sm:px-6 py-4">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4 px-5 sm:px-6 py-4 sm:py-5">
         {/* Product Image */}
         <Link
           href={`/products/${product.slug}`}
-          className="w-20 h-20 bg-gray-100 rounded-lg flex-shrink-0 relative overflow-hidden self-start sm:self-center"
+          className="w-36 h-36 bg-gray-100 rounded-xl border-2 border-gray-300 flex-shrink-0 relative overflow-hidden self-start sm:self-center"
         >
           {!imageError ? (
             <Image
@@ -87,7 +69,7 @@ export function ProductCardList({
               alt={product.title}
               fill
               className="object-cover object-center"
-              sizes="80px"
+              sizes="144px"
               unoptimized
               onError={onImageError}
             />
@@ -103,10 +85,10 @@ export function ProductCardList({
         {/* Product Info */}
         <div className="flex-1 min-w-0 w-full sm:w-auto">
           <Link href={`/products/${product.slug}`} className="block">
-            <h3 className="text-lg sm:text-xl font-medium text-gray-900 hover:text-blue-600 transition-colors line-clamp-2">
+            <h3 className="text-xl sm:text-2xl font-medium text-gray-900 transition-colors line-clamp-2">
               {product.title}
             </h3>
-            <p className="text-base sm:text-lg text-gray-500 mt-1">
+            <p className="text-lg sm:text-xl text-gray-500 mt-1">
               {product.brand?.name || t('common.defaults.category')}
             </p>
           </Link>
@@ -123,11 +105,11 @@ export function ProductCardList({
           {/* Price */}
           <div className="flex flex-col">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xl sm:text-2xl font-semibold text-blue-600">
+              <span className="text-lg sm:text-xl font-semibold text-marco-black">
                 {formatPrice(product.price || 0, currency)}
               </span>
               {product.discountPercent && product.discountPercent > 0 ? (
-                <span className="text-xs sm:text-sm font-semibold text-blue-600">
+                <span className="text-xs sm:text-sm font-semibold text-marco-black">
                   -{product.discountPercent}%
                 </span>
               ) : null}
@@ -146,63 +128,20 @@ export function ProductCardList({
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center gap-2 self-start sm:self-center">
-            {/* Compare Icon */}
-            <button
-              onClick={onCompareToggle}
-              className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
-                isInCompare
-                  ? 'border-gray-900 text-gray-900 bg-white shadow-sm'
-                  : 'border-gray-200 text-gray-700 bg-white hover:border-gray-300 hover:bg-gray-50'
-              }`}
-              title={isInCompare ? t('common.messages.removedFromCompare') : t('common.messages.addedToCompare')}
-              aria-label={isInCompare ? t('common.messages.removedFromCompare') : t('common.messages.addedToCompare')}
-            >
-              <CompareIcon isActive={isInCompare} />
-            </button>
-
-            {/* Wishlist Icon */}
-            <button
-              onClick={onWishlistToggle}
-              className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center transition-all duration-200 ${
-                isInWishlist
-                  ? 'bg-red-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-              title={isInWishlist ? t('common.messages.removedFromWishlist') : t('common.messages.addedToWishlist')}
-              aria-label={isInWishlist ? t('common.messages.removedFromWishlist') : t('common.messages.addedToWishlist')}
-            >
-              <WishlistIcon filled={isInWishlist} />
-            </button>
-
-            {/* Cart Icon */}
-            <button
-              onClick={onAddToCart}
-              disabled={!product.inStock || isAddingToCart}
-              className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center transition-all duration-200 ${
-                product.inStock && !isAddingToCart
-                  ? 'bg-gray-100 text-gray-700 hover:bg-green-600 hover:text-white'
-                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              }`}
-              title={product.inStock ? t('common.buttons.addToCart') : t('common.stock.outOfStock')}
-              aria-label={product.inStock ? t('common.buttons.addToCart') : t('common.stock.outOfStock')}
-            >
-              {isAddingToCart ? (
-                <svg className="animate-spin h-4 w-4 sm:h-5 sm:w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-              ) : (
-                <CartPngIcon size={20} />
-              )}
-            </button>
+          <div className="self-start sm:self-center">
+            <ProductCardActions
+              isInWishlist={isInWishlist}
+              isInCompare={isInCompare}
+              isAddingToCart={isAddingToCart}
+              inStock={product.inStock}
+              isCompact
+              onWishlistToggle={onWishlistToggle}
+              onCompareToggle={onCompareToggle}
+              onAddToCart={onAddToCart}
+            />
           </div>
         </div>
       </div>
     </div>
   );
 }
-
-
-
-

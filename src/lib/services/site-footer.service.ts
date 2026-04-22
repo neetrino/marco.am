@@ -97,7 +97,7 @@ const DEFAULT_STORAGE: SiteFooterStorage = {
       ru: "+374 XX XXX XXX",
     },
     phoneTel: "+37400000000",
-    email: "info@shop.am",
+    email: "marcofurniture@mail.ru",
   },
   mapEmbed: {
     enabled: false,

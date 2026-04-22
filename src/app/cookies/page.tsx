@@ -145,8 +145,8 @@ export default function CookiesPage() {
           <h2 className="text-2xl font-semibold text-gray-900">{t('cookies.contact.title')}</h2>
           <p className="text-gray-600">
             {t('cookies.contact.description')}{' '}
-            <a href="mailto:privacy@whiteshop.com" className="text-blue-600 hover:underline">
-              privacy@whiteshop.com
+            <a href="mailto:marcofurniture@mail.ru" className="text-blue-600 hover:underline">
+              marcofurniture@mail.ru
             </a>
           </p>
         </section>

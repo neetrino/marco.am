@@ -29,13 +29,13 @@ describe("structured-data SEO builders", () => {
       title: "Contact us",
       description: "Call us any time.",
       phoneTel: "+37400000000",
-      email: "info@shop.am",
+      email: "marcofurniture@mail.ru",
     });
     if (seo.structuredData["@type"] !== "ContactPage") {
       throw new Error("Contact page structured data expected");
     }
     expect(seo.structuredData.contactPoint.telephone).toBe("+37400000000");
-    expect(seo.structuredData.contactPoint.email).toBe("info@shop.am");
+    expect(seo.structuredData.contactPoint.email).toBe("marcofurniture@mail.ru");
     expect(seo.canonicalUrl).toBe("https://shop.example/contact");
   });
 

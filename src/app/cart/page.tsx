@@ -100,7 +100,7 @@ export default function CartPage() {
   }
 
   return (
-    <div className="page-shell py-12">
+    <div className="marco-header-container py-12">
       <h1 className="text-3xl font-bold text-gray-900 mb-8">{t('common.cart.title')}</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

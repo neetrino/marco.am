@@ -1,5 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
 import { useTranslation } from '../lib/i18n-client';
 import { apiClient } from '../lib/api-client';
 import { HomePromoMobileHeroChair } from './home/HomePromoMobileHeroChair';
@@ -17,7 +19,7 @@ import {
 } from '../lib/constants/home-hero-admin-banners';
 
 /** Hero shell follows the same responsive width rhythm as the whole home page. */
-const HERO_PAGE_CONTAINER_CLASS = `${HOME_PAGE_SECTION_SHELL_CLASS} pt-6 sm:pt-9 lg:pt-8`;
+const HERO_PAGE_CONTAINER_CLASS = `${HOME_PAGE_SECTION_SHELL_CLASS} pt-8 sm:pt-11 lg:pt-10`;
 
 type PublicBannerItem = {
   id: string;
@@ -30,6 +32,8 @@ type PublicBannersPayload = {
   items: PublicBannerItem[];
 };
 
+const HERO_DESKTOP_HELP_MESSAGE_ICON_SRC = '/assets/hero/hero-help-message-icon.svg';
+
 export function HeroCarousel() {
   const { t } = useTranslation();
   const [desktopImages, setDesktopImages] = useState({
@@ -37,7 +41,7 @@ export function HeroCarousel() {
     leftBottom: HOME_HERO_PRIMARY_BOTTOM_DEFAULT_IMAGE_URL,
     right: HOME_HERO_SECONDARY_DEFAULT_IMAGE_URL,
   });
-  const [mobileImage, setMobileImage] = useState(HERO_MOBILE_PRIMARY_IMAGE_SRC);
+  const [mobileImage, setMobileImage] = useState<string>(HERO_MOBILE_PRIMARY_IMAGE_SRC);
 
   useEffect(() => {
     let active = true;
@@ -129,10 +133,32 @@ export function HeroCarousel() {
             />
           </div>
           <div
-            className="h-full min-w-0 rounded-[30px] bg-cover bg-center bg-no-repeat"
+            className="relative h-full min-w-0 rounded-[30px] bg-cover bg-center bg-no-repeat"
             style={{ backgroundImage: `url(${desktopImages.right})`, backgroundPosition: 'center 58%' }}
             aria-label="Galaxy A05s hero"
-          />
+          >
+            <div className="absolute bottom-[18px] right-[18px] z-[2] flex items-center gap-2.5 lg:bottom-[22px] lg:right-[22px] lg:gap-3">
+              <div className="rounded-[68px] bg-white px-4 py-2 shadow-[0px_4px_24px_0px_rgba(150,150,150,0.28)] lg:px-5 lg:py-2.5">
+                <p className="font-bold text-[13px] leading-5 text-[#181111] whitespace-nowrap lg:text-[14px]">
+                  Ինչո՞վ կարող ենք ձեզ օգնել
+                </p>
+              </div>
+              <Link
+                href="/contact"
+                className="flex h-[60px] w-[60px] items-center justify-center rounded-full bg-[#FACC15] transition-transform hover:-translate-y-0.5 lg:h-[64px] lg:w-[64px]"
+                aria-label="Կապնվել մեզ հետ"
+              >
+                <Image
+                  src={HERO_DESKTOP_HELP_MESSAGE_ICON_SRC}
+                  alt=""
+                  width={30}
+                  height={30}
+                  className="h-[30px] w-[30px] object-contain lg:h-[32px] lg:w-[32px]"
+                  aria-hidden
+                />
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -10,6 +10,7 @@ import { apiClient } from '../../lib/api-client';
 import { getStoredLanguage, type LanguageCode } from '../../lib/language';
 import { t } from '../../lib/i18n';
 import { useTranslation } from '../../lib/i18n-client';
+import { dedupeCardProductsByTitle } from '../../lib/dedupeCardProductsByTitle';
 import { SpecialOfferCard } from './SpecialOfferCard';
 import type { SpecialOfferProduct } from './special-offer-product.types';
 import {
@@ -132,7 +133,7 @@ export function HomeSpecialOffersSection() {
           filter: 'promotion',
         },
       });
-      setProducts(response.data ?? []);
+      setProducts(dedupeCardProductsByTitle(response.data ?? []));
     } catch {
       setError(t(language, 'home.special_offers.error_loading'));
       setProducts([]);
@@ -351,7 +352,7 @@ export function HomeSpecialOffersSection() {
                     {padChunkToSize(chunk, SPECIAL_OFFERS_MOBILE_GRID_PAGE_SIZE).map(
                       (product, slotIndex) => (
                         <div
-                          key={product?.id ?? `special-offers-slot-${pageIndex}-${slotIndex}`}
+                          key={`special-offers-slot-${pageIndex}-${slotIndex}-${product?.id ?? 'empty'}`}
                           className="min-w-0"
                         >
                           {product ? (
@@ -369,8 +370,8 @@ export function HomeSpecialOffersSection() {
                   </div>
                 ))
               ) : (
-                products.map((product) => (
-                  <div key={product.id} className={railSlotClassName} style={railSlotStyle}>
+                products.map((product, index) => (
+                  <div key={`special-offers-product-${product.id}-${index}`} className={railSlotClassName} style={railSlotStyle}>
                     <SpecialOfferCard product={product} />
                   </div>
                 ))

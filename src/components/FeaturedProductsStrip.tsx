@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 import type { CSSProperties } from 'react';
 
 import { chunkArray, padChunksToMinimumCount } from '../lib/chunk-array';
@@ -10,7 +10,6 @@ import type { LanguageCode } from '../lib/language';
 import type { HomeBrandPartnerPublicItem } from '@/lib/types/home-brand-partners-public';
 import {
   FEATURED_PRODUCTS_FOOTER_DOT_COUNT_DESKTOP,
-  FEATURED_PRODUCTS_FOOTER_DOT_COUNT_MOBILE,
   FEATURED_PRODUCTS_GRID_GAP_Y_CLASS,
   FEATURED_PRODUCTS_VISIBLE_COUNT,
 } from './featured-products-tabs.constants';
@@ -38,9 +37,9 @@ import {
   HOME_BRANDS_DOTS_TO_CTA_GAP_MOBILE_PX,
   HOME_BRANDS_GRID_TO_DOTS_GAP_MOBILE_PX,
   HOME_BRANDS_GRID_TO_DOTS_GAP_PX,
-  HOME_BRANDS_RAIL_SCROLL_PX,
   HOME_BRANDS_TITLE_TO_RAIL_GAP_PX,
 } from './home/home-brands.constants';
+import { HOME_BRAND_SLIDE_ENTRIES } from './home/home-brands-slide.constants';
 import { HomeBrandsHeading } from './home/HomeBrandsHeading';
 import { HomeBrandsSlide } from './home/HomeBrandsSlide';
 import type { SpecialOfferProduct } from './home/special-offer-product.types';
@@ -100,7 +99,14 @@ export function FeaturedProductsStrip({
   homeBrandPartnersSectionTitle,
 }: FeaturedProductsStripProps) {
   const ctaHref = `/products?filter=${encodeURIComponent(FILTER_BY_TAB[activeTab])}`;
-  const brandsRailRef = useRef<HTMLDivElement | null>(null);
+  const brandsFallbackTotal = HOME_BRAND_SLIDE_ENTRIES.length;
+  const brandsTotalItems = homeBrandPartners && homeBrandPartners.length > 0
+    ? homeBrandPartners.length
+    : brandsFallbackTotal;
+  const brandsPaginationPageCount = Math.max(
+    1,
+    Math.ceil(brandsTotalItems / SPECIAL_OFFERS_MOBILE_GRID_PAGE_SIZE)
+  );
 
   const mobileProductChunks = useMemo(() => {
     const chunks = chunkArray(products, SPECIAL_OFFERS_MOBILE_GRID_PAGE_SIZE);
@@ -118,10 +124,6 @@ export function FeaturedProductsStrip({
     paginationPageCount: isMaxMd ? SPECIAL_OFFERS_MOBILE_PAGINATION_PAGE_COUNT : 1,
   });
 
-  const brandsFooterDotCount = isMaxMd
-    ? FEATURED_PRODUCTS_FOOTER_DOT_COUNT_MOBILE
-    : FEATURED_PRODUCTS_FOOTER_DOT_COUNT_DESKTOP;
-
   /** `md+` decorative dots — same rail→dots / dots→CTA rhythm as desktop special-offers footer. */
   const desktopFeaturedRailToDotsGapPx = SPECIAL_OFFERS_RAIL_TO_PAGINATION_GAP_PX;
   const desktopFeaturedDotsToCtaGapPx = SPECIAL_OFFERS_PAGINATION_TO_CTA_GAP_DESKTOP_PX;
@@ -132,33 +134,32 @@ export function FeaturedProductsStrip({
     ? SPECIAL_OFFERS_PAGINATION_DOT_GAP_MOBILE_PX
     : SPECIAL_OFFERS_PAGINATION_DOT_GAP_DESKTOP_PX;
 
-  const scrollBrandsRail = useCallback((direction: -1 | 1) => {
-    const el = brandsRailRef.current;
-    if (!el) {
-      return;
-    }
-    el.scrollBy({ left: direction * HOME_BRANDS_RAIL_SCROLL_PX, behavior: 'smooth' });
-  }, []);
+  const {
+    scrollerRef: brandsRailRef,
+    activePage: brandsActivePage,
+    scrollToPage: scrollBrandsToPage,
+  } = useSpecialOffersCarousel({
+    isRailVisible: true,
+    paginationPageCount: brandsPaginationPageCount,
+  });
 
+  let featuredContent: JSX.Element;
   if (loading) {
-    if (isMaxMd) {
-      return (
-        <div
-          className="grid w-full grid-cols-2"
-          style={{
-            columnGap: SPECIAL_OFFERS_MOBILE_GRID_COLUMN_GAP_PX,
-            rowGap: SPECIAL_OFFERS_MOBILE_GRID_ROW_GAP_PX,
-          }}
-        >
-          {Array.from({ length: SPECIAL_OFFERS_MOBILE_GRID_PAGE_SIZE }).map((_, i) => (
-            <div key={`sk-m-${i}`} className="min-w-0">
-              <div className="w-full animate-pulse bg-gray-200" style={featuredCardSkeletonStyle} />
-            </div>
-          ))}
-        </div>
-      );
-    }
-    return (
+    featuredContent = isMaxMd ? (
+      <div
+        className="grid w-full grid-cols-2"
+        style={{
+          columnGap: SPECIAL_OFFERS_MOBILE_GRID_COLUMN_GAP_PX,
+          rowGap: SPECIAL_OFFERS_MOBILE_GRID_ROW_GAP_PX,
+        }}
+      >
+        {Array.from({ length: SPECIAL_OFFERS_MOBILE_GRID_PAGE_SIZE }).map((_, i) => (
+          <div key={`sk-m-${i}`} className="min-w-0">
+            <div className="w-full animate-pulse bg-gray-200" style={featuredCardSkeletonStyle} />
+          </div>
+        ))}
+      </div>
+    ) : (
       <div className={FEATURED_OFFERS_GRID_CLASS} style={featuredOffersGridStyle(isMaxMd)}>
         {Array.from({ length: FEATURED_PRODUCTS_VISIBLE_COUNT }).map((__, i) => (
           <div key={`sk-${i}`} className="min-w-0">
@@ -167,10 +168,8 @@ export function FeaturedProductsStrip({
         ))}
       </div>
     );
-  }
-
-  if (error) {
-    return (
+  } else if (error) {
+    featuredContent = (
       <div className="text-center py-12">
         <p className="text-red-600 mb-4">{error}</p>
         <button
@@ -182,65 +181,65 @@ export function FeaturedProductsStrip({
         </button>
       </div>
     );
-  }
-
-  if (products.length === 0) {
-    return (
+  } else if (products.length === 0) {
+    featuredContent = (
       <div className="text-center py-12">
         <p className="text-gray-500">{t(language, 'home.featured_products.noProducts')}</p>
       </div>
+    );
+  } else {
+    featuredContent = isMaxMd ? (
+      <FeaturedNewArrivalsMobileRail
+        productChunks={mobileProductChunks}
+        scrollerRef={featuredScrollerRef}
+        activePage={featuredActivePage}
+        onGoToPage={scrollFeaturedToPage}
+        cardLayout="mobileGrid"
+        language={language}
+        ctaHref={ctaHref}
+      />
+    ) : (
+      <>
+        <div className={FEATURED_OFFERS_GRID_CLASS} style={featuredOffersGridStyle(isMaxMd)}>
+          {products.map((product, index) => (
+            <div key={`featured-strip-product-${product.id}-${index}`} className="min-w-0">
+              <SpecialOfferCard product={product} layout={cardLayout} />
+            </div>
+          ))}
+        </div>
+
+        <div
+          className="flex flex-row items-center justify-center"
+          style={{
+            marginTop: `${desktopFeaturedRailToDotsGapPx}px`,
+            gap: `${paginationDotGapPx}px`,
+          }}
+          aria-hidden
+        >
+          {Array.from({ length: FEATURED_PRODUCTS_FOOTER_DOT_COUNT_DESKTOP }, (_, i) => (
+            <span
+              key={`featured-footer-dot-${i}`}
+              className={i === 0 ? 'rounded-full bg-marco-black' : 'rounded-full bg-gray-300'}
+              style={featuredFooterDotStyle}
+            />
+          ))}
+        </div>
+
+        <div
+          className="flex justify-center"
+          style={{ marginTop: desktopFeaturedDotsToCtaGapPx }}
+        >
+          <Link href={ctaHref} className={SPECIAL_OFFERS_CTA_LINK_CLASS}>
+            {t(language, 'home.special_offers.cta')}
+          </Link>
+        </div>
+      </>
     );
   }
 
   return (
     <>
-      {isMaxMd ? (
-        <FeaturedNewArrivalsMobileRail
-          productChunks={mobileProductChunks}
-          scrollerRef={featuredScrollerRef}
-          activePage={featuredActivePage}
-          onGoToPage={scrollFeaturedToPage}
-          cardLayout="mobileGrid"
-          language={language}
-          ctaHref={ctaHref}
-        />
-      ) : (
-        <>
-          <div className={FEATURED_OFFERS_GRID_CLASS} style={featuredOffersGridStyle(isMaxMd)}>
-            {products.map((product) => (
-              <div key={product.id} className="min-w-0">
-                <SpecialOfferCard product={product} layout={cardLayout} />
-              </div>
-            ))}
-          </div>
-
-          <div
-            className="flex flex-row items-center justify-center"
-            style={{
-              marginTop: `${desktopFeaturedRailToDotsGapPx}px`,
-              gap: `${paginationDotGapPx}px`,
-            }}
-            aria-hidden
-          >
-            {Array.from({ length: FEATURED_PRODUCTS_FOOTER_DOT_COUNT_DESKTOP }, (_, i) => (
-              <span
-                key={`featured-footer-dot-${i}`}
-                className={i === 0 ? 'rounded-full bg-marco-black' : 'rounded-full bg-gray-300'}
-                style={featuredFooterDotStyle}
-              />
-            ))}
-          </div>
-
-          <div
-            className="flex justify-center"
-            style={{ marginTop: desktopFeaturedDotsToCtaGapPx }}
-          >
-            <Link href={ctaHref} className={SPECIAL_OFFERS_CTA_LINK_CLASS}>
-              {t(language, 'home.special_offers.cta')}
-            </Link>
-          </div>
-        </>
-      )}
+      {featuredContent}
 
       <div
         className="w-full"
@@ -255,14 +254,14 @@ export function FeaturedProductsStrip({
       >
         <HomeBrandsHeading
           language={language}
-          onPrev={() => scrollBrandsRail(-1)}
-          onNext={() => scrollBrandsRail(1)}
+          onPrev={() => scrollBrandsToPage(brandsActivePage - 1)}
+          onNext={() => scrollBrandsToPage(brandsActivePage + 1)}
           sectionTitle={homeBrandPartnersSectionTitle ?? undefined}
         />
         <div
           ref={brandsRailRef}
           id="home-brands-rail"
-          className="w-full"
+          className="w-full overflow-x-auto scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           style={{ marginTop: `${HOME_BRANDS_TITLE_TO_RAIL_GAP_PX}px` }}
           aria-label={t(language, 'home.brands.rail_aria')}
         >
@@ -275,12 +274,20 @@ export function FeaturedProductsStrip({
             marginTop: `${isMaxMd ? HOME_BRANDS_GRID_TO_DOTS_GAP_MOBILE_PX : HOME_BRANDS_GRID_TO_DOTS_GAP_PX}px`,
             gap: `${paginationDotGapPx}px`,
           }}
-          aria-hidden
+          role="tablist"
+          aria-label={t(language, 'home.brands.rail_aria')}
         >
-          {Array.from({ length: brandsFooterDotCount }, (_, i) => (
-            <span
+          {Array.from({ length: brandsPaginationPageCount }, (_, i) => (
+            <button
               key={`brands-footer-dot-${i}`}
-              className={i === 0 ? 'rounded-full bg-marco-black' : 'rounded-full bg-gray-300'}
+              type="button"
+              role="tab"
+              aria-selected={i === brandsActivePage}
+              aria-label={`${t(language, 'home.special_offers_carousel_page')} ${i + 1}`}
+              onClick={() => scrollBrandsToPage(i)}
+              className={`rounded-full transition-colors duration-200 ${
+                i === brandsActivePage ? 'bg-marco-black' : 'bg-gray-300 hover:bg-gray-400'
+              }`}
               style={featuredFooterDotStyle}
             />
           ))}
@@ -290,7 +297,7 @@ export function FeaturedProductsStrip({
           className="flex justify-center"
           style={{ marginTop: brandsDotsToCtaGapPx }}
         >
-          <Link href="/products" className={SPECIAL_OFFERS_CTA_LINK_CLASS}>
+          <Link href="/brands" className={SPECIAL_OFFERS_CTA_LINK_CLASS}>
             {t(language, 'home.special_offers.cta')}
           </Link>
         </div>

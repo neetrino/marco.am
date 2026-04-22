@@ -97,10 +97,17 @@ async function handleErrorResponse(
 ): Promise<never> {
   const isUnauthorized = response.status === 401;
   const isNotFound = response.status === 404;
+  const isValidationLike = response.status === 422;
   
-  // Log 404 as warning (expected situation - resource doesn't exist)
+  // Log expected, non-fatal statuses as warnings.
   if (shouldLogWarning(response.status)) {
-    console.warn(`⚠️ [API CLIENT] Not Found (404): ${url}`);
+    if (isNotFound) {
+      console.warn(`⚠️ [API CLIENT] Not Found (404): ${url}`);
+    } else if (isValidationLike) {
+      console.warn(`⚠️ [API CLIENT] Validation response (422): ${url}`);
+    } else {
+      console.warn(`⚠️ [API CLIENT] Expected error response (${response.status}): ${url}`);
+    }
   }
   // Log other errors (except 401 which is expected)
   else if (shouldLogError(response.status)) {
@@ -122,6 +129,8 @@ async function handleErrorResponse(
   // Log error details
   if (isNotFound) {
     console.warn('⚠️ [API CLIENT] Not Found response:', errorData || errorText);
+  } else if (isValidationLike) {
+    console.warn('⚠️ [API CLIENT] Validation response:', errorData || errorText);
   } else if (!isUnauthorized && shouldLogError(response.status)) {
     console.error('❌ [API CLIENT] Error response:', errorData || errorText);
   }

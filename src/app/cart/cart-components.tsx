@@ -36,7 +36,7 @@ export function CartItemRow({
     >
       <button
         onClick={() => onRemove(item.id)}
-        className="absolute top-2 right-2 md:top-4 md:right-4 w-7 h-7 rounded-full bg-white hover:bg-red-50 flex items-center justify-center text-gray-500 hover:text-red-600 transition-colors shadow-md border border-gray-200 hover:border-red-300 z-10"
+        className="absolute top-2 right-2 md:top-4 md:right-4 w-7 h-7 rounded-full bg-white hover:bg-marco-yellow/20 flex items-center justify-center text-gray-500 hover:text-marco-black transition-colors shadow-md border border-gray-200 hover:border-marco-yellow z-10"
         aria-label={t('common.buttons.remove')}
       >
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -73,7 +73,7 @@ export function CartItemRow({
       </div>
 
       {/* Quantity */}
-      <div className="md:col-span-2 flex flex-col items-start md:items-center justify-center">
+      <div className="md:col-span-2 flex flex-col items-start md:items-center justify-center md:-ml-[20px]">
         <p className="mb-2 text-xs font-semibold tracking-wide text-gray-500 uppercase md:hidden">
           {t('common.messages.quantity')}
         </p>
@@ -98,7 +98,7 @@ export function CartItemRow({
               onUpdateQuantity(item.id, newQuantity);
             }}
             disabled={updatingItems.has(item.id)}
-            className="w-20 h-9 text-right border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 font-medium pl-2 pr-5"
+            className="w-14 h-9 text-right border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 font-medium pl-2 pr-2"
             title={item.variant.stock !== undefined ? t('common.messages.availableQuantity').replace('{stock}', item.variant.stock.toString()) : ''}
           />
           <button
@@ -120,8 +120,8 @@ export function CartItemRow({
         <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 md:hidden">
           {t('common.messages.subtotal')}
         </p>
-        <div className="flex flex-col gap-1 mt-1 md:mt-0">
-          <span className="text-lg font-semibold text-blue-600">
+        <div className="mt-1 flex flex-col gap-1 md:mt-0 md:pl-[20px]">
+          <span className="text-lg font-bold text-marco-black">
             {formatPrice(item.total, currencyCode)}
           </span>
           {item.originalPrice && item.originalPrice > item.price && (
@@ -163,7 +163,7 @@ export function CartTable({
           <div className="md:col-span-6">
             <span className="text-sm font-semibold text-gray-900 uppercase tracking-wide">{t('common.messages.product')}</span>
           </div>
-          <div className="md:col-span-2 text-center">
+          <div className="md:col-span-2 text-center md:-ml-[20px]">
             <span className="text-sm font-semibold text-gray-900 uppercase tracking-wide">{t('common.messages.quantity')}</span>
           </div>
           <div className="md:col-span-3 text-center">
@@ -212,26 +212,34 @@ export function OrderSummary({ cart, currency, t }: OrderSummaryProps) {
         <div className="space-y-4 mb-6">
           <div className="flex justify-between text-gray-600">
             <span>{t('common.cart.subtotal')}</span>
-            <span>{formatPrice(cart.totals.subtotal, currencyCode)}</span>
+            <span className="ml-auto min-w-[120px] text-right">
+              {formatPrice(cart.totals.subtotal, currencyCode)}
+            </span>
           </div>
           <div className="flex justify-between text-gray-600">
             <span>{t('common.cart.shipping')}</span>
-            <span>{t('common.cart.free')}</span>
+            <span className="ml-auto min-w-[120px] text-right">
+              {t('common.cart.free')}
+            </span>
           </div>
           <div className="flex justify-between text-gray-600">
             <span>{t('common.cart.tax')}</span>
-            <span>{formatPrice(cart.totals.tax, currencyCode)}</span>
+            <span className="ml-auto min-w-[120px] text-right">
+              {formatPrice(cart.totals.tax, currencyCode)}
+            </span>
           </div>
           <div className="border-t border-gray-200 pt-4">
             <div className="flex justify-between text-lg font-bold text-gray-900">
               <span>{t('common.cart.total')}</span>
-              <span>{formatPrice(cart.totals.total, currencyCode)}</span>
+              <span className="ml-auto min-w-[120px] text-right">
+                {formatPrice(cart.totals.total, currencyCode)}
+              </span>
             </div>
           </div>
         </div>
         <Button 
           variant="primary" 
-          className="w-full" 
+          className="w-full !h-12 !rounded-full !flex !items-center !justify-center !text-center bg-marco-yellow !text-marco-black !font-bold !hover:bg-marco-yellow !hover:brightness-100 !active:brightness-100" 
           size="lg"
           onClick={() => {
             // Allow guest checkout - no redirect to login
@@ -242,7 +250,7 @@ export function OrderSummary({ cart, currency, t }: OrderSummaryProps) {
         </Button>
         <Button
           variant="outline"
-          className="w-full mt-3"
+          className="mt-3 w-full !h-11 !rounded-full !font-bold text-marco-black hover:bg-marco-yellow/10"
           size="md"
           onClick={() => {
             window.location.href = '/products';

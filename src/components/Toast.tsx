@@ -17,12 +17,26 @@ interface ToastProps {
 }
 
 function ToastItem({ toast, onClose }: ToastProps) {
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      onClose(toast.id);
-    }, toast.duration || 3000);
+  const [isVisible, setIsVisible] = useState(false);
+  const [isLeaving, setIsLeaving] = useState(false);
 
-    return () => clearTimeout(timer);
+  useEffect(() => {
+    const rafId = requestAnimationFrame(() => {
+      setIsVisible(true);
+    });
+
+    const visibleDuration = toast.duration || 3000;
+    const leaveDuration = 220;
+
+    const timer = setTimeout(() => {
+      setIsLeaving(true);
+      setTimeout(() => onClose(toast.id), leaveDuration);
+    }, visibleDuration);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      clearTimeout(timer);
+    };
   }, [toast.id, toast.duration, onClose]);
 
   const bgColors = {
@@ -62,13 +76,28 @@ function ToastItem({ toast, onClose }: ToastProps) {
     ),
   };
 
+  const handleClose = () => {
+    if (isLeaving) {
+      return;
+    }
+    setIsLeaving(true);
+    setTimeout(() => onClose(toast.id), 220);
+  };
+
   return (
     <div
       className={`
         ${bgColors[toast.type]}
         border rounded-lg shadow-lg p-4 mb-3 flex items-start gap-3
         max-w-md w-full
-        animate-fade-in
+        transition-all duration-300 ease-out
+        ${
+          isLeaving
+            ? 'translate-y-1 opacity-0'
+            : isVisible
+              ? 'translate-y-0 opacity-100'
+              : '-translate-y-2 opacity-0'
+        }
       `}
       role="alert"
     >
@@ -77,7 +106,7 @@ function ToastItem({ toast, onClose }: ToastProps) {
       </div>
       <div className="flex-1 text-sm font-medium">{toast.message}</div>
       <button
-        onClick={() => onClose(toast.id)}
+        onClick={handleClose}
         className={`flex-shrink-0 ${iconColors[toast.type]} hover:opacity-70 transition-opacity`}
         aria-label="Close"
       >
@@ -119,7 +148,7 @@ export function ToastContainer() {
   if (toasts.length === 0) return null;
 
   return (
-    <div className="fixed top-4 right-4 z-50 flex flex-col items-end">
+    <div className="fixed top-4 left-1/2 z-50 flex -translate-x-1/2 flex-col items-center">
       {toasts.map((toast) => (
         <ToastItem key={toast.id} toast={toast} onClose={handleClose} />
       ))}

@@ -1,7 +1,8 @@
 {
   "phone": "+374 XX XXX XXX",
-  "email": "info@shop.am",
-  "address": "Աբովյան փող. 1/1, Երևան,\nՀայաստան",
+  "email": "marcofurniture@mail.ru",
+  "pageTitle": "ԿԱՊ ՄԵԶ ՀԵՏ",
+  "address": "Ք․ Երևան Ալեք Մանուկյան 23",
   "workingHours": "Երկ-Ուրբ 10:00-19:00",
   "social": {
     "instagram": "",
@@ -14,5 +15,5 @@
   "callToUs": {"title":"Զանգահարեք մեզ","description":"Մենք հասանելի ենք շաբաթվա 7 օր, օրվա 24 ժամ:"},
   "writeToUs": {"title":"Գրեք մեզ","description":"Լրացրեք մեր ձևը, և մենք կկապվենք ձեզ հետ 24 ժամվա ընթացքում:","emailLabel":"Էլ. փոստ"},
   "headquarter": {"title":"Գլխավոր գրասենյակ","hours":{"weekdays":"Երկուշաբթի - Ուրբաթ: 9:00-20:00","saturday":"Շաբաթ: 11:00 - 15:00"}},
-  "form": {"name":"Անուն *","namePlaceholder":"Ձեր անունը","email":"Էլ. փոստ *","emailPlaceholder":"your@email.com","subject":"Թեմա *","subjectPlaceholder":"Ինչի՞ մասին է","message":"Հաղորդագրություն","messagePlaceholder":"Ձեր հաղորդագրությունը...","submit":"Ուղարկել","submitting":"Ուղարկվում է...","submitSuccess":"Ձեր հաղորդագրությունը հաջողությամբ ուղարկվեց","submitError":"Սխալ: Չհաջողվեց ուղարկել հաղորդագրությունը"}
+  "form": {"title":"Ուղարկել մեզ հաղորդագրություն","name":"Անուն *","namePlaceholder":"Ձեր անունը","email":"Էլ. փոստ *","emailPlaceholder":"marcofurniture@mail.ru","subject":"Թեմա *","subjectPlaceholder":"Ինչի՞ մասին է","message":"Հաղորդագրություն","messagePlaceholder":"Ձեր հաղորդագրությունը...","submit":"Ուղարկել","submitting":"Ուղարկվում է...","submitSuccess":"Ձեր հաղորդագրությունը հաջողությամբ ուղարկվեց","submitError":"Սխալ: Չհաջողվեց ուղարկել հաղորդագրությունը"}
 }

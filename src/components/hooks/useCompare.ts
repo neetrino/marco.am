@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from '../../lib/i18n-client';
 import { getStoredLanguage } from '@/lib/language';
 import {
@@ -8,6 +8,8 @@ import {
   fetchCompareProductIds,
   removeCompareItemClient,
 } from '@/lib/compare/compare-client';
+import { getErrorHttpStatus } from '@/lib/api-client';
+import { showToast } from '@/components/Toast';
 
 const MAX_COMPARE_ITEMS = 4;
 
@@ -19,17 +21,46 @@ const MAX_COMPARE_ITEMS = 4;
 export function useCompare(productId: string) {
   const { t } = useTranslation();
   const [isInCompare, setIsInCompare] = useState(false);
+  const [isToggling, setIsToggling] = useState(false);
+  const isMountedRef = useRef(true);
+  const isTogglingRef = useRef(false);
 
   useEffect(() => {
-    const checkCompare = async () => {
-      try {
-        const compare = await fetchCompareProductIds(getStoredLanguage());
-        setIsInCompare(compare.includes(productId));
-      } catch {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    isTogglingRef.current = isToggling;
+  }, [isToggling]);
+
+  const checkCompare = useCallback(async () => {
+    if (!productId) {
+      if (isMountedRef.current) {
         setIsInCompare(false);
       }
-    };
+      return;
+    }
+    if (isTogglingRef.current) {
+      return;
+    }
+    try {
+      const compare = await fetchCompareProductIds(getStoredLanguage());
+      if (!isMountedRef.current || isTogglingRef.current) {
+        return;
+      }
+      setIsInCompare(compare.includes(productId));
+    } catch {
+      if (!isMountedRef.current || isTogglingRef.current) {
+        return;
+      }
+      setIsInCompare(false);
+    }
+  }, [productId]);
 
+  useEffect(() => {
     void checkCompare();
 
     const handleCompareUpdate = () => {
@@ -44,26 +75,67 @@ export function useCompare(productId: string) {
       window.removeEventListener('auth-updated', handleCompareUpdate);
       window.removeEventListener('language-updated', handleCompareUpdate);
     };
-  }, [productId]);
+  }, [checkCompare]);
 
   const toggleCompare = async () => {
-    try {
-      const language = getStoredLanguage();
-      const compare = await fetchCompareProductIds(language);
+    if (!productId) {
+      return;
+    }
+    if (isTogglingRef.current) {
+      return;
+    }
 
-      if (isInCompare) {
-        await removeCompareItemClient(productId, language);
-        setIsInCompare(false);
-      } else {
+    const language = getStoredLanguage();
+    const previousValue = isInCompare;
+    const nextValue = !previousValue;
+    const delta = nextValue ? 1 : -1;
+    isTogglingRef.current = true;
+    setIsToggling(true);
+    setIsInCompare(nextValue);
+    window.dispatchEvent(
+      new CustomEvent('compare-optimistic-updated', {
+        detail: { delta },
+      })
+    );
+
+    try {
+      if (nextValue) {
+        const compare = await fetchCompareProductIds(language);
         if (compare.length >= MAX_COMPARE_ITEMS) {
-          alert(t('common.alerts.compareMaxReached'));
+          if (isMountedRef.current) {
+            setIsInCompare(previousValue);
+          }
+          window.dispatchEvent(
+            new CustomEvent('compare-optimistic-updated', {
+              detail: { delta: -delta },
+            })
+          );
+          showToast(t('common.alerts.compareMaxReached'), 'warning', 2800);
           return;
         }
         await addCompareItemClient(productId, language);
-        setIsInCompare(true);
+      } else {
+        await removeCompareItemClient(productId, language);
       }
-    } catch {
+    } catch (error: unknown) {
+      if (isMountedRef.current) {
+        setIsInCompare(previousValue);
+      }
+      window.dispatchEvent(
+        new CustomEvent('compare-optimistic-updated', {
+          detail: { delta: -delta },
+        })
+      );
+      if (nextValue && getErrorHttpStatus(error) === 422) {
+        showToast(t('common.alerts.compareMaxReached'), 'warning', 2800);
+      }
       /* ignore compare toggle errors in card widgets */
+    } finally {
+      isTogglingRef.current = false;
+      if (isMountedRef.current) {
+        setIsToggling(false);
+      }
+      void checkCompare();
     }
   };
 

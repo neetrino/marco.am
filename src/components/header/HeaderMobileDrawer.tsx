@@ -1,15 +1,18 @@
 'use client';
 
+import { useContext, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { CompareIcon } from '../icons/CompareIcon';
 import { HeaderNavbarWishlistIcon } from '../icons/HeaderNavbarWishlistIcon';
 import { MobileNavCartLinearIcon } from '../mobile-bottom-nav-icons';
+import { LanguagePreferenceContext } from '../../lib/language-context';
 import { HeaderSocialCircleLinks } from './HeaderSocialCircleLinks';
 import { useShouldHideHeaderSocialLinks } from './useShouldHideHeaderSocialLinks';
 import { HeaderProfileIconFilled } from './HeaderInlineIcons';
 import { primaryNavLinks } from './nav-config';
 import type { useHeaderData } from './useHeaderData';
+import { resolveCategoryNavPresentation } from './categoryNavPresentation';
 
 type Props = {
   data: ReturnType<typeof useHeaderData>;
@@ -17,6 +20,9 @@ type Props = {
 };
 
 export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
+  const lang = useContext(LanguagePreferenceContext);
+  const [categoriesOpen, setCategoriesOpen] = useState(false);
+  const [expandedCategorySlug, setExpandedCategorySlug] = useState<string | null>(null);
   const hideHeaderSocialLinks = useShouldHideHeaderSocialLinks();
   const {
     t,
@@ -29,7 +35,18 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
     compareCount,
     cartCount,
     currentYear,
+    categories,
+    loadingCategories,
+    getRootCategories,
   } = data;
+  const rootCategories = getRootCategories(categories);
+
+  useEffect(() => {
+    if (!mobileMenuOpen) {
+      setCategoriesOpen(false);
+      setExpandedCategorySlug(null);
+    }
+  }, [mobileMenuOpen]);
 
   if (!mobileMenuOpen) {
     return null;
@@ -43,7 +60,7 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
       onClick={() => setMobileMenuOpen(false)}
     >
       <div
-        className="flex h-full min-h-screen w-1/2 min-w-[16rem] max-w-full touch-auto flex-col bg-white shadow-2xl"
+        className="flex h-full min-h-screen w-[70vw] min-w-[18rem] max-w-[28rem] touch-auto flex-col bg-white shadow-2xl"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4">
@@ -63,6 +80,143 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
         <div className="flex-1 overflow-hidden min-h-0">
           <nav className="flex h-full flex-col border-y border-gray-200 text-sm font-semibold uppercase tracking-wide text-gray-800 bg-white">
             <div className="flex-1 overflow-y-auto divide-y divide-gray-200">
+              <div className="border-b border-gray-200 normal-case">
+                <button
+                  type="button"
+                  onClick={() => setCategoriesOpen((prev) => !prev)}
+                  className="flex w-full items-center justify-between px-4 py-3 font-semibold text-gray-800 hover:bg-gray-50"
+                  aria-expanded={categoriesOpen}
+                  aria-controls="mobile-categories-menu"
+                >
+                  <span className="uppercase tracking-wide">{t('common.navigation.categories')}</span>
+                  <svg
+                    className={`h-4 w-4 text-gray-400 transition-transform duration-200 ${categoriesOpen ? 'rotate-180' : 'rotate-0'}`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    aria-hidden
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {categoriesOpen && (
+                  <div id="mobile-categories-menu" className="border-t border-gray-100 bg-gray-50/60">
+                    {loadingCategories ? (
+                      <p className="px-4 py-3 text-sm text-gray-500">{t('common.messages.loading')}</p>
+                    ) : (
+                      <div className="divide-y divide-gray-100">
+                        {rootCategories.map((category) => {
+                          const categoryPresentation = resolveCategoryNavPresentation(
+                            category.slug,
+                            category.title,
+                            lang
+                          );
+                          const CategoryIcon =
+                            categoryPresentation.icon.kind === 'lucide'
+                              ? categoryPresentation.icon.Icon
+                              : null;
+                          const hasChildren = category.children.length > 0;
+                          const isExpanded = expandedCategorySlug === category.slug;
+                          return (
+                            <div key={category.id}>
+                              <div className="flex items-center justify-between gap-2 px-4 py-2.5">
+                                <Link
+                                  href={`/products?category=${category.slug}`}
+                                  onClick={() => setMobileMenuOpen(false)}
+                                  className="flex min-w-0 flex-1 items-center gap-2.5 text-sm font-medium leading-5 text-gray-700 hover:text-gray-900"
+                                >
+                                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white">
+                                    {categoryPresentation.icon.kind === 'figma' ? (
+                                      <img
+                                        src={categoryPresentation.icon.src}
+                                        alt=""
+                                        width={22}
+                                        height={22}
+                                        className="h-[22px] w-[22px] object-contain"
+                                        draggable={false}
+                                      />
+                                    ) : (
+                                      CategoryIcon && <CategoryIcon size={18} strokeWidth={1.7} aria-hidden />
+                                    )}
+                                  </span>
+                                  <span className="min-w-0 flex-1 whitespace-normal break-words">
+                                    {categoryPresentation.title}
+                                  </span>
+                                </Link>
+                                {hasChildren && (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setExpandedCategorySlug((prev) =>
+                                        prev === category.slug ? null : category.slug
+                                      )
+                                    }
+                                    className="rounded-md p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                                    aria-expanded={isExpanded}
+                                    aria-label={isExpanded ? t('common.ariaLabels.closeMenu') : t('common.ariaLabels.openMenu')}
+                                  >
+                                    <svg
+                                      className={`h-4 w-4 transition-transform duration-200 ${isExpanded ? 'rotate-90' : 'rotate-0'}`}
+                                      fill="none"
+                                      viewBox="0 0 24 24"
+                                      stroke="currentColor"
+                                      aria-hidden
+                                    >
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                    </svg>
+                                  </button>
+                                )}
+                              </div>
+                              {hasChildren && isExpanded && (
+                                <div className="space-y-1.5 pb-2 pl-8 pr-4">
+                                  {category.children.map((child) => {
+                                    const childPresentation = resolveCategoryNavPresentation(
+                                      child.slug,
+                                      child.title,
+                                      lang
+                                    );
+                                    const ChildIcon =
+                                      childPresentation.icon.kind === 'lucide'
+                                        ? childPresentation.icon.Icon
+                                        : null;
+                                    return (
+                                    <Link
+                                      key={child.id}
+                                      href={`/products?category=${child.slug}`}
+                                      onClick={() => setMobileMenuOpen(false)}
+                                        className="flex items-start gap-2 py-1 text-sm leading-5 text-gray-600 hover:text-gray-900"
+                                    >
+                                        <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded bg-white">
+                                          {childPresentation.icon.kind === 'figma' ? (
+                                            <img
+                                              src={childPresentation.icon.src}
+                                              alt=""
+                                              width={16}
+                                              height={16}
+                                              className="h-4 w-4 object-contain"
+                                              draggable={false}
+                                            />
+                                          ) : (
+                                            ChildIcon && <ChildIcon size={14} strokeWidth={1.7} aria-hidden />
+                                          )}
+                                        </span>
+                                        <span className="whitespace-normal break-words">
+                                          {childPresentation.title}
+                                        </span>
+                                    </Link>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
               {primaryNavLinks.map((link) => {
                 if (link.translationKey === 'common.navigation.reels') {
                   return (
@@ -155,7 +309,7 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
                   {t('common.navigation.compare')}
                 </span>
                 {compareCount > 0 && (
-                  <span className="rounded-full bg-gray-900 px-2 py-0.5 text-xs font-semibold text-white">
+                  <span className="rounded-full bg-red-600 px-2 py-0.5 text-xs font-semibold text-white">
                     {compareCount > 99 ? '99+' : compareCount}
                   </span>
                 )}

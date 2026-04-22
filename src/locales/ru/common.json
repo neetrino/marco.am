@@ -220,7 +220,7 @@
     "copyright": "© {year} Shop. Все права защищены.",
     "paymentMethods": "Способы оплаты",
     "marco": {
-      "brandDescription": "Ведущая онлайн-платформа Армении для премиальной электроники и бытовой техники с 2010 года. Качество, которому можно доверять.",
+      "brandDescription": "Ведущая онлайн-платформа\nАрмении для премиальной электроники и\nбытовой техники с\n2010 года. Качество,\nкоторому можно доверять.",
       "headings": {
         "company": "Компания",
         "support": "Поддержка",
@@ -233,10 +233,10 @@
         "companyNews": "Новости и блог",
         "companyFeedback": "Обратная связь",
         "supportDelivery": "Доставка и возврат",
-        "supportInstallment": "Условия рассрочки",
-        "supportWarranty": "Официальная гарантия",
+        "supportInstallment": "Политика конфиденциальности",
+        "supportWarranty": "Условия использования",
         "supportFaq": "Частые вопросы",
-        "supportService": "Сервисные центры"
+        "supportService": "Политика возврата"
       },
       "copyrightBefore": "Copyright © {year} | Все права защищены | Создано ",
       "copyrightAfter": "",

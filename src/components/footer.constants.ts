@@ -45,16 +45,16 @@ export const FOOTER_SUPPORT_LINKS = [
     href: '/delivery-returns',
     labelKey: 'common.footer.marco.links.supportDelivery',
   },
+  { href: '/faq', labelKey: 'common.footer.marco.links.supportFaq' },
   {
-    href: '/installment-terms',
+    href: '/privacy',
     labelKey: 'common.footer.marco.links.supportInstallment',
   },
   {
-    href: '/warranty',
+    href: '/terms',
     labelKey: 'common.footer.marco.links.supportWarranty',
   },
-  { href: '/faq', labelKey: 'common.footer.marco.links.supportFaq' },
-  { href: '/service-centers', labelKey: 'common.footer.marco.links.supportService' },
+  { href: '/refund-policy', labelKey: 'common.footer.marco.links.supportService' },
 ] as const;
 
 export const NEETRINO_STUDIO_HREF = 'https://neetrino.com/';
@@ -119,4 +119,3 @@ export const FOOTER_BRAND_DESCRIPTION_OVERLAP_CLASS =
 /** Smaller than `text-xs` so the blurb stays subtle over the logo. */
 export const FOOTER_BRAND_DESCRIPTION_TEXT_CLASS =
   'text-[10px] leading-snug sm:text-[11px]';
-

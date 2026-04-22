@@ -49,6 +49,12 @@ interface SpecialOfferCardProps {
    * `end` — align tile to the right of the cell (e.g. products catalog). Default: centered (`mx-auto`).
    */
   align?: 'center' | 'end';
+  /** Optional per-context override for mobile floating cart button bottom inset. */
+  mobileCartButtonBottomPx?: number;
+  /** Set false to hide the decorative mobile bottom notch in specific contexts. */
+  showMobileBottomNotch?: boolean;
+  /** Optional desktop max-width override for contexts like products catalog. */
+  maxWidthPx?: number;
 }
 
 /**
@@ -58,6 +64,9 @@ export function SpecialOfferCard({
   product,
   layout = 'default',
   align = 'center',
+  mobileCartButtonBottomPx,
+  showMobileBottomNotch = true,
+  maxWidthPx,
 }: SpecialOfferCardProps) {
   const useUnifiedNature = SPECIAL_OFFERS_USE_UNIFIED_NATURE_IMAGE;
 
@@ -99,7 +108,7 @@ export function SpecialOfferCard({
   const shellMaxWidthStyle =
     layout === 'mobileGrid'
       ? {}
-      : { maxWidth: SPECIAL_OFFERS_CARD_MAX_WIDTH_PX };
+      : { maxWidth: maxWidthPx ?? SPECIAL_OFFERS_CARD_MAX_WIDTH_PX };
 
   const textBlockShiftStyle =
     layout === 'mobileGrid'
@@ -114,7 +123,9 @@ export function SpecialOfferCard({
       className={`relative z-10 min-w-0 w-full max-w-full font-sans hover:z-30 focus-within:z-30 ${shellAlignClass}`}
       style={{
         ...shellMaxWidthStyle,
-        ['--so-cart-bottom-mobile' as string]: `${SPECIAL_OFFERS_CART_BUTTON_MOBILE_BOTTOM_PX}px`,
+        ['--so-cart-bottom-mobile' as string]: `${
+          mobileCartButtonBottomPx ?? SPECIAL_OFFERS_CART_BUTTON_MOBILE_BOTTOM_PX
+        }px`,
         ['--so-cart-bottom-desktop' as string]: `${SPECIAL_OFFERS_CART_BUTTON_INSET_BOTTOM_PX}px`,
         ['--so-cart-right-desktop' as string]: `${SPECIAL_OFFERS_CART_BUTTON_INSET_RIGHT_PX}px`,
       }}
@@ -138,17 +149,19 @@ export function SpecialOfferCard({
             transform: `translate(${cornerTranslate}, ${cornerTranslate})`,
           }}
         />
-        <span
-          aria-hidden
-          className="pointer-events-none absolute bottom-0 left-1/2 z-0 md:hidden max-w-full -translate-x-1/2"
-          style={{
-            width: `min(100%, ${SPECIAL_OFFERS_CARD_MOBILE_NOTCH_WIDTH_PX}px)`,
-            height: SPECIAL_OFFERS_CARD_MOBILE_NOTCH_HEIGHT_PX,
-            backgroundColor: SPECIAL_OFFERS_CARD_CORNER_MASK_BG,
-            borderTopLeftRadius: SPECIAL_OFFERS_CARD_MOBILE_NOTCH_TOP_RADIUS_PX,
-            borderTopRightRadius: SPECIAL_OFFERS_CARD_MOBILE_NOTCH_TOP_RADIUS_PX,
-          }}
-        />
+        {showMobileBottomNotch ? (
+          <span
+            aria-hidden
+            className="pointer-events-none absolute bottom-0 left-1/2 z-0 md:hidden max-w-full -translate-x-1/2"
+            style={{
+              width: `min(100%, ${SPECIAL_OFFERS_CARD_MOBILE_NOTCH_WIDTH_PX}px)`,
+              height: SPECIAL_OFFERS_CARD_MOBILE_NOTCH_HEIGHT_PX,
+              backgroundColor: SPECIAL_OFFERS_CARD_CORNER_MASK_BG,
+              borderTopLeftRadius: SPECIAL_OFFERS_CARD_MOBILE_NOTCH_TOP_RADIUS_PX,
+              borderTopRightRadius: SPECIAL_OFFERS_CARD_MOBILE_NOTCH_TOP_RADIUS_PX,
+            }}
+          />
+        ) : null}
         <div
           className="relative z-10 flex min-h-0 flex-1 flex-col px-4 pb-6"
           style={{ paddingTop: SPECIAL_OFFERS_CARD_PADDING_TOP_PX }}

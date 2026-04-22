@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslation } from '../lib/i18n-client';
+import { dedupeCardProductsByTitle } from '../lib/dedupeCardProductsByTitle';
 import type { ProductLabel } from './ProductLabels';
 import { ProductCard } from './ProductCard';
 import { SpecialOfferCard } from './home/SpecialOfferCard';
@@ -58,6 +59,8 @@ interface ProductsGridProps {
   sortBy?: string;
 }
 
+const PRODUCTS_CARD_MAX_WIDTH_PX = 286;
+
 export function ProductsGrid({ products, sortBy = 'default' }: ProductsGridProps) {
   const { t } = useTranslation();
   const isMaxMd = useIsMaxMd();
@@ -113,7 +116,7 @@ export function ProductsGrid({ products, sortBy = 'default' }: ProductsGridProps
         break;
     }
 
-    setSortedProducts(sorted);
+    setSortedProducts(dedupeCardProductsByTitle(sorted));
   }, [products, sortBy]);
 
   /** Tighter on smallest phones; roomier gaps on mobile shop before `md` desktop columns */
@@ -132,7 +135,7 @@ export function ProductsGrid({ products, sortBy = 'default' }: ProductsGridProps
     }
     switch (viewMode) {
       case 'list':
-        return `grid grid-cols-1 ${gridGapClass}`;
+        return 'grid grid-cols-1 gap-y-6';
       case 'grid-2':
         return `grid grid-cols-2 md:grid-cols-3 ${gridGapClass}`;
       case 'grid-3':
@@ -159,7 +162,7 @@ export function ProductsGrid({ products, sortBy = 'default' }: ProductsGridProps
           key={product.id}
           className={
             useListLayout
-              ? 'min-w-0 w-full'
+              ? 'min-w-0 w-full max-w-none'
               : 'flex min-w-0 justify-end pr-2 sm:pr-3 md:pr-4'
           }
         >
@@ -170,6 +173,7 @@ export function ProductsGrid({ products, sortBy = 'default' }: ProductsGridProps
               product={toSpecialOfferProduct(product)}
               layout={specialOfferLayout}
               align="end"
+              maxWidthPx={PRODUCTS_CARD_MAX_WIDTH_PX}
             />
           )}
         </div>

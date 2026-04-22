@@ -42,14 +42,32 @@ function parseStored(raw: unknown): ReelsManagementStorage | null {
   return parsed.data;
 }
 
+function isPrismaPoolTimeoutError(error: unknown): boolean {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+  return error.message.includes("Timed out fetching a new connection from the connection pool");
+}
+
 async function loadStorage(): Promise<ReelsManagementStorage> {
-  const row = await db.settings.findUnique({
-    where: { key: REELS_MANAGEMENT_SETTINGS_KEY },
-  });
-  if (!row) {
+  try {
+    const row = await db.settings.findUnique({
+      where: { key: REELS_MANAGEMENT_SETTINGS_KEY },
+    });
+    if (!row) {
+      return DEFAULT_STORAGE;
+    }
+    return parseStored(row.value) ?? DEFAULT_STORAGE;
+  } catch (error) {
+    if (!isPrismaPoolTimeoutError(error)) {
+      throw error;
+    }
+    logger.error(
+      "[reelsManagement] Prisma pool timeout while loading settings. Falling back to default reels payload.",
+      error,
+    );
     return DEFAULT_STORAGE;
   }
-  return parseStored(row.value) ?? DEFAULT_STORAGE;
 }
 
 function normalizeSettingsAssetUrl(url: string | null): string | null {

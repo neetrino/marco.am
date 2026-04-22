@@ -66,7 +66,7 @@ function ProfilePageContent() {
 
   if (authLoading || loading) {
     return (
-      <div className="page-shell py-12">
+      <div className="marco-header-container py-12">
         <div className="text-center">
           <p className="text-gray-600">{t('profile.common.loadingProfile')}</p>
         </div>
@@ -129,7 +129,7 @@ function ProfilePageContent() {
   ];
 
   return (
-    <div className="page-shell py-8">
+    <div className="marco-header-container py-8">
       <div className="flex flex-col lg:flex-row gap-8">
         <ProfileHeader
           profile={profile}
@@ -245,7 +245,7 @@ function ProfilePageContent() {
 export default function ProfilePage() {
   return (
     <Suspense fallback={
-      <div className="page-shell py-12">
+      <div className="marco-header-container py-12">
         <div className="text-center">
           <p className="text-gray-600">Loading profile...</p>
         </div>

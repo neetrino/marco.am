@@ -130,7 +130,10 @@ export function HeaderRow2RightToolbar({ data, compactPrimaryNav, headerMobileLi
           href="/compare"
           className={`relative flex items-center justify-center text-gray-700 transition-colors duration-150 hover:text-gray-900 ${HEADER_TOOLBAR_ICON_BUTTON_CLASS}`}
         >
-          <HeaderBadgeIcon icon={<CompareIcon size={14} />} badge={compareCount} />
+          <HeaderBadgeIcon
+            icon={<CompareIcon size={18} className="h-[18px] w-[18px] shrink-0" />}
+            badge={compareCount}
+          />
         </Link>
 
         <Link
