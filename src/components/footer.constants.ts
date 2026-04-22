@@ -45,6 +45,7 @@ export const FOOTER_SUPPORT_LINKS = [
     href: '/delivery-returns',
     labelKey: 'common.footer.marco.links.supportDelivery',
   },
+  { href: '/faq', labelKey: 'common.footer.marco.links.supportFaq' },
   {
     href: '/installment-terms',
     labelKey: 'common.footer.marco.links.supportInstallment',
@@ -53,7 +54,6 @@ export const FOOTER_SUPPORT_LINKS = [
     href: '/warranty',
     labelKey: 'common.footer.marco.links.supportWarranty',
   },
-  { href: '/faq', labelKey: 'common.footer.marco.links.supportFaq' },
   { href: '/service-centers', labelKey: 'common.footer.marco.links.supportService' },
 ] as const;
 
@@ -119,4 +119,3 @@ export const FOOTER_BRAND_DESCRIPTION_OVERLAP_CLASS =
 /** Smaller than `text-xs` so the blurb stays subtle over the logo. */
 export const FOOTER_BRAND_DESCRIPTION_TEXT_CLASS =
   'text-[10px] leading-snug sm:text-[11px]';
-

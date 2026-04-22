@@ -216,8 +216,8 @@
     "privacyPolicy": "Գաղտնիության քաղաքականություն",
     "termsOfService": "Ծառայությունների պայմաններ",
     "cookiePolicy": "Cookie քաղաքականություն",
-    "refundPolicy": "Փոխհատուցման քաղաքականություն",
-    "deliveryTerms": "Առաքման պայմաններ",
+    "refundPolicy": "Վերադարձի քաղաքականություն",
+    "deliveryTerms": "Օգտագործման պայմաններ",
     "copyright": "© {year} Խանութ: Բոլոր իրավունքները պաշտպանված են:",
     "paymentMethods": "Վճարման եղանակներ",
     "marco": {
@@ -234,10 +234,10 @@
         "companyNews": "Նորություններ և բլոգ",
         "companyFeedback": "Հետադարձ կապ",
         "supportDelivery": "Առաքում և վերադարձ",
-        "supportInstallment": "Ապառիկի պայմաններ",
-        "supportWarranty": "Պաշտոնական երաշխիք",
+        "supportInstallment": "Գաղտնիության քաղաքականություն",
+        "supportWarranty": "Օգտագործման պայմաններ",
         "supportFaq": "Հաճախ տրվող հարցեր",
-        "supportService": "Սպասարկման կենտրոններ"
+        "supportService": "Վերադարձի քաղաքականություն"
       },
       "copyrightBefore": "Copyright © {year} | Բոլոր իրավունքները պաշտպանված են | Ստեղծվել է ",
       "copyrightAfter": " կողմից",

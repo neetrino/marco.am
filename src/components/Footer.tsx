@@ -27,7 +27,6 @@ import {
   FOOTER_NAV_COLUMN_LIST_ITEM_GAP_CLASS,
   FOOTER_MUTED_TEXT_CLASS,
   FOOTER_SUPPORT_LINKS,
-  FOOTER_INNER_CONTAINER_CLASS,
   FOOTER_SURFACE_CLASS,
   FOOTER_TABLET_COLUMN_CENTER_CLASS,
   NEETRINO_STUDIO_HREF,
@@ -43,6 +42,7 @@ import { FooterSocialLinks } from './FooterSocialLinks';
 
 const FOOTER_LINK_CLASS = `${FOOTER_MUTED_TEXT_CLASS} text-xs transition-colors hover:text-marco-black`;
 const FOOTER_SECONDARY_EMAIL = 'marcogrouparmenia@mail.ru';
+const FOOTER_PRIMARY_PHONES = ['+374 93 52 04 06', '+374 98 19 04 06'] as const;
 
 const FOOTER_NAV_COLUMN_LINK_CLASS = `${FOOTER_LINK_CLASS} ${FOOTER_NAV_COLUMN_LINK_WORD_SPACING_CLASS} ${FOOTER_NAV_COLUMN_LINK_LEADING_CLASS}`;
 
@@ -79,8 +79,6 @@ function FooterNavColumn({
 
 function FooterContactsColumn() {
   const { t } = useTranslation();
-  const phoneRaw = t('contact.phone');
-  const telHref = `tel:${phoneRaw.replace(/\s/g, '')}`;
 
   return (
     <div className={`inline-flex max-w-full flex-col gap-4 ${FOOTER_TABLET_COLUMN_CENTER_CLASS}`}>
@@ -101,7 +99,7 @@ function FooterContactsColumn() {
           {t('contact.address')}
         </p>
       </div>
-        <div className="flex items-start gap-3 md:max-[1023px]:justify-center min-[1024px]:max-[1366px]:justify-center">
+      <div className="flex items-start gap-3 md:max-[1023px]:justify-center min-[1024px]:max-[1366px]:justify-center">
         <img
           src={FOOTER_CONTACT_PHONE_ICON_SRC}
           alt=""
@@ -110,12 +108,17 @@ function FooterContactsColumn() {
           className={FOOTER_CONTACT_PHONE_ICON_CLASS}
           aria-hidden
         />
-        <a
-          href={telHref}
-          className="text-xs font-bold text-marco-black transition-colors hover:underline"
-        >
-          {phoneRaw}
-        </a>
+        <div className="flex flex-col gap-1">
+          {FOOTER_PRIMARY_PHONES.map((phone) => (
+            <a
+              key={phone}
+              href={`tel:${phone.replace(/\s/g, '')}`}
+              className={`text-xs transition-colors hover:text-marco-black hover:underline ${FOOTER_MUTED_TEXT_CLASS}`}
+            >
+              {phone}
+            </a>
+          ))}
+        </div>
       </div>
         <div className="flex items-start gap-3 md:max-[1023px]:justify-center min-[1024px]:max-[1366px]:justify-center">
         <img
@@ -158,7 +161,7 @@ function FooterCopyright() {
   const year = new Date().getFullYear();
 
   return (
-    <p className="inline-block text-center text-[9px] leading-tight text-marco-black sm:text-[10px] md:text-[11px] lg:text-xs whitespace-nowrap">
+    <p className="inline-block text-center text-[9px] leading-tight text-gray-500 sm:text-[10px] md:text-[11px] lg:text-xs whitespace-nowrap">
       <span>
         {t('common.footer.marco.copyrightBefore').replace('{year}', String(year))}
       </span>
@@ -183,7 +186,7 @@ export function Footer() {
 
   return (
     <footer className={`${FOOTER_SURFACE_CLASS} border-t border-black/5`}>
-      <div className={`${FOOTER_INNER_CONTAINER_CLASS} pb-10 pt-8`}>
+      <div className="marco-header-container pb-10 pt-8">
         <div className={FOOTER_MAIN_GRID_CLASS}>
           <div
             className={`relative flex max-w-sm flex-col md:max-[1023px]:items-center min-[1024px]:max-[1366px]:items-center ${FOOTER_BRAND_COLUMN_GAP_CLASS}`}
@@ -223,15 +226,15 @@ export function Footer() {
         </div>
 
         <div
-          className={`${FOOTER_COPYRIGHT_STRIP_MARGIN_TOP_CLASS} flex flex-col ${FOOTER_COPYRIGHT_STRIP_STACK_GAP_CLASS} border-t border-black/10 ${FOOTER_COPYRIGHT_STRIP_PADDING_TOP_CLASS} lg:flex-row lg:items-center lg:gap-3 xl:gap-5 min-[1024px]:max-[1366px]:justify-center min-[1367px]:justify-between`}
+          className={`${FOOTER_COPYRIGHT_STRIP_MARGIN_TOP_CLASS} flex w-full flex-row items-center justify-between gap-4 border-t border-black/10 ${FOOTER_COPYRIGHT_STRIP_PADDING_TOP_CLASS}`}
         >
-          <div className="flex shrink-0 justify-center min-[1367px]:justify-start">
+          <div className="flex shrink-0 justify-start">
             <FooterSocialLinks density="compact" />
           </div>
-          <div className="scrollbar-hide flex min-w-0 flex-1 justify-center overflow-x-auto px-1 lg:overflow-visible">
+          <div className="scrollbar-hide flex min-w-0 flex-1 justify-center overflow-x-auto px-3">
             <FooterCopyright />
           </div>
-          <div className="flex shrink-0 justify-center min-[1367px]:justify-end">
+          <div className="flex shrink-0 justify-end">
             <FooterPaymentLogos compact />
           </div>
         </div>

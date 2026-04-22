@@ -38,7 +38,36 @@ const CONTACT_LOCATIONS = [
 const CONTACT_EMAILS = ['marcogrouparmenia@mail.ru', 'marcofurniture@mail.ru'] as const;
 
 export default function ContactPage() {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
+  const contactLocations = [
+    {
+      address:
+        lang === 'hy'
+          ? 'Ք․ Երևան Ալեք Մանուկյան 23'
+          : lang === 'ru'
+            ? 'г. Ереван, Алек Манукян 23'
+            : '23 Alek Manukyan St, Yerevan',
+      phones: ['+374 93 52 04 06', '+374 98 19 04 06', '011 52 04 06'],
+    },
+    {
+      address:
+        lang === 'hy'
+          ? 'Արգավանդ Օդանավակայան 1'
+          : lang === 'ru'
+            ? 'Аргаванд, Аэропорт 1'
+            : '1 Airport St, Argavand',
+      phones: ['+374 93 58 04 09', '+374 41 34 04 06', '+374 77 64 04 06'],
+    },
+    {
+      address:
+        lang === 'hy'
+          ? 'Գ. Փարաքար Մեսրոպ Մաշտոցի 1'
+          : lang === 'ru'
+            ? 'с. Паракар, Месроп Маштоц 1'
+            : '1 Mesrop Mashtots St, Parakar',
+      phones: ['+374 77 51 04 06'],
+    },
+  ] as const;
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -93,13 +122,13 @@ export default function ContactPage() {
           {/* Left Side: Contact Information */}
           <div className="flex w-full flex-col items-center self-start space-y-3.5 md:items-start">
             <h2 className="mb-8 w-full self-start text-3xl font-bold text-gray-900 lg:-ml-[181px]">
-              ԿԱՊ ՄԵԶ ՀԵՏ
+              {t('contact.pageTitle')}
             </h2>
             <div className="mx-auto w-fit max-w-[320px] self-center sm:max-w-[340px] md:mx-0 md:w-full md:self-auto">
-              {CONTACT_LOCATIONS.map((location, idx) => (
+              {contactLocations.map((location, idx) => (
                 <div
                   key={location.address}
-                  className={`space-y-2 ${idx === CONTACT_LOCATIONS.length - 1 ? 'pb-0' : 'pb-4'}`}
+                  className={`space-y-2 ${idx === contactLocations.length - 1 ? 'pb-0' : 'pb-4'}`}
                 >
                   <div className="flex items-start gap-2">
                     <MapPin
@@ -134,7 +163,7 @@ export default function ContactPage() {
                       ))}
                     </div>
                   </div>
-                  {idx < CONTACT_LOCATIONS.length - 1 && (
+                  {idx < contactLocations.length - 1 && (
                     <div className={CONTACT_DIVIDER_CLASS} aria-hidden />
                   )}
                 </div>

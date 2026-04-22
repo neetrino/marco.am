@@ -5,33 +5,63 @@ import Link from 'next/link';
 import { useTranslation } from '../../lib/i18n-client';
 
 export default function StoresPage() {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const stores = [
     {
       id: 1,
       name: 'Main Store',
-      address: '123 Main Street, Yerevan, Armenia',
+      address:
+        lang === 'hy'
+          ? 'Ք․ Երևան Ալեք Մանուկյան 23'
+          : lang === 'ru'
+            ? 'г. Ереван, Алек Манукян 23'
+            : '23 Alek Manukyan St, Yerevan',
       phone: '+374 10 123456',
-      email: 'marcofurniture@mail.ru',
-      hours: 'Mon-Sat: 9:00 AM - 8:00 PM',
+      emails: ['marcofurniture@mail.ru', 'marcogrouparmenia@mail.ru'],
+      hours:
+        lang === 'hy'
+          ? 'Երկ-Շբթ: 09:00 - 20:00'
+          : lang === 'ru'
+            ? 'Пн-Сб: 09:00 - 20:00'
+            : 'Mon-Sat: 9:00 AM - 8:00 PM',
       image: 'https://via.placeholder.com/400x300?text=Main+Store',
     },
     {
       id: 2,
       name: 'Shopping Mall Branch',
-      address: '456 Mall Avenue, Yerevan, Armenia',
+      address:
+        lang === 'hy'
+          ? 'Արգավանդ Օդանավակայան 1'
+          : lang === 'ru'
+            ? 'Аргаванд, Аэропорт 1'
+            : '1 Airport St, Argavand',
       phone: '+374 10 234567',
-      email: 'marcofurniture@mail.ru',
-      hours: 'Mon-Sun: 10:00 AM - 10:00 PM',
+      emails: ['marcofurniture@mail.ru', 'marcogrouparmenia@mail.ru'],
+      hours:
+        lang === 'hy'
+          ? 'Երկ-Կիր: 10:00 - 22:00'
+          : lang === 'ru'
+            ? 'Пн-Вс: 10:00 - 22:00'
+            : 'Mon-Sun: 10:00 AM - 10:00 PM',
       image: 'https://via.placeholder.com/400x300?text=Mall+Branch',
     },
     {
       id: 3,
       name: 'Downtown Location',
-      address: '789 Downtown Plaza, Yerevan, Armenia',
-      phone: '+374 10 345678',
-      email: 'marcofurniture@mail.ru',
-      hours: 'Mon-Fri: 8:00 AM - 7:00 PM',
+      address:
+        lang === 'hy'
+          ? 'Գ. Փարաքար Մեսրոպ Մաշտոցի 1'
+          : lang === 'ru'
+            ? 'с. Паракар, Месроп Маштоц 1'
+            : '1 Mesrop Mashtots St, Parakar',
+      phone: '+374 77 51 04 06',
+      emails: ['marcofurniture@mail.ru', 'marcogrouparmenia@mail.ru'],
+      hours:
+        lang === 'hy'
+          ? 'Երկ-Ուրբ: 08:00 - 19:00'
+          : lang === 'ru'
+            ? 'Пн-Пт: 08:00 - 19:00'
+            : 'Mon-Fri: 8:00 AM - 7:00 PM',
       image: 'https://via.placeholder.com/400x300?text=Downtown',
     },
   ];
@@ -80,7 +110,7 @@ export default function StoresPage() {
                   <p className="text-gray-600 text-sm">{store.address}</p>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-start gap-3">
                   <svg
                     className="w-5 h-5 text-gray-500 flex-shrink-0"
                     fill="none"
@@ -102,26 +132,30 @@ export default function StoresPage() {
                   </a>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <svg
-                    className="w-5 h-5 text-gray-500 flex-shrink-0"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                    />
-                  </svg>
-                  <a
-                    href={`mailto:${store.email}`}
-                    className="text-gray-600 text-sm hover:text-gray-900 transition-colors"
-                  >
-                    {store.email}
-                  </a>
+                <div className="space-y-1">
+                  {store.emails.map((email) => (
+                    <div key={email} className="flex items-center gap-3">
+                      <svg
+                        className="w-5 h-5 text-gray-500 flex-shrink-0"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                        />
+                      </svg>
+                      <a
+                        href={`mailto:${email}`}
+                        className="text-gray-600 text-sm hover:text-gray-900 transition-colors"
+                      >
+                        {email}
+                      </a>
+                    </div>
+                  ))}
                 </div>
 
                 <div className="flex items-center gap-3">
@@ -143,7 +177,11 @@ export default function StoresPage() {
               </div>
 
               <Link href="/contact">
-                <Button variant="outline" className="w-full" size="sm">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="!h-11 w-full !rounded-full !border-0 !bg-marco-yellow !px-6 !text-sm font-semibold uppercase tracking-wide !text-marco-black hover:!brightness-95"
+                >
                   {t('stores.getDirections')}
                 </Button>
               </Link>
@@ -158,7 +196,11 @@ export default function StoresPage() {
           {t('stores.cantFind.description')}
         </p>
         <Link href="/contact">
-          <Button variant="primary" size="lg">
+          <Button
+            variant="primary"
+            size="lg"
+            className="!h-11 !rounded-full !border-0 !bg-marco-black !px-8 !text-sm font-semibold uppercase tracking-wide !text-white hover:!brightness-95"
+          >
             {t('stores.cantFind.contactUs')}
           </Button>
         </Link>
@@ -166,4 +208,3 @@ export default function StoresPage() {
     </div>
   );
 }
-
