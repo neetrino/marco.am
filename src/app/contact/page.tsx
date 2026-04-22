@@ -13,12 +13,13 @@ import {
 } from '../../components/footer-social.constants';
 
 const CONTACT_PAGE_PHONE_ICON_CLASS =
-  'mt-0.5 h-[13px] w-auto shrink-0 translate-y-[2px]';
+  'mt-0.5 h-[13px] w-auto shrink-0 translate-y-[4px]';
 const CONTACT_PAGE_MAIL_ICON_CLASS =
-  'mt-0.5 h-[12px] w-auto shrink-0 translate-y-[2px]';
-/** Короткая линия по ширине текстового блока (адрес + телефоны), не на всю колонку. */
+  'mt-0.5 h-[12px] w-auto shrink-0 translate-y-[3px]';
+/** Ровные разделители контактных блоков: первые одинаковые, последний короче. */
+const CONTACT_DIVIDER_BASE_CLASS = 'ml-0 block h-px shrink-0 self-start bg-black/15';
 const CONTACT_DIVIDER_CLASS =
-  'h-px w-full max-w-[16rem] bg-black/15 sm:max-w-[18.5rem]';
+  `${CONTACT_DIVIDER_BASE_CLASS} w-[17.5rem] sm:w-[20rem]`;
 const CONTACT_LOCATIONS = [
   {
     address: 'ք. Երևան Ալեք Մանուկյան 23',
@@ -87,79 +88,86 @@ export default function ContactPage() {
   return (
     <div className="bg-white">
       {/* Top Section: Contact Info and Form */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7 lg:py-9">
-        <div className="grid grid-cols-1 items-start gap-7 lg:grid-cols-2 lg:gap-9">
+      <div className="marco-header-container pt-12 pb-16">
+        <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-[420px_420px] lg:justify-center lg:items-center lg:gap-12">
           {/* Left Side: Contact Information */}
-          <div className="flex flex-col items-start space-y-3.5">
-            <h2 className="text-xl font-semibold tracking-tight text-marco-black sm:text-2xl">
+          <div className="flex w-full flex-col self-start space-y-3.5">
+            <h2 className="mb-8 w-full self-start text-3xl font-bold text-gray-900 lg:-ml-[181px]">
               ԿԱՊ ՄԵԶ ՀԵՏ
             </h2>
-            {CONTACT_LOCATIONS.map((location, idx) => (
-              <div key={location.address} className="space-y-2">
-                <div className="flex items-start gap-2">
-                  <MapPin
-                    className="mt-0.5 h-3.5 w-3.5 shrink-0 translate-y-px text-marco-yellow"
-                    strokeWidth={2}
-                    aria-hidden
-                  />
-                  <p className="text-sm font-medium leading-snug text-marco-black sm:text-base">
-                    {location.address}
-                  </p>
-                </div>
-                <div className="flex items-start gap-2">
-                  <img
-                    src={FOOTER_CONTACT_PHONE_ICON_SRC}
-                    alt=""
-                    width={16}
-                    height={13}
-                    className={CONTACT_PAGE_PHONE_ICON_CLASS}
-                    aria-hidden
-                  />
-                  <div className="flex flex-col gap-px">
-                    {location.phones.map((phone) => (
-                      <a
-                        key={phone}
-                        href={`tel:${phone.replace(/[^\d+]/gu, '')}`}
-                        className="text-sm font-semibold leading-snug text-marco-black transition-opacity hover:opacity-80 sm:text-base"
-                      >
-                        {phone}
-                      </a>
-                    ))}
+            <div className="w-full max-w-[320px] self-center sm:max-w-[340px]">
+              {CONTACT_LOCATIONS.map((location, idx) => (
+                <div
+                  key={location.address}
+                  className={`space-y-2 ${idx === CONTACT_LOCATIONS.length - 1 ? 'pb-0' : 'pb-4'}`}
+                >
+                  <div className="flex items-start gap-2">
+                    <MapPin
+                      className={`mt-0.5 h-[18px] w-[18px] shrink-0 text-marco-yellow ${
+                        idx === 0 ? 'translate-y-[3px]' : 'translate-y-[2px]'
+                      }`}
+                      strokeWidth={2}
+                      aria-hidden
+                    />
+                    <p className="text-sm font-medium leading-snug text-marco-black sm:text-base">
+                      {location.address}
+                    </p>
                   </div>
-                </div>
-                {idx < CONTACT_LOCATIONS.length - 1 && (
-                  <div className={CONTACT_DIVIDER_CLASS} aria-hidden />
-                )}
-              </div>
-            ))}
-            <div className={CONTACT_DIVIDER_CLASS} aria-hidden />
-            <div className="space-y-2.5">
-              {CONTACT_EMAILS.map((email) => (
-                <div key={email} className="flex items-start gap-2">
-                  <img
-                    src={FOOTER_CONTACT_MAIL_ICON_SRC}
-                    alt=""
-                    width={18}
-                    height={14}
-                    className={CONTACT_PAGE_MAIL_ICON_CLASS}
-                    aria-hidden
-                  />
-                  <a
-                    href={`mailto:${email}`}
-                    className="break-all text-xs font-semibold leading-snug text-marco-black transition-opacity hover:opacity-80 sm:text-sm"
-                  >
-                    {email}
-                  </a>
+                  <div className="flex items-start gap-2">
+                    <img
+                      src={FOOTER_CONTACT_PHONE_ICON_SRC}
+                      alt=""
+                      width={16}
+                      height={13}
+                      className={CONTACT_PAGE_PHONE_ICON_CLASS}
+                      aria-hidden
+                    />
+                    <div className="flex flex-col gap-px">
+                      {location.phones.map((phone) => (
+                        <a
+                          key={phone}
+                          href={`tel:${phone.replace(/[^\d+]/gu, '')}`}
+                          className="text-sm font-semibold leading-snug text-marco-black transition-opacity hover:opacity-80 sm:text-base"
+                        >
+                          {phone}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                  {idx < CONTACT_LOCATIONS.length - 1 && (
+                    <div className={CONTACT_DIVIDER_CLASS} aria-hidden />
+                  )}
                 </div>
               ))}
+              <div className={`${CONTACT_DIVIDER_CLASS} mt-2`} aria-hidden />
+              <div className="space-y-2.5 pt-6">
+                {CONTACT_EMAILS.map((email) => (
+                  <div key={email} className="flex items-start gap-2">
+                    <img
+                      src={FOOTER_CONTACT_MAIL_ICON_SRC}
+                      alt=""
+                      width={18}
+                      height={14}
+                      className={CONTACT_PAGE_MAIL_ICON_CLASS}
+                      aria-hidden
+                    />
+                    <a
+                      href={`mailto:${email}`}
+                      className="break-all text-xs font-semibold leading-snug text-marco-black transition-opacity hover:opacity-80 sm:text-sm"
+                    >
+                      {email}
+                    </a>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
           {/* Right Side: Contact Form — ниже и по центру колонки относительно блока «ԿԱՊ ՄԵԶ ՀԵՏ» */}
-          <div className="flex w-full flex-col items-center lg:pt-10 xl:pt-14">
+          <div className="flex w-full max-w-[420px] flex-col items-center self-center justify-self-center lg:translate-y-[40px]">
             <form
               onSubmit={handleSubmit}
-              className="w-full max-w-[460px] space-y-2.5 lg:mx-auto"
+              className="mx-auto w-full max-w-[420px] space-y-2.5"
             >
               <div>
                 <Input
