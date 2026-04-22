@@ -18,7 +18,7 @@ const NEON_POOL_TIMEOUT_SEC = "30";
  * process serves many concurrent requests and `Promise.all` queries — use a small multi-slot pool
  * locally; tighter default in production. Override with `PRISMA_CONNECTION_LIMIT`.
  */
-const DEFAULT_NEON_POOL_DEV = "5";
+const DEFAULT_NEON_POOL_DEV = "10";
 const DEFAULT_NEON_POOL_PROD = "3";
 
 function resolvePooledConnectionLimit(): string {
