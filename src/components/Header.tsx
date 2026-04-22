@@ -34,10 +34,6 @@ export function Header({ initialLanguage }: HeaderProps) {
   const row2WrapperRef = useRef<HTMLDivElement>(null);
   const row2ContentRef = useRef<HTMLDivElement>(null);
 
-  if (pathname?.startsWith('/supersudo')) {
-    return null;
-  }
-
   const { compactPrimaryNav, viewportWidth, desktopTopRowInnerRef, desktopTopRowMeasureRef } = layout;
 
   const {
@@ -89,6 +85,10 @@ export function Header({ initialLanguage }: HeaderProps) {
   const row2MarginTopPx = -row2HiddenPx;
   const row2IsInteractive = effectiveScrollProgress < 0.95;
   const row2MaxHeightStyle = row2HeightPx > 0 ? `${row2MaxHeightPx}px` : undefined;
+
+  if (pathname?.startsWith('/supersudo')) {
+    return null;
+  }
 
   return (
     <header className="sticky top-0 z-50 border-b border-marco-border bg-white shadow-sm backdrop-blur-sm">
