@@ -89,13 +89,13 @@ export default function ContactPage() {
     <div className="bg-white">
       {/* Top Section: Contact Info and Form */}
       <div className="marco-header-container pt-12 pb-16">
-        <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-[420px_420px] lg:justify-center lg:items-center lg:gap-12">
+        <div className="grid grid-cols-1 items-center gap-10 md:grid-cols-[minmax(320px,380px)_minmax(320px,380px)] md:justify-center md:items-center md:gap-8 lg:grid-cols-[420px_420px] lg:gap-12">
           {/* Left Side: Contact Information */}
-          <div className="flex w-full flex-col self-start space-y-3.5">
+          <div className="flex w-full flex-col items-center self-start space-y-3.5 md:items-start">
             <h2 className="mb-8 w-full self-start text-3xl font-bold text-gray-900 lg:-ml-[181px]">
               ԿԱՊ ՄԵԶ ՀԵՏ
             </h2>
-            <div className="w-full max-w-[320px] self-center sm:max-w-[340px]">
+            <div className="mx-auto w-fit max-w-[320px] self-center sm:max-w-[340px] md:mx-0 md:w-full md:self-auto">
               {CONTACT_LOCATIONS.map((location, idx) => (
                 <div
                   key={location.address}
