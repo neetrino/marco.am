@@ -8,6 +8,8 @@ interface ProcessImagesForSubmitProps {
   variants: VariantImageCarrier[];
 }
 
+const MAX_BASE64_SIZE = 5 * 1024 * 1024;
+
 export function processImagesForSubmit({
   imageUrls,
   featuredImageIndex,
@@ -32,14 +34,13 @@ export function processImagesForSubmit({
   };
 
   const processImages = (images: string[]): { processed: string[]; skipped: number } => {
-    const MAX_BASE64_SIZE = 5 * 1024 * 1024; // 5MB per image max
     let skippedCount = 0;
-    
-    const processed = images.filter(img => {
+
+    const processed = images.filter((img) => {
       if (isUrl(img)) {
         return true;
       }
-      
+
       if (isBase64Image(img)) {
         const size = getBase64Size(img);
         if (size > MAX_BASE64_SIZE) {
@@ -49,116 +50,110 @@ export function processImagesForSubmit({
         }
         return true;
       }
-      
+
       return true;
     });
-    
+
     return { processed, skipped: skippedCount };
   };
 
-  const processMainImagesWithPositions = (images: string[]): { mapping: (string | null)[]; skipped: number } => {
-    const MAX_BASE64_SIZE = 5 * 1024 * 1024;
-    const mapping: (string | null)[] = [];
-    let skippedCount = 0;
-    
-    images.forEach((img) => {
-      if (isUrl(img)) {
-        mapping.push(img);
-        return;
+  /** One slot in `imageUrls` → processed URL or null; indices match `imageUrls` exactly (no `filter` / `indexOf` bugs). */
+  const processMainImageSlot = (url: string): { slot: string | null; skipped: number } => {
+    if (!url || !url.trim()) {
+      return { slot: null, skipped: 0 };
+    }
+    if (isUrl(url)) {
+      return { slot: url, skipped: 0 };
+    }
+    if (isBase64Image(url)) {
+      const size = getBase64Size(url);
+      if (size > MAX_BASE64_SIZE) {
+        console.warn(
+          `⚠️ [ADMIN] Main image too large (${Math.round(size / 1024)}KB), skipping to avoid 413 error.`
+        );
+        return { slot: null, skipped: 1 };
       }
-      
-      if (isBase64Image(img)) {
-        const size = getBase64Size(img);
-        if (size > MAX_BASE64_SIZE) {
-          console.warn(`⚠️ [ADMIN] Main image too large (${Math.round(size / 1024)}KB), skipping to avoid 413 error.`);
-          skippedCount++;
-          mapping.push(null);
-          return;
-        }
-        mapping.push(img);
-        return;
-      }
-      
-      mapping.push(img);
-    });
-    
-    return { mapping, skipped: skippedCount };
+      return { slot: url, skipped: 0 };
+    }
+    return { slot: url, skipped: 0 };
   };
 
-  const mainImages: string[] = [];
-  if (imageUrls.length > 0) {
-    mainImages.push(...imageUrls.filter(Boolean));
-  } else if (mainProductImage) {
-    mainImages.push(mainProductImage);
-  }
-
-  const mainImagesProcessed = mainImages.length > 0 ? processMainImagesWithPositions(mainImages) : { mapping: [], skipped: 0 };
-  const mainImageMapping = mainImagesProcessed.mapping;
+  let mainSkipped = 0;
+  const mainImageMapping: (string | null)[] = imageUrls.map((url) => {
+    const { slot, skipped } = processMainImageSlot(url);
+    mainSkipped += skipped;
+    return slot;
+  });
 
   const variantImages: string[] = [];
-  variants.forEach(variant => {
+  variants.forEach((variant) => {
     if (variant.imageUrl) {
-      const imageUrls = variant.imageUrl.split(',').map((url: string) => url.trim()).filter(Boolean);
-      variantImages.push(...imageUrls);
+      const parts = variant.imageUrl
+        .split(',')
+        .map((p: string) => p.trim())
+        .filter(Boolean);
+      variantImages.push(...parts);
     }
   });
 
   const variantImagesProcessed = variantImages.length > 0 ? processImages(variantImages) : { processed: [], skipped: 0 };
   const processedVariantImages = variantImagesProcessed.processed;
-  const skippedImagesCount = mainImagesProcessed.skipped + variantImagesProcessed.skipped;
-  
+  const skippedImagesCount = mainSkipped + variantImagesProcessed.skipped;
+
   if (skippedImagesCount > 0) {
     console.warn(`⚠️ [ADMIN] ${skippedImagesCount} large image(s) were skipped to avoid 413 error.`);
   }
 
   const processedVariants = [...variants];
   let variantImageIndex = 0;
-  processedVariants.forEach(variant => {
+  processedVariants.forEach((variant) => {
     if (variant.imageUrl) {
-      const imageUrls = variant.imageUrl.split(',').map((url: string) => url.trim()).filter(Boolean);
-      const processedUrls = processedVariantImages.slice(variantImageIndex, variantImageIndex + imageUrls.length);
+      const parts = variant.imageUrl
+        .split(',')
+        .map((p: string) => p.trim())
+        .filter(Boolean);
+      const processedUrls = processedVariantImages.slice(
+        variantImageIndex,
+        variantImageIndex + parts.length
+      );
       variant.imageUrl = processedUrls.join(',');
-      variantImageIndex += imageUrls.length;
+      variantImageIndex += parts.length;
     }
   });
 
   const finalMedia: string[] = [];
-  
+
   if (imageUrls.length > 0) {
-    const processedImageUrls: string[] = [];
-    
-    imageUrls.forEach((originalUrl, index) => {
-      if (!originalUrl || !originalUrl.trim()) {
-        return;
-      }
-      
-      const mainImagesIndex = mainImages.indexOf(originalUrl);
-      if (mainImagesIndex >= 0 && mainImagesIndex < mainImageMapping.length) {
-        const processedImg = mainImageMapping[mainImagesIndex];
-        if (processedImg) {
-          processedImageUrls[index] = processedImg;
-        }
-      }
-    });
-    
-    if (processedImageUrls[featuredImageIndex]) {
-      finalMedia.push(processedImageUrls[featuredImageIndex]);
+    if (mainImageMapping[featuredImageIndex]) {
+      finalMedia.push(mainImageMapping[featuredImageIndex]!);
     }
-    processedImageUrls.forEach((url, index) => {
+    mainImageMapping.forEach((url, index) => {
       if (index !== featuredImageIndex && url) {
         finalMedia.push(url);
       }
     });
   } else if (mainProductImage) {
-    const mainImgProcessed = mainImageMapping[0];
-    if (mainImgProcessed) {
-      finalMedia.push(mainImgProcessed);
+    const { slot } = processMainImageSlot(mainProductImage);
+    if (slot) {
+      finalMedia.push(slot);
     }
   }
-  
-  const mainImage = imageUrls.length > 0 && mainImageMapping.length > featuredImageIndex
-    ? mainImageMapping[featuredImageIndex]
-    : (mainImageMapping.length > 0 ? mainImageMapping[0] : mainProductImage);
+
+  const mainImage: string | null = (() => {
+    if (imageUrls.length > 0) {
+      const atFeatured = mainImageMapping[featuredImageIndex] ?? null;
+      if (atFeatured) {
+        return atFeatured;
+      }
+      const first = mainImageMapping.find((u) => u) ?? null;
+      return first;
+    }
+    if (mainProductImage) {
+      const { slot } = processMainImageSlot(mainProductImage);
+      return slot;
+    }
+    return null;
+  })();
 
   return { finalMedia, mainImage, processedVariants };
 }

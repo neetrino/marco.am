@@ -1,14 +1,14 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '../../../lib/auth/AuthContext';
 import { Card, Button } from '@shop/ui';
 import { apiClient, getApiOrErrorMessage } from '../../../lib/api-client';
-import { AdminMenuDrawer } from '../../../components/AdminMenuDrawer';
-import { getAdminMenuTABS } from '../admin-menu.config';
 import { useTranslation } from '../../../lib/i18n-client';
-import { logger } from "@/lib/utils/logger";
+import { AdminPageLayout } from '../components/AdminPageLayout';
+import { logger } from '@/lib/utils/logger';
+import { showToast } from '../../../components/Toast';
 
 interface Brand {
   id: string;
@@ -16,25 +16,37 @@ interface Brand {
   slug: string;
 }
 
-function BrandsSection() {
+const ITEMS_PER_PAGE = 20;
+
+export default function BrandsPage() {
   const { t } = useTranslation();
+  const { isLoggedIn, isAdmin, isLoading } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname();
+  const currentPath = pathname || '/supersudo/brands';
+
   const [brands, setBrands] = useState<Brand[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [editingBrand, setEditingBrand] = useState<Brand | null>(null);
   const [formData, setFormData] = useState({ name: '' });
-  const [submitting, setSubmitting] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [deletingBulk, setDeletingBulk] = useState(false);
+  const [selectedBrandIds, setSelectedBrandIds] = useState<string[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const fetchBrands = useCallback(async () => {
     try {
       setLoading(true);
-      logger.devLog('🏷️ [ADMIN] Fetching brands...');
+      logger.devLog('[ADMIN] Fetching brands...');
       const response = await apiClient.get<{ data: Brand[] }>('/api/v1/supersudo/brands');
       setBrands(response.data || []);
-      logger.devLog('✅ [ADMIN] Brands loaded:', response.data?.length || 0);
-    } catch (err) {
-      console.error('❌ [ADMIN] Error fetching brands:', err);
+      logger.devLog('[ADMIN] Brands loaded:', response.data?.length || 0);
+    } catch (err: unknown) {
+      logger.error('Error fetching brands', { error: err });
       setBrands([]);
+      showToast(t('admin.brands.loading'), 'error');
     } finally {
       setLoading(false);
     }
@@ -43,225 +55,6 @@ function BrandsSection() {
   useEffect(() => {
     fetchBrands();
   }, [fetchBrands]);
-
-  const handleDeleteBrand = async (brandId: string, brandName: string) => {
-    if (!confirm(t('admin.brands.deleteConfirm').replace('{name}', brandName))) {
-      return;
-    }
-
-    try {
-      logger.devLog(`🗑️ [ADMIN] Deleting brand: ${brandName} (${brandId})`);
-      await apiClient.delete(`/api/v1/supersudo/brands/${brandId}`);
-      logger.devLog('✅ [ADMIN] Brand deleted successfully');
-      fetchBrands();
-      alert(t('admin.brands.deletedSuccess'));
-    } catch (err: unknown) {
-      console.error('❌ [ADMIN] Error deleting brand:', err);
-      const errorMessage = getApiOrErrorMessage(err, 'Unknown error occurred');
-      alert(t('admin.brands.errorDeleting') + '\n\n' + errorMessage);
-    }
-  };
-
-  const handleOpenAddModal = () => {
-    setEditingBrand(null);
-    setFormData({ name: '' });
-    setShowModal(true);
-  };
-
-  const handleOpenEditModal = (brand: Brand) => {
-    setEditingBrand(brand);
-    setFormData({ name: brand.name });
-    setShowModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setEditingBrand(null);
-    setFormData({ name: '' });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!formData.name.trim()) {
-      alert(t('admin.brands.nameRequired'));
-      return;
-    }
-
-    setSubmitting(true);
-    try {
-      if (editingBrand) {
-        // Update existing brand
-        logger.devLog('🔄 [ADMIN] Updating brand:', editingBrand.id);
-        await apiClient.put(`/api/v1/supersudo/brands/${editingBrand.id}`, {
-          name: formData.name.trim(),
-        });
-        logger.devLog('✅ [ADMIN] Brand updated successfully');
-        alert(t('admin.brands.updatedSuccess'));
-      } else {
-        // Create new brand
-        logger.devLog('➕ [ADMIN] Creating brand:', formData.name);
-        await apiClient.post('/api/v1/supersudo/brands', {
-          name: formData.name.trim(),
-        });
-        logger.devLog('✅ [ADMIN] Brand created successfully');
-        alert(t('admin.brands.createdSuccess'));
-      }
-      
-      fetchBrands();
-      handleCloseModal();
-    } catch (err: unknown) {
-      console.error('❌ [ADMIN] Error saving brand:', err);
-      const errorMessage = getApiOrErrorMessage(err, 'Unknown error occurred');
-      alert(t('admin.brands.errorSaving') + '\n\n' + errorMessage);
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="text-center py-4">
-        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900 mx-auto mb-2"></div>
-        <p className="text-sm text-gray-600">{t('admin.brands.loading')}</p>
-      </div>
-    );
-  }
-
-  return (
-    <>
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold text-gray-900">{t('admin.brands.title')}</h2>
-        <Button
-          onClick={handleOpenAddModal}
-          variant="primary"
-          size="sm"
-        >
-          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          {t('admin.brands.addNew')}
-        </Button>
-      </div>
-
-      {loading ? (
-        <div className="text-center py-4">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900 mx-auto mb-2"></div>
-          <p className="text-sm text-gray-600">{t('admin.brands.loading')}</p>
-        </div>
-      ) : brands.length === 0 ? (
-        <p className="text-sm text-gray-500 py-2">{t('admin.brands.noBrands')}</p>
-      ) : (
-        <div className="space-y-2 max-h-96 overflow-y-auto">
-        {brands.map((brand) => (
-          <div
-            key={brand.id}
-            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-          >
-            <div>
-              <div className="text-sm font-medium text-gray-900">{brand.name}</div>
-              <div className="text-xs text-gray-500">{brand.slug}</div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleOpenEditModal(brand)}
-                className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
-              >
-                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-                {t('admin.brands.edit')}
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleDeleteBrand(brand.id, brand.name)}
-                className="text-red-600 hover:text-red-800 hover:bg-red-50"
-              >
-                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-                {t('admin.brands.delete')}
-              </Button>
-            </div>
-          </div>
-        ))}
-        </div>
-      )}
-
-      {/* Add/Edit Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">
-                {editingBrand ? t('admin.brands.editBrand') : t('admin.brands.addNewBrand')}
-              </h3>
-              <button
-                onClick={handleCloseModal}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label htmlFor="brand-name" className="block text-sm font-medium text-gray-700 mb-1">
-                  {t('admin.brands.brandName')}
-                </label>
-                <input
-                  id="brand-name"
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                  placeholder={t('admin.brands.enterBrandName')}
-                  required
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleCloseModal}
-                  disabled={submitting}
-                >
-                  {t('admin.brands.cancel')}
-                </Button>
-                <Button
-                  type="submit"
-                  variant="primary"
-                  disabled={submitting}
-                >
-                  {submitting ? t('admin.brands.saving') : (editingBrand ? t('admin.brands.update') : t('admin.brands.create'))}
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-    </>
-  );
-}
-
-export default function BrandsPage() {
-  const { t } = useTranslation();
-  const { isLoggedIn, isAdmin, isLoading } = useAuth();
-  const router = useRouter();
-  const pathname = usePathname();
-  const [currentPath, setCurrentPath] = useState(pathname || '/supersudo/brands');
-
-  useEffect(() => {
-    if (pathname) {
-      setCurrentPath(pathname);
-    }
-  }, [pathname]);
 
   useEffect(() => {
     if (!isLoading) {
@@ -272,7 +65,173 @@ export default function BrandsPage() {
     }
   }, [isLoggedIn, isAdmin, isLoading, router]);
 
-  const adminTabs = getAdminMenuTABS(t);
+  useEffect(() => {
+    setSelectedBrandIds((prevIds) => prevIds.filter((brandId) => brands.some((brand) => brand.id === brandId)));
+  }, [brands]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [brands.length]);
+
+  const totalPages = Math.ceil(brands.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedBrands = brands.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  const selectedOnPage = paginatedBrands.filter((brand) => selectedBrandIds.includes(brand.id)).length;
+  const allOnPageSelected = paginatedBrands.length > 0 && selectedOnPage === paginatedBrands.length;
+  const selectedBrands = useMemo(
+    () => brands.filter((brand) => selectedBrandIds.includes(brand.id)),
+    [brands, selectedBrandIds]
+  );
+
+  const resetForm = () => {
+    setFormData({ name: '' });
+  };
+
+  const handleToggleSelect = (brandId: string, checked: boolean) => {
+    setSelectedBrandIds((prevIds) => {
+      if (checked) {
+        return prevIds.includes(brandId) ? prevIds : [...prevIds, brandId];
+      }
+
+      return prevIds.filter((id) => id !== brandId);
+    });
+  };
+
+  const handleTogglePageSelection = (checked: boolean) => {
+    const pageIds = paginatedBrands.map((brand) => brand.id);
+    setSelectedBrandIds((prevIds) => {
+      if (checked) {
+        const nextIds = [...prevIds];
+        pageIds.forEach((id) => {
+          if (!nextIds.includes(id)) {
+            nextIds.push(id);
+          }
+        });
+        return nextIds;
+      }
+
+      return prevIds.filter((id) => !pageIds.includes(id));
+    });
+  };
+
+  const handleDeleteBrand = async (brandId: string, brandName: string) => {
+    if (!confirm(t('admin.brands.deleteConfirm').replace('{name}', brandName))) {
+      return;
+    }
+
+    try {
+      logger.devLog(`[ADMIN] Deleting brand: ${brandName} (${brandId})`);
+      await apiClient.delete(`/api/v1/supersudo/brands/${brandId}`);
+      await fetchBrands();
+      showToast(t('admin.brands.deletedSuccess'), 'success');
+    } catch (err: unknown) {
+      logger.error('Error deleting brand', { error: err });
+      const errorMessage = getApiOrErrorMessage(err, 'Unknown error occurred');
+      showToast(t('admin.brands.errorDeleting') + `: ${errorMessage}`, 'error');
+    }
+  };
+
+  const handleBulkDeleteBrands = async () => {
+    if (selectedBrands.length === 0) {
+      return;
+    }
+
+    const previewName =
+      selectedBrands.length > 1
+        ? `${selectedBrands[0].name} (+${selectedBrands.length - 1})`
+        : selectedBrands[0].name;
+
+    if (!confirm(t('admin.brands.deleteConfirm').replace('{name}', previewName))) {
+      return;
+    }
+
+    setDeletingBulk(true);
+    try {
+      const results = await Promise.allSettled(
+        selectedBrands.map((brand) => apiClient.delete(`/api/v1/supersudo/brands/${brand.id}`))
+      );
+      const failedCount = results.filter((result) => result.status === 'rejected').length;
+
+      await fetchBrands();
+      if (failedCount === 0) {
+        setSelectedBrandIds([]);
+        showToast(t('admin.brands.deletedSuccess'), 'success');
+      } else {
+        showToast(t('admin.brands.errorDeleting') + `: ${failedCount} failed`, 'error');
+      }
+    } finally {
+      setDeletingBulk(false);
+    }
+  };
+
+  const handleOpenAddModal = () => {
+    setEditingBrand(null);
+    resetForm();
+    setShowAddModal(true);
+  };
+
+  const handleOpenEditModal = (brand: Brand) => {
+    setEditingBrand(brand);
+    setFormData({ name: brand.name });
+    setShowEditModal(true);
+  };
+
+  const handleCloseAddModal = () => {
+    setShowAddModal(false);
+    resetForm();
+  };
+
+  const handleCloseEditModal = () => {
+    setShowEditModal(false);
+    setEditingBrand(null);
+    resetForm();
+  };
+
+  const handleCreateBrand = async () => {
+    if (!formData.name.trim()) {
+      showToast(t('admin.brands.nameRequired'), 'warning');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await apiClient.post('/api/v1/supersudo/brands', {
+        name: formData.name.trim(),
+      });
+      await fetchBrands();
+      handleCloseAddModal();
+      showToast(t('admin.brands.createdSuccess'), 'success');
+    } catch (err: unknown) {
+      logger.error('Error creating brand', { error: err });
+      const errorMessage = getApiOrErrorMessage(err, 'Unknown error occurred');
+      showToast(t('admin.brands.errorSaving') + `: ${errorMessage}`, 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleUpdateBrand = async () => {
+    if (!editingBrand || !formData.name.trim()) {
+      showToast(t('admin.brands.nameRequired'), 'warning');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await apiClient.put(`/api/v1/supersudo/brands/${editingBrand.id}`, {
+        name: formData.name.trim(),
+      });
+      await fetchBrands();
+      handleCloseEditModal();
+      showToast(t('admin.brands.updatedSuccess'), 'success');
+    } catch (err: unknown) {
+      logger.error('Error updating brand', { error: err });
+      const errorMessage = getApiOrErrorMessage(err, 'Unknown error occurred');
+      showToast(t('admin.brands.errorSaving') + `: ${errorMessage}`, 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -290,65 +249,254 @@ export default function BrandsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <button
-            onClick={() => router.push('/supersudo')}
-            className="text-gray-600 hover:text-gray-900 mb-4 flex items-center"
+    <AdminPageLayout
+      currentPath={currentPath}
+      router={router}
+      t={t}
+      title={t('admin.brands.title')}
+      backLabel={t('admin.common.backToAdmin')}
+      onBack={() => router.push('/supersudo')}
+    >
+      <div className="space-y-5">
+        <Card className="admin-card border-slate-200/80 bg-white/95 shadow-[0_10px_30px_rgba(2,6,23,0.06)] backdrop-blur">
+          <div className="rounded-xl border border-slate-200 bg-gradient-to-r from-slate-50 to-white p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className="text-xl font-semibold tracking-tight text-slate-900">{t('admin.brands.title')}</h2>
+              <Button
+                variant="primary"
+                size="md"
+                className="shadow-sm transition-transform hover:-translate-y-0.5"
+                onClick={handleOpenAddModal}
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                {t('admin.brands.addNew')}
+              </Button>
+            </div>
+          </div>
+        </Card>
+
+        <div className="mb-1 min-h-[72px]">
+          <Card
+            className={`h-full p-4 transition-all duration-200 ${
+              selectedBrandIds.length > 0
+                ? 'border border-amber-200/80 bg-amber-50/80 shadow-sm'
+                : 'border border-slate-200 bg-slate-50/70 shadow-sm'
+            }`}
           >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            {t('admin.common.backToAdmin')}
-          </button>
-          <h1 className="text-3xl font-bold text-gray-900">{t('admin.brands.title')}</h1>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className={`text-sm font-medium ${selectedBrandIds.length > 0 ? 'text-amber-900' : 'text-slate-600'}`}>
+                {`Selected brands: ${selectedBrandIds.length}`}
+              </div>
+              <Button
+                variant="outline"
+                onClick={handleBulkDeleteBrands}
+                disabled={deletingBulk || selectedBrandIds.length === 0}
+                className={`${
+                  selectedBrandIds.length > 0
+                    ? 'border-amber-300 bg-white text-amber-900 hover:bg-amber-100'
+                    : 'border-slate-200 bg-white text-slate-400'
+                }`}
+              >
+                {deletingBulk ? t('admin.common.loading') : 'Delete Selected'}
+              </Button>
+            </div>
+          </Card>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-8">
-          <div className="lg:hidden mb-6">
-            <AdminMenuDrawer tabs={adminTabs} currentPath={currentPath} />
-          </div>
-          {/* Sidebar Navigation */}
-          <aside className="hidden lg:block lg:w-64 flex-shrink-0">
-            <nav className="bg-white border border-gray-200 rounded-lg p-2 space-y-1">
-              {adminTabs.map((tab) => {
-                const isActive = currentPath === tab.path || 
-                  (tab.path === '/supersudo' && currentPath === '/supersudo') ||
-                  (tab.path !== '/supersudo' && currentPath.startsWith(tab.path));
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => {
-                      router.push(tab.path);
-                    }}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-md text-sm font-medium transition-all ${
-                      tab.isSubCategory ? 'pl-12' : ''
-                    } ${
-                      isActive
-                        ? 'bg-gray-900 text-white'
-                        : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                    }`}
-                  >
-                    <span className={`flex-shrink-0 ${isActive ? 'text-white' : 'text-gray-500'}`}>
-                      {tab.icon}
-                    </span>
-                    <span className="text-left">{tab.label}</span>
-                  </button>
-                );
-              })}
-            </nav>
-          </aside>
+        <Card className="admin-card border-slate-200/80 bg-white shadow-[0_10px_24px_rgba(15,23,42,0.07)]">
+          {loading ? (
+            <div className="rounded-xl border border-slate-200 bg-slate-50/70 py-10 text-center">
+              <div className="mx-auto mb-3 h-7 w-7 animate-spin rounded-full border-b-2 border-slate-800" />
+              <p className="text-sm font-medium text-slate-600">{t('admin.brands.loading')}</p>
+            </div>
+          ) : brands.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50/70 px-4 py-8 text-center">
+              <p className="text-sm font-medium text-slate-600">{t('admin.brands.noBrands')}</p>
+            </div>
+          ) : (
+            <>
+              <div className="overflow-hidden rounded-xl border border-slate-200">
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[700px] table-fixed divide-y divide-slate-200 bg-white">
+                    <colgroup>
+                      <col className="w-12" />
+                      <col className="w-[34%]" />
+                      <col className="w-[34%]" />
+                      <col className="w-[32%]" />
+                    </colgroup>
+                    <thead className="bg-slate-50/90">
+                      <tr>
+                        <th className="px-3 py-2 text-left">
+                          <input
+                            type="checkbox"
+                            checked={allOnPageSelected}
+                            onChange={(event) => handleTogglePageSelection(event.target.checked)}
+                            className="h-4 w-4 cursor-pointer rounded border-slate-300 text-amber-500 focus:ring-amber-400"
+                            aria-label="Select page brands"
+                          />
+                        </th>
+                        <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                          Name
+                        </th>
+                        <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                          Slug
+                        </th>
+                        <th className="px-3 py-2 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {paginatedBrands.map((brand) => (
+                        <tr key={brand.id} className="group border-b border-slate-100 transition-colors hover:bg-amber-50/50">
+                          <td className="px-3 py-3">
+                            <input
+                              type="checkbox"
+                              checked={selectedBrandIds.includes(brand.id)}
+                              onChange={(event) => handleToggleSelect(brand.id, event.target.checked)}
+                              className="h-4 w-4 cursor-pointer rounded border-slate-300 text-amber-500 focus:ring-amber-400"
+                              aria-label={`Select ${brand.name}`}
+                            />
+                          </td>
+                          <td className="px-3 py-3 text-sm font-semibold text-slate-900 group-hover:text-amber-900">
+                            {brand.name}
+                          </td>
+                          <td className="px-3 py-3 text-sm text-slate-600">{brand.slug}</td>
+                          <td className="px-3 py-3">
+                            <div className="flex justify-end gap-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleOpenEditModal(brand)}
+                                className="border border-slate-200 bg-white text-slate-700 hover:border-amber-300 hover:bg-amber-100 hover:text-amber-900"
+                              >
+                                {t('admin.brands.edit')}
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDeleteBrand(brand.id, brand.name)}
+                                className="border border-red-100 bg-red-50/70 text-red-600 hover:border-amber-300 hover:bg-amber-100 hover:text-red-700"
+                              >
+                                {t('admin.brands.delete')}
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
 
-          {/* Main Content */}
-          <div className="flex-1 min-w-0">
-            <Card className="p-6">
-              <BrandsSection />
-            </Card>
-          </div>
-        </div>
+              {totalPages > 1 && (
+                <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3">
+                  <div className="text-sm font-medium text-slate-700">
+                    {`${currentPage} / ${totalPages} (${brands.length})`}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                      disabled={currentPage === 1}
+                      className="border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 disabled:border-slate-100 disabled:bg-slate-50"
+                    >
+                      Previous
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                      disabled={currentPage === totalPages}
+                      className="border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 disabled:border-slate-100 disabled:bg-slate-50"
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </Card>
       </div>
-    </div>
+
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-xl border border-gray-200 bg-white p-5 shadow-xl">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900">{t('admin.brands.addNewBrand')}</h3>
+              <button onClick={handleCloseAddModal} className="text-gray-400 transition-colors hover:text-gray-600">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <label htmlFor="add-brand-name" className="mb-1 block text-sm font-medium text-gray-700">
+                  {t('admin.brands.brandName')}
+                </label>
+                <input
+                  id="add-brand-name"
+                  type="text"
+                  value={formData.name}
+                  onChange={(event) => setFormData({ name: event.target.value })}
+                  className="admin-field"
+                  placeholder={t('admin.brands.enterBrandName')}
+                />
+              </div>
+              <div className="flex items-center justify-end gap-2 pt-3">
+                <Button type="button" variant="outline" onClick={handleCloseAddModal} disabled={saving}>
+                  {t('admin.brands.cancel')}
+                </Button>
+                <Button type="button" variant="primary" disabled={saving} onClick={handleCreateBrand}>
+                  {saving ? t('admin.brands.saving') : t('admin.brands.create')}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showEditModal && editingBrand && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-xl border border-gray-200 bg-white p-5 shadow-xl">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900">{t('admin.brands.editBrand')}</h3>
+              <button onClick={handleCloseEditModal} className="text-gray-400 transition-colors hover:text-gray-600">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <label htmlFor="edit-brand-name" className="mb-1 block text-sm font-medium text-gray-700">
+                  {t('admin.brands.brandName')}
+                </label>
+                <input
+                  id="edit-brand-name"
+                  type="text"
+                  value={formData.name}
+                  onChange={(event) => setFormData({ name: event.target.value })}
+                  className="admin-field"
+                  placeholder={t('admin.brands.enterBrandName')}
+                />
+              </div>
+              <div className="flex items-center justify-end gap-2 pt-3">
+                <Button type="button" variant="outline" onClick={handleCloseEditModal} disabled={saving}>
+                  {t('admin.brands.cancel')}
+                </Button>
+                <Button type="button" variant="primary" disabled={saving} onClick={handleUpdateBrand}>
+                  {saving ? t('admin.brands.saving') : t('admin.brands.update')}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </AdminPageLayout>
   );
 }
 

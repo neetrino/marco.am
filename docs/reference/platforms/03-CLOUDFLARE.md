@@ -366,7 +366,7 @@ Then: Rate limit
 ```
 Name: Protect Admin
 When: 
-  http.request.uri.path starts with "/admin" AND
+  http.request.uri.path starts with "/supersudo" AND
   NOT ip.src in {1.2.3.4 5.6.7.8}
 Then: Block
 ```

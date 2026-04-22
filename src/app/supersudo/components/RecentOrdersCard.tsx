@@ -28,18 +28,19 @@ export function RecentOrdersCard({ recentOrders, recentOrdersLoading }: RecentOr
   const router = useRouter();
 
   return (
-    <Card className="p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold text-gray-900">{t('admin.dashboard.recentOrders')}</h2>
+    <Card className="admin-card overflow-hidden border-marco-border/70 bg-white/95 p-6 shadow-sm">
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-xl font-semibold text-marco-black">{t('admin.dashboard.recentOrders')}</h2>
         <Button
           variant="ghost"
           size="sm"
+          className="rounded-xl border border-marco-border bg-white px-3 py-1.5 text-marco-text/80 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-marco-yellow/60 hover:bg-marco-yellow/15 hover:text-marco-black hover:shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-yellow/45"
           onClick={() => router.push('/supersudo/orders')}
         >
           {t('admin.dashboard.viewAll')}
         </Button>
       </div>
-      <div className="space-y-4">
+      <div className="space-y-3">
         {recentOrdersLoading ? (
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
@@ -49,36 +50,36 @@ export function RecentOrdersCard({ recentOrders, recentOrdersLoading }: RecentOr
             ))}
           </div>
         ) : recentOrders.length === 0 ? (
-          <div className="text-sm text-gray-600 text-center py-8">
+          <div className="py-8 text-center text-sm text-marco-text/65">
             <p>{t('admin.dashboard.noRecentOrders')}</p>
           </div>
         ) : (
           recentOrders.map((order) => (
             <div
               key={order.id}
-              className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+              className="group cursor-pointer rounded-2xl border border-marco-border/80 bg-white/80 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-marco-yellow/60 hover:bg-marco-yellow/10"
               onClick={() => router.push(`/supersudo/orders?search=${order.number}`)}
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <p className="text-sm font-medium text-gray-900">#{order.number}</p>
+                  <div className="mb-1 flex items-center gap-2">
+                    <p className="text-sm font-semibold text-marco-black">#{order.number}</p>
                     <span
-                      className={`px-2 py-0.5 text-xs rounded-full ${
+                      className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
                         order.paymentStatus === 'paid'
-                          ? 'bg-green-100 text-green-800'
+                          ? 'bg-emerald-100 text-emerald-800'
                           : order.paymentStatus === 'pending'
                           ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-gray-100 text-gray-800'
+                          : 'bg-gray-100 text-gray-700'
                       }`}
                     >
                       {order.paymentStatus}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-600">
+                  <p className="text-xs text-marco-text/70">
                     {order.customerEmail || order.customerPhone || t('admin.dashboard.guest')}
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="mt-1 text-xs text-marco-text/55">
                     {order.itemsCount === 1
                       ? t('admin.dashboard.items').replace('{count}', order.itemsCount.toString())
                       : t('admin.dashboard.itemsPlural').replace('{count}', order.itemsCount.toString())}{' '}
@@ -86,7 +87,7 @@ export function RecentOrdersCard({ recentOrders, recentOrdersLoading }: RecentOr
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-semibold text-gray-900">
+                  <p className="text-sm font-semibold text-marco-black group-hover:text-marco-black">
                     {formatCurrency(order.total, order.currency)}
                   </p>
                 </div>

@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { MapPin } from 'lucide-react';
 
 import { useTranslation } from '../lib/i18n-client';
@@ -181,7 +182,12 @@ function FooterCopyright() {
  * Site-wide footer — MARCO marketing layout (Figma 101:2835).
  */
 export function Footer() {
+  const pathname = usePathname();
   const { t } = useTranslation();
+
+  if (pathname?.startsWith('/supersudo')) {
+    return null;
+  }
 
   return (
     <footer className={`${FOOTER_SURFACE_CLASS} border-t border-black/5`}>

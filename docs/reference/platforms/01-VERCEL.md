@@ -430,7 +430,7 @@ const isNewCheckoutEnabled = await getFeatureFlag('new-checkout');
   "action": "block",
   "conditions": {
     "ip": ["1.2.3.4", "5.6.7.8"],
-    "path": "/admin/*"
+    "path": "/supersudo/*"
   }
 }
 ```

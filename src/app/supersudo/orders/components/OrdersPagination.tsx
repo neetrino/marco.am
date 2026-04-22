@@ -23,8 +23,8 @@ export function OrdersPagination({
   }
 
   return (
-    <div className="mt-6 flex items-center justify-between">
-      <div className="text-sm text-gray-700">
+    <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3">
+      <div className="text-sm font-medium text-slate-700">
         {t('admin.orders.showingPage')
           .replace('{page}', page.toString())
           .replace('{totalPages}', totalPages.toString())
@@ -35,6 +35,7 @@ export function OrdersPagination({
           variant="ghost"
           onClick={() => onPageChange(Math.max(1, page - 1))}
           disabled={page === 1}
+          className="border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 disabled:border-slate-100 disabled:bg-slate-50"
         >
           {t('admin.orders.previous')}
         </Button>
@@ -42,6 +43,7 @@ export function OrdersPagination({
           variant="ghost"
           onClick={() => onPageChange(Math.min(totalPages, page + 1))}
           disabled={page === totalPages}
+          className="border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 disabled:border-slate-100 disabled:bg-slate-50"
         >
           {t('admin.orders.next')}
         </Button>

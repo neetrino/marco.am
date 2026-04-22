@@ -1,5 +1,5 @@
 /** In-app Reels route — deep links use `?i=<index>`. */
-export const REELS_PAGE_PATH = '/reels';
+export const REELS_PAGE_PATH = '/reels/watch';
 
 export const REELS_INDEX_QUERY = 'i';
 

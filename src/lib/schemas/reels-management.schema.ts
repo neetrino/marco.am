@@ -7,6 +7,7 @@ import {
   REELS_MANAGEMENT_MAX_ITEMS,
   REELS_MANAGEMENT_MODERATION_NOTE_MAX_LENGTH,
   REELS_MANAGEMENT_STORAGE_VERSION,
+  REELS_VIEWS_STORAGE_VERSION,
 } from "@/lib/constants/reels-management";
 import { buildLocalizedTextMapSchema } from "@/lib/schemas/locale-map.schema";
 
@@ -106,6 +107,16 @@ export const reelsLikesStorageSchema = z.object({
   items: z.array(reelLikesEntrySchema).max(REELS_MANAGEMENT_MAX_ITEMS),
 });
 
+const reelViewsEntrySchema = z.object({
+  reelId: z.string().min(1).max(64),
+  count: z.number().int().min(0),
+});
+
+export const reelsViewsStorageSchema = z.object({
+  version: z.literal(REELS_VIEWS_STORAGE_VERSION),
+  items: z.array(reelViewsEntrySchema).max(REELS_MANAGEMENT_MAX_ITEMS),
+});
+
 export const publicReelItemSchema = z.object({
   id: z.string().min(1).max(64),
   title: z.string().max(160),
@@ -141,6 +152,7 @@ export const reelsModerationPatchSchema = z.object({
 
 export type ReelsManagementStorage = z.infer<typeof reelsManagementStorageSchema>;
 export type ReelsLikesStorage = z.infer<typeof reelsLikesStorageSchema>;
+export type ReelsViewsStorage = z.infer<typeof reelsViewsStorageSchema>;
 export type ReelModerationPatch = z.infer<typeof reelsModerationPatchSchema>;
 export type PublicReelItem = z.infer<typeof publicReelItemSchema>;
 export type ReelsPublicPayload = z.infer<typeof reelsPublicPayloadSchema>;

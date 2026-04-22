@@ -1,7 +1,6 @@
 'use client';
 
 import type { SyntheticEvent } from 'react';
-import { Button } from '@shop/ui';
 import { useTranslation } from '../../../../lib/i18n-client';
 import type { Category } from '../types';
 
@@ -22,11 +21,8 @@ interface ProductFiltersProps {
   setMinPrice: (price: string) => void;
   maxPrice: string;
   setMaxPrice: (price: string) => void;
-  selectedIds: Set<string>;
   handleSearch: (e: SyntheticEvent) => void;
-  handleBulkDelete: () => void;
   handleClearFilters: () => void;
-  bulkDeleting: boolean;
   setPage: (page: number | ((prev: number) => number)) => void;
 }
 
@@ -47,21 +43,18 @@ export function ProductFilters({
   setMinPrice: _setMinPrice,
   maxPrice: _maxPrice,
   setMaxPrice: _setMaxPrice,
-  selectedIds,
   handleSearch,
-  handleBulkDelete,
   handleClearFilters: _handleClearFilters,
-  bulkDeleting,
   setPage,
 }: ProductFiltersProps) {
   const { t } = useTranslation();
 
   return (
-    <div className="space-y-4 mb-6">
+    <div className="mb-6 space-y-4 rounded-2xl border border-slate-200/80 bg-white/95 p-4 shadow-sm shadow-slate-200/60 sm:p-5">
       {/* Search Fields */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">
+          <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
             {t('admin.products.searchByTitleOrSlug')}
           </label>
           <input
@@ -75,12 +68,12 @@ export function ProductFilters({
               }
             }}
             placeholder={t('admin.products.searchPlaceholder')}
-            className="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+            className="admin-field border-slate-300/90 bg-slate-50/70 transition-all focus:border-slate-800"
           />
         </div>
         
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">
+          <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
             {t('admin.products.searchBySku')}
           </label>
           <input
@@ -91,25 +84,25 @@ export function ProductFilters({
               setPage(1);
             }}
             placeholder={t('admin.products.skuPlaceholder')}
-            className="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+            className="admin-field border-slate-300/90 bg-slate-50/70 transition-all focus:border-slate-800"
           />
         </div>
       </div>
 
       {/* Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         {/* Category Filter */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">
+          <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
             {t('admin.products.filterByCategory')}
           </label>
           <div className="relative" data-category-dropdown>
             <button
               type="button"
               onClick={() => setCategoriesExpanded(!categoriesExpanded)}
-              className="w-full px-4 py-2.5 text-left border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-sm flex items-center justify-between"
+              className="admin-field flex items-center justify-between border-slate-300/90 bg-slate-50/70 text-left transition-all hover:bg-white focus:border-slate-800"
             >
-              <span className="text-gray-700">
+              <span className="text-sm font-medium text-slate-700">
                 {selectedCategories.size === 0
                   ? t('admin.products.allCategories')
                   : selectedCategories.size === 1
@@ -128,18 +121,18 @@ export function ProductFilters({
               </svg>
             </button>
             {categoriesExpanded && (
-              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+              <div className="absolute z-10 mt-1.5 max-h-60 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white/95 p-1 shadow-lg shadow-slate-300/30 backdrop-blur">
                 {categoriesLoading ? (
-                  <div className="p-3 text-sm text-gray-500 text-center">{t('admin.products.loadingCategories')}</div>
+                  <div className="p-3 text-center text-sm text-slate-500">{t('admin.products.loadingCategories')}</div>
                 ) : categories.length === 0 ? (
-                  <div className="p-3 text-sm text-gray-500 text-center">{t('admin.products.noCategoriesAvailable')}</div>
+                  <div className="p-3 text-center text-sm text-slate-500">{t('admin.products.noCategoriesAvailable')}</div>
                 ) : (
                   <div className="p-2">
                     <div className="space-y-1">
                       {categories.map((category) => (
                         <label
                           key={category.id}
-                          className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded"
+                          className="flex cursor-pointer items-center gap-2 rounded-lg p-2 transition-colors hover:bg-slate-100/80"
                         >
                           <input
                             type="checkbox"
@@ -154,9 +147,9 @@ export function ProductFilters({
                               setSelectedCategories(newSelected);
                               setPage(1);
                             }}
-                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                            className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-500"
                           />
-                          <span className="text-sm text-gray-700">{category.title}</span>
+                          <span className="text-sm text-slate-700">{category.title}</span>
                         </label>
                       ))}
                     </div>
@@ -169,7 +162,7 @@ export function ProductFilters({
         
         {/* Stock Filter */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">
+          <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
             {t('admin.products.filterByStock')}
           </label>
           <select
@@ -178,7 +171,7 @@ export function ProductFilters({
               setStockFilter(e.target.value as 'all' | 'inStock' | 'outOfStock');
               setPage(1);
             }}
-            className="w-full px-4 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-sm"
+            className="admin-field border-slate-300/90 bg-slate-50/70 transition-all focus:border-slate-800"
           >
             <option value="all">{t('admin.products.allProducts')}</option>
             <option value="inStock">{t('admin.products.inStock')}</option>
@@ -187,22 +180,6 @@ export function ProductFilters({
         </div>
       </div>
 
-      {/* Selected Products and Delete */}
-      {selectedIds.size > 0 && (
-        <div className="px-4 py-3 flex items-center justify-between border border-gray-200 rounded-md bg-white">
-          <div className="text-sm text-gray-700">
-            {t('admin.products.selectedProducts').replace('{count}', selectedIds.size.toString())}
-          </div>
-          <Button
-            variant="outline"
-            onClick={handleBulkDelete}
-            disabled={bulkDeleting}
-            className="text-sm"
-          >
-            {bulkDeleting ? t('admin.products.deleting') : t('admin.products.deleteSelected')}
-          </Button>
-        </div>
-      )}
     </div>
   );
 }

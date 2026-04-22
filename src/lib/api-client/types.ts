@@ -4,6 +4,9 @@
 export interface RequestOptions extends globalThis.RequestInit {
   params?: Record<string, string>;
   skipAuth?: boolean; // Skip automatic token injection
+  timeoutMs?: number;
+  suppressNetworkErrorLogging?: boolean;
+  suppressAbortErrorLogging?: boolean;
 }
 
 /**

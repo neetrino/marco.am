@@ -44,7 +44,7 @@
 - **Область:** frontend
 - **Что не так:** Ни в одном маршруте нет `error.tsx` или `loading.tsx`. Нет ErrorBoundary компонента.
 - **Почему плохо:** При ошибке API или рендера — пользователь видит белый экран или неуправляемый crash. Нет graceful degradation.
-- **Как исправить:** Добавить `error.tsx` минимум в корень `/app`, `/app/products`, `/app/checkout`, `/app/admin`. Добавить `loading.tsx` для тяжёлых страниц.
+- **Как исправить:** Добавить `error.tsx` минимум в корень `/app`, `/app/products`, `/app/checkout`, `/app/supersudo`. Добавить `loading.tsx` для тяжёлых страниц.
 
 ### P2-ARCH-04 — Документация проекта практически отсутствует
 
@@ -64,7 +64,7 @@
 - **Область:** security / auth
 - **Что не так:** Нет файла `middleware.ts` в корне проекта. Аутентификация вызывается вручную в каждом API route через `import { authenticateToken }`. Если разработчик забудет вызвать `authenticateToken` в новом route — он будет полностью открыт.
 - **Почему плохо:** Одна забытая строка = открытый API endpoint. Нет centralised enforcement. Admin panel может быть доступна без проверки.
-- **Как исправить:** Создать `middleware.ts` с matcher-ом для `/api/v1/admin/*`, `/api/v1/orders/*`, `/api/v1/cart/*`, `/api/v1/users/*`. Проверять JWT централизованно.
+- **Как исправить:** Создать `middleware.ts` с matcher-ом для `/api/v1/supersudo/*`, `/api/v1/orders/*`, `/api/v1/cart/*`, `/api/v1/users/*`. Проверять JWT централизованно.
 
 ### P0-SEC-02 — XSS через `dangerouslySetInnerHTML` без санитизации
 

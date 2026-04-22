@@ -11,6 +11,7 @@ interface UseCategoryActionsReturn {
   editingCategory: Category | null;
   formData: CategoryFormData;
   saving: boolean;
+  deletingBulk: boolean;
   setShowAddModal: (show: boolean) => void;
   setShowEditModal: (show: boolean) => void;
   setFormData: (data: CategoryFormData) => void;
@@ -18,6 +19,11 @@ interface UseCategoryActionsReturn {
   handleEditCategory: (category: Category) => Promise<void>;
   handleUpdateCategory: (fetchCategories: () => Promise<void>) => Promise<void>;
   handleDeleteCategory: (categoryId: string, categoryTitle: string, fetchCategories: () => Promise<void>) => Promise<void>;
+  handleDeleteCategories: (
+    categoryIds: string[],
+    categoryTitles: string[],
+    fetchCategories: () => Promise<void>
+  ) => Promise<boolean>;
   resetForm: () => void;
 }
 
@@ -40,6 +46,7 @@ export function useCategoryActions(): UseCategoryActionsReturn {
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [formData, setFormData] = useState<CategoryFormData>(initialFormData);
   const [saving, setSaving] = useState(false);
+  const [deletingBulk, setDeletingBulk] = useState(false);
 
   const resetForm = () => {
     setFormData(initialFormData);
@@ -179,12 +186,57 @@ export function useCategoryActions(): UseCategoryActionsReturn {
     }
   };
 
+  const handleDeleteCategories = async (
+    categoryIds: string[],
+    categoryTitles: string[],
+    fetchCategories: () => Promise<void>
+  ): Promise<boolean> => {
+    if (categoryIds.length === 0) {
+      return false;
+    }
+
+    const firstTitle = categoryTitles[0] || 'Category';
+    const previewTitle =
+      categoryIds.length > 1 ? `${firstTitle} (+${categoryIds.length - 1})` : firstTitle;
+
+    if (!confirm(t('admin.categories.deleteConfirm').replace('{name}', previewTitle))) {
+      return false;
+    }
+
+    setDeletingBulk(true);
+    try {
+      const results = await Promise.allSettled(
+        categoryIds.map((categoryId) => apiClient.delete(`/api/v1/supersudo/categories/${categoryId}`))
+      );
+
+      const failedCount = results.filter((result) => result.status === 'rejected').length;
+      await fetchCategories();
+
+      if (failedCount === 0) {
+        showToast(t('admin.categories.deletedSuccess'), 'success');
+      } else {
+        const failureMessage = `${failedCount} categories failed to delete`;
+        showToast(t('admin.categories.errorDeleting').replace('{message}', failureMessage), 'error');
+      }
+
+      return failedCount === 0;
+    } catch (err: unknown) {
+      logger.error('Error deleting multiple categories', { error: err });
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      showToast(t('admin.categories.errorDeleting').replace('{message}', errorMessage), 'error');
+      return false;
+    } finally {
+      setDeletingBulk(false);
+    }
+  };
+
   return {
     showAddModal,
     showEditModal,
     editingCategory,
     formData,
     saving,
+    deletingBulk,
     setShowAddModal,
     setShowEditModal,
     setFormData,
@@ -192,6 +244,7 @@ export function useCategoryActions(): UseCategoryActionsReturn {
     handleEditCategory,
     handleUpdateCategory,
     handleDeleteCategory,
+    handleDeleteCategories,
     resetForm,
   };
 }

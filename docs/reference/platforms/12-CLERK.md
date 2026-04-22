@@ -115,7 +115,7 @@ SET role = 'ADMIN'
 WHERE "clerkId" = 'user_xxxxxxxx';
 ```
 
-Դրանից հետո այդ օգտատերը կարող է մուտք գործել `/[locale]/admin` (getAdminUser-ը Neon-ից կվերադարձնի role=ADMIN):
+Դրանից հետո այդ օգտատերը կարող է մուտք գործել `/[locale]/supersudo` (getAdminUser-ը Neon-ից կվերադարձնի role=ADMIN):
 
 ---
 
@@ -126,7 +126,7 @@ WHERE "clerkId" = 'user_xxxxxxxx';
 - [ ] Clerk Dashboard → Paths: sign-in/sign-up on development host, path-երը `/sign-in`, `/sign-up`
 - [ ] (Ընտրովի) Webhook endpoint ավելացված, `CLERK_WEBHOOK_SIGNING_SECRET` ավելացված `.env`-ում
 - [ ] Գրանցում → մուտք account → Neon-ում User հայտնվում է (Prisma Studio / `User` աղյուսակ)
-- [ ] Admin: Neon-ում `User.role = 'ADMIN'` ըստ `clerkId` → մուտք `/admin`
+- [ ] Admin: Neon-ում `User.role = 'ADMIN'` ըստ `clerkId` → մուտք `/supersudo`
 
 ---
 

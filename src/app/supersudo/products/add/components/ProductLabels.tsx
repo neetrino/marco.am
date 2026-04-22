@@ -2,6 +2,7 @@
 
 import { Button, Input } from '@shop/ui';
 import { useTranslation } from '../../../../../lib/i18n-client';
+import { FormSection } from './FormSection';
 import type { ProductLabel } from '../types';
 
 interface ProductLabelsProps {
@@ -15,22 +16,23 @@ export function ProductLabels({ labels, onAddLabel, onRemoveLabel, onUpdateLabel
   const { t } = useTranslation();
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold text-gray-900">{t('admin.products.add.productLabels')}</h2>
-        <Button type="button" variant="outline" onClick={onAddLabel}>
+    <FormSection
+      title={t('admin.products.add.productLabels')}
+      description={t('admin.products.add.addLabelsHint')}
+      headerRight={
+        <Button type="button" variant="outline" onClick={onAddLabel} className="w-full sm:w-auto">
           {t('admin.products.add.addLabel')}
         </Button>
-      </div>
+      }
+    >
       {labels.length === 0 ? (
-        <div className="text-center py-4 border-2 border-dashed border-gray-300 rounded-lg">
-          <p className="text-gray-500 mb-2">{t('admin.products.add.noLabelsAdded')}</p>
-          <p className="text-sm text-gray-400">{t('admin.products.add.addLabelsHint')}</p>
+        <div className="rounded-xl border-2 border-dashed border-marco-border/60 py-6 text-center">
+          <p className="text-marco-text/80 mb-1">{t('admin.products.add.noLabelsAdded')}</p>
         </div>
       ) : (
         <div className="space-y-4">
           {labels.map((label, index) => (
-            <div key={index} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+            <div key={index} className="rounded-xl border border-marco-border/50 bg-white/60 p-4 sm:p-5">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-medium text-gray-900">
                   {t('admin.products.add.label').replace('{index}', (index + 1).toString())}
@@ -46,7 +48,7 @@ export function ProductLabels({ labels, onAddLabel, onRemoveLabel, onUpdateLabel
                     {t('admin.products.add.type')} *
                   </label>
                   <select
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
                     value={label.type}
                     onChange={(e) => onUpdateLabel(index, 'type', e.target.value as 'text' | 'percentage')}
                     required
@@ -72,7 +74,7 @@ export function ProductLabels({ labels, onAddLabel, onRemoveLabel, onUpdateLabel
                     className="w-full"
                   />
                   {label.type === 'percentage' && (
-                    <p className="mt-1 text-xs text-blue-600 font-medium">{t('admin.products.add.percentageAutoUpdateHint')}</p>
+                    <p className="mt-1 text-xs font-medium text-gray-600">{t('admin.products.add.percentageAutoUpdateHint')}</p>
                   )}
                 </div>
 
@@ -82,7 +84,7 @@ export function ProductLabels({ labels, onAddLabel, onRemoveLabel, onUpdateLabel
                     {t('admin.products.add.position')} *
                   </label>
                   <select
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
                     value={label.position}
                     onChange={(e) => onUpdateLabel(index, 'position', e.target.value)}
                     required
@@ -113,7 +115,7 @@ export function ProductLabels({ labels, onAddLabel, onRemoveLabel, onUpdateLabel
           ))}
         </div>
       )}
-    </div>
+    </FormSection>
   );
 }
 

@@ -17,10 +17,10 @@ export function StockAnalyticsSection({ data, loading, failed }: StockAnalyticsS
 
   if (loading) {
     return (
-      <Card className="p-6 mb-6 bg-white shadow-sm border border-gray-200 rounded-xl">
+      <Card className="admin-card mb-6 border-marco-border/70 bg-white/95 p-6 shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
-          <p className="text-gray-600">{t('admin.analytics.stockLoading')}</p>
+          <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-marco-black" />
+          <p className="text-marco-text/75">{t('admin.analytics.stockLoading')}</p>
         </div>
       </Card>
     );
@@ -28,7 +28,7 @@ export function StockAnalyticsSection({ data, loading, failed }: StockAnalyticsS
 
   if (failed || !data) {
     return (
-      <Card className="p-4 mb-6 border border-amber-200 bg-amber-50">
+      <Card className="admin-card mb-6 border border-amber-200/80 bg-amber-50/80 p-4 shadow-sm">
         <p className="text-sm text-amber-950">{t('admin.analytics.stockLoadFailed')}</p>
       </Card>
     );
@@ -40,8 +40,8 @@ export function StockAnalyticsSection({ data, loading, failed }: StockAnalyticsS
   return (
     <div className="mb-6">
       <div className="mb-4">
-        <h2 className="text-xl font-semibold text-gray-900">{t('admin.analytics.stockTitle')}</h2>
-        <p className="text-sm text-gray-500 mt-1">
+        <h2 className="text-xl font-semibold text-marco-black">{t('admin.analytics.stockTitle')}</h2>
+        <p className="mt-1 text-sm text-marco-text/70">
           {t('admin.analytics.stockHint')
             .replace('{max}', String(maxLow))
             .replace('{threshold}', String(threshold))}

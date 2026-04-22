@@ -30,7 +30,7 @@
 | Место | Назначение |
 |-------|------------|
 | **Cloudflare R2** | Все загружаемые фото товаров и атрибутов сохраняются в R2 (ключи `products/YYYYMMDD-xxx.jpg`). URL возвращает API после загрузки. |
-| **API** | `POST /api/v1/admin/products/upload-images` — принимает base64, заливает в R2, возвращает `urls: string[]`. |
+| **API** | `POST /api/v1/supersudo/products/upload-images` — принимает base64, заливает в R2, возвращает `urls: string[]`. |
 | **Клиент** | Админка: добавление товара → выбор файлов → сжатие в браузере (browser-image-compression) → отправка base64 в API → в форму подставляются уже R2 URL. |
 
 В коде **нет** сохранения файлов в `public/` или на диск сервера. Старые данные в БД могут содержать base64 или внешние URL (Unsplash и т.д.) — это только в полях `media` / `imageUrl`, не в файловой системе проекта.
@@ -69,17 +69,17 @@
 
 | Файл | Что показывает |
 |------|----------------|
-| `src/app/admin/products/add/components/ProductImages.tsx` | Превью загруженных фото товара. |
-| `src/app/admin/products/add/components/VariantBuilder.tsx` | Фото вариантов и значений атрибутов. |
-| `src/app/admin/products/add/components/ValueSelectionModal.tsx` | Выбор значения: `imageUrl`. |
-| `src/app/admin/products/add/components/AttributesSelection.tsx` | Превью выбранного значения с картинкой. |
-| `src/app/admin/products/components/ProductsTable.tsx` | Таблица товаров: миниатюра. |
-| `src/app/admin/attributes/AttributesPageContent.tsx` | Значения атрибутов: `value.imageUrl`. |
-| `src/app/admin/attributes/ValueEditForm.tsx` | Редактирование значения: картинка. |
-| `src/app/admin/orders/components/OrderDetailsItems.tsx` | Товары в заказе: фото. |
-| `src/app/admin/analytics/components/TopProducts.tsx` | Топ товаров: картинка. |
-| `src/app/admin/quick-settings/components/ProductDiscountsCard.tsx` | Скидки: картинка. |
-| `src/app/admin/components/TopProductsCard.tsx` | Карточка топ товаров. |
+| `src/app/supersudo/products/add/components/ProductImages.tsx` | Превью загруженных фото товара. |
+| `src/app/supersudo/products/add/components/VariantBuilder.tsx` | Фото вариантов и значений атрибутов. |
+| `src/app/supersudo/products/add/components/ValueSelectionModal.tsx` | Выбор значения: `imageUrl`. |
+| `src/app/supersudo/products/add/components/AttributesSelection.tsx` | Превью выбранного значения с картинкой. |
+| `src/app/supersudo/products/components/ProductsTable.tsx` | Таблица товаров: миниатюра. |
+| `src/app/supersudo/attributes/AttributesPageContent.tsx` | Значения атрибутов: `value.imageUrl`. |
+| `src/app/supersudo/attributes/ValueEditForm.tsx` | Редактирование значения: картинка. |
+| `src/app/supersudo/orders/components/OrderDetailsItems.tsx` | Товары в заказе: фото. |
+| `src/app/supersudo/analytics/components/TopProducts.tsx` | Топ товаров: картинка. |
+| `src/app/supersudo/quick-settings/components/ProductDiscountsCard.tsx` | Скидки: картинка. |
+| `src/app/supersudo/components/TopProductsCard.tsx` | Карточка топ товаров. |
 
 ### Утилиты и типы
 
@@ -88,8 +88,8 @@
 | `src/lib/utils/image-utils.ts` | Очистка URL, разделение main/variant, `processImageUrl`, `cleanImageUrls`. |
 | `src/lib/utils/extractMediaUrl.ts` | Достаёт один URL из `media` (строка или объект с url/src). |
 | `src/lib/services/products-slug/product-transformer.ts` | Преобразование `product.media` и вариантов. |
-| `src/lib/services/admin/admin-products-create.service.ts` | Сохранение `media` и вариантов при создании товара. |
-| `src/lib/services/admin/admin-products-update/*` | Обновление медиа и вариантов. |
+| `src/lib/services/supersudo/supersudo-products-create.service.ts` | Сохранение `media` и вариантов при создании товара. |
+| `src/lib/services/supersudo/supersudo-products-update/*` | Обновление медиа и вариантов. |
 
 ---
 

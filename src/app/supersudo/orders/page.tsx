@@ -22,10 +22,10 @@ export default function OrdersPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600">{t('admin.orders.loading')}</p>
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-slate-50 to-white">
+        <div className="rounded-2xl border border-slate-200 bg-white px-8 py-7 text-center shadow-[0_16px_40px_rgba(15,23,42,0.08)]">
+          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-gray-900"></div>
+          <p className="font-medium text-gray-600">{t('admin.orders.loading')}</p>
         </div>
       </div>
     );

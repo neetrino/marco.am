@@ -15,11 +15,12 @@ export function CustomerAnalytics({ data }: CustomerAnalyticsProps) {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-      <Card className="p-6 border border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+      <Card className="admin-card overflow-hidden border-marco-border/70 bg-white/95 p-6 shadow-sm">
+        <div className="mb-4 h-1 w-14 rounded-full bg-gradient-to-r from-emerald-300 to-marco-black/30" />
+        <h3 className="text-lg font-semibold text-marco-black mb-2">
           {t('admin.analytics.customerNewVsRepeatTitle')}
         </h3>
-        <p className="text-sm text-gray-600 mb-4">
+        <p className="text-sm text-marco-text/75 mb-4">
           {t('admin.analytics.customerNewVsRepeatHint')}
         </p>
         <dl className="grid grid-cols-2 gap-3 text-sm">
@@ -39,20 +40,20 @@ export function CustomerAnalytics({ data }: CustomerAnalyticsProps) {
               {newVsRepeat.repeatCustomers}
             </dd>
           </div>
-          <div className="col-span-2 grid grid-cols-2 gap-2 pt-2 border-t border-gray-100">
+          <div className="col-span-2 grid grid-cols-2 gap-2 border-t border-marco-border/70 pt-2">
             <div>
-              <dt className="text-gray-600">
+              <dt className="text-marco-text/70">
                 {t('admin.analytics.customerOrdersFromNew')}
               </dt>
-              <dd className="font-semibold text-gray-900">
+              <dd className="font-semibold text-marco-black">
                 {newVsRepeat.ordersFromNewCustomers}
               </dd>
             </div>
             <div>
-              <dt className="text-gray-600">
+              <dt className="text-marco-text/70">
                 {t('admin.analytics.customerOrdersFromRepeat')}
               </dt>
-              <dd className="font-semibold text-gray-900">
+              <dd className="font-semibold text-marco-black">
                 {newVsRepeat.ordersFromRepeatCustomers}
               </dd>
             </div>
@@ -68,20 +69,21 @@ export function CustomerAnalytics({ data }: CustomerAnalyticsProps) {
         </dl>
       </Card>
 
-      <Card className="p-6 border border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+      <Card className="admin-card overflow-hidden border-marco-border/70 bg-white/95 p-6 shadow-sm">
+        <div className="mb-4 h-1 w-14 rounded-full bg-gradient-to-r from-cyan-300 to-marco-black/30" />
+        <h3 className="text-lg font-semibold text-marco-black mb-2">
           {t('admin.analytics.topCustomersBySpendTitle')}
         </h3>
-        <p className="text-sm text-gray-600 mb-4">
+        <p className="text-sm text-marco-text/75 mb-4">
           {t('admin.analytics.topCustomersBySpendHint')}
         </p>
         {topCustomersBySpend.length === 0 ? (
-          <p className="text-sm text-gray-500">{t('admin.analytics.noTopCustomers')}</p>
+          <p className="text-sm text-marco-text/70">{t('admin.analytics.noTopCustomers')}</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-200 text-left text-gray-600">
+                <tr className="border-b border-marco-border/80 text-left text-marco-text/70">
                   <th className="py-2 pr-2 font-medium">
                     {t('admin.analytics.topCustomersColumnCustomer')}
                   </th>
@@ -95,8 +97,8 @@ export function CustomerAnalytics({ data }: CustomerAnalyticsProps) {
               </thead>
               <tbody>
                 {topCustomersBySpend.map((row) => (
-                  <tr key={`${row.identityType}-${row.userId ?? row.email}`} className="border-b border-gray-100">
-                    <td className="py-2 pr-2 text-gray-900">{row.displayName}</td>
+                  <tr key={`${row.identityType}-${row.userId ?? row.email}`} className="border-b border-marco-border/60">
+                    <td className="py-2 pr-2 text-marco-black">{row.displayName}</td>
                     <td className="py-2 pr-2 text-right tabular-nums">
                       {formatCurrency(row.totalSpend, row.currency)}
                     </td>

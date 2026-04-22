@@ -3,4 +3,6 @@
  * Tuned for `src/app/layout.tsx` (sticky header + `MOBILE_NAV_LAYOUT_PADDING_BOTTOM`).
  */
 export const REELS_FEED_SCROLL_CONTAINER_CLASS =
-  'h-[calc(100dvh-5.5rem)] max-lg:h-[calc(100dvh-7.25rem)] overflow-y-auto snap-y snap-mandatory';
+  'h-full overflow-y-auto snap-y snap-mandatory overscroll-y-contain [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
+
+export const REELS_FEED_SLIDE_ID_PREFIX = 'reel-slide-';

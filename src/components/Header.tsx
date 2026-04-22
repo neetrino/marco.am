@@ -1,6 +1,7 @@
 'use client';
 
 import { Suspense, useLayoutEffect, useRef, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import type { LanguageCode } from '../lib/language';
 import { useTranslation } from '../lib/i18n-client';
 import { MarcoLogo } from './header/MarcoLogo';
@@ -24,6 +25,7 @@ type HeaderProps = {
 const HEADER_ROW2_HIDE_SCROLL_DISTANCE_PX = 120;
 
 export function Header({ initialLanguage }: HeaderProps) {
+  const pathname = usePathname();
   const data = useHeaderData();
   const layout = useHeaderLayoutMetrics();
   const { t } = useTranslation();
@@ -85,6 +87,10 @@ export function Header({ initialLanguage }: HeaderProps) {
   const row2MaxHeightPx = Math.max(0, row2HeightPx - row2HiddenPx);
   const row2MarginTopPx = -row2HiddenPx;
   const row2MaxHeightStyle = row2HeightPx > 0 ? `${row2MaxHeightPx}px` : undefined;
+
+  if (pathname?.startsWith('/supersudo')) {
+    return null;
+  }
 
   return (
     <header className="sticky top-0 z-50 border-b border-marco-border bg-white shadow-sm backdrop-blur-sm">

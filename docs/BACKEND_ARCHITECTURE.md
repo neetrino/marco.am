@@ -123,7 +123,7 @@ flowchart LR
 | `POST /api/.../cart` … | Զամբյուղ |
 | `POST /api/.../checkout` | Պատվերի ստեղծում, վալիդացիա |
 | `POST /webhooks/...` | Վճարում, առաքում (եթե կա) |
-| `GET/POST /api/admin/...` | Ադմին CRUD, analytics |
+| `GET/POST /api/supersudo/...` | Ադմին CRUD, analytics |
 | `GET /api/.../search` | Գլոբալ որոնում |
 
 Ճշգրիտ path-ները համաձայնեցնել `docs/TECH_CARD.md` և API design կանոնների հետ։

@@ -23,8 +23,8 @@ export function CategoriesPagination({
   }
 
   return (
-    <div className="mt-6 pt-4 border-t border-gray-200 flex items-center justify-between">
-      <div className="text-sm text-gray-700">
+    <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3">
+      <div className="text-sm font-medium text-slate-700">
         {t('admin.categories.showingPage')
           .replace('{page}', currentPage.toString())
           .replace('{totalPages}', totalPages.toString())
@@ -35,6 +35,7 @@ export function CategoriesPagination({
           variant="ghost"
           onClick={() => onPageChange(Math.max(1, currentPage - 1))}
           disabled={currentPage === 1}
+          className="border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 disabled:border-slate-100 disabled:bg-slate-50"
         >
           {t('admin.categories.previous')}
         </Button>
@@ -42,6 +43,7 @@ export function CategoriesPagination({
           variant="ghost"
           onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
           disabled={currentPage === totalPages}
+          className="border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 disabled:border-slate-100 disabled:bg-slate-50"
         >
           {t('admin.categories.next')}
         </Button>

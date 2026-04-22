@@ -348,7 +348,7 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
                   </Link>
                   {isAdmin && (
                     <Link
-                      href="/admin"
+                      href="/supersudo"
                       onClick={() => setMobileMenuOpen(false)}
                       className="flex items-center justify-between px-4 py-3 hover:bg-blue-50 normal-case text-blue-700"
                     >

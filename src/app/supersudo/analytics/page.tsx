@@ -1,14 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '../../../lib/auth/AuthContext';
 import { Card } from '@shop/ui';
 import { useTranslation } from '../../../lib/i18n-client';
 import { useAnalytics } from './hooks/useAnalytics';
 import { useStockAnalytics } from './hooks/useStockAnalytics';
-import { AnalyticsHeader } from './components/AnalyticsHeader';
-import { AdminSidebar } from './components/AdminSidebar';
+import { AdminPageLayout } from '../components/AdminPageLayout';
 import { PeriodSelector } from './components/PeriodSelector';
 import { StatsCards } from './components/StatsCards';
 import { TopProducts } from './components/TopProducts';
@@ -23,6 +22,8 @@ export default function AnalyticsPage() {
   const { t, lang } = useTranslation();
   const { isLoggedIn, isAdmin, isLoading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
+  const currentPath = pathname || '/supersudo/analytics';
   const [period, setPeriod] = useState<string>('week');
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
@@ -76,77 +77,72 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="page-shell">
-        <AnalyticsHeader />
+    <AdminPageLayout
+      currentPath={currentPath}
+      router={router}
+      t={t}
+      title={t('admin.analytics.title')}
+      subtitle={t('admin.analytics.subtitle')}
+      backLabel={t('admin.analytics.backToAdmin')}
+      onBack={() => router.push('/supersudo')}
+    >
+      <div className="space-y-6 pb-8">
+        <PeriodSelector
+          period={period}
+          startDate={startDate}
+          endDate={endDate}
+          analytics={analytics}
+          onPeriodChange={setPeriod}
+          onStartDateChange={setStartDate}
+          onEndDateChange={setEndDate}
+        />
 
-        <div className="flex flex-col lg:flex-row gap-8">
-          <AdminSidebar t={t} />
-
-          {/* Main Content */}
-          <div className="flex-1 min-w-0">
-            <PeriodSelector
-              period={period}
-              startDate={startDate}
-              endDate={endDate}
-              analytics={analytics}
-              onPeriodChange={setPeriod}
-              onStartDateChange={setStartDate}
-              onEndDateChange={setEndDate}
-            />
-
-            {loading ? (
-              <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-                <p className="text-gray-600">{t('admin.analytics.loadingAnalytics')}</p>
-              </div>
-            ) : (
+        {loading ? (
+          <Card className="admin-card border-marco-border/70 bg-white/95 py-12 text-center shadow-sm">
+            <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-b-2 border-marco-black"></div>
+            <p className="text-marco-text/75">{t('admin.analytics.loadingAnalytics')}</p>
+          </Card>
+        ) : (
+          <>
+            {analytics ? (
               <>
-                {analytics ? (
-                  <>
-                    <StatsCards analytics={analytics} totalUsers={totalUsers} />
+                <StatsCards analytics={analytics} totalUsers={totalUsers} />
 
-                    {orderStatusBreakdownFailed ? (
-                      <Card className="p-4 mb-6 border border-amber-200 bg-amber-50">
-                        <p className="text-sm text-amber-950">
-                          {t('admin.analytics.orderStatusBreakdownLoadFailed')}
-                        </p>
-                      </Card>
-                    ) : null}
-
-                    {orderStatusBreakdown ? (
-                      <OrderStatusBreakdown data={orderStatusBreakdown} />
-                    ) : null}
-
-                    <CustomerAnalytics data={analytics.customerAnalytics} />
-
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                      <TopProducts products={analytics.topProducts} />
-                      <LeastSellingProducts products={analytics.leastSellingProducts} />
-                    </div>
-
-                    <div className="mb-6">
-                      <TopCategories categories={analytics.topCategories} />
-                    </div>
-
-                    <OrdersByDayChart ordersByDay={analytics.ordersByDay} />
-                  </>
-                ) : (
-                  <Card className="p-6 mb-6">
-                    <p className="text-gray-600 text-center">{t('admin.analytics.noAnalyticsData')}</p>
+                {orderStatusBreakdownFailed ? (
+                  <Card className="admin-card border-amber-200/80 bg-amber-50/80 p-4 shadow-sm">
+                    <p className="text-sm text-amber-950">
+                      {t('admin.analytics.orderStatusBreakdownLoadFailed')}
+                    </p>
                   </Card>
-                )}
+                ) : null}
 
-                <StockAnalyticsSection
-                  data={stockAnalytics}
-                  loading={stockLoading}
-                  failed={stockFailed}
-                />
+                {orderStatusBreakdown ? <OrderStatusBreakdown data={orderStatusBreakdown} /> : null}
+
+                <CustomerAnalytics data={analytics.customerAnalytics} />
+
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                  <TopProducts products={analytics.topProducts} />
+                  <LeastSellingProducts products={analytics.leastSellingProducts} />
+                </div>
+
+                <TopCategories categories={analytics.topCategories} />
+
+                <OrdersByDayChart ordersByDay={analytics.ordersByDay} />
               </>
+            ) : (
+              <Card className="admin-card border-marco-border/70 bg-white/95 py-12 shadow-sm">
+                <p className="text-center text-marco-text/75">{t('admin.analytics.noAnalyticsData')}</p>
+              </Card>
             )}
-          </div>
-        </div>
+
+            <StockAnalyticsSection
+              data={stockAnalytics}
+              loading={stockLoading}
+              failed={stockFailed}
+            />
+          </>
+        )}
       </div>
-    </div>
+    </AdminPageLayout>
   );
 }

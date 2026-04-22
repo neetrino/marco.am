@@ -14,6 +14,21 @@ import type { AdminMenuItem } from '../../components/AdminMenuDrawer';
 export function getAdminMenuTABS(t: (path: string) => string): AdminMenuItem[] {
   return [
   {
+    id: 'home',
+    label: t('admin.menu.home'),
+    path: '/',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M3 11.5L12 4l9 7.5M5.5 9.5V20h13V9.5M9 20v-6h6v6"
+        />
+      </svg>
+    ),
+  },
+  {
     id: 'dashboard',
     label: t('admin.menu.dashboard'),
     path: '/supersudo',
@@ -122,6 +137,21 @@ export function getAdminMenuTABS(t: (path: string) => string): AdminMenuItem[] {
     ),
   },
   {
+    id: 'hero-banner',
+    label: t('admin.menu.heroBanner'),
+    path: '/supersudo/hero-banner',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-9-9h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+        />
+      </svg>
+    ),
+  },
+  {
     id: 'users',
     label: t('admin.menu.users'),
     path: '/supersudo/users',
@@ -147,6 +177,21 @@ export function getAdminMenuTABS(t: (path: string) => string): AdminMenuItem[] {
           strokeLinejoin="round"
           strokeWidth={2}
           d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+        />
+      </svg>
+    ),
+  },
+  {
+    id: 'reels',
+    label: t('admin.menu.reels'),
+    path: '/supersudo/reels',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 5h8a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2z"
         />
       </svg>
     ),

@@ -7,61 +7,69 @@ import type { Category, CategoryWithLevel } from '../types';
 interface CategoryItemProps {
   category: CategoryWithLevel;
   parentCategory: Category | null;
+  selected: boolean;
+  onToggleSelect: (categoryId: string, checked: boolean) => void;
   onEdit: (category: Category) => void;
   onDelete: (categoryId: string, categoryTitle: string) => void;
 }
 
-export function CategoryItem({ category, parentCategory, onEdit, onDelete }: CategoryItemProps) {
+export function CategoryItem({
+  category,
+  parentCategory,
+  selected,
+  onToggleSelect,
+  onEdit,
+  onDelete,
+}: CategoryItemProps) {
   const { t } = useTranslation();
   const depthPrefix = category.level > 0 ? `${'— '.repeat(category.level)} ` : '';
 
   return (
-    <div
-      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-    >
-      <div className="flex-1">
-        <div className="flex items-center gap-2">
-          <div className="text-sm font-medium text-gray-900">{`${depthPrefix}${category.title}`}</div>
+    <tr className="group border-b border-slate-100 transition-colors hover:bg-amber-50/50">
+      <td className="px-3 py-3">
+        <input
+          type="checkbox"
+          checked={selected}
+          onChange={(event) => onToggleSelect(category.id, event.target.checked)}
+          className="h-4 w-4 cursor-pointer rounded border-slate-300 text-amber-500 focus:ring-amber-400"
+          aria-label={`Select ${category.title}`}
+        />
+      </td>
+      <td className="px-3 py-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-sm font-semibold text-slate-900 group-hover:text-amber-900">
+            {`${depthPrefix}${category.title}`}
+          </span>
           {category.requiresSizes && (
-            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">
+            <span className="rounded-full border border-slate-300 bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">
               Sizes
             </span>
           )}
         </div>
-        <div className="text-xs text-gray-500 mt-1">
-          {category.slug}
-          {parentCategory && (
-            <span className="ml-2 text-gray-400">
-              → Parent: {parentCategory.title}
-            </span>
-          )}
+      </td>
+      <td className="px-3 py-3 text-sm text-slate-600">{category.slug}</td>
+      <td className="px-3 py-3 text-sm text-slate-600">{parentCategory?.title || '—'}</td>
+      <td className="px-3 py-3">
+        <div className="flex justify-end gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onEdit(category)}
+            className="border border-slate-200 bg-white text-slate-700 hover:border-amber-300 hover:bg-amber-100 hover:text-amber-900"
+          >
+            {t('admin.common.edit')}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onDelete(category.id, category.title)}
+            className="border border-red-100 bg-red-50/70 text-red-600 hover:border-amber-300 hover:bg-amber-100 hover:text-red-700"
+          >
+            {t('admin.common.delete')}
+          </Button>
         </div>
-      </div>
-      <div className="flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onEdit(category)}
-          className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
-        >
-          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-          </svg>
-          {t('admin.common.edit')}
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onDelete(category.id, category.title)}
-          className="text-red-600 hover:text-red-800 hover:bg-red-50"
-        >
-          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-          </svg>
-          {t('admin.common.delete')}
-        </Button>
-      </div>
-    </div>
+      </td>
+    </tr>
   );
 }
 

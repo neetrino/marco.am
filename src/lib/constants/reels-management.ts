@@ -4,11 +4,17 @@ export const REELS_MANAGEMENT_SETTINGS_KEY = "reels" as const;
 /** Settings key for reels likes state (per reel and per user). */
 export const REELS_LIKES_SETTINGS_KEY = "reels_likes" as const;
 
+/** Settings key for reels views counters (per reel). */
+export const REELS_VIEWS_SETTINGS_KEY = "reels_views" as const;
+
 /** Stored payload version for future migrations. */
 export const REELS_MANAGEMENT_STORAGE_VERSION = 1 as const;
 
 /** Stored payload version for reels likes state. */
 export const REELS_LIKES_STORAGE_VERSION = 1 as const;
+
+/** Stored payload version for reels views state. */
+export const REELS_VIEWS_STORAGE_VERSION = 1 as const;
 
 /** Max reels items in one admin document. */
 export const REELS_MANAGEMENT_MAX_ITEMS = 200 as const;

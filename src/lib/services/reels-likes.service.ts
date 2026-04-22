@@ -24,6 +24,8 @@ export type ReelsLikesSnapshot = {
   viewerLikedReelsCount: number;
 };
 
+export type ReelsLikesByReelId = Record<string, number>;
+
 function parseLikesStorage(raw: unknown): ReelsLikesStorage | null {
   const parsed = reelsLikesStorageSchema.safeParse(raw);
   if (!parsed.success) {
@@ -106,6 +108,17 @@ async function assertReelLikeable(reelId: string): Promise<void> {
 }
 
 export const reelsLikesService = {
+  async getAdminLikesByReelId(): Promise<ReelsLikesByReelId> {
+    const storage = await loadLikesStorage();
+    const likesByReelId: ReelsLikesByReelId = {};
+
+    for (const item of storage.items) {
+      likesByReelId[item.reelId] = normalizeUserIds(item.userIds).length;
+    }
+
+    return likesByReelId;
+  },
+
   async getLikesSnapshot(args: {
     reelIds: string[];
     viewerUserId?: string;

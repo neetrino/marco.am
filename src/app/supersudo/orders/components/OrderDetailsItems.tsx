@@ -49,7 +49,7 @@ export function OrderDetailsItems({
             {orderDetails.items.map((item) => {
               const allOptions = item.variantOptions || [];
               return (
-                <tr key={item.id}>
+                <tr key={item.id} className="group transition-colors hover:bg-amber-50/50">
                   <td className="px-3 py-2 align-top">
                     {item.imageUrl ? (
                       <img
@@ -64,7 +64,11 @@ export function OrderDetailsItems({
                       <div className="w-10 h-10 rounded border border-dashed border-gray-200 bg-gray-50" />
                     )}
                   </td>
-                  <td className="px-3 py-2">{item.productTitle}</td>
+                  <td className="px-3 py-2">
+                    <span className="text-slate-900 transition-colors group-hover:text-amber-900">
+                      {item.productTitle}
+                    </span>
+                  </td>
                   <td className="px-3 py-2 text-gray-500">{item.sku}</td>
                   <td className="px-3 py-2">
                     {allOptions.length > 0 ? (

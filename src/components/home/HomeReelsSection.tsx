@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Montserrat } from 'next/font/google';
 
@@ -41,8 +41,9 @@ import {
 import { HOME_PAGE_SECTION_SHELL_CLASS } from './home-page-section-shell.constants';
 import { useHomeReelsCarousel } from './useHomeReelsCarousel';
 import { useIsMaxMd } from './use-is-max-md';
-import { getReelsItemHref } from '../../lib/reels/reels-url';
 import type { PublicReelItem } from '../../lib/schemas/reels-management.schema';
+import { HomeReelPreviewDialog } from './HomeReelPreviewDialog';
+import { useReelsFeedData } from '../reels/useReelsFeedData';
 
 const montserratReels = Montserrat({
   subsets: ['latin'],
@@ -118,6 +119,9 @@ export type HomeReelsSectionProps = {
 
 export function HomeReelsSection({ items }: HomeReelsSectionProps) {
   const { t } = useTranslation();
+  const [previewIndex, setPreviewIndex] = useState<number | null>(null);
+  const preloadedVideoIdsRef = useRef<Set<string>>(new Set());
+  const { reelItems, pendingLikeById, toggleLike } = useReelsFeedData(items);
   const isMaxMd = useIsMaxMd();
   const reelsPageCount = isMaxMd
     ? REELS_PAGINATION_PAGE_COUNT_MOBILE
@@ -138,6 +142,25 @@ export function HomeReelsSection({ items }: HomeReelsSectionProps) {
     'reels_pagination_go_second',
     'reels_pagination_go_third',
   ] as const;
+  const previewItem = useMemo(() => {
+    if (previewIndex === null) {
+      return null;
+    }
+    return reelItems[previewIndex] ?? null;
+  }, [reelItems, previewIndex]);
+
+  const preloadReelVideo = useCallback((item: PublicReelItem) => {
+    if (preloadedVideoIdsRef.current.has(item.id)) {
+      return;
+    }
+    preloadedVideoIdsRef.current.add(item.id);
+    const video = document.createElement('video');
+    video.preload = 'auto';
+    video.muted = true;
+    video.playsInline = true;
+    video.src = item.videoUrl;
+    video.load();
+  }, []);
 
   return (
     <section
@@ -213,23 +236,30 @@ export function HomeReelsSection({ items }: HomeReelsSectionProps) {
             ['--reels-mobile-tile-basis' as string]: REELS_MOBILE_TILE_BASIS_CSS,
           }}
         >
-          {items.map((item, index) => {
+          {reelItems.map((item, index) => {
             const label = item.title;
             const twoWordParts = getReelLabelTwoWordParts(label);
             return (
-              <Link
+              <button
                 key={item.id}
-                href={getReelsItemHref(index)}
                 title={label}
-                className="flex max-md:min-w-0 max-md:flex-[0_0_var(--reels-mobile-tile-basis)] shrink-0 snap-start flex-col items-center gap-2.5 text-center md:min-w-[148px]"
+                type="button"
+                onClick={() => {
+                  preloadReelVideo(item);
+                  setPreviewIndex(index);
+                }}
+                onMouseEnter={() => preloadReelVideo(item)}
+                onFocus={() => preloadReelVideo(item)}
+                onTouchStart={() => preloadReelVideo(item)}
+                className="group flex max-md:min-w-0 max-md:flex-[0_0_var(--reels-mobile-tile-basis)] shrink-0 snap-start flex-col items-center gap-2.5 text-center transition-transform duration-200 hover:-translate-y-0.5 md:min-w-[148px]"
               >
                 <div
-                  className="relative mx-auto shrink-0 overflow-hidden rounded-full border border-marco-border bg-marco-gray max-md:h-[var(--reels-mobile-circle)] max-md:w-[var(--reels-mobile-circle)] md:mx-0 md:h-32 md:w-32"
+                  className="relative mx-auto shrink-0 overflow-hidden rounded-full border border-marco-border bg-marco-gray shadow-[0_6px_16px_rgba(0,0,0,0.08)] transition-shadow duration-200 group-hover:shadow-[0_12px_26px_rgba(0,0,0,0.18)] max-md:h-[var(--reels-mobile-circle)] max-md:w-[var(--reels-mobile-circle)] md:mx-0 md:h-32 md:w-32"
                 >
                   <img
                     src={item.posterUrl}
                     alt={label}
-                    className="h-full w-full object-cover object-center"
+                    className="h-full w-full object-cover object-center transition duration-300 group-hover:scale-105"
                     loading="lazy"
                   />
                 </div>
@@ -251,11 +281,11 @@ export function HomeReelsSection({ items }: HomeReelsSectionProps) {
                     label
                   )}
                 </span>
-              </Link>
+              </button>
             );
           })}
         </div>
-        {items.length === 0 ? (
+        {reelItems.length === 0 ? (
           <p className="py-4 text-center text-sm text-marco-muted">{t('home.reels_title')}</p>
         ) : null}
 
@@ -285,6 +315,19 @@ export function HomeReelsSection({ items }: HomeReelsSectionProps) {
           ))}
         </div>
       </div>
+      <HomeReelPreviewDialog
+        item={previewItem}
+        isOpen={previewItem !== null}
+        liked={previewItem?.likedByCurrentUser ?? false}
+        likePending={previewItem ? pendingLikeById[previewItem.id] === true : false}
+        onToggleLike={() => {
+          if (!previewItem) {
+            return;
+          }
+          toggleLike({ reelId: previewItem.id });
+        }}
+        onClose={() => setPreviewIndex(null)}
+      />
     </section>
   );
 }

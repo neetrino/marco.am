@@ -8,7 +8,7 @@ export function CategoriesHeader() {
   const router = useRouter();
 
   return (
-    <div className="mb-8">
+    <div className="mb-8 lg:ml-64">
       <button
         onClick={() => router.push('/supersudo')}
         className="text-gray-600 hover:text-gray-900 mb-4 flex items-center transition-colors duration-200 group"

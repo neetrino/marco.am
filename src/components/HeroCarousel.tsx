@@ -1,7 +1,9 @@
 'use client';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useTranslation } from '../lib/i18n-client';
+import { apiClient } from '../lib/api-client';
 import { HomePromoMobileHeroChair } from './home/HomePromoMobileHeroChair';
 import { HomePromoMobileHeroHeadline } from './home/HomePromoMobileHeroHeadline';
 import { HomePromoMobileHeroSlateCta } from './home/HomePromoMobileHeroSlateCta';
@@ -10,18 +12,87 @@ import { HomePromoMobileHeroSlatePanel } from './home/HomePromoMobileHeroSlatePa
 import { HeroCarouselSlides } from './HeroCarouselSlides';
 import { HERO_MOBILE_PRIMARY_IMAGE_SRC } from './hero.constants';
 import { HOME_PAGE_SECTION_SHELL_CLASS } from './home/home-page-section-shell.constants';
+import {
+  HOME_HERO_PRIMARY_BOTTOM_DEFAULT_IMAGE_URL,
+  HOME_HERO_PRIMARY_TOP_DEFAULT_IMAGE_URL,
+  HOME_HERO_SECONDARY_DEFAULT_IMAGE_URL,
+} from '../lib/constants/home-hero-admin-banners';
 
 /** Hero shell follows the same responsive width rhythm as the whole home page. */
 const HERO_PAGE_CONTAINER_CLASS = `${HOME_PAGE_SECTION_SHELL_CLASS} pt-8 sm:pt-11 lg:pt-10`;
 
-/** Desktop hero tiles from Figma (1023:2720, 1023:2721, 1023:2719). */
-const HERO_DESKTOP_LEFT_TOP_BG = 'https://www.figma.com/api/mcp/asset/3791ef5c-cb75-4fdf-b91c-867dfea32623';
-const HERO_DESKTOP_LEFT_BOTTOM_BG = 'https://www.figma.com/api/mcp/asset/dacdd4e4-d6c3-496f-9f3a-ea1efac284f4';
-const HERO_DESKTOP_RIGHT_BG = 'https://www.figma.com/api/mcp/asset/b7429ac7-5d98-4c42-a62f-f9780ebfda16';
+type PublicBannerItem = {
+  id: string;
+  imageDesktopUrl: string | null;
+  imageMobileUrl: string | null;
+  sortOrder: number;
+};
+
+type PublicBannersPayload = {
+  items: PublicBannerItem[];
+};
+
 const HERO_DESKTOP_HELP_MESSAGE_ICON_SRC = '/assets/hero/hero-help-message-icon.svg';
 
 export function HeroCarousel() {
   const { t } = useTranslation();
+  const [desktopImages, setDesktopImages] = useState({
+    leftTop: HOME_HERO_PRIMARY_TOP_DEFAULT_IMAGE_URL,
+    leftBottom: HOME_HERO_PRIMARY_BOTTOM_DEFAULT_IMAGE_URL,
+    right: HOME_HERO_SECONDARY_DEFAULT_IMAGE_URL,
+  });
+  const [mobileImage, setMobileImage] = useState<string>(HERO_MOBILE_PRIMARY_IMAGE_SRC);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadHeroBanners() {
+      try {
+        const [primary, secondary] = await Promise.all([
+          apiClient.get<PublicBannersPayload>('/api/v1/banners?slot=home.hero.primary'),
+          apiClient.get<PublicBannersPayload>('/api/v1/banners?slot=home.hero.secondary'),
+        ]);
+
+        if (!active) {
+          return;
+        }
+
+        const primaryItems = [...primary.items].sort(
+          (a, b) => a.sortOrder - b.sortOrder || a.id.localeCompare(b.id),
+        );
+        const secondaryItems = [...secondary.items].sort(
+          (a, b) => a.sortOrder - b.sortOrder || a.id.localeCompare(b.id),
+        );
+
+        setDesktopImages({
+          leftTop:
+            primaryItems[0]?.imageDesktopUrl ?? HOME_HERO_PRIMARY_TOP_DEFAULT_IMAGE_URL,
+          leftBottom:
+            primaryItems[1]?.imageDesktopUrl ?? HOME_HERO_PRIMARY_BOTTOM_DEFAULT_IMAGE_URL,
+          right:
+            secondaryItems[0]?.imageDesktopUrl ?? HOME_HERO_SECONDARY_DEFAULT_IMAGE_URL,
+        });
+        setMobileImage(primaryItems[0]?.imageMobileUrl ?? HERO_MOBILE_PRIMARY_IMAGE_SRC);
+      } catch {
+        if (!active) {
+          return;
+        }
+
+        setDesktopImages({
+          leftTop: HOME_HERO_PRIMARY_TOP_DEFAULT_IMAGE_URL,
+          leftBottom: HOME_HERO_PRIMARY_BOTTOM_DEFAULT_IMAGE_URL,
+          right: HOME_HERO_SECONDARY_DEFAULT_IMAGE_URL,
+        });
+        setMobileImage(HERO_MOBILE_PRIMARY_IMAGE_SRC);
+      }
+    }
+
+    void loadHeroBanners();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   return (
     <div className={HERO_PAGE_CONTAINER_CLASS} id="hero">
@@ -29,7 +100,7 @@ export function HeroCarousel() {
         {/* Guaranteed mobile hero background texture pinned to top edge. */}
         <div
           className="pointer-events-none absolute inset-0 z-0 bg-cover bg-top bg-no-repeat md:hidden"
-          style={{ backgroundImage: `url(${HERO_MOBILE_PRIMARY_IMAGE_SRC})`, backgroundPosition: 'center top' }}
+          style={{ backgroundImage: `url(${mobileImage})`, backgroundPosition: 'center top' }}
           aria-hidden
         />
         <div className="md:hidden">
@@ -52,18 +123,18 @@ export function HeroCarousel() {
           <div className="grid h-full min-w-0 grid-rows-2 gap-3 lg:gap-4">
             <div
               className="h-full min-w-0 rounded-[30px] bg-cover bg-center bg-no-repeat"
-              style={{ backgroundImage: `url(${HERO_DESKTOP_LEFT_TOP_BG})`, backgroundPosition: 'center 16%' }}
+              style={{ backgroundImage: `url(${desktopImages.leftTop})`, backgroundPosition: 'center 16%' }}
               aria-label="CASEKOO Accessories"
             />
             <div
               className="h-full min-w-0 rounded-[30px] bg-cover bg-center bg-no-repeat"
-              style={{ backgroundImage: `url(${HERO_DESKTOP_LEFT_BOTTOM_BG})`, backgroundPosition: 'center 58%' }}
+              style={{ backgroundImage: `url(${desktopImages.leftBottom})`, backgroundPosition: 'center 58%' }}
               aria-label="Xming projector"
             />
           </div>
           <div
             className="relative h-full min-w-0 rounded-[30px] bg-cover bg-center bg-no-repeat"
-            style={{ backgroundImage: `url(${HERO_DESKTOP_RIGHT_BG})`, backgroundPosition: 'center 58%' }}
+            style={{ backgroundImage: `url(${desktopImages.right})`, backgroundPosition: 'center 58%' }}
             aria-label="Galaxy A05s hero"
           >
             <div className="absolute bottom-[18px] right-[18px] z-[2] flex items-center gap-2.5 lg:bottom-[22px] lg:right-[22px] lg:gap-3">

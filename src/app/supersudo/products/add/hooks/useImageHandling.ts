@@ -1,6 +1,7 @@
 'use client';
 
 import type { ChangeEvent } from 'react';
+import { useRef, useEffect } from 'react';
 import { getErrorMessage } from '@/lib/types/errors';
 import { processImageFile } from '../../../../../lib/utils/image-utils';
 import type { Variant } from '../types';
@@ -51,6 +52,11 @@ export function useImageHandling({
   setColorImageTarget,
   t,
 }: UseImageHandlingProps): UseImageHandlingReturn {
+  const imageUrlsRef = useRef(imageUrls);
+  useEffect(() => {
+    imageUrlsRef.current = imageUrls;
+  }, [imageUrls]);
+
   const addImageUrl = () => {
     setImageUrls((prev) => [...prev, '']);
   };
@@ -81,10 +87,11 @@ export function useImageHandling({
   };
 
   const setFeaturedImage = (index: number) => {
-    if (index < 0 || index >= imageUrls.length) {
+    const urls = imageUrlsRef.current;
+    if (index < 0 || index >= urls.length) {
       return;
     }
-    const mainImage = imageUrls[index] || '';
+    const mainImage = urls[index] || '';
     setFeaturedImageIndex(index);
     setMainProductImage(mainImage);
   };

@@ -2,6 +2,7 @@
 
 import { Input } from '@shop/ui';
 import { useTranslation } from '../../../../../lib/i18n-client';
+import { FormSection } from './FormSection';
 import { CURRENCIES, type CurrencyCode } from '../../../../../lib/currency';
 
 interface SimpleProductFieldsProps {
@@ -30,10 +31,9 @@ export function SimpleProductFields({
   const { t } = useTranslation();
 
   return (
-    <div>
-      <h2 className="text-xl font-semibold text-gray-900 mb-4">{t('admin.products.add.productVariants')}</h2>
-      <div className="bg-white border border-gray-200 rounded-lg p-6 space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <FormSection title={t('admin.products.add.pricingAndInventory')}>
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {/* Price */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -105,7 +105,7 @@ export function SimpleProductFields({
           </div>
         </div>
       </div>
-    </div>
+    </FormSection>
   );
 }
 

@@ -61,47 +61,50 @@ export function OrderStatusBreakdown({ data }: OrderStatusBreakdownProps) {
     w.byStatus[key].toString();
 
   return (
-    <Card className="p-6 mb-6 overflow-x-auto">
-      <h2 className="text-xl font-semibold text-gray-900 mb-4">
+    <Card className="admin-card mb-6 overflow-hidden border-marco-border/70 bg-white/95 p-6 shadow-sm">
+      <div className="mb-4 h-1 w-14 rounded-full bg-gradient-to-r from-sky-300 to-marco-black/30" />
+      <h2 className="text-xl font-semibold text-marco-black mb-4">
         {t('admin.analytics.orderStatusBreakdownTitle')}
       </h2>
-      <p className="text-sm text-gray-500 mb-4">
+      <p className="text-sm text-marco-text/75 mb-4">
         {t('admin.analytics.orderStatusBreakdownHint')}
       </p>
-      <table className="min-w-full text-sm text-left border-collapse">
+      <div className="overflow-x-auto rounded-2xl border border-marco-border/80 bg-white/80">
+        <table className="min-w-full border-collapse text-left text-sm">
         <thead>
-          <tr className="border-b border-gray-200">
-            <th className="py-2 pr-4 font-medium text-gray-700">
+          <tr className="border-b border-marco-border/80 bg-marco-gray/30">
+            <th className="py-2 pr-4 font-medium text-marco-text/75">
               {t('admin.analytics.orderStatusColumn')}
             </th>
-            <th className="py-2 px-2 font-medium text-gray-700 text-right">
+            <th className="py-2 px-2 text-right font-medium text-marco-text/75">
               {labelForPeriod('today')}
             </th>
-            <th className="py-2 px-2 font-medium text-gray-700 text-right">
+            <th className="py-2 px-2 text-right font-medium text-marco-text/75">
               {labelForPeriod('week')}
             </th>
-            <th className="py-2 px-2 font-medium text-gray-700 text-right">
+            <th className="py-2 px-2 text-right font-medium text-marco-text/75">
               {labelForPeriod('month')}
             </th>
           </tr>
         </thead>
         <tbody>
           {ROW_KEYS.map((key) => (
-            <tr key={key} className="border-b border-gray-100">
-              <td className="py-2 pr-4 text-gray-800">{labelForRow(key)}</td>
+            <tr key={key} className="border-b border-marco-border/60">
+              <td className="py-2 pr-4 text-marco-black">{labelForRow(key)}</td>
               <td className="py-2 px-2 text-right tabular-nums">{cell(today, key)}</td>
               <td className="py-2 px-2 text-right tabular-nums">{cell(week, key)}</td>
               <td className="py-2 px-2 text-right tabular-nums">{cell(month, key)}</td>
             </tr>
           ))}
-          <tr className="font-semibold text-gray-900">
+          <tr className="bg-marco-yellow/10 font-semibold text-marco-black">
             <td className="py-2 pr-4">{t('admin.analytics.orderStatusTotal')}</td>
             <td className="py-2 px-2 text-right tabular-nums">{today.totalOrders}</td>
             <td className="py-2 px-2 text-right tabular-nums">{week.totalOrders}</td>
             <td className="py-2 px-2 text-right tabular-nums">{month.totalOrders}</td>
           </tr>
         </tbody>
-      </table>
+        </table>
+      </div>
     </Card>
   );
 }

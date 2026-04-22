@@ -1,6 +1,7 @@
 'use client';
 
 import { Card, Button } from '@shop/ui';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '../../../lib/i18n-client';
 import { formatCurrency } from '../utils/dashboardUtils';
@@ -26,18 +27,19 @@ export function TopProductsCard({ topProducts, topProductsLoading }: TopProducts
   const router = useRouter();
 
   return (
-    <Card className="p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold text-gray-900">{t('admin.dashboard.topSellingProducts')}</h2>
+    <Card className="admin-card overflow-hidden border-marco-border/70 bg-white/95 p-6 shadow-sm">
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-xl font-semibold text-marco-black">{t('admin.dashboard.topSellingProducts')}</h2>
         <Button
           variant="ghost"
           size="sm"
+          className="rounded-xl border border-marco-border bg-white px-3 py-1.5 text-marco-text/80 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-marco-yellow/60 hover:bg-marco-yellow/15 hover:text-marco-black hover:shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-yellow/45"
           onClick={() => router.push('/supersudo/products')}
         >
           {t('admin.dashboard.viewAll')}
         </Button>
       </div>
-      <div className="space-y-4">
+      <div className="space-y-3">
         {topProductsLoading ? (
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
@@ -47,39 +49,41 @@ export function TopProductsCard({ topProducts, topProductsLoading }: TopProducts
             ))}
           </div>
         ) : topProducts.length === 0 ? (
-          <div className="text-sm text-gray-600 text-center py-8">
+          <div className="py-8 text-center text-sm text-marco-text/65">
             <p>{t('admin.dashboard.noSalesData')}</p>
           </div>
         ) : (
           topProducts.map((product, index) => (
             <div
               key={product.variantId}
-              className="flex items-center gap-4 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+              className="group flex cursor-pointer items-center gap-4 rounded-2xl border border-marco-border/80 bg-white/80 p-3 transition-all duration-200 hover:-translate-y-0.5 hover:border-marco-yellow/60 hover:bg-marco-yellow/10"
               onClick={() => router.push(`/supersudo/products/${product.productId}`)}
             >
               <div className="flex-shrink-0">
-                <div className="w-10 h-10 bg-gray-200 rounded flex items-center justify-center text-xs font-bold text-gray-500">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-marco-yellow/25 text-xs font-bold text-marco-black/70">
                   {index + 1}
                 </div>
               </div>
               {product.image && (
                 <div className="flex-shrink-0">
-                  <img
+                  <Image
                     src={product.image}
                     alt={product.title}
-                    className="w-12 h-12 object-cover rounded"
+                    width={48}
+                    height={48}
+                    className="h-12 w-12 rounded-xl object-cover ring-1 ring-marco-border/70"
                   />
                 </div>
               )}
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">{product.title}</p>
-                <p className="text-xs text-gray-600">SKU: {product.sku}</p>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="truncate text-sm font-semibold text-marco-black">{product.title}</p>
+                <p className="text-xs text-marco-text/70">SKU: {product.sku}</p>
+                <p className="mt-1 text-xs text-marco-text/55">
                   {t('admin.dashboard.sold').replace('{count}', product.totalQuantity.toString())} • {t('admin.dashboard.orders').replace('{count}', product.orderCount.toString())}
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-sm font-semibold text-gray-900">
+                <p className="text-sm font-semibold text-marco-black">
                   {formatCurrency(product.totalRevenue, 'USD')}
                 </p>
               </div>

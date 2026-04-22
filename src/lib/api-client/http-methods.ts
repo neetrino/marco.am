@@ -6,19 +6,58 @@ import { handleUnauthorized } from "./auth-utils";
 import { shouldLogError, shouldLogWarning, parseErrorResponse, createApiError } from "./error-handler";
 import { logger } from "@/lib/utils/logger";
 
+type NetworkErrorOptions = Pick<
+  RequestOptions,
+  "suppressAbortErrorLogging" | "suppressNetworkErrorLogging"
+>;
+
+function shouldSuppressAbortLogging(
+  networkError: { message?: string; name?: string },
+  options?: NetworkErrorOptions,
+): boolean {
+  return Boolean(
+    options?.suppressAbortErrorLogging &&
+      (networkError.name === "AbortError" ||
+        networkError.message?.includes("Request aborted")),
+  );
+}
+
+function shouldSuppressNetworkLogging(
+  networkError: { message?: string; name?: string },
+  options?: NetworkErrorOptions,
+): boolean {
+  return Boolean(
+    options?.suppressNetworkErrorLogging &&
+      !shouldSuppressAbortLogging(networkError, options),
+  );
+}
+
 /**
  * Handle network errors
  */
-function handleNetworkError(error: unknown, baseUrl: string, url: string): never {
+function handleNetworkError(
+  error: unknown,
+  baseUrl: string,
+  url: string,
+  options?: NetworkErrorOptions,
+): never {
   const networkError = error as { message?: string; name?: string };
-  
-  // Check if it's a timeout error
-  if (networkError.message?.includes('timeout') || networkError.message?.includes('Request timeout')) {
-    console.error('⏱️ [API CLIENT] Request timeout:', networkError.message);
+
+  if (shouldSuppressAbortLogging(networkError, options)) {
     throw networkError;
   }
-  
-  console.error('❌ [API CLIENT] Network error during fetch:', networkError);
+
+  // Check if it's a timeout error
+  if (networkError.message?.includes('timeout') || networkError.message?.includes('Request timeout')) {
+    if (!shouldSuppressNetworkLogging(networkError, options)) {
+      console.error('⏱️ [API CLIENT] Request timeout:', networkError.message);
+    }
+    throw networkError;
+  }
+
+  if (!shouldSuppressNetworkLogging(networkError, options)) {
+    console.error('❌ [API CLIENT] Network error during fetch:', networkError);
+  }
   
   // Check if it's a connection refused error
   const isConnectionRefused = 
@@ -111,32 +150,65 @@ export async function getRequest<T>(
   const url = buildUrl(baseUrl, endpoint, options?.params);
   const maxRetries = 3;
   const retryDelay = 1000; // 1 second
-  const timeout = 30000; // 30 seconds timeout
+  const timeout = options?.timeoutMs ?? 30000;
   
   logger.devLog('🌐 [API CLIENT] GET request:', { url, endpoint, baseUrl });
   
   let response: Response;
   try {
-    // Create timeout controller
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeout);
-    
+    const timeoutController = new AbortController();
+    const requestController = new AbortController();
+    const externalSignal = options?.signal;
+    let timeoutTriggered = false;
+
+    const abortRequest = () => {
+      if (!requestController.signal.aborted) {
+        requestController.abort();
+      }
+    };
+
+    const timeoutId = setTimeout(() => {
+      timeoutTriggered = true;
+      timeoutController.abort();
+      abortRequest();
+    }, timeout);
+
+    const handleExternalAbort = () => {
+      abortRequest();
+    };
+
+    if (externalSignal) {
+      if (externalSignal.aborted) {
+        handleExternalAbort();
+      } else {
+        externalSignal.addEventListener("abort", handleExternalAbort, { once: true });
+      }
+    }
+
     try {
+      const { timeoutMs: _timeoutMs, suppressNetworkErrorLogging: _suppressNetworkErrorLogging, suppressAbortErrorLogging: _suppressAbortErrorLogging, ...fetchOptions } = options ?? {};
       response = await fetch(url, {
         method: 'GET',
-        headers: getHeaders(options),
+        headers: getHeaders(fetchOptions),
         cache: 'no-store', // Disable caching for server components
-        signal: controller.signal,
-        ...options,
+        ...fetchOptions,
+        signal: requestController.signal,
       });
       clearTimeout(timeoutId);
     } catch (fetchError: unknown) {
       clearTimeout(timeoutId);
       const error = fetchError as { name?: string };
       if (error.name === 'AbortError') {
-        throw new Error(`Request timeout: API server did not respond within ${timeout / 1000} seconds. URL: ${url}`);
+        if (timeoutTriggered || timeoutController.signal.aborted) {
+          throw new Error(`Request timeout: API server did not respond within ${timeout / 1000} seconds. URL: ${url}`);
+        }
+        throw new Error(`Request aborted: ${url}`);
       }
       throw fetchError;
+    } finally {
+      if (externalSignal) {
+        externalSignal.removeEventListener("abort", handleExternalAbort);
+      }
     }
     
     // Log response status safely
@@ -146,7 +218,7 @@ export async function getRequest<T>(
       console.warn('⚠️ [API CLIENT] Failed to log response status');
     }
   } catch (networkError: unknown) {
-    handleNetworkError(networkError, baseUrl, url);
+    handleNetworkError(networkError, baseUrl, url, options);
   }
 
   if (!response.ok) {
@@ -370,7 +442,6 @@ export async function deleteRequest<T>(
     return null as T;
   }
 }
-
 
 
 

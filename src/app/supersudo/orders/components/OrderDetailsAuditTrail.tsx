@@ -49,7 +49,7 @@ export function OrderDetailsAuditTrail({ orderDetails }: OrderDetailsAuditTrailP
             return (
               <li
                 key={entry.id}
-                className="text-sm border-l-4 border-blue-200 pl-3 py-1 bg-white rounded-r"
+                className="rounded-r border-l-4 border-gray-300 bg-white py-1 pl-3 text-sm"
               >
                 <div className="text-gray-500 text-xs mb-1">
                   {timeStr}

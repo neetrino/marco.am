@@ -30,8 +30,8 @@ export function AddCategoryModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div className="mx-4 w-full max-w-md rounded-xl border border-gray-200 bg-white p-5">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('admin.categories.addCategory')}</h3>
         <div className="space-y-4">
           <div>
@@ -53,7 +53,7 @@ export function AddCategoryModal({
             <select
               value={formData.parentId}
               onChange={(e) => onFormDataChange({ ...formData, parentId: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="admin-field"
             >
               <option value="">{t('admin.categories.rootCategory')}</option>
               {categoryTree.map((category) => (
@@ -84,7 +84,7 @@ export function AddCategoryModal({
               onChange={(e) => onFormDataChange({ ...formData, seoDescription: e.target.value })}
               placeholder={t('admin.categories.seoDescriptionPlaceholder')}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
+              className="admin-field resize-y"
             />
           </div>
           <div>
@@ -93,7 +93,7 @@ export function AddCategoryModal({
                 type="checkbox"
                 checked={formData.requiresSizes}
                 onChange={(e) => onFormDataChange({ ...formData, requiresSizes: e.target.checked })}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                className="h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-500"
               />
               <span className="text-sm text-gray-700">
                 {t('admin.categories.requiresSizes')}

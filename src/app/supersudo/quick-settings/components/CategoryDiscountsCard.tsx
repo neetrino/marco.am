@@ -31,16 +31,17 @@ export function CategoryDiscountsCard({
   const { t } = useTranslation();
 
   return (
-    <Card className="p-6 mb-8 bg-white border-gray-200">
-      <div className="flex items-center justify-between mb-4">
+    <Card className="admin-card mb-6 border-slate-200/80 bg-white/95 shadow-[0_12px_28px_rgba(15,23,42,0.07)]">
+      <div className="mb-4 flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">{t('admin.quickSettings.categoryDiscounts')}</h2>
-          <p className="text-sm text-gray-600">{t('admin.quickSettings.categoryDiscountsSubtitle')}</p>
+          <h2 className="text-xl font-semibold tracking-tight text-slate-900">{t('admin.quickSettings.categoryDiscounts')}</h2>
+          <p className="text-sm text-slate-600">{t('admin.quickSettings.categoryDiscountsSubtitle')}</p>
         </div>
         <Button
           variant="primary"
           onClick={handleCategoryDiscountSave}
           disabled={categorySaving || categories.length === 0}
+          className="shadow-sm"
         >
           {categorySaving ? (
             <div className="flex items-center gap-2">
@@ -54,31 +55,31 @@ export function CategoryDiscountsCard({
       </div>
 
       {categoriesLoading ? (
-        <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600">{t('admin.quickSettings.loadingCategories')}</p>
+        <div className="py-8 text-center">
+          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-b-2 border-slate-900"></div>
+          <p className="text-slate-600">{t('admin.quickSettings.loadingCategories')}</p>
         </div>
       ) : categories.length === 0 ? (
-        <div className="text-center py-6 text-gray-600 border border-dashed border-gray-200 rounded">
+        <div className="rounded-lg border border-dashed border-slate-300 py-6 text-center text-slate-600">
           {t('admin.quickSettings.noCategories')}
         </div>
       ) : (
-        <div className="max-h-[420px] overflow-y-auto divide-y divide-gray-100 border border-gray-100 rounded-lg">
+        <div className="max-h-[440px] overflow-y-auto rounded-xl border border-slate-100 bg-slate-50/50 p-2">
           {categories.map((category) => {
             const currentValue = categoryDiscounts[category.id];
             return (
               <div
                 key={category.id}
-                className="flex items-center gap-4 px-4 py-3 bg-white hover:bg-gray-50 transition-colors"
+                className="mb-2 flex items-center gap-4 rounded-lg border border-transparent bg-white px-4 py-3 shadow-[0_2px_8px_rgba(15,23,42,0.04)] transition-all duration-200 last:mb-0 hover:-translate-y-0.5 hover:border-amber-200 hover:bg-gradient-to-r hover:from-yellow-50 hover:to-amber-50 hover:shadow-[0_10px_24px_rgba(120,53,15,0.16)]"
               >
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">
+                  <p className="truncate text-sm font-semibold text-slate-900">
                     {category.title || t('admin.quickSettings.untitledCategory')}
                   </p>
                   {category.parentId ? (
-                    <p className="text-xs text-gray-500">{t('admin.quickSettings.parentCategoryId').replace('{id}', category.parentId)}</p>
+                    <p className="text-xs text-slate-500">{t('admin.quickSettings.parentCategoryId').replace('{id}', category.parentId)}</p>
                   ) : (
-                    <p className="text-xs text-gray-500">{t('admin.quickSettings.rootCategory')}</p>
+                    <p className="text-xs text-slate-500">{t('admin.quickSettings.rootCategory')}</p>
                   )}
                 </div>
                 <div className="flex items-center gap-2">
@@ -89,15 +90,16 @@ export function CategoryDiscountsCard({
                     step="0.1"
                     value={currentValue === undefined ? '' : currentValue}
                     onChange={(e) => updateCategoryDiscountValue(category.id, e.target.value)}
-                    className="w-24"
+                    className="w-24 border-slate-300 bg-white"
                     placeholder="0"
                   />
-                  <span className="text-sm font-medium text-gray-700">%</span>
+                  <span className="text-sm font-semibold text-slate-700">%</span>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => clearCategoryDiscount(category.id)}
                     disabled={currentValue === undefined}
+                    className="text-slate-600 hover:bg-amber-100 hover:text-amber-900"
                   >
                     {t('admin.quickSettings.clear')}
                   </Button>

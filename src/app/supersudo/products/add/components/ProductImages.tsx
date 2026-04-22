@@ -1,7 +1,9 @@
 'use client';
 
 import type { ChangeEvent, RefObject } from 'react';
+import { Button } from '@shop/ui';
 import { useTranslation } from '../../../../../lib/i18n-client';
+import { FormSection } from './FormSection';
 
 interface ProductImagesProps {
   imageUrls: string[];
@@ -27,28 +29,29 @@ export function ProductImages({
   const { t } = useTranslation();
 
   return (
-    <div>
-      <h2 className="text-xl font-semibold text-gray-900 mb-4">{t('admin.products.add.mainProductImage')}</h2>
+    <FormSection
+      title={t('admin.products.add.mainProductImage')}
+      description={t('admin.products.add.uploadMultipleImages')}
+    >
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <span className="mb-2 block text-sm font-medium text-gray-700">
             {t('admin.products.add.productImages')}
-            <span className="text-xs text-gray-500 ml-2">({t('admin.products.add.uploadMultipleImages')})</span>
-          </label>
-          
-          {/* Upload Button */}
+          </span>
+
           <div className="mb-4">
-            <button
+            <Button
               type="button"
+              variant="outline"
               onClick={() => fileInputRef.current?.click()}
               disabled={imageUploadLoading}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="inline-flex w-full items-center justify-center gap-2 sm:w-auto"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
               {imageUploadLoading ? t('admin.products.add.uploading') : t('admin.products.add.uploadImages')}
-            </button>
+            </Button>
             <input
               ref={fileInputRef}
               type="file"
@@ -64,11 +67,13 @@ export function ProductImages({
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {imageUrls.map((imageUrl, index) => (
                 <div key={index} className="relative group">
-                  <div className={`relative border-2 rounded-md overflow-hidden ${
-                    featuredImageIndex === index 
-                      ? 'border-blue-500 ring-2 ring-blue-300' 
-                      : 'border-gray-300'
-                  }`}>
+                  <div
+                    className={`relative overflow-hidden rounded-lg border-2 ${
+                    featuredImageIndex === index
+                      ? 'border-marco-black ring-2 ring-marco-yellow/40'
+                      : 'border-marco-border/60'
+                  }`}
+                  >
                     <img
                       src={imageUrl}
                       alt={`Product image ${index + 1}`}
@@ -82,7 +87,7 @@ export function ProductImages({
                           type="checkbox"
                           checked={featuredImageIndex === index}
                           onChange={() => onSetFeaturedImage(index)}
-                          className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                          className="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-gray-500"
                         />
                         <span className="text-xs font-medium text-gray-700">
                           {featuredImageIndex === index ? t('admin.products.add.main') : t('admin.products.add.setAsMain')}
@@ -104,7 +109,7 @@ export function ProductImages({
 
                     {/* Main Badge */}
                     {featuredImageIndex === index && (
-                      <div className="absolute bottom-2 left-2 bg-blue-500 text-white px-2 py-1 rounded text-xs font-medium">
+                      <div className="absolute bottom-2 left-2 rounded bg-marco-yellow px-2 py-1 text-xs font-medium text-marco-black">
                         {t('admin.products.add.main')}
                       </div>
                     )}
@@ -121,7 +126,7 @@ export function ProductImages({
           )}
         </div>
       </div>
-    </div>
+    </FormSection>
   );
 }
 

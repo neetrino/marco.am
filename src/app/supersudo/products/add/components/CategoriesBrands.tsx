@@ -2,6 +2,7 @@
 
 import { Input } from '@shop/ui';
 import { useTranslation } from '../../../../../lib/i18n-client';
+import { FormSection } from './FormSection';
 import type { Category, Brand, Variant } from '../types';
 
 interface CategoriesBrandsProps {
@@ -126,9 +127,8 @@ export function CategoriesBrands({
   };
 
   return (
-    <div>
-      <h2 className="text-xl font-semibold text-gray-900 mb-4">{t('admin.products.add.categoriesAndBrands')}</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <FormSection title={t('admin.products.add.categoriesAndBrands')}>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {/* Categories - Multi-select */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -145,7 +145,7 @@ export function CategoriesBrands({
                   onUseNewCategoryChange(false);
                   onNewCategoryNameChange('');
                 }}
-                className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                className="w-4 h-4 text-gray-900 border-gray-300 focus:ring-gray-500"
               />
               <label htmlFor="select-category" className="text-sm text-gray-700">
                 {t('admin.products.add.selectExistingCategories')}
@@ -160,7 +160,7 @@ export function CategoriesBrands({
                 onChange={() => {
                   onUseNewCategoryChange(true);
                 }}
-                className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                className="w-4 h-4 text-gray-900 border-gray-300 focus:ring-gray-500"
               />
               <label htmlFor="new-category" className="text-sm text-gray-700">
                 {t('admin.products.add.addNewCategory')}
@@ -171,7 +171,7 @@ export function CategoriesBrands({
                 <button
                   type="button"
                   onClick={() => onCategoriesExpandedChange(!categoriesExpanded)}
-                  className="w-full px-3 py-2 text-left border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm flex items-center justify-between"
+                  className="w-full px-3 py-2 text-left border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 bg-white text-sm flex items-center justify-between"
                 >
                   <span className="text-gray-700">
                     {categoryIds.length === 0
@@ -206,7 +206,7 @@ export function CategoriesBrands({
                               type="checkbox"
                               checked={categoryIds.includes(category.id)}
                               onChange={(e) => handleCategoryChange(category.id, e.target.checked)}
-                              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                              className="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-gray-500"
                             />
                             <span
                               className={`text-gray-700 ${
@@ -252,7 +252,7 @@ export function CategoriesBrands({
                   onUseNewBrandChange(false);
                   onNewBrandNameChange('');
                 }}
-                className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                className="w-4 h-4 text-gray-900 border-gray-300 focus:ring-gray-500"
               />
               <label htmlFor="select-brand" className="text-sm text-gray-700">
                 {t('admin.products.add.selectExistingBrands')}
@@ -267,7 +267,7 @@ export function CategoriesBrands({
                 onChange={() => {
                   onUseNewBrandChange(true);
                 }}
-                className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                className="w-4 h-4 text-gray-900 border-gray-300 focus:ring-gray-500"
               />
               <label htmlFor="new-brand" className="text-sm text-gray-700">
                 {t('admin.products.add.addNewBrand')}
@@ -278,7 +278,7 @@ export function CategoriesBrands({
                 <button
                   type="button"
                   onClick={() => onBrandsExpandedChange(!brandsExpanded)}
-                  className="w-full px-3 py-2 text-left border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm flex items-center justify-between"
+                  className="w-full px-3 py-2 text-left border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 bg-white text-sm flex items-center justify-between"
                 >
                   <span className="text-gray-700">
                     {brandIds.length === 0
@@ -316,7 +316,7 @@ export function CategoriesBrands({
                                   : brandIds.filter((id) => id !== brand.id);
                                 onBrandIdsChange(newBrandIds);
                               }}
-                              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                              className="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-gray-500"
                             />
                             <span className="text-sm text-gray-700">{brand.name}</span>
                           </label>
@@ -338,7 +338,7 @@ export function CategoriesBrands({
           </div>
         </div>
       </div>
-    </div>
+    </FormSection>
   );
 }
 

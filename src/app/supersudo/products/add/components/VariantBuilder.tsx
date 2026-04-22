@@ -3,6 +3,7 @@
 import type { ChangeEvent, RefObject } from 'react';
 import { Button, Input } from '@shop/ui';
 import { useTranslation } from '../../../../../lib/i18n-client';
+import { FormSection } from './FormSection';
 import { getColorHex } from '../../../../../lib/colorMap';
 import { CURRENCIES, type CurrencyCode } from '../../../../../lib/currency';
 import type { Attribute, GeneratedVariant } from '../types';
@@ -69,9 +70,8 @@ export function VariantBuilder({
   const attributesToShow = generatedVariants.length > 0 ? getAttributesToShow(generatedVariants[0]) : [];
 
   return (
-    <div>
-      <h2 className="text-xl font-semibold text-gray-900 mb-4">{t('admin.products.add.variantBuilder')}</h2>
-      <div className="bg-white border border-gray-200 rounded-lg p-6 space-y-6">
+    <FormSection title={t('admin.products.add.variantBuilder')}>
+      <div className="space-y-6">
         {/* Generated Variants Table */}
         {generatedVariants.length > 0 && (
           <div>
@@ -180,7 +180,7 @@ export function VariantBuilder({
                       {t('admin.products.add.image')}
                     </th>
                     <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
-                      {t('admin.products.add.actions') || 'Actions'}
+                      {t('admin.products.add.actions')}
                     </th>
                   </tr>
                 </thead>
@@ -221,14 +221,14 @@ export function VariantBuilder({
                                   onClick={() => {
                                     onOpenValueModal({ variantId: variant.id, attributeId });
                                   }}
-                                  className="w-full text-left flex items-center gap-1 p-1.5 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                  className="w-full text-left flex items-center gap-1 p-1.5 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500"
                                 >
                                   <div className="flex-1 flex flex-wrap items-center gap-1 min-w-0">
                                     {selectedValues.length > 0 ? (
                                       selectedValues.map((val) => (
                                         <span
                                           key={val.id}
-                                          className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded text-xs"
+                                          className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-gray-100 text-gray-700 rounded text-xs"
                                         >
                                           {val.imageUrl ? (
                                             <img
@@ -357,7 +357,7 @@ export function VariantBuilder({
                                 type="button"
                                 onClick={() => variantImageInputRefs.current?.[variant.id]?.click()}
                                 disabled={imageUploadLoading}
-                                className="px-2 py-1 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                                className="px-2 py-1 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                               >
                                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -386,7 +386,7 @@ export function VariantBuilder({
                             type="button"
                             onClick={() => onVariantDelete(variant.id)}
                             className="px-2 py-1 text-xs font-medium text-red-700 bg-red-50 border border-red-300 rounded-md hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors flex items-center gap-1"
-                            title={t('admin.products.add.deleteVariant') || 'Delete variant'}
+                            title={t('admin.products.add.deleteVariant')}
                           >
                             <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path
@@ -396,7 +396,7 @@ export function VariantBuilder({
                                 d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                               />
                             </svg>
-                            {t('admin.products.add.delete') || 'Delete'}
+                            {t('admin.products.add.delete')}
                           </button>
                         </td>
                       </tr>
@@ -408,7 +408,7 @@ export function VariantBuilder({
 
             <div className="mt-4 flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={onVariantAdd}>
-                {t('admin.products.add.addVariant') || 'Add'}
+                {t('admin.products.add.addVariant')}
               </Button>
               <Button
                 type="button"
@@ -416,13 +416,13 @@ export function VariantBuilder({
                   logger.devLog('✅ [VARIANT BUILDER] Variants ready for submission:', generatedVariants);
                 }}
               >
-                {t('admin.products.add.variantsReady') || 'Variants Ready'}
+                {t('admin.products.add.variantsReady')}
               </Button>
             </div>
           </div>
         )}
       </div>
-    </div>
+    </FormSection>
   );
 }
 

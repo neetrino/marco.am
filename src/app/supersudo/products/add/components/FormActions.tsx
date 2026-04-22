@@ -14,8 +14,8 @@ export function FormActions({ loading, isEditMode }: FormActionsProps) {
   const router = useRouter();
 
   return (
-    <div className="sticky bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-lg -mx-6 -mb-6 px-6 py-4 mt-8 backdrop-blur-sm bg-white/95">
-      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 max-w-full">
+    <div className="sticky bottom-0 left-0 right-0 z-50 -mx-5 -mb-5 mt-6 border-t border-marco-border/60 bg-gradient-to-b from-white to-marco-gray/20 px-5 py-4 shadow-[0_-8px_30px_rgba(16,16,16,0.06)] backdrop-blur-sm sm:-mx-8 sm:-mb-5 sm:px-8 sm:mt-8">
+      <div className="flex max-w-full flex-col gap-3 sm:flex-row sm:gap-4">
         <Button
           type="submit"
           variant="primary"

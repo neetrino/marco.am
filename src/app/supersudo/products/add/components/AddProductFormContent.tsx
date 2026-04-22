@@ -172,8 +172,11 @@ export function AddProductFormContent({
   handleSubmit,
 }: AddProductFormContentProps) {
   return (
-    <Card className="p-6 pb-24 sm:pb-24">
-      <form onSubmit={handleSubmit} className="space-y-14">
+    <Card className="relative border-marco-border/80 bg-gradient-to-br from-white via-white to-marco-gray/10 p-0 shadow-[0_16px_40px_rgba(16,16,16,0.08)] sm:rounded-2xl">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-6 p-5 pb-28 sm:space-y-8 sm:p-8 sm:pb-32"
+      >
         <BasicInformation
           productType={productType}
           setProductType={onProductTypeChange}

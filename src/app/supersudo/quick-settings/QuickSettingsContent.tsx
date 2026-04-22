@@ -3,7 +3,7 @@
 import { Card } from '@shop/ui';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '../../../lib/i18n-client';
-import { AdminSidebar } from './components/AdminSidebar';
+import { AdminPageLayout } from '../components/AdminPageLayout';
 import { GlobalDiscountCard } from './components/GlobalDiscountCard';
 import { QuickInfoCard } from './components/QuickInfoCard';
 import { CategoryDiscountsCard } from './components/CategoryDiscountsCard';
@@ -93,72 +93,64 @@ export function QuickSettingsContent({
   savingProductId,
 }: QuickSettingsContentProps) {
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="page-shell">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">{t('admin.quickSettings.title')}</h1>
-          <p className="text-gray-600 mt-2">{t('admin.quickSettings.subtitle')}</p>
-        </div>
-
-        <div className="flex flex-col lg:flex-row gap-8">
-          <AdminSidebar currentPath={currentPath} router={router} t={t} />
-
-          {/* Main Content */}
-          <div className="flex-1 min-w-0">
-            {/* Quick Settings - Discount Management */}
-            <Card className="p-6 mb-8 bg-white border-gray-200">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h2 className="text-xl font-semibold text-gray-900">{t('admin.quickSettings.quickSettingsTitle')}</h2>
-                  <p className="text-sm text-gray-600 mt-1">{t('admin.quickSettings.quickSettingsSubtitle')}</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <GlobalDiscountCard
-                  globalDiscount={globalDiscount}
-                  setGlobalDiscount={setGlobalDiscount}
-                  discountLoading={discountLoading}
-                  discountSaving={discountSaving}
-                  handleDiscountSave={handleDiscountSave}
-                />
-
-                <QuickInfoCard />
-              </div>
-            </Card>
-
-            <CategoryDiscountsCard
-              categories={categories}
-              categoriesLoading={categoriesLoading}
-              categoryDiscounts={categoryDiscounts}
-              updateCategoryDiscountValue={updateCategoryDiscountValue}
-              clearCategoryDiscount={clearCategoryDiscount}
-              handleCategoryDiscountSave={handleCategoryDiscountSave}
-              categorySaving={categorySaving}
-            />
-
-            <BrandDiscountsCard
-              brands={brands}
-              brandsLoading={brandsLoading}
-              brandDiscounts={brandDiscounts}
-              updateBrandDiscountValue={updateBrandDiscountValue}
-              clearBrandDiscount={clearBrandDiscount}
-              handleBrandDiscountSave={handleBrandDiscountSave}
-              brandSaving={brandSaving}
-            />
-
-            <ProductDiscountsCard
-              products={products}
-              productsLoading={productsLoading}
-              productDiscounts={productDiscounts}
-              setProductDiscounts={setProductDiscounts}
-              handleProductDiscountSave={handleProductDiscountSave}
-              savingProductId={savingProductId}
-            />
+    <AdminPageLayout
+      currentPath={currentPath}
+      router={router}
+      t={t}
+      title={t('admin.quickSettings.title')}
+      subtitle={t('admin.quickSettings.subtitle')}
+      backLabel={t('admin.common.backToAdmin')}
+      onBack={() => router.push('/supersudo')}
+    >
+      <Card className="admin-card mb-6 overflow-hidden border-slate-200/80 bg-gradient-to-br from-white via-white to-slate-50 shadow-[0_14px_36px_rgba(15,23,42,0.08)]">
+        <div className="mb-5 flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-semibold tracking-tight text-slate-900">{t('admin.quickSettings.quickSettingsTitle')}</h2>
+            <p className="mt-1 text-sm text-slate-600">{t('admin.quickSettings.quickSettingsSubtitle')}</p>
           </div>
         </div>
-      </div>
-    </div>
+
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+          <GlobalDiscountCard
+            globalDiscount={globalDiscount}
+            setGlobalDiscount={setGlobalDiscount}
+            discountLoading={discountLoading}
+            discountSaving={discountSaving}
+            handleDiscountSave={handleDiscountSave}
+          />
+
+          <QuickInfoCard />
+        </div>
+      </Card>
+
+      <CategoryDiscountsCard
+        categories={categories}
+        categoriesLoading={categoriesLoading}
+        categoryDiscounts={categoryDiscounts}
+        updateCategoryDiscountValue={updateCategoryDiscountValue}
+        clearCategoryDiscount={clearCategoryDiscount}
+        handleCategoryDiscountSave={handleCategoryDiscountSave}
+        categorySaving={categorySaving}
+      />
+
+      <BrandDiscountsCard
+        brands={brands}
+        brandsLoading={brandsLoading}
+        brandDiscounts={brandDiscounts}
+        updateBrandDiscountValue={updateBrandDiscountValue}
+        clearBrandDiscount={clearBrandDiscount}
+        handleBrandDiscountSave={handleBrandDiscountSave}
+        brandSaving={brandSaving}
+      />
+
+      <ProductDiscountsCard
+        products={products}
+        productsLoading={productsLoading}
+        productDiscounts={productDiscounts}
+        setProductDiscounts={setProductDiscounts}
+        handleProductDiscountSave={handleProductDiscountSave}
+        savingProductId={savingProductId}
+      />
+    </AdminPageLayout>
   );
 }

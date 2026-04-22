@@ -133,7 +133,7 @@ Cloudflare → Security → WAF → Rate limiting rules
 
 **E. Admin**
 
-- `/admin/*`, `/api/admin/*`
+- `/supersudo/*`, `/api/supersudo/*`
     
 
 ---
@@ -182,7 +182,7 @@ Cloudflare → Security → WAF → Rate limiting rules
 
 **E) Admin**
 
-- `/admin/*`:
+- `/supersudo/*`:
     
     - по умолчанию **Block**, затем **Allowlist** по IP/VPN/Access (см. раздел 4 и 6)
         
@@ -266,7 +266,7 @@ Cloudflare → Zero Trust → Access
 
 **Политика:**
 
-- `/admin/*` закрыт Access-правилом
+- `/supersudo/*` закрыт Access-правилом
     
 - доступ только:
     
@@ -277,7 +277,7 @@ Cloudflare → Zero Trust → Access
     - One-time PIN (как минимум)
         
 
-**Зачем:** это проще и надежнее, чем надеяться, что “никто не угадает /admin”.
+**Зачем:** это проще и надежнее, чем надеяться, что “никто не угадает /supersudo”.
 
 ---
 
@@ -390,7 +390,7 @@ Cloudflare → Zero Trust → Access
 
 ### 9.6 Admin protection
 
--  `/admin/*` закрыт через Cloudflare Access или allowlist
+-  `/supersudo/*` закрыт через Cloudflare Access или allowlist
     
 
 ---

@@ -4,11 +4,11 @@ import { useEffect, useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '../../../lib/auth/AuthContext';
 import { apiClient, getApiOrErrorMessage } from '../../../lib/api-client';
-import { AdminMenuDrawer } from '../../../components/AdminMenuDrawer';
-import { getAdminMenuTABS } from '../admin-menu.config';
 import { useTranslation } from '../../../lib/i18n-client';
 import { getStoredCurrency, initializeCurrencyRates, type CurrencyCode } from '../../../lib/currency';
+import { AdminPageLayout } from '../components/AdminPageLayout';
 import { ProductFilters } from './components/ProductFilters';
+import { BulkSelectionControls } from './components/BulkSelectionControls';
 import { ProductsTable } from './components/ProductsTable';
 import { useProductHandlers } from './hooks/useProductHandlers';
 import type { Product, ProductsResponse, Category } from './types';
@@ -36,6 +36,9 @@ export default function ProductsPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [_togglingAllFeatured, setTogglingAllFeatured] = useState(false);
+  const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
+  const [updatingPublishedIds, setUpdatingPublishedIds] = useState<Set<string>>(new Set());
+  const [updatingFeaturedIds, setUpdatingFeaturedIds] = useState<Set<string>>(new Set());
   const [currency, setCurrency] = useState<CurrencyCode>('USD');
 
   useEffect(() => {
@@ -289,6 +292,9 @@ export default function ProductsPage() {
     setPage,
     setBulkDeleting,
     setTogglingAllFeatured,
+    setDeletingIds,
+    setUpdatingPublishedIds,
+    setUpdatingFeaturedIds,
   });
 
   const handleClearFilters = () => {
@@ -314,132 +320,91 @@ export default function ProductsPage() {
     return null;
   }
 
-  const adminTabs = getAdminMenuTABS(t);
   const currentPath = pathname || '/supersudo/products';
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-6">
+    <AdminPageLayout
+      currentPath={currentPath}
+      router={router}
+      t={t}
+      title={t('admin.products.title')}
+      backLabel={t('admin.products.backToAdmin')}
+      onBack={() => router.push('/supersudo')}
+      headerActions={
+        (search || selectedCategories.size > 0 || skuSearch || stockFilter !== 'all') ? (
           <button
-            onClick={() => router.push('/supersudo')}
-            className="text-gray-600 hover:text-gray-900 mb-2 flex items-center text-sm"
+            type="button"
+            onClick={handleClearFilters}
+            className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 transition-colors hover:border-slate-300 hover:text-slate-900"
           >
-            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            {t('admin.products.backToAdmin')}
+            {t('admin.products.clearAll')}
           </button>
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{t('admin.products.title')}</h1>
-            {(search || selectedCategories.size > 0 || skuSearch || stockFilter !== 'all') && (
-              <button
-                type="button"
-                onClick={handleClearFilters}
-                className="text-sm text-gray-600 hover:text-gray-900 underline"
-              >
-                {t('admin.products.clearAll')}
-              </button>
-            )}
-          </div>
-        </div>
+        ) : undefined
+      }
+    >
+      <ProductFilters
+        search={search}
+        setSearch={setSearch}
+        skuSearch={skuSearch}
+        setSkuSearch={setSkuSearch}
+        selectedCategories={selectedCategories}
+        setSelectedCategories={setSelectedCategories}
+        categories={categories}
+        categoriesLoading={categoriesLoading}
+        categoriesExpanded={categoriesExpanded}
+        setCategoriesExpanded={setCategoriesExpanded}
+        stockFilter={stockFilter}
+        setStockFilter={setStockFilter}
+        minPrice={minPrice}
+        setMinPrice={setMinPrice}
+        maxPrice={maxPrice}
+        setMaxPrice={setMaxPrice}
+        handleSearch={handlers.handleSearch}
+        handleClearFilters={handleClearFilters}
+        setPage={setPage}
+      />
 
-        <div className="flex flex-col lg:flex-row gap-8">
-          <div className="lg:hidden mb-6">
-            <AdminMenuDrawer tabs={adminTabs} currentPath={currentPath} />
-          </div>
-          {/* Sidebar Navigation */}
-          <aside className="hidden lg:block lg:w-64 flex-shrink-0">
-            <nav className="bg-white border border-gray-200 rounded-lg p-2 space-y-1">
-              {adminTabs.map((tab) => {
-                const isActive = currentPath === tab.path || 
-                  (tab.path === '/supersudo' && currentPath === '/supersudo') ||
-                  (tab.path !== '/supersudo' && currentPath.startsWith(tab.path));
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => {
-                      router.push(tab.path);
-                    }}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-md text-sm font-medium transition-all ${
-                      tab.isSubCategory ? 'pl-12' : ''
-                    } ${
-                      isActive
-                        ? 'bg-gray-900 text-white'
-                        : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                    }`}
-                  >
-                    <span className={`flex-shrink-0 ${isActive ? 'text-white' : 'text-gray-500'}`}>
-                      {tab.icon}
-                    </span>
-                    <span className="text-left">{tab.label}</span>
-                  </button>
-                );
-              })}
-            </nav>
-          </aside>
-
-          {/* Main Content */}
-          <div className="flex-1 min-w-0">
-            <ProductFilters
-              search={search}
-              setSearch={setSearch}
-              skuSearch={skuSearch}
-              setSkuSearch={setSkuSearch}
-              selectedCategories={selectedCategories}
-              setSelectedCategories={setSelectedCategories}
-              categories={categories}
-              categoriesLoading={categoriesLoading}
-              categoriesExpanded={categoriesExpanded}
-              setCategoriesExpanded={setCategoriesExpanded}
-              stockFilter={stockFilter}
-              setStockFilter={setStockFilter}
-              minPrice={minPrice}
-              setMinPrice={setMinPrice}
-              maxPrice={maxPrice}
-              setMaxPrice={setMaxPrice}
-              selectedIds={selectedIds}
-              handleSearch={handlers.handleSearch}
-              handleBulkDelete={handlers.handleBulkDelete}
-              handleClearFilters={handleClearFilters}
-              bulkDeleting={bulkDeleting}
-              setPage={setPage}
-            />
-
-            {/* Add New Product Button */}
-            <div className="mb-6">
-              <button
-                onClick={() => router.push('/supersudo/products/add')}
-                className="w-full px-4 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors flex items-center justify-center gap-2 font-medium text-sm"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                {t('admin.products.addNewProduct')}
-              </button>
-            </div>
-
-            {/* Products Table */}
-            <ProductsTable
-              loading={loading}
-              sortedProducts={sortedProducts}
-              products={products}
-              selectedIds={selectedIds}
-              toggleSelect={handlers.toggleSelect}
-              toggleSelectAll={handlers.toggleSelectAll}
-              sortBy={sortBy}
-              handleHeaderSort={handleHeaderSort}
-              currency={currency}
-              handleDeleteProduct={handlers.handleDeleteProduct}
-              handleTogglePublished={handlers.handleTogglePublished}
-              handleToggleFeatured={handlers.handleToggleFeatured}
-              meta={meta}
-              page={page}
-              setPage={setPage}
-            />
-          </div>
-        </div>
+      <div className="mb-4 flex items-center justify-between rounded-2xl border border-slate-200/80 bg-white/95 px-4 py-3 shadow-sm shadow-slate-200/60">
+        <p className="text-sm font-medium text-slate-600">
+          {t('admin.products.title')}
+        </p>
+        <button
+          onClick={() => router.push('/supersudo/products/add')}
+          className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-marco-yellow px-4 text-sm font-semibold text-marco-black transition-all hover:-translate-y-0.5 hover:brightness-95"
+        >
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          {t('admin.products.addNewProduct')}
+        </button>
       </div>
-    </div>
+
+      <BulkSelectionControls
+        selectedCount={selectedIds.size}
+        onBulkDelete={handlers.handleBulkDelete}
+        bulkDeleting={bulkDeleting}
+      />
+
+      <ProductsTable
+        loading={loading}
+        sortedProducts={sortedProducts}
+        products={products}
+        selectedIds={selectedIds}
+        toggleSelect={handlers.toggleSelect}
+        toggleSelectAll={handlers.toggleSelectAll}
+        sortBy={sortBy}
+        handleHeaderSort={handleHeaderSort}
+        currency={currency}
+        handleDeleteProduct={handlers.handleDeleteProduct}
+        handleTogglePublished={handlers.handleTogglePublished}
+        handleToggleFeatured={handlers.handleToggleFeatured}
+        deletingIds={deletingIds}
+        updatingPublishedIds={updatingPublishedIds}
+        updatingFeaturedIds={updatingFeaturedIds}
+        meta={meta}
+        page={page}
+        setPage={setPage}
+      />
+    </AdminPageLayout>
   );
 }

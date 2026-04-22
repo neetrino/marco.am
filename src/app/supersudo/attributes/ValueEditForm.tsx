@@ -40,34 +40,34 @@ export function ValueEditForm({
   const { t } = useTranslation();
 
   return (
-    <div className="border-t border-gray-200 p-4 bg-gray-50 space-y-4">
+    <div className="space-y-5 border-t border-gray-200 bg-gradient-to-b from-gray-50/80 to-white p-4">
       {/* Label */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="mb-2 block text-sm font-medium text-gray-700">
           {t('admin.attributes.valueModal.label')}
         </label>
         <input
           type="text"
           value={editingLabel}
           onChange={(e) => onLabelChange(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+          className="w-full rounded-xl border border-gray-300 px-3 py-2 focus:border-transparent focus:ring-2 focus:ring-gray-900"
           placeholder={t('admin.attributes.valueModal.labelPlaceholder')}
         />
       </div>
 
       {/* Colors and Image Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {/* Colors Section */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
+        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-[0_6px_20px_-14px_rgba(17,24,39,0.35)]">
+          <label className="mb-3 block text-sm font-medium text-gray-700">
             {t('admin.attributes.valueModal.colors')}
           </label>
           <ColorPaletteSelector colors={editingColors} onColorsChange={onColorsChange} />
         </div>
 
         {/* Image Section */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
+        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-[0_6px_20px_-14px_rgba(17,24,39,0.35)]">
+          <label className="mb-3 block text-sm font-medium text-gray-700">
             {t('admin.attributes.valueModal.image')}
           </label>
           {editingImageUrl ? (
@@ -76,12 +76,12 @@ export function ValueEditForm({
                 <img
                   src={editingImageUrl}
                   alt={t('admin.attributes.valueModal.imagePreview')}
-                  className="w-32 h-32 object-cover rounded-lg border border-gray-300"
+                  className="h-32 w-32 rounded-xl border border-gray-300 object-cover"
                 />
                 <button
                   type="button"
                   onClick={onRemoveImage}
-                  className="absolute -top-2 -right-2 w-6 h-6 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors flex items-center justify-center"
+                  className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-600 text-white transition-colors hover:bg-red-700"
                   title={t('admin.attributes.valueModal.removeImage')}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -93,7 +93,7 @@ export function ValueEditForm({
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={imageUploading}
-                className="px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {imageUploading ? t('admin.attributes.valueModal.uploading') : t('admin.attributes.valueModal.changeImage')}
               </button>
@@ -104,7 +104,7 @@ export function ValueEditForm({
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={imageUploading}
-                className="px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="flex items-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {imageUploading ? (
                   <>
@@ -133,12 +133,12 @@ export function ValueEditForm({
       </div>
 
       {/* Action Buttons */}
-      <div className="flex items-center justify-end gap-3 pt-2 border-t border-gray-200">
+      <div className="flex items-center justify-end gap-3 border-t border-gray-200 pt-3">
         <button
           type="button"
           onClick={onCancel}
           disabled={savingValue}
-          className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="rounded-xl bg-gray-200 px-4 py-2 text-gray-700 transition-colors hover:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {t('admin.attributes.valueModal.cancel')}
         </button>
@@ -146,7 +146,7 @@ export function ValueEditForm({
           type="button"
           onClick={onSave}
           disabled={savingValue || !editingLabel.trim()}
-          className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          className="flex items-center gap-2 rounded-xl bg-marco-yellow px-4 py-2 font-semibold text-marco-black transition-colors hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {savingValue ? (
             <>

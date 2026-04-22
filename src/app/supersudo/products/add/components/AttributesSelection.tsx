@@ -2,6 +2,7 @@
 
 import type { RefObject } from 'react';
 import { useTranslation } from '../../../../../lib/i18n-client';
+import { FormSection } from './FormSection';
 import { getColorHex } from '../../../../../lib/colorMap';
 import type { Attribute } from '../types';
 
@@ -29,9 +30,8 @@ export function AttributesSelection({
   const { t } = useTranslation();
 
   return (
-    <div>
-      <h2 className="text-xl font-semibold text-gray-900 mb-4">{t('admin.products.add.selectAttributesForVariants')}</h2>
-      <div className="bg-white border border-gray-200 rounded-lg p-6">
+    <FormSection title={t('admin.products.add.selectAttributesForVariants')}>
+      <div className="rounded-xl border border-marco-border/50 bg-white/60 p-4 sm:p-5">
         <label className="block text-sm font-medium text-gray-700 mb-3">
           {t('admin.products.add.attributes')} <span className="text-gray-500 font-normal">{t('admin.products.add.selectMultiple')}</span>
         </label>
@@ -39,7 +39,7 @@ export function AttributesSelection({
           <button
             type="button"
             onClick={onAttributesDropdownToggle}
-            className="w-full px-3 py-2 text-left border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm flex items-center justify-between"
+            className="w-full px-3 py-2 text-left border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 bg-white text-sm flex items-center justify-between"
           >
             <span className="text-gray-700">
               {selectedAttributesForVariants.size === 0
@@ -81,7 +81,7 @@ export function AttributesSelection({
                         key={attribute.id}
                         className={`flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-3 rounded-lg border transition-colors ${
                           selectedAttributesForVariants.has(attribute.id)
-                            ? 'bg-blue-50 border-blue-300'
+                            ? 'bg-gray-100 border-gray-400'
                             : 'border-gray-200 bg-white'
                         }`}
                       >
@@ -89,7 +89,7 @@ export function AttributesSelection({
                           type="checkbox"
                           checked={selectedAttributesForVariants.has(attribute.id)}
                           onChange={(e) => onAttributeToggle(attribute.id, e.target.checked)}
-                          className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                          className="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-gray-500"
                         />
                         <span className="text-sm font-medium text-gray-900">{attribute.name}</span>
                       </label>
@@ -123,7 +123,7 @@ export function AttributesSelection({
                 return (
                   <span
                     key={attributeId}
-                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium border border-blue-200"
+                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium border border-gray-300"
                   >
                     {previewImage ? (
                       <img
@@ -139,14 +139,14 @@ export function AttributesSelection({
                     ) : null}
                     {attribute.name}
                     {selectedValues.length > 0 && (
-                      <span className="text-xs text-blue-600">
+                      <span className="text-xs text-gray-600">
                         ({selectedValues.length})
                       </span>
                     )}
                     <button
                       type="button"
                       onClick={() => onAttributeRemove(attributeId)}
-                      className="ml-1 text-blue-600 hover:text-blue-800 focus:outline-none"
+                      className="ml-1 text-gray-600 hover:text-gray-900 focus:outline-none"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -159,7 +159,7 @@ export function AttributesSelection({
           </div>
         )}
       </div>
-    </div>
+    </FormSection>
   );
 }
 
