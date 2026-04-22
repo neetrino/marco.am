@@ -14,22 +14,22 @@ export default function NotFound() {
   
   return (
     <div className="min-h-screen flex items-center justify-center bg-white">
-      <div className="text-center px-4">
-        <h1 className="text-6xl font-bold text-gray-900 mb-4">404</h1>
-        <h2 className="text-2xl font-semibold text-gray-700 mb-4">{t('common.notFound.title')}</h2>
-        <p className="text-gray-600 mb-8 max-w-md mx-auto">
+      <div className="text-center px-4 -mt-[106px] md:-mt-[138px] text-black">
+        <h1 className="text-8xl md:text-9xl font-bold text-black mb-4">404</h1>
+        <h2 className="text-2xl font-semibold text-black mb-4">{t('common.notFound.title')}</h2>
+        <p className="text-black mb-8 max-w-md mx-auto">
           {t('common.notFound.description')}
         </p>
         <div className="flex gap-4 justify-center">
           <Link
             href="/"
-            className="px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors font-medium"
+            className="px-6 py-3 bg-yellow-400 text-black rounded-full hover:bg-yellow-300 transition-colors font-medium"
           >
             {t('common.notFound.goHome')}
           </Link>
           <Link
             href="/products"
-            className="px-6 py-3 bg-white text-gray-900 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+            className="px-6 py-3 bg-black text-white rounded-full hover:bg-gray-800 transition-colors font-medium"
           >
             {t('common.buttons.browseProducts')}
           </Link>
