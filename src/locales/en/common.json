@@ -223,7 +223,7 @@
     "copyright": "© {year} Shop. All rights reserved.",
     "paymentMethods": "Payment methods",
     "marco": {
-      "brandDescription": "Armenia's leading online platform for premium electronics and home appliances since 2010. Quality you can trust.",
+      "brandDescription": "Armenia's leading online\nplatform for premium electronics and\nhome appliances since\n2010. Quality you can\ntrust.",
       "headings": {
         "company": "Company",
         "support": "Support",
@@ -268,7 +268,6 @@
     "goHome": "Go Home"
   }
 }
-
 
 
 
