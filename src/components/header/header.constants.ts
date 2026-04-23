@@ -160,7 +160,7 @@ export function getHeaderSearchSubmitWidthClass(tabletLike: boolean): string {
 export function getHeaderSearchSubmitClass(tabletLike: boolean): string {
   const radius = getHeaderSearchFormRadiusClass(tabletLike);
   const textShrink = tabletLike ? 'md:text-[11px]' : '';
-  return `flex items-center justify-center self-center ${HEADER_SEARCH_SUBMIT_HEIGHT_CLASS} shrink-0 bg-marco-yellow text-xs font-semibold leading-normal text-marco-black transition-[filter] hover:brightness-95 active:brightness-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/15 ${textShrink} ${radius}`.trim();
+  return `flex items-center justify-center self-center ${HEADER_SEARCH_SUBMIT_HEIGHT_CLASS} shrink-0 bg-marco-yellow text-xs font-semibold leading-normal text-[#050505] dark:text-[#050505] transition-[filter] hover:brightness-95 active:brightness-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/15 ${textShrink} ${radius}`.trim();
 }
 
 export function getHeaderCategoryButtonClass(tabletLike: boolean, ipadDesktopRow2Like = false): string {
@@ -197,7 +197,7 @@ export const HEADER_SEARCH_SUBMIT_WIDTH_CLASS =
 /**
  * Yellow submit — centered in `HEADER_SEARCH_BAR_HEIGHT_CLASS` track; radius matches search pill.
  */
-export const HEADER_SEARCH_SUBMIT_CLASS = `flex items-center justify-center self-center ${HEADER_SEARCH_SUBMIT_HEIGHT_CLASS} shrink-0 bg-marco-yellow text-xs font-semibold leading-normal text-marco-black transition-[filter] hover:brightness-95 active:brightness-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/15 md:max-[1366px]:text-[11px] ${HEADER_SEARCH_FORM_RADIUS_CLASS}`;
+export const HEADER_SEARCH_SUBMIT_CLASS = `flex items-center justify-center self-center ${HEADER_SEARCH_SUBMIT_HEIGHT_CLASS} shrink-0 bg-marco-yellow text-xs font-semibold leading-normal text-[#050505] dark:text-[#050505] transition-[filter] hover:brightness-95 active:brightness-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/15 md:max-[1366px]:text-[11px] ${HEADER_SEARCH_FORM_RADIUS_CLASS}`;
 
 /** Language + currency pill — height matches `HEADER_ROW2_BAR_HEIGHT_CLASS` */
 export const HEADER_LOCALE_PILL_HEIGHT_CLASS = HEADER_ROW2_BAR_HEIGHT_CLASS;

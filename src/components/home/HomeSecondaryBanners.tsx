@@ -25,7 +25,7 @@ export function HomeSecondaryBanners() {
             href="/products"
             className="group flex min-h-[180px] flex-col justify-center rounded-[20px] bg-[#c8d8e4] px-8 py-10 transition-opacity hover:opacity-95 md:min-h-[220px]"
           >
-            <span className="text-4xl font-black uppercase tracking-tight text-[#101010] md:text-5xl">
+            <span className="text-4xl font-black uppercase tracking-tight text-white md:text-5xl">
               {t('home.secondary_banner_label')}
             </span>
             <span className="mt-6 inline-flex w-fit items-center justify-center rounded-full bg-[#101010] px-8 py-3 text-sm font-bold text-white">

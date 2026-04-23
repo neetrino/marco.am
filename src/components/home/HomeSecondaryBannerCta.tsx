@@ -119,7 +119,7 @@ export function HomeSecondaryBannerCta({ language }: HomeSecondaryBannerCtaProps
   return (
     <Link
       href={HOME_SECONDARY_BANNER_CTA_HREF}
-      className={`${montserratSlateCta.className} group pointer-events-auto flex w-full shrink-0 items-center bg-black font-bold text-white transition hover:-translate-y-0.5 hover:bg-red-700 hover:text-white active:translate-y-px focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marco-black ${hyDesktopPillClass} ${enDesktopPillClass} ${ruDesktopPillClass}`}
+      className={`${montserratSlateCta.className} group pointer-events-auto flex w-full shrink-0 items-center bg-black font-bold text-white dark:text-[#050505] transition hover:-translate-y-0.5 hover:bg-red-700 hover:text-white active:translate-y-px focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marco-black ${hyDesktopPillClass} ${enDesktopPillClass} ${ruDesktopPillClass}`}
       style={linkStyle}
       aria-label={ariaLabel}
     >

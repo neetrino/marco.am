@@ -283,7 +283,7 @@ function BrandLogo({ brand }: { brand: BrandLogoCard }) {
 
   return (
     <span
-      className={`text-center text-base font-semibold uppercase tracking-[0.14em] text-marco-black md:text-lg ${brand.wordmarkClassName ?? ''}`}
+      className={`text-center text-base font-semibold uppercase tracking-[0.14em] text-[#050505] dark:text-[#050505] md:text-lg ${brand.wordmarkClassName ?? ''}`}
     >
       {brand.label}
     </span>
@@ -300,7 +300,7 @@ export default async function BrandsPage() {
     <div className="w-full pb-16 pt-10">
       <div className="marco-header-container">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-marco-black md:text-4xl">
+          <h1 className="text-3xl font-bold text-[#050505] dark:text-white md:text-4xl">
             {t(language, 'common.navigation.brands')}
           </h1>
         </div>
@@ -310,7 +310,7 @@ export default async function BrandsPage() {
             <Link
               key={brand.id}
               href={brandHref(brand.hrefToken)}
-              className={`group flex min-h-[136px] items-center justify-center rounded-2xl border border-marco-border bg-white px-6 py-5 transition-colors hover:border-marco-black/30 hover:bg-gray-50 ${brand.cardClassName ?? ''}`}
+              className={`group flex min-h-[136px] items-center justify-center rounded-2xl border border-marco-border bg-[#ffffff] dark:bg-[#ffffff] px-6 py-5 transition-colors hover:border-marco-black/30 hover:bg-[#f8f8f8] dark:hover:bg-[#f8f8f8] ${brand.cardClassName ?? ''}`}
               aria-label={brand.label}
             >
               <BrandLogo brand={brand} />

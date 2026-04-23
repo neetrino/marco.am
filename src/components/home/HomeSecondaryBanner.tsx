@@ -51,7 +51,7 @@ export function HomeSecondaryBanner({ language }: HomeSecondaryBannerProps) {
     >
       <div className="flex min-h-0 flex-1 items-center justify-center px-2 pt-2 text-center">
         <p
-          className="pointer-events-none max-w-full font-black uppercase tracking-[-0.02em] text-marco-black"
+          className="pointer-events-none max-w-full font-black uppercase tracking-[-0.02em] text-white"
           style={headlineStyle}
         >
           {headline}

@@ -214,7 +214,7 @@ export function SpecialOfferCartFab({
       type="button"
       onClick={onCart}
       disabled={!product.inStock || isAddingToCart}
-      className="absolute bottom-0 right-0 z-20 flex size-[54px] translate-x-1/2 translate-y-1/2 items-center justify-center rounded-full bg-[#ffca03] p-0 text-white shadow-[0_4px_14px_rgba(0,0,0,0.12)] transition-transform hover:scale-[1.03] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#181111] disabled:cursor-not-allowed disabled:opacity-50 md:size-[62px]"
+      className="absolute bottom-0 right-0 z-20 flex size-[54px] translate-x-1/2 translate-y-1/2 items-center justify-center rounded-full bg-[#ffca03] p-0 text-white shadow-[0_4px_14px_rgba(0,0,0,0.12)] transition-transform hover:scale-[1.03] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#181111] disabled:cursor-not-allowed disabled:opacity-50 dark:outline dark:outline-2 dark:outline-[#050505] md:size-[62px]"
       title={product.inStock ? t('common.buttons.addToCart') : t('common.stock.outOfStock')}
       aria-label={product.inStock ? t('common.ariaLabels.addToCart') : t('common.ariaLabels.outOfStock')}
     >

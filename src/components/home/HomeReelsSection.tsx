@@ -99,7 +99,7 @@ const REELS_MOBILE_TITLE_NUDGE_CLASS =
 
 /** Pill: default white + gray border; hover filled marco-yellow (like former primary/black fill). */
 const REELS_NAV_BUTTON_CLASS =
-  'flex shrink-0 items-center justify-center overflow-visible rounded-full border border-gray-200 bg-white p-0 transition-colors hover:border-marco-yellow hover:bg-marco-yellow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marco-black';
+  'flex shrink-0 items-center justify-center overflow-visible rounded-full border border-gray-200 bg-white p-0 text-[#181111] transition-colors hover:!border-marco-yellow hover:!bg-marco-yellow dark:border-white/25 dark:bg-transparent dark:text-white dark:hover:!border-marco-yellow dark:hover:!bg-marco-yellow dark:hover:text-[#181111] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marco-black';
 
 const reelsPaginationDotStyle = {
   width: REELS_PAGINATION_DOT_SIZE_PX,
@@ -108,7 +108,7 @@ const reelsPaginationDotStyle = {
 
 /** Dark chevrons; readable on yellow hover fill */
 const REELS_NAV_ICON_CLASS =
-  'h-3 w-3 shrink-0 text-marco-black max-md:h-5 max-md:w-5';
+  'h-3 w-3 shrink-0 text-current max-md:h-5 max-md:w-5';
 
 /**
  * REELS: circular category thumbnails in a centered row with arrow scroll.
@@ -303,7 +303,7 @@ export function HomeReelsSection({ items }: HomeReelsSectionProps) {
               key={page}
               type="button"
               className={`rounded-full p-0 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marco-black ${
-                activePage === page ? 'bg-marco-black' : 'bg-marco-border'
+                activePage === page ? 'bg-[#181111] dark:!bg-[#ffca03]' : 'bg-marco-border'
               }`}
               style={reelsPaginationDotStyle}
               aria-current={activePage === page ? 'page' : undefined}

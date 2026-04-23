@@ -126,7 +126,7 @@ export function HomeGradientBannerCta({ language }: HomeGradientBannerCtaProps) 
   return (
     <Link
       href="/products"
-      className={`${montserratSlateCta.className} group pointer-events-auto flex w-full max-w-full shrink-0 items-center bg-marco-yellow font-bold text-marco-black transition hover:-translate-y-0.5 hover:bg-red-700 hover:text-white active:translate-y-px ${enDesktopPillClass}`}
+      className={`${montserratSlateCta.className} group pointer-events-auto flex w-full max-w-full shrink-0 items-center bg-marco-yellow font-bold text-[#050505] dark:text-[#050505] transition hover:-translate-y-0.5 hover:bg-red-700 hover:text-white active:translate-y-px ${enDesktopPillClass}`}
       style={linkStyle}
       aria-label={ariaLabel}
     >

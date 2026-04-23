@@ -213,7 +213,7 @@ export function HomeBrandsSection() {
                 aria-label={`${t('home.special_offers_carousel_page')} ${index + 1}`}
                 onClick={() => setPageIndex(index)}
                 className={`rounded-full transition-all duration-300 ${
-                  index === safePageIndex ? 'h-2.5 w-2.5 bg-[#181111]' : 'h-2.5 w-2.5 bg-[#d1d5db]'
+                  index === safePageIndex ? 'h-2.5 w-2.5 bg-[#181111] dark:!bg-[#ffca03]' : 'h-2.5 w-2.5 bg-[#d1d5db]'
                 }`}
               />
             ))}

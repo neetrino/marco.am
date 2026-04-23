@@ -53,20 +53,17 @@ export function ProductCardList({
   onAddToCart,
 }: ProductCardListProps) {
   const { t } = useTranslation();
-  const imageSrc = product.image;
-  const showPlaceholder = imageError || !imageSrc;
-
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:bg-gray-50 transition-colors">
+    <div className="bg-white rounded-lg overflow-hidden hover:bg-gray-50 transition-colors">
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 px-5 sm:px-6 py-4 sm:py-5">
         {/* Product Image */}
         <Link
           href={`/products/${product.slug}`}
           className="w-36 h-36 bg-gray-100 rounded-xl border-2 border-gray-300 flex-shrink-0 relative overflow-hidden self-start sm:self-center"
         >
-          {!showPlaceholder ? (
+          {!imageError && product.image ? (
             <Image
-              src={imageSrc}
+              src={product.image}
               alt={product.title}
               fill
               className="object-cover object-center"

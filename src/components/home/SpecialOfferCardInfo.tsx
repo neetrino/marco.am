@@ -38,7 +38,7 @@ export function SpecialOfferCardInfo({
           </h3>
         </Link>
       </div>
-      {product.colors && product.colors.length > 0 ? (
+      {product.colors && product.colors.length > 1 ? (
         <div
           className="shrink-0"
           style={{

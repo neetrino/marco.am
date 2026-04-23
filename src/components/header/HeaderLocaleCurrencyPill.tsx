@@ -81,7 +81,9 @@ function LocaleLanguageRows({
           onClick={() => onLanguageSelect(lang.code)}
           disabled={isActive}
           className={`w-full px-4 py-2.5 text-left text-sm transition-colors ${
-            isActive ? 'bg-gray-50 font-semibold text-gray-900' : 'text-gray-700 hover:bg-gray-50'
+            isActive
+              ? 'bg-gray-50 font-semibold text-[#111827] dark:text-[#ffffff]'
+              : 'text-gray-700 hover:bg-gray-50'
           }`}
         >
           {lang.nativeName}
@@ -105,11 +107,15 @@ function LocaleCurrencyRows({
         type="button"
         onClick={() => onCurrencySelect(currency.code)}
         className={`flex w-full items-center justify-between px-4 py-2.5 text-sm transition-colors ${
-          isActive ? 'bg-gray-50 font-semibold text-gray-900' : 'text-gray-700 hover:bg-gray-50'
+          isActive
+            ? 'bg-gray-50 font-semibold text-[#111827] dark:text-[#ffffff]'
+            : 'text-gray-700 hover:bg-gray-50'
         }`}
       >
         <span>{currency.code}</span>
-        <span className="text-gray-500">{currency.symbol}</span>
+        <span className={isActive ? 'text-[#6b7280] dark:text-[#ffffff]' : 'text-gray-500'}>
+          {currency.symbol}
+        </span>
       </button>
     );
   });

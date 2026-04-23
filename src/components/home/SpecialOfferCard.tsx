@@ -92,7 +92,9 @@ export function SpecialOfferCard({
         : [],
   );
 
-  const cornerTranslate = `${SPECIAL_OFFERS_CARD_CORNER_MASK_TRANSLATE_PERCENT}%`;
+  const cornerTranslatePx = Math.round(
+    (SPECIAL_OFFERS_CARD_CORNER_MASK_SIZE_PX * SPECIAL_OFFERS_CARD_CORNER_MASK_TRANSLATE_PERCENT) / 100,
+  );
 
   const shellMaxWidthStyle =
     layout === 'mobileGrid'
@@ -130,13 +132,12 @@ export function SpecialOfferCard({
       >
         <span
           aria-hidden
-          className="pointer-events-none absolute bottom-0 right-0 z-0 max-md:hidden rounded-full"
+          className="pointer-events-none absolute bottom-0 right-0 z-0 max-md:hidden rounded-full [box-shadow:inset_0_0_0_1px_var(--special-offers-card-cutout-bg)] dark:[box-shadow:inset_0_0_0_1px_#050505]"
           style={{
             width: SPECIAL_OFFERS_CARD_CORNER_MASK_SIZE_PX,
             height: SPECIAL_OFFERS_CARD_CORNER_MASK_SIZE_PX,
             backgroundColor: 'var(--special-offers-card-cutout-bg)',
-            transform: `translate(${cornerTranslate}, ${cornerTranslate})`,
-            boxShadow: '0 0 0 1px var(--special-offers-card-cutout-bg)',
+            transform: `translate(${cornerTranslatePx}px, ${cornerTranslatePx}px)`,
           }}
         />
         {showMobileBottomNotch ? (
@@ -149,7 +150,6 @@ export function SpecialOfferCard({
               backgroundColor: 'var(--special-offers-card-cutout-bg)',
               borderTopLeftRadius: SPECIAL_OFFERS_CARD_MOBILE_NOTCH_TOP_RADIUS_PX,
               borderTopRightRadius: SPECIAL_OFFERS_CARD_MOBILE_NOTCH_TOP_RADIUS_PX,
-              boxShadow: '0 0 0 1px var(--special-offers-card-cutout-bg)',
             }}
           />
         ) : null}

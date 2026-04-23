@@ -159,7 +159,7 @@ export function HeaderRow2RightToolbar({ data, compactPrimaryNav, headerMobileLi
         <HeaderNavbarCartIcon className="h-[21px] w-[22px] shrink-0 text-white" />
         <span className="tabular-nums">{formatPrice(cartTotal, selectedCurrency)}</span>
         {cartCount > 0 && (
-          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[18px] items-center justify-center rounded-full bg-red-600 px-0.5 text-[9px] font-bold text-white">
+          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[18px] items-center justify-center rounded-full bg-red-600 px-0.5 text-[9px] font-bold text-[#ffffff]">
             {cartCount > 99 ? '99+' : cartCount}
           </span>
         )}

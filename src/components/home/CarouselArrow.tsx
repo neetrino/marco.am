@@ -19,8 +19,8 @@ export function CarouselArrow({
   const isPrev = direction === 'prev';
   const className =
     variant === 'dark'
-      ? 'border-white/80 bg-transparent text-white hover:border-[#ffca03] hover:text-[#ffca03]'
-      : 'border-[#e5e7eb] bg-white text-[#374151] hover:border-[#ffca03] hover:text-[#181111]';
+      ? 'border-white/80 bg-transparent text-white hover:border-[#ffca03] hover:bg-[#ffca03] hover:text-[#181111]'
+      : 'border-[#e5e7eb] bg-white text-[#374151] hover:border-[#ffca03] hover:text-[#181111] dark:hover:border-[#ffca03] dark:hover:bg-[#ffca03] dark:hover:text-[#181111]';
 
   return (
     <button
