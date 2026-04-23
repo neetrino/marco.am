@@ -247,35 +247,35 @@ export default function WishlistPage() {
           </div>
 
           {/* Products Table */}
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden dark:bg-[#0f0f0f] dark:border-white/40">
           {/* Table Header */}
-          <div className="hidden md:grid md:grid-cols-12 gap-4 px-6 py-4 bg-white border-b border-gray-200">
+          <div className="hidden md:grid md:grid-cols-12 gap-4 px-6 py-4 bg-white border-b border-gray-200 dark:bg-[#202020] dark:border-white/40">
             <div className="md:col-span-5">
-              <span className="text-sm font-semibold text-gray-900 uppercase tracking-wide">{t('common.wishlist.tableHeaders.productName')}</span>
+              <span className="text-sm font-semibold text-gray-900 uppercase tracking-wide dark:text-white">{t('common.wishlist.tableHeaders.productName')}</span>
             </div>
             <div className="md:col-span-2 text-center md:-ml-[83px]">
-              <span className="text-sm font-semibold text-gray-900 uppercase tracking-wide">{t('common.wishlist.tableHeaders.unitPrice')}</span>
+              <span className="text-sm font-semibold text-gray-900 uppercase tracking-wide dark:text-white">{t('common.wishlist.tableHeaders.unitPrice')}</span>
             </div>
             <div className="md:col-span-2 text-center md:-ml-[32px]">
-              <span className="text-sm font-semibold text-gray-900 uppercase tracking-wide">{t('common.wishlist.tableHeaders.stockStatus')}</span>
+              <span className="text-sm font-semibold text-gray-900 uppercase tracking-wide dark:text-white">{t('common.wishlist.tableHeaders.stockStatus')}</span>
             </div>
             <div className="md:col-span-3 text-center">
-              <span className="text-sm font-semibold text-gray-900 uppercase tracking-wide">{t('common.wishlist.tableHeaders.action')}</span>
+              <span className="text-sm font-semibold text-gray-900 uppercase tracking-wide dark:text-white">{t('common.wishlist.tableHeaders.action')}</span>
             </div>
           </div>
 
           {/* Table Body */}
-          <div className="divide-y divide-gray-200">
+          <div className="divide-y divide-gray-200 dark:divide-white/40">
             {products.map((product) => (
               <div
                 key={product.id}
-                className="grid grid-cols-1 md:grid-cols-12 gap-4 px-6 py-6 hover:bg-gray-50 transition-colors"
+                className="grid grid-cols-1 md:grid-cols-12 gap-4 px-6 py-6 hover:bg-gray-50 transition-colors dark:hover:bg-[#1a1a1a]"
               >
                 {/* Product Name */}
                 <div className="md:col-span-5 flex items-center gap-4">
                   <Link
                     href={`/products/${product.slug}`}
-                    className="w-20 h-20 bg-gray-100 rounded-lg flex-shrink-0 relative overflow-hidden"
+                    className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg !bg-gray-100 dark:!bg-gray-100"
                   >
                     {product.image ? (
                       <Image
@@ -288,7 +288,7 @@ export default function WishlistPage() {
                       />
                     ) : (
                       <ProductImagePlaceholder
-                        className="w-full h-full"
+                        className="h-full w-full !bg-gray-200 !text-gray-400 dark:!bg-gray-200 dark:!text-gray-400"
                         aria-label={product.title ? `No image for ${product.title}` : 'No image'}
                       />
                     )}
@@ -296,7 +296,7 @@ export default function WishlistPage() {
                   <div className="flex-1 min-w-0">
                     <Link
                       href={`/products/${product.slug}`}
-                      className="text-base font-medium text-gray-900 hover:text-blue-600 transition-colors line-clamp-2"
+                      className="text-base font-medium text-gray-900 hover:text-blue-600 transition-colors line-clamp-2 dark:text-white/90 dark:hover:text-marco-yellow"
                     >
                       {product.title}
                     </Link>
@@ -306,16 +306,16 @@ export default function WishlistPage() {
                 {/* Unit Price */}
                 <div className="md:col-span-2 flex items-center justify-start">
                   <div className="flex flex-col items-start gap-1">
-                    <span className="text-base font-bold text-marco-black">
+                    <span className="text-base font-bold text-marco-black dark:text-white/90">
                       {formatPrice(product.price, currency)}
                     </span>
                     {(product.originalPrice && product.originalPrice > product.price) && (
-                      <span className="text-sm text-gray-500 line-through">
+                      <span className="text-sm text-gray-500 line-through dark:text-white/55">
                         {formatPrice(product.originalPrice, currency)}
                       </span>
                     )}
                     {!product.originalPrice && product.compareAtPrice && product.compareAtPrice > product.price && (
-                      <span className="text-sm text-gray-500 line-through">
+                      <span className="text-sm text-gray-500 line-through dark:text-white/55">
                         {formatPrice(product.compareAtPrice, currency)}
                       </span>
                     )}
@@ -344,16 +344,16 @@ export default function WishlistPage() {
                     variant="primary"
                     onClick={() => handleAddToCart(product)}
                     disabled={!product.inStock || addingToCart.has(product.id)}
-                    className="!bg-marco-yellow !text-marco-black !rounded-full !h-10 !px-6 inline-flex items-center justify-center whitespace-nowrap font-semibold uppercase text-sm !hover:bg-marco-yellow hover:brightness-95 transition-[filter] disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="!bg-marco-yellow !text-[#050505] dark:!text-[#050505] !rounded-full !h-10 !px-6 inline-flex items-center justify-center whitespace-nowrap font-semibold uppercase text-sm !hover:bg-marco-yellow hover:brightness-95 transition-[filter] disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {addingToCart.has(product.id) ? t('common.messages.adding') : t('common.buttons.addToCart')}
                   </Button>
                   <button
                     onClick={() => handleRemove(product.id)}
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:bg-marco-yellow hover:text-marco-black transition-colors"
+                    className="group flex h-8 w-8 items-center justify-center rounded-full hover:bg-marco-yellow transition-colors"
                     aria-label={t('common.ariaLabels.removeFromWishlist')}
                   >
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="h-5 w-5 !text-[#9ca3af] transition-colors group-hover:!text-[#050505] dark:group-hover:!text-[#050505]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </button>
