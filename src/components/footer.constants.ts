@@ -42,7 +42,11 @@ export const FOOTER_COMPANY_LINKS = [
 
 export const FOOTER_SUPPORT_LINKS = [
   {
-    href: '/delivery-returns',
+    href: '/delivery-return',
+    labelKey: 'common.footer.marco.links.supportShipping',
+  },
+  {
+    href: '/delivery',
     labelKey: 'common.footer.marco.links.supportDelivery',
   },
   { href: '/faq', labelKey: 'common.footer.marco.links.supportFaq' },
