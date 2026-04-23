@@ -12,7 +12,7 @@ import { getStoredLanguage } from '../../lib/language';
 import { useTranslation } from '../../lib/i18n-client';
 import { useAuth } from '../../lib/auth/AuthContext';
 import { logger } from "@/lib/utils/logger";
-import { SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC } from '../../components/home/home-special-offers.constants';
+import { ProductImagePlaceholder } from '../../components/ProductImagePlaceholder';
 import {
   ensureLegacyWishlistMigratedForGuest,
   fetchWishlistPayload,
@@ -47,7 +47,6 @@ export default function WishlistPage() {
   const [wishlistIds, setWishlistIds] = useState<string[]>([]);
   const [currency, setCurrency] = useState(getStoredCurrency());
   const [addingToCart, setAddingToCart] = useState<Set<string>>(new Set());
-  const displayImageSrc = SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC;
   // Track if we updated locally to prevent unnecessary re-fetch
   const isLocalUpdateRef = useRef(false);
 
@@ -278,14 +277,21 @@ export default function WishlistPage() {
                     href={`/products/${product.slug}`}
                     className="w-20 h-20 bg-gray-100 rounded-lg flex-shrink-0 relative overflow-hidden"
                   >
-                    <Image
-                      src={displayImageSrc}
-                      alt={product.title}
-                      fill
-                      className="object-cover"
-                      sizes="80px"
-                      unoptimized
-                    />
+                    {product.image ? (
+                      <Image
+                        src={product.image}
+                        alt={product.title}
+                        fill
+                        className="object-cover"
+                        sizes="80px"
+                        unoptimized
+                      />
+                    ) : (
+                      <ProductImagePlaceholder
+                        className="w-full h-full"
+                        aria-label={product.title ? `No image for ${product.title}` : 'No image'}
+                      />
+                    )}
                   </Link>
                   <div className="flex-1 min-w-0">
                     <Link

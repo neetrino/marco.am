@@ -13,7 +13,7 @@ import { getStoredLanguage } from '../../lib/language';
 import { useTranslation } from '../../lib/i18n-client';
 import { useAuth } from '../../lib/auth/AuthContext';
 import { logger } from "@/lib/utils/logger";
-import { SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC } from '../../components/home/home-special-offers.constants';
+import { ProductImagePlaceholder } from '../../components/ProductImagePlaceholder';
 import {
   ensureLegacyCompareMigratedForGuest,
   fetchComparePayload,
@@ -50,7 +50,6 @@ export default function ComparePage() {
   const [compareIds, setCompareIds] = useState<string[]>([]);
   const [currency, setCurrency] = useState(getStoredCurrency());
   const [addingToCart, setAddingToCart] = useState<Set<string>>(new Set());
-  const displayImageSrc = SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC;
   // Track if we updated locally to prevent unnecessary re-fetch
   const isLocalUpdateRef = useRef(false);
 
@@ -287,14 +286,21 @@ export default function ComparePage() {
                     <td key={product.id} className="px-4 py-4 text-center">
                       <Link href={`/products/${product.slug}`} className="inline-block">
                         <div className="w-32 h-32 mx-auto bg-gray-100 rounded-lg overflow-hidden relative">
-                          <Image
-                            src={displayImageSrc}
-                            alt={product.title}
-                            fill
-                            className="object-cover"
-                            sizes="128px"
-                            unoptimized
-                          />
+                          {product.image ? (
+                            <Image
+                              src={product.image}
+                              alt={product.title}
+                              fill
+                              className="object-cover"
+                              sizes="128px"
+                              unoptimized
+                            />
+                          ) : (
+                            <ProductImagePlaceholder
+                              className="w-full h-full"
+                              aria-label={product.title ? `No image for ${product.title}` : 'No image'}
+                            />
+                          )}
                         </div>
                       </Link>
                     </td>

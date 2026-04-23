@@ -4,6 +4,7 @@ import { apiClient } from '@/lib/api-client';
 import { CURRENCIES, type CurrencyCode } from '@/lib/currency';
 import type { Brand, Category, Attribute } from '../types';
 import { logger } from "@/lib/utils/logger";
+import { findAttributeBySemanticKey } from '@/lib/attribute-keys';
 
 interface UseProductDataLoadingProps {
   isLoggedIn: boolean;
@@ -123,8 +124,8 @@ export function useProductDataLoading({
               imageUrl: v.imageUrl 
             })) || []
           })));
-          const colorAttr = attributesRes.data.find(a => a.key === 'color');
-          const sizeAttr = attributesRes.data.find(a => a.key === 'size');
+          const colorAttr = findAttributeBySemanticKey(attributesRes.data, 'color');
+          const sizeAttr = findAttributeBySemanticKey(attributesRes.data, 'size');
           if (!colorAttr) {
             console.warn('⚠️ [ADMIN] Color attribute not found in loaded attributes!');
           } else {

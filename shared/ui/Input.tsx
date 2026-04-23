@@ -26,13 +26,13 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full">
         {label && (
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-slate-300">
             {label}
           </label>
         )}
         <input
           ref={ref}
-          className={`w-full rounded-lg border bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/20 focus:border-gray-900 disabled:bg-gray-50 disabled:cursor-not-allowed ${
+          className={`w-full rounded-lg border bg-white px-3 py-2 text-sm text-gray-900 focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/20 disabled:cursor-not-allowed disabled:bg-gray-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-200 dark:focus:ring-slate-200/20 dark:disabled:bg-slate-800 ${
             error ? 'border-error focus:ring-error' : 'border-gray-300'
           } ${className}`}
           onKeyDown={handleKeyDown}

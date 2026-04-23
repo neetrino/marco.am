@@ -1,3 +1,4 @@
+import { getAttributeBucket, isColorAttributeKey, isSizeAttributeKey } from "@/lib/attribute-keys";
 import type { ProductFilters, ProductWithRelations } from "./products-find-query/types";
 import { productMatchesTechnicalSpecs } from "./products-technical-filters";
 
@@ -56,6 +57,162 @@ function getMinVariantPrice(product: ProductWithRelations): number {
   const variants = Array.isArray(product.variants) ? product.variants : [];
   if (variants.length === 0) return Number.POSITIVE_INFINITY;
   return Math.min(...variants.map((variant: { price: number }) => variant.price));
+}
+
+type VariantRow = ProductWithRelations["variants"][number];
+type VariantOptionLike = VariantRow["options"][number] & {
+  attributeKey?: string | null;
+  key?: string | null;
+  attribute?: string | null;
+  value?: string | null;
+  label?: string | null;
+  attributeValue?: {
+    value?: string | null;
+    translations?: Array<{ locale?: string; label?: string | null }>;
+    attribute?: { key?: string | null } | null;
+  } | null;
+};
+
+function labelFromAttributeValue(
+  attr: VariantOptionLike["attributeValue"] extends infer U
+    ? U
+    : never,
+  lang: string,
+): string {
+  if (!attr) {
+    return "";
+  }
+  const t =
+    attr.translations?.find((tr) => tr.locale === lang) ??
+    attr.translations?.find((tr) => Boolean(tr?.label)) ??
+    null;
+  return (t?.label || (attr as { value?: string | null }).value || "").trim();
+}
+
+function colorFromOption(opt: VariantOptionLike, lang: string): string | null {
+  if (opt.attributeValue && isColorAttributeKey(opt.attributeValue.attribute?.key)) {
+    return labelFromAttributeValue(opt.attributeValue, lang).toLowerCase() || null;
+  }
+  if (isColorAttributeKey(opt.attributeKey) || isColorAttributeKey(opt.key) || isColorAttributeKey(opt.attribute)) {
+    const v = (opt.value || opt.label || "").trim().toLowerCase();
+    return v || null;
+  }
+  return null;
+}
+
+function sizeFromOption(opt: VariantOptionLike, lang: string): string | null {
+  if (opt.attributeValue && isSizeAttributeKey(opt.attributeValue.attribute?.key)) {
+    return labelFromAttributeValue(opt.attributeValue, lang).toUpperCase() || null;
+  }
+  if (isSizeAttributeKey(opt.attributeKey) || isSizeAttributeKey(opt.key) || isSizeAttributeKey(opt.attribute)) {
+    const v = (opt.value || opt.label || "").trim().toUpperCase();
+    return v || null;
+  }
+  return null;
+}
+
+function colorLabelsFromAttributeBucket(
+  raw: Record<string, unknown> | null | undefined,
+): string[] {
+  const out: string[] = [];
+  for (const entry of getAttributeBucket(raw, "color")) {
+    const label = String(
+      (entry as { label?: string; value?: string }).label ?? (entry as { label?: string; value?: string }).value ?? "",
+    )
+      .trim()
+      .toLowerCase();
+    if (label) {
+      out.push(label);
+    }
+  }
+  return out;
+}
+
+function sizeLabelsFromAttributeBucket(raw: Record<string, unknown> | null | undefined): string[] {
+  const out: string[] = [];
+  for (const entry of getAttributeBucket(raw, "size")) {
+    const label = String(
+      (entry as { label?: string; value?: string }).label ?? (entry as { label?: string; value?: string }).value ?? "",
+    )
+      .trim()
+      .toUpperCase();
+    if (label) {
+      out.push(label);
+    }
+  }
+  return out;
+}
+
+function variantColorMatchesList(
+  variant: VariantRow,
+  colorList: string[],
+  lang: string,
+): boolean {
+  const options = Array.isArray(variant.options) ? variant.options : [];
+  for (const opt of options) {
+    const c = colorFromOption(opt as VariantOptionLike, lang);
+    if (c && colorList.includes(c)) {
+      return true;
+    }
+  }
+  const att = variant as { attributes?: unknown };
+  if (att.attributes && typeof att.attributes === "object" && !Array.isArray(att.attributes)) {
+    for (const label of colorLabelsFromAttributeBucket(att.attributes as Record<string, unknown>)) {
+      if (colorList.includes(label)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+function variantSizeMatchesList(variant: VariantRow, sizeList: string[], lang: string): boolean {
+  const options = Array.isArray(variant.options) ? variant.options : [];
+  for (const opt of options) {
+    const s = sizeFromOption(opt as VariantOptionLike, lang);
+    if (s && sizeList.includes(s)) {
+      return true;
+    }
+  }
+  const att = variant as { attributes?: unknown };
+  if (att.attributes && typeof att.attributes === "object" && !Array.isArray(att.attributes)) {
+    for (const label of sizeLabelsFromAttributeBucket(att.attributes as Record<string, unknown>)) {
+      if (sizeList.includes(label)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+function productMatchesColorListFromProductAttributes(
+  product: ProductWithRelations,
+  colorList: string[],
+  lang: string,
+): boolean {
+  type PaValue = { value?: string | null; translations?: Array<{ locale?: string; label?: string | null }> };
+  const rows = (product as ProductWithRelations & { productAttributes?: Array<{
+    attribute?: { key?: string | null; values?: PaValue[] } | null;
+  }> }).productAttributes;
+  if (!Array.isArray(rows)) {
+    return false;
+  }
+  for (const pa of rows) {
+    if (!isColorAttributeKey(pa.attribute?.key) || !pa.attribute?.values) {
+      continue;
+    }
+    for (const attrValue of pa.attribute.values) {
+      const t =
+        attrValue?.translations?.find((tr) => tr.locale === lang) ??
+        attrValue?.translations?.find((tr) => Boolean(tr?.label)) ??
+        null;
+      const label = (t?.label || attrValue?.value || "").trim().toLowerCase();
+      if (label && colorList.includes(label)) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 class ProductsFindFilterService {
@@ -118,94 +275,31 @@ class ProductsFindFilterService {
     const sizeList = normalizeFilterList(sizes, (v) => v.toUpperCase());
 
     if (colorList.length > 0 || sizeList.length > 0) {
+      const lang = filters.lang || "en";
       products = products.filter((product: ProductWithRelations) => {
         const variants = Array.isArray(product.variants) ? product.variants : [];
-        
+
         if (variants.length === 0) {
           return false;
         }
-        
-        // Find variants that match ALL specified filters
-        type VariantRow = ProductWithRelations["variants"][number];
-        /** Prisma option row plus legacy attributeKey/value fields */
-        type VariantOptionLike = VariantRow["options"][number] & {
-          attributeKey?: string | null;
-          key?: string | null;
-          attribute?: string | null;
-          value?: string | null;
-          label?: string | null;
-        };
 
         const matchingVariants = variants.filter((variant: VariantRow) => {
-          const options = Array.isArray(variant.options) ? variant.options : [];
-          
-          if (options.length === 0) {
+          if (colorList.length > 0 && !variantColorMatchesList(variant, colorList, lang)) {
             return false;
           }
-          
-          // Helper function to get color value from option (support all formats)
-          const getColorValue = (opt: VariantOptionLike, lang: string = 'en'): string | null => {
-            // New format: Use AttributeValue if available
-            if (opt.attributeValue && opt.attributeValue.attribute?.key === "color") {
-              const translation = opt.attributeValue.translations?.find((t: { locale: string }) => t.locale === lang) || opt.attributeValue.translations?.[0];
-              return (translation?.label || opt.attributeValue.value || "").trim().toLowerCase();
-            }
-            // Old format: check attributeKey, key, or attribute
-            if (opt.attributeKey === "color" || opt.key === "color" || opt.attribute === "color") {
-              return (opt.value || opt.label || "").trim().toLowerCase();
-            }
-            return null;
-          };
-          
-          // Helper function to get size value from option (support all formats)
-          const getSizeValue = (opt: VariantOptionLike, lang: string = 'en'): string | null => {
-            // New format: Use AttributeValue if available
-            if (opt.attributeValue && opt.attributeValue.attribute?.key === "size") {
-              const translation = opt.attributeValue.translations?.find((t: { locale: string }) => t.locale === lang) || opt.attributeValue.translations?.[0];
-              return (translation?.label || opt.attributeValue.value || "").trim().toUpperCase();
-            }
-            // Old format: check attributeKey, key, or attribute
-            if (opt.attributeKey === "size" || opt.key === "size" || opt.attribute === "size") {
-              return (opt.value || opt.label || "").trim().toUpperCase();
-            }
-            return null;
-          };
-          
-          // Check color match if colors filter is provided
-          if (colorList.length > 0) {
-            let colorMatched = false;
-            for (const opt of options) {
-              const variantColorValue = getColorValue(opt, filters.lang || 'en');
-              if (variantColorValue && colorList.includes(variantColorValue)) {
-                colorMatched = true;
-                break;
-              }
-            }
-            if (!colorMatched) {
-              return false;
-            }
+          if (sizeList.length > 0 && !variantSizeMatchesList(variant, sizeList, lang)) {
+            return false;
           }
-          
-          // Check size match if sizes filter is provided
-          if (sizeList.length > 0) {
-            let sizeMatched = false;
-            for (const opt of options) {
-              const variantSizeValue = getSizeValue(opt, filters.lang || 'en');
-              if (variantSizeValue && sizeList.includes(variantSizeValue)) {
-                sizeMatched = true;
-                break;
-              }
-            }
-            if (!sizeMatched) {
-              return false;
-            }
-          }
-          
           return true;
         });
-        
-        const hasMatch = matchingVariants.length > 0;
-        return hasMatch;
+
+        if (matchingVariants.length > 0) {
+          return true;
+        }
+        if (colorList.length > 0 && sizeList.length === 0) {
+          return productMatchesColorListFromProductAttributes(product, colorList, lang);
+        }
+        return false;
       });
     }
 

@@ -26,8 +26,8 @@ export function FooterPaymentLogos({ compact = false }: FooterPaymentLogosProps)
     : 'flex w-full max-w-44 justify-end sm:max-w-48';
 
   const imageClass = compact
-    ? `h-auto w-full object-contain object-right ${FOOTER_PAYMENT_STRIP_COMPACT_IMAGE_MAX_CLASS}`
-    : 'h-auto w-full max-h-5 object-contain object-right sm:max-h-6';
+    ? `h-auto w-full object-contain object-right opacity-95 dark:brightness-110 dark:contrast-110 ${FOOTER_PAYMENT_STRIP_COMPACT_IMAGE_MAX_CLASS}`
+    : 'h-auto w-full max-h-5 object-contain object-right opacity-95 dark:brightness-110 dark:contrast-110 sm:max-h-6';
 
   return (
     <div className={containerClass} aria-label={t('common.footer.paymentMethods')}>

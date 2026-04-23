@@ -265,18 +265,18 @@ export function PriceFilter({ currentMinPrice, currentMaxPrice, category }: Pric
     <section className={PRODUCTS_FILTER_SECTION_SHELL_CLASS}>
       <div className="mb-3 flex min-h-6 w-full min-w-0 flex-row items-center justify-between gap-2 lg:mb-4">
         <span
-          className={`${productsFiltersSectionFont.className} shrink-0 text-sm font-semibold leading-6 tracking-[-0.31px] text-[#314158] lg:text-base`}
+          className={`${productsFiltersSectionFont.className} shrink-0 text-sm font-semibold leading-6 tracking-[-0.31px] text-[#314158] dark:text-white lg:text-base`}
         >
           {t('products.filters.price.title')}
         </span>
-        <span className="min-w-0 flex-1 truncate text-right text-xs font-bold leading-6 tracking-[-0.31px] text-black lg:text-base">
+        <span className="min-w-0 flex-1 truncate text-right text-xs font-bold leading-6 tracking-[-0.31px] text-black dark:text-white lg:text-base">
           {rangeLabel}
         </span>
       </div>
 
       <div
         ref={sliderRef}
-        className={`relative h-2 w-full rounded-full bg-[#e2e8f0] ${rangeReady ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}
+        className={`relative h-2 w-full rounded-full bg-[#e2e8f0] dark:bg-white/15 ${rangeReady ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}
         onMouseDown={(e) => {
           if (!rangeReady || span <= 0) return;
           const rect = sliderRef.current?.getBoundingClientRect();
@@ -313,7 +313,7 @@ export function PriceFilter({ currentMinPrice, currentMaxPrice, category }: Pric
             />
 
             <div
-              className="absolute z-10 h-4 w-4 cursor-grab rounded-full border border-solid border-[#e2e8f0] bg-white shadow-sm active:cursor-grabbing"
+              className="absolute z-10 h-4 w-4 cursor-grab rounded-full border border-solid border-[#e2e8f0] bg-white shadow-sm dark:border-white dark:bg-[#0d0d0d] active:cursor-grabbing"
               style={{ left: `${minPercentage}%`, top: '50%', transform: 'translate(-50%, -50%)' }}
               onMouseDown={(e) => {
                 e.stopPropagation();
@@ -325,7 +325,7 @@ export function PriceFilter({ currentMinPrice, currentMaxPrice, category }: Pric
               }}
             />
             <div
-              className="absolute z-10 h-4 w-4 cursor-grab rounded-full border border-solid border-[#e2e8f0] bg-white shadow-sm active:cursor-grabbing"
+              className="absolute z-10 h-4 w-4 cursor-grab rounded-full border border-solid border-[#e2e8f0] bg-white shadow-sm dark:border-white dark:bg-[#0d0d0d] active:cursor-grabbing"
               style={{ left: `${maxPercentage}%`, top: '50%', transform: 'translate(-50%, -50%)' }}
               onMouseDown={(e) => {
                 e.stopPropagation();

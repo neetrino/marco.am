@@ -138,7 +138,10 @@ export function HeroCarousel() {
             aria-label="Galaxy A05s hero"
           >
             <div className="absolute bottom-[18px] right-[18px] z-[2] flex items-center gap-2.5 lg:bottom-[22px] lg:right-[22px] lg:gap-3">
-              <div className="rounded-[68px] bg-white px-4 py-2 shadow-[0px_4px_24px_0px_rgba(150,150,150,0.28)] lg:px-5 lg:py-2.5">
+              <div
+                data-theme-static="true"
+                className="rounded-[68px] bg-white px-4 py-2 shadow-[0px_4px_24px_0px_rgba(150,150,150,0.28)] lg:px-5 lg:py-2.5"
+              >
                 <p className="font-bold text-[13px] leading-5 text-[#181111] whitespace-nowrap lg:text-[14px]">
                   Ինչո՞վ կարող ենք ձեզ օգնել
                 </p>

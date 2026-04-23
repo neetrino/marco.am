@@ -7,7 +7,6 @@ import { ProductLabels } from "../../../components/ProductLabels";
 import { ProductImagePlaceholder } from "../../../components/ProductImagePlaceholder";
 import { t } from "../../../lib/i18n";
 import type { LanguageCode } from "../../../lib/language";
-import { SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC } from "../../../components/home/home-special-offers.constants";
 import type { Product } from "./types";
 
 interface ProductImageGalleryProps {
@@ -35,23 +34,24 @@ export function ProductImageGallery({
 }: ProductImageGalleryProps) {
   const [showZoom, setShowZoom] = useState(false);
   const [failedIndices, setFailedIndices] = useState<Set<number>>(new Set());
-  const gallerySize = Math.max(images.length, 1);
-  const unifiedImages = Array.from({ length: gallerySize }, () => SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC);
+  const galleryImages = images.filter(Boolean);
+  const safeCurrentImageIndex =
+    galleryImages.length === 0 ? 0 : Math.min(currentImageIndex, galleryImages.length - 1);
 
   const markFailed = (index: number) => {
     setFailedIndices((prev) => new Set(prev).add(index));
   };
 
-  const mainImageFailed = failedIndices.has(currentImageIndex);
-  const currentSrc = unifiedImages[currentImageIndex] ?? SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC;
-  const hasMultipleImages = unifiedImages.length > 1;
+  const mainImageFailed = failedIndices.has(safeCurrentImageIndex);
+  const currentSrc = galleryImages[safeCurrentImageIndex] ?? null;
+  const hasMultipleImages = galleryImages.length > 1;
 
   const goToPreviousImage = () => {
     if (!hasMultipleImages) return;
     const prevIndex =
-      currentImageIndex === 0 ? unifiedImages.length - 1 : currentImageIndex - 1;
+      safeCurrentImageIndex === 0 ? galleryImages.length - 1 : safeCurrentImageIndex - 1;
     onImageIndexChange(prevIndex);
-    if (unifiedImages.length > THUMBNAILS_PER_VIEW) {
+    if (galleryImages.length > THUMBNAILS_PER_VIEW) {
       if (prevIndex < thumbnailStartIndex) {
         onThumbnailStartIndexChange(prevIndex);
       } else if (prevIndex >= thumbnailStartIndex + THUMBNAILS_PER_VIEW) {
@@ -63,9 +63,9 @@ export function ProductImageGallery({
   const goToNextImage = () => {
     if (!hasMultipleImages) return;
     const nextIndex =
-      currentImageIndex === unifiedImages.length - 1 ? 0 : currentImageIndex + 1;
+      safeCurrentImageIndex === galleryImages.length - 1 ? 0 : safeCurrentImageIndex + 1;
     onImageIndexChange(nextIndex);
-    if (unifiedImages.length > THUMBNAILS_PER_VIEW) {
+    if (galleryImages.length > THUMBNAILS_PER_VIEW) {
       if (nextIndex < thumbnailStartIndex) {
         onThumbnailStartIndexChange(nextIndex);
       } else if (nextIndex >= thumbnailStartIndex + THUMBNAILS_PER_VIEW) {
@@ -76,19 +76,19 @@ export function ProductImageGallery({
 
   // Auto-scroll thumbnails to show selected image
   useEffect(() => {
-    if (unifiedImages.length > THUMBNAILS_PER_VIEW) {
-      if (currentImageIndex < thumbnailStartIndex) {
+    if (galleryImages.length > THUMBNAILS_PER_VIEW) {
+      if (safeCurrentImageIndex < thumbnailStartIndex) {
         // Selected image is above visible range - scroll up
-        onThumbnailStartIndexChange(currentImageIndex);
-      } else if (currentImageIndex >= thumbnailStartIndex + THUMBNAILS_PER_VIEW) {
+        onThumbnailStartIndexChange(safeCurrentImageIndex);
+      } else if (safeCurrentImageIndex >= thumbnailStartIndex + THUMBNAILS_PER_VIEW) {
         // Selected image is below visible range - scroll down
-        onThumbnailStartIndexChange(currentImageIndex - THUMBNAILS_PER_VIEW + 1);
+        onThumbnailStartIndexChange(safeCurrentImageIndex - THUMBNAILS_PER_VIEW + 1);
       }
     }
-  }, [currentImageIndex, unifiedImages.length, thumbnailStartIndex, onThumbnailStartIndexChange]);
+  }, [safeCurrentImageIndex, galleryImages.length, thumbnailStartIndex, onThumbnailStartIndexChange]);
 
   // Show only 3 thumbnails at a time, scrollable with navigation arrows
-  const visibleThumbnails = unifiedImages.slice(
+  const visibleThumbnails = galleryImages.slice(
     thumbnailStartIndex,
     thumbnailStartIndex + THUMBNAILS_PER_VIEW
   );
@@ -101,7 +101,7 @@ export function ProductImageGallery({
           <div className="flex flex-1 flex-col gap-4 overflow-hidden">
             {visibleThumbnails.map((image, index) => {
               const actualIndex = thumbnailStartIndex + index;
-              const isActive = actualIndex === currentImageIndex;
+              const isActive = actualIndex === safeCurrentImageIndex;
               return (
                 <button
                   key={actualIndex}
@@ -131,12 +131,12 @@ export function ProductImageGallery({
         {/* Main Image */}
         <div className="mx-auto w-full max-w-[420px] md:mx-0 md:max-w-none md:flex-1">
           <div className="relative aspect-square bg-white rounded-lg overflow-hidden group shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
-          {unifiedImages.length > 0 && !mainImageFailed ? (
+          {currentSrc && !mainImageFailed ? (
             <img 
               src={currentSrc} 
               alt={product.title} 
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
-              onError={() => markFailed(currentImageIndex)}
+              onError={() => markFailed(safeCurrentImageIndex)}
             />
           ) : (
             <ProductImagePlaceholder
@@ -198,8 +198,8 @@ export function ProductImageGallery({
         <div className="md:hidden">
           <div className="overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <div className="flex w-max min-w-full justify-center gap-3 px-1">
-              {unifiedImages.map((image, index) => {
-                const isActive = index === currentImageIndex;
+              {galleryImages.map((image, index) => {
+                const isActive = index === safeCurrentImageIndex;
                 return (
                   <button
                     key={index}
@@ -229,7 +229,7 @@ export function ProductImageGallery({
       </div>
 
       {/* Zoom Modal */}
-      {showZoom && unifiedImages.length > 0 && !failedIndices.has(currentImageIndex) && (
+      {showZoom && currentSrc && !failedIndices.has(safeCurrentImageIndex) && (
         <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4" onClick={() => setShowZoom(false)}>
           <img src={currentSrc} alt="" className="max-w-full max-h-full object-contain" />
           <button 

@@ -1,4 +1,5 @@
 import { db } from "@white-shop/db";
+import { getAttributeBucket, isColorAttributeKey } from '@/lib/attribute-keys';
 import { processImageUrl } from "../utils/image-utils";
 import { translations } from "../translations";
 import { ProductWithRelations } from "./products-find-query.service";
@@ -258,9 +259,8 @@ class ProductsFindTransformService {
         
         // Fallback: check variant.attributes JSONB column if options don't have color
         // This handles cases where colors are stored in JSONB but not in options
-        if (colorOptions.length === 0 && v.attributes && typeof v.attributes === 'object' && !Array.isArray(v.attributes) && 'color' in v.attributes) {
-          const colorAttr = (v.attributes as { color?: unknown }).color;
-          const colorAttributes = Array.isArray(colorAttr) ? colorAttr : colorAttr ? [colorAttr] : [];
+        if (colorOptions.length === 0 && v.attributes && typeof v.attributes === 'object' && !Array.isArray(v.attributes)) {
+          const colorAttributes = getAttributeBucket(v.attributes as Record<string, unknown>, 'color');
           colorAttributes.forEach((colorAttrItem: unknown) => {
             const colorValue = (colorAttrItem && typeof colorAttrItem === 'object' && 'value' in colorAttrItem) 
               ? (colorAttrItem as { value?: unknown }).value 
@@ -299,7 +299,7 @@ class ProductsFindTransformService {
             };
           };
           const attr = row.attribute;
-          if (attr && typeof attr === 'object' && 'key' in attr && attr.key === 'color' && 'values' in attr && Array.isArray(attr.values)) {
+          if (attr && typeof attr === 'object' && 'key' in attr && isColorAttributeKey(attr.key) && 'values' in attr && Array.isArray(attr.values)) {
             attr.values.forEach((attrValue: { translations?: Array<{ locale: string; label?: string }>; value?: string; imageUrl?: string | null; colors?: string[] | null }) => {
               const translation = attrValue.translations?.find((t: { locale: string }) => t.locale === lang) || attrValue.translations?.[0];
               const colorValue = translation?.label || attrValue.value || "";
@@ -455,6 +455,4 @@ class ProductsFindTransformService {
     return data;
   }
 }
-
 export const productsFindTransformService = new ProductsFindTransformService();
-                                                    

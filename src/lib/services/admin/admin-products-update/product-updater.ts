@@ -82,7 +82,17 @@ export function buildProductUpdateData(
       data.media as Array<string | { url?: string; src?: string; value?: string }>,
       allVariantImages
     );
-    updateData.media = cleanImageUrls(main);
+    let cleanedMainMedia = cleanImageUrls(main);
+
+    if (data.mainProductImage) {
+      const featuredImage = cleanImageUrls([data.mainProductImage])[0] ?? null;
+      if (featuredImage) {
+        const existingWithoutFeatured = cleanedMainMedia.filter((url) => url !== featuredImage);
+        cleanedMainMedia = [featuredImage, ...existingWithoutFeatured];
+      }
+    }
+
+    updateData.media = cleanedMainMedia;
     logger.debug('Updated main media', { count: updateData.media.length, variantImagesExcluded: allVariantImages.length });
   }
   

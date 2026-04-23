@@ -1,6 +1,7 @@
 /**
  * Utilities for extracting color and size attributes from variants
  */
+import { isColorAttributeKey, isSizeAttributeKey } from '@/lib/attribute-keys';
 
 interface VariantOption {
   attributeKey?: string;
@@ -37,7 +38,7 @@ export function extractColorFromOptions(variant: Variant): string {
 
   // Search for color in options
   const colorOption = variant.options.find((opt) => {
-    return opt.attributeKey === 'color' || opt.key === 'color' || opt.attribute === 'color';
+    return isColorAttributeKey(opt.attributeKey) || isColorAttributeKey(opt.key) || isColorAttributeKey(opt.attribute);
   });
 
   if (colorOption?.value) {
@@ -48,7 +49,7 @@ export function extractColorFromOptions(variant: Variant): string {
   const colorOptionByValue = variant.options.find((opt) => {
     if (opt.attributeValue) {
       const attrValue = opt.attributeValue;
-      return attrValue.attribute?.key === 'color' || attrValue.attributeKey === 'color';
+      return isColorAttributeKey(attrValue.attribute?.key) || isColorAttributeKey(attrValue.attributeKey);
     }
     return false;
   });
@@ -74,7 +75,7 @@ export function extractSizeFromOptions(variant: Variant): string {
 
   // Search for size in options
   const sizeOption = variant.options.find((opt) => {
-    return opt.attributeKey === 'size' || opt.key === 'size' || opt.attribute === 'size';
+    return isSizeAttributeKey(opt.attributeKey) || isSizeAttributeKey(opt.key) || isSizeAttributeKey(opt.attribute);
   });
 
   if (sizeOption?.value) {
@@ -85,7 +86,7 @@ export function extractSizeFromOptions(variant: Variant): string {
   const sizeOptionByValue = variant.options.find((opt) => {
     if (opt.attributeValue) {
       const attrValue = opt.attributeValue;
-      return attrValue.attribute?.key === 'size' || attrValue.attributeKey === 'size';
+      return isSizeAttributeKey(attrValue.attribute?.key) || isSizeAttributeKey(attrValue.attributeKey);
     }
     return false;
   });

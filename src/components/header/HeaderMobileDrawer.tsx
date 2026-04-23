@@ -11,6 +11,7 @@ import { HeaderSocialCircleLinks } from './HeaderSocialCircleLinks';
 import { useShouldHideHeaderSocialLinks } from './useShouldHideHeaderSocialLinks';
 import { HeaderProfileIconFilled } from './HeaderInlineIcons';
 import { primaryNavLinks } from './nav-config';
+import { ThemeToggleButton } from '../theme/ThemeToggleButton';
 import type { useHeaderData } from './useHeaderData';
 import { resolveCategoryNavPresentation } from './categoryNavPresentation';
 
@@ -330,6 +331,15 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
                   </span>
                 )}
               </Link>
+
+              <div className="border-b border-gray-200 px-4 py-3 normal-case">
+                <ThemeToggleButton
+                  className="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 text-left text-gray-800 transition-colors hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
+                  iconClassName="h-5 w-5 shrink-0"
+                  labelClassName="text-sm font-semibold"
+                  showLabel
+                />
+              </div>
 
               {isLoggedIn ? (
                 <>

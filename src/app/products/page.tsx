@@ -217,15 +217,15 @@ export default async function ProductsPage({ searchParams }: any) {
           minPrice={params?.minPrice}
           maxPrice={params?.maxPrice}
         >
-        <aside className="hidden w-[16rem] shrink-0 bg-white min-[744px]:sticky min-[744px]:top-4 min-[744px]:z-10 min-[744px]:self-start min-[744px]:block xl:w-[20rem]">
-          <div className="border-r border-solid border-[#e2e8f0] pb-4 pt-4 min-[744px]:pl-0 min-[744px]:pr-3 xl:pb-6 xl:pt-6 xl:pr-6">
+        <aside className="hidden w-[16rem] shrink-0 bg-white dark:bg-[var(--app-bg)] min-[744px]:sticky min-[744px]:top-4 min-[744px]:z-10 min-[744px]:self-start min-[744px]:block xl:w-[20rem]">
+          <div className="border-r border-solid border-[#e2e8f0] dark:border-white/20 pb-4 pt-4 min-[744px]:pl-0 min-[744px]:pr-3 xl:pb-6 xl:pt-6 xl:pr-6">
             <div className="mb-4 flex flex-col gap-1 lg:mb-5 xl:mb-6">
               <h2
-                className={`${productsFiltersSectionFont.className} text-sm font-semibold leading-5 tracking-[-0.31px] text-[#0f172b] lg:text-base lg:leading-6`}
+                className={`${productsFiltersSectionFont.className} text-sm font-semibold leading-5 tracking-[-0.31px] text-[#0f172b] dark:text-white lg:text-base lg:leading-6`}
               >
                 {t(language, 'products.filters.panelTitle')}
               </h2>
-              <p className="text-xs font-normal leading-snug tracking-[-0.15px] text-[#62748e] lg:text-sm lg:leading-5">
+              <p className="text-xs font-normal leading-snug tracking-[-0.15px] text-[#62748e] dark:text-white/72 lg:text-sm lg:leading-5">
                 {t(language, 'products.filters.panelSubtitle')}
               </p>
             </div>
@@ -265,7 +265,7 @@ export default async function ProductsPage({ searchParams }: any) {
             </>
           ) : (
             <div className="text-center py-12">
-              <p className="text-gray-500 text-lg">{t(language, 'common.messages.noProductsFound')}</p>
+              <p className="text-gray-500 dark:text-white/72 text-lg">{t(language, 'common.messages.noProductsFound')}</p>
             </div>
           )}
 
@@ -275,7 +275,7 @@ export default async function ProductsPage({ searchParams }: any) {
       <MobileFiltersDrawer openEventName={MOBILE_FILTERS_EVENT}>
         <div className="space-y-0 px-4 pb-4 pt-0">
           <div className="mb-5">
-            <p className="text-sm font-normal leading-5 tracking-[-0.15px] text-[#62748e]">
+            <p className="text-sm font-normal leading-5 tracking-[-0.15px] text-[#62748e] dark:text-white/72">
               {t(language, 'products.filters.panelSubtitle')}
             </p>
           </div>
@@ -300,5 +300,4 @@ export default async function ProductsPage({ searchParams }: any) {
     </div>
   );
 }
-
 

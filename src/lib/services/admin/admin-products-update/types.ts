@@ -16,6 +16,7 @@ export interface UpdateProductData {
   featured?: boolean;
   locale?: string;
   media?: unknown[];
+  mainProductImage?: string;
   labels?: Array<{
     id?: string;
     type: string;

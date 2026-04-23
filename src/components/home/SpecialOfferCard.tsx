@@ -3,7 +3,6 @@
 import {
   getSpecialOfferBrandTextClass,
   SPECIAL_OFFERS_CARD_BG,
-  SPECIAL_OFFERS_CARD_CORNER_MASK_BG,
   SPECIAL_OFFERS_CARD_CORNER_MASK_SIZE_PX,
   SPECIAL_OFFERS_CARD_CORNER_MASK_TRANSLATE_PERCENT,
   SPECIAL_OFFERS_CARD_HEIGHT_PX,
@@ -19,8 +18,6 @@ import {
   SPECIAL_OFFERS_CARD_TEXT_SHIFT_DOWN_MOBILE_PX,
   SPECIAL_OFFERS_PRICE_BLOCK_LIFT_FROM_BOTTOM_PX,
   SPECIAL_OFFERS_PRICE_ROW_END_PADDING_PX,
-  SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC,
-  SPECIAL_OFFERS_USE_UNIFIED_NATURE_IMAGE,
 } from './home-special-offers.constants';
 import {
   SpecialOfferActionsStack,
@@ -68,8 +65,6 @@ export function SpecialOfferCard({
   showMobileBottomNotch = true,
   maxWidthPx,
 }: SpecialOfferCardProps) {
-  const useUnifiedNature = SPECIAL_OFFERS_USE_UNIFIED_NATURE_IMAGE;
-
   const {
     t,
     currency,
@@ -85,22 +80,16 @@ export function SpecialOfferCard({
     onImageError,
     wishlistAria,
     compareAria,
-  } = useSpecialOfferCard(product, {
-    guaranteedImageSrc: useUnifiedNature
-      ? SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC
-      : undefined,
-  });
+  } = useSpecialOfferCard(product);
 
   const brandClass = getSpecialOfferBrandTextClass(product.brand?.name);
 
   const galleryImages = duplicateSingleImageForDevGalleryTest(
-    useUnifiedNature
-      ? [SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC]
-      : product.images && product.images.length > 0
-        ? product.images
-        : product.image
-          ? [product.image]
-          : [],
+    product.images && product.images.length > 0
+      ? product.images
+      : product.image
+        ? [product.image]
+        : [],
   );
 
   const cornerTranslate = `${SPECIAL_OFFERS_CARD_CORNER_MASK_TRANSLATE_PERCENT}%`;
@@ -145,8 +134,9 @@ export function SpecialOfferCard({
           style={{
             width: SPECIAL_OFFERS_CARD_CORNER_MASK_SIZE_PX,
             height: SPECIAL_OFFERS_CARD_CORNER_MASK_SIZE_PX,
-            backgroundColor: SPECIAL_OFFERS_CARD_CORNER_MASK_BG,
+            backgroundColor: 'var(--special-offers-card-cutout-bg)',
             transform: `translate(${cornerTranslate}, ${cornerTranslate})`,
+            boxShadow: '0 0 0 1px var(--special-offers-card-cutout-bg)',
           }}
         />
         {showMobileBottomNotch ? (
@@ -156,9 +146,10 @@ export function SpecialOfferCard({
             style={{
               width: `min(100%, ${SPECIAL_OFFERS_CARD_MOBILE_NOTCH_WIDTH_PX}px)`,
               height: SPECIAL_OFFERS_CARD_MOBILE_NOTCH_HEIGHT_PX,
-              backgroundColor: SPECIAL_OFFERS_CARD_CORNER_MASK_BG,
+              backgroundColor: 'var(--special-offers-card-cutout-bg)',
               borderTopLeftRadius: SPECIAL_OFFERS_CARD_MOBILE_NOTCH_TOP_RADIUS_PX,
               borderTopRightRadius: SPECIAL_OFFERS_CARD_MOBILE_NOTCH_TOP_RADIUS_PX,
+              boxShadow: '0 0 0 1px var(--special-offers-card-cutout-bg)',
             }}
           />
         ) : null}

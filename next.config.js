@@ -1,4 +1,5 @@
 /** @type {import('next').NextConfig} */
+const os = require('os');
 const path = require('path');
 
 function getPublicR2Origin() {
@@ -13,6 +14,57 @@ function getPublicR2Origin() {
   }
 }
 
+function getHostnameFromUrl(raw) {
+  if (!raw) {
+    return null;
+  }
+  try {
+    return new URL(raw).hostname;
+  } catch {
+    return null;
+  }
+}
+
+function isPrivateIpv4(address) {
+  if (address.startsWith('10.') || address.startsWith('192.168.')) {
+    return true;
+  }
+
+  const match = /^172\.(\d+)\./.exec(address);
+  if (!match) {
+    return false;
+  }
+
+  const secondOctet = Number(match[1]);
+  return secondOctet >= 16 && secondOctet <= 31;
+}
+
+function getAllowedDevOrigins() {
+  const hosts = new Set(['localhost', '127.0.0.1']);
+  const envHosts = [
+    getHostnameFromUrl(process.env.NEXT_PUBLIC_APP_URL),
+    getHostnameFromUrl(process.env.APP_URL),
+  ].filter(Boolean);
+
+  for (const host of envHosts) {
+    hosts.add(host);
+  }
+
+  for (const networkGroup of Object.values(os.networkInterfaces())) {
+    for (const network of networkGroup ?? []) {
+      if (network.internal || network.family !== 'IPv4') {
+        continue;
+      }
+
+      if (isPrivateIpv4(network.address)) {
+        hosts.add(network.address);
+      }
+    }
+  }
+
+  return Array.from(hosts);
+}
+
 const r2Origin = getPublicR2Origin();
 const mediaSources = ["'self'", 'blob:', 'https:'];
 if (r2Origin) {
@@ -21,6 +73,7 @@ if (r2Origin) {
 
 const nextConfig = {
   reactStrictMode: true,
+  allowedDevOrigins: getAllowedDevOrigins(),
   // Скрыть индикатор "Compiling..." в углу в dev — не мешает на экране
   devIndicators: false,
   transpilePackages: ['@shop/ui', '@shop/design-tokens'],

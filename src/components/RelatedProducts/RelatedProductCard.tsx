@@ -9,7 +9,7 @@ import type { CurrencyCode } from '../../lib/currency';
 import type { LanguageCode } from '../../lib/language';
 import { t } from '../../lib/i18n';
 import { logger } from "@/lib/utils/logger";
-import { SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC } from '../home/home-special-offers.constants';
+import { ProductImagePlaceholder } from '../ProductImagePlaceholder';
 
 interface RelatedProduct {
   id: string;
@@ -58,8 +58,7 @@ export function RelatedProductCard({
   imageError,
   width,
 }: RelatedProductCardProps) {
-  const hasImage = !imageError;
-  const displayImageSrc = SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC;
+  const hasImage = !imageError && !!product.image;
   const categoryName = product.categories && product.categories.length > 0 
     ? product.categories.map(c => c.title).join(', ')
     : product.brand?.name || 'Product';
@@ -88,7 +87,7 @@ export function RelatedProductCard({
             <div className="relative aspect-square bg-gray-100 overflow-hidden flex-shrink-0">
               {hasImage ? (
                 <Image
-                  src={displayImageSrc}
+                  src={product.image as string}
                   alt={product.title}
                   fill
                   className="object-cover group-hover:scale-105 transition-transform duration-300"
@@ -97,9 +96,10 @@ export function RelatedProductCard({
                   onError={() => onImageError(product.id)}
                 />
               ) : (
-                <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                  <span className="text-gray-400 text-sm">{t(language, 'common.messages.noImage')}</span>
-                </div>
+                <ProductImagePlaceholder
+                  className="w-full h-full"
+                  aria-label={product.title ? `No image for ${product.title}` : t(language, 'common.messages.noImage')}
+                />
               )}
             </div>
 

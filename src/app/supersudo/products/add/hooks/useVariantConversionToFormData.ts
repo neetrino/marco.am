@@ -1,5 +1,6 @@
 import type { Attribute, ColorData, Variant, GeneratedVariant } from '../types';
 import { logger } from "@/lib/utils/logger";
+import { findAttributeBySemanticKey } from '@/lib/attribute-keys';
 
 interface UseVariantConversionToFormDataProps {
   productType: 'simple' | 'variable';
@@ -28,8 +29,8 @@ export function useVariantConversionToFormData({
       const skuSetForConversion = new Set<string>();
       
       generatedVariants.forEach((variant, variantIndex) => {
-        const colorAttribute = attributes.find(a => a.key === 'color');
-        const sizeAttribute = attributes.find(a => a.key === 'size');
+        const colorAttribute = findAttributeBySemanticKey(attributes, 'color');
+        const sizeAttribute = findAttributeBySemanticKey(attributes, 'size');
         
         const selectedColorValueIds = colorAttribute 
           ? variant.selectedValueIds.filter(id => colorAttribute.values.some(v => v.id === id))
@@ -189,9 +190,6 @@ export function useVariantConversionToFormData({
 
   return { convertGeneratedVariantsToFormData };
 }
-
-
-
 
 
 

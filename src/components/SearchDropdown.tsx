@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useTranslation } from '../lib/i18n-client';
 import { formatPrice, getStoredCurrency } from '../lib/currency';
 import type { InstantSearchResultItem } from './hooks/useInstantSearch';
-import { SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC } from './home/home-special-offers.constants';
+import { ProductImagePlaceholder } from './ProductImagePlaceholder';
 
 export interface SearchDropdownProps {
   results: InstantSearchResultItem[];
@@ -34,7 +34,6 @@ export function SearchDropdown({
 }: SearchDropdownProps) {
   const { t } = useTranslation();
   const currency = getStoredCurrency();
-  const displayImageSrc = SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC;
 
   if (!isOpen) {
     return null;
@@ -78,14 +77,21 @@ export function SearchDropdown({
                   }`}
                 >
                   <div className="w-12 h-12 flex-shrink-0 rounded-lg bg-gray-100 overflow-hidden relative">
-                    <Image
-                      src={displayImageSrc}
-                      alt={result.title}
-                      fill
-                      className="object-cover"
-                      sizes="48px"
-                      unoptimized
-                    />
+                    {result.image ? (
+                      <Image
+                        src={result.image}
+                        alt={result.title}
+                        fill
+                        className="object-cover"
+                        sizes="48px"
+                        unoptimized
+                      />
+                    ) : (
+                      <ProductImagePlaceholder
+                        className="w-full h-full"
+                        aria-label={result.title ? `No image for ${result.title}` : 'No image'}
+                      />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-900 line-clamp-2">

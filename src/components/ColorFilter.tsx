@@ -27,23 +27,6 @@ interface ColorOption {
   colors?: string[] | null;
 }
 
-/** Shown when the filters API returns no color facets so the block still appears under brands. */
-const FALLBACK_COLOR_VALUES = [
-  'red',
-  'green',
-  'brown',
-  'gray',
-  'burgundy',
-  'orange',
-  'blue',
-  'black',
-  'silver',
-  'yellow',
-  'pink',
-  'white',
-  'mint',
-] as const;
-
 function isLightHex(hex: string): boolean {
   const raw = hex.replace('#', '').trim();
   const full =
@@ -91,17 +74,6 @@ export function ColorFilter({ category, search, minPrice, maxPrice }: ColorFilte
   );
 
   const selectedValues = optimisticValues ?? selectedFromUrl;
-
-  const displayColors = useMemo((): ColorOption[] => {
-    if (colors.length > 0) return colors;
-    return FALLBACK_COLOR_VALUES.map((value) => ({
-      value,
-      label: t(`products.filters.color.palette.${value}`),
-      count: 0,
-      imageUrl: null,
-      colors: null,
-    }));
-  }, [colors, t]);
 
   useEffect(() => {
     setOptimisticValues(null);
@@ -165,14 +137,18 @@ export function ColorFilter({ category, search, minPrice, maxPrice }: ColorFilte
       <section className={PRODUCTS_FILTER_SECTION_SHELL_CLASS}>
         <div className="flex flex-col gap-4">
           <h3
-            className={`${productsFiltersSectionFont.className} text-base font-semibold leading-6 tracking-[-0.31px] text-black`}
+            className={`${productsFiltersSectionFont.className} text-base font-semibold leading-6 tracking-[-0.31px] text-black dark:text-white`}
           >
             {t('products.filters.color.title')}
           </h3>
-          <div className="text-sm text-[#62748e]">{t('products.filters.color.loading')}</div>
+          <div className="text-sm text-[#62748e] dark:text-white/72">{t('products.filters.color.loading')}</div>
         </div>
       </section>
     );
+  }
+
+  if (colors.length === 0) {
+    return null;
   }
 
   return (
@@ -180,7 +156,7 @@ export function ColorFilter({ category, search, minPrice, maxPrice }: ColorFilte
       <div className="flex flex-col gap-4">
         <div className="flex min-h-6 items-center justify-between gap-2">
           <h3
-            className={`${productsFiltersSectionFont.className} min-w-0 text-base font-semibold leading-6 tracking-[-0.31px] text-black`}
+            className={`${productsFiltersSectionFont.className} min-w-0 text-base font-semibold leading-6 tracking-[-0.31px] text-black dark:text-white`}
           >
             {t('products.filters.color.title')}
           </h3>
@@ -197,7 +173,7 @@ export function ColorFilter({ category, search, minPrice, maxPrice }: ColorFilte
         </div>
 
         <div className="flex flex-wrap justify-center gap-x-[22px] gap-y-3">
-          {displayColors.map((color) => {
+          {colors.map((color) => {
             const isSelected = selectedValues.includes(color.value.toLowerCase());
             const fromValue = getColorHex(color.value);
             const colorHex =

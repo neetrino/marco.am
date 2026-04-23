@@ -3,6 +3,7 @@
  */
 
 import { convertPrice, type CurrencyCode } from '@/lib/currency';
+import { findAttributeBySemanticKey } from '@/lib/attribute-keys';
 import { smartSplitUrls } from '@/lib/utils/image-utils';
 import type { ColorData } from '../types';
 
@@ -168,7 +169,7 @@ export function createColorData(
   size: string,
   stockValue: string
 ): ColorData {
-  const colorAttribute = attributes.find((attr) => attr.key === 'color');
+  const colorAttribute = findAttributeBySemanticKey(attributes, 'color');
   const colorValueObj = colorAttribute?.values.find((v) => v.value === color);
   const colorLabel =
     colorValueObj?.label || (color.charAt(0).toUpperCase() + color.slice(1).replace(/-/g, ' '));

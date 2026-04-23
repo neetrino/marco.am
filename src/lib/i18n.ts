@@ -173,6 +173,9 @@ const translations: Partial<Record<LanguageCode, Record<Namespace, unknown>>> = 
 // Cache for resolved translation paths (performance optimization)
 const translationCache = new Map<string, string>();
 
+/** In dev, JSON can HMR while this Map still holds pre-edit values — skip cache to avoid SSR/hydration mismatch. */
+const SKIP_T_RESULT_CACHE = process.env.NODE_ENV === 'development';
+
 /**
  * Get nested value from object by path array
  * @param obj - Object to traverse
@@ -254,7 +257,7 @@ export function t(lang: LanguageCode | undefined, path: string): string {
 
   // Check cache first (performance optimization)
   const cacheKey = `${lang}:${path}`;
-  if (translationCache.has(cacheKey)) {
+  if (!SKIP_T_RESULT_CACHE && translationCache.has(cacheKey)) {
     return translationCache.get(cacheKey)!;
   }
 
@@ -301,12 +304,12 @@ export function t(lang: LanguageCode | undefined, path: string): string {
   }
   
   const result = typeof value === 'string' ? value : path;
-  
+
   // Cache the result (limit cache size to prevent memory issues)
-  if (translationCache.size < 1000) {
+  if (!SKIP_T_RESULT_CACHE && translationCache.size < 1000) {
     translationCache.set(cacheKey, result);
   }
-  
+
   return result;
 }
 

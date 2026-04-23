@@ -1,3 +1,5 @@
+import { getAttributeBucket, isColorAttributeKey, isSizeAttributeKey } from "@/lib/attribute-keys";
+
 /**
  * Format variant for admin product detail response
  */
@@ -38,16 +40,18 @@ export function formatVariantForAdmin(variant: {
     attributes = attrs as Record<string, Array<{ valueId: string; value: string; attributeKey: string }>>;
     
     // Extract color and size values from JSONB attributes
-    if (attrs.color && Array.isArray(attrs.color)) {
-      colorValues = attrs.color.map((item: unknown) => {
+    const colorBucket = getAttributeBucket(attrs, 'color');
+    if (colorBucket.length > 0) {
+      colorValues = colorBucket.map((item: unknown) => {
         if (item && typeof item === 'object' && 'value' in item) {
           return String((item as { value: unknown }).value);
         }
         return String(item);
       }).filter(Boolean);
     }
-    if (attrs.size && Array.isArray(attrs.size)) {
-      sizeValues = attrs.size.map((item: unknown) => {
+    const sizeBucket = getAttributeBucket(attrs, 'size');
+    if (sizeBucket.length > 0) {
+      sizeValues = sizeBucket.map((item: unknown) => {
         if (item && typeof item === 'object' && 'value' in item) {
           return String((item as { value: unknown }).value);
         }
@@ -75,9 +79,9 @@ export function formatVariantForAdmin(variant: {
         }
         
         // Extract color and size for backward compatibility
-        if (attrKey === "color") {
+        if (isColorAttributeKey(attrKey)) {
           colorValues.push(value);
-        } else if (attrKey === "size") {
+        } else if (isSizeAttributeKey(attrKey)) {
           sizeValues.push(value);
         }
       }
@@ -86,8 +90,8 @@ export function formatVariantForAdmin(variant: {
   }
   
   // For backward compatibility: use first color/size if multiple values exist
-  const colorOption = options.find((opt) => opt.attributeKey === "color");
-  const sizeOption = options.find((opt) => opt.attributeKey === "size");
+  const colorOption = options.find((opt) => isColorAttributeKey(opt.attributeKey || opt.attributeValue?.attribute?.key));
+  const sizeOption = options.find((opt) => isSizeAttributeKey(opt.attributeKey || opt.attributeValue?.attribute?.key));
   
   // Use first value from arrays or fallback to single option value
   const color = colorValues.length > 0 ? colorValues[0] : (colorOption?.value || "");
@@ -111,7 +115,4 @@ export function formatVariantForAdmin(variant: {
     sizeValues: sizeValues, // All size values
   };
 }
-
-
-
 

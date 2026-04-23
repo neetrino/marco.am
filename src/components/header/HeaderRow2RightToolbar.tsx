@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { Sun } from 'lucide-react';
 import type { LanguageCode } from '../../lib/language';
 import { HeaderLocaleCurrencyPill } from './HeaderLocaleCurrencyPill';
 import {
@@ -19,6 +18,7 @@ import {
 import { CompareIcon } from '../icons/CompareIcon';
 import { HeaderNavbarCartIcon } from '../icons/HeaderNavbarCartIcon';
 import { HeaderNavbarWishlistIcon } from '../icons/HeaderNavbarWishlistIcon';
+import { ThemeToggleButton } from '../theme/ThemeToggleButton';
 import type { useHeaderData } from './useHeaderData';
 
 type Props = {
@@ -64,13 +64,10 @@ export function HeaderRow2RightToolbar({ data, compactPrimaryNav, headerMobileLi
           onMenuOpenChange={setShowLocaleCurrencyMenu}
         />
       )}
-      <button
-        type="button"
-        className={`flex shrink-0 items-center justify-center rounded-full bg-marco-black text-white transition-opacity hover:opacity-90 ${!compactPrimaryNav ? HEADER_LOCALE_TO_THEME_MARGIN_CLASS : ''} ${HEADER_TOOLBAR_ICON_BUTTON_CLASS}`}
-        aria-label="Theme"
-      >
-        <Sun className="h-6 w-6 shrink-0" strokeWidth={1.65} aria-hidden />
-      </button>
+      <ThemeToggleButton
+        className={`flex shrink-0 items-center justify-center rounded-full bg-marco-black text-white transition-opacity hover:opacity-90 dark:bg-white dark:text-slate-900 ${!compactPrimaryNav ? HEADER_LOCALE_TO_THEME_MARGIN_CLASS : ''} ${HEADER_TOOLBAR_ICON_BUTTON_CLASS}`}
+        iconClassName="h-6 w-6 shrink-0"
+      />
       <div className={HEADER_TOOLBAR_ICON_CLUSTER_CLASS}>
         <div
           className="relative shrink-0"

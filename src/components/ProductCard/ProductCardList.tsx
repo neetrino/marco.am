@@ -7,9 +7,9 @@ import { formatPrice } from '../../lib/currency';
 import { useTranslation } from '../../lib/i18n-client';
 import { ProductColors } from './ProductColors';
 import { ProductCardActions } from './ProductCardActions';
+import { ProductImagePlaceholder } from '../ProductImagePlaceholder';
 import type { CurrencyCode } from '../../lib/currency';
 import type { ProductLabel } from '../ProductLabels';
-import { SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC } from '../home/home-special-offers.constants';
 
 interface ProductCardListProps {
   product: {
@@ -53,7 +53,8 @@ export function ProductCardList({
   onAddToCart,
 }: ProductCardListProps) {
   const { t } = useTranslation();
-  const displayImageSrc = SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC;
+  const imageSrc = product.image;
+  const showPlaceholder = imageError || !imageSrc;
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:bg-gray-50 transition-colors">
@@ -63,9 +64,9 @@ export function ProductCardList({
           href={`/products/${product.slug}`}
           className="w-36 h-36 bg-gray-100 rounded-xl border-2 border-gray-300 flex-shrink-0 relative overflow-hidden self-start sm:self-center"
         >
-          {!imageError ? (
+          {!showPlaceholder ? (
             <Image
-              src={displayImageSrc}
+              src={imageSrc}
               alt={product.title}
               fill
               className="object-cover object-center"
@@ -74,11 +75,10 @@ export function ProductCardList({
               onError={onImageError}
             />
           ) : (
-            <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-              <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-            </div>
+            <ProductImagePlaceholder
+              className="w-full h-full"
+              aria-label={product.title ? `No image for ${product.title}` : 'No image'}
+            />
           )}
         </Link>
 

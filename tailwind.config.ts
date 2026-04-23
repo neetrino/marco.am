@@ -1,6 +1,7 @@
 import type { Config } from 'tailwindcss';
 
 const config: Config = {
+  darkMode: 'class',
   // Use `./shared/ui/*` (no `**`) — on Windows `shared/ui/**/*.js` can match into
   // `node_modules` and stall Tailwind + first-request compile. Files live at package root only.
   content: [

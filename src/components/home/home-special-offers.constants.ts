@@ -12,7 +12,7 @@ export const SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC =
  * On by default in development; production uses real images unless `NEXT_PUBLIC_SPECIAL_OFFERS_UNIFIED_IMAGE=1`.
  */
 export const SPECIAL_OFFERS_USE_UNIFIED_NATURE_IMAGE =
-  true;
+  false;
 
 /** Horizontal gap between product cards in the carousel (wider gap → slightly narrower slots, still 4-up). */
 export const SPECIAL_OFFERS_CARD_GAP_PX = 24;

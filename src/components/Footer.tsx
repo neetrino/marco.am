@@ -40,7 +40,7 @@ import {
 import { FooterPaymentLogos } from './FooterPaymentLogos';
 import { FooterSocialLinks } from './FooterSocialLinks';
 
-const FOOTER_LINK_CLASS = `${FOOTER_MUTED_TEXT_CLASS} text-xs transition-colors hover:text-marco-black`;
+const FOOTER_LINK_CLASS = `${FOOTER_MUTED_TEXT_CLASS} text-xs transition-colors hover:text-marco-black dark:hover:text-white`;
 const FOOTER_SECONDARY_EMAIL = 'marcogrouparmenia@mail.ru';
 const FOOTER_PRIMARY_PHONES = ['+374 93 52 04 06', '+374 98 19 04 06'] as const;
 
@@ -113,7 +113,7 @@ function FooterContactsColumn() {
             <a
               key={phone}
               href={`tel:${phone.replace(/\s/g, '')}`}
-              className={`text-xs transition-colors hover:text-marco-black hover:underline ${FOOTER_MUTED_TEXT_CLASS}`}
+              className={`text-xs transition-colors hover:text-marco-black hover:underline dark:hover:text-white ${FOOTER_MUTED_TEXT_CLASS}`}
             >
               {phone}
             </a>
@@ -131,7 +131,7 @@ function FooterContactsColumn() {
         />
         <a
           href={`mailto:${t('contact.email')}`}
-          className={`text-xs transition-colors hover:text-marco-black ${FOOTER_MUTED_TEXT_CLASS}`}
+          className={`text-xs transition-colors hover:text-marco-black dark:hover:text-white ${FOOTER_MUTED_TEXT_CLASS}`}
         >
           {t('contact.email')}
         </a>
@@ -147,7 +147,7 @@ function FooterContactsColumn() {
         />
         <a
           href={`mailto:${FOOTER_SECONDARY_EMAIL}`}
-          className={`text-xs transition-colors hover:text-marco-black ${FOOTER_MUTED_TEXT_CLASS}`}
+          className={`text-xs transition-colors hover:text-marco-black dark:hover:text-white ${FOOTER_MUTED_TEXT_CLASS}`}
         >
           {FOOTER_SECONDARY_EMAIL}
         </a>
@@ -161,7 +161,7 @@ function FooterCopyright() {
   const year = new Date().getFullYear();
 
   return (
-    <p className="inline-block text-center text-[9px] leading-tight text-gray-500 sm:text-[10px] md:text-[11px] lg:text-xs whitespace-nowrap">
+    <p className="inline-block whitespace-nowrap text-center text-[9px] leading-tight text-gray-500 dark:text-[#c7c7c7] sm:text-[10px] md:text-[11px] lg:text-xs">
       <span>
         {t('common.footer.marco.copyrightBefore').replace('{year}', String(year))}
       </span>
@@ -169,7 +169,7 @@ function FooterCopyright() {
         href={NEETRINO_STUDIO_HREF}
         target="_blank"
         rel="noopener noreferrer"
-        className="font-medium text-marco-black no-underline hover:opacity-80"
+        className="font-medium text-marco-black no-underline hover:opacity-80 dark:text-white"
       >
         {t('common.footer.marco.creditStudio')}
       </a>
@@ -190,7 +190,7 @@ export function Footer() {
   }
 
   return (
-    <footer className={`${FOOTER_SURFACE_CLASS} border-t border-black/5`}>
+    <footer className={`${FOOTER_SURFACE_CLASS} border-t border-black/5 dark:border-white/10`}>
       <div className="marco-header-container pb-10 pt-8">
         <div className={FOOTER_MAIN_GRID_CLASS}>
           <div
@@ -231,7 +231,7 @@ export function Footer() {
         </div>
 
         <div
-          className={`${FOOTER_COPYRIGHT_STRIP_MARGIN_TOP_CLASS} flex w-full flex-row items-center justify-between gap-4 border-t border-black/10 ${FOOTER_COPYRIGHT_STRIP_PADDING_TOP_CLASS}`}
+          className={`${FOOTER_COPYRIGHT_STRIP_MARGIN_TOP_CLASS} flex w-full flex-row items-center justify-between gap-4 border-t border-black/10 dark:border-white/10 ${FOOTER_COPYRIGHT_STRIP_PADDING_TOP_CLASS}`}
         >
           <div className="flex shrink-0 justify-start">
             <FooterSocialLinks density="compact" />

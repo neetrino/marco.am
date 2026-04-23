@@ -2,8 +2,61 @@ import { db } from "@white-shop/db";
 import { Prisma } from "@prisma/client";
 import { adminService } from "./admin.service";
 import { ProductWithRelations } from "./products-find-query.service";
+import { getAttributeBucket, isColorAttributeKey, isSizeAttributeKey } from "@/lib/attribute-keys";
 
 class ProductsFiltersService {
+  private getLocalizedAttributeValueLabel(
+    attributeValue: {
+      value?: string | null;
+      translations?: Array<{ locale?: string | null; label?: string | null }>;
+    } | null | undefined,
+    lang: string,
+  ): string {
+    if (!attributeValue) {
+      return "";
+    }
+
+    const translation =
+      attributeValue.translations?.find((t) => t.locale === lang) ??
+      attributeValue.translations?.find((t) => Boolean(t?.label)) ??
+      null;
+
+    return (translation?.label || attributeValue.value || "").trim();
+  }
+
+  private upsertColorFacet(
+    colorMap: Map<
+      string,
+      { count: number; label: string; imageUrl?: string | null; colors?: string[] | null }
+    >,
+    input: {
+      label: string;
+      countIncrement?: number;
+      imageUrl?: string | null;
+      colors?: string[] | null;
+    },
+  ) {
+    const normalizedLabel = input.label.trim();
+    if (!normalizedLabel) {
+      return;
+    }
+
+    const key = normalizedLabel.toLowerCase();
+    const existing = colorMap.get(key);
+    const preferredLabel = existing
+      ? normalizedLabel[0] === normalizedLabel[0]?.toUpperCase()
+        ? normalizedLabel
+        : existing.label
+      : normalizedLabel;
+
+    colorMap.set(key, {
+      count: (existing?.count || 0) + (input.countIncrement ?? 1),
+      label: preferredLabel,
+      imageUrl: input.imageUrl ?? existing?.imageUrl ?? null,
+      colors: input.colors ?? existing?.colors ?? null,
+    });
+  }
+
   /**
    * Get all child category IDs recursively
    */
@@ -218,57 +271,39 @@ class ProductsFiltersService {
           if (!option) return;
           
           // Check if it's a color option (support multiple formats)
-          const isColor = option.attributeKey === "color" || 
-                         option.key === "color" ||
-                         option.attribute === "color" ||
-                         (option.attributeValue && option.attributeValue.attribute?.key === "color");
+          const isColor = isColorAttributeKey(option.attributeKey) ||
+                         isColorAttributeKey(option.key) ||
+                         isColorAttributeKey(option.attribute) ||
+                         (option.attributeValue && isColorAttributeKey(option.attributeValue.attribute?.key));
           
           if (isColor) {
             let colorValue = "";
             let imageUrl: string | null | undefined = null;
             let colorsHex: string[] | null | undefined = null;
-            
-            // New format: Use AttributeValue if available
+
             if (option.attributeValue) {
-              const translation = option.attributeValue.translations?.find((t: { locale: string }) => t.locale === lang) || option.attributeValue.translations?.[0];
-              colorValue = translation?.label || option.attributeValue.value || "";
+              colorValue = this.getLocalizedAttributeValueLabel(option.attributeValue, lang);
               imageUrl = option.attributeValue.imageUrl || null;
               colorsHex = option.attributeValue.colors || null;
             } else if (option.value) {
-              // Old format: use value directly
               colorValue = option.value.trim();
             } else if (option.key === "color" || option.attribute === "color") {
-              // Fallback: try to get from option itself
-              colorValue = option.value || option.label || "";
+              colorValue = (option.value || option.label || "").trim();
             }
-            
+
             if (colorValue) {
-              const colorKey = colorValue.toLowerCase();
-              const existing = colorMap.get(colorKey);
-              
-              // Prefer capitalized version for label (e.g., "Black" over "black")
-              // If both exist, keep the one that starts with uppercase
-              const preferredLabel = existing 
-                ? (colorValue[0] === colorValue[0].toUpperCase() ? colorValue : existing.label)
-                : colorValue;
-              
-              // Prefer imageUrl and colors from AttributeValue if available
-              const finalImageUrl = imageUrl || existing?.imageUrl || null;
-              const finalColors = colorsHex || existing?.colors || null;
-              
-              colorMap.set(colorKey, {
-                count: (existing?.count || 0) + 1,
-                label: preferredLabel,
-                imageUrl: finalImageUrl,
-                colors: finalColors,
+              this.upsertColorFacet(colorMap, {
+                label: colorValue,
+                imageUrl,
+                colors: colorsHex,
               });
             }
           } else {
             // Check if it's a size option (support multiple formats)
-            const isSize = option.attributeKey === "size" || 
-                          option.key === "size" ||
-                          option.attribute === "size" ||
-                          (option.attributeValue && option.attributeValue.attribute?.key === "size");
+            const isSize = isSizeAttributeKey(option.attributeKey) ||
+                          isSizeAttributeKey(option.key) ||
+                          isSizeAttributeKey(option.attribute) ||
+                          (option.attributeValue && isSizeAttributeKey(option.attributeValue.attribute?.key));
             
             if (isSize) {
               let sizeValue = "";
@@ -292,27 +327,60 @@ class ProductsFiltersService {
             }
           }
         });
+
+        const attributeColors = getAttributeBucket(
+          variant.attributes && typeof variant.attributes === "object"
+            ? (variant.attributes as Record<string, unknown>)
+            : null,
+          'color'
+        );
+
+        attributeColors.forEach((entry: any) => {
+          const colorLabel = String(entry?.label || entry?.value || "").trim();
+          if (!colorLabel) {
+            return;
+          }
+
+          this.upsertColorFacet(colorMap, {
+            label: colorLabel,
+            imageUrl: typeof entry?.imageUrl === "string" ? entry.imageUrl : null,
+            colors: Array.isArray(entry?.colors)
+              ? entry.colors.filter((color: unknown): color is string => typeof color === "string")
+              : null,
+          });
+        });
+
+        const attributeSizes = getAttributeBucket(
+          variant.attributes && typeof variant.attributes === "object"
+            ? (variant.attributes as Record<string, unknown>)
+            : null,
+          'size'
+        );
+
+        attributeSizes.forEach((entry: any) => {
+          const sizeValue = String(entry?.label || entry?.value || "").trim();
+          if (!sizeValue) {
+            return;
+          }
+
+          const normalizedSize = sizeValue.toUpperCase();
+          sizeMap.set(normalizedSize, (sizeMap.get(normalizedSize) || 0) + 1);
+        });
       });
       
       // Also check productAttributes for color attribute values with imageUrl and colors
       if ((product as any).productAttributes && Array.isArray((product as any).productAttributes)) {
         (product as any).productAttributes.forEach((productAttr: any) => {
-          if (productAttr.attribute?.key === 'color' && productAttr.attribute?.values) {
+          if (isColorAttributeKey(productAttr.attribute?.key) && productAttr.attribute?.values) {
             productAttr.attribute.values.forEach((attrValue: any) => {
-              const translation = attrValue.translations?.find((t: { locale: string }) => t.locale === lang) || attrValue.translations?.[0];
-              const colorValue = translation?.label || attrValue.value || "";
+              const colorValue = this.getLocalizedAttributeValueLabel(attrValue, lang);
               if (colorValue) {
-                const colorKey = colorValue.toLowerCase();
-                const existing = colorMap.get(colorKey);
-                // Update if we have imageUrl or colors hex and they're not already set
-                if (attrValue.imageUrl || attrValue.colors) {
-                  colorMap.set(colorKey, {
-                    count: existing?.count || 0,
-                    label: existing?.label || colorValue,
-                    imageUrl: attrValue.imageUrl || existing?.imageUrl || null,
-                    colors: attrValue.colors || existing?.colors || null,
-                  });
-                }
+                this.upsertColorFacet(colorMap, {
+                  label: colorValue,
+                  countIncrement: 0,
+                  imageUrl: attrValue.imageUrl || null,
+                  colors: attrValue.colors || null,
+                });
               }
             });
           }

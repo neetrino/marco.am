@@ -5,6 +5,7 @@
 import { useMemo } from 'react';
 import type { Attribute } from '../types';
 import { logger } from "@/lib/utils/logger";
+import { findAttributeBySemanticKey } from '@/lib/attribute-keys';
 
 interface UseProductAttributeHelpersProps {
   attributes: Attribute[];
@@ -15,7 +16,7 @@ export function useProductAttributeHelpers({ attributes }: UseProductAttributeHe
     if (!attributes || attributes.length === 0) {
       return undefined;
     }
-    const colorAttr = attributes.find((attr) => attr.key === 'color');
+    const colorAttr = findAttributeBySemanticKey(attributes, 'color');
     if (!colorAttr) {
       logger.devLog('⚠️ [ADMIN] Color attribute not found. Available attributes:', attributes.map(a => ({ key: a.key, name: a.name })));
     } else {
@@ -28,7 +29,7 @@ export function useProductAttributeHelpers({ attributes }: UseProductAttributeHe
     if (!attributes || attributes.length === 0) {
       return undefined;
     }
-    const sizeAttr = attributes.find((attr) => attr.key === 'size');
+    const sizeAttr = findAttributeBySemanticKey(attributes, 'size');
     if (!sizeAttr) {
       logger.devLog('⚠️ [ADMIN] Size attribute not found. Available attributes:', attributes.map(a => ({ key: a.key, name: a.name })));
     } else {

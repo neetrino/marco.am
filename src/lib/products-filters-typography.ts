@@ -7,7 +7,7 @@ export const productsFiltersSectionFont = Montserrat({
 });
 
 const PRODUCTS_FILTER_SECTION_SHELL_BASE =
-  'border-b border-solid border-[#e2e8f0] mb-4 pb-4 max-lg:mb-8 max-lg:pb-5';
+  'border-b border-solid border-[#e2e8f0] dark:border-white/20 mb-4 pb-4 max-lg:mb-8 max-lg:pb-5';
 
 /** Divider + padding under section content; extra gap below line before next title on mobile drawer (`max-lg`). */
 export const PRODUCTS_FILTER_SECTION_SHELL_CLASS = PRODUCTS_FILTER_SECTION_SHELL_BASE;

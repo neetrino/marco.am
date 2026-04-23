@@ -164,7 +164,7 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
                 ref={categoriesTriggerRef}
                 type="button"
                 onClick={() => setShowProductsMenu((open) => !open)}
-                className={`flex w-full items-center bg-marco-black text-white ${getHeaderCategoryButtonClass(
+                className={`flex w-full items-center bg-marco-black text-white dark:[&_svg]:text-[#050505] ${getHeaderCategoryButtonClass(
                   row2TabletLike,
                   row2DesktopLike,
                 )} [&_svg]:text-white`}

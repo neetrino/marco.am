@@ -6,7 +6,7 @@ import { Button } from '@shop/ui';
 import { formatPrice } from '../../lib/currency';
 import type { CurrencyCode } from '../../lib/currency';
 import type { Cart, CartItem } from './types';
-import { SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC } from '../../components/home/home-special-offers.constants';
+import { ProductImagePlaceholder } from '../../components/ProductImagePlaceholder';
 
 /**
  * Cart item row component
@@ -29,7 +29,6 @@ export function CartItemRow({
   t,
 }: CartItemRowProps) {
   const currencyCode = currency as CurrencyCode;
-  const displayImageSrc = SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC;
   return (
     <div
       className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 px-4 sm:px-6 py-6 hover:bg-gray-50 transition-colors relative"
@@ -50,14 +49,21 @@ export function CartItemRow({
           href={`/products/${item.variant.product.slug}`}
           className="w-24 h-24 sm:w-28 sm:h-28 bg-gray-100 rounded-lg flex-shrink-0 relative overflow-hidden"
         >
-          <Image
-            src={displayImageSrc}
-            alt={item.variant.product.title}
-            fill
-            className="object-cover"
-            sizes="80px"
-            unoptimized
-          />
+          {item.variant.product.image ? (
+            <Image
+              src={item.variant.product.image}
+              alt={item.variant.product.title}
+              fill
+              className="object-cover"
+              sizes="80px"
+              unoptimized
+            />
+          ) : (
+            <ProductImagePlaceholder
+              className="w-full h-full"
+              aria-label={item.variant.product.title ? `No image for ${item.variant.product.title}` : 'No image'}
+            />
+          )}
         </Link>
         <div className="flex-1 min-w-0">
           <Link

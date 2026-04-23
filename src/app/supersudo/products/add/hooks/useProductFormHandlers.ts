@@ -9,6 +9,7 @@ import { processImagesForSubmit } from './useImageProcessingForSubmit';
 import { createAndSubmitPayload } from './useProductPayloadCreation';
 import type { ProductClass } from '@/lib/constants/product-class';
 import { logger } from "@/lib/utils/logger";
+import { findAttributeBySemanticKey } from '@/lib/attribute-keys';
 
 interface UseProductFormHandlersProps {
   formData: {
@@ -305,7 +306,7 @@ export function useProductFormHandlers({
                     const finalPrice = convertPrice(finalPriceRaw, defaultCurrency, 'USD');
                     const variantOptions: Array<{ attributeKey: string; value: string; valueId?: string }> = [];
                     if (colorData.colorValue && colorData.colorValue.trim() !== '') {
-                      const colorAttr = attributes.find(a => a.key === 'color');
+                      const colorAttr = findAttributeBySemanticKey(attributes, 'color');
                       const colorValue = colorAttr?.values.find(v => v.value === colorData.colorValue);
                       if (colorValue) {
                         variantOptions.push({ attributeKey: 'color', value: colorData.colorValue, valueId: colorValue.id });
@@ -314,7 +315,7 @@ export function useProductFormHandlers({
                       }
                     }
                     if (size && size.trim() !== '') {
-                      const sizeAttr = attributes.find(a => a.key === 'size');
+                      const sizeAttr = findAttributeBySemanticKey(attributes, 'size');
                       const sizeValue = sizeAttr?.values.find(v => v.value === size);
                       if (sizeValue) {
                         variantOptions.push({ attributeKey: 'size', value: size, valueId: sizeValue.id });
