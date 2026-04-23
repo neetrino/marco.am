@@ -164,11 +164,11 @@ function SofaCard({ copy }: { copy: HeroBannerCopy }) {
 
       <Link
         href="/products"
-        className="absolute z-10 flex items-center justify-center overflow-hidden rounded-[68px] bg-[#facc15] py-1 pl-4 pr-14 antialiased"
+        className="absolute z-10 flex items-center justify-center overflow-hidden rounded-[68px] bg-[#facc15] py-1 pl-4 pr-14 antialiased dark:!text-[#050505]"
         style={{ left: x(524), top: by(700), width: bx(243), height: by(56) }}
       >
         <span
-          className={`${montserratArm.className} min-w-0 text-center text-base font-bold leading-6 text-[#000]`}
+          className={`${montserratArm.className} min-w-0 text-center text-base font-bold leading-6 text-[#000] dark:!text-[#050505]`}
         >
           {copy.buyNow}
         </span>

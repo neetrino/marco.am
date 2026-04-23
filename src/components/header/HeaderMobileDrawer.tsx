@@ -91,7 +91,7 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
                 >
                   <span className="uppercase tracking-wide">{t('common.navigation.categories')}</span>
                   <svg
-                    className={`h-4 w-4 text-gray-400 transition-transform duration-200 ${categoriesOpen ? 'rotate-180' : 'rotate-0'}`}
+                    className={`h-4 w-4 text-gray-400 transition-transform duration-200 dark:text-white ${categoriesOpen ? 'rotate-180' : 'rotate-0'}`}
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -126,18 +126,25 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
                                   onClick={() => setMobileMenuOpen(false)}
                                   className="flex min-w-0 flex-1 items-center gap-2.5 text-sm font-medium leading-5 text-gray-700 hover:text-gray-900"
                                 >
-                                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white">
+                                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white dark:bg-slate-800">
                                     {categoryPresentation.icon.kind === 'figma' ? (
                                       <img
                                         src={categoryPresentation.icon.src}
                                         alt=""
                                         width={22}
                                         height={22}
-                                        className="h-[22px] w-[22px] object-contain"
+                                        className="h-[22px] w-[22px] object-contain dark:brightness-0 dark:invert"
                                         draggable={false}
                                       />
                                     ) : (
-                                      CategoryIcon && <CategoryIcon size={18} strokeWidth={1.7} aria-hidden />
+                                      CategoryIcon && (
+                                        <CategoryIcon
+                                          size={18}
+                                          strokeWidth={1.7}
+                                          className="text-gray-700 dark:text-white"
+                                          aria-hidden
+                                        />
+                                      )
                                     )}
                                   </span>
                                   <span className="min-w-0 flex-1 whitespace-normal break-words">
@@ -152,7 +159,7 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
                                         prev === category.slug ? null : category.slug
                                       )
                                     }
-                                    className="rounded-md p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                                    className="rounded-md p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-white dark:hover:bg-slate-700 dark:hover:text-white"
                                     aria-expanded={isExpanded}
                                     aria-label={isExpanded ? t('common.ariaLabels.closeMenu') : t('common.ariaLabels.openMenu')}
                                   >
@@ -187,18 +194,25 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
                                       onClick={() => setMobileMenuOpen(false)}
                                         className="flex items-start gap-2 py-1 text-sm leading-5 text-gray-600 hover:text-gray-900"
                                     >
-                                        <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded bg-white">
+                                        <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded bg-white dark:bg-slate-800">
                                           {childPresentation.icon.kind === 'figma' ? (
                                             <img
                                               src={childPresentation.icon.src}
                                               alt=""
                                               width={16}
                                               height={16}
-                                              className="h-4 w-4 object-contain"
+                                              className="h-4 w-4 object-contain dark:brightness-0 dark:invert"
                                               draggable={false}
                                             />
                                           ) : (
-                                            ChildIcon && <ChildIcon size={14} strokeWidth={1.7} aria-hidden />
+                                            ChildIcon && (
+                                              <ChildIcon
+                                                size={14}
+                                                strokeWidth={1.7}
+                                                className="text-gray-700 dark:text-white"
+                                                aria-hidden
+                                              />
+                                            )
                                           )}
                                         </span>
                                         <span className="whitespace-normal break-words">
