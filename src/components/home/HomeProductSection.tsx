@@ -201,7 +201,7 @@ export function HomeProductSection({ titleKey, filter }: HomeProductSectionProps
                     aria-selected={i === newArrivalsSafePage}
                     onClick={() => setPageIndex(i)}
                     className={`h-2.5 w-2.5 rounded-full transition-colors ${
-                      i === newArrivalsSafePage ? 'bg-[#181111]' : 'bg-[#d1d5db]'
+                      i === newArrivalsSafePage ? 'bg-[#181111] dark:!bg-[#ffca03]' : 'bg-[#d1d5db]'
                     }`}
                     aria-label={`${tr('home.special_offers_carousel_page')} ${i + 1}`}
                   />
