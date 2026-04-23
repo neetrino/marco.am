@@ -239,27 +239,27 @@ export default function ComparePage() {
       </div>
 
       {products.length > 0 ? (
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden dark:bg-[#0f0f0f] dark:border-white/40">
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 min-w-[150px] sticky left-0 bg-gray-50 z-10">
+                <tr className="bg-gray-50 border-b border-gray-200 dark:border-white/40">
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 min-w-[150px] sticky left-0 bg-gray-50 z-10 dark:!bg-[#202020] dark:!text-white">
                     {t('common.compare.characteristic')}
                   </th>
                   {products.map((product) => (
                     <th
                       key={product.id}
-                      className="px-4 py-3 text-center text-sm font-semibold text-gray-700 min-w-[220px] relative"
+                      className="px-4 py-3 text-center text-sm font-semibold text-gray-700 min-w-[220px] relative bg-gray-50 dark:!bg-[#202020] dark:text-white/85"
                     >
                       <button
                         onClick={(e) => handleRemove(e, product.id)}
-                        className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center text-gray-400 hover:text-marco-black hover:bg-marco-yellow rounded-full transition-all"
+                        className="group absolute top-2 right-2 w-6 h-6 flex items-center justify-center hover:bg-marco-yellow rounded-full transition-all"
                         title={t('common.buttons.remove')}
                         aria-label={t('common.buttons.remove')}
                       >
                         <svg
-                          className="w-4 h-4"
+                          className="w-4 h-4 !text-[#9ca3af] transition-colors group-hover:!text-[#050505] dark:group-hover:!text-[#050505]"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
@@ -276,16 +276,16 @@ export default function ComparePage() {
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-gray-200 dark:divide-white/40">
                 {/* Изображение */}
-                <tr className="hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-4 text-sm font-medium text-gray-700 bg-gray-50 sticky left-0 z-10">
+                <tr className="hover:bg-gray-50 transition-colors dark:hover:bg-[#1a1a1a]">
+                  <td className="px-4 py-4 text-sm font-medium text-gray-700 bg-gray-50 sticky left-0 z-10 dark:!bg-[#202020] dark:!text-white">
                     {t('common.compare.image')}
                   </td>
                   {products.map((product) => (
                     <td key={product.id} className="px-4 py-4 text-center">
                       <Link href={`/products/${product.slug}`} className="inline-block">
-                        <div className="w-32 h-32 mx-auto bg-gray-100 rounded-lg overflow-hidden relative">
+                        <div className="relative mx-auto h-32 w-32 overflow-hidden rounded-lg !bg-gray-100 dark:!bg-gray-100">
                           {product.image ? (
                             <Image
                               src={product.image}
@@ -297,7 +297,7 @@ export default function ComparePage() {
                             />
                           ) : (
                             <ProductImagePlaceholder
-                              className="w-full h-full"
+                              className="h-full w-full !bg-gray-200 !text-gray-400 dark:!bg-gray-200 dark:!text-gray-400"
                               aria-label={product.title ? `No image for ${product.title}` : 'No image'}
                             />
                           )}
@@ -308,15 +308,15 @@ export default function ComparePage() {
                 </tr>
 
                 {/* Название */}
-                <tr className="hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-4 text-sm font-medium text-gray-700 bg-gray-50 sticky left-0 z-10">
+                <tr className="hover:bg-gray-50 transition-colors dark:hover:bg-[#1a1a1a]">
+                  <td className="px-4 py-4 text-sm font-medium text-gray-700 bg-gray-50 sticky left-0 z-10 dark:!bg-[#202020] dark:!text-white">
                     {t('common.compare.name')}
                   </td>
                   {products.map((product) => (
                     <td key={product.id} className="px-4 py-4">
                       <Link
                         href={`/products/${product.slug}`}
-                        className="text-base font-semibold text-gray-900 hover:text-blue-600 transition-colors block text-center"
+                        className="text-base font-semibold text-gray-900 hover:text-blue-600 transition-colors block text-center dark:text-white/90 dark:hover:text-marco-yellow"
                       >
                         {product.title}
                       </Link>
@@ -325,35 +325,35 @@ export default function ComparePage() {
                 </tr>
 
                 {/* Бренд */}
-                <tr className="hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-4 text-sm font-medium text-gray-700 bg-gray-50 sticky left-0 z-10">
+                <tr className="hover:bg-gray-50 transition-colors dark:hover:bg-[#1a1a1a]">
+                  <td className="px-4 py-4 text-sm font-medium text-gray-700 bg-gray-50 sticky left-0 z-10 dark:!bg-[#202020] dark:!text-white">
                     {t('common.compare.brand')}
                   </td>
                   {products.map((product) => (
-                    <td key={product.id} className="px-4 py-4 text-center text-sm text-gray-600">
+                    <td key={product.id} className="px-4 py-4 text-center text-sm text-gray-600 dark:text-white/75">
                       {product.brand ? product.brand.name : '-'}
                     </td>
                   ))}
                 </tr>
 
                 {/* Цена */}
-                <tr className="hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-4 text-sm font-medium text-gray-700 bg-gray-50 sticky left-0 z-10">
+                <tr className="hover:bg-gray-50 transition-colors dark:hover:bg-[#1a1a1a]">
+                  <td className="px-4 py-4 text-sm font-medium text-gray-700 bg-gray-50 sticky left-0 z-10 dark:!bg-[#202020] dark:!text-white">
                     {t('common.compare.price')}
                   </td>
                   {products.map((product) => (
                     <td key={product.id} className="px-4 py-4 text-center">
                       <div className="flex flex-col items-center justify-center gap-1">
-                        <p className="text-lg font-bold text-gray-900 select-none">
+                        <p className="text-lg font-bold text-gray-900 select-none dark:text-white/90">
                           {formatPrice(product.price, currency)}
                         </p>
                         {(product.originalPrice && product.originalPrice > product.price) && (
-                          <p className="text-sm text-gray-500 line-through select-none">
+                          <p className="text-sm text-gray-500 line-through select-none dark:text-white/55">
                             {formatPrice(product.originalPrice, currency)}
                           </p>
                         )}
                         {!product.originalPrice && product.compareAtPrice && product.compareAtPrice > product.price && (
-                          <p className="text-sm text-gray-500 line-through select-none">
+                          <p className="text-sm text-gray-500 line-through select-none dark:text-white/55">
                             {formatPrice(product.compareAtPrice, currency)}
                           </p>
                         )}
@@ -363,8 +363,8 @@ export default function ComparePage() {
                 </tr>
 
                 {/* Наличие */}
-                <tr className="hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-4 text-sm font-medium text-gray-700 bg-gray-50 sticky left-0 z-10">
+                <tr className="hover:bg-gray-50 transition-colors dark:hover:bg-[#1a1a1a]">
+                  <td className="px-4 py-4 text-sm font-medium text-gray-700 bg-gray-50 sticky left-0 z-10 dark:!bg-[#202020] dark:!text-white">
                     {t('common.compare.availability')}
                   </td>
                   {products.map((product) => (
@@ -385,8 +385,8 @@ export default function ComparePage() {
                 </tr>
 
                 {/* Действия */}
-                <tr className="hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-4 text-sm font-medium text-gray-700 bg-gray-50 sticky left-0 z-10">
+                <tr className="hover:bg-gray-50 transition-colors dark:hover:bg-[#1a1a1a]">
+                  <td className="px-4 py-4 text-sm font-medium text-gray-700 bg-gray-50 sticky left-0 z-10 dark:!bg-[#202020] dark:!text-white">
                     {t('common.compare.actions')}
                   </td>
                   {products.map((product) => (
@@ -394,7 +394,7 @@ export default function ComparePage() {
                       <div className="flex flex-col gap-3 items-center">
                         <Link
                           href={`/products/${product.slug}`}
-                          className="text-sm text-marco-black hover:opacity-80 font-medium transition-opacity"
+                          className="text-sm text-marco-black hover:opacity-80 font-medium transition-opacity dark:text-white/85 dark:hover:text-marco-yellow"
                         >
                           {t('common.compare.viewDetails')}
                         </Link>
@@ -402,7 +402,7 @@ export default function ComparePage() {
                           <button
                             onClick={(e) => handleAddToCart(e, product)}
                             disabled={addingToCart.has(product.id)}
-                            className="inline-flex items-center justify-center h-10 px-6 bg-marco-yellow text-marco-black text-sm font-bold rounded-full whitespace-nowrap hover:brightness-95 transition-[filter] disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="inline-flex items-center justify-center h-10 px-6 bg-marco-yellow !text-[#050505] dark:!text-[#050505] text-sm font-bold rounded-full whitespace-nowrap hover:brightness-95 transition-[filter] disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             {addingToCart.has(product.id)
                               ? t('common.messages.adding')

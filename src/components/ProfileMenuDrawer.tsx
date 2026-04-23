@@ -96,15 +96,17 @@ export function ProfileMenuDrawer({ tabs, activeTab, onSelect }: ProfileMenuDraw
                   key={tab.id}
                   onClick={() => handleSelect(tab.id)}
                   className={`flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium ${
-                    activeTab === tab.id ? 'bg-marco-yellow text-marco-black rounded-full' : 'text-gray-700 hover:bg-gray-50 rounded-full'
+                    activeTab === tab.id
+                      ? 'bg-marco-yellow text-[#050505] dark:text-[#050505] rounded-full'
+                      : 'text-gray-700 hover:bg-gray-50 rounded-full'
                   }`}
                 >
                   <span className="flex items-center gap-3">
-                    <span className={activeTab === tab.id ? 'text-marco-black' : 'text-gray-500'}>{tab.icon}</span>
+                    <span className={activeTab === tab.id ? 'text-[#050505] dark:text-[#050505]' : 'text-gray-500'}>{tab.icon}</span>
                     {tab.label}
                   </span>
                   <svg
-                    className={`w-4 h-4 ${activeTab === tab.id ? 'text-marco-black' : 'text-gray-400'}`}
+                    className={`w-4 h-4 ${activeTab === tab.id ? 'text-[#050505] dark:text-[#050505]' : 'text-gray-400'}`}
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"

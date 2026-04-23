@@ -110,7 +110,7 @@ const VIEW_TOGGLE_SEGMENT_BASE =
 
 function viewToggleSegmentClass(isActive: boolean): string {
   return isActive
-    ? `${VIEW_TOGGLE_SEGMENT_BASE} bg-[#f5f5f5] text-marco-black dark:bg-white dark:text-[#050505]`
+    ? `${VIEW_TOGGLE_SEGMENT_BASE} bg-[#ffffff] text-[#050505] dark:bg-[#ffffff] dark:text-[#050505]`
     : `${VIEW_TOGGLE_SEGMENT_BASE} text-marco-black dark:text-white hover:bg-[#fafafa] dark:hover:bg-white/10`;
 }
 

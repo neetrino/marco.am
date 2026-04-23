@@ -17,7 +17,7 @@ const CONTACT_PAGE_PHONE_ICON_CLASS =
 const CONTACT_PAGE_MAIL_ICON_CLASS =
   'mt-0.5 h-[12px] w-auto shrink-0 translate-y-[3px]';
 /** Ровные разделители контактных блоков: первые одинаковые, последний короче. */
-const CONTACT_DIVIDER_BASE_CLASS = 'ml-0 block h-px shrink-0 self-start bg-black/15';
+const CONTACT_DIVIDER_BASE_CLASS = 'ml-0 block h-px shrink-0 self-start bg-black/15 dark:bg-white/40';
 const CONTACT_DIVIDER_CLASS =
   `${CONTACT_DIVIDER_BASE_CLASS} w-[17.5rem] sm:w-[20rem]`;
 const CONTACT_EMAILS = ['marcogrouparmenia@mail.ru', 'marcofurniture@mail.ru'] as const;
@@ -230,14 +230,14 @@ export default function ContactPage() {
                   value={formData.message}
                   onChange={handleChange}
                   aria-label={t('contact.form.message')}
-                  className="w-full min-h-[108px] resize-none rounded-[20px] border-transparent bg-[#efefef] px-4 py-2.5 text-sm text-marco-black focus:outline-none focus:ring-2 focus:ring-[#d4d4d4] placeholder:text-[#8f8f8f] sm:text-base"
+                  className="w-full min-h-[108px] resize-none !rounded-[20px] !border-transparent !bg-[#efefef] !px-4 !py-2.5 !text-sm !text-marco-black dark:!text-[#050505] placeholder:!text-[#8f8f8f] focus:!outline-none focus:!ring-2 focus:!ring-[#d4d4d4] sm:!text-base"
                   placeholder={t('contact.form.message')}
                 />
               </div>
               <Button
                 type="submit"
                 variant="primary"
-                className="w-full !h-10 !rounded-full !border-0 !bg-marco-black !py-0 text-sm font-semibold uppercase tracking-wide !text-white hover:!brightness-95 focus:!ring-marco-black sm:!text-base"
+                className="w-full !h-10 !rounded-full !border-0 !bg-marco-yellow !py-0 text-sm font-semibold uppercase tracking-wide !text-[#050505] dark:!text-[#050505] hover:!brightness-95 focus:!ring-marco-black sm:!text-base"
                 disabled={submitting}
               >
                 {submitting ? (t('contact.form.submitting') || 'Ուղարկվում է...') : t('contact.form.submit')}

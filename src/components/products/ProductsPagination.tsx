@@ -5,7 +5,7 @@ import { useTranslation } from '../../lib/i18n-client';
 
 /** Figma MARCO 218:2304 — control pill (white or grey) */
 const PAGINATION_CONTROL_BASE =
-  'inline-flex h-9 min-w-0 shrink-0 items-center justify-center gap-1 rounded-[9px] border border-[#e2e2e2] px-3 py-2 text-sm font-normal leading-5 text-[#313131] transition-colors';
+  'inline-flex h-9 min-w-0 shrink-0 items-center justify-center gap-1 rounded-[9px] border border-[#e2e2e2] px-3 py-2 text-sm font-normal leading-5 text-[#313131] transition-colors dark:text-white';
 
 const PAGINATION_CONTROL_WHITE = `${PAGINATION_CONTROL_BASE} bg-white hover:bg-[#fafafa]`;
 const PAGINATION_CONTROL_GREY = `${PAGINATION_CONTROL_BASE} min-w-[105px] bg-[#f6f6f6] hover:bg-[#efefef]`;
@@ -111,16 +111,16 @@ export function ProductsPagination({
       {page > 1 ? (
         <Link
           href={hrefFirst}
-          className={`${PAGINATION_CONTROL_GREY} gap-1`}
+          className={`${PAGINATION_CONTROL_GREY} gap-1 dark:text-[#313131]`}
           aria-label={t('common.pagination.firstAria')}
         >
-          <IconChevronsLeft className="shrink-0 text-[#313131]" />
-          <span>{t('common.pagination.first')}</span>
+          <IconChevronsLeft className="shrink-0 text-[#313131] dark:text-[#313131]" />
+          <span className="text-[#313131] dark:text-[#313131]">{t('common.pagination.first')}</span>
         </Link>
       ) : (
-        <span className={`${inactiveGrey} gap-1`} aria-disabled="true">
-          <IconChevronsLeft className="shrink-0" />
-          <span>{t('common.pagination.first')}</span>
+        <span className={`${inactiveGrey} gap-1 dark:text-[#313131]`} aria-disabled="true">
+          <IconChevronsLeft className="shrink-0 text-[#313131] dark:text-[#313131]" />
+          <span className="text-[#313131] dark:text-[#313131]">{t('common.pagination.first')}</span>
         </span>
       )}
 
@@ -131,7 +131,7 @@ export function ProductsPagination({
           className={`${PAGINATION_CONTROL_WHITE} gap-1`}
           aria-label={t('common.pagination.previousAria')}
         >
-          <IconChevronLeft className="shrink-0 text-[#313131]" />
+          <IconChevronLeft className="shrink-0 text-[#313131] dark:text-white" />
           <span>{t('common.pagination.previous')}</span>
         </Link>
       ) : (
@@ -146,7 +146,7 @@ export function ProductsPagination({
         item.kind === 'ellipsis' ? (
           <span
             key={`ellipsis-${idx}`}
-            className={`${PAGINATION_PAGE_BASE} min-w-[31px] bg-white font-normal text-[#313131]`}
+            className={`${PAGINATION_PAGE_BASE} min-w-[31px] bg-white font-normal text-[#313131] dark:text-white`}
             aria-hidden
           >
             …
@@ -155,7 +155,7 @@ export function ProductsPagination({
           <span key={item.page}>
             {item.page === page ? (
               <span
-                className={`${PAGINATION_PAGE_BASE} border-0 bg-black font-bold text-white`}
+                className={`${PAGINATION_PAGE_BASE} border border-[#050505] bg-[#ffffff] font-bold text-[#050505]`}
                 aria-current="page"
               >
                 {item.page}
@@ -163,7 +163,7 @@ export function ProductsPagination({
             ) : (
               <Link
                 href={item.href}
-                className={`${PAGINATION_PAGE_BASE} bg-white font-normal text-[#313131] hover:bg-[#fafafa]`}
+                className={`${PAGINATION_PAGE_BASE} bg-white font-normal text-[#313131] hover:bg-[#fafafa] dark:text-white`}
               >
                 {item.page}
               </Link>
@@ -180,7 +180,7 @@ export function ProductsPagination({
           aria-label={t('common.pagination.nextAria')}
         >
           <span>{t('common.pagination.next')}</span>
-          <IconChevronRight className="shrink-0 text-[#313131]" />
+          <IconChevronRight className="shrink-0 text-[#313131] dark:text-white" />
         </Link>
       ) : (
         <span className={`${inactiveControl} gap-1`} aria-disabled="true">
@@ -193,16 +193,16 @@ export function ProductsPagination({
       {page < totalPages ? (
         <Link
           href={hrefLast}
-          className={`${PAGINATION_CONTROL_GREY} gap-1`}
+          className={`${PAGINATION_CONTROL_GREY} gap-1 dark:text-[#313131]`}
           aria-label={t('common.pagination.lastAria')}
         >
-          <span>{t('common.pagination.last')}</span>
-          <IconChevronsRight className="shrink-0 text-[#313131]" />
+          <span className="text-[#313131] dark:text-[#313131]">{t('common.pagination.last')}</span>
+          <IconChevronsRight className="shrink-0 text-[#313131] dark:text-[#313131]" />
         </Link>
       ) : (
-        <span className={`${inactiveGrey} gap-1`} aria-disabled="true">
-          <span>{t('common.pagination.last')}</span>
-          <IconChevronsRight className="shrink-0" />
+        <span className={`${inactiveGrey} gap-1 dark:text-[#313131]`} aria-disabled="true">
+          <span className="text-[#313131] dark:text-[#313131]">{t('common.pagination.last')}</span>
+          <IconChevronsRight className="shrink-0 text-[#313131] dark:text-[#313131]" />
         </span>
       )}
     </nav>

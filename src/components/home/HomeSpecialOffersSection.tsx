@@ -66,11 +66,11 @@ const SECTION_CONTAINER_CLASS = HOME_PAGE_SECTION_SHELL_CLASS;
 
 /** Pill: default white + gray border; hover marco-yellow — same as REELS. */
 const SPECIAL_OFFERS_NAV_BUTTON_CLASS =
-  'flex shrink-0 items-center justify-center overflow-visible rounded-full border border-gray-200 bg-white p-0 transition-colors hover:border-marco-yellow hover:bg-marco-yellow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marco-black';
+  'flex shrink-0 items-center justify-center overflow-visible rounded-full border border-gray-200 bg-white p-0 text-[#181111] transition-colors hover:!border-marco-yellow hover:!bg-marco-yellow dark:border-white/25 dark:bg-transparent dark:text-white dark:hover:!border-marco-yellow dark:hover:!bg-marco-yellow dark:hover:text-[#181111] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marco-black';
 
 /** Match `HomeReelsSection` chevrons — larger on `max-md`. */
 const SPECIAL_OFFERS_NAV_ICON_CLASS =
-  'h-3 w-3 shrink-0 text-marco-black max-md:h-5 max-md:w-5';
+  'h-3 w-3 shrink-0 text-current max-md:h-5 max-md:w-5';
 
 /** Sub-lg (`railSlotWidthPx === null`), non-mobile-grid: one tile width per slide (`md`–`lg`). */
 const SPECIAL_OFFERS_RAIL_SUB_LG_LINEAR_CLASS = `shrink-0 snap-start min-w-0 flex-[0_0_min(100%,${SPECIAL_OFFERS_CARD_MAX_WIDTH_PX}px)] max-w-[min(100%,${SPECIAL_OFFERS_CARD_MAX_WIDTH_PX}px)]`;
@@ -399,7 +399,7 @@ export function HomeSpecialOffersSection() {
                         scrollToPage(dotIndex);
                       }}
                       className={`rounded-full transition-colors ${
-                        activePage === dotIndex ? 'bg-marco-black' : 'bg-gray-300'
+                        activePage === dotIndex ? 'bg-[#181111] dark:!bg-[#ffca03]' : 'bg-gray-300'
                       }`}
                       style={paginationDotStyle}
                       aria-label={tr(

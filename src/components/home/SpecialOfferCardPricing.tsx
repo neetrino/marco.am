@@ -5,7 +5,6 @@ import type { MouseEvent } from 'react';
 import { formatPrice } from '../../lib/currency';
 import type { CurrencyCode } from '../../lib/currency';
 import {
-  SpecialOfferCartFigmaCircle,
   SpecialOfferCartFigmaIcon,
 } from './SpecialOfferCartFigmaArt';
 import {
@@ -70,39 +69,20 @@ export function SpecialOfferCartFloatingButton({
 }: SpecialOfferCartFloatingButtonProps) {
   return (
     <div className="pointer-events-none absolute max-md:z-50 max-md:bottom-[var(--so-cart-bottom-mobile)] max-md:left-1/2 max-md:right-auto max-md:-translate-x-1/2 md:z-30 md:bottom-[var(--so-cart-bottom-desktop)] md:left-auto md:right-[var(--so-cart-right-desktop)] md:translate-x-0">
-      <div
-        className="pointer-events-auto relative"
-        style={{
-          width: SPECIAL_OFFERS_CART_BUTTON_SIZE_PX + 8,
-          height: SPECIAL_OFFERS_CART_BUTTON_SIZE_PX + 8,
-        }}
-      >
-        <span
-          aria-hidden
-          className="pointer-events-none absolute inset-0 rounded-full"
-          style={{ backgroundColor: 'var(--special-offers-card-cutout-bg)' }}
-        />
-        <span
-          aria-hidden
-          className="pointer-events-none absolute inset-[-2px] rounded-full"
-          style={{ backgroundColor: 'var(--special-offers-card-cutout-bg)' }}
-        />
+      <div className="pointer-events-auto">
         <button
           type="button"
           onClick={onAddToCart}
           disabled={!inStock || isAddingToCart}
-          className="absolute left-1/2 top-1/2 z-10 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center overflow-hidden rounded-full transition-transform hover:scale-105 disabled:cursor-not-allowed disabled:opacity-50"
+          className="relative flex items-center justify-center overflow-hidden rounded-full bg-[#ffca03] shadow-sm transition-transform hover:scale-105 disabled:cursor-not-allowed disabled:opacity-50 dark:outline dark:outline-2 dark:outline-[#050505]"
           style={{
             width: SPECIAL_OFFERS_CART_BUTTON_SIZE_PX,
             height: SPECIAL_OFFERS_CART_BUTTON_SIZE_PX,
-            boxShadow: 'none',
-            outline: '1px solid transparent',
           }}
           aria-label={inStock ? addToCartAria : outOfStockAria}
         >
           {isAddingToCart ? (
             <>
-              <SpecialOfferCartFigmaCircle />
               <svg
                 className="relative z-10 animate-spin text-white"
                 style={{
@@ -130,10 +110,7 @@ export function SpecialOfferCartFloatingButton({
               </svg>
             </>
           ) : (
-            <>
-              <SpecialOfferCartFigmaCircle />
-              <SpecialOfferCartFigmaIcon />
-            </>
+            <SpecialOfferCartFigmaIcon />
           )}
         </button>
       </div>

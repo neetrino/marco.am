@@ -123,7 +123,7 @@ export function FeaturedNewArrivalsMobileRail({
               onGoToPage(dotIndex);
             }}
             className={`rounded-full transition-colors ${
-              activePage === dotIndex ? 'bg-marco-black' : 'bg-gray-300'
+              activePage === dotIndex ? 'bg-[#181111] dark:!bg-[#ffca03]' : 'bg-gray-300'
             }`}
             style={featuredFooterDotStyle}
             aria-label={t(language, featuredPageAriaPath(dotIndex))}

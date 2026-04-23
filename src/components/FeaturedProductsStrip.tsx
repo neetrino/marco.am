@@ -219,7 +219,7 @@ export function FeaturedProductsStrip({
           {Array.from({ length: FEATURED_PRODUCTS_FOOTER_DOT_COUNT_DESKTOP }, (_, i) => (
             <span
               key={`featured-footer-dot-${i}`}
-              className={i === 0 ? 'rounded-full bg-marco-black' : 'rounded-full bg-gray-300'}
+              className={i === 0 ? 'rounded-full bg-[#181111] dark:!bg-[#ffca03]' : 'rounded-full bg-gray-300'}
               style={featuredFooterDotStyle}
             />
           ))}
@@ -286,7 +286,9 @@ export function FeaturedProductsStrip({
               aria-label={`${t(language, 'home.special_offers_carousel_page')} ${i + 1}`}
               onClick={() => scrollBrandsToPage(i)}
               className={`rounded-full transition-colors duration-200 ${
-                i === brandsActivePage ? 'bg-marco-black' : 'bg-gray-300 hover:bg-gray-400'
+                i === brandsActivePage
+                  ? 'bg-[#181111] dark:!bg-[#ffca03]'
+                  : 'bg-gray-300 hover:bg-gray-400'
               }`}
               style={featuredFooterDotStyle}
             />

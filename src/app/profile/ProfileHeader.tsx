@@ -56,11 +56,11 @@ export function ProfileHeader({ profile, tabs, activeTab, onTabChange, t }: Prof
                 onClick={() => onTabChange(tab.id)}
                 className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium transition-all ${
                   activeTab === tab.id
-                    ? 'bg-marco-yellow text-marco-black rounded-full'
+                    ? 'bg-marco-yellow text-[#050505] dark:text-[#050505] rounded-full'
                     : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 rounded-full'
                 }`}
               >
-                <span className={`flex-shrink-0 ${activeTab === tab.id ? 'text-marco-black' : 'text-gray-500'}`}>
+                <span className={`flex-shrink-0 ${activeTab === tab.id ? 'text-[#050505] dark:text-[#050505]' : 'text-gray-500'}`}>
                   {tab.icon}
                 </span>
                 <span className="text-left">{tab.label}</span>

@@ -50,7 +50,7 @@ export function ProfileOrders({
         onClick={() => onOrdersStatusFilterChange('')}
         className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
           ordersStatusFilter === ''
-            ? 'bg-marco-yellow text-marco-black border-marco-yellow'
+            ? 'bg-marco-yellow text-[#050505] dark:text-[#050505] border-marco-yellow'
             : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
         }`}
       >
@@ -63,7 +63,7 @@ export function ProfileOrders({
           onClick={() => onOrdersStatusFilterChange(value)}
           className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
             ordersStatusFilter === value
-              ? 'bg-marco-yellow text-marco-black border-marco-yellow'
+              ? 'bg-marco-yellow text-[#050505] dark:text-[#050505] border-marco-yellow'
               : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
           }`}
         >
@@ -104,7 +104,7 @@ export function ProfileOrders({
             <Button
               type="button"
               variant="outline"
-              className="mr-2 rounded-full px-4"
+              className="mr-2 !h-10 !rounded-full !border !border-gray-300 !bg-white !px-5 !text-sm !font-medium !text-gray-700 transition-colors hover:!bg-gray-50 dark:!border-[#ffffff] dark:!bg-[#ffffff] dark:!text-[#050505] dark:hover:!bg-[#f2f2f2]"
               onClick={() => onOrdersStatusFilterChange('')}
             >
               {t('profile.orders.showAllOrders')}
@@ -112,7 +112,7 @@ export function ProfileOrders({
           ) : null}
           <Link
             href="/products"
-            className="inline-flex items-center px-6 py-3 text-sm font-medium rounded-full bg-marco-black text-white hover:opacity-90 transition-opacity"
+            className="inline-flex h-10 items-center justify-center rounded-full bg-marco-black px-5 text-sm font-medium text-white transition-opacity hover:opacity-90"
           >
             {t('profile.dashboard.startShopping')}
           </Link>
