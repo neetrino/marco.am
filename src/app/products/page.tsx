@@ -20,44 +20,11 @@ import {
   type PaginationSlotItem,
 } from '../../components/products/ProductsPagination';
 import { MOBILE_FILTERS_EVENT } from '../../lib/events';
+import { productsService } from '../../lib/services/products.service';
 
 /** Same horizontal rhythm as navbar: `.marco-header-container` (see `globals.css`) */
 const PRODUCTS_PAGE_SHELL = 'marco-header-container';
 
-interface Product {
-  id: string;
-  slug: string;
-  title: string;
-  price: number;
-  compareAtPrice: number | null;
-  image: string | null;
-  inStock: boolean;
-  brand: {
-    id: string;
-    name: string;
-  } | null;
-  labels?: Array<{
-    id: string;
-    type: 'text' | 'percentage';
-    value: string;
-    position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
-    color: string | null;
-  }>;
-}
-
-interface ProductsResponse {
-  data: Product[];
-  meta: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
-}
-
-/**
- * Fetch products (PRODUCTION SAFE)
- */
 async function getProducts(
   page: number = 1,
   search?: string,
@@ -70,47 +37,26 @@ async function getProducts(
   limit: number = 12,
   filter?: string,
   language: LanguageCode = 'en'
-): Promise<ProductsResponse> {
+) {
   try {
-    const params: Record<string, string> = {
-      page: page.toString(),
-      limit: limit.toString(),
+    const parsedMinPrice = minPrice ? Number(minPrice) : undefined;
+    const parsedMaxPrice = maxPrice ? Number(maxPrice) : undefined;
+    const validMinPrice = parsedMinPrice !== undefined && Number.isFinite(parsedMinPrice) && parsedMinPrice >= 0 ? parsedMinPrice : undefined;
+    const validMaxPrice = parsedMaxPrice !== undefined && Number.isFinite(parsedMaxPrice) && parsedMaxPrice >= 0 ? parsedMaxPrice : undefined;
+
+    return await productsService.findAll({
+      page,
+      limit,
       lang: language,
-    };
-
-    if (search?.trim()) params.search = search.trim();
-    if (category?.trim()) params.category = category.trim();
-    if (minPrice?.trim()) params.minPrice = minPrice.trim();
-    if (maxPrice?.trim()) params.maxPrice = maxPrice.trim();
-    if (colors?.trim()) params.colors = colors.trim();
-    if (sizes?.trim()) params.sizes = sizes.trim();
-    if (brand?.trim()) params.brand = brand.trim();
-    if (filter?.trim()) params.filter = filter.trim();
-
-    const queryString = new URLSearchParams(params).toString();
-
-    // Fallback chain: NEXT_PUBLIC_APP_URL -> VERCEL_URL -> localhost (for local dev)
-    const baseUrl =
-      process.env.NEXT_PUBLIC_APP_URL ||
-      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
-
-    const targetUrl = `${baseUrl}/api/v1/products?${queryString}`;
-    const res = await fetch(targetUrl, {
-      cache: "no-store"
+      search: search?.trim() || undefined,
+      category: category?.trim() || undefined,
+      minPrice: validMinPrice,
+      maxPrice: validMaxPrice,
+      colors: colors?.trim() || undefined,
+      sizes: sizes?.trim() || undefined,
+      brand: brand?.trim() || undefined,
+      filter: filter?.trim() || undefined,
     });
-
-    if (!res.ok) throw new Error(`API failed: ${res.status}`);
-
-    const response = await res.json();
-    if (!response.data || !Array.isArray(response.data)) {
-      return {
-        data: [],
-        meta: { total: 0, page: 1, limit: 12, totalPages: 0 }
-      };
-    }
-
-    return response;
-
   } catch (e) {
     console.error("❌ PRODUCT ERROR", e);
     return {
