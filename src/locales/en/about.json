@@ -1,15 +1,17 @@
 {
   "subtitle": "ELEGANT DESIGN",
   "title": "About our online store",
+  "imageAlt": "Marco Group team",
   "description": {
-    "paragraph1": "We are delighted to welcome you to our online store. Our company strives to provide you with the best shopping experience with a wide range of quality products and excellent service.",
-    "paragraph2": "Our mission is to make online shopping simple, convenient and enjoyable. We carefully select each product to ensure high quality and customer satisfaction.",
-    "paragraph3": "We are proud to offer not only excellent products but also excellent customer service. Our team is always ready to help you find exactly what you are looking for."
+    "paragraph1": "Marco Group was founded in 2014 with the goal of providing high-quality and modern solutions in furniture, electrical appliances, laminated chipboard, MDF, and furniture accessories. Over the years, the company has grown steadily in the Armenian market, expanding its range of products and services to meet each customer's needs.",
+    "paragraph2": "At the beginning of its activity, the company focused on furniture production and import. Since 2018, after studying the market and responding to customer needs, it expanded its assortment to include laminated chipboard, MDF, furniture accessories, and electrical appliances. Today, Marco Group is a reliable and competitive brand that presents products meeting international standards."
   },
-  "team": {
-    "subtitle": "ABOUT US",
-    "title": "Our team",
-    "description": "Our team consists of experienced professionals who are dedicated to their work and strive to provide the best service for our customers."
+  "partners": {
+    "subtitle": "PARTNERSHIP",
+    "title": "Our partners",
+    "paragraph1": "Years of experience have allowed us to build strong relationships with both local and international partners, offering competitive prices and high-quality service.",
+    "paragraph2": "Marco Group is the official representative of the well-known By SPAN, DEKTA, EGIDA, and HENNSON companies in Armenia. In our showrooms, you can find household appliances from popular brands such as Samsung, Toshiba, LG, Hisense, Midea, Hennson, Geepas, Philips, Welux, Vestel, Lex, Centek, Nobel, Hausberg, and many others.",
+    "paragraph3": "In cooperation with INECOBANK, ACBA-CREDIT AGRICOLE BANK, and ID BANK, we offer a new purchasing opportunity through installment payments, making your purchase easier and more accessible."
   }
 }
 
