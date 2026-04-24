@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { pushShopProductsListingUrl } from '../lib/push-shop-products-listing-url';
 import Image from 'next/image';
 import { apiClient } from '../lib/api-client';
 import { getStoredLanguage } from '../lib/language';
 import { SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC } from './home/home-special-offers.constants';
+import { subscribeShopCategoryTreeUpdated } from '../lib/shop-category-tree-sync';
 
 interface Category {
   id: string;
@@ -34,6 +35,17 @@ interface ProductsResponse {
   };
 }
 
+function flattenCategoriesTree(cats: Category[]): Category[] {
+  const result: Category[] = [];
+  cats.forEach((cat) => {
+    result.push(cat);
+    if (cat.children && cat.children.length > 0) {
+      result.push(...flattenCategoriesTree(cat.children));
+    }
+  });
+  return result;
+}
+
 export function HomeCategoriesSidebar() {
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
@@ -49,12 +61,7 @@ export function HomeCategoriesSidebar() {
   const previewRef = useRef<HTMLDivElement>(null);
   const categoryButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
-  // Fetch categories and product counts
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     try {
       setLoading(true);
       const language = getStoredLanguage();
@@ -65,9 +72,8 @@ export function HomeCategoriesSidebar() {
       const categoriesList = response.data || [];
       setCategories(categoriesList);
 
-      // Fetch product counts and first product for each category
       const counts: Record<string, number> = {};
-      const allCategories = flattenCategories(categoriesList);
+      const allCategories = flattenCategoriesTree(categoriesList);
       
       // Fetch total count for "All"
       try {
@@ -106,19 +112,17 @@ export function HomeCategoriesSidebar() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  // Flatten categories tree
-  const flattenCategories = (cats: Category[]): Category[] => {
-    const result: Category[] = [];
-    cats.forEach((cat) => {
-      result.push(cat);
-      if (cat.children && cat.children.length > 0) {
-        result.push(...flattenCategories(cat.children));
-      }
+  useEffect(() => {
+    void fetchCategories();
+  }, [fetchCategories]);
+
+  useEffect(() => {
+    return subscribeShopCategoryTreeUpdated(() => {
+      void fetchCategories();
     });
-    return result;
-  };
+  }, [fetchCategories]);
 
   // Handle category hover
   const handleCategoryHover = async (categorySlug: string | null) => {
@@ -185,7 +189,7 @@ export function HomeCategoriesSidebar() {
   };
 
   // Filter categories by search
-  const allCategories = flattenCategories(categories);
+  const allCategories = flattenCategoriesTree(categories);
   const filteredCategories = searchQuery
     ? allCategories.filter((cat) =>
         cat.title.toLowerCase().includes(searchQuery.toLowerCase())

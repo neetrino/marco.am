@@ -3,6 +3,7 @@ import { apiClient } from '../../../../lib/api-client';
 import { logger } from '../../../../lib/utils/logger';
 import { showToast } from '../../../../components/Toast';
 import { useTranslation } from '../../../../lib/i18n-client';
+import { notifyShopCategoryTreeUpdated } from '../../../../lib/shop-category-tree-sync';
 import type { Category, CategoryFormData } from '../types';
 
 interface UseCategoryActionsReturn {
@@ -71,6 +72,7 @@ export function useCategoryActions(): UseCategoryActionsReturn {
       setShowAddModal(false);
       resetForm();
       await fetchCategories();
+      notifyShopCategoryTreeUpdated();
       showToast(t('admin.categories.createdSuccess'), 'success');
     } catch (err: unknown) {
       logger.error('Error creating category', { error: err });
@@ -136,6 +138,7 @@ export function useCategoryActions(): UseCategoryActionsReturn {
       setEditingCategory(null);
       resetForm();
       await fetchCategories();
+      notifyShopCategoryTreeUpdated();
       showToast(t('admin.categories.updatedSuccess'), 'success');
     } catch (err: unknown) {
       logger.error('Error updating category', { error: err });
@@ -164,6 +167,7 @@ export function useCategoryActions(): UseCategoryActionsReturn {
       await apiClient.delete(`/api/v1/supersudo/categories/${categoryId}`);
       logger.info('Category deleted successfully');
       await fetchCategories();
+      notifyShopCategoryTreeUpdated();
       showToast(t('admin.categories.deletedSuccess'), 'success');
     } catch (err: unknown) {
       logger.error('Error deleting category', { error: err });
@@ -211,7 +215,9 @@ export function useCategoryActions(): UseCategoryActionsReturn {
 
       const failedCount = results.filter((result) => result.status === 'rejected').length;
       await fetchCategories();
-
+      if (failedCount < categoryIds.length) {
+        notifyShopCategoryTreeUpdated();
+      }
       if (failedCount === 0) {
         showToast(t('admin.categories.deletedSuccess'), 'success');
       } else {

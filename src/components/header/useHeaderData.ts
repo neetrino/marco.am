@@ -13,6 +13,7 @@ import { CART_KEY } from '../../lib/storageCounts';
 import { useHeaderStorageCounts } from './useHeaderStorageCounts';
 import { useHeaderCurrency } from './useHeaderCurrency';
 import { useTranslation } from '../../lib/i18n-client';
+import { subscribeShopCategoryTreeUpdated } from '../../lib/shop-category-tree-sync';
 import type { Category, CategoriesResponse } from './category-nav-types';
 
 export function useHeaderData() {
@@ -176,6 +177,12 @@ export function useHeaderData() {
 
   useEffect(() => {
     fetchCategories();
+  }, [fetchCategories]);
+
+  useEffect(() => {
+    return subscribeShopCategoryTreeUpdated(() => {
+      void fetchCategories();
+    });
   }, [fetchCategories]);
 
   useEffect(() => {

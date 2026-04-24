@@ -220,6 +220,12 @@
     "backToAdmin": "Вернуться в панель администратора",
     "loadingCategories": "Загрузка категорий...",
     "noCategories": "Категории не найдены",
+    "searchLabel": "Поиск категорий",
+    "searchHint": "Учитываются название, slug в URL и родитель. Несколько слов сужают выборку.",
+    "searchPlaceholder": "Введите текст для фильтрации списка…",
+    "clearSearch": "Сбросить поиск",
+    "searchMatchCount": "{matched} из {total} категорий",
+    "noSearchResults": "Нет категорий по этому запросу",
     "addCategory": "Добавить категорию",
     "editCategory": "Редактировать категорию",
     "createCategory": "Создать категорию",
@@ -247,7 +253,13 @@
     "errorDeleting": "Ошибка при удалении категории: {message}",
     "showingPage": "Показана страница {page} из {totalPages} (всего {total})",
     "previous": "Предыдущая",
-    "next": "Следующая"
+    "next": "Следующая",
+    "goToPageLabel": "На страницу",
+    "goToPagePlaceholder": "напр. 3",
+    "goToPageButton": "Перейти",
+    "goToPageAria": "Перейти на страницу с номером",
+    "pageNumberAria": "Страница {n}",
+    "paginationRegionAria": "Постраничная навигация списка категорий"
   },
   "delivery": {
     "title": "Доставка",

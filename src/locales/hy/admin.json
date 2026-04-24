@@ -220,6 +220,12 @@
     "backToAdmin": "Վերադառնալ ադմինիստրատորի վահան",
     "loadingCategories": "Բեռնվում են կատեգորիաները...",
     "noCategories": "Կատեգորիաներ չեն գտնվել",
+    "searchLabel": "Որոնել կատեգորիաներ",
+    "searchHint": "Համընկնում է վերնագրի, URL slug-ի կամ ծնողի անվան հետ։ Մի քանի բառ՝ ավելի նեղ արդյունքի համար։",
+    "searchPlaceholder": "Մուտքագրեք՝ ֆիլտրելու ցուցակը…",
+    "clearSearch": "Մաքրել որոնումը",
+    "searchMatchCount": "{matched} / {total} կատեգորիա",
+    "noSearchResults": "Որոնմանը համապատասխանող կատեգորիա չկա",
     "addCategory": "Ավելացնել կատեգորիա ",
     "editCategory": "Խմբագրել կատեգորիա",
     "createCategory": "Ստեղծել կատեգորիա",
@@ -247,7 +253,13 @@
     "errorDeleting": "Սխալ կատեգորիան ջնջելիս: {message}",
     "showingPage": "Ցուցադրվում է {page} էջը {totalPages}-ից ({total} ընդամենը)",
     "previous": "Նախորդ",
-    "next": "Հաջորդ"
+    "next": "Հաջորդ",
+    "goToPageLabel": "Անցնել էջ",
+    "goToPagePlaceholder": "օր.՝ 3",
+    "goToPageButton": "Անցնել",
+    "goToPageAria": "Անցնել նշված համարի էջ",
+    "pageNumberAria": "{n} էջ",
+    "paginationRegionAria": "Կատեգորիաների ցուցակի էջավորում"
   },
   "delivery": {
     "title": "Առաքում",

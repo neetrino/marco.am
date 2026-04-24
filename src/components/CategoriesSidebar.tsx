@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { pushShopProductsListingUrl } from '../lib/push-shop-products-listing-url';
 import { apiClient } from '../lib/api-client';
 import { getStoredLanguage } from '../lib/language';
+import { subscribeShopCategoryTreeUpdated } from '../lib/shop-category-tree-sync';
 
 interface Category {
   id: string;
@@ -27,11 +28,7 @@ function CategoriesSidebarContent() {
   const [isExpanded, setIsExpanded] = useState(false);
   const currentCategory = searchParams?.get('category');
 
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     try {
       setLoading(true);
       const language = getStoredLanguage();
@@ -46,7 +43,17 @@ function CategoriesSidebarContent() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    void fetchCategories();
+  }, [fetchCategories]);
+
+  useEffect(() => {
+    return subscribeShopCategoryTreeUpdated(() => {
+      void fetchCategories();
+    });
+  }, [fetchCategories]);
 
   const handleCategoryClick = (categorySlug: string | null) => {
     const params = new URLSearchParams(searchParams?.toString() || '');

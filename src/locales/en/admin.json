@@ -220,6 +220,12 @@
     "backToAdmin": "Back to Admin Dashboard",
     "loadingCategories": "Loading categories...",
     "noCategories": "No categories found",
+    "searchLabel": "Search categories",
+    "searchHint": "Matches title, URL slug, or parent name. Use several words to narrow results.",
+    "searchPlaceholder": "Type to filter the list…",
+    "clearSearch": "Clear search",
+    "searchMatchCount": "{matched} of {total} categories",
+    "noSearchResults": "No categories match your search",
     "addCategory": "Add Category",
     "editCategory": "Edit Category",
     "createCategory": "Create Category",
@@ -247,7 +253,13 @@
     "errorDeleting": "Error deleting category: {message}",
     "showingPage": "Showing page {page} of {totalPages} ({total} total)",
     "previous": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "goToPageLabel": "Go to page",
+    "goToPagePlaceholder": "e.g. 3",
+    "goToPageButton": "Go",
+    "goToPageAria": "Go to page number",
+    "pageNumberAria": "Page {n}",
+    "paginationRegionAria": "Category list pagination"
   },
   "delivery": {
     "title": "Delivery",
