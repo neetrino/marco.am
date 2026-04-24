@@ -10,8 +10,8 @@ import {
   PRODUCTS_FILTER_SECTION_SHELL_CLASS,
   productsFiltersSectionFont,
 } from '../lib/products-filters-typography';
-import { PRODUCTS_FILTER_LIST_SCROLL_CLASS } from '../lib/products-filter-list-scroll';
 import { ProductsFilterCheckboxVisual } from './ProductsFilterCheckbox';
+import { ProductsFilterScrollArea } from './ProductsFilterScrollArea';
 
 interface CategoryFilterProps {
   category?: string;
@@ -157,7 +157,8 @@ export function CategoryFilter({
         ) : null}
       </div>
 
-      <div className={`flex flex-col gap-3 ${PRODUCTS_FILTER_LIST_SCROLL_CLASS}`}>
+      <ProductsFilterScrollArea className="max-h-[18rem] pr-[10px]">
+        <div className="flex flex-col gap-3">
         {categories.map((item) => {
           const isSelected = selectedSlugs.some(
             (s) => s.toLowerCase() === item.slug.toLowerCase()
@@ -168,7 +169,7 @@ export function CategoryFilter({
               key={item.slug}
               type="button"
               onClick={() => handleToggle(item.slug)}
-              className="flex w-full min-w-0 items-center gap-3 text-left transition-[opacity,color] duration-200 ease-out hover:opacity-90"
+              className="flex w-full min-w-0 items-center gap-3 pr-3 text-left transition-[opacity,color] duration-200 ease-out hover:opacity-90"
             >
               <ProductsFilterCheckboxVisual checked={isSelected} variant="checkmark" />
               <span
@@ -184,7 +185,8 @@ export function CategoryFilter({
             </button>
           );
         })}
-      </div>
+        </div>
+      </ProductsFilterScrollArea>
     </section>
   );
 }

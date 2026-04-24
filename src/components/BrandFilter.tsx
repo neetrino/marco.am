@@ -10,8 +10,8 @@ import {
   PRODUCTS_FILTER_SECTION_SHELL_CLASS,
   productsFiltersSectionFont,
 } from '../lib/products-filters-typography';
-import { PRODUCTS_FILTER_LIST_SCROLL_CLASS } from '../lib/products-filter-list-scroll';
 import { ProductsFilterCheckboxVisual } from './ProductsFilterCheckbox';
+import { ProductsFilterScrollArea } from './ProductsFilterScrollArea';
 
 interface BrandFilterProps {
   category?: string;
@@ -145,7 +145,8 @@ export function BrandFilter({ category, search, minPrice, maxPrice }: BrandFilte
         ) : null}
       </div>
 
-      <div className={`flex flex-col gap-3 ${PRODUCTS_FILTER_LIST_SCROLL_CLASS}`}>
+      <ProductsFilterScrollArea className="max-h-[18rem] pr-[10px]">
+        <div className="flex flex-col gap-3">
         {brands.map((brand) => {
           const isSelected = selectedBrandSlugs.includes(brand.slug) || selectedBrandSlugs.includes(brand.id);
 
@@ -154,7 +155,7 @@ export function BrandFilter({ category, search, minPrice, maxPrice }: BrandFilte
               key={brand.id}
               type="button"
               onClick={() => handleBrandSelect(brand.slug)}
-              className="flex w-full min-w-0 items-center gap-3 text-left transition-[opacity,color] duration-200 ease-out hover:opacity-90"
+              className="flex w-full min-w-0 items-center gap-3 pr-3 text-left transition-[opacity,color] duration-200 ease-out hover:opacity-90"
             >
               <ProductsFilterCheckboxVisual checked={isSelected} />
               <span
@@ -170,7 +171,8 @@ export function BrandFilter({ category, search, minPrice, maxPrice }: BrandFilte
             </button>
           );
         })}
-      </div>
+        </div>
+      </ProductsFilterScrollArea>
     </section>
   );
 }
