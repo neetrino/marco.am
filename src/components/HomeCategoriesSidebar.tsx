@@ -311,6 +311,7 @@ export function HomeCategoriesSidebar() {
       {hoveredCategory && hoveredProduct && (
         <div
           ref={previewRef}
+          data-theme-static="true"
           className="absolute z-50 bg-white rounded-lg shadow-xl border border-gray-200 p-4 w-48"
           style={{
             top: `${previewPosition.top}px`,

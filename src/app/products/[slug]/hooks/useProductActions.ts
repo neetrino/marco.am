@@ -41,20 +41,13 @@ export function useProductActions({
       if (isInWishlist) {
         await removeWishlistItemClient(productId, language);
         setIsInWishlist(false);
-        setShowMessage(t(language, 'product.removedFromWishlist'));
       } else {
         await addWishlistItemClient(productId, language);
         setIsInWishlist(true);
-        setShowMessage(t(language, 'product.addedToWishlist'));
       }
-
-      setTimeout(() => setShowMessage(null), 2000);
     } catch (error: unknown) {
       logger.error('Wishlist update failed', { error });
-      setShowMessage(
-        getApiOrErrorMessage(error, t(language, 'common.alerts.invalidProduct'))
-      );
-      setTimeout(() => setShowMessage(null), 3000);
+      void getApiOrErrorMessage(error, t(language, 'common.alerts.invalidProduct'));
     }
   };
 

@@ -245,7 +245,7 @@ export function OrderSummary({ cart, currency, t }: OrderSummaryProps) {
         </div>
         <Button 
           variant="primary" 
-          className="w-full !h-12 !rounded-full !flex !items-center !justify-center !text-center bg-marco-yellow !text-marco-black !font-bold !hover:bg-marco-yellow !hover:brightness-100 !active:brightness-100" 
+          className="w-full !h-12 !rounded-full !flex !items-center !justify-center !text-center bg-marco-yellow !text-marco-black dark:!text-[#050505] !font-bold !hover:bg-marco-yellow !hover:brightness-100 !active:brightness-100" 
           size="lg"
           onClick={() => {
             // Allow guest checkout - no redirect to login

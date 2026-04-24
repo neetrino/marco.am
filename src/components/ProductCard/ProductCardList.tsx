@@ -85,7 +85,7 @@ export function ProductCardList({
             <h3 className="text-xl sm:text-2xl font-medium text-gray-900 transition-colors line-clamp-2">
               {product.title}
             </h3>
-            <p className="text-lg sm:text-xl text-gray-500 mt-1">
+            <p className="mt-1 text-lg text-gray-500 dark:text-[#050505] sm:text-xl">
               {product.brand?.name || t('common.defaults.category')}
             </p>
           </Link>

@@ -154,15 +154,90 @@ const SUBCATEGORIES_BY_PARENT = {
   ],
 };
 
-/** Shop filter brands (Figma / product listing) */
-const BRANDS = [
-  { slug: "apple", name: "Apple" },
-  { slug: "samsung", name: "Samsung" },
-  { slug: "xiaomi", name: "Xiaomi" },
-  { slug: "oneplus", name: "OnePlus" },
-  { slug: "google", name: "Google" },
-  { slug: "sony", name: "Sony" },
+/** Brand assets source (public logo folder). */
+const BRAND_ASSETS_DIR = path.join(__dirname, "../../../public/assets/brands");
+const BRAND_EXTENSIONS_BY_PRIORITY = [".svg", ".png", ".jpg", ".jpeg", ".webp"];
+const BRAND_VARIANT_SUFFIXES = ["-figma", "-wordmark", "-blue", "-alt"];
+const DEFAULT_BRANDS = [
+  { slug: "apple", name: "Apple", logoUrl: null },
+  { slug: "samsung", name: "Samsung", logoUrl: null },
+  { slug: "xiaomi", name: "Xiaomi", logoUrl: null },
+  { slug: "oneplus", name: "Oneplus", logoUrl: null },
+  { slug: "google", name: "Google", logoUrl: null },
+  { slug: "sony", name: "Sony", logoUrl: null },
 ];
+const EXTRA_TEXT_BRANDS = [
+  { slug: "franko", name: "Franko", logoUrl: null },
+  { slug: "hennson", name: "Hennson", logoUrl: null },
+];
+
+function toTitleCaseFromSlug(slug) {
+  return slug
+    .split("-")
+    .filter(Boolean)
+    .map((part) => {
+      if (part.length <= 2) return part.toUpperCase();
+      return `${part[0].toUpperCase()}${part.slice(1)}`;
+    })
+    .join(" ");
+}
+
+function normalizeBrandSlugFromFileName(fileName) {
+  const ext = path.extname(fileName).toLowerCase();
+  const base = path.basename(fileName, ext).toLowerCase();
+  const normalizedBase = BRAND_VARIANT_SUFFIXES.reduce((acc, suffix) => {
+    return acc.endsWith(suffix) ? acc.slice(0, -suffix.length) : acc;
+  }, base);
+  return normalizedBase.replace(/[^a-z0-9-]+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
+}
+
+function extensionPriority(fileName) {
+  const ext = path.extname(fileName).toLowerCase();
+  const index = BRAND_EXTENSIONS_BY_PRIORITY.indexOf(ext);
+  return index === -1 ? Number.MAX_SAFE_INTEGER : index;
+}
+
+function readBrandsFromAssets() {
+  if (!fs.existsSync(BRAND_ASSETS_DIR)) {
+    console.warn("[Seed] Brand assets directory not found:", BRAND_ASSETS_DIR);
+    return [];
+  }
+
+  const files = fs
+    .readdirSync(BRAND_ASSETS_DIR)
+    .filter((name) => BRAND_EXTENSIONS_BY_PRIORITY.includes(path.extname(name).toLowerCase()));
+  const bySlug = new Map();
+
+  for (const fileName of files) {
+    const slug = normalizeBrandSlugFromFileName(fileName);
+    if (!slug) continue;
+    const logoUrl = `/assets/brands/${fileName}`;
+    const candidate = { slug, name: toTitleCaseFromSlug(slug), logoUrl, fileName };
+    const current = bySlug.get(slug);
+    if (!current || extensionPriority(candidate.fileName) < extensionPriority(current.fileName)) {
+      bySlug.set(slug, candidate);
+    }
+  }
+
+  return Array.from(bySlug.values()).map(({ slug, name, logoUrl }) => ({
+    slug,
+    name,
+    logoUrl,
+  }))
+    .sort((a, b) => a.slug.localeCompare(b.slug));
+}
+
+/** Shop filter brands (loaded from `/public/assets/brands`). */
+const BRANDS = (() => {
+  const brandsFromAssets = readBrandsFromAssets();
+  if (brandsFromAssets.length > 0) {
+    const bySlug = new Map();
+    [...brandsFromAssets, ...EXTRA_TEXT_BRANDS].forEach((brand) => bySlug.set(brand.slug, brand));
+    return Array.from(bySlug.values()).sort((a, b) => a.slug.localeCompare(b.slug));
+  }
+  console.warn("[Seed] Falling back to default brands list");
+  return [...DEFAULT_BRANDS, ...EXTRA_TEXT_BRANDS];
+})();
 
 function slugify(text) {
   return text
@@ -272,16 +347,37 @@ async function seedSubcategories() {
 
 async function seedBrands() {
   const ids = [];
-  for (const { slug, name } of BRANDS) {
-    let brand = await prisma.brand.findUnique({ where: { slug } });
-    if (!brand) {
-      brand = await prisma.brand.create({
+  for (const { slug, name, logoUrl } of BRANDS) {
+    const brand = await prisma.brand.upsert({
+      where: { slug },
+      create: {
+        slug,
+        logoUrl,
+        published: true,
+        translations: {
+          create: { locale: "en", name },
+        },
+      },
+      update: {
+        logoUrl,
+        published: true,
+      },
+    });
+
+    const existingTranslation = await prisma.brandTranslation.findUnique({
+      where: { brandId_locale: { brandId: brand.id, locale: "en" } },
+    });
+    if (existingTranslation) {
+      await prisma.brandTranslation.update({
+        where: { id: existingTranslation.id },
+        data: { name },
+      });
+    } else {
+      await prisma.brandTranslation.create({
         data: {
-          slug,
-          published: true,
-          translations: {
-            create: { locale: "en", name },
-          },
+          brandId: brand.id,
+          locale: "en",
+          name,
         },
       });
     }
@@ -374,10 +470,18 @@ async function seedProducts(categoryIds, brandIds) {
   for (let i = 0; i < 50; i++) {
     const title = titles[i] || `Product ${i + 1}`;
     const slug = `seed-${slugify(title)}-${i + 1}`;
+    const sku = `SKU-${1000 + i}`;
+    const existingVariant = await prisma.productVariant.findUnique({
+      where: { sku },
+      select: { id: true },
+    });
+    if (existingVariant) {
+      continue;
+    }
     const catIndex = i % categoryIds.length;
     const primaryCategoryId = categoryIds[catIndex];
     const categoryIdsList = [primaryCategoryId];
-    const brandId = i % 3 === 0 ? brandIds[i % brandIds.length] : null;
+    const brandId = brandIds.length > 0 && i % 3 === 0 ? brandIds[i % brandIds.length] : null;
     const price = 1999 + (i % 50) * 500;
     const stock = 10 + (i % 91);
     const featured = i < 10;
@@ -406,7 +510,7 @@ async function seedProducts(categoryIds, brandIds) {
             price,
             compareAtPrice: price * 1.2,
             stock,
-            sku: `SKU-${1000 + i}`,
+            sku,
             position: 0,
             published: true,
           },

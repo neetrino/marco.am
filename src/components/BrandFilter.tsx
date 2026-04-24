@@ -10,8 +10,8 @@ import {
   PRODUCTS_FILTER_SECTION_SHELL_CLASS,
   productsFiltersSectionFont,
 } from '../lib/products-filters-typography';
-import { PRODUCTS_FILTER_LIST_SCROLL_CLASS } from '../lib/products-filter-list-scroll';
 import { ProductsFilterCheckboxVisual } from './ProductsFilterCheckbox';
+import { ProductsFilterScrollArea } from './ProductsFilterScrollArea';
 
 interface BrandFilterProps {
   category?: string;
@@ -27,7 +27,7 @@ export function BrandFilter({ category, search, minPrice, maxPrice }: BrandFilte
   const { t } = useTranslation();
   const [brands, setBrands] = useState<BrandOption[]>([]);
   const [loading, setLoading] = useState(true);
-  const [optimisticBrandIds, setOptimisticBrandIds] = useState<string[] | null>(null);
+  const [optimisticBrandSlugs, setOptimisticBrandSlugs] = useState<string[] | null>(null);
   const [, startTransition] = useTransition();
 
   useEffect(() => {
@@ -63,26 +63,26 @@ export function BrandFilter({ category, search, minPrice, maxPrice }: BrandFilte
   };
 
   const brandQs = searchParams.get('brand');
-  const selectedBrandIdsFromUrl = useMemo(
+  const selectedBrandSlugsFromUrl = useMemo(
     () => (brandQs ? brandQs.split(',').map((s) => s.trim()).filter(Boolean) : []),
     [brandQs]
   );
 
-  const selectedBrandIds = optimisticBrandIds ?? selectedBrandIdsFromUrl;
+  const selectedBrandSlugs = optimisticBrandSlugs ?? selectedBrandSlugsFromUrl;
 
   useEffect(() => {
-    setOptimisticBrandIds(null);
+    setOptimisticBrandSlugs(null);
   }, [brandQs]);
 
-  const handleBrandSelect = (brandId: string) => {
+  const handleBrandSelect = (brandSlug: string) => {
     const params = new URLSearchParams(searchParams.toString());
     const fromUrl =
-      optimisticBrandIds ??
+      optimisticBrandSlugs ??
       params.get('brand')?.split(',').map((s) => s.trim()).filter(Boolean) ??
       [];
-    const idx = fromUrl.indexOf(brandId);
-    const newBrands = idx >= 0 ? fromUrl.filter((_, i) => i !== idx) : [...fromUrl, brandId];
-    setOptimisticBrandIds(newBrands);
+    const idx = fromUrl.indexOf(brandSlug);
+    const newBrands = idx >= 0 ? fromUrl.filter((_, i) => i !== idx) : [...fromUrl, brandSlug];
+    setOptimisticBrandSlugs(newBrands);
     if (newBrands.length > 0) {
       params.set('brand', newBrands.join(','));
     } else {
@@ -99,14 +99,14 @@ export function BrandFilter({ category, search, minPrice, maxPrice }: BrandFilte
     const params = new URLSearchParams(searchParams.toString());
     params.delete('brand');
     params.delete('page');
-    setOptimisticBrandIds([]);
+    setOptimisticBrandSlugs([]);
     const qs = params.toString();
     startTransition(() => {
       router.push(qs ? `/products?${qs}` : '/products');
     });
   };
 
-  const hasBrandSelection = selectedBrandIds.length > 0;
+  const hasBrandSelection = selectedBrandSlugs.length > 0;
 
   if (loading) {
     return (
@@ -145,21 +145,22 @@ export function BrandFilter({ category, search, minPrice, maxPrice }: BrandFilte
         ) : null}
       </div>
 
-      <div className={`flex flex-col gap-3 ${PRODUCTS_FILTER_LIST_SCROLL_CLASS}`}>
+      <ProductsFilterScrollArea className="max-h-[18rem] pr-[10px]">
+        <div className="flex flex-col gap-3">
         {brands.map((brand) => {
-          const isSelected = selectedBrandIds.includes(brand.id);
+          const isSelected = selectedBrandSlugs.includes(brand.slug) || selectedBrandSlugs.includes(brand.id);
 
           return (
             <button
               key={brand.id}
               type="button"
-              onClick={() => handleBrandSelect(brand.id)}
-              className="flex w-full min-w-0 items-center gap-3 text-left transition-[opacity,color] duration-200 ease-out hover:opacity-90"
+              onClick={() => handleBrandSelect(brand.slug)}
+              className="flex w-full min-w-0 items-center gap-3 pr-3 text-left transition-[opacity,color] duration-200 ease-out hover:opacity-90"
             >
               <ProductsFilterCheckboxVisual checked={isSelected} />
               <span
                 className={`min-w-0 flex-1 truncate text-base leading-6 tracking-[0.16px] transition-colors duration-200 ease-out ${
-                  isSelected ? 'text-[#314158] dark:text-white' : 'text-[#5d7285] dark:text-white/78'
+                  isSelected ? 'text-[#314158] dark:text-[#b8c2cf]' : 'text-[#5d7285] dark:text-[#8f9fb2]'
                 }`}
               >
                 {brand.name}
@@ -170,7 +171,8 @@ export function BrandFilter({ category, search, minPrice, maxPrice }: BrandFilte
             </button>
           );
         })}
-      </div>
+        </div>
+      </ProductsFilterScrollArea>
     </section>
   );
 }

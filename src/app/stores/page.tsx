@@ -16,7 +16,7 @@ export default function StoresPage() {
           : lang === 'ru'
             ? 'г. Ереван, Алек Манукян 23'
             : '23 Alek Manukyan St, Yerevan',
-      phone: '+374 10 123456',
+      phone: '+374 93 52 04 06',
       emails: ['marcofurniture@mail.ru', 'marcogrouparmenia@mail.ru'],
       hours:
         lang === 'hy'
@@ -35,7 +35,7 @@ export default function StoresPage() {
           : lang === 'ru'
             ? 'Аргаванд, Аэропорт 1'
             : '1 Airport St, Argavand',
-      phone: '+374 10 234567',
+      phone: '+374 93 58 04 09',
       emails: ['marcofurniture@mail.ru', 'marcogrouparmenia@mail.ru'],
       hours:
         lang === 'hy'

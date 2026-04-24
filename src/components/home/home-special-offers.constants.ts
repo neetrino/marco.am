@@ -363,10 +363,10 @@ export const SPECIAL_OFFERS_CTA_LINK_CLASS =
 const SPECIAL_OFFERS_BRAND_TEXT_CLASS_BY_KEY: Readonly<
   Record<string, string>
 > = {
-  samsung: 'text-[#354ae6]',
-  apple: 'text-[#0f0f0f]',
-  bosch: 'text-[#af1b1b]',
-  lg: 'text-[#d51212]',
+  samsung: 'text-[#354ae6] dark:text-[#050505]',
+  apple: 'text-[#0f0f0f] dark:text-[#050505]',
+  bosch: 'text-[#af1b1b] dark:text-[#050505]',
+  lg: 'text-[#d51212] dark:text-[#050505]',
 };
 
 /**
@@ -376,14 +376,14 @@ export function getSpecialOfferBrandTextClass(
   brandName: string | null | undefined,
 ): string {
   if (!brandName) {
-    return 'text-marco-black';
+    return 'text-[#0f0f0f] dark:text-[#050505]';
   }
   const n = brandName.toLowerCase();
   const keys = Object.keys(SPECIAL_OFFERS_BRAND_TEXT_CLASS_BY_KEY);
   for (const key of keys) {
     if (n.includes(key)) {
-      return SPECIAL_OFFERS_BRAND_TEXT_CLASS_BY_KEY[key] ?? 'text-marco-black';
+      return SPECIAL_OFFERS_BRAND_TEXT_CLASS_BY_KEY[key] ?? 'text-[#0f0f0f] dark:text-[#050505]';
     }
   }
-  return 'text-marco-black';
+  return 'text-[#0f0f0f] dark:text-[#050505]';
 }

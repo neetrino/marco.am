@@ -1,6 +1,6 @@
 {
   "reels_title": "REELS",
-  "reels_captions": "Washing machines|Vacuum cleaners|Small appliances|Smart TV|Refrigeration|Air conditioners",
+  "reels_captions": "Washing machines|Vacuum cleaners|Small appliances|Smart TV|Refrigeration",
   "reels_scroll_prev": "Previous reels",
   "reels_scroll_next": "Next reels",
   "special_offers_title": "SPECIAL OFFERS",
@@ -79,7 +79,6 @@
   "reels_item_small_appliances": "Small appliances",
   "reels_item_smart_tv": "Smart TV",
   "reels_item_refrigerators": "Refrigerators",
-  "reels_item_air_conditioners": "Air conditioners",
   "reels_feed_back_aria": "Back to home",
   "reels_feed_region_aria": "Reels feed",
   "reels_feed_shop_cta": "Shop",

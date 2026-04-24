@@ -93,7 +93,7 @@ const SORT_TRIGGER_CLASS =
 
 /** Dropdown aligns to trigger width (`w-full` inside `relative w-max` wrapper) */
 const SORT_DROPDOWN_PANEL_CLASS =
-  'absolute top-full right-0 z-50 mt-2 w-full min-w-0 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg dark:border-white/10 dark:bg-[var(--app-surface)]';
+  'absolute top-full right-0 z-50 mt-2 w-full min-w-0 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg';
 
 /** Each option row matches trigger height (40px) and horizontal padding */
 const SORT_DROPDOWN_ITEM_CLASS =
@@ -337,7 +337,7 @@ function ProductsHeaderContent({ total }: ProductsHeaderProps) {
             </button>
 
             {showSortDropdown && (
-              <div className={SORT_DROPDOWN_PANEL_CLASS}>
+              <div data-theme-static="true" className={SORT_DROPDOWN_PANEL_CLASS}>
                 {sortOptions.map((option) => (
                   <button
                     key={option.value}
@@ -345,8 +345,8 @@ function ProductsHeaderContent({ total }: ProductsHeaderProps) {
                     onClick={() => handleSortChange(option.value)}
                     className={`${SORT_DROPDOWN_ITEM_CLASS} ${
                       sortBy === option.value
-                        ? 'bg-gray-100 font-semibold text-gray-900 dark:bg-white/10 dark:text-white'
-                        : 'text-gray-700 dark:text-white/82 hover:bg-gray-50 dark:hover:bg-white/5'
+                        ? 'bg-gray-100 font-semibold text-gray-900'
+                        : 'text-gray-700 hover:bg-gray-50'
                     }`}
                   >
                     {option.label}
@@ -416,7 +416,7 @@ function ProductsHeaderContent({ total }: ProductsHeaderProps) {
               </button>
 
               {showSortDropdown && (
-                <div className={SORT_DROPDOWN_PANEL_CLASS}>
+                <div data-theme-static="true" className={SORT_DROPDOWN_PANEL_CLASS}>
                   {sortOptions.map((option) => (
                     <button
                       key={option.value}
@@ -424,8 +424,8 @@ function ProductsHeaderContent({ total }: ProductsHeaderProps) {
                       onClick={() => handleSortChange(option.value)}
                       className={`${SORT_DROPDOWN_ITEM_CLASS} ${
                         sortBy === option.value
-                          ? 'bg-gray-100 font-semibold text-gray-900 dark:bg-white/10 dark:text-white'
-                          : 'text-gray-700 dark:text-white/82 hover:bg-gray-50 dark:hover:bg-white/5'
+                          ? 'bg-gray-100 font-semibold text-gray-900'
+                          : 'text-gray-700 hover:bg-gray-50'
                       }`}
                     >
                       {option.label}

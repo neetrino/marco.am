@@ -149,7 +149,10 @@ export function LanguageSwitcherHeader() {
         <ChevronDownIcon />
       </button>
       {showMenu && (
-        <div className="absolute top-full right-0 mt-2 w-48 bg-white shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+        <div
+          data-theme-static="true"
+          className="absolute top-full right-0 mt-2 w-48 bg-white shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
+        >
           {Object.values(LANGUAGES)
             .filter((lang) => lang.code !== 'ka') // Exclude Georgian (ka) from header
             .map((lang) => {

@@ -22,20 +22,28 @@ export default function SupportPage() {
           <div className="space-y-4">
             <div>
               <p className="text-sm font-medium text-gray-700 mb-1">{t('support.contactUs.email')}</p>
-              <a
-                href="mailto:marcofurniture@mail.ru"
-                className="text-blue-600 hover:underline"
-              >
-                marcofurniture@mail.ru
-              </a>
+              <div className="space-y-1">
+                <a
+                  href="mailto:marcofurniture@mail.ru"
+                  className="block text-marco-yellow hover:underline"
+                >
+                  marcofurniture@mail.ru
+                </a>
+                <a
+                  href="mailto:marcogrouparmenia@mail.ru"
+                  className="block text-marco-yellow hover:underline"
+                >
+                  marcogrouparmenia@mail.ru
+                </a>
+              </div>
             </div>
             <div>
               <p className="text-sm font-medium text-gray-700 mb-1">{t('support.contactUs.phone')}</p>
               <a
-                href="tel:+1234567890"
-                className="text-blue-600 hover:underline"
+                href="tel:+37441350406"
+                className="text-marco-yellow hover:underline"
               >
-                +1 (234) 567-890
+                +374 41 350406
               </a>
             </div>
             <div>
@@ -49,30 +57,30 @@ export default function SupportPage() {
           </div>
         </Card>
 
-        <Card className="p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">{t('support.quickLinks.title')}</h2>
-          <div className="space-y-3">
+        <Card className="p-6 flex flex-col items-center justify-center text-center">
+          <h2 className="text-xl font-semibold text-gray-900 mb-0">{t('support.quickLinks.title')}</h2>
+          <div className="mt-4 w-full max-w-sm space-y-5">
             <Link
               href="/faq"
-              className="block text-blue-600 hover:text-blue-700 hover:underline"
+              className="inline-flex w-full items-center justify-center rounded-full border border-marco-yellow bg-marco-yellow px-5 py-2 text-center text-sm font-semibold text-marco-black transition-[filter,transform] hover:-translate-y-0.5 hover:brightness-95"
             >
               {t('support.quickLinks.faq')}
             </Link>
             <Link
-              href="/delivery"
-              className="block text-blue-600 hover:text-blue-700 hover:underline"
+              href="/delivery-return"
+              className="inline-flex w-full items-center justify-center rounded-full border border-marco-yellow bg-marco-yellow px-5 py-2 text-center text-sm font-semibold text-marco-black transition-[filter,transform] hover:-translate-y-0.5 hover:brightness-95"
             >
               {t('support.quickLinks.delivery')}
             </Link>
             <Link
-              href="/returns"
-              className="block text-blue-600 hover:text-blue-700 hover:underline"
+              href="/refund-policy"
+              className="inline-flex w-full items-center justify-center rounded-full border border-marco-yellow bg-marco-yellow px-5 py-2 text-center text-sm font-semibold text-marco-black transition-[filter,transform] hover:-translate-y-0.5 hover:brightness-95"
             >
               {t('support.quickLinks.returns')}
             </Link>
             <Link
               href="/contact"
-              className="block text-blue-600 hover:text-blue-700 hover:underline"
+              className="inline-flex w-full items-center justify-center rounded-full border border-marco-yellow bg-marco-yellow px-5 py-2 text-center text-sm font-semibold text-marco-black transition-[filter,transform] hover:-translate-y-0.5 hover:brightness-95"
             >
               {t('support.quickLinks.contact')}
             </Link>

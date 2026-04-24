@@ -138,16 +138,16 @@ export default function FAQPage() {
           <p className="text-gray-600 mb-4">
             {t('faq.stillHaveQuestions.description')}
           </p>
-          <div className="flex gap-4">
+          <div className="flex flex-col items-start gap-2">
             <Link
               href="/contact"
-              className="text-blue-600 hover:text-blue-700 font-medium hover:underline"
+              className="text-marco-yellow font-medium hover:underline"
             >
               {t('faq.stillHaveQuestions.contactUs')}
             </Link>
             <Link
               href="/support"
-              className="text-blue-600 hover:text-blue-700 font-medium hover:underline"
+              className="text-marco-yellow font-medium hover:underline"
             >
               {t('faq.stillHaveQuestions.getSupport')}
             </Link>

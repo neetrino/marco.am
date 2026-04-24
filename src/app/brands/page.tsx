@@ -8,7 +8,7 @@ import { LANGUAGE_PREFERENCE_KEY, parseLanguageFromServer, type LanguageCode } f
 type BrandLogoCard = {
   id: string;
   label: string;
-  hrefToken: string;
+  slug: string;
   logoSrc?: string;
   logoWidth?: number;
   logoHeight?: number;
@@ -21,7 +21,7 @@ const BRAND_LOGO_CARDS: readonly BrandLogoCard[] = [
   {
     id: 'carino',
     label: 'CARINO',
-    hrefToken: 'carino',
+    slug: 'carino',
     logoSrc: '/assets/brands/carino.svg',
     logoWidth: 520,
     logoHeight: 140,
@@ -29,7 +29,7 @@ const BRAND_LOGO_CARDS: readonly BrandLogoCard[] = [
   {
     id: 'kenwood',
     label: 'KENWOOD',
-    hrefToken: 'kenwood',
+    slug: 'kenwood',
     logoSrc: '/assets/brands/kenwood.svg',
     logoWidth: 1117,
     logoHeight: 177,
@@ -37,7 +37,7 @@ const BRAND_LOGO_CARDS: readonly BrandLogoCard[] = [
   {
     id: 'panasonic',
     label: 'Panasonic',
-    hrefToken: 'panasonic',
+    slug: 'panasonic',
     logoSrc: '/assets/brands/panasonic.svg',
     logoWidth: 600,
     logoHeight: 92,
@@ -45,13 +45,13 @@ const BRAND_LOGO_CARDS: readonly BrandLogoCard[] = [
   {
     id: 'franko',
     label: 'FRANKO',
-    hrefToken: 'franko',
+    slug: 'franko',
     wordmarkClassName: 'text-[1.25rem] font-black italic tracking-[0.08em] md:text-[1.45rem]',
   },
   {
     id: 'braun',
     label: 'BRAUN',
-    hrefToken: 'braun',
+    slug: 'braun',
     logoSrc: '/assets/brands/braun.svg',
     logoWidth: 399,
     logoHeight: 169,
@@ -59,7 +59,7 @@ const BRAND_LOGO_CARDS: readonly BrandLogoCard[] = [
   {
     id: 'targen-your-kitchen',
     label: 'TARGEN YOUR KITCHEN',
-    hrefToken: 'targen your kitchen',
+    slug: 'targen-your-kitchen',
     logoSrc: '/assets/brands/targen-your-kitchen.svg',
     logoWidth: 460,
     logoHeight: 120,
@@ -68,7 +68,7 @@ const BRAND_LOGO_CARDS: readonly BrandLogoCard[] = [
   {
     id: 'bosch',
     label: 'BOSCH',
-    hrefToken: 'bosch',
+    slug: 'bosch',
     logoSrc: '/assets/brands/bosch.svg',
     logoWidth: 500,
     logoHeight: 114,
@@ -76,7 +76,7 @@ const BRAND_LOGO_CARDS: readonly BrandLogoCard[] = [
   {
     id: 'kumitel',
     label: 'KUMITEL',
-    hrefToken: 'kumitel',
+    slug: 'kumitel',
     logoSrc: '/assets/brands/kumitel.svg',
     logoWidth: 1000,
     logoHeight: 150,
@@ -84,7 +84,7 @@ const BRAND_LOGO_CARDS: readonly BrandLogoCard[] = [
   {
     id: 'luxell',
     label: 'LUXELL',
-    hrefToken: 'luxell',
+    slug: 'luxell',
     logoSrc: '/assets/brands/luxell.svg',
     logoWidth: 1000,
     logoHeight: 150,
@@ -93,7 +93,7 @@ const BRAND_LOGO_CARDS: readonly BrandLogoCard[] = [
   {
     id: 'marrbaxx',
     label: 'MARRBAXX',
-    hrefToken: 'marrbaxx',
+    slug: 'marrbaxx',
     logoSrc: '/assets/brands/marrbaxx.png',
     logoWidth: 1000,
     logoHeight: 350,
@@ -101,7 +101,7 @@ const BRAND_LOGO_CARDS: readonly BrandLogoCard[] = [
   {
     id: 'kastamonu',
     label: 'KASTAMONU',
-    hrefToken: 'kastamonu',
+    slug: 'kastamonu',
     logoSrc: '/assets/brands/kastamonu.svg',
     logoWidth: 1000,
     logoHeight: 300,
@@ -109,7 +109,7 @@ const BRAND_LOGO_CARDS: readonly BrandLogoCard[] = [
   {
     id: 'evo-gloss',
     label: 'EVO GLOSS',
-    hrefToken: 'evo gloss',
+    slug: 'evo-gloss',
     logoSrc: '/assets/brands/evo-gloss.svg',
     logoWidth: 165,
     logoHeight: 69,
@@ -117,7 +117,7 @@ const BRAND_LOGO_CARDS: readonly BrandLogoCard[] = [
   {
     id: 'agt',
     label: 'AGT',
-    hrefToken: 'agt',
+    slug: 'agt',
     logoSrc: '/assets/brands/agt.png',
     logoWidth: 395,
     logoHeight: 121,
@@ -125,7 +125,7 @@ const BRAND_LOGO_CARDS: readonly BrandLogoCard[] = [
   {
     id: 'by-span',
     label: 'BY SPAN',
-    hrefToken: 'by span',
+    slug: 'by-span',
     logoSrc: '/assets/brands/by-span.png',
     logoWidth: 790,
     logoHeight: 158,
@@ -133,7 +133,7 @@ const BRAND_LOGO_CARDS: readonly BrandLogoCard[] = [
   {
     id: 'vestel',
     label: 'VESTEL',
-    hrefToken: 'vestel',
+    slug: 'vestel',
     logoSrc: '/assets/brands/vestel.svg',
     logoWidth: 512,
     logoHeight: 111,
@@ -141,7 +141,7 @@ const BRAND_LOGO_CARDS: readonly BrandLogoCard[] = [
   {
     id: 'egida',
     label: 'EGIDA',
-    hrefToken: 'egida',
+    slug: 'egida',
     logoSrc: '/assets/brands/egida.png',
     logoWidth: 256,
     logoHeight: 256,
@@ -150,7 +150,7 @@ const BRAND_LOGO_CARDS: readonly BrandLogoCard[] = [
   {
     id: 'toshiba',
     label: 'TOSHIBA',
-    hrefToken: 'toshiba',
+    slug: 'toshiba',
     logoSrc: '/assets/brands/toshiba.svg',
     logoWidth: 800,
     logoHeight: 122,
@@ -158,7 +158,7 @@ const BRAND_LOGO_CARDS: readonly BrandLogoCard[] = [
   {
     id: 'philips',
     label: 'PHILIPS',
-    hrefToken: 'philips',
+    slug: 'philips',
     logoSrc: '/assets/brands/philips.svg',
     logoWidth: 500,
     logoHeight: 92,
@@ -166,7 +166,7 @@ const BRAND_LOGO_CARDS: readonly BrandLogoCard[] = [
   {
     id: 'hausberg',
     label: 'HAUSBERG',
-    hrefToken: 'hausberg',
+    slug: 'hausberg',
     logoSrc: '/assets/brands/hausberg.jpg',
     logoWidth: 320,
     logoHeight: 130,
@@ -174,7 +174,7 @@ const BRAND_LOGO_CARDS: readonly BrandLogoCard[] = [
   {
     id: 'midea',
     label: 'MIDEA',
-    hrefToken: 'midea',
+    slug: 'midea',
     logoSrc: '/assets/brands/midea.svg',
     logoWidth: 114,
     logoHeight: 44,
@@ -182,7 +182,7 @@ const BRAND_LOGO_CARDS: readonly BrandLogoCard[] = [
   {
     id: 'nnobel',
     label: 'NNObel',
-    hrefToken: 'nnobel',
+    slug: 'nnobel',
     logoSrc: '/assets/brands/nnobel.png',
     logoWidth: 216,
     logoHeight: 214,
@@ -191,7 +191,7 @@ const BRAND_LOGO_CARDS: readonly BrandLogoCard[] = [
   {
     id: 'lex-life-expert',
     label: 'LEX life expert',
-    hrefToken: 'lex life expert',
+    slug: 'lex-life-expert',
     logoSrc: '/assets/brands/lex-life-expert.svg',
     logoWidth: 588,
     logoHeight: 196,
@@ -200,7 +200,7 @@ const BRAND_LOGO_CARDS: readonly BrandLogoCard[] = [
   {
     id: 'hisense',
     label: 'HISENSE',
-    hrefToken: 'hisense',
+    slug: 'hisense',
     logoSrc: '/assets/brands/hisense.svg',
     logoWidth: 286,
     logoHeight: 51,
@@ -208,7 +208,7 @@ const BRAND_LOGO_CARDS: readonly BrandLogoCard[] = [
   {
     id: 'geepas',
     label: 'GEEPAS',
-    hrefToken: 'geepas',
+    slug: 'geepas',
     logoSrc: '/assets/brands/geepas.png',
     logoWidth: 2000,
     logoHeight: 738,
@@ -216,9 +216,9 @@ const BRAND_LOGO_CARDS: readonly BrandLogoCard[] = [
     cardClassName: 'px-2 py-2',
   },
   {
-    id: 'lectrolux',
-    label: 'LECTROLUX',
-    hrefToken: 'lectrolux',
+    id: 'electrolux',
+    label: 'ELECTROLUX',
+    slug: 'electrolux',
     logoSrc: '/assets/brands/electrolux.svg',
     logoWidth: 1367,
     logoHeight: 177,
@@ -226,7 +226,7 @@ const BRAND_LOGO_CARDS: readonly BrandLogoCard[] = [
   {
     id: 'samsung',
     label: 'SAMSUNG',
-    hrefToken: 'samsung',
+    slug: 'samsung',
     logoSrc: '/assets/brands/samsung.svg',
     logoWidth: 1000,
     logoHeight: 332,
@@ -234,7 +234,7 @@ const BRAND_LOGO_CARDS: readonly BrandLogoCard[] = [
   {
     id: 'centek',
     label: 'CENTEK',
-    hrefToken: 'centek',
+    slug: 'centek',
     logoSrc: '/assets/brands/centek.svg',
     logoWidth: 914,
     logoHeight: 170,
@@ -242,7 +242,7 @@ const BRAND_LOGO_CARDS: readonly BrandLogoCard[] = [
   {
     id: 'delonghi',
     label: 'DeLonghi',
-    hrefToken: 'delonghi',
+    slug: 'delonghi',
     logoSrc: '/assets/brands/delonghi.svg',
     logoWidth: 2337,
     logoHeight: 724,
@@ -251,7 +251,7 @@ const BRAND_LOGO_CARDS: readonly BrandLogoCard[] = [
   {
     id: 'lg',
     label: 'LG',
-    hrefToken: 'lg',
+    slug: 'lg',
     logoSrc: '/assets/brands/lg.svg',
     logoWidth: 512,
     logoHeight: 76,
@@ -259,13 +259,13 @@ const BRAND_LOGO_CARDS: readonly BrandLogoCard[] = [
   {
     id: 'hennson',
     label: 'HENNSON',
-    hrefToken: 'hennson',
+    slug: 'hennson',
     wordmarkClassName: 'text-[1.12rem] font-bold tracking-[0.14em] md:text-[1.24rem]',
   },
 ] as const;
 
-function brandHref(token: string): string {
-  return `/products?brand=${encodeURIComponent(token)}`;
+function brandHref(slug: string): string {
+  return `/products?brand=${encodeURIComponent(slug)}`;
 }
 
 function BrandLogo({ brand }: { brand: BrandLogoCard }) {
@@ -309,7 +309,7 @@ export default async function BrandsPage() {
           {BRAND_LOGO_CARDS.map((brand) => (
             <Link
               key={brand.id}
-              href={brandHref(brand.hrefToken)}
+              href={brandHref(brand.slug)}
               className={`group flex min-h-[136px] items-center justify-center rounded-2xl border border-marco-border bg-[#ffffff] dark:bg-[#ffffff] px-6 py-5 transition-colors hover:border-marco-black/30 hover:bg-[#f8f8f8] dark:hover:bg-[#f8f8f8] ${brand.cardClassName ?? ''}`}
               aria-label={brand.label}
             >

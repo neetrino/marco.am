@@ -76,15 +76,14 @@ function WishlistGlyph({ filled, size }: { filled: boolean; size: number }) {
   );
 }
 
-/** Compare glyph that switches to yellow when active. */
+/** Compare glyph that switches to black on active yellow background. */
 function CompareCircleGlyph({ isActive }: { isActive: boolean }) {
   return (
     <CompareIcon
       isActive={isActive}
       size={18}
-      className={isActive ? 'text-marco-yellow' : ''}
-      style={!isActive ? { color: '#050505' } : undefined}
-      color={!isActive ? '#050505' : undefined}
+      className={isActive ? 'text-[#050505]' : 'text-white'}
+      color={isActive ? '#050505' : '#ffffff'}
     />
   );
 }
@@ -121,7 +120,9 @@ export function SpecialOfferSideActions({
       key="wishlist"
       type="button"
       onClick={onWishlist}
-      className="flex size-9 shrink-0 items-center justify-center rounded-full bg-black text-white shadow-sm transition-opacity hover:opacity-90 md:size-10"
+      className={`flex size-9 shrink-0 items-center justify-center rounded-full shadow-sm transition-opacity hover:opacity-90 md:size-10 ${
+        isInWishlist ? 'bg-red-600 text-white' : 'bg-[#050505] text-white'
+      }`}
       title={isInWishlist ? t('common.messages.removedFromWishlist') : t('common.messages.addedToWishlist')}
       aria-label={isInWishlist ? t('common.ariaLabels.removeFromWishlist') : t('common.ariaLabels.addToWishlist')}
     >
@@ -134,8 +135,8 @@ export function SpecialOfferSideActions({
       key="compare"
       type="button"
       onClick={onCompare}
-      className={`flex size-9 shrink-0 items-center justify-center overflow-visible rounded-full bg-black p-0 text-white shadow-sm transition-opacity hover:opacity-90 md:size-10 ${
-        isInCompare ? 'ring-2 ring-marco-yellow/60 ring-offset-2 ring-offset-[#f6f6f6]' : ''
+      className={`flex size-9 shrink-0 items-center justify-center overflow-visible rounded-full p-0 shadow-sm transition-opacity hover:opacity-90 md:size-10 ${
+        isInCompare ? 'bg-marco-yellow text-[#050505]' : 'bg-[#050505] text-white'
       }`}
       title={isInCompare ? t('common.messages.removedFromCompare') : t('common.messages.addedToCompare')}
       aria-label={isInCompare ? t('common.ariaLabels.removeFromCompare') : t('common.ariaLabels.addToCompare')}

@@ -24,10 +24,9 @@ export function CarouselDots({ totalItems, visibleItems, currentIndex, onDotClic
           <button
             key={index}
             onClick={() => onDotClick(startIndex)}
-            className={`rounded-full transition-colors ${
-              isActive ? 'bg-marco-black' : 'bg-gray-300'
+            className={`h-2.5 w-2.5 rounded-full transition-all duration-300 ${
+              isActive ? 'bg-[#181111] dark:!bg-[#ffca03]' : 'bg-[#d1d5db]'
             }`}
-            style={{ width: 8, height: 8 }}
             aria-label={`Go to slide ${index + 1}`}
           />
         );

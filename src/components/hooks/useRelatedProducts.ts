@@ -61,7 +61,16 @@ export function useRelatedProducts({ productSlug, language }: UseRelatedProducts
           lang: language,
         };
 
-        const encodedSlug = encodeURIComponent(productSlug.trim());
+        const trimmedSlug = productSlug.trim();
+        const normalizedSlug = (() => {
+          try {
+            return decodeURIComponent(trimmedSlug);
+          } catch {
+            // If slug is not URI-encoded (or is malformed), use it as-is.
+            return trimmedSlug;
+          }
+        })();
+        const encodedSlug = encodeURIComponent(normalizedSlug);
         const response = await apiClient.get<{
           data: RelatedProduct[];
           meta: { total: number };

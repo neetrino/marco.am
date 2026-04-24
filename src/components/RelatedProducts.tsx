@@ -22,8 +22,8 @@ interface RelatedProductsProps {
 }
 
 const HOME_STYLE_NAV_BUTTON_CLASS =
-  'flex shrink-0 items-center justify-center overflow-visible rounded-full border border-gray-200 bg-white p-0 transition-colors hover:border-marco-yellow hover:bg-marco-yellow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marco-black';
-const REELS_STYLE_NAV_ICON_CLASS = 'h-3 w-3 shrink-0 text-marco-black max-md:h-5 max-md:w-5';
+  'flex shrink-0 items-center justify-center overflow-visible rounded-full border border-gray-200 bg-white p-0 text-[#181111] transition-colors hover:!border-marco-yellow hover:!bg-marco-yellow dark:border-white/25 dark:bg-transparent dark:text-white dark:hover:!border-marco-yellow dark:hover:!bg-marco-yellow dark:hover:text-[#181111] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marco-black';
+const REELS_STYLE_NAV_ICON_CLASS = 'h-3 w-3 shrink-0 text-current max-md:h-5 max-md:w-5';
 
 /**
  * RelatedProducts component - displays products from the same category in a carousel

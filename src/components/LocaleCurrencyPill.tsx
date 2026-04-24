@@ -134,7 +134,10 @@ export function LocaleCurrencyPill({
       </button>
 
       {showMenu && (
-        <div className="absolute right-0 top-full z-50 mt-2 max-h-[min(70vh,420px)] w-56 overflow-y-auto rounded-xl border border-gray-200/80 bg-white shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200">
+        <div
+          data-theme-static="true"
+          className="absolute right-0 top-full z-50 mt-2 max-h-[min(70vh,420px)] w-56 overflow-y-auto rounded-xl border border-gray-200/80 bg-white shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200"
+        >
           <div className="py-1">
             {Object.values(LANGUAGES)
               .filter((lang) => lang.code !== 'ka')

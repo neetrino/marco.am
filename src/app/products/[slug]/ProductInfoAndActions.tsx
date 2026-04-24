@@ -296,7 +296,7 @@ export function ProductInfoAndActions({
             <button
               type="button"
               disabled={!canAddToCart || isAddingToCart}
-                className={`flex min-w-0 flex-1 items-center gap-1.5 bg-marco-yellow pl-4 pr-4 text-left text-sm font-bold leading-normal text-marco-black transition-[filter,transform] hover:-translate-y-0.5 hover:brightness-95 active:brightness-90 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 disabled:hover:brightness-100 md:max-w-72 md:flex-none md:pl-7 ${PRODUCT_BUY_CTA_HEIGHT_CLASS} ${HEADER_FIGMA_PILL_RADIUS_CLASS}`}
+                className={`flex min-w-0 flex-1 items-center gap-1.5 bg-marco-yellow pl-4 pr-4 text-left text-sm font-bold leading-normal text-marco-black dark:!text-[#050505] transition-[filter,transform] hover:-translate-y-0.5 hover:brightness-95 active:brightness-90 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 disabled:hover:brightness-100 md:max-w-72 md:flex-none md:pl-7 ${PRODUCT_BUY_CTA_HEIGHT_CLASS} ${HEADER_FIGMA_PILL_RADIUS_CLASS}`}
               onClick={onAddToCart}
             >
               <span
@@ -358,13 +358,13 @@ export function ProductInfoAndActions({
             </div>
             <button
               onClick={onCompareToggle}
-              className={`w-10 h-10 shrink-0 rounded-xl border-2 flex items-center justify-center transition-all duration-200 ${isInCompare ? 'border-marco-yellow bg-yellow-50 text-marco-black' : 'border-gray-200 hover:border-gray-300'}`}
+              className={`w-10 h-10 shrink-0 rounded-xl border-2 flex items-center justify-center transition-all duration-200 ${isInCompare ? 'border-marco-yellow bg-marco-yellow text-[#050505] dark:!text-[#050505]' : 'border-gray-200 hover:border-gray-300'}`}
             >
               <CompareIcon isActive={isInCompare} />
             </button>
             <button
               onClick={onAddToWishlist}
-              className={`w-10 h-10 shrink-0 rounded-xl border-2 flex items-center justify-center ${isInWishlist ? 'border-marco-black bg-gray-50' : 'border-gray-200'}`}
+              className={`w-10 h-10 shrink-0 rounded-xl border-2 flex items-center justify-center ${isInWishlist ? 'border-red-600 bg-red-600 text-white dark:border-red-600 dark:bg-red-600 dark:text-white' : 'border-gray-200'}`}
             >
               <Heart fill={isInWishlist ? 'currentColor' : 'none'} />
             </button>

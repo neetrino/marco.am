@@ -59,8 +59,9 @@ export function RelatedProductCard({
   width,
 }: RelatedProductCardProps) {
   const hasImage = !imageError && !!product.image;
-  const categoryName = product.categories && product.categories.length > 0 
-    ? product.categories.map(c => c.title).join(', ')
+  const hasCategoryLabels = Boolean(product.categories && product.categories.length > 0);
+  const categoryName = hasCategoryLabels
+    ? product.categories!.map((c) => c.title).join(', ')
     : product.brand?.name || 'Product';
 
   return (
@@ -111,7 +112,7 @@ export function RelatedProductCard({
               </h3>
 
               {/* Category */}
-              <p className="text-xs text-gray-500 mb-3">
+              <p className={`mb-3 text-xs ${hasCategoryLabels ? 'text-gray-500' : 'text-gray-500 dark:text-[#050505]'}`}>
                 {categoryName}
               </p>
 

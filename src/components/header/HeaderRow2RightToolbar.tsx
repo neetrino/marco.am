@@ -65,7 +65,7 @@ export function HeaderRow2RightToolbar({ data, compactPrimaryNav, headerMobileLi
         />
       )}
       <ThemeToggleButton
-        className={`flex shrink-0 items-center justify-center rounded-full bg-marco-black text-white transition-opacity hover:opacity-90 dark:bg-white dark:text-slate-900 ${!compactPrimaryNav ? HEADER_LOCALE_TO_THEME_MARGIN_CLASS : ''} ${HEADER_TOOLBAR_ICON_BUTTON_CLASS}`}
+        className={`flex shrink-0 items-center justify-center rounded-full !bg-[#050505] text-white transition-opacity hover:opacity-90 dark:!bg-[#050505] ${!compactPrimaryNav ? HEADER_LOCALE_TO_THEME_MARGIN_CLASS : ''} ${HEADER_TOOLBAR_ICON_BUTTON_CLASS}`}
         iconClassName="h-6 w-6 shrink-0"
       />
       <div className={HEADER_TOOLBAR_ICON_CLUSTER_CLASS}>
@@ -90,6 +90,7 @@ export function HeaderRow2RightToolbar({ data, compactPrimaryNav, headerMobileLi
               </button>
               {showUserMenu && (
                 <div
+                  data-theme-static="true"
                   className="absolute right-0 top-full z-[60] mt-2 w-52 overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200"
                   role="menu"
                   onMouseDown={(event) => event.stopPropagation()}
@@ -155,9 +156,12 @@ export function HeaderRow2RightToolbar({ data, compactPrimaryNav, headerMobileLi
         </Link>
       </div>
 
-      <Link href="/cart" className={`relative bg-marco-black text-white ${HEADER_CART_BUTTON_CLASS}`}>
-        <HeaderNavbarCartIcon className="h-[21px] w-[22px] shrink-0 text-white" />
-        <span className="tabular-nums">{formatPrice(cartTotal, selectedCurrency)}</span>
+      <Link
+        href="/cart"
+        className={`relative !bg-[#050505] !text-white dark:!bg-white dark:!text-[#050505] dark:ring-1 dark:ring-black/10 ${HEADER_CART_BUTTON_CLASS}`}
+      >
+        <HeaderNavbarCartIcon className="h-[21px] w-[22px] shrink-0 !text-white dark:!text-[#050505]" />
+        <span className="tabular-nums text-inherit">{formatPrice(cartTotal, selectedCurrency)}</span>
         {cartCount > 0 && (
           <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[18px] items-center justify-center rounded-full bg-red-600 px-0.5 text-[9px] font-bold text-[#ffffff]">
             {cartCount > 99 ? '99+' : cartCount}

@@ -4,6 +4,28 @@ import { adminService } from "./admin.service";
 import { ProductWithRelations } from "./products-find-query.service";
 import { getAttributeBucket, isColorAttributeKey, isSizeAttributeKey } from "@/lib/attribute-keys";
 
+/** Legacy demo categories — omit from shop sidebar (not part of MARCO nav taxonomy). */
+const SHOP_FILTER_EXCLUDED_CATEGORY_CANONICAL = new Set([
+  "accessories",
+  "books",
+  "clothing",
+  "electronics",
+  "home and garden",
+  /** Slug `home-garden` normalizes to spaces without "and". */
+  "home garden",
+  "shoes",
+  "sports",
+]);
+
+function canonicalCategoryFilterKey(input: string): string {
+  return input
+    .trim()
+    .toLowerCase()
+    .replace(/\s*&\s*/g, " and ")
+    .replace(/[-_]+/g, " ")
+    .replace(/\s+/g, " ");
+}
+
 class ProductsFiltersService {
   private getLocalizedAttributeValueLabel(
     attributeValue: {
@@ -22,6 +44,25 @@ class ProductsFiltersService {
       null;
 
     return (translation?.label || attributeValue.value || "").trim();
+  }
+
+  /**
+   * Match legacy demo categories in any locale — `en` slug may differ from `hy`/`ru` slug on the same row.
+   */
+  private isShopFilterCategoryExcludedFromTranslations(
+    translations: Array<{ slug: string; title: string }>,
+  ): boolean {
+    for (const tr of translations) {
+      const slugKey = canonicalCategoryFilterKey(tr.slug);
+      const titleKey = canonicalCategoryFilterKey(tr.title);
+      if (
+        SHOP_FILTER_EXCLUDED_CATEGORY_CANONICAL.has(slugKey) ||
+        SHOP_FILTER_EXCLUDED_CATEGORY_CANONICAL.has(titleKey)
+      ) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private upsertColorFacet(
@@ -216,7 +257,7 @@ class ProductsFiltersService {
       colors?: string[] | null;
     }>();
     const sizeMap = new Map<string, number>();
-    const brandMap = new Map<string, { id: string; name: string; count: number }>();
+    const brandMap = new Map<string, { id: string; slug: string; name: string; count: number }>();
     const categoryCountMap = new Map<string, number>();
     let rangeMin = Infinity;
     let rangeMax = 0;
@@ -252,6 +293,7 @@ class ProductsFiltersService {
           const existing = brandMap.get(product.brand.id);
           brandMap.set(product.brand.id, {
             id: product.brand.id,
+            slug: b.slug || "",
             name,
             count: (existing?.count || 0) + 1,
           });
@@ -401,6 +443,12 @@ class ProductsFiltersService {
         orderBy: { position: "asc" },
       });
       categories = categoryRows
+        .filter(
+          (cat) =>
+            !this.isShopFilterCategoryExcludedFromTranslations(
+              cat.translations.map((t) => ({ slug: t.slug, title: t.title })),
+            ),
+        )
         .map((cat) => {
           const tr =
             cat.translations.find((t) => t.locale === lang) || cat.translations[0];
@@ -464,11 +512,12 @@ class ProductsFiltersService {
           const facet = brandMap.get(row.id);
           return {
             id: row.id,
+            slug: row.slug,
             name,
             count: facet?.count ?? 0,
           };
         })
-        .filter((b): b is { id: string; name: string; count: number } => b !== null)
+        .filter((b): b is { id: string; slug: string; name: string; count: number } => b !== null)
         .sort((a, b) => a.name.localeCompare(b.name));
       const priceMin = rangeMin === Infinity ? 0 : Math.floor(rangeMin / 1000) * 1000;
       const priceMax = rangeMax === 0 ? 0 : Math.ceil(rangeMax / 1000) * 1000;

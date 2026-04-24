@@ -44,8 +44,8 @@ export function ProductCardActions({
         onClick={onCompareToggle}
         className={`${buttonSize} rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
           isInCompare
-            ? 'border-marco-yellow bg-marco-yellow text-marco-black shadow-lg'
-            : 'border-gray-200 text-gray-700 bg-white hover:border-gray-300 hover:bg-gray-50'
+            ? 'border-marco-yellow bg-marco-yellow text-marco-black shadow-lg dark:border-marco-yellow dark:bg-marco-yellow dark:!text-[#050505]'
+            : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50 dark:border-marco-black dark:bg-marco-black dark:text-white dark:hover:border-marco-black dark:hover:bg-marco-black'
         }`}
         title={isInCompare ? t('common.messages.removedFromCompare') : t('common.messages.addedToCompare')}
         aria-label={isInCompare ? t('common.ariaLabels.removeFromCompare') : t('common.ariaLabels.addToCompare')}
@@ -59,8 +59,8 @@ export function ProductCardActions({
         onClick={onWishlistToggle}
         className={`${buttonSize} rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
           isInWishlist
-            ? 'border-red-600 bg-red-600 text-white shadow-lg'
-            : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50'
+            ? 'border-red-600 bg-red-600 text-white shadow-lg dark:border-red-600 dark:bg-red-600 dark:text-white'
+            : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50 dark:border-marco-black dark:bg-marco-black dark:text-white dark:hover:border-marco-black dark:hover:bg-marco-black'
         }`}
         title={isInWishlist ? t('common.messages.removedFromWishlist') : t('common.messages.addedToWishlist')}
         aria-label={isInWishlist ? t('common.ariaLabels.removeFromWishlist') : t('common.ariaLabels.addToWishlist')}
@@ -93,8 +93,8 @@ export function ProductCardActions({
         disabled={!inStock || isAddingToCart}
         className={`${buttonSize} rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
           inStock && !isAddingToCart
-            ? 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50'
-            : 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
+            ? 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50 dark:border-marco-black dark:bg-marco-black dark:text-white dark:hover:border-marco-black dark:hover:bg-marco-black'
+            : 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed dark:border-[#1f1f1f] dark:bg-[#1f1f1f] dark:text-white/40'
         }`}
         title={inStock ? t('common.buttons.addToCart') : t('common.stock.outOfStock')}
         aria-label={inStock ? t('common.ariaLabels.addToCart') : t('common.ariaLabels.outOfStock')}
@@ -111,7 +111,6 @@ export function ProductCardActions({
     </div>
   );
 }
-
 
 
 

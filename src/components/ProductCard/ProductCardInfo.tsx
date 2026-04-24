@@ -46,7 +46,7 @@ export function ProductCardInfo({
         </h3>
         
         {/* Category - Using brand name as category or default */}
-        <p className={`${isCompact ? 'text-sm' : 'text-lg'} text-gray-500 ${isCompact ? 'mb-1' : 'mb-2'}`}>
+        <p className={`${isCompact ? 'text-sm' : 'text-lg'} text-gray-500 dark:text-[#050505] ${isCompact ? 'mb-1' : 'mb-2'}`}>
           {brandName || t('common.defaults.category')}
         </p>
       </Link>

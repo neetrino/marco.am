@@ -163,7 +163,7 @@ const NAV_ROWS: ReadonlyArray<{
       'washing-machines',
       'khshor-kentsaghayin-tekhnika',
     ],
-    figmaIconSrc: '/images/category-nav/large-appliances.png',
+    figmaIconSrc: '/images/category-nav/home-and-garden.svg',
     labels: {
       hy: 'Խոշոր կենցաղային տեխնիկա',
       en: 'Large home appliances',
@@ -360,7 +360,7 @@ const NAV_ROWS: ReadonlyArray<{
       'audio-and-video',
       'audiovideo',
     ],
-    figmaIconSrc: '/images/category-nav/audio-video.png',
+    figmaIconSrc: '/images/category-nav/sports.svg',
     labels: {
       hy: 'Աուդիո և վիդեո համակարգեր',
       en: 'Audio and video systems',
@@ -391,7 +391,7 @@ const NAV_ROWS: ReadonlyArray<{
   },
   {
     slugs: ['water-dispensers', 'water-coolers'],
-    figmaIconSrc: '/images/category-nav/water-dispensers.png',
+    figmaIconSrc: '/images/category-nav/books.svg',
     labels: {
       hy: 'Ջրի դիսպենսերներ',
       en: 'Water dispensers',
@@ -427,7 +427,7 @@ const NAV_ROWS: ReadonlyArray<{
       'household-appliances',
       'kentsaghayin-tekhnika',
     ],
-    figmaIconSrc: '/images/category-nav/home-appliances.png',
+    figmaIconSrc: '/images/category-nav/accessories.svg',
     labels: {
       hy: 'Կենցաղային տեխնիկա',
       en: 'Home appliances',
@@ -463,8 +463,10 @@ const NAV_ROWS: ReadonlyArray<{
       'hvac',
       'heaters',
       'odorakichner',
+      'օդորակիչներ և տաքացուցիչներ',
+      'օդրակիչներ և տաքացուցիչներ',
     ],
-    figmaIconSrc: '/images/category-nav/climate.png',
+    figmaIconSrc: '/images/category-nav/climate-extra.svg',
     labels: {
       hy: 'Օդորակիչներ և տաքացուցիչներ',
       en: 'Air conditioners and heaters',
@@ -496,13 +498,14 @@ const NAV_ROWS: ReadonlyArray<{
 ];
 
 const SLUG_TO_ROW = new Map<string, (typeof NAV_ROWS)[number]>();
+const TITLE_TO_ROW = new Map<string, (typeof NAV_ROWS)[number]>();
 
 function normalizeCategoryKey(value: string): string {
   return value
     .trim()
     .toLowerCase()
     .replace(/&/g, 'and')
-    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/[^\p{L}\p{N}]+/gu, '-')
     .replace(/^-+|-+$/g, '');
 }
 
@@ -511,6 +514,10 @@ for (const row of NAV_ROWS) {
     const lowered = s.toLowerCase();
     SLUG_TO_ROW.set(lowered, row);
     SLUG_TO_ROW.set(normalizeCategoryKey(lowered), row);
+  }
+  const localizedTitles = [row.labels.hy, row.labels.en, row.labels.ru];
+  for (const title of localizedTitles) {
+    TITLE_TO_ROW.set(normalizeCategoryKey(title), row);
   }
 }
 
@@ -570,7 +577,8 @@ export function resolveCategoryNavPresentation(
   const row =
     SLUG_TO_ROW.get(slug.trim().toLowerCase()) ??
     SLUG_TO_ROW.get(normalizedSlug) ??
-    SLUG_TO_ROW.get(normalizedTitle);
+    SLUG_TO_ROW.get(normalizedTitle) ??
+    TITLE_TO_ROW.get(normalizedTitle);
   if (!row) {
     const desc = labelForLang(FALLBACK_DESCRIPTION, lang).replace('{name}', apiTitle);
     return {

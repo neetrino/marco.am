@@ -61,6 +61,8 @@ const montserratSpecial = Montserrat({
   display: 'swap',
 });
 
+const HOME_CARD_COMPACT_MAX_WIDTH_PX = 168;
+
 /** Same horizontal shell as «Նորույթներ» (`FeaturedProductsTabs`) for matching card width on mobile. */
 const SECTION_CONTAINER_CLASS = HOME_PAGE_SECTION_SHELL_CLASS;
 
@@ -307,7 +309,7 @@ export function HomeSpecialOffersSection() {
               {loading ? (
                 isMaxMd ? (
                   <div
-                    className="grid min-h-0 min-w-full shrink-0 snap-start grid-cols-2"
+                    className="grid min-h-0 min-w-full shrink-0 snap-start grid-cols-2 justify-items-center"
                     style={{
                       columnGap: SPECIAL_OFFERS_MOBILE_GRID_COLUMN_GAP_PX,
                       rowGap: SPECIAL_OFFERS_MOBILE_GRID_ROW_GAP_PX,
@@ -330,11 +332,11 @@ export function HomeSpecialOffersSection() {
                     <div key={i} className={railSlotClassName} style={railSlotStyle}>
                       <div
                         className="mx-auto w-full max-w-full animate-pulse bg-gray-200"
-                        style={{
-                          height: SPECIAL_OFFERS_CARD_HEIGHT_PX,
-                          maxWidth: SPECIAL_OFFERS_CARD_MAX_WIDTH_PX,
-                          borderRadius: SPECIAL_OFFERS_CARD_SHELL_RADIUS_PX,
-                        }}
+                          style={{
+                            height: SPECIAL_OFFERS_CARD_HEIGHT_PX,
+                            maxWidth: SPECIAL_OFFERS_CARD_MAX_WIDTH_PX,
+                            borderRadius: SPECIAL_OFFERS_CARD_SHELL_RADIUS_PX,
+                          }}
                       />
                     </div>
                   ))
@@ -343,7 +345,7 @@ export function HomeSpecialOffersSection() {
                 productChunks.map((chunk, pageIndex) => (
                   <div
                     key={`page-${pageIndex}`}
-                    className="grid min-h-0 min-w-full shrink-0 snap-start grid-cols-2"
+                    className="grid min-h-0 min-w-full shrink-0 snap-start grid-cols-2 justify-items-center"
                     style={{
                       columnGap: SPECIAL_OFFERS_MOBILE_GRID_COLUMN_GAP_PX,
                       rowGap: SPECIAL_OFFERS_MOBILE_GRID_ROW_GAP_PX,
@@ -356,7 +358,11 @@ export function HomeSpecialOffersSection() {
                           className="min-w-0"
                         >
                           {product ? (
-                            <SpecialOfferCard layout="mobileGrid" product={product} />
+                            <SpecialOfferCard
+                              layout="mobileGrid"
+                              product={product}
+                              maxWidthPx={HOME_CARD_COMPACT_MAX_WIDTH_PX}
+                            />
                           ) : (
                             <div
                               className="min-w-0"
@@ -372,7 +378,10 @@ export function HomeSpecialOffersSection() {
               ) : (
                 products.map((product, index) => (
                   <div key={`special-offers-product-${product.id}-${index}`} className={railSlotClassName} style={railSlotStyle}>
-                    <SpecialOfferCard product={product} />
+                    <SpecialOfferCard
+                      product={product}
+                      maxWidthPx={isMaxMd ? HOME_CARD_COMPACT_MAX_WIDTH_PX : undefined}
+                    />
                   </div>
                 ))
               )}

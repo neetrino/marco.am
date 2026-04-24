@@ -27,6 +27,7 @@ export interface SizeOption {
 
 export interface BrandOption {
   id: string;
+  slug: string;
   name: string;
   count: number;
 }

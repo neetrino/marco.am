@@ -96,7 +96,7 @@ export function ProductReviews({
           <Button
             variant="primary"
             onClick={handleShowForm}
-            className="mb-8"
+            className="mb-8 h-11 !rounded-[9999px] px-6 text-sm font-bold dark:!text-[#050505]"
           >
             {t('common.reviews.writeReview')}
           </Button>

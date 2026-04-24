@@ -5,7 +5,7 @@ import { Facebook, Instagram, Send } from 'lucide-react';
 import { useTranslation } from '../../lib/i18n-client';
 
 const SOCIAL_VECTOR_ICON_PX = 16;
-const SOCIAL_LUCIDE_CLASS = 'shrink-0 text-primary dark:text-[#050505]';
+const SOCIAL_LUCIDE_CLASS = 'shrink-0 text-primary dark:text-white';
 
 function WhatsAppGlyph({ className }: { className?: string }) {
   return (
@@ -81,16 +81,16 @@ function socialControlClass(entry: SocialEntry, enabled: boolean): string {
   const base =
     'flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-transparent transition-[opacity,background-color,color,border-color,transform] dark:border-white/18';
   if (isGlyphEntry(entry)) {
-    return `${base} ${entry.bgClass} dark:bg-white ${enabled ? 'group hover:bg-marco-yellow dark:hover:bg-marco-yellow hover:-translate-y-0.5' : 'opacity-50'}`;
+    return `${base} ${entry.bgClass} dark:!bg-[#050505] ${enabled ? 'group hover:bg-marco-yellow dark:hover:bg-marco-yellow hover:-translate-y-0.5' : 'opacity-50'}`;
   }
-  return `${base} bg-marco-gray text-primary dark:bg-white dark:text-[#050505] ${enabled ? 'hover:bg-marco-yellow dark:hover:bg-marco-yellow hover:-translate-y-0.5' : 'opacity-50'}`;
+  return `${base} bg-marco-gray text-primary dark:!bg-[#050505] dark:text-white ${enabled ? 'hover:bg-marco-yellow dark:hover:bg-marco-yellow hover:-translate-y-0.5' : 'opacity-50'}`;
 }
 
 function SocialGlyph({ entry }: { entry: SocialEntry }) {
   if (isGlyphEntry(entry)) {
     const { Glyph } = entry;
     return (
-      <Glyph className="shrink-0 text-primary transition-colors dark:text-[#050505]" />
+      <Glyph className="shrink-0 text-primary transition-colors dark:text-white" />
     );
   }
   const { Icon } = entry;

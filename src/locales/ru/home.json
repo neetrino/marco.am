@@ -1,6 +1,6 @@
 {
   "reels_title": "REELS",
-  "reels_captions": "Стиральные машины|Пылесосы|Мелкая техника|Смарт TV|Холодильники|Кондиционеры",
+  "reels_captions": "Стиральные машины|Пылесосы|Мелкая техника|Смарт TV|Холодильники",
   "reels_scroll_prev": "Предыдущие reels",
   "reels_scroll_next": "Следующие reels",
   "special_offers_title": "СПЕЦИАЛЬНЫЕ ПРЕДЛОЖЕНИЯ",
@@ -79,7 +79,6 @@
   "reels_item_small_appliances": "Мелкая техника",
   "reels_item_smart_tv": "Смарт TV",
   "reels_item_refrigerators": "Холодильники",
-  "reels_item_air_conditioners": "Кондиционеры",
   "reels_feed_back_aria": "На главную",
   "reels_feed_region_aria": "Лента Reels",
   "reels_feed_shop_cta": "В магазин",

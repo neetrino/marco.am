@@ -50,6 +50,8 @@ const FEATURED_OFFERS_GRID_CLASS = `grid grid-cols-2 gap-x-3 md:grid-cols-4 md:g
 const featuredOffersGridStyle = (isMaxMd: boolean): CSSProperties =>
   isMaxMd ? { rowGap: SPECIAL_OFFERS_MOBILE_GRID_ROW_GAP_PX } : {};
 
+const HOME_CARD_COMPACT_MAX_WIDTH_PX = 210;
+
 const featuredCardSkeletonStyle = {
   height: SPECIAL_OFFERS_CARD_HEIGHT_PX,
   borderRadius: SPECIAL_OFFERS_CARD_SHELL_RADIUS_PX,
@@ -203,7 +205,11 @@ export function FeaturedProductsStrip({
         <div className={FEATURED_OFFERS_GRID_CLASS} style={featuredOffersGridStyle(isMaxMd)}>
           {products.map((product, index) => (
             <div key={`featured-strip-product-${product.id}-${index}`} className="min-w-0">
-              <SpecialOfferCard product={product} layout={cardLayout} />
+              <SpecialOfferCard
+                product={product}
+                layout={cardLayout}
+                maxWidthPx={cardLayout === 'mobileGrid' ? HOME_CARD_COMPACT_MAX_WIDTH_PX : undefined}
+              />
             </div>
           ))}
         </div>

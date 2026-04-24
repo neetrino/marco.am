@@ -14,10 +14,10 @@
   },
   "quickLinks": {
     "title": "Quick Links",
-    "faq": "Frequently Asked Questions →",
-    "delivery": "Delivery and Returns Information →",
-    "returns": "Return Policy →",
-    "contact": "Contact Form →"
+    "faq": "Frequently Asked Questions",
+    "delivery": "Delivery and Returns Information",
+    "returns": "Return Policy",
+    "contact": "Contact Form"
   },
   "sendMessage": {
     "title": "Send Us a Message",

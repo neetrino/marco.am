@@ -41,10 +41,11 @@ export function SearchDropdown({
 
   return (
     <div
+      data-theme-static="true"
       role="listbox"
       id="search-results"
       aria-label={t('common.ariaLabels.searchPlaceholder')}
-      className={`absolute left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-[60] max-h-[min(70vh,400px)] overflow-hidden flex flex-col ${className}`}
+      className={`absolute left-0 right-0 top-full mt-0 bg-white border border-marco-border rounded-[13px] shadow-2xl z-[500] max-h-[min(70vh,400px)] overflow-hidden flex flex-col ${className}`}
     >
       <div className="overflow-y-auto flex-1 min-h-0">
         {loading && (

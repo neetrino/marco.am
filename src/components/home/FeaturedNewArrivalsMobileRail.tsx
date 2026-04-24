@@ -34,6 +34,8 @@ const featuredFooterDotStyle = {
   height: SPECIAL_OFFERS_PAGINATION_DOT_SIZE_PX,
 } as const;
 
+const HOME_CARD_COMPACT_MAX_WIDTH_PX = 168;
+
 function featuredPageAriaPath(index: number): string {
   return index < FEATURED_PAGE_ARIA_KEYS.length
     ? `home.featured_products.${FEATURED_PAGE_ARIA_KEYS[index]}`
@@ -76,7 +78,7 @@ export function FeaturedNewArrivalsMobileRail({
         {productChunks.map((chunk, pageIndex) => (
           <div
             key={`featured-mobile-page-${pageIndex}`}
-            className="grid min-h-0 min-w-full shrink-0 snap-start grid-cols-2"
+            className="grid min-h-0 min-w-full shrink-0 snap-start grid-cols-2 justify-items-center"
             style={{
               columnGap: SPECIAL_OFFERS_MOBILE_GRID_COLUMN_GAP_PX,
               rowGap: SPECIAL_OFFERS_MOBILE_GRID_ROW_GAP_PX,
@@ -89,7 +91,11 @@ export function FeaturedNewArrivalsMobileRail({
                   className="min-w-0"
                 >
                   {product ? (
-                    <SpecialOfferCard product={product} layout={cardLayout} />
+                    <SpecialOfferCard
+                      product={product}
+                      layout={cardLayout}
+                      maxWidthPx={HOME_CARD_COMPACT_MAX_WIDTH_PX}
+                    />
                   ) : (
                     <div
                       className="min-w-0"

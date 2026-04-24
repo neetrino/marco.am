@@ -72,8 +72,9 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
       return;
     }
 
-    /** User-requested upward shift for categories dropdown. */
-    const seamOverlapPx = 47;
+    /** Keep dropdown close to the trigger without visual overlap. */
+    const gapPx = 2;
+    const raiseDropdownByPx = 50;
 
     const updateLayout = () => {
       const trigger = categoriesTriggerRef.current;
@@ -88,8 +89,7 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
         : 0;
       const rightEdge = cr ? cr.right - paddingRight : window.innerWidth - 16;
       const panelWidth = Math.max(280, Math.min(rightEdge, window.innerWidth - 8) - r.left);
-      const panelTop = r.bottom - seamOverlapPx;
-      const bridgeHeight = 0;
+      const panelTop = r.bottom + gapPx - raiseDropdownByPx;
       const panelHeight = Math.max(240, Math.floor(window.innerHeight - panelTop));
       setCategoriesDropdownLayout({
         bridge: {
@@ -97,7 +97,7 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
           top: r.bottom,
           left: r.left,
           width: r.width,
-          height: bridgeHeight,
+          height: gapPx,
           zIndex: 69,
         },
         panel: {
@@ -127,10 +127,17 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
     }
 
     const previousOverflow = document.body.style.overflow;
+    const previousPaddingRight = document.body.style.paddingRight;
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    if (scrollbarWidth > 0) {
+      const computedPaddingRight = parseFloat(getComputedStyle(document.body).paddingRight) || 0;
+      document.body.style.paddingRight = `${computedPaddingRight + scrollbarWidth}px`;
+    }
     document.body.style.overflow = 'hidden';
 
     return () => {
       document.body.style.overflow = previousOverflow;
+      document.body.style.paddingRight = previousPaddingRight;
     };
   }, [showProductsMenu]);
 
@@ -165,10 +172,10 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
                 ref={categoriesTriggerRef}
                 type="button"
                 onClick={() => setShowProductsMenu((open) => !open)}
-                className={`flex w-full items-center bg-marco-black text-white dark:[&_svg]:text-[#050505] ${getHeaderCategoryButtonClass(
+                className={`flex w-full items-center !bg-[#050505] !text-white dark:!bg-white dark:!text-[#050505] dark:ring-1 dark:ring-black/10 ${getHeaderCategoryButtonClass(
                   row2TabletLike,
                   row2DesktopLike,
-                )} [&_svg]:text-white`}
+                )} [&_svg]:!text-white dark:[&_svg]:!text-[#050505]`}
                 aria-expanded={showProductsMenu}
                 aria-haspopup="true"
               >
@@ -202,6 +209,7 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
                   />
                   <div
                     data-marco-categories-dropdown
+                    data-theme-static="true"
                     className="flex min-h-0 flex-col"
                     style={categoriesDropdownLayout.panel}
                   >
@@ -222,7 +230,7 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
               )}
             </div>
 
-            <div ref={inlineSearchRef} className={`relative min-w-0 flex-1 ${HEADER_SEARCH_BAR_INNER_CLASS}`}>
+            <div ref={inlineSearchRef} className={`relative z-[480] min-w-0 flex-1 ${HEADER_SEARCH_BAR_INNER_CLASS}`}>
               <form
                 onSubmit={handleSearch}
                 className={`flex w-full min-w-0 flex-row items-center overflow-hidden bg-marco-gray ${getHeaderSearchFormRadiusClass(row2TabletLike)} ${HEADER_SEARCH_BAR_HEIGHT_CLASS}`}
@@ -233,23 +241,45 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
                   <span className="shrink-0 text-[rgba(33,43,54,0.46)]" aria-hidden>
                     <HeaderSearchGlyph />
                   </span>
-                  <input
-                    ref={headerSearchInputRef}
-                    type="search"
-                    value={searchQuery}
-                    onChange={(e) => {
-                      setSearchQuery(e.target.value);
-                      if (e.target.value.trim().length >= 1) setSearchDropdownOpen(true);
-                    }}
-                    onFocus={() => {
-                      if (searchQuery.trim().length >= 1) setSearchDropdownOpen(true);
-                    }}
-                    onKeyDown={searchHandleKeyDown}
-                    placeholder={t('common.placeholders.search')}
-                    className="min-h-0 min-w-0 flex-1 border-0 bg-transparent text-xs leading-normal text-marco-text placeholder:text-[rgba(33,43,54,0.46)] focus:outline-none focus:ring-0"
-                    aria-controls="search-results"
-                    aria-autocomplete="list"
-                  />
+                  <div className="relative min-w-0 flex-1">
+                    <input
+                      ref={headerSearchInputRef}
+                      type="search"
+                      value={searchQuery}
+                      onChange={(e) => {
+                        const nextQuery = e.target.value;
+                        if (nextQuery.trim().length === 0) {
+                          clearSearch();
+                          return;
+                        }
+                        setSearchQuery(nextQuery);
+                        setSearchDropdownOpen(true);
+                      }}
+                      onFocus={(e) => {
+                        if (e.currentTarget.value.trim().length >= 1) setSearchDropdownOpen(true);
+                      }}
+                      onKeyDown={searchHandleKeyDown}
+                      placeholder={t('common.placeholders.search')}
+                      className="min-h-0 min-w-0 flex-1 w-full border-0 bg-transparent pr-6 text-xs leading-normal text-marco-text dark:!text-[#050505] placeholder:text-[rgba(33,43,54,0.46)] focus:outline-none focus:ring-0"
+                      aria-controls="search-results"
+                      aria-autocomplete="list"
+                    />
+                    {searchQuery.trim().length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          clearSearch();
+                          headerSearchInputRef.current?.focus();
+                        }}
+                        className="absolute right-0 top-1/2 -translate-y-1/2 inline-flex h-4 w-4 items-center justify-center text-marco-yellow hover:brightness-95 cursor-pointer"
+                        aria-label={t('common.ariaLabels.clearSearch')}
+                      >
+                        <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
+                          <path strokeLinecap="round" d="M6 6l12 12M18 6L6 18" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <button
                   type="submit"
@@ -273,8 +303,8 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
                 onSeeAllClick={() => undefined}
                 className={
                   useMobileRow2
-                    ? 'fixed left-3 right-3 top-[4.5rem] z-[70] mt-0'
-                    : 'max-md:fixed max-md:left-3 max-md:right-3 max-md:top-[4.5rem] max-md:mt-0 max-md:z-[70]'
+                    ? 'fixed left-3 right-3 top-[4.5rem] z-[320] mt-0'
+                    : 'max-md:fixed max-md:left-3 max-md:right-3 max-md:top-[4.5rem] max-md:mt-0 max-md:z-[320]'
                 }
               />
             </div>

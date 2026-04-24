@@ -273,7 +273,7 @@ export function HomeMobileBannerProductShowcase({ language }: HomeMobileBannerPr
           >
             <Link
               href="/products"
-              className={`${montserratShowcaseCta.className} group pointer-events-auto flex min-w-0 shrink-0 items-center bg-marco-yellow font-bold text-marco-black transition hover:-translate-y-0.5 hover:bg-red-700 hover:text-white active:translate-y-px`}
+              className={`${montserratShowcaseCta.className} group pointer-events-auto flex min-w-0 shrink-0 items-center bg-marco-yellow font-bold text-marco-black transition hover:-translate-y-0.5 hover:bg-red-700 hover:text-white active:translate-y-px dark:!text-[#050505] dark:hover:!text-[#050505]`}
               style={{
                 ...showcaseCtaLinkStyle,
                 fontSize: isRussian
@@ -305,7 +305,7 @@ export function HomeMobileBannerProductShowcase({ language }: HomeMobileBannerPr
               aria-label={ctaAria}
             >
               <span
-                className="min-w-0 shrink whitespace-nowrap text-left"
+                className="min-w-0 shrink whitespace-nowrap text-left dark:!text-[#050505]"
                 style={{
                   transform: `translateX(${
                     isRussian

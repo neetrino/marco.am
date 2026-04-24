@@ -65,7 +65,10 @@ export function LanguageSwitcher() {
           />
           
           {/* Dropdown Menu */}
-          <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50 overflow-hidden">
+          <div
+            data-theme-static="true"
+            className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50 overflow-hidden"
+          >
             {Object.entries(LANGUAGES).map(([code, lang]) => {
               const isActive = code === currentLang;
               const flag = code === 'en' ? '🇬🇧' : code === 'hy' ? '🇦🇲' : code === 'ru' ? '🇷🇺' : '🇬🇪';

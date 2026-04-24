@@ -96,10 +96,12 @@ export function SpecialOfferCard({
     (SPECIAL_OFFERS_CARD_CORNER_MASK_SIZE_PX * SPECIAL_OFFERS_CARD_CORNER_MASK_TRANSLATE_PERCENT) / 100,
   );
 
-  const shellMaxWidthStyle =
-    layout === 'mobileGrid'
-      ? {}
-      : { maxWidth: maxWidthPx ?? SPECIAL_OFFERS_CARD_MAX_WIDTH_PX };
+  const shellMaxWidthStyle = {
+    maxWidth:
+      layout === 'mobileGrid'
+        ? maxWidthPx ?? SPECIAL_OFFERS_CARD_MAX_WIDTH_PX
+        : maxWidthPx ?? SPECIAL_OFFERS_CARD_MAX_WIDTH_PX,
+  };
 
   const textBlockShiftStyle =
     layout === 'mobileGrid'

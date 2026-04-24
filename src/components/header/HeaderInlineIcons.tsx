@@ -7,7 +7,7 @@ import { HeaderNavbarProfileIcon } from '../icons/HeaderNavbarProfileIcon';
 export function HeaderChevronDownIcon() {
   return (
     <svg
-      className="h-2.5 w-2.5 shrink-0 md:h-4 md:w-4 min-[1367px]:h-5 min-[1367px]:w-5"
+      className="h-2.5 w-2.5 shrink-0 text-white dark:!text-[#050505] md:h-4 md:w-4 min-[1367px]:h-5 min-[1367px]:w-5"
       viewBox="0 0 12 12"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"

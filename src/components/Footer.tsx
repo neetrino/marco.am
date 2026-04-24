@@ -42,7 +42,7 @@ import { FooterSocialLinks } from './FooterSocialLinks';
 
 const FOOTER_LINK_CLASS = `${FOOTER_MUTED_TEXT_CLASS} text-xs transition-colors hover:text-marco-black dark:hover:text-white`;
 const FOOTER_SECONDARY_EMAIL = 'marcogrouparmenia@mail.ru';
-const FOOTER_PRIMARY_PHONES = ['+374 93 52 04 06', '+374 98 19 04 06'] as const;
+const FOOTER_PRIMARY_PHONES = ['+374 93 52 04 06', '+374 98 19 04 06', '+374 41 34 04 06'] as const;
 
 const FOOTER_NAV_COLUMN_LINK_CLASS = `${FOOTER_LINK_CLASS} ${FOOTER_NAV_COLUMN_LINK_WORD_SPACING_CLASS} ${FOOTER_NAV_COLUMN_LINK_LEADING_CLASS}`;
 

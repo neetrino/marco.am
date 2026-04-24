@@ -1,46 +1,48 @@
 {
-  "title": "Delivery Terms",
+  "title": "Delivery and Shipping Terms",
   "lastUpdated": "Last Updated:",
   "overview": {
     "title": "Overview",
-    "description": "These Delivery Terms explain how we process, ship and deliver your orders, including expected timelines, fees and responsibilities."
+    "description": "We are committed to delivering your order quickly, safely, and conveniently. Below are the main delivery terms."
   },
   "shippingOptions": {
-    "title": "Shipping Options",
-    "description": "Available options are displayed at checkout and may include:",
+    "title": "2. Delivery Options",
+    "description": "We offer the following delivery options:",
     "options": {
-      "standard": "Standard shipping with estimated timelines by region.",
-      "express": "Express shipping where supported.",
-      "pickup": "Store pickup or local courier (if available in your area)."
+      "standard": "Standard delivery – carried out by our company’s delivery service.",
+      "express": "Express delivery – available for an additional fee..",
+      "pickup": ""
     }
   },
   "processingTimes": {
-    "title": "Processing Times",
+    "title": "1. Delivery Timeframes",
     "items": {
-      "typical": "Orders are typically processed within 1–2 business days after payment confirmation.",
-      "weekends": "Orders placed on weekends or holidays are processed on the next business day.",
-      "preorder": "Pre-order items ship based on estimated availability shown at purchase."
+      "typical": "Delivery time depends on the type of order, delivery location, and shipping method.",
+      "weekends": "Usually, orders are delivered within 3-5 business days.",
+      "preorder": "In case of potential delays, our team will contact you."
     }
   },
   "deliveryTimeframes": {
-    "title": "Delivery Timeframes",
-    "description": "Estimated delivery times vary by destination and selected method. Tracking details are provided when the order ships. Actual delivery times may vary due to carrier capacity or local customs procedures."
+    "title": "",
+    "description": ""
   },
   "shippingFees": {
-    "title": "Shipping Fees and Duties",
+    "title": "3. Delivery Fees",
     "items": {
-      "costs": "Shipping costs are calculated at checkout based on destination and service level.",
-      "duties": "Import duties, taxes or brokerage fees may apply for international shipments and are the recipient's responsibility.",
-      "promotional": "Promotional free shipping offers apply only as stated in the promotion."
+      "costs": "Delivery is free within 20 km; beyond 20 km, the cost is 150 AMD per each additional kilometer.",
+      "duties": "For low-value purchases, delivery within Yerevan and to the regions will be carried out with an additional charge.",
+      "promotional": ""
     }
   },
   "delaysDamageLoss": {
-    "title": "Delays, Damage or Loss",
+    "title": "4. Possible Delays",
+    "descriptionBefore": "Despite our efforts, in some cases, delivery may be delayed due to:",
     "items": {
-      "delays": "We are not responsible for delays caused by carriers, weather conditions or customs inspections.",
-      "damage": "Please inspect packages upon delivery and report visible damage to the carrier and our support team within 48 hours.",
-      "loss": "If a shipment is lost, contact us with your order number; we will coordinate with the carrier to resolve the issue."
-    }
+      "delays": "Weather conditions",
+      "damage": "Transportation issues",
+      "loss": "Holiday and peak season demand"
+    },
+    "descriptionAfter": "We will inform you of any possible delays while ensuring transparent communication."
   },
   "contact": {
     "title": "Contact Us",

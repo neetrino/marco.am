@@ -45,6 +45,7 @@ export function Header({ initialLanguage }: HeaderProps) {
     showProductsMenu,
     showUserMenu,
     showLocaleCurrencyMenu,
+    searchDropdownOpen,
     setShowLocaleCurrencyMenu,
     setMobileMenuOpen,
     mobileMenuOpen,
@@ -52,7 +53,7 @@ export function Header({ initialLanguage }: HeaderProps) {
     handleCurrencyChange,
   } = data;
 
-  const isRow2Blocked = showProductsMenu || showUserMenu || showLocaleCurrencyMenu;
+  const isRow2Blocked = showProductsMenu || showUserMenu || showLocaleCurrencyMenu || searchDropdownOpen;
   const isRow2Hidden = useHeaderRow2AutoHide({
     isBlocked: isRow2Blocked,
   });
@@ -117,16 +118,21 @@ export function Header({ initialLanguage }: HeaderProps) {
         <button
           type="button"
           onClick={() => setMobileMenuOpen(true)}
-          className={HEADER_MOBILE_HEADER_ROUND_CONTROL_CLASS}
+          className={`${HEADER_MOBILE_HEADER_ROUND_CONTROL_CLASS} dark:!bg-white dark:ring-1 dark:ring-black/15`}
           aria-label={t('common.ariaLabels.openMenu')}
           aria-expanded={mobileMenuOpen}
         >
-          <svg className="h-6 w-6 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden>
+          <svg
+            className="h-6 w-6 shrink-0 dark:!text-black dark:[&_path]:!stroke-black"
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden
+          >
             <path
               d="M5 8h14M5 12h14M5 16h14"
               stroke="currentColor"
               strokeLinecap="round"
-              strokeWidth={2}
+              strokeWidth={2.25}
             />
           </svg>
         </button>

@@ -7,6 +7,7 @@ export interface RequestOptions extends globalThis.RequestInit {
   timeoutMs?: number;
   suppressNetworkErrorLogging?: boolean;
   suppressAbortErrorLogging?: boolean;
+  suppressHttpErrorLogging?: boolean;
 }
 
 /**

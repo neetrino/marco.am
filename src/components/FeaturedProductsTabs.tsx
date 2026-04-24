@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Montserrat } from 'next/font/google';
 
-import { apiClient } from '../lib/api-client';
+import { apiClient, getErrorHttpStatus } from '../lib/api-client';
 import { getStoredLanguage, type LanguageCode } from '../lib/language';
 import { t } from '../lib/i18n';
 import { logger } from '../lib/utils/logger';
@@ -148,12 +148,18 @@ export function FeaturedProductsTabs() {
 
         const response = await apiClient.get<ProductsResponse>('/api/v1/products', {
           params,
+          suppressHttpErrorLogging: true,
         });
 
         const rows = dedupeCardProductsByTitle(response.data ?? []);
         setProducts(rows.slice(0, FEATURED_PRODUCTS_VISIBLE_COUNT));
       } catch (err) {
-        logger.error('[FeaturedProductsTabs] fetch failed', { error: err });
+        const status = getErrorHttpStatus(err);
+        if (status && status >= 500) {
+          logger.warn('[FeaturedProductsTabs] products backend unavailable', { status });
+        } else {
+          logger.error('[FeaturedProductsTabs] fetch failed', { error: err });
+        }
         setError(t(language, 'home.featured_products.errorLoading'));
         setProducts([]);
       } finally {

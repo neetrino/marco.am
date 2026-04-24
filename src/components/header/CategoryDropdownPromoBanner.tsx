@@ -23,7 +23,7 @@ export function CategoryDropdownPromoBanner({
   return (
     <div className="relative mb-6 overflow-hidden rounded-[13px] bg-gradient-to-b from-[rgba(255,202,3,0.45)] to-[#fff9e5] p-5 pb-6 md:mb-5 md:p-6">
       <span
-        className={`${headerCategoryNavFont.className} relative -top-1 mb-3 inline-flex rounded-full bg-[rgba(110,108,77,0.2)] px-3 py-1 text-xs font-bold leading-4 text-marco-black`}
+        className={`${headerCategoryNavFont.className} relative -top-1 mb-3 inline-flex rounded-full bg-[rgba(110,108,77,0.2)] px-3 py-1 text-xs font-bold leading-4 !text-[#050505] dark:!text-[#050505]`}
       >
         {badge}
       </span>
@@ -44,10 +44,13 @@ export function CategoryDropdownPromoBanner({
       >
         <span className="min-w-0 whitespace-nowrap !text-[#050505] dark:!text-[#050505]">{ctaLabel}</span>
         <span
-          className="flex size-9 shrink-0 items-center justify-center rounded-full bg-marco-black text-white sm:size-10"
+          className="flex size-9 shrink-0 items-center justify-center rounded-full !bg-[#050505] text-white dark:!bg-[#050505] sm:size-10"
           aria-hidden
         >
-          <ArrowUpRight className="size-3.5 sm:size-4" strokeWidth={2.5} />
+          <ArrowUpRight
+            className="size-3.5 shrink-0 !text-white dark:!text-white sm:size-4"
+            strokeWidth={2.5}
+          />
         </span>
       </Link>
     </div>

@@ -93,7 +93,8 @@ function handleNetworkError(
 async function handleErrorResponse(
   response: Response,
   url: string,
-  _baseUrl: string
+  _baseUrl: string,
+  options?: Pick<RequestOptions, "suppressHttpErrorLogging">,
 ): Promise<never> {
   const isUnauthorized = response.status === 401;
   const isNotFound = response.status === 404;
@@ -110,7 +111,7 @@ async function handleErrorResponse(
     }
   }
   // Log other errors (except 401 which is expected)
-  else if (shouldLogError(response.status)) {
+  else if (shouldLogError(response.status) && !options?.suppressHttpErrorLogging) {
     console.error(`❌ [API CLIENT] Error: ${response.status} ${response.statusText}`, {
       url,
       status: response.status,
@@ -131,7 +132,7 @@ async function handleErrorResponse(
     console.warn('⚠️ [API CLIENT] Not Found response:', errorData || errorText);
   } else if (isValidationLike) {
     console.warn('⚠️ [API CLIENT] Validation response:', errorData || errorText);
-  } else if (!isUnauthorized && shouldLogError(response.status)) {
+  } else if (!isUnauthorized && shouldLogError(response.status) && !options?.suppressHttpErrorLogging) {
     console.error('❌ [API CLIENT] Error response:', errorData || errorText);
   }
   
@@ -230,7 +231,7 @@ export async function getRequest<T>(
       return getRequest<T>(baseUrl, endpoint, options, retryCount + 1);
     }
 
-    await handleErrorResponse(response, url, baseUrl);
+    await handleErrorResponse(response, url, baseUrl, options);
   }
 
   try {
@@ -302,7 +303,7 @@ export async function postRequest<T>(
         handleUnauthorized();
       }
       
-      await handleErrorResponse(response, url, baseUrl);
+      await handleErrorResponse(response, url, baseUrl, options);
     }
 
     try {
@@ -363,7 +364,7 @@ export async function putRequest<T>(
   logger.devLog('📥 [API CLIENT] PUT response status:', response.status, response.statusText);
 
   if (!response.ok) {
-    await handleErrorResponse(response, url, baseUrl);
+    await handleErrorResponse(response, url, baseUrl, options);
   }
 
   try {
@@ -399,7 +400,7 @@ export async function patchRequest<T>(
   });
 
   if (!response.ok) {
-    await handleErrorResponse(response, url, baseUrl);
+    await handleErrorResponse(response, url, baseUrl, options);
   }
 
   try {
@@ -427,7 +428,7 @@ export async function deleteRequest<T>(
   });
 
   if (!response.ok) {
-    await handleErrorResponse(response, url, baseUrl);
+    await handleErrorResponse(response, url, baseUrl, options);
   }
 
   // DELETE requests might not return a body
