@@ -31,7 +31,7 @@ export default async function ReelsPage() {
   return (
     <section className={`bg-[var(--app-bg)] py-8 sm:py-10 ${montserrat.className}`}>
       <div className={HOME_PAGE_SECTION_SHELL_CLASS}>
-        <div className="mb-6 overflow-hidden rounded-3xl border border-marco-border bg-gradient-to-r from-white via-marco-gray/40 to-white p-4 shadow-[0_10px_28px_rgba(16,16,16,0.06)] dark:border-white/10 dark:bg-[linear-gradient(90deg,rgba(13,13,13,0.98)_0%,rgba(24,24,24,0.96)_48%,rgba(13,13,13,0.98)_100%)] dark:shadow-[0_18px_40px_rgba(0,0,0,0.34)] md:mb-8 md:p-6">
+        <div className="mb-6 overflow-hidden rounded-3xl border border-marco-border bg-gradient-to-r from-white via-marco-gray/40 to-white p-4 shadow-[0_10px_28px_rgba(16,16,16,0.06)] dark:border-white/10 dark:bg-[linear-gradient(90deg,rgba(16,16,16,0.98)_0%,rgba(24,24,24,0.96)_48%,rgba(16,16,16,0.98)_100%)] dark:shadow-[0_18px_40px_rgba(0,0,0,0.34)] md:mb-8 md:p-6">
           <div className="flex items-end justify-between gap-4">
             <div>
               <p className="mb-2 inline-flex rounded-full border border-marco-yellow/60 bg-marco-yellow/20 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-marco-black dark:text-marco-yellow">

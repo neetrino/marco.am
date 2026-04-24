@@ -247,7 +247,7 @@ export default function WishlistPage() {
           </div>
 
           {/* Products Table */}
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden dark:bg-[#0f0f0f] dark:border-white/40">
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden dark:bg-[var(--app-bg)] dark:border-white/40">
           {/* Table Header */}
           <div className="hidden md:grid md:grid-cols-12 gap-4 px-6 py-4 bg-white border-b border-gray-200 dark:bg-[#202020] dark:border-white/40">
             <div className="md:col-span-5">

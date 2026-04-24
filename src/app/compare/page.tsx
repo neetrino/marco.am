@@ -239,7 +239,7 @@ export default function ComparePage() {
       </div>
 
       {products.length > 0 ? (
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden dark:bg-[#0f0f0f] dark:border-white/40">
+        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden dark:bg-[var(--app-bg)] dark:border-white/40">
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>

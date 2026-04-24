@@ -314,7 +314,7 @@ export function PriceFilter({ currentMinPrice, currentMaxPrice, category }: Pric
             />
 
             <div
-              className="absolute z-10 h-4 w-4 cursor-grab rounded-full border border-solid border-[#e2e8f0] bg-white shadow-sm dark:border-white dark:bg-[#0d0d0d] active:cursor-grabbing"
+              className="absolute z-10 h-4 w-4 cursor-grab rounded-full border border-solid border-[#e2e8f0] bg-white shadow-sm dark:border-white dark:bg-[var(--app-bg)] active:cursor-grabbing"
               style={{ left: `${minPercentage}%`, top: '50%', transform: 'translate(-50%, -50%)' }}
               onMouseDown={(e) => {
                 e.stopPropagation();
@@ -326,7 +326,7 @@ export function PriceFilter({ currentMinPrice, currentMaxPrice, category }: Pric
               }}
             />
             <div
-              className="absolute z-10 h-4 w-4 cursor-grab rounded-full border border-solid border-[#e2e8f0] bg-white shadow-sm dark:border-white dark:bg-[#0d0d0d] active:cursor-grabbing"
+              className="absolute z-10 h-4 w-4 cursor-grab rounded-full border border-solid border-[#e2e8f0] bg-white shadow-sm dark:border-white dark:bg-[var(--app-bg)] active:cursor-grabbing"
               style={{ left: `${maxPercentage}%`, top: '50%', transform: 'translate(-50%, -50%)' }}
               onMouseDown={(e) => {
                 e.stopPropagation();
