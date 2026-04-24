@@ -5,9 +5,7 @@ import { CurrencyCode } from '../../../../lib/currency';
 import { OrderDetailsMeta } from './OrderDetailsMeta';
 import { OrderDetailsTotals } from './OrderDetailsTotals';
 import { OrderDetailsItems } from './OrderDetailsItems';
-import { OrderDetailsAuditTrail } from './OrderDetailsAuditTrail';
 import { OrderDetailsCustomer } from './OrderDetailsCustomer';
-import { OrderDetailsDelivery } from './OrderDetailsDelivery';
 import { OrderDetailsPayment } from './OrderDetailsPayment';
 import { OrderDetailsNotes } from './OrderDetailsNotes';
 import type { OrderDetails } from '../useOrders';
@@ -72,14 +70,12 @@ export function OrderDetailsModal({
                 <OrderDetailsCustomer orderDetails={orderDetails} />
                 <OrderDetailsPayment orderDetails={orderDetails} formatCurrency={formatCurrency} />
               </div>
-              <OrderDetailsDelivery orderDetails={orderDetails} />
               <OrderDetailsTotals orderDetails={orderDetails} formatCurrency={formatCurrency} />
               <OrderDetailsNotes
                 orderDetails={orderDetails}
                 saving={savingAdminNotes}
                 onSaveAdminNotes={onSaveAdminNotes}
               />
-              <OrderDetailsAuditTrail orderDetails={orderDetails} />
             </div>
           ) : (
             <div className="text-sm text-gray-600 py-6">{t('admin.orders.orderDetails.failedToLoad')}</div>
