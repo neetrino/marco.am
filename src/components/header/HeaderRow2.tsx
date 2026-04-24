@@ -72,8 +72,9 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
       return;
     }
 
-    /** Keep dropdown visibly below the navbar with a small gap. */
-    const gapPx = 10;
+    /** Keep dropdown close to the trigger without visual overlap. */
+    const gapPx = 2;
+    const raiseDropdownByPx = 50;
 
     const updateLayout = () => {
       const trigger = categoriesTriggerRef.current;
@@ -88,7 +89,7 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
         : 0;
       const rightEdge = cr ? cr.right - paddingRight : window.innerWidth - 16;
       const panelWidth = Math.max(280, Math.min(rightEdge, window.innerWidth - 8) - r.left);
-      const panelTop = r.bottom + gapPx;
+      const panelTop = r.bottom + gapPx - raiseDropdownByPx;
       const panelHeight = Math.max(240, Math.floor(window.innerHeight - panelTop));
       setCategoriesDropdownLayout({
         bridge: {
@@ -126,10 +127,17 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
     }
 
     const previousOverflow = document.body.style.overflow;
+    const previousPaddingRight = document.body.style.paddingRight;
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    if (scrollbarWidth > 0) {
+      const computedPaddingRight = parseFloat(getComputedStyle(document.body).paddingRight) || 0;
+      document.body.style.paddingRight = `${computedPaddingRight + scrollbarWidth}px`;
+    }
     document.body.style.overflow = 'hidden';
 
     return () => {
       document.body.style.overflow = previousOverflow;
+      document.body.style.paddingRight = previousPaddingRight;
     };
   }, [showProductsMenu]);
 

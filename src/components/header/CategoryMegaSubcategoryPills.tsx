@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { LanguageCode } from '../../lib/language';
 import type { Category } from './category-nav-types';
@@ -28,7 +28,7 @@ function SubcategoryPillRow({
     <Link
       href={`/products?category=${child.slug}`}
       onClick={onNavigate}
-      className={`${headerCategoryNavFont.className} flex h-[67px] w-full min-w-0 items-center justify-between gap-3 rounded-[33.5px] bg-[#f4f4f4] py-[5px] pl-[11px] pr-2.5 text-marco-black transition-[filter] hover:brightness-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/15 md:gap-6 md:px-2.5`}
+      className={`${headerCategoryNavFont.className} flex h-[67px] w-full min-w-0 items-center justify-between gap-3 rounded-[33.5px] bg-[#f4f4f4] py-[5px] pl-[11px] pr-2 text-marco-black transition-[filter] hover:brightness-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/15 md:gap-6 md:pl-2.5 md:pr-2`}
     >
       <span className="flex min-w-0 flex-1 items-center gap-4 md:gap-[29px]">
         <SubcategoryIcon icon={row.icon} />
@@ -41,10 +41,10 @@ function SubcategoryPillRow({
           {countLine}
         </span>
         <span
-          className="flex size-[52px] shrink-0 items-center justify-center rounded-full bg-marco-black text-white md:size-[68px]"
+          className="flex size-[40px] shrink-0 items-center justify-center rounded-full bg-marco-black text-white md:size-[50px]"
           aria-hidden
         >
-          <ArrowRight className="size-5 text-white md:size-6" strokeWidth={2.5} />
+          <ArrowUpRight className="size-3.5 text-white md:size-4" strokeWidth={2.5} />
         </span>
       </span>
     </Link>

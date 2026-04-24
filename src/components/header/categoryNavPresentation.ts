@@ -463,6 +463,8 @@ const NAV_ROWS: ReadonlyArray<{
       'hvac',
       'heaters',
       'odorakichner',
+      'օդորակիչներ և տաքացուցիչներ',
+      'օդրակիչներ և տաքացուցիչներ',
     ],
     figmaIconSrc: '/images/category-nav/climate-extra.svg',
     labels: {
@@ -496,13 +498,14 @@ const NAV_ROWS: ReadonlyArray<{
 ];
 
 const SLUG_TO_ROW = new Map<string, (typeof NAV_ROWS)[number]>();
+const TITLE_TO_ROW = new Map<string, (typeof NAV_ROWS)[number]>();
 
 function normalizeCategoryKey(value: string): string {
   return value
     .trim()
     .toLowerCase()
     .replace(/&/g, 'and')
-    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/[^\p{L}\p{N}]+/gu, '-')
     .replace(/^-+|-+$/g, '');
 }
 
@@ -511,6 +514,10 @@ for (const row of NAV_ROWS) {
     const lowered = s.toLowerCase();
     SLUG_TO_ROW.set(lowered, row);
     SLUG_TO_ROW.set(normalizeCategoryKey(lowered), row);
+  }
+  const localizedTitles = [row.labels.hy, row.labels.en, row.labels.ru];
+  for (const title of localizedTitles) {
+    TITLE_TO_ROW.set(normalizeCategoryKey(title), row);
   }
 }
 
@@ -570,7 +577,8 @@ export function resolveCategoryNavPresentation(
   const row =
     SLUG_TO_ROW.get(slug.trim().toLowerCase()) ??
     SLUG_TO_ROW.get(normalizedSlug) ??
-    SLUG_TO_ROW.get(normalizedTitle);
+    SLUG_TO_ROW.get(normalizedTitle) ??
+    TITLE_TO_ROW.get(normalizedTitle);
   if (!row) {
     const desc = labelForLang(FALLBACK_DESCRIPTION, lang).replace('{name}', apiTitle);
     return {

@@ -9,32 +9,66 @@ import { CategoryDropdownPromoBanner } from './CategoryDropdownPromoBanner';
 import { resolveCategoryNavPresentation } from './categoryNavPresentation';
 import { headerCategoryNavFont } from './headerCategoryNavTypography';
 
-const EXTRA_BOTTOM_CATEGORY: Category = {
-  id: '__extra-climate__',
-  slug: '__extra-climate__',
-  title: 'Օդորակիչներ և տաքացուցիչներ',
-  fullPath: 'Օդորակիչներ և տաքացուցիչներ',
-  children: [],
-};
-
 function normalizeCategoryKey(value: string): string {
-  return value.trim().toLowerCase().replace(/\s+/g, ' ');
+  return value
+    .normalize('NFKC')
+    .trim()
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
+    .replace(/\s+/g, ' ');
+}
+
+function isTechAndElectronicsCategory(value: string): boolean {
+  const normalized = normalizeCategoryKey(value);
+  return normalized.includes('տեխնիկա') && normalized.includes('էլեկտրոն');
+}
+
+const HIDDEN_ROOT_CATEGORY_TITLES = new Set<string>([
+  normalizeCategoryKey('Ջրի դիսպենսերներ'),
+  normalizeCategoryKey('Կենցաղային տեխնիկա'),
+  normalizeCategoryKey('Խոհանոցային տեխնիկա'),
+  normalizeCategoryKey('Կահույքի պատրաստման պարագաներ'),
+  normalizeCategoryKey('Խոշոր կենցաղային տեխնիկա'),
+  normalizeCategoryKey('Աուդիո և վիդեո համակարգեր'),
+]);
+
+function isHiddenRootCategory(category: Category, lang: string): boolean {
+  const presentation = resolveCategoryNavPresentation(category.slug, category.title, lang);
+  const presentationTitleKey = normalizeCategoryKey(presentation.title);
+  const apiTitleKey = normalizeCategoryKey(category.title);
+  return HIDDEN_ROOT_CATEGORY_TITLES.has(presentationTitleKey) || HIDDEN_ROOT_CATEGORY_TITLES.has(apiTitleKey);
+}
+
+function childrenCount(category: Category): number {
+  return category.children.length;
+}
+
+function shouldReplaceCategory(existing: Category, candidate: Category): boolean {
+  const existingCount = childrenCount(existing);
+  const candidateCount = childrenCount(candidate);
+  if (existingCount === 0 && candidateCount > 0) {
+    return true;
+  }
+  return candidateCount > existingCount;
 }
 
 function dedupeCategories(categories: Category[], lang: string): Category[] {
-  const seen = new Set<string>();
+  const keyToIndex = new Map<string, number>();
   const result: Category[] = [];
 
   for (const category of categories) {
     const presentation = resolveCategoryNavPresentation(category.slug, category.title, lang);
-    const key = `${normalizeCategoryKey(category.slug)}::${normalizeCategoryKey(presentation.title)}`;
+    const key = normalizeCategoryKey(presentation.title);
 
-    if (seen.has(key)) {
+    const existingIndex = keyToIndex.get(key);
+    if (existingIndex === undefined) {
+      keyToIndex.set(key, result.length);
+      result.push(category);
       continue;
     }
-
-    seen.add(key);
-    result.push(category);
+    if (shouldReplaceCategory(result[existingIndex], category)) {
+      result[existingIndex] = category;
+    }
   }
 
   return result;
@@ -50,7 +84,7 @@ export function CategoriesDropdownMega({
   const lang = useContext(LanguagePreferenceContext);
   const { t } = useTranslation();
   const categoriesWithExtra = useMemo(
-    () => dedupeCategories([...categories, EXTRA_BOTTOM_CATEGORY], lang),
+    () => dedupeCategories(categories.filter((category) => !isHiddenRootCategory(category, lang)), lang),
     [categories, lang]
   );
   const [selectedSlug, setSelectedSlug] = useState<string>(() => categoriesWithExtra[0]?.slug ?? '');
@@ -70,10 +104,13 @@ export function CategoriesDropdownMega({
   }
 
   const preview = resolveCategoryNavPresentation(selected.slug, selected.title, lang);
+  const isTechAndElectronics =
+    isTechAndElectronicsCategory(preview.title) || isTechAndElectronicsCategory(selected.title);
+  const showPromoBanner = !isTechAndElectronics;
 
   return (
     <div className="flex h-full min-h-0 w-full min-w-0 flex-col divide-y divide-marco-border overflow-hidden rounded-[13px] bg-marco-gray shadow-2xl md:flex-row md:divide-x md:divide-y-0">
-      <div className="flex min-h-0 w-full shrink-0 flex-col gap-[16px] overflow-y-auto rounded-t-[13px] bg-marco-gray py-6 pl-4 pr-2 md:h-full md:w-[400px] md:min-w-[400px] md:max-w-[400px] md:rounded-l-[13px] md:rounded-r-[13px] md:rounded-t-none md:py-[29px] md:pl-[25px] md:pr-[25px]">
+      <div className="flex min-h-0 w-full flex-1 flex-col gap-[16px] overflow-y-auto rounded-t-[13px] bg-marco-gray py-6 pl-4 pr-2 md:h-full md:w-[400px] md:min-w-[400px] md:max-w-[400px] md:flex-none md:rounded-l-[13px] md:rounded-r-[13px] md:rounded-t-none md:py-[29px] md:pl-[25px] md:pr-[25px]">
         {categoriesWithExtra.map((category, index) => {
           const isSelected = category.slug === selectedSlug;
           const row = resolveCategoryNavPresentation(category.slug, category.title, lang);
@@ -130,14 +167,16 @@ export function CategoriesDropdownMega({
       </div>
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col self-stretch overflow-y-auto rounded-b-[13px] bg-white px-5 pb-5 pt-6 md:rounded-b-none md:rounded-r-[13px] md:pl-6 md:pr-5 md:pt-6">
-        <CategoryDropdownPromoBanner
-          badge={preview.promo.badge}
-          headline={preview.promo.headline}
-          subline={preview.promo.subline}
-          href={`/products?category=${selected.slug}`}
-          onNavigate={onClose}
-          ctaLabel={t('common.buttons.shopNow')}
-        />
+        {showPromoBanner && (
+          <CategoryDropdownPromoBanner
+            badge={preview.promo.badge}
+            headline={preview.promo.headline}
+            subline={preview.promo.subline}
+            href={`/products?category=${selected.slug}`}
+            onNavigate={onClose}
+            ctaLabel={t('common.buttons.shopNow')}
+          />
+        )}
         <CategoryMegaSubcategoryPills
           sectionTitle={preview.title.toUpperCase()}
           items={dedupeCategories(selected.children, lang)}
