@@ -1,23 +1,20 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { Button } from '@shop/ui';
 import { apiClient } from '../../lib/api-client';
-import { getErrorMessage } from '@/lib/types/errors';
-import { formatPrice, getStoredCurrency } from '../../lib/currency';
 import { getStoredLanguage } from '../../lib/language';
 import { useTranslation } from '../../lib/i18n-client';
-import { useAuth } from '../../lib/auth/AuthContext';
 import { logger } from "@/lib/utils/logger";
-import { ProductImagePlaceholder } from '../../components/ProductImagePlaceholder';
+import { ProductCard } from '@/components/ProductCard';
 import {
   ensureLegacyWishlistMigratedForGuest,
   fetchWishlistPayload,
-  removeWishlistItemClient,
 } from '@/lib/wishlist/wishlist-client';
+
+const WISHLIST_PRODUCT_GRID_CLASS =
+  'grid grid-cols-2 gap-4 sm:gap-5 md:grid-cols-3 lg:grid-cols-4 md:gap-6';
 
 interface Product {
   id: string;
@@ -35,32 +32,32 @@ interface Product {
   } | null;
 }
 
+type FetchWishlistOptions = {
+  /** When true, skip full-page loading skeleton (e.g. after heart toggle on this page). */
+  silent?: boolean;
+};
+
 /**
  * Wishlist page that shows saved products and supports lightweight CRUD actions.
  */
 export default function WishlistPage() {
-  const router = useRouter();
-  const { isLoggedIn } = useAuth();
   const { t } = useTranslation();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [wishlistIds, setWishlistIds] = useState<string[]>([]);
-  const [currency, setCurrency] = useState(getStoredCurrency());
-  const [addingToCart, setAddingToCart] = useState<Set<string>>(new Set());
-  // Track if we updated locally to prevent unnecessary re-fetch
-  const isLocalUpdateRef = useRef(false);
 
   /**
    * Fetches wishlist products for provided ids and updates component state.
    */
-  const fetchWishlistProducts = useCallback(async () => {
+  const fetchWishlistProducts = useCallback(async (options?: FetchWishlistOptions) => {
+    const showLoading = !options?.silent;
     try {
-      setLoading(true);
+      if (showLoading) {
+        setLoading(true);
+      }
       const languagePreference = getStoredLanguage();
       await ensureLegacyWishlistMigratedForGuest(languagePreference);
       const payload = await fetchWishlistPayload(languagePreference);
       const idsToLoad = payload.wishlist.items.map((item) => item.productId);
-      setWishlistIds(idsToLoad);
       if (idsToLoad.length === 0) {
         logger.devInfo('[Wishlist] Skip fetch because ids array is empty');
         setProducts([]);
@@ -95,125 +92,31 @@ export default function WishlistPage() {
     } catch (error) {
       console.error('[Wishlist] Error fetching wishlist products:', error);
       setProducts([]);
-      setWishlistIds([]);
     } finally {
-      setLoading(false);
+      if (showLoading) {
+        setLoading(false);
+      }
     }
   }, []);
 
   useEffect(() => {
     void fetchWishlistProducts();
 
-    // Listen for wishlist updates from other components (header, etc.)
-    // But don't re-fetch if we already updated locally
     const handleWishlistUpdate = () => {
-      // If we just updated locally, skip re-fetch to avoid page reload
-      if (isLocalUpdateRef.current) {
-        isLocalUpdateRef.current = false;
-        return;
-      }
-      
-      // Only re-fetch if update came from external source (another component)
-      void fetchWishlistProducts();
+      void fetchWishlistProducts({ silent: true });
     };
 
-    const handleCurrencyUpdate = () => {
-      setCurrency(getStoredCurrency());
-    };
     const handleLanguageUpdate = () => {
       void fetchWishlistProducts();
     };
 
     window.addEventListener('wishlist-updated', handleWishlistUpdate);
-    window.addEventListener('currency-updated', handleCurrencyUpdate);
     window.addEventListener('language-updated', handleLanguageUpdate);
     return () => {
       window.removeEventListener('wishlist-updated', handleWishlistUpdate);
-      window.removeEventListener('currency-updated', handleCurrencyUpdate);
       window.removeEventListener('language-updated', handleLanguageUpdate);
     };
   }, [fetchWishlistProducts]);
-
-  const handleRemove = (productId: string) => {
-    logger.devInfo(`[Wishlist] Removing product ${productId} from wishlist UI`);
-    
-    // Mark as local update to prevent re-fetch in event handler
-    isLocalUpdateRef.current = true;
-    
-    // Optimistic update: remove from UI immediately (no loading state, no page reload)
-    const updatedIds = wishlistIds.filter((id) => id !== productId);
-    const updatedProducts = products.filter((p) => p.id !== productId);
-    
-    // Update state immediately (no page reload, no loading spinner)
-    setWishlistIds(updatedIds);
-    setProducts(updatedProducts);
-
-    void removeWishlistItemClient(productId, getStoredLanguage()).catch((error) => {
-      logger.devWarn('[Wishlist] Failed to remove wishlist item on server, restoring state', { error });
-      isLocalUpdateRef.current = false;
-      void fetchWishlistProducts();
-    });
-  };
-
-  const handleAddToCart = async (product: Product) => {
-    if (!product.inStock) {
-      return;
-    }
-
-    if (!isLoggedIn) {
-      router.push(`/login?redirect=/wishlist`);
-      return;
-    }
-
-    setAddingToCart(prev => new Set(prev).add(product.id));
-
-    try {
-      // Get product details to get variant ID
-      interface ProductDetails {
-        id: string;
-        variants?: Array<{
-          id: string;
-          sku: string;
-          price: number;
-          stock: number;
-          available: boolean;
-        }>;
-      }
-
-      const productDetails = await apiClient.get<ProductDetails>(`/api/v1/products/${product.slug}`);
-
-      if (!productDetails.variants || productDetails.variants.length === 0) {
-        alert(t('common.alerts.noVariantsAvailable'));
-        return;
-      }
-
-      const variantId = productDetails.variants[0].id;
-      
-      await apiClient.post(
-        '/api/v1/cart/items',
-        {
-          productId: product.id,
-          variantId: variantId,
-          quantity: 1,
-        }
-      );
-
-      // Trigger cart update event
-      window.dispatchEvent(new Event('cart-updated'));
-    } catch (error: unknown) {
-      console.error('Error adding to cart:', error);
-      const msg = getErrorMessage(error);
-      if (msg.includes('401') || msg.includes('Unauthorized')) {
-        router.push(`/login?redirect=/wishlist`);
-      }
-    } finally {
-      setAddingToCart(prev => {
-        const next = new Set(prev);
-        next.delete(product.id);
-        return next;
-      });
-    }
-  };
 
   if (loading) {
     return (
@@ -232,136 +135,24 @@ export default function WishlistPage() {
 
       {products.length > 0 ? (
         <>
-          {/* Total Count Section */}
           <div className="py-4 mb-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                </svg>
-                <span className="text-base font-medium text-gray-700">
-                  {t('common.wishlist.totalCount')}: <span className="font-bold text-gray-900">{products.length}</span>
-                </span>
-              </div>
+            <div className="flex items-center gap-3">
+              <svg className="w-5 h-5 text-gray-600 dark:text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+              <span className="text-base font-medium text-gray-700 dark:text-white/80">
+                {t('common.wishlist.totalCount')}: <span className="font-bold text-gray-900 dark:text-white">{products.length}</span>
+              </span>
             </div>
           </div>
 
-          {/* Products Table */}
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden dark:bg-[var(--app-bg)] dark:border-white/40">
-          {/* Table Header */}
-          <div className="hidden md:grid md:grid-cols-12 gap-4 px-6 py-4 bg-white border-b border-gray-200 dark:bg-[#202020] dark:border-white/40">
-            <div className="md:col-span-5">
-              <span className="text-sm font-semibold text-gray-900 uppercase tracking-wide dark:text-white">{t('common.wishlist.tableHeaders.productName')}</span>
-            </div>
-            <div className="md:col-span-2 text-center md:-ml-[83px]">
-              <span className="text-sm font-semibold text-gray-900 uppercase tracking-wide dark:text-white">{t('common.wishlist.tableHeaders.unitPrice')}</span>
-            </div>
-            <div className="md:col-span-2 text-center md:-ml-[32px]">
-              <span className="text-sm font-semibold text-gray-900 uppercase tracking-wide dark:text-white">{t('common.wishlist.tableHeaders.stockStatus')}</span>
-            </div>
-            <div className="md:col-span-3 text-center">
-              <span className="text-sm font-semibold text-gray-900 uppercase tracking-wide dark:text-white">{t('common.wishlist.tableHeaders.action')}</span>
-            </div>
-          </div>
-
-          {/* Table Body */}
-          <div className="divide-y divide-gray-200 dark:divide-white/40">
+          <div className={WISHLIST_PRODUCT_GRID_CLASS}>
             {products.map((product) => (
-              <div
-                key={product.id}
-                className="grid grid-cols-1 md:grid-cols-12 gap-4 px-6 py-6 hover:bg-gray-50 transition-colors dark:hover:bg-[#1a1a1a]"
-              >
-                {/* Product Name */}
-                <div className="md:col-span-5 flex items-center gap-4">
-                  <Link
-                    href={`/products/${product.slug}`}
-                    className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg !bg-gray-100 dark:!bg-gray-100"
-                  >
-                    {product.image ? (
-                      <Image
-                        src={product.image}
-                        alt={product.title}
-                        fill
-                        className="object-cover"
-                        sizes="80px"
-                        unoptimized
-                      />
-                    ) : (
-                      <ProductImagePlaceholder
-                        className="h-full w-full !bg-gray-200 !text-gray-400 dark:!bg-gray-200 dark:!text-gray-400"
-                        aria-label={product.title ? `No image for ${product.title}` : 'No image'}
-                      />
-                    )}
-                  </Link>
-                  <div className="flex-1 min-w-0">
-                    <Link
-                      href={`/products/${product.slug}`}
-                      className="text-base font-medium text-gray-900 hover:text-blue-600 transition-colors line-clamp-2 dark:text-white/90 dark:hover:text-marco-yellow"
-                    >
-                      {product.title}
-                    </Link>
-                  </div>
-                </div>
-
-                {/* Unit Price */}
-                <div className="md:col-span-2 flex items-center justify-start">
-                  <div className="flex flex-col items-start gap-1">
-                    <span className="text-base font-bold text-marco-black dark:text-white/90">
-                      {formatPrice(product.price, currency)}
-                    </span>
-                    {(product.originalPrice && product.originalPrice > product.price) && (
-                      <span className="text-sm text-gray-500 line-through dark:text-white/55">
-                        {formatPrice(product.originalPrice, currency)}
-                      </span>
-                    )}
-                    {!product.originalPrice && product.compareAtPrice && product.compareAtPrice > product.price && (
-                      <span className="text-sm text-gray-500 line-through dark:text-white/55">
-                        {formatPrice(product.compareAtPrice, currency)}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Stock Status */}
-                <div className="md:col-span-2 flex items-center justify-center md:-ml-[32px]">
-                  {product.inStock ? (
-                    <span className="text-sm font-medium text-green-600 flex items-center gap-1">
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                      {t('common.stock.inStock')}
-                    </span>
-                  ) : (
-                    <span className="text-sm font-medium text-red-600">
-                      {t('common.stock.outOfStock')}
-                    </span>
-                  )}
-                </div>
-
-                {/* Action */}
-                <div className="md:col-span-3 flex items-center justify-end gap-3 md:-mr-[10px]">
-                  <Button
-                    variant="primary"
-                    onClick={() => handleAddToCart(product)}
-                    disabled={!product.inStock || addingToCart.has(product.id)}
-                    className="!bg-marco-yellow !text-[#050505] dark:!text-[#050505] !rounded-full !h-10 !px-6 inline-flex items-center justify-center whitespace-nowrap font-semibold uppercase text-sm !hover:bg-marco-yellow hover:brightness-95 transition-[filter] disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {addingToCart.has(product.id) ? t('common.messages.adding') : t('common.buttons.addToCart')}
-                  </Button>
-                  <button
-                    onClick={() => handleRemove(product.id)}
-                    className="group flex h-8 w-8 items-center justify-center rounded-full hover:bg-marco-yellow transition-colors"
-                    aria-label={t('common.ariaLabels.removeFromWishlist')}
-                  >
-                    <svg className="h-5 w-5 !text-[#9ca3af] transition-colors group-hover:!text-[#050505] dark:group-hover:!text-[#050505]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
+              <div key={product.id} className="min-w-0">
+                <ProductCard product={product} viewMode="grid-2" wishlistPage />
               </div>
             ))}
           </div>
-        </div>
         </>
       ) : (
         <div className="text-center py-16">

@@ -34,6 +34,8 @@ interface ProductCardGridProps {
   onWishlistToggle: (e: MouseEvent) => void;
   onCompareToggle: (e: MouseEvent) => void;
   onAddToCart: (e: MouseEvent) => void;
+  /** Wishlist page: card border + X instead of heart on overlay actions. */
+  wishlistPage?: boolean;
 }
 
 /**
@@ -51,11 +53,16 @@ export function ProductCardGrid({
   onWishlistToggle,
   onCompareToggle,
   onAddToCart,
+  wishlistPage = false,
 }: ProductCardGridProps) {
   const { t } = useTranslation();
 
+  const cardSurfaceClass = wishlistPage
+    ? 'border border-gray-200 shadow-sm hover:shadow-md dark:border-white/30'
+    : 'hover:shadow-md';
+
   return (
-    <div className="bg-white rounded-lg overflow-hidden hover:shadow-md transition-shadow relative group">
+    <div className={`bg-white rounded-lg overflow-hidden transition-shadow relative group ${cardSurfaceClass}`}>
       {/* Product Image */}
       <div className="aspect-square bg-gray-100 relative overflow-hidden">
         <ProductCardImage
@@ -75,6 +82,7 @@ export function ProductCardGrid({
           isAddingToCart={isAddingToCart}
           inStock={product.inStock}
           isCompact={isCompact}
+          wishlistPage={wishlistPage}
           onWishlistToggle={onWishlistToggle}
           onCompareToggle={onCompareToggle}
           onAddToCart={onAddToCart}

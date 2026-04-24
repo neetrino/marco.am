@@ -35,6 +35,7 @@ interface ProductCardListProps {
   onWishlistToggle: (e: MouseEvent) => void;
   onCompareToggle: (e: MouseEvent) => void;
   onAddToCart: (e: MouseEvent) => void;
+  wishlistPage?: boolean;
 }
 
 /**
@@ -51,10 +52,15 @@ export function ProductCardList({
   onWishlistToggle,
   onCompareToggle,
   onAddToCart,
+  wishlistPage = false,
 }: ProductCardListProps) {
   const { t } = useTranslation();
+  const listSurfaceClass = wishlistPage
+    ? 'border border-gray-200 shadow-sm dark:border-white/30'
+    : '';
+
   return (
-    <div className="bg-white rounded-lg overflow-hidden hover:bg-gray-50 transition-colors">
+    <div className={`bg-white rounded-lg overflow-hidden hover:bg-gray-50 transition-colors ${listSurfaceClass}`}>
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 px-5 sm:px-6 py-4 sm:py-5">
         {/* Product Image */}
         <Link
@@ -132,6 +138,7 @@ export function ProductCardList({
               isAddingToCart={isAddingToCart}
               inStock={product.inStock}
               isCompact
+              wishlistPage={wishlistPage}
               onWishlistToggle={onWishlistToggle}
               onCompareToggle={onCompareToggle}
               onAddToCart={onAddToCart}
