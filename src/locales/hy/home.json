@@ -1,6 +1,6 @@
 {
   "reels_title": "REELS",
-  "reels_captions": "Լվացքի մեքենաներ|Փոշեկուլներ|Մանր տեխնիկա|Սմարթ TV|Սառցարան|Օդորակիչներ",
+  "reels_captions": "Լվացքի մեքենաներ|Փոշեկուլներ|Մանր տեխնիկա|Սմարթ TV|Սառցարան",
   "reels_scroll_prev": "Նախորդ reels",
   "reels_scroll_next": "Հաջորդ reels",
   "special_offers_title": "ՀԱՏՈՒԿ ԱՌԱՋԱՐԿՆԵՐ",
@@ -79,7 +79,6 @@
   "reels_item_small_appliances": "Մանր տեխնիկա",
   "reels_item_smart_tv": "Սմարթ TV",
   "reels_item_refrigerators": "Սառցարան",
-  "reels_item_air_conditioners": "Օդորակիչներ",
   "reels_feed_back_aria": "Վերադառնալ գլխավոր",
   "reels_feed_region_aria": "Reels ֆիդ",
   "reels_feed_shop_cta": "Խանութ",

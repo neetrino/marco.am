@@ -1,5 +1,7 @@
 import { db } from "@white-shop/db";
 
+import { filterExcludedShopCategoryTree } from "@/lib/constants/excluded-shop-category-slugs";
+
 class CategoriesService {
   /**
    * Get category tree
@@ -94,7 +96,7 @@ class CategoriesService {
     }
 
     return {
-      data: rootCategories,
+      data: filterExcludedShopCategoryTree(rootCategories),
     };
   }
 

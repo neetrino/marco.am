@@ -13,36 +13,13 @@ import { HeaderProfileIconFilled } from './HeaderInlineIcons';
 import { primaryNavLinks } from './nav-config';
 import { ThemeToggleButton } from '../theme/ThemeToggleButton';
 import type { useHeaderData } from './useHeaderData';
+import { dedupeCategories, prepareRootCategoriesForNav } from './categoryNavList';
 import { resolveCategoryNavPresentation } from './categoryNavPresentation';
-import type { Category } from './category-nav-types';
 
 type Props = {
   data: ReturnType<typeof useHeaderData>;
   compactPrimaryNav: boolean;
 };
-
-function normalizeCategoryKey(value: string): string {
-  return value.trim().toLowerCase().replace(/\s+/g, ' ');
-}
-
-function dedupeCategories(categories: Category[], lang: string): Category[] {
-  const seen = new Set<string>();
-  const result: Category[] = [];
-
-  for (const category of categories) {
-    const presentation = resolveCategoryNavPresentation(category.slug, category.title, lang);
-    const key = `${normalizeCategoryKey(category.slug)}::${normalizeCategoryKey(presentation.title)}`;
-
-    if (seen.has(key)) {
-      continue;
-    }
-
-    seen.add(key);
-    result.push(category);
-  }
-
-  return result;
-}
 
 function hideBrokenCategoryIcon(event: SyntheticEvent<HTMLImageElement>) {
   const wrapper = event.currentTarget.parentElement;
@@ -75,7 +52,7 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
     loadingCategories,
     getRootCategories,
   } = data;
-  const rootCategories = dedupeCategories(getRootCategories(categories), lang);
+  const rootCategories = prepareRootCategoriesForNav(getRootCategories(categories), lang);
 
   useEffect(() => {
     if (!mobileMenuOpen) {
@@ -155,64 +132,102 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
                           const isExpanded = expandedCategorySlug === category.slug;
                           return (
                             <div key={category.id}>
-                              <div className="flex items-center justify-between gap-2 px-4 py-2.5">
-                                <Link
-                                  href={`/products?category=${category.slug}`}
-                                  onClick={() => setMobileMenuOpen(false)}
-                                  className="flex min-w-0 flex-1 items-center gap-2.5 text-sm font-medium leading-5 text-gray-700 hover:text-gray-900"
+                              {hasChildren ? (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setExpandedCategorySlug((prev) =>
+                                      prev === category.slug ? null : category.slug
+                                    )
+                                  }
+                                  className="flex w-full items-center justify-between gap-2 px-4 py-2.5 text-left text-sm font-medium leading-5 text-gray-700 hover:bg-gray-100/80 dark:hover:bg-slate-800/50"
+                                  aria-expanded={isExpanded}
+                                  aria-controls={`mobile-category-children-${category.id}`}
                                 >
-                                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white dark:bg-slate-800">
-                                    {categoryPresentation.icon.kind === 'figma' ? (
-                                      <img
-                                        src={categoryPresentation.icon.src}
-                                        alt=""
-                                        width={22}
-                                        height={22}
-                                        className="h-[22px] w-[22px] object-contain dark:brightness-0 dark:invert"
-                                        draggable={false}
-                                        onError={hideBrokenCategoryIcon}
-                                      />
-                                    ) : (
-                                      CategoryIcon && (
-                                        <CategoryIcon
-                                          size={18}
-                                          strokeWidth={1.7}
-                                          className="text-gray-700 dark:text-white"
-                                          aria-hidden
+                                  <span className="flex min-w-0 flex-1 items-center gap-2.5">
+                                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white dark:bg-slate-800">
+                                      {categoryPresentation.icon.kind === 'figma' ? (
+                                        <img
+                                          src={categoryPresentation.icon.src}
+                                          alt=""
+                                          width={22}
+                                          height={22}
+                                          className="h-[22px] w-[22px] object-contain dark:brightness-0 dark:invert"
+                                          draggable={false}
+                                          onError={hideBrokenCategoryIcon}
                                         />
-                                      )
-                                    )}
+                                      ) : (
+                                        CategoryIcon && (
+                                          <CategoryIcon
+                                            size={18}
+                                            strokeWidth={1.7}
+                                            className="text-gray-700 dark:text-white"
+                                            aria-hidden
+                                          />
+                                        )
+                                      )}
+                                    </span>
+                                    <span className="min-w-0 flex-1 whitespace-normal break-words">
+                                      {categoryPresentation.title}
+                                    </span>
                                   </span>
-                                  <span className="min-w-0 flex-1 whitespace-normal break-words">
-                                    {categoryPresentation.title}
-                                  </span>
-                                </Link>
-                                {hasChildren && (
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      setExpandedCategorySlug((prev) =>
-                                        prev === category.slug ? null : category.slug
-                                      )
-                                    }
-                                    className="rounded-md p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-white dark:hover:bg-slate-700 dark:hover:text-white"
-                                    aria-expanded={isExpanded}
-                                    aria-label={isExpanded ? t('common.ariaLabels.closeMenu') : t('common.ariaLabels.openMenu')}
+                                  <svg
+                                    className={`h-4 w-4 shrink-0 text-gray-400 transition-transform duration-200 dark:text-white ${isExpanded ? 'rotate-180' : 'rotate-0'}`}
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                    aria-hidden
                                   >
-                                    <svg
-                                      className={`h-4 w-4 transition-transform duration-200 ${isExpanded ? 'rotate-90' : 'rotate-0'}`}
-                                      fill="none"
-                                      viewBox="0 0 24 24"
-                                      stroke="currentColor"
-                                      aria-hidden
-                                    >
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                    </svg>
-                                  </button>
-                                )}
-                              </div>
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                  </svg>
+                                </button>
+                              ) : (
+                                <div className="px-4 py-2.5">
+                                  <Link
+                                    href={`/products?category=${category.slug}`}
+                                    onClick={() => setMobileMenuOpen(false)}
+                                    className="flex min-w-0 items-center gap-2.5 text-sm font-medium leading-5 text-gray-700 hover:text-gray-900"
+                                  >
+                                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white dark:bg-slate-800">
+                                      {categoryPresentation.icon.kind === 'figma' ? (
+                                        <img
+                                          src={categoryPresentation.icon.src}
+                                          alt=""
+                                          width={22}
+                                          height={22}
+                                          className="h-[22px] w-[22px] object-contain dark:brightness-0 dark:invert"
+                                          draggable={false}
+                                          onError={hideBrokenCategoryIcon}
+                                        />
+                                      ) : (
+                                        CategoryIcon && (
+                                          <CategoryIcon
+                                            size={18}
+                                            strokeWidth={1.7}
+                                            className="text-gray-700 dark:text-white"
+                                            aria-hidden
+                                          />
+                                        )
+                                      )}
+                                    </span>
+                                    <span className="min-w-0 flex-1 whitespace-normal break-words">
+                                      {categoryPresentation.title}
+                                    </span>
+                                  </Link>
+                                </div>
+                              )}
                               {hasChildren && isExpanded && (
-                                <div className="space-y-1.5 pb-2 pl-8 pr-4">
+                                <div
+                                  id={`mobile-category-children-${category.id}`}
+                                  className="space-y-1 border-t border-gray-100 bg-white/80 px-4 py-2 dark:bg-slate-900/40"
+                                >
+                                  <Link
+                                    href={`/products?category=${category.slug}`}
+                                    onClick={() => setMobileMenuOpen(false)}
+                                    className="flex py-1.5 text-xs font-semibold uppercase tracking-wide text-marco-yellow hover:brightness-95"
+                                  >
+                                    {t('common.navigation.categoriesMegaMenu.viewProducts')}
+                                  </Link>
                                   {dedupeCategories(category.children, lang).map((child) => {
                                     const childPresentation = resolveCategoryNavPresentation(
                                       child.slug,

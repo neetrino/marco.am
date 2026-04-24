@@ -6,72 +6,13 @@ import { LanguagePreferenceContext } from '../../lib/language-context';
 import type { Category } from './category-nav-types';
 import { CategoryMegaSubcategoryPills } from './CategoryMegaSubcategoryPills';
 import { CategoryDropdownPromoBanner } from './CategoryDropdownPromoBanner';
+import { dedupeCategories, normalizeCategoryKey, prepareRootCategoriesForNav } from './categoryNavList';
 import { resolveCategoryNavPresentation } from './categoryNavPresentation';
 import { headerCategoryNavFont } from './headerCategoryNavTypography';
-
-function normalizeCategoryKey(value: string): string {
-  return value
-    .normalize('NFKC')
-    .trim()
-    .toLowerCase()
-    .replace(/[^\p{L}\p{N}\s]/gu, ' ')
-    .replace(/\s+/g, ' ');
-}
 
 function isTechAndElectronicsCategory(value: string): boolean {
   const normalized = normalizeCategoryKey(value);
   return normalized.includes('տեխնիկա') && normalized.includes('էլեկտրոն');
-}
-
-const HIDDEN_ROOT_CATEGORY_TITLES = new Set<string>([
-  normalizeCategoryKey('Ջրի դիսպենսերներ'),
-  normalizeCategoryKey('Կենցաղային տեխնիկա'),
-  normalizeCategoryKey('Խոհանոցային տեխնիկա'),
-  normalizeCategoryKey('Կահույքի պատրաստման պարագաներ'),
-  normalizeCategoryKey('Խոշոր կենցաղային տեխնիկա'),
-  normalizeCategoryKey('Աուդիո և վիդեո համակարգեր'),
-]);
-
-function isHiddenRootCategory(category: Category, lang: string): boolean {
-  const presentation = resolveCategoryNavPresentation(category.slug, category.title, lang);
-  const presentationTitleKey = normalizeCategoryKey(presentation.title);
-  const apiTitleKey = normalizeCategoryKey(category.title);
-  return HIDDEN_ROOT_CATEGORY_TITLES.has(presentationTitleKey) || HIDDEN_ROOT_CATEGORY_TITLES.has(apiTitleKey);
-}
-
-function childrenCount(category: Category): number {
-  return category.children.length;
-}
-
-function shouldReplaceCategory(existing: Category, candidate: Category): boolean {
-  const existingCount = childrenCount(existing);
-  const candidateCount = childrenCount(candidate);
-  if (existingCount === 0 && candidateCount > 0) {
-    return true;
-  }
-  return candidateCount > existingCount;
-}
-
-function dedupeCategories(categories: Category[], lang: string): Category[] {
-  const keyToIndex = new Map<string, number>();
-  const result: Category[] = [];
-
-  for (const category of categories) {
-    const presentation = resolveCategoryNavPresentation(category.slug, category.title, lang);
-    const key = normalizeCategoryKey(presentation.title);
-
-    const existingIndex = keyToIndex.get(key);
-    if (existingIndex === undefined) {
-      keyToIndex.set(key, result.length);
-      result.push(category);
-      continue;
-    }
-    if (shouldReplaceCategory(result[existingIndex], category)) {
-      result[existingIndex] = category;
-    }
-  }
-
-  return result;
 }
 
 export function CategoriesDropdownMega({
@@ -84,8 +25,8 @@ export function CategoriesDropdownMega({
   const lang = useContext(LanguagePreferenceContext);
   const { t } = useTranslation();
   const categoriesWithExtra = useMemo(
-    () => dedupeCategories(categories.filter((category) => !isHiddenRootCategory(category, lang)), lang),
-    [categories, lang]
+    () => prepareRootCategoriesForNav(categories, lang),
+    [categories, lang],
   );
   const [selectedSlug, setSelectedSlug] = useState<string>(() => categoriesWithExtra[0]?.slug ?? '');
 
