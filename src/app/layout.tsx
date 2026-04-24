@@ -8,7 +8,6 @@ import { ClientProviders } from '../components/ClientProviders';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import { MobileBottomNav } from '../components/MobileBottomNav';
-import { GlobalContactHelpFab } from '../components/GlobalContactHelpFab';
 import { MOBILE_NAV_LAYOUT_PADDING_BOTTOM } from '../components/mobile-bottom-nav.constants';
 import {
   LANGUAGE_PREFERENCE_KEY,
@@ -54,6 +53,10 @@ export default async function RootLayout({
             })();
           `}
         </Script>
+        <Script
+          src="https://code.tidio.co/9ovkfmgncuyhg4kaemwvkdbvp5r7njec.js"
+          strategy="lazyOnload"
+        />
         <Suspense fallback={null}>
           <LanguagePreferenceProvider initialLanguage={initialLanguage}>
             <ClientProviders>
@@ -73,7 +76,6 @@ export default async function RootLayout({
                   <Footer />
                 </div>
                 <MobileBottomNav />
-                <GlobalContactHelpFab />
               </div>
             </ClientProviders>
           </LanguagePreferenceProvider>

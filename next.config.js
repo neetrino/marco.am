@@ -97,12 +97,12 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://code.tidio.co",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-              "font-src 'self' https://fonts.gstatic.com",
+              "font-src 'self' https://fonts.gstatic.com https://code.tidio.co data:",
               "img-src 'self' data: https: blob:",
               `media-src ${mediaSources.join(' ')}`,
-              "connect-src 'self' https:",
+              "connect-src 'self' https: wss://socket.tidio.co",
               // Contact page + footer map iframes (Google Maps / OSM); default-src alone blocks embeds
               "frame-src 'self' https://www.google.com https://google.com https://maps.google.com https://www.openstreetmap.org https://openstreetmap.org",
               "frame-ancestors 'none'",
