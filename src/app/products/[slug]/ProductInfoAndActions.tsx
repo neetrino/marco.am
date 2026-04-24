@@ -13,6 +13,7 @@ import {
   HEADER_FIGMA_PILL_RADIUS_CLASS,
 } from '../../../components/header/header.constants';
 import { ProductAttributesSelector } from './ProductAttributesSelector';
+import { ProductPartialStar } from './ProductPartialStar';
 import type { Product, ProductVariant } from './types';
 
 /** Buy CTA — taller row; trailing circle with light left nudge (−4px). */
@@ -116,6 +117,12 @@ export function ProductInfoAndActions({
     colorGroups.length > 0 ||
     (!product?.productAttributes && sizeGroups.length > 0);
 
+  const hasProductReviews = reviewsCount > 0;
+  const displayRatingScore = hasProductReviews
+    ? Math.min(5, Math.max(0, averageRating))
+    : 5;
+  const starFillRatio = displayRatingScore / 5;
+
   useEffect(() => {
     if (language !== 'hy') {
       setUseShortHyBuyLabel(false);
@@ -174,6 +181,25 @@ export function ProductInfoAndActions({
             <p className="text-xs font-bold uppercase tracking-[0.3px] text-white">ԵՐԱՇԽԻՔ</p>
           </div>
         </div>
+        <div className="-mt-2 mb-6 flex flex-wrap items-center gap-x-2 gap-y-1">
+          <ProductPartialStar fillRatio={starFillRatio} />
+          <span className="text-sm font-semibold tabular-nums text-marco-black">
+            {displayRatingScore.toFixed(1)}
+          </span>
+          <span className="text-sm text-gray-400" aria-hidden>
+            ·
+          </span>
+          <button
+            type="button"
+            onClick={onScrollToReviews}
+            className="text-sm text-gray-600 underline-offset-2 transition-colors hover:text-marco-black hover:underline"
+          >
+            {reviewsCount}{' '}
+            {reviewsCount === 1
+              ? t(language, 'common.reviews.review')
+              : t(language, 'common.reviews.reviews')}
+          </button>
+        </div>
         <div className="mb-6">
           <div className="flex flex-col gap-1">
             {/* Discounted price with discount percentage */}
@@ -195,41 +221,9 @@ export function ProductInfoAndActions({
             {isOutOfStock ? t(language, 'common.stock.outOfStock') : t(language, 'common.stock.inStock')}
           </p>
         </div>
-        {/* Rating Section */}
-        <div className="mb-6 p-4 bg-white rounded-2xl space-y-4">
-          <div className="flex items-center gap-2 pb-3">
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1 -ml-[17px]">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <svg
-                    key={star}
-                    className={`w-5 h-5 ${
-                      star <= Math.round(averageRating)
-                        ? 'text-yellow-400'
-                        : 'text-gray-300'
-                    }`}
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                ))}
-              </div>
-              <span className="text-sm font-semibold text-marco-black">
-                {averageRating > 0 ? averageRating.toFixed(1) : '0.0'}
-              </span>
-            </div>
-            <span
-              onClick={onScrollToReviews}
-              className="text-sm text-gray-600 cursor-pointer hover:text-marco-black hover:underline transition-colors"
-            >
-              ({reviewsCount} {reviewsCount === 1 ? t(language, 'common.reviews.review') : t(language, 'common.reviews.reviews')})
-            </span>
-          </div>
-        </div>
         {hasDescription && (
           <div
-            className="-mt-[19px] text-gray-600 mb-8 prose prose-sm"
+            className="text-gray-600 mb-8 prose prose-sm"
             dangerouslySetInnerHTML={{ __html: sanitizedDescription }}
           />
         )}
