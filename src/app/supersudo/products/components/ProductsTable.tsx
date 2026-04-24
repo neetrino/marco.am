@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { Card, Button } from '@shop/ui';
 import { useTranslation } from '../../../../lib/i18n-client';
+import { AdminTablePagination } from '../../components/AdminTablePagination';
 import { formatPrice, type CurrencyCode } from '../../../../lib/currency';
 import type { Product, ProductsResponse } from '../types';
 
@@ -419,31 +420,14 @@ export function ProductsTable({
             </table>
           </div>
 
-          {/* Pagination */}
-          {meta && meta.totalPages > 1 && (
-            <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50/60 px-6 py-4">
-              <div className="text-sm font-medium text-slate-700">
-                {t('admin.products.showingPage').replace('{page}', meta.page.toString()).replace('{totalPages}', meta.totalPages.toString()).replace('{total}', meta.total.toString())}
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="ghost"
-                  onClick={() => setPage(p => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  className="rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 disabled:opacity-50"
-                >
-                  {t('admin.products.previous')}
-                </Button>
-                <Button
-                  variant="ghost"
-                  onClick={() => setPage(p => Math.min(meta.totalPages, p + 1))}
-                  disabled={page === meta.totalPages}
-                  className="rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 disabled:opacity-50"
-                >
-                  {t('admin.products.next')}
-                </Button>
-              </div>
-            </div>
+          {meta && (
+            <AdminTablePagination
+              embedded
+              currentPage={page}
+              totalPages={meta.totalPages}
+              totalItems={meta.total}
+              onPageChange={(next) => setPage(next)}
+            />
           )}
         </>
       )}

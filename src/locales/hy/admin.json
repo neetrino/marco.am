@@ -246,20 +246,11 @@
     "updating": "Թարմացվում է...",
     "createdSuccess": "Կատեգորիան հաջողությամբ ստեղծվեց",
     "updatedSuccess": "Կատեգորիան հաջողությամբ թարմացվեց",
-
+    "errorCreating": "Սխալ կատեգորիա ստեղծելիս",
     "errorUpdating": "Սխալ կատեգորիա թարմացնելիս",
     "deleteConfirm": "Վստահ ե՞ք, որ ցանկանում եք ջնջել կատեգորիա \"{name}\": Այս գործողությունը չի կարող հետարկվել:",
     "deletedSuccess": "Կատեգորիան հաջողությամբ ջնջվեց",
-    "errorDeleting": "Սխալ կատեգորիան ջնջելիս: {message}",
-    "showingPage": "Ցուցադրվում է {page} էջը {totalPages}-ից ({total} ընդամենը)",
-    "previous": "Նախորդ",
-    "next": "Հաջորդ",
-    "goToPageLabel": "Անցնել էջ",
-    "goToPagePlaceholder": "օր.՝ 3",
-    "goToPageButton": "Անցնել",
-    "goToPageAria": "Անցնել նշված համարի էջ",
-    "pageNumberAria": "{n} էջ",
-    "paginationRegionAria": "Կատեգորիաների ցուցակի էջավորում"
+    "errorDeleting": "Սխալ կատեգորիան ջնջելիս: {message}"
   },
   "delivery": {
     "title": "Առաքում",
@@ -822,6 +813,17 @@
     "update": "Թարմացնել",
     "saving": "Պահվում է...",
     "back": "Վերադառնալ",
-    "backToAdmin": "Վերադառնալ ադմինիստրատորի վահան"
+    "backToAdmin": "Վերադառնալ ադմինիստրատորի վահան",
+    "tablePagination": {
+      "showingPage": "Ցուցադրվում է {page} էջը {totalPages}-ից ({total} ընդամենը)",
+      "previous": "Նախորդ",
+      "next": "Հաջորդ",
+      "goToPageLabel": "Անցնել էջ",
+      "goToPagePlaceholder": "օր.՝ 3",
+      "goToPageButton": "Անցնել",
+      "goToPageAria": "Անցնել նշված համարի էջ",
+      "pageNumberAria": "{n} էջ",
+      "paginationRegionAria": "Աղյուսակի էջավորում"
+    }
   }
 }

@@ -250,16 +250,7 @@
     "errorUpdating": "Error updating category",
     "deleteConfirm": "Are you sure you want to delete category \"{name}\"? This action cannot be undone.",
     "deletedSuccess": "Category successfully deleted",
-    "errorDeleting": "Error deleting category: {message}",
-    "showingPage": "Showing page {page} of {totalPages} ({total} total)",
-    "previous": "Previous",
-    "next": "Next",
-    "goToPageLabel": "Go to page",
-    "goToPagePlaceholder": "e.g. 3",
-    "goToPageButton": "Go",
-    "goToPageAria": "Go to page number",
-    "pageNumberAria": "Page {n}",
-    "paginationRegionAria": "Category list pagination"
+    "errorDeleting": "Error deleting category: {message}"
   },
   "delivery": {
     "title": "Delivery",
@@ -821,7 +812,18 @@
     "update": "Update",
     "saving": "Saving...",
     "back": "Back",
-    "backToAdmin": "Back to Admin Dashboard"
+    "backToAdmin": "Back to Admin Dashboard",
+    "tablePagination": {
+      "showingPage": "Showing page {page} of {totalPages} ({total} total)",
+      "previous": "Previous",
+      "next": "Next",
+      "goToPageLabel": "Go to page",
+      "goToPagePlaceholder": "e.g. 3",
+      "goToPageButton": "Go",
+      "goToPageAria": "Go to page number",
+      "pageNumberAria": "Page {n}",
+      "paginationRegionAria": "Table pagination"
+    }
   }
 }
 

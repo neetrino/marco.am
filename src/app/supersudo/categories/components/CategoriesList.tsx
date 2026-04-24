@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from '../../../../lib/i18n-client';
 import { buildCategoryTree } from '../utils';
 import { CategoryItem } from './CategoryItem';
-import { CategoriesPagination } from './CategoriesPagination';
+import { AdminTablePagination } from '../../components/AdminTablePagination';
 import type { Category, CategoryWithLevel } from '../types';
 
 interface CategoriesListProps {
@@ -130,7 +130,7 @@ export function CategoriesList({
         </div>
       </div>
 
-      <CategoriesPagination
+      <AdminTablePagination
         currentPage={currentPage}
         totalPages={totalPages}
         totalItems={categoryTree.length}

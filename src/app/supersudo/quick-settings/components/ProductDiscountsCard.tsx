@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Card, Button, Input } from '@shop/ui';
 import { useTranslation } from '../../../../lib/i18n-client';
+import { AdminTablePagination } from '../../components/AdminTablePagination';
 import { logger } from "@/lib/utils/logger";
 
 interface Product {
@@ -169,32 +170,12 @@ export function ProductDiscountsCard({
           })}
 
           {totalPages > 1 ? (
-            <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3">
-              <div className="text-sm font-medium text-slate-700">
-                {t('admin.quickSettings.showingPage')
-                  .replace('{page}', currentPage.toString())
-                  .replace('{totalPages}', totalPages.toString())
-                  .replace('{total}', products.length.toString())}
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="ghost"
-                  onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-                  disabled={currentPage === 1}
-                  className="border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 disabled:border-slate-100 disabled:bg-slate-50"
-                >
-                  {t('admin.quickSettings.previous')}
-                </Button>
-                <Button
-                  variant="ghost"
-                  onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-                  disabled={currentPage === totalPages}
-                  className="border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 disabled:border-slate-100 disabled:bg-slate-50"
-                >
-                  {t('admin.quickSettings.next')}
-                </Button>
-              </div>
-            </div>
+            <AdminTablePagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={products.length}
+              onPageChange={setCurrentPage}
+            />
           ) : null}
         </div>
       )}

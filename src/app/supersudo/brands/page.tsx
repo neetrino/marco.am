@@ -7,6 +7,7 @@ import { Card, Button } from '@shop/ui';
 import { apiClient, getApiOrErrorMessage } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
 import { AdminPageLayout } from '../components/AdminPageLayout';
+import { AdminTablePagination } from '../components/AdminTablePagination';
 import { logger } from '@/lib/utils/logger';
 import { showToast } from '../../../components/Toast';
 
@@ -392,29 +393,12 @@ export default function BrandsPage() {
               </div>
 
               {totalPages > 1 && (
-                <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3">
-                  <div className="text-sm font-medium text-slate-700">
-                    {`${currentPage} / ${totalPages} (${brands.length})`}
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="ghost"
-                      onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-                      disabled={currentPage === 1}
-                      className="border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 disabled:border-slate-100 disabled:bg-slate-50"
-                    >
-                      Previous
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-                      disabled={currentPage === totalPages}
-                      className="border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 disabled:border-slate-100 disabled:bg-slate-50"
-                    >
-                      Next
-                    </Button>
-                  </div>
-                </div>
+                <AdminTablePagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  totalItems={brands.length}
+                  onPageChange={setCurrentPage}
+                />
               )}
             </>
           )}

@@ -1,14 +1,18 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { Button } from '@shop/ui';
-import { useTranslation } from '../../../../lib/i18n-client';
+import { useTranslation } from '../../../lib/i18n-client';
 
-interface CategoriesPaginationProps {
+const TP = 'admin.common.tablePagination';
+
+export interface AdminTablePaginationProps {
   currentPage: number;
   totalPages: number;
   totalItems: number;
   onPageChange: (page: number) => void;
+  /** Table footer inside Card: top border, no outer card chrome. */
+  embedded?: boolean;
 }
 
 function buildPaginationItems(current: number, total: number): readonly (number | 'ellipsis')[] {
@@ -24,13 +28,15 @@ function buildPaginationItems(current: number, total: number): readonly (number 
   return [1, 'ellipsis', current - 1, current, current + 1, 'ellipsis', total];
 }
 
-export function CategoriesPagination({
+export function AdminTablePagination({
   currentPage,
   totalPages,
   totalItems,
   onPageChange,
-}: CategoriesPaginationProps) {
+  embedded = false,
+}: AdminTablePaginationProps) {
   const { t } = useTranslation();
+  const goFieldId = useId();
   const [goInput, setGoInput] = useState(String(currentPage));
 
   useEffect(() => {
@@ -53,10 +59,14 @@ export function CategoriesPagination({
     onPageChange(clamped);
   };
 
+  const outerClass = embedded
+    ? 'border-t border-slate-200 bg-slate-50/60 px-4 py-4 sm:px-6'
+    : 'mt-6 rounded-xl border border-slate-200 bg-slate-50/90 p-4 shadow-sm sm:p-5';
+
   return (
-    <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50/90 p-4 shadow-sm sm:p-5">
+    <div className={outerClass}>
       <p className="mb-4 text-center text-sm font-medium text-slate-700 sm:mb-3 sm:text-left">
-        {t('admin.categories.showingPage')
+        {t(`${TP}.showingPage`)
           .replace('{page}', currentPage.toString())
           .replace('{totalPages}', totalPages.toString())
           .replace('{total}', totalItems.toString())}
@@ -66,7 +76,7 @@ export function CategoriesPagination({
         <div
           className="flex flex-wrap items-center justify-center gap-2 sm:justify-start"
           role="navigation"
-          aria-label={t('admin.categories.paginationRegionAria')}
+          aria-label={t(`${TP}.paginationRegionAria`)}
         >
           <Button
             type="button"
@@ -75,7 +85,7 @@ export function CategoriesPagination({
             disabled={currentPage === 1}
             className="min-h-10 min-w-[5.5rem] shrink-0 border border-slate-200 bg-white px-3 text-sm font-medium text-slate-800 hover:bg-slate-100 disabled:border-slate-100 disabled:bg-slate-50 disabled:text-slate-400"
           >
-            {t('admin.categories.previous')}
+            {t(`${TP}.previous`)}
           </Button>
 
           {pageItems.map((item, index) =>
@@ -92,7 +102,7 @@ export function CategoriesPagination({
                 key={item}
                 type="button"
                 onClick={() => onPageChange(item)}
-                aria-label={t('admin.categories.pageNumberAria').replace('{n}', String(item))}
+                aria-label={t(`${TP}.pageNumberAria`).replace('{n}', String(item))}
                 aria-current={item === currentPage ? 'page' : undefined}
                 className={`min-h-10 min-w-10 rounded-lg border text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-1 ${
                   item === currentPage
@@ -112,7 +122,7 @@ export function CategoriesPagination({
             disabled={currentPage === totalPages}
             className="min-h-10 min-w-[5.5rem] shrink-0 border border-slate-200 bg-white px-3 text-sm font-medium text-slate-800 hover:bg-slate-100 disabled:border-slate-100 disabled:bg-slate-50 disabled:text-slate-400"
           >
-            {t('admin.categories.next')}
+            {t(`${TP}.next`)}
           </Button>
         </div>
 
@@ -124,19 +134,22 @@ export function CategoriesPagination({
           }}
         >
           <div className="flex min-w-[8rem] flex-col gap-1">
-            <label htmlFor="categories-pagination-go" className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-              {t('admin.categories.goToPageLabel')}
+            <label
+              htmlFor={goFieldId}
+              className="text-xs font-semibold uppercase tracking-wide text-slate-500"
+            >
+              {t(`${TP}.goToPageLabel`)}
             </label>
             <input
-              id="categories-pagination-go"
+              id={goFieldId}
               type="number"
               inputMode="numeric"
               min={1}
               max={totalPages}
               value={goInput}
               onChange={(e) => setGoInput(e.target.value)}
-              placeholder={t('admin.categories.goToPagePlaceholder')}
-              aria-label={t('admin.categories.goToPageAria')}
+              placeholder={t(`${TP}.goToPagePlaceholder`)}
+              aria-label={t(`${TP}.goToPageAria`)}
               className="admin-field h-10 w-24 rounded-lg border-2 border-slate-200 bg-white text-center text-sm font-medium tabular-nums shadow-sm focus:border-amber-500 focus:shadow-[0_0_0_3px_rgba(245,158,11,0.2)]"
             />
           </div>
@@ -144,9 +157,9 @@ export function CategoriesPagination({
             type="submit"
             variant="primary"
             className="min-h-10 shrink-0 px-4 shadow-sm"
-            aria-label={t('admin.categories.goToPageAria')}
+            aria-label={t(`${TP}.goToPageAria`)}
           >
-            {t('admin.categories.goToPageButton')}
+            {t(`${TP}.goToPageButton`)}
           </Button>
         </form>
       </div>
