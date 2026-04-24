@@ -46,6 +46,7 @@
     "brands": "Բրենդներ",
     "reels": "Reels",
     "addresses": "Հասցեներ",
+    "openInMaps": "Տեսնել քարտեզում",
     "categoriesMegaMenu": {
       "viewProducts": "Դիտել բոլոր ապրանքները",
       "subcategories": "Ենթաբաժիններ",
@@ -192,7 +193,9 @@
     "previousThumbnail": "Նախորդ մանրապատկեր",
     "nextThumbnail": "Հաջորդ մանրապատկեր",
     "fullscreenImage": "Լիաէկրան պատկեր",
-    "socialLinks": "Սոցիալ ցանցեր"
+    "socialLinks": "Սոցիալ ցանցեր",
+    "headerChoosePhone": "Ընտրեք զանգահարելու համարը",
+    "headerChooseAddress": "Ընտրեք խանութի հասցեն կամ բացեք քարտեզը"
   },
   "placeholders": {
     "search": "Որոնել ապրանքներ"

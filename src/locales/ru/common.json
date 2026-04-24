@@ -46,6 +46,7 @@
     "brands": "Бренды",
     "reels": "Reels",
     "addresses": "Адреса",
+    "openInMaps": "На карте",
     "categoriesMegaMenu": {
       "viewProducts": "Смотреть все товары",
       "subcategories": "Подкатегории",
@@ -191,7 +192,9 @@
     "previousThumbnail": "Предыдущая миниатюра",
     "nextThumbnail": "Следующая миниатюра",
     "fullscreenImage": "Полноэкранное изображение",
-    "socialLinks": "Социальные сети"
+    "socialLinks": "Социальные сети",
+    "headerChoosePhone": "Выберите номер для звонка",
+    "headerChooseAddress": "Выберите адрес магазина или откройте карту"
   },
   "placeholders": {
     "search": "Поиск товаров"

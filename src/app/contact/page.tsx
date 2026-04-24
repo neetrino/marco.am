@@ -2,9 +2,10 @@
 
 import { Button, Input } from '@shop/ui';
 import { MapPin } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { FormEvent, ChangeEvent } from 'react';
 import { useTranslation } from '../../lib/i18n-client';
+import { getContactLocations } from '../../lib/contact-locations';
 import { apiClient } from '../../lib/api-client';
 import { getErrorMessage } from '@/lib/types/errors';
 import {
@@ -24,35 +25,7 @@ const CONTACT_EMAILS = ['marcogrouparmenia@mail.ru', 'marcofurniture@mail.ru'] a
 
 export default function ContactPage() {
   const { t, lang } = useTranslation();
-  const contactLocations = [
-    {
-      address:
-        lang === 'hy'
-          ? 'Ք․ Երևան Ալեք Մանուկյան 23'
-          : lang === 'ru'
-            ? 'г. Ереван, Алек Манукян 23'
-            : '23 Alek Manukyan St, Yerevan',
-      phones: ['+374 93 52 04 06', '+374 98 19 04 06', '011 52 04 06'],
-    },
-    {
-      address:
-        lang === 'hy'
-          ? 'Արգավանդ Օդանավակայան 1'
-          : lang === 'ru'
-            ? 'Аргаванд, Аэропорт 1'
-            : '1 Airport St, Argavand',
-      phones: ['+374 93 58 04 09', '+374 41 34 04 06', '+374 77 64 04 06'],
-    },
-    {
-      address:
-        lang === 'hy'
-          ? 'Գ. Փարաքար Մեսրոպ Մաշտոցի 1'
-          : lang === 'ru'
-            ? 'с. Паракар, Месроп Маштоц 1'
-            : '1 Mesrop Mashtots St, Parakar',
-      phones: ['+374 77 51 04 06'],
-    },
-  ] as const;
+  const contactLocations = useMemo(() => getContactLocations(lang), [lang]);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
