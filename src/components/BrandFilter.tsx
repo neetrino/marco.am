@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useMemo, useTransition } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { pushShopProductsListingUrl } from '../lib/push-shop-products-listing-url';
 import { apiClient } from '../lib/api-client';
 import { getStoredLanguage } from '../lib/language';
 import { useTranslation } from '../lib/i18n-client';
@@ -28,8 +29,6 @@ export function BrandFilter({ category, search, minPrice, maxPrice }: BrandFilte
   const [brands, setBrands] = useState<BrandOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [optimisticBrandSlugs, setOptimisticBrandSlugs] = useState<string[] | null>(null);
-  const [, startTransition] = useTransition();
-
   useEffect(() => {
     if (filtersContext?.data?.brands) {
       setBrands(filtersContext.data.brands);
@@ -90,9 +89,7 @@ export function BrandFilter({ category, search, minPrice, maxPrice }: BrandFilte
     }
     params.delete('page');
     const qs = params.toString();
-    startTransition(() => {
-      router.push(qs ? `/products?${qs}` : '/products');
-    });
+    pushShopProductsListingUrl(router, qs ? `/products?${qs}` : '/products');
   };
 
   const handleClearBrands = () => {
@@ -101,9 +98,7 @@ export function BrandFilter({ category, search, minPrice, maxPrice }: BrandFilte
     params.delete('page');
     setOptimisticBrandSlugs([]);
     const qs = params.toString();
-    startTransition(() => {
-      router.push(qs ? `/products?${qs}` : '/products');
-    });
+    pushShopProductsListingUrl(router, qs ? `/products?${qs}` : '/products');
   };
 
   const hasBrandSelection = selectedBrandSlugs.length > 0;

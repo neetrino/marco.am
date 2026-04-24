@@ -10,6 +10,7 @@ import {
 import { getStoredLanguage } from '../lib/language';
 import { getStoredCurrency, formatPrice as formatCurrencyPrice, type CurrencyCode } from '../lib/currency';
 import { useTranslation } from '../lib/i18n-client';
+import { pushShopProductsListingUrl } from '../lib/push-shop-products-listing-url';
 import { useProductsFilters } from './ProductsFiltersProvider';
 
 interface PriceFilterProps {
@@ -227,7 +228,7 @@ export function PriceFilter({ currentMinPrice, currentMaxPrice, category }: Pric
       params.delete('page');
 
       const timeoutId = setTimeout(() => {
-        router.push(`/products?${params.toString()}`);
+        pushShopProductsListingUrl(router, `/products?${params.toString()}`);
       }, 300);
 
       return () => clearTimeout(timeoutId);

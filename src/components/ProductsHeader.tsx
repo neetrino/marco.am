@@ -3,6 +3,7 @@
 import { Montserrat } from 'next/font/google';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { pushShopProductsListingUrl } from '../lib/push-shop-products-listing-url';
 import { useState, useEffect, useRef, Suspense } from 'react';
 import { useTranslation } from '../lib/i18n-client';
 import { useForcedShopGridColumns } from './useForcedShopGridColumns';
@@ -259,7 +260,7 @@ function ProductsHeaderContent({ total }: ProductsHeaderProps) {
     // Reset to page 1 when sorting changes
     params.delete('page');
     
-    router.push(`/products?${params.toString()}`);
+    pushShopProductsListingUrl(router, `/products?${params.toString()}`);
   };
 
   return (

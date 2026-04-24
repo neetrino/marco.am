@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { pushShopProductsListingUrl } from '../lib/push-shop-products-listing-url';
 import Link from 'next/link';
 import Image from 'next/image';
 import { apiClient } from '../lib/api-client';
@@ -80,7 +81,7 @@ export function TopCategories() {
               href={`/products?category=${item.slug}`}
               onClick={(e) => {
                 e.preventDefault();
-                router.push(`/products?category=${item.slug}`);
+                pushShopProductsListingUrl(router, `/products?category=${item.slug}`);
               }}
               className="flex flex-col items-center gap-3 group cursor-pointer transition-all duration-300 hover:scale-105 min-w-[120px] outline-none focus:outline-none hover:outline-none focus-visible:outline-none ring-0 focus:ring-0 hover:ring-0"
             >

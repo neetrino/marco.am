@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useMemo, useTransition } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { pushShopProductsListingUrl } from '../lib/push-shop-products-listing-url';
 import { apiClient } from '../lib/api-client';
 import { getStoredLanguage } from '../lib/language';
 import { getColorHex } from '../lib/colorMap';
@@ -49,8 +50,6 @@ export function ColorFilter({ category, search, minPrice, maxPrice }: ColorFilte
   const [colors, setColors] = useState<ColorOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [optimisticValues, setOptimisticValues] = useState<string[] | null>(null);
-  const [, startTransition] = useTransition();
-
   useEffect(() => {
     if (filtersContext?.data?.colors) {
       setColors(filtersContext.data.colors);
@@ -114,9 +113,7 @@ export function ColorFilter({ category, search, minPrice, maxPrice }: ColorFilte
     }
     params.delete('page');
     const qs = params.toString();
-    startTransition(() => {
-      router.push(qs ? `/products?${qs}` : '/products');
-    });
+    pushShopProductsListingUrl(router, qs ? `/products?${qs}` : '/products');
   };
 
   const handleClearColors = () => {
@@ -125,9 +122,7 @@ export function ColorFilter({ category, search, minPrice, maxPrice }: ColorFilte
     params.delete('page');
     setOptimisticValues([]);
     const qs = params.toString();
-    startTransition(() => {
-      router.push(qs ? `/products?${qs}` : '/products');
-    });
+    pushShopProductsListingUrl(router, qs ? `/products?${qs}` : '/products');
   };
 
   const hasColorSelection = selectedValues.length > 0;

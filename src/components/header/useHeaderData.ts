@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { pushShopProductsListingUrl } from '../../lib/push-shop-products-listing-url';
 import type { FormEvent } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { setStoredCurrency, type CurrencyCode, formatPrice } from '../../lib/currency';
@@ -252,7 +253,7 @@ export function useHeaderData() {
     }
     clearSearch();
     const queryString = params.toString();
-    router.push(queryString ? `/products?${queryString}` : '/products');
+    pushShopProductsListingUrl(router, queryString ? `/products?${queryString}` : '/products');
   };
 
   const handleCurrencyChange = (currency: CurrencyCode) => {

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { pushShopProductsListingUrl } from '../lib/push-shop-products-listing-url';
 import Image from 'next/image';
 import { apiClient } from '../lib/api-client';
 import { getStoredLanguage } from '../lib/language';
@@ -177,9 +178,9 @@ export function HomeCategoriesSidebar() {
   // Handle category click
   const handleCategoryClick = (categorySlug: string | null) => {
     if (categorySlug) {
-      router.push(`/products?category=${categorySlug}`);
+      pushShopProductsListingUrl(router, `/products?category=${categorySlug}`);
     } else {
-      router.push('/products');
+      pushShopProductsListingUrl(router, '/products');
     }
   };
 

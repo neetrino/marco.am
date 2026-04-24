@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
+import { pushShopProductsListingUrl } from '../lib/push-shop-products-listing-url';
 import Link from 'next/link';
 import Image from 'next/image';
 import { apiClient } from '../lib/api-client';
@@ -269,7 +270,7 @@ export function CategoryGrid() {
   };
 
   const handleCategoryClick = (categorySlug: string) => {
-    router.push(`/products?category=${categorySlug}`);
+    pushShopProductsListingUrl(router, `/products?category=${categorySlug}`);
   };
 
   if (loading) {

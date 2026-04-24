@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { pushShopProductsListingUrl } from '../lib/push-shop-products-listing-url';
 import { apiClient } from '../lib/api-client';
 import { getStoredLanguage } from '../lib/language';
 
@@ -58,8 +59,9 @@ function CategoriesSidebarContent() {
     
     // Reset to page 1 when changing category
     params.delete('page');
-    
-    router.push(`/products?${params.toString()}`);
+
+    const qs = params.toString();
+    pushShopProductsListingUrl(router, qs ? `/products?${qs}` : '/products');
   };
 
   // Flatten categories tree to show all categories
