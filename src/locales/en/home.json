@@ -153,7 +153,9 @@
     "available_count_label": "Available reels",
     "empty": "Reels are not available yet.",
     "card_badge": "Reel",
-    "watch_cta": "Watch reel"
+    "watch_cta": "Watch reel",
+    "preview_previous_aria": "Previous reel",
+    "preview_next_aria": "Next reel"
   },
   "reels_watch_page": {
     "meta_title": "Watch Reels — MARCO",

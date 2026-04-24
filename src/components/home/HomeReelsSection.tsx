@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Montserrat } from 'next/font/google';
 
@@ -121,7 +121,8 @@ export function HomeReelsSection({ items }: HomeReelsSectionProps) {
   const { t } = useTranslation();
   const [previewIndex, setPreviewIndex] = useState<number | null>(null);
   const preloadedVideoIdsRef = useRef<Set<string>>(new Set());
-  const { reelItems, pendingLikeById, toggleLike } = useReelsFeedData(items);
+  const { reelItems, pendingLikeById, doubleTapBurstById, toggleLike } =
+    useReelsFeedData(items);
   const isMaxMd = useIsMaxMd();
   const reelsPageCount = isMaxMd
     ? REELS_PAGINATION_PAGE_COUNT_MOBILE
@@ -142,13 +143,6 @@ export function HomeReelsSection({ items }: HomeReelsSectionProps) {
     'reels_pagination_go_second',
     'reels_pagination_go_third',
   ] as const;
-  const previewItem = useMemo(() => {
-    if (previewIndex === null) {
-      return null;
-    }
-    return reelItems[previewIndex] ?? null;
-  }, [reelItems, previewIndex]);
-
   const preloadReelVideo = useCallback((item: PublicReelItem) => {
     if (preloadedVideoIdsRef.current.has(item.id)) {
       return;
@@ -315,19 +309,16 @@ export function HomeReelsSection({ items }: HomeReelsSectionProps) {
           ))}
         </div>
       </div>
-      <HomeReelPreviewDialog
-        item={previewItem}
-        isOpen={previewItem !== null}
-        liked={previewItem?.likedByCurrentUser ?? false}
-        likePending={previewItem ? pendingLikeById[previewItem.id] === true : false}
-        onToggleLike={() => {
-          if (!previewItem) {
-            return;
-          }
-          toggleLike({ reelId: previewItem.id });
-        }}
-        onClose={() => setPreviewIndex(null)}
-      />
+      {previewIndex !== null ? (
+        <HomeReelPreviewDialog
+          items={reelItems}
+          initialIndex={previewIndex}
+          pendingLikeById={pendingLikeById}
+          doubleTapBurstById={doubleTapBurstById}
+          toggleLike={toggleLike}
+          onClose={() => setPreviewIndex(null)}
+        />
+      ) : null}
     </section>
   );
 }

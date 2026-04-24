@@ -1,38 +1,75 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { Heart, Pause, Play, Volume2, VolumeX, X } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { ChevronDown, ChevronUp, X } from 'lucide-react';
+import { Montserrat } from 'next/font/google';
 
+import { apiClient } from '../../lib/api-client';
 import { useTranslation } from '../../lib/i18n-client';
-import type { PublicReelItem } from '../../lib/schemas/reels-management.schema';
+import { ReelLikeButton } from '../reels/ReelLikeButton';
+import { ReelOverlay } from '../reels/ReelOverlay';
+import { ReelVideoPlayer } from '../reels/ReelVideoPlayer';
+import {
+  HOME_REEL_PREVIEW_SLIDE_ID_PREFIX,
+  REELS_FEED_SCROLL_CONTAINER_CLASS,
+} from '../reels/reels-vertical-feed.constants';
+import type { ReelInteractionState } from '../reels/useReelsFeedData';
+import { useActiveReelIndex } from '../reels/useActiveReelIndex';
+
+const montserrat = Montserrat({
+  subsets: ['latin'],
+  weight: ['600', '700'],
+  display: 'swap',
+});
+
+export type HomeReelPreviewToggleLike = (args: {
+  reelId: string;
+  forceLiked?: boolean;
+  registerBurst?: boolean;
+}) => void;
 
 export type HomeReelPreviewDialogProps = {
-  item: PublicReelItem | null;
-  isOpen: boolean;
-  liked: boolean;
-  likePending: boolean;
-  onToggleLike: () => void;
+  items: ReelInteractionState[];
+  initialIndex: number;
+  pendingLikeById: Record<string, boolean>;
+  doubleTapBurstById: Record<string, number>;
+  toggleLike: HomeReelPreviewToggleLike;
   onClose: () => void;
 };
 
+/** Same vertical snap-scrolling model as `/reels/watch` (`ReelsVerticalFeed`). */
 export function HomeReelPreviewDialog({
-  item,
-  isOpen,
-  liked,
-  likePending,
-  onToggleLike,
+  items,
+  initialIndex,
+  pendingLikeById,
+  doubleTapBurstById,
+  toggleLike,
   onClose,
 }: HomeReelPreviewDialogProps) {
   const { t } = useTranslation();
-  const [isMuted, setIsMuted] = useState(true);
-  const [isPaused, setIsPaused] = useState(false);
-  const [videoFailed, setVideoFailed] = useState(false);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const viewedReelIdsRef = useRef<Set<string>>(new Set());
+  const activeIndex = useActiveReelIndex({
+    containerRef: scrollContainerRef,
+    initialIndex,
+    itemCount: items.length,
+    slideIdPrefix: HOME_REEL_PREVIEW_SLIDE_ID_PREFIX,
+  });
+  const [shouldReduceMotion, setShouldReduceMotion] = useState(false);
 
   useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const sync = () => {
+      setShouldReduceMotion(media.matches);
+    };
+    sync();
+    media.addEventListener('change', sync);
+    return () => {
+      media.removeEventListener('change', sync);
+    };
+  }, []);
+
+  useEffect(() => {
     const onEsc = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         onClose();
@@ -45,47 +82,102 @@ export function HomeReelPreviewDialog({
       window.removeEventListener('keydown', onEsc);
       document.body.style.overflow = previousOverflow;
     };
-  }, [isOpen, onClose]);
+  }, [onClose]);
 
   useEffect(() => {
-    setVideoFailed(false);
-  }, [item?.id]);
-
-  useEffect(() => {
-    setIsMuted(true);
-    setIsPaused(false);
-  }, [item?.id]);
-
-  useEffect(() => {
-    if (!isOpen) {
+    const activeItem = items[activeIndex];
+    if (!activeItem) {
       return;
     }
-    const video = videoRef.current;
-    if (!video) {
+    if (viewedReelIdsRef.current.has(activeItem.id)) {
       return;
     }
-    video.muted = isMuted;
-    const playNow = () => {
-      void video.play().catch(() => {
-        // Browser autoplay policies can still block in edge cases.
+    viewedReelIdsRef.current.add(activeItem.id);
+    void apiClient
+      .post(`/api/v1/reels/${activeItem.id}/view`)
+      .catch(() => {
+        viewedReelIdsRef.current.delete(activeItem.id);
       });
-    };
-    requestAnimationFrame(playNow);
-    video.addEventListener('loadeddata', playNow);
-    video.addEventListener('canplay', playNow);
-    return () => {
-      video.removeEventListener('loadeddata', playNow);
-      video.removeEventListener('canplay', playNow);
-    };
-  }, [isOpen, item?.id]);
+  }, [activeIndex, items]);
 
-  if (!isOpen || !item) {
+  const scrollToReelByIndex = (index: number) => {
+    const next = Math.max(0, Math.min(items.length - 1, index));
+    const target = document.getElementById(
+      `${HOME_REEL_PREVIEW_SLIDE_ID_PREFIX}${next}`,
+    );
+    target?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+  };
+
+  const feedContent = useMemo(() => {
+    return items.map((item, index) => {
+      const isActive = index === activeIndex;
+      const poster = item.poster ?? item.posterUrl;
+      return (
+        <article
+          id={`${HOME_REEL_PREVIEW_SLIDE_ID_PREFIX}${index}`}
+          key={item.id}
+          aria-posinset={index + 1}
+          aria-setsize={items.length}
+          className="relative flex h-full min-h-full shrink-0 snap-start snap-always items-center justify-center p-3"
+        >
+          <div
+            className={`relative h-[95dvh] w-[min(95vw,30rem)] overflow-hidden rounded-[1.75rem] bg-black transition border ${
+              isActive
+                ? 'border-white/20 shadow-[0_26px_60px_rgba(0,0,0,0.5)]'
+                : 'border-white/10 shadow-[0_12px_34px_rgba(0,0,0,0.35)]'
+            }`}
+          >
+            <ReelVideoPlayer
+              reelId={item.id}
+              title={item.title}
+              videoUrl={item.videoUrl}
+              poster={poster}
+              isActive={isActive}
+              shouldReduceMotion={shouldReduceMotion}
+              onDoubleTapLike={(reelId) => {
+                toggleLike({ reelId, forceLiked: true, registerBurst: true });
+              }}
+            />
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label={t('common.ariaLabels.closeMenu')}
+              className="absolute right-2 top-2 z-30 inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/30 bg-black/45 text-white shadow-[0_8px_20px_rgba(0,0,0,0.24)] transition-all duration-200 hover:border-marco-yellow hover:bg-marco-yellow hover:text-marco-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              <X className="h-5 w-5" strokeWidth={2} aria-hidden />
+            </button>
+            <ReelOverlay title={item.title} />
+            <ReelLikeButton
+              ariaLabel={t('home.reels_feed_like_aria')}
+              liked={item.likedByCurrentUser}
+              burstVersion={doubleTapBurstById[item.id] ?? 0}
+              disabled={pendingLikeById[item.id] === true}
+              onToggle={() => {
+                toggleLike({ reelId: item.id });
+              }}
+            />
+          </div>
+        </article>
+      );
+    });
+  }, [
+    activeIndex,
+    doubleTapBurstById,
+    items,
+    onClose,
+    toggleLike,
+    pendingLikeById,
+    shouldReduceMotion,
+    t,
+  ]);
+
+  if (items.length === 0) {
     return null;
   }
 
   return (
     <div
-      className="fixed inset-0 z-[220] flex items-center justify-center bg-black/70 p-3 backdrop-blur-xl"
+      className={`fixed inset-0 z-[220] isolate bg-black/70 text-white backdrop-blur-xl ${montserrat.className}`}
       role="dialog"
       aria-modal
       onMouseDown={(event) => {
@@ -98,110 +190,42 @@ export function HomeReelPreviewDialog({
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,rgba(255,255,255,0.12)_0%,rgba(255,255,255,0.02)_36%,rgba(0,0,0,0.66)_75%)]"
         aria-hidden
       />
-      <div className="relative h-[95dvh] w-[min(95vw,30rem)] overflow-hidden rounded-[1.75rem] border border-white/20 bg-black shadow-[0_26px_60px_rgba(0,0,0,0.5)]">
-        {!videoFailed ? (
-          <video
-            ref={videoRef}
-            src={item.videoUrl}
-            className="absolute inset-0 h-full w-full bg-black object-contain object-center"
-            autoPlay
-            loop
-            muted={isMuted}
-            playsInline
-            preload="auto"
-            onPause={() => setIsPaused(true)}
-            onPlay={() => setIsPaused(false)}
-            onError={() => setVideoFailed(true)}
-          />
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center px-6 text-center text-sm font-medium text-white/75">
-            Video is not available.
-          </div>
-        )}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label={t('common.ariaLabels.closeMenu')}
-          className="absolute right-2 top-2 z-30 inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/30 bg-black/45 text-white shadow-[0_8px_20px_rgba(0,0,0,0.24)] transition-all duration-200 hover:border-marco-yellow hover:bg-marco-yellow hover:text-marco-black"
+      {items.length > 1 ? (
+        <div
+          className="pointer-events-auto absolute top-1/2 z-40 flex -translate-y-1/2 flex-col gap-1.5"
+          style={{
+            left: 'min(calc(50% + min(95vw, 30rem) / 2 + 0.375rem), calc(100% - 3.25rem))',
+          }}
         >
-          <X className="h-5 w-5" strokeWidth={2} aria-hidden />
-        </button>
-        <div className="absolute bottom-[max(9.75rem,calc(env(safe-area-inset-bottom,0px)+9rem))] right-3 z-30 md:bottom-[8.75rem] md:right-4">
           <button
             type="button"
-            disabled={likePending}
-            onClick={onToggleLike}
-            className={`group relative flex h-11 w-11 items-center justify-center rounded-2xl border shadow-[0_8px_20px_rgba(0,0,0,0.24)] transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-70 ${
-              liked
-                ? 'border-marco-yellow/70 bg-marco-yellow/20 text-marco-yellow hover:border-marco-yellow hover:bg-marco-yellow hover:text-marco-black'
-                : 'border-white/30 bg-black/45 text-white hover:border-marco-yellow hover:bg-marco-yellow hover:text-marco-black'
-            }`}
-            aria-label={t('home.reels_feed_like_aria')}
+            onClick={() => scrollToReelByIndex(activeIndex - 1)}
+            disabled={activeIndex <= 0}
+            aria-label={t('home.reels_page.preview_previous_aria')}
+            className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/30 bg-black/45 text-white shadow-[0_8px_20px_rgba(0,0,0,0.24)] transition-all duration-200 hover:border-marco-yellow hover:bg-marco-yellow hover:text-marco-black disabled:cursor-not-allowed disabled:opacity-45"
           >
-            <Heart
-              className={`h-5 w-5 transition-transform duration-200 ${
-                liked
-                  ? 'fill-marco-yellow text-marco-yellow group-hover:fill-marco-black group-hover:text-marco-black'
-                  : ''
-              }`}
-              aria-hidden
-            />
+            <ChevronUp className="h-5 w-5" strokeWidth={2} aria-hidden />
+          </button>
+          <button
+            type="button"
+            onClick={() => scrollToReelByIndex(activeIndex + 1)}
+            disabled={activeIndex >= items.length - 1}
+            aria-label={t('home.reels_page.preview_next_aria')}
+            className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/30 bg-black/45 text-white shadow-[0_8px_20px_rgba(0,0,0,0.24)] transition-all duration-200 hover:border-marco-yellow hover:bg-marco-yellow hover:text-marco-black disabled:cursor-not-allowed disabled:opacity-45"
+          >
+            <ChevronDown className="h-5 w-5" strokeWidth={2} aria-hidden />
           </button>
         </div>
-        <div className="absolute bottom-[max(5rem,calc(env(safe-area-inset-bottom,0px)+4.45rem))] right-3 z-30 flex flex-col items-center gap-2 md:bottom-8 md:right-4">
-          <button
-            type="button"
-            onClick={() => {
-              const video = videoRef.current;
-              if (!video) {
-                return;
-              }
-              if (video.paused) {
-                void video.play();
-                return;
-              }
-              video.pause();
-            }}
-            className={`inline-flex h-11 w-11 items-center justify-center rounded-2xl border shadow-[0_8px_20px_rgba(0,0,0,0.24)] transition-all duration-200 ${
-              isPaused
-                ? 'border-marco-yellow/70 bg-marco-yellow/20 text-marco-yellow hover:border-marco-yellow hover:bg-marco-yellow hover:text-marco-black'
-                : 'border-white/30 bg-black/45 text-white hover:border-marco-yellow hover:bg-marco-yellow hover:text-marco-black'
-            }`}
-            aria-label={isPaused ? 'Play video' : 'Pause video'}
-          >
-            {isPaused ? (
-              <Play className="h-5 w-5 transition-transform duration-200" aria-hidden />
-            ) : (
-              <Pause className="h-5 w-5 transition-transform duration-200" aria-hidden />
-            )}
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              const video = videoRef.current;
-              if (!video) {
-                return;
-              }
-              const nextMuted = !video.muted;
-              video.muted = nextMuted;
-              setIsMuted(nextMuted);
-            }}
-            className={`inline-flex h-11 w-11 items-center justify-center rounded-2xl border shadow-[0_8px_20px_rgba(0,0,0,0.24)] transition-all duration-200 ${
-              isMuted
-                ? 'border-marco-yellow/70 bg-marco-yellow/20 text-marco-yellow hover:border-marco-yellow hover:bg-marco-yellow hover:text-marco-black'
-                : 'border-white/30 bg-black/45 text-white hover:border-marco-yellow hover:bg-marco-yellow hover:text-marco-black'
-            }`}
-            aria-label={isMuted ? 'Unmute video' : 'Mute video'}
-          >
-            {isMuted ? (
-              <VolumeX className="h-5 w-5 transition-transform duration-200" aria-hidden />
-            ) : (
-              <Volume2 className="h-5 w-5 transition-transform duration-200" aria-hidden />
-            )}
-          </button>
-        </div>
+      ) : null}
+      <div
+        ref={scrollContainerRef}
+        className={REELS_FEED_SCROLL_CONTAINER_CLASS}
+        role="feed"
+        aria-label={t('home.reels_feed_region_aria')}
+      >
+        {feedContent}
       </div>
+      <p className="sr-only">{t('home.reels_feed_hint_screen_reader')}</p>
     </div>
   );
 }

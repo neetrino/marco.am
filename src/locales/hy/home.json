@@ -153,7 +153,9 @@
     "available_count_label": "Հասանելի reels",
     "empty": "Reels-ը դեռ հասանելի չեն։",
     "card_badge": "Reel",
-    "watch_cta": "Դիտել reel"
+    "watch_cta": "Դիտել reel",
+    "preview_previous_aria": "Նախորդ reel",
+    "preview_next_aria": "Հաջորդ reel"
   },
   "reels_watch_page": {
     "meta_title": "Reels դիտել — MARCO",

@@ -18,7 +18,11 @@ export function useActiveReelIndex(args: {
   containerRef: RefObject<HTMLDivElement | null>;
   initialIndex: number;
   itemCount: number;
+  /** Defaults to `reel-slide-` (reels watch feed). Use a distinct prefix if another snap feed can mount. */
+  slideIdPrefix?: string;
 }): number {
+  const slidePrefix = args.slideIdPrefix ?? REELS_FEED_SLIDE_ID_PREFIX;
+
   const [activeIndex, setActiveIndex] = useState(() =>
     clampReelIndex(args.initialIndex, args.itemCount),
   );
@@ -28,10 +32,10 @@ export function useActiveReelIndex(args: {
   }, [args.initialIndex, args.itemCount]);
 
   useLayoutEffect(() => {
-    const id = `${REELS_FEED_SLIDE_ID_PREFIX}${clampReelIndex(args.initialIndex, args.itemCount)}`;
+    const id = `${slidePrefix}${clampReelIndex(args.initialIndex, args.itemCount)}`;
     const el = document.getElementById(id);
     el?.scrollIntoView({ block: 'start' });
-  }, [args.initialIndex, args.itemCount]);
+  }, [args.initialIndex, args.itemCount, slidePrefix]);
 
   useEffect(() => {
     const container = args.containerRef.current;
