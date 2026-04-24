@@ -9,6 +9,7 @@
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
+const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
 
 require("@next/env").loadEnvConfig(process.cwd());
 
@@ -22,6 +23,22 @@ const CSV_PATH =
   "C:\\Users\\ROG\\Downloads\\Telegram Desktop\\Marco - Worksheet (1).csv";
 const CONCURRENCY = Math.max(1, Number.parseInt(process.env.IMPORT_CONCURRENCY || "8", 10));
 const UPDATE_EXISTING = process.env.IMPORT_UPDATE_EXISTING === "1";
+const R2_PUBLIC_URL = (process.env.R2_PUBLIC_URL || "").trim().replace(/\/$/, "");
+const R2_BUCKET_NAME = process.env.R2_BUCKET_NAME;
+const r2 =
+  process.env.R2_ACCOUNT_ID &&
+  process.env.R2_ACCESS_KEY_ID &&
+  process.env.R2_SECRET_ACCESS_KEY &&
+  R2_BUCKET_NAME
+    ? new S3Client({
+        region: "auto",
+        endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+        credentials: {
+          accessKeyId: process.env.R2_ACCESS_KEY_ID,
+          secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+        },
+      })
+    : null;
 
 const attributeCache = new Map();
 const attributeValueCache = new Map();
@@ -128,6 +145,76 @@ function parseImages(value) {
       return true;
     });
   return urls;
+}
+
+function isR2Configured() {
+  return Boolean(r2 && R2_BUCKET_NAME && R2_PUBLIC_URL);
+}
+
+function isR2Url(value) {
+  return Boolean(R2_PUBLIC_URL && value && String(value).startsWith(R2_PUBLIC_URL));
+}
+
+function mimeToExt(mime) {
+  switch ((mime || "").toLowerCase()) {
+    case "image/jpeg":
+    case "image/jpg":
+      return "jpg";
+    case "image/png":
+      return "png";
+    case "image/gif":
+      return "gif";
+    case "image/webp":
+      return "webp";
+    case "image/svg+xml":
+      return "svg";
+    default:
+      return "jpg";
+  }
+}
+
+async function uploadBufferToR2(key, buffer, contentType) {
+  if (!isR2Configured()) return null;
+  await r2.send(
+    new PutObjectCommand({
+      Bucket: R2_BUCKET_NAME,
+      Key: key,
+      Body: buffer,
+      ContentType: contentType,
+    })
+  );
+  return `${R2_PUBLIC_URL}/${key}`;
+}
+
+async function migrateImageToR2(sourceUrl, rowId, imageIndex) {
+  if (!sourceUrl) return null;
+  if (!isR2Configured()) return sourceUrl;
+  if (isR2Url(sourceUrl)) return sourceUrl;
+
+  const response = await fetch(sourceUrl);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch image (${response.status}) from ${sourceUrl}`);
+  }
+
+  const arrayBuffer = await response.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+  const contentType = response.headers.get("content-type") || "image/jpeg";
+  const ext = mimeToExt(contentType);
+  const contentHash = crypto.createHash("sha1").update(buffer).digest("hex").slice(0, 12);
+  const key = `products/imported/marco/${rowId}-${imageIndex + 1}-${contentHash}.${ext}`;
+  const uploadedUrl = await uploadBufferToR2(key, buffer, contentType);
+  if (!uploadedUrl) {
+    throw new Error(`Failed to upload image to R2 for ${sourceUrl}`);
+  }
+  return uploadedUrl;
+}
+
+async function migrateImagesToR2(urls, rowId) {
+  const results = [];
+  for (let i = 0; i < urls.length; i += 1) {
+    results.push(await migrateImageToR2(urls[i], rowId, i));
+  }
+  return results.filter(Boolean);
 }
 
 function splitCategoryPaths(value) {
@@ -361,6 +448,7 @@ async function upsertProduct(row, index) {
     regularPrice !== null && regularPrice > price ? regularPrice : null;
   const stock = parseInteger(row.Stock);
   const media = parseImages(row.Images);
+  const storedMedia = await migrateImagesToR2(media, id);
   const brandId = await ensureBrand(row.Brand);
   const categoryIds = await ensureCategories(row.Category);
   const primaryCategoryId = categoryIds[categoryIds.length - 1] || categoryIds[0] || null;
@@ -395,7 +483,7 @@ async function upsertProduct(row, index) {
         where: { id: existingVariant.productId },
         data: {
           brandId,
-          media,
+          media: storedMedia,
           published: true,
           publishedAt: new Date(),
           categoryIds,
@@ -437,7 +525,7 @@ async function upsertProduct(row, index) {
           price,
           compareAtPrice,
           stock,
-          imageUrl: media[0] || null,
+          imageUrl: storedMedia[0] || null,
           published: true,
           attributes:
             color && colorValueId
@@ -485,7 +573,7 @@ async function upsertProduct(row, index) {
     data: {
       brandId,
       skuPrefix: `MARCO-${id}`,
-      media,
+      media: storedMedia,
       published: true,
       featured: index < 24,
       publishedAt: new Date(),
@@ -521,7 +609,7 @@ async function upsertProduct(row, index) {
           price,
           compareAtPrice,
           stock,
-          imageUrl: media[0] || undefined,
+          imageUrl: storedMedia[0] || undefined,
           position: 0,
           published: true,
           attributes:
