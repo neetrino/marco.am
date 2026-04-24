@@ -163,7 +163,7 @@ const NAV_ROWS: ReadonlyArray<{
       'washing-machines',
       'khshor-kentsaghayin-tekhnika',
     ],
-    figmaIconSrc: '/images/category-nav/large-appliances.png',
+    figmaIconSrc: '/images/category-nav/home-and-garden.svg',
     labels: {
       hy: 'Խոշոր կենցաղային տեխնիկա',
       en: 'Large home appliances',
@@ -360,7 +360,7 @@ const NAV_ROWS: ReadonlyArray<{
       'audio-and-video',
       'audiovideo',
     ],
-    figmaIconSrc: '/images/category-nav/audio-video.png',
+    figmaIconSrc: '/images/category-nav/sports.svg',
     labels: {
       hy: 'Աուդիո և վիդեո համակարգեր',
       en: 'Audio and video systems',
@@ -391,7 +391,7 @@ const NAV_ROWS: ReadonlyArray<{
   },
   {
     slugs: ['water-dispensers', 'water-coolers'],
-    figmaIconSrc: '/images/category-nav/water-dispensers.png',
+    figmaIconSrc: '/images/category-nav/books.svg',
     labels: {
       hy: 'Ջրի դիսպենսերներ',
       en: 'Water dispensers',
@@ -427,7 +427,7 @@ const NAV_ROWS: ReadonlyArray<{
       'household-appliances',
       'kentsaghayin-tekhnika',
     ],
-    figmaIconSrc: '/images/category-nav/home-appliances.png',
+    figmaIconSrc: '/images/category-nav/accessories.svg',
     labels: {
       hy: 'Կենցաղային տեխնիկա',
       en: 'Home appliances',
@@ -464,7 +464,7 @@ const NAV_ROWS: ReadonlyArray<{
       'heaters',
       'odorakichner',
     ],
-    figmaIconSrc: '/images/category-nav/climate.png',
+    figmaIconSrc: '/images/category-nav/climate-extra.svg',
     labels: {
       hy: 'Օդորակիչներ և տաքացուցիչներ',
       en: 'Air conditioners and heaters',

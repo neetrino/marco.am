@@ -17,6 +17,29 @@ const EXTRA_BOTTOM_CATEGORY: Category = {
   children: [],
 };
 
+function normalizeCategoryKey(value: string): string {
+  return value.trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+function dedupeCategories(categories: Category[], lang: string): Category[] {
+  const seen = new Set<string>();
+  const result: Category[] = [];
+
+  for (const category of categories) {
+    const presentation = resolveCategoryNavPresentation(category.slug, category.title, lang);
+    const key = `${normalizeCategoryKey(category.slug)}::${normalizeCategoryKey(presentation.title)}`;
+
+    if (seen.has(key)) {
+      continue;
+    }
+
+    seen.add(key);
+    result.push(category);
+  }
+
+  return result;
+}
+
 export function CategoriesDropdownMega({
   categories,
   onClose,
@@ -27,8 +50,8 @@ export function CategoriesDropdownMega({
   const lang = useContext(LanguagePreferenceContext);
   const { t } = useTranslation();
   const categoriesWithExtra = useMemo(
-    () => [...categories, EXTRA_BOTTOM_CATEGORY],
-    [categories]
+    () => dedupeCategories([...categories, EXTRA_BOTTOM_CATEGORY], lang),
+    [categories, lang]
   );
   const [selectedSlug, setSelectedSlug] = useState<string>(() => categoriesWithExtra[0]?.slug ?? '');
 
@@ -117,7 +140,7 @@ export function CategoriesDropdownMega({
         />
         <CategoryMegaSubcategoryPills
           sectionTitle={preview.title.toUpperCase()}
-          items={selected.children}
+          items={dedupeCategories(selected.children, lang)}
           lang={lang}
           productsWord={t('common.navigation.categoriesMegaMenu.productsWord')}
           emptyMessage={t('common.navigation.categoriesMegaMenu.emptySubcategories')}

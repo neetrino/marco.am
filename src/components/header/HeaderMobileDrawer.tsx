@@ -1,6 +1,6 @@
 'use client';
 
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useState, type SyntheticEvent } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { CompareIcon } from '../icons/CompareIcon';
@@ -14,11 +14,46 @@ import { primaryNavLinks } from './nav-config';
 import { ThemeToggleButton } from '../theme/ThemeToggleButton';
 import type { useHeaderData } from './useHeaderData';
 import { resolveCategoryNavPresentation } from './categoryNavPresentation';
+import type { Category } from './category-nav-types';
 
 type Props = {
   data: ReturnType<typeof useHeaderData>;
   compactPrimaryNav: boolean;
 };
+
+function normalizeCategoryKey(value: string): string {
+  return value.trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+function dedupeCategories(categories: Category[], lang: string): Category[] {
+  const seen = new Set<string>();
+  const result: Category[] = [];
+
+  for (const category of categories) {
+    const presentation = resolveCategoryNavPresentation(category.slug, category.title, lang);
+    const key = `${normalizeCategoryKey(category.slug)}::${normalizeCategoryKey(presentation.title)}`;
+
+    if (seen.has(key)) {
+      continue;
+    }
+
+    seen.add(key);
+    result.push(category);
+  }
+
+  return result;
+}
+
+function hideBrokenCategoryIcon(event: SyntheticEvent<HTMLImageElement>) {
+  const wrapper = event.currentTarget.parentElement;
+
+  if (wrapper instanceof HTMLElement) {
+    wrapper.style.display = 'none';
+    return;
+  }
+
+  event.currentTarget.style.display = 'none';
+}
 
 export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
   const lang = useContext(LanguagePreferenceContext);
@@ -40,7 +75,7 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
     loadingCategories,
     getRootCategories,
   } = data;
-  const rootCategories = getRootCategories(categories);
+  const rootCategories = dedupeCategories(getRootCategories(categories), lang);
 
   useEffect(() => {
     if (!mobileMenuOpen) {
@@ -135,6 +170,7 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
                                         height={22}
                                         className="h-[22px] w-[22px] object-contain dark:brightness-0 dark:invert"
                                         draggable={false}
+                                        onError={hideBrokenCategoryIcon}
                                       />
                                     ) : (
                                       CategoryIcon && (
@@ -177,7 +213,7 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
                               </div>
                               {hasChildren && isExpanded && (
                                 <div className="space-y-1.5 pb-2 pl-8 pr-4">
-                                  {category.children.map((child) => {
+                                  {dedupeCategories(category.children, lang).map((child) => {
                                     const childPresentation = resolveCategoryNavPresentation(
                                       child.slug,
                                       child.title,
@@ -203,6 +239,7 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
                                               height={16}
                                               className="h-4 w-4 object-contain dark:brightness-0 dark:invert"
                                               draggable={false}
+                                              onError={hideBrokenCategoryIcon}
                                             />
                                           ) : (
                                             ChildIcon && (
