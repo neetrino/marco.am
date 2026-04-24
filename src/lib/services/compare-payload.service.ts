@@ -1,6 +1,14 @@
 import { Prisma } from "@prisma/client";
 import { db } from "@white-shop/db";
-import { COMPARE_MAX_ITEMS } from "@/lib/constants/compare-session";
+import {
+  COMPARE_MAX_LIST_ITEMS,
+  COMPARE_MAX_PER_CATEGORY,
+} from "@/lib/constants/compare-session";
+import {
+  COMPARE_UNCATEGORIZED_ID,
+  resolveCompareCategoryId,
+  uncategorizedCategoryTitle,
+} from "@/lib/compare/compare-category";
 import { pickLocalizedByApiLocale, type ApiLocale } from "@/lib/i18n/api-locale";
 import { extractMediaUrl } from "@/lib/utils/extractMediaUrl";
 import {
@@ -10,6 +18,8 @@ import {
 
 type CompareProductWithRelations = {
   id: string;
+  primaryCategoryId: string | null;
+  categoryIds: string[];
   media: Prisma.JsonValue[] | null;
   translations: Array<{ locale: string; title: string; slug: string }>;
   brand:
@@ -19,6 +29,10 @@ type CompareProductWithRelations = {
         translations: Array<{ locale: string; name: string }>;
       }
     | null;
+  categories: Array<{
+    id: string;
+    translations: Array<{ locale: string; title: string }>;
+  }>;
   variants: Array<{
     published: boolean;
     stock: number;
@@ -78,19 +92,112 @@ export type CompareApiItem = {
   inStock: boolean;
   addedAt: string;
   specifications: CompareApiSpec[];
+  category: {
+    id: string;
+    name: string;
+  };
+};
+
+export type CompareApiSection = {
+  categoryId: string;
+  categoryName: string;
+  items: CompareApiItem[];
+  specRows: CompareApiSpecRow[];
 };
 
 export type CompareApiPayload = {
   compare: {
     id: string;
+    /** @deprecated use maxItemsPerCategory */
     maxItems: number;
+    maxItemsPerCategory: number;
+    maxListItems: number;
     items: CompareApiItem[];
+    sections: CompareApiSection[];
   };
   specRows: CompareApiSpecRow[];
 };
 
 function normalizeComparableValue(value: string | null): string {
   return (value ?? "").trim().toLowerCase();
+}
+
+function resolveCategoryMetaForProduct(
+  product: CompareProductWithRelations,
+  locale: ApiLocale
+): { id: string; name: string } {
+  const id = resolveCompareCategoryId({
+    primaryCategoryId: product.primaryCategoryId,
+    categoryIds: product.categoryIds,
+  });
+  if (id === COMPARE_UNCATEGORIZED_ID) {
+    return { id, name: uncategorizedCategoryTitle(locale) };
+  }
+  const cat = product.categories.find((c) => c.id === id);
+  if (!cat) {
+    return { id, name: id };
+  }
+  const tr = pickLocalizedByApiLocale(cat.translations, locale);
+  return { id, name: tr?.title ?? cat.translations[0]?.title ?? id };
+}
+
+function buildCompareSpecRows(items: CompareApiItem[]): CompareApiSpecRow[] {
+  const specNames = new Map<string, string>();
+  const valuesByKey = new Map<string, Record<string, string | null>>();
+
+  for (const item of items) {
+    for (const spec of item.specifications) {
+      specNames.set(spec.key, spec.name);
+      const rowValues = valuesByKey.get(spec.key) ?? {};
+      rowValues[item.productId] = spec.value;
+      valuesByKey.set(spec.key, rowValues);
+    }
+  }
+
+  return Array.from(valuesByKey.entries())
+    .map(([key, rowValues]) => {
+      const completedValues = items.reduce<Record<string, string | null>>(
+        (acc, item) => {
+          acc[item.productId] = rowValues[item.productId] ?? null;
+          return acc;
+        },
+        {}
+      );
+      const normalizedUnique = new Set(
+        Object.values(completedValues)
+          .map((value) => normalizeComparableValue(value))
+          .filter((value) => value.length > 0)
+      );
+      return {
+        key,
+        name: specNames.get(key) ?? key,
+        valuesByProductId: completedValues,
+        different: normalizedUnique.size > 1,
+      };
+    })
+    .sort((left, right) => left.name.localeCompare(right.name));
+}
+
+function buildCompareSections(items: CompareApiItem[]): CompareApiSection[] {
+  const buckets = new Map<string, CompareApiItem[]>();
+  for (const item of items) {
+    const key = item.category.id;
+    const list = buckets.get(key) ?? [];
+    list.push(item);
+    buckets.set(key, list);
+  }
+
+  return Array.from(buckets.entries())
+    .map(([, group]) => {
+      const visible = group.slice(0, COMPARE_MAX_PER_CATEGORY);
+      return {
+        categoryId: group[0]!.category.id,
+        categoryName: group[0]!.category.name,
+        items: visible,
+        specRows: buildCompareSpecRows(visible),
+      };
+    })
+    .sort((a, b) => a.categoryName.localeCompare(b.categoryName));
 }
 
 function mapVariantSpecifications(
@@ -175,6 +282,11 @@ async function fetchCompareProducts(productIds: string[]) {
           translations: true,
         },
       },
+      categories: {
+        include: {
+          translations: true,
+        },
+      },
       variants: {
         include: {
           options: {
@@ -226,8 +338,11 @@ export async function buildComparePayload(
     return {
       compare: {
         id: compareListId,
-        maxItems: COMPARE_MAX_ITEMS,
+        maxItems: COMPARE_MAX_PER_CATEGORY,
+        maxItemsPerCategory: COMPARE_MAX_PER_CATEGORY,
+        maxListItems: COMPARE_MAX_LIST_ITEMS,
         items: [],
+        sections: [],
       },
       specRows: [],
     };
@@ -257,6 +372,7 @@ export async function buildComparePayload(
     const brandTranslation = product.brand
       ? pickLocalizedByApiLocale(product.brand.translations, locale)
       : null;
+    const category = resolveCategoryMetaForProduct(product, locale);
 
     return [
       {
@@ -282,50 +398,22 @@ export async function buildComparePayload(
         ),
         addedAt: row.createdAt.toISOString(),
         specifications,
+        category,
       },
     ];
   });
 
-  const specNames = new Map<string, string>();
-  const valuesByKey = new Map<string, Record<string, string | null>>();
-
-  for (const item of items) {
-    for (const spec of item.specifications) {
-      specNames.set(spec.key, spec.name);
-      const rowValues = valuesByKey.get(spec.key) ?? {};
-      rowValues[item.productId] = spec.value;
-      valuesByKey.set(spec.key, rowValues);
-    }
-  }
-
-  const specRows: CompareApiSpecRow[] = Array.from(valuesByKey.entries())
-    .map(([key, rowValues]) => {
-      const completedValues = items.reduce<Record<string, string | null>>(
-        (acc, item) => {
-          acc[item.productId] = rowValues[item.productId] ?? null;
-          return acc;
-        },
-        {}
-      );
-      const normalizedUnique = new Set(
-        Object.values(completedValues)
-          .map((value) => normalizeComparableValue(value))
-          .filter((value) => value.length > 0)
-      );
-      return {
-        key,
-        name: specNames.get(key) ?? key,
-        valuesByProductId: completedValues,
-        different: normalizedUnique.size > 1,
-      };
-    })
-    .sort((left, right) => left.name.localeCompare(right.name));
+  const specRows = buildCompareSpecRows(items);
+  const sections = buildCompareSections(items);
 
   return {
     compare: {
       id: compareListId,
-      maxItems: COMPARE_MAX_ITEMS,
+      maxItems: COMPARE_MAX_PER_CATEGORY,
+      maxItemsPerCategory: COMPARE_MAX_PER_CATEGORY,
+      maxListItems: COMPARE_MAX_LIST_ITEMS,
       items,
+      sections,
     },
     specRows,
   };

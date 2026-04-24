@@ -28,6 +28,10 @@ export type CompareClientItem = {
   inStock: boolean;
   addedAt: string;
   specifications: CompareClientSpec[];
+  category: {
+    id: string;
+    name: string;
+  };
 };
 
 export type CompareClientSpecRow = {
@@ -37,11 +41,21 @@ export type CompareClientSpecRow = {
   different: boolean;
 };
 
+export type CompareClientSection = {
+  categoryId: string;
+  categoryName: string;
+  items: CompareClientItem[];
+  specRows: CompareClientSpecRow[];
+};
+
 export type CompareClientResponse = {
   compare: {
     id: string;
     maxItems: number;
+    maxItemsPerCategory: number;
+    maxListItems: number;
     items: CompareClientItem[];
+    sections: CompareClientSection[];
   };
   specRows: CompareClientSpecRow[];
 };

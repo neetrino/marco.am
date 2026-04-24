@@ -11,8 +11,6 @@ import {
 import { getErrorHttpStatus } from '@/lib/api-client';
 import { showToast } from '@/components/Toast';
 
-const MAX_COMPARE_ITEMS = 4;
-
 /**
  * Hook for managing compare state for a product
  * @param productId - The product ID to check/manage
@@ -100,19 +98,6 @@ export function useCompare(productId: string) {
 
     try {
       if (nextValue) {
-        const compare = await fetchCompareProductIds(language);
-        if (compare.length >= MAX_COMPARE_ITEMS) {
-          if (isMountedRef.current) {
-            setIsInCompare(previousValue);
-          }
-          window.dispatchEvent(
-            new CustomEvent('compare-optimistic-updated', {
-              detail: { delta: -delta },
-            })
-          );
-          showToast(t('common.alerts.compareMaxReached'), 'warning', 2800);
-          return;
-        }
         await addCompareItemClient(productId, language);
       } else {
         await removeCompareItemClient(productId, language);
