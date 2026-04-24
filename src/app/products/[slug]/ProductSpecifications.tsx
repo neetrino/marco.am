@@ -3,6 +3,7 @@
 import { t, getProductText } from '../../../lib/i18n';
 import type { LanguageCode } from '../../../lib/language';
 import type { Product } from './types';
+import { SpecificationValueDisplay } from './ProductSpecificationsValue';
 
 interface SpecificationRow {
   key: string;
@@ -233,22 +234,26 @@ export function ProductSpecifications({ product, language }: ProductSpecificatio
   if (rows.length === 0) {
     return null;
   }
-  const specificationTitle = 'ԲՆՈՒԹԱԳԻՐ';
+  const specificationTitle = t(language, 'product.specifications_title');
 
   return (
     <section className="mt-12 border-t border-gray-200 pt-10" aria-label={specificationTitle}>
       <h2 className="text-2xl font-bold uppercase tracking-tight text-marco-black md:text-3xl">
         {specificationTitle}
       </h2>
-      <div className="mt-6 space-y-3">
+      <dl className="mt-6 divide-y divide-gray-100 overflow-hidden rounded-2xl border border-gray-200/90 bg-white shadow-sm ring-1 ring-black/[0.02]">
         {rows.map((row, index) => (
-          <div key={`${row.key}-${index}`} className="flex items-end gap-3 text-sm leading-snug text-marco-black md:text-base">
-            <span className="shrink-0 text-gray-700">{row.key}</span>
-            <span className="mb-1 min-w-0 flex-1 border-b border-dashed border-gray-300" aria-hidden />
-            <span className="shrink-0 text-right font-medium">{row.value}</span>
+          <div
+            key={`${row.key}-${index}`}
+            className="grid gap-2 px-4 py-4 sm:grid-cols-[minmax(0,11rem)_minmax(0,1fr)] sm:items-start sm:gap-x-8 sm:px-5 sm:py-4"
+          >
+            <dt className="text-sm font-medium tracking-tight text-gray-500 md:text-base">{row.key}</dt>
+            <dd className="min-w-0 text-sm font-medium text-marco-black md:text-base">
+              <SpecificationValueDisplay value={row.value} />
+            </dd>
           </div>
         ))}
-      </div>
+      </dl>
     </section>
   );
 }
