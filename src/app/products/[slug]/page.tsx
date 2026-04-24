@@ -154,11 +154,11 @@ export default function ProductPage({ params }: ProductPageProps) {
 
       <ProductSpecifications product={product} language={language} />
 
-      <div id="product-reviews" className="mt-24 scroll-mt-24">
-        <ProductReviews productSlug={slug} productId={product.id} />
-      </div>
-      <div className="mt-16">
+      <div className="mt-24">
         <RelatedProducts currentProductSlug={slug} />
+      </div>
+      <div id="product-reviews" className="mt-16 scroll-mt-24">
+        <ProductReviews productSlug={slug} productId={product.id} />
       </div>
     </div>
   );
