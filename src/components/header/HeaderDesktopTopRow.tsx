@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { ChevronDown, MapPin, Phone } from 'lucide-react';
 import type { Ref } from 'react';
 import { useTranslation } from '../../lib/i18n-client';
@@ -17,8 +18,9 @@ import {
   HEADER_FIGMA_NAV_LINK_GAP_CLASS,
   HEADER_NAV_TO_SOCIAL_GAP_CLASS,
   HEADER_FIGMA_PADDING_Y_CLASS,
+  getHeaderPrimaryNavDesktopLinkClass,
 } from './header.constants';
-import { primaryNavLinks } from './nav-config';
+import { isPrimaryNavHrefActive, primaryNavLinks } from './nav-config';
 
 type HeaderDesktopTopRowProps = {
   innerRef: Ref<HTMLDivElement>;
@@ -28,6 +30,7 @@ type HeaderDesktopTopRowProps = {
  * Full-width first stripe: logo, primary nav, socials, phone, stores.
  */
 export function HeaderDesktopTopRow({ innerRef }: HeaderDesktopTopRowProps) {
+  const pathname = usePathname();
   const hideHeaderSocialLinks = useShouldHideHeaderSocialLinks();
   const { t } = useTranslation();
   const phoneDisplay = t('contact.phone').trim();
@@ -47,6 +50,8 @@ export function HeaderDesktopTopRow({ innerRef }: HeaderDesktopTopRowProps) {
         >
           {primaryNavLinks.map((item) => {
             const label = t(item.translationKey);
+            const active = isPrimaryNavHrefActive(pathname, item.href);
+            const navClass = getHeaderPrimaryNavDesktopLinkClass(active);
             if (item.external === true) {
               return (
                 <a
@@ -54,7 +59,8 @@ export function HeaderDesktopTopRow({ innerRef }: HeaderDesktopTopRowProps) {
                   href={item.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex h-10 shrink-0 items-center whitespace-nowrap transition-colors hover:text-marco-black dark:hover:text-white"
+                  className={navClass}
+                  aria-current={active ? 'page' : undefined}
                 >
                   {label}
                 </a>
@@ -64,7 +70,8 @@ export function HeaderDesktopTopRow({ innerRef }: HeaderDesktopTopRowProps) {
               <Link
                 key={item.translationKey}
                 href={item.href}
-                className="inline-flex h-10 shrink-0 items-center whitespace-nowrap transition-colors hover:text-marco-black dark:hover:text-white"
+                className={navClass}
+                aria-current={active ? 'page' : undefined}
               >
                 {label}
               </Link>

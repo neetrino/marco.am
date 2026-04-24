@@ -10,3 +10,11 @@ export const primaryNavLinks: PrimaryNavLink[] = [
   { href: '/contact', translationKey: 'common.navigation.contact' },
   { href: '/reels', translationKey: 'common.navigation.reels' },
 ];
+
+/** Match current route to primary nav `href` without treating `/` as a prefix of everything. */
+export function isPrimaryNavHrefActive(pathname: string, href: string): boolean {
+  if (href === '/') {
+    return pathname === '/' || pathname === '';
+  }
+  return pathname === href || pathname.startsWith(`${href}/`);
+}

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import type { LanguageCode } from '../../lib/language';
 import { HeaderLocaleCurrencyPill } from './HeaderLocaleCurrencyPill';
 import {
@@ -8,7 +9,8 @@ import {
   HEADER_FIGMA_ROW2_RIGHT_INNER_GAP_CLASS,
   HEADER_LOCALE_TO_THEME_MARGIN_CLASS,
   HEADER_TOOLBAR_ICON_CLUSTER_CLASS,
-  HEADER_TOOLBAR_ICON_BUTTON_CLASS,
+  getHeaderThemeToggleButtonClass,
+  getHeaderToolbarIconSurfaceClass,
 } from './header.constants';
 import {
   HeaderBadgeIcon,
@@ -19,6 +21,7 @@ import { CompareIcon } from '../icons/CompareIcon';
 import { HeaderNavbarCartIcon } from '../icons/HeaderNavbarCartIcon';
 import { HeaderNavbarWishlistIcon } from '../icons/HeaderNavbarWishlistIcon';
 import { ThemeToggleButton } from '../theme/ThemeToggleButton';
+import { useTheme } from '../theme/ThemeProvider';
 import type { useHeaderData } from './useHeaderData';
 
 type Props = {
@@ -28,7 +31,21 @@ type Props = {
   initialLanguage?: LanguageCode;
 };
 
+function isProfileToolbarPathActive(pathname: string, isLoggedIn: boolean): boolean {
+  if (isLoggedIn) {
+    return pathname.startsWith('/profile');
+  }
+  return (
+    pathname === '/login' ||
+    pathname === '/register' ||
+    pathname.startsWith('/forgot-password')
+  );
+}
+
 export function HeaderRow2RightToolbar({ data, compactPrimaryNav, headerMobileLike, initialLanguage }: Props) {
+  const pathname = usePathname();
+  const { theme, mounted: themeMounted } = useTheme();
+  const themeToggleResolvedDark = themeMounted && theme === 'dark';
   const {
     t,
     router,
@@ -48,6 +65,10 @@ export function HeaderRow2RightToolbar({ data, compactPrimaryNav, headerMobileLi
     formatPrice,
   } = data;
 
+  const profileToolbarActive = isProfileToolbarPathActive(pathname, isLoggedIn);
+  const compareToolbarActive = pathname.startsWith('/compare');
+  const wishlistToolbarActive = pathname.startsWith('/wishlist');
+
   return (
     <div
       className={
@@ -65,7 +86,7 @@ export function HeaderRow2RightToolbar({ data, compactPrimaryNav, headerMobileLi
         />
       )}
       <ThemeToggleButton
-        className={`flex shrink-0 items-center justify-center rounded-full !bg-[#050505] text-white transition-opacity hover:opacity-90 dark:!bg-[#050505] ${!compactPrimaryNav ? HEADER_LOCALE_TO_THEME_MARGIN_CLASS : ''} ${HEADER_TOOLBAR_ICON_BUTTON_CLASS}`}
+        className={`${getHeaderThemeToggleButtonClass(themeToggleResolvedDark)} ${!compactPrimaryNav ? HEADER_LOCALE_TO_THEME_MARGIN_CLASS : ''}`}
         iconClassName="h-6 w-6 shrink-0"
       />
       <div className={HEADER_TOOLBAR_ICON_CLUSTER_CLASS}>
@@ -82,9 +103,10 @@ export function HeaderRow2RightToolbar({ data, compactPrimaryNav, headerMobileLi
                   event.stopPropagation();
                   setShowUserMenu(!showUserMenu);
                 }}
-                className={`flex items-center justify-center transition-all duration-200 group ${HEADER_TOOLBAR_ICON_BUTTON_CLASS}`}
+                className={getHeaderToolbarIconSurfaceClass(profileToolbarActive)}
                 aria-haspopup="menu"
                 aria-expanded={showUserMenu}
+                aria-current={profileToolbarActive ? 'page' : undefined}
               >
                 <HeaderProfileIconFilled />
               </button>
@@ -128,7 +150,8 @@ export function HeaderRow2RightToolbar({ data, compactPrimaryNav, headerMobileLi
           ) : (
             <Link
               href="/login"
-              className={`flex items-center justify-center text-gray-700 transition-colors duration-150 group hover:text-gray-900 ${HEADER_TOOLBAR_ICON_BUTTON_CLASS}`}
+              className={getHeaderToolbarIconSurfaceClass(profileToolbarActive)}
+              aria-current={profileToolbarActive ? 'page' : undefined}
             >
               <HeaderProfileIconOutline />
             </Link>
@@ -137,7 +160,8 @@ export function HeaderRow2RightToolbar({ data, compactPrimaryNav, headerMobileLi
 
         <Link
           href="/compare"
-          className={`relative flex items-center justify-center text-gray-700 transition-colors duration-150 hover:text-gray-900 ${HEADER_TOOLBAR_ICON_BUTTON_CLASS}`}
+          className={getHeaderToolbarIconSurfaceClass(compareToolbarActive)}
+          aria-current={compareToolbarActive ? 'page' : undefined}
         >
           <HeaderBadgeIcon
             icon={<CompareIcon size={18} className="h-[18px] w-[18px] shrink-0" />}
@@ -147,7 +171,8 @@ export function HeaderRow2RightToolbar({ data, compactPrimaryNav, headerMobileLi
 
         <Link
           href="/wishlist"
-          className={`relative flex items-center justify-center text-gray-700 transition-colors duration-150 hover:text-gray-900 ${HEADER_TOOLBAR_ICON_BUTTON_CLASS}`}
+          className={getHeaderToolbarIconSurfaceClass(wishlistToolbarActive)}
+          aria-current={wishlistToolbarActive ? 'page' : undefined}
         >
           <HeaderBadgeIcon
             icon={<HeaderNavbarWishlistIcon className="h-[18px] w-[18px] shrink-0" />}
