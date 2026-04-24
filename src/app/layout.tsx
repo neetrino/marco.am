@@ -19,7 +19,7 @@ import { LanguagePreferenceProvider } from '../lib/language-context';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Shop - Professional E-commerce',
+  title: 'Shop - Marco Group',
   description: 'Modern e-commerce platform',
 };
 
