@@ -151,21 +151,21 @@ export function ProductInfoAndActions({
     <div className="flex flex-col h-full">
       <div className="flex-1">
         {product.brand && (
-          <div className="mb-2 flex flex-wrap items-center gap-2 md:gap-3">
+          <div className="mb-5 flex flex-wrap items-center gap-4 md:gap-5">
             {product.brand.logo && (
               <Image
                 src={product.brand.logo}
                 alt={product.brand.name}
-                width={200}
-                height={60}
-                className="h-11 w-auto max-w-[min(100%,200px)] shrink-0 object-contain object-left md:h-12 md:max-w-[min(100%,232px)]"
-                sizes="(max-width: 768px) 200px, 232px"
+                width={140}
+                height={42}
+                className="h-7 w-auto max-w-[min(100%,140px)] shrink-0 object-contain object-left md:h-8 md:max-w-[min(100%,160px)]"
+                sizes="(max-width: 768px) 140px, 160px"
               />
             )}
             <p className="text-sm text-gray-500">{product.brand.name}</p>
           </div>
         )}
-        <div className="mb-4 flex items-start justify-between gap-4">
+        <div className="mb-5 flex items-start justify-between gap-4">
           <h1 className="min-w-0 flex-1 text-4xl font-bold text-marco-black">
             {getProductText(language, product.id, 'title') || product.title}
           </h1>
