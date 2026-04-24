@@ -151,14 +151,15 @@ export function ProductInfoAndActions({
     <div className="flex flex-col h-full">
       <div className="flex-1">
         {product.brand && (
-          <div className="mb-2 flex items-center gap-2">
+          <div className="mb-2 flex flex-wrap items-center gap-2 md:gap-3">
             {product.brand.logo && (
               <Image
                 src={product.brand.logo}
                 alt={product.brand.name}
-                width={20}
-                height={20}
-                className="h-5 w-5 rounded-sm object-contain"
+                width={200}
+                height={60}
+                className="h-11 w-auto max-w-[min(100%,200px)] shrink-0 object-contain object-left md:h-12 md:max-w-[min(100%,232px)]"
+                sizes="(max-width: 768px) 200px, 232px"
               />
             )}
             <p className="text-sm text-gray-500">{product.brand.name}</p>
@@ -291,12 +292,41 @@ export function ProductInfoAndActions({
             </p>
           </div>
         )}
-        <div className="flex -translate-y-0.5 border-t pb-2 pt-7">
+        <div className="flex -translate-y-0.5 pb-2 pt-4">
           <div className="flex w-full min-w-0 flex-nowrap items-center gap-3">
+            <div className="flex h-10 shrink-0 items-center overflow-hidden rounded-xl border-2 border-gray-200 bg-white">
+              <button
+                onClick={() => onQuantityAdjust(-1)}
+                disabled={quantity <= 1}
+                className="flex h-10 w-7 items-center justify-center text-sm disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                -
+              </button>
+              <div className="w-7 text-center text-sm font-bold">{quantity}</div>
+              <button
+                onClick={() => onQuantityAdjust(1)}
+                disabled={quantity >= maxQuantity}
+                className="flex h-10 w-7 items-center justify-center text-sm disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                +
+              </button>
+            </div>
+            <button
+              onClick={onCompareToggle}
+              className={`w-10 h-10 shrink-0 rounded-xl border-2 flex items-center justify-center transition-all duration-200 ${isInCompare ? 'border-marco-yellow bg-marco-yellow text-[#050505] dark:!text-[#050505]' : 'border-gray-200 hover:border-gray-300'}`}
+            >
+              <CompareIcon isActive={isInCompare} />
+            </button>
+            <button
+              onClick={onAddToWishlist}
+              className={`w-10 h-10 shrink-0 rounded-xl border-2 flex items-center justify-center ${isInWishlist ? 'border-red-600 bg-red-600 text-white dark:border-red-600 dark:bg-red-600 dark:text-white' : 'border-gray-200'}`}
+            >
+              <Heart fill={isInWishlist ? 'currentColor' : 'none'} />
+            </button>
             <button
               type="button"
               disabled={!canAddToCart || isAddingToCart}
-                className={`flex min-w-0 flex-1 items-center gap-1.5 bg-marco-yellow pl-4 pr-4 text-left text-sm font-bold leading-normal text-marco-black dark:!text-[#050505] transition-[filter,transform] hover:-translate-y-0.5 hover:brightness-95 active:brightness-90 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 disabled:hover:brightness-100 md:max-w-72 md:flex-none md:pl-7 ${PRODUCT_BUY_CTA_HEIGHT_CLASS} ${HEADER_FIGMA_PILL_RADIUS_CLASS}`}
+              className={`ml-auto flex min-w-0 flex-1 items-center gap-1.5 bg-marco-yellow pl-4 pr-4 text-left text-sm font-bold leading-normal text-marco-black dark:!text-[#050505] transition-[filter,transform] hover:-translate-y-0.5 hover:brightness-95 active:brightness-90 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 disabled:hover:brightness-100 md:max-w-72 md:flex-none md:pl-7 ${PRODUCT_BUY_CTA_HEIGHT_CLASS} ${HEADER_FIGMA_PILL_RADIUS_CLASS}`}
               onClick={onAddToCart}
             >
               <span
@@ -338,35 +368,6 @@ export function ProductInfoAndActions({
               >
                 <ArrowUpRight className="size-3.5" strokeWidth={2.5} />
               </span>
-            </button>
-            <div className="ml-auto flex h-10 shrink-0 items-center overflow-hidden rounded-xl border-2 border-gray-200 bg-white">
-              <button
-                onClick={() => onQuantityAdjust(-1)}
-                disabled={quantity <= 1}
-                className="flex h-10 w-7 items-center justify-center text-sm disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                -
-              </button>
-              <div className="w-7 text-center text-sm font-bold">{quantity}</div>
-              <button
-                onClick={() => onQuantityAdjust(1)}
-                disabled={quantity >= maxQuantity}
-                className="flex h-10 w-7 items-center justify-center text-sm disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                +
-              </button>
-            </div>
-            <button
-              onClick={onCompareToggle}
-              className={`w-10 h-10 shrink-0 rounded-xl border-2 flex items-center justify-center transition-all duration-200 ${isInCompare ? 'border-marco-yellow bg-marco-yellow text-[#050505] dark:!text-[#050505]' : 'border-gray-200 hover:border-gray-300'}`}
-            >
-              <CompareIcon isActive={isInCompare} />
-            </button>
-            <button
-              onClick={onAddToWishlist}
-              className={`w-10 h-10 shrink-0 rounded-xl border-2 flex items-center justify-center ${isInWishlist ? 'border-red-600 bg-red-600 text-white dark:border-red-600 dark:bg-red-600 dark:text-white' : 'border-gray-200'}`}
-            >
-              <Heart fill={isInWishlist ? 'currentColor' : 'none'} />
             </button>
           </div>
         </div>
