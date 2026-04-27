@@ -80,6 +80,7 @@ const config = [
     files: ["scripts/**/*.js", "shared/db/**/*.cjs"],
     rules: {
       "no-console": "off",
+      "@typescript-eslint/no-require-imports": "off",
     },
   },
 ];

@@ -10,7 +10,6 @@
  * Prisma client: pnpm run db:generate first if needed.
  */
 
-/* eslint-disable @typescript-eslint/no-require-imports */
 const path = require("path");
 const fs = require("fs");
 
