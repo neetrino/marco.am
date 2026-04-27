@@ -7,15 +7,15 @@ export const HOME_HERO_PRIMARY_BOTTOM_BANNER_ID = "home-hero-primary-bottom";
 export const HOME_HERO_SECONDARY_BANNER_ID = "home-hero-secondary-main";
 
 /**
- * Defaults must be same-origin (or otherwise reliably fetchable) for Next/Image on Vercel.
- * Figma MCP `/api/mcp/asset/*` URLs often fail under production image optimization (403, expiry).
+ * Same-origin defaults only. Figma MCP URLs (`/api/mcp/asset/...`) are not public image
+ * endpoints — browsers get 404, so production (e.g. Vercel) shows broken tiles.
  */
 export const HOME_HERO_PRIMARY_TOP_DEFAULT_IMAGE_URL =
-  "/assets/home/home-gradient-banner.jpg" as const;
-export const HOME_HERO_PRIMARY_BOTTOM_DEFAULT_IMAGE_URL =
   "/assets/home/app-download-banner.png" as const;
+export const HOME_HERO_PRIMARY_BOTTOM_DEFAULT_IMAGE_URL =
+  "/assets/home/home-gradient-banner.jpg" as const;
 export const HOME_HERO_SECONDARY_DEFAULT_IMAGE_URL =
-  "/images/home/special-offers-unified-nature.jpg" as const;
+  "/assets/brands/panasonic-figma.png" as const;
 
 export const HOME_HERO_DEFAULT_BANNER_ITEMS: BannerManagementStorage["banners"] = [
   {
