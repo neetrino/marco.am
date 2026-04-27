@@ -71,13 +71,19 @@ if (r2Origin) {
   mediaSources.push(r2Origin);
 }
 
+// Custom Prisma `output` (shared/db/generated/...): engines must be in each serverless trace. Picomatch
+// keys: `/*` is one segment only, so nested handlers like `/api/v1/compare` need `/api/**/*`.
+const prismaGeneratedTraceGlob = './shared/db/generated/prisma-client/**/*';
+
 const nextConfig = {
   reactStrictMode: true,
   // Keep workspace DB + generated Prisma client as Node externals so query engine `.node` paths resolve at runtime (bundling breaks `__dirname` for native engines).
-  serverExternalPackages: ['@white-shop/db'],
-  // Custom Prisma `output` lives outside `.prisma/client`; include engines in serverless / standalone traces.
+  serverExternalPackages: ['@white-shop/db', '@prisma/client'],
   outputFileTracingIncludes: {
-    '/*': ['./shared/db/generated/prisma-client/**/*'],
+    // Picomatch: `/*` is one URL segment; nested pages and `/api/v1/...` need `/**/*` + `/api/**/*`.
+    '/*': [prismaGeneratedTraceGlob],
+    '/**/*': [prismaGeneratedTraceGlob],
+    '/api/**/*': [prismaGeneratedTraceGlob],
   },
   experimental: {
     optimizePackageImports: ['lucide-react'],
