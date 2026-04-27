@@ -78,7 +78,7 @@ const DEFAULT_STORAGE: SiteFooterStorage = {
   version: HOME_SITE_FOOTER_STORAGE_VERSION,
   companyColumnTitle: {
     en: "Company",
-    hy: "Ընկերություն",
+    hy: "Նավիգացիա",
     ru: "Компания",
   },
   supportColumnTitle: {
@@ -111,7 +111,18 @@ const DEFAULT_STORAGE: SiteFooterStorage = {
   },
   companyLinks: [
     {
-      id: "company-about",
+      id: "nav-shop",
+      label: {
+        en: "Shop",
+        hy: "Խանութ",
+        ru: "Магазин",
+      },
+      href: "/products",
+      active: true,
+      sortOrder: 0,
+    },
+    {
+      id: "nav-about",
       label: {
         en: "About us",
         hy: "Մեր մասին",
@@ -119,49 +130,38 @@ const DEFAULT_STORAGE: SiteFooterStorage = {
       },
       href: "/about",
       active: true,
-      sortOrder: 0,
-    },
-    {
-      id: "company-stores",
-      label: {
-        en: "Our stores",
-        hy: "Մեր խանութները",
-        ru: "Наши магазины",
-      },
-      href: "/stores",
-      active: true,
       sortOrder: 1,
     },
     {
-      id: "company-careers",
+      id: "nav-contact",
       label: {
-        en: "Careers",
-        hy: "Աշխատանք մեզ մոտ",
-        ru: "Работа у нас",
+        en: "Contact",
+        hy: "Կապ",
+        ru: "Контакты",
       },
       href: "/contact",
       active: true,
       sortOrder: 2,
     },
     {
-      id: "company-news",
+      id: "nav-brands",
       label: {
-        en: "News & blog",
-        hy: "Նորություններ և բլոգ",
-        ru: "Новости и блог",
+        en: "Brands",
+        hy: "Բրենդներ",
+        ru: "Бренды",
       },
-      href: "/about",
+      href: "/brands",
       active: true,
       sortOrder: 3,
     },
     {
-      id: "company-feedback",
+      id: "nav-reels",
       label: {
-        en: "Contact us",
-        hy: "Հետադարձ կապ",
-        ru: "Обратная связь",
+        en: "Reels",
+        hy: "Reels",
+        ru: "Reels",
       },
-      href: "/contact",
+      href: "/reels",
       active: true,
       sortOrder: 4,
     },

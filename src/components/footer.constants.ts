@@ -32,9 +32,13 @@ export const FOOTER_NAV_COLUMN_LIST_ITEM_GAP_CLASS = 'gap-1';
 export const FOOTER_NAV_COLUMN_HEADING_LEADING_CLASS = 'leading-tight';
 export const FOOTER_NAV_COLUMN_LINK_LEADING_CLASS = 'leading-tight';
 
+/** First footer nav column (heading: Navigation / Նավիգացիա) — shop + info links. */
 export const FOOTER_COMPANY_LINKS = [
+  { href: '/products', labelKey: 'common.navigation.shop' },
   { href: '/about', labelKey: 'common.footer.marco.links.companyAbout' },
-  { href: '/contact', labelKey: 'common.footer.marco.links.companyFeedback' },
+  { href: '/contact', labelKey: 'common.navigation.contact' },
+  { href: '/brands', labelKey: 'common.navigation.brands' },
+  { href: '/reels', labelKey: 'common.navigation.reels' },
 ] as const;
 
 export const FOOTER_SUPPORT_LINKS = [
