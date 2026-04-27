@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { shouldBypassNextImageOptimizer } from '../../lib/utils/should-bypass-next-image-optimizer';
 import {
   HERO_MOBILE_CHAIR_FRAME_HEIGHT_PX,
   HERO_MOBILE_CHAIR_FRAME_WIDTH_PX,
@@ -118,6 +119,7 @@ export function HomePromoMobileHeroChair() {
               height={HERO_PROMO_CHAIR_IMAGE_NATURAL_HEIGHT_PX}
               sizes={MOBILE_HERO_CHAIR_SIZES}
               priority
+              unoptimized={shouldBypassNextImageOptimizer(HERO_PROMO_CHAIR_IMAGE_SRC)}
               className="absolute left-0 max-w-none w-full select-none"
               style={chairImageStyle}
             />

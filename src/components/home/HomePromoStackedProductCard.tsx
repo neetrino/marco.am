@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Montserrat } from 'next/font/google';
 import type { CSSProperties } from 'react';
 import { useTranslation } from '../../lib/i18n-client';
+import { shouldBypassNextImageOptimizer } from '../../lib/utils/should-bypass-next-image-optimizer';
 import {
   HERO_PROMO_CHAIR_IMAGE_SRC,
   HERO_PROMO_CHAIR_SHADOW_IMAGE_SRC,
@@ -147,6 +148,7 @@ function PromoChairAsset({ wrapStyle }: PromoChairOverlayProps) {
           className="object-contain object-bottom"
           sizes={HERO_PROMO_STACK_IMAGE_SIZES}
           priority
+          unoptimized={shouldBypassNextImageOptimizer(HERO_PROMO_CHAIR_IMAGE_SRC)}
         />
       </div>
     </div>

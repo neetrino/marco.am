@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { useTranslation } from '../lib/i18n-client';
 import type { HeroCarouselImageUrls } from '../lib/home-hero-carousel-urls';
+import { shouldBypassNextImageOptimizer } from '../lib/utils/should-bypass-next-image-optimizer';
 import { HomePromoMobileHeroChair } from './home/HomePromoMobileHeroChair';
 import { HomePromoMobileHeroHeadline } from './home/HomePromoMobileHeroHeadline';
 import { HomePromoMobileHeroSlateCta } from './home/HomePromoMobileHeroSlateCta';
@@ -33,6 +34,7 @@ export function HeroCarousel({ heroImageUrls }: HeroCarouselProps) {
             alt=""
             fill
             priority
+            unoptimized={shouldBypassNextImageOptimizer(mobile)}
             className="object-cover object-top"
             sizes="100vw"
           />
@@ -61,6 +63,7 @@ export function HeroCarousel({ heroImageUrls }: HeroCarouselProps) {
                 alt=""
                 fill
                 priority
+                unoptimized={shouldBypassNextImageOptimizer(leftTop)}
                 className="object-cover object-[center_16%]"
                 sizes={HERO_DESKTOP_IMAGE_SIZES}
               />
@@ -70,6 +73,7 @@ export function HeroCarousel({ heroImageUrls }: HeroCarouselProps) {
                 src={leftBottom}
                 alt=""
                 fill
+                unoptimized={shouldBypassNextImageOptimizer(leftBottom)}
                 className="object-cover object-[center_58%]"
                 sizes={HERO_DESKTOP_IMAGE_SIZES}
               />
@@ -80,6 +84,7 @@ export function HeroCarousel({ heroImageUrls }: HeroCarouselProps) {
               src={right}
               alt=""
               fill
+              unoptimized={shouldBypassNextImageOptimizer(right)}
               className="object-cover object-[center_58%]"
               sizes="(max-width: 1280px) 42vw, min(45vw, 560px)"
             />

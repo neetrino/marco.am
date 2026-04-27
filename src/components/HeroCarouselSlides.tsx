@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { shouldBypassNextImageOptimizer } from '../lib/utils/should-bypass-next-image-optimizer';
 import { HERO_PRIMARY_IMAGE_SRC } from './hero.constants';
 
 export function HeroCarouselSlides() {
@@ -10,6 +11,7 @@ export function HeroCarouselSlides() {
           src={HERO_PRIMARY_IMAGE_SRC}
           alt=""
           fill
+          unoptimized={shouldBypassNextImageOptimizer(HERO_PRIMARY_IMAGE_SRC)}
           className="hidden object-cover object-top md:block"
           sizes="(max-width: 1280px) 100vw, min(100vw, 1280px)"
         />

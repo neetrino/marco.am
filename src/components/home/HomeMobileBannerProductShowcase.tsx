@@ -5,6 +5,7 @@ import { ArrowUpRight } from 'lucide-react';
 import { Montserrat } from 'next/font/google';
 
 import { t } from '../../lib/i18n';
+import { shouldBypassNextImageOptimizer } from '../../lib/utils/should-bypass-next-image-optimizer';
 import type { LanguageCode } from '../../lib/language';
 import {
   HERO_MOBILE_CHAIR_FRAME_HEIGHT_PX,
@@ -248,6 +249,7 @@ export function HomeMobileBannerProductShowcase({ language }: HomeMobileBannerPr
                   width={HERO_PROMO_CHAIR_IMAGE_NATURAL_WIDTH_PX}
                   height={HERO_PROMO_CHAIR_IMAGE_NATURAL_HEIGHT_PX}
                   sizes={HOME_MOBILE_BANNER_SHOWCASE_IMAGE_SIZES}
+                  unoptimized={shouldBypassNextImageOptimizer(HERO_PROMO_CHAIR_IMAGE_SRC)}
                   className="absolute left-0 max-w-none w-full select-none"
                   style={chairImageStyle}
                 />

@@ -132,6 +132,18 @@ function buildImageRemotePatterns() {
     pathname: '/**',
   });
 
+  const extraImageHosts = (process.env.NEXT_IMAGE_REMOTE_HOSTS || '')
+    .split(',')
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+  for (const hostname of extraImageHosts) {
+    patterns.push({
+      protocol: 'https',
+      hostname,
+      pathname: '/**',
+    });
+  }
+
   return patterns;
 }
 
