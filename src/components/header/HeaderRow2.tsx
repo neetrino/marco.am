@@ -92,8 +92,12 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
       const panelTop = r.bottom + gapPx - raiseDropdownByPx;
       /** Cap height to viewport so inner columns scroll; uncapped height made the list taller than the screen without overflow. */
       const bottomMargin = 8;
-      const rawHeight = Math.floor(window.innerHeight - panelTop - bottomMargin);
-      const panelHeight = Math.max(240, Math.min(rawHeight, window.innerHeight - 16));
+      const viewportH =
+        typeof window !== 'undefined' && window.visualViewport?.height
+          ? window.visualViewport.height
+          : window.innerHeight;
+      const rawHeight = Math.floor(viewportH - panelTop - bottomMargin);
+      const panelHeight = Math.max(240, Math.min(rawHeight, viewportH - 16));
       setCategoriesDropdownLayout({
         bridge: {
           position: 'fixed',
@@ -118,9 +122,14 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
     updateLayout();
     window.addEventListener('scroll', updateLayout, true);
     window.addEventListener('resize', updateLayout);
+    const vv = window.visualViewport;
+    vv?.addEventListener('resize', updateLayout);
+    vv?.addEventListener('scroll', updateLayout);
     return () => {
       window.removeEventListener('scroll', updateLayout, true);
       window.removeEventListener('resize', updateLayout);
+      vv?.removeEventListener('resize', updateLayout);
+      vv?.removeEventListener('scroll', updateLayout);
     };
   }, [showProductsMenu]);
 
@@ -213,7 +222,7 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
                   <div
                     data-marco-categories-dropdown
                     data-theme-static="true"
-                    className="flex h-full min-h-0 min-w-0 flex-col"
+                    className="flex h-full max-h-full min-h-0 min-w-0 flex-col overflow-hidden"
                     style={categoriesDropdownLayout.panel}
                   >
                     {loadingCategories ? (
@@ -221,12 +230,14 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
                         {t('common.messages.loading')}
                       </div>
                     ) : (
-                      <Suspense fallback={null}>
-                        <CategoriesDropdownMega
-                          categories={getRootCategories(categories)}
-                          onClose={() => setShowProductsMenu(false)}
-                        />
-                      </Suspense>
+                      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                        <Suspense fallback={null}>
+                          <CategoriesDropdownMega
+                            categories={getRootCategories(categories)}
+                            onClose={() => setShowProductsMenu(false)}
+                          />
+                        </Suspense>
+                      </div>
                     )}
                   </div>
                 </>

@@ -51,7 +51,9 @@
       "viewProducts": "View all products",
       "subcategories": "Subcategories",
       "productsWord": "products",
-      "emptySubcategories": "No subcategories yet. Add child categories in the admin or run the database seed."
+      "emptySubcategories": "No subcategories yet. Add child categories in the admin or run the database seed.",
+      "scrollListUp": "Scroll categories up",
+      "scrollListDown": "Scroll categories down"
     }
   },
   "stock": {
