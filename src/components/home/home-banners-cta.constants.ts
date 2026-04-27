@@ -18,6 +18,31 @@ export const HOME_BANNERS_CTA_PILL_RADIUS_PX = HOME_BANNERS_CTA_HEIGHT_PX / 2;
 
 export const HOME_BANNERS_CTA_PADDING_LEFT_PX = 34;
 
+/**
+ * Hover slack chip stops this many px from the pill’s inner inline-start (`0` = flush to cap).
+ */
+export const HOME_BANNERS_CTA_SLACK_HOVER_END_INSET_PX = 0;
+
+/**
+ * Extra left travel (px) after compensating track padding — clears subpixels / chip margins.
+ */
+export const HOME_BANNERS_CTA_SLACK_TRAVEL_MICRO_PX = 4;
+
+/**
+ * Label shifts this many px toward inline-end only during slack hover/focus (LTR = right),
+ * same duration/easing as the chip trail.
+ */
+export const HOME_BANNERS_CTA_SLACK_LABEL_SHIFT_ON_HOVER_PX = 11;
+
+/** Trail + chip horizontal motion + matching label/chip color transitions (ms). */
+export const HOME_BANNERS_CTA_SLACK_MOTION_DURATION_MS = 520;
+
+/**
+ * Easing for slack motion — strong ease-out so the chip settles softly at the far cap.
+ * Used as `--slack-ease` on `HomeFloorBannerSlackCtaLink`.
+ */
+export const HOME_BANNERS_CTA_SLACK_MOTION_EASING_CSS = 'cubic-bezier(0.22, 1, 0.36, 1)' as const;
+
 export const HOME_BANNERS_CTA_PADDING_RIGHT_PX = 0;
 
 export const HOME_BANNERS_CTA_LABEL_ICON_GAP_PX = 6;

@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
+import { HomeFloorBannerSlackCtaLink } from './HomeFloorBannerSlackCtaLink';
 import { ArrowUpRight } from 'lucide-react';
 import { Montserrat } from 'next/font/google';
 
@@ -268,9 +268,10 @@ export function HomeMobileBannerProductShowcase({ language }: HomeMobileBannerPr
               paddingTop: `${HOME_MOBILE_BANNER_SHOWCASE_FOOTER_PAD_TOP_PX}px`,
             }}
           >
-            <Link
+            <HomeFloorBannerSlackCtaLink
               href="/products"
-              className={`${montserratShowcaseCta.className} group pointer-events-auto flex min-w-0 shrink-0 items-center bg-marco-yellow font-bold text-marco-black transition hover:-translate-y-0.5 hover:bg-red-700 hover:text-white active:translate-y-px dark:!text-[#050505] dark:hover:!text-[#050505]`}
+              ariaLabel={ctaAria}
+              className={`${montserratShowcaseCta.className} pointer-events-auto min-w-0 shrink-0 bg-marco-yellow font-bold text-marco-black transition hover:-translate-y-0.5 active:translate-y-px dark:text-[#050505]`}
               style={{
                 ...showcaseCtaLinkStyle,
                 fontSize: isRussian
@@ -299,39 +300,39 @@ export function HomeMobileBannerProductShowcase({ language }: HomeMobileBannerPr
                         }
                       : {}),
               }}
-              aria-label={ctaAria}
-            >
-              <span
-                className="min-w-0 shrink whitespace-nowrap text-left dark:!text-[#050505]"
-                style={{
-                  transform: `translateX(${
-                    isRussian
-                      ? HOME_GRADIENT_BANNER_CTA_LABEL_NUDGE_LEFT_PX -
-                        HOME_MOBILE_BANNER_SHOWCASE_CTA_RU_LABEL_NUDGE_SUBTRACT_PX
-                      : HOME_GRADIENT_BANNER_CTA_LABEL_NUDGE_LEFT_PX
-                  }px)`,
-                }}
-              >
-                {ctaLabel}
-              </span>
-              <span
-                className="flex shrink-0 items-center justify-center rounded-full bg-marco-black text-white transition group-hover:bg-white group-hover:text-red-700"
-                style={
-                  isRussian
-                    ? { ...showcaseCtaIconFrameStyle, transform: 'translateX(-6px)' }
-                    : isEnglish
-                      ? { ...showcaseCtaIconFrameStyle, transform: 'translateX(4px)' }
-                      : showcaseCtaIconFrameStyle
-                }
-                aria-hidden
-              >
+              trailClassName="bg-marco-black"
+              labelWrapperClassName="min-w-0 shrink whitespace-nowrap text-left transition-colors [transition-duration:var(--slack-dur)] [transition-timing-function:var(--slack-ease)] motion-reduce:transition-none group-hover:text-white group-focus-visible:text-white dark:group-hover:text-white dark:group-focus-visible:text-white"
+              label={
+                <span
+                  className="dark:text-[#050505]"
+                  style={{
+                    transform: `translateX(${
+                      isRussian
+                        ? HOME_GRADIENT_BANNER_CTA_LABEL_NUDGE_LEFT_PX -
+                          HOME_MOBILE_BANNER_SHOWCASE_CTA_RU_LABEL_NUDGE_SUBTRACT_PX
+                        : HOME_GRADIENT_BANNER_CTA_LABEL_NUDGE_LEFT_PX
+                    }px)`,
+                  }}
+                >
+                  {ctaLabel}
+                </span>
+              }
+              chipInnerClassName="flex shrink-0 items-center justify-center rounded-full bg-marco-black text-white transition-colors [transition-duration:var(--slack-dur)] [transition-timing-function:var(--slack-ease)] motion-reduce:transition-none group-hover:bg-marco-yellow group-hover:text-marco-black group-focus-visible:bg-marco-yellow group-focus-visible:text-marco-black dark:group-hover:bg-marco-yellow dark:group-hover:text-marco-black dark:group-focus-visible:bg-marco-yellow dark:group-focus-visible:text-marco-black"
+              chipInnerStyle={
+                isRussian
+                  ? { ...showcaseCtaIconFrameStyle, transform: 'translateX(-6px)' }
+                  : isEnglish
+                    ? { ...showcaseCtaIconFrameStyle, transform: 'translateX(4px)' }
+                    : showcaseCtaIconFrameStyle
+              }
+              chipChildren={
                 <ArrowUpRight
                   width={HOME_BANNERS_CTA_ARROW_ICON_PX}
                   height={HOME_BANNERS_CTA_ARROW_ICON_PX}
                   strokeWidth={2.5}
                 />
-              </span>
-            </Link>
+              }
+            />
             <div
               className={`${montserratShowcaseLabel.className} flex shrink-0 flex-col justify-center leading-[0] not-italic text-left text-white`}
               style={{

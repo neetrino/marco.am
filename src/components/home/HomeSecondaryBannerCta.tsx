@@ -1,7 +1,8 @@
 import type { CSSProperties } from 'react';
-import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import { Montserrat } from 'next/font/google';
+
+import { HomeFloorBannerSlackCtaLink } from './HomeFloorBannerSlackCtaLink';
 
 import {
   HOME_BANNERS_CTA_ARROW_ICON_PX,
@@ -117,42 +118,42 @@ export function HomeSecondaryBannerCta({ language }: HomeSecondaryBannerCtaProps
       : '';
 
   return (
-    <Link
+    <HomeFloorBannerSlackCtaLink
       href={HOME_SECONDARY_BANNER_CTA_HREF}
-      className={`${montserratSlateCta.className} group pointer-events-auto flex w-full shrink-0 items-center bg-black font-bold text-white dark:text-[#050505] transition hover:-translate-y-0.5 hover:bg-red-700 hover:text-white active:translate-y-px focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marco-black ${hyDesktopPillClass} ${enDesktopPillClass} ${ruDesktopPillClass}`}
+      ariaLabel={ariaLabel}
+      className={`${montserratSlateCta.className} pointer-events-auto bg-black font-bold text-white transition hover:-translate-y-0.5 active:translate-y-px focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marco-black dark:text-[#050505] ${hyDesktopPillClass} ${enDesktopPillClass} ${ruDesktopPillClass}`}
       style={linkStyle}
-      aria-label={ariaLabel}
-    >
-      <span
-        className={`min-w-0 shrink whitespace-nowrap text-left ${hyLabelTransformClass}`}
-        style={
-          isHy
-            ? undefined
-            : {
-                transform: `translateX(${HOME_SECONDARY_BANNER_CTA_LABEL_NUDGE_RIGHT_PX}px)`,
-              }
-        }
-      >
-        {label}
-      </span>
-      <span
-        className={`flex shrink-0 items-center justify-center rounded-full bg-marco-yellow text-marco-black transition group-hover:bg-white group-hover:text-red-700 ${hyDesktopIconTranslateClass} ${
-          language === 'ru' && !isHy
-            ? 'h-9 w-9 lg:!h-[34px] lg:!w-[34px] lg:translate-x-[4px]'
-            : ''
-        }`}
-        style={
-          isHy
-            ? {
-                ...slateCtaIconFrameBaseStyle,
-                marginLeft: HOME_SECONDARY_BANNER_CTA_ICON_MARGIN_LEFT_PX,
-              }
-            : language === 'ru'
-              ? { marginLeft: HOME_SECONDARY_BANNER_CTA_ICON_MARGIN_LEFT_PX }
-              : slateCtaIconFrameStyle
-        }
-        aria-hidden
-      >
+      trailClassName="bg-marco-yellow"
+      labelWrapperClassName={`min-w-0 shrink whitespace-nowrap text-left transition-colors [transition-duration:var(--slack-dur)] [transition-timing-function:var(--slack-ease)] motion-reduce:transition-none group-hover:text-marco-black group-focus-visible:text-marco-black dark:group-hover:text-marco-black dark:group-focus-visible:text-marco-black ${hyLabelTransformClass}`}
+      label={
+        <span
+          style={
+            isHy
+              ? undefined
+              : {
+                  transform: `translateX(${HOME_SECONDARY_BANNER_CTA_LABEL_NUDGE_RIGHT_PX}px)`,
+                }
+          }
+        >
+          {label}
+        </span>
+      }
+      chipInnerClassName={`flex shrink-0 items-center justify-center rounded-full bg-marco-yellow text-marco-black transition-colors [transition-duration:var(--slack-dur)] [transition-timing-function:var(--slack-ease)] motion-reduce:transition-none group-hover:bg-black group-hover:text-white group-focus-visible:bg-black group-focus-visible:text-white dark:group-hover:bg-black dark:group-hover:text-white dark:group-focus-visible:bg-black dark:group-focus-visible:text-white ${hyDesktopIconTranslateClass} ${
+        language === 'ru' && !isHy
+          ? 'h-9 w-9 lg:!h-[34px] lg:!w-[34px] lg:translate-x-[4px]'
+          : ''
+      }`}
+      chipInnerStyle={
+        isHy
+          ? {
+              ...slateCtaIconFrameBaseStyle,
+              marginLeft: HOME_SECONDARY_BANNER_CTA_ICON_MARGIN_LEFT_PX,
+            }
+          : language === 'ru'
+            ? { marginLeft: HOME_SECONDARY_BANNER_CTA_ICON_MARGIN_LEFT_PX }
+            : slateCtaIconFrameStyle
+      }
+      chipChildren={
         <ArrowUpRight
           className={
             language === 'ru' && !isHy
@@ -163,7 +164,7 @@ export function HomeSecondaryBannerCta({ language }: HomeSecondaryBannerCtaProps
           height={language === 'ru' && !isHy ? undefined : HOME_BANNERS_CTA_ARROW_ICON_PX}
           strokeWidth={2.5}
         />
-      </span>
-    </Link>
+      }
+    />
   );
 }

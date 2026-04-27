@@ -1,7 +1,8 @@
 import type { CSSProperties } from 'react';
-import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import { Montserrat } from 'next/font/google';
+
+import { HomeFloorBannerSlackCtaLink } from './HomeFloorBannerSlackCtaLink';
 
 import {
   HOME_BANNERS_CTA_ARROW_ICON_PX,
@@ -22,6 +23,7 @@ import {
   HOME_GRADIENT_BANNER_CTA_ICON_PULL_LEFT_RU_EXTRA_PX,
   HOME_GRADIENT_BANNER_CTA_LABEL_NUDGE_LEFT_PX,
   HOME_GRADIENT_BANNER_CTA_LABEL_NUDGE_LEFT_RU_EXTRA_PX,
+  HOME_GRADIENT_BANNER_CTA_SLACK_REST_INSET_INLINE_END_PX,
 } from './home-gradient-banner.constants';
 import { t } from '../../lib/i18n';
 import type { LanguageCode } from '../../lib/language';
@@ -124,35 +126,36 @@ export function HomeGradientBannerCta({ language }: HomeGradientBannerCtaProps) 
   const iconHyDesktopTranslateClass = language === 'hy' ? 'lg:translate-x-[12px]' : '';
 
   return (
-    <Link
+    <HomeFloorBannerSlackCtaLink
       href="/products"
-      className={`${montserratSlateCta.className} group pointer-events-auto flex w-full max-w-full shrink-0 items-center bg-marco-yellow font-bold text-[#050505] dark:text-[#050505] transition hover:-translate-y-0.5 hover:bg-red-700 hover:text-white active:translate-y-px ${enDesktopPillClass}`}
+      ariaLabel={ariaLabel}
+      slackChipRestInsetInlineEndPx={HOME_GRADIENT_BANNER_CTA_SLACK_REST_INSET_INLINE_END_PX}
+      className={`${montserratSlateCta.className} pointer-events-auto bg-marco-yellow font-bold text-[#050505] transition hover:-translate-y-0.5 active:translate-y-px dark:text-[#050505] ${enDesktopPillClass}`}
       style={linkStyle}
-      aria-label={ariaLabel}
-    >
-      <span
-        className={`${labelSpanClassName} ${language === 'hy' ? labelHyDesktopClass : ''} ${labelRuTranslateClass}`}
-        style={
-          language === 'hy' || language === 'ru'
-            ? undefined
-            : {
-                transform: `translateX(${labelNudgeLeftPx}px)`,
-              }
-        }
-      >
-        {label}
-      </span>
-      <span
-        className={`flex shrink-0 items-center justify-center rounded-full bg-marco-black text-white transition group-hover:bg-white group-hover:text-red-700 ${iconRuDesktopTranslateClass} ${iconHyDesktopTranslateClass}`}
-        style={iconFrameStyle}
-        aria-hidden
-      >
+      trailClassName="bg-marco-black"
+      labelWrapperClassName={`transition-colors [transition-duration:var(--slack-dur)] [transition-timing-function:var(--slack-ease)] motion-reduce:transition-none group-hover:text-white group-focus-visible:text-white dark:group-hover:text-white dark:group-focus-visible:text-white ${labelSpanClassName} ${language === 'hy' ? labelHyDesktopClass : ''} ${labelRuTranslateClass}`}
+      label={
+        <span
+          style={
+            language === 'hy' || language === 'ru'
+              ? undefined
+              : {
+                  transform: `translateX(${labelNudgeLeftPx}px)`,
+                }
+          }
+        >
+          {label}
+        </span>
+      }
+      chipInnerClassName={`flex shrink-0 items-center justify-center rounded-full bg-marco-black text-white transition-colors [transition-duration:var(--slack-dur)] [transition-timing-function:var(--slack-ease)] motion-reduce:transition-none group-hover:bg-marco-yellow group-hover:text-marco-black group-focus-visible:bg-marco-yellow group-focus-visible:text-marco-black dark:group-hover:bg-marco-yellow dark:group-hover:text-marco-black dark:group-focus-visible:bg-marco-yellow dark:group-focus-visible:text-marco-black ${iconRuDesktopTranslateClass} ${iconHyDesktopTranslateClass}`}
+      chipInnerStyle={iconFrameStyle}
+      chipChildren={
         <ArrowUpRight
           width={arrowIconPx}
           height={arrowIconPx}
           strokeWidth={2.5}
         />
-      </span>
-    </Link>
+      }
+    />
   );
 }
