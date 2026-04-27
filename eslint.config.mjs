@@ -10,6 +10,7 @@ const config = [
       "out/**",
       "coverage/**",
       "shared/db/generated/**",
+      "generated/prisma-client/**",
     ],
   },
   ...nextConfig,
