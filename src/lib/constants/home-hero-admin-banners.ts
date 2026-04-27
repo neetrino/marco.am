@@ -6,12 +6,16 @@ export const HOME_HERO_PRIMARY_TOP_BANNER_ID = "home-hero-primary-top";
 export const HOME_HERO_PRIMARY_BOTTOM_BANNER_ID = "home-hero-primary-bottom";
 export const HOME_HERO_SECONDARY_BANNER_ID = "home-hero-secondary-main";
 
+/**
+ * Defaults must be same-origin (or otherwise reliably fetchable) for Next/Image on Vercel.
+ * Figma MCP `/api/mcp/asset/*` URLs often fail under production image optimization (403, expiry).
+ */
 export const HOME_HERO_PRIMARY_TOP_DEFAULT_IMAGE_URL =
-  "https://www.figma.com/api/mcp/asset/3791ef5c-cb75-4fdf-b91c-867dfea32623";
+  "/assets/home/home-gradient-banner.jpg" as const;
 export const HOME_HERO_PRIMARY_BOTTOM_DEFAULT_IMAGE_URL =
-  "https://www.figma.com/api/mcp/asset/dacdd4e4-d6c3-496f-9f3a-ea1efac284f4";
+  "/assets/home/app-download-banner.png" as const;
 export const HOME_HERO_SECONDARY_DEFAULT_IMAGE_URL =
-  "https://www.figma.com/api/mcp/asset/b7429ac7-5d98-4c42-a62f-f9780ebfda16";
+  "/images/home/special-offers-unified-nature.jpg" as const;
 
 export const HOME_HERO_DEFAULT_BANNER_ITEMS: BannerManagementStorage["banners"] = [
   {
