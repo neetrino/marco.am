@@ -17,16 +17,16 @@
   }
 
   .dark {
-    --app-bg: #0d0d0d;
-    --app-bg-muted: #0d0d0d;
-    --app-surface: #0d0d0d;
-    --app-surface-muted: #0d0d0d;
+    --app-bg: #101010;
+    --app-bg-muted: #101010;
+    --app-surface: #101010;
+    --app-surface-muted: #101010;
     --app-border: #2d2d2d;
     --app-border-strong: #454545;
     --app-text: #ffffff;
     --app-text-muted: #f1f5f9;
     --app-text-soft: #dbe4ee;
-    --special-offers-card-cutout-bg: #0d0d0d;
+    --special-offers-card-cutout-bg: #101010;
   }
 
   html {

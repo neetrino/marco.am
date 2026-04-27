@@ -8,6 +8,7 @@ import { Card, Button } from '@shop/ui';
 import { apiClient } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
 import { AdminPageLayout } from '../components/AdminPageLayout';
+import { AdminTablePagination } from '../components/AdminTablePagination';
 import { logger } from "@/lib/utils/logger";
 
 interface Message {
@@ -280,30 +281,14 @@ export default function MessagesPage() {
                     </table>
                   </div>
 
-                  {meta && meta.totalPages > 1 && (
-                    <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50/60 px-6 py-4">
-                      <div className="text-sm font-medium text-slate-700">
-                        {t('admin.messages.showingPage').replace('{page}', meta.page.toString()).replace('{totalPages}', meta.totalPages.toString()).replace('{total}', meta.total.toString())}
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="ghost"
-                          onClick={() => setPage((p) => Math.max(1, p - 1))}
-                          disabled={page === 1}
-                          className="rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 disabled:opacity-50"
-                        >
-                          {t('admin.messages.previous')}
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          onClick={() => setPage((p) => Math.min(meta.totalPages, p + 1))}
-                          disabled={page === meta.totalPages}
-                          className="rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 disabled:opacity-50"
-                        >
-                          {t('admin.messages.next')}
-                        </Button>
-                      </div>
-                    </div>
+                  {meta && (
+                    <AdminTablePagination
+                      embedded
+                      currentPage={page}
+                      totalPages={meta.totalPages}
+                      totalItems={meta.total}
+                      onPageChange={setPage}
+                    />
                   )}
                 </>
               )}

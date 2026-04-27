@@ -10,7 +10,13 @@ import type {
   HomeBrandPartnerPublicItem,
   HomeBrandPartnersPublicPayload,
 } from "@/lib/types/home-brand-partners-public";
+import {
+  getCachedJson,
+  invalidateHomeBrandPartnersPublicCache,
+} from "@/lib/services/read-through-json-cache";
 import { logger } from "@/lib/utils/logger";
+
+const BRAND_PARTNERS_PUBLIC_CACHE_TTL_SEC = 120;
 
 type HomeLocale = "en" | "hy" | "ru";
 
@@ -156,24 +162,28 @@ export const homeBrandPartnersService = {
 
   async getPublicPayload(localeRaw: string | undefined): Promise<HomeBrandPartnersPublicPayload> {
     const locale = normalizeLocale(localeRaw);
-    const storage = await loadStorage();
-    const sectionTitle = storage.sectionTitle[locale];
+    const cacheKey = `home:brand-partners:public:v1:${locale}`;
 
-    if (storage.entries.length === 0) {
-      const brands = await fetchPublishedBrands(undefined);
+    return getCachedJson(cacheKey, BRAND_PARTNERS_PUBLIC_CACHE_TTL_SEC, async () => {
+      const storage = await loadStorage();
+      const sectionTitle = storage.sectionTitle[locale];
+
+      if (storage.entries.length === 0) {
+        const brands = await fetchPublishedBrands(undefined);
+        return {
+          sectionTitle,
+          brands: buildFromAll(brands, locale),
+        };
+      }
+
+      const ids = [...new Set(storage.entries.map((e) => e.brandId))];
+      const rows = await fetchPublishedBrands(ids);
+      const brandById = new Map(rows.map((b) => [b.id, b]));
       return {
         sectionTitle,
-        brands: buildFromAll(brands, locale),
+        brands: buildFromCurated(storage, brandById, locale),
       };
-    }
-
-    const ids = [...new Set(storage.entries.map((e) => e.brandId))];
-    const rows = await fetchPublishedBrands(ids);
-    const brandById = new Map(rows.map((b) => [b.id, b]));
-    return {
-      sectionTitle,
-      brands: buildFromCurated(storage, brandById, locale),
-    };
+    });
   },
 
   async getAdminStorage(): Promise<HomeBrandPartnersStorage> {
@@ -197,6 +207,7 @@ export const homeBrandPartnersService = {
           "Home brand partners — section title (locales), curated entries (brandId, active, order, optional logo scale); empty entries = all published brands",
       },
     });
+    await invalidateHomeBrandPartnersPublicCache();
     return parsed;
   },
 };

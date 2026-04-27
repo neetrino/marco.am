@@ -1,4 +1,5 @@
 import { db } from "@white-shop/db";
+import { invalidateCategoryPublicCaches } from "@/lib/services/read-through-json-cache";
 import { toSlug } from "@/lib/utils/slug";
 import { logger } from "@/lib/utils/logger";
 
@@ -115,6 +116,19 @@ class AdminCategoriesService {
 
     const normalized = value.trim();
     return normalized.length > 0 ? normalized : null;
+  }
+
+  /**
+   * `toSlug` only keeps [a-z0-9]; Armenian-only titles become "" and break URLs / fullPath.
+   */
+  private stableSlugFromCategoryId(categoryId: string): string {
+    const tail = categoryId.replace(/[^a-z0-9]/gi, "").toLowerCase();
+    return tail.length > 0 ? `cat-${tail}` : "cat-category";
+  }
+
+  private slugFromTitleOrCategoryId(title: string, categoryId: string): string {
+    const fromTitle = toSlug(title);
+    return fromTitle.length > 0 ? fromTitle : this.stableSlugFromCategoryId(categoryId);
   }
 
   private collectDescendantIds(rootCategoryId: string, childMap: Map<string, string[]>): string[] {
@@ -323,7 +337,11 @@ class AdminCategoriesService {
       await this.ensureParentExists(data.parentId);
     }
 
-    const slug = toSlug(normalizedTitle);
+    const slugFromTitle = toSlug(normalizedTitle);
+    const provisionalSlug =
+      slugFromTitle.length > 0
+        ? slugFromTitle
+        : `tmp-${crypto.randomUUID().replace(/-/g, "").slice(0, 24)}`;
 
     const category = await db.category.create({
       data: {
@@ -334,8 +352,8 @@ class AdminCategoriesService {
           create: {
             locale,
             title: normalizedTitle,
-            slug,
-            fullPath: slug,
+            slug: provisionalSlug,
+            fullPath: provisionalSlug,
             seoTitle: this.normalizeOptionalText(data.seoTitle),
             seoDescription: this.normalizeOptionalText(data.seoDescription),
           },
@@ -343,11 +361,26 @@ class AdminCategoriesService {
       },
     });
 
+    if (slugFromTitle.length === 0) {
+      const fallback = this.stableSlugFromCategoryId(category.id);
+      const createdTr = await db.categoryTranslation.findFirst({
+        where: { categoryId: category.id, locale },
+      });
+      if (createdTr) {
+        await db.categoryTranslation.update({
+          where: { id: createdTr.id },
+          data: { slug: fallback, fullPath: fallback },
+        });
+      }
+    }
+
     await this.rebuildFullPathForSubtree(category.id);
     const reloaded = await this.loadCategoryWithChildren(category.id);
     if (!reloaded) {
       throw this.buildProblemError(404, "Category not found", `Category with id '${category.id}' does not exist`);
     }
+
+    await invalidateCategoryPublicCaches();
 
     return {
       data: this.mapCategory(
@@ -503,13 +536,16 @@ class AdminCategoriesService {
             where: { id: existingTranslation.id },
             data: {
               title: normalizedTitle,
-              slug: normalizedTitle ? toSlug(normalizedTitle) : undefined,
+              slug:
+                normalizedTitle !== undefined
+                  ? this.slugFromTitleOrCategoryId(normalizedTitle, categoryId)
+                  : undefined,
               seoTitle: data.seoTitle !== undefined ? normalizedSeoTitle : undefined,
               seoDescription: data.seoDescription !== undefined ? normalizedSeoDescription : undefined,
             },
           });
         } else {
-          const slug = toSlug(normalizedTitle as string);
+          const slug = this.slugFromTitleOrCategoryId(normalizedTitle as string, categoryId);
           await transaction.categoryTranslation.create({
             data: {
               categoryId,
@@ -563,6 +599,8 @@ class AdminCategoriesService {
         `Category with id '${categoryId}' does not exist`,
       );
     }
+
+    await invalidateCategoryPublicCaches();
 
     return {
       data: this.mapCategory(
@@ -674,6 +712,7 @@ class AdminCategoriesService {
     });
 
     logger.devLog('✅ [ADMIN SERVICE] Category deleted:', categoryId);
+    await invalidateCategoryPublicCaches();
     return { success: true };
   }
 }

@@ -3,7 +3,14 @@ import { apiClient } from '../../../../lib/api-client';
 import { logger } from '../../../../lib/utils/logger';
 import { showToast } from '../../../../components/Toast';
 import { useTranslation } from '../../../../lib/i18n-client';
+import { getStoredLanguage, type LanguageCode } from '../../../../lib/language';
+import { notifyShopCategoryTreeUpdated } from '../../../../lib/shop-category-tree-sync';
 import type { Category, CategoryFormData } from '../types';
+
+/** Category translations in DB use shop locales; Georgian UI maps to `en` like storefront. */
+function categoryWriteLocale(lang: LanguageCode): LanguageCode {
+  return lang === 'ka' ? 'en' : lang;
+}
 
 interface UseCategoryActionsReturn {
   showAddModal: boolean;
@@ -66,11 +73,12 @@ export function useCategoryActions(): UseCategoryActionsReturn {
         seoDescription: formData.seoDescription.trim() || undefined,
         parentId: formData.parentId || undefined,
         requiresSizes: formData.requiresSizes,
-        locale: 'en',
+        locale: categoryWriteLocale(getStoredLanguage()),
       });
       setShowAddModal(false);
       resetForm();
       await fetchCategories();
+      notifyShopCategoryTreeUpdated();
       showToast(t('admin.categories.createdSuccess'), 'success');
     } catch (err: unknown) {
       logger.error('Error creating category', { error: err });
@@ -130,12 +138,13 @@ export function useCategoryActions(): UseCategoryActionsReturn {
         parentId: formData.parentId || null,
         requiresSizes: formData.requiresSizes,
         subcategoryIds: formData.subcategoryIds,
-        locale: 'en',
+        locale: categoryWriteLocale(getStoredLanguage()),
       });
       setShowEditModal(false);
       setEditingCategory(null);
       resetForm();
       await fetchCategories();
+      notifyShopCategoryTreeUpdated();
       showToast(t('admin.categories.updatedSuccess'), 'success');
     } catch (err: unknown) {
       logger.error('Error updating category', { error: err });
@@ -164,6 +173,7 @@ export function useCategoryActions(): UseCategoryActionsReturn {
       await apiClient.delete(`/api/v1/supersudo/categories/${categoryId}`);
       logger.info('Category deleted successfully');
       await fetchCategories();
+      notifyShopCategoryTreeUpdated();
       showToast(t('admin.categories.deletedSuccess'), 'success');
     } catch (err: unknown) {
       logger.error('Error deleting category', { error: err });
@@ -211,7 +221,9 @@ export function useCategoryActions(): UseCategoryActionsReturn {
 
       const failedCount = results.filter((result) => result.status === 'rejected').length;
       await fetchCategories();
-
+      if (failedCount < categoryIds.length) {
+        notifyShopCategoryTreeUpdated();
+      }
       if (failedCount === 0) {
         showToast(t('admin.categories.deletedSuccess'), 'success');
       } else {

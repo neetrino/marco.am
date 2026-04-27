@@ -220,6 +220,12 @@
     "backToAdmin": "Back to Admin Dashboard",
     "loadingCategories": "Loading categories...",
     "noCategories": "No categories found",
+    "searchLabel": "Search categories",
+    "searchHint": "Matches title, URL slug, or parent name. Use several words to narrow results.",
+    "searchPlaceholder": "Type to filter the list…",
+    "clearSearch": "Clear search",
+    "searchMatchCount": "{matched} of {total} categories",
+    "noSearchResults": "No categories match your search",
     "addCategory": "Add Category",
     "editCategory": "Edit Category",
     "createCategory": "Create Category",
@@ -244,10 +250,7 @@
     "errorUpdating": "Error updating category",
     "deleteConfirm": "Are you sure you want to delete category \"{name}\"? This action cannot be undone.",
     "deletedSuccess": "Category successfully deleted",
-    "errorDeleting": "Error deleting category: {message}",
-    "showingPage": "Showing page {page} of {totalPages} ({total} total)",
-    "previous": "Previous",
-    "next": "Next"
+    "errorDeleting": "Error deleting category: {message}"
   },
   "delivery": {
     "title": "Delivery",
@@ -330,6 +333,7 @@
     "selectAll": "Select all products",
     "selectProduct": "Select product {title}",
     "product": "PRODUCT",
+    "categories": "CATEGORIES",
     "stock": "STOCK",
     "price": "PRICE",
     "status": "STATUS",
@@ -609,7 +613,22 @@
     "errorDeleting": "Error deleting brand:",
     "errorSaving": "Error saving brand:",
     "unknownError": "An unknown error occurred",
-    "unknownErrorFallback": "Unknown error"
+    "unknownErrorFallback": "Unknown error",
+    "searchLabel": "Search brands",
+    "searchHint": "Matches name or URL slug. Use several words to narrow results.",
+    "searchPlaceholder": "Type to filter the list…",
+    "clearSearch": "Clear search",
+    "searchMatchCount": "{matched} of {total} brands",
+    "searchNoMatches": "No brands match your search.",
+    "logo": "Logo",
+    "logoUrlLabel": "Logo URL or upload",
+    "logoUrlPlaceholder": "https://… or /assets/brands/…",
+    "logoUpload": "Upload image",
+    "logoRemove": "Remove logo",
+    "logoUploading": "Processing…",
+    "logoInvalidFile": "Please choose an image file.",
+    "selectedBrandsCount": "Selected brands: {count}",
+    "deleteSelected": "Delete selected"
   },
   "orders": {
     "title": "View Orders",
@@ -808,7 +827,18 @@
     "update": "Update",
     "saving": "Saving...",
     "back": "Back",
-    "backToAdmin": "Back to Admin Dashboard"
+    "backToAdmin": "Back to Admin Dashboard",
+    "tablePagination": {
+      "showingPage": "Showing page {page} of {totalPages} ({total} total)",
+      "previous": "Previous",
+      "next": "Next",
+      "goToPageLabel": "Go to page",
+      "goToPagePlaceholder": "e.g. 3",
+      "goToPageButton": "Go",
+      "goToPageAria": "Go to page number",
+      "pageNumberAria": "Page {n}",
+      "paginationRegionAria": "Table pagination"
+    }
   }
 }
 

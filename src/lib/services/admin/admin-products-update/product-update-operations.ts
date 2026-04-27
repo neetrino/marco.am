@@ -1,5 +1,5 @@
 import { db } from "@white-shop/db";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@white-shop/db/prisma";
 import { logger } from "../../../utils/logger";
 import { resolveProductClass } from "@/lib/constants/product-class";
 import type { UpdateProductData } from "./types";

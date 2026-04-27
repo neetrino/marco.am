@@ -12,11 +12,11 @@ import type { CurrencyCode } from '../lib/currency';
 import { CURRENCIES } from '../lib/currency';
 import { getLanguageColor } from './LanguageSwitcherHeader';
 
-/** Uppercase labels on the pill trigger (matches Figma-style locale display). */
+/** Compact labels on the pill trigger (ENG; native script for hy/ru). */
 const LANGUAGE_PILL_LABEL: Record<Exclude<LanguageCode, 'ka'>, string> = {
   en: 'ENG',
-  hy: 'HY',
-  ru: 'RU',
+  hy: 'հայ',
+  ru: 'рус',
 };
 
 const ChevronDownIcon = () => (

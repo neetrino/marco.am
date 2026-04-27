@@ -23,15 +23,23 @@ class AdminBrandsService {
     });
 
     return {
-      data: brands.map((brand: { id: string; slug: string; translations?: Array<{ name: string }> }) => {
-        const translations = Array.isArray(brand.translations) ? brand.translations : [];
-        const translation = translations[0] || null;
-        return {
-          id: brand.id,
-          name: translation?.name || "",
-          slug: brand.slug,
-        };
-      }),
+      data: brands.map(
+        (brand: {
+          id: string;
+          slug: string;
+          logoUrl: string | null;
+          translations?: Array<{ name: string }>;
+        }) => {
+          const translations = Array.isArray(brand.translations) ? brand.translations : [];
+          const translation = translations[0] || null;
+          return {
+            id: brand.id,
+            name: translation?.name || "",
+            slug: brand.slug,
+            logoUrl: brand.logoUrl ?? null,
+          };
+        }
+      ),
     };
   }
 
@@ -99,6 +107,7 @@ class AdminBrandsService {
         id: brand.id,
         name: translation?.name || "",
         slug: brand.slug,
+        logoUrl: brand.logoUrl ?? null,
       },
     };
   }
@@ -133,9 +142,8 @@ class AdminBrandsService {
     }
 
     const locale = data.locale || "en";
-    const updateData: any = {};
+    const updateData: { logoUrl?: string | null } = {};
 
-    // Update logo URL if provided
     if (data.logoUrl !== undefined) {
       updateData.logoUrl = data.logoUrl || null;
     }
@@ -194,6 +202,7 @@ class AdminBrandsService {
         id: updatedBrand!.id,
         name: translation?.name || "",
         slug: updatedBrand!.slug,
+        logoUrl: updatedBrand!.logoUrl ?? null,
       },
     };
   }

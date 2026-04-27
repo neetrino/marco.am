@@ -1,9 +1,11 @@
 import { db } from "@white-shop/db";
 import { nanoid } from "nanoid";
 import {
-  COMPARE_MAX_ITEMS,
+  COMPARE_MAX_LIST_ITEMS,
+  COMPARE_MAX_PER_CATEGORY,
   COMPARE_SESSION_MAX_AGE_SECONDS,
 } from "@/lib/constants/compare-session";
+import { resolveCompareCategoryId } from "@/lib/compare/compare-category";
 import { type ApiLocale } from "@/lib/i18n/api-locale";
 import { logger } from "@/lib/utils/logger";
 import {
@@ -64,16 +66,23 @@ export async function ensureGuestCompareList(
   return { compareListId: createdRow.id, sessionToken: token, created: true };
 }
 
-async function assertProductComparable(productId: string): Promise<void> {
-  const product = await db.product.findFirst({
+async function addProductToCompareList(
+  compareListId: string,
+  productId: string
+): Promise<void> {
+  const incoming = await db.product.findFirst({
     where: {
       id: productId,
       published: true,
       deletedAt: null,
     },
-    select: { id: true },
+    select: {
+      id: true,
+      primaryCategoryId: true,
+      categoryIds: true,
+    },
   });
-  if (!product) {
+  if (!incoming) {
     throw {
       status: 404,
       type: "https://api.shop.am/problems/not-found",
@@ -81,13 +90,7 @@ async function assertProductComparable(productId: string): Promise<void> {
       detail: "Product is not available for compare",
     };
   }
-}
 
-async function addProductToCompareList(
-  compareListId: string,
-  productId: string
-): Promise<void> {
-  await assertProductComparable(productId);
   const duplicate = await db.compareItem.findUnique({
     where: {
       compareListId_productId: { compareListId, productId },
@@ -97,13 +100,37 @@ async function addProductToCompareList(
     return;
   }
 
-  const count = await db.compareItem.count({ where: { compareListId } });
-  if (count >= COMPARE_MAX_ITEMS) {
+  const total = await db.compareItem.count({ where: { compareListId } });
+  if (total >= COMPARE_MAX_LIST_ITEMS) {
     throw {
       status: 422,
       type: "https://api.shop.am/problems/validation-error",
       title: "Compare list full",
-      detail: `Maximum ${COMPARE_MAX_ITEMS} products allowed`,
+      detail: `Maximum ${COMPARE_MAX_LIST_ITEMS} products in compare`,
+    };
+  }
+
+  const incomingKey = resolveCompareCategoryId(incoming);
+  const existingRows = await db.compareItem.findMany({
+    where: { compareListId },
+    select: {
+      product: {
+        select: {
+          primaryCategoryId: true,
+          categoryIds: true,
+        },
+      },
+    },
+  });
+  const sameCategoryCount = existingRows.filter(
+    (row) => resolveCompareCategoryId(row.product) === incomingKey
+  ).length;
+  if (sameCategoryCount >= COMPARE_MAX_PER_CATEGORY) {
+    throw {
+      status: 422,
+      type: "https://api.shop.am/problems/validation-error",
+      title: "Compare category full",
+      detail: `Maximum ${COMPARE_MAX_PER_CATEGORY} products per category in compare`,
     };
   }
 

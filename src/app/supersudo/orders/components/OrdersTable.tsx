@@ -4,7 +4,7 @@ import { useTranslation } from '../../../../lib/i18n-client';
 import { Card } from '@shop/ui';
 import { CurrencyCode } from '../../../../lib/currency';
 import { OrderRow } from './OrderRow';
-import { OrdersPagination } from './OrdersPagination';
+import { AdminTablePagination } from '../../components/AdminTablePagination';
 import type { Order } from '../useOrders';
 
 interface OrdersTableProps {
@@ -179,10 +179,11 @@ export function OrdersTable({
       </div>
 
       {meta && (
-        <OrdersPagination
-          page={page}
+        <AdminTablePagination
+          embedded
+          currentPage={page}
           totalPages={meta.totalPages}
-          total={meta.total}
+          totalItems={meta.total}
           onPageChange={onPageChange}
         />
       )}

@@ -16,6 +16,7 @@ import { logger } from "@/lib/utils/logger";
 import type { PrismaTransactionClient } from "@/lib/types/prisma";
 import { getErrorMessage, getPrismaErrorCode } from "@/lib/types/errors";
 import { cacheService } from "../cache.service";
+import { invalidateCategoryPublicCaches } from "../read-through-json-cache";
 
 type ProductMediaItem = string | { url: string };
 
@@ -445,7 +446,8 @@ class AdminProductsCreateService {
         revalidatePath('/products');
         // @ts-expect-error - revalidateTag type issue in Next.js
         revalidateTag('products');
-        await cacheService.deletePattern('products:*');
+        await cacheService.deletePattern("products:*");
+        await invalidateCategoryPublicCaches();
       } catch (e) {
         console.warn('⚠️ [ADMIN PRODUCTS CREATE SERVICE] Revalidation failed:', e);
       }

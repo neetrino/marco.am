@@ -1,5 +1,5 @@
 import { findOrCreateAttributeValue } from "../../../utils/variant-generator";
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from "@white-shop/db/prisma";
 
 /**
  * Variant option for processing

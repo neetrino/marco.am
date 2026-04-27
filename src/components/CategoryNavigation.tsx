@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { pushShopProductsListingUrl } from '../lib/push-shop-products-listing-url';
 import { useTranslation } from '../lib/i18n-client';
 import { useCategories } from './CategoryNavigation/hooks/useCategories';
 import { useCategoryProducts } from './CategoryNavigation/hooks/useCategoryProducts';
@@ -40,8 +41,9 @@ function CategoryNavigationContent() {
     
     // Reset to page 1 when changing category
     params.delete('page');
-    
-    router.push(`/products?${params.toString()}`);
+
+    const qs = params.toString();
+    pushShopProductsListingUrl(router, qs ? `/products?${qs}` : '/products');
   };
 
   useEffect(() => {

@@ -220,6 +220,12 @@
     "backToAdmin": "Вернуться в панель администратора",
     "loadingCategories": "Загрузка категорий...",
     "noCategories": "Категории не найдены",
+    "searchLabel": "Поиск категорий",
+    "searchHint": "Учитываются название, slug в URL и родитель. Несколько слов сужают выборку.",
+    "searchPlaceholder": "Введите текст для фильтрации списка…",
+    "clearSearch": "Сбросить поиск",
+    "searchMatchCount": "{matched} из {total} категорий",
+    "noSearchResults": "Нет категорий по этому запросу",
     "addCategory": "Добавить категорию",
     "editCategory": "Редактировать категорию",
     "createCategory": "Создать категорию",
@@ -244,10 +250,7 @@
     "errorUpdating": "Ошибка при обновлении категории",
     "deleteConfirm": "Вы уверены, что хотите удалить категорию \"{name}\"? Это действие нельзя отменить.",
     "deletedSuccess": "Категория успешно удалена",
-    "errorDeleting": "Ошибка при удалении категории: {message}",
-    "showingPage": "Показана страница {page} из {totalPages} (всего {total})",
-    "previous": "Предыдущая",
-    "next": "Следующая"
+    "errorDeleting": "Ошибка при удалении категории: {message}"
   },
   "delivery": {
     "title": "Доставка",
@@ -330,6 +333,7 @@
     "selectAll": "Выбрать все товары",
     "selectProduct": "Выбрать товар {title}",
     "product": "ТОВАР",
+    "categories": "КАТЕГОРИИ",
     "stock": "НАЛИЧИЕ",
     "price": "ЦЕНА",
     "status": "СТАТУС",
@@ -604,7 +608,22 @@
     "errorDeleting": "Ошибка при удалении бренда:",
     "errorSaving": "Ошибка при сохранении бренда:",
     "unknownError": "Произошла неизвестная ошибка",
-    "unknownErrorFallback": "Неизвестная ошибка"
+    "unknownErrorFallback": "Неизвестная ошибка",
+    "searchLabel": "Поиск брендов",
+    "searchHint": "Ищет по названию или URL slug. Несколько слов сужают выборку.",
+    "searchPlaceholder": "Введите текст для фильтрации…",
+    "clearSearch": "Сбросить поиск",
+    "searchMatchCount": "{matched} из {total} брендов",
+    "searchNoMatches": "Нет брендов, подходящих под запрос.",
+    "logo": "Логотип",
+    "logoUrlLabel": "URL логотипа или загрузка",
+    "logoUrlPlaceholder": "https://… или /assets/brands/…",
+    "logoUpload": "Загрузить изображение",
+    "logoRemove": "Удалить логотип",
+    "logoUploading": "Обработка…",
+    "logoInvalidFile": "Выберите файл изображения.",
+    "selectedBrandsCount": "Выбрано брендов: {count}",
+    "deleteSelected": "Удалить выбранные"
   },
   "orders": {
     "title": "Просмотр заказов",
@@ -803,6 +822,17 @@
     "update": "Обновить",
     "saving": "Сохранение...",
     "back": "Назад",
-    "backToAdmin": "Вернуться в панель администратора"
+    "backToAdmin": "Вернуться в панель администратора",
+    "tablePagination": {
+      "showingPage": "Показана страница {page} из {totalPages} (всего {total})",
+      "previous": "Предыдущая",
+      "next": "Следующая",
+      "goToPageLabel": "На страницу",
+      "goToPagePlaceholder": "напр. 3",
+      "goToPageButton": "Перейти",
+      "goToPageAria": "Перейти на страницу с номером",
+      "pageNumberAria": "Страница {n}",
+      "paginationRegionAria": "Постраничная навигация таблицы"
+    }
   }
 }

@@ -8,7 +8,13 @@ import {
   homeCustomerReviewsStorageSchema,
   type HomeCustomerReviewsStorage,
 } from "@/lib/schemas/home-customer-reviews.schema";
+import {
+  getCachedJson,
+  invalidateHomeCustomerReviewsPublicCache,
+} from "@/lib/services/read-through-json-cache";
 import { logger } from "@/lib/utils/logger";
+
+const CUSTOMER_REVIEWS_PUBLIC_CACHE_TTL_SEC = 300;
 
 type HomeLocale = "en" | "hy" | "ru";
 
@@ -145,11 +151,15 @@ export const homeCustomerReviewsService = {
     localeRaw: string | undefined,
   ): Promise<HomeCustomerReviewsPublicPayload> {
     const locale = normalizeLocale(localeRaw);
-    const storage = await loadStorage();
-    return {
-      sectionTitle: storage.sectionTitle[locale],
-      items: publicItems(storage, locale),
-    };
+    const cacheKey = `home:reviews:public:v1:${locale}`;
+
+    return getCachedJson(cacheKey, CUSTOMER_REVIEWS_PUBLIC_CACHE_TTL_SEC, async () => {
+      const storage = await loadStorage();
+      return {
+        sectionTitle: storage.sectionTitle[locale],
+        items: publicItems(storage, locale),
+      };
+    });
   },
 
   async getAdminStorage(): Promise<HomeCustomerReviewsStorage> {
@@ -175,6 +185,7 @@ export const homeCustomerReviewsService = {
           "Home customer reviews — section title (locales), testimonials (rating, text, author, photo URLs, active, order)",
       },
     });
+    await invalidateHomeCustomerReviewsPublicCache();
     return parsed;
   },
 };

@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useMemo, useTransition } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { pushShopProductsListingUrl } from '../lib/push-shop-products-listing-url';
 import { apiClient } from '../lib/api-client';
 import { getStoredLanguage } from '../lib/language';
 import { useTranslation } from '../lib/i18n-client';
@@ -38,9 +39,8 @@ export function CategoryFilter({
   const { t } = useTranslation();
   const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [loading, setLoading] = useState(true);
-  /** Instant UI while URL / RSC catch up after `router.push` */
+  /** Instant UI while URL / RSC catch up after navigation */
   const [optimisticSlugs, setOptimisticSlugs] = useState<string[] | null>(null);
-  const [, startTransition] = useTransition();
 
   useEffect(() => {
     if (filtersContext?.data?.categories) {
@@ -102,9 +102,7 @@ export function CategoryFilter({
     }
     params.delete('page');
     const qs = params.toString();
-    startTransition(() => {
-      router.push(qs ? `/products?${qs}` : '/products');
-    });
+    pushShopProductsListingUrl(router, qs ? `/products?${qs}` : '/products');
   };
 
   const handleClearCategories = () => {
@@ -113,9 +111,7 @@ export function CategoryFilter({
     params.delete('page');
     setOptimisticSlugs([]);
     const qs = params.toString();
-    startTransition(() => {
-      router.push(qs ? `/products?${qs}` : '/products');
-    });
+    pushShopProductsListingUrl(router, qs ? `/products?${qs}` : '/products');
   };
 
   const hasCategorySelection = selectedSlugs.length > 0;

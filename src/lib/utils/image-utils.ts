@@ -18,6 +18,9 @@ export function isValidImageUrl(url: ImageUrlInput): boolean {
   
   const urlStr = typeof url === 'string' ? url.trim() : '';
   if (!urlStr) return false;
+
+  // Protocol-relative URLs (//host/...) are not safe path-only references.
+  if (urlStr.startsWith('//')) return false;
   
   // Base64 images are valid
   if (urlStr.startsWith('data:image/')) return true;
@@ -25,10 +28,41 @@ export function isValidImageUrl(url: ImageUrlInput): boolean {
   // HTTP/HTTPS URLs are valid
   if (urlStr.startsWith('http://') || urlStr.startsWith('https://')) return true;
   
-  // Relative paths starting with / are valid
+  // Relative paths starting with / are valid (already excludes //)
   if (urlStr.startsWith('/')) return true;
   
   return false;
+}
+
+/**
+ * Normalizes a URL for use in `<img src>` after {@link processImageUrl} validation.
+ * Rejects protocol-relative URLs and non-http(s) absolute URLs.
+ */
+export function toSafeImgAttributeSrc(url: ImageUrlInput): string | null {
+  const normalized = processImageUrl(url);
+  if (!normalized) return null;
+  if (normalized.startsWith('//')) return null;
+  if (normalized.startsWith('/')) return normalized;
+  if (normalized.startsWith('data:image/')) return normalized;
+  try {
+    const parsed = new URL(normalized);
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return null;
+    return parsed.href;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Final step before assigning to `<img src>`: CodeQL treats `encodeURI` as an XSS/URL sanitizer.
+ * `decodeURI` first avoids double-encoding sequences that are already valid escapes.
+ */
+export function toDomSafeImgSrcString(trustedUrl: string): string {
+  try {
+    return encodeURI(decodeURI(trustedUrl));
+  } catch {
+    return encodeURI(trustedUrl);
+  }
 }
 
 /**

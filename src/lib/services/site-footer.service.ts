@@ -9,7 +9,13 @@ import {
   type SiteFooterStorage,
 } from "@/lib/schemas/site-footer.schema";
 import { AppError } from "@/lib/types/errors";
+import {
+  getCachedJson,
+  invalidateFooterPublicCache,
+} from "@/lib/services/read-through-json-cache";
 import { logger } from "@/lib/utils/logger";
+
+const FOOTER_PUBLIC_CACHE_TTL_SEC = 300;
 
 type HomeLocale = "en" | "hy" | "ru";
 
@@ -378,23 +384,27 @@ export const siteFooterService = {
     localeRaw: string | undefined,
   ): Promise<SiteFooterPublicPayload> {
     const locale = normalizeLocale(localeRaw);
-    const storage = await loadStorage();
-    return {
-      companyColumnTitle: storage.companyColumnTitle[locale],
-      supportColumnTitle: storage.supportColumnTitle[locale],
-      contactsColumnTitle: storage.contactsColumnTitle[locale],
-      contact: {
-        address: storage.contact.address[locale],
-        phoneDisplay: storage.contact.phoneDisplay[locale],
-        phoneTel: storage.contact.phoneTel,
-        email: storage.contact.email,
-      },
-      mapEmbed: publicMapEmbed(storage),
-      companyLinks: resolveNav(storage.companyLinks, locale),
-      supportLinks: resolveNav(storage.supportLinks, locale),
-      legalLinks: resolveNav(storage.legalLinks, locale),
-      socialLinks: resolveSocial(storage.socialLinks),
-    };
+    const cacheKey = `footer:public:v1:${locale}`;
+
+    return getCachedJson(cacheKey, FOOTER_PUBLIC_CACHE_TTL_SEC, async () => {
+      const storage = await loadStorage();
+      return {
+        companyColumnTitle: storage.companyColumnTitle[locale],
+        supportColumnTitle: storage.supportColumnTitle[locale],
+        contactsColumnTitle: storage.contactsColumnTitle[locale],
+        contact: {
+          address: storage.contact.address[locale],
+          phoneDisplay: storage.contact.phoneDisplay[locale],
+          phoneTel: storage.contact.phoneTel,
+          email: storage.contact.email,
+        },
+        mapEmbed: publicMapEmbed(storage),
+        companyLinks: resolveNav(storage.companyLinks, locale),
+        supportLinks: resolveNav(storage.supportLinks, locale),
+        legalLinks: resolveNav(storage.legalLinks, locale),
+        socialLinks: resolveSocial(storage.socialLinks),
+      };
+    });
   },
 
   async getAdminStorage(): Promise<SiteFooterStorage> {
@@ -441,6 +451,7 @@ export const siteFooterService = {
           "Site footer — contact, social, map embed, nav + legal links (per-locale copy)",
       },
     });
+    await invalidateFooterPublicCache();
     return parsed;
   },
 };

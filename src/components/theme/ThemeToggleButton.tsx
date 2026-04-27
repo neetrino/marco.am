@@ -31,12 +31,12 @@ export function ThemeToggleButton({
       aria-pressed={isDark}
     >
       {isDark ? (
-        <Sun className={iconClassName} strokeWidth={1.8} aria-hidden />
-      ) : (
         <Moon className={iconClassName} strokeWidth={1.8} aria-hidden />
+      ) : (
+        <Sun className={iconClassName} strokeWidth={1.8} aria-hidden />
       )}
       {showLabel ? (
-        <span className={labelClassName}>{isDark ? 'Light mode' : 'Dark mode'}</span>
+        <span className={labelClassName}>{isDark ? 'Dark mode' : 'Light mode'}</span>
       ) : null}
     </button>
   );

@@ -1,12 +1,22 @@
 import { db } from "@white-shop/db";
 
 import { filterExcludedShopCategoryTree } from "@/lib/constants/excluded-shop-category-slugs";
+import { getCachedJson } from "@/lib/services/read-through-json-cache";
+
+const CATEGORY_TREE_CACHE_TTL_SEC = 120;
 
 class CategoriesService {
   /**
    * Get category tree
    */
   async getTree(lang: string = "en") {
+    const cacheKey = `categories:tree:v1:${lang}`;
+    return getCachedJson(cacheKey, CATEGORY_TREE_CACHE_TTL_SEC, () =>
+      this.buildCategoryTree(lang),
+    );
+  }
+
+  private async buildCategoryTree(lang: string) {
     const categories = await db.category.findMany({
       where: {
         published: true,

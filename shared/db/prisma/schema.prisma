@@ -1,5 +1,7 @@
 generator client {
   provider = "prisma-client-js"
+  // Project-local output avoids Windows EPERM when Prisma renames the query engine inside pnpm's .pnpm store.
+  output   = "../generated/prisma-client"
 }
 
 datasource db {

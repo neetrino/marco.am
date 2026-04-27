@@ -34,13 +34,15 @@ type ViewMode = 'list' | 'grid-2' | 'grid-3';
 interface ProductCardProps {
   product: Product;
   viewMode?: ViewMode;
+  /** Only for `/wishlist`: bordered card + X to remove instead of heart. */
+  wishlistPage?: boolean;
 }
 
 /**
  * Product card component with Compare, Wishlist and Cart icons
  * Displays product image, title, category, price and action buttons
  */
-export function ProductCard({ product, viewMode = 'grid-3' }: ProductCardProps) {
+export function ProductCard({ product, viewMode = 'grid-3', wishlistPage = false }: ProductCardProps) {
   const isCompact = viewMode === 'grid-3';
   const currency = useCurrency();
   const { isInWishlist, toggleWishlist } = useWishlist(product.id);
@@ -88,6 +90,7 @@ export function ProductCard({ product, viewMode = 'grid-3' }: ProductCardProps) 
         onWishlistToggle={handleWishlistToggle}
         onCompareToggle={handleCompareToggle}
         onAddToCart={handleAddToCart}
+        wishlistPage={wishlistPage}
       />
     );
   }
@@ -106,6 +109,7 @@ export function ProductCard({ product, viewMode = 'grid-3' }: ProductCardProps) 
       onWishlistToggle={handleWishlistToggle}
       onCompareToggle={handleCompareToggle}
       onAddToCart={handleAddToCart}
+      wishlistPage={wishlistPage}
     />
   );
 }

@@ -144,6 +144,22 @@
   "secondary_banner": {
     "aria": "MARCO — promotional area",
     "cta": "MORE"
+  },
+  "reels_page": {
+    "meta_title": "Reels — MARCO",
+    "meta_description": "Choose a reel to watch",
+    "heading": "Reels",
+    "subtitle": "Tap a reel and watch it in full-screen mode.",
+    "available_count_label": "Available reels",
+    "empty": "Reels are not available yet.",
+    "card_badge": "Reel",
+    "watch_cta": "Watch reel",
+    "preview_previous_aria": "Previous reel",
+    "preview_next_aria": "Next reel"
+  },
+  "reels_watch_page": {
+    "meta_title": "Watch Reels — MARCO",
+    "meta_description": "Vertical reel player"
   }
 }
 

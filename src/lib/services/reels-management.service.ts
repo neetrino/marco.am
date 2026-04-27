@@ -15,7 +15,13 @@ import {
 } from "@/lib/schemas/reels-management.schema";
 import { resolveApiLocale, type ApiLocale } from "@/lib/i18n/api-locale";
 import { AppError } from "@/lib/types/errors";
+import {
+  getCachedJson,
+  invalidateReelsPublicCache,
+} from "@/lib/services/read-through-json-cache";
 import { logger } from "@/lib/utils/logger";
+
+const REELS_PUBLIC_CACHE_TTL_SEC = 120;
 
 const DEFAULT_STORAGE: ReelsManagementStorage = {
   version: REELS_MANAGEMENT_STORAGE_VERSION,
@@ -167,6 +173,7 @@ async function saveStorage(
     },
   });
 
+  await invalidateReelsPublicCache();
   return payload;
 }
 
@@ -223,13 +230,17 @@ export const reelsManagementService = {
     acceptLanguageRaw?: string | null;
   }): Promise<ReelsPublicPayload> {
     const locale = normalizeLocale(args.localeRaw, args.acceptLanguageRaw);
-    const storage = await loadStorage();
-    return reelsPublicPayloadSchema.parse({
-      generatedAt: new Date().toISOString(),
-      viewer: {
-        likedReelsCount: 0,
-      },
-      items: toPublicItems(storage, locale),
+    const cacheKey = `reels:public:v1:${locale}`;
+
+    return getCachedJson(cacheKey, REELS_PUBLIC_CACHE_TTL_SEC, async () => {
+      const storage = await loadStorage();
+      return reelsPublicPayloadSchema.parse({
+        generatedAt: new Date().toISOString(),
+        viewer: {
+          likedReelsCount: 0,
+        },
+        items: toPublicItems(storage, locale),
+      });
     });
   },
 };

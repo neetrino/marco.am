@@ -3,6 +3,7 @@ import { nanoid } from "nanoid";
 
 import { authenticateToken, requireAdmin } from "@/lib/middleware/auth";
 import { isR2Configured, uploadToR2 } from "@/lib/r2";
+import { prepareRasterForR2Upload } from "@/lib/utils/prepare-raster-for-r2-upload";
 import { logger } from "@/lib/utils/logger";
 
 const ALLOWED_IMAGE_MIME_TYPES = new Set([
@@ -14,22 +15,6 @@ const ALLOWED_IMAGE_MIME_TYPES = new Set([
 ]);
 
 const MAX_IMAGE_SIZE_BYTES = 20 * 1024 * 1024;
-
-function getImageExtension(mimeType: string): string {
-  switch (mimeType) {
-    case "image/jpeg":
-    case "image/jpg":
-      return "jpg";
-    case "image/png":
-      return "png";
-    case "image/webp":
-      return "webp";
-    case "image/gif":
-      return "gif";
-    default:
-      return "jpg";
-  }
-}
 
 export async function POST(req: NextRequest) {
   try {
@@ -104,10 +89,10 @@ export async function POST(req: NextRequest) {
 
     const arrayBuffer = await file.arrayBuffer();
     const fileBuffer = Buffer.from(arrayBuffer);
-    const ext = getImageExtension(file.type);
+    const prepared = await prepareRasterForR2Upload(fileBuffer, file.type);
     const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-    const key = `reels/posters/${date}-${nanoid(10)}.${ext}`;
-    const url = await uploadToR2(key, fileBuffer, file.type);
+    const key = `reels/posters/${date}-${nanoid(10)}.${prepared.extension}`;
+    const url = await uploadToR2(key, prepared.buffer, prepared.contentType);
 
     if (!url) {
       return NextResponse.json(

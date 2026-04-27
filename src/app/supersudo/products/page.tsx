@@ -331,15 +331,27 @@ export default function ProductsPage() {
       backLabel={t('admin.products.backToAdmin')}
       onBack={() => router.push('/supersudo')}
       headerActions={
-        (search || selectedCategories.size > 0 || skuSearch || stockFilter !== 'all') ? (
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          {(search || selectedCategories.size > 0 || skuSearch || stockFilter !== 'all') ? (
+            <button
+              type="button"
+              onClick={handleClearFilters}
+              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 transition-colors hover:border-slate-300 hover:text-slate-900"
+            >
+              {t('admin.products.clearAll')}
+            </button>
+          ) : null}
           <button
             type="button"
-            onClick={handleClearFilters}
-            className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 transition-colors hover:border-slate-300 hover:text-slate-900"
+            onClick={() => router.push('/supersudo/products/add')}
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-marco-yellow px-4 text-sm font-semibold text-marco-black transition-all hover:-translate-y-0.5 hover:brightness-95"
           >
-            {t('admin.products.clearAll')}
+            <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            {t('admin.products.addNewProduct')}
           </button>
-        ) : undefined
+        </div>
       }
     >
       <ProductFilters
@@ -364,26 +376,22 @@ export default function ProductsPage() {
         setPage={setPage}
       />
 
-      <div className="mb-4 flex items-center justify-between rounded-2xl border border-slate-200/80 bg-white/95 px-4 py-3 shadow-sm shadow-slate-200/60">
-        <p className="text-sm font-medium text-slate-600">
-          {t('admin.products.title')}
-        </p>
-        <button
-          onClick={() => router.push('/supersudo/products/add')}
-          className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-marco-yellow px-4 text-sm font-semibold text-marco-black transition-all hover:-translate-y-0.5 hover:brightness-95"
-        >
-          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          {t('admin.products.addNewProduct')}
-        </button>
+      <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-stretch sm:gap-4">
+        <div className="flex min-h-[72px] shrink-0 items-center rounded-2xl border border-slate-200/80 bg-white/95 px-4 py-3 shadow-sm shadow-slate-200/60 sm:max-w-[min(100%,20rem)]">
+          <p className="text-sm font-medium text-slate-700">
+            <span>{t('admin.products.title')}</span>
+            <span className="ml-1.5 font-normal tabular-nums text-slate-500">
+              ({loading ? '…' : (meta?.total ?? 0)})
+            </span>
+          </p>
+        </div>
+        <BulkSelectionControls
+          selectedCount={selectedIds.size}
+          onBulkDelete={handlers.handleBulkDelete}
+          bulkDeleting={bulkDeleting}
+          wrapperClassName="flex min-h-[72px] min-w-0 flex-1 flex-col"
+        />
       </div>
-
-      <BulkSelectionControls
-        selectedCount={selectedIds.size}
-        onBulkDelete={handlers.handleBulkDelete}
-        bulkDeleting={bulkDeleting}
-      />
 
       <ProductsTable
         loading={loading}

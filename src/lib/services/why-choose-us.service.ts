@@ -8,7 +8,13 @@ import {
   type WhyChooseUsIconKey,
   type WhyChooseUsStorage,
 } from "@/lib/schemas/why-choose-us.schema";
+import {
+  getCachedJson,
+  invalidateWhyChooseUsPublicCache,
+} from "@/lib/services/read-through-json-cache";
 import { logger } from "@/lib/utils/logger";
+
+const WHY_CHOOSE_PUBLIC_CACHE_TTL_SEC = 300;
 
 type HomeLocale = "en" | "hy" | "ru";
 
@@ -154,11 +160,15 @@ export const whyChooseUsService = {
     localeRaw: string | undefined,
   ): Promise<WhyChooseUsPublicPayload> {
     const locale = normalizeLocale(localeRaw);
-    const storage = await loadStorage();
-    return {
-      sectionTitle: storage.sectionTitle[locale],
-      items: publicItems(storage, locale),
-    };
+    const cacheKey = `why-choose:public:v1:${locale}`;
+
+    return getCachedJson(cacheKey, WHY_CHOOSE_PUBLIC_CACHE_TTL_SEC, async () => {
+      const storage = await loadStorage();
+      return {
+        sectionTitle: storage.sectionTitle[locale],
+        items: publicItems(storage, locale),
+      };
+    });
   },
 
   async getAdminStorage(): Promise<WhyChooseUsStorage> {
@@ -184,6 +194,7 @@ export const whyChooseUsService = {
           "Home Why choose us — section title (locales), trust items (titles, body, icon preset, active, order)",
       },
     });
+    await invalidateWhyChooseUsPublicCache();
     return parsed;
   },
 };

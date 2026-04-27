@@ -7,20 +7,23 @@ interface BulkSelectionControlsProps {
   selectedCount: number;
   onBulkDelete: () => void;
   bulkDeleting: boolean;
+  /** Override outer wrapper (e.g. row layout next to summary bar) */
+  wrapperClassName?: string;
 }
 
 export function BulkSelectionControls({
   selectedCount,
   onBulkDelete,
   bulkDeleting,
+  wrapperClassName,
 }: BulkSelectionControlsProps) {
   const { t } = useTranslation();
   const hasSelection = selectedCount > 0;
 
   return (
-    <div className="mb-4 min-h-[72px]">
+    <div className={wrapperClassName ?? 'mb-4 min-h-[72px] flex flex-col'}>
       <Card
-        className={`h-full p-4 transition-all duration-200 ${
+        className={`flex h-full min-h-[72px] flex-1 flex-col justify-center p-4 transition-all duration-200 ${
           hasSelection
             ? 'border border-amber-200/80 bg-amber-50/80 shadow-sm'
             : 'border border-slate-200 bg-slate-50/70 shadow-sm'

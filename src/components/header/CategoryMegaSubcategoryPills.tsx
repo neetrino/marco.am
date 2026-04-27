@@ -126,7 +126,7 @@ export function CategoryMegaSubcategoryPills({
     <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-8 md:gap-[62px]">
       {headerBlock}
 
-      <ul className="flex min-h-0 flex-1 flex-col gap-[11px] overflow-y-auto pr-1">
+      <ul className="flex flex-col gap-[11px] pr-1">
         {items.map((child) => (
           <li key={child.id}>
             <SubcategoryPillRow

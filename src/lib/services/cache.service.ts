@@ -245,6 +245,22 @@ export async function del(key: string): Promise<boolean> {
   }
 }
 
+async function scanKeysMatchingPatternIoRedis(
+  client: IORedis,
+  pattern: string,
+): Promise<string[]> {
+  const out: string[] = [];
+  let cursor = "0";
+  do {
+    const [next, batch] = await client.scan(cursor, "MATCH", pattern, "COUNT", 200);
+    cursor = next;
+    if (batch.length > 0) {
+      out.push(...batch);
+    }
+  } while (cursor !== "0");
+  return out;
+}
+
 /**
  * Get multiple keys matching pattern
  */
@@ -262,7 +278,7 @@ export async function keys(pattern: string): Promise<string[]> {
       return await upstashClient.keys(pattern);
     }
     if (redisClient) {
-      return await redisClient.keys(pattern);
+      return await scanKeysMatchingPatternIoRedis(redisClient, pattern);
     }
     return [];
   } catch (_error) {
@@ -301,9 +317,13 @@ export async function deletePattern(pattern: string): Promise<number> {
       return matchingKeys.length + memoryDeleted;
     }
     if (redisClient) {
-      const matchingKeys = await redisClient.keys(pattern);
+      const matchingKeys = await scanKeysMatchingPatternIoRedis(redisClient, pattern);
       if (matchingKeys.length > 0) {
-        await redisClient.del(...matchingKeys);
+        const chunk = 500;
+        for (let i = 0; i < matchingKeys.length; i += chunk) {
+          const slice = matchingKeys.slice(i, i + chunk);
+          await redisClient.del(...slice);
+        }
       }
       return matchingKeys.length + memoryDeleted;
     }

@@ -1,8 +1,13 @@
 import { db } from "@white-shop/db";
 import {
-  COMPARE_MAX_ITEMS,
+  COMPARE_MAX_LIST_ITEMS,
+  COMPARE_MAX_PER_CATEGORY,
   COMPARE_SESSION_MAX_AGE_SECONDS,
 } from "@/lib/constants/compare-session";
+import {
+  filterCompareLinesByCategoryLimits,
+  resolveCompareCategoryId,
+} from "@/lib/compare/compare-category";
 
 function compareExpiresAt(): Date {
   return new Date(Date.now() + COMPARE_SESSION_MAX_AGE_SECONDS * 1000);
@@ -39,9 +44,21 @@ export async function mergeGuestCompareIntoUser(
       where: { userId },
     });
 
+    const sortedGuest = [...guest.items].sort((a, b) => a.position - b.position);
+    const guestProductIds = sortedGuest.map((i) => i.productId);
+    const guestProducts = await tx.product.findMany({
+      where: { id: { in: guestProductIds } },
+      select: { id: true, primaryCategoryId: true, categoryIds: true },
+    });
+    const guestProductById = new Map(guestProducts.map((p) => [p.id, p]));
+
     if (!userCompare) {
-      const sortedGuest = [...guest.items].sort((a, b) => a.position - b.position);
-      const keepItems = sortedGuest.slice(0, COMPARE_MAX_ITEMS);
+      const keepItems = filterCompareLinesByCategoryLimits(
+        sortedGuest,
+        guestProductById,
+        COMPARE_MAX_PER_CATEGORY,
+        COMPARE_MAX_LIST_ITEMS
+      );
 
       await tx.compareList.update({
         where: { id: guest.id },
@@ -52,12 +69,11 @@ export async function mergeGuestCompareIntoUser(
         },
       });
 
-      if (sortedGuest.length > keepItems.length) {
-        const removableIds = sortedGuest
-          .slice(COMPARE_MAX_ITEMS)
-          .map((item) => item.id);
+      const keepIds = new Set(keepItems.map((i) => i.id));
+      const removable = sortedGuest.filter((i) => !keepIds.has(i.id));
+      if (removable.length > 0) {
         await tx.compareItem.deleteMany({
-          where: { id: { in: removableIds } },
+          where: { id: { in: removable.map((i) => i.id) } },
         });
       }
 
@@ -73,6 +89,21 @@ export async function mergeGuestCompareIntoUser(
       ).map((row) => row.productId)
     );
 
+    const userRows = await tx.compareItem.findMany({
+      where: { compareListId: userCompare.id },
+      select: {
+        product: {
+          select: { primaryCategoryId: true, categoryIds: true },
+        },
+      },
+    });
+    const countsByKey = new Map<string, number>();
+    for (const row of userRows) {
+      const k = resolveCompareCategoryId(row.product);
+      countsByKey.set(k, (countsByKey.get(k) ?? 0) + 1);
+    }
+    let listTotal = userRows.length;
+
     let pos =
       ((
         await tx.compareItem.aggregate({
@@ -82,18 +113,25 @@ export async function mergeGuestCompareIntoUser(
       )._max.position ?? -1) + 1;
 
     let merged = 0;
-    const sortedGuest = [...guest.items].sort((a, b) => a.position - b.position);
-
     for (const line of sortedGuest) {
       if (existingIds.has(line.productId)) {
         continue;
       }
-      const size = await tx.compareItem.count({
-        where: { compareListId: userCompare.id },
-      });
-      if (size >= COMPARE_MAX_ITEMS) {
+      const p = guestProductById.get(line.productId);
+      if (!p) {
+        continue;
+      }
+
+      if (listTotal >= COMPARE_MAX_LIST_ITEMS) {
         break;
       }
+
+      const incomingKey = resolveCompareCategoryId(p);
+      const inCat = countsByKey.get(incomingKey) ?? 0;
+      if (inCat >= COMPARE_MAX_PER_CATEGORY) {
+        continue;
+      }
+
       await tx.compareItem.create({
         data: {
           compareListId: userCompare.id,
@@ -103,6 +141,8 @@ export async function mergeGuestCompareIntoUser(
       });
       pos += 1;
       existingIds.add(line.productId);
+      countsByKey.set(incomingKey, inCat + 1);
+      listTotal += 1;
       merged += 1;
     }
 

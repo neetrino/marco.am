@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { Inter } from 'next/font/google';
 import Script from 'next/script';
 import './globals.css';
+import { TidioDeferredLoader } from '../components/TidioDeferredLoader';
 import { ClientProviders } from '../components/ClientProviders';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
@@ -19,7 +20,7 @@ import { LanguagePreferenceProvider } from '../lib/language-context';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Shop - Professional E-commerce',
+  title: 'Shop - Marco Group',
   description: 'Modern e-commerce platform',
 };
 
@@ -53,6 +54,7 @@ export default async function RootLayout({
             })();
           `}
         </Script>
+        <TidioDeferredLoader />
         <Suspense fallback={null}>
           <LanguagePreferenceProvider initialLanguage={initialLanguage}>
             <ClientProviders>

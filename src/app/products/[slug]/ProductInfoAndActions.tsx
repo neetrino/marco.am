@@ -13,6 +13,7 @@ import {
   HEADER_FIGMA_PILL_RADIUS_CLASS,
 } from '../../../components/header/header.constants';
 import { ProductAttributesSelector } from './ProductAttributesSelector';
+import { ProductPartialStar } from './ProductPartialStar';
 import type { Product, ProductVariant } from './types';
 
 /** Buy CTA — taller row; trailing circle with light left nudge (−4px). */
@@ -116,6 +117,12 @@ export function ProductInfoAndActions({
     colorGroups.length > 0 ||
     (!product?.productAttributes && sizeGroups.length > 0);
 
+  const hasProductReviews = reviewsCount > 0;
+  const displayRatingScore = hasProductReviews
+    ? Math.min(5, Math.max(0, averageRating))
+    : 5;
+  const starFillRatio = displayRatingScore / 5;
+
   useEffect(() => {
     if (language !== 'hy') {
       setUseShortHyBuyLabel(false);
@@ -151,20 +158,21 @@ export function ProductInfoAndActions({
     <div className="flex flex-col h-full">
       <div className="flex-1">
         {product.brand && (
-          <div className="mb-2 flex items-center gap-2">
+          <div className="mb-5 flex flex-wrap items-center gap-4 md:gap-5">
             {product.brand.logo && (
               <Image
                 src={product.brand.logo}
                 alt={product.brand.name}
-                width={20}
-                height={20}
-                className="h-5 w-5 rounded-sm object-contain"
+                width={140}
+                height={42}
+                className="h-7 w-auto max-w-[min(100%,140px)] shrink-0 object-contain object-left md:h-8 md:max-w-[min(100%,160px)]"
+                sizes="(max-width: 768px) 140px, 160px"
               />
             )}
             <p className="text-sm text-gray-500">{product.brand.name}</p>
           </div>
         )}
-        <div className="mb-4 flex items-start justify-between gap-4">
+        <div className="mb-5 flex items-start justify-between gap-4">
           <h1 className="min-w-0 flex-1 text-4xl font-bold text-marco-black">
             {getProductText(language, product.id, 'title') || product.title}
           </h1>
@@ -172,6 +180,25 @@ export function ProductInfoAndActions({
             <p className="text-base font-bold text-marco-yellow">3 ՏԱՐԻ</p>
             <p className="text-xs font-bold uppercase tracking-[0.3px] text-white">ԵՐԱՇԽԻՔ</p>
           </div>
+        </div>
+        <div className="-mt-2 mb-6 flex flex-wrap items-center gap-x-2 gap-y-1">
+          <ProductPartialStar fillRatio={starFillRatio} />
+          <span className="text-sm font-semibold tabular-nums text-marco-black">
+            {displayRatingScore.toFixed(1)}
+          </span>
+          <span className="text-sm text-gray-400" aria-hidden>
+            ·
+          </span>
+          <button
+            type="button"
+            onClick={onScrollToReviews}
+            className="text-sm text-gray-600 underline-offset-2 transition-colors hover:text-marco-black hover:underline"
+          >
+            {reviewsCount}{' '}
+            {reviewsCount === 1
+              ? t(language, 'common.reviews.review')
+              : t(language, 'common.reviews.reviews')}
+          </button>
         </div>
         <div className="mb-6">
           <div className="flex flex-col gap-1">
@@ -194,41 +221,9 @@ export function ProductInfoAndActions({
             {isOutOfStock ? t(language, 'common.stock.outOfStock') : t(language, 'common.stock.inStock')}
           </p>
         </div>
-        {/* Rating Section */}
-        <div className="mb-6 p-4 bg-white rounded-2xl space-y-4">
-          <div className="flex items-center gap-2 pb-3">
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1 -ml-[17px]">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <svg
-                    key={star}
-                    className={`w-5 h-5 ${
-                      star <= Math.round(averageRating)
-                        ? 'text-yellow-400'
-                        : 'text-gray-300'
-                    }`}
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                ))}
-              </div>
-              <span className="text-sm font-semibold text-marco-black">
-                {averageRating > 0 ? averageRating.toFixed(1) : '0.0'}
-              </span>
-            </div>
-            <span
-              onClick={onScrollToReviews}
-              className="text-sm text-gray-600 cursor-pointer hover:text-marco-black hover:underline transition-colors"
-            >
-              ({reviewsCount} {reviewsCount === 1 ? t(language, 'common.reviews.review') : t(language, 'common.reviews.reviews')})
-            </span>
-          </div>
-        </div>
         {hasDescription && (
           <div
-            className="-mt-[19px] text-gray-600 mb-8 prose prose-sm"
+            className="text-gray-600 mb-8 prose prose-sm"
             dangerouslySetInnerHTML={{ __html: sanitizedDescription }}
           />
         )}
@@ -291,12 +286,41 @@ export function ProductInfoAndActions({
             </p>
           </div>
         )}
-        <div className="flex -translate-y-0.5 border-t pb-2 pt-7">
+        <div className="flex -translate-y-0.5 pb-2 pt-4">
           <div className="flex w-full min-w-0 flex-nowrap items-center gap-3">
+            <div className="flex h-10 shrink-0 items-center overflow-hidden rounded-xl border-2 border-gray-200 bg-white">
+              <button
+                onClick={() => onQuantityAdjust(-1)}
+                disabled={quantity <= 1}
+                className="flex h-10 w-7 items-center justify-center text-sm disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                -
+              </button>
+              <div className="w-7 text-center text-sm font-bold">{quantity}</div>
+              <button
+                onClick={() => onQuantityAdjust(1)}
+                disabled={quantity >= maxQuantity}
+                className="flex h-10 w-7 items-center justify-center text-sm disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                +
+              </button>
+            </div>
+            <button
+              onClick={onCompareToggle}
+              className={`w-10 h-10 shrink-0 rounded-xl border-2 flex items-center justify-center transition-all duration-200 ${isInCompare ? 'border-marco-yellow bg-marco-yellow text-[#050505] dark:!text-[#050505]' : 'border-gray-200 hover:border-gray-300'}`}
+            >
+              <CompareIcon isActive={isInCompare} />
+            </button>
+            <button
+              onClick={onAddToWishlist}
+              className={`w-10 h-10 shrink-0 rounded-xl border-2 flex items-center justify-center ${isInWishlist ? 'border-red-600 bg-red-600 text-white dark:border-red-600 dark:bg-red-600 dark:text-white' : 'border-gray-200'}`}
+            >
+              <Heart fill={isInWishlist ? 'currentColor' : 'none'} />
+            </button>
             <button
               type="button"
               disabled={!canAddToCart || isAddingToCart}
-                className={`flex min-w-0 flex-1 items-center gap-1.5 bg-marco-yellow pl-4 pr-4 text-left text-sm font-bold leading-normal text-marco-black dark:!text-[#050505] transition-[filter,transform] hover:-translate-y-0.5 hover:brightness-95 active:brightness-90 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 disabled:hover:brightness-100 md:max-w-72 md:flex-none md:pl-7 ${PRODUCT_BUY_CTA_HEIGHT_CLASS} ${HEADER_FIGMA_PILL_RADIUS_CLASS}`}
+              className={`ml-auto flex min-w-0 flex-1 items-center gap-1.5 bg-marco-yellow pl-4 pr-4 text-left text-sm font-bold leading-normal text-marco-black dark:!text-[#050505] transition-[filter,transform] hover:-translate-y-0.5 hover:brightness-95 active:brightness-90 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 disabled:hover:brightness-100 md:max-w-72 md:flex-none md:pl-7 ${PRODUCT_BUY_CTA_HEIGHT_CLASS} ${HEADER_FIGMA_PILL_RADIUS_CLASS}`}
               onClick={onAddToCart}
             >
               <span
@@ -338,35 +362,6 @@ export function ProductInfoAndActions({
               >
                 <ArrowUpRight className="size-3.5" strokeWidth={2.5} />
               </span>
-            </button>
-            <div className="ml-auto flex h-10 shrink-0 items-center overflow-hidden rounded-xl border-2 border-gray-200 bg-white">
-              <button
-                onClick={() => onQuantityAdjust(-1)}
-                disabled={quantity <= 1}
-                className="flex h-10 w-7 items-center justify-center text-sm disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                -
-              </button>
-              <div className="w-7 text-center text-sm font-bold">{quantity}</div>
-              <button
-                onClick={() => onQuantityAdjust(1)}
-                disabled={quantity >= maxQuantity}
-                className="flex h-10 w-7 items-center justify-center text-sm disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                +
-              </button>
-            </div>
-            <button
-              onClick={onCompareToggle}
-              className={`w-10 h-10 shrink-0 rounded-xl border-2 flex items-center justify-center transition-all duration-200 ${isInCompare ? 'border-marco-yellow bg-marco-yellow text-[#050505] dark:!text-[#050505]' : 'border-gray-200 hover:border-gray-300'}`}
-            >
-              <CompareIcon isActive={isInCompare} />
-            </button>
-            <button
-              onClick={onAddToWishlist}
-              className={`w-10 h-10 shrink-0 rounded-xl border-2 flex items-center justify-center ${isInWishlist ? 'border-red-600 bg-red-600 text-white dark:border-red-600 dark:bg-red-600 dark:text-white' : 'border-gray-200'}`}
-            >
-              <Heart fill={isInWishlist ? 'currentColor' : 'none'} />
             </button>
           </div>
         </div>

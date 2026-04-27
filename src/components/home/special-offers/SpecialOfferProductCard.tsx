@@ -78,7 +78,7 @@ function SpecialOfferProductCardView({
 
   return (
     <article
-      className={`${montserratArm.className} special-offer-card-cutout relative mx-auto flex h-full w-full max-w-[306px] min-h-[420px] flex-col overflow-visible rounded-[32px] bg-[#f6f6f6] shadow-[0_2px_12px_rgba(0,0,0,0.06)] dark:bg-[#0a0a0a] dark:shadow-[0_6px_24px_rgba(0,0,0,0.3)] md:mx-0 md:w-[306px] md:max-w-none md:min-h-[486px] md:shrink-0`}
+      className={`${montserratArm.className} special-offer-card-cutout relative mx-auto flex h-full w-full max-w-[306px] min-h-[420px] flex-col overflow-visible rounded-[32px] bg-[#f6f6f6] shadow-[0_2px_12px_rgba(0,0,0,0.06)] dark:bg-[var(--app-bg)] dark:shadow-[0_6px_24px_rgba(0,0,0,0.3)] md:mx-0 md:w-[306px] md:max-w-none md:min-h-[486px] md:shrink-0`}
     >
       {showWarrantyBadge ? (
         <SpecialOfferWarrantyBadge line1={t('home.special_offers_warranty_line1')} line2={t('home.special_offers_warranty_line2')} />

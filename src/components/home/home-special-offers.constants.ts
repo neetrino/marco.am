@@ -47,7 +47,7 @@ export const SPECIAL_OFFERS_SCROLLER_PADDING_BOTTOM_DESKTOP_PX = 4;
  * Horizontal reel scroller — shared by «Հատուկ առաջարկներ» and featured «Նորույթներ» mobile rail.
  */
 export const SPECIAL_OFFERS_MOBILE_SCROLLER_CLASS =
-  'flex min-w-0 flex-row flex-nowrap overflow-x-auto overflow-y-hidden overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
+  'flex min-w-0 flex-row flex-nowrap overflow-x-auto overflow-y-hidden overscroll-x-contain touch-pan-x [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
 
 /** Portion of scroller width to move per arrow tap. */
 export const SPECIAL_OFFERS_SCROLL_FRACTION = 0.85;

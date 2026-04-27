@@ -57,7 +57,7 @@ function FooterNavColumn({
 
   return (
     <div
-      className={`inline-flex max-w-full flex-col ${FOOTER_NAV_COLUMN_HEADING_LIST_GAP_CLASS} ${FOOTER_TABLET_COLUMN_CENTER_CLASS}`}
+      className={`flex h-full w-full max-w-full flex-col ${FOOTER_NAV_COLUMN_HEADING_LIST_GAP_CLASS} ${FOOTER_TABLET_COLUMN_CENTER_CLASS}`}
     >
       <p
         className={`text-xs font-bold uppercase ${FOOTER_NAV_COLUMN_HEADING_LEADING_CLASS} ${FOOTER_NAV_COLUMN_HEADING_TRACK_CLASS} ${FOOTER_HEADING_TEXT_CLASS}`}
@@ -81,20 +81,22 @@ function FooterContactsColumn() {
   const { t } = useTranslation();
 
   return (
-    <div className={`inline-flex max-w-full flex-col gap-4 ${FOOTER_TABLET_COLUMN_CENTER_CLASS}`}>
+    <div
+      className={`flex h-full w-full max-w-full flex-col gap-3 ${FOOTER_TABLET_COLUMN_CENTER_CLASS}`}
+    >
       <p
-        className={`text-xs font-bold uppercase tracking-[0.05em] ${FOOTER_HEADING_TEXT_CLASS}`}
+        className={`text-xs font-bold uppercase ${FOOTER_NAV_COLUMN_HEADING_LEADING_CLASS} ${FOOTER_NAV_COLUMN_HEADING_TRACK_CLASS} ${FOOTER_HEADING_TEXT_CLASS}`}
       >
         {t('common.footer.marco.headings.contacts')}
       </p>
-        <div className="flex items-start gap-3 md:max-[1023px]:justify-center min-[1024px]:max-[1366px]:justify-center">
+      <div className="flex items-start gap-3 md:max-[1023px]:justify-center min-[1024px]:max-[1366px]:justify-center">
         <MapPin
           className="mt-0 h-4 w-4 shrink-0 -translate-x-px translate-y-[4px] self-start text-marco-yellow"
           strokeWidth={2}
           aria-hidden
         />
         <p
-          className={`text-xs leading-relaxed whitespace-pre-line ${FOOTER_MUTED_TEXT_CLASS}`}
+          className={`text-xs leading-snug whitespace-pre-line ${FOOTER_MUTED_TEXT_CLASS}`}
         >
           {t('contact.address')}
         </p>
@@ -120,7 +122,7 @@ function FooterContactsColumn() {
           ))}
         </div>
       </div>
-        <div className="flex items-start gap-3 md:max-[1023px]:justify-center min-[1024px]:max-[1366px]:justify-center">
+      <div className="flex items-start gap-3 md:max-[1023px]:justify-center min-[1024px]:max-[1366px]:justify-center">
         <img
           src={FOOTER_CONTACT_MAIL_ICON_SRC}
           alt=""
@@ -191,10 +193,10 @@ export function Footer() {
 
   return (
     <footer className={`${FOOTER_SURFACE_CLASS} border-t border-black/5 dark:border-white/10`}>
-      <div className="marco-header-container pb-10 pt-8">
+      <div className="marco-header-container pb-7 pt-6">
         <div className={FOOTER_MAIN_GRID_CLASS}>
           <div
-            className={`relative flex max-w-sm flex-col md:max-[1023px]:items-center min-[1024px]:max-[1366px]:items-center ${FOOTER_BRAND_COLUMN_GAP_CLASS}`}
+            className={`relative flex max-w-sm flex-col md:max-[1023px]:items-center min-[1024px]:max-[1366px]:items-center lg:self-start ${FOOTER_BRAND_COLUMN_GAP_CLASS}`}
           >
             <div className={`${FOOTER_BRAND_LOGO_BOX_CLASS} ${FOOTER_BRAND_LOGO_SHIFT_CLASS}`}>
               <Image
@@ -202,7 +204,7 @@ export function Footer() {
                 alt="MARCO GROUP"
                 fill
                 className="object-contain object-left-top md:max-[1023px]:object-center min-[1024px]:max-[1366px]:object-center"
-                sizes="200px"
+                sizes="320px"
                 priority={false}
               />
             </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { pushShopProductsListingUrl } from '../../lib/push-shop-products-listing-url';
 import type { FormEvent } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { setStoredCurrency, type CurrencyCode, formatPrice } from '../../lib/currency';
@@ -12,6 +13,7 @@ import { CART_KEY } from '../../lib/storageCounts';
 import { useHeaderStorageCounts } from './useHeaderStorageCounts';
 import { useHeaderCurrency } from './useHeaderCurrency';
 import { useTranslation } from '../../lib/i18n-client';
+import { subscribeShopCategoryTreeUpdated } from '../../lib/shop-category-tree-sync';
 import type { Category, CategoriesResponse } from './category-nav-types';
 
 export function useHeaderData() {
@@ -178,6 +180,12 @@ export function useHeaderData() {
   }, [fetchCategories]);
 
   useEffect(() => {
+    return subscribeShopCategoryTreeUpdated(() => {
+      void fetchCategories();
+    });
+  }, [fetchCategories]);
+
+  useEffect(() => {
     const onLanguage = () => {
       fetchCategories();
     };
@@ -252,7 +260,7 @@ export function useHeaderData() {
     }
     clearSearch();
     const queryString = params.toString();
-    router.push(queryString ? `/products?${queryString}` : '/products');
+    pushShopProductsListingUrl(router, queryString ? `/products?${queryString}` : '/products');
   };
 
   const handleCurrencyChange = (currency: CurrencyCode) => {

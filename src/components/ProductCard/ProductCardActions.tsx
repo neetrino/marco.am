@@ -1,7 +1,7 @@
 'use client';
 
 import type { MouseEvent } from 'react';
-import { Heart } from 'lucide-react';
+import { Heart, X } from 'lucide-react';
 import { CompareIcon } from '../icons/CompareIcon';
 import { HeaderNavbarCartIcon } from '../icons/HeaderNavbarCartIcon';
 import { useTranslation } from '../../lib/i18n-client';
@@ -12,6 +12,8 @@ interface ProductCardActionsProps {
   isAddingToCart: boolean;
   inStock: boolean;
   isCompact?: boolean;
+  /** Wishlist page only: show X to remove from wishlist instead of the heart toggle. */
+  wishlistPage?: boolean;
   onWishlistToggle: (e: MouseEvent) => void;
   onCompareToggle: (e: MouseEvent) => void;
   onAddToCart: (e: MouseEvent) => void;
@@ -27,6 +29,7 @@ export function ProductCardActions({
   isAddingToCart,
   inStock,
   isCompact = false,
+  wishlistPage = false,
   onWishlistToggle,
   onCompareToggle,
   onAddToCart,
@@ -53,25 +56,37 @@ export function ProductCardActions({
         <CompareIcon isActive={isInCompare} size={isCompact ? 16 : 18} />
       </button>
 
-      {/* Wishlist Icon */}
-      <button
-        type="button"
-        onClick={onWishlistToggle}
-        className={`${buttonSize} rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
-          isInWishlist
-            ? 'border-red-600 bg-red-600 text-white shadow-lg dark:border-red-600 dark:bg-red-600 dark:text-white'
-            : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50 dark:border-marco-black dark:bg-marco-black dark:text-white dark:hover:border-marco-black dark:hover:bg-marco-black'
-        }`}
-        title={isInWishlist ? t('common.messages.removedFromWishlist') : t('common.messages.addedToWishlist')}
-        aria-label={isInWishlist ? t('common.ariaLabels.removeFromWishlist') : t('common.ariaLabels.addToWishlist')}
-      >
-        <Heart
-          className={`${isCompact ? 'h-[18px] w-[18px]' : 'h-6 w-6'} ${
-            isInWishlist ? 'fill-current' : 'fill-none'
+      {/* Wishlist: heart (shop) or X remove (wishlist page only) */}
+      {wishlistPage ? (
+        <button
+          type="button"
+          onClick={onWishlistToggle}
+          className={`${buttonSize} rounded-full border-2 border-gray-200 bg-white text-gray-700 flex items-center justify-center transition-all duration-200 hover:border-gray-300 hover:bg-gray-50 dark:border-marco-black dark:bg-marco-black dark:text-white dark:hover:border-marco-black dark:hover:bg-marco-black`}
+          title={t('common.messages.removedFromWishlist')}
+          aria-label={t('common.ariaLabels.removeFromWishlist')}
+        >
+          <X className={isCompact ? 'h-[18px] w-[18px]' : 'h-6 w-6'} strokeWidth={2} />
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={onWishlistToggle}
+          className={`${buttonSize} rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
+            isInWishlist
+              ? 'border-red-600 bg-red-600 text-white shadow-lg dark:border-red-600 dark:bg-red-600 dark:text-white'
+              : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50 dark:border-marco-black dark:bg-marco-black dark:text-white dark:hover:border-marco-black dark:hover:bg-marco-black'
           }`}
-          strokeWidth={2}
-        />
-      </button>
+          title={isInWishlist ? t('common.messages.removedFromWishlist') : t('common.messages.addedToWishlist')}
+          aria-label={isInWishlist ? t('common.ariaLabels.removeFromWishlist') : t('common.ariaLabels.addToWishlist')}
+        >
+          <Heart
+            className={`${isCompact ? 'h-[18px] w-[18px]' : 'h-6 w-6'} ${
+              isInWishlist ? 'fill-current' : 'fill-none'
+            }`}
+            strokeWidth={2}
+          />
+        </button>
+      )}
     </>
   );
 

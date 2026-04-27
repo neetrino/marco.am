@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@white-shop/db/prisma";
 
 /**
  * Product filters interface
@@ -18,6 +18,8 @@ export interface ProductFilters {
   cursor?: string;
   lang?: string;
   technicalSpecs?: TechnicalSpecFilters;
+  /** Restrict to these product IDs (e.g. wishlist). Applied with other filters as AND. */
+  productIds?: string[];
 }
 
 export type TechnicalSpecFilters = Record<string, string[]>;

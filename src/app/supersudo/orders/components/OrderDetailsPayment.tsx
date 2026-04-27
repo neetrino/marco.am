@@ -20,9 +20,6 @@ export function OrderDetailsPayment({ orderDetails, formatCurrency }: OrderDetai
       <h3 className="text-sm font-semibold text-gray-900 mb-2">{t('admin.orders.orderDetails.paymentSection')}</h3>
       {p ? (
         <div className="text-sm text-gray-700 space-y-1">
-          <div>
-            <span className="font-medium">{t('admin.orders.orderDetails.provider')}</span> {p.provider}
-          </div>
           {p.method ? (
             <div>
               <span className="font-medium">{t('admin.orders.orderDetails.method')}</span> {p.method}

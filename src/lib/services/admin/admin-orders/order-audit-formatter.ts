@@ -1,4 +1,4 @@
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from "@white-shop/db/prisma";
 
 /** Actor snapshot for admin order audit entries (from `users`). */
 export type OrderAuditActor = {

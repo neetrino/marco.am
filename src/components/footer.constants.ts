@@ -34,9 +34,6 @@ export const FOOTER_NAV_COLUMN_LINK_LEADING_CLASS = 'leading-tight';
 
 export const FOOTER_COMPANY_LINKS = [
   { href: '/about', labelKey: 'common.footer.marco.links.companyAbout' },
-  { href: '/stores', labelKey: 'common.footer.marco.links.companyStores' },
-  { href: '/careers', labelKey: 'common.footer.marco.links.companyCareers' },
-  { href: '/news', labelKey: 'common.footer.marco.links.companyNews' },
   { href: '/contact', labelKey: 'common.footer.marco.links.companyFeedback' },
 ] as const;
 
@@ -45,11 +42,6 @@ export const FOOTER_SUPPORT_LINKS = [
     href: '/delivery-return',
     labelKey: 'common.footer.marco.links.supportShipping',
   },
-  {
-    href: '/delivery',
-    labelKey: 'common.footer.marco.links.supportDelivery',
-  },
-  { href: '/faq', labelKey: 'common.footer.marco.links.supportFaq' },
   {
     href: '/privacy',
     labelKey: 'common.footer.marco.links.supportInstallment',
@@ -71,34 +63,40 @@ export const FOOTER_TABLET_COLUMN_CENTER_CLASS =
   'md:max-[1023px]:items-center md:max-[1023px]:text-center min-[1024px]:max-[1366px]:items-center min-[1024px]:max-[1366px]:text-center';
 
 /**
+ * Nudges Company / Support / Contacts down vs. the brand column (4-col footer).
+ */
+export const FOOTER_GRID_NAV_COLUMNS_PAD_TOP_CLASS = 'lg:pt-9';
+
+/**
  * Company / Support grid cells: centered on iPad Pro band; flush right + nudge only on wide desktop.
  */
 export const FOOTER_GRID_COMPANY_SUPPORT_WRAPPER_CLASS =
-  'lg:flex lg:w-full min-[1024px]:max-[1366px]:translate-x-0 min-[1024px]:max-[1366px]:justify-center min-[1367px]:justify-end min-[1367px]:-translate-x-[49px]';
+  `lg:flex lg:h-full lg:w-full lg:min-h-0 ${FOOTER_GRID_NAV_COLUMNS_PAD_TOP_CLASS} min-[1024px]:max-[1366px]:translate-x-0 min-[1024px]:max-[1366px]:justify-center min-[1367px]:justify-end min-[1367px]:-translate-x-[16px]`;
 
 /** Contacts column: centered on iPad Pro band; aligned to cell end on wide desktop. */
 export const FOOTER_GRID_CONTACTS_WRAPPER_CLASS =
-  'lg:flex lg:w-full min-[1024px]:max-[1366px]:justify-center min-[1367px]:justify-end';
+  `lg:flex lg:h-full lg:w-full lg:min-h-0 ${FOOTER_GRID_NAV_COLUMNS_PAD_TOP_CLASS} min-[1024px]:max-[1366px]:justify-center min-[1367px]:justify-end`;
 
 /** Space between main footer grid and the copyright separator bar. */
-export const FOOTER_COPYRIGHT_STRIP_MARGIN_TOP_CLASS = 'mt-6';
+export const FOOTER_COPYRIGHT_STRIP_MARGIN_TOP_CLASS = 'mt-4';
 /** Padding under the rule, above social / copyright / payments. */
-export const FOOTER_COPYRIGHT_STRIP_PADDING_TOP_CLASS = 'pt-4';
+export const FOOTER_COPYRIGHT_STRIP_PADDING_TOP_CLASS = 'pt-3';
 /** Vertical gap between stacked copyright-row blocks on small screens. */
 export const FOOTER_COPYRIGHT_STRIP_STACK_GAP_CLASS = 'gap-5';
 
 /**
  * Main footer columns grid — iPad Pro (1024–1366): centered cells; 1367+ Figma stretch alignment.
+ * `lg:items-stretch` + brand `self-start`: nav/contact cells share row height; brand keeps intrinsic height.
  */
 export const FOOTER_MAIN_GRID_CLASS =
-  'grid grid-cols-1 items-start gap-12 md:grid-cols-2 md:max-[1023px]:justify-items-center lg:grid-cols-4 min-[1024px]:max-[1366px]:justify-items-center min-[1367px]:justify-items-stretch lg:gap-x-16 lg:gap-y-10';
+  'grid grid-cols-1 items-start gap-8 md:grid-cols-2 md:max-[1023px]:justify-items-center lg:grid-cols-4 lg:items-stretch min-[1024px]:max-[1366px]:justify-items-center min-[1367px]:justify-items-stretch lg:gap-x-4 lg:gap-y-6';
 
 /**
  * Brand logo frame — larger than legacy 91×81; same ~91:81 aspect.
  * Blurb overlays the lower area via {@link FOOTER_BRAND_DESCRIPTION_OVERLAP_CLASS} (logo position unchanged).
  */
 export const FOOTER_BRAND_LOGO_BOX_CLASS =
-  'relative z-0 h-[178px] w-[200px] shrink-0';
+  'relative z-0 h-[285px] w-[320px] shrink-0';
 
 /**
  * Lifts the MARCO mark: stronger from `md` so its top lines up with the Company column heading;

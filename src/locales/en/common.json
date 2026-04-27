@@ -46,11 +46,14 @@
     "brands": "Brands",
     "reels": "Reels",
     "addresses": "Addresses",
+    "openInMaps": "View on map",
     "categoriesMegaMenu": {
       "viewProducts": "View all products",
       "subcategories": "Subcategories",
       "productsWord": "products",
-      "emptySubcategories": "No subcategories yet. Add child categories in the admin or run the database seed."
+      "emptySubcategories": "No subcategories yet. Add child categories in the admin or run the database seed.",
+      "scrollListUp": "Scroll categories up",
+      "scrollListDown": "Scroll categories down"
     }
   },
   "stock": {
@@ -84,7 +87,8 @@
   "compare": {
     "title": "Compare Products",
     "empty": "No products to compare",
-    "emptyDescription": "Add up to 4 products to compare their features and prices.",
+    "emptyDescription": "Add up to 4 products per category to compare features and prices.",
+    "summaryLine": "{total} products · {categories} categories · max {max} per category",
     "products": "products",
     "product": "product",
     "isFull": "Comparison list is full",
@@ -140,7 +144,7 @@
     "selectOptions": "Select options",
     "adding": "Adding...",
     "pcs": "pcs",
-    "compareMaxReached": "You can compare a maximum of 4 products",
+    "compareMaxReached": "You can compare up to 4 products in each category (or the list limit was reached)",
     "invalidProduct": "Invalid product. Please refresh the page and try again.",
     "noVariantsAvailable": "No variants available",
     "stockExceeded": "Available quantity is {stock} pcs. You cannot add more:",
@@ -155,7 +159,7 @@
     "sku": "SKU"
   },
   "alerts": {
-    "compareMaxReached": "You can compare a maximum of 4 products",
+    "compareMaxReached": "You can compare up to 4 products in each category (or the list limit was reached)",
     "invalidProduct": "Invalid product. Please refresh the page and try again.",
     "noVariantsAvailable": "No variants available",
     "stockExceeded": "Available quantity is {stock} pcs. You cannot add more:",
@@ -194,7 +198,9 @@
     "previousThumbnail": "Previous thumbnail",
     "nextThumbnail": "Next thumbnail",
     "fullscreenImage": "Fullscreen image",
-    "socialLinks": "Social networks"
+    "socialLinks": "Social networks",
+    "headerChoosePhone": "Choose a phone number to call",
+    "headerChooseAddress": "Choose a store address or open the map"
   },
   "placeholders": {
     "search": "Search products"

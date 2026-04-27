@@ -91,6 +91,15 @@ export function useWishlist(productId: string) {
     isTogglingRef.current = true;
     setIsToggling(true);
     setIsInWishlist(nextValue);
+
+    if (!nextValue) {
+      window.dispatchEvent(
+        new CustomEvent('wishlist-remove-optimistic', {
+          detail: { productId },
+        })
+      );
+    }
+
     window.dispatchEvent(
       new CustomEvent('wishlist-optimistic-updated', {
         detail: { delta },
@@ -106,6 +115,13 @@ export function useWishlist(productId: string) {
     } catch (error: unknown) {
       if (isMountedRef.current) {
         setIsInWishlist(previousValue);
+      }
+      if (!nextValue) {
+        window.dispatchEvent(
+          new CustomEvent('wishlist-remove-reverted', {
+            detail: { productId },
+          })
+        );
       }
       window.dispatchEvent(
         new CustomEvent('wishlist-optimistic-updated', {

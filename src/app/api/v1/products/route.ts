@@ -32,10 +32,21 @@ export async function GET(req: NextRequest) {
     const page =
       Number.isInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1;
     const parsedLimit = Number(searchParams.get("limit"));
+
+    const idsParam = searchParams.get("ids");
+    const productIdsFromQuery =
+      idsParam
+        ?.split(",")
+        .map((id) => id.trim())
+        .filter((id) => id.length > 0)
+        .slice(0, 500) ?? [];
+
     const limit =
-      Number.isInteger(parsedLimit) && parsedLimit > 0
-        ? Math.min(parsedLimit, 200)
-        : 12;
+      productIdsFromQuery.length > 0
+        ? Math.min(Math.max(productIdsFromQuery.length, 1), 500)
+        : Number.isInteger(parsedLimit) && parsedLimit > 0
+          ? Math.min(parsedLimit, 200)
+          : 12;
     const cursor = searchParams.get("cursor") || undefined;
 
     const technicalSpecs = parseTechnicalSpecFiltersFromSearchParams(searchParams);
@@ -54,6 +65,7 @@ export async function GET(req: NextRequest) {
       cursor,
       lang: searchParams.get("lang") || "en",
       technicalSpecs,
+      productIds: productIdsFromQuery.length > 0 ? productIdsFromQuery : undefined,
     };
 
     const cacheKey = `products:${searchParams.toString()}`;

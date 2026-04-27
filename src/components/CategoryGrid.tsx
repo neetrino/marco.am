@@ -1,14 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
+import { pushShopProductsListingUrl } from '../lib/push-shop-products-listing-url';
 import Link from 'next/link';
 import Image from 'next/image';
 import { apiClient } from '../lib/api-client';
 import { getStoredLanguage } from '../lib/language';
 import { logger } from "@/lib/utils/logger";
 import { SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC } from './home/home-special-offers.constants';
+import { subscribeShopCategoryTreeUpdated } from '../lib/shop-category-tree-sync';
 
 interface Category {
   id: string;
@@ -156,14 +158,7 @@ export function CategoryGrid() {
   const [categoryProducts, setCategoryProducts] = useState<Record<string, Product | null>>({});
   const displayImageSrc = SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC;
 
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
-  /**
-   * Fetch categories and product counts
-   */
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     try {
       setLoading(true);
       const language = getStoredLanguage();
@@ -266,10 +261,20 @@ export function CategoryGrid() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    void fetchCategories();
+  }, [fetchCategories]);
+
+  useEffect(() => {
+    return subscribeShopCategoryTreeUpdated(() => {
+      void fetchCategories();
+    });
+  }, [fetchCategories]);
 
   const handleCategoryClick = (categorySlug: string) => {
-    router.push(`/products?category=${categorySlug}`);
+    pushShopProductsListingUrl(router, `/products?category=${categorySlug}`);
   };
 
   if (loading) {

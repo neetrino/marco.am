@@ -1,5 +1,10 @@
 import type { ProductClass } from "@/lib/constants/product-class";
 
+export interface ProductListCategory {
+  id: string;
+  title: string;
+}
+
 export interface Product {
   id: string;
   slug: string;
@@ -17,6 +22,7 @@ export interface Product {
   }>;
   image: string | null;
   createdAt: string;
+  categories?: ProductListCategory[];
 }
 
 export interface ProductsResponse {

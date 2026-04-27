@@ -220,6 +220,12 @@
     "backToAdmin": "Վերադառնալ ադմինիստրատորի վահան",
     "loadingCategories": "Բեռնվում են կատեգորիաները...",
     "noCategories": "Կատեգորիաներ չեն գտնվել",
+    "searchLabel": "Որոնել կատեգորիաներ",
+    "searchHint": "Համընկնում է վերնագրի, URL slug-ի կամ ծնողի անվան հետ։ Մի քանի բառ՝ ավելի նեղ արդյունքի համար։",
+    "searchPlaceholder": "Մուտքագրեք՝ ֆիլտրելու ցուցակը…",
+    "clearSearch": "Մաքրել որոնումը",
+    "searchMatchCount": "{matched} / {total} կատեգորիա",
+    "noSearchResults": "Որոնմանը համապատասխանող կատեգորիա չկա",
     "addCategory": "Ավելացնել կատեգորիա ",
     "editCategory": "Խմբագրել կատեգորիա",
     "createCategory": "Ստեղծել կատեգորիա",
@@ -230,7 +236,7 @@
     "seoTitlePlaceholder": "Ընտրովի՝ որոնման արդյունքի վերնագիր",
     "seoDescription": "SEO նկարագրություն",
     "seoDescriptionPlaceholder": "Ընտրովի՝ կարճ նկարագրություն որոնման արդյունքների համար",
-    "parentCategory": "Ենթակատեգորիա",
+    "parentCategory": "Ծնող կատեգորիա",
     "rootCategory": "Ոչինչ (Արմատային կատեգորիա)",
     "subcategories": "Ենթակատեգորիաներ",
     "noSubcategoryCandidates": "Ենթակատեգորիա նշանակելու հասանելի կատեգորիաներ չկան",
@@ -240,14 +246,11 @@
     "updating": "Թարմացվում է...",
     "createdSuccess": "Կատեգորիան հաջողությամբ ստեղծվեց",
     "updatedSuccess": "Կատեգորիան հաջողությամբ թարմացվեց",
-
+    "errorCreating": "Սխալ կատեգորիա ստեղծելիս",
     "errorUpdating": "Սխալ կատեգորիա թարմացնելիս",
     "deleteConfirm": "Վստահ ե՞ք, որ ցանկանում եք ջնջել կատեգորիա \"{name}\": Այս գործողությունը չի կարող հետարկվել:",
     "deletedSuccess": "Կատեգորիան հաջողությամբ ջնջվեց",
-    "errorDeleting": "Սխալ կատեգորիան ջնջելիս: {message}",
-    "showingPage": "Ցուցադրվում է {page} էջը {totalPages}-ից ({total} ընդամենը)",
-    "previous": "Նախորդ",
-    "next": "Հաջորդ"
+    "errorDeleting": "Սխալ կատեգորիան ջնջելիս: {message}"
   },
   "delivery": {
     "title": "Առաքում",
@@ -330,6 +333,7 @@
     "selectAll": "Ընտրել բոլոր ապրանքները",
     "selectProduct": "Ընտրել ապրանք {title}",
     "product": "ԱՊՐԱՆՔ",
+    "categories": "ԿԱՏԵԳՈՐԻԱՆԵՐ",
     "stock": "ՊԱՇԱՐ",
     "price": "ԳԻՆ",
     "status": "ԿԱՐԳԱՎԻՃԱԿ",
@@ -610,7 +614,22 @@
     "errorDeleting": "Սխալ բրենդը ջնջելիս:",
     "errorSaving": "Սխալ բրենդը պահելիս:",
     "unknownError": "Անհայտ սխալ տեղի ունեցավ",
-    "unknownErrorFallback": "Անհայտ սխալ"
+    "unknownErrorFallback": "Անհայտ սխալ",
+    "searchLabel": "Որոնել բրենդներ",
+    "searchHint": "Համընկնում է անվան կամ URL slug-ի հետ։ Մի քանի բառով նեղացրեք արդյունքները։",
+    "searchPlaceholder": "Գրեք՝ ցուցակը զտելու համար…",
+    "clearSearch": "Մաքրել որոնումը",
+    "searchMatchCount": "{matched}՝ {total} բրենդներից",
+    "searchNoMatches": "Ձեր որոնմանը համապատասխանող բրենդներ չկան։",
+    "logo": "Լոգո",
+    "logoUrlLabel": "Լոգոյի հղում կամ վերբեռնում",
+    "logoUrlPlaceholder": "https://… կամ /assets/brands/…",
+    "logoUpload": "Վերբեռնել նկար",
+    "logoRemove": "Հեռացնել լոգոն",
+    "logoUploading": "Մշակվում է…",
+    "logoInvalidFile": "Ընտրեք նկարի ֆայլ։",
+    "selectedBrandsCount": "Ընտրված բրենդներ՝ {count}",
+    "deleteSelected": "Ջնջել ընտրվածները"
   },
   "orders": {
     "title": "Դիտել պատվերները",
@@ -809,6 +828,17 @@
     "update": "Թարմացնել",
     "saving": "Պահվում է...",
     "back": "Վերադառնալ",
-    "backToAdmin": "Վերադառնալ ադմինիստրատորի վահան"
+    "backToAdmin": "Վերադառնալ ադմինիստրատորի վահան",
+    "tablePagination": {
+      "showingPage": "Ցուցադրվում է {page} էջը {totalPages}-ից ({total} ընդամենը)",
+      "previous": "Նախորդ",
+      "next": "Հաջորդ",
+      "goToPageLabel": "Անցնել էջ",
+      "goToPagePlaceholder": "օր.՝ 3",
+      "goToPageButton": "Անցնել",
+      "goToPageAria": "Անցնել նշված համարի էջ",
+      "pageNumberAria": "{n} էջ",
+      "paginationRegionAria": "Աղյուսակի էջավորում"
+    }
   }
 }

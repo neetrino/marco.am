@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@white-shop/db/prisma";
 import { isAdminOrderListStatus } from "@/lib/constants/admin-order-list-status";
 import type { OrderFilters } from "./types";
 

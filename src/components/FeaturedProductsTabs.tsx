@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Montserrat } from 'next/font/google';
 
+import { montserratFeatured } from '../fonts/montserrat-home';
 import { apiClient, getErrorHttpStatus } from '../lib/api-client';
 import { getStoredLanguage, type LanguageCode } from '../lib/language';
 import { t } from '../lib/i18n';
@@ -40,12 +40,6 @@ import {
 } from './home/home-reels.constants';
 import type { SpecialOfferProduct } from './home/special-offer-product.types';
 import { useIsMaxMd } from './home/use-is-max-md';
-
-const montserratFeatured = Montserrat({
-  subsets: ['latin'],
-  weight: ['700'],
-  display: 'swap',
-});
 
 interface ProductsResponse {
   data: SpecialOfferProduct[];
@@ -191,7 +185,6 @@ export function FeaturedProductsTabs() {
   }, [fetchProducts]);
 
   const sectionHeading = t(language, FEATURED_SECTION_TITLE_KEY);
-  const cardLayout = isMaxMd ? 'mobileGrid' : 'default';
 
   return (
     <section
@@ -249,7 +242,6 @@ export function FeaturedProductsTabs() {
           loading={loading}
           error={error}
           products={products}
-          cardLayout={cardLayout}
           isMaxMd={isMaxMd}
           onRetryFetch={() => fetchProducts(FILTER_BY_TAB[activeTab])}
           homeBrandPartners={null}

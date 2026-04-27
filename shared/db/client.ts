@@ -1,5 +1,5 @@
 import { loadEnvConfig } from "@next/env";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "./generated/prisma-client";
 
 /** Ensures `.env` is applied before Prisma reads `DATABASE_URL` (Next.js Turbopack / early imports). */
 loadEnvConfig(process.cwd(), process.env.NODE_ENV === "development");

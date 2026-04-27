@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@white-shop/db/prisma";
 import { db } from "@white-shop/db";
 import { ensureProductVariantAttributesColumn } from "../../../utils/db-ensure";
 import { logger } from "../../../utils/logger";
@@ -10,6 +10,14 @@ const getProductListInclude = () => ({
   translations: {
     where: { locale: "en" },
     take: 1,
+  },
+  categories: {
+    include: {
+      translations: {
+        where: { locale: "en" },
+        take: 1,
+      },
+    },
   },
   variants: {
     where: { published: true },

@@ -26,7 +26,7 @@ function loadEnv(filePath) {
 loadEnv(path.join(__dirname, "../../.env"));
 loadEnv(path.join(process.cwd(), ".env"));
 
-const { PrismaClient } = require("@prisma/client");
+const { PrismaClient } = require(path.join(__dirname, "..", "generated", "prisma-client"));
 
 const prisma = new PrismaClient();
 

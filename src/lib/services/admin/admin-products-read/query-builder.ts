@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@white-shop/db/prisma";
 import type { ProductFilters } from "./types";
 
 /**

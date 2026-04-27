@@ -2,15 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { nanoid } from "nanoid";
 import { authenticateToken, requireAdmin } from "@/lib/middleware/auth";
 import { uploadToR2, isR2Configured } from "@/lib/r2";
+import { prepareRasterForR2Upload } from "@/lib/utils/prepare-raster-for-r2-upload";
 import { logger } from "@/lib/utils/logger";
-
-const MIME_TO_EXT: Record<string, string> = {
-  "image/jpeg": "jpg",
-  "image/jpg": "jpg",
-  "image/png": "png",
-  "image/gif": "gif",
-  "image/webp": "webp",
-};
 
 function parseDataUrl(dataUrl: string): { mime: string; buffer: Buffer } | null {
   const match = dataUrl.match(/^data:(image\/[a-z+]+);base64,(.+)$/i);
@@ -124,9 +117,9 @@ export async function POST(req: NextRequest) {
           { status: 400 }
         );
       }
-      const ext = MIME_TO_EXT[parsed.mime] ?? "jpg";
-      const key = `products/${date}-${nanoid(10)}.${ext}`;
-      const url = await uploadToR2(key, parsed.buffer, parsed.mime);
+      const prepared = await prepareRasterForR2Upload(parsed.buffer, parsed.mime);
+      const key = `products/${date}-${nanoid(10)}.${prepared.extension}`;
+      const url = await uploadToR2(key, prepared.buffer, prepared.contentType);
       if (!url) {
         logger.error("Admin upload images: R2 upload failed", { key });
         return NextResponse.json(

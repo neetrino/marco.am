@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@white-shop/db/prisma";
 import { db } from "@white-shop/db";
 import { logger } from "../../utils/logger";
 import type { ProductFilters } from "./types";
@@ -229,6 +229,13 @@ export async function buildWhereClause(
     published: true,
     deletedAt: null,
   };
+
+  const idList =
+    filters.productIds?.filter((id): id is string => typeof id === "string" && id.trim().length > 0) ?? [];
+  const uniqueProductIds = [...new Set(idList.map((id) => id.trim()))].slice(0, 500);
+  if (uniqueProductIds.length > 0) {
+    where = { ...where, id: { in: uniqueProductIds } };
+  }
 
   // Add search filter
   if (search && search.trim()) {

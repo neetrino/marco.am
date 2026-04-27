@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Montserrat } from 'next/font/google';
 
+import { montserratSpecial } from '../../fonts/montserrat-home';
 import { chunkArray, padChunkToSize, padChunksToMinimumCount } from '../../lib/chunk-array';
 import { apiClient } from '../../lib/api-client';
 import { getStoredLanguage, type LanguageCode } from '../../lib/language';
@@ -54,12 +54,6 @@ import { HOME_PAGE_SECTION_SHELL_CLASS } from './home-page-section-shell.constan
 import { useIsMaxMd } from './use-is-max-md';
 import { useSpecialOffersCarousel } from './useSpecialOffersCarousel';
 import { SPECIAL_OFFERS_PRODUCTS_LIMIT } from '@/constants/specialOffersSection';
-
-const montserratSpecial = Montserrat({
-  subsets: ['latin', 'latin-ext'],
-  weight: ['400', '700', '900'],
-  display: 'swap',
-});
 
 const HOME_CARD_COMPACT_MAX_WIDTH_PX = 168;
 

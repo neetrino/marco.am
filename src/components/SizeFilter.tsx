@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { pushShopProductsListingUrl } from '../lib/push-shop-products-listing-url';
 import { apiClient } from '../lib/api-client';
 import { getStoredLanguage } from '../lib/language';
 import { useTranslation } from '../lib/i18n-client';
@@ -97,7 +98,7 @@ export function SizeFilter({ category, search, minPrice, maxPrice, selectedSizes
 
     params.delete('page');
 
-    router.push(`/products?${params.toString()}`);
+    pushShopProductsListingUrl(router, `/products?${params.toString()}`);
   };
 
   if (loading) {

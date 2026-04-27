@@ -3,6 +3,15 @@ import tseslint from "typescript-eslint";
 
 /** @type {import("eslint").Linter.Config[]} */
 const config = [
+  {
+    ignores: [
+      "**/node_modules/**",
+      ".next/**",
+      "out/**",
+      "coverage/**",
+      "shared/db/generated/**",
+    ],
+  },
   ...nextConfig,
   ...tseslint.configs.recommended,
   {

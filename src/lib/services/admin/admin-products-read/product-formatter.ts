@@ -3,6 +3,7 @@
  */
 export function formatProductForList(product: {
   id: string;
+  primaryCategoryId?: string | null;
   published: boolean;
   featured: boolean | null;
   productClass?: "retail" | "wholesale";
@@ -11,6 +12,10 @@ export function formatProductForList(product: {
   translations?: Array<{
     slug: string;
     title: string;
+  }>;
+  categories?: Array<{
+    id: string;
+    translations?: Array<{ locale: string; title: string }>;
   }>;
   variants?: Array<{
     price: number;
@@ -31,6 +36,22 @@ export function formatProductForList(product: {
   
   const image = extractImageFromMedia(product.media);
 
+  const rawCategories = product.categories ?? [];
+  const primaryId = product.primaryCategoryId ?? null;
+  const sortedCategories = [...rawCategories].sort((a, b) => {
+    if (a.id === primaryId) return -1;
+    if (b.id === primaryId) return 1;
+    return 0;
+  });
+  const categories = sortedCategories
+    .map((cat) => {
+      const trs = Array.isArray(cat.translations) ? cat.translations : [];
+      const tr = trs.find((t) => t.locale === "en") ?? trs[0];
+      const title = tr?.title?.trim() ?? "";
+      return { id: cat.id, title };
+    })
+    .filter((c) => c.title.length > 0);
+
   return {
     id: product.id,
     slug: translation?.slug || "",
@@ -45,6 +66,7 @@ export function formatProductForList(product: {
     colorStocks: [], // Can be enhanced later
     image,
     createdAt: product.createdAt.toISOString(),
+    categories,
   };
 }
 

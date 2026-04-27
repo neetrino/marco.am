@@ -9,7 +9,13 @@ import {
   type BannerManagementStorage,
 } from "@/lib/schemas/banner-management.schema";
 import { resolveApiLocale, type ApiLocale } from "@/lib/i18n/api-locale";
+import {
+  getCachedJson,
+  invalidateBannersPublicCache,
+} from "@/lib/services/read-through-json-cache";
 import { logger } from "@/lib/utils/logger";
+
+const BANNER_PUBLIC_CACHE_TTL_SEC = 90;
 
 export type PublicBannerItem = {
   id: string;
@@ -119,6 +125,7 @@ export const bannerManagementService = {
       },
     });
 
+    await invalidateBannersPublicCache();
     return parsed;
   },
 
@@ -128,39 +135,50 @@ export const bannerManagementService = {
     acceptLanguageRaw?: string | null;
     now?: Date;
   }): Promise<PublicBannersPayload> {
-    const storage = await loadStorage();
     const locale = normalizeLocale(args.localeRaw, args.acceptLanguageRaw);
     const now = args.now ?? new Date();
     const nowMs = now.getTime();
+    const cacheKey =
+      args.now !== undefined
+        ? `banners:public:v1:${args.slot}:${locale}:at:${nowMs}`
+        : `banners:public:v1:${args.slot}:${locale}`;
 
-    const items = storage.banners
-      .filter((banner) => banner.slot === args.slot)
-      .filter((banner) => banner.active)
-      .filter((banner) =>
-        isScheduledNow(
-          banner.schedule.startsAt,
-          banner.schedule.endsAt,
-          nowMs,
-        ),
-      )
-      .sort((a, b) => a.sortOrder - b.sortOrder || a.id.localeCompare(b.id))
-      .map((banner) => ({
-        id: banner.id,
-        slot: banner.slot,
-        title: banner.title[locale],
-        imageDesktopUrl: banner.imageDesktopUrl,
-        imageMobileUrl: banner.imageMobileUrl,
-        link: {
-          href: banner.link.href,
-          openInNewTab: banner.link.openInNewTab,
-        },
-        sortOrder: banner.sortOrder,
-      }));
+    return getCachedJson(
+      cacheKey,
+      args.now !== undefined ? 30 : BANNER_PUBLIC_CACHE_TTL_SEC,
+      async () => {
+        const storage = await loadStorage();
 
-    return {
-      slot: args.slot,
-      generatedAt: now.toISOString(),
-      items,
-    };
+        const items = storage.banners
+          .filter((banner) => banner.slot === args.slot)
+          .filter((banner) => banner.active)
+          .filter((banner) =>
+            isScheduledNow(
+              banner.schedule.startsAt,
+              banner.schedule.endsAt,
+              nowMs,
+            ),
+          )
+          .sort((a, b) => a.sortOrder - b.sortOrder || a.id.localeCompare(b.id))
+          .map((banner) => ({
+            id: banner.id,
+            slot: banner.slot,
+            title: banner.title[locale],
+            imageDesktopUrl: banner.imageDesktopUrl,
+            imageMobileUrl: banner.imageMobileUrl,
+            link: {
+              href: banner.link.href,
+              openInNewTab: banner.link.openInNewTab,
+            },
+            sortOrder: banner.sortOrder,
+          }));
+
+        return {
+          slot: args.slot,
+          generatedAt: now.toISOString(),
+          items,
+        };
+      },
+    );
   },
 };

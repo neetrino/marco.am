@@ -4,11 +4,15 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from '../../../../lib/i18n-client';
 import { buildCategoryTree } from '../utils';
 import { CategoryItem } from './CategoryItem';
-import { CategoriesPagination } from './CategoriesPagination';
+import { AdminTablePagination } from '../../components/AdminTablePagination';
 import type { Category, CategoryWithLevel } from '../types';
 
 interface CategoriesListProps {
   categories: Category[];
+  /** Full list for resolving parent titles when `categories` is filtered. Defaults to `categories`. */
+  categoryLookupList?: Category[];
+  /** When non-empty and list is empty, show “no search results” instead of “no categories”. */
+  searchQuery?: string;
   selectedCategoryIds: string[];
   onToggleSelect: (categoryId: string, checked: boolean) => void;
   onTogglePageSelection: (categoryIds: string[], checked: boolean) => void;
@@ -20,6 +24,8 @@ const ITEMS_PER_PAGE = 20;
 
 export function CategoriesList({
   categories,
+  categoryLookupList,
+  searchQuery = '',
   selectedCategoryIds,
   onToggleSelect,
   onTogglePageSelection,
@@ -28,6 +34,7 @@ export function CategoriesList({
 }: CategoriesListProps) {
   const { t } = useTranslation();
   const [currentPage, setCurrentPage] = useState(1);
+  const lookup = categoryLookupList ?? categories;
 
   const categoryTree = buildCategoryTree(categories);
 
@@ -44,12 +51,16 @@ export function CategoriesList({
   // Reset to page 1 when categories change
   useEffect(() => {
     setCurrentPage(1);
-  }, [categories.length]);
+  }, [categories.length, searchQuery]);
 
   if (categoryTree.length === 0) {
+    const emptyMessage =
+      searchQuery.trim().length > 0
+        ? t('admin.categories.noSearchResults')
+        : t('admin.categories.noCategories');
     return (
       <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50/70 px-4 py-8 text-center">
-        <p className="text-sm font-medium text-slate-600">{t('admin.categories.noCategories')}</p>
+        <p className="text-sm font-medium text-slate-600">{emptyMessage}</p>
       </div>
     );
   }
@@ -99,7 +110,7 @@ export function CategoriesList({
             <tbody className="divide-y divide-slate-100">
               {paginatedCategories.map((category: CategoryWithLevel) => {
                 const parentCategory = category.parentId
-                  ? categories.find((item) => item.id === category.parentId)
+                  ? lookup.find((item) => item.id === category.parentId)
                   : null;
 
                 return (
@@ -119,7 +130,7 @@ export function CategoriesList({
         </div>
       </div>
 
-      <CategoriesPagination
+      <AdminTablePagination
         currentPage={currentPage}
         totalPages={totalPages}
         totalItems={categoryTree.length}

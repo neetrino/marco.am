@@ -27,7 +27,7 @@ const ChevronDownIcon = () => (
   </svg>
 );
 
-/** Figma 111:4306 — 3-letter labels (ENG / AMD row) */
+/** Figma 111:4306 — compact pill labels (ENG; native script for hy/ru) */
 function getPillLanguageLabel(raw: LanguageCode): string {
   if (raw === 'ka') {
     return 'ENG';
@@ -36,9 +36,9 @@ function getPillLanguageLabel(raw: LanguageCode): string {
     return 'ENG';
   }
   if (raw === 'hy') {
-    return 'HYE';
+    return 'ՀԱՅ';
   }
-  return 'RUS';
+  return 'РУС';
 }
 
 interface HeaderLocaleCurrencyPillProps {

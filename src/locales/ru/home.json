@@ -144,6 +144,22 @@
   "secondary_banner": {
     "aria": "MARCO — промо-блок",
     "cta": "ЕЩЁ"
+  },
+  "reels_page": {
+    "meta_title": "Reels — MARCO",
+    "meta_description": "Выберите ролик для просмотра",
+    "heading": "Reels",
+    "subtitle": "Нажмите на ролик и смотрите в полноэкранном режиме.",
+    "available_count_label": "Доступные ролики",
+    "empty": "Ролики пока недоступны.",
+    "card_badge": "Ролик",
+    "watch_cta": "Смотреть",
+    "preview_previous_aria": "Предыдущий ролик",
+    "preview_next_aria": "Следующий ролик"
+  },
+  "reels_watch_page": {
+    "meta_title": "Смотреть Reels — MARCO",
+    "meta_description": "Вертикальный плеер роликов"
   }
 }
 

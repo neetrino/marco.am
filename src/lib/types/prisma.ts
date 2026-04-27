@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@prisma/client';
+import type { PrismaClient } from '@white-shop/db/prisma';
 
 /**
  * Client passed to interactive Prisma `$transaction` callbacks.

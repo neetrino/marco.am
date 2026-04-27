@@ -7,7 +7,7 @@ import {
   assertValidOrderUpdateData,
   buildOrderUpdatePatch,
 } from "./order-update-patch";
-import type { Order } from "@prisma/client";
+import type { Order } from "@white-shop/db/prisma";
 import {
   buildCashPaymentPatch,
   isCashPaymentMethod,

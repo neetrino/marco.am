@@ -1,10 +1,17 @@
 'use client';
 
-import { Button, Input } from '@shop/ui';
+import { Button, Card, Input } from '@shop/ui';
 import { MapPin } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { FormEvent, ChangeEvent } from 'react';
 import { useTranslation } from '../../lib/i18n-client';
+import {
+  getContactLocations,
+  mapsEmbedUrlForLocation,
+  parseContactLocationHash,
+  type ContactLocation,
+  type ContactLocationId,
+} from '../../lib/contact-locations';
 import { apiClient } from '../../lib/api-client';
 import { getErrorMessage } from '@/lib/types/errors';
 import {
@@ -16,43 +23,117 @@ const CONTACT_PAGE_PHONE_ICON_CLASS =
   'mt-0.5 h-[13px] w-auto shrink-0 translate-y-[4px]';
 const CONTACT_PAGE_MAIL_ICON_CLASS =
   'mt-0.5 h-[12px] w-auto shrink-0 translate-y-[3px]';
-/** Ровные разделители контактных блоков: первые одинаковые, последний короче. */
-const CONTACT_DIVIDER_BASE_CLASS = 'ml-0 block h-px shrink-0 self-start bg-black/15 dark:bg-white/40';
-const CONTACT_DIVIDER_CLASS =
-  `${CONTACT_DIVIDER_BASE_CLASS} w-[17.5rem] sm:w-[20rem]`;
+/** Contact block dividers — aligned to content width. */
+const CONTACT_DIVIDER_BASE_CLASS =
+  'ml-0 block h-px shrink-0 self-start bg-[var(--app-border)]';
+const CONTACT_DIVIDER_CLASS = `${CONTACT_DIVIDER_BASE_CLASS} w-full max-w-sm`;
 const CONTACT_EMAILS = ['marcogrouparmenia@mail.ru', 'marcofurniture@mail.ru'] as const;
+
+const CONTACT_FORM_FIELD_CLASS =
+  'w-full !h-11 !rounded-full !border !border-[var(--app-border)] !bg-[var(--app-surface-muted)] !px-4 !py-0 !text-sm !text-[var(--app-text)] placeholder:!text-[var(--app-text-soft)] focus:!border-marco-yellow/55 focus:!ring-2 focus:!ring-marco-yellow/30 dark:!border-[var(--app-border-strong)] sm:!text-base';
+
+type ContactMapAddressStripProps = {
+  locations: readonly ContactLocation[];
+  activeId: ContactLocationId;
+  onSelect: (id: ContactLocationId) => void;
+  sectionTitle: string;
+};
+
+function ContactMapAddressStrip({
+  locations,
+  activeId,
+  onSelect,
+  sectionTitle,
+}: ContactMapAddressStripProps) {
+  return (
+    <div className="border-b border-[var(--app-border)] bg-[var(--app-surface)] px-4 py-5 sm:px-6">
+      <div className="marco-header-container">
+        <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--app-text-soft)]">
+          {sectionTitle}
+        </p>
+        <div
+          className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
+          role="tablist"
+          aria-label={sectionTitle}
+        >
+          {locations.map((loc) => {
+            const active = activeId === loc.id;
+            return (
+              <button
+                key={loc.id}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => onSelect(loc.id)}
+                className={`flex min-h-[3.25rem] items-start gap-2.5 rounded-2xl border px-4 py-3 text-left text-sm font-medium leading-snug transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marco-yellow/80 sm:text-[15px] ${
+                  active
+                    ? 'border-marco-yellow bg-marco-yellow/12 text-[var(--app-text)] shadow-sm ring-1 ring-marco-yellow/35 dark:bg-marco-yellow/14 dark:ring-marco-yellow/45'
+                    : 'border-[var(--app-border)] bg-[var(--app-surface-muted)]/80 text-[var(--app-text)] hover:border-marco-yellow/45 hover:bg-marco-yellow/[0.06] hover:shadow-sm dark:border-[var(--app-border-strong)] dark:bg-[var(--app-surface-muted)]/50 dark:hover:border-marco-yellow/40 dark:hover:bg-marco-yellow/[0.08]'
+                }`}
+              >
+                <MapPin
+                  className={`mt-0.5 h-[18px] w-[18px] shrink-0 stroke-[2] ${
+                    active ? 'text-marco-yellow' : 'text-[var(--app-text-soft)]'
+                  }`}
+                  aria-hidden
+                />
+                <span className="min-w-0 flex-1">{loc.address}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function ContactPage() {
   const { t, lang } = useTranslation();
-  const contactLocations = [
-    {
-      address:
-        lang === 'hy'
-          ? 'Ք․ Երևան Ալեք Մանուկյան 23'
-          : lang === 'ru'
-            ? 'г. Ереван, Алек Манукян 23'
-            : '23 Alek Manukyan St, Yerevan',
-      phones: ['+374 93 52 04 06', '+374 98 19 04 06', '011 52 04 06'],
-    },
-    {
-      address:
-        lang === 'hy'
-          ? 'Արգավանդ Օդանավակայան 1'
-          : lang === 'ru'
-            ? 'Аргаванд, Аэропорт 1'
-            : '1 Airport St, Argavand',
-      phones: ['+374 93 58 04 09', '+374 41 34 04 06', '+374 77 64 04 06'],
-    },
-    {
-      address:
-        lang === 'hy'
-          ? 'Գ. Փարաքար Մեսրոպ Մաշտոցի 1'
-          : lang === 'ru'
-            ? 'с. Паракар, Месроп Маштоц 1'
-            : '1 Mesrop Mashtots St, Parakar',
-      phones: ['+374 77 51 04 06'],
-    },
-  ] as const;
+  const contactLocations = useMemo(() => getContactLocations(lang), [lang]);
+  const [mapFocusId, setMapFocusId] = useState<ContactLocationId | null>(null);
+  const mapSectionRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const syncFromHash = () => {
+      setMapFocusId(parseContactLocationHash(window.location.hash));
+    };
+    syncFromHash();
+    window.addEventListener('hashchange', syncFromHash);
+    return () => window.removeEventListener('hashchange', syncFromHash);
+  }, []);
+
+  useEffect(() => {
+    if (!parseContactLocationHash(window.location.hash)) {
+      return;
+    }
+    const el = mapSectionRef.current;
+    if (!el) {
+      return;
+    }
+    const rect = el.getBoundingClientRect();
+    const headerOffset = 88;
+    const visibleEnough =
+      rect.top >= headerOffset - 32 && rect.top < window.innerHeight * 0.92;
+    if (visibleEnough) {
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 80);
+    return () => window.clearTimeout(timer);
+  }, [mapFocusId]);
+
+  const mapLocation =
+    (mapFocusId ? contactLocations.find((l) => l.id === mapFocusId) : null) ??
+    contactLocations[0];
+
+  const activeMapId: ContactLocationId =
+    mapFocusId ?? contactLocations[0]?.id ?? 'yerevan';
+
+  const selectMapLocation = (id: ContactLocationId) => {
+    window.location.hash = `loc-${id}`;
+  };
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -100,20 +181,28 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="bg-white">
-      {/* Top Section: Contact Info and Form */}
-      <div className="marco-header-container pt-12 pb-16">
-        <div className="grid grid-cols-1 items-center gap-10 md:grid-cols-[minmax(320px,380px)_minmax(320px,380px)] md:justify-center md:items-center md:gap-8 lg:grid-cols-[420px_420px] lg:gap-12">
-          {/* Left Side: Contact Information */}
-          <div className="flex w-full flex-col items-center self-start space-y-3.5 md:items-start">
-            <h2 className="mb-8 w-full self-start text-3xl font-bold text-gray-900 lg:-ml-[181px]">
+    <div className="bg-[var(--app-bg)] text-[var(--app-text)]">
+      <div className="marco-header-container py-10 md:py-14">
+        <div className="mx-auto grid max-w-5xl grid-cols-1 gap-10 md:grid-cols-2 md:items-start md:gap-12 lg:gap-16">
+          <div className="flex w-full flex-col md:max-w-lg">
+            <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--app-text-soft)]">
+              {t('contact.writeToUs.title')}
+            </p>
+            <h1 className="mb-8 text-3xl font-bold tracking-tight text-[var(--app-text)] sm:text-4xl">
               {t('contact.pageTitle')}
-            </h2>
-            <div className="mx-auto w-fit max-w-[320px] self-center sm:max-w-[340px] md:mx-0 md:w-full md:self-auto">
+            </h1>
+            <div className="w-full max-w-md">
               {contactLocations.map((location, idx) => (
                 <div
                   key={location.address}
-                  className={`space-y-2 ${idx === contactLocations.length - 1 ? 'pb-0' : 'pb-4'}`}
+                  id={`contact-loc-${location.id}`}
+                  className={`space-y-2 rounded-xl border border-transparent px-3 py-2 transition-colors ${
+                    idx === contactLocations.length - 1 ? 'pb-0' : 'pb-4'
+                  } ${
+                    mapFocusId !== null && mapFocusId === location.id
+                      ? 'border-marco-yellow/35 bg-marco-yellow/10 dark:bg-marco-yellow/[0.12]'
+                      : ''
+                  }`}
                 >
                   <div className="flex items-start gap-2">
                     <MapPin
@@ -123,7 +212,7 @@ export default function ContactPage() {
                       strokeWidth={2}
                       aria-hidden
                     />
-                    <p className="text-sm font-medium leading-snug text-marco-black sm:text-base">
+                    <p className="text-sm font-medium leading-snug text-[var(--app-text)] sm:text-base">
                       {location.address}
                     </p>
                   </div>
@@ -141,7 +230,7 @@ export default function ContactPage() {
                         <a
                           key={phone}
                           href={`tel:${phone.replace(/[^\d+]/gu, '')}`}
-                          className="text-sm font-semibold leading-snug text-marco-black transition-opacity hover:opacity-80 sm:text-base"
+                          className="text-sm font-semibold leading-snug text-[var(--app-text)] transition-colors hover:text-marco-yellow sm:text-base"
                         >
                           {phone}
                         </a>
@@ -167,7 +256,7 @@ export default function ContactPage() {
                     />
                     <a
                       href={`mailto:${email}`}
-                      className="break-all text-xs font-semibold leading-snug text-marco-black transition-opacity hover:opacity-80 sm:text-sm"
+                      className="break-all text-xs font-semibold leading-snug text-[var(--app-text)] transition-colors hover:text-marco-yellow sm:text-sm"
                     >
                       {email}
                     </a>
@@ -177,88 +266,105 @@ export default function ContactPage() {
             </div>
           </div>
 
-          {/* Right Side: Contact Form — ниже и по центру колонки относительно блока «ԿԱՊ ՄԵԶ ՀԵՏ» */}
-          <div className="flex w-full max-w-[420px] flex-col items-center self-center justify-self-center lg:translate-y-[40px]">
-            <form
-              onSubmit={handleSubmit}
-              className="mx-auto w-full max-w-[420px] space-y-2.5"
-            >
-              <div>
-                <Input
-                  id="name"
-                  name="name"
-                  type="text"
-                  required
-                  aria-label={t('contact.form.name')}
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="w-full !h-10 !rounded-full !border-transparent !bg-[#efefef] !px-4 !py-0 !text-sm !text-marco-black placeholder:!text-[#8f8f8f] focus:!ring-2 focus:!ring-[#d4d4d4] sm:!text-base"
-                  placeholder={t('contact.form.name').replace(/\*/gu, '').trim()}
-                />
-              </div>
-              <div>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  aria-label={t('contact.form.email')}
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="w-full !h-10 !rounded-full !border-transparent !bg-[#efefef] !px-4 !py-0 !text-sm !text-marco-black placeholder:!text-[#8f8f8f] focus:!ring-2 focus:!ring-[#d4d4d4] sm:!text-base"
-                  placeholder={t('contact.form.email').replace(/\*/gu, '').trim()}
-                />
-              </div>
-              <div>
-                <Input
-                  id="subject"
-                  name="subject"
-                  type="text"
-                  required
-                  aria-label={t('contact.form.subject')}
-                  value={formData.subject}
-                  onChange={handleChange}
-                  className="w-full !h-10 !rounded-full !border-transparent !bg-[#efefef] !px-4 !py-0 !text-sm !text-marco-black placeholder:!text-[#8f8f8f] focus:!ring-2 focus:!ring-[#d4d4d4] sm:!text-base"
-                  placeholder={t('contact.form.subject').replace(/\*/gu, '').trim()}
-                />
-              </div>
-              <div>
-                <textarea
-                  id="message"
-                  name="message"
-                  rows={4}
-                  value={formData.message}
-                  onChange={handleChange}
-                  aria-label={t('contact.form.message')}
-                  className="w-full min-h-[108px] resize-none !rounded-[20px] !border-transparent !bg-[#efefef] !px-4 !py-2.5 !text-sm !text-marco-black dark:!text-[#050505] placeholder:!text-[#8f8f8f] focus:!outline-none focus:!ring-2 focus:!ring-[#d4d4d4] sm:!text-base"
-                  placeholder={t('contact.form.message')}
-                />
-              </div>
-              <Button
-                type="submit"
-                variant="primary"
-                className="w-full !h-10 !rounded-full !border-0 !bg-marco-yellow !py-0 text-sm font-semibold uppercase tracking-wide !text-[#050505] dark:!text-[#050505] hover:!brightness-95 focus:!ring-marco-black sm:!text-base"
-                disabled={submitting}
+          <div className="flex w-full justify-center md:justify-end">
+            <Card className="w-full max-w-md border-[var(--app-border)] bg-[var(--app-surface)] p-6 shadow-sm dark:border-[var(--app-border-strong)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.28)] sm:p-8">
+              <form
+                onSubmit={handleSubmit}
+                className="space-y-3"
+                aria-label={t('contact.form.title')}
               >
-                {submitting ? (t('contact.form.submitting') || 'Ուղարկվում է...') : t('contact.form.submit')}
-              </Button>
-            </form>
+                <div>
+                  <Input
+                    id="name"
+                    name="name"
+                    type="text"
+                    required
+                    aria-label={t('contact.form.name')}
+                    value={formData.name}
+                    onChange={handleChange}
+                    className={CONTACT_FORM_FIELD_CLASS}
+                    placeholder={t('contact.form.name').replace(/\*/gu, '').trim()}
+                  />
+                </div>
+                <div>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    required
+                    aria-label={t('contact.form.email')}
+                    value={formData.email}
+                    onChange={handleChange}
+                    className={CONTACT_FORM_FIELD_CLASS}
+                    placeholder={t('contact.form.email').replace(/\*/gu, '').trim()}
+                  />
+                </div>
+                <div>
+                  <Input
+                    id="subject"
+                    name="subject"
+                    type="text"
+                    required
+                    aria-label={t('contact.form.subject')}
+                    value={formData.subject}
+                    onChange={handleChange}
+                    className={CONTACT_FORM_FIELD_CLASS}
+                    placeholder={t('contact.form.subject').replace(/\*/gu, '').trim()}
+                  />
+                </div>
+                <div>
+                  <textarea
+                    id="message"
+                    name="message"
+                    rows={4}
+                    value={formData.message}
+                    onChange={handleChange}
+                    aria-label={t('contact.form.message')}
+                    className={`${CONTACT_FORM_FIELD_CLASS} !h-auto min-h-[108px] !rounded-2xl !py-2.5`}
+                    placeholder={t('contact.form.message')}
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  className="w-full !h-11 !rounded-full !border-0 !bg-marco-yellow !py-0 text-sm font-semibold uppercase tracking-wide !text-marco-black hover:!brightness-95 focus:!ring-2 focus:!ring-marco-yellow/50 sm:!text-base"
+                  disabled={submitting}
+                >
+                  {submitting ? (t('contact.form.submitting') || 'Ուղարկվում է...') : t('contact.form.submit')}
+                </Button>
+              </form>
+            </Card>
           </div>
         </div>
       </div>
 
-      {/* Bottom Section: Map */}
-      <div className="w-full h-[500px] bg-gray-100">
-        <iframe
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3048.1234567890123!2d44.5150!3d40.1812!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x406aa2dab8fc8b5b%3A0x3d1479ab4e9b8c5e!2sAbovyan%20St%2C%20Yerevan%2C%20Armenia!5e0!3m2!1sen!2sam!4v1234567890123!5m2!1sen!2sam"
-          width="100%"
-          height="100%"
-          style={{ border: 0 }}
-          allowFullScreen
-          loading="lazy"
-          referrerPolicy="no-referrer-when-downgrade"
-          className="w-full h-full"
+      <div
+        ref={mapSectionRef}
+        id="contact-page-map"
+        className="w-full scroll-mt-24 bg-[var(--app-bg-muted)]"
+      >
+        <ContactMapAddressStrip
+          locations={contactLocations}
+          activeId={activeMapId}
+          onSelect={selectMapLocation}
+          sectionTitle={t('contact.mapSectionTitle')}
         />
+        <div className="h-[min(480px,62vh)] min-h-[300px] w-full">
+          {mapLocation ? (
+            <iframe
+              key={mapLocation.id}
+              title={mapLocation.address}
+              src={mapsEmbedUrlForLocation(mapLocation)}
+              width="100%"
+              height="100%"
+              style={{ border: 0 }}
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              className="h-full w-full"
+            />
+          ) : null}
+        </div>
       </div>
     </div>
   );

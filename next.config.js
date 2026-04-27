@@ -73,12 +73,16 @@ if (r2Origin) {
 
 const nextConfig = {
   reactStrictMode: true,
+  experimental: {
+    optimizePackageImports: ['lucide-react'],
+  },
   allowedDevOrigins: getAllowedDevOrigins(),
   // Скрыть индикатор "Compiling..." в углу в dev — не мешает на экране
   devIndicators: false,
   transpilePackages: ['@shop/ui', '@shop/design-tokens'],
-  // Standalone output - prevents prerendering of 404 page
-  output: 'standalone',
+  // Standalone for Linux/macOS CI and Docker; omitted on Windows — Turbopack trace copy
+  // fails (EINVAL) when chunk paths contain `:` (e.g. node:crypto externals).
+  ...(process.platform !== 'win32' ? { output: 'standalone' } : {}),
   // Security headers (P1-SEC-07)
   async headers() {
     return [
@@ -97,12 +101,14 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://code.tidio.co",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-              "font-src 'self' https://fonts.gstatic.com",
+              "font-src 'self' https://fonts.gstatic.com https://code.tidio.co data:",
               "img-src 'self' data: https: blob:",
               `media-src ${mediaSources.join(' ')}`,
-              "connect-src 'self' https:",
+              "connect-src 'self' https: wss://socket.tidio.co",
+              // Contact page + footer map iframes (Google Maps / OSM); default-src alone blocks embeds
+              "frame-src 'self' https://www.google.com https://google.com https://maps.google.com https://www.openstreetmap.org https://openstreetmap.org",
               "frame-ancestors 'none'",
             ].join('; '),
           },

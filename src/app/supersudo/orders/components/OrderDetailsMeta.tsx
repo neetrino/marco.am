@@ -46,10 +46,6 @@ export function OrderDetailsMeta({ orderDetails, formatCurrency }: OrderDetailsM
           <div className="mt-1">
             <span className="font-medium">{t('admin.orders.orderDetails.payment')}</span> {orderDetails.paymentStatus}
           </div>
-          <div className="mt-1">
-            <span className="font-medium">{t('admin.orders.orderDetails.fulfillmentStatus')}</span>{' '}
-            {orderDetails.fulfillmentStatus}
-          </div>
         </div>
         <div>
           {orderDetails.trackingNumber ? (

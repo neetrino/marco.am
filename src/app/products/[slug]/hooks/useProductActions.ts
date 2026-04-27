@@ -1,16 +1,12 @@
 import type { MouseEvent } from 'react';
 import { t } from '../../../../lib/i18n';
 import type { LanguageCode } from '../../../../lib/language';
-import { getApiOrErrorMessage } from '../../../../lib/api-client';
+import { getApiOrErrorMessage, getErrorHttpStatus } from '../../../../lib/api-client';
 import {
   addWishlistItemClient,
   removeWishlistItemClient,
 } from '@/lib/wishlist/wishlist-client';
-import {
-  addCompareItemClient,
-  fetchCompareProductIds,
-  removeCompareItemClient,
-} from '@/lib/compare/compare-client';
+import { addCompareItemClient, removeCompareItemClient } from '@/lib/compare/compare-client';
 import { logger } from '@/lib/utils/logger';
 
 interface UseProductActionsProps {
@@ -57,19 +53,21 @@ export function useProductActions({
     if (!productId || typeof window === 'undefined') return;
 
     try {
-      const compare = await fetchCompareProductIds(language);
-
       if (isInCompare) {
         await removeCompareItemClient(productId, language);
         setIsInCompare(false);
         setShowMessage(t(language, 'product.removedFromCompare'));
       } else {
-        if (compare.length >= 4) {
-          setShowMessage(t(language, 'product.compareListFull'));
-        } else {
+        try {
           await addCompareItemClient(productId, language);
           setIsInCompare(true);
           setShowMessage(t(language, 'product.addedToCompare'));
+        } catch (error: unknown) {
+          if (getErrorHttpStatus(error) === 422) {
+            setShowMessage(t(language, 'product.compareListFull'));
+          } else {
+            setShowMessage(t(language, 'common.alerts.invalidProduct'));
+          }
         }
       }
 

@@ -3,6 +3,7 @@
 import { useContext, useEffect, useState, type SyntheticEvent } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { CompareIcon } from '../icons/CompareIcon';
 import { HeaderNavbarWishlistIcon } from '../icons/HeaderNavbarWishlistIcon';
 import { MobileNavCartLinearIcon } from '../mobile-bottom-nav-icons';
@@ -10,8 +11,10 @@ import { LanguagePreferenceContext } from '../../lib/language-context';
 import { HeaderSocialCircleLinks } from './HeaderSocialCircleLinks';
 import { useShouldHideHeaderSocialLinks } from './useShouldHideHeaderSocialLinks';
 import { HeaderProfileIconFilled } from './HeaderInlineIcons';
-import { primaryNavLinks } from './nav-config';
+import { getHeaderPrimaryNavMobileRowClass } from './header.constants';
+import { isPrimaryNavHrefActive, primaryNavLinks } from './nav-config';
 import { ThemeToggleButton } from '../theme/ThemeToggleButton';
+import { useTheme } from '../theme/ThemeProvider';
 import type { useHeaderData } from './useHeaderData';
 import { dedupeCategories, prepareRootCategoriesForNav } from './categoryNavList';
 import { resolveCategoryNavPresentation } from './categoryNavPresentation';
@@ -33,6 +36,9 @@ function hideBrokenCategoryIcon(event: SyntheticEvent<HTMLImageElement>) {
 }
 
 export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
+  const pathname = usePathname();
+  const { theme, mounted: themeMounted } = useTheme();
+  const drawerThemeDark = themeMounted && theme === 'dark';
   const lang = useContext(LanguagePreferenceContext);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [expandedCategorySlug, setExpandedCategorySlug] = useState<string | null>(null);
@@ -285,6 +291,8 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
               </div>
 
               {primaryNavLinks.map((link) => {
+                const primaryNavActive = isPrimaryNavHrefActive(pathname, link.href);
+                const primaryNavRowClass = getHeaderPrimaryNavMobileRowClass(primaryNavActive);
                 if (link.translationKey === 'common.navigation.reels') {
                   return (
                     <div key="common.navigation.reels" className="border-b border-gray-200">
@@ -294,7 +302,8 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={() => setMobileMenuOpen(false)}
-                          className="flex items-center justify-between px-4 py-3 hover:bg-gray-50"
+                          className={primaryNavRowClass}
+                          aria-current={primaryNavActive ? 'page' : undefined}
                         >
                           {t(link.translationKey)}
                           <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -305,7 +314,8 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
                         <Link
                           href={link.href}
                           onClick={() => setMobileMenuOpen(false)}
-                          className="flex items-center justify-between px-4 py-3 hover:bg-gray-50"
+                          className={primaryNavRowClass}
+                          aria-current={primaryNavActive ? 'page' : undefined}
                         >
                           {t(link.translationKey)}
                           <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -328,7 +338,8 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center justify-between px-4 py-3 hover:bg-gray-50"
+                    className={primaryNavRowClass}
+                    aria-current={primaryNavActive ? 'page' : undefined}
                   >
                     {t(link.translationKey)}
                     <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -340,7 +351,8 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
                     key={link.translationKey}
                     href={link.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center justify-between px-4 py-3 hover:bg-gray-50"
+                    className={primaryNavRowClass}
+                    aria-current={primaryNavActive ? 'page' : undefined}
                   >
                     {t(link.translationKey)}
                     <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -400,7 +412,11 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
 
               <div className="border-b border-gray-200 px-4 py-3 normal-case">
                 <ThemeToggleButton
-                  className="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 text-left text-gray-800 transition-colors hover:bg-gray-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
+                  className={
+                    drawerThemeDark
+                      ? 'flex w-full items-center justify-between rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-left text-slate-100 transition-[background-color,color,filter] duration-200 hover:bg-slate-800'
+                      : 'flex w-full items-center justify-between rounded-xl border border-marco-black/10 bg-marco-yellow px-4 py-3 text-left text-[#050505] transition-[background-color,color,filter] duration-200 hover:brightness-95 active:brightness-90'
+                  }
                   iconClassName="h-5 w-5 shrink-0"
                   labelClassName="text-sm font-semibold"
                   showLabel
