@@ -1,32 +1,21 @@
 /**
  * Figma MARCO — mobile product showcase under app banner (`Group 9300`, node 314:2479).
- * Photo fill layer — node 314:2480 (`kam-idris-_HqHX3LBN18-unsplash 1`).
+ * Card fill — same raster as `HomeGradientBanner` (`HOME_GRADIENT_BANNER_IMAGE_PATH`).
  */
+
+import { HOME_GRADIENT_BANNER_IMAGE_PATH } from './home-gradient-banner.constants';
 
 /** Figma frame `Group 9300` — width × height (design px). */
 export const HOME_MOBILE_BANNER_SHOWCASE_CARD_WIDTH_PX = 522;
 
 export const HOME_MOBILE_BANNER_SHOWCASE_CARD_HEIGHT_PX = 372;
 
-/** Figma `kam-idris` + overlay — `rounded-[20px]`. */
+/** Card chrome — `rounded-[20px]`. */
 export const HOME_MOBILE_BANNER_SHOWCASE_RADIUS_PX = 20;
-
-/** Same base + overlay recipe as `HomeGradientBanner`. */
-export const HOME_MOBILE_BANNER_SHOWCASE_OVERLAY_OPACITY = 0.58;
 
 export const HOME_MOBILE_BANNER_SHOWCASE_SURFACE_HEX = '#2f4b5d';
 
-export const HOME_MOBILE_BANNER_SHOWCASE_IMAGE_PATH = '/assets/home/home-gradient-banner.jpg';
-
-/** Figma 314:2480 dev — reference %; image layer uses `cover` in code to avoid visible bands. */
-export const HOME_MOBILE_BANNER_SHOWCASE_BG_SIZE_WIDTH_PERCENT = 120.46;
-
-export const HOME_MOBILE_BANNER_SHOWCASE_BG_SIZE_HEIGHT_PERCENT = 160.88;
-
-/** Figma 314:2480 dev — `left` / `top` on the image (% of container). */
-export const HOME_MOBILE_BANNER_SHOWCASE_BG_POSITION_X_PERCENT = -11.5;
-
-export const HOME_MOBILE_BANNER_SHOWCASE_BG_POSITION_Y_PERCENT = -48.15;
+export const HOME_MOBILE_BANNER_SHOWCASE_IMAGE_PATH = HOME_GRADIENT_BANNER_IMAGE_PATH;
 
 /**
  * Chair group width / card — Figma 314:2481 (`327.258` / `402`).
