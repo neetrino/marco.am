@@ -2,19 +2,17 @@
 
 import Link from 'next/link';
 import { useMemo } from 'react';
-import type { CSSProperties } from 'react';
 
 import { chunkArray, padChunksToMinimumCount } from '../lib/chunk-array';
 import { t } from '../lib/i18n';
 import type { LanguageCode } from '../lib/language';
 import type { HomeBrandPartnerPublicItem } from '@/lib/types/home-brand-partners-public';
 import {
+  FEATURED_PRODUCTS_DESKTOP_PAGE_SIZE,
   FEATURED_PRODUCTS_FOOTER_DOT_COUNT_DESKTOP,
-  FEATURED_PRODUCTS_GRID_GAP_Y_CLASS,
-  FEATURED_PRODUCTS_VISIBLE_COUNT,
 } from './featured-products-tabs.constants';
+import { FeaturedNewArrivalsDesktopTwoRowScroller } from './home/FeaturedNewArrivalsDesktopTwoRowScroller';
 import { FeaturedNewArrivalsMobileRail } from './home/FeaturedNewArrivalsMobileRail';
-import { SpecialOfferCard } from './home/SpecialOfferCard';
 import {
   SPECIAL_OFFERS_CARD_HEIGHT_PX,
   SPECIAL_OFFERS_CARD_SHELL_RADIUS_PX,
@@ -27,7 +25,6 @@ import {
   SPECIAL_OFFERS_PAGINATION_DOT_GAP_MOBILE_PX,
   SPECIAL_OFFERS_PAGINATION_DOT_SIZE_PX,
   SPECIAL_OFFERS_PAGINATION_TO_CTA_GAP_DESKTOP_PX,
-  SPECIAL_OFFERS_RAIL_TO_PAGINATION_GAP_PX,
 } from './home/home-special-offers.constants';
 import {
   HOME_BRANDS_AFTER_CTA_MARGIN_TOP_PX,
@@ -44,13 +41,6 @@ import { HomeBrandsHeading } from './home/HomeBrandsHeading';
 import { HomeBrandsSlide } from './home/HomeBrandsSlide';
 import type { SpecialOfferProduct } from './home/special-offer-product.types';
 import { useSpecialOffersCarousel } from './home/useSpecialOffersCarousel';
-
-const FEATURED_OFFERS_GRID_CLASS = `grid grid-cols-2 gap-x-3 md:grid-cols-4 md:gap-x-6 ${FEATURED_PRODUCTS_GRID_GAP_Y_CLASS}`;
-
-const featuredOffersGridStyle = (isMaxMd: boolean): CSSProperties =>
-  isMaxMd ? { rowGap: SPECIAL_OFFERS_MOBILE_GRID_ROW_GAP_PX } : {};
-
-const HOME_CARD_COMPACT_MAX_WIDTH_PX = 210;
 
 const featuredCardSkeletonStyle = {
   height: SPECIAL_OFFERS_CARD_HEIGHT_PX,
@@ -76,7 +66,6 @@ type FeaturedProductsStripProps = {
   loading: boolean;
   error: string | null;
   products: SpecialOfferProduct[];
-  cardLayout: 'default' | 'mobileGrid';
   isMaxMd: boolean;
   onRetryFetch: () => void;
   /** Home brand partners rail; null = use static placeholders in `HomeBrandsSlide`. */
@@ -86,7 +75,7 @@ type FeaturedProductsStripProps = {
 };
 
 /**
- * `md+`: 8-card grid. `max-md`: 2×2 per slide, horizontal paging (aligned with «Հատուկ առաջարկներ»).
+ * `md+`: 2×4 cards per page, horizontal scroll (up to two pages). `max-md`: 2×2 per slide rail.
  */
 export function FeaturedProductsStrip({
   language,
@@ -94,7 +83,6 @@ export function FeaturedProductsStrip({
   loading,
   error,
   products,
-  cardLayout,
   isMaxMd,
   onRetryFetch,
   homeBrandPartners,
@@ -115,20 +103,43 @@ export function FeaturedProductsStrip({
     return padChunksToMinimumCount(chunks, SPECIAL_OFFERS_MOBILE_PAGINATION_PAGE_COUNT);
   }, [products]);
 
-  const isFeaturedRailVisible = isMaxMd && !loading && !error && products.length > 0;
+  const desktopPages = useMemo(
+    () => chunkArray(products, FEATURED_PRODUCTS_DESKTOP_PAGE_SIZE),
+    [products],
+  );
+
+  const desktopPaginationCount = useMemo(() => {
+    if (loading) {
+      return FEATURED_PRODUCTS_FOOTER_DOT_COUNT_DESKTOP;
+    }
+    return Math.min(
+      FEATURED_PRODUCTS_FOOTER_DOT_COUNT_DESKTOP,
+      Math.max(1, desktopPages.length),
+    );
+  }, [loading, desktopPages.length]);
+
+  const isFeaturedMobileRailVisible = isMaxMd && !loading && !error && products.length > 0;
+
+  const isFeaturedDesktopRailVisible = !isMaxMd && !error && (loading || products.length > 0);
 
   const {
-    scrollerRef: featuredScrollerRef,
-    activePage: featuredActivePage,
-    scrollToPage: scrollFeaturedToPage,
+    scrollerRef: featuredMobileScrollerRef,
+    activePage: featuredMobileActivePage,
+    scrollToPage: scrollFeaturedMobileToPage,
   } = useSpecialOffersCarousel({
-    isRailVisible: isFeaturedRailVisible,
-    paginationPageCount: isMaxMd ? SPECIAL_OFFERS_MOBILE_PAGINATION_PAGE_COUNT : 1,
+    isRailVisible: isFeaturedMobileRailVisible,
+    paginationPageCount: SPECIAL_OFFERS_MOBILE_PAGINATION_PAGE_COUNT,
   });
 
-  /** `md+` decorative dots — same rail→dots / dots→CTA rhythm as desktop special-offers footer. */
-  const desktopFeaturedRailToDotsGapPx = SPECIAL_OFFERS_RAIL_TO_PAGINATION_GAP_PX;
-  const desktopFeaturedDotsToCtaGapPx = SPECIAL_OFFERS_PAGINATION_TO_CTA_GAP_DESKTOP_PX;
+  const {
+    scrollerRef: featuredDesktopScrollerRef,
+    activePage: featuredDesktopActivePage,
+    scrollToPage: scrollFeaturedDesktopToPage,
+  } = useSpecialOffersCarousel({
+    isRailVisible: isFeaturedDesktopRailVisible,
+    paginationPageCount: desktopPaginationCount,
+  });
+
   const brandsDotsToCtaGapPx = isMaxMd
     ? HOME_BRANDS_DOTS_TO_CTA_GAP_MOBILE_PX
     : SPECIAL_OFFERS_PAGINATION_TO_CTA_GAP_DESKTOP_PX;
@@ -162,13 +173,16 @@ export function FeaturedProductsStrip({
         ))}
       </div>
     ) : (
-      <div className={FEATURED_OFFERS_GRID_CLASS} style={featuredOffersGridStyle(isMaxMd)}>
-        {Array.from({ length: FEATURED_PRODUCTS_VISIBLE_COUNT }).map((__, i) => (
-          <div key={`sk-${i}`} className="min-w-0">
-            <div className="w-full animate-pulse bg-gray-200" style={featuredCardSkeletonStyle} />
-          </div>
-        ))}
-      </div>
+      <FeaturedNewArrivalsDesktopTwoRowScroller
+        scrollerRef={featuredDesktopScrollerRef}
+        loading
+        pages={[]}
+        paginationPageCount={FEATURED_PRODUCTS_FOOTER_DOT_COUNT_DESKTOP}
+        activePage={featuredDesktopActivePage}
+        onGoToPage={scrollFeaturedDesktopToPage}
+        language={language}
+        ctaHref={ctaHref}
+      />
     );
   } else if (error) {
     featuredContent = (
@@ -193,53 +207,24 @@ export function FeaturedProductsStrip({
     featuredContent = isMaxMd ? (
       <FeaturedNewArrivalsMobileRail
         productChunks={mobileProductChunks}
-        scrollerRef={featuredScrollerRef}
-        activePage={featuredActivePage}
-        onGoToPage={scrollFeaturedToPage}
+        scrollerRef={featuredMobileScrollerRef}
+        activePage={featuredMobileActivePage}
+        onGoToPage={scrollFeaturedMobileToPage}
         cardLayout="mobileGrid"
         language={language}
         ctaHref={ctaHref}
       />
     ) : (
-      <>
-        <div className={FEATURED_OFFERS_GRID_CLASS} style={featuredOffersGridStyle(isMaxMd)}>
-          {products.map((product, index) => (
-            <div key={`featured-strip-product-${product.id}-${index}`} className="min-w-0">
-              <SpecialOfferCard
-                product={product}
-                layout={cardLayout}
-                maxWidthPx={cardLayout === 'mobileGrid' ? HOME_CARD_COMPACT_MAX_WIDTH_PX : undefined}
-              />
-            </div>
-          ))}
-        </div>
-
-        <div
-          className="flex flex-row items-center justify-center"
-          style={{
-            marginTop: `${desktopFeaturedRailToDotsGapPx}px`,
-            gap: `${paginationDotGapPx}px`,
-          }}
-          aria-hidden
-        >
-          {Array.from({ length: FEATURED_PRODUCTS_FOOTER_DOT_COUNT_DESKTOP }, (_, i) => (
-            <span
-              key={`featured-footer-dot-${i}`}
-              className={i === 0 ? 'rounded-full bg-[#181111] dark:!bg-[#ffca03]' : 'rounded-full bg-gray-300'}
-              style={featuredFooterDotStyle}
-            />
-          ))}
-        </div>
-
-        <div
-          className="flex justify-center"
-          style={{ marginTop: desktopFeaturedDotsToCtaGapPx }}
-        >
-          <Link href={ctaHref} className={SPECIAL_OFFERS_CTA_LINK_CLASS}>
-            {t(language, 'home.special_offers.cta')}
-          </Link>
-        </div>
-      </>
+      <FeaturedNewArrivalsDesktopTwoRowScroller
+        scrollerRef={featuredDesktopScrollerRef}
+        loading={false}
+        pages={desktopPages}
+        paginationPageCount={desktopPaginationCount}
+        activePage={featuredDesktopActivePage}
+        onGoToPage={scrollFeaturedDesktopToPage}
+        language={language}
+        ctaHref={ctaHref}
+      />
     );
   }
 

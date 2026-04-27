@@ -185,7 +185,6 @@ export function FeaturedProductsTabs() {
   }, [fetchProducts]);
 
   const sectionHeading = t(language, FEATURED_SECTION_TITLE_KEY);
-  const cardLayout = isMaxMd ? 'mobileGrid' : 'default';
 
   return (
     <section
@@ -243,7 +242,6 @@ export function FeaturedProductsTabs() {
           loading={loading}
           error={error}
           products={products}
-          cardLayout={cardLayout}
           isMaxMd={isMaxMd}
           onRetryFetch={() => fetchProducts(FILTER_BY_TAB[activeTab])}
           homeBrandPartners={null}

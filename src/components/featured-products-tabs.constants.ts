@@ -39,9 +39,14 @@ export const FEATURED_PRODUCTS_TITLE_TO_GRID_GAP_PX = 42;
 export const FEATURED_PRODUCTS_TITLE_INSET_LEFT_PX = 16;
 
 /**
- * «Նորույթներ»: 8 cards — 2 rows × 4 columns on md+; 2 columns on mobile.
+ * Desktop «Նորույթներ»: one horizontal page = 2 rows × 4 columns (8 cards).
  */
-export const FEATURED_PRODUCTS_VISIBLE_COUNT = 8;
+export const FEATURED_PRODUCTS_DESKTOP_PAGE_SIZE = 8;
+
+/**
+ * «Նորույթներ» fetch cap — two desktop pages (2×4 × 2); mobile uses first 8 per slide set.
+ */
+export const FEATURED_PRODUCTS_VISIBLE_COUNT = 16;
 
 /**
  * Vertical gap between card rows on `md+` only. On `max-md`, row gap matches
@@ -49,9 +54,7 @@ export const FEATURED_PRODUCTS_VISIBLE_COUNT = 8;
  */
 export const FEATURED_PRODUCTS_GRID_GAP_Y_CLASS = 'md:gap-y-10';
 
-/**
- * Decorative dots above CTA (visual match to «Հատուկ առաջարկներ»; grid is not paginated).
- */
+/** Max desktop horizontal pages (dots + scroll segments). */
 export const FEATURED_PRODUCTS_FOOTER_DOT_COUNT_DESKTOP = 2;
 
 /** Mobile: three dots above «Տեսնել ավելին». */
