@@ -159,7 +159,7 @@ export function ProductInfoAndActions({
       <div className="flex-1">
         {product.brand && (
           <div className="mb-5 flex flex-wrap items-center gap-4 md:gap-5">
-            {product.brand.logo && (
+            {product.brand.logo ? (
               <Image
                 src={product.brand.logo}
                 alt={product.brand.name}
@@ -168,8 +168,9 @@ export function ProductInfoAndActions({
                 className="h-7 w-auto max-w-[min(100%,140px)] shrink-0 object-contain object-left md:h-8 md:max-w-[min(100%,160px)]"
                 sizes="(max-width: 768px) 140px, 160px"
               />
+            ) : (
+              <p className="text-sm text-gray-500">{product.brand.name}</p>
             )}
-            <p className="text-sm text-gray-500">{product.brand.name}</p>
           </div>
         )}
         <div className="mb-5 flex items-start justify-between gap-4">
