@@ -9,7 +9,7 @@ import { useTranslation } from '../../../lib/i18n-client';
 import { AdminPageLayout } from '../components/AdminPageLayout';
 import { AdminTablePagination } from '../components/AdminTablePagination';
 import { logger } from '@/lib/utils/logger';
-import { processImageFile } from '@/lib/utils/image-utils';
+import { processImageFile, processImageUrl } from '@/lib/utils/image-utils';
 import { showToast } from '../../../components/Toast';
 
 interface Brand {
@@ -110,6 +110,11 @@ export default function BrandsPage() {
   const selectedBrands = useMemo(
     () => brands.filter((brand) => selectedBrandIds.includes(brand.id)),
     [brands, selectedBrandIds]
+  );
+
+  const safeFormLogoPreviewUrl = useMemo(
+    () => processImageUrl(formData.logoUrl.trim()),
+    [formData.logoUrl],
   );
 
   const resetForm = () => {
@@ -484,7 +489,9 @@ export default function BrandsPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                      {paginatedBrands.map((brand) => (
+                      {paginatedBrands.map((brand) => {
+                        const safeBrandLogoUrl = processImageUrl(brand.logoUrl);
+                        return (
                         <tr key={brand.id} className="group border-b border-slate-100 transition-colors hover:bg-amber-50/50">
                           <td className="px-3 py-3">
                             <input
@@ -496,9 +503,9 @@ export default function BrandsPage() {
                             />
                           </td>
                           <td className="px-2 py-2 align-middle">
-                            {brand.logoUrl ? (
+                            {safeBrandLogoUrl ? (
                               <img
-                                src={brand.logoUrl}
+                                src={safeBrandLogoUrl}
                                 alt=""
                                 className="h-12 w-12 rounded-lg border border-slate-200 bg-white object-contain p-0.5"
                               />
@@ -536,7 +543,8 @@ export default function BrandsPage() {
                             </div>
                           </td>
                         </tr>
-                      ))}
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -616,10 +624,10 @@ export default function BrandsPage() {
                     </Button>
                   ) : null}
                 </div>
-                {formData.logoUrl.trim() !== '' ? (
+                {safeFormLogoPreviewUrl ? (
                   <div className="mt-3 flex justify-center rounded-lg border border-slate-200 bg-slate-50 p-3">
                     <img
-                      src={formData.logoUrl}
+                      src={safeFormLogoPreviewUrl}
                       alt=""
                       className="max-h-28 max-w-full object-contain"
                     />
@@ -705,10 +713,10 @@ export default function BrandsPage() {
                     </Button>
                   ) : null}
                 </div>
-                {formData.logoUrl.trim() !== '' ? (
+                {safeFormLogoPreviewUrl ? (
                   <div className="mt-3 flex justify-center rounded-lg border border-slate-200 bg-slate-50 p-3">
                     <img
-                      src={formData.logoUrl}
+                      src={safeFormLogoPreviewUrl}
                       alt=""
                       className="max-h-28 max-w-full object-contain"
                     />
