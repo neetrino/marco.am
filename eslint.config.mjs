@@ -77,7 +77,7 @@ const config = [
     },
   },
   {
-    files: ["scripts/**/*.js", "shared/db/**/*.cjs"],
+    files: ["scripts/**/*.js", "scripts/**/*.cjs", "shared/db/**/*.cjs"],
     rules: {
       "no-console": "off",
       "@typescript-eslint/no-require-imports": "off",
