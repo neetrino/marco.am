@@ -51,68 +51,75 @@ export function CategoriesDropdownMega({
 
   return (
     <div className="flex h-full min-h-0 w-full min-w-0 flex-col divide-y divide-marco-border overflow-hidden rounded-[13px] bg-marco-gray shadow-2xl md:flex-row md:divide-x md:divide-y-0">
-      <div className="flex min-h-0 w-full flex-1 flex-col gap-[16px] overflow-y-auto rounded-t-[13px] bg-marco-gray py-6 pl-4 pr-2 md:h-full md:w-[400px] md:min-w-[400px] md:max-w-[400px] md:flex-none md:rounded-l-[13px] md:rounded-r-[13px] md:rounded-t-none md:py-[29px] md:pl-[25px] md:pr-[25px]">
-        {categoriesWithExtra.map((category, index) => {
-          const isSelected = category.slug === selectedSlug;
-          const row = resolveCategoryNavPresentation(category.slug, category.title, lang);
-          const RowLucide = row.icon.kind === 'lucide' ? row.icon.Icon : null;
-          const titleParts = row.title.trim().split(/\s+/);
-          const canSplitLastWord = index === 0 && titleParts.length > 1;
-          const firstLineTitle = canSplitLastWord ? titleParts.slice(0, -1).join(' ') : row.title;
-          const secondLineTitle = canSplitLastWord ? titleParts[titleParts.length - 1] : '';
+      {/* Root list: `absolute inset-0` + `overflow-y` so scroll works inside flex row (avoids max-h-% chain bugs) */}
+      <div className="relative min-h-0 w-full min-w-0 flex-1 rounded-t-[13px] bg-marco-gray md:h-full md:w-[400px] md:min-w-[400px] md:max-w-[400px] md:flex-none md:shrink-0 md:rounded-l-[13px] md:rounded-r-[13px] md:rounded-t-none">
+        <nav
+          className="absolute inset-0 flex flex-col gap-[16px] overflow-y-auto overflow-x-hidden overscroll-y-contain py-6 pl-4 pr-2 [-webkit-overflow-scrolling:touch] [scrollbar-gutter:stable] md:py-[29px] md:pl-[25px] md:pr-[25px]"
+          aria-label={t('common.navigation.categories')}
+        >
+          {categoriesWithExtra.map((category, index) => {
+            const isSelected = category.slug === selectedSlug;
+            const row = resolveCategoryNavPresentation(category.slug, category.title, lang);
+            const RowLucide = row.icon.kind === 'lucide' ? row.icon.Icon : null;
+            const titleParts = row.title.trim().split(/\s+/);
+            const canSplitLastWord = index === 0 && titleParts.length > 1;
+            const firstLineTitle = canSplitLastWord ? titleParts.slice(0, -1).join(' ') : row.title;
+            const secondLineTitle = canSplitLastWord ? titleParts[titleParts.length - 1] : '';
 
-          return (
-            <button
-              key={category.id}
-              type="button"
-              onClick={() => setSelectedSlug(category.slug)}
-              className={`${headerCategoryNavFont.className} flex w-full min-w-0 items-center gap-1.5 rounded-[35px] px-[7px] py-0 text-left text-[14px] leading-[19px] tracking-[0.14px] transition-[opacity,background-color,color] duration-150 ${
-                isSelected
-                  ? 'bg-marco-yellow font-bold !text-[#050505] dark:!text-[#050505]'
-                  : 'font-normal !text-[#050505] dark:!text-[#050505] hover:opacity-90'
-              }`}
-            >
-              <span className="flex size-[42px] shrink-0 items-center justify-center p-[5px] !text-[#050505] dark:!text-[#050505]">
-                {row.icon.kind === 'figma' ? (
-                  <img
-                    src={row.icon.src}
-                    alt=""
-                    width={30}
-                    height={30}
-                    className="h-[30px] w-[30px] shrink-0 object-contain brightness-0"
-                    draggable={false}
-                  />
-                ) : (
-                  RowLucide && (
-                    <RowLucide
-                      size={30}
-                      className="shrink-0 !text-[#050505] dark:!text-[#050505]"
-                      strokeWidth={1.35}
-                      aria-hidden
-                    />
-                  )
-                )}
-              </span>
-              <span
-                className={`min-w-0 flex-1 py-[7px] pr-1 ${
-                  canSplitLastWord ? 'whitespace-normal leading-[18px]' : 'whitespace-nowrap'
+            return (
+              <button
+                key={category.id}
+                type="button"
+                onClick={() => setSelectedSlug(category.slug)}
+                className={`${headerCategoryNavFont.className} flex w-full min-w-0 shrink-0 items-center gap-1.5 rounded-[35px] px-[7px] py-0 text-left text-[14px] leading-[19px] tracking-[0.14px] transition-[opacity,background-color,color] duration-150 ${
+                  isSelected
+                    ? 'bg-marco-yellow font-bold !text-[#050505] dark:!text-[#050505]'
+                    : 'font-normal !text-[#050505] dark:!text-[#050505] hover:opacity-90'
                 }`}
               >
-                {canSplitLastWord ? (
-                  <>
-                    <span>{firstLineTitle}</span>
-                    <span className="block">{secondLineTitle}</span>
-                  </>
-                ) : (
-                  row.title
-                )}
-              </span>
-            </button>
-          );
-        })}
+                <span className="flex size-[42px] shrink-0 items-center justify-center p-[5px] !text-[#050505] dark:!text-[#050505]">
+                  {row.icon.kind === 'figma' ? (
+                    <img
+                      src={row.icon.src}
+                      alt=""
+                      width={30}
+                      height={30}
+                      className="h-[30px] w-[30px] shrink-0 object-contain brightness-0"
+                      draggable={false}
+                    />
+                  ) : (
+                    RowLucide && (
+                      <RowLucide
+                        size={30}
+                        className="shrink-0 !text-[#050505] dark:!text-[#050505]"
+                        strokeWidth={1.35}
+                        aria-hidden
+                      />
+                    )
+                  )}
+                </span>
+                <span
+                  className={`min-w-0 flex-1 py-[7px] pr-1 ${
+                    canSplitLastWord ? 'whitespace-normal leading-[18px]' : 'whitespace-nowrap'
+                  }`}
+                >
+                  {canSplitLastWord ? (
+                    <>
+                      <span>{firstLineTitle}</span>
+                      <span className="block">{secondLineTitle}</span>
+                    </>
+                  ) : (
+                    row.title
+                  )}
+                </span>
+              </button>
+            );
+          })}
+        </nav>
       </div>
 
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col self-stretch overflow-y-auto rounded-b-[13px] bg-white px-5 pb-5 pt-6 md:rounded-b-none md:rounded-r-[13px] md:pl-6 md:pr-5 md:pt-6">
+      {/* No column scroll here: only the root (left) list scrolls; avoids nested scroll areas. */}
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col self-stretch overflow-hidden rounded-b-[13px] bg-white px-5 pb-5 pt-6 md:rounded-b-none md:rounded-r-[13px] md:pl-6 md:pr-5 md:pt-6">
         {showPromoBanner && (
           <CategoryDropdownPromoBanner
             badge={preview.promo.badge}

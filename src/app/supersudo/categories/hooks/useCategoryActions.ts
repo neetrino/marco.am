@@ -3,8 +3,14 @@ import { apiClient } from '../../../../lib/api-client';
 import { logger } from '../../../../lib/utils/logger';
 import { showToast } from '../../../../components/Toast';
 import { useTranslation } from '../../../../lib/i18n-client';
+import { getStoredLanguage, type LanguageCode } from '../../../../lib/language';
 import { notifyShopCategoryTreeUpdated } from '../../../../lib/shop-category-tree-sync';
 import type { Category, CategoryFormData } from '../types';
+
+/** Category translations in DB use shop locales; Georgian UI maps to `en` like storefront. */
+function categoryWriteLocale(lang: LanguageCode): LanguageCode {
+  return lang === 'ka' ? 'en' : lang;
+}
 
 interface UseCategoryActionsReturn {
   showAddModal: boolean;
@@ -67,7 +73,7 @@ export function useCategoryActions(): UseCategoryActionsReturn {
         seoDescription: formData.seoDescription.trim() || undefined,
         parentId: formData.parentId || undefined,
         requiresSizes: formData.requiresSizes,
-        locale: 'en',
+        locale: categoryWriteLocale(getStoredLanguage()),
       });
       setShowAddModal(false);
       resetForm();
@@ -132,7 +138,7 @@ export function useCategoryActions(): UseCategoryActionsReturn {
         parentId: formData.parentId || null,
         requiresSizes: formData.requiresSizes,
         subcategoryIds: formData.subcategoryIds,
-        locale: 'en',
+        locale: categoryWriteLocale(getStoredLanguage()),
       });
       setShowEditModal(false);
       setEditingCategory(null);

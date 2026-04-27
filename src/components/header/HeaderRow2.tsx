@@ -90,7 +90,10 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
       const rightEdge = cr ? cr.right - paddingRight : window.innerWidth - 16;
       const panelWidth = Math.max(280, Math.min(rightEdge, window.innerWidth - 8) - r.left);
       const panelTop = r.bottom + gapPx - raiseDropdownByPx;
-      const panelHeight = Math.max(240, Math.floor(window.innerHeight - panelTop));
+      /** Cap height to viewport so inner columns scroll; uncapped height made the list taller than the screen without overflow. */
+      const bottomMargin = 8;
+      const rawHeight = Math.floor(window.innerHeight - panelTop - bottomMargin);
+      const panelHeight = Math.max(240, Math.min(rawHeight, window.innerHeight - 16));
       setCategoriesDropdownLayout({
         bridge: {
           position: 'fixed',
@@ -210,7 +213,7 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
                   <div
                     data-marco-categories-dropdown
                     data-theme-static="true"
-                    className="flex min-h-0 flex-col"
+                    className="flex h-full min-h-0 min-w-0 flex-col"
                     style={categoriesDropdownLayout.panel}
                   >
                     {loadingCategories ? (
