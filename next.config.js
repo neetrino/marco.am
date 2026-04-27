@@ -72,17 +72,21 @@ if (r2Origin) {
 }
 
 // Custom-output Prisma client: trace engines; keep schema.prisma beside generated client (db:generate) so dirname stays correct.
+// Root `generated/prisma-client` is a mirror (sync-prisma-cwd-fallback.cjs) for Prisma's cwd fallback when traced __dirname lacks schema.
 const prismaGeneratedTraceGlob = './shared/db/generated/prisma-client/**/*';
+const prismaCwdFallbackTraceGlob = './generated/prisma-client/**/*';
+const prismaTraceGlobs = [prismaGeneratedTraceGlob, prismaCwdFallbackTraceGlob];
 
 const nextConfig = {
   reactStrictMode: true,
   // Keep workspace DB + generated Prisma client as Node externals so query engine `.node` paths resolve at runtime (bundling breaks `__dirname` for native engines).
   serverExternalPackages: ['@white-shop/db', '@prisma/client'],
   outputFileTracingIncludes: {
-    // Picomatch: `/*` is one URL segment; nested pages and `/api/v1/...` need `/**/*` + `/api/**/*`.
-    '/*': [prismaGeneratedTraceGlob],
-    '/**/*': [prismaGeneratedTraceGlob],
-    '/api/**/*': [prismaGeneratedTraceGlob],
+    // Picomatch: `/*` matches one segment only; `/` is the App Router root; deep routes need `/**/*` and `/api/**/*`.
+    '/': prismaTraceGlobs,
+    '/*': prismaTraceGlobs,
+    '/**/*': prismaTraceGlobs,
+    '/api/**/*': prismaTraceGlobs,
   },
   experimental: {
     optimizePackageImports: ['lucide-react'],
