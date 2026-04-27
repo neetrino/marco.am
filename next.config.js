@@ -73,6 +73,10 @@ if (r2Origin) {
 
 const nextConfig = {
   reactStrictMode: true,
+  // Custom Prisma `output` lives outside `.prisma/client`; include engines in serverless / standalone traces.
+  outputFileTracingIncludes: {
+    '/*': ['./shared/db/generated/prisma-client/**/*'],
+  },
   experimental: {
     optimizePackageImports: ['lucide-react'],
   },

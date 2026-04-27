@@ -1,7 +1,9 @@
 generator client {
   provider = "prisma-client-js"
   // Project-local output avoids Windows EPERM when Prisma renames the query engine inside pnpm's .pnpm store.
-  output   = "../generated/prisma-client"
+  output = "../generated/prisma-client"
+  // Vercel Node serverless uses Amazon Linux / RHEL OpenSSL 3; build image "native" alone omits this engine.
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
