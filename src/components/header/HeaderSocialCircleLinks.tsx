@@ -80,7 +80,8 @@ function socialControlClass(
   desktopBalancedIcons: boolean,
   comfortableTouch: boolean
 ): string {
-  const touch = comfortableTouch ? 'h-14 w-14' : 'h-11 w-11';
+  /** Drawer footer: smaller circles so they align with nav density (header stays `h-11`). */
+  const touch = comfortableTouch ? 'h-9 w-9' : 'h-11 w-11';
   const base = `flex ${touch} shrink-0 items-center justify-center rounded-full border border-marco-black/10 bg-marco-yellow text-marco-black transition-[opacity,filter,transform] dark:border-marco-black/15 dark:bg-marco-yellow dark:text-[#050505]`;
   const desktopCompact =
     desktopBalancedIcons &&
@@ -112,7 +113,7 @@ interface HeaderSocialCircleLinksProps {
   className?: string;
   /** Wide desktop (≥1367px): smaller yellow pill + glyph — header row only; drawer omits this */
   desktopBalancedIcons?: boolean;
-  /** Mobile drawer: slightly larger hit targets and glyphs */
+  /** Mobile drawer footer: compact circles + glyphs (aligned with nav density). */
   comfortableTouch?: boolean;
 }
 
@@ -123,8 +124,8 @@ export function HeaderSocialCircleLinks({
   comfortableTouch = false,
 }: HeaderSocialCircleLinksProps) {
   const { t } = useTranslation();
-  const iconPx = comfortableTouch ? 26 : SOCIAL_VECTOR_ICON_PX;
-  const gapClass = comfortableTouch ? 'gap-9' : 'gap-6';
+  const iconPx = comfortableTouch ? 18 : SOCIAL_VECTOR_ICON_PX;
+  const gapClass = comfortableTouch ? 'gap-4' : 'gap-6';
 
   return (
     <div
