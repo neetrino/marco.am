@@ -7,7 +7,19 @@
     "personal": "Personal Information",
     "addresses": "Addresses",
     "password": "Change Password",
-    "orders": "Orders"
+    "orders": "Orders",
+    "deleteAccount": "Delete account"
+  },
+  "deleteAccount": {
+    "title": "Delete your account",
+    "description": "If you continue, your account will be closed and you will be signed out.",
+    "pointOrders": "Order history remains in our records where required for legal or accounting purposes.",
+    "pointLogin": "You will not be able to sign in with this account again.",
+    "pointData": "Profile and address data will no longer be available to you in the app.",
+    "confirmCheckbox": "I understand that this action is permanent for my access to this account.",
+    "submit": "Delete my account",
+    "deleting": "Deleting...",
+    "failed": "Could not delete the account. Please try again or contact support."
   },
   "dashboard": {
     "loading": "Loading dashboard...",

@@ -125,12 +125,20 @@ export interface OrderListItem {
   createdAt: string;
 }
 
-export type ProfileTab = 'dashboard' | 'personal' | 'addresses' | 'password' | 'orders';
+export type ProfileTab =
+  | 'dashboard'
+  | 'personal'
+  | 'addresses'
+  | 'password'
+  | 'orders'
+  | 'deleteAccount';
 
 export interface ProfileTabConfig {
   id: ProfileTab;
   label: string;
   icon: React.ReactNode;
+  /** Sidebar styling for destructive actions */
+  variant?: 'default' | 'danger';
 }
 
 

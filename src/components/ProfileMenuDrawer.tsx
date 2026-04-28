@@ -9,6 +9,7 @@ export interface ProfileMenuItem {
   id: string;
   label: string;
   icon: ReactNode;
+  variant?: 'default' | 'danger';
 }
 
 interface ProfileMenuDrawerProps {
@@ -91,22 +92,38 @@ export function ProfileMenuDrawer({ tabs, activeTab, onSelect }: ProfileMenuDraw
             </div>
 
             <div className="flex-1 overflow-y-auto divide-y divide-gray-100">
-              {tabs.map((tab) => (
+              {tabs.map((tab) => {
+                const isDanger = tab.variant === 'danger';
+                const inactiveDrawer =
+                  isDanger && activeTab !== tab.id
+                    ? 'text-red-700 hover:bg-red-50 rounded-lg'
+                    : 'text-gray-700 hover:bg-gray-50 rounded-lg';
+                return (
                 <button
                   key={tab.id}
                   onClick={() => handleSelect(tab.id)}
                   className={`flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium ${
                     activeTab === tab.id
                       ? 'bg-marco-yellow text-[#050505] dark:text-[#050505] rounded-lg'
-                      : 'text-gray-700 hover:bg-gray-50 rounded-lg'
+                      : inactiveDrawer
                   }`}
                 >
                   <span className="flex items-center gap-3">
-                    <span className={activeTab === tab.id ? 'text-[#050505] dark:text-[#050505]' : 'text-gray-500'}>{tab.icon}</span>
+                    <span
+                      className={
+                        activeTab === tab.id
+                          ? 'text-[#050505] dark:text-[#050505]'
+                          : isDanger
+                            ? 'text-red-600'
+                            : 'text-gray-500'
+                      }
+                    >
+                      {tab.icon}
+                    </span>
                     {tab.label}
                   </span>
                   <svg
-                    className={`w-4 h-4 ${activeTab === tab.id ? 'text-[#050505] dark:text-[#050505]' : 'text-gray-400'}`}
+                    className={`w-4 h-4 ${activeTab === tab.id ? 'text-[#050505] dark:text-[#050505]' : isDanger ? 'text-red-400' : 'text-gray-400'}`}
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -114,7 +131,8 @@ export function ProfileMenuDrawer({ tabs, activeTab, onSelect }: ProfileMenuDraw
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </button>
-              ))}
+              );
+              })}
             </div>
           </div>
         </div>

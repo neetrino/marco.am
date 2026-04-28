@@ -50,22 +50,29 @@ export function ProfileHeader({ profile, tabs, activeTab, onTabChange, t }: Prof
         {/* Sidebar Navigation */}
         <aside className="hidden lg:block">
           <nav className="bg-white border border-gray-200 rounded-lg p-2 space-y-1">
-            {tabs.map((tab) => (
+            {tabs.map((tab) => {
+              const isDanger = tab.variant === 'danger';
+              const inactiveSidebar =
+                isDanger && activeTab !== tab.id
+                  ? 'text-red-700 hover:bg-red-50 hover:text-red-900 rounded-full'
+                  : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 rounded-full';
+              return (
               <button
                 key={tab.id}
                 onClick={() => onTabChange(tab.id)}
                 className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium transition-all ${
                   activeTab === tab.id
                     ? 'bg-marco-yellow text-[#050505] dark:text-[#050505] rounded-full'
-                    : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 rounded-full'
+                    : inactiveSidebar
                 }`}
               >
-                <span className={`flex-shrink-0 ${activeTab === tab.id ? 'text-[#050505] dark:text-[#050505]' : 'text-gray-500'}`}>
+                <span className={`flex-shrink-0 ${activeTab === tab.id ? 'text-[#050505] dark:text-[#050505]' : isDanger ? 'text-red-600' : 'text-gray-500'}`}>
                   {tab.icon}
                 </span>
                 <span className="text-left">{tab.label}</span>
               </button>
-            ))}
+            );
+            })}
           </nav>
         </aside>
       </div>
