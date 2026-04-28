@@ -1,7 +1,6 @@
 import dynamic from 'next/dynamic';
 import { cookies } from 'next/headers';
 import { HeroCarousel } from '../components/HeroCarousel';
-import { HomeMobileMessageCta } from '../components/home/HomeMobileMessageCta';
 import { HomeReelsSection } from '../components/home/HomeReelsSection';
 
 import { LANGUAGE_PREFERENCE_KEY, parseLanguageFromServer } from '../lib/language';
@@ -52,8 +51,6 @@ export default async function HomePage() {
       <div className="mt-4 sm:mt-6 md:mt-8">
         <HomeReelsSection items={reelsFeed.items} />
       </div>
-
-      <HomeMobileMessageCta />
 
       <HomeSpecialOffersSection />
 
