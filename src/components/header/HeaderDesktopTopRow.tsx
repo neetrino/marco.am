@@ -65,7 +65,9 @@ export function HeaderDesktopTopRow({ innerRef }: HeaderDesktopTopRowProps) {
               <Link
                 key={item.translationKey}
                 href={item.href}
-                {...(item.href === '/products' ? { prefetch: true as const } : {})}
+                {...(item.href === '/' || item.href === '/products'
+                  ? { prefetch: true as const }
+                  : {})}
                 className={navClass}
                 aria-current={active ? 'page' : undefined}
               >

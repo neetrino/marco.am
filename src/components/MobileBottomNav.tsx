@@ -94,7 +94,7 @@ function NavItemLink({ item, pathname }: NavItemLinkProps) {
   return (
     <Link
       href={href}
-      {...(href === '/products' ? { prefetch: true as const } : {})}
+      {...(href === '/' || href === '/products' ? { prefetch: true as const } : {})}
       aria-current={isActive ? 'page' : undefined}
       className="flex min-h-[44px] flex-1 items-center justify-center px-1 py-1"
     >
