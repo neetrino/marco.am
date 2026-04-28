@@ -7,12 +7,12 @@ import { useTranslation } from '../../lib/i18n-client';
 const SOCIAL_VECTOR_ICON_PX = 20;
 const SOCIAL_LUCIDE_CLASS = 'shrink-0 text-marco-black dark:text-[#050505]';
 
-function WhatsAppGlyph({ className }: { className?: string }) {
+function WhatsAppGlyph({ className, size = SOCIAL_VECTOR_ICON_PX }: { className?: string; size?: number }) {
   return (
     <svg
       viewBox="9 9 21 21"
-      width={SOCIAL_VECTOR_ICON_PX}
-      height={SOCIAL_VECTOR_ICON_PX}
+      width={size}
+      height={size}
       fill="currentColor"
       className={className}
       aria-hidden="true"
@@ -22,12 +22,12 @@ function WhatsAppGlyph({ className }: { className?: string }) {
   );
 }
 
-function ViberGlyph({ className }: { className?: string }) {
+function ViberGlyph({ className, size = SOCIAL_VECTOR_ICON_PX }: { className?: string; size?: number }) {
   return (
     <svg
       viewBox="0 0 20.2189 21.9737"
-      width={SOCIAL_VECTOR_ICON_PX}
-      height={SOCIAL_VECTOR_ICON_PX}
+      width={size}
+      height={size}
       fill="currentColor"
       className={className}
       aria-hidden="true"
@@ -49,7 +49,7 @@ type LucideSocialEntry = {
 type GlyphSocialEntry = {
   translationKey: string;
   ariaKey: string;
-  Glyph: (props: { className?: string }) => JSX.Element;
+  Glyph: (props: { className?: string; size?: number }) => JSX.Element;
 };
 
 type SocialEntry = LucideSocialEntry | GlyphSocialEntry;
@@ -77,10 +77,11 @@ function isGlyphEntry(entry: SocialEntry): entry is GlyphSocialEntry {
 function socialControlClass(
   _entry: SocialEntry,
   enabled: boolean,
-  desktopBalancedIcons: boolean
+  desktopBalancedIcons: boolean,
+  comfortableTouch: boolean
 ): string {
-  const base =
-    'flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-marco-black/10 bg-marco-yellow text-marco-black transition-[opacity,filter,transform] dark:border-marco-black/15 dark:bg-marco-yellow dark:text-[#050505]';
+  const touch = comfortableTouch ? 'h-12 w-12' : 'h-11 w-11';
+  const base = `flex ${touch} shrink-0 items-center justify-center rounded-full border border-marco-black/10 bg-marco-yellow text-marco-black transition-[opacity,filter,transform] dark:border-marco-black/15 dark:bg-marco-yellow dark:text-[#050505]`;
   const desktopCompact =
     desktopBalancedIcons &&
     'min-[1367px]:h-9 min-[1367px]:w-9 min-[1367px]:[&_svg]:!h-[14px] min-[1367px]:[&_svg]:!w-[14px] min-[1367px]:[&_svg]:!max-h-[14px] min-[1367px]:[&_svg]:!max-w-[14px]';
@@ -89,17 +90,17 @@ function socialControlClass(
     .join(' ');
 }
 
-function SocialGlyph({ entry }: { entry: SocialEntry }) {
+function SocialGlyph({ entry, iconPx }: { entry: SocialEntry; iconPx: number }) {
   if (isGlyphEntry(entry)) {
     const { Glyph } = entry;
     return (
-      <Glyph className="shrink-0 text-marco-black transition-colors dark:text-[#050505]" />
+      <Glyph className="shrink-0 text-marco-black transition-colors dark:text-[#050505]" size={iconPx} />
     );
   }
   const { Icon } = entry;
   return (
     <Icon
-      size={SOCIAL_VECTOR_ICON_PX}
+      size={iconPx}
       className={SOCIAL_LUCIDE_CLASS}
       strokeWidth={2.1}
       aria-hidden
@@ -111,18 +112,23 @@ interface HeaderSocialCircleLinksProps {
   className?: string;
   /** Wide desktop (≥1367px): smaller yellow pill + glyph — header row only; drawer omits this */
   desktopBalancedIcons?: boolean;
+  /** Mobile drawer: slightly larger hit targets and glyphs */
+  comfortableTouch?: boolean;
 }
 
 /** Round social buttons — MARCO yellow pills */
 export function HeaderSocialCircleLinks({
   className = '',
   desktopBalancedIcons = false,
+  comfortableTouch = false,
 }: HeaderSocialCircleLinksProps) {
   const { t } = useTranslation();
+  const iconPx = comfortableTouch ? 22 : SOCIAL_VECTOR_ICON_PX;
+  const gapClass = comfortableTouch ? 'gap-7' : 'gap-6';
 
   return (
     <div
-      className={`flex shrink-0 items-center gap-6 ${desktopBalancedIcons ? 'min-[1367px]:gap-4' : ''} ${className}`}
+      className={`flex shrink-0 items-center ${gapClass} ${desktopBalancedIcons ? 'min-[1367px]:gap-4' : ''} ${className}`}
       role="list"
       aria-label={t('common.ariaLabels.socialLinks')}
     >
@@ -132,8 +138,8 @@ export function HeaderSocialCircleLinks({
         const hasHref = href.length > 0 && href !== '#';
         const name = t(ariaKey);
 
-        const inner = <SocialGlyph entry={entry} />;
-        const surfaceClass = socialControlClass(entry, hasHref, desktopBalancedIcons);
+        const inner = <SocialGlyph entry={entry} iconPx={iconPx} />;
+        const surfaceClass = socialControlClass(entry, hasHref, desktopBalancedIcons, comfortableTouch);
 
         if (!hasHref) {
           return (
