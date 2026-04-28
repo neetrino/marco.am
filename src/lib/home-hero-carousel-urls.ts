@@ -4,26 +4,7 @@ import {
   HOME_HERO_SECONDARY_DEFAULT_IMAGE_URL,
 } from '@/lib/constants/home-hero-admin-banners';
 import type { PublicBannersPayload } from '@/lib/services/banner-management.service';
-import { HERO_MOBILE_PRIMARY_IMAGE_SRC } from '@/components/hero.constants';
-
-/** Persisted admin URLs from older MARCO mobile hero — map to current default raster. */
-const LEGACY_HERO_MOBILE_IMAGE_URLS = new Set<string>([
-  '/assets/hero/hero-yellow-brick-wall.png',
-  '/assets/hero/hero-mobile-brick-wall-314-2380.jpg',
-]);
-
-function resolveHeroCarouselMobileUrl(
-  imageMobileUrl: string | null | undefined,
-): string {
-  if (imageMobileUrl == null || imageMobileUrl.trim() === '') {
-    return HERO_MOBILE_PRIMARY_IMAGE_SRC;
-  }
-  const trimmed = imageMobileUrl.trim();
-  if (LEGACY_HERO_MOBILE_IMAGE_URLS.has(trimmed)) {
-    return HERO_MOBILE_PRIMARY_IMAGE_SRC;
-  }
-  return trimmed;
-}
+import { resolveHeroMobileImageUrl } from '@/lib/utils/resolve-hero-mobile-image-url';
 
 export type HeroCarouselImageUrls = {
   leftTop: string;
@@ -50,6 +31,6 @@ export function buildHeroCarouselImageUrls(
     leftTop: primaryItems[0]?.imageDesktopUrl ?? HOME_HERO_PRIMARY_TOP_DEFAULT_IMAGE_URL,
     leftBottom: primaryItems[1]?.imageDesktopUrl ?? HOME_HERO_PRIMARY_BOTTOM_DEFAULT_IMAGE_URL,
     right: secondaryItems[0]?.imageDesktopUrl ?? HOME_HERO_SECONDARY_DEFAULT_IMAGE_URL,
-    mobile: resolveHeroCarouselMobileUrl(primaryItems[0]?.imageMobileUrl),
+    mobile: resolveHeroMobileImageUrl(primaryItems[0]?.imageMobileUrl),
   };
 }

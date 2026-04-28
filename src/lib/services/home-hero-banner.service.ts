@@ -2,10 +2,8 @@ import { db } from "@white-shop/db";
 import {
   HOME_HERO_BANNER_SETTINGS_KEY,
 } from "@/lib/constants/home-hero-banner";
-import {
-  HERO_FALLBACK_DESKTOP_IMAGE_SRC,
-  HERO_FALLBACK_MOBILE_IMAGE_SRC,
-} from "@/lib/constants/hero-fallback-images";
+import { HERO_FALLBACK_DESKTOP_IMAGE_SRC } from "@/lib/constants/hero-fallback-images";
+import { resolveHeroMobileImageUrl } from "@/lib/utils/resolve-hero-mobile-image-url";
 import {
   homeHeroBannerStorageSchema,
   type HomeHeroBannerStorage,
@@ -132,10 +130,7 @@ export const homeHeroBannerService = {
         storage.imageDesktopUrl,
         HERO_FALLBACK_DESKTOP_IMAGE_SRC,
       ),
-      imageMobileUrl: resolveImageUrl(
-        storage.imageMobileUrl,
-        HERO_FALLBACK_MOBILE_IMAGE_SRC,
-      ),
+      imageMobileUrl: resolveHeroMobileImageUrl(storage.imageMobileUrl),
       ctas: publicCtas(storage, locale),
     };
   },
