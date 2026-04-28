@@ -228,12 +228,6 @@ export function OrderSummary({ cart, currency, t }: OrderSummaryProps) {
               {t('common.cart.free')}
             </span>
           </div>
-          <div className="flex justify-between text-gray-600">
-            <span>{t('common.cart.tax')}</span>
-            <span className="ml-auto min-w-[120px] text-right">
-              {formatPrice(cart.totals.tax, currencyCode)}
-            </span>
-          </div>
           <div className="border-t border-gray-200 pt-4">
             <div className="flex justify-between text-lg font-bold text-gray-900">
               <span>{t('common.cart.total')}</span>

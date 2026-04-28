@@ -23,7 +23,6 @@ interface CheckoutModalsProps {
   cart: Cart | null;
   orderSummary: {
     subtotalDisplay: number;
-    taxDisplay: number;
     shippingDisplay: number;
     totalDisplay: number;
   };

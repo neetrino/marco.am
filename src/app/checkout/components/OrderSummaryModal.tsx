@@ -9,7 +9,6 @@ interface OrderSummaryModalProps {
   cart: Cart | null;
   orderSummary: {
     subtotalDisplay: number;
-    taxDisplay: number;
     shippingDisplay: number;
     totalDisplay: number;
   };
@@ -63,10 +62,6 @@ export function OrderSummaryModal({
       <div className="flex justify-between text-sm">
         <span className="text-gray-600">{t('checkout.summary.shipping')}:</span>
         <span className="font-medium">{shippingDisplay}</span>
-      </div>
-      <div className="flex justify-between text-sm">
-        <span className="text-gray-600">{t('checkout.summary.tax')}:</span>
-        <span className="font-medium">{formatPriceInCurrency(orderSummary.taxDisplay, currency)}</span>
       </div>
       <div className="border-t border-gray-200 pt-2 mt-2">
         <div className="flex justify-between">
