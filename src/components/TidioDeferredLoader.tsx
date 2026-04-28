@@ -5,6 +5,7 @@ import { MOBILE_NAV_OVERLAY_WIDGET_BOTTOM } from './mobile-bottom-nav.constants'
 
 const TIDIO_SRC = 'https://code.tidio.co/9ovkfmgncuyhg4kaemwvkdbvp5r7njec.js';
 const SCRIPT_ID = 'tidio-widget-js';
+const HOST_OFFSET_STYLE_ID = 'marco-tidio-mobile-offset';
 
 type TidioChatApi = {
   adjustStyles: (css: string) => void;
@@ -18,15 +19,29 @@ function getTidioChatApi(): TidioChatApi | undefined {
  * Lifts the Tidio launcher above the fixed mobile bottom nav (Tailwind `lg` = 1024px).
  * @see https://help.tidio.com/hc/en-us/articles/5464851341724-Widget-Position
  */
+function tidioMobileBottomCss(): string {
+  const bottom = MOBILE_NAV_OVERLAY_WIDGET_BOTTOM;
+  return `@media (max-width: 1023px) { #tidio, #tidio-chat, #tidio-chat-iframe { bottom: ${bottom} !important; } }`;
+}
+
+function syncHostPageTidioOffsetStyle(): void {
+  const css = tidioMobileBottomCss();
+  let el = document.getElementById(HOST_OFFSET_STYLE_ID);
+  if (!el) {
+    el = document.createElement('style');
+    el.id = HOST_OFFSET_STYLE_ID;
+    document.head.appendChild(el);
+  }
+  el.textContent = css;
+}
+
 function applyTidioMobileBottomOffset(): void {
+  syncHostPageTidioOffsetStyle();
   const api = getTidioChatApi();
   if (!api?.adjustStyles) {
     return;
   }
-  const bottom = MOBILE_NAV_OVERLAY_WIDGET_BOTTOM;
-  api.adjustStyles(
-    `@media (max-width: 1023px) { #tidio, #tidio-chat { bottom: ${bottom} !important; } }`,
-  );
+  api.adjustStyles(tidioMobileBottomCss());
 }
 
 /**
@@ -36,12 +51,16 @@ export function TidioDeferredLoader() {
   useEffect(() => {
     const onTidioReady = () => {
       applyTidioMobileBottomOffset();
+      window.setTimeout(applyTidioMobileBottomOffset, 300);
+      window.setTimeout(applyTidioMobileBottomOffset, 900);
+      window.setTimeout(applyTidioMobileBottomOffset, 2500);
     };
     document.addEventListener('tidioChat-ready', onTidioReady);
     applyTidioMobileBottomOffset();
 
     return () => {
       document.removeEventListener('tidioChat-ready', onTidioReady);
+      document.getElementById(HOST_OFFSET_STYLE_ID)?.remove();
     };
   }, []);
 
