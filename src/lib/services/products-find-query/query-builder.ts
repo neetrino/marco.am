@@ -60,31 +60,33 @@ async function buildCategoryFilter(
     return null;
   }
 
-  const perSlugTrees: Prisma.ProductWhereInput[] = [];
+  const perSlugTrees: Prisma.ProductWhereInput[] = (
+    await Promise.all(
+      slugs.map(async (slug) => {
+        const categoryDoc = await findCategoryBySlug(slug, lang);
+        if (!categoryDoc) {
+          return null;
+        }
 
-  for (const slug of slugs) {
-    const categoryDoc = await findCategoryBySlug(slug, lang);
-    if (!categoryDoc) {
-      continue;
-    }
+        const childCategoryIds = await getAllChildCategoryIds(categoryDoc.id);
+        const allCategoryIds = [categoryDoc.id, ...childCategoryIds];
 
-    const childCategoryIds = await getAllChildCategoryIds(categoryDoc.id);
-    const allCategoryIds = [categoryDoc.id, ...childCategoryIds];
+        logger.debug('Category IDs to include', {
+          slug,
+          parent: categoryDoc.id,
+          children: childCategoryIds,
+          total: allCategoryIds.length,
+        });
 
-    logger.debug('Category IDs to include', {
-      slug,
-      parent: categoryDoc.id,
-      children: childCategoryIds,
-      total: allCategoryIds.length,
-    });
+        const categoryConditions = allCategoryIds.flatMap((catId: string) => [
+          { primaryCategoryId: catId },
+          { categoryIds: { has: catId } },
+        ]);
 
-    const categoryConditions = allCategoryIds.flatMap((catId: string) => [
-      { primaryCategoryId: catId },
-      { categoryIds: { has: catId } },
-    ]);
-
-    perSlugTrees.push({ OR: categoryConditions });
-  }
+        return { OR: categoryConditions } as Prisma.ProductWhereInput;
+      }),
+    )
+  ).filter((node): node is Prisma.ProductWhereInput => node !== null);
 
   if (perSlugTrees.length === 0) {
     return null;

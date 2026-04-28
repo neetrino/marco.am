@@ -71,11 +71,28 @@ const DEFAULT_FILTERS: ProductsFiltersData = {
   priceRange: { min: 0, max: 0, stepSize: null, stepSizePerCurrency: null },
 };
 
+function mergeFilterPayload(payload: ProductsFiltersData): ProductsFiltersData {
+  return {
+    colors: payload.colors ?? [],
+    sizes: payload.sizes ?? [],
+    brands: payload.brands ?? [],
+    categories: payload.categories ?? [],
+    priceRange: payload.priceRange ?? DEFAULT_FILTERS.priceRange,
+  };
+}
+
 interface ProductsFiltersProviderProps {
   category?: string;
   search?: string;
   minPrice?: string;
   maxPrice?: string;
+  /**
+   * When the PLP prefetches filters on the server, pass the payload plus the same key
+   * built from category/search/min/max + language so the first client /filters round-trip is skipped.
+   */
+  initialFiltersData?: ProductsFiltersData | null;
+  /** Must match `getStoredLanguage()` order: category|search|minPrice|maxPrice|lang */
+  initialFiltersKey?: string | null;
   children: ReactNode;
 }
 
@@ -84,10 +101,18 @@ export function ProductsFiltersProvider({
   search,
   minPrice,
   maxPrice,
+  initialFiltersData = null,
+  initialFiltersKey = null,
   children,
 }: ProductsFiltersProviderProps) {
-  const [data, setData] = useState<ProductsFiltersData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<ProductsFiltersData | null>(() =>
+    initialFiltersData && initialFiltersKey
+      ? mergeFilterPayload(initialFiltersData)
+      : null,
+  );
+  const [loading, setLoading] = useState(
+    () => !(initialFiltersData && initialFiltersKey),
+  );
   const [error, setError] = useState(false);
 
   const fetchFilters = useCallback(async () => {
@@ -117,8 +142,28 @@ export function ProductsFiltersProvider({
   }, [category, search, minPrice, maxPrice]);
 
   useEffect(() => {
-    fetchFilters();
-  }, [fetchFilters]);
+    const lang = getStoredLanguage();
+    const clientKey = `${category ?? ''}|${search ?? ''}|${minPrice ?? ''}|${maxPrice ?? ''}|${lang}`;
+    if (
+      initialFiltersData &&
+      initialFiltersKey &&
+      initialFiltersKey === clientKey
+    ) {
+      setData(mergeFilterPayload(initialFiltersData));
+      setLoading(false);
+      setError(false);
+      return;
+    }
+    void fetchFilters();
+  }, [
+    category,
+    search,
+    minPrice,
+    maxPrice,
+    initialFiltersData,
+    initialFiltersKey,
+    fetchFilters,
+  ]);
 
   const value = useMemo<ProductsFiltersContextValue>(
     () => ({ data, loading, error, refetch: fetchFilters }),

@@ -1,5 +1,5 @@
-import { db } from "@white-shop/db";
 import { getAttributeBucket, isColorAttributeKey } from '@/lib/attribute-keys';
+import { getListingDiscountSettings } from './listing-discount-settings';
 import { processImageUrl } from "../utils/image-utils";
 import { translations } from "../translations";
 import { ProductWithRelations } from "./products-find-query.service";
@@ -167,25 +167,7 @@ class ProductsFindTransformService {
     products: ProductWithRelations[],
     lang: string = "en"
   ): Promise<unknown[]> {
-    // Get discount settings
-    const discountSettings = await db.settings.findMany({
-      where: {
-        key: {
-          in: ["globalDiscount", "categoryDiscounts", "brandDiscounts"],
-        },
-      },
-    });
-
-    const globalDiscount =
-      Number(
-        discountSettings.find((s: { key: string; value: unknown }) => s.key === "globalDiscount")?.value
-      ) || 0;
-    
-    const categoryDiscountsSetting = discountSettings.find((s: { key: string; value: unknown }) => s.key === "categoryDiscounts");
-    const categoryDiscounts = categoryDiscountsSetting ? (categoryDiscountsSetting.value as Record<string, number>) || {} : {};
-    
-    const brandDiscountsSetting = discountSettings.find((s: { key: string; value: unknown }) => s.key === "brandDiscounts");
-    const brandDiscounts = brandDiscountsSetting ? (brandDiscountsSetting.value as Record<string, number>) || {} : {};
+    const { globalDiscount, categoryDiscounts, brandDiscounts } = await getListingDiscountSettings();
 
     // Format response
     const data = products.map((product: ProductWithRelations) => {

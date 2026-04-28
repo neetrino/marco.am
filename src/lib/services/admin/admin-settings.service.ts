@@ -1,5 +1,14 @@
+import { revalidateTag } from 'next/cache';
 import { db } from "@white-shop/db";
 import { logger } from "@/lib/utils/logger";
+
+function revalidateListingDiscountCache() {
+  try {
+    revalidateTag('listing-discount-settings', {});
+  } catch {
+    // Outside Next request (e.g. scripts) — ignore
+  }
+}
 
 class AdminSettingsService {
   /**
@@ -60,6 +69,7 @@ class AdminSettingsService {
         },
       });
       logger.devLog('✅ [ADMIN SERVICE] Global discount updated:', globalDiscountValue);
+      revalidateListingDiscountCache();
     }
     
     // Update category discounts
@@ -77,6 +87,7 @@ class AdminSettingsService {
         },
       });
       logger.devLog('✅ [ADMIN SERVICE] Category discounts updated:', data.categoryDiscounts);
+      revalidateListingDiscountCache();
     }
     
     // Update brand discounts
@@ -94,6 +105,7 @@ class AdminSettingsService {
         },
       });
       logger.devLog('✅ [ADMIN SERVICE] Brand discounts updated:', data.brandDiscounts);
+      revalidateListingDiscountCache();
     }
     
     // Update default currency

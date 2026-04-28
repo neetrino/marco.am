@@ -20,6 +20,10 @@ export interface ProductFilters {
   technicalSpecs?: TechnicalSpecFilters;
   /** Restrict to these product IDs (e.g. wishlist). Applied with other filters as AND. */
   productIds?: string[];
+  /**
+   * PLP: skip heavy `productAttributes` join on product rows (faster listing; card keySpecs/color extras may be thinner).
+   */
+  listingOmitProductAttributes?: boolean;
 }
 
 export type TechnicalSpecFilters = Record<string, string[]>;
