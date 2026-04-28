@@ -75,7 +75,7 @@ export function HeaderDesktopTopRow({ innerRef }: HeaderDesktopTopRowProps) {
         </nav>
         {!hideHeaderSocialLinks && (
           <HeaderSocialCircleLinks
-            className={`${HEADER_NAV_TO_SOCIAL_GAP_CLASS} h-10 shrink-0 items-center`}
+            className={`${HEADER_NAV_TO_SOCIAL_GAP_CLASS} min-h-11 shrink-0 items-center`}
           />
         )}
         <div className="ml-4 min-h-0 min-w-0 flex-1" aria-hidden />

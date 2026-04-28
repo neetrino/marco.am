@@ -2,6 +2,12 @@
   "phone": "+374 41 350 406",
   "email": "marcofurniture@mail.ru",
   "pageTitle": "ԿԱՊ ՄԵԶ ՀԵՏ",
+  "drawerCall": {
+    "cta": "Զանգահարել",
+    "chooseBranchTitle": "Ո՞ր մասնաճուղում եք ցանկանում զանգահարել",
+    "changeBranch": "Այլ մասնաճուղ ընտրել",
+    "cancel": "Հետ"
+  },
   "mapSectionTitle": "Մեր հասցեները քարտեզում",
   "address": "Ք․ Երևան Ալեք Մանուկյան 23",
   "workingHours": "Երկ-Ուրբ 10:00-19:00",

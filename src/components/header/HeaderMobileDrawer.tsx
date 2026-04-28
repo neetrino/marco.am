@@ -1,47 +1,140 @@
 'use client';
 
-import { useContext, useEffect, useState, type SyntheticEvent } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import {
+  ChevronRight,
+  Clapperboard,
+  Info,
+  LogOut,
+  Mail,
+  Phone,
+  ShoppingBag,
+  Tag,
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { CompareIcon } from '../icons/CompareIcon';
-import { HeaderNavbarWishlistIcon } from '../icons/HeaderNavbarWishlistIcon';
-import { MobileNavCartLinearIcon } from '../mobile-bottom-nav-icons';
+import { MOBILE_FLOOR_NAV_HREFS } from '../mobile-bottom-nav.constants';
 import { LanguagePreferenceContext } from '../../lib/language-context';
+import { useAuth } from '../../lib/auth/AuthContext';
 import { HeaderSocialCircleLinks } from './HeaderSocialCircleLinks';
 import { useShouldHideHeaderSocialLinks } from './useShouldHideHeaderSocialLinks';
-import { HeaderProfileIconFilled } from './HeaderInlineIcons';
-import { getHeaderPrimaryNavMobileRowClass } from './header.constants';
-import { isPrimaryNavHrefActive, primaryNavLinks } from './nav-config';
+import { isPrimaryNavHrefActive, primaryNavLinks, type PrimaryNavLink } from './nav-config';
 import { ThemeToggleButton } from '../theme/ThemeToggleButton';
 import { useTheme } from '../theme/ThemeProvider';
 import type { useHeaderData } from './useHeaderData';
-import { dedupeCategories, prepareRootCategoriesForNav } from './categoryNavList';
-import { resolveCategoryNavPresentation } from './categoryNavPresentation';
+import { prepareRootCategoriesForNav } from './categoryNavList';
+import {
+  contactLocationMapHref,
+  getContactLocations,
+  phoneToTelHref,
+  type ContactLocationId,
+} from '../../lib/contact-locations';
+import { HeaderNavbarProfileIcon } from '../icons/HeaderNavbarProfileIcon';
+import { HeaderMobileDrawerCategories } from './HeaderMobileDrawerCategories';
+import {
+  MOBILE_DRAWER_CLOSE_BTN_CLASS,
+  MOBILE_DRAWER_CONTACT_COMPACT_CLASS,
+  MOBILE_DRAWER_CTA_PILL_CLASS,
+  MOBILE_DRAWER_MUTED_PILL_CLASS,
+  MOBILE_DRAWER_CONTENT_MAX_CLASS,
+  MOBILE_DRAWER_PANEL_CLASS,
+  MOBILE_DRAWER_USER_PILL_CLASS,
+  mobileDrawerCompactPillClass,
+  mobileDrawerNavPillClass,
+} from './header-mobile-drawer.classes';
 
 type Props = {
   data: ReturnType<typeof useHeaderData>;
   compactPrimaryNav: boolean;
 };
 
-function hideBrokenCategoryIcon(event: SyntheticEvent<HTMLImageElement>) {
-  const wrapper = event.currentTarget.parentElement;
+const PRIMARY_NAV_ICONS: Record<string, LucideIcon> = {
+  'common.navigation.about': Info,
+  'common.navigation.shop': ShoppingBag,
+  'common.navigation.brands': Tag,
+  'common.navigation.contact': Mail,
+  'common.navigation.reels': Clapperboard,
+};
 
-  if (wrapper instanceof HTMLElement) {
-    wrapper.style.display = 'none';
-    return;
+function PrimaryNavRowIcon({ translationKey }: { translationKey: string }) {
+  const Icon = PRIMARY_NAV_ICONS[translationKey];
+  if (!Icon) {
+    return null;
   }
+  return <Icon className="h-5 w-5 shrink-0" size={20} strokeWidth={2} aria-hidden />;
+}
 
-  event.currentTarget.style.display = 'none';
+function drawerUserLabel(user: {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+}): string {
+  const full = [user.firstName, user.lastName].filter(Boolean).join(' ').trim();
+  if (full.length > 0) {
+    return full;
+  }
+  return (user.email ?? user.phone ?? '').trim();
+}
+
+function renderPrimaryNavLink(
+  link: PrimaryNavLink,
+  pathname: string,
+  t: (key: string) => string,
+  onClose: () => void,
+  rowClass: string
+) {
+  const active = isPrimaryNavHrefActive(pathname, link.href);
+  const content = (
+    <>
+      <span className="flex min-w-0 flex-1 items-center gap-2.5">
+        <PrimaryNavRowIcon translationKey={link.translationKey} />
+        <span className="truncate">{t(link.translationKey)}</span>
+      </span>
+      <ChevronRight className="h-4 w-4 shrink-0 opacity-50" aria-hidden />
+    </>
+  );
+  if (link.external === true) {
+    return (
+      <a
+        key={link.translationKey}
+        href={link.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={onClose}
+        className={rowClass}
+        aria-current={active ? 'page' : undefined}
+      >
+        {content}
+      </a>
+    );
+  }
+  return (
+    <Link
+      key={link.translationKey}
+      href={link.href}
+      onClick={onClose}
+      className={rowClass}
+      aria-current={active ? 'page' : undefined}
+    >
+      {content}
+    </Link>
+  );
 }
 
 export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? '';
   const { theme, mounted: themeMounted } = useTheme();
   const drawerThemeDark = themeMounted && theme === 'dark';
   const lang = useContext(LanguagePreferenceContext);
+  const { user } = useAuth();
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [expandedCategorySlug, setExpandedCategorySlug] = useState<string | null>(null);
+  const [callFlow, setCallFlow] = useState<'idle' | 'branches' | 'phones'>('idle');
+  const [callBranchId, setCallBranchId] = useState<ContactLocationId | null>(null);
   const hideHeaderSocialLinks = useShouldHideHeaderSocialLinks();
   const {
     t,
@@ -50,20 +143,32 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
     isLoggedIn,
     logout,
     isAdmin,
-    wishlistCount,
     compareCount,
-    cartCount,
     currentYear,
     categories,
     loadingCategories,
     getRootCategories,
   } = data;
   const rootCategories = prepareRootCategoriesForNav(getRootCategories(categories), lang);
+  const floorNavHrefSet = new Set<string>(MOBILE_FLOOR_NAV_HREFS);
+  const drawerPrimaryNavLinks = primaryNavLinks.filter((link) => !floorNavHrefSet.has(link.href));
+  const reelsLink = drawerPrimaryNavLinks.find((l) => l.translationKey === 'common.navigation.reels');
+  const otherPrimaryLinks = drawerPrimaryNavLinks.filter(
+    (l) =>
+      l.translationKey !== 'common.navigation.reels' &&
+      l.translationKey !== 'common.navigation.shop'
+  );
+  const compareNavActive = isPrimaryNavHrefActive(pathname, '/compare');
+  const compareRowClass = `${mobileDrawerNavPillClass(compareNavActive)} normal-case`;
+
+  const closeDrawer = () => setMobileMenuOpen(false);
 
   useEffect(() => {
     if (!mobileMenuOpen) {
       setCategoriesOpen(false);
       setExpandedCategorySlug(null);
+      setCallFlow('idle');
+      setCallBranchId(null);
     }
   }, [mobileMenuOpen]);
 
@@ -71,431 +176,272 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
     return null;
   }
 
+  const contactLocations = getContactLocations(lang);
+  const callSelectedLocation =
+    callFlow === 'phones' && callBranchId !== null
+      ? (contactLocations.find((l) => l.id === callBranchId) ?? null)
+      : null;
+
   const drawer = (
     <div
-      className={`pointer-events-auto fixed inset-0 z-[200] flex touch-none bg-black/40 backdrop-blur-sm ${compactPrimaryNav ? '' : 'md:hidden'}`}
+      className={`pointer-events-auto fixed inset-0 z-[200] ${MOBILE_DRAWER_PANEL_CLASS} ${compactPrimaryNav ? '' : 'md:hidden'}`}
       role="dialog"
       aria-modal="true"
-      onClick={() => setMobileMenuOpen(false)}
     >
-      <div
-        className="flex h-full min-h-screen w-[70vw] min-w-[18rem] max-w-[28rem] touch-auto flex-col bg-white shadow-2xl"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4">
-          <p className="text-lg font-semibold text-gray-900">{t('common.menu.title')}</p>
-          <button
-            type="button"
-            onClick={() => setMobileMenuOpen(false)}
-            className="w-10 h-10 rounded-full border border-gray-200 text-gray-600 hover:text-gray-900 hover:border-gray-300 transition-colors"
-            aria-label={t('common.ariaLabels.closeMenu')}
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-4">
+          <div className="flex shrink-0 justify-end pb-2 pt-2">
+            <button
+              type="button"
+              onClick={closeDrawer}
+              className={MOBILE_DRAWER_CLOSE_BTN_CLASS}
+              aria-label={t('common.ariaLabels.closeMenu')}
+            >
+              <svg className="mx-auto h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <div
+            className={`${MOBILE_DRAWER_CONTENT_MAX_CLASS} mt-4 flex min-h-0 flex-1 flex-col sm:mt-5`}
           >
-            <svg className="w-5 h-5 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-
-        <div className="flex-1 overflow-hidden min-h-0">
-          <nav className="flex h-full flex-col border-y border-gray-200 text-sm font-semibold uppercase tracking-wide text-gray-800 bg-white">
-            <div className="flex-1 overflow-y-auto divide-y divide-gray-200">
-              <div className="border-b border-gray-200 normal-case">
-                <button
-                  type="button"
-                  onClick={() => setCategoriesOpen((prev) => !prev)}
-                  className="flex w-full items-center justify-between px-4 py-3 font-semibold text-gray-800 hover:bg-gray-50"
-                  aria-expanded={categoriesOpen}
-                  aria-controls="mobile-categories-menu"
-                >
-                  <span className="uppercase tracking-wide">{t('common.navigation.categories')}</span>
-                  <svg
-                    className={`h-4 w-4 text-gray-400 transition-transform duration-200 dark:text-white ${categoriesOpen ? 'rotate-180' : 'rotate-0'}`}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    aria-hidden
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                {categoriesOpen && (
-                  <div id="mobile-categories-menu" className="border-t border-gray-100 bg-gray-50/60">
-                    {loadingCategories ? (
-                      <p className="px-4 py-3 text-sm text-gray-500">{t('common.messages.loading')}</p>
-                    ) : (
-                      <div className="divide-y divide-gray-100">
-                        {rootCategories.map((category) => {
-                          const categoryPresentation = resolveCategoryNavPresentation(
-                            category.slug,
-                            category.title,
-                            lang
-                          );
-                          const CategoryIcon =
-                            categoryPresentation.icon.kind === 'lucide'
-                              ? categoryPresentation.icon.Icon
-                              : null;
-                          const hasChildren = category.children.length > 0;
-                          const isExpanded = expandedCategorySlug === category.slug;
-                          return (
-                            <div key={category.id}>
-                              {hasChildren ? (
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    setExpandedCategorySlug((prev) =>
-                                      prev === category.slug ? null : category.slug
-                                    )
-                                  }
-                                  className="flex w-full items-center justify-between gap-2 px-4 py-2.5 text-left text-sm font-medium leading-5 text-gray-700 hover:bg-gray-100/80 dark:hover:bg-slate-800/50"
-                                  aria-expanded={isExpanded}
-                                  aria-controls={`mobile-category-children-${category.id}`}
-                                >
-                                  <span className="flex min-w-0 flex-1 items-center gap-2.5">
-                                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white dark:bg-slate-800">
-                                      {categoryPresentation.icon.kind === 'figma' ? (
-                                        <img
-                                          src={categoryPresentation.icon.src}
-                                          alt=""
-                                          width={22}
-                                          height={22}
-                                          className="h-[22px] w-[22px] object-contain dark:brightness-0 dark:invert"
-                                          draggable={false}
-                                          onError={hideBrokenCategoryIcon}
-                                        />
-                                      ) : (
-                                        CategoryIcon && (
-                                          <CategoryIcon
-                                            size={18}
-                                            strokeWidth={1.7}
-                                            className="text-gray-700 dark:text-white"
-                                            aria-hidden
-                                          />
-                                        )
-                                      )}
-                                    </span>
-                                    <span className="min-w-0 flex-1 whitespace-normal break-words">
-                                      {categoryPresentation.title}
-                                    </span>
-                                  </span>
-                                  <svg
-                                    className={`h-4 w-4 shrink-0 text-gray-400 transition-transform duration-200 dark:text-white ${isExpanded ? 'rotate-180' : 'rotate-0'}`}
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                    aria-hidden
-                                  >
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                  </svg>
-                                </button>
-                              ) : (
-                                <div className="px-4 py-2.5">
-                                  <Link
-                                    href={`/products?category=${category.slug}`}
-                                    onClick={() => setMobileMenuOpen(false)}
-                                    className="flex min-w-0 items-center gap-2.5 text-sm font-medium leading-5 text-gray-700 hover:text-gray-900"
-                                  >
-                                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-white dark:bg-slate-800">
-                                      {categoryPresentation.icon.kind === 'figma' ? (
-                                        <img
-                                          src={categoryPresentation.icon.src}
-                                          alt=""
-                                          width={22}
-                                          height={22}
-                                          className="h-[22px] w-[22px] object-contain dark:brightness-0 dark:invert"
-                                          draggable={false}
-                                          onError={hideBrokenCategoryIcon}
-                                        />
-                                      ) : (
-                                        CategoryIcon && (
-                                          <CategoryIcon
-                                            size={18}
-                                            strokeWidth={1.7}
-                                            className="text-gray-700 dark:text-white"
-                                            aria-hidden
-                                          />
-                                        )
-                                      )}
-                                    </span>
-                                    <span className="min-w-0 flex-1 whitespace-normal break-words">
-                                      {categoryPresentation.title}
-                                    </span>
-                                  </Link>
-                                </div>
-                              )}
-                              {hasChildren && isExpanded && (
-                                <div
-                                  id={`mobile-category-children-${category.id}`}
-                                  className="space-y-1 border-t border-gray-100 bg-white/80 px-4 py-2 dark:bg-slate-900/40"
-                                >
-                                  <Link
-                                    href={`/products?category=${category.slug}`}
-                                    onClick={() => setMobileMenuOpen(false)}
-                                    className="flex py-1.5 text-xs font-semibold uppercase tracking-wide text-marco-yellow hover:brightness-95"
-                                  >
-                                    {t('common.navigation.categoriesMegaMenu.viewProducts')}
-                                  </Link>
-                                  {dedupeCategories(category.children, lang).map((child) => {
-                                    const childPresentation = resolveCategoryNavPresentation(
-                                      child.slug,
-                                      child.title,
-                                      lang
-                                    );
-                                    const ChildIcon =
-                                      childPresentation.icon.kind === 'lucide'
-                                        ? childPresentation.icon.Icon
-                                        : null;
-                                    return (
-                                    <Link
-                                      key={child.id}
-                                      href={`/products?category=${child.slug}`}
-                                      onClick={() => setMobileMenuOpen(false)}
-                                        className="flex items-start gap-2 py-1 text-sm leading-5 text-gray-600 hover:text-gray-900"
-                                    >
-                                        <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded bg-white dark:bg-slate-800">
-                                          {childPresentation.icon.kind === 'figma' ? (
-                                            <img
-                                              src={childPresentation.icon.src}
-                                              alt=""
-                                              width={16}
-                                              height={16}
-                                              className="h-4 w-4 object-contain dark:brightness-0 dark:invert"
-                                              draggable={false}
-                                              onError={hideBrokenCategoryIcon}
-                                            />
-                                          ) : (
-                                            ChildIcon && (
-                                              <ChildIcon
-                                                size={14}
-                                                strokeWidth={1.7}
-                                                className="text-gray-700 dark:text-white"
-                                                aria-hidden
-                                              />
-                                            )
-                                          )}
-                                        </span>
-                                        <span className="whitespace-normal break-words">
-                                          {childPresentation.title}
-                                        </span>
-                                    </Link>
-                                    );
-                                  })}
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {primaryNavLinks.map((link) => {
-                const primaryNavActive = isPrimaryNavHrefActive(pathname, link.href);
-                const primaryNavRowClass = getHeaderPrimaryNavMobileRowClass(primaryNavActive);
-                if (link.translationKey === 'common.navigation.reels') {
-                  return (
-                    <div key="common.navigation.reels" className="border-b border-gray-200">
-                      {link.external === true ? (
-                        <a
-                          href={link.href}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={() => setMobileMenuOpen(false)}
-                          className={primaryNavRowClass}
-                          aria-current={primaryNavActive ? 'page' : undefined}
-                        >
-                          {t(link.translationKey)}
-                          <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                          </svg>
-                        </a>
-                      ) : (
-                        <Link
-                          href={link.href}
-                          onClick={() => setMobileMenuOpen(false)}
-                          className={primaryNavRowClass}
-                          aria-current={primaryNavActive ? 'page' : undefined}
-                        >
-                          {t(link.translationKey)}
-                          <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                          </svg>
-                        </Link>
-                      )}
-                      {!hideHeaderSocialLinks && (
-                        <div className="flex justify-center border-t border-gray-100 px-4 py-4 normal-case">
-                          <HeaderSocialCircleLinks />
-                        </div>
-                      )}
-                    </div>
-                  );
-                }
-                return link.external === true ? (
-                  <a
-                    key={link.translationKey}
-                    href={link.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={primaryNavRowClass}
-                    aria-current={primaryNavActive ? 'page' : undefined}
-                  >
-                    {t(link.translationKey)}
-                    <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </a>
-                ) : (
-                  <Link
-                    key={link.translationKey}
-                    href={link.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={primaryNavRowClass}
-                    aria-current={primaryNavActive ? 'page' : undefined}
-                  >
-                    {t(link.translationKey)}
-                    <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </Link>
-                );
-              })}
-
-              <Link
-                href="/wishlist"
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-between px-4 py-3 hover:bg-gray-50"
-              >
-                <span className="flex items-center gap-2 normal-case font-medium text-gray-700">
-                  <HeaderNavbarWishlistIcon className="h-[18px] w-[18px] shrink-0" />
-                  {t('common.navigation.wishlist')}
-                </span>
-                {wishlistCount > 0 && (
-                  <span className="rounded-full bg-gray-900 px-2 py-0.5 text-xs font-semibold text-white">
-                    {wishlistCount > 99 ? '99+' : wishlistCount}
+            <nav
+              className="flex h-full min-h-0 flex-1 flex-col text-marco-black dark:text-white"
+              aria-label={t('common.menu.title')}
+            >
+              <div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto pb-5">
+              {isLoggedIn && user ? (
+                <Link href="/profile" onClick={closeDrawer} className={MOBILE_DRAWER_USER_PILL_CLASS}>
+                  <span className="flex min-w-0 flex-1 items-center gap-2.5">
+                    <HeaderNavbarProfileIcon className="h-[18px] w-[17px] shrink-0 text-white" />
+                    <span className="truncate normal-case">
+                      {drawerUserLabel(user) || t('common.navigation.profile')}
+                    </span>
                   </span>
-                )}
+                  <ChevronRight className="h-4 w-4 shrink-0 text-white/90" aria-hidden />
+                </Link>
+              ) : null}
+
+              <HeaderMobileDrawerCategories
+                t={t}
+                lang={lang}
+                loadingCategories={loadingCategories}
+                rootCategories={rootCategories}
+                categoriesOpen={categoriesOpen}
+                setCategoriesOpen={setCategoriesOpen}
+                expandedCategorySlug={expandedCategorySlug}
+                setExpandedCategorySlug={setExpandedCategorySlug}
+                onNavigate={closeDrawer}
+              />
+
+              {otherPrimaryLinks.map((link) =>
+                renderPrimaryNavLink(
+                  link,
+                  pathname,
+                  t,
+                  closeDrawer,
+                  mobileDrawerNavPillClass(isPrimaryNavHrefActive(pathname, link.href))
+                )
+              )}
+
+              <Link href="/products" onClick={closeDrawer} className={MOBILE_DRAWER_CTA_PILL_CLASS}>
+                {t('common.navigation.shop')}
               </Link>
+
+              {reelsLink
+                ? renderPrimaryNavLink(
+                    reelsLink,
+                    pathname,
+                    t,
+                    closeDrawer,
+                    mobileDrawerNavPillClass(isPrimaryNavHrefActive(pathname, reelsLink.href))
+                  )
+                : null}
 
               <Link
                 href="/compare"
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-between px-4 py-3 hover:bg-gray-50"
+                onClick={closeDrawer}
+                className={compareRowClass}
+                aria-current={compareNavActive ? 'page' : undefined}
               >
-                <span className="flex items-center gap-2 normal-case font-medium text-gray-700">
-                  <CompareIcon size={18} />
-                  {t('common.navigation.compare')}
+                <span className="flex min-w-0 flex-1 items-center gap-2.5 font-semibold">
+                  <CompareIcon size={18} className="shrink-0" />
+                  <span className="truncate">{t('common.navigation.compare')}</span>
                 </span>
-                {compareCount > 0 && (
-                  <span className="rounded-full bg-red-600 px-2 py-0.5 text-xs font-semibold text-white">
-                    {compareCount > 99 ? '99+' : compareCount}
-                  </span>
-                )}
+                <span className="flex shrink-0 items-center gap-2">
+                  {compareCount > 0 ? (
+                    <span className="rounded-full bg-red-600 px-2 py-0.5 text-[10px] font-bold text-white">
+                      {compareCount > 99 ? '99+' : compareCount}
+                    </span>
+                  ) : null}
+                  <ChevronRight className="h-4 w-4 shrink-0 opacity-50" aria-hidden />
+                </span>
               </Link>
 
-              <Link
-                href="/cart"
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-between px-4 py-3 hover:bg-gray-50"
-              >
-                <span className="flex items-center gap-2 normal-case font-medium text-gray-700">
-                  <MobileNavCartLinearIcon className="h-[19px] w-[19px]" />
-                  {t('common.navigation.cart')}
-                </span>
-                {cartCount > 0 && (
-                  <span className="rounded-full bg-gray-900 px-2 py-0.5 text-xs font-semibold text-white">
-                    {cartCount > 99 ? '99+' : cartCount}
-                  </span>
-                )}
-              </Link>
-
-              <div className="border-b border-gray-200 px-4 py-3 normal-case">
+              <div className="overflow-hidden rounded-full border border-marco-black/12 dark:border-white/12">
                 <ThemeToggleButton
                   className={
                     drawerThemeDark
-                      ? 'flex w-full items-center justify-between rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-left text-slate-100 transition-[background-color,color,filter] duration-200 hover:bg-slate-800'
-                      : 'flex w-full items-center justify-between rounded-xl border border-marco-black/10 bg-marco-yellow px-4 py-3 text-left text-[#050505] transition-[background-color,color,filter] duration-200 hover:brightness-95 active:brightness-90'
+                      ? 'flex min-h-11 w-full items-center justify-between bg-zinc-900 px-4 py-2.5 text-left text-white transition-[background-color] duration-200 hover:bg-zinc-800'
+                      : 'flex min-h-11 w-full items-center justify-between bg-marco-gray px-4 py-2.5 text-left text-marco-black transition-[background-color] duration-200 hover:bg-marco-border dark:bg-zinc-800 dark:text-white'
                   }
                   iconClassName="h-5 w-5 shrink-0"
-                  labelClassName="text-sm font-semibold"
+                  labelClassName="text-xs font-bold uppercase tracking-wide"
                   showLabel
                 />
               </div>
 
               {isLoggedIn ? (
                 <>
-                  <Link
-                    href="/profile"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 normal-case text-gray-800"
-                  >
-                    <span className="flex items-center gap-2">
-                      <HeaderProfileIconFilled />
-                      {t('common.navigation.profile')}
-                    </span>
-                    <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </Link>
-                  {isAdmin && (
+                  {isAdmin ? (
                     <Link
                       href="/supersudo"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="flex items-center justify-between px-4 py-3 hover:bg-blue-50 normal-case text-blue-700"
+                      onClick={closeDrawer}
+                      className="flex min-h-11 w-full items-center justify-between gap-2.5 rounded-full border-2 border-blue-600 bg-transparent px-4 py-2.5 text-left text-xs font-bold uppercase tracking-wide text-blue-700 transition-colors hover:bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:bg-blue-950/40"
                     >
                       <span>{t('common.navigation.adminPanel')}</span>
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
+                      <ChevronRight className="h-4 w-4 shrink-0" aria-hidden />
                     </Link>
-                  )}
+                  ) : null}
                   <button
                     type="button"
                     onClick={() => {
-                      setMobileMenuOpen(false);
+                      closeDrawer();
                       logout();
                     }}
-                    className="flex w-full items-center justify-between px-4 py-3 text-left text-red-600 hover:bg-red-50 normal-case font-semibold"
+                    className={`${MOBILE_DRAWER_MUTED_PILL_CLASS} text-marco-black dark:text-white`}
                   >
-                    {t('common.navigation.logout')}
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
+                    <span>{t('common.navigation.logout')}</span>
+                    <LogOut className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden />
                   </button>
                 </>
               ) : (
                 <>
                   <Link
-                    href="/login"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 normal-case text-gray-800"
+                    href="/register"
+                    onClick={closeDrawer}
+                    className={MOBILE_DRAWER_CTA_PILL_CLASS}
                   >
-                    <span>{t('common.navigation.login')}</span>
-                    <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
+                    {t('register.form.createAccount')}
                   </Link>
                   <Link
-                    href="/register"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center justify-between px-4 py-3 hover:bg-gray-900 hover:text-white normal-case text-gray-900 font-semibold"
+                    href="/login"
+                    onClick={closeDrawer}
+                    className={`${mobileDrawerNavPillClass(false)} normal-case font-semibold`}
                   >
-                    <span>{t('register.form.createAccount')}</span>
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
+                    <span>{t('common.navigation.login')}</span>
+                    <ChevronRight className="h-4 w-4 shrink-0 opacity-50" aria-hidden />
                   </Link>
                 </>
               )}
-            </div>
+              </div>
 
-            <div className="border-t border-gray-200 px-4 py-4 text-xs font-medium tracking-wide text-gray-500 normal-case">
-              © {currentYear} MARCO GROUP
-            </div>
-          </nav>
+              {!hideHeaderSocialLinks ? (
+                <div className="flex shrink-0 justify-center pb-2 pt-1">
+                  <HeaderSocialCircleLinks />
+                </div>
+              ) : null}
+
+              <div className="shrink-0 w-full space-y-3 border-t border-marco-black/10 px-0 pb-2 pt-3 dark:border-white/10">
+                {callFlow === 'idle' ? (
+                  <>
+                    <p className="text-center text-[11px] font-bold uppercase tracking-wide text-marco-black dark:text-white">
+                      {t('contact.pageTitle')}
+                    </p>
+                    <p className="text-center text-[10px] leading-snug text-marco-text/75 dark:text-zinc-400">
+                      {t('contact.callToUs.description')}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setCallFlow('branches')}
+                      className={`${MOBILE_DRAWER_CTA_PILL_CLASS} gap-2`}
+                    >
+                      <Phone className="h-5 w-5 shrink-0" strokeWidth={2} aria-hidden />
+                      <span>{t('contact.drawerCall.cta')}</span>
+                    </button>
+                  </>
+                ) : (
+                  <div className="space-y-2.5" role="region" aria-label={t('contact.drawerCall.cta')}>
+                    {callFlow === 'branches' ? (
+                      <div className="space-y-2.5">
+                        <p className="text-center text-[11px] font-bold uppercase leading-tight tracking-wide text-marco-black dark:text-white">
+                          {t('contact.drawerCall.chooseBranchTitle')}
+                        </p>
+                        <div className="flex flex-col gap-2">
+                          {contactLocations.map((loc) => (
+                            <button
+                              key={loc.id}
+                              type="button"
+                              onClick={() => {
+                                setCallBranchId(loc.id);
+                                setCallFlow('phones');
+                              }}
+                              className={mobileDrawerCompactPillClass(false)}
+                            >
+                              <span className="min-w-0 flex-1 whitespace-normal text-left leading-snug">
+                                {loc.address}
+                              </span>
+                              <ChevronRight className="h-4 w-4 shrink-0 opacity-50" aria-hidden />
+                            </button>
+                          ))}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setCallFlow('idle')}
+                          className="w-full py-2 text-center text-[11px] font-semibold uppercase tracking-wide text-marco-text/75 underline-offset-2 hover:text-marco-black hover:underline dark:text-zinc-400 dark:hover:text-white"
+                        >
+                          {t('contact.drawerCall.cancel')}
+                        </button>
+                      </div>
+                    ) : null}
+
+                    {callSelectedLocation ? (
+                      <div className="space-y-2.5">
+                        <p className="text-left text-xs font-bold leading-snug text-marco-black dark:text-white">
+                          {callSelectedLocation.address}
+                        </p>
+                        <Link
+                          href={contactLocationMapHref(callSelectedLocation.id)}
+                          onClick={closeDrawer}
+                          className="inline-flex text-[10px] font-semibold uppercase tracking-wide text-marco-yellow underline-offset-2 hover:underline"
+                        >
+                          {t('contact.mapSectionTitle')}
+                        </Link>
+                        <div className="flex flex-col gap-2">
+                          {callSelectedLocation.phones.map((phone) => (
+                            <a
+                              key={`${callSelectedLocation.id}-${phone}`}
+                              href={phoneToTelHref(phone)}
+                              onClick={closeDrawer}
+                              className={`${MOBILE_DRAWER_CONTACT_COMPACT_CLASS} normal-case`}
+                              aria-label={`${callSelectedLocation.address} — ${phone}`}
+                            >
+                              <Phone className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden />
+                              <span>{phone}</span>
+                            </a>
+                          ))}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCallBranchId(null);
+                            setCallFlow('branches');
+                          }}
+                          className={mobileDrawerCompactPillClass(false, true)}
+                        >
+                          {t('contact.drawerCall.changeBranch')}
+                        </button>
+                      </div>
+                    ) : null}
+                  </div>
+                )}
+              </div>
+
+              <div className="shrink-0 border-t border-marco-black/10 py-3 text-center text-[10px] font-medium uppercase tracking-wide text-marco-text/60 dark:border-white/10 dark:text-zinc-500">
+                © {currentYear} MARCO GROUP
+              </div>
+            </nav>
+          </div>
         </div>
-      </div>
     </div>
   );
 

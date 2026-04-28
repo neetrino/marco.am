@@ -2,6 +2,12 @@
   "phone": "+374 41 350 406",
   "email": "marcofurniture@mail.ru",
   "pageTitle": "CONTACT US",
+  "drawerCall": {
+    "cta": "Call",
+    "chooseBranchTitle": "Which store would you like to call?",
+    "changeBranch": "Choose another store",
+    "cancel": "Back"
+  },
   "mapSectionTitle": "Our locations on the map",
   "address": "23 Alek Manukyan St, Yerevan",
   "workingHours": "Mon-Fri 10:00-19:00",
