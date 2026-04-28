@@ -1,14 +1,50 @@
 'use client';
 
 import { useEffect } from 'react';
+import { MOBILE_NAV_OVERLAY_WIDGET_BOTTOM } from './mobile-bottom-nav.constants';
 
 const TIDIO_SRC = 'https://code.tidio.co/9ovkfmgncuyhg4kaemwvkdbvp5r7njec.js';
 const SCRIPT_ID = 'tidio-widget-js';
+
+type TidioChatApi = {
+  adjustStyles: (css: string) => void;
+};
+
+function getTidioChatApi(): TidioChatApi | undefined {
+  return (window as Window & { tidioChatApi?: TidioChatApi }).tidioChatApi;
+}
+
+/**
+ * Lifts the Tidio launcher above the fixed mobile bottom nav (Tailwind `lg` = 1024px).
+ * @see https://help.tidio.com/hc/en-us/articles/5464851341724-Widget-Position
+ */
+function applyTidioMobileBottomOffset(): void {
+  const api = getTidioChatApi();
+  if (!api?.adjustStyles) {
+    return;
+  }
+  const bottom = MOBILE_NAV_OVERLAY_WIDGET_BOTTOM;
+  api.adjustStyles(
+    `@media (max-width: 1023px) { #tidio, #tidio-chat { bottom: ${bottom} !important; } }`,
+  );
+}
 
 /**
  * Defers Tidio until idle (or cap) so initial main-thread and network stay focused on LCP / INP.
  */
 export function TidioDeferredLoader() {
+  useEffect(() => {
+    const onTidioReady = () => {
+      applyTidioMobileBottomOffset();
+    };
+    document.addEventListener('tidioChat-ready', onTidioReady);
+    applyTidioMobileBottomOffset();
+
+    return () => {
+      document.removeEventListener('tidioChat-ready', onTidioReady);
+    };
+  }, []);
+
   useEffect(() => {
     if (document.getElementById(SCRIPT_ID)) {
       return;

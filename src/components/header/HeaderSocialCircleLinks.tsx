@@ -4,8 +4,8 @@ import type { LucideIcon } from 'lucide-react';
 import { Facebook, Instagram, Send } from 'lucide-react';
 import { useTranslation } from '../../lib/i18n-client';
 
-const SOCIAL_VECTOR_ICON_PX = 16;
-const SOCIAL_LUCIDE_CLASS = 'shrink-0 text-primary dark:text-white';
+const SOCIAL_VECTOR_ICON_PX = 20;
+const SOCIAL_LUCIDE_CLASS = 'shrink-0 text-marco-black dark:text-[#050505]';
 
 function WhatsAppGlyph({ className }: { className?: string }) {
   return (
@@ -50,7 +50,6 @@ type GlyphSocialEntry = {
   translationKey: string;
   ariaKey: string;
   Glyph: (props: { className?: string }) => JSX.Element;
-  bgClass: string;
 };
 
 type SocialEntry = LucideSocialEntry | GlyphSocialEntry;
@@ -63,13 +62,11 @@ const SOCIAL_ENTRIES: SocialEntry[] = [
     translationKey: 'contact.social.whatsapp',
     ariaKey: 'common.ariaLabels.whatsapp',
     Glyph: WhatsAppGlyph,
-    bgClass: 'bg-marco-gray',
   },
   {
     translationKey: 'contact.social.viber',
     ariaKey: 'common.ariaLabels.viber',
     Glyph: ViberGlyph,
-    bgClass: 'bg-marco-gray',
   },
 ];
 
@@ -77,20 +74,17 @@ function isGlyphEntry(entry: SocialEntry): entry is GlyphSocialEntry {
   return 'Glyph' in entry;
 }
 
-function socialControlClass(entry: SocialEntry, enabled: boolean): string {
+function socialControlClass(_entry: SocialEntry, enabled: boolean): string {
   const base =
-    'flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-transparent transition-[opacity,background-color,color,border-color,transform] dark:border-white/18';
-  if (isGlyphEntry(entry)) {
-    return `${base} ${entry.bgClass} dark:!bg-[#050505] ${enabled ? 'group hover:bg-marco-yellow dark:hover:bg-marco-yellow hover:-translate-y-0.5' : 'opacity-50'}`;
-  }
-  return `${base} bg-marco-gray text-primary dark:!bg-[#050505] dark:text-white ${enabled ? 'hover:bg-marco-yellow dark:hover:bg-marco-yellow hover:-translate-y-0.5' : 'opacity-50'}`;
+    'flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-marco-black/10 bg-marco-yellow text-marco-black transition-[opacity,filter,transform] dark:border-marco-black/15 dark:bg-marco-yellow dark:text-[#050505]';
+  return `${base} ${enabled ? 'hover:brightness-95 active:brightness-90 hover:-translate-y-0.5' : 'opacity-40'}`;
 }
 
 function SocialGlyph({ entry }: { entry: SocialEntry }) {
   if (isGlyphEntry(entry)) {
     const { Glyph } = entry;
     return (
-      <Glyph className="shrink-0 text-primary transition-colors dark:text-white" />
+      <Glyph className="shrink-0 text-marco-black transition-colors dark:text-[#050505]" />
     );
   }
   const { Icon } = entry;
@@ -98,7 +92,7 @@ function SocialGlyph({ entry }: { entry: SocialEntry }) {
     <Icon
       size={SOCIAL_VECTOR_ICON_PX}
       className={SOCIAL_LUCIDE_CLASS}
-      strokeWidth={2}
+      strokeWidth={2.1}
       aria-hidden
     />
   );
@@ -108,13 +102,13 @@ interface HeaderSocialCircleLinksProps {
   className?: string;
 }
 
-/** Round social buttons — compact */
+/** Round social buttons — MARCO yellow pills */
 export function HeaderSocialCircleLinks({ className = '' }: HeaderSocialCircleLinksProps) {
   const { t } = useTranslation();
 
   return (
     <div
-      className={`flex shrink-0 items-center gap-4 ${className}`}
+      className={`flex shrink-0 items-center gap-6 ${className}`}
       role="list"
       aria-label={t('common.ariaLabels.socialLinks')}
     >

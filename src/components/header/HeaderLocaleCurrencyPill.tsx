@@ -47,6 +47,8 @@ interface HeaderLocaleCurrencyPillProps {
   /** Server-known language so the first HTML matches SSR + first client paint. Omit to use "en" then sync localStorage in useEffect. */
   initialLanguage?: LanguageCode;
   onMenuOpenChange?: (isOpen: boolean) => void;
+  /** `drawer` — full-width black pill + dropdown for mobile menu panel. */
+  variant?: 'toolbar' | 'drawer';
 }
 
 function normalizeHeaderLang(code: LanguageCode | undefined): LanguageCode {
@@ -61,6 +63,8 @@ interface LocaleCurrencyMenuProps {
   selectedCurrency: CurrencyCode;
   onLanguageSelect: (code: LanguageCode) => void;
   onCurrencySelect: (code: CurrencyCode) => void;
+  /** Drawer: full-width menu above overlay z-index. */
+  variant?: 'toolbar' | 'drawer';
 }
 
 function LocaleLanguageRows({
@@ -126,12 +130,14 @@ function LocaleCurrencyMenu({
   selectedCurrency,
   onLanguageSelect,
   onCurrencySelect,
+  variant = 'toolbar',
 }: LocaleCurrencyMenuProps) {
+  const menuShell =
+    variant === 'drawer'
+      ? 'absolute left-0 right-0 top-full z-[250] mt-2 w-full min-w-0 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl dark:border-zinc-700 dark:bg-zinc-900'
+      : 'absolute right-0 top-full z-[70] mt-2 w-64 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl';
   return (
-    <div
-      data-theme-static="true"
-      className="absolute right-0 top-full z-[70] mt-2 w-64 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl"
-    >
+    <div data-theme-static="true" className={menuShell}>
       <p className="border-b border-gray-100 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
         Language
       </p>
@@ -230,6 +236,7 @@ export function HeaderLocaleCurrencyPill({
   onCurrencyChange,
   initialLanguage,
   onMenuOpenChange,
+  variant = 'toolbar',
 }: HeaderLocaleCurrencyPillProps) {
   const { showMenu, setShowMenu, currentLang, menuRef, changeLanguage, handleCurrencySelect } =
     useLocaleCurrencyPillState(onCurrencyChange, initialLanguage);
@@ -241,9 +248,14 @@ export function HeaderLocaleCurrencyPill({
     };
   }, [onMenuOpenChange, showMenu]);
 
+  const isDrawer = variant === 'drawer';
+  const toolbarButtonClass = `flex shrink-0 items-center justify-center overflow-hidden bg-marco-gray text-xs font-bold leading-none text-marco-text ${HEADER_LOCALE_PILL_MIN_WIDTH_CLASS} ${HEADER_LOCALE_PILL_PADDING_X_CLASS} ${HEADER_LOCALE_PILL_INNER_GAP_CLASS} ${HEADER_LOCALE_PILL_HEIGHT_CLASS} ${HEADER_LOCALE_PILL_RADIUS_CLASS}`;
+  const drawerButtonClass =
+    'flex h-auto min-h-11 w-full items-center justify-between gap-2 overflow-hidden rounded-full bg-marco-black px-4 py-2.5 text-xs font-bold leading-none text-white';
+
   return (
     <div
-      className="relative"
+      className={isDrawer ? 'relative w-full' : 'relative'}
       ref={menuRef as React.RefObject<HTMLDivElement>}
       data-theme-static="true"
     >
@@ -252,14 +264,26 @@ export function HeaderLocaleCurrencyPill({
         onClick={() => setShowMenu((open) => !open)}
         aria-expanded={showMenu}
         data-theme-static="true"
-        className={`flex shrink-0 items-center justify-center overflow-hidden bg-marco-gray text-xs font-bold leading-none text-marco-text ${HEADER_LOCALE_PILL_MIN_WIDTH_CLASS} ${HEADER_LOCALE_PILL_PADDING_X_CLASS} ${HEADER_LOCALE_PILL_INNER_GAP_CLASS} ${HEADER_LOCALE_PILL_HEIGHT_CLASS} ${HEADER_LOCALE_PILL_RADIUS_CLASS}`}
+        className={isDrawer ? drawerButtonClass : toolbarButtonClass}
       >
-        <Globe className="h-4 w-4 shrink-0 self-center" strokeWidth={1.75} aria-hidden />
-        <span className="inline-flex items-center whitespace-nowrap">
-          {getPillLanguageLabel(currentLang)} <span className="font-bold">/</span>
+        <span className="flex shrink-0 items-center gap-2">
+          <Globe
+            className={`h-4 w-4 shrink-0 self-center ${isDrawer ? 'text-white' : ''}`}
+            strokeWidth={1.75}
+            aria-hidden
+          />
+          <span className="inline-flex items-center whitespace-nowrap">
+            {getPillLanguageLabel(currentLang)} <span className="font-bold">/</span>
+          </span>
         </span>
-        <Banknote className="h-4 w-4 shrink-0 self-center" strokeWidth={1.75} aria-hidden />
-        <span className="inline-flex items-center whitespace-nowrap">{selectedCurrency}</span>
+        <span className="flex min-w-0 flex-1 items-center justify-center gap-2">
+          <Banknote
+            className={`h-4 w-4 shrink-0 self-center ${isDrawer ? 'text-white' : ''}`}
+            strokeWidth={1.75}
+            aria-hidden
+          />
+          <span className="inline-flex min-w-0 items-center whitespace-nowrap">{selectedCurrency}</span>
+        </span>
         <ChevronDownIcon />
       </button>
       {showMenu && (
@@ -268,6 +292,7 @@ export function HeaderLocaleCurrencyPill({
           selectedCurrency={selectedCurrency}
           onLanguageSelect={changeLanguage}
           onCurrencySelect={handleCurrencySelect}
+          variant={variant}
         />
       )}
     </div>
