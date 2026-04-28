@@ -49,6 +49,9 @@ export const HOME_GRADIENT_BANNER_CTA_ICON_PULL_LEFT_RU_EXTRA_PX = 8;
  */
 export const HOME_GRADIENT_BANNER_CTA_SLACK_REST_INSET_INLINE_END_PX = 8;
 
+/** Gradient (left) banner CTA only — slack stop inset from inline-start on hover end (px). */
+export const HOME_GRADIENT_BANNER_CTA_SLACK_HOVER_END_INSET_INLINE_START_PX = 8;
+
 /** Russian (`ru`) — black circle + glyph slightly smaller than default banner CTA. */
 export const HOME_GRADIENT_BANNER_CTA_ICON_CIRCLE_RU_PX = 34;
 

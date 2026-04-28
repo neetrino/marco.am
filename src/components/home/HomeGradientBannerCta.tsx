@@ -23,6 +23,7 @@ import {
   HOME_GRADIENT_BANNER_CTA_ICON_PULL_LEFT_RU_EXTRA_PX,
   HOME_GRADIENT_BANNER_CTA_LABEL_NUDGE_LEFT_PX,
   HOME_GRADIENT_BANNER_CTA_LABEL_NUDGE_LEFT_RU_EXTRA_PX,
+  HOME_GRADIENT_BANNER_CTA_SLACK_HOVER_END_INSET_INLINE_START_PX,
   HOME_GRADIENT_BANNER_CTA_SLACK_REST_INSET_INLINE_END_PX,
 } from './home-gradient-banner.constants';
 import { t } from '../../lib/i18n';
@@ -130,6 +131,7 @@ export function HomeGradientBannerCta({ language }: HomeGradientBannerCtaProps) 
       href="/products"
       ariaLabel={ariaLabel}
       slackChipRestInsetInlineEndPx={HOME_GRADIENT_BANNER_CTA_SLACK_REST_INSET_INLINE_END_PX}
+      slackStopPad={`${HOME_GRADIENT_BANNER_CTA_SLACK_HOVER_END_INSET_INLINE_START_PX}px`}
       className={`${montserratSlateCta.className} pointer-events-auto bg-marco-yellow font-bold text-[#050505] transition hover:-translate-y-0.5 active:translate-y-px dark:text-[#050505] ${enDesktopPillClass}`}
       style={linkStyle}
       trailClassName="bg-marco-black"
