@@ -1,6 +1,6 @@
 'use client';
 
-import { useContext, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -80,8 +80,6 @@ function drawerUserLabel(user: {
   return (user.email ?? user.phone ?? '').trim();
 }
 
-const DRAWER_FIT_EPSILON = 0.004;
-
 function renderPrimaryNavLink(
   link: PrimaryNavLink,
   pathname: string,
@@ -137,9 +135,6 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
   const [expandedCategorySlug, setExpandedCategorySlug] = useState<string | null>(null);
   const [callFlow, setCallFlow] = useState<'idle' | 'branches' | 'phones'>('idle');
   const [callBranchId, setCallBranchId] = useState<ContactLocationId | null>(null);
-  const [fitScale, setFitScale] = useState(1);
-  const fitSlotRef = useRef<HTMLDivElement>(null);
-  const fitMeasureRef = useRef<HTMLDivElement>(null);
   const hideHeaderSocialLinks = useShouldHideHeaderSocialLinks();
   const {
     t,
@@ -174,43 +169,7 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
       setExpandedCategorySlug(null);
       setCallFlow('idle');
       setCallBranchId(null);
-      setFitScale(1);
     }
-  }, [mobileMenuOpen]);
-
-  useLayoutEffect(() => {
-    if (!mobileMenuOpen) {
-      return;
-    }
-    const slot = fitSlotRef.current;
-    const measure = fitMeasureRef.current;
-    if (!slot || !measure) {
-      return;
-    }
-
-    const sync = () => {
-      const available = slot.clientHeight;
-      const natural = measure.scrollHeight;
-      if (available <= 0 || natural <= 0) {
-        return;
-      }
-      const next = Math.min(1, (available + 0.5) / natural);
-      setFitScale((prev) => (Math.abs(prev - next) < DRAWER_FIT_EPSILON ? prev : next));
-    };
-
-    sync();
-    const raf = requestAnimationFrame(sync);
-
-    const ro = new ResizeObserver(sync);
-    ro.observe(slot);
-    ro.observe(measure);
-
-    window.addEventListener('resize', sync);
-    return () => {
-      cancelAnimationFrame(raf);
-      ro.disconnect();
-      window.removeEventListener('resize', sync);
-    };
   }, [mobileMenuOpen]);
 
   if (!mobileMenuOpen) {
@@ -230,20 +189,9 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
       aria-modal="true"
     >
         <div
-          ref={fitSlotRef}
-          className="relative flex min-h-0 flex-1 flex-col overflow-hidden px-3 min-[400px]:px-4"
+          className="relative flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden overscroll-y-contain px-3 min-[400px]:px-4"
         >
-          <div
-            className="absolute inset-x-0 top-0 w-full min-w-0 will-change-transform"
-            style={{
-              transform: `scale(${fitScale})`,
-              transformOrigin: 'top center',
-            }}
-          >
-            <div
-              ref={fitMeasureRef}
-              className="flex flex-col gap-y-[clamp(0.35rem,1.2dvh,0.75rem)] pb-1 text-marco-black dark:text-white"
-            >
+            <div className="flex flex-col gap-y-[clamp(0.35rem,1.2dvh,0.75rem)] pb-2 text-marco-black dark:text-white">
               <div className="flex shrink-0 justify-end pb-1 pt-2">
                 <button
                   type="button"
@@ -495,7 +443,6 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
               </footer>
               </div>
             </div>
-          </div>
         </div>
     </div>
   );
