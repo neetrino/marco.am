@@ -231,7 +231,7 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
     >
         <div
           ref={fitSlotRef}
-          className="relative flex min-h-0 flex-1 flex-col overflow-hidden px-4"
+          className="relative flex min-h-0 flex-1 flex-col overflow-hidden px-3 min-[400px]:px-4"
         >
           <div
             className="absolute inset-x-0 top-0 w-full min-w-0 will-change-transform"
@@ -333,8 +333,8 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
                 <ThemeToggleButton
                   className={
                     drawerThemeDark
-                      ? 'flex min-h-12 w-full items-center justify-between bg-zinc-900 px-4 py-3 text-left text-white transition-[background-color] duration-200 hover:bg-zinc-800'
-                      : 'flex min-h-12 w-full items-center justify-between bg-marco-gray px-4 py-3 text-left text-marco-black transition-[background-color] duration-200 hover:bg-marco-border dark:bg-zinc-800 dark:text-white'
+                      ? 'flex min-h-12 w-full items-center justify-between bg-zinc-900 px-5 py-3 text-left text-white transition-[background-color] duration-200 hover:bg-zinc-800'
+                      : 'flex min-h-12 w-full items-center justify-between bg-marco-gray px-5 py-3 text-left text-marco-black transition-[background-color] duration-200 hover:bg-marco-border dark:bg-zinc-800 dark:text-white'
                   }
                   iconClassName="h-[22px] w-[22px] shrink-0"
                   labelClassName="text-xs font-bold uppercase tracking-wide"
@@ -348,7 +348,7 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
                     <Link
                       href="/supersudo"
                       onClick={closeDrawer}
-                      className="flex min-h-12 w-full items-center justify-between gap-3 rounded-full border-2 border-blue-600 bg-transparent px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-blue-700 transition-colors hover:bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:bg-blue-950/40"
+                      className="flex min-h-12 w-full items-center justify-between gap-3 rounded-full border-2 border-blue-600 bg-transparent px-5 py-3 text-left text-xs font-bold uppercase tracking-wide text-blue-700 transition-colors hover:bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:bg-blue-950/40"
                     >
                       <span>{t('common.navigation.adminPanel')}</span>
                       <ChevronRight className="h-[18px] w-[18px] shrink-0" aria-hidden />
