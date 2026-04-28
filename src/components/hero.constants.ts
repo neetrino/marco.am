@@ -5,7 +5,7 @@
 
 import type { CSSProperties } from 'react';
 
-/** Yellow panel shape — `aspect-[141/79]` in `HeroCarousel` */
+/** Legacy yellow mobile panel ratio (unused in current `HeroCarousel` outer box). */
 export const HERO_PANEL_ASPECT_W = 141;
 export const HERO_PANEL_ASPECT_H = 79;
 
@@ -16,11 +16,15 @@ export const HERO_PANEL_RADIUS_PX = 32;
 export const HERO_PRIMARY_IMAGE_SRC = '/assets/hero/hero-brick-wall-vertical.png' as const;
 
 /**
- * Mobile hero raster — Figma 314:2380 (full-bleed yellow brick texture).
- * `md+` uses {@link HERO_PRIMARY_IMAGE_SRC} in `HeroCarouselSlides`.
+ * Mobile home hero — Figma MARCO `1114:3373` (`-355 1`, 399×288, radius 24).
+ * Full-bleed raster; no separate headline/slate layers on top.
  */
 export const HERO_MOBILE_PRIMARY_IMAGE_SRC =
-  '/assets/hero/hero-yellow-brick-wall.png' as const;
+  '/assets/hero/hero-mobile-home-banner-1114-3373.png' as const;
+
+/** Figma `1114:3373` frame — mobile hero card aspect (width∶height). */
+export const HERO_MOBILE_HOME_BANNER_ASPECT_W = 399;
+export const HERO_MOBILE_HOME_BANNER_ASPECT_H = 288;
 
 /** Figma 101:4019–101:4021 — stacked layer fills + 101:4023 chair asset */
 export const HERO_PROMO_STACK_LAYER_WHITE = '#ffffff' as const;
