@@ -205,10 +205,10 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
             className={`${MOBILE_DRAWER_CONTENT_MAX_CLASS} mt-4 flex min-h-0 flex-1 flex-col sm:mt-5`}
           >
             <nav
-              className="flex min-h-0 flex-1 flex-col overflow-hidden text-marco-black dark:text-white"
+              className="grid min-h-0 flex-1 grid-rows-[minmax(0,1fr)_auto] text-marco-black dark:text-white"
               aria-label={t('common.menu.title')}
             >
-              <div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto overscroll-y-contain pb-5">
+              <div className="flex min-h-0 flex-col gap-2.5 overflow-y-auto overscroll-y-contain pb-5">
               {isLoggedIn && user ? (
                 <Link href="/profile" onClick={closeDrawer} className={MOBILE_DRAWER_USER_PILL_CLASS}>
                   <span className="flex min-w-0 flex-1 items-center gap-2.5">
@@ -335,112 +335,112 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
               )}
               </div>
 
-              <footer className="relative z-10 shrink-0 bg-white dark:bg-zinc-950">
-              {!hideHeaderSocialLinks ? (
-                <div className="flex shrink-0 justify-center px-0 pb-2 pt-4">
-                  <HeaderSocialCircleLinks />
-                </div>
-              ) : null}
-
-              <div className="shrink-0 w-full space-y-3 border-t border-marco-black/10 px-0 pb-2 pt-3 dark:border-white/10">
-                {callFlow === 'idle' ? (
-                  <>
-                    <p className="text-center text-[11px] font-bold uppercase tracking-wide text-marco-black dark:text-white">
-                      {t('contact.pageTitle')}
-                    </p>
-                    <p className="text-center text-[10px] leading-snug text-marco-text/75 dark:text-zinc-400">
-                      {t('contact.callToUs.description')}
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => setCallFlow('branches')}
-                      className={`${MOBILE_DRAWER_CTA_PILL_CLASS} gap-2`}
-                    >
-                      <Phone className="h-5 w-5 shrink-0" strokeWidth={2} aria-hidden />
-                      <span>{t('contact.drawerCall.cta')}</span>
-                    </button>
-                  </>
-                ) : (
-                  <div className="space-y-2.5" role="region" aria-label={t('contact.drawerCall.cta')}>
-                    {callFlow === 'branches' ? (
-                      <div className="space-y-2.5">
-                        <p className="text-center text-[11px] font-bold uppercase leading-tight tracking-wide text-marco-black dark:text-white">
-                          {t('contact.drawerCall.chooseBranchTitle')}
-                        </p>
-                        <div className="flex flex-col gap-2">
-                          {contactLocations.map((loc) => (
-                            <button
-                              key={loc.id}
-                              type="button"
-                              onClick={() => {
-                                setCallBranchId(loc.id);
-                                setCallFlow('phones');
-                              }}
-                              className={mobileDrawerCompactPillClass(false)}
-                            >
-                              <span className="min-w-0 flex-1 whitespace-normal text-left leading-snug">
-                                {loc.address}
-                              </span>
-                              <ChevronRight className="h-4 w-4 shrink-0 opacity-50" aria-hidden />
-                            </button>
-                          ))}
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => setCallFlow('idle')}
-                          className="w-full py-2 text-center text-[11px] font-semibold uppercase tracking-wide text-marco-text/75 underline-offset-2 hover:text-marco-black hover:underline dark:text-zinc-400 dark:hover:text-white"
-                        >
-                          {t('contact.drawerCall.cancel')}
-                        </button>
-                      </div>
-                    ) : null}
-
-                    {callSelectedLocation ? (
-                      <div className="space-y-2.5">
-                        <p className="text-left text-xs font-bold leading-snug text-marco-black dark:text-white">
-                          {callSelectedLocation.address}
-                        </p>
-                        <Link
-                          href={contactLocationMapHref(callSelectedLocation.id)}
-                          onClick={closeDrawer}
-                          className="inline-flex text-[10px] font-semibold uppercase tracking-wide text-marco-yellow underline-offset-2 hover:underline"
-                        >
-                          {t('contact.mapSectionTitle')}
-                        </Link>
-                        <div className="flex flex-col gap-2">
-                          {callSelectedLocation.phones.map((phone) => (
-                            <a
-                              key={`${callSelectedLocation.id}-${phone}`}
-                              href={phoneToTelHref(phone)}
-                              onClick={closeDrawer}
-                              className={`${MOBILE_DRAWER_CONTACT_COMPACT_CLASS} normal-case`}
-                              aria-label={`${callSelectedLocation.address} — ${phone}`}
-                            >
-                              <Phone className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden />
-                              <span>{phone}</span>
-                            </a>
-                          ))}
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setCallBranchId(null);
-                            setCallFlow('branches');
-                          }}
-                          className={mobileDrawerCompactPillClass(false, true)}
-                        >
-                          {t('contact.drawerCall.changeBranch')}
-                        </button>
-                      </div>
-                    ) : null}
+              <div className="flex min-h-0 flex-col bg-white dark:bg-zinc-950">
+                {!hideHeaderSocialLinks ? (
+                  <div className="flex shrink-0 justify-center pb-2 pt-1">
+                    <HeaderSocialCircleLinks />
                   </div>
-                )}
-              </div>
+                ) : null}
 
-              <div className="shrink-0 border-t border-marco-black/10 py-3 text-center text-[10px] font-medium uppercase tracking-wide text-marco-text/60 dark:border-white/10 dark:text-zinc-500">
-                © {currentYear} MARCO GROUP
+                <div className="shrink-0 w-full space-y-3 border-t border-marco-black/10 px-0 pb-2 pt-3 dark:border-white/10">
+                  {callFlow === 'idle' ? (
+                    <>
+                      <p className="text-center text-[11px] font-bold uppercase tracking-wide text-marco-black dark:text-white">
+                        {t('contact.pageTitle')}
+                      </p>
+                      <p className="text-center text-[10px] leading-snug text-marco-text/75 dark:text-zinc-400">
+                        {t('contact.callToUs.description')}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setCallFlow('branches')}
+                        className={`${MOBILE_DRAWER_CTA_PILL_CLASS} gap-2`}
+                      >
+                        <Phone className="h-5 w-5 shrink-0" strokeWidth={2} aria-hidden />
+                        <span>{t('contact.drawerCall.cta')}</span>
+                      </button>
+                    </>
+                  ) : (
+                    <div className="space-y-2.5" role="region" aria-label={t('contact.drawerCall.cta')}>
+                      {callFlow === 'branches' ? (
+                        <div className="space-y-2.5">
+                          <p className="text-center text-[11px] font-bold uppercase leading-tight tracking-wide text-marco-black dark:text-white">
+                            {t('contact.drawerCall.chooseBranchTitle')}
+                          </p>
+                          <div className="flex flex-col gap-2">
+                            {contactLocations.map((loc) => (
+                              <button
+                                key={loc.id}
+                                type="button"
+                                onClick={() => {
+                                  setCallBranchId(loc.id);
+                                  setCallFlow('phones');
+                                }}
+                                className={mobileDrawerCompactPillClass(false)}
+                              >
+                                <span className="min-w-0 flex-1 whitespace-normal text-left leading-snug">
+                                  {loc.address}
+                                </span>
+                                <ChevronRight className="h-4 w-4 shrink-0 opacity-50" aria-hidden />
+                              </button>
+                            ))}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setCallFlow('idle')}
+                            className="w-full py-2 text-center text-[11px] font-semibold uppercase tracking-wide text-marco-text/75 underline-offset-2 hover:text-marco-black hover:underline dark:text-zinc-400 dark:hover:text-white"
+                          >
+                            {t('contact.drawerCall.cancel')}
+                          </button>
+                        </div>
+                      ) : null}
+
+                      {callSelectedLocation ? (
+                        <div className="space-y-2.5">
+                          <p className="text-left text-xs font-bold leading-snug text-marco-black dark:text-white">
+                            {callSelectedLocation.address}
+                          </p>
+                          <Link
+                            href={contactLocationMapHref(callSelectedLocation.id)}
+                            onClick={closeDrawer}
+                            className="inline-flex text-[10px] font-semibold uppercase tracking-wide text-marco-yellow underline-offset-2 hover:underline"
+                          >
+                            {t('contact.mapSectionTitle')}
+                          </Link>
+                          <div className="flex flex-col gap-2">
+                            {callSelectedLocation.phones.map((phone) => (
+                              <a
+                                key={`${callSelectedLocation.id}-${phone}`}
+                                href={phoneToTelHref(phone)}
+                                onClick={closeDrawer}
+                                className={`${MOBILE_DRAWER_CONTACT_COMPACT_CLASS} normal-case`}
+                                aria-label={`${callSelectedLocation.address} — ${phone}`}
+                              >
+                                <Phone className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden />
+                                <span>{phone}</span>
+                              </a>
+                            ))}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setCallBranchId(null);
+                              setCallFlow('branches');
+                            }}
+                            className={mobileDrawerCompactPillClass(false, true)}
+                          >
+                            {t('contact.drawerCall.changeBranch')}
+                          </button>
+                        </div>
+                      ) : null}
+                    </div>
+                  )}
+                </div>
+
+                <div className="shrink-0 border-t border-marco-black/10 py-3 text-center text-[10px] font-medium uppercase tracking-wide text-marco-text/60 dark:border-white/10 dark:text-zinc-500">
+                  © {currentYear} MARCO GROUP
+                </div>
               </div>
-              </footer>
             </nav>
           </div>
         </div>
