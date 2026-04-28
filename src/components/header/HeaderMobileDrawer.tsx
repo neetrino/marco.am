@@ -205,10 +205,10 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
             className={`${MOBILE_DRAWER_CONTENT_MAX_CLASS} mt-4 flex min-h-0 flex-1 flex-col sm:mt-5`}
           >
             <nav
-              className="flex h-full min-h-0 flex-1 flex-col text-marco-black dark:text-white"
+              className="flex min-h-0 flex-1 flex-col overflow-hidden text-marco-black dark:text-white"
               aria-label={t('common.menu.title')}
             >
-              <div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto pb-5">
+              <div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto overscroll-y-contain pb-5">
               {isLoggedIn && user ? (
                 <Link href="/profile" onClick={closeDrawer} className={MOBILE_DRAWER_USER_PILL_CLASS}>
                   <span className="flex min-w-0 flex-1 items-center gap-2.5">
@@ -335,8 +335,9 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
               )}
               </div>
 
+              <footer className="relative z-10 shrink-0 bg-white dark:bg-zinc-950">
               {!hideHeaderSocialLinks ? (
-                <div className="flex shrink-0 justify-center pb-2 pt-1">
+                <div className="flex shrink-0 justify-center px-0 pb-2 pt-4">
                   <HeaderSocialCircleLinks />
                 </div>
               ) : null}
@@ -439,6 +440,7 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
               <div className="shrink-0 border-t border-marco-black/10 py-3 text-center text-[10px] font-medium uppercase tracking-wide text-marco-text/60 dark:border-white/10 dark:text-zinc-500">
                 © {currentYear} MARCO GROUP
               </div>
+              </footer>
             </nav>
           </div>
         </div>

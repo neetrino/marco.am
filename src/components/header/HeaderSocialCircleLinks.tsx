@@ -74,10 +74,19 @@ function isGlyphEntry(entry: SocialEntry): entry is GlyphSocialEntry {
   return 'Glyph' in entry;
 }
 
-function socialControlClass(_entry: SocialEntry, enabled: boolean): string {
+function socialControlClass(
+  _entry: SocialEntry,
+  enabled: boolean,
+  desktopBalancedIcons: boolean
+): string {
   const base =
     'flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-marco-black/10 bg-marco-yellow text-marco-black transition-[opacity,filter,transform] dark:border-marco-black/15 dark:bg-marco-yellow dark:text-[#050505]';
-  return `${base} ${enabled ? 'hover:brightness-95 active:brightness-90 hover:-translate-y-0.5' : 'opacity-40'}`;
+  const desktopCompact =
+    desktopBalancedIcons &&
+    'min-[1367px]:h-9 min-[1367px]:w-9 min-[1367px]:[&_svg]:!h-[14px] min-[1367px]:[&_svg]:!w-[14px] min-[1367px]:[&_svg]:!max-h-[14px] min-[1367px]:[&_svg]:!max-w-[14px]';
+  return [base, desktopCompact, enabled ? 'hover:brightness-95 active:brightness-90 hover:-translate-y-0.5' : 'opacity-40']
+    .filter(Boolean)
+    .join(' ');
 }
 
 function SocialGlyph({ entry }: { entry: SocialEntry }) {
@@ -100,15 +109,20 @@ function SocialGlyph({ entry }: { entry: SocialEntry }) {
 
 interface HeaderSocialCircleLinksProps {
   className?: string;
+  /** Wide desktop (≥1367px): smaller yellow pill + glyph — header row only; drawer omits this */
+  desktopBalancedIcons?: boolean;
 }
 
 /** Round social buttons — MARCO yellow pills */
-export function HeaderSocialCircleLinks({ className = '' }: HeaderSocialCircleLinksProps) {
+export function HeaderSocialCircleLinks({
+  className = '',
+  desktopBalancedIcons = false,
+}: HeaderSocialCircleLinksProps) {
   const { t } = useTranslation();
 
   return (
     <div
-      className={`flex shrink-0 items-center gap-6 ${className}`}
+      className={`flex shrink-0 items-center gap-6 ${desktopBalancedIcons ? 'min-[1367px]:gap-4' : ''} ${className}`}
       role="list"
       aria-label={t('common.ariaLabels.socialLinks')}
     >
@@ -119,7 +133,7 @@ export function HeaderSocialCircleLinks({ className = '' }: HeaderSocialCircleLi
         const name = t(ariaKey);
 
         const inner = <SocialGlyph entry={entry} />;
-        const surfaceClass = socialControlClass(entry, hasHref);
+        const surfaceClass = socialControlClass(entry, hasHref, desktopBalancedIcons);
 
         if (!hasHref) {
           return (
