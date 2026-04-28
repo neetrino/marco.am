@@ -3,7 +3,7 @@
  * Bar background is white; yellow applies only to the active tab pill.
  */
 
-/** Primary destinations shown in `MobileBottomNav` — omit from `MobileSiteMenu` to avoid duplication. */
+/** Primary destinations shown in `MobileBottomNav` — omit from `HeaderMobileDrawer` to avoid duplication. */
 export const MOBILE_FLOOR_NAV_HREFS = ['/', '/wishlist', '/cart', '/profile'] as const;
 
 export const MOBILE_NAV_BOX_SHADOW = '0 -4px 14px rgba(138, 138, 138, 0.07)';

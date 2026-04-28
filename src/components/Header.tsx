@@ -9,7 +9,7 @@ import { MobileHeaderLocaleCurrencyButton } from './header/HeaderLocaleCurrencyP
 import { HeaderSearchSync } from './header/HeaderSearchSync';
 import { HeaderDesktopTopRow } from './header/HeaderDesktopTopRow';
 import { HeaderRow2 } from './header/HeaderRow2';
-import { MobileSiteMenu } from './header/MobileSiteMenu';
+import { HeaderMobileDrawer } from './header/HeaderMobileDrawer';
 import { useHeaderData } from './header/useHeaderData';
 import { useHeaderLayoutMetrics } from './header/useHeaderLayoutMetrics';
 import { useHeaderRow2AutoHide } from './header/useHeaderRow2AutoHide';
@@ -168,7 +168,7 @@ export function Header({ initialLanguage }: HeaderProps) {
         </div>
       </div>
 
-      <MobileSiteMenu data={data} compactPrimaryNav={compactPrimaryNav} />
+      <HeaderMobileDrawer data={data} compactPrimaryNav={compactPrimaryNav} />
     </header>
   );
 }
