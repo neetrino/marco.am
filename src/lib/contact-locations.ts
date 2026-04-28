@@ -70,37 +70,8 @@ export function getContactLocations(lang: LanguageCode): ContactLocation[] {
   ];
 }
 
-/**
- * Builds an E.164-style digit string for `tel:` URIs.
- * Armenian national numbers (trunk 0, e.g. 093…, 011…) become +374… so mobile OS dialers resolve correctly.
- */
-export function normalizePhoneForTelUri(phone: string): string {
-  const compact = phone.replace(/[^\d+]/gu, '');
-  if (compact.length === 0) {
-    return '';
-  }
-  if (compact.startsWith('+')) {
-    return `+${compact.slice(1).replace(/\D/g, '')}`;
-  }
-  const digits = compact.replace(/\D/g, '');
-  if (digits.startsWith('374')) {
-    return `+${digits}`;
-  }
-  if (digits.startsWith('0') && digits.length >= 9) {
-    return `+374${digits.slice(1)}`;
-  }
-  if (digits.length > 0) {
-    return `+${digits}`;
-  }
-  return '';
-}
-
 export function phoneToTelHref(phone: string): string {
-  const e164 = normalizePhoneForTelUri(phone);
-  if (e164.length === 0) {
-    return '#';
-  }
-  return `tel:${e164}`;
+  return `tel:${phone.replace(/[^\d+]/gu, '')}`;
 }
 
 export function mapsSearchUrlForAddress(address: string): string {
