@@ -37,6 +37,7 @@ import { HeaderMobileDrawerCategories } from './HeaderMobileDrawerCategories';
 import {
   MOBILE_DRAWER_CLOSE_BTN_CLASS,
   MOBILE_DRAWER_CONTACT_COMPACT_CLASS,
+  MOBILE_DRAWER_CTA_COMPACT_CLASS,
   MOBILE_DRAWER_CTA_PILL_CLASS,
   MOBILE_DRAWER_MUTED_PILL_CLASS,
   MOBILE_DRAWER_CONTENT_MAX_CLASS,
@@ -64,7 +65,7 @@ function PrimaryNavRowIcon({ translationKey }: { translationKey: string }) {
   if (!Icon) {
     return null;
   }
-  return <Icon className="h-7 w-7 shrink-0" size={28} strokeWidth={2} aria-hidden />;
+  return <Icon className="h-6 w-6 shrink-0" size={24} strokeWidth={2} aria-hidden />;
 }
 
 function drawerUserLabel(user: {
@@ -90,11 +91,11 @@ function renderPrimaryNavLink(
   const active = isPrimaryNavHrefActive(pathname, link.href);
   const content = (
     <>
-      <span className="flex min-w-0 flex-1 items-center gap-4">
+      <span className="flex min-w-0 flex-1 items-center gap-3.5">
         <PrimaryNavRowIcon translationKey={link.translationKey} />
         <span className="truncate">{t(link.translationKey)}</span>
       </span>
-      <ChevronRight className="h-6 w-6 shrink-0 opacity-50" aria-hidden />
+      <ChevronRight className="h-5 w-5 shrink-0 opacity-50" aria-hidden />
     </>
   );
   if (link.external === true) {
@@ -199,7 +200,7 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
                   className={MOBILE_DRAWER_CLOSE_BTN_CLASS}
                   aria-label={t('common.ariaLabels.closeMenu')}
                 >
-                  <svg className="mx-auto h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="mx-auto h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
@@ -211,13 +212,13 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
             >
               {isLoggedIn && user ? (
                 <Link href="/profile" onClick={closeDrawer} className={MOBILE_DRAWER_USER_PILL_CLASS}>
-                  <span className="flex min-w-0 flex-1 items-center gap-4">
-                    <HeaderNavbarProfileIcon className="h-6 w-[22px] shrink-0 text-white" />
+                  <span className="flex min-w-0 flex-1 items-center gap-3.5">
+                    <HeaderNavbarProfileIcon className="h-5 w-5 shrink-0 text-white" />
                     <span className="truncate normal-case">
                       {drawerUserLabel(user) || t('common.navigation.profile')}
                     </span>
                   </span>
-                  <ChevronRight className="h-6 w-6 shrink-0 text-white/90" aria-hidden />
+                  <ChevronRight className="h-5 w-5 shrink-0 text-white/90" aria-hidden />
                 </Link>
               ) : null}
 
@@ -263,8 +264,8 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
                 className={compareRowClass}
                 aria-current={compareNavActive ? 'page' : undefined}
               >
-                <span className="flex min-w-0 flex-1 items-center gap-4 font-semibold">
-                  <CompareIcon size={24} className="shrink-0" />
+                <span className="flex min-w-0 flex-1 items-center gap-3.5 font-semibold">
+                  <CompareIcon size={22} className="shrink-0" />
                   <span className="truncate">{t('common.navigation.compare')}</span>
                 </span>
                 <span className="flex shrink-0 items-center gap-2">
@@ -273,7 +274,7 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
                       {compareCount > 99 ? '99+' : compareCount}
                     </span>
                   ) : null}
-                  <ChevronRight className="h-6 w-6 shrink-0 opacity-50" aria-hidden />
+                  <ChevronRight className="h-5 w-5 shrink-0 opacity-50" aria-hidden />
                 </span>
               </Link>
 
@@ -281,10 +282,10 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
                 <ThemeToggleButton
                   className={
                     drawerThemeDark
-                      ? 'flex min-h-[3.75rem] w-full items-center justify-between bg-zinc-900 px-7 py-4 text-left text-white transition-[background-color] duration-200 hover:bg-zinc-800'
-                      : 'flex min-h-[3.75rem] w-full items-center justify-between bg-marco-gray px-7 py-4 text-left text-marco-black transition-[background-color] duration-200 hover:bg-marco-border dark:bg-zinc-800 dark:text-white'
+                      ? 'flex min-h-[3.5rem] w-full items-center justify-between bg-zinc-900 px-6 py-3.5 text-left text-white transition-[background-color] duration-200 hover:bg-zinc-800'
+                      : 'flex min-h-[3.5rem] w-full items-center justify-between bg-marco-gray px-6 py-3.5 text-left text-marco-black transition-[background-color] duration-200 hover:bg-marco-border dark:bg-zinc-800 dark:text-white'
                   }
-                  iconClassName="h-7 w-7 shrink-0"
+                  iconClassName="h-6 w-6 shrink-0"
                   labelClassName="text-xs font-bold uppercase tracking-wide"
                   showLabel
                 />
@@ -296,10 +297,10 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
                     <Link
                       href="/supersudo"
                       onClick={closeDrawer}
-                      className="flex min-h-[3.75rem] w-full items-center justify-between gap-4 rounded-full border-2 border-blue-600 bg-transparent px-7 py-4 text-left text-xs font-bold uppercase tracking-wide text-blue-700 transition-colors hover:bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:bg-blue-950/40"
+                      className="flex min-h-[3.5rem] w-full items-center justify-between gap-3.5 rounded-full border-2 border-blue-600 bg-transparent px-6 py-3.5 text-left text-xs font-bold uppercase tracking-wide text-blue-700 transition-colors hover:bg-blue-50 dark:border-blue-500 dark:text-blue-400 dark:hover:bg-blue-950/40"
                     >
                       <span>{t('common.navigation.adminPanel')}</span>
-                      <ChevronRight className="h-6 w-6 shrink-0" aria-hidden />
+                      <ChevronRight className="h-5 w-5 shrink-0" aria-hidden />
                     </Link>
                   ) : null}
                   <button
@@ -311,7 +312,7 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
                     className={`${MOBILE_DRAWER_MUTED_PILL_CLASS} text-marco-black dark:text-white`}
                   >
                     <span>{t('common.navigation.logout')}</span>
-                    <LogOut className="h-6 w-6 shrink-0" strokeWidth={2} aria-hidden />
+                    <LogOut className="h-5 w-5 shrink-0" strokeWidth={2} aria-hidden />
                   </button>
                 </>
               ) : (
@@ -329,7 +330,7 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
                     className={`${mobileDrawerNavPillClass(false)} normal-case font-semibold`}
                   >
                     <span>{t('common.navigation.login')}</span>
-                    <ChevronRight className="h-6 w-6 shrink-0 opacity-50" aria-hidden />
+                    <ChevronRight className="h-5 w-5 shrink-0 opacity-50" aria-hidden />
                   </Link>
                 </>
               )}
@@ -337,7 +338,7 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
 
               <footer className="flex shrink-0 flex-col">
                 {!hideHeaderSocialLinks ? (
-                  <div className="mt-3 flex shrink-0 justify-center pb-2 pt-1 sm:mt-4">
+                  <div className="mt-5 flex shrink-0 justify-center pb-2 pt-1 sm:mt-6">
                     <HeaderSocialCircleLinks comfortableTouch />
                   </div>
                 ) : null}
@@ -354,9 +355,9 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
                       <button
                         type="button"
                         onClick={() => setCallFlow('branches')}
-                        className={`${MOBILE_DRAWER_CTA_PILL_CLASS} gap-2`}
+                        className={MOBILE_DRAWER_CTA_COMPACT_CLASS}
                       >
-                        <Phone className="h-7 w-7 shrink-0" strokeWidth={2} aria-hidden />
+                        <Phone className="h-5 w-5 shrink-0" strokeWidth={2} aria-hidden />
                         <span>{t('contact.drawerCall.cta')}</span>
                       </button>
                     </>
@@ -381,7 +382,7 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
                                 <span className="min-w-0 flex-1 whitespace-normal text-left leading-snug">
                                   {loc.address}
                                 </span>
-                                <ChevronRight className="h-6 w-6 shrink-0 opacity-50" aria-hidden />
+                                <ChevronRight className="h-5 w-5 shrink-0 opacity-50" aria-hidden />
                               </button>
                             ))}
                           </div>
@@ -416,7 +417,7 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
                                 className={`${MOBILE_DRAWER_CONTACT_COMPACT_CLASS} normal-case`}
                                 aria-label={`${callSelectedLocation.address} — ${phone}`}
                               >
-                                <Phone className="h-7 w-7 shrink-0" strokeWidth={2} aria-hidden />
+                                <Phone className="h-6 w-6 shrink-0" strokeWidth={2} aria-hidden />
                                 <span>{phone}</span>
                               </a>
                             ))}

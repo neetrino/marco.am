@@ -51,11 +51,11 @@ export function HeaderMobileDrawerCategories({
         aria-controls="mobile-categories-menu"
       >
         <span className="flex min-w-0 flex-1 items-center gap-3">
-          <LayoutGrid className="h-7 w-7 shrink-0" strokeWidth={2} aria-hidden />
+          <LayoutGrid className="h-6 w-6 shrink-0" strokeWidth={2} aria-hidden />
           <span className="truncate">{t('common.navigation.categories')}</span>
         </span>
         <ChevronDown
-          className={`h-6 w-6 shrink-0 transition-transform duration-200 ${categoriesOpen ? 'rotate-180' : ''}`}
+          className={`h-5 w-5 shrink-0 transition-transform duration-200 ${categoriesOpen ? 'rotate-180' : ''}`}
           aria-hidden
         />
       </button>
@@ -92,21 +92,21 @@ export function HeaderMobileDrawerCategories({
                       aria-controls={`mobile-category-children-${category.id}`}
                     >
                       <span className="flex min-w-0 flex-1 items-center gap-3">
-                        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-marco-gray dark:bg-zinc-800">
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-marco-gray dark:bg-zinc-800">
                           {categoryPresentation.icon.kind === 'figma' ? (
                             <img
                               src={categoryPresentation.icon.src}
                               alt=""
-                              width={28}
-                              height={28}
-                              className="h-7 w-7 object-contain dark:brightness-0 dark:invert"
+                              width={24}
+                              height={24}
+                              className="h-6 w-6 object-contain dark:brightness-0 dark:invert"
                               draggable={false}
                               onError={hideBrokenCategoryIcon}
                             />
                           ) : (
                             CategoryIcon && (
                               <CategoryIcon
-                                size={24}
+                                size={22}
                                 strokeWidth={1.7}
                                 className="text-marco-black dark:text-white"
                                 aria-hidden
@@ -119,7 +119,7 @@ export function HeaderMobileDrawerCategories({
                         </span>
                       </span>
                       <ChevronDown
-                        className={`h-6 w-6 shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                        className={`h-5 w-5 shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
                         aria-hidden
                       />
                     </button>
@@ -130,21 +130,21 @@ export function HeaderMobileDrawerCategories({
                         onClick={onNavigate}
                         className="flex min-w-0 items-center gap-3 rounded-xl px-2 py-2.5 text-sm font-semibold text-marco-black hover:bg-marco-gray/50 dark:text-white dark:hover:bg-zinc-800"
                       >
-                        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-marco-gray dark:bg-zinc-800">
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-marco-gray dark:bg-zinc-800">
                           {categoryPresentation.icon.kind === 'figma' ? (
                             <img
                               src={categoryPresentation.icon.src}
                               alt=""
-                              width={28}
-                              height={28}
-                              className="h-7 w-7 object-contain dark:brightness-0 dark:invert"
+                              width={24}
+                              height={24}
+                              className="h-6 w-6 object-contain dark:brightness-0 dark:invert"
                               draggable={false}
                               onError={hideBrokenCategoryIcon}
                             />
                           ) : (
                             CategoryIcon && (
                               <CategoryIcon
-                                size={24}
+                                size={22}
                                 strokeWidth={1.7}
                                 className="text-marco-black dark:text-white"
                                 aria-hidden
@@ -185,7 +185,7 @@ export function HeaderMobileDrawerCategories({
                             onClick={onNavigate}
                             className="flex items-start gap-2 rounded-full px-2 py-2 text-sm leading-5 text-marco-text hover:bg-white dark:text-zinc-300 dark:hover:bg-zinc-800"
                           >
-                            <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-marco-gray dark:bg-zinc-800">
+                            <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-marco-gray dark:bg-zinc-800">
                               {childPresentation.icon.kind === 'figma' ? (
                                 <img
                                   src={childPresentation.icon.src}

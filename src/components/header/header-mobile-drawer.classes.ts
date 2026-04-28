@@ -16,23 +16,27 @@ export const MOBILE_DRAWER_CONTENT_MAX_CLASS =
   'mx-auto w-full min-w-0 max-w-full';
 
 export const MOBILE_DRAWER_CLOSE_BTN_CLASS =
-  'flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-marco-gray text-marco-black transition-opacity hover:opacity-90 dark:bg-zinc-800 dark:text-white';
+  'flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-full bg-marco-gray text-marco-black transition-opacity hover:opacity-90 dark:bg-zinc-800 dark:text-white';
 
 export const MOBILE_DRAWER_USER_PILL_CLASS =
-  'flex min-h-[3.75rem] w-full items-center justify-between gap-4 rounded-full bg-marco-black px-7 py-4 text-left text-sm font-bold uppercase tracking-wide text-white dark:bg-marco-black';
+  'flex min-h-[3.5rem] w-full items-center justify-between gap-3.5 rounded-full bg-marco-black px-6 py-3.5 text-left text-sm font-bold uppercase tracking-wide text-white dark:bg-marco-black';
 
 export const MOBILE_DRAWER_CTA_PILL_CLASS =
-  'flex min-h-[3.75rem] w-full items-center justify-center rounded-full bg-marco-yellow px-7 py-[1.125rem] text-center text-xs font-bold uppercase tracking-wide text-marco-black transition-[filter] duration-200 hover:brightness-95 active:brightness-90';
+  'flex min-h-[3.5rem] w-full items-center justify-center rounded-full bg-marco-yellow px-6 py-4 text-center text-xs font-bold uppercase tracking-wide text-marco-black transition-[filter] duration-200 hover:brightness-95 active:brightness-90';
+
+/** Footer “Call” (and similar) — shorter than primary Shop CTA to match nav proportions. */
+export const MOBILE_DRAWER_CTA_COMPACT_CLASS =
+  'flex min-h-[2.75rem] w-full items-center justify-center gap-2 rounded-full bg-marco-yellow px-5 py-2.5 text-center text-xs font-bold uppercase tracking-wide text-marco-black transition-[filter] duration-200 hover:brightness-95 active:brightness-90';
 
 export const MOBILE_DRAWER_MUTED_PILL_CLASS =
-  'flex min-h-[3.75rem] w-full items-center justify-between gap-4 rounded-full bg-marco-gray px-7 py-4 text-left text-xs font-bold uppercase tracking-wide text-marco-black dark:bg-zinc-800 dark:text-white';
+  'flex min-h-[3.5rem] w-full items-center justify-between gap-3.5 rounded-full bg-marco-gray px-6 py-3.5 text-left text-xs font-bold uppercase tracking-wide text-marco-black dark:bg-zinc-800 dark:text-white';
 
 export const MOBILE_DRAWER_CONTACT_OUTLINE_CLASS =
-  'flex min-h-[3.75rem] w-full items-center justify-center gap-2 rounded-full border-2 border-marco-black bg-white px-6 py-3.5 text-sm font-bold text-marco-black transition-colors hover:bg-marco-gray/40 dark:border-white dark:bg-zinc-950 dark:text-white dark:hover:bg-zinc-800';
+  'flex min-h-[3.5rem] w-full items-center justify-center gap-2 rounded-full border-2 border-marco-black bg-white px-5 py-3 text-sm font-bold text-marco-black transition-colors hover:bg-marco-gray/40 dark:border-white dark:bg-zinc-950 dark:text-white dark:hover:bg-zinc-800';
 
 export function mobileDrawerNavPillClass(active: boolean): string {
   const base =
-    'flex min-h-[3.75rem] w-full items-center justify-between gap-4 rounded-full border px-7 py-4 text-left text-xs font-bold uppercase tracking-wide transition-[background-color,border-color,color,filter] duration-200';
+    'flex min-h-[3.5rem] w-full items-center justify-between gap-3.5 rounded-full border px-6 py-3.5 text-left text-xs font-bold uppercase tracking-wide transition-[background-color,border-color,color,filter] duration-200';
   if (active) {
     return `${base} border-transparent bg-marco-yellow text-marco-black`;
   }
@@ -44,7 +48,7 @@ export function mobileDrawerCompactPillClass(active: boolean, centered = false):
   const justify = centered ? 'justify-center' : 'justify-between';
   const textAlign = centered ? 'text-center' : 'text-left';
   const base =
-    `flex min-h-[3.375rem] w-full items-center ${justify} gap-3 rounded-full border px-7 py-4 ${textAlign} text-xs font-semibold leading-snug normal-case transition-[background-color,border-color,color,filter] duration-200`;
+    `flex min-h-[3.125rem] w-full items-center ${justify} gap-2.5 rounded-full border px-6 py-3.5 ${textAlign} text-xs font-semibold leading-snug normal-case transition-[background-color,border-color,color,filter] duration-200`;
   if (active) {
     return `${base} border-transparent bg-marco-yellow text-marco-black`;
   }
@@ -53,4 +57,4 @@ export function mobileDrawerCompactPillClass(active: boolean, centered = false):
 
 /** Compact tel row inside drawer call flow. */
 export const MOBILE_DRAWER_CONTACT_COMPACT_CLASS =
-  'flex min-h-[3.375rem] w-full items-center justify-center gap-2 rounded-full border-2 border-marco-black bg-white px-6 py-3.5 text-center text-xs font-bold tabular-nums text-marco-black transition-colors hover:bg-marco-gray/35 dark:border-white dark:bg-zinc-950 dark:text-white dark:hover:bg-zinc-800';
+  'flex min-h-[3.125rem] w-full items-center justify-center gap-2 rounded-full border-2 border-marco-black bg-white px-5 py-3 text-center text-xs font-bold tabular-nums text-marco-black transition-colors hover:bg-marco-gray/35 dark:border-white dark:bg-zinc-950 dark:text-white dark:hover:bg-zinc-800';
