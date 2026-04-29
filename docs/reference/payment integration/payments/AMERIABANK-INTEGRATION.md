@@ -4,7 +4,7 @@
 >
 > **Պաշտոնական API նկարագրություն:**  
 > `payment integration/| Official doc for the API integrationm/AmeriaBank/vPOS - Ameriabank.md`
-
+ 
 ---
 
 ## 1. Ընդհանուր
