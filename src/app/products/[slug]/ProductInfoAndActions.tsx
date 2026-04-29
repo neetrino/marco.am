@@ -4,7 +4,7 @@ import type { MouseEvent } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { ArrowUpRight, Heart } from 'lucide-react';
-import { formatPrice, type CurrencyCode } from '../../../lib/currency';
+import { formatCatalogPrice, type CurrencyCode } from '../../../lib/currency';
 import { t, getProductText } from '../../../lib/i18n';
 import type { LanguageCode } from '../../../lib/language';
 import { sanitizeHtml } from '../../../lib/utils/sanitize';
@@ -205,12 +205,12 @@ export function ProductInfoAndActions({
           <div className="flex flex-col gap-1">
             {/* Discounted price with discount percentage */}
             <div className="flex items-center gap-2">
-              <p className="text-3xl font-bold text-marco-black">{formatPrice(price, currency as CurrencyCode)}</p>
+              <p className="text-3xl font-bold text-marco-black">{formatCatalogPrice(price, currency as CurrencyCode)}</p>
             </div>
             {/* Original price below discounted price - full width, not inline */}
             {(originalPrice || (compareAtPrice && compareAtPrice > price)) && (
               <p className="mt-1 ml-px text-xl text-gray-500 line-through decoration-gray-400">
-                {formatPrice(originalPrice || compareAtPrice || 0, currency as CurrencyCode)}
+                {formatCatalogPrice(originalPrice || compareAtPrice || 0, currency as CurrencyCode)}
               </p>
             )}
           </div>

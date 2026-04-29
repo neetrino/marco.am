@@ -2,6 +2,7 @@ import { apiClient } from '../../lib/api-client';
 import { logger } from '../../lib/utils/logger';
 import type { Cart, CartItem } from './types';
 import { CART_KEY } from './constants';
+import { cartLineSubtotal } from './line-subtotal';
 
 /**
  * Guest cart item
@@ -31,7 +32,7 @@ function parseItemId(itemId: string): { productId: string; variantId: string } |
  * Calculate cart totals
  */
 function calculateCartTotals(items: CartItem[], existingTotals: Cart['totals']): Cart['totals'] {
-  const newSubtotal = items.reduce((sum, item) => sum + item.total, 0);
+  const newSubtotal = items.reduce((sum, item) => sum + cartLineSubtotal(item.price, item.quantity), 0);
   return {
     ...existingTotals,
     subtotal: newSubtotal,
@@ -97,7 +98,7 @@ export async function handleRemoveItem(
 
   // Calculate new totals
   const updatedItems = cart.items.filter(item => item.id !== itemId);
-  const newItemsCount = updatedItems.reduce((sum, item) => sum + item.quantity, 0);
+  const newItemsCount = updatedItems.reduce((sum, item) => sum + Number(item.quantity), 0);
 
   // Update UI immediately (optimistic update)
   setCart({
@@ -158,10 +159,10 @@ export async function handleUpdateQuantity(
   if (cart) {
     const updatedItems = cart.items.map(item => 
       item.id === itemId 
-        ? { ...item, quantity, total: item.price * quantity }
+        ? { ...item, quantity, total: cartLineSubtotal(item.price, quantity) }
         : item
     );
-    const newItemsCount = updatedItems.reduce((sum, item) => sum + item.quantity, 0);
+    const newItemsCount = updatedItems.reduce((sum, item) => sum + Number(item.quantity), 0);
 
     setCart({
       ...cart,

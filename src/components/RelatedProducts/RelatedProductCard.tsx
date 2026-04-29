@@ -3,9 +3,8 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import type { MouseEvent } from 'react';
-import { formatPrice } from '../../lib/currency';
+import { formatCatalogPrice, type CurrencyCode } from '../../lib/currency';
 import { CartIcon as CartPngIcon } from '../icons/CartIcon';
-import type { CurrencyCode } from '../../lib/currency';
 import type { LanguageCode } from '../../lib/language';
 import { t } from '../../lib/i18n';
 import { logger } from "@/lib/utils/logger";
@@ -120,7 +119,7 @@ export function RelatedProductCard({
               <div className="flex flex-col gap-1 mt-auto">
                 <div className="flex items-center gap-2">
                   <span className="text-lg font-bold text-gray-900">
-                    {formatPrice(product.price, currency)}
+                    {formatCatalogPrice(product.price, currency)}
                   </span>
                   {product.discountPercent && product.discountPercent > 0 && (
                     <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
@@ -131,7 +130,7 @@ export function RelatedProductCard({
                 {(product.originalPrice && product.originalPrice > product.price) || 
                  (product.compareAtPrice && product.compareAtPrice > product.price) ? (
                   <span className="text-sm text-gray-500 line-through decoration-gray-400">
-                    {formatPrice(
+                    {formatCatalogPrice(
                       (product.originalPrice && product.originalPrice > product.price) 
                         ? product.originalPrice 
                         : (product.compareAtPrice || 0),

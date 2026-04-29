@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { montserratArm } from '@/fonts/montserrat-arm';
-import { formatPrice } from '@/lib/currency';
+import { formatCatalogPrice } from '@/lib/currency';
 import { ProductColors } from '@/components/ProductCard/ProductColors';
 import {
   SpecialOfferCartFab,
@@ -137,9 +137,9 @@ function SpecialOfferProductCardView({
           <StarRow />
         </div>
         <div className="mt-3 flex flex-wrap items-end gap-2">
-          <p className="text-lg font-black text-[#181111] dark:text-white md:text-xl">{formatPrice(product.price, currency)}</p>
+          <p className="text-lg font-black text-[#181111] dark:text-white md:text-xl">{formatCatalogPrice(product.price, currency)}</p>
           {strikePrice != null ? (
-            <span className="text-xs text-[#9ca3af] dark:text-white/55 line-through md:text-sm">{formatPrice(strikePrice, currency)}</span>
+            <span className="text-xs text-[#9ca3af] dark:text-white/55 line-through md:text-sm">{formatCatalogPrice(strikePrice, currency)}</span>
           ) : null}
         </div>
       </div>

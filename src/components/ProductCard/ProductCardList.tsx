@@ -3,12 +3,11 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import type { MouseEvent } from 'react';
-import { formatPrice } from '../../lib/currency';
+import { formatCatalogPrice, type CurrencyCode } from '../../lib/currency';
 import { useTranslation } from '../../lib/i18n-client';
 import { ProductColors } from './ProductColors';
 import { ProductCardActions } from './ProductCardActions';
 import { ProductImagePlaceholder } from '../ProductImagePlaceholder';
-import type { CurrencyCode } from '../../lib/currency';
 import type { ProductLabel } from '../ProductLabels';
 
 interface ProductCardListProps {
@@ -109,7 +108,7 @@ export function ProductCardList({
           <div className="flex flex-col">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-lg sm:text-xl font-semibold text-marco-black">
-                {formatPrice(product.price || 0, currency)}
+                {formatCatalogPrice(product.price || 0, currency)}
               </span>
               {product.discountPercent && product.discountPercent > 0 ? (
                 <span className="text-xs sm:text-sm font-semibold text-marco-black">
@@ -120,7 +119,7 @@ export function ProductCardList({
             {(product.originalPrice && product.originalPrice > product.price) || 
              (product.compareAtPrice && product.compareAtPrice > product.price) ? (
               <span className="text-base sm:text-lg text-gray-500 line-through mt-0.5">
-                {formatPrice(
+                {formatCatalogPrice(
                   (product.originalPrice && product.originalPrice > product.price) 
                     ? product.originalPrice 
                     : (product.compareAtPrice || 0), 

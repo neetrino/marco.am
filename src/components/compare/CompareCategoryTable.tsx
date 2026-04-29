@@ -3,7 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 import type { CompareClientItem } from '@/lib/compare/compare-client';
-import { formatPrice, type CurrencyCode } from '@/lib/currency';
+import { formatCatalogPrice, type CurrencyCode } from '@/lib/currency';
 import { ProductImagePlaceholder } from '@/components/ProductImagePlaceholder';
 
 export type CompareTableProduct = {
@@ -157,18 +157,18 @@ export function CompareCategoryTable({
               <td key={product.id} className="px-4 py-4 text-center">
                 <div className="flex flex-col items-center justify-center gap-1">
                   <p className="select-none text-lg font-bold text-gray-900 dark:text-white/90">
-                    {formatPrice(product.price, currency)}
+                    {formatCatalogPrice(product.price, currency)}
                   </p>
                   {product.originalPrice && product.originalPrice > product.price ? (
                     <p className="select-none text-sm text-gray-500 line-through dark:text-white/55">
-                      {formatPrice(product.originalPrice, currency)}
+                      {formatCatalogPrice(product.originalPrice, currency)}
                     </p>
                   ) : null}
                   {!product.originalPrice &&
                   product.compareAtPrice &&
                   product.compareAtPrice > product.price ? (
                     <p className="select-none text-sm text-gray-500 line-through dark:text-white/55">
-                      {formatPrice(product.compareAtPrice, currency)}
+                      {formatCatalogPrice(product.compareAtPrice, currency)}
                     </p>
                   ) : null}
                 </div>

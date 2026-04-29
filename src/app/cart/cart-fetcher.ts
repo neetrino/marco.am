@@ -2,6 +2,7 @@ import { apiClient } from '../../lib/api-client';
 import { logger } from '../../lib/utils/logger';
 import type { Cart, CartItem } from './types';
 import { CART_KEY } from './constants';
+import { cartLineSubtotal, resolveGuestUnitPrice } from './line-subtotal';
 
 /**
  * Product data from API
@@ -29,6 +30,8 @@ interface GuestCartItem {
   productSlug?: string;
   variantId: string;
   quantity: number;
+  /** Snapshot when added to cart — used if product API returns 0 price */
+  price?: number;
 }
 
 /**
@@ -66,6 +69,8 @@ async function fetchGuestCartItems(
               : productData.media[0].url || productData.media[0].src)
           : null;
 
+        const unitPrice = resolveGuestUnitPrice(variant.price, item.price);
+
         return {
           item: {
             id: `${item.productId}-${item.variantId}-${index}`,
@@ -80,10 +85,10 @@ async function fetchGuestCartItems(
                 image: imageUrl,
               },
             },
-            quantity: item.quantity,
-            price: variant.price,
+            quantity: Number(item.quantity),
+            price: unitPrice,
             originalPrice: variant.originalPrice || null,
-            total: variant.price * item.quantity,
+            total: cartLineSubtotal(unitPrice, item.quantity),
           },
           shouldRemove: false,
         };
@@ -105,8 +110,8 @@ async function fetchGuestCartItems(
  * Build cart from valid items
  */
 function buildCartFromItems(validItems: CartItem[]): Cart {
-  const subtotal = validItems.reduce((sum, item) => sum + item.total, 0);
-  const itemsCount = validItems.reduce((sum, item) => sum + item.quantity, 0);
+  const subtotal = validItems.reduce((sum, item) => sum + cartLineSubtotal(item.price, item.quantity), 0);
+  const itemsCount = validItems.reduce((sum, item) => sum + Number(item.quantity), 0);
 
   return {
     id: 'guest-cart',

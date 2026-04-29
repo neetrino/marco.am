@@ -2,7 +2,7 @@
 
 import type { MouseEvent } from 'react';
 
-import { formatPrice } from '../../lib/currency';
+import { formatCatalogPrice } from '../../lib/currency';
 import type { CurrencyCode } from '../../lib/currency';
 import {
   SpecialOfferCartFigmaIcon,
@@ -35,14 +35,14 @@ export function SpecialOfferCardPricing({
           lineHeight: `${SPECIAL_OFFERS_PRICE_LINE_HEIGHT_PX}px`,
         }}
       >
-        {formatPrice(price, currency)}
+        {formatCatalogPrice(price, currency)}
       </p>
       {oldPrice ? (
         <p
           className="text-gray-400 line-through"
           style={{ fontSize: SPECIAL_OFFERS_OLD_PRICE_FONT_SIZE_PX }}
         >
-          {formatPrice(oldPrice, currency)}
+          {formatCatalogPrice(oldPrice, currency)}
         </p>
       ) : null}
     </div>
