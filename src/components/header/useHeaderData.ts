@@ -18,7 +18,9 @@ import type { Category, CategoriesResponse } from './category-nav-types';
 
 export function useHeaderData() {
   const router = useRouter();
-  const { isLoggedIn, logout, isAdmin } = useAuth();
+  const { isLoggedIn, isLoading: authLoading, logout, isAdmin } = useAuth();
+  const authLoadingRef = useRef(false);
+  authLoadingRef.current = authLoading;
   const { t } = useTranslation();
 
   const [compareCount, setCompareCount] = useState(0);
@@ -61,6 +63,9 @@ export function useHeaderData() {
   });
 
   const fetchCart = useCallback(async () => {
+    if (authLoadingRef.current) {
+      return;
+    }
     if (!isLoggedIn) {
       if (typeof window === 'undefined') {
         setCartCount(0);
@@ -143,6 +148,9 @@ export function useHeaderData() {
 
   useEffect(() => {
     const handleCartUpdate = (e: Event) => {
+      if (authLoadingRef.current) {
+        return;
+      }
       const detail = (e as CustomEvent)?.detail;
       if (detail?.optimisticAdd) {
         setCartCount((c) => c + (detail.optimisticAdd.quantity ?? 1));
@@ -155,7 +163,7 @@ export function useHeaderData() {
         setCartTotalCurrency(coerceCurrencyCode(detail.currency, 'AMD'));
         return;
       }
-      fetchCart();
+      void fetchCart();
     };
 
     window.addEventListener('cart-updated', handleCartUpdate);
@@ -165,9 +173,16 @@ export function useHeaderData() {
     };
   }, [fetchCart]);
 
+  /** Until auth is resolved, do not read guest cart as "logged out" — avoids phantom totals on refresh. */
   useEffect(() => {
-    fetchCart();
-  }, [isLoggedIn, fetchCart]);
+    if (authLoading) {
+      setCartCount(0);
+      setCartTotal(0);
+      setCartTotalCurrency('AMD');
+      return;
+    }
+    void fetchCart();
+  }, [authLoading, isLoggedIn, fetchCart]);
 
   useHeaderCurrency(setSelectedCurrency);
 
