@@ -81,7 +81,6 @@ export default function CheckoutPage() {
             setValue={setValue}
             errors={errors}
             isSubmitting={isSubmitting}
-            shippingMethod={shippingMethod}
             paymentMethod={paymentMethod}
             paymentMethods={paymentMethods}
             logoErrors={logoErrors}

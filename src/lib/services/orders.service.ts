@@ -74,7 +74,7 @@ class OrdersService {
       const {
         cartId,
         items: guestItems,
-        shippingMethod: rawShippingMethod = 'pickup',
+        shippingMethod: rawShippingMethod = 'courier',
         shippingAddress,
         paymentMethod: rawPaymentMethod,
         couponCode,

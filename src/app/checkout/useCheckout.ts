@@ -43,7 +43,7 @@ export function useCheckout() {
       email: '',
       phone: '',
       notes: '',
-      shippingMethod: 'pickup',
+      shippingMethod: 'courier',
       paymentMethod: 'cash',
       shippingAddress: '',
       shippingCity: '',
@@ -112,6 +112,10 @@ export function useCheckout() {
       window.removeEventListener('currency-rates-updated', handleCurrencyRatesUpdate);
     };
   }, [isLoggedIn, isLoading, fetchCart]);
+
+  useEffect(() => {
+    setValue('shippingMethod', 'courier');
+  }, [setValue]);
 
   const handlePlaceOrder = (e: React.FormEvent) => {
     e.preventDefault();
