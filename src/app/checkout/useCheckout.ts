@@ -23,7 +23,6 @@ export function useCheckout() {
   const [_language, setLanguage] = useState(getStoredLanguage());
   const [logoErrors, setLogoErrors] = useState<Record<string, boolean>>({});
   const [showShippingModal, setShowShippingModal] = useState(false);
-  const [showCardModal, setShowCardModal] = useState(false);
 
   const paymentMethods = usePaymentMethods();
   const checkoutSchema = useCheckoutSchema();
@@ -59,7 +58,7 @@ export function useCheckout() {
   const shippingMethod = watch('shippingMethod');
   const shippingCity = watch('shippingCity');
 
-  const { cart, loading, fetchCart } = useCart(isLoggedIn);
+  const { cart, loading, fetchCart } = useCart(isLoggedIn, isLoading);
   const { checkoutTotals, loadingCheckoutTotals, checkoutTotalsStale } = useCheckoutTotals(
     cart,
     isLoggedIn,
@@ -132,11 +131,6 @@ export function useCheckout() {
       }
     }
     
-    if (paymentMethod === 'card') {
-      setShowCardModal(true);
-      return;
-    }
-    
     if (!isLoggedIn) {
       setShowShippingModal(true);
       return;
@@ -160,8 +154,6 @@ export function useCheckout() {
     setLogoErrors,
     showShippingModal,
     setShowShippingModal,
-    showCardModal,
-    setShowCardModal,
     checkoutTotals,
     loadingCheckoutTotals,
     checkoutTotalsStale,

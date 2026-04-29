@@ -1,37 +1,55 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { apiClient } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
 import { fetchCartForGuest } from '../checkoutUtils';
 import type { Cart } from '../types';
 
-export function useCart(isLoggedIn: boolean) {
+export function useCart(isLoggedIn: boolean, authLoading: boolean) {
   const { t } = useTranslation();
   const [cart, setCart] = useState<Cart | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const fetchGenerationRef = useRef(0);
 
   const fetchCart = useCallback(async () => {
+    if (authLoading) {
+      return;
+    }
+    const generation = ++fetchGenerationRef.current;
     try {
       setLoading(true);
-      
+
       if (isLoggedIn) {
         const response = await apiClient.get<{ cart: Cart }>('/api/v1/cart');
+        if (generation !== fetchGenerationRef.current) {
+          return;
+        }
         setCart(response.cart);
         return;
       }
 
       const guestCart = await fetchCartForGuest();
+      if (generation !== fetchGenerationRef.current) {
+        return;
+      }
       setCart(guestCart);
     } catch {
-      setError(t('checkout.errors.failedToLoadCart'));
+      if (generation === fetchGenerationRef.current) {
+        setError(t('checkout.errors.failedToLoadCart'));
+      }
     } finally {
-      setLoading(false);
+      if (generation === fetchGenerationRef.current) {
+        setLoading(false);
+      }
     }
-  }, [isLoggedIn, t]);
+  }, [authLoading, isLoggedIn, t]);
 
   useEffect(() => {
-    fetchCart();
-  }, [fetchCart]);
+    if (authLoading) {
+      return;
+    }
+    void fetchCart();
+  }, [authLoading, fetchCart]);
 
   return { cart, loading, error, setError, fetchCart };
 }

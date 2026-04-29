@@ -1,3 +1,4 @@
+import { pickVariantForListingPrice } from "@/lib/product-variant-listing-pick";
 import { db } from "@white-shop/db";
 import {
   processImageUrl,
@@ -670,16 +671,29 @@ export async function transformProduct(
     productVariantsForTechnicalSpecifications,
     lang
   );
-  const transformedVariants = Array.isArray(product.variants)
+  const rawVariantsForTransform = Array.isArray(product.variants) ? product.variants : [];
+  const transformedVariants = rawVariantsForTransform.length
     ? transformVariants(
-        product.variants,
+        rawVariantsForTransform,
         actualDiscount,
         globalDiscount,
         productDiscount,
         lang
       )
     : [];
-  const primaryVariant = transformedVariants[0] ?? null;
+  const listingPick = pickVariantForListingPrice(rawVariantsForTransform);
+  const listingId = listingPick?.id;
+  const variantsForResponse =
+    listingId && transformedVariants.length > 0
+      ? (() => {
+          const primary = transformedVariants.find((v) => v.id === listingId);
+          if (!primary) {
+            return transformedVariants;
+          }
+          return [primary, ...transformedVariants.filter((v) => v.id !== listingId)];
+        })()
+      : transformedVariants;
+  const primaryVariant = variantsForResponse[0] ?? null;
   const productStockSummary = resolveProductStockSummary(Array.isArray(product.variants) ? product.variants : []);
 
   return {
@@ -707,7 +721,7 @@ export async function transformProduct(
     media,
     gallery,
     labels: transformLabels(product, lang),
-    variants: transformedVariants,
+    variants: variantsForResponse,
     currentPrice: primaryVariant?.currentPrice ?? null,
     oldPrice: primaryVariant?.oldPrice ?? null,
     discountBadge: primaryVariant?.discountBadge ?? null,

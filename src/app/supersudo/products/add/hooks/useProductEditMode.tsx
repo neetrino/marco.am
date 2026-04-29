@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api-client';
-import { convertPrice, type CurrencyCode } from '@/lib/currency';
+import { CATALOG_PRICE_CURRENCY, convertPrice, type CurrencyCode } from '@/lib/currency';
 import { cleanImageUrls, separateMainAndVariantImages } from '@/lib/utils/image-utils';
 import type { ProductData, ColorData, Variant } from '../types';
 import { useTranslation } from '@/lib/i18n-client';
@@ -117,16 +117,19 @@ export function useProductEditMode({
             }
 
             if (index === 0) {
-              const firstPriceUSD = variant.price !== undefined && variant.price !== null ? variant.price : 0;
-              const firstCompareAtPriceUSD =
+              const firstPriceCatalog =
+                variant.price !== undefined && variant.price !== null ? variant.price : 0;
+              const firstCompareAtPriceCatalog =
                 variant.compareAtPrice !== undefined && variant.compareAtPrice !== null
                   ? variant.compareAtPrice
                   : 0;
               firstPrice =
-                firstPriceUSD > 0 ? String(convertPrice(firstPriceUSD, 'USD', defaultCurrency)) : '';
+                firstPriceCatalog > 0
+                  ? String(convertPrice(firstPriceCatalog, CATALOG_PRICE_CURRENCY, defaultCurrency))
+                  : '';
               firstCompareAtPrice =
-                firstCompareAtPriceUSD > 0
-                  ? String(convertPrice(firstCompareAtPriceUSD, 'USD', defaultCurrency))
+                firstCompareAtPriceCatalog > 0
+                  ? String(convertPrice(firstCompareAtPriceCatalog, CATALOG_PRICE_CURRENCY, defaultCurrency))
                   : '';
               firstSku = variant.sku || '';
             }
@@ -241,7 +244,7 @@ export function useProductEditMode({
                         typeof firstVariant.price === 'number'
                           ? firstVariant.price
                           : parseFloat(String(firstVariant.price || '0')),
-                        'USD',
+                        CATALOG_PRICE_CURRENCY,
                         defaultCurrency
                       )
                     )
@@ -252,7 +255,7 @@ export function useProductEditMode({
                         typeof firstVariant.compareAtPrice === 'number'
                           ? firstVariant.compareAtPrice
                           : parseFloat(String(firstVariant.compareAtPrice || '0')),
-                        'USD',
+                        CATALOG_PRICE_CURRENCY,
                         defaultCurrency
                       )
                     )

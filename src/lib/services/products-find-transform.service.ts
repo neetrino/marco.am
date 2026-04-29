@@ -1,4 +1,5 @@
 import { getAttributeBucket, isColorAttributeKey } from '@/lib/attribute-keys';
+import { pickVariantForListingPrice } from '@/lib/product-variant-listing-pick';
 import { getListingDiscountSettings } from './listing-discount-settings';
 import { processImageUrl } from "../utils/image-utils";
 import { translations } from "../translations";
@@ -183,11 +184,9 @@ class ProductsFindTransformService {
         ? brandTranslations.find((t: { locale: string }) => t.locale === lang) || brandTranslations[0]
         : null;
       
-      // Безопасное получение variant
+      // Listing / card price: same variant logic as PDP default (not raw min price — avoids 0-priced placeholder SKUs).
       const variants = Array.isArray(product.variants) ? product.variants : [];
-      const variant = variants.length > 0
-        ? variants.sort((a: { price: number }, b: { price: number }) => a.price - b.price)[0]
-        : null;
+      const variant = pickVariantForListingPrice(variants);
 
       // Get all unique colors from ALL variants with imageUrl and colors hex (support both new and old format)
       // IMPORTANT: Only collect colors that actually exist in variants

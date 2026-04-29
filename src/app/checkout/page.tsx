@@ -22,8 +22,6 @@ export default function CheckoutPage() {
     setLogoErrors,
     showShippingModal,
     setShowShippingModal,
-    showCardModal,
-    setShowCardModal,
     loadingCheckoutTotals,
     checkoutTotalsStale,
     register,
@@ -117,10 +115,7 @@ export default function CheckoutPage() {
       <CheckoutModals
         showShippingModal={showShippingModal}
         setShowShippingModal={setShowShippingModal}
-        showCardModal={showCardModal}
-        setShowCardModal={setShowCardModal}
         register={register}
-        setValue={setValue}
         handleSubmit={handleSubmit}
         errors={errors}
         isSubmitting={isSubmitting}

@@ -76,6 +76,7 @@ export function useOrderSubmission({
           provider: string;
           paymentUrl: string | null;
           expiresAt: string | null;
+          idramForm: { action: string; fields: Record<string, string> } | null;
         };
         nextAction: string;
       }>('/api/v1/orders/checkout', {
@@ -92,12 +93,34 @@ export function useOrderSubmission({
         paymentMethod: data.paymentMethod,
       });
 
-      if (!isLoggedIn) {
+      const needsOnlinePayment =
+        Boolean(response.payment?.paymentUrl) ||
+        Boolean(response.payment?.idramForm);
+
+      if (!isLoggedIn && !needsOnlinePayment) {
         clearGuestCart();
       }
 
       if (response.payment?.paymentUrl) {
         window.location.href = response.payment.paymentUrl;
+        return;
+      }
+
+      if (response.payment?.idramForm) {
+        const { action, fields } = response.payment.idramForm;
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = action;
+        form.acceptCharset = "UTF-8";
+        for (const [name, value] of Object.entries(fields)) {
+          const input = document.createElement("input");
+          input.type = "hidden";
+          input.name = name;
+          input.value = value;
+          form.appendChild(input);
+        }
+        document.body.appendChild(form);
+        form.submit();
         return;
       }
 

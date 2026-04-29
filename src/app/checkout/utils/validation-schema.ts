@@ -17,7 +17,7 @@ export function useCheckoutSchema() {
     shippingMethod: z.enum(['pickup', 'courier'], {
       message: t('checkout.errors.selectShippingMethod'),
     }),
-    paymentMethod: z.enum(['card', 'cash'], {
+    paymentMethod: z.enum(["arca", "idram", "cash"], {
       message: t('checkout.errors.selectPaymentMethod'),
     }),
     shippingAddress: z.string().optional(),
@@ -42,38 +42,6 @@ export function useCheckoutSchema() {
   }, {
     message: t('checkout.errors.cityRequired'),
     path: ['shippingCity'],
-  }).refine((data) => {
-    if (data.paymentMethod === 'card') {
-      return data.cardNumber && data.cardNumber.replace(/\s/g, '').length >= 13;
-    }
-    return true;
-  }, {
-    message: t('checkout.errors.cardNumberRequired'),
-    path: ['cardNumber'],
-  }).refine((data) => {
-    if (data.paymentMethod === 'card') {
-      return data.cardExpiry && /^\d{2}\/\d{2}$/.test(data.cardExpiry);
-    }
-    return true;
-  }, {
-    message: t('checkout.errors.cardExpiryRequired'),
-    path: ['cardExpiry'],
-  }).refine((data) => {
-    if (data.paymentMethod === 'card') {
-      return data.cardCvv && data.cardCvv.length >= 3;
-    }
-    return true;
-  }, {
-    message: t('checkout.errors.cvvRequired'),
-    path: ['cardCvv'],
-  }).refine((data) => {
-    if (data.paymentMethod === 'card') {
-      return data.cardHolderName && data.cardHolderName.trim().length > 0;
-    }
-    return true;
-  }, {
-    message: t('checkout.errors.cardHolderNameRequired'),
-    path: ['cardHolderName'],
   });
 }
 

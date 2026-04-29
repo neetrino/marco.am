@@ -1,6 +1,6 @@
 import type { FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { convertPrice, type CurrencyCode } from '@/lib/currency';
+import { CATALOG_PRICE_CURRENCY, convertPrice, type CurrencyCode } from '@/lib/currency';
 import type { Attribute, Variant, GeneratedVariant } from '../types';
 import { useBrandAndCategoryCreation } from './useBrandAndCategoryCreation';
 import { useVariantConversionToFormData } from './useVariantConversionToFormData';
@@ -143,19 +143,24 @@ export function useProductFormHandlers({
 
       if (productType === 'simple') {
         logger.devLog('📦 [ADMIN] Processing Simple Product');
-        const priceUSD = convertPrice(parseFloat(simpleProductData.price), defaultCurrency, 'USD');
-        const compareAtPriceUSD = simpleProductData.compareAtPrice && simpleProductData.compareAtPrice.trim() !== ''
-          ? convertPrice(parseFloat(simpleProductData.compareAtPrice), defaultCurrency, 'USD')
-          : undefined;
+        const priceCatalog = convertPrice(
+          parseFloat(simpleProductData.price),
+          defaultCurrency,
+          CATALOG_PRICE_CURRENCY
+        );
+        const compareAtPriceCatalog =
+          simpleProductData.compareAtPrice && simpleProductData.compareAtPrice.trim() !== ''
+            ? convertPrice(parseFloat(simpleProductData.compareAtPrice), defaultCurrency, CATALOG_PRICE_CURRENCY)
+            : undefined;
         const simpleVariant: any = {
-          price: priceUSD,
+          price: priceCatalog,
           stock: parseInt(simpleProductData.quantity) || 0,
           sku: simpleProductData.sku.trim(),
           productClass: selectedProductClass,
           published: true,
         };
-        if (compareAtPriceUSD) {
-          simpleVariant.compareAtPrice = compareAtPriceUSD;
+        if (compareAtPriceCatalog !== undefined) {
+          simpleVariant.compareAtPrice = compareAtPriceCatalog;
         }
         variants.push(simpleVariant);
         variantSkuSet.add(simpleProductData.sku.trim());
@@ -169,9 +174,13 @@ export function useProductFormHandlers({
           const _sizeAttribute = getSizeAttribute();
           
           generatedVariants.forEach((genVariant, variantIndex) => {
-            const variantPriceUSD = convertPrice(parseFloat(genVariant.price || '0'), defaultCurrency, 'USD');
-            const variantCompareAtPriceUSD = genVariant.compareAtPrice 
-              ? convertPrice(parseFloat(genVariant.compareAtPrice), defaultCurrency, 'USD')
+            const variantPriceCatalog = convertPrice(
+              parseFloat(genVariant.price || '0'),
+              defaultCurrency,
+              CATALOG_PRICE_CURRENCY
+            );
+            const variantCompareAtPriceCatalog = genVariant.compareAtPrice
+              ? convertPrice(parseFloat(genVariant.compareAtPrice), defaultCurrency, CATALOG_PRICE_CURRENCY)
               : undefined;
             
             const attributeValueMap: Record<string, Array<{ valueId: string; value: string }>> = {};
@@ -200,8 +209,8 @@ export function useProductFormHandlers({
               }
               variantSkuSet.add(uniqueSku);
               variants.push({
-                price: variantPriceUSD,
-                compareAtPrice: variantCompareAtPriceUSD,
+                price: variantPriceCatalog,
+                compareAtPrice: variantCompareAtPriceCatalog,
                 stock: parseInt(genVariant.stock || '0') || 0,
                 sku: uniqueSku,
                 imageUrl: genVariant.image || undefined,
@@ -256,8 +265,8 @@ export function useProductFormHandlers({
                 variantSkuSet.add(uniqueSku);
                 
                 variants.push({
-                  price: variantPriceUSD,
-                  compareAtPrice: variantCompareAtPriceUSD,
+                  price: variantPriceCatalog,
+                  compareAtPrice: variantCompareAtPriceCatalog,
                   stock: parseInt(genVariant.stock || '0') || 0,
                   sku: uniqueSku,
                   imageUrl: genVariant.image || undefined,
@@ -271,10 +280,18 @@ export function useProductFormHandlers({
           // Legacy formData.variants processing (simplified)
           logger.devLog('📦 [ADMIN] Using formData.variants format (legacy)');
           currentFormData.variants.forEach((variant, variantIndex) => {
-            const variantPriceUSD = convertPrice(parseFloat(variant.price || '0'), defaultCurrency, 'USD');
-            const baseVariantData: any = { price: variantPriceUSD, published: true };
+            const variantPriceCatalog = convertPrice(
+              parseFloat(variant.price || '0'),
+              defaultCurrency,
+              CATALOG_PRICE_CURRENCY
+            );
+            const baseVariantData: any = { price: variantPriceCatalog, published: true };
             if (variant.compareAtPrice) {
-              baseVariantData.compareAtPrice = convertPrice(parseFloat(variant.compareAtPrice), defaultCurrency, 'USD');
+              baseVariantData.compareAtPrice = convertPrice(
+                parseFloat(variant.compareAtPrice),
+                defaultCurrency,
+                CATALOG_PRICE_CURRENCY
+              );
             }
             const colorDataArray = variant.colors || [];
             // Simplified variant processing - full logic would be in separate hook
@@ -300,10 +317,12 @@ export function useProductFormHandlers({
                     variantSkuSet.add(uniqueSku);
                     const variantImageUrl = colorData.images && colorData.images.length > 0 ? colorData.images.join(',') : undefined;
                     const sizePrice = colorData.sizePrices?.[size];
-                    const finalPriceRaw = sizePrice && sizePrice.trim() !== ''
-                      ? parseFloat(sizePrice)
-                      : (colorData.price && colorData.price.trim() !== '' ? parseFloat(colorData.price) : baseVariantData.price);
-                    const finalPrice = convertPrice(finalPriceRaw, defaultCurrency, 'USD');
+                    const finalPrice =
+                      sizePrice && sizePrice.trim() !== ''
+                        ? convertPrice(parseFloat(sizePrice), defaultCurrency, CATALOG_PRICE_CURRENCY)
+                        : colorData.price && colorData.price.trim() !== ''
+                          ? convertPrice(parseFloat(colorData.price), defaultCurrency, CATALOG_PRICE_CURRENCY)
+                          : baseVariantData.price;
                     const variantOptions: Array<{ attributeKey: string; value: string; valueId?: string }> = [];
                     if (colorData.colorValue && colorData.colorValue.trim() !== '') {
                       const colorAttr = findAttributeBySemanticKey(attributes, 'color');

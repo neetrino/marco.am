@@ -1,3 +1,5 @@
+import { pickVariantForListingPrice } from '@/lib/product-variant-listing-pick';
+
 /**
  * Format product for list response
  */
@@ -29,10 +31,7 @@ export function formatProductForList(product: {
     ? product.translations[0]
     : null;
   
-  // Безопасное получение variant с проверкой на существование массива
-  const variant = Array.isArray(product.variants) && product.variants.length > 0
-    ? product.variants[0]
-    : null;
+  const variant = pickVariantForListingPrice(product.variants ?? []);
   
   const image = extractImageFromMedia(product.media);
 

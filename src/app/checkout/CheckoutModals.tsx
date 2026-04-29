@@ -1,8 +1,7 @@
 'use client';
 
-import { UseFormRegister, UseFormSetValue, UseFormHandleSubmit, FieldErrors } from 'react-hook-form';
+import { UseFormRegister, UseFormHandleSubmit, FieldErrors } from "react-hook-form";
 import { ShippingAddressModal } from './components/ShippingAddressModal';
-import { CardDetailsModal } from './components/CardDetailsModal';
 import type { CheckoutPaymentMethodId } from '../../lib/constants/checkout-payment-method';
 import type { ShippingMethodId } from '../../lib/constants/shipping-method';
 import { CheckoutFormData, Cart } from './types';
@@ -10,10 +9,7 @@ import { CheckoutFormData, Cart } from './types';
 interface CheckoutModalsProps {
   showShippingModal: boolean;
   setShowShippingModal: (show: boolean) => void;
-  showCardModal: boolean;
-  setShowCardModal: (show: boolean) => void;
   register: UseFormRegister<CheckoutFormData>;
-  setValue: UseFormSetValue<CheckoutFormData>;
   handleSubmit: UseFormHandleSubmit<CheckoutFormData>;
   errors: FieldErrors<CheckoutFormData>;
   isSubmitting: boolean;
@@ -36,10 +32,7 @@ interface CheckoutModalsProps {
 export function CheckoutModals({
   showShippingModal,
   setShowShippingModal,
-  showCardModal,
-  setShowCardModal,
   register,
-  setValue,
   handleSubmit,
   errors,
   isSubmitting,
@@ -74,25 +67,6 @@ export function CheckoutModals({
         onSubmit={onSubmit}
       />
 
-      <CardDetailsModal
-        isOpen={showCardModal}
-        onClose={() => setShowCardModal(false)}
-        register={register}
-        setValue={setValue}
-        handleSubmit={handleSubmit}
-        errors={errors}
-        isSubmitting={isSubmitting}
-        shippingMethod={shippingMethod}
-        shippingCity={shippingCity}
-        cart={cart}
-        orderSummary={orderSummary}
-        currency={currency}
-        loadingCheckoutTotals={loadingCheckoutTotals}
-        checkoutTotalsStale={checkoutTotalsStale}
-        isLoggedIn={isLoggedIn}
-        onShowShippingModal={() => setShowShippingModal(true)}
-        onSubmit={onSubmit}
-      />
     </>
   );
 }
