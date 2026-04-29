@@ -1,8 +1,11 @@
-# Advanced CodeQL (this workflow). GitHub rejects uploaded SARIF if repository
-# "Default setup" for code scanning is still enabled — disable it first:
-# Repo → Settings → Code security → Code scanning → set up / Configure
-# → use Advanced (Actions) only, or turn off default before relying on this job.
-# https://docs.github.com/en/code-security/code-scanning/enabling-code-scanning/configuring-default-setup-for-code-scanning
+# Advanced CodeQL (this workflow). If upload fails with:
+#   "CodeQL analyses from advanced configurations cannot be processed when the
+#   default setup is enabled"
+# disable CodeQL default setup so this workflow can upload SARIF:
+#   Repo → Settings → Security → Advanced Security → Code security →
+#   next to "CodeQL analysis" open the ⋮ menu → Disable CodeQL (then rely on
+#   this workflow only), or Switch to advanced if offered.
+# https://docs.github.com/en/code-security/reference/code-scanning/sarif-files/troubleshoot-sarif-uploads/default-setup-enabled
 name: CodeQL
 
 on:
