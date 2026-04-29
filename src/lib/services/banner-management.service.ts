@@ -95,6 +95,45 @@ function isScheduledNow(
   return true;
 }
 
+function buildPublicSlotPayload(
+  storage: BannerManagementStorage,
+  slot: BannerSlotId,
+  locale: ApiLocale,
+  now: Date,
+): PublicBannersPayload {
+  const nowMs = now.getTime();
+  const items = storage.banners
+    .filter((banner) => banner.slot === slot)
+    .filter((banner) => banner.active)
+    .filter((banner) =>
+      isScheduledNow(banner.schedule.startsAt, banner.schedule.endsAt, nowMs),
+    )
+    .sort((a, b) => a.sortOrder - b.sortOrder || a.id.localeCompare(b.id))
+    .map((banner) => ({
+      id: banner.id,
+      slot: banner.slot,
+      title: banner.title[locale],
+      imageDesktopUrl: banner.imageDesktopUrl,
+      imageMobileUrl: banner.imageMobileUrl,
+      link: {
+        href: banner.link.href,
+        openInNewTab: banner.link.openInNewTab,
+      },
+      sortOrder: banner.sortOrder,
+    }));
+
+  return {
+    slot,
+    generatedAt: now.toISOString(),
+    items,
+  };
+}
+
+export type HomeHeroSlotsPayload = {
+  primary: PublicBannersPayload;
+  secondary: PublicBannersPayload;
+};
+
 export const bannerManagementService = {
   getDefaultStorage(): BannerManagementStorage {
     return DEFAULT_BANNER_STORAGE;
@@ -148,35 +187,35 @@ export const bannerManagementService = {
       args.now !== undefined ? 30 : BANNER_PUBLIC_CACHE_TTL_SEC,
       async () => {
         const storage = await loadStorage();
+        return buildPublicSlotPayload(storage, args.slot, locale, now);
+      },
+    );
+  },
 
-        const items = storage.banners
-          .filter((banner) => banner.slot === args.slot)
-          .filter((banner) => banner.active)
-          .filter((banner) =>
-            isScheduledNow(
-              banner.schedule.startsAt,
-              banner.schedule.endsAt,
-              nowMs,
-            ),
-          )
-          .sort((a, b) => a.sortOrder - b.sortOrder || a.id.localeCompare(b.id))
-          .map((banner) => ({
-            id: banner.id,
-            slot: banner.slot,
-            title: banner.title[locale],
-            imageDesktopUrl: banner.imageDesktopUrl,
-            imageMobileUrl: banner.imageMobileUrl,
-            link: {
-              href: banner.link.href,
-              openInNewTab: banner.link.openInNewTab,
-            },
-            sortOrder: banner.sortOrder,
-          }));
+  /**
+   * Home hero: primary + secondary slots in one cache entry / one settings read (faster than two getPublicSlotPayload calls).
+   */
+  async getPublicHomeHeroSlotsPayload(args: {
+    localeRaw: string | undefined;
+    acceptLanguageRaw?: string | null;
+    now?: Date;
+  }): Promise<HomeHeroSlotsPayload> {
+    const locale = normalizeLocale(args.localeRaw, args.acceptLanguageRaw);
+    const now = args.now ?? new Date();
+    const nowMs = now.getTime();
+    const cacheKey =
+      args.now !== undefined
+        ? `banners:public:v1:home-hero-bundle:${locale}:at:${nowMs}`
+        : `banners:public:v1:home-hero-bundle:${locale}`;
 
+    return getCachedJson(
+      cacheKey,
+      args.now !== undefined ? 30 : BANNER_PUBLIC_CACHE_TTL_SEC,
+      async () => {
+        const storage = await loadStorage();
         return {
-          slot: args.slot,
-          generatedAt: now.toISOString(),
-          items,
+          primary: buildPublicSlotPayload(storage, 'home.hero.primary', locale, now),
+          secondary: buildPublicSlotPayload(storage, 'home.hero.secondary', locale, now),
         };
       },
     );

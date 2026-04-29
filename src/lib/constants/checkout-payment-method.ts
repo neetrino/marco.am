@@ -1,25 +1,18 @@
-/**
- * Storefront checkout payment selection — canonical API values for order payload.
- * Legacy Idram/ArCa values are normalized server-side to `card`.
- */
-export type CheckoutPaymentMethodId = 'card' | 'cash';
+/** Storefront checkout — online card/wallet methods are not enabled in this build. */
+export type CheckoutPaymentMethodId = "cash";
 
-const LEGACY_CARD = new Set(['idram', 'arca']);
-const LEGACY_CASH = new Set(['cash_on_delivery', 'cod']);
+const LEGACY_CASH = new Set(["cash_on_delivery", "cod"]);
 
 /**
- * Maps request strings to canonical `card` | `cash`. Returns `null` if unknown.
+ * Maps request strings to canonical id. Returns `null` if unknown.
  */
 export function normalizeCheckoutPaymentMethod(raw: string): CheckoutPaymentMethodId | null {
   const normalized = raw.trim().toLowerCase();
-  if (normalized === 'card' || normalized === 'cash') {
-    return normalized;
+  if (normalized === "cash") {
+    return "cash";
   }
   if (LEGACY_CASH.has(normalized)) {
-    return 'cash';
-  }
-  if (LEGACY_CARD.has(normalized)) {
-    return 'card';
+    return "cash";
   }
   return null;
 }
@@ -48,7 +41,7 @@ export function resolveCheckoutPaymentMethod(raw: unknown): CheckoutPaymentMetho
       status: 400,
       type: 'https://api.shop.am/problems/validation-error',
       title: 'Validation Error',
-      detail: 'Invalid paymentMethod. Use "card" or "cash".',
+      detail: 'Invalid paymentMethod. Use "cash".',
     };
   }
   return canonical;

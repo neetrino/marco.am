@@ -1,11 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
-import { getStoredLanguage } from '../lib/language';
-import { fetchWishlistItemCount } from '../lib/wishlist/wishlist-client';
-import { logger } from '@/lib/utils/logger';
 import { useTranslation } from '../lib/i18n-client';
 import {
   MobileNavCartBoldIcon,
@@ -26,13 +23,12 @@ import {
   MOBILE_NAV_TOP_CORNER_RADIUS_PX,
 } from './mobile-bottom-nav.constants';
 
-export type MobileNavIconSlot = 'home' | 'wishlist' | 'cart' | 'profile';
+export type MobileNavIconSlot = 'home' | 'shop' | 'cart' | 'profile';
 
 interface MobileNavItem {
   label: string;
   href: string;
   icon: MobileNavIconSlot;
-  badge?: 'wishlist';
 }
 
 function isNavItemActive(pathname: string | null, href: string): boolean {
@@ -52,7 +48,7 @@ function renderNavIcon(slot: MobileNavIconSlot, isActive: boolean, sizeClass: st
       ) : (
         <MobileNavHomeLinearIcon className={sizeClass} />
       );
-    case 'wishlist':
+    case 'shop':
       return isActive ? (
         <MobileNavWishlistBagBoldIcon className={sizeClass} />
       ) : (
@@ -76,13 +72,11 @@ function renderNavIcon(slot: MobileNavIconSlot, isActive: boolean, sizeClass: st
 interface NavItemLinkProps {
   item: MobileNavItem;
   pathname: string | null;
-  wishlistCount: number;
 }
 
-function NavItemLink({ item, pathname, wishlistCount }: NavItemLinkProps) {
-  const { label, href, badge, icon: slot } = item;
+function NavItemLink({ item, pathname }: NavItemLinkProps) {
+  const { label, href, icon: slot } = item;
   const isActive = isNavItemActive(pathname, href);
-  const badgeValue = badge === 'wishlist' ? wishlistCount : 0;
   const activeColor = MOBILE_NAV_ACTIVE_FOREGROUND;
   const inactiveColor = MOBILE_NAV_INACTIVE_ICON;
   const iconColor = isActive ? activeColor : inactiveColor;
@@ -94,17 +88,13 @@ function NavItemLink({ item, pathname, wishlistCount }: NavItemLinkProps) {
       style={{ color: iconColor }}
     >
       {renderNavIcon(slot, isActive, sizeClass)}
-      {badgeValue > 0 && (
-        <span className="absolute -right-1.5 -top-1 flex min-h-[16px] min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold text-white">
-          {badgeValue > 99 ? '99+' : badgeValue}
-        </span>
-      )}
     </div>
   );
 
   return (
     <Link
       href={href}
+      {...(href === '/' || href === '/products' ? { prefetch: true as const } : {})}
       aria-current={isActive ? 'page' : undefined}
       className="flex min-h-[44px] flex-1 items-center justify-center px-1 py-1"
     >
@@ -131,35 +121,12 @@ function NavItemLink({ item, pathname, wishlistCount }: NavItemLinkProps) {
  */
 export function MobileBottomNav() {
   const pathname = usePathname();
-  const [wishlistCount, setWishlistCount] = useState(0);
   const { t } = useTranslation();
-
-  useEffect(() => {
-    const updateCounts = async () => {
-      try {
-        const wishlist = await fetchWishlistItemCount(getStoredLanguage());
-        logger.devDebug('[MobileBottomNav] wishlist count refreshed', { wishlist });
-        setWishlistCount(wishlist);
-      } catch {
-        setWishlistCount(0);
-      }
-    };
-
-    void updateCounts();
-    window.addEventListener('wishlist-updated', updateCounts);
-    window.addEventListener('auth-updated', updateCounts);
-    window.addEventListener('language-updated', updateCounts);
-    return () => {
-      window.removeEventListener('wishlist-updated', updateCounts);
-      window.removeEventListener('auth-updated', updateCounts);
-      window.removeEventListener('language-updated', updateCounts);
-    };
-  }, []);
 
   const navItems: MobileNavItem[] = useMemo(
     () => [
       { label: t('common.navigation.home'), href: '/', icon: 'home' },
-      { label: t('common.navigation.shop'), href: '/wishlist', icon: 'wishlist', badge: 'wishlist' },
+      { label: t('common.navigation.shop'), href: '/products', icon: 'shop' },
       { label: t('common.navigation.cart'), href: '/cart', icon: 'cart' },
       { label: t('common.navigation.profile'), href: '/profile', icon: 'profile' },
     ],
@@ -179,12 +146,7 @@ export function MobileBottomNav() {
         >
           <div className="mx-auto flex max-w-md items-center justify-between px-4 pt-3 pb-1.5">
             {navItems.map((item) => (
-              <NavItemLink
-                key={item.href}
-                item={item}
-                pathname={pathname}
-                wishlistCount={wishlistCount}
-              />
+              <NavItemLink key={item.href} item={item} pathname={pathname} />
             ))}
           </div>
           <div className="flex justify-center px-4 pb-2 pt-1" aria-hidden>

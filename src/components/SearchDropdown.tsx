@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useTranslation } from '../lib/i18n-client';
-import { formatPrice, getStoredCurrency } from '../lib/currency';
+import { formatCatalogPrice, getStoredCurrency } from '../lib/currency';
 import type { InstantSearchResultItem } from './hooks/useInstantSearch';
 import { ProductImagePlaceholder } from './ProductImagePlaceholder';
 
@@ -102,10 +102,10 @@ export function SearchDropdown({
                       <p className="text-xs text-gray-500 mt-0.5">{result.category}</p>
                     )}
                     <p className="text-sm font-semibold text-gray-700 mt-0.5">
-                      {formatPrice(result.price, currency)}
+                      {formatCatalogPrice(result.price, currency)}
                       {result.compareAtPrice != null && result.compareAtPrice > result.price && (
                         <span className="ml-2 text-xs text-gray-500 line-through">
-                          {formatPrice(result.compareAtPrice, currency)}
+                          {formatCatalogPrice(result.compareAtPrice, currency)}
                         </span>
                       )}
                     </p>

@@ -3,9 +3,9 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@shop/ui';
-import { formatPrice } from '../../lib/currency';
-import type { CurrencyCode } from '../../lib/currency';
+import { coerceCurrencyCode, formatMoneyInCurrency, type CurrencyCode } from '../../lib/currency';
 import type { Cart, CartItem } from './types';
+import { cartLineSubtotal } from './line-subtotal';
 import { ProductImagePlaceholder } from '../../components/ProductImagePlaceholder';
 
 /**
@@ -14,6 +14,8 @@ import { ProductImagePlaceholder } from '../../components/ProductImagePlaceholde
 interface CartItemRowProps {
   item: CartItem;
   currency: string;
+  /** ISO currency of numeric amounts on the item (matches cart API, usually AMD). */
+  amountCurrency: CurrencyCode;
   updatingItems: Set<string>;
   onRemove: (itemId: string) => void;
   onUpdateQuantity: (itemId: string, quantity: number) => void;
@@ -23,6 +25,7 @@ interface CartItemRowProps {
 export function CartItemRow({
   item,
   currency,
+  amountCurrency,
   updatingItems,
   onRemove,
   onUpdateQuantity,
@@ -128,11 +131,15 @@ export function CartItemRow({
         </p>
         <div className="mt-1 flex flex-col gap-1 md:mt-0 md:pl-[20px]">
           <span className="text-lg font-bold text-marco-black">
-            {formatPrice(item.total, currencyCode)}
+            {formatMoneyInCurrency(
+              cartLineSubtotal(item.price, item.quantity),
+              amountCurrency,
+              currencyCode
+            )}
           </span>
           {item.originalPrice && item.originalPrice > item.price && (
             <span className="text-sm text-gray-500 line-through">
-              {formatPrice(item.originalPrice * item.quantity, currencyCode)}
+              {formatMoneyInCurrency(item.originalPrice * item.quantity, amountCurrency, currencyCode)}
             </span>
           )}
         </div>
@@ -161,6 +168,7 @@ export function CartTable({
   onUpdateQuantity,
   t,
 }: CartTableProps) {
+  const amountCurrency = coerceCurrencyCode(cart.totals.currency, 'AMD');
   return (
     <div className="lg:col-span-2">
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
@@ -185,6 +193,7 @@ export function CartTable({
               key={item.id}
               item={item}
               currency={currency}
+              amountCurrency={amountCurrency}
               updatingItems={updatingItems}
               onRemove={onRemove}
               onUpdateQuantity={onUpdateQuantity}
@@ -208,7 +217,8 @@ interface OrderSummaryProps {
 
 export function OrderSummary({ cart, currency, t }: OrderSummaryProps) {
   const currencyCode = currency as CurrencyCode;
-  
+  const amountCurrency = coerceCurrencyCode(cart.totals.currency, 'AMD');
+
   return (
     <div className="lg:col-span-1">
       <div className="bg-white rounded-lg border border-gray-200 p-6 lg:sticky lg:top-24">
@@ -219,7 +229,7 @@ export function OrderSummary({ cart, currency, t }: OrderSummaryProps) {
           <div className="flex justify-between text-gray-600">
             <span>{t('common.cart.subtotal')}</span>
             <span className="ml-auto min-w-[120px] text-right">
-              {formatPrice(cart.totals.subtotal, currencyCode)}
+              {formatMoneyInCurrency(cart.totals.subtotal, amountCurrency, currencyCode)}
             </span>
           </div>
           <div className="flex justify-between text-gray-600">
@@ -232,7 +242,7 @@ export function OrderSummary({ cart, currency, t }: OrderSummaryProps) {
             <div className="flex justify-between text-lg font-bold text-gray-900">
               <span>{t('common.cart.total')}</span>
               <span className="ml-auto min-w-[120px] text-right">
-                {formatPrice(cart.totals.total, currencyCode)}
+                {formatMoneyInCurrency(cart.totals.total, amountCurrency, currencyCode)}
               </span>
             </div>
           </div>

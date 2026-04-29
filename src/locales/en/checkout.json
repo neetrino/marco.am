@@ -14,10 +14,6 @@
     "city": "City",
     "postalCode": "Postal Code",
     "phoneNumber": "Phone Number",
-    "cardNumber": "Card Number",
-    "expiryDate": "Expiry Date",
-    "cvv": "CVV",
-    "cardHolderName": "Card Holder Name",
     "notes": "Order notes (optional)"
   },
   "placeholders": {
@@ -25,10 +21,6 @@
     "address": "Street, apartment, office, etc.",
     "city": "City",
     "postalCode": "Postal Code",
-    "cardNumber": "1234 5678 9012 3456",
-    "expiryDate": "MM/YY",
-    "cvv": "123",
-    "cardHolderName": "John Doe",
     "notes": "Delivery instructions or other comments"
   },
   "shipping": {
@@ -43,18 +35,10 @@
     "enterCity": "Enter City"
   },
   "payment": {
-    "card": "Bank card",
-    "cardDescription": "Pay online by card (you will be redirected when payment is enabled)",
     "cash": "Cash",
-    "cashDescription": "Pay cash when you receive or pick up your order",
+    "cashDescription": "Pay cash when you receive your order",
     "cashOnDelivery": "Cash on Delivery",
-    "cashOnDeliveryDescription": "Pay cash when you receive your order",
-    "idram": "Idram",
-    "idramDescription": "Pay with Idram wallet or card",
-    "arca": "ArCa",
-    "arcaDescription": "Pay with ArCa card",
-    "paymentDetails": "Payment Details",
-    "enterCardDetails": "Enter your card details to complete payment"
+    "cashOnDeliveryDescription": "Pay cash when you receive your order"
   },
   "summary": {
     "items": "Items",
@@ -66,15 +50,13 @@
   "buttons": {
     "placeOrder": "Place Order",
     "processing": "Processing...",
-    "continueToPayment": "Continue to Payment",
+    "continueToPayment": "Continue",
     "continueShopping": "Continue Shopping",
     "cancel": "Cancel"
   },
   "modals": {
     "completeOrder": "Complete Your Order",
     "confirmOrder": "Confirm Order",
-    "cardDetails": "{method} Card Details",
-    "cardDetailsHeading": "Card payment",
     "closeModal": "Close Window"
   },
   "messages": {
@@ -97,10 +79,6 @@
     "postalCodeRequired": "Postal code is required for delivery",
     "phoneRequiredDelivery": "Phone number is required for delivery",
     "invalidPhoneFormat": "Invalid phone number format",
-    "cardNumberRequired": "Card number is required",
-    "cardExpiryRequired": "Card expiry date is required",
-    "cvvRequired": "CVV is required",
-    "cardHolderNameRequired": "Card holder name is required",
     "fillShippingAddress": "Please fill in all shipping address fields",
     "cartEmpty": "Cart is empty",
     "failedToLoadCart": "Failed to load cart",

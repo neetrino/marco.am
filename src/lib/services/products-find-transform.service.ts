@@ -1,5 +1,6 @@
-import { db } from "@white-shop/db";
 import { getAttributeBucket, isColorAttributeKey } from '@/lib/attribute-keys';
+import { pickVariantForListingPrice } from '@/lib/product-variant-listing-pick';
+import { getListingDiscountSettings } from './listing-discount-settings';
 import { processImageUrl } from "../utils/image-utils";
 import { translations } from "../translations";
 import { ProductWithRelations } from "./products-find-query.service";
@@ -167,25 +168,7 @@ class ProductsFindTransformService {
     products: ProductWithRelations[],
     lang: string = "en"
   ): Promise<unknown[]> {
-    // Get discount settings
-    const discountSettings = await db.settings.findMany({
-      where: {
-        key: {
-          in: ["globalDiscount", "categoryDiscounts", "brandDiscounts"],
-        },
-      },
-    });
-
-    const globalDiscount =
-      Number(
-        discountSettings.find((s: { key: string; value: unknown }) => s.key === "globalDiscount")?.value
-      ) || 0;
-    
-    const categoryDiscountsSetting = discountSettings.find((s: { key: string; value: unknown }) => s.key === "categoryDiscounts");
-    const categoryDiscounts = categoryDiscountsSetting ? (categoryDiscountsSetting.value as Record<string, number>) || {} : {};
-    
-    const brandDiscountsSetting = discountSettings.find((s: { key: string; value: unknown }) => s.key === "brandDiscounts");
-    const brandDiscounts = brandDiscountsSetting ? (brandDiscountsSetting.value as Record<string, number>) || {} : {};
+    const { globalDiscount, categoryDiscounts, brandDiscounts } = await getListingDiscountSettings();
 
     // Format response
     const data = products.map((product: ProductWithRelations) => {
@@ -201,11 +184,9 @@ class ProductsFindTransformService {
         ? brandTranslations.find((t: { locale: string }) => t.locale === lang) || brandTranslations[0]
         : null;
       
-      // Безопасное получение variant
+      // Listing / card price: same variant logic as PDP default (not raw min price — avoids 0-priced placeholder SKUs).
       const variants = Array.isArray(product.variants) ? product.variants : [];
-      const variant = variants.length > 0
-        ? variants.sort((a: { price: number }, b: { price: number }) => a.price - b.price)[0]
-        : null;
+      const variant = pickVariantForListingPrice(variants);
 
       // Get all unique colors from ALL variants with imageUrl and colors hex (support both new and old format)
       // IMPORTANT: Only collect colors that actually exist in variants

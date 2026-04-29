@@ -7,6 +7,12 @@ import { parseTechnicalSpecFiltersFromSearchParams } from "@/lib/services/produc
 const PRODUCTS_CACHE_TTL = 120; // 2 minutes
 const FEATURED_CACHE_TTL = 600; // 10 minutes for home featured tabs (new/bestseller/featured)
 
+/**
+ * Bump this prefix when listing payload semantics change (pricing, variant pick, discounts)
+ * so Redis/memory entries from older builds are not served for the full TTL.
+ */
+const PRODUCTS_GET_CACHE_PREFIX = "products:get:v4:";
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -68,7 +74,7 @@ export async function GET(req: NextRequest) {
       productIds: productIdsFromQuery.length > 0 ? productIdsFromQuery : undefined,
     };
 
-    const cacheKey = `products:${searchParams.toString()}`;
+    const cacheKey = `${PRODUCTS_GET_CACHE_PREFIX}${searchParams.toString()}`;
     const cached = await cacheService.get(cacheKey);
     if (cached !== null && cached !== undefined) {
       const data = typeof cached === "string" ? JSON.parse(cached) : cached;

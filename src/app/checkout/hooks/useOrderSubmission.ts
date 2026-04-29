@@ -92,7 +92,9 @@ export function useOrderSubmission({
         paymentMethod: data.paymentMethod,
       });
 
-      if (!isLoggedIn) {
+      const needsOnlinePayment = Boolean(response.payment?.paymentUrl);
+
+      if (!isLoggedIn && !needsOnlinePayment) {
         clearGuestCart();
       }
 

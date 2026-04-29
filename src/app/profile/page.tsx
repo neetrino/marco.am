@@ -146,7 +146,7 @@ function ProfilePageContent() {
 
   return (
     <div className="marco-header-container py-8">
-      <div className="flex flex-col lg:flex-row gap-8">
+      <div className="flex flex-col gap-8">
         <ProfileHeader
           profile={profile}
           tabs={tabs}

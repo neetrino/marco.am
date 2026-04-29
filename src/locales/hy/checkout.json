@@ -14,10 +14,6 @@
     "city": "Քաղաք",
     "postalCode": "Փոստային կոդ",
     "phoneNumber": "Հեռախոսահամար",
-    "cardNumber": "Քարտի համար",
-    "expiryDate": "Վավերականության ժամկետ",
-    "cvv": "CVV",
-    "cardHolderName": "Քարտի տիրոջ անուն",
     "notes": "Նշումներ (ըստ ցանկության)"
   },
   "placeholders": {
@@ -25,10 +21,6 @@
     "address": "Փողոց, բնակարան, սենյակ և այլն",
     "city": "Քաղաք",
     "postalCode": "Փոստային կոդ",
-    "cardNumber": "1234 5678 9012 3456",
-    "expiryDate": "ԱԱ/ՏՏ",
-    "cvv": "123",
-    "cardHolderName": "Արամ Պետրոսյան",
     "notes": "Առաքման հրահանգներ կամ այլ մեկնաբանություն"
   },
   "shipping": {
@@ -43,18 +35,10 @@
     "enterCity": "Մուտքագրել քաղաք"
   },
   "payment": {
-    "card": "Բանկային քարտ",
-    "cardDescription": "Վճարեք առցանց քարտով (կվերահղվեք, երբ վճարումը միացված լինի)",
     "cash": "Կանխիկ",
-    "cashDescription": "Վճարեք կանխիկ, երբ ստանաք կամ վերցնեք պատվերը",
+    "cashDescription": "Վճարեք կանխիկ, երբ ստանաք ձեր պատվերը",
     "cashOnDelivery": "Կանխիկ առաքման ժամանակ",
-    "cashOnDeliveryDescription": "Վճարեք կանխիկ, երբ ստանաք ձեր պատվերը",
-    "idram": "Idram",
-    "idramDescription": "Վճարեք Idram դրամապանակով կամ քարտով",
-    "arca": "ArCa",
-    "arcaDescription": "Վճարեք ArCa քարտով",
-    "paymentDetails": "Վճարման մանրամասներ",
-    "enterCardDetails": "Մուտքագրեք ձեր քարտի տվյալները՝ վճարումն ավարտելու համար"
+    "cashOnDeliveryDescription": "Վճարեք կանխիկ, երբ ստանաք ձեր պատվերը"
   },
   "summary": {
     "items": "Ապրանքներ",
@@ -66,15 +50,13 @@
   "buttons": {
     "placeOrder": "Պատվիրել",
     "processing": "Մշակվում է...",
-    "continueToPayment": "Անցնել վճարման",
+    "continueToPayment": "Շարունակել",
     "continueShopping": "Շարունակել գնումները",
     "cancel": "Չեղարկել"
   },
   "modals": {
     "completeOrder": "Ավարտել ձեր պատվերը",
     "confirmOrder": "Հաստատել պատվերը",
-    "cardDetails": "{method} քարտի տվյալներ",
-    "cardDetailsHeading": "Քարտով վճարում",
     "closeModal": "Փակել պատուհանը"
   },
   "messages": {
@@ -97,10 +79,6 @@
     "postalCodeRequired": "Փոստային կոդը պարտադիր է առաքման համար",
     "phoneRequiredDelivery": "Հեռախոսահամարը պարտադիր է առաքման համար",
     "invalidPhoneFormat": "Անվավեր հեռախոսահամարի ձևաչափ",
-    "cardNumberRequired": "Քարտի համարը պարտադիր է",
-    "cardExpiryRequired": "Քարտի վավերականության ժամկետը պարտադիր է",
-    "cvvRequired": "CVV-ն պարտադիր է",
-    "cardHolderNameRequired": "Քարտի տիրոջ անունը պարտադիր է",
     "fillShippingAddress": "Խնդրում ենք լրացնել բոլոր առաքման հասցեի դաշտերը",
     "cartEmpty": "Զամբյուղը դատարկ է",
     "failedToLoadCart": "Չհաջողվեց բեռնել զամբյուղը",

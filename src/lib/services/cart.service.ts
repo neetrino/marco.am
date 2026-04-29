@@ -328,7 +328,7 @@ class CartService {
       const total = itemsForSum.reduce((sum, i) => sum + i.q * i.p, 0);
       return {
         item: { id: item.id, variantId, quantity: item.quantity, price: Number(item.priceSnapshot) },
-        cartSummary: { itemsCount, total },
+        cartSummary: { itemsCount, total, currency: "AMD" as const },
       };
     } else {
       logger.debug("Cart: creating new item", { variantId, quantity });
@@ -349,7 +349,7 @@ class CartService {
       const total = itemsForSum.reduce((sum, i) => sum + i.q * i.p, 0);
       return {
         item: { id: item.id, variantId, quantity: item.quantity, price: Number(item.priceSnapshot) },
-        cartSummary: { itemsCount, total },
+        cartSummary: { itemsCount, total, currency: "AMD" as const },
       };
     }
   }

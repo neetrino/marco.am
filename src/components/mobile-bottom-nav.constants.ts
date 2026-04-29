@@ -4,7 +4,7 @@
  */
 
 /** Primary destinations shown in `MobileBottomNav` — omit from `HeaderMobileDrawer` to avoid duplication. */
-export const MOBILE_FLOOR_NAV_HREFS = ['/', '/wishlist', '/cart', '/profile'] as const;
+export const MOBILE_FLOOR_NAV_HREFS = ['/', '/products', '/cart', '/profile'] as const;
 
 export const MOBILE_NAV_BOX_SHADOW = '0 -4px 14px rgba(138, 138, 138, 0.07)';
 export const MOBILE_NAV_ACTIVE_PILL_BG = '#facc15';
@@ -22,7 +22,7 @@ export const MOBILE_NAV_LAYOUT_PADDING_BOTTOM =
 
 /**
  * Tidio (and similar) `bottom` offset on viewports where `MobileBottomNav` is shown (`lg:hidden`).
- * Matches layout padding plus a small gap so the chat bubble does not cover the profile tab.
+ * Layout padding plus clearance above the floor nav for the Tidio launcher.
  */
 export const MOBILE_NAV_OVERLAY_WIDGET_BOTTOM =
-  'calc(4.875rem + max(0.5rem, env(safe-area-inset-bottom, 0px)) + 12px)';
+  'calc(4.875rem + max(0.5rem, env(safe-area-inset-bottom, 0px)) + 2.625rem)';

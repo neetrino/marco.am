@@ -1,6 +1,6 @@
 'use client';
 
-import { formatPrice } from '../../../lib/currency';
+import { formatCatalogPrice } from '../../../lib/currency';
 import type { CurrencyCode } from '../../../lib/currency';
 import { getProductText } from '../../../lib/i18n';
 import type { LanguageCode } from '../../../lib/language';
@@ -78,12 +78,12 @@ export function ProductInfo({
           <div className="flex flex-col gap-1">
             {/* Discounted price with discount percentage */}
             <div className="flex items-center gap-2">
-              <p className="text-3xl font-bold text-marco-black">{formatPrice(price, currency)}</p>
+              <p className="text-3xl font-bold text-marco-black">{formatCatalogPrice(price, currency)}</p>
             </div>
             {/* Original price below discounted price - full width, not inline */}
             {(originalPrice || (compareAtPrice && compareAtPrice > price)) && (
               <p className="text-xl text-gray-500 line-through decoration-gray-400 mt-1">
-                {formatPrice(originalPrice || compareAtPrice || 0, currency)}
+                {formatCatalogPrice(originalPrice || compareAtPrice || 0, currency)}
               </p>
             )}
           </div>

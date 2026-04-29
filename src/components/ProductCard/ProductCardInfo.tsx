@@ -2,10 +2,9 @@
 
 import Link from 'next/link';
 import { montserratArm } from '../../fonts/montserrat-arm';
-import { formatPrice } from '../../lib/currency';
+import { formatCatalogPrice, type CurrencyCode } from '../../lib/currency';
 import { useTranslation } from '../../lib/i18n-client';
 import { ProductColors } from './ProductColors';
-import type { CurrencyCode } from '../../lib/currency';
 
 interface ProductCardInfoProps {
   slug: string;
@@ -65,7 +64,7 @@ export function ProductCardInfo({
                 isCompact ? 'text-[18px] leading-[24px]' : 'text-[20px] leading-[28px]'
               } font-black text-[#181111]`}
             >
-              {formatPrice(price || 0, currency)}
+              {formatCatalogPrice(price || 0, currency)}
             </span>
             {discountPercent && discountPercent > 0 ? (
               <span className={`rounded-full bg-blue-50 px-2 py-0.5 ${isCompact ? 'text-[11px]' : 'text-sm'} font-semibold leading-none text-blue-600`}>
@@ -76,7 +75,7 @@ export function ProductCardInfo({
           {(originalPrice && originalPrice > price) || 
            (compareAtPrice && compareAtPrice > price) ? (
             <span className={`${isCompact ? 'text-xs' : 'text-sm'} mt-1 font-medium text-gray-400 line-through decoration-gray-300`}>
-              {formatPrice(
+              {formatCatalogPrice(
                 (originalPrice && originalPrice > price) 
                   ? originalPrice 
                   : (compareAtPrice || 0), 

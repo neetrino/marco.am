@@ -69,11 +69,25 @@ export default function ProductPage({ params }: ProductPageProps) {
       if (!isLoggedIn) {
         const stored = localStorage.getItem('shop_cart_guest');
         const cart = stored ? JSON.parse(stored) : [];
-        const existing = cart.find((i: unknown): i is { variantId: string; quantity: number; productId?: string; productSlug?: string } => 
+        const unitPrice =
+          Number(currentVariant.currentPrice ?? currentVariant.price) || 0;
+        const existing = cart.find((i: unknown): i is { variantId: string; quantity: number; productId?: string; productSlug?: string; price?: number } => 
           typeof i === 'object' && i !== null && 'variantId' in i && i.variantId === currentVariant.id
         );
-        if (existing) existing.quantity += quantity;
-        else cart.push({ productId: product.id, productSlug: product.slug, variantId: currentVariant.id, quantity });
+        if (existing) {
+          existing.quantity += quantity;
+          if (unitPrice > 0) {
+            existing.price = unitPrice;
+          }
+        } else {
+          cart.push({
+            productId: product.id,
+            productSlug: product.slug,
+            variantId: currentVariant.id,
+            quantity,
+            price: unitPrice,
+          });
+        }
         localStorage.setItem('shop_cart_guest', JSON.stringify(cart));
       } else {
         await apiClient.post('/api/v1/cart/items', { productId: product.id, variantId: currentVariant.id, quantity });

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { convertPrice, type CurrencyCode } from '@/lib/currency';
+import { CATALOG_PRICE_CURRENCY, convertPrice, type CurrencyCode } from '@/lib/currency';
 import type { GeneratedVariant } from '../types';
 import { logger } from "@/lib/utils/logger";
 
@@ -198,12 +198,14 @@ export function useProductVariantConversion({
           logger.devLog(`🖼️ [ADMIN] Variant ${variantIndex} has no imageUrl`);
         }
         
-        const priceInDefaultCurrency = variant.price !== undefined && variant.price !== null 
-          ? convertPrice(variant.price, 'USD', defaultCurrency)
-          : 0;
-        const compareAtPriceInDefaultCurrency = variant.compareAtPrice !== undefined && variant.compareAtPrice !== null 
-          ? convertPrice(variant.compareAtPrice, 'USD', defaultCurrency)
-          : null;
+        const priceInDefaultCurrency =
+          variant.price !== undefined && variant.price !== null
+            ? convertPrice(variant.price, CATALOG_PRICE_CURRENCY, defaultCurrency)
+            : 0;
+        const compareAtPriceInDefaultCurrency =
+          variant.compareAtPrice !== undefined && variant.compareAtPrice !== null
+            ? convertPrice(variant.compareAtPrice, CATALOG_PRICE_CURRENCY, defaultCurrency)
+            : null;
         
         variantDataList.push({
           id: variant.id || `variant-${Date.now()}-${variantIndex}-${Math.random()}`,

@@ -46,10 +46,44 @@ function flattenCategoriesTree(cats: Category[]): Category[] {
   return result;
 }
 
+const CATEGORY_COUNT_FETCH_CONCURRENCY = 14;
+
+async function fetchTotalsInChunks(
+  language: string,
+  slugs: string[],
+): Promise<Record<string, number>> {
+  const out: Record<string, number> = {};
+  for (let i = 0; i < slugs.length; i += CATEGORY_COUNT_FETCH_CONCURRENCY) {
+    const slice = slugs.slice(i, i + CATEGORY_COUNT_FETCH_CONCURRENCY);
+    const settled = await Promise.all(
+      slice.map(async (slug) => {
+        try {
+          const productsResponse = await apiClient.get<ProductsResponse>('/api/v1/products', {
+            params: {
+              category: slug,
+              limit: '1',
+              lang: language,
+            },
+          });
+          return { slug, total: productsResponse.meta?.total ?? 0 };
+        } catch (err) {
+          console.error(`Error fetching products for category ${slug}:`, err);
+          return { slug, total: 0 };
+        }
+      }),
+    );
+    for (const { slug, total } of settled) {
+      out[slug] = total;
+    }
+  }
+  return out;
+}
+
 export function HomeCategoriesSidebar() {
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const isFirstCategoriesFetch = useRef(true);
   const [productCounts, setProductCounts] = useState<Record<string, number>>({});
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
   const [hoveredProduct, setHoveredProduct] = useState<Product | null>(null);
@@ -62,8 +96,11 @@ export function HomeCategoriesSidebar() {
   const categoryButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
   const fetchCategories = useCallback(async () => {
-    try {
+    const showFullPageSpinner = isFirstCategoriesFetch.current;
+    if (showFullPageSpinner) {
       setLoading(true);
+    }
+    try {
       const language = getStoredLanguage();
       const response = await apiClient.get<CategoriesResponse>('/api/v1/categories/tree', {
         params: { lang: language },
@@ -72,45 +109,35 @@ export function HomeCategoriesSidebar() {
       const categoriesList = response.data || [];
       setCategories(categoriesList);
 
-      const counts: Record<string, number> = {};
       const allCategories = flattenCategoriesTree(categoriesList);
-      
-      // Fetch total count for "All"
-      try {
-        const allProductsResponse = await apiClient.get<ProductsResponse>('/api/v1/products', {
-          params: {
-            limit: '1',
-            lang: language,
-          },
-        });
-        counts['all'] = allProductsResponse.meta?.total || 0;
-      } catch (err) {
-        console.error('Error fetching all products count:', err);
-        counts['all'] = 0;
-      }
+      const slugs = allCategories.map((c) => c.slug);
 
-      // Fetch counts for each category
-      for (const category of allCategories) {
-        try {
-          const productsResponse = await apiClient.get<ProductsResponse>('/api/v1/products', {
+      const [allProductsResponse, perSlugCounts] = await Promise.all([
+        apiClient
+          .get<ProductsResponse>('/api/v1/products', {
             params: {
-              category: category.slug,
               limit: '1',
               lang: language,
             },
-          });
-          counts[category.slug] = productsResponse.meta?.total || 0;
-        } catch (err) {
-          console.error(`Error fetching products for category ${category.slug}:`, err);
-          counts[category.slug] = 0;
-        }
-      }
-      
+          })
+          .catch((err: unknown) => {
+            console.error('Error fetching all products count:', err);
+            return { meta: { total: 0 } } as ProductsResponse;
+          }),
+        fetchTotalsInChunks(language, slugs),
+      ]);
+
+      const counts: Record<string, number> = {
+        all: allProductsResponse.meta?.total ?? 0,
+        ...perSlugCounts,
+      };
+
       setProductCounts(counts);
     } catch (err: unknown) {
       console.error('Error fetching categories:', err);
     } finally {
       setLoading(false);
+      isFirstCategoriesFetch.current = false;
     }
   }, []);
 

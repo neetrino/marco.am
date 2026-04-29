@@ -166,6 +166,11 @@ const nextConfig = {
   },
   experimental: {
     optimizePackageImports: ['lucide-react'],
+    // Fewer full-route loading states on client navigation; revalidate in background.
+    staleTimes: {
+      dynamic: 30,
+      static: 300,
+    },
   },
   allowedDevOrigins: getAllowedDevOrigins(),
   // Скрыть индикатор "Compiling..." в углу в dev — не мешает на экране

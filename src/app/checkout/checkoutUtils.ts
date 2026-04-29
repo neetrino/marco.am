@@ -1,4 +1,5 @@
 import { apiClient } from '../../lib/api-client';
+import { cartLineSubtotal, resolveGuestUnitPrice } from '../cart/line-subtotal';
 import type { Cart, CartItem } from './types';
 
 const CART_KEY = 'shop_cart_guest';
@@ -9,7 +10,13 @@ export async function fetchCartForGuest(): Promise<Cart | null> {
   }
 
   const stored = localStorage.getItem(CART_KEY);
-  const guestCart: Array<{ productId: string; productSlug?: string; variantId: string; quantity: number }> = stored ? JSON.parse(stored) : [];
+  const guestCart: Array<{
+    productId: string;
+    productSlug?: string;
+    variantId: string;
+    quantity: number;
+    price?: number;
+  }> = stored ? JSON.parse(stored) : [];
 
   if (guestCart.length === 0) {
     return null;
@@ -50,6 +57,8 @@ export async function fetchCartForGuest(): Promise<Cart | null> {
               : productData.media[0].url || productData.media[0].src)
           : null;
 
+        const unitPrice = resolveGuestUnitPrice(variant.price, item.price);
+
         return {
           item: {
             id: `${item.productId}-${item.variantId}-${index}`,
@@ -63,9 +72,9 @@ export async function fetchCartForGuest(): Promise<Cart | null> {
                 image: imageUrl,
               },
             },
-            quantity: item.quantity,
-            price: variant.price,
-            total: variant.price * item.quantity,
+            quantity: Number(item.quantity),
+            price: unitPrice,
+            total: cartLineSubtotal(unitPrice, item.quantity),
           },
           shouldRemove: false,
         };
@@ -97,8 +106,8 @@ export async function fetchCartForGuest(): Promise<Cart | null> {
     return null;
   }
 
-  const subtotal = validItems.reduce((sum, item) => sum + item.total, 0);
-  const itemsCount = validItems.reduce((sum, item) => sum + item.quantity, 0);
+  const subtotal = validItems.reduce((sum, item) => sum + cartLineSubtotal(item.price, item.quantity), 0);
+  const itemsCount = validItems.reduce((sum, item) => sum + Number(item.quantity), 0);
 
   return {
     id: 'guest-cart',

@@ -7,7 +7,7 @@ export interface PaymentMethod {
   id: PaymentMethodId;
   name: string;
   description: string;
-  logo: string | null;
+  logos: readonly string[];
 }
 
 export function usePaymentMethods(): PaymentMethod[] {
@@ -15,16 +15,10 @@ export function usePaymentMethods(): PaymentMethod[] {
 
   return [
     {
-      id: 'card',
-      name: t('checkout.payment.card'),
-      description: t('checkout.payment.cardDescription'),
-      logo: null,
-    },
-    {
       id: 'cash',
       name: t('checkout.payment.cash'),
       description: t('checkout.payment.cashDescription'),
-      logo: null,
+      logos: [],
     },
   ];
 }

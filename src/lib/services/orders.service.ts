@@ -14,7 +14,6 @@ import type { AdminOrderListStatus } from "../constants/admin-order-list-status"
 import { cartService } from "./cart.service";
 import { deliverOrderConfirmation } from "./order-confirmation-delivery.service";
 import { resolveGuestCheckoutItems } from "./checkout-guest-items.service";
-import { createCardPaymentSession } from "./payment-psp.service";
 import { shouldChargeCourierShipping } from "./checkout-delivery-rules.service";
 import { resolveProductClass, type ProductClass } from "../constants/product-class";
 import { promoCodesService } from "./promo-codes.service";
@@ -73,7 +72,7 @@ class OrdersService {
       const {
         cartId,
         items: guestItems,
-        shippingMethod: rawShippingMethod = 'pickup',
+        shippingMethod: rawShippingMethod = 'courier',
         shippingAddress,
         paymentMethod: rawPaymentMethod,
         couponCode,
@@ -402,8 +401,13 @@ class OrdersService {
           },
         });
 
-        // If user cart, delete cart after successful checkout
-        if (userId && cartId && cartId !== 'guest-cart') {
+        // Cash on delivery: clear cart immediately for logged-in users.
+        if (
+          paymentMethod === "cash" &&
+          userId &&
+          cartId &&
+          cartId !== "guest-cart"
+        ) {
           await tx.cart.delete({
             where: { id: cartId },
           });
@@ -413,24 +417,6 @@ class OrdersService {
       },
         { timeout: 10000, maxWait: 5000 }
       );
-
-      let cardSession:
-        | {
-            provider: string;
-            paymentUrl: string;
-            expiresAt: string;
-          }
-        | null = null;
-
-      if (paymentMethod === "card") {
-        cardSession = await createCardPaymentSession({
-          paymentId: order.payment.id,
-          orderId: order.order.id,
-          orderNumber: order.order.number,
-          amount: Number(order.order.total),
-          currency: order.order.currency,
-        });
-      }
 
       const confirmationNotifications = await deliverOrderConfirmation({
         orderNumber: order.order.number,
@@ -451,12 +437,11 @@ class OrdersService {
           currency: order.order.currency,
         },
         payment: {
-          provider: cardSession?.provider ?? order.payment.provider,
-          paymentUrl: cardSession?.paymentUrl ?? null,
-          expiresAt: cardSession?.expiresAt ?? null,
+          provider: order.payment.provider,
+          paymentUrl: null,
+          expiresAt: null,
         },
-        nextAction:
-          paymentMethod === 'card' ? 'redirect_to_payment' : 'view_order',
+        nextAction: "view_order",
         confirmation: {
           orderId: order.order.id,
           orderNumber: order.order.number,

@@ -5,6 +5,10 @@ import { ensureProductClassColumns } from "../../utils/db-ensure-product-class";
 import { logger } from "../../utils/logger";
 import type { ProductWithRelations } from "./types";
 
+export type ExecuteProductQueryOptions = {
+  omitProductAttributes?: boolean;
+};
+
 /**
  * Base include configuration for product queries
  */
@@ -118,23 +122,26 @@ function isAttributeValuesColorsError(error: unknown): boolean {
 export async function executeProductQuery(
   where: Prisma.ProductWhereInput,
   limit: number,
-  skip: number = 0
+  skip: number = 0,
+  options: ExecuteProductQueryOptions = {},
 ): Promise<ProductWithRelations[]> {
+  const { omitProductAttributes = false } = options;
   await ensureProductClassColumns();
   const baseInclude = getBaseInclude();
+  const withOptionalAttrs = () =>
+    omitProductAttributes ? baseInclude : { ...baseInclude, ...getProductAttributesInclude() };
 
   try {
     const products = await db.product.findMany({
       where,
-      include: {
-        ...baseInclude,
-        ...getProductAttributesInclude(),
-      },
+      include: withOptionalAttrs(),
       orderBy: { createdAt: "desc" },
       skip,
       take: limit,
     });
-    logger.info(`Found ${products.length} products from database (with productAttributes)`);
+    logger.info(
+      `Found ${products.length} products from database (${omitProductAttributes ? 'PLP light' : 'with productAttributes'})`,
+    );
     return products as unknown as ProductWithRelations[];
   } catch (error: unknown) {
     // If productAttributes table doesn't exist, retry without it
@@ -142,7 +149,7 @@ export async function executeProductQuery(
       logger.warn('product_attributes table not found, fetching without it', { 
         error: error instanceof Error ? error.message : String(error) 
       });
-      return executeWithoutProductAttributes(where, limit, skip);
+      return executeWithoutProductAttributes(where, limit, skip, options);
     }
 
     if (isVariantAttributesError(error)) {
@@ -158,7 +165,7 @@ export async function executeProductQuery(
         logger.info(`Found ${products.length} products from database (after creating attributes column)`);
         return products as unknown as ProductWithRelations[];
       } catch (attributesError: unknown) {
-        return handleAttributesError(attributesError, where, limit, skip);
+        return handleAttributesError(attributesError, where, limit, skip, options);
       }
     }
 
@@ -166,7 +173,7 @@ export async function executeProductQuery(
       logger.warn('attribute_values.colors column not found, fetching without attributeValue', { 
         error: error instanceof Error ? error.message : String(error) 
       });
-      return executeWithoutAttributeValue(where, limit, skip);
+      return executeWithoutAttributeValue(where, limit, skip, options);
     }
 
     throw error;
@@ -179,7 +186,8 @@ export async function executeProductQuery(
 async function executeWithoutProductAttributes(
   where: Prisma.ProductWhereInput,
   limit: number,
-  skip: number = 0
+  skip: number = 0,
+  options: ExecuteProductQueryOptions = {},
 ): Promise<ProductWithRelations[]> {
   const baseInclude = getBaseInclude();
 
@@ -208,7 +216,7 @@ async function executeWithoutProductAttributes(
         logger.info(`Found ${products.length} products from database (after creating attributes column)`);
         return products as unknown as ProductWithRelations[];
       } catch (attributesError: unknown) {
-        return handleAttributesError(attributesError, where, limit, skip);
+        return handleAttributesError(attributesError, where, limit, skip, options);
       }
     }
 
@@ -216,7 +224,7 @@ async function executeWithoutProductAttributes(
       logger.warn('attribute_values.colors column not found, fetching without attributeValue', { 
         error: retryError instanceof Error ? retryError.message : String(retryError) 
       });
-      return executeWithoutAttributeValue(where, limit, skip);
+      return executeWithoutAttributeValue(where, limit, skip, options);
     }
 
     throw retryError;
@@ -230,13 +238,14 @@ async function handleAttributesError(
   error: unknown,
   where: Prisma.ProductWhereInput,
   limit: number,
-  skip: number = 0
+  skip: number = 0,
+  options: ExecuteProductQueryOptions = {},
 ): Promise<ProductWithRelations[]> {
   if (isAttributeValuesColorsError(error)) {
     logger.warn('attribute_values.colors column not found, fetching without attributeValue', { 
       error: error instanceof Error ? error.message : String(error) 
     });
-    return executeWithoutAttributeValue(where, limit, skip);
+    return executeWithoutAttributeValue(where, limit, skip, options);
   }
   throw error;
 }
@@ -247,23 +256,30 @@ async function handleAttributesError(
 async function executeWithoutAttributeValue(
   where: Prisma.ProductWhereInput,
   limit: number,
-  skip: number = 0
+  skip: number = 0,
+  options: ExecuteProductQueryOptions = {},
 ): Promise<ProductWithRelations[]> {
+  const { omitProductAttributes = false } = options;
   const baseIncludeWithoutAttributeValue = getBaseIncludeWithoutAttributeValue();
 
-  // Try to include productAttributes even in fallback
+  const includeWithAttrs = omitProductAttributes
+    ? baseIncludeWithoutAttributeValue
+    : {
+        ...baseIncludeWithoutAttributeValue,
+        ...getProductAttributesInclude(),
+      };
+
   try {
     const products = await db.product.findMany({
       where,
-      include: {
-        ...baseIncludeWithoutAttributeValue,
-        ...getProductAttributesInclude(),
-      },
+      include: includeWithAttrs,
       orderBy: { createdAt: "desc" },
       skip,
       take: limit,
     });
-    logger.info(`Found ${products.length} products from database (without attributeValue, with productAttributes)`);
+    logger.info(
+      `Found ${products.length} products from database (without attributeValue${omitProductAttributes ? ', no productAttributes' : ', with productAttributes'})`,
+    );
     return products as unknown as ProductWithRelations[];
   } catch (productAttrError: unknown) {
     // If productAttributes also fails, try without it

@@ -162,4 +162,33 @@ export function formatPriceInCurrency(price: number, currency: CurrencyCode = 'A
   return `${amount}\u00a0${symbol}`;
 }
 
+export function coerceCurrencyCode(value: unknown, fallback: CurrencyCode): CurrencyCode {
+  if (value === 'USD' || value === 'AMD' || value === 'EUR' || value === 'RUB' || value === 'GEL') {
+    return value;
+  }
+  return fallback;
+}
+
+/**
+ * Format `amount` stored in `amountCurrency` (e.g. cart API totals are AMD) for UI in `displayCurrency`.
+ * Do not use `formatPrice` for that — it treats the number as USD and multiplies by the target rate.
+ */
+export function formatMoneyInCurrency(
+  amount: number,
+  amountCurrency: CurrencyCode,
+  displayCurrency: CurrencyCode
+): string {
+  const safe = Number.isFinite(amount) ? amount : 0;
+  const inDisplay =
+    amountCurrency === displayCurrency ? safe : convertPrice(safe, amountCurrency, displayCurrency);
+  return formatPriceInCurrency(inDisplay, displayCurrency);
+}
+
+/** Listing / PDP / search product prices from the shop API use the same unit as cart rows (AMD). */
+export const CATALOG_PRICE_CURRENCY: CurrencyCode = 'AMD';
+
+export function formatCatalogPrice(amount: number, displayCurrency: CurrencyCode): string {
+  return formatMoneyInCurrency(amount, CATALOG_PRICE_CURRENCY, displayCurrency);
+}
+
 

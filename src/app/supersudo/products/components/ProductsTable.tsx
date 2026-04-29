@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { Card, Button } from '@shop/ui';
 import { useTranslation } from '../../../../lib/i18n-client';
 import { AdminTablePagination } from '../../components/AdminTablePagination';
-import { formatPrice, type CurrencyCode } from '../../../../lib/currency';
+import { formatCatalogPrice, type CurrencyCode } from '../../../../lib/currency';
 import type { Product, ProductsResponse } from '../types';
 
 interface ProductsTableProps {
@@ -308,12 +308,12 @@ export function ProductsTable({
                     <td className="whitespace-nowrap py-3 pl-6 pr-3">
                       <div className="flex flex-col">
                         <div className="text-sm font-semibold text-slate-900">
-                          {formatPrice(product.price, currency)}
+                          {formatCatalogPrice(product.price, currency)}
                         </div>
                         {(product.compareAtPrice && product.compareAtPrice > product.price) || 
                          (product.discountPercent && product.discountPercent > 0) ? (
                           <div className="mt-0.5 text-xs text-slate-500 line-through">
-                            {formatPrice(
+                            {formatCatalogPrice(
                               product.compareAtPrice && product.compareAtPrice > product.price
                                 ? product.compareAtPrice
                                 : product.price / (1 - (product.discountPercent || 0) / 100),

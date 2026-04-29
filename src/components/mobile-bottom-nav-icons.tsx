@@ -77,7 +77,7 @@ export function MobileNavWishlistBagIcon({ className }: NavGlyphProps) {
   );
 }
 
-/** Active wishlist / “Shop” tab — filled bag (Figma 352:2850). */
+/** Active shop tab — filled bag (Figma 352:2850). */
 export function MobileNavWishlistBagBoldIcon({ className }: NavGlyphProps) {
   return (
     <svg

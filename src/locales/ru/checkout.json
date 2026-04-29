@@ -14,10 +14,6 @@
     "city": "Город",
     "postalCode": "Почтовый индекс",
     "phoneNumber": "Номер телефона",
-    "cardNumber": "Номер карты",
-    "expiryDate": "Срок действия",
-    "cvv": "CVV",
-    "cardHolderName": "Имя держателя карты",
     "notes": "Комментарий к заказу (необязательно)"
   },
   "placeholders": {
@@ -25,10 +21,6 @@
     "address": "Улица, квартира, офис и т.д.",
     "city": "Город",
     "postalCode": "Почтовый индекс",
-    "cardNumber": "1234 5678 9012 3456",
-    "expiryDate": "ММ/ГГ",
-    "cvv": "123",
-    "cardHolderName": "Иван Иванов",
     "notes": "Указания к доставке или другие комментарии"
   },
   "shipping": {
@@ -43,18 +35,10 @@
     "enterCity": "Введите город"
   },
   "payment": {
-    "card": "Банковская карта",
-    "cardDescription": "Оплата онлайн картой (перенаправление при подключении платежа)",
     "cash": "Наличные",
-    "cashDescription": "Оплатите наличными при получении или самовывозе заказа",
+    "cashDescription": "Оплатите наличными при получении заказа",
     "cashOnDelivery": "Наложенный платеж",
-    "cashOnDeliveryDescription": "Оплатите наличными при получении заказа",
-    "idram": "Idram",
-    "idramDescription": "Оплатите кошельком Idram или картой",
-    "arca": "ArCa",
-    "arcaDescription": "Оплатите картой ArCa",
-    "paymentDetails": "Детали оплаты",
-    "enterCardDetails": "Введите данные вашей карты для завершения оплаты"
+    "cashOnDeliveryDescription": "Оплатите наличными при получении заказа"
   },
   "summary": {
     "items": "Товары",
@@ -66,15 +50,13 @@
   "buttons": {
     "placeOrder": "Оформить заказ",
     "processing": "Обработка...",
-    "continueToPayment": "Перейти к оплате",
+    "continueToPayment": "Продолжить",
     "continueShopping": "Продолжить покупки",
     "cancel": "Отмена"
   },
   "modals": {
     "completeOrder": "Завершите ваш заказ",
     "confirmOrder": "Подтвердить заказ",
-    "cardDetails": "Данные карты {method}",
-    "cardDetailsHeading": "Оплата картой",
     "closeModal": "Закрыть окно"
   },
   "messages": {
@@ -97,10 +79,6 @@
     "postalCodeRequired": "Почтовый индекс обязателен для доставки",
     "phoneRequiredDelivery": "Номер телефона обязателен для доставки",
     "invalidPhoneFormat": "Неверный формат номера телефона",
-    "cardNumberRequired": "Номер карты обязателен",
-    "cardExpiryRequired": "Срок действия карты обязателен",
-    "cvvRequired": "CVV обязателен",
-    "cardHolderNameRequired": "Имя держателя карты обязательно",
     "fillShippingAddress": "Пожалуйста, заполните все поля адреса доставки",
     "cartEmpty": "Корзина пуста",
     "failedToLoadCart": "Не удалось загрузить корзину",

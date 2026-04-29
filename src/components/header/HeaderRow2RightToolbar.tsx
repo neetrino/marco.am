@@ -22,6 +22,7 @@ import { HeaderNavbarCartIcon } from '../icons/HeaderNavbarCartIcon';
 import { HeaderNavbarWishlistIcon } from '../icons/HeaderNavbarWishlistIcon';
 import { ThemeToggleButton } from '../theme/ThemeToggleButton';
 import { useTheme } from '../theme/ThemeProvider';
+import { formatMoneyInCurrency } from '../../lib/currency';
 import type { useHeaderData } from './useHeaderData';
 
 type Props = {
@@ -56,13 +57,13 @@ export function HeaderRow2RightToolbar({ data, compactPrimaryNav, headerMobileLi
     wishlistCount,
     cartCount,
     cartTotal,
+    cartTotalCurrency,
     showUserMenu,
     setShowUserMenu,
     setShowLocaleCurrencyMenu,
     selectedCurrency,
     userMenuRef,
     handleCurrencyChange,
-    formatPrice,
   } = data;
 
   const profileToolbarActive = isProfileToolbarPathActive(pathname, isLoggedIn);
@@ -186,7 +187,9 @@ export function HeaderRow2RightToolbar({ data, compactPrimaryNav, headerMobileLi
         className={`relative !bg-[#050505] !text-white dark:!bg-white dark:!text-[#050505] dark:ring-1 dark:ring-black/10 ${HEADER_CART_BUTTON_CLASS}`}
       >
         <HeaderNavbarCartIcon className="h-[21px] w-[22px] shrink-0 !text-white dark:!text-[#050505]" />
-        <span className="tabular-nums text-inherit">{formatPrice(cartTotal, selectedCurrency)}</span>
+        <span className="tabular-nums text-inherit">
+          {formatMoneyInCurrency(cartTotal, cartTotalCurrency, selectedCurrency)}
+        </span>
         {cartCount > 0 && (
           <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[18px] items-center justify-center rounded-full bg-red-600 px-0.5 text-[9px] font-bold text-[#ffffff]">
             {cartCount > 99 ? '99+' : cartCount}
