@@ -1,35 +1,29 @@
 'use client';
 
+import { CHECKOUT_ARCA_CARD_LOGOS } from '../utils/checkout-payment-logos';
+
 const sizeClasses = {
-  small: 'w-12 h-8',
-  medium: 'w-16 h-10',
-  large: 'w-20 h-12',
+  small: 'gap-1 [&_.pm-logo-cell]:h-9 [&_.pm-logo-cell]:w-9 [&_img]:max-h-6 [&_img]:max-w-[1.75rem]',
+  medium: 'gap-2 [&_.pm-logo-cell]:h-11 [&_.pm-logo-cell]:w-11 [&_img]:max-h-7 [&_img]:max-w-[2.25rem]',
+  large: 'gap-2 [&_.pm-logo-cell]:h-14 [&_.pm-logo-cell]:w-14 [&_img]:max-h-9 [&_img]:max-w-[2.5rem]',
 };
+
+const cellClass =
+  'pm-logo-cell flex flex-shrink-0 items-center justify-center rounded-xl border border-gray-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.06)]';
 
 interface PaymentMethodLogoProps {
   size?: 'small' | 'medium' | 'large';
 }
 
-/** Generic bank card icon for card payment step (no PSP branding). */
+/** ArCa, Mastercard, and Visa marks (one cell each) for the bank-card payment step. */
 export function PaymentMethodLogo({ size = 'medium' }: PaymentMethodLogoProps) {
   return (
-    <div
-      className={`${sizeClasses[size]} flex-shrink-0 bg-white rounded border border-gray-200 flex items-center justify-center overflow-hidden`}
-      aria-hidden
-    >
-      <svg
-        className="w-8 h-8 text-purple-600"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-        />
-      </svg>
+    <div className={`flex flex-shrink-0 items-center ${sizeClasses[size]}`} aria-hidden>
+      {CHECKOUT_ARCA_CARD_LOGOS.map((src) => (
+        <div key={src} className={cellClass}>
+          <img src={src} alt="" className="object-contain p-1" />
+        </div>
+      ))}
     </div>
   );
 }
