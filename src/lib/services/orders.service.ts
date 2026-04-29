@@ -14,8 +14,6 @@ import type { AdminOrderListStatus } from "../constants/admin-order-list-status"
 import { cartService } from "./cart.service";
 import { deliverOrderConfirmation } from "./order-confirmation-delivery.service";
 import { resolveGuestCheckoutItems } from "./checkout-guest-items.service";
-import { createArcaPaymentSession } from "./payment-arca.service";
-import { getIdramCheckoutForm } from "./payment-idram.service";
 import { shouldChargeCourierShipping } from "./checkout-delivery-rules.service";
 import { resolveProductClass, type ProductClass } from "../constants/product-class";
 import { promoCodesService } from "./promo-codes.service";
@@ -403,7 +401,7 @@ class OrdersService {
           },
         });
 
-        // Cash-only: clear cart immediately. Online methods clear cart only after payment is confirmed.
+        // Cash on delivery: clear cart immediately for logged-in users.
         if (
           paymentMethod === "cash" &&
           userId &&
@@ -419,97 +417,6 @@ class OrdersService {
       },
         { timeout: 10000, maxWait: 5000 }
       );
-
-      let onlinePayment:
-        | {
-            provider: string;
-            paymentUrl: string | null;
-            expiresAt: string | null;
-            idramForm?: { action: string; fields: Record<string, string> };
-          }
-        | null = null;
-
-      if (paymentMethod === "arca") {
-        try {
-          const session = await createArcaPaymentSession({
-            paymentId: order.payment.id,
-            orderId: order.order.id,
-            orderNumber: order.order.number,
-            amount: Number(order.order.total),
-            currency: order.order.currency,
-            checkoutLocale,
-          });
-          onlinePayment = {
-            provider: session.provider,
-            paymentUrl: session.paymentUrl,
-            expiresAt: session.expiresAt,
-          };
-        } catch (err: unknown) {
-          const msg =
-            err && typeof err === "object" && "detail" in err
-              ? String((err as { detail?: string }).detail)
-              : err instanceof Error
-                ? err.message
-                : "Arca payment registration failed";
-          await db.payment.update({
-            where: { id: order.payment.id },
-            data: { status: "failed", errorMessage: msg },
-          });
-          await db.order.update({
-            where: { id: order.order.id },
-            data: { paymentStatus: "failed" },
-          });
-          throw err;
-        }
-      } else if (paymentMethod === "idram") {
-        if (order.order.currency !== "AMD") {
-          await db.payment.update({
-            where: { id: order.payment.id },
-            data: { status: "failed", errorMessage: "Idram supports AMD only" },
-          });
-          await db.order.update({
-            where: { id: order.order.id },
-            data: { paymentStatus: "failed" },
-          });
-          throw {
-            status: 400,
-            type: "https://api.shop.am/problems/validation-error",
-            title: "Validation Error",
-            detail: "Idram is only available for AMD orders.",
-          };
-        }
-        try {
-          const form = getIdramCheckoutForm({
-            orderNumber: order.order.number,
-            amount: Number(order.order.total),
-            description: `Order ${order.order.number}`,
-            checkoutLocale,
-            customerEmail: order.order.customerEmail,
-          });
-          onlinePayment = {
-            provider: "idram",
-            paymentUrl: null,
-            expiresAt: null,
-            idramForm: form,
-          };
-        } catch (err: unknown) {
-          const msg =
-            err && typeof err === "object" && "detail" in err
-              ? String((err as { detail?: string }).detail)
-              : err instanceof Error
-                ? err.message
-                : "Idram payment form build failed";
-          await db.payment.update({
-            where: { id: order.payment.id },
-            data: { status: "failed", errorMessage: msg },
-          });
-          await db.order.update({
-            where: { id: order.order.id },
-            data: { paymentStatus: "failed" },
-          });
-          throw err;
-        }
-      }
 
       const confirmationNotifications = await deliverOrderConfirmation({
         orderNumber: order.order.number,
@@ -530,17 +437,11 @@ class OrdersService {
           currency: order.order.currency,
         },
         payment: {
-          provider: onlinePayment?.provider ?? order.payment.provider,
-          paymentUrl: onlinePayment?.paymentUrl ?? null,
-          expiresAt: onlinePayment?.expiresAt ?? null,
-          idramForm: onlinePayment?.idramForm ?? null,
+          provider: order.payment.provider,
+          paymentUrl: null,
+          expiresAt: null,
         },
-        nextAction:
-          paymentMethod === "arca"
-            ? "redirect_to_payment"
-            : paymentMethod === "idram"
-              ? "submit_idram_form"
-              : "view_order",
+        nextAction: "view_order",
         confirmation: {
           orderId: order.order.id,
           orderNumber: order.order.number,

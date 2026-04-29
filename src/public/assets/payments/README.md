@@ -4,12 +4,10 @@ This directory contains logos for payment providers.
 
 ## Required Logos
 
-Please add the following logo files:
+Please add the following logo files when those methods are enabled:
 
-1. **idram.svg** - Idram payment logo
-2. **arca.svg** - ArCa payment logo
-3. **armenian-express.svg** - Armenian Express payment logo
-4. **ameria.svg** - Ameria payment logo
+1. **armenian-express.svg** - Armenian Express payment logo
+2. **ameria.svg** - Ameria payment logo
 
 ## Logo Specifications
 

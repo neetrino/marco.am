@@ -47,10 +47,6 @@ export function useCheckout() {
       paymentMethod: 'cash',
       shippingAddress: '',
       shippingCity: '',
-      cardNumber: '',
-      cardExpiry: '',
-      cardCvv: '',
-      cardHolderName: '',
     },
   });
 

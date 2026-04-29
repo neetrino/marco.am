@@ -5,17 +5,9 @@ import {
 } from "./checkout-payment-method";
 
 describe("normalizeCheckoutPaymentMethod", () => {
-  it("normalizes canonical methods", () => {
-    expect(normalizeCheckoutPaymentMethod("arca")).toBe("arca");
-    expect(normalizeCheckoutPaymentMethod("idram")).toBe("idram");
+  it("normalizes cash", () => {
     expect(normalizeCheckoutPaymentMethod("cash")).toBe("cash");
-    expect(normalizeCheckoutPaymentMethod("ARCA")).toBe("arca");
-  });
-
-  it("maps legacy card rails to arca", () => {
-    expect(normalizeCheckoutPaymentMethod("card")).toBe("arca");
-    expect(normalizeCheckoutPaymentMethod("visa")).toBe("arca");
-    expect(normalizeCheckoutPaymentMethod("mastercard")).toBe("arca");
+    expect(normalizeCheckoutPaymentMethod("CASH")).toBe("cash");
   });
 
   it("maps legacy cash synonyms", () => {
@@ -23,7 +15,12 @@ describe("normalizeCheckoutPaymentMethod", () => {
     expect(normalizeCheckoutPaymentMethod("cod")).toBe("cash");
   });
 
-  it("returns null for unknown", () => {
+  it("returns null for removed or unknown methods", () => {
+    expect(normalizeCheckoutPaymentMethod("arca")).toBeNull();
+    expect(normalizeCheckoutPaymentMethod("idram")).toBeNull();
+    expect(normalizeCheckoutPaymentMethod("card")).toBeNull();
+    expect(normalizeCheckoutPaymentMethod("visa")).toBeNull();
+    expect(normalizeCheckoutPaymentMethod("mastercard")).toBeNull();
     expect(normalizeCheckoutPaymentMethod("bitcoin")).toBeNull();
   });
 });
@@ -42,5 +39,6 @@ describe("resolveCheckoutPaymentMethod", () => {
 
   it("throws for unknown string", () => {
     expect(() => resolveCheckoutPaymentMethod("wire")).toThrow();
+    expect(() => resolveCheckoutPaymentMethod("arca")).toThrow();
   });
 });

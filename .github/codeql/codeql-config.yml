@@ -1,9 +1,2 @@
 # CodeQL customization (referenced from .github/workflows/codeql.yml).
-#
-# Idram Merchant API specifies MD5 for EDP_CHECKSUM (see official doc in repo:
-# docs/reference/payment integration/official-api-integration-docs/IDram/).
-# That file is protocol-only; excluding it keeps js/weak-cryptographic-algorithm
-# enabled for all other code.
 name: "Marco CodeQL"
-paths-ignore:
-  - src/lib/payments/idram/checksum.ts

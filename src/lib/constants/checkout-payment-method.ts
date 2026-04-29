@@ -1,26 +1,18 @@
-/**
- * Storefront checkout payment selection — canonical API values for order payload.
- * `card` is accepted as a legacy alias for Arca (bank-hosted Visa / Mastercard / ArCa).
- */
-export type CheckoutPaymentMethodId = "arca" | "idram" | "cash";
+/** Storefront checkout — online card/wallet methods are not enabled in this build. */
+export type CheckoutPaymentMethodId = "cash";
 
 const LEGACY_CASH = new Set(["cash_on_delivery", "cod"]);
-/** Legacy UI / clients that still send `card` map to Arca redirect flow. */
-const LEGACY_ARCA = new Set(["card", "visa", "mastercard", "master_card"]);
 
 /**
  * Maps request strings to canonical id. Returns `null` if unknown.
  */
 export function normalizeCheckoutPaymentMethod(raw: string): CheckoutPaymentMethodId | null {
   const normalized = raw.trim().toLowerCase();
-  if (normalized === "arca" || normalized === "idram" || normalized === "cash") {
-    return normalized;
+  if (normalized === "cash") {
+    return "cash";
   }
   if (LEGACY_CASH.has(normalized)) {
     return "cash";
-  }
-  if (LEGACY_ARCA.has(normalized)) {
-    return "arca";
   }
   return null;
 }
@@ -49,7 +41,7 @@ export function resolveCheckoutPaymentMethod(raw: unknown): CheckoutPaymentMetho
       status: 400,
       type: 'https://api.shop.am/problems/validation-error',
       title: 'Validation Error',
-      detail: 'Invalid paymentMethod. Use "arca", "idram", or "cash".',
+      detail: 'Invalid paymentMethod. Use "cash".',
     };
   }
   return canonical;

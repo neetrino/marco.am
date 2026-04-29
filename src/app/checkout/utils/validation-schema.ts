@@ -17,15 +17,9 @@ export function useCheckoutSchema() {
     shippingMethod: z.enum(['pickup', 'courier'], {
       message: t('checkout.errors.selectShippingMethod'),
     }),
-    paymentMethod: z.enum(["arca", "idram", "cash"], {
-      message: t('checkout.errors.selectPaymentMethod'),
-    }),
+    paymentMethod: z.literal("cash"),
     shippingAddress: z.string().optional(),
     shippingCity: z.string().optional(),
-    cardNumber: z.string().optional(),
-    cardExpiry: z.string().optional(),
-    cardCvv: z.string().optional(),
-    cardHolderName: z.string().optional(),
   }).refine((data) => {
     if (data.shippingMethod === 'courier') {
       return data.shippingAddress && data.shippingAddress.trim().length > 0;
