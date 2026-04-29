@@ -36,7 +36,6 @@ export default function CheckoutPage() {
     orderSummary,
     handlePlaceOrder,
     onSubmit,
-    isLoggedIn,
   } = useCheckout();
 
   if (loading) {
@@ -126,7 +125,6 @@ export default function CheckoutPage() {
         currency={currency}
         loadingCheckoutTotals={loadingCheckoutTotals}
         checkoutTotalsStale={checkoutTotalsStale}
-        isLoggedIn={isLoggedIn}
         onSubmit={onSubmit}
       />
     </div>

@@ -25,7 +25,6 @@ interface CheckoutModalsProps {
   currency: 'USD' | 'AMD' | 'EUR' | 'RUB' | 'GEL';
   loadingCheckoutTotals: boolean;
   checkoutTotalsStale?: boolean;
-  isLoggedIn: boolean;
   onSubmit: (data: CheckoutFormData) => void;
 }
 
@@ -44,7 +43,6 @@ export function CheckoutModals({
   currency,
   loadingCheckoutTotals,
   checkoutTotalsStale,
-  isLoggedIn,
   onSubmit,
 }: CheckoutModalsProps) {
   return (
