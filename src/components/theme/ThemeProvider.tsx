@@ -49,26 +49,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(STORAGE_KEY, theme);
   }, [mounted, theme]);
 
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-
-    const handleChange = (event: MediaQueryListEvent) => {
-      const storedTheme = localStorage.getItem(STORAGE_KEY);
-      if (storedTheme === 'light' || storedTheme === 'dark') {
-        return;
-      }
-
-      const nextTheme: Theme = event.matches ? 'dark' : 'light';
-      setThemeState(nextTheme);
-      applyTheme(nextTheme);
-    };
-
-    mediaQuery.addEventListener('change', handleChange);
-    return () => {
-      mediaQuery.removeEventListener('change', handleChange);
-    };
-  }, []);
-
   const setTheme = (nextTheme: Theme) => {
     setThemeState(nextTheme);
   };

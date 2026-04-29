@@ -42,10 +42,8 @@ export default async function RootLayout({
               try {
                 const storageKey = 'marco-theme';
                 const stored = localStorage.getItem(storageKey);
-                const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                const theme = stored === 'light' || stored === 'dark'
-                  ? stored
-                  : (systemDark ? 'dark' : 'light');
+                const theme =
+                  stored === 'light' || stored === 'dark' ? stored : 'light';
                 const root = document.documentElement;
                 root.classList.toggle('dark', theme === 'dark');
                 root.dataset.theme = theme;
