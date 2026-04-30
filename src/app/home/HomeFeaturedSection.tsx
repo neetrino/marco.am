@@ -19,18 +19,22 @@ export async function HomeFeaturedSection() {
   const lang: LanguageCode =
     parseLanguageFromServer(cookieStore.get(LANGUAGE_PREFERENCE_KEY)?.value) ?? 'en';
 
-  const result = await getProductsListingCached({
-    page: 1,
-    limit: FEATURED_PRODUCTS_VISIBLE_COUNT,
-    lang,
-    filter: 'new',
-    sort: 'createdAt',
-    listingOmitProductAttributes: true,
-  });
-
-  const rows = dedupeCardProductsByTitle(
-    (result.data ?? []) as SpecialOfferProduct[],
-  ).slice(0, FEATURED_PRODUCTS_VISIBLE_COUNT);
+  let rows: SpecialOfferProduct[] = [];
+  try {
+    const result = await getProductsListingCached({
+      page: 1,
+      limit: FEATURED_PRODUCTS_VISIBLE_COUNT,
+      lang,
+      filter: 'new',
+      sort: 'createdAt',
+      listingOmitProductAttributes: true,
+    });
+    rows = dedupeCardProductsByTitle(
+      (result.data ?? []) as SpecialOfferProduct[],
+    ).slice(0, FEATURED_PRODUCTS_VISIBLE_COUNT);
+  } catch {
+    // Still render the client strip so shells + browser fetch can recover (e.g. Redis down in dev).
+  }
 
   return <FeaturedProductsTabs serverLanguage={lang} initialNewProducts={rows} />;
 }

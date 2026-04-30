@@ -124,7 +124,8 @@
     "ariaShowProducts": "Показать товары {label}",
     "errorLoading": "Не удалось загрузить товары",
     "tryAgain": "Попробовать снова",
-    "noProducts": "В этой категории нет товаров."
+    "noProducts": "В этой категории нет товаров.",
+    "card_loading_aria": "Товар"
   },
   "brands": {
     "title": "БРЕНДЫ",

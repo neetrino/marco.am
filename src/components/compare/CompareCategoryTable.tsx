@@ -1,7 +1,9 @@
+'use client';
+
 import type { MouseEvent } from 'react';
-import Link from 'next/link';
 import Image from 'next/image';
 
+import { ProductPdpPrefetchLink } from '@/components/ProductPdpPrefetchLink';
 import type { CompareClientItem } from '@/lib/compare/compare-client';
 import { formatCatalogPrice, type CurrencyCode } from '@/lib/currency';
 import { ProductImagePlaceholder } from '@/components/ProductImagePlaceholder';
@@ -99,7 +101,11 @@ export function CompareCategoryTable({
             </td>
             {products.map((product) => (
               <td key={product.id} className="px-4 py-4 text-center">
-                <Link href={`/products/${product.slug}`} className="inline-block">
+                <ProductPdpPrefetchLink
+                  href={`/products/${product.slug}`}
+                  productSlug={product.slug}
+                  className="inline-block"
+                >
                   <div className="relative mx-auto h-32 w-32 overflow-hidden rounded-lg !bg-gray-100 dark:!bg-gray-100">
                     {product.image ? (
                       <Image
@@ -117,7 +123,7 @@ export function CompareCategoryTable({
                       />
                     )}
                   </div>
-                </Link>
+                </ProductPdpPrefetchLink>
               </td>
             ))}
           </tr>
@@ -127,12 +133,13 @@ export function CompareCategoryTable({
             </td>
             {products.map((product) => (
               <td key={product.id} className="px-4 py-4">
-                <Link
+                <ProductPdpPrefetchLink
                   href={`/products/${product.slug}`}
+                  productSlug={product.slug}
                   className="block text-center text-base font-semibold text-gray-900 transition-colors hover:text-blue-600 dark:text-white/90 dark:hover:text-marco-yellow"
                 >
                   {product.title}
-                </Link>
+                </ProductPdpPrefetchLink>
               </td>
             ))}
           </tr>
@@ -202,12 +209,13 @@ export function CompareCategoryTable({
             {products.map((product) => (
               <td key={product.id} className="px-4 py-4 text-center">
                 <div className="flex flex-col items-center gap-3">
-                  <Link
+                  <ProductPdpPrefetchLink
                     href={`/products/${product.slug}`}
+                    productSlug={product.slug}
                     className="text-sm font-medium text-marco-black transition-opacity hover:opacity-80 dark:text-white/85 dark:hover:text-marco-yellow"
                   >
                     {t('common.compare.viewDetails')}
-                  </Link>
+                  </ProductPdpPrefetchLink>
                   {product.inStock ? (
                     <button
                       type="button"

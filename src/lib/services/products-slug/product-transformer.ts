@@ -748,3 +748,73 @@ export async function transformProduct(
   };
 }
 
+export type PdpVisualLabel = {
+  id: string;
+  type: string;
+  value: string;
+  position: string;
+  color: string | null;
+};
+
+export type PdpVisualPayload = {
+  id: string;
+  slug: string;
+  title: string;
+  images: string[];
+  gallery: ProductGalleryImage[];
+  labels: PdpVisualLabel[];
+  discountPercent: number | null;
+};
+
+/**
+ * Build lightweight PDP payload for first paint (images + badge labels).
+ * Accepts a narrow Prisma `select` row cast to the shape `transformGallery` / `transformLabels` need.
+ */
+export function buildPdpVisualPayloadFromPrisma(
+  raw: {
+    id: string;
+    media: unknown;
+    discountPercent: number;
+    labels: unknown;
+    translations: Array<{ locale: string; title: string; slug: string }>;
+    variants: Array<{
+      id: string;
+      imageUrl: string | null;
+      stock: number;
+      stockReserved: number;
+    }>;
+  },
+  requestedSlug: string,
+  lang: string,
+): PdpVisualPayload {
+  const translation =
+    raw.translations.find((t) => t.locale === lang) ?? raw.translations[0] ?? null;
+  const castProduct = {
+    ...raw,
+    translations: raw.translations,
+    variants: raw.variants,
+    media: raw.media,
+    labels: raw.labels,
+    categories: [],
+    brand: null,
+    productAttributes: [],
+  } as unknown as ProductWithFullRelations;
+  const gallery = transformGallery(castProduct, translation?.title ?? null);
+  const labels = transformLabels(castProduct, lang);
+  return {
+    id: raw.id,
+    slug: translation?.slug ?? requestedSlug,
+    title: translation?.title ?? "",
+    images: gallery.map((g) => g.url),
+    gallery,
+    labels: labels.map((l) => ({
+      id: l.id,
+      type: l.type,
+      value: l.value,
+      position: l.position,
+      color: l.color,
+    })),
+    discountPercent: raw.discountPercent > 0 ? raw.discountPercent : null,
+  };
+}
+

@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { ProductPdpPrefetchLink } from '@/components/ProductPdpPrefetchLink';
 import { montserratArm } from '@/fonts/montserrat-arm';
 import { formatCatalogPrice } from '@/lib/currency';
 import { ProductColors } from '@/components/ProductCard/ProductColors';
@@ -108,11 +108,15 @@ function SpecialOfferProductCardView({
                 <ProductColors colors={product.colors} isCompact maxVisible={4} />
               ) : null}
             </div>
-            <Link href={`/products/${product.slug}`} className="mt-2 block">
+            <ProductPdpPrefetchLink
+              href={`/products/${product.slug}`}
+              productSlug={product.slug}
+              className="mt-2 block"
+            >
               <h3 className="line-clamp-2 text-left text-[13px] font-bold leading-5 text-[#181111] dark:text-white md:text-sm md:leading-5">
                 {product.title}
               </h3>
-            </Link>
+            </ProductPdpPrefetchLink>
           </>
         ) : (
           <>
@@ -121,11 +125,15 @@ function SpecialOfferProductCardView({
                 {product.brand.name}
               </p>
             ) : null}
-            <Link href={`/products/${product.slug}`} className="mt-2 block">
+            <ProductPdpPrefetchLink
+              href={`/products/${product.slug}`}
+              productSlug={product.slug}
+              className="mt-2 block"
+            >
               <h3 className="line-clamp-2 text-left text-[13px] font-bold leading-5 text-[#181111] dark:text-white md:text-sm md:leading-5">
                 {product.title}
               </h3>
-            </Link>
+            </ProductPdpPrefetchLink>
             {product.colors && product.colors.length > 0 ? (
               <div className="mt-2">
                 <ProductColors colors={product.colors} isCompact maxVisible={4} />

@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { ProductPdpPrefetchLink } from '../ProductPdpPrefetchLink';
 import Image from 'next/image';
 import type { MouseEvent } from 'react';
 import { formatCatalogPrice, type CurrencyCode } from '../../lib/currency';
@@ -69,8 +69,9 @@ export function RelatedProductCard({
       style={{ width }}
     >
       <div className="group relative h-full flex flex-col">
-        <Link
+        <ProductPdpPrefetchLink
           href={`/products/${product.slug}`}
+          productSlug={product.slug}
           className="block cursor-pointer flex-1 flex flex-col"
           onClick={(e) => {
             // Prevent navigation only if we actually dragged (moved more than threshold)
@@ -141,7 +142,7 @@ export function RelatedProductCard({
               </div>
             </div>
           </div>
-        </Link>
+        </ProductPdpPrefetchLink>
 
         {/* Cart Icon Button */}
         <button

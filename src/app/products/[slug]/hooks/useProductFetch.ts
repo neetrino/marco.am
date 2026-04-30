@@ -2,44 +2,36 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '../../../../lib/api-client';
-import { getStoredLanguage, type LanguageCode } from '../../../../lib/language';
-import { queryKeys } from '../../../../lib/query-keys';
+import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
+
+import type { PdpVisualPayload } from '@/lib/services/products-slug/product-transformer';
+import { getStoredLanguage, type LanguageCode } from '@/lib/language';
+import {
+  fetchProductDetail,
+  fetchProductVisual,
+} from '@/lib/product-pdp/product-pdp-fetchers';
+import { queryKeys } from '@/lib/query-keys';
+
 import { RESERVED_ROUTES } from '../types';
-import type { Product } from '../types';
 
 interface UseProductFetchProps {
   slug: string;
   variantIdFromUrl: string | null;
-}
-
-async function fetchProductDetail(slug: string, lang: LanguageCode): Promise<Product> {
-  try {
-    return await apiClient.get<Product>(`/api/v1/products/${slug}`, {
-      params: { lang },
-    });
-  } catch (error: unknown) {
-    const errorStatus =
-      error && typeof error === 'object' && 'status' in error ? Number(error.status) : undefined;
-    if (errorStatus === 404 && lang !== 'en') {
-      return apiClient.get<Product>(`/api/v1/products/${slug}`, {
-        params: { lang: 'en' },
-      });
-    }
-    throw error;
-  }
+  /** Cookie language from the server page — keeps SSR + first client paint aligned. */
+  serverLanguage: LanguageCode;
+  /** Server-rendered `/visual` payload when available (instant gallery on navigation). */
+  initialVisual: PdpVisualPayload | null;
 }
 
 export function useProductFetch({
   slug,
   variantIdFromUrl: _variantIdFromUrl,
+  serverLanguage,
+  initialVisual,
 }: UseProductFetchProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [lang, setLang] = useState<LanguageCode>(() =>
-    typeof window !== 'undefined' ? getStoredLanguage() : 'en',
-  );
+  const [lang, setLang] = useState<LanguageCode>(() => serverLanguage);
 
   useEffect(() => {
     setLang(getStoredLanguage());
@@ -61,10 +53,12 @@ export function useProductFetch({
 
   const enabled = Boolean(slug) && !RESERVED_ROUTES.includes(slug.toLowerCase());
 
-  const query = useQuery({
-    queryKey: queryKeys.productDetail(slug, lang),
-    queryFn: () => fetchProductDetail(slug, lang),
+  const visualQuery = useQuery({
+    queryKey: queryKeys.productVisual(slug, lang),
+    queryFn: () => fetchProductVisual(slug, lang),
     enabled,
+    initialData: initialVisual ?? undefined,
+    placeholderData: keepPreviousData,
     staleTime: 120_000,
     retry: (failureCount, error) => {
       const status =
@@ -76,12 +70,57 @@ export function useProductFetch({
     },
   });
 
-  const fetchProduct = () =>
-    queryClient.invalidateQueries({ queryKey: queryKeys.productDetail(slug, lang) });
+  const detailQuery = useQuery({
+    queryKey: queryKeys.productDetail(slug, lang),
+    queryFn: () => fetchProductDetail(slug, lang),
+    enabled,
+    placeholderData: keepPreviousData,
+    staleTime: 120_000,
+    retry: (failureCount, error) => {
+      const status =
+        error && typeof error === 'object' && 'status' in error ? Number(error.status) : undefined;
+      if (status === 404) {
+        return false;
+      }
+      return failureCount < 1;
+    },
+  });
+
+  const fetchProduct = () => {
+    void queryClient.invalidateQueries({ queryKey: queryKeys.productDetail(slug, lang) });
+    void queryClient.invalidateQueries({ queryKey: queryKeys.productVisual(slug, lang) });
+  };
+
+  const product = detailQuery.data ?? null;
+  const productVisual = visualQuery.data ?? null;
+
+  const blockingEmpty =
+    !product &&
+    !productVisual &&
+    visualQuery.isPending &&
+    !visualQuery.isError;
+
+  const awaitingDetailShell =
+    !product &&
+    !productVisual &&
+    !visualQuery.isPending &&
+    detailQuery.isPending &&
+    !detailQuery.isError;
+
+  const detailsPending = Boolean(productVisual && !product && detailQuery.isPending);
+
+  const pdpInitialShell = blockingEmpty || awaitingDetailShell;
 
   return {
-    product: query.data ?? null,
-    loading: query.isPending || query.isFetching,
+    product,
+    productVisual,
+    loading: pdpInitialShell,
+    blockingEmpty: pdpInitialShell,
+    blockingVisualOnly: blockingEmpty,
+    awaitingDetailShell,
+    detailsPending,
+    visualError: visualQuery.isError ? visualQuery.error : null,
+    detailError: detailQuery.isError ? detailQuery.error : null,
     fetchProduct,
   };
 }

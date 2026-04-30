@@ -52,6 +52,8 @@ interface SpecialOfferCardProps {
   showMobileBottomNotch?: boolean;
   /** Optional desktop max-width override for contexts like products catalog. */
   maxWidthPx?: number;
+  imagePriority?: boolean;
+  detailsPending?: boolean;
 }
 
 /**
@@ -64,7 +66,10 @@ export function SpecialOfferCard({
   mobileCartButtonBottomPx,
   showMobileBottomNotch = true,
   maxWidthPx,
+  imagePriority = false,
+  detailsPending: detailsPendingProp = false,
 }: SpecialOfferCardProps) {
+  const detailsPending = detailsPendingProp || Boolean(product.detailsPending);
   const {
     t,
     currency,
@@ -168,19 +173,32 @@ export function SpecialOfferCard({
           <SpecialOfferCardMedia
             layout={layout}
             slug={product.slug}
-            title={product.title}
+            title={
+              detailsPending
+                ? product.slug || t('home.featured_products.card_loading_aria')
+                : product.title
+            }
             images={galleryImages}
             showPlaceholder={showPlaceholder}
             onImageError={onImageError}
+            imagePriority={imagePriority}
+            navigationDisabled={Boolean(product.shellPlaceholder)}
           />
 
           <div
             className="flex min-h-0 w-full flex-1 flex-col"
             style={textBlockShiftStyle}
           >
-            <SpecialOfferCardInfo product={product} brandClass={brandClass} />
+            <SpecialOfferCardInfo
+              product={product}
+              brandClass={brandClass}
+              detailsPending={detailsPending}
+            />
 
-            <SpecialOfferCardStars reviewCount={product.reviewCount} />
+            <SpecialOfferCardStars
+              reviewCount={product.reviewCount}
+              detailsPending={detailsPending}
+            />
 
             <div
               className="mt-auto w-full min-w-0"
@@ -192,6 +210,7 @@ export function SpecialOfferCard({
                 price={product.price}
                 oldPrice={oldPrice}
                 currency={currency}
+                detailsPending={detailsPending}
               />
             </div>
           </div>
@@ -204,11 +223,12 @@ export function SpecialOfferCard({
         addToCartAria={t('common.ariaLabels.addToCart')}
         outOfStockAria={t('common.ariaLabels.outOfStock')}
         onAddToCart={handleCart}
+        interactionLocked={detailsPending}
       />
 
       <SpecialOfferActionsStack
         layout={layout}
-        showDiscountPill={showDiscountPill}
+        showDiscountPill={!detailsPending && showDiscountPill}
         discountPercent={product.discountPercent}
         isInWishlist={isInWishlist}
         isInCompare={isInCompare}
@@ -216,6 +236,7 @@ export function SpecialOfferCard({
         compareAria={compareAria}
         onWishlist={handleWishlist}
         onCompare={handleCompare}
+        disabled={Boolean(product.shellPlaceholder)}
       />
     </div>
   );

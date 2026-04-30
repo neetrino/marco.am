@@ -44,6 +44,14 @@ export function parseProductListFiltersFromSearchParams(
   const cursor = searchParams.get('cursor') || undefined;
   const technicalSpecs = parseTechnicalSpecFiltersFromSearchParams(searchParams);
 
+  const omitAttr = searchParams.get('omitProductAttributes');
+  const listingOmitProductAttributes =
+    omitAttr === '1' || omitAttr?.toLowerCase() === 'true' ? true : undefined;
+
+  const cardVisualRaw = searchParams.get('cardVisualOnly');
+  const cardVisualOnly =
+    cardVisualRaw === '1' || cardVisualRaw?.toLowerCase() === 'true' ? true : undefined;
+
   return {
     category: searchParams.get('category') || undefined,
     search: searchParams.get('search') || undefined,
@@ -60,5 +68,7 @@ export function parseProductListFiltersFromSearchParams(
     lang: searchParams.get('lang') || 'en',
     technicalSpecs,
     productIds: productIdsFromQuery.length > 0 ? productIdsFromQuery : undefined,
+    listingOmitProductAttributes,
+    cardVisualOnly,
   };
 }

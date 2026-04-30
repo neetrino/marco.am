@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { ProductPdpPrefetchLink } from '../../components/ProductPdpPrefetchLink';
 import Image from 'next/image';
 import { Button } from '@shop/ui';
 import { coerceCurrencyCode, formatMoneyInCurrency, type CurrencyCode } from '../../lib/currency';
@@ -48,8 +48,9 @@ export function CartItemRow({
       
       {/* Product */}
       <div className="md:col-span-6 flex items-start gap-4">
-        <Link
+        <ProductPdpPrefetchLink
           href={`/products/${item.variant.product.slug}`}
+          productSlug={item.variant.product.slug}
           className="w-24 h-24 sm:w-28 sm:h-28 bg-gray-100 rounded-lg flex-shrink-0 relative overflow-hidden"
         >
           {item.variant.product.image ? (
@@ -67,14 +68,15 @@ export function CartItemRow({
               aria-label={item.variant.product.title ? `No image for ${item.variant.product.title}` : 'No image'}
             />
           )}
-        </Link>
+        </ProductPdpPrefetchLink>
         <div className="flex-1 min-w-0">
-          <Link
+          <ProductPdpPrefetchLink
             href={`/products/${item.variant.product.slug}`}
+            productSlug={item.variant.product.slug}
             className="text-base font-medium text-gray-900 hover:text-blue-600 transition-colors line-clamp-2"
           >
             {item.variant.product.title}
-          </Link>
+          </ProductPdpPrefetchLink>
           {item.variant.sku && (
             <p className="text-xs text-gray-500 mt-1">{t('common.messages.sku')}: {item.variant.sku}</p>
           )}

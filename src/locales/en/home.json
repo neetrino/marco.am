@@ -124,7 +124,8 @@
     "ariaShowProducts": "Show {label} products",
     "errorLoading": "Failed to load products",
     "tryAgain": "Try Again",
-    "noProducts": "No products in this category."
+    "noProducts": "No products in this category.",
+    "card_loading_aria": "Product"
   },
   "brands": {
     "title": "BRANDS",

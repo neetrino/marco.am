@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import Link from 'next/link';
+import { ProductPdpPrefetchLink } from '@/components/ProductPdpPrefetchLink';
 import type { MouseEvent } from 'react';
 import { ProductImagePlaceholder } from '@/components/ProductImagePlaceholder';
 import { ProductLabels } from '@/components/ProductLabels';
@@ -175,7 +175,11 @@ export function SpecialOfferMedia({
 }) {
   return (
     <div className="relative z-[2] mx-[6%] mt-4 overflow-hidden rounded-lg bg-[#f9fafb] md:mt-[17px]">
-      <Link href={`/products/${product.slug}`} className="relative block aspect-[274/248] w-full">
+      <ProductPdpPrefetchLink
+        href={`/products/${product.slug}`}
+        productSlug={product.slug}
+        className="relative block aspect-[274/248] w-full"
+      >
         {showPlaceholder ? (
           <ProductImagePlaceholder className="h-full w-full" aria-label={product.title} />
         ) : (
@@ -194,7 +198,7 @@ export function SpecialOfferMedia({
             <ProductLabels labels={product.labels} />
           </div>
         ) : null}
-      </Link>
+      </ProductPdpPrefetchLink>
     </div>
   );
 }

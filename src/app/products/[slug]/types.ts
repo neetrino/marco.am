@@ -1,9 +1,5 @@
 // Product page types and interfaces
 
-export interface ProductPageProps {
-  params: Promise<{ slug?: string }>;
-}
-
 export interface ProductMedia {
   url?: string;
   type?: string;

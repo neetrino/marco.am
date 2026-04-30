@@ -1,10 +1,11 @@
 'use client';
 
 import Image from 'next/image';
-import Link from 'next/link';
 
+import { ProductPdpPrefetchLink } from '../ProductPdpPrefetchLink';
 import { ProductImagePlaceholder } from '../ProductImagePlaceholder';
 
+import { shouldBypassNextImageOptimizer } from '../../lib/utils/should-bypass-next-image-optimizer';
 import {
   SPECIAL_OFFERS_IMAGE_WELL_HEIGHT_PX,
   SPECIAL_OFFERS_IMAGE_WELL_RADIUS_PX,
@@ -18,6 +19,9 @@ interface SpecialOfferCardMediaProps {
   showPlaceholder: boolean;
   onImageError: () => void;
   layout?: 'default' | 'mobileGrid';
+  imagePriority?: boolean;
+  /** No product URL yet — keep image well layout without navigation. */
+  navigationDisabled?: boolean;
 }
 
 export function SpecialOfferCardMedia({
@@ -27,6 +31,8 @@ export function SpecialOfferCardMedia({
   showPlaceholder,
   onImageError,
   layout = 'default',
+  imagePriority = false,
+  navigationDisabled = false,
 }: SpecialOfferCardMediaProps) {
   const translateY = 0;
   const nudgeLeftPx = 0;
@@ -62,33 +68,53 @@ export function SpecialOfferCardMedia({
         title={title}
         images={images}
         onImageError={onImageError}
+        imagePriority={imagePriority}
+        navigationDisabled={navigationDisabled}
       />
     );
   }
 
   const singleSrc = images[0] as string;
 
-  return (
-    <Link
-      href={`/products/${slug}`}
-      className={`relative z-0 mt-0 flex w-full items-center justify-center overflow-hidden ${imageWellBgClass} ${imageWellPaddingClass} max-md:z-20`}
+  const singleImageWellClass = `relative z-0 mt-0 flex w-full items-center justify-center overflow-hidden ${imageWellBgClass} ${imageWellPaddingClass} max-md:z-20`;
+  const singleImageWellStyle = {
+    height: SPECIAL_OFFERS_IMAGE_WELL_HEIGHT_PX,
+    borderRadius: SPECIAL_OFFERS_IMAGE_WELL_RADIUS_PX,
+  } as const;
+
+  const singleImageInner = (
+    <Image
+      src={singleSrc}
+      alt={title}
+      fill
+      className={imageFillClass}
       style={{
-        height: SPECIAL_OFFERS_IMAGE_WELL_HEIGHT_PX,
-        borderRadius: SPECIAL_OFFERS_IMAGE_WELL_RADIUS_PX,
+        transform: `translate(-${nudgeLeftPx}px, ${translateY}px)`,
       }}
+      sizes="(max-width: 768px) 42vw, (max-width: 1200px) 22vw, 280px"
+      priority={imagePriority}
+      loading={imagePriority ? 'eager' : 'lazy'}
+      unoptimized={shouldBypassNextImageOptimizer(singleSrc)}
+      onError={onImageError}
+    />
+  );
+
+  if (navigationDisabled) {
+    return (
+      <div className={singleImageWellClass} style={singleImageWellStyle}>
+        {singleImageInner}
+      </div>
+    );
+  }
+
+  return (
+    <ProductPdpPrefetchLink
+      href={`/products/${slug}`}
+      productSlug={slug}
+      className={singleImageWellClass}
+      style={singleImageWellStyle}
     >
-      <Image
-        src={singleSrc}
-        alt={title}
-        fill
-        className={imageFillClass}
-        style={{
-          transform: `translate(-${nudgeLeftPx}px, ${translateY}px)`,
-        }}
-        sizes="(max-width: 1024px) 260px, 20vw"
-        unoptimized
-        onError={onImageError}
-      />
-    </Link>
+      {singleImageInner}
+    </ProductPdpPrefetchLink>
   );
 }

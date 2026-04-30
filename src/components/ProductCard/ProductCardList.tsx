@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { ProductPdpPrefetchLink } from '../ProductPdpPrefetchLink';
 import Image from 'next/image';
 import type { MouseEvent } from 'react';
 import { formatCatalogPrice, type CurrencyCode } from '../../lib/currency';
@@ -62,8 +62,9 @@ export function ProductCardList({
     <div className={`bg-white rounded-lg overflow-hidden hover:bg-gray-50 transition-colors ${listSurfaceClass}`}>
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 px-5 sm:px-6 py-4 sm:py-5">
         {/* Product Image */}
-        <Link
+        <ProductPdpPrefetchLink
           href={`/products/${product.slug}`}
+          productSlug={product.slug}
           className="w-36 h-36 bg-gray-100 rounded-xl border-2 border-gray-300 flex-shrink-0 relative overflow-hidden self-start sm:self-center"
         >
           {!imageError && product.image ? (
@@ -82,18 +83,22 @@ export function ProductCardList({
               aria-label={product.title ? `No image for ${product.title}` : 'No image'}
             />
           )}
-        </Link>
+        </ProductPdpPrefetchLink>
 
         {/* Product Info */}
         <div className="flex-1 min-w-0 w-full sm:w-auto">
-          <Link href={`/products/${product.slug}`} className="block">
+          <ProductPdpPrefetchLink
+            href={`/products/${product.slug}`}
+            productSlug={product.slug}
+            className="block"
+          >
             <h3 className="text-xl sm:text-2xl font-medium text-gray-900 transition-colors line-clamp-2">
               {product.title}
             </h3>
             <p className="mt-1 text-lg text-gray-500 dark:text-[#050505] sm:text-xl">
               {product.brand?.name || t('common.defaults.category')}
             </p>
-          </Link>
+          </ProductPdpPrefetchLink>
           {/* Available Colors */}
           {product.colors && product.colors.length > 0 && (
             <div className="flex items-center gap-1.5 mt-2 flex-wrap">

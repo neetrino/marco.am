@@ -21,6 +21,7 @@ import {
   SPECIAL_OFFERS_SECTION_PAGINATION_TO_CTA_GAP_MOBILE_PX,
   SPECIAL_OFFERS_SECTION_RAIL_TO_PAGINATION_GAP_MOBILE_PX,
 } from './home-special-offers.constants';
+import { HOME_PRODUCT_CHUNK_SIZE } from '../../constants/homeProductChunks';
 import type { SpecialOfferProduct } from './special-offer-product.types';
 
 const FEATURED_PAGE_ARIA_KEYS = [
@@ -95,6 +96,14 @@ export function FeaturedNewArrivalsMobileRail({
                       product={product}
                       layout={cardLayout}
                       maxWidthPx={HOME_CARD_COMPACT_MAX_WIDTH_PX}
+                      imagePriority={
+                        pageIndex === 0 &&
+                        slotIndex < HOME_PRODUCT_CHUNK_SIZE &&
+                        !product.shellPlaceholder &&
+                        Boolean(
+                          (product.images && product.images.length > 0) || product.image,
+                        )
+                      }
                     />
                   ) : (
                     <div

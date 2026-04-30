@@ -1,9 +1,10 @@
 'use client';
 
 import Image from 'next/image';
-import Link from 'next/link';
 
 import { useTranslation } from '../../lib/i18n-client';
+import { ProductPdpPrefetchLink } from '../ProductPdpPrefetchLink';
+import { shouldBypassNextImageOptimizer } from '../../lib/utils/should-bypass-next-image-optimizer';
 
 import {
   SPECIAL_OFFERS_GALLERY_DOTS_BELOW_WELL_MOBILE_EXTRA_PX,
@@ -25,6 +26,8 @@ interface SpecialOfferImageSliderProps {
   images: string[];
   onImageError: () => void;
   layout?: 'default' | 'mobileGrid';
+  imagePriority?: boolean;
+  navigationDisabled?: boolean;
 }
 
 function galleryDotAriaLabel(raw: string, n: number, total: number): string {
@@ -106,6 +109,8 @@ export function SpecialOfferImageSlider({
   images,
   onImageError,
   layout = 'default',
+  imagePriority = false,
+  navigationDisabled = false,
 }: SpecialOfferImageSliderProps) {
   const { t } = useTranslation();
   const { scrollerRef, activeIndex, goToIndex } = useSpecialOfferImageGallery(
@@ -140,31 +145,47 @@ export function SpecialOfferImageSlider({
           ref={scrollerRef}
           className="flex h-full w-full snap-x snap-mandatory overflow-x-auto overflow-y-hidden [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
-          {images.map((src, index) => (
-            <div
-              key={`${src}-${index}`}
-              className="relative h-full min-w-full shrink-0 snap-center snap-always"
-            >
-              <Link
-                href={`/products/${slug}`}
-                className={`relative block h-full w-full ${imagePaddingClass}`}
-                aria-label={`${title} — ${index + 1} / ${images.length}`}
+          {images.map((src, index) => {
+            const slideInner = (
+              <Image
+                src={src}
+                alt=""
+                fill
+                className={imageFillClass}
+                style={{
+                  transform: `translate(-${imageNudgeLeftPx}px, ${imageTranslateY}px)`,
+                }}
+                sizes="(max-width: 768px) 42vw, (max-width: 1200px) 22vw, 280px"
+                priority={imagePriority && index === 0}
+                loading={imagePriority && index === 0 ? 'eager' : 'lazy'}
+                unoptimized={shouldBypassNextImageOptimizer(src)}
+                onError={onImageError}
+              />
+            );
+            const slideClass = `relative block h-full w-full ${imagePaddingClass}`;
+            const slideAria = `${title} — ${index + 1} / ${images.length}`;
+            return (
+              <div
+                key={`${src}-${index}`}
+                className="relative h-full min-w-full shrink-0 snap-center snap-always"
               >
-                <Image
-                  src={src}
-                  alt=""
-                  fill
-                  className={imageFillClass}
-                  style={{
-                    transform: `translate(-${imageNudgeLeftPx}px, ${imageTranslateY}px)`,
-                  }}
-                  sizes="(max-width: 1024px) 260px, 20vw"
-                  unoptimized
-                  onError={onImageError}
-                />
-              </Link>
-            </div>
-          ))}
+                {navigationDisabled ? (
+                  <div className={slideClass} aria-label={slideAria}>
+                    {slideInner}
+                  </div>
+                ) : (
+                  <ProductPdpPrefetchLink
+                    href={`/products/${slug}`}
+                    productSlug={slug}
+                    className={slideClass}
+                    aria-label={slideAria}
+                  >
+                    {slideInner}
+                  </ProductPdpPrefetchLink>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
       <SpecialOfferGalleryDots

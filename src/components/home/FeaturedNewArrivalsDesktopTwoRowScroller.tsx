@@ -23,6 +23,7 @@ import {
   SPECIAL_OFFERS_RAIL_TO_PAGINATION_GAP_PX,
   SPECIAL_OFFERS_SCROLLER_PADDING_BOTTOM_DESKTOP_PX,
 } from './home-special-offers.constants';
+import { HOME_PRODUCT_CHUNK_SIZE } from '../../constants/homeProductChunks';
 import type { SpecialOfferProduct } from './special-offer-product.types';
 
 const DESKTOP_PAGE_GRID_CLASS = `grid min-h-0 min-w-full shrink-0 snap-start grid-cols-4 gap-x-3 md:gap-x-6 ${FEATURED_PRODUCTS_GRID_GAP_Y_CLASS}`;
@@ -104,7 +105,18 @@ export function FeaturedNewArrivalsDesktopTwoRowScroller({
                     className="min-w-0"
                   >
                     {product ? (
-                      <SpecialOfferCard product={product} layout="default" />
+                      <SpecialOfferCard
+                        product={product}
+                        layout="default"
+                        imagePriority={
+                          pageIndex === 0 &&
+                          slotIndex < HOME_PRODUCT_CHUNK_SIZE &&
+                          !product.shellPlaceholder &&
+                          Boolean(
+                            (product.images && product.images.length > 0) || product.image,
+                          )
+                        }
+                      />
                     ) : (
                       <div className="min-w-0" style={{ minHeight: SPECIAL_OFFERS_CARD_HEIGHT_PX }} aria-hidden />
                     )}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -42,6 +42,7 @@ import {
 } from './home/home-reels.constants';
 import type { SpecialOfferProduct } from './home/special-offer-product.types';
 import { useIsMaxMd } from './home/use-is-max-md';
+import { HOME_PRODUCT_CHUNK_SIZE } from '../constants/homeProductChunks';
 
 interface ProductsResponse {
   data: SpecialOfferProduct[];
@@ -113,6 +114,7 @@ async function fetchFeaturedStrip(
     limit: String(FEATURED_PRODUCTS_VISIBLE_COUNT),
     lang: language,
     filter,
+    omitProductAttributes: '1',
   };
   const response = await apiClient.get<ProductsResponse>('/api/v1/products', {
     params,
@@ -120,6 +122,65 @@ async function fetchFeaturedStrip(
   });
   const rows = dedupeCardProductsByTitle(response.data ?? []);
   return rows.slice(0, FEATURED_PRODUCTS_VISIBLE_COUNT);
+}
+
+type CardVisualRow = {
+  id: string;
+  slug: string;
+  image: string | null;
+  images: string[];
+};
+
+interface CardVisualResponse {
+  data: CardVisualRow[];
+}
+
+async function fetchFeaturedNewVisualChunk(language: LanguageCode): Promise<CardVisualRow[]> {
+  const response = await apiClient.get<CardVisualResponse>('/api/v1/products', {
+    params: {
+      page: '1',
+      limit: String(HOME_PRODUCT_CHUNK_SIZE),
+      lang: language,
+      filter: 'new',
+      sort: 'createdAt',
+      omitProductAttributes: '1',
+      cardVisualOnly: '1',
+    },
+    suppressHttpErrorLogging: true,
+  });
+  return response.data ?? [];
+}
+
+function cardVisualRowsToStubProducts(rows: CardVisualRow[]): SpecialOfferProduct[] {
+  return rows.map((row) => ({
+    id: row.id,
+    slug: row.slug,
+    image: row.image,
+    images: row.images?.length ? row.images : row.image ? [row.image] : [],
+    title: '\u00a0',
+    price: 0,
+    inStock: true,
+    brand: null,
+    defaultVariantId: null,
+    detailsPending: true,
+  }));
+}
+
+/** Real card chrome + image well + text skeletons before the first listing byte. */
+function createHomeFeaturedShellPlaceholders(count: number): SpecialOfferProduct[] {
+  return Array.from({ length: count }, (_, i) => ({
+    id: `__home_featured_shell_${i}`,
+    slug: '',
+    title: '\u00a0',
+    price: 0,
+    inStock: true,
+    brand: null,
+    defaultVariantId: null,
+    detailsPending: true,
+    shellPlaceholder: true,
+    image: null,
+    images: [],
+  }));
 }
 
 /**
@@ -174,8 +235,52 @@ export function FeaturedProductsTabs({
     refetchOnMount: initialForNewTab === undefined,
   });
 
-  const products = featuredQuery.data ?? [];
-  const loading = featuredQuery.isPending;
+  const newStripVisualQuery = useQuery({
+    queryKey: queryKeys.productsCardVisual('new', language, 1, HOME_PRODUCT_CHUNK_SIZE),
+    queryFn: () => fetchFeaturedNewVisualChunk(language),
+    staleTime: 300_000,
+    enabled: activeTab === 'new' && initialForNewTab === undefined,
+  });
+
+  const products = useMemo(() => {
+    if (activeTab !== 'new') {
+      return featuredQuery.data ?? [];
+    }
+    const full = dedupeCardProductsByTitle(featuredQuery.data ?? []).slice(
+      0,
+      FEATURED_PRODUCTS_VISIBLE_COUNT,
+    );
+    if (full.length > 0) {
+      return full.map((p) => ({ ...p, detailsPending: false }));
+    }
+    const vis = newStripVisualQuery.data ?? [];
+    if (vis.length > 0) {
+      return cardVisualRowsToStubProducts(vis);
+    }
+    if (
+      initialForNewTab === undefined &&
+      !newStripVisualQuery.isError &&
+      !featuredQuery.isError &&
+      (newStripVisualQuery.isPending || featuredQuery.isPending)
+    ) {
+      return createHomeFeaturedShellPlaceholders(HOME_PRODUCT_CHUNK_SIZE);
+    }
+    return [];
+  }, [
+    activeTab,
+    featuredQuery.data,
+    featuredQuery.isPending,
+    featuredQuery.isError,
+    newStripVisualQuery.data,
+    newStripVisualQuery.isPending,
+    newStripVisualQuery.isError,
+    initialForNewTab,
+  ]);
+
+  const loading =
+    activeTab === 'new' && initialForNewTab === undefined
+      ? !products.length && newStripVisualQuery.isPending && featuredQuery.isPending
+      : featuredQuery.isPending;
   const error = featuredQuery.isError ? t(language, 'home.featured_products.errorLoading') : null;
 
   useEffect(() => {
@@ -278,6 +383,9 @@ export function FeaturedProductsTabs({
           isMaxMd={isMaxMd}
           onRetryFetch={() => {
             void featuredQuery.refetch();
+            if (activeTab === 'new' && initialForNewTab === undefined) {
+              void newStripVisualQuery.refetch();
+            }
           }}
           homeBrandPartners={null}
           homeBrandPartnersSectionTitle={null}

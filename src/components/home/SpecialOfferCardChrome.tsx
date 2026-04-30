@@ -70,6 +70,8 @@ interface SpecialOfferActionsStackProps {
   onWishlist: (e: MouseEvent) => void;
   onCompare: (e: MouseEvent) => void;
   layout?: 'default' | 'mobileGrid';
+  /** Pre-paint listing shells — hide hit targets without removing layout. */
+  disabled?: boolean;
 }
 
 export function SpecialOfferActionsStack({
@@ -82,6 +84,7 @@ export function SpecialOfferActionsStack({
   onWishlist,
   onCompare,
   layout = 'default',
+  disabled = false,
 }: SpecialOfferActionsStackProps) {
   const rightPx =
     SPECIAL_OFFERS_ACTIONS_STACK_RIGHT_FROM_CARD_OUTER_PX -
@@ -91,7 +94,8 @@ export function SpecialOfferActionsStack({
 
   return (
     <div
-      className="absolute z-50 flex flex-col items-end gap-2"
+      className={`absolute z-50 flex flex-col items-end gap-2${disabled ? ' pointer-events-none opacity-40' : ''}`}
+      aria-hidden={disabled || undefined}
       style={{
         top:
           SPECIAL_OFFERS_ACTIONS_STACK_TOP_FROM_CARD_OUTER_PX -
