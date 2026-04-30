@@ -33,6 +33,13 @@ export const HOME_SECONDARY_BANNER_HEADLINE_LINE_HEIGHT_RATIO = '0.91';
 export const HOME_SECONDARY_BANNER_CTA_HREF = '/products';
 
 /**
+ * Secondary banner only — `HomeFloorBannerSlackCtaLink` `--slack-stop-pad` on hover/focus (px).
+ * Inset from the pill’s inline-start where the slack chip settles; larger = final hover position nudges right.
+ * Rest position is unchanged.
+ */
+export const HOME_SECONDARY_BANNER_CTA_SLACK_HOVER_END_INSET_INLINE_START_PX = 10;
+
+/**
  * English (`en`) — banner 2 CTA on desktop (`lg`): compact width for short «More» copy (px).
  * Tailwind `lg:max-w-[…px]` in `HomeSecondaryBannerCta` must match.
  */
@@ -61,8 +68,8 @@ export const HOME_SECONDARY_BANNER_CTA_ARROW_ICON_RU_DESKTOP_PX = 17;
  */
 export const HOME_SECONDARY_BANNER_CTA_ICON_TRANSLATE_X_RU_DESKTOP_PX = 4;
 
-/** `margin-left` on yellow chip (px) — shift right; scaled with `HOME_BANNERS_CTA_*`. */
-export const HOME_SECONDARY_BANNER_CTA_ICON_MARGIN_LEFT_PX = 23;
+/** `margin-left` on yellow chip (px); lower = chip sits closer to the pill’s inline-end. */
+export const HOME_SECONDARY_BANNER_CTA_ICON_MARGIN_LEFT_PX = 8;
 
 /** Visual nudge for CTA label only (`translateX`); does not move the yellow chip. */
 export const HOME_SECONDARY_BANNER_CTA_LABEL_NUDGE_RIGHT_PX = 6;
@@ -92,7 +99,7 @@ export const HOME_SECONDARY_BANNER_CTA_PADDING_LEFT_HY_DESKTOP_PX = 26;
 
 /**
  * Armenian (`hy`) — desktop (`lg`): extra `translateX` on yellow chip (px). Negative = left.
- * Applied on top of inline `margin-left: HOME_SECONDARY_BANNER_CTA_ICON_MARGIN_LEFT_PX` (23). Tailwind `lg:-translate-x-[…px]` must match absolute value.
+ * Applied on top of inline `margin-left: HOME_SECONDARY_BANNER_CTA_ICON_MARGIN_LEFT_PX`. Tailwind `lg:-translate-x-[…px]` must match absolute value.
  */
 export const HOME_SECONDARY_BANNER_CTA_ICON_TRANSLATE_X_HY_DESKTOP_PX = -3;
 

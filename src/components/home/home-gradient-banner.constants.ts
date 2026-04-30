@@ -45,9 +45,9 @@ export const HOME_GRADIENT_BANNER_CTA_ICON_PULL_LEFT_RU_EXTRA_PX = 8;
 
 /**
  * Gradient (left) banner CTA only — slack chip inset from the pill’s inline-end at rest (px).
- * Secondary / mobile floor CTAs omit this so their slack stays flush.
+ * `0` keeps the chip flush to the pill cap; secondary CTAs omit this prop so their slack stays flush.
  */
-export const HOME_GRADIENT_BANNER_CTA_SLACK_REST_INSET_INLINE_END_PX = 16;
+export const HOME_GRADIENT_BANNER_CTA_SLACK_REST_INSET_INLINE_END_PX = 0;
 
 /** Gradient (left) banner CTA only — slack stop inset from inline-start on hover end (px). */
 export const HOME_GRADIENT_BANNER_CTA_SLACK_HOVER_END_INSET_INLINE_START_PX = 12;
@@ -84,9 +84,10 @@ export const HOME_GRADIENT_BANNER_CTA_LABEL_NUDGE_LEFT_RU_DESKTOP_EXTRA_PX = -1;
 export const HOME_GRADIENT_BANNER_CTA_LABEL_NUDGE_LEFT_HY_DESKTOP_EXTRA_PX = 8;
 
 /**
- * Armenian (`hy`) — desktop: extra `translateX` on black chip (px). Positive = right. Tailwind `lg:translate-x-[…px]` must match.
+ * Armenian (`hy`) — desktop: extra `translateX` on black chip (px). Negative = left; keep tiny so the chip stays inside the pill.
+ * Tailwind `lg:-translate-x-[…px]` in `HomeGradientBannerCta` must match absolute value when negative.
  */
-export const HOME_GRADIENT_BANNER_CTA_ICON_CIRCLE_NUDGE_RIGHT_HY_DESKTOP_PX = 12;
+export const HOME_GRADIENT_BANNER_CTA_ICON_CIRCLE_NUDGE_RIGHT_HY_DESKTOP_PX = -1;
 
 /** CTA row nudge from bottom-left anchor: positive X = right, negative Y = up. */
 export const HOME_GRADIENT_BANNER_CTA_ROW_OFFSET_X_PX = 30;

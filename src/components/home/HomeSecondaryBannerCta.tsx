@@ -22,6 +22,7 @@ import {
   HOME_SECONDARY_BANNER_CTA_HREF,
   HOME_SECONDARY_BANNER_CTA_ICON_MARGIN_LEFT_PX,
   HOME_SECONDARY_BANNER_CTA_LABEL_NUDGE_RIGHT_PX,
+  HOME_SECONDARY_BANNER_CTA_SLACK_HOVER_END_INSET_INLINE_START_PX,
 } from './home-secondary-banner.constants';
 
 const montserratSlateCta = Montserrat({
@@ -121,6 +122,7 @@ export function HomeSecondaryBannerCta({ language }: HomeSecondaryBannerCtaProps
     <HomeFloorBannerSlackCtaLink
       href={HOME_SECONDARY_BANNER_CTA_HREF}
       ariaLabel={ariaLabel}
+      slackStopPad={`${HOME_SECONDARY_BANNER_CTA_SLACK_HOVER_END_INSET_INLINE_START_PX}px`}
       className={`${montserratSlateCta.className} pointer-events-auto bg-black font-bold text-white transition hover:-translate-y-0.5 active:translate-y-px focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marco-black dark:text-[#050505] ${hyDesktopPillClass} ${enDesktopPillClass} ${ruDesktopPillClass}`}
       style={linkStyle}
       trailClassName="bg-marco-yellow"
