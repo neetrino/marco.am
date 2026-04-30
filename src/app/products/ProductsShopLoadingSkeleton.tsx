@@ -1,18 +1,21 @@
+export type ProductsShopLoadingSkeletonVariant = 'full' | 'body';
+
+type ProductsShopLoadingSkeletonProps = {
+  /** `body` = grid + filter column only (real header already on screen). */
+  readonly variant?: ProductsShopLoadingSkeletonVariant;
+};
+
 /**
  * PLP placeholder: explicit slate colors (avoid `var(--app-text)/opacity` — often invisible in Tailwind).
  * Used by Suspense fallback and `loading.tsx` so navigations are never a blank white main.
  */
-export function ProductsShopLoadingSkeleton() {
+export function ProductsShopLoadingSkeleton({ variant = 'full' }: ProductsShopLoadingSkeletonProps) {
   const bar = 'rounded-md bg-slate-200 animate-pulse dark:bg-slate-600';
   const block = 'rounded-lg bg-slate-200 animate-pulse dark:bg-slate-600';
   const card = 'h-[260px] w-full max-w-[286px] rounded-lg bg-slate-200 animate-pulse sm:h-[280px] dark:bg-slate-600';
 
-  return (
-    <div
-      className="w-full max-w-full min-h-[min(72vh,820px)] bg-[var(--app-bg)] pb-4 md:min-h-[min(68vh,760px)] md:pb-32 lg:pb-40"
-      aria-busy="true"
-      aria-label="Loading shop"
-    >
+  const headerSkeleton =
+    variant === 'full' ? (
       <div className="marco-header-container border-b border-slate-200/80 pb-3 pt-[58px] dark:border-white/10 sm:pb-4">
         <div className="hidden sm:flex sm:items-center sm:justify-between sm:gap-4">
           <div className={`h-9 w-52 max-w-[72%] sm:h-10 ${bar}`} />
@@ -26,6 +29,15 @@ export function ProductsShopLoadingSkeleton() {
           <div className={`h-11 w-full rounded-lg ${block}`} />
         </div>
       </div>
+    ) : null;
+
+  return (
+    <div
+      className="w-full max-w-full min-h-[min(72vh,820px)] bg-[var(--app-bg)] pb-4 md:min-h-[min(68vh,760px)] md:pb-32 lg:pb-40"
+      aria-busy="true"
+      aria-label="Loading shop"
+    >
+      {headerSkeleton}
 
       <div className="marco-header-container flex flex-col min-[744px]:flex-row min-[744px]:gap-5 xl:gap-8">
         <aside className="hidden w-[16rem] shrink-0 min-[744px]:block xl:w-[20rem]" aria-hidden>

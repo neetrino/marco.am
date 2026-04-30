@@ -2,6 +2,9 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useQueryClient } from "@tanstack/react-query";
+import { prefetchProductDetail } from "@/lib/api/prefetch-product-detail";
+import { getStoredLanguage } from "@/lib/language";
 import { ProductLabels } from "../ProductLabels";
 import { ProductImagePlaceholder } from "../ProductImagePlaceholder";
 import type { ProductLabel } from "../ProductLabels";
@@ -29,11 +32,22 @@ export function ProductCardImage({
   onImageError,
   isCompact: _isCompact = false,
 }: ProductCardImageProps) {
+  const queryClient = useQueryClient();
   const showPlaceholder = imageError || !image;
+
+  const handlePrefetch = () => {
+    void prefetchProductDetail(queryClient, slug, getStoredLanguage());
+  };
 
   return (
     <div className="aspect-square bg-gray-100 relative overflow-hidden">
-      <Link href={`/products/${slug}`} className="relative block h-full w-full">
+      <Link
+        href={`/products/${slug}`}
+        className="relative block h-full w-full"
+        prefetch
+        onMouseEnter={handlePrefetch}
+        onFocus={handlePrefetch}
+      >
         {showPlaceholder ? (
           <ProductImagePlaceholder
             className="w-full h-full"

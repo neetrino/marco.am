@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { BadgeCheck, CreditCard, ShieldCheck, Truck } from 'lucide-react';
 
@@ -9,6 +9,7 @@ import type { WhyChooseUsPublicPayload } from '@/lib/services/why-choose-us.serv
 import { useTranslation } from '@/lib/i18n-client';
 
 import { HOME_PAGE_SECTION_SHELL_CLASS } from './home-page-section-shell.constants';
+import { useWhenNearViewport } from '../hooks/use-when-near-viewport';
 
 const ICONS: Record<WhyChooseUsIconKey, LucideIcon> = {
   warranty: ShieldCheck,
@@ -26,8 +27,13 @@ export function HomeWhyChooseUsSection({
 }: HomeWhyChooseUsSectionProps) {
   const { lang } = useTranslation();
   const [data, setData] = useState<WhyChooseUsPublicPayload>(initialWhyChooseUs);
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const nearViewport = useWhenNearViewport(sectionRef, { rootMargin: '200px 0px' });
 
   useEffect(() => {
+    if (!nearViewport) {
+      return;
+    }
     let cancelled = false;
     void (async () => {
       try {
@@ -44,10 +50,11 @@ export function HomeWhyChooseUsSection({
     return () => {
       cancelled = true;
     };
-  }, [lang]);
+  }, [lang, nearViewport]);
 
   return (
     <section
+      ref={sectionRef}
       className={`${HOME_PAGE_SECTION_SHELL_CLASS} py-10 sm:py-14`}
       aria-labelledby="home-why-choose-us-heading"
     >

@@ -1,5 +1,7 @@
 import { revalidateTag } from 'next/cache';
 import { db } from "@white-shop/db";
+import { CURRENCY_RATES_CACHE_KEY } from "@/lib/cache/public-cache-keys";
+import { cacheService } from "@/lib/services/cache.service";
 import { logger } from "@/lib/utils/logger";
 
 function revalidateListingDiscountCache() {
@@ -141,6 +143,7 @@ class AdminSettingsService {
         },
       });
       logger.devLog('✅ [ADMIN SERVICE] Currency rates updated:', data.currencyRates);
+      await cacheService.del(CURRENCY_RATES_CACHE_KEY);
     }
     
     return { success: true };
@@ -255,6 +258,7 @@ class AdminSettingsService {
     });
 
     logger.devLog('✅ [ADMIN SERVICE] Price filter settings updated:', setting);
+    await cacheService.deletePattern('cache:products:*');
     const stored = setting.value as any;
     return {
       success: true,

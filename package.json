@@ -35,6 +35,7 @@
     "@prisma/client": "^5.9.0",
     "@shop/design-tokens": "workspace:*",
     "@shop/ui": "workspace:*",
+    "@tanstack/react-query": "^5.90.0",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.36.2",
     "@white-shop/db": "workspace:*",

@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { toApiErrorResponse } from "@/lib/api/next-route-error";
-import { productsService } from "@/lib/services/products.service";
 import { parseTechnicalSpecFiltersFromSearchParams } from "@/lib/services/products-technical-filters";
+import { getProductsFiltersCached } from "@/lib/cache/products-filters-redis";
 
 export async function GET(req: NextRequest) {
   try {
-    let searchParams;
+    let searchParams: URLSearchParams;
     try {
-      const url = req.url || '';
+      const url = req.url || "";
       searchParams = new URL(url).searchParams;
     } catch (urlError) {
       console.error("❌ [PRODUCTS FILTERS] Error parsing URL:", urlError);
@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
           title: "Internal Server Error",
           status: 500,
           detail: "Invalid request URL",
-          instance: req.url || '',
+          instance: req.url || "",
         },
         { status: 500 }
       );
@@ -44,11 +44,17 @@ export async function GET(req: NextRequest) {
       technicalSpecs: parseTechnicalSpecFiltersFromSearchParams(searchParams),
     };
 
-    const result = await productsService.getFilters(filters);
+    const result = await getProductsFiltersCached({
+      category: filters.category,
+      search: filters.search,
+      minPrice: filters.minPrice,
+      maxPrice: filters.maxPrice,
+      lang: filters.lang,
+      technicalSpecs: filters.technicalSpecs,
+    });
     return NextResponse.json(result);
   } catch (error: unknown) {
     console.error("❌ [PRODUCTS FILTERS] Error:", error);
-    return toApiErrorResponse(error, req.url || '');
+    return toApiErrorResponse(error, req.url || "");
   }
 }
-

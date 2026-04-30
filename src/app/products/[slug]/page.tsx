@@ -1,15 +1,25 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { apiClient } from '../../../lib/api-client';
 import { t } from '../../../lib/i18n';
 import { useAuth } from '../../../lib/auth/AuthContext';
-import { RelatedProducts } from '../../../components/RelatedProducts';
-import { ProductReviews } from '../../../components/ProductReviews';
 import { ProductImageGallery } from './ProductImageGallery';
 import { ProductInfoAndActions } from './ProductInfoAndActions';
-import { ProductSpecifications } from './ProductSpecifications';
 import { useProductPage } from './useProductPage';
 import type { ProductPageProps } from './types';
+
+const ProductSpecifications = dynamic(() =>
+  import('./ProductSpecifications').then((m) => ({ default: m.ProductSpecifications })),
+);
+
+const RelatedProducts = dynamic(() =>
+  import('../../../components/RelatedProducts').then((m) => ({ default: m.RelatedProducts })),
+);
+
+const ProductReviews = dynamic(() =>
+  import('../../../components/ProductReviews').then((m) => ({ default: m.ProductReviews })),
+);
 
 export default function ProductPage({ params }: ProductPageProps) {
   const { isLoggedIn } = useAuth();

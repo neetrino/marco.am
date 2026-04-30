@@ -3,7 +3,8 @@ import { db } from "@white-shop/db";
 import { filterExcludedShopCategoryTree } from "@/lib/constants/excluded-shop-category-slugs";
 import { getCachedJson } from "@/lib/services/read-through-json-cache";
 
-const CATEGORY_TREE_CACHE_TTL_SEC = 120;
+/** Categories change rarely; longer TTL improves Redis hit rate (invalidated on admin category writes). */
+const CATEGORY_TREE_CACHE_TTL_SEC = 300;
 
 class CategoriesService {
   /**

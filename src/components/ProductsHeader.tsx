@@ -115,7 +115,7 @@ function viewToggleSegmentClass(isActive: boolean): string {
     : `${VIEW_TOGGLE_SEGMENT_BASE} text-marco-black dark:text-white hover:bg-[#fafafa] dark:hover:bg-white/10`;
 }
 
-function ProductsShopTitleBlock({ total }: { readonly total: number }) {
+function ProductsShopTitleBlock({ total }: { readonly total?: number }) {
   const { t } = useTranslation();
   return (
     <div className="flex flex-col items-start">
@@ -141,9 +141,11 @@ function ProductsShopTitleBlock({ total }: { readonly total: number }) {
           <span aria-hidden className="block">
             {t('products.header.shopWordmark')}
           </span>
-          <span className="sr-only">
-            {t('products.header.allProducts').replace('{total}', String(total))}
-          </span>
+          {total !== undefined ? (
+            <span className="sr-only">
+              {t('products.header.allProducts').replace('{total}', String(total))}
+            </span>
+          ) : null}
         </h1>
         <span className={PRODUCTS_PAGE_TITLE_UNDERLINE_CLASS} aria-hidden />
       </div>
@@ -153,9 +155,10 @@ function ProductsShopTitleBlock({ total }: { readonly total: number }) {
 
 interface ProductsHeaderProps {
   /**
-   * Ընդհանուր ապրանքների քանակը՝ բոլոր էջերում (from API meta.total)
+   * Ընդհանուր ապրանքների քանակը՝ բոլոր էջերում (from API meta.total).
+   * Undefined until PLP listing streams (header still paints first).
    */
-  total: number;
+  total?: number;
 }
 
 function ProductsHeaderContent({ total }: ProductsHeaderProps) {
