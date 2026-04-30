@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { HomeRoutePrefetch } from '@/components/home/HomeRoutePrefetch';
 import { HomeFeaturedSection } from './home/HomeFeaturedSection';
+import { HomeProductRailsSkeleton } from './home/HomeProductRailsSkeleton';
 import { HomeSpecialOffersBoundary } from './home/HomeSpecialOffersBoundary';
 import { HomeHeroBannerSection } from './HomeHeroBannerSection';
 import { HomeHeroReelsFallback } from './HomeHeroReelsFallback';
@@ -20,11 +21,11 @@ export default function HomePage() {
         <HomeReelsBelowHero />
       </Suspense>
 
-      <Suspense fallback={null}>
+      <Suspense fallback={<HomeProductRailsSkeleton />}>
         <HomeSpecialOffersBoundary />
       </Suspense>
 
-      <Suspense fallback={null}>
+      <Suspense fallback={<HomeProductRailsSkeleton />}>
         <HomeFeaturedSection />
       </Suspense>
 

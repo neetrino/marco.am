@@ -1,8 +1,7 @@
 'use client';
 
-import Link from 'next/link';
-
 import { ProductColors } from '../ProductCard/ProductColors';
+import { ProductPdpPrefetchLink } from '../ProductPdpPrefetchLink';
 
 import {
   SPECIAL_OFFERS_COLOR_SWATCH_COLUMN_PADDING_TOP_PX,
@@ -15,12 +14,33 @@ import type { SpecialOfferProduct } from './special-offer-product.types';
 interface SpecialOfferCardInfoProps {
   product: SpecialOfferProduct;
   brandClass: string;
+  /** Reserved layout while listing details load — no fake title text. */
+  detailsPending?: boolean;
 }
+
+const skeletonBar = 'rounded-md bg-gray-200/90 dark:bg-white/10';
 
 export function SpecialOfferCardInfo({
   product,
   brandClass,
+  detailsPending = false,
 }: SpecialOfferCardInfoProps) {
+  if (detailsPending) {
+    return (
+      <div
+        className="flex gap-2"
+        style={{ marginTop: `${SPECIAL_OFFERS_IMAGE_TO_TEXT_GAP_PX}px` }}
+        aria-busy="true"
+      >
+        <div className="min-w-0 flex-1 space-y-2">
+          <div className={`h-3 w-20 ${skeletonBar}`} />
+          <div className={`h-4 w-full max-w-[200px] ${skeletonBar}`} />
+          <div className={`h-4 w-[80%] max-w-[160px] ${skeletonBar}`} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className="flex gap-2"
@@ -32,11 +52,15 @@ export function SpecialOfferCardInfo({
         >
           {product.brand?.name ?? '—'}
         </p>
-        <Link href={`/products/${product.slug}`} className="mt-1 block">
+        <ProductPdpPrefetchLink
+          href={`/products/${product.slug}`}
+          productSlug={product.slug}
+          className="mt-1 block"
+        >
           <h3 className="line-clamp-2 text-left text-[14px] font-bold leading-5 text-[#181111]">
             {product.title}
           </h3>
-        </Link>
+        </ProductPdpPrefetchLink>
       </div>
       {product.colors && product.colors.length > 1 ? (
         <div

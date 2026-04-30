@@ -3,6 +3,12 @@ import type { LanguageCode } from "@/lib/language";
 export const queryKeys = {
   productDetail: (slug: string, lang: LanguageCode) =>
     ["api", "v1", "products", "detail", slug, lang] as const,
+  productVisual: (slug: string, lang: LanguageCode) =>
+    ["api", "v1", "products", "visual", slug, lang] as const,
+  relatedProducts: (slug: string, lang: LanguageCode, limit: number) =>
+    ["api", "v1", "products", "related", slug, lang, String(limit)] as const,
+  productsCardVisual: (filter: string, lang: LanguageCode, page: number, limit: number) =>
+    ["api", "v1", "products", "card-visual", filter, lang, String(page), String(limit)] as const,
   productsList: (params: Record<string, string | undefined>) =>
     ["api", "v1", "products", "list", params] as const,
   featuredHomeStrip: (filter: string, lang: LanguageCode, limit: number) =>

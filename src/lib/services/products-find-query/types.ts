@@ -24,6 +24,8 @@ export interface ProductFilters {
    * PLP: skip heavy `productAttributes` join on product rows (faster listing; card keySpecs/color extras may be thinner).
    */
   listingOmitProductAttributes?: boolean;
+  /** When true, listing API returns only id, slug, image, images for first-paint card shells. */
+  cardVisualOnly?: boolean;
 }
 
 export type TechnicalSpecFilters = Record<string, string[]>;

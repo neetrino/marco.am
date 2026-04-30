@@ -15,12 +15,25 @@ const STAR_COUNT = 5;
 
 interface SpecialOfferCardStarsProps {
   reviewCount?: number;
+  detailsPending?: boolean;
 }
 
 /**
  * Figma `101:3637` — outlined yellow stars, optional `(n)` reviews; row sits below title with fixed offset.
  */
-export function SpecialOfferCardStars({ reviewCount }: SpecialOfferCardStarsProps) {
+export function SpecialOfferCardStars({ reviewCount, detailsPending = false }: SpecialOfferCardStarsProps) {
+  if (detailsPending) {
+    return (
+      <div
+        className="flex min-h-0 w-full min-w-0 items-center"
+        style={{ marginTop: SPECIAL_OFFERS_TITLE_TO_STARS_MARGIN_TOP_PX }}
+        aria-busy="true"
+      >
+        <div className="h-4 w-24 rounded-md bg-gray-200/90 dark:bg-white/10" />
+      </div>
+    );
+  }
+
   return (
     <div
       className="flex min-h-0 w-full min-w-0 items-center"

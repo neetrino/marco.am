@@ -22,4 +22,10 @@ export interface SpecialOfferProduct {
     imageUrl?: string | null;
     colors?: string[] | null;
   }>;
+  /** When true, card shows image + neutral skeletons for text/price until full row arrives. */
+  detailsPending?: boolean;
+  /**
+   * First-paint shells before any listing payload (no slug yet). Disables links and side actions.
+   */
+  shellPlaceholder?: boolean;
 }

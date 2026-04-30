@@ -18,18 +18,22 @@ export async function HomeSpecialOffersBoundary() {
   const lang: LanguageCode =
     parseLanguageFromServer(cookieStore.get(LANGUAGE_PREFERENCE_KEY)?.value) ?? 'en';
 
-  const result = await getProductsListingCached({
-    page: 1,
-    limit: SPECIAL_OFFERS_PRODUCTS_LIMIT,
-    lang,
-    filter: 'promotion',
-    sort: 'createdAt',
-    listingOmitProductAttributes: true,
-  });
-
-  const rows = dedupeCardProductsByTitle(
-    (result.data ?? []) as SpecialOfferProduct[],
-  ).slice(0, SPECIAL_OFFERS_PRODUCTS_LIMIT);
+  let rows: SpecialOfferProduct[] = [];
+  try {
+    const result = await getProductsListingCached({
+      page: 1,
+      limit: SPECIAL_OFFERS_PRODUCTS_LIMIT,
+      lang,
+      filter: 'promotion',
+      sort: 'createdAt',
+      listingOmitProductAttributes: true,
+    });
+    rows = dedupeCardProductsByTitle(
+      (result.data ?? []) as SpecialOfferProduct[],
+    ).slice(0, SPECIAL_OFFERS_PRODUCTS_LIMIT);
+  } catch {
+    // Client `useQuery` can still load promotions if the server cache path fails.
+  }
 
   return (
     <HomeSpecialOffersSection serverLanguage={lang} initialPromotionProducts={rows} />

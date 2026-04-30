@@ -18,6 +18,8 @@ interface ProductImageGalleryProps {
   onImageIndexChange: Dispatch<SetStateAction<number>>;
   thumbnailStartIndex: number;
   onThumbnailStartIndexChange: (index: number) => void;
+  /** Hint browser to decode the hero image first when only `/visual` data is available yet. */
+  mainImageHighPriority?: boolean;
 }
 
 const THUMBNAILS_PER_VIEW = 3;
@@ -31,6 +33,7 @@ export function ProductImageGallery({
   onImageIndexChange,
   thumbnailStartIndex,
   onThumbnailStartIndexChange,
+  mainImageHighPriority = false,
 }: ProductImageGalleryProps) {
   const [showZoom, setShowZoom] = useState(false);
   const [failedIndices, setFailedIndices] = useState<Set<number>>(new Set());
@@ -132,10 +135,12 @@ export function ProductImageGallery({
         <div className="mx-auto w-full max-w-[420px] md:mx-0 md:max-w-none md:flex-1">
           <div className="relative aspect-square bg-white rounded-lg overflow-hidden group shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
           {currentSrc && !mainImageFailed ? (
-            <img 
-              src={currentSrc} 
-              alt={product.title} 
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+            <img
+              src={currentSrc}
+              alt={product.title}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              fetchPriority={mainImageHighPriority ? 'high' : 'auto'}
+              decoding="async"
               onError={() => markFailed(safeCurrentImageIndex)}
             />
           ) : (

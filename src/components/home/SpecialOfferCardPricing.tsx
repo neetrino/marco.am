@@ -19,13 +19,36 @@ interface SpecialOfferCardPricingProps {
   price: number;
   oldPrice: number | null;
   currency: CurrencyCode;
+  detailsPending?: boolean;
 }
+
+const priceSkeletonBar = 'rounded-md bg-gray-200/90 dark:bg-white/10';
 
 export function SpecialOfferCardPricing({
   price,
   oldPrice,
   currency,
+  detailsPending = false,
 }: SpecialOfferCardPricingProps) {
+  if (detailsPending) {
+    return (
+      <div
+        className="min-w-0 max-md:pr-0 md:[padding-right:var(--special-offers-price-pad-end)]"
+        aria-busy="true"
+      >
+        <div
+          className={`${priceSkeletonBar}`}
+          style={{
+            height: SPECIAL_OFFERS_PRICE_LINE_HEIGHT_PX,
+            width: '72px',
+            maxWidth: '40%',
+          }}
+        />
+        <div className={`mt-1 h-3 w-14 ${priceSkeletonBar}`} />
+      </div>
+    );
+  }
+
   return (
     <div className="min-w-0 max-md:pr-0 md:[padding-right:var(--special-offers-price-pad-end)]">
       <p
@@ -55,6 +78,8 @@ interface SpecialOfferCartFloatingButtonProps {
   addToCartAria: string;
   outOfStockAria: string;
   onAddToCart: (e: MouseEvent) => void;
+  /** When true (e.g. listing details still loading), cart is non-interactive. */
+  interactionLocked?: boolean;
 }
 
 /**
@@ -66,14 +91,16 @@ export function SpecialOfferCartFloatingButton({
   addToCartAria,
   outOfStockAria,
   onAddToCart,
+  interactionLocked = false,
 }: SpecialOfferCartFloatingButtonProps) {
+  const disabled = interactionLocked || !inStock || isAddingToCart;
   return (
     <div className="pointer-events-none absolute max-md:z-50 max-md:bottom-[var(--so-cart-bottom-mobile)] max-md:left-1/2 max-md:right-auto max-md:-translate-x-1/2 md:z-30 md:bottom-[var(--so-cart-bottom-desktop)] md:left-auto md:right-[var(--so-cart-right-desktop)] md:translate-x-0">
       <div className="pointer-events-auto">
         <button
           type="button"
           onClick={onAddToCart}
-          disabled={!inStock || isAddingToCart}
+          disabled={disabled}
           className="relative flex items-center justify-center overflow-hidden rounded-full bg-[#ffca03] shadow-sm transition-transform hover:scale-105 disabled:cursor-not-allowed disabled:opacity-50 dark:outline dark:outline-2 dark:outline-[#050505]"
           style={{
             width: SPECIAL_OFFERS_CART_BUTTON_SIZE_PX,

@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useEffect, use, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { getStoredCurrency } from '../../../lib/currency';
 import { getStoredLanguage, type LanguageCode } from '../../../lib/language';
+import type { PdpVisualPayload } from '@/lib/services/products-slug/product-transformer';
 import type { CurrencyCode } from '../../../lib/currency';
 import { t } from '../../../lib/i18n';
 import { useAttributeGroups } from './useAttributeGroups';
 import { useProductImages } from './hooks/useProductImages';
+import { buildGalleryStubProduct } from './buildGalleryStubProduct';
 import { useProductFetch } from './hooks/useProductFetch';
 import { useWishlistCompare } from './hooks/useWishlistCompare';
 import { useReviews } from '../../../components/ProductReviews/hooks/useReviews';
@@ -14,30 +16,51 @@ import { useVariantSelection } from './hooks/useVariantSelection';
 import { useProductActions } from './hooks/useProductActions';
 import { useProductQuantity } from './hooks/useProductQuantity';
 import { useProductCalculations } from './hooks/useProductCalculations';
-export function useProductPage(params: Promise<{ slug?: string }>) {
+
+export type UseProductPageInput = {
+  /** Raw `[slug]` segment (may include `:variantId`). */
+  slugParam: string;
+  serverLanguage: LanguageCode;
+  initialVisual: PdpVisualPayload | null;
+};
+
+export function useProductPage({ slugParam, serverLanguage, initialVisual }: UseProductPageInput) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   // Keep first SSR and client render identical to prevent hydration mismatch.
   const [currency, setCurrency] = useState<CurrencyCode>('AMD');
-  const [language, setLanguage] = useState<LanguageCode>('en');
+  const [language, setLanguage] = useState<LanguageCode>(() => serverLanguage);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [showMessage, setShowMessage] = useState<string | null>(null);
   const [thumbnailStartIndex, setThumbnailStartIndex] = useState(0);
 
-  const resolvedParams = use(params);
-  const rawSlug = resolvedParams?.slug ?? '';
-  const slugParts = rawSlug.includes(':') ? rawSlug.split(':') : [rawSlug];
-  const slug = slugParts[0];
+  const slugParts = slugParam.includes(':') ? slugParam.split(':') : [slugParam];
+  const slug = slugParts[0] ?? '';
   const variantIdFromUrl = slugParts.length > 1 ? slugParts[1] : null;
 
   const {
     product,
+    productVisual,
+    blockingEmpty,
+    detailsPending,
     loading,
   } = useProductFetch({
     slug,
     variantIdFromUrl,
+    serverLanguage,
+    initialVisual,
   });
 
-  const images = useProductImages(product);
+  const displayProduct = useMemo(() => {
+    if (product) {
+      return product;
+    }
+    if (productVisual) {
+      return buildGalleryStubProduct(productVisual);
+    }
+    return null;
+  }, [product, productVisual]);
+
+  const images = useProductImages(displayProduct);
 
   const {
     selectedVariant,
@@ -51,13 +74,13 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
     handleSizeSelect,
     handleAttributeValueSelect,
   } = useVariantSelection({
-    product,
+    product: displayProduct,
     images,
     setCurrentImageIndex,
   });
 
   const attributeGroups = useAttributeGroups({
-    product,
+    product: displayProduct,
     selectedColor,
     selectedSize,
     selectedAttributeValues,
@@ -76,7 +99,7 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
     hasUnavailableAttributes,
     canAddToCart,
   } = useProductCalculations({
-    product,
+    product: displayProduct,
     currentVariant,
     attributeGroups,
     selectedColor,
@@ -90,7 +113,7 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
   });
 
   const { isInWishlist, setIsInWishlist, isInCompare, setIsInCompare } = useWishlistCompare({
-    productId: product?.id || null,
+    productId: displayProduct?.id || null,
   });
 
   const {
@@ -98,13 +121,13 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
     aggregate,
     loading: reviewsLoading,
     loadReviews: reloadProductReviews,
-  } = useReviews(product?.id, slug);
+  } = useReviews(displayProduct?.id ?? undefined, slug || undefined);
 
   const averageRating = aggregate.averageRating;
   const reviewCount = aggregate.reviewCount;
 
   const { handleAddToWishlist, handleCompareToggle } = useProductActions({
-    productId: product?.id || null,
+    productId: displayProduct?.id || null,
     isInWishlist,
     setIsInWishlist,
     isInCompare,
@@ -138,9 +161,16 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
   }, [images.length, currentImageIndex]);
 
   useEffect(() => {
-    if (product && product.variants && product.variants.length > 0 && variantIdFromUrl) {
-      const variantById = product.variants.find(v => v.id === variantIdFromUrl || v.id.endsWith(variantIdFromUrl));
-      const variantByIndex = product.variants[parseInt(variantIdFromUrl) - 1];
+    if (
+      product &&
+      product.variants &&
+      product.variants.length > 0 &&
+      variantIdFromUrl
+    ) {
+      const variantById = product.variants.find(
+        (v) => v.id === variantIdFromUrl || v.id.endsWith(variantIdFromUrl),
+      );
+      const variantByIndex = product.variants[parseInt(variantIdFromUrl, 10) - 1];
       const initialVariant = variantById || variantByIndex || product.variants[0];
       setSelectedVariant(initialVariant);
       setCurrentImageIndex(0);
@@ -167,6 +197,10 @@ export function useProductPage(params: Promise<{ slug?: string }>) {
 
   return {
     product,
+    productVisual,
+    displayProduct,
+    blockingEmpty,
+    detailsPending,
     loading,
     images,
     currentImageIndex,

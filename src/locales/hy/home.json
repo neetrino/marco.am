@@ -124,7 +124,8 @@
     "ariaShowProducts": "Ցուցադրել {label} ապրանքներ",
     "errorLoading": "Չհաջողվեց բեռնել ապրանքները",
     "tryAgain": "Փորձել կրկին",
-    "noProducts": "Այս կատեգորիայում ապրանքներ չկան:"
+    "noProducts": "Այս կատեգորիայում ապրանքներ չկան:",
+    "card_loading_aria": "Ապրանք"
   },
   "brands": {
     "title": "ԲՐԵՆԴՆԵՐ",

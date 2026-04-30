@@ -49,6 +49,7 @@ export function buildProductsListingRedisKey(filters: ProductFilters): string {
     technicalSpecs: normalizeSpecsForKey(filters.technicalSpecs),
     productIds: productIds ?? null,
     listingOmitProductAttributes: Boolean(filters.listingOmitProductAttributes),
+    cardVisualOnly: Boolean(filters.cardVisualOnly),
   };
   const hash = createHash('sha256')
     .update(stableStringifyForCacheKey(fingerprint))

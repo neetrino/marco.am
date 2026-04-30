@@ -5,6 +5,7 @@
 
 import { productsFindService } from "./products-find.service";
 import { productsFiltersService } from "./products-filters.service";
+import { findBySlugVisual as findBySlugVisualImpl } from "./products-pdp-visual.service";
 import { productsSlugService } from "./products-slug.service";
 
 // Re-export types for backward compatibility
@@ -22,6 +23,8 @@ class ProductsService {
 
   // Slug methods
   findBySlug = productsSlugService.findBySlug.bind(productsSlugService);
+
+  findBySlugVisual = findBySlugVisualImpl;
 }
 
 export const productsService = new ProductsService();

@@ -16,6 +16,17 @@ interface ProductsMeta {
   nextCursor: string | null;
 }
 
+function toCardVisualOnlyRows(
+  rows: Array<{ id: string; slug: string; image: string | null; images?: string[] }>,
+) {
+  return rows.map((row) => ({
+    id: row.id,
+    slug: row.slug,
+    image: row.image,
+    images: row.images?.length ? row.images : row.image ? [row.image] : ([] as string[]),
+  }));
+}
+
 function buildProductsMeta(total: number, limit: number, page: number, start: number): ProductsMeta {
   const hasNextPage = start + limit < total;
   return {
@@ -79,8 +90,9 @@ class ProductsFindService {
         }
         return b.price - a.price;
       });
+      const slice = transformedAll.slice(start, start + limit);
       return {
-        data: transformedAll.slice(start, start + limit),
+        data: filters.cardVisualOnly ? toCardVisualOnlyRows(slice as never[]) : slice,
         meta: buildProductsMeta(total, limit, normalizedPage, start),
       };
     }
@@ -88,7 +100,7 @@ class ProductsFindService {
     const data = await productsFindTransformService.transformProducts(paginatedProducts, lang);
 
     return {
-      data,
+      data: filters.cardVisualOnly ? toCardVisualOnlyRows(data as never[]) : data,
       meta: buildProductsMeta(total, limit, normalizedPage, start),
     };
   }
