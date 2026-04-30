@@ -1,12 +1,14 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 
 import { montserratSpecial } from '../../fonts/montserrat-home';
 import { chunkArray, padChunkToSize, padChunksToMinimumCount } from '../../lib/chunk-array';
 import { apiClient } from '../../lib/api-client';
+import { queryKeys } from '../../lib/query-keys';
 import { getStoredLanguage, type LanguageCode } from '../../lib/language';
 import { t } from '../../lib/i18n';
 import { useTranslation } from '../../lib/i18n-client';
@@ -81,15 +83,49 @@ interface ProductsResponse {
   data: SpecialOfferProduct[];
 }
 
+export type HomeSpecialOffersSectionProps = {
+  readonly serverLanguage?: LanguageCode;
+  readonly initialPromotionProducts?: readonly SpecialOfferProduct[];
+};
+
 /**
  * Figma «Հատուկ առաջարկներ» — featured products carousel, CTA, pagination.
  */
-export function HomeSpecialOffersSection() {
+export function HomeSpecialOffersSection({
+  serverLanguage,
+  initialPromotionProducts,
+}: HomeSpecialOffersSectionProps = {}) {
   const { t: tr } = useTranslation();
-  const [language, setLanguage] = useState<LanguageCode>('en');
-  const [products, setProducts] = useState<SpecialOfferProduct[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [language, setLanguage] = useState<LanguageCode>(() => serverLanguage ?? 'en');
+
+  const initialPromotion =
+    initialPromotionProducts &&
+    initialPromotionProducts.length > 0 &&
+    (serverLanguage === undefined || language === serverLanguage)
+      ? [...initialPromotionProducts]
+      : undefined;
+
+  const specialOffersQuery = useQuery({
+    queryKey: queryKeys.specialOffersPromotion(language, SPECIAL_OFFERS_PRODUCTS_LIMIT),
+    queryFn: async () => {
+      const response = await apiClient.get<ProductsResponse>('/api/v1/products', {
+        params: {
+          page: '1',
+          limit: String(SPECIAL_OFFERS_PRODUCTS_LIMIT),
+          lang: language,
+          filter: 'promotion',
+        },
+      });
+      return dedupeCardProductsByTitle(response.data ?? []);
+    },
+    staleTime: 300_000,
+    initialData: initialPromotion,
+    refetchOnMount: initialPromotion === undefined,
+  });
+
+  const products = specialOffersQuery.data ?? [];
+  const loading = specialOffersQuery.isPending;
+  const error = specialOffersQuery.isError ? t(language, 'home.special_offers.error_loading') : null;
 
   const isRailVisible = !error && (loading || products.length > 0);
 
@@ -110,37 +146,17 @@ export function HomeSpecialOffersSection() {
     const updateLanguage = () => {
       setLanguage(getStoredLanguage());
     };
-    updateLanguage();
+    const stored = getStoredLanguage();
+    if (serverLanguage === undefined) {
+      setLanguage(stored);
+    } else if (stored !== serverLanguage) {
+      setLanguage(stored);
+    }
     window.addEventListener('language-updated', updateLanguage);
     return () => {
       window.removeEventListener('language-updated', updateLanguage);
     };
-  }, []);
-
-  const fetchProducts = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await apiClient.get<ProductsResponse>('/api/v1/products', {
-        params: {
-          page: '1',
-          limit: String(SPECIAL_OFFERS_PRODUCTS_LIMIT),
-          lang: language,
-          filter: 'promotion',
-        },
-      });
-      setProducts(dedupeCardProductsByTitle(response.data ?? []));
-    } catch {
-      setError(t(language, 'home.special_offers.error_loading'));
-      setProducts([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [language]);
-
-  useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
+  }, [serverLanguage]);
 
   const titleHighlight = tr('home.special_offers.title_highlight');
   const titleRest = tr('home.special_offers.title_rest');
@@ -277,7 +293,9 @@ export function HomeSpecialOffersSection() {
             <p className="text-red-600">{error}</p>
             <button
               type="button"
-              onClick={fetchProducts}
+              onClick={() => {
+                void specialOffersQuery.refetch();
+              }}
               className="mt-4 rounded-lg bg-marco-black px-4 py-2 text-sm text-white hover:opacity-90"
             >
               {tr('home.special_offers.try_again')}

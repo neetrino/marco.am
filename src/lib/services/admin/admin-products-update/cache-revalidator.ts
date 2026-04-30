@@ -23,6 +23,7 @@ export async function revalidateProductCache(
     revalidateTag(`product-${productId}`);
 
     await cacheService.deletePattern("products:*");
+    await cacheService.deletePattern("cache:products:*");
     await invalidateCategoryPublicCaches();
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);

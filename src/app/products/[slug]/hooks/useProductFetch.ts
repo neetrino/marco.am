@@ -1,7 +1,11 @@
-import { useState, useCallback, useEffect } from 'react';
+'use client';
+
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../../../lib/api-client';
-import { getStoredLanguage } from '../../../../lib/language';
+import { getStoredLanguage, type LanguageCode } from '../../../../lib/language';
+import { queryKeys } from '../../../../lib/query-keys';
 import { RESERVED_ROUTES } from '../types';
 import type { Product } from '../types';
 
@@ -10,51 +14,43 @@ interface UseProductFetchProps {
   variantIdFromUrl: string | null;
 }
 
+async function fetchProductDetail(slug: string, lang: LanguageCode): Promise<Product> {
+  try {
+    return await apiClient.get<Product>(`/api/v1/products/${slug}`, {
+      params: { lang },
+    });
+  } catch (error: unknown) {
+    const errorStatus =
+      error && typeof error === 'object' && 'status' in error ? Number(error.status) : undefined;
+    if (errorStatus === 404 && lang !== 'en') {
+      return apiClient.get<Product>(`/api/v1/products/${slug}`, {
+        params: { lang: 'en' },
+      });
+    }
+    throw error;
+  }
+}
+
 export function useProductFetch({
   slug,
-  variantIdFromUrl,
+  variantIdFromUrl: _variantIdFromUrl,
 }: UseProductFetchProps) {
   const router = useRouter();
-  const [product, setProduct] = useState<Product | null>(null);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+  const [lang, setLang] = useState<LanguageCode>(() =>
+    typeof window !== 'undefined' ? getStoredLanguage() : 'en',
+  );
 
-  const fetchProduct = useCallback(async () => {
-    if (!slug || RESERVED_ROUTES.includes(slug.toLowerCase())) return;
-    
-    try {
-      setLoading(true);
-      const currentLang = getStoredLanguage();
-      let data: Product;
-      
-      try {
-        data = await apiClient.get<Product>(`/api/v1/products/${slug}`, {
-          params: { lang: currentLang }
-        });
-      } catch (error: unknown) {
-        const errorStatus = error && typeof error === 'object' && 'status' in error ? Number(error.status) : undefined;
-        if (errorStatus === 404 && currentLang !== 'en') {
-          try {
-            data = await apiClient.get<Product>(`/api/v1/products/${slug}`, {
-              params: { lang: 'en' }
-            });
-          } catch {
-            throw error;
-          }
-        } else {
-          throw error;
-        }
-      }
-      
-      setProduct(data);
-    } catch (error: unknown) {
-      const err = error as { status?: number };
-      if (err?.status === 404) {
-        setProduct(null);
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, [slug, variantIdFromUrl]);
+  useEffect(() => {
+    setLang(getStoredLanguage());
+    const onLanguageUpdate = () => {
+      setLang(getStoredLanguage());
+    };
+    window.addEventListener('language-updated', onLanguageUpdate);
+    return () => {
+      window.removeEventListener('language-updated', onLanguageUpdate);
+    };
+  }, []);
 
   useEffect(() => {
     if (!slug) return;
@@ -63,20 +59,29 @@ export function useProductFetch({
     }
   }, [slug, router]);
 
-  useEffect(() => {
-    if (!slug || RESERVED_ROUTES.includes(slug.toLowerCase())) return;
-    fetchProduct();
-    
-    const handleLanguageUpdate = () => {
-      fetchProduct();
-    };
-    
-    window.addEventListener('language-updated', handleLanguageUpdate);
-    return () => {
-      window.removeEventListener('language-updated', handleLanguageUpdate);
-    };
-  }, [slug, variantIdFromUrl, router, fetchProduct]);
+  const enabled = Boolean(slug) && !RESERVED_ROUTES.includes(slug.toLowerCase());
 
-  return { product, loading, fetchProduct };
+  const query = useQuery({
+    queryKey: queryKeys.productDetail(slug, lang),
+    queryFn: () => fetchProductDetail(slug, lang),
+    enabled,
+    staleTime: 120_000,
+    retry: (failureCount, error) => {
+      const status =
+        error && typeof error === 'object' && 'status' in error ? Number(error.status) : undefined;
+      if (status === 404) {
+        return false;
+      }
+      return failureCount < 1;
+    },
+  });
+
+  const fetchProduct = () =>
+    queryClient.invalidateQueries({ queryKey: queryKeys.productDetail(slug, lang) });
+
+  return {
+    product: query.data ?? null,
+    loading: query.isPending || query.isFetching,
+    fetchProduct,
+  };
 }
-

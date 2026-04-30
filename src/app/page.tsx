@@ -1,37 +1,34 @@
-import dynamic from 'next/dynamic';
 import { Suspense } from 'react';
+import { HomeRoutePrefetch } from '@/components/home/HomeRoutePrefetch';
+import { HomeFeaturedSection } from './home/HomeFeaturedSection';
+import { HomeSpecialOffersBoundary } from './home/HomeSpecialOffersBoundary';
+import { HomeHeroBannerSection } from './HomeHeroBannerSection';
 import { HomeHeroReelsFallback } from './HomeHeroReelsFallback';
-import { HomeHeroReelsSection } from './HomeHeroReelsSection';
-
-const FeaturedProductsTabs = dynamic(
-  () =>
-    import('../components/FeaturedProductsTabs').then((m) => ({
-      default: m.FeaturedProductsTabs,
-    })),
-  { ssr: true, loading: () => <div className="min-h-[280px] w-full" aria-hidden /> },
-);
-
-const HomeSpecialOffersSection = dynamic(
-  () =>
-    import('../components/home/HomeSpecialOffersSection').then((m) => ({
-      default: m.HomeSpecialOffersSection,
-    })),
-  { ssr: true, loading: () => <div className="min-h-[240px] w-full" aria-hidden /> },
-);
+import { HomeReelsBelowHero } from './HomeReelsBelowHero';
 
 /**
- * Sync shell: hero + reels stream inside Suspense; below-the-fold sections stay dynamic imports.
+ * Shell renders immediately; hero streams alone first; reels follow without blocking the banner.
  */
 export default function HomePage() {
   return (
     <div className="min-h-screen">
       <Suspense fallback={<HomeHeroReelsFallback />}>
-        <HomeHeroReelsSection />
+        <HomeHeroBannerSection />
       </Suspense>
 
-      <HomeSpecialOffersSection />
+      <Suspense fallback={null}>
+        <HomeReelsBelowHero />
+      </Suspense>
 
-      <FeaturedProductsTabs />
+      <Suspense fallback={null}>
+        <HomeSpecialOffersBoundary />
+      </Suspense>
+
+      <Suspense fallback={null}>
+        <HomeFeaturedSection />
+      </Suspense>
+
+      <HomeRoutePrefetch />
     </div>
   );
 }

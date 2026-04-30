@@ -2,12 +2,14 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { montserratFeatured } from '../fonts/montserrat-home';
 import { apiClient, getErrorHttpStatus } from '../lib/api-client';
 import { getStoredLanguage, type LanguageCode } from '../lib/language';
 import { t } from '../lib/i18n';
 import { logger } from '../lib/utils/logger';
+import { queryKeys } from '../lib/query-keys';
 import { dedupeCardProductsByTitle } from '../lib/dedupeCardProductsByTitle';
 import { FeaturedProductsStrip } from './FeaturedProductsStrip';
 import { HomeAppBanner } from './home/HomeAppBanner';
@@ -95,23 +97,54 @@ const featuredTitleBarStyle = {
   height: `${FEATURED_PRODUCTS_TITLE_BAR_THICKNESS_PX}px`,
 } as const;
 
+export type FeaturedProductsTabsProps = {
+  /** Cookie / SSR language used to fetch `initialNewProducts` — keeps hydration aligned. */
+  readonly serverLanguage?: LanguageCode;
+  /** Server-rendered «new» strip so first paint is not an empty client waterfall. */
+  readonly initialNewProducts?: readonly SpecialOfferProduct[];
+};
+
+async function fetchFeaturedStrip(
+  filter: string,
+  language: LanguageCode,
+): Promise<SpecialOfferProduct[]> {
+  const params: Record<string, string> = {
+    page: '1',
+    limit: String(FEATURED_PRODUCTS_VISIBLE_COUNT),
+    lang: language,
+    filter,
+  };
+  const response = await apiClient.get<ProductsResponse>('/api/v1/products', {
+    params,
+    suppressHttpErrorLogging: true,
+  });
+  const rows = dedupeCardProductsByTitle(response.data ?? []);
+  return rows.slice(0, FEATURED_PRODUCTS_VISIBLE_COUNT);
+}
+
 /**
  * «Նորույթներ» — static 2×4 grid (md+), decorative dots + «Տեսնել ավելին» CTA.
  */
-export function FeaturedProductsTabs() {
+export function FeaturedProductsTabs({
+  serverLanguage,
+  initialNewProducts,
+}: FeaturedProductsTabsProps = {}) {
   const isMaxMd = useIsMaxMd();
-  const [language, setLanguage] = useState<LanguageCode>('en');
+  const queryClient = useQueryClient();
+  const [language, setLanguage] = useState<LanguageCode>(() => serverLanguage ?? 'en');
   const [activeTab, setActiveTab] = useState<FilterType>('new');
-  const [products, setProducts] = useState<SpecialOfferProduct[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const updateLanguage = () => {
       setLanguage(getStoredLanguage());
     };
 
-    updateLanguage();
+    const stored = getStoredLanguage();
+    if (serverLanguage === undefined) {
+      setLanguage(stored);
+    } else if (stored !== serverLanguage) {
+      setLanguage(stored);
+    }
 
     const handleLanguageUpdate = () => {
       updateLanguage();
@@ -121,55 +154,59 @@ export function FeaturedProductsTabs() {
     return () => {
       window.removeEventListener('language-updated', handleLanguageUpdate);
     };
+  }, [serverLanguage]);
+
+  const filter = FILTER_BY_TAB[activeTab];
+  const initialForNewTab =
+    activeTab === 'new' &&
+    initialNewProducts &&
+    initialNewProducts.length > 0 &&
+    (serverLanguage === undefined || language === serverLanguage)
+      ? [...initialNewProducts]
+      : undefined;
+
+  const featuredQuery = useQuery({
+    queryKey: queryKeys.featuredHomeStrip(filter, language, FEATURED_PRODUCTS_VISIBLE_COUNT),
+    queryFn: () => fetchFeaturedStrip(filter, language),
+    staleTime: 300_000,
+    initialData: initialForNewTab,
+    /** Skip duplicate `/api/v1/products` right after SSR (react-hooks/purity disallows `Date.now()` in render). */
+    refetchOnMount: initialForNewTab === undefined,
+  });
+
+  const products = featuredQuery.data ?? [];
+  const loading = featuredQuery.isPending;
+  const error = featuredQuery.isError ? t(language, 'home.featured_products.errorLoading') : null;
+
+  useEffect(() => {
+    if (!featuredQuery.isError || featuredQuery.error == null) {
+      return;
+    }
+    const status = getErrorHttpStatus(featuredQuery.error);
+    if (status && status >= 500) {
+      logger.warn('[FeaturedProductsTabs] products backend unavailable', { status });
+    } else {
+      logger.error('[FeaturedProductsTabs] fetch failed', { error: featuredQuery.error });
+    }
+  }, [featuredQuery.isError, featuredQuery.error]);
+
+  useEffect(() => {
+    if (!featuredQuery.isSuccess) {
+      return;
+    }
+    const others = TAB_ORDER.filter((tab) => tab !== activeTab).map((tab) => FILTER_BY_TAB[tab]);
+    for (const f of others) {
+      void queryClient.prefetchQuery({
+        queryKey: queryKeys.featuredHomeStrip(f, language, FEATURED_PRODUCTS_VISIBLE_COUNT),
+        queryFn: () => fetchFeaturedStrip(f, language),
+        staleTime: 300_000,
+      });
+    }
+  }, [featuredQuery.isSuccess, activeTab, language, queryClient]);
+
+  const handleTabChange = useCallback((tabId: FilterType) => {
+    setActiveTab(tabId);
   }, []);
-
-  const fetchProducts = useCallback(
-    async (filter: string | null) => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const currentLang = language;
-        const params: Record<string, string> = {
-          page: '1',
-          limit: String(FEATURED_PRODUCTS_VISIBLE_COUNT),
-          lang: currentLang,
-        };
-
-        if (filter) {
-          params.filter = filter;
-        }
-
-        const response = await apiClient.get<ProductsResponse>('/api/v1/products', {
-          params,
-          suppressHttpErrorLogging: true,
-        });
-
-        const rows = dedupeCardProductsByTitle(response.data ?? []);
-        setProducts(rows.slice(0, FEATURED_PRODUCTS_VISIBLE_COUNT));
-      } catch (err) {
-        const status = getErrorHttpStatus(err);
-        if (status && status >= 500) {
-          logger.warn('[FeaturedProductsTabs] products backend unavailable', { status });
-        } else {
-          logger.error('[FeaturedProductsTabs] fetch failed', { error: err });
-        }
-        setError(t(language, 'home.featured_products.errorLoading'));
-        setProducts([]);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [language],
-  );
-
-  const handleTabChange = useCallback(
-    (tabId: FilterType) => {
-      setActiveTab(tabId);
-      fetchProducts(FILTER_BY_TAB[tabId]);
-    },
-    [fetchProducts],
-  );
 
   const shiftTab = useCallback(
     (direction: -1 | 1) => {
@@ -179,10 +216,6 @@ export function FeaturedProductsTabs() {
     },
     [activeTab, handleTabChange],
   );
-
-  useEffect(() => {
-    fetchProducts('new');
-  }, [fetchProducts]);
 
   const sectionHeading = t(language, FEATURED_SECTION_TITLE_KEY);
 
@@ -243,7 +276,9 @@ export function FeaturedProductsTabs() {
           error={error}
           products={products}
           isMaxMd={isMaxMd}
-          onRetryFetch={() => fetchProducts(FILTER_BY_TAB[activeTab])}
+          onRetryFetch={() => {
+            void featuredQuery.refetch();
+          }}
           homeBrandPartners={null}
           homeBrandPartnersSectionTitle={null}
         />

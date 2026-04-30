@@ -447,6 +447,7 @@ class AdminProductsCreateService {
         // @ts-expect-error - revalidateTag type issue in Next.js
         revalidateTag('products');
         await cacheService.deletePattern("products:*");
+        await cacheService.deletePattern("cache:products:*");
         await invalidateCategoryPublicCaches();
       } catch (e) {
         console.warn('⚠️ [ADMIN PRODUCTS CREATE SERVICE] Revalidation failed:', e);

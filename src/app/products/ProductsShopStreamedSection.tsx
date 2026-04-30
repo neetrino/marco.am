@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { cookies } from 'next/headers';
 import {
   LANGUAGE_PREFERENCE_KEY,
@@ -5,22 +6,19 @@ import {
   type LanguageCode,
 } from '../../lib/language';
 import { t } from '../../lib/i18n';
-import { PriceFilter } from '../../components/PriceFilter';
-import { BrandFilter } from '../../components/BrandFilter';
-import { CategoryFilter } from '../../components/CategoryFilter';
-import { ColorFilter } from '../../components/ColorFilter';
-import { ProductsHeader } from '../../components/ProductsHeader';
 import { ProductsGrid } from '../../components/ProductsGrid';
-import { MobileFiltersDrawer } from '../../components/MobileFiltersDrawer';
-import { ProductsFiltersProvider } from '../../components/ProductsFiltersProvider';
-import { productsFiltersSectionFont } from '../../lib/products-filters-typography';
+import { ProductsPlpTotalReporter } from './ProductsPlpTotalReporter';
+import {
+  ProductsShopFiltersColumn,
+  productsShopFiltersColumnSkeletonAria,
+} from './ProductsShopFiltersColumn';
 import {
   ProductsPagination,
   type PaginationSlotItem,
 } from '../../components/products/ProductsPagination';
-import { MOBILE_FILTERS_EVENT } from '../../lib/events';
-import { productsService } from '../../lib/services/products.service';
+import { getProductsListingCached } from '../../lib/cache/products-listing-redis';
 import type { ProductLabel } from '../../components/ProductLabels';
+import type { ProductsPageSearchParams } from './products-page-search-params';
 
 /** PLP row after `transformProducts` (typed as unknown[] in service). */
 type ShopGridProduct = {
@@ -67,8 +65,6 @@ function normalizeShopGridProduct(p: unknown): ShopGridProduct {
   };
 }
 
-export type ProductsPageSearchParams = Record<string, string | string[] | undefined>;
-
 function firstParam(v: string | string[] | undefined): string | undefined {
   if (v === undefined) {
     return undefined;
@@ -103,7 +99,7 @@ async function getProducts(
   try {
     const { min: validMinPrice, max: validMaxPrice } = parseUrlPriceBounds(minPrice, maxPrice);
 
-    return await productsService.findAll({
+    return await getProductsListingCached({
       page,
       limit,
       lang: language,
@@ -156,6 +152,11 @@ export async function ProductsShopStreamedSection({ searchParams }: ProductsShop
     ? parseInt(limitParam, 10)
     : null;
   const perPage = parsedLimit ? Math.min(parsedLimit, 200) : 12;
+
+  const { min: filtersMinPrice, max: filtersMaxPrice } = parseUrlPriceBounds(
+    params.minPrice,
+    params.maxPrice,
+  );
 
   const productsData = await getProducts(
     page,
@@ -215,119 +216,45 @@ export async function ProductsShopStreamedSection({ searchParams }: ProductsShop
   );
 
   return (
-    <div className="w-full max-w-full pb-4 md:pb-32 lg:pb-40">
-      <ProductsHeader total={productsData.meta.total} />
-
+    <>
+      <ProductsPlpTotalReporter total={productsData.meta.total} />
       <div className="marco-header-container flex flex-col min-[744px]:flex-row min-[744px]:gap-5 xl:gap-8">
-        <ProductsFiltersProvider
-          category={params.category}
-          search={params.search}
-          minPrice={params.minPrice}
-          maxPrice={params.maxPrice}
-        >
-          <aside className="hidden w-[16rem] shrink-0 bg-white dark:bg-[var(--app-bg)] min-[744px]:sticky min-[744px]:top-4 min-[744px]:z-10 min-[744px]:self-start min-[744px]:block xl:w-[20rem]">
-            <div className="border-r border-solid border-[#e2e8f0] dark:border-white/20 pb-4 pt-4 min-[744px]:pl-0 min-[744px]:pr-3 xl:pb-6 xl:pt-6 xl:pr-6">
-              <div className="mb-4 flex flex-col gap-1 lg:mb-5 xl:mb-6">
-                <h2
-                  className={`${productsFiltersSectionFont.className} text-sm font-semibold leading-5 tracking-[-0.31px] text-[#0f172b] dark:text-white lg:text-base lg:leading-6`}
-                >
-                  {t(language, 'products.filters.panelTitle')}
-                </h2>
-                <p className="text-xs font-normal leading-snug tracking-[-0.15px] text-[#62748e] dark:text-white/72 lg:text-sm lg:leading-5">
-                  {t(language, 'products.filters.panelSubtitle')}
-                </p>
-              </div>
-              <PriceFilter
-                currentMinPrice={params.minPrice}
-                currentMaxPrice={params.maxPrice}
-                category={params.category}
-                search={params.search}
-              />
-              <CategoryFilter
-                category={params.category}
-                search={params.search}
-                minPrice={params.minPrice}
-                maxPrice={params.maxPrice}
-              />
-              <BrandFilter
-                category={params.category}
-                search={params.search}
-                minPrice={params.minPrice}
-                maxPrice={params.maxPrice}
-              />
-              <ColorFilter
-                category={params.category}
-                search={params.search}
-                minPrice={params.minPrice}
-                maxPrice={params.maxPrice}
-              />
+        <Suspense fallback={productsShopFiltersColumnSkeletonAria()}>
+          <ProductsShopFiltersColumn
+            raw={raw}
+            language={language}
+            params={params}
+            filtersMinPrice={filtersMinPrice}
+            filtersMaxPrice={filtersMaxPrice}
+          />
+        </Suspense>
+
+        <div className="min-w-0 flex-1 w-full overflow-x-hidden pt-4 pb-2 min-[744px]:w-auto min-[744px]:py-4">
+          {normalizedProducts.length > 0 ? (
+            <>
+              <ProductsGrid products={normalizedProducts} sortBy={params.sort || 'default'} />
+
+              {productsData.meta.totalPages > 1 && (
+                <ProductsPagination
+                  page={page}
+                  totalPages={productsData.meta.totalPages}
+                  hrefFirst={buildPaginationUrl(1)}
+                  hrefBack={buildPaginationUrl(Math.max(1, page - 1))}
+                  hrefNext={buildPaginationUrl(Math.min(productsData.meta.totalPages, page + 1))}
+                  hrefLast={buildPaginationUrl(productsData.meta.totalPages)}
+                  slotItems={paginationSlotItems}
+                />
+              )}
+            </>
+          ) : (
+            <div className="py-12 text-center">
+              <p className="text-lg text-gray-500 dark:text-white/72">
+                {t(language, 'common.messages.noProductsFound')}
+              </p>
             </div>
-          </aside>
-
-          <div className="min-w-0 flex-1 w-full overflow-x-hidden pt-4 pb-2 min-[744px]:w-auto min-[744px]:py-4">
-            {normalizedProducts.length > 0 ? (
-              <>
-                <ProductsGrid products={normalizedProducts} sortBy={params.sort || 'default'} />
-
-                {productsData.meta.totalPages > 1 && (
-                  <ProductsPagination
-                    page={page}
-                    totalPages={productsData.meta.totalPages}
-                    hrefFirst={buildPaginationUrl(1)}
-                    hrefBack={buildPaginationUrl(Math.max(1, page - 1))}
-                    hrefNext={buildPaginationUrl(Math.min(productsData.meta.totalPages, page + 1))}
-                    hrefLast={buildPaginationUrl(productsData.meta.totalPages)}
-                    slotItems={paginationSlotItems}
-                  />
-                )}
-              </>
-            ) : (
-              <div className="py-12 text-center">
-                <p className="text-lg text-gray-500 dark:text-white/72">
-                  {t(language, 'common.messages.noProductsFound')}
-                </p>
-              </div>
-            )}
-          </div>
-
-          <MobileFiltersDrawer openEventName={MOBILE_FILTERS_EVENT}>
-            <div className="space-y-0 px-4 pb-4 pt-0">
-              <div className="mb-5">
-                <p className="text-sm font-normal leading-5 tracking-[-0.15px] text-[#62748e] dark:text-white/72">
-                  {t(language, 'products.filters.panelSubtitle')}
-                </p>
-              </div>
-              <PriceFilter
-                currentMinPrice={params.minPrice}
-                currentMaxPrice={params.maxPrice}
-                category={params.category}
-                search={params.search}
-              />
-              <div className="h-6 shrink-0" aria-hidden />
-              <CategoryFilter
-                category={params.category}
-                search={params.search}
-                minPrice={params.minPrice}
-                maxPrice={params.maxPrice}
-              />
-              <div className="h-6 shrink-0" aria-hidden />
-              <BrandFilter
-                category={params.category}
-                search={params.search}
-                minPrice={params.minPrice}
-                maxPrice={params.maxPrice}
-              />
-              <div className="h-6 shrink-0" aria-hidden />
-              <ColorFilter
-                category={params.category}
-                search={params.search}
-                minPrice={params.minPrice}
-                maxPrice={params.maxPrice}
-              />
-            </div>
-          </MobileFiltersDrawer>
-        </ProductsFiltersProvider>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

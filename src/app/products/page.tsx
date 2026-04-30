@@ -1,22 +1,23 @@
 import { Suspense } from 'react';
 import { ProductsShopLoadingSkeleton } from './ProductsShopLoadingSkeleton';
-import {
-  ProductsShopStreamedSection,
-  type ProductsPageSearchParams,
-} from './ProductsShopStreamedSection';
+import { ProductsShopClientShell } from './ProductsShopClientShell';
+import { ProductsShopStreamedSection } from './ProductsShopStreamedSection';
+import type { ProductsPageSearchParams } from './products-page-search-params';
 
 interface ProductsPageProps {
   readonly searchParams: Promise<ProductsPageSearchParams>;
 }
 
 /**
- * Sync shell + Suspense so the route resolves immediately and the shop UI streams
- * (filters + grid) without blocking on `products/loading.tsx`.
+ * Header (`ProductsShopClientShell`) paints immediately; listing streams inside Suspense
+ * so breadcrumb + «Խանութ» are not replaced by a skeleton during fetch.
  */
 export default function ProductsPage({ searchParams }: ProductsPageProps) {
   return (
-    <Suspense fallback={<ProductsShopLoadingSkeleton />}>
-      <ProductsShopStreamedSection searchParams={searchParams} />
-    </Suspense>
+    <ProductsShopClientShell>
+      <Suspense fallback={<ProductsShopLoadingSkeleton variant="body" />}>
+        <ProductsShopStreamedSection searchParams={searchParams} />
+      </Suspense>
+    </ProductsShopClientShell>
   );
 }

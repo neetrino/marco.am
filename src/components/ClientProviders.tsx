@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react';
 import { AuthProvider } from '../lib/auth/AuthContext';
 import { LanguagePreferenceCookieSync } from './LanguagePreferenceCookieSync';
+import { QueryProvider } from './QueryProvider';
 import { ToastContainer } from './Toast';
 import { ThemeProvider } from './theme/ThemeProvider';
 
@@ -13,11 +14,13 @@ import { ThemeProvider } from './theme/ThemeProvider';
 export function ClientProviders({ children }: { children: ReactNode }) {
   return (
     <ThemeProvider>
-      <AuthProvider>
-        <LanguagePreferenceCookieSync />
-        {children}
-        <ToastContainer />
-      </AuthProvider>
+      <QueryProvider>
+        <AuthProvider>
+          <LanguagePreferenceCookieSync />
+          {children}
+          <ToastContainer />
+        </AuthProvider>
+      </QueryProvider>
     </ThemeProvider>
   );
 }

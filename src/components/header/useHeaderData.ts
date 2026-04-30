@@ -189,8 +189,6 @@ export function useHeaderData() {
   const fetchCategories = useCallback(async () => {
     try {
       setLoadingCategories(true);
-      await new Promise((resolve) => setTimeout(resolve, 200));
-
       const response = await apiClient.get<CategoriesResponse>('/api/v1/categories/tree', {
         params: { lang: getStoredLanguage() },
       });
