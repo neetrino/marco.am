@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { getStoredLanguage, type LanguageCode } from '../lib/language';
 import { t } from '../lib/i18n';
+import type { LanguageCode } from '../lib/language';
 import { useRelatedProducts } from './hooks/useRelatedProducts';
 import { useCarousel } from './hooks/useCarousel';
 import { useVisibleCards } from './hooks/useVisibleCards';
@@ -19,6 +18,8 @@ import {
 
 interface RelatedProductsProps {
   currentProductSlug: string;
+  /** Same language as PDP (avoids a wrong-lang fetch before hydration). */
+  language: LanguageCode;
 }
 
 const HOME_STYLE_NAV_BUTTON_CLASS =
@@ -29,10 +30,9 @@ const REELS_STYLE_NAV_ICON_CLASS = 'h-3 w-3 shrink-0 text-current max-md:h-5 max
  * RelatedProducts component - displays products from the same category in a carousel
  * Shown at the bottom of the single product page
  */
-export function RelatedProducts({ currentProductSlug }: RelatedProductsProps) {
-  const [language, setLanguage] = useState<LanguageCode>('en');
+export function RelatedProducts({ currentProductSlug, language }: RelatedProductsProps) {
   const isMaxMd = useIsMaxMd();
-  
+
   const visibleCards = useVisibleCards();
   const { products, loading } = useRelatedProducts({ productSlug: currentProductSlug, language });
   
@@ -81,20 +81,6 @@ export function RelatedProducts({ currentProductSlug }: RelatedProductsProps) {
         })) ?? undefined,
     };
   }
-
-  // Initialize language from localStorage after mount to prevent hydration mismatch
-  useEffect(() => {
-    setLanguage(getStoredLanguage());
-    
-    const handleLanguageUpdate = () => {
-      setLanguage(getStoredLanguage());
-    };
-    
-    window.addEventListener('language-updated', handleLanguageUpdate);
-    return () => {
-      window.removeEventListener('language-updated', handleLanguageUpdate);
-    };
-  }, []);
 
   // Always show the section, even if no products (will show loading or empty state)
   return (

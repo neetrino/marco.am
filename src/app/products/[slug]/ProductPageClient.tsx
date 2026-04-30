@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import { Suspense } from 'react';
 
+import { RelatedProducts } from '@/components/RelatedProducts';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { apiClient } from '@/lib/api-client';
 import { t } from '@/lib/i18n';
@@ -16,10 +17,6 @@ import { useProductPage } from './useProductPage';
 
 const ProductSpecifications = dynamic(() =>
   import('./ProductSpecifications').then((m) => ({ default: m.ProductSpecifications })),
-);
-
-const RelatedProducts = dynamic(() =>
-  import('@/components/RelatedProducts').then((m) => ({ default: m.RelatedProducts })),
 );
 
 const ProductReviews = dynamic(() =>
@@ -233,6 +230,10 @@ export function ProductPageClient({
         )}
       </div>
 
+      <div className="mt-24">
+        <RelatedProducts currentProductSlug={slug} language={language} />
+      </div>
+
       {product ? (
         <>
           <Suspense
@@ -246,18 +247,6 @@ export function ProductPageClient({
             <ProductSpecifications product={product} language={language} />
           </Suspense>
 
-          <Suspense
-            fallback={
-              <div
-                className="mt-24 min-h-[200px] w-full rounded-lg bg-gray-100/90 dark:bg-white/[0.06]"
-                aria-hidden
-              />
-            }
-          >
-            <div className="mt-24">
-              <RelatedProducts currentProductSlug={slug} />
-            </div>
-          </Suspense>
           <Suspense
             fallback={
               <div
