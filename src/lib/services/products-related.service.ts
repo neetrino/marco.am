@@ -1,3 +1,4 @@
+import { db } from "@white-shop/db";
 import { productsService } from "./products.service";
 
 const DEFAULT_RELATED_LIMIT = 10;
@@ -77,10 +78,152 @@ function normalizeLimit(limit?: number): number {
   return Math.min(limit ?? DEFAULT_RELATED_LIMIT, MAX_RELATED_LIMIT);
 }
 
+function productNotFoundError(slug: string) {
+  return {
+    status: 404 as const,
+    type: "https://api.shop.am/problems/not-found",
+    title: "Product not found",
+    detail: `Product with slug '${slug}' does not exist or is not published`,
+  };
+}
+
+function pickLocalizedString<T extends { locale: string }>(
+  rows: T[],
+  lang: string,
+  pick: (row: T) => string,
+): string {
+  const exact = rows.find((r) => r.locale === lang);
+  if (exact) return pick(exact);
+  const en = rows.find((r) => r.locale === "en");
+  if (en) return pick(en);
+  const first = rows[0];
+  return first ? pick(first) : "";
+}
+
+function mapCategoryFromTranslations(
+  categoryId: string,
+  translations: Array<{ locale: string; slug: string; title: string }>,
+  lang: string,
+): RelatedCategory | null {
+  if (translations.length === 0) {
+    return null;
+  }
+  const slug = pickLocalizedString(translations, lang, (t) => t.slug);
+  const title = pickLocalizedString(translations, lang, (t) => t.title);
+  return { id: categoryId, slug, title };
+}
+
+function resolvePrimaryCategoryForRelated(
+  primaryCategoryId: string | null,
+  linkedCategories: Array<{
+    id: string;
+    translations: Array<{ locale: string; slug: string; title: string }>;
+  }>,
+  lang: string,
+): RelatedCategory | null {
+  if (primaryCategoryId) {
+    const primary = linkedCategories.find((c) => c.id === primaryCategoryId);
+    if (primary) {
+      return mapCategoryFromTranslations(primary.id, primary.translations, lang);
+    }
+  }
+  for (const c of linkedCategories) {
+    const mapped = mapCategoryFromTranslations(c.id, c.translations, lang);
+    if (mapped) {
+      return mapped;
+    }
+  }
+  return null;
+}
+
+async function fetchCategoryAnchorIfMissing(
+  primaryCategoryId: string,
+  lang: string,
+): Promise<RelatedCategory | null> {
+  const cat = await db.category.findFirst({
+    where: { id: primaryCategoryId, deletedAt: null },
+    select: {
+      id: true,
+      translations: {
+        select: { locale: true, slug: true, title: true },
+        take: 24,
+      },
+    },
+  });
+  if (!cat) {
+    return null;
+  }
+  return mapCategoryFromTranslations(cat.id, cat.translations, lang);
+}
+
 class ProductsRelatedService {
+  private async loadRelatedAnchor(slug: string, lang: string): Promise<ProductDetailsResponse> {
+    const row = await db.product.findFirst({
+      where: {
+        published: true,
+        deletedAt: null,
+        translations: { some: { slug } },
+      },
+      select: {
+        id: true,
+        primaryCategoryId: true,
+        brand: {
+          select: {
+            id: true,
+            slug: true,
+            logoUrl: true,
+            translations: {
+              select: { locale: true, name: true },
+              take: 24,
+            },
+          },
+        },
+        categories: {
+          take: 16,
+          select: {
+            id: true,
+            translations: {
+              select: { locale: true, slug: true, title: true },
+              take: 24,
+            },
+          },
+        },
+      },
+    });
+
+    if (!row) {
+      throw productNotFoundError(slug);
+    }
+
+    let primaryCategory = resolvePrimaryCategoryForRelated(
+      row.primaryCategoryId,
+      row.categories,
+      lang,
+    );
+    if (!primaryCategory && row.primaryCategoryId) {
+      primaryCategory = await fetchCategoryAnchorIfMissing(row.primaryCategoryId, lang);
+    }
+
+    const brand: RelatedBrand | null = row.brand
+      ? {
+          id: row.brand.id,
+          slug: row.brand.slug,
+          name: pickLocalizedString(row.brand.translations, lang, (t) => t.name),
+          logo: row.brand.logoUrl,
+        }
+      : null;
+
+    return {
+      id: row.id,
+      slug: "",
+      brand,
+      categories: primaryCategory ? [primaryCategory] : [],
+    };
+  }
+
   async findBySlug(slug: string, lang: string, requestedLimit?: number): Promise<RelatedProductsResponse> {
     const limit = normalizeLimit(requestedLimit);
-    const baseProduct = (await productsService.findBySlug(slug, lang)) as ProductDetailsResponse;
+    const baseProduct = await this.loadRelatedAnchor(slug, lang);
     const selectedProducts: RelatedProductWithRule[] = [];
     const seenProductIds = new Set<string>([baseProduct.id]);
 
