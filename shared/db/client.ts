@@ -9,9 +9,13 @@ const globalForPrisma = globalThis as typeof globalThis & {
   prismaResolvedDatabaseUrl?: string;
 };
 
-/** Pooled Neon after idle: first TCP + TLS can approach 10s; Prisma P1001 matches this window if too tight. */
+/**
+ * Neon after idle: TCP + TLS + compute wake can exceed 10s on serverless (Vercel → Neon pooler).
+ * Default prod timeout matches dev so first requests after pause are less likely to hit P1001.
+ * Override with NEON_CONNECT_TIMEOUT_SEC (e.g. "45") if needed.
+ */
 const NEON_CONNECT_TIMEOUT_DEV_SEC = "30";
-const NEON_CONNECT_TIMEOUT_PROD_SEC = "10";
+const NEON_CONNECT_TIMEOUT_PROD_SEC = "30";
 
 function resolveNeonConnectTimeoutSec(): string {
   const fromEnv =
@@ -110,14 +114,69 @@ function resolveDatabaseUrlWithClientEncoding(): string {
   return withEncoding;
 }
 
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+function prismaErrorCode(error: unknown): string | undefined {
+  if (!error || typeof error !== "object" || !("code" in error)) {
+    return undefined;
+  }
+  const code = (error as { code: unknown }).code;
+  return typeof code === "string" ? code : undefined;
+}
+
+/**
+ * True when the query never reliably reached Postgres (safe to retry read/write once).
+ * Avoid retrying validation / unique constraint errors.
+ */
+function isTransientDbConnectionError(error: unknown): boolean {
+  const code = prismaErrorCode(error);
+  if (code === "P1001" || code === "P1017") {
+    return true;
+  }
+  if (error instanceof Error) {
+    return /Can't reach database server|ECONNREFUSED|ETIMEDOUT|ENOTFOUND|Connection terminated unexpectedly/i.test(
+      error.message,
+    );
+  }
+  return false;
+}
+
+const TRANSIENT_DB_QUERY_MAX_ATTEMPTS = 3;
+
 function createPrismaClient(resolvedDatabaseUrl: string): PrismaClient {
-  return new PrismaClient({
+  const base = new PrismaClient({
     datasources: {
       db: { url: resolvedDatabaseUrl },
     },
     log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
     errorFormat: "pretty",
   });
+
+  const extended = base.$extends({
+    query: {
+      async $allOperations({ args, query }) {
+        let lastError: unknown;
+        for (let attempt = 1; attempt <= TRANSIENT_DB_QUERY_MAX_ATTEMPTS; attempt += 1) {
+          try {
+            return await query(args);
+          } catch (error) {
+            lastError = error;
+            if (!isTransientDbConnectionError(error) || attempt === TRANSIENT_DB_QUERY_MAX_ATTEMPTS) {
+              throw error;
+            }
+            await sleep(200 * 2 ** (attempt - 1));
+          }
+        }
+        throw lastError;
+      },
+    },
+  });
+
+  return extended as unknown as PrismaClient;
 }
 
 /**
