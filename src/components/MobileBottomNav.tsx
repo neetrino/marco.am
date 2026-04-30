@@ -18,7 +18,6 @@ import {
   MOBILE_NAV_ACTIVE_FOREGROUND,
   MOBILE_NAV_ACTIVE_PILL_BG,
   MOBILE_NAV_BOX_SHADOW,
-  MOBILE_NAV_HOME_INDICATOR_BG,
   MOBILE_NAV_INACTIVE_ICON,
   MOBILE_NAV_TOP_CORNER_RADIUS_PX,
 } from './mobile-bottom-nav.constants';
@@ -144,16 +143,10 @@ export function MobileBottomNav() {
             boxShadow: MOBILE_NAV_BOX_SHADOW,
           }}
         >
-          <div className="mx-auto flex max-w-md items-center justify-between px-4 pt-3 pb-1.5">
+          <div className="mx-auto flex max-w-md items-center justify-between px-4 pt-3 pb-2">
             {navItems.map((item) => (
               <NavItemLink key={item.href} item={item} pathname={pathname} />
             ))}
-          </div>
-          <div className="flex justify-center px-4 pb-2 pt-1" aria-hidden>
-            <span
-              className="block h-1 w-32 max-w-[45%] shrink-0 rounded-full"
-              style={{ backgroundColor: MOBILE_NAV_HOME_INDICATOR_BG }}
-            />
           </div>
         </div>
       </div>

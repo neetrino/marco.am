@@ -108,7 +108,7 @@ export function HomeGradientBannerCta({ language }: HomeGradientBannerCtaProps) 
       : 'min-w-0 shrink whitespace-nowrap text-left';
 
   /**
-   * Armenian (`hy`): label + chip right on `lg` — net `lg:translate-x-[2px]` = `LABEL_NUDGE_LEFT_PX` + `LABEL_NUDGE_LEFT_HY_DESKTOP_EXTRA_PX`; `lg:translate-x-[12px]` on chip matches `ICON_CIRCLE_NUDGE_RIGHT_HY_DESKTOP_PX`.
+   * Armenian (`hy`): label + chip right on `lg` — net `lg:translate-x-[2px]` = `LABEL_NUDGE_LEFT_PX` + `LABEL_NUDGE_LEFT_HY_DESKTOP_EXTRA_PX`; chip `lg:translate-x-[…px]` matches `ICON_CIRCLE_NUDGE_RIGHT_HY_DESKTOP_PX`.
    */
   const labelHyDesktopClass =
     language === 'hy'
@@ -124,7 +124,7 @@ export function HomeGradientBannerCta({ language }: HomeGradientBannerCtaProps) 
   const labelRuTranslateClass =
     language === 'ru' ? 'translate-x-[-17px] lg:translate-x-[-18px]' : '';
 
-  const iconHyDesktopTranslateClass = language === 'hy' ? 'lg:translate-x-[12px]' : '';
+  const iconHyDesktopTranslateClass = language === 'hy' ? 'lg:-translate-x-[1px]' : '';
 
   return (
     <HomeFloorBannerSlackCtaLink
