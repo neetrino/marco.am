@@ -352,8 +352,9 @@ class AdminProductsCreateService {
             `${mainProductImageNorm.substring(0, 50)}...`,
           );
         } else if (mainProductImageNorm && rawMedia.length > 0) {
-          const mainImageIndex = rawMedia.findIndex((m: ProductMediaItem) => {
-            const url = typeof m === "string" ? m : m.url;
+          const mainImageIndex = rawMedia.findIndex((m) => {
+            const url =
+              typeof m === "string" ? m : (m.url ?? m.src ?? m.value);
             return url === mainProductImageNorm;
           });
           if (mainImageIndex === -1) {
