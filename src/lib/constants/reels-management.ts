@@ -33,4 +33,4 @@ export const REEL_MODERATION_STATUSES = [
 ] as const;
 
 /** Used when reel poster metadata is missing for the feed card/video placeholder. */
-export const REELS_POSTER_FALLBACK_SRC = "/images/home/reels/reel-1.png" as const;
+export const REELS_POSTER_FALLBACK_SRC = "/images/home/reels/reel-1.webp" as const;

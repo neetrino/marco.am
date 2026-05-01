@@ -200,7 +200,7 @@ export function Footer() {
           >
             <div className={`${FOOTER_BRAND_LOGO_BOX_CLASS} ${FOOTER_BRAND_LOGO_SHIFT_CLASS}`}>
               <Image
-                src="/assets/brand/marco-group-logo.png"
+                src="/assets/brand/marco-group-logo.webp"
                 alt="MARCO GROUP"
                 fill
                 className="object-contain object-left-top md:max-[1023px]:object-center min-[1024px]:max-[1366px]:object-center"

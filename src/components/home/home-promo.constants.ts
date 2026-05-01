@@ -6,21 +6,21 @@
 export const PROMO_PANEL_FIGMA_WIDTH_PX = 1651;
 export const PROMO_PANEL_FIGMA_HEIGHT_PX = 925;
 
-/** Yellow brick texture — `public/assets/hero/hero-yellow-brick-wall.png`; applied in `.home-promo-panel` (globals.css) */
+/** Yellow brick texture — `public/assets/hero/hero-yellow-brick-wall.webp`; applied in `.home-promo-panel` (globals.css) */
 export const PROMO_PANEL_MASK_IMAGE_SRC =
-  '/assets/hero/hero-yellow-brick-wall.png' as const;
+  '/assets/hero/hero-yellow-brick-wall.webp' as const;
 
-/** Featured armchair — Pexels (allowed in next.config.js) */
+/** Featured armchair — self-hosted WebP (source: Pexels 1350789) */
 export const PROMO_FEATURED_IMAGE_SRC =
-  'https://images.pexels.com/photos/1350789/pexels-photo-1350789.jpeg?auto=compress&cs=tinysrgb&w=800' as const;
+  '/assets/stock/pexels-1350789-armchair.webp' as const;
 
-/** Right card 1 — interior / product mood */
+/** Right card 1 — interior / product mood (source: Pexels 1571460) */
 export const PROMO_SIDE_CARD_A_BG_SRC =
-  'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=600' as const;
+  '/assets/stock/pexels-1571460-interior.webp' as const;
 
-/** Right card 2 — free delivery banner art (`promo-side-card-free-delivery.png`) */
+/** Right card 2 — free delivery banner art (`promo-side-card-free-delivery.webp`) */
 export const PROMO_SIDE_CARD_B_BANNER_SRC =
-  '/assets/hero/promo-side-card-free-delivery.png' as const;
+  '/assets/hero/promo-side-card-free-delivery.webp' as const;
 
 /** Top + horizontal only; bottom padding is set on the panel for CTA/chat clearance */
 export const PROMO_SECTION_PADDING_CLASS = 'pt-5 px-5 sm:pt-7 sm:px-7 md:pt-8 md:px-8 lg:pt-10 lg:px-10' as const;

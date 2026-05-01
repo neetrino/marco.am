@@ -40,7 +40,7 @@ function BrandLogo({ brand }: { brand: BrandKey }) {
   if (brand === 'hisense') {
     return (
       <Image
-        src="/images/brand-hisense-logo.png"
+        src="/assets/brands/hisense.svg"
         alt="Hisense"
         width={486}
         height={109}
@@ -54,7 +54,7 @@ function BrandLogo({ brand }: { brand: BrandKey }) {
   if (brand === 'samsung') {
     return (
       <Image
-        src="/images/brand-samsung-logo.png"
+        src="/assets/brands/samsung.svg"
         alt="Samsung"
         width={423}
         height={140}
@@ -68,7 +68,7 @@ function BrandLogo({ brand }: { brand: BrandKey }) {
   if (brand === 'lg') {
     return (
       <Image
-        src="/images/brand-lg-logo.png"
+        src="/assets/brands/lg.svg"
         alt="LG"
         width={346}
         height={140}
@@ -82,7 +82,7 @@ function BrandLogo({ brand }: { brand: BrandKey }) {
   if (brand === 'panasonic') {
     return (
       <Image
-        src="/images/brand-panasonic-logo.png"
+        src="/assets/brands/panasonic.svg"
         alt="Panasonic"
         width={486}
         height={127}

@@ -40,7 +40,7 @@ export async function updateProduct(
       const allVariantImages = await collectVariantImages(data.variants, productId, tx);
 
       // 1. Update product base data
-      const updateData = buildProductUpdateData(data, allVariantImages, existing);
+      const updateData = await buildProductUpdateData(data, allVariantImages, existing);
 
       // 2. Update translation
       await updateProductTranslation(productId, data, tx);

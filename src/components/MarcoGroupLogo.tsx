@@ -9,7 +9,7 @@ type MarcoGroupLogoProps = {
 export function MarcoGroupLogo({ className = '', priority = false }: MarcoGroupLogoProps) {
   return (
     <Image
-      src="/images/marco-group-logo.png"
+      src="/assets/brand/marco-group-logo.webp"
       alt="MARCO GROUP"
       width={HEADER_LOGO_WIDTH_PX}
       height={HEADER_LOGO_HEIGHT_PX}

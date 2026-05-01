@@ -16,7 +16,7 @@ const getLanguageIcon = (code: LanguageCode): React.ReactNode => {
   const icons: Record<LanguageCode, React.ReactNode> = {
     en: (
       <Image
-        src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Flag_of_the_United_Kingdom_%283-5%29.svg/1024px-Flag_of_the_United_Kingdom_%283-5%29.svg.png"
+        src="/assets/flags/lang-en.webp"
         alt="English"
         width={25}
         height={25}
@@ -26,7 +26,7 @@ const getLanguageIcon = (code: LanguageCode): React.ReactNode => {
     ),
     hy: (
       <Image
-        src="https://janarmenia.com/uploads/0000/83/2022/04/28/anthem-armenia.jpg"
+        src="/assets/flags/lang-hy.webp"
         alt="Armenian"
         width={25}
         height={25}
@@ -36,7 +36,7 @@ const getLanguageIcon = (code: LanguageCode): React.ReactNode => {
     ),
     ru: (
       <Image
-        src="https://flagfactoryshop.com/image/cache/catalog/products/flags/national/mockups/russia_coa-600x400.jpg"
+        src="/assets/flags/lang-ru.webp"
         alt="Russian"
         width={25}
         height={25}

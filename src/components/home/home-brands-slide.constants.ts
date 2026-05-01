@@ -56,7 +56,7 @@ export const HOME_BRAND_SLIDE_ENTRIES: readonly HomeBrandSlideEntry[] = [
   },
   {
     id: 'lg',
-    src: '/assets/brands/lg-figma.png',
+    src: '/assets/brands/lg-figma.webp',
     width: 351,
     height: 161,
     alt: 'LG',
@@ -64,7 +64,7 @@ export const HOME_BRAND_SLIDE_ENTRIES: readonly HomeBrandSlideEntry[] = [
   },
   {
     id: 'panasonic',
-    src: '/assets/brands/panasonic-figma.png',
+    src: '/assets/brands/panasonic-figma.webp',
     width: 495,
     height: 79,
     alt: 'Panasonic',

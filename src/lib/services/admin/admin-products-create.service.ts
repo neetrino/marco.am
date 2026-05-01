@@ -9,6 +9,11 @@ import {
   separateMainAndVariantImages,
 } from "../../utils/image-utils";
 import {
+  normalizeCommaSeparatedRasterDataUrls,
+  normalizeInboundRasterStringToWebpDataUrl,
+  normalizeProductMediaPayload,
+} from "@/lib/utils/normalize-inbound-raster-to-webp-data-url";
+import {
   resolveProductClass,
   type ProductClass,
 } from "@/lib/constants/product-class";
@@ -287,7 +292,9 @@ class AdminProductsCreateService {
               const urls = smartSplitUrls(variant.imageUrl);
               const processedUrls = urls.map(url => processImageUrl(url)).filter((url): url is string => url !== null);
               if (processedUrls.length > 0) {
-                processedVariantImageUrl = processedUrls.join(',');
+                processedVariantImageUrl = await normalizeCommaSeparatedRasterDataUrls(
+                  processedUrls.join(","),
+                );
               }
             }
 
@@ -332,28 +339,33 @@ class AdminProductsCreateService {
           }
         });
 
-        // Prepare media array - use mainProductImage if provided and media is empty
-        let rawMedia = data.media || [];
-        if (data.mainProductImage && rawMedia.length === 0) {
-          // If mainProductImage is provided but media is empty, use mainProductImage as first media item
-          rawMedia = [data.mainProductImage];
-          logger.devLog('📸 [ADMIN PRODUCTS CREATE SERVICE] Using mainProductImage as media:', data.mainProductImage.substring(0, 50) + '...');
-        } else if (data.mainProductImage && rawMedia.length > 0) {
-          // If both are provided, ensure mainProductImage is first in media array
+        // Prepare media array — normalize inline rasters to WebP data URLs before persist / R2 paths
+        let rawMedia = await normalizeProductMediaPayload(data.media || []);
+        const mainProductImageNorm = data.mainProductImage
+          ? await normalizeInboundRasterStringToWebpDataUrl(data.mainProductImage)
+          : undefined;
+
+        if (mainProductImageNorm && rawMedia.length === 0) {
+          rawMedia = [mainProductImageNorm];
+          logger.devLog(
+            "📸 [ADMIN PRODUCTS CREATE SERVICE] Using mainProductImage as media:",
+            `${mainProductImageNorm.substring(0, 50)}...`,
+          );
+        } else if (mainProductImageNorm && rawMedia.length > 0) {
           const mainImageIndex = rawMedia.findIndex((m: ProductMediaItem) => {
-            const url = typeof m === 'string' ? m : m.url;
-            return url === data.mainProductImage;
+            const url = typeof m === "string" ? m : m.url;
+            return url === mainProductImageNorm;
           });
           if (mainImageIndex === -1) {
-            // mainProductImage not in media array, add it as first
-            rawMedia = [data.mainProductImage, ...rawMedia];
-            logger.devLog('📸 [ADMIN PRODUCTS CREATE SERVICE] Added mainProductImage as first media item');
+            rawMedia = [mainProductImageNorm, ...rawMedia];
+            logger.devLog("📸 [ADMIN PRODUCTS CREATE SERVICE] Added mainProductImage as first media item");
           } else if (mainImageIndex > 0) {
-            // mainProductImage is in media but not first, move it to first
             const mainImage = rawMedia[mainImageIndex];
             rawMedia.splice(mainImageIndex, 1);
             rawMedia.unshift(mainImage);
-            logger.devLog('📸 [ADMIN PRODUCTS CREATE SERVICE] Moved mainProductImage to first position in media');
+            logger.devLog(
+              "📸 [ADMIN PRODUCTS CREATE SERVICE] Moved mainProductImage to first position in media",
+            );
           }
         }
 

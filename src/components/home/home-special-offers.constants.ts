@@ -4,7 +4,7 @@
 
 /** Local JPEG — one «nature» photo for every tile when unified mode is on. */
 export const SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC =
-  '/images/home/special-offers-unified-nature.jpg';
+  '/images/home/special-offers-unified-nature.webp';
 
 /**
  * When true, product thumbnails from the API are ignored and

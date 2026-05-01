@@ -1,8 +1,8 @@
 /**
- * Slate banner — flat raster fill (`home-gradient-banner-bg.png`), #2F4B5D fallback while loading.
+ * Slate banner — flat raster fill (`home-gradient-banner-bg.webp`), #2F4B5D fallback while loading.
  */
 
-export const HOME_GRADIENT_BANNER_IMAGE_PATH = '/assets/home/home-gradient-banner-bg.png';
+export const HOME_GRADIENT_BANNER_IMAGE_PATH = '/assets/home/home-gradient-banner-bg.webp';
 
 /** First banner — between compact 420 and legacy 560. */
 export const HOME_GRADIENT_BANNER_MAX_WIDTH_PX = 460;
