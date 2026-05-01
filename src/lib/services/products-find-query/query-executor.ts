@@ -1,7 +1,6 @@
 import { Prisma } from "@white-shop/db/prisma";
 import { db } from "@white-shop/db";
 import { ensureProductVariantAttributesColumn } from "../../utils/db-ensure";
-import { ensureProductClassColumns } from "../../utils/db-ensure-product-class";
 import { logger } from "../../utils/logger";
 import type { ProductWithRelations } from "./types";
 
@@ -126,7 +125,6 @@ export async function executeProductQuery(
   options: ExecuteProductQueryOptions = {},
 ): Promise<ProductWithRelations[]> {
   const { omitProductAttributes = false } = options;
-  await ensureProductClassColumns();
   const baseInclude = getBaseInclude();
   const withOptionalAttrs = () =>
     omitProductAttributes ? baseInclude : { ...baseInclude, ...getProductAttributesInclude() };
@@ -139,9 +137,6 @@ export async function executeProductQuery(
       skip,
       take: limit,
     });
-    logger.info(
-      `Found ${products.length} products from database (${omitProductAttributes ? 'PLP light' : 'with productAttributes'})`,
-    );
     return products as unknown as ProductWithRelations[];
   } catch (error: unknown) {
     // If productAttributes table doesn't exist, retry without it
@@ -162,7 +157,6 @@ export async function executeProductQuery(
           skip,
           take: limit,
         });
-        logger.info(`Found ${products.length} products from database (after creating attributes column)`);
         return products as unknown as ProductWithRelations[];
       } catch (attributesError: unknown) {
         return handleAttributesError(attributesError, where, limit, skip, options);
@@ -199,7 +193,6 @@ async function executeWithoutProductAttributes(
       skip,
       take: limit,
     });
-    logger.info(`Found ${products.length} products from database (without productAttributes)`);
     return products as unknown as ProductWithRelations[];
   } catch (retryError: unknown) {
     if (isVariantAttributesError(retryError)) {
@@ -213,7 +206,6 @@ async function executeWithoutProductAttributes(
           skip,
           take: limit,
         });
-        logger.info(`Found ${products.length} products from database (after creating attributes column)`);
         return products as unknown as ProductWithRelations[];
       } catch (attributesError: unknown) {
         return handleAttributesError(attributesError, where, limit, skip, options);
@@ -277,9 +269,6 @@ async function executeWithoutAttributeValue(
       skip,
       take: limit,
     });
-    logger.info(
-      `Found ${products.length} products from database (without attributeValue${omitProductAttributes ? ', no productAttributes' : ', with productAttributes'})`,
-    );
     return products as unknown as ProductWithRelations[];
   } catch (productAttrError: unknown) {
     // If productAttributes also fails, try without it
@@ -291,7 +280,6 @@ async function executeWithoutAttributeValue(
         skip,
         take: limit,
       });
-      logger.info(`Found ${products.length} products from database (without attributeValue and productAttributes)`);
       return products as unknown as ProductWithRelations[];
     }
     throw productAttrError;

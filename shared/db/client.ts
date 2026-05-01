@@ -148,11 +148,18 @@ function isTransientDbConnectionError(error: unknown): boolean {
 const TRANSIENT_DB_QUERY_MAX_ATTEMPTS = 3;
 
 function createPrismaClient(resolvedDatabaseUrl: string): PrismaClient {
+  const logQueries =
+    process.env["PRISMA_LOG_QUERIES"] === "true" ||
+    process.env["PRISMA_LOG_QUERIES"] === "1";
   const base = new PrismaClient({
     datasources: {
       db: { url: resolvedDatabaseUrl },
     },
-    log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
+    log: logQueries
+      ? ["query", "error", "warn"]
+      : process.env.NODE_ENV === "development"
+        ? ["error", "warn"]
+        : ["error"],
     errorFormat: "pretty",
   });
 
