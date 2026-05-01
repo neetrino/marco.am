@@ -11,11 +11,11 @@ export const HOME_HERO_SECONDARY_BANNER_ID = "home-hero-secondary-main";
  * endpoints — browsers get 404, so production (e.g. Vercel) shows broken tiles.
  */
 export const HOME_HERO_PRIMARY_TOP_DEFAULT_IMAGE_URL =
-  "/assets/home/app-download-banner.png" as const;
+  "/assets/home/app-download-banner.webp" as const;
 export const HOME_HERO_PRIMARY_BOTTOM_DEFAULT_IMAGE_URL =
-  "/assets/home/home-gradient-banner-bg.png" as const;
+  "/assets/home/home-gradient-banner-bg.webp" as const;
 export const HOME_HERO_SECONDARY_DEFAULT_IMAGE_URL =
-  "/assets/brands/panasonic-figma.png" as const;
+  "/assets/brands/panasonic-figma.webp" as const;
 
 export const HOME_HERO_DEFAULT_BANNER_ITEMS: BannerManagementStorage["banners"] = [
   {

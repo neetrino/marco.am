@@ -1,7 +1,6 @@
 'use client';
 
 import Image from 'next/image';
-import { ProductPdpPrefetchLink } from '@/components/ProductPdpPrefetchLink';
 import type { MouseEvent } from 'react';
 import { ProductImagePlaceholder } from '@/components/ProductImagePlaceholder';
 import { ProductLabels } from '@/components/ProductLabels';
@@ -9,9 +8,6 @@ import { CompareIcon } from '@/components/icons/CompareIcon';
 import type { SpecialOfferProduct } from './SpecialOfferProductCardTypes';
 
 const STAR_FILL_CLASS = 'text-[#ffca03]';
-
-/** Figma export — thin outline heart (black on transparent); inverted on black button. */
-const SPECIAL_OFFER_WISHLIST_OUTLINE_SRC = '/images/special-offers/wishlist-heart-outline.png' as const;
 
 /** Figma 101:3500 — exact vector path (asset was mis-saved as .png; inline SVG avoids MIME mismatch) */
 function SpecialOfferAddToCartGlyph({ className }: { className?: string }) {
@@ -50,20 +46,28 @@ export function StarRow() {
 }
 
 /**
- * Outline from design asset on black button (`brightness-0 invert`);
- * liked state uses vector fill (no separate asset).
+ * Outline heart on black button — vector stroke (replaces raster outline asset).
+ * Liked state uses vector fill (no separate asset).
  */
 function WishlistGlyph({ filled, size }: { filled: boolean; size: number }) {
   if (!filled) {
     return (
-      <Image
-        src={SPECIAL_OFFER_WISHLIST_OUTLINE_SRC}
-        alt=""
+      <svg
         width={size}
         height={size}
-        className="pointer-events-none shrink-0 brightness-0 invert"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="pointer-events-none shrink-0 text-white"
         aria-hidden
-      />
+      >
+        <path
+          d="M12 21s-6.716-4.783-9-8.5C.5 9.5.5 6.4 3 4.5 5.2 2.9 8.5 3.5 12 7c3.5-3.5 6.8-4.1 9-2.5 2.5 1.9 2.5 5 0 8-2.284 3.717-9 8.5-9 8.5z"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          vectorEffect="non-scaling-stroke"
+        />
+      </svg>
     );
   }
   return (
@@ -174,12 +178,8 @@ export function SpecialOfferMedia({
   onImageError: () => void;
 }) {
   return (
-    <div className="relative z-[2] mx-[6%] mt-4 overflow-hidden rounded-lg bg-[#f9fafb] md:mt-[17px]">
-      <ProductPdpPrefetchLink
-        href={`/products/${product.slug}`}
-        productSlug={product.slug}
-        className="relative block aspect-[274/248] w-full"
-      >
+    <div className="relative mx-[6%] mt-4 overflow-hidden rounded-lg bg-[#f9fafb] md:mt-[17px]">
+      <div className="relative block aspect-[274/248] w-full">
         {showPlaceholder ? (
           <ProductImagePlaceholder className="h-full w-full" aria-label={product.title} />
         ) : (
@@ -198,7 +198,7 @@ export function SpecialOfferMedia({
             <ProductLabels labels={product.labels} />
           </div>
         ) : null}
-      </ProductPdpPrefetchLink>
+      </div>
     </div>
   );
 }

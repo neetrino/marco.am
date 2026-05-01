@@ -2,8 +2,8 @@ import { HERO_MOBILE_PRIMARY_IMAGE_SRC } from '@/components/hero.constants';
 
 /** Admin / JSON may still reference pre–Figma `1114:3373` mobile hero rasters. */
 const LEGACY_HERO_MOBILE_IMAGE_URLS = new Set<string>([
-  '/assets/hero/hero-yellow-brick-wall.png',
-  '/assets/hero/hero-mobile-brick-wall-314-2380.jpg',
+  '/assets/hero/hero-yellow-brick-wall.webp',
+  '/assets/hero/hero-mobile-brick-wall-314-2380.webp',
 ]);
 
 export function resolveHeroMobileImageUrl(

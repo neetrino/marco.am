@@ -27,7 +27,7 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="relative w-full h-[400px] md:h-[500px] lg:h-[600px] rounded-lg overflow-hidden shadow-lg">
               <Image
-                src="https://images.pexels.com/photos/3184357/pexels-photo-3184357.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+                src="/assets/stock/pexels-3184357-about-hero.webp"
                 alt={t('about.imageAlt')}
                 fill
                 className="object-cover"

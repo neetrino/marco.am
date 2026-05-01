@@ -1,5 +1,7 @@
 'use client';
 
+import { ProductPdpPrefetchLink } from '@/components/ProductPdpPrefetchLink';
+
 import {
   getSpecialOfferBrandTextClass,
   SPECIAL_OFFERS_CARD_BG,
@@ -116,6 +118,8 @@ export function SpecialOfferCard({
   const shellAlignClass =
     align === 'end' ? 'ml-auto mr-0' : 'mx-auto';
 
+  const cardPdpEnabled = Boolean(product.slug) && !product.shellPlaceholder;
+
   return (
     <div
       className={`relative z-10 min-w-0 w-full max-w-full font-sans hover:z-30 focus-within:z-30 ${shellAlignClass}`}
@@ -137,6 +141,17 @@ export function SpecialOfferCard({
           ['--special-offers-price-pad-end' as string]: `${SPECIAL_OFFERS_PRICE_ROW_END_PADDING_PX}px`,
         }}
       >
+        {cardPdpEnabled ? (
+          <ProductPdpPrefetchLink
+            href={`/products/${product.slug}`}
+            productSlug={product.slug}
+            className="absolute inset-0 z-[1] focus:outline-none focus-visible:ring-2 focus-visible:ring-marco-yellow focus-visible:ring-offset-2"
+            style={{ borderRadius: SPECIAL_OFFERS_CARD_SHELL_RADIUS_PX }}
+            aria-label={product.title}
+          >
+            <span className="sr-only">{product.title}</span>
+          </ProductPdpPrefetchLink>
+        ) : null}
         <span
           aria-hidden
           className="pointer-events-none absolute bottom-0 right-0 z-0 max-md:hidden rounded-full [box-shadow:inset_0_0_0_1px_var(--special-offers-card-cutout-bg)] dark:[box-shadow:inset_0_0_0_1px_#050505]"
@@ -186,7 +201,7 @@ export function SpecialOfferCard({
           />
 
           <div
-            className="flex min-h-0 w-full flex-1 flex-col"
+            className="pointer-events-none flex min-h-0 w-full flex-1 flex-col"
             style={textBlockShiftStyle}
           >
             <SpecialOfferCardInfo

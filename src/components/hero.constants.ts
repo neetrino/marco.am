@@ -13,14 +13,14 @@ export const HERO_PANEL_ASPECT_H = 79;
 export const HERO_PANEL_RADIUS_PX = 32;
 
 /** Vertical brick wall — top aligns with hero; bottom crops under `object-cover` + `object-top` */
-export const HERO_PRIMARY_IMAGE_SRC = '/assets/hero/hero-brick-wall-vertical.png' as const;
+export const HERO_PRIMARY_IMAGE_SRC = '/assets/hero/hero-brick-wall-vertical.webp' as const;
 
 /**
  * Mobile home hero — Figma MARCO `1114:3373` (`-355 1`, 399×288, radius 24).
  * Full-bleed raster; no separate headline/slate layers on top.
  */
 export const HERO_MOBILE_PRIMARY_IMAGE_SRC =
-  '/assets/hero/hero-mobile-home-banner-1114-3373.png' as const;
+  '/assets/hero/hero-mobile-home-banner-1114-3373.webp' as const;
 
 /** Figma `1114:3373` frame — mobile hero card aspect (width∶height). */
 export const HERO_MOBILE_HOME_BANNER_ASPECT_W = 399;
@@ -30,7 +30,7 @@ export const HERO_MOBILE_HOME_BANNER_ASPECT_H = 288;
 export const HERO_PROMO_STACK_LAYER_WHITE = '#ffffff' as const;
 export const HERO_PROMO_STACK_LAYER_GRAY = '#c7c7c7' as const;
 export const HERO_PROMO_STACK_LAYER_BLUE = '#2f4b5d' as const;
-export const HERO_PROMO_CHAIR_IMAGE_SRC = '/assets/hero/hero-promo-chair-101-4023.png' as const;
+export const HERO_PROMO_CHAIR_IMAGE_SRC = '/assets/hero/hero-promo-chair-101-4023.webp' as const;
 /** Raster pixel size — used by Next/Image `width`/`height` (natural asset). */
 export const HERO_PROMO_CHAIR_IMAGE_NATURAL_WIDTH_PX = 500;
 export const HERO_PROMO_CHAIR_IMAGE_NATURAL_HEIGHT_PX = 500;
@@ -45,7 +45,7 @@ export const HERO_PROMO_SLIDER_HANDLE_IMAGE_SRC =
 
 /** Free delivery tile raster — 428×589; full art (text + icon), mask applied in `HomePromoFreeDeliveryBanner` */
 export const HERO_FREE_DELIVERY_BANNER_IMAGE_SRC =
-  '/assets/hero/hero-free-delivery-banner-428x589.png' as const;
+  '/assets/hero/hero-free-delivery-banner-428x589.webp' as const;
 
 /** Figma 101:4039 / mask — outer `border-radius` on free-delivery card (Subtract group) */
 export const HERO_FREE_DELIVERY_TILE_MASK_CORNER_RADIUS_PX = 36;
@@ -109,7 +109,7 @@ export const HERO_PROMO_SIDE_TILE_ARROW_LINK_STYLE: CSSProperties = {
 
 /** Figma 305:2154 — 80% / smartphones promo tile (beside free-delivery banner) */
 export const HERO_PROMO_SMARTPHONES_BANNER_IMAGE_SRC =
-  '/assets/hero/hero-promo-smartphones-banner-305-2154.png' as const;
+  '/assets/hero/hero-promo-smartphones-banner-305-2154.webp' as const;
 
 /** Fixed frame for the 80% smartphones tile only (free-delivery keeps shared side-tile sizing). */
 export const HERO_PROMO_SMARTPHONES_TILE_WIDTH_PX = 360;

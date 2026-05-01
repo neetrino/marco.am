@@ -156,7 +156,7 @@ const SUBCATEGORIES_BY_PARENT = {
 
 /** Brand assets source (public logo folder). */
 const BRAND_ASSETS_DIR = path.join(__dirname, "../../../public/assets/brands");
-const BRAND_EXTENSIONS_BY_PRIORITY = [".svg", ".png", ".jpg", ".jpeg", ".webp"];
+const BRAND_EXTENSIONS_BY_PRIORITY = [".svg", ".webp", ".png", ".jpg", ".jpeg"];
 const BRAND_VARIANT_SUFFIXES = ["-figma", "-wordmark", "-blue", "-alt"];
 const DEFAULT_BRANDS = [
   { slug: "apple", name: "Apple", logoUrl: null },

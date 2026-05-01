@@ -6,7 +6,9 @@ import {
   parseLanguageFromServer,
   type LanguageCode,
 } from '@/lib/language';
-import { productsService } from '@/lib/services/products.service';
+import { getCachedPdpDetail, getCachedPdpVisual } from '@/lib/product-pdp/pdp-server-cache';
+
+import type { Product } from './types';
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -22,10 +24,17 @@ export default async function ProductPage({ params }: PageProps) {
   const baseSlug = slugParts[0] ?? slugParam;
 
   let initialVisual = null;
-  try {
-    initialVisual = await productsService.findBySlugVisual(baseSlug, serverLanguage);
-  } catch {
-    // Client will refetch (e.g. cache miss or slug only valid on full PDP).
+  let initialProduct: Product | null = null;
+  const [visualSettled, detailSettled] = await Promise.allSettled([
+    getCachedPdpVisual(baseSlug, serverLanguage),
+    getCachedPdpDetail(baseSlug, serverLanguage),
+  ]);
+  if (visualSettled.status === 'fulfilled') {
+    initialVisual = visualSettled.value;
+  }
+  if (detailSettled.status === 'fulfilled') {
+    /* Same payload shape as GET /api/v1/products/[slug] (Prisma transform). */
+    initialProduct = detailSettled.value as Product;
   }
 
   return (
@@ -33,6 +42,7 @@ export default async function ProductPage({ params }: PageProps) {
       slugParam={slugParam}
       serverLanguage={serverLanguage}
       initialVisual={initialVisual}
+      initialProduct={initialProduct}
     />
   );
 }

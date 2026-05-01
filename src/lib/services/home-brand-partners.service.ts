@@ -14,9 +14,11 @@ import {
   getCachedJson,
   invalidateHomeBrandPartnersPublicCache,
 } from "@/lib/services/read-through-json-cache";
+import { resolveBrandStaticLogo } from "@/lib/brand-static-logo-assets";
 import { logger } from "@/lib/utils/logger";
 
-const BRAND_PARTNERS_PUBLIC_CACHE_TTL_SEC = 120;
+/** Align with home listing strips — fewer DB round-trips on repeat visits. */
+const BRAND_PARTNERS_PUBLIC_CACHE_TTL_SEC = 600;
 
 type HomeLocale = "en" | "hy" | "ru";
 
@@ -155,6 +157,19 @@ function buildFromAll(brands: BrandRow[], locale: HomeLocale): HomeBrandPartnerP
   return brands.map((b) => toPublicItem(b, locale, b.id, undefined));
 }
 
+function partnerHasDisplayableLogo(partner: HomeBrandPartnerPublicItem): boolean {
+  if (partner.logoUrl?.trim()) {
+    return true;
+  }
+  return resolveBrandStaticLogo(partner.slug) !== null;
+}
+
+function filterToPartnersWithLogo(
+  partners: HomeBrandPartnerPublicItem[],
+): HomeBrandPartnerPublicItem[] {
+  return partners.filter(partnerHasDisplayableLogo);
+}
+
 export const homeBrandPartnersService = {
   getDefaultStorage(): HomeBrandPartnersStorage {
     return DEFAULT_STORAGE;
@@ -162,7 +177,7 @@ export const homeBrandPartnersService = {
 
   async getPublicPayload(localeRaw: string | undefined): Promise<HomeBrandPartnersPublicPayload> {
     const locale = normalizeLocale(localeRaw);
-    const cacheKey = `home:brand-partners:public:v1:${locale}`;
+    const cacheKey = `home:brand-partners:public:v2:${locale}`;
 
     return getCachedJson(cacheKey, BRAND_PARTNERS_PUBLIC_CACHE_TTL_SEC, async () => {
       const storage = await loadStorage();
@@ -172,7 +187,7 @@ export const homeBrandPartnersService = {
         const brands = await fetchPublishedBrands(undefined);
         return {
           sectionTitle,
-          brands: buildFromAll(brands, locale),
+          brands: filterToPartnersWithLogo(buildFromAll(brands, locale)),
         };
       }
 
@@ -181,7 +196,9 @@ export const homeBrandPartnersService = {
       const brandById = new Map(rows.map((b) => [b.id, b]));
       return {
         sectionTitle,
-        brands: buildFromCurated(storage, brandById, locale),
+        brands: filterToPartnersWithLogo(
+          buildFromCurated(storage, brandById, locale),
+        ),
       };
     });
   },

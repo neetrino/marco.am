@@ -27,6 +27,7 @@ export async function HomeSpecialOffersBoundary() {
       filter: 'promotion',
       sort: 'createdAt',
       listingOmitProductAttributes: true,
+      skipExactTotalCount: true,
     });
     rows = dedupeCardProductsByTitle(
       (result.data ?? []) as SpecialOfferProduct[],

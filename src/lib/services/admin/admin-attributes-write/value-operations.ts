@@ -1,5 +1,6 @@
 import { db } from "@white-shop/db";
 import { logger } from "../../../utils/logger";
+import { normalizeInboundRasterStringToWebpDataUrl } from "@/lib/utils/normalize-inbound-raster-to-webp-data-url";
 import { ensureColorsColumnsExist } from "./migration";
 import { formatAttribute } from "./utils";
 
@@ -159,9 +160,11 @@ export async function updateAttributeValue(
     });
   }
 
-  // Update imageUrl if provided
+  // Update imageUrl if provided (inline uploads → WebP data URL)
   if (data.imageUrl !== undefined) {
-    updateData.imageUrl = data.imageUrl || null;
+    const raw = data.imageUrl;
+    updateData.imageUrl =
+      raw && raw.trim() ? await normalizeInboundRasterStringToWebpDataUrl(raw) : null;
   }
 
   // Update translation label if provided

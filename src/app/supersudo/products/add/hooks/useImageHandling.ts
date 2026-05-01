@@ -148,8 +148,8 @@ export function useImageHandling({
             maxSizeMB: 2,
             maxWidthOrHeight: 1920,
             useWebWorker: true,
-            fileType: 'image/jpeg',
-            initialQuality: 0.8,
+            fileType: 'image/webp',
+            initialQuality: 0.82,
           });
 
           if (base64 && base64.trim()) {
@@ -243,8 +243,8 @@ export function useImageHandling({
         maxSizeMB: 2,
         maxWidthOrHeight: 1920,
         useWebWorker: true,
-        fileType: 'image/jpeg',
-        initialQuality: 0.8,
+        fileType: 'image/webp',
+        initialQuality: 0.82,
       });
 
       setGeneratedVariants((prev) => prev.map((v) => (v.id === variantId ? { ...v, image: base64 } : v)));
@@ -293,8 +293,8 @@ export function useImageHandling({
             maxSizeMB: 2,
             maxWidthOrHeight: 1920,
             useWebWorker: true,
-            fileType: 'image/jpeg',
-            initialQuality: 0.8,
+            fileType: 'image/webp',
+            initialQuality: 0.82,
           });
 
           logger.devLog(`✅ [COLOR IMAGE] Image ${index + 1}/${imageFiles.length} processed, base64 length:`, base64.length);

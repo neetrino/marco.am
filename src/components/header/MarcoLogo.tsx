@@ -18,7 +18,7 @@ export function MarcoLogo() {
     >
       <span className="relative aspect-[83/73] h-9 w-auto shrink-0 overflow-hidden md:h-10">
         <Image
-          src="/assets/brand/marco-group-logo.png"
+          src="/assets/brand/marco-group-logo.webp"
           alt=""
           width={MARCO_LOGO_INTRINSIC_WIDTH}
           height={MARCO_LOGO_INTRINSIC_HEIGHT}

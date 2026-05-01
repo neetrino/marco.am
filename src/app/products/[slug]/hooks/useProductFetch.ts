@@ -10,9 +10,10 @@ import {
   fetchProductDetail,
   fetchProductVisual,
 } from '@/lib/product-pdp/product-pdp-fetchers';
+import { PDP_QUERY_GC_TIME_MS, PDP_QUERY_STALE_TIME_MS } from '@/lib/product-pdp/pdp-query-cache';
 import { queryKeys } from '@/lib/query-keys';
 
-import { RESERVED_ROUTES } from '../types';
+import { RESERVED_ROUTES, type Product } from '../types';
 
 interface UseProductFetchProps {
   slug: string;
@@ -21,6 +22,8 @@ interface UseProductFetchProps {
   serverLanguage: LanguageCode;
   /** Server-rendered `/visual` payload when available (instant gallery on navigation). */
   initialVisual: PdpVisualPayload | null;
+  /** SSR full product for same slug/lang — instant detail after refresh when cache hits. */
+  initialProduct: Product | null;
 }
 
 export function useProductFetch({
@@ -28,6 +31,7 @@ export function useProductFetch({
   variantIdFromUrl: _variantIdFromUrl,
   serverLanguage,
   initialVisual,
+  initialProduct,
 }: UseProductFetchProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -53,13 +57,21 @@ export function useProductFetch({
 
   const enabled = Boolean(slug) && !RESERVED_ROUTES.includes(slug.toLowerCase());
 
+  const detailInitialData =
+    initialProduct != null &&
+    initialProduct.slug === slug &&
+    lang === serverLanguage
+      ? initialProduct
+      : undefined;
+
   const visualQuery = useQuery({
     queryKey: queryKeys.productVisual(slug, lang),
     queryFn: () => fetchProductVisual(slug, lang),
     enabled,
     initialData: initialVisual ?? undefined,
     placeholderData: keepPreviousData,
-    staleTime: 120_000,
+    staleTime: PDP_QUERY_STALE_TIME_MS,
+    gcTime: PDP_QUERY_GC_TIME_MS,
     retry: (failureCount, error) => {
       const status =
         error && typeof error === 'object' && 'status' in error ? Number(error.status) : undefined;
@@ -74,8 +86,10 @@ export function useProductFetch({
     queryKey: queryKeys.productDetail(slug, lang),
     queryFn: () => fetchProductDetail(slug, lang),
     enabled,
+    initialData: detailInitialData,
     placeholderData: keepPreviousData,
-    staleTime: 120_000,
+    staleTime: PDP_QUERY_STALE_TIME_MS,
+    gcTime: PDP_QUERY_GC_TIME_MS,
     retry: (failureCount, error) => {
       const status =
         error && typeof error === 'object' && 'status' in error ? Number(error.status) : undefined;

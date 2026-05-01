@@ -12,8 +12,7 @@ export const SITE_CONTENT_MAP_EMBED_ALLOWED_HOSTS = new Set([
 export const SITE_CONTENT_DEFAULT_STORAGE: SiteContentStorage = {
   version: SITE_CONTENT_STORAGE_VERSION,
   about: {
-    heroImageUrl:
-      "https://images.pexels.com/photos/3184357/pexels-photo-3184357.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+    heroImageUrl: "/assets/stock/pexels-3184357-about-hero.webp",
     subtitle: {
       hy: "ԷԼԵԳԱՆՏ ԴԻԶԱՅՆ",
       ru: "ЭЛЕГАНТНЫЙ ДИЗАЙН",

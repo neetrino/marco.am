@@ -4,7 +4,7 @@ import { HOME_PAGE_SECTION_SHELL_CLASS } from './home-page-section-shell.constan
  * Home app download banner — Figma node 305:2155 (`App banner`).
  */
 
-export const HOME_APP_BANNER_IMAGE_PATH = '/assets/home/app-download-banner.png';
+export const HOME_APP_BANNER_IMAGE_PATH = '/assets/home/app-download-banner.webp';
 
 export const HOME_APP_BANNER_IMAGE_WIDTH = 2306;
 

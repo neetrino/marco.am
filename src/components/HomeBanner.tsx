@@ -10,21 +10,21 @@ import { HOME_HERO_BANNER_HEADER_GAP_PX } from '@/constants/homePageLayout';
 
 /**
  * Hero assets. `bgTexture`: yellow brick wall (portrait); `object-cover` crops to banner aspect.
- * Figma MCP `/api/mcp/asset/*` URLs expire (~7 days); product and UI rasters are stored under `/public/images/`.
+ * Product and UI rasters live under `public/assets/hero/` as WebP.
  * Overlay ref ~1714×924.
  */
 const ASSETS = {
-  bgTexture: '/images/home-banner-brick-bg.png',
-  /** BANNER 1 — Figma node `305:2147` (631×606 ref); exported PNG, not MCP hotlink. */
-  banner1: '/images/home-banner-305-2147.png',
+  bgTexture: '/assets/hero/hero-yellow-brick-wall.webp',
+  /** BANNER 1 — brick wall vertical (WebP export under `public/assets/hero/`). */
+  banner1: '/assets/hero/hero-brick-wall-vertical.webp',
   /** Group 9233 — Figma `305:2115` (black circle + yellow arrow); local SVG matches MCP export. */
   linkIcon1: '/images/home-banner-banner2-link-icon.svg',
   /** Group 9233 — Figma node `305:2131` (BANNER3); local export (white circle + arrow). */
   linkIcon2: '/images/home-banner-banner3-link-icon.svg',
   /** BANNER2 1 — Figma node 305:2151, downloaded locally (404×556 px). */
-  banner2: '/images/home-banner-305-2151.png',
-  /** BANNER3 1 — Figma node 305:2154, downloaded locally (772×834 px). */
-  banner3: '/images/home-banner-305-2154.png',
+  banner2: '/assets/hero/hero-free-delivery-banner-428x589.webp',
+  /** BANNER3 — smartphones promo tile art. */
+  banner3: '/assets/hero/hero-promo-smartphones-banner-305-2154.webp',
   /** Ellipse 87 — Figma node 101:4070; soft white circle + shadow (SVG export). */
   ellipse87: '/images/home-banner-101-4070.svg',
 } as const;

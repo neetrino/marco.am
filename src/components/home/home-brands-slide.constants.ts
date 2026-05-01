@@ -6,13 +6,13 @@
 export const HOME_BRANDS_SLIDE_GAP_PX = 12;
 
 /** Card shell height — extra vertical padding inside needs headroom. */
-export const HOME_BRANDS_SLIDE_CARD_MIN_HEIGHT_PX = 88;
+export const HOME_BRANDS_SLIDE_CARD_MIN_HEIGHT_PX = 96;
 
 export const HOME_BRANDS_SLIDE_CORNER_RADIUS_PX = 20;
 
 export const HOME_BRANDS_SLIDE_SURFACE_HEX = '#f6f6f6';
 
-/** Larger logo inside the same card shell (Hisense / Panasonic stay default). */
+/** Admin/API hint — rail UI uses a single uniform logo cell for all entries. */
 export type HomeBrandLogoScale = 'default' | 'large';
 
 export type HomeBrandSlideEntry = {
@@ -24,13 +24,18 @@ export type HomeBrandSlideEntry = {
   logoScale?: HomeBrandLogoScale;
 };
 
-/** Shared Tailwind for logo `<Image>` — card `minHeight` unchanged. */
-export const HOME_BRAND_LOGO_CLASS_DEFAULT =
-  'h-auto max-h-5 w-auto max-w-full object-contain sm:max-h-6 md:max-h-7';
+/**
+ * Every logo is scaled inside this fixed box so mixed SVG/raster assets read at similar visual weight.
+ */
+export const HOME_BRANDS_RAIL_LOGO_CELL_HEIGHT_PX = 56;
+export const HOME_BRANDS_RAIL_LOGO_CELL_MAX_WIDTH_PX = 152;
 
-/** Samsung / LG — larger glyph; card shell (`minHeight`, padding) unchanged. */
-export const HOME_BRAND_LOGO_CLASS_LARGE =
-  'h-auto max-h-11 w-auto max-w-full object-contain sm:max-h-12 md:max-h-14';
+/** Equal padding on every brand card (logo scale no longer changes inset). */
+export const HOME_BRANDS_SLIDE_CARD_PADDING_CLASS =
+  'px-3 py-3 sm:px-4 sm:py-3.5';
+
+export const HOME_BRANDS_RAIL_LOGO_IMAGE_CLASS =
+  'max-h-full max-w-full object-contain';
 
 /** Brand logo assets under `public/assets/brands/`. */
 export const HOME_BRAND_SLIDE_ENTRIES: readonly HomeBrandSlideEntry[] = [
@@ -51,7 +56,7 @@ export const HOME_BRAND_SLIDE_ENTRIES: readonly HomeBrandSlideEntry[] = [
   },
   {
     id: 'lg',
-    src: '/assets/brands/lg-figma.png',
+    src: '/assets/brands/lg-figma.webp',
     width: 351,
     height: 161,
     alt: 'LG',
@@ -59,7 +64,7 @@ export const HOME_BRAND_SLIDE_ENTRIES: readonly HomeBrandSlideEntry[] = [
   },
   {
     id: 'panasonic',
-    src: '/assets/brands/panasonic-figma.png',
+    src: '/assets/brands/panasonic-figma.webp',
     width: 495,
     height: 79,
     alt: 'Panasonic',

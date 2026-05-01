@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import { HomePageLayoutShell } from '@/components/home/HomePageLayoutShell';
 import { HomeRoutePrefetch } from '@/components/home/HomeRoutePrefetch';
 import { HomeFeaturedSection } from './home/HomeFeaturedSection';
 import { HomeProductRailsSkeleton } from './home/HomeProductRailsSkeleton';
@@ -12,7 +13,7 @@ import { HomeReelsBelowHero } from './HomeReelsBelowHero';
  */
 export default function HomePage() {
   return (
-    <div className="min-h-screen">
+    <HomePageLayoutShell>
       <Suspense fallback={<HomeHeroReelsFallback />}>
         <HomeHeroBannerSection />
       </Suspense>
@@ -30,6 +31,6 @@ export default function HomePage() {
       </Suspense>
 
       <HomeRoutePrefetch />
-    </div>
+    </HomePageLayoutShell>
   );
 }

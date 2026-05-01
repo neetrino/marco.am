@@ -10,6 +10,7 @@ import { t } from '@/lib/i18n';
 import type { PdpVisualPayload } from '@/lib/services/products-slug/product-transformer';
 import type { LanguageCode } from '@/lib/language';
 
+import type { Product } from './types';
 import { ProductImageGallery } from './ProductImageGallery';
 import { ProductInfoAndActions } from './ProductInfoAndActions';
 import { ProductInfoPrimarySkeleton } from './ProductInfoPrimarySkeleton';
@@ -27,12 +28,15 @@ export type ProductPageClientProps = {
   slugParam: string;
   serverLanguage: LanguageCode;
   initialVisual: PdpVisualPayload | null;
+  /** SSR full product — hydrates client cache so refresh / hard navigation can paint without waiting on `/api`. */
+  initialProduct: Product | null;
 };
 
 export function ProductPageClient({
   slugParam,
   serverLanguage,
   initialVisual,
+  initialProduct,
 }: ProductPageClientProps) {
   const { isLoggedIn } = useAuth();
 
@@ -84,7 +88,7 @@ export function ProductPageClient({
     handleAddToWishlist,
     handleCompareToggle,
     getRequiredAttributesMessage,
-  } = useProductPage({ slugParam, serverLanguage, initialVisual });
+  } = useProductPage({ slugParam, serverLanguage, initialVisual, initialProduct });
 
   const handleAddToCart = async () => {
     if (!canAddToCart || !product || !currentVariant) return;

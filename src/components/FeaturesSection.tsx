@@ -35,7 +35,7 @@ export function FeaturesSection() {
             <div className="flex justify-center mb-4">
               <div className="w-20 h-20 flex items-center justify-center">
                 <img
-                  src="https://img.freepik.com/premium-vector/vector-fast-delivery-icon-illustration_723554-1032.jpg"
+                  src="/assets/home/features/feature-fast-delivery.webp"
                   alt="Fast Delivery"
                   className="w-full h-full object-contain"
                 />
@@ -57,7 +57,7 @@ export function FeaturesSection() {
             <div className="flex justify-center mb-4">
               <div className="w-20 h-20 flex items-center justify-center">
                 <img
-                  src="https://www.shutterstock.com/image-vector/best-quality-stamp-sticker-icon-600w-1922730422.jpg"
+                  src="/assets/home/features/feature-best-quality.webp"
                   alt="Best Quality"
                   className="w-full h-full object-contain"
                 />
@@ -79,7 +79,7 @@ export function FeaturesSection() {
             <div className="flex justify-center mb-4">
               <div className="w-20 h-20 flex items-center justify-center">
                 <img
-                  src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRSgoxSEhKJM1oLGZSKnh1mVW4wTQcQl_DV1Q&s"
+                  src="/assets/home/features/feature-free-return.webp"
                   alt="Free Return"
                   className="w-full h-full object-contain"
                 />

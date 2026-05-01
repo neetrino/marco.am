@@ -1,6 +1,10 @@
 import { Prisma } from "@white-shop/db/prisma";
 import { logger } from "../../../utils/logger";
 import { cleanImageUrls, separateMainAndVariantImages, smartSplitUrls } from "../../../utils/image-utils";
+import {
+  normalizeInboundRasterStringToWebpDataUrl,
+  normalizeProductMediaPayload,
+} from "@/lib/utils/normalize-inbound-raster-to-webp-data-url";
 import type { UpdateProductData } from "./types";
 import { normalizeProductClass } from "@/lib/constants/product-class";
 
@@ -41,11 +45,11 @@ export async function collectVariantImages(
 /**
  * Build product update data
  */
-export function buildProductUpdateData(
+export async function buildProductUpdateData(
   data: UpdateProductData,
   allVariantImages: string[],
   existing: { publishedAt: Date | null }
-): {
+): Promise<{
   brandId?: string | null;
   productClass?: "retail" | "wholesale";
   primaryCategoryId?: string | null;
@@ -54,7 +58,7 @@ export function buildProductUpdateData(
   published?: boolean;
   publishedAt?: Date;
   featured?: boolean;
-} {
+}> {
   const updateData: {
     brandId?: string | null;
     productClass?: "retail" | "wholesale";
@@ -77,15 +81,15 @@ export function buildProductUpdateData(
   if (data.categoryIds !== undefined) updateData.categoryIds = data.categoryIds || [];
   
   if (data.media !== undefined) {
-    // Separate main images from variant images and clean them
-    const { main } = separateMainAndVariantImages(
+    const normalizedMedia = await normalizeProductMediaPayload(
       data.media as Array<string | { url?: string; src?: string; value?: string }>,
-      allVariantImages
     );
+    const { main } = separateMainAndVariantImages(normalizedMedia, allVariantImages);
     let cleanedMainMedia = cleanImageUrls(main);
 
     if (data.mainProductImage) {
-      const featuredImage = cleanImageUrls([data.mainProductImage])[0] ?? null;
+      const featuredNorm = await normalizeInboundRasterStringToWebpDataUrl(data.mainProductImage);
+      const featuredImage = cleanImageUrls([featuredNorm])[0] ?? null;
       if (featuredImage) {
         const existingWithoutFeatured = cleanedMainMedia.filter((url) => url !== featuredImage);
         cleanedMainMedia = [featuredImage, ...existingWithoutFeatured];

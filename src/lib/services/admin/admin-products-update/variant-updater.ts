@@ -1,6 +1,7 @@
 import { Prisma } from "@white-shop/db/prisma";
 import { logger } from "../../../utils/logger";
 import { processImageUrl, smartSplitUrls } from "../../../utils/image-utils";
+import { normalizeCommaSeparatedRasterDataUrls } from "@/lib/utils/normalize-inbound-raster-to-webp-data-url";
 import { processVariantOptions, parseVariantPrices } from "./variant-processor";
 import {
   resolveProductClass,
@@ -71,14 +72,17 @@ async function findVariant(
 /**
  * Process variant image URL
  */
-function processVariantImageUrl(imageUrl: string | undefined): string | undefined {
+async function processVariantImageUrl(imageUrl: string | undefined): Promise<string | undefined> {
   if (!imageUrl) {
     return undefined;
   }
-  
+
   const urls = smartSplitUrls(imageUrl);
-  const processedUrls = urls.map(url => processImageUrl(url)).filter((url): url is string => url !== null);
-  return processedUrls.length > 0 ? processedUrls.join(',') : undefined;
+  const processedUrls = urls.map((url) => processImageUrl(url)).filter((url): url is string => url !== null);
+  if (processedUrls.length === 0) {
+    return undefined;
+  }
+  return normalizeCommaSeparatedRasterDataUrls(processedUrls.join(","));
 }
 
 /**
@@ -104,7 +108,7 @@ async function updateExistingVariant(
     where: { variantId },
   });
   
-  const processedVariantImageUrl = processVariantImageUrl(variant.imageUrl);
+  const processedVariantImageUrl = await processVariantImageUrl(variant.imageUrl);
 
   await tx.productVariant.update({
     where: { id: variantId },
@@ -162,7 +166,7 @@ async function createNewVariant(
     }
   }
   
-  const processedVariantImageUrl = processVariantImageUrl(variant.imageUrl);
+  const processedVariantImageUrl = await processVariantImageUrl(variant.imageUrl);
 
   logger.info(`Creating new variant`, { sku: variant.sku || 'none' });
   const newVariant = await tx.productVariant.create({
