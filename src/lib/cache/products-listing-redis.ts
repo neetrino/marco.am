@@ -50,6 +50,7 @@ export function buildProductsListingRedisKey(filters: ProductFilters): string {
     productIds: productIds ?? null,
     listingOmitProductAttributes: Boolean(filters.listingOmitProductAttributes),
     cardVisualOnly: Boolean(filters.cardVisualOnly),
+    ...(filters.skipExactTotalCount ? { skipExactTotalCount: true as const } : {}),
   };
   const hash = createHash('sha256')
     .update(stableStringifyForCacheKey(fingerprint))

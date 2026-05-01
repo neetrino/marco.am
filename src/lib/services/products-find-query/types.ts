@@ -26,6 +26,12 @@ export interface ProductFilters {
   listingOmitProductAttributes?: boolean;
   /** When true, listing API returns only id, slug, image, images for first-paint card shells. */
   cardVisualOnly?: boolean;
+  /**
+   * Skip `db.product.count` when pagination is DB-backed (no over-fetch). Derives `meta.total`
+   * from the page slice so first-screen home strips save one round-trip per listing. Do not use
+   * when exact totals matter (e.g. PLP footer); avoid with `cursor` pagination.
+   */
+  skipExactTotalCount?: boolean;
 }
 
 export type TechnicalSpecFilters = Record<string, string[]>;

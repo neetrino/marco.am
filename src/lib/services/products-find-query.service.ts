@@ -3,6 +3,7 @@ import { executeProductQuery } from "./products-find-query/query-executor";
 import { db } from "@white-shop/db";
 import type { ProductFilters, ProductWithRelations } from "./products-find-query/types";
 import { hasTechnicalSpecFilters } from "./products-technical-filters";
+import { decodeProductCursor } from "./products-pagination-cursor";
 
 /**
  * Service for building and executing product find queries
@@ -48,9 +49,25 @@ class ProductsFindQueryService {
     };
 
     if (!needOverFetch) {
+      const cursorOffset = filters.cursor ? decodeProductCursor(filters.cursor) : undefined;
+      const skip = cursorOffset !== undefined ? cursorOffset : (page - 1) * limit;
+      const canSkipCount =
+        Boolean(filters.skipExactTotalCount) && filters.cursor === undefined;
+
+      if (canSkipCount) {
+        const products = await executeProductQuery(where, limit, skip, queryOpts);
+        const total =
+          products.length < limit ? skip + products.length : skip + limit + 1;
+        return {
+          products,
+          bestsellerProductIds,
+          total,
+        };
+      }
+
       const [total, products] = await Promise.all([
         db.product.count({ where }),
-        executeProductQuery(where, limit, (page - 1) * limit, queryOpts),
+        executeProductQuery(where, limit, skip, queryOpts),
       ]);
       return {
         products,

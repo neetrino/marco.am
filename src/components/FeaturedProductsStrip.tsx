@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useMemo } from 'react';
 
 import { chunkArray, padChunksToMinimumCount } from '../lib/chunk-array';
@@ -16,40 +15,23 @@ import { FeaturedNewArrivalsMobileRail } from './home/FeaturedNewArrivalsMobileR
 import {
   SPECIAL_OFFERS_CARD_HEIGHT_PX,
   SPECIAL_OFFERS_CARD_SHELL_RADIUS_PX,
-  SPECIAL_OFFERS_CTA_LINK_CLASS,
   SPECIAL_OFFERS_MOBILE_GRID_COLUMN_GAP_PX,
   SPECIAL_OFFERS_MOBILE_GRID_PAGE_SIZE,
   SPECIAL_OFFERS_MOBILE_GRID_ROW_GAP_PX,
   SPECIAL_OFFERS_MOBILE_PAGINATION_PAGE_COUNT,
   SPECIAL_OFFERS_PAGINATION_DOT_GAP_DESKTOP_PX,
   SPECIAL_OFFERS_PAGINATION_DOT_GAP_MOBILE_PX,
-  SPECIAL_OFFERS_PAGINATION_DOT_SIZE_PX,
   SPECIAL_OFFERS_PAGINATION_TO_CTA_GAP_DESKTOP_PX,
 } from './home/home-special-offers.constants';
-import {
-  HOME_BRANDS_AFTER_CTA_MARGIN_TOP_PX,
-  HOME_BRANDS_AFTER_CTA_MARGIN_TOP_MOBILE_PX,
-  HOME_BRANDS_BLOCK_PADDING_BOTTOM_DESKTOP_PX,
-  HOME_BRANDS_BLOCK_PADDING_BOTTOM_MOBILE_PX,
-  HOME_BRANDS_DOTS_TO_CTA_GAP_MOBILE_PX,
-  HOME_BRANDS_GRID_TO_DOTS_GAP_MOBILE_PX,
-  HOME_BRANDS_GRID_TO_DOTS_GAP_PX,
-  HOME_BRANDS_TITLE_TO_RAIL_GAP_PX,
-} from './home/home-brands.constants';
+import { HOME_BRANDS_DOTS_TO_CTA_GAP_MOBILE_PX } from './home/home-brands.constants';
 import { HOME_BRAND_SLIDE_ENTRIES } from './home/home-brands-slide.constants';
-import { HomeBrandsHeading } from './home/HomeBrandsHeading';
-import { HomeBrandsSlide } from './home/HomeBrandsSlide';
+import { FeaturedProductsStripBrandsRail } from './FeaturedProductsStripBrandsRail';
 import type { SpecialOfferProduct } from './home/special-offer-product.types';
 import { useSpecialOffersCarousel } from './home/useSpecialOffersCarousel';
 
 const featuredCardSkeletonStyle = {
   height: SPECIAL_OFFERS_CARD_HEIGHT_PX,
   borderRadius: SPECIAL_OFFERS_CARD_SHELL_RADIUS_PX,
-} as const;
-
-const featuredFooterDotStyle = {
-  width: SPECIAL_OFFERS_PAGINATION_DOT_SIZE_PX,
-  height: SPECIAL_OFFERS_PAGINATION_DOT_SIZE_PX,
 } as const;
 
 type FilterType = 'new' | 'featured' | 'bestseller';
@@ -68,7 +50,11 @@ type FeaturedProductsStripProps = {
   products: SpecialOfferProduct[];
   isMaxMd: boolean;
   onRetryFetch: () => void;
-  /** Home brand partners rail; null = use static placeholders in `HomeBrandsSlide`. */
+  /**
+   * Home brand partners rail.
+   * `null` = no SSR/API payload — static placeholders in `HomeBrandsSlide`.
+   * `[]` = payload loaded but no brands with logos — hide the brands block.
+   */
   homeBrandPartners: HomeBrandPartnerPublicItem[] | null;
   /** When API returns a section title, show it on the brands heading. */
   homeBrandPartnersSectionTitle?: string | null;
@@ -90,9 +76,12 @@ export function FeaturedProductsStrip({
 }: FeaturedProductsStripProps) {
   const ctaHref = `/products?filter=${encodeURIComponent(FILTER_BY_TAB[activeTab])}`;
   const brandsFallbackTotal = HOME_BRAND_SLIDE_ENTRIES.length;
-  const brandsTotalItems = homeBrandPartners && homeBrandPartners.length > 0
-    ? homeBrandPartners.length
-    : brandsFallbackTotal;
+  const showBrandsSection =
+    homeBrandPartners === null || homeBrandPartners.length > 0;
+  const brandsTotalItems =
+    homeBrandPartners !== null && homeBrandPartners.length > 0
+      ? homeBrandPartners.length
+      : brandsFallbackTotal;
   const brandsPaginationPageCount = Math.max(
     1,
     Math.ceil(brandsTotalItems / SPECIAL_OFFERS_MOBILE_GRID_PAGE_SIZE)
@@ -152,7 +141,7 @@ export function FeaturedProductsStrip({
     activePage: brandsActivePage,
     scrollToPage: scrollBrandsToPage,
   } = useSpecialOffersCarousel({
-    isRailVisible: true,
+    isRailVisible: showBrandsSection,
     paginationPageCount: brandsPaginationPageCount,
   });
 
@@ -232,69 +221,20 @@ export function FeaturedProductsStrip({
     <>
       {featuredContent}
 
-      <div
-        className="w-full"
-        style={{
-          marginTop: `${
-            isMaxMd
-              ? HOME_BRANDS_AFTER_CTA_MARGIN_TOP_MOBILE_PX
-              : HOME_BRANDS_AFTER_CTA_MARGIN_TOP_PX
-          }px`,
-          paddingBottom: `${isMaxMd ? HOME_BRANDS_BLOCK_PADDING_BOTTOM_MOBILE_PX : HOME_BRANDS_BLOCK_PADDING_BOTTOM_DESKTOP_PX}px`,
-        }}
-      >
-        <HomeBrandsHeading
+      {showBrandsSection ? (
+        <FeaturedProductsStripBrandsRail
           language={language}
-          onPrev={() => scrollBrandsToPage(brandsActivePage - 1)}
-          onNext={() => scrollBrandsToPage(brandsActivePage + 1)}
-          sectionTitle={homeBrandPartnersSectionTitle ?? undefined}
+          isMaxMd={isMaxMd}
+          homeBrandPartners={homeBrandPartners}
+          homeBrandPartnersSectionTitle={homeBrandPartnersSectionTitle}
+          brandsRailRef={brandsRailRef}
+          brandsActivePage={brandsActivePage}
+          brandsPaginationPageCount={brandsPaginationPageCount}
+          paginationDotGapPx={paginationDotGapPx}
+          brandsDotsToCtaGapPx={brandsDotsToCtaGapPx}
+          scrollBrandsToPage={scrollBrandsToPage}
         />
-        <div
-          ref={brandsRailRef}
-          id="home-brands-rail"
-          className="w-full overflow-x-auto scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-          style={{ marginTop: `${HOME_BRANDS_TITLE_TO_RAIL_GAP_PX}px` }}
-          aria-label={t(language, 'home.brands.rail_aria')}
-        >
-          <HomeBrandsSlide partners={homeBrandPartners} />
-        </div>
-
-        <div
-          className="flex flex-row items-center justify-center"
-          style={{
-            marginTop: `${isMaxMd ? HOME_BRANDS_GRID_TO_DOTS_GAP_MOBILE_PX : HOME_BRANDS_GRID_TO_DOTS_GAP_PX}px`,
-            gap: `${paginationDotGapPx}px`,
-          }}
-          role="tablist"
-          aria-label={t(language, 'home.brands.rail_aria')}
-        >
-          {Array.from({ length: brandsPaginationPageCount }, (_, i) => (
-            <button
-              key={`brands-footer-dot-${i}`}
-              type="button"
-              role="tab"
-              aria-selected={i === brandsActivePage}
-              aria-label={`${t(language, 'home.special_offers_carousel_page')} ${i + 1}`}
-              onClick={() => scrollBrandsToPage(i)}
-              className={`rounded-full transition-colors duration-200 ${
-                i === brandsActivePage
-                  ? 'bg-[#181111] dark:!bg-[#ffca03]'
-                  : 'bg-gray-300 hover:bg-gray-400'
-              }`}
-              style={featuredFooterDotStyle}
-            />
-          ))}
-        </div>
-
-        <div
-          className="flex justify-center"
-          style={{ marginTop: brandsDotsToCtaGapPx }}
-        >
-          <Link href="/brands" className={SPECIAL_OFFERS_CTA_LINK_CLASS}>
-            {t(language, 'home.special_offers.cta')}
-          </Link>
-        </div>
-      </div>
+      ) : null}
     </>
   );
 }

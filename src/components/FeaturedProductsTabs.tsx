@@ -40,6 +40,7 @@ import {
   REELS_CAROUSEL_NAV_BUTTON_WIDTH_MOBILE_PX,
   REELS_CAROUSEL_NAV_INSET_RIGHT_MOBILE_PX,
 } from './home/home-reels.constants';
+import type { HomeBrandPartnerPublicItem } from '@/lib/types/home-brand-partners-public';
 import type { SpecialOfferProduct } from './home/special-offer-product.types';
 import { useIsMaxMd } from './home/use-is-max-md';
 import { HOME_PRODUCT_CHUNK_SIZE } from '../constants/homeProductChunks';
@@ -103,6 +104,12 @@ export type FeaturedProductsTabsProps = {
   readonly serverLanguage?: LanguageCode;
   /** Server-rendered «new» strip so first paint is not an empty client waterfall. */
   readonly initialNewProducts?: readonly SpecialOfferProduct[];
+  /**
+   * Server-rendered brand rail (Redis). Only brands with a logo (`logoUrl` or bundled slug asset).
+   * `null` = fetch failed (client/static fallback). `[]` = none qualify — section hidden.
+   */
+  readonly initialHomeBrandPartners?: readonly HomeBrandPartnerPublicItem[] | null;
+  readonly initialHomeBrandPartnersSectionTitle?: string | null;
 };
 
 async function fetchFeaturedStrip(
@@ -189,6 +196,8 @@ function createHomeFeaturedShellPlaceholders(count: number): SpecialOfferProduct
 export function FeaturedProductsTabs({
   serverLanguage,
   initialNewProducts,
+  initialHomeBrandPartners = null,
+  initialHomeBrandPartnersSectionTitle = null,
 }: FeaturedProductsTabsProps = {}) {
   const isMaxMd = useIsMaxMd();
   const queryClient = useQueryClient();
@@ -387,8 +396,10 @@ export function FeaturedProductsTabs({
               void newStripVisualQuery.refetch();
             }
           }}
-          homeBrandPartners={null}
-          homeBrandPartnersSectionTitle={null}
+          homeBrandPartners={
+            initialHomeBrandPartners !== null ? [...initialHomeBrandPartners] : null
+          }
+          homeBrandPartnersSectionTitle={initialHomeBrandPartnersSectionTitle}
         />
       </div>
 
