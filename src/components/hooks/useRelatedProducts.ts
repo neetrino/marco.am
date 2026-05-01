@@ -10,6 +10,7 @@ import {
   fetchRelatedProducts,
   type RelatedProductRow,
 } from '@/lib/product-pdp/fetch-related-products';
+import { PDP_RELATED_GC_TIME_MS, PDP_RELATED_STALE_TIME_MS } from '@/lib/product-pdp/pdp-query-cache';
 
 interface UseRelatedProductsProps {
   productSlug: string;
@@ -28,8 +29,8 @@ export function useRelatedProducts({ productSlug, language }: UseRelatedProducts
     queryKey: queryKeys.relatedProducts(trimmed, language, RELATED_LIMIT),
     queryFn: () => fetchRelatedProducts(trimmed, language, RELATED_LIMIT),
     enabled: Boolean(trimmed),
-    staleTime: 300_000,
-    gcTime: 1_800_000,
+    staleTime: PDP_RELATED_STALE_TIME_MS,
+    gcTime: PDP_RELATED_GC_TIME_MS,
     retry: 1,
   });
 

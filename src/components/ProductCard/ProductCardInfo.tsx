@@ -17,6 +17,10 @@ interface ProductCardInfoProps {
   currency: CurrencyCode;
   colors?: Array<{ value: string; imageUrl?: string | null; colors?: string[] | null }>;
   isCompact?: boolean;
+  /**
+   * When true, title/brand are not wrapped in PDP link (parent provides navigation).
+   */
+  omitPdpLink?: boolean;
 }
 
 /**
@@ -33,22 +37,33 @@ export function ProductCardInfo({
   currency,
   colors,
   isCompact = false,
+  omitPdpLink = false,
 }: ProductCardInfoProps) {
   const { t } = useTranslation();
 
+  const titleBlock = (
+    <>
+      {/* Product Title */}
+      <h3 className={`${isCompact ? 'text-base' : 'text-xl'} font-medium text-gray-900 ${isCompact ? 'mb-0.5' : 'mb-1'} line-clamp-2`}>
+        {title}
+      </h3>
+
+      {/* Category - Using brand name as category or default */}
+      <p className={`${isCompact ? 'text-sm' : 'text-lg'} text-gray-500 dark:text-[#050505] ${isCompact ? 'mb-1' : 'mb-2'}`}>
+        {brandName || t('common.defaults.category')}
+      </p>
+    </>
+  );
+
   return (
     <div className={isCompact ? 'p-2.5' : 'p-4'}>
-      <ProductPdpPrefetchLink href={`/products/${slug}`} productSlug={slug} className="block">
-        {/* Product Title */}
-        <h3 className={`${isCompact ? 'text-base' : 'text-xl'} font-medium text-gray-900 ${isCompact ? 'mb-0.5' : 'mb-1'} line-clamp-2`}>
-          {title}
-        </h3>
-        
-        {/* Category - Using brand name as category or default */}
-        <p className={`${isCompact ? 'text-sm' : 'text-lg'} text-gray-500 dark:text-[#050505] ${isCompact ? 'mb-1' : 'mb-2'}`}>
-          {brandName || t('common.defaults.category')}
-        </p>
-      </ProductPdpPrefetchLink>
+      {omitPdpLink ? (
+        titleBlock
+      ) : (
+        <ProductPdpPrefetchLink href={`/products/${slug}`} productSlug={slug} className="block">
+          {titleBlock}
+        </ProductPdpPrefetchLink>
+      )}
 
       {/* Available Colors */}
       {colors && colors.length > 0 && (

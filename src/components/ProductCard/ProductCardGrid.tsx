@@ -1,6 +1,7 @@
 'use client';
 
 import type { MouseEvent } from 'react';
+import { ProductPdpPrefetchLink } from '../ProductPdpPrefetchLink';
 import { ProductCardImage } from './ProductCardImage';
 import { ProductCardInfo } from './ProductCardInfo';
 import { ProductCardActions } from './ProductCardActions';
@@ -63,45 +64,54 @@ export function ProductCardGrid({
 
   return (
     <div className={`bg-white rounded-lg overflow-hidden transition-shadow relative group ${cardSurfaceClass}`}>
-      {/* Product Image */}
-      <div className="aspect-square bg-gray-100 relative overflow-hidden">
-        <ProductCardImage
+      <ProductPdpPrefetchLink
+        href={`/products/${product.slug}`}
+        productSlug={product.slug}
+        className="block cursor-pointer rounded-t-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-marco-yellow focus-visible:ring-offset-2"
+        aria-label={product.title}
+      >
+        {/* Product Image */}
+        <div className="aspect-square bg-gray-100 relative overflow-hidden">
+          <ProductCardImage
+            slug={product.slug}
+            image={product.image}
+            title={product.title}
+            labels={product.labels}
+            imageError={imageError}
+            onImageError={onImageError}
+            isCompact={isCompact}
+            omitPdpLink
+          />
+        </div>
+
+        {/* Product Info */}
+        <ProductCardInfo
           slug={product.slug}
-          image={product.image}
           title={product.title}
-          labels={product.labels}
-          imageError={imageError}
-          onImageError={onImageError}
+          brandName={product.brand?.name}
+          price={product.price}
+          originalPrice={product.originalPrice}
+          compareAtPrice={product.compareAtPrice}
+          discountPercent={product.discountPercent}
+          currency={currency}
+          colors={product.colors}
           isCompact={isCompact}
+          omitPdpLink
         />
-        
-        {/* Action Icons - appear on hover */}
-        <ProductCardActions
-          isInWishlist={isInWishlist}
-          isInCompare={isInCompare}
-          isAddingToCart={isAddingToCart}
-          inStock={product.inStock}
-          isCompact={isCompact}
-          wishlistPage={wishlistPage}
-          onWishlistToggle={onWishlistToggle}
-          onCompareToggle={onCompareToggle}
-          onAddToCart={onAddToCart}
-          showOnHover
-        />
-      </div>
-      
-      {/* Product Info */}
-      <ProductCardInfo
-        slug={product.slug}
-        title={product.title}
-        brandName={product.brand?.name}
-        price={product.price}
-        originalPrice={product.originalPrice}
-        compareAtPrice={product.compareAtPrice}
-        discountPercent={product.discountPercent}
-        currency={currency}
-        colors={product.colors}
+      </ProductPdpPrefetchLink>
+
+      {/* Action Icons - appear on hover (outside card link so buttons stay interactive) */}
+      <ProductCardActions
+        isInWishlist={isInWishlist}
+        isInCompare={isInCompare}
+        isAddingToCart={isAddingToCart}
+        inStock={product.inStock}
         isCompact={isCompact}
+        wishlistPage={wishlistPage}
+        onWishlistToggle={onWishlistToggle}
+        onCompareToggle={onCompareToggle}
+        onAddToCart={onAddToCart}
+        showOnHover
       />
 
       {/* Cart Button in Price Row */}

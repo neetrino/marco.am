@@ -6,6 +6,7 @@ import { getStoredLanguage, type LanguageCode } from '../../../lib/language';
 import type { PdpVisualPayload } from '@/lib/services/products-slug/product-transformer';
 import type { CurrencyCode } from '../../../lib/currency';
 import { t } from '../../../lib/i18n';
+import type { Product } from './types';
 import { useAttributeGroups } from './useAttributeGroups';
 import { useProductImages } from './hooks/useProductImages';
 import { buildGalleryStubProduct } from './buildGalleryStubProduct';
@@ -22,9 +23,15 @@ export type UseProductPageInput = {
   slugParam: string;
   serverLanguage: LanguageCode;
   initialVisual: PdpVisualPayload | null;
+  initialProduct: Product | null;
 };
 
-export function useProductPage({ slugParam, serverLanguage, initialVisual }: UseProductPageInput) {
+export function useProductPage({
+  slugParam,
+  serverLanguage,
+  initialVisual,
+  initialProduct,
+}: UseProductPageInput) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   // Keep first SSR and client render identical to prevent hydration mismatch.
   const [currency, setCurrency] = useState<CurrencyCode>('AMD');
@@ -48,6 +55,7 @@ export function useProductPage({ slugParam, serverLanguage, initialVisual }: Use
     variantIdFromUrl,
     serverLanguage,
     initialVisual,
+    initialProduct,
   });
 
   const displayProduct = useMemo(() => {

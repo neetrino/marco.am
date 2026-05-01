@@ -4,6 +4,12 @@ import { RESERVED_ROUTES } from '@/app/products/[slug]/types';
 import { type LanguageCode } from '@/lib/language';
 import { queryKeys } from '@/lib/query-keys';
 
+import {
+  PDP_QUERY_GC_TIME_MS,
+  PDP_QUERY_STALE_TIME_MS,
+  PDP_RELATED_GC_TIME_MS,
+  PDP_RELATED_STALE_TIME_MS,
+} from './pdp-query-cache';
 import { fetchProductDetail, fetchProductVisual } from './product-pdp-fetchers';
 import { fetchRelatedProducts } from './fetch-related-products';
 
@@ -32,17 +38,20 @@ export function prefetchProductPdp(
     queryClient.prefetchQuery({
       queryKey: queryKeys.productVisual(slug, lang),
       queryFn: () => fetchProductVisual(slug, lang),
-      staleTime: 120_000,
+      staleTime: PDP_QUERY_STALE_TIME_MS,
+      gcTime: PDP_QUERY_GC_TIME_MS,
     }),
     queryClient.prefetchQuery({
       queryKey: queryKeys.productDetail(slug, lang),
       queryFn: () => fetchProductDetail(slug, lang),
-      staleTime: 120_000,
+      staleTime: PDP_QUERY_STALE_TIME_MS,
+      gcTime: PDP_QUERY_GC_TIME_MS,
     }),
     queryClient.prefetchQuery({
       queryKey: queryKeys.relatedProducts(slug, lang, RELATED_PREFETCH_LIMIT),
       queryFn: () => fetchRelatedProducts(slug, lang, RELATED_PREFETCH_LIMIT),
-      staleTime: 300_000,
+      staleTime: PDP_RELATED_STALE_TIME_MS,
+      gcTime: PDP_RELATED_GC_TIME_MS,
     }),
   ]).then(() => undefined);
 }
