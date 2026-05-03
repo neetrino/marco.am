@@ -51,9 +51,7 @@
       "viewProducts": "Դիտել բոլոր ապրանքները",
       "subcategories": "Ենթաբաժիններ",
       "productsWord": "ԱՊՐԱՆՔ",
-      "emptySubcategories": "Ենթաբաժիններ դեռ չկան։ Ավելացրեք դրանք ադմինից կամ գործարկեք seed։",
-      "scrollListUp": "Տեղափոխել ցանկը վերև",
-      "scrollListDown": "Տեղափոխել ցանկը ներքև"
+      "emptySubcategories": "Ենթաբաժիններ դեռ չկան։ Ավելացրեք դրանք ադմինից կամ գործարկեք seed։"
     }
   },
   "stock": {

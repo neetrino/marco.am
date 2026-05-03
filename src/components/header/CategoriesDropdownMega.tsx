@@ -1,6 +1,5 @@
 'use client';
 
-import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from '../../lib/i18n-client';
 import { LanguagePreferenceContext } from '../../lib/language-context';
@@ -18,15 +17,9 @@ function isTechAndElectronicsCategory(value: string): boolean {
 
 const SCROLL_EDGE_EPS = 3;
 
-function readCategoryListScrollEdges(el: HTMLDivElement) {
-  const { scrollTop, scrollHeight, clientHeight } = el;
-  const overflow = scrollHeight - clientHeight;
-  const needsScroll = overflow > SCROLL_EDGE_EPS;
-  return {
-    needsScroll,
-    canUp: needsScroll && scrollTop > SCROLL_EDGE_EPS,
-    canDown: needsScroll && scrollTop + clientHeight < scrollHeight - SCROLL_EDGE_EPS,
-  };
+function readCategoryListNeedsScroll(el: HTMLDivElement) {
+  const { scrollHeight, clientHeight } = el;
+  return { needsScroll: scrollHeight - clientHeight > SCROLL_EDGE_EPS };
 }
 
 export function CategoriesDropdownMega({
@@ -54,14 +47,14 @@ export function CategoriesDropdownMega({
   }, [categoriesWithExtra]);
 
   const categoryListRef = useRef<HTMLDivElement>(null);
-  const [listScroll, setListScroll] = useState({ needsScroll: false, canUp: false, canDown: false });
+  const [listScroll, setListScroll] = useState({ needsScroll: false });
 
   const syncListScrollEdges = useCallback(() => {
     const el = categoryListRef.current;
     if (!el) {
       return;
     }
-    setListScroll(readCategoryListScrollEdges(el));
+    setListScroll(readCategoryListNeedsScroll(el));
   }, []);
 
   useLayoutEffect(() => {
@@ -73,23 +66,12 @@ export function CategoriesDropdownMega({
     if (!el) {
       return;
     }
-    el.addEventListener('scroll', syncListScrollEdges, { passive: true });
     const ro = new ResizeObserver(syncListScrollEdges);
     ro.observe(el);
     return () => {
-      el.removeEventListener('scroll', syncListScrollEdges);
       ro.disconnect();
     };
   }, [categoriesWithExtra, syncListScrollEdges]);
-
-  const scrollCategoryList = useCallback((direction: 1 | -1) => {
-    const el = categoryListRef.current;
-    if (!el) {
-      return;
-    }
-    const step = Math.max(96, Math.floor(el.clientHeight * 0.45));
-    el.scrollBy({ top: direction * step, behavior: 'smooth' });
-  }, []);
 
   const selected = categoriesWithExtra.find((c) => c.slug === selectedSlug) ?? categoriesWithExtra[0];
   if (!selected) {
@@ -105,35 +87,15 @@ export function CategoriesDropdownMega({
     <div className="flex h-full max-h-full min-h-0 w-full min-w-0 flex-1 flex-col divide-y divide-marco-border overflow-hidden rounded-[13px] bg-marco-gray shadow-2xl md:min-h-0 md:flex-row md:divide-x md:divide-y-0">
       {/* Left rail: fixed width on md+; h-full + inner min-h-0 scroll region so category list always scrolls inside the panel (flex min-height:auto cannot steal height). */}
       <div className="relative flex h-full min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden rounded-t-[13px] bg-marco-gray md:min-h-0 md:w-[400px] md:min-w-[400px] md:max-w-[400px] md:flex-none md:shrink-0 md:rounded-l-[13px] md:rounded-r-[13px] md:rounded-t-none">
-        {listScroll.needsScroll && (
-          <>
-            <button
-              type="button"
-              onClick={() => scrollCategoryList(-1)}
-              disabled={!listScroll.canUp}
-              className="absolute right-2 top-4 z-[2] flex size-9 items-center justify-center rounded-full bg-white/95 text-[#050505] shadow-md ring-1 ring-black/10 transition-[filter,opacity] hover:brightness-95 disabled:pointer-events-none disabled:opacity-35 md:right-3 md:top-6"
-              aria-label={t('common.navigation.categoriesMegaMenu.scrollListUp')}
-            >
-              <ChevronUp className="size-5 shrink-0" strokeWidth={2} aria-hidden />
-            </button>
-            <button
-              type="button"
-              onClick={() => scrollCategoryList(1)}
-              disabled={!listScroll.canDown}
-              className="absolute right-2 bottom-4 z-[2] flex size-9 items-center justify-center rounded-full bg-white/95 text-[#050505] shadow-md ring-1 ring-black/10 transition-[filter,opacity] hover:brightness-95 disabled:pointer-events-none disabled:opacity-35 md:right-3 md:bottom-6"
-              aria-label={t('common.navigation.categoriesMegaMenu.scrollListDown')}
-            >
-              <ChevronDown className="size-5 shrink-0" strokeWidth={2} aria-hidden />
-            </button>
-          </>
-        )}
         <nav
           className="flex h-full min-h-0 flex-1 flex-col overflow-hidden py-6 pl-4 pr-2 md:py-[29px] md:pl-[25px] md:pr-[25px]"
           aria-label={t('common.navigation.categories')}
         >
           <div
             ref={categoryListRef}
-            className={`flex min-h-0 flex-1 basis-0 flex-col gap-[16px] overflow-y-auto overflow-x-hidden overscroll-y-contain [-webkit-overflow-scrolling:touch] [scrollbar-gutter:stable] touch-pan-y ${listScroll.needsScroll ? 'pr-10 md:pr-12' : ''}`}
+            className={`flex min-h-0 flex-1 basis-0 flex-col gap-[16px] overflow-y-auto overflow-x-hidden overscroll-y-contain [-webkit-overflow-scrolling:touch] [scrollbar-gutter:stable] touch-pan-y scroll-pb-header-mega-category-scroll-end pb-header-mega-category-scroll-end ${
+              listScroll.needsScroll ? 'pr-10 md:pr-12' : ''
+            }`}
           >
           {categoriesWithExtra.map((category, index) => {
             const isSelected = category.slug === selectedSlug;

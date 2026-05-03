@@ -51,9 +51,7 @@
       "viewProducts": "Смотреть все товары",
       "subcategories": "Подкатегории",
       "productsWord": "товаров",
-      "emptySubcategories": "Подкатегорий пока нет. Добавьте их в админке или выполните seed базы.",
-      "scrollListUp": "Прокрутить список вверх",
-      "scrollListDown": "Прокрутить список вниз"
+      "emptySubcategories": "Подкатегорий пока нет. Добавьте их в админке или выполните seed базы."
     }
   },
   "stock": {
