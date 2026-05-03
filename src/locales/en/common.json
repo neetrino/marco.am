@@ -267,6 +267,9 @@
     "previousAria": "Go to previous page",
     "nextAria": "Go to next page"
   },
+  "brandsPage": {
+    "empty": "No brands to show yet. Brands with active catalog products and a logo appear here automatically."
+  },
   "notFound": {
     "title": "Page Not Found",
     "description": "The page you are looking for does not exist or has been moved.",

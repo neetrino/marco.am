@@ -1,6 +1,7 @@
 import { db } from "@white-shop/db";
 import { Prisma } from "@white-shop/db/prisma";
 import { adminService } from "./admin.service";
+import { buildWhereClause } from "./products-find-query/query-builder";
 import { ProductWithRelations } from "./products-find-query.service";
 import { getAttributeBucket, isColorAttributeKey, isSizeAttributeKey } from "@/lib/attribute-keys";
 import {
@@ -138,51 +139,25 @@ class ProductsFiltersService {
     lang?: string;
   }) {
     try {
-      const where: Prisma.ProductWhereInput = {
-        published: true,
-        deletedAt: null,
-      };
-
-      // Add search filter
-      if (filters.search && filters.search.trim()) {
-        where.OR = [
-          {
-            translations: {
-              some: {
-                title: {
-                  contains: filters.search.trim(),
-                  mode: "insensitive",
-                },
-              },
-            },
-          },
-          {
-            translations: {
-              some: {
-                subtitle: {
-                  contains: filters.search.trim(),
-                  mode: "insensitive",
-                },
-              },
-            },
-          },
-          {
-            variants: {
-              some: {
-                sku: {
-                  contains: filters.search.trim(),
-                  mode: "insensitive",
-                },
-              },
-            },
-          },
-        ];
+      const { where: listingWhere } = await buildWhereClause({
+        category: filters.category?.trim(),
+        search: filters.search?.trim(),
+        lang: filters.lang || "en",
+      });
+      if (listingWhere === null) {
+        return {
+          colors: [],
+          sizes: [],
+          brands: [],
+          categories: [],
+          priceRange: { min: 0, max: 0, stepSize: null, stepSizePerCurrency: null },
+        };
       }
 
-      // Category filter is omitted so facet counts (including category list) match search scope.
+      let where: Prisma.ProductWhereInput = listingWhere;
 
       // Get products with variants (capped for filter computation)
-      const FILTERS_PRODUCTS_LIMIT = 500;
+      const FILTERS_PRODUCTS_LIMIT = 1500;
       let products: ProductWithRelations[] = [];
       try {
         products = (await db.product.findMany({
@@ -642,28 +617,10 @@ class ProductsFiltersService {
       // Sort colors alphabetically
       colors.sort((a: { label: string }, b: { label: string }) => a.label.localeCompare(b.label));
 
-      // Shop sidebar: list all published brands from DB, counts from current product facet (not only brands that appear in the capped sample)
-      const publishedBrands = await db.brand.findMany({
-        where: { published: true, deletedAt: null },
-        include: { translations: true },
-      });
-      const brands = publishedBrands
-        .map((row) => {
-          const tr =
-            row.translations.find((t) => t.locale === lang) ?? row.translations[0];
-          const name = (tr?.name?.trim() || row.slug || '').trim();
-          if (!name) {
-            return null;
-          }
-          const facet = brandMap.get(row.id);
-          return {
-            id: row.id,
-            slug: row.slug,
-            name,
-            count: facet?.count ?? 0,
-          };
-        })
-        .filter((b): b is { id: string; slug: string; name: string; count: number } => b !== null)
+      // Shop sidebar: only brands that appear in the current facet sample (category + search from DB,
+      // then price in memory). Omits brands with zero matching products on this PLP scope.
+      const brands = Array.from(brandMap.values())
+        .filter((b) => b.count > 0)
         .sort((a, b) => a.name.localeCompare(b.name));
       const priceMin = rangeMin === Infinity ? 0 : Math.floor(rangeMin / 1000) * 1000;
       const priceMax = rangeMax === 0 ? 0 : Math.ceil(rangeMax / 1000) * 1000;

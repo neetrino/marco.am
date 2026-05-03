@@ -14,7 +14,6 @@ import {
   getCachedJson,
   invalidateHomeBrandPartnersPublicCache,
 } from "@/lib/services/read-through-json-cache";
-import { resolveBrandStaticLogo } from "@/lib/brand-static-logo-assets";
 import { logger } from "@/lib/utils/logger";
 
 /** Align with home listing strips — fewer DB round-trips on repeat visits. */
@@ -111,15 +110,22 @@ async function loadStorage(): Promise<HomeBrandPartnersStorage> {
   return valid ?? DEFAULT_STORAGE;
 }
 
-async function fetchPublishedBrands(ids?: string[]): Promise<BrandRow[]> {
+/** Shop-visible products: same baseline as PLP (`buildWhereClause`). */
+const LISTED_PRODUCT_RELATION = {
+  some: {
+    published: true,
+    deletedAt: null,
+  },
+} as const;
+
+async function fetchBrandsWithListedProducts(ids?: string[]): Promise<BrandRow[]> {
   const base = {
     published: true,
     deletedAt: null,
+    products: LISTED_PRODUCT_RELATION,
   };
   const where =
-    ids !== undefined
-      ? { ...base, id: { in: ids } }
-      : base;
+    ids !== undefined ? { ...base, id: { in: ids } } : base;
 
   return db.brand.findMany({
     where,
@@ -157,19 +163,6 @@ function buildFromAll(brands: BrandRow[], locale: HomeLocale): HomeBrandPartnerP
   return brands.map((b) => toPublicItem(b, locale, b.id, undefined));
 }
 
-function partnerHasDisplayableLogo(partner: HomeBrandPartnerPublicItem): boolean {
-  if (partner.logoUrl?.trim()) {
-    return true;
-  }
-  return resolveBrandStaticLogo(partner.slug) !== null;
-}
-
-function filterToPartnersWithLogo(
-  partners: HomeBrandPartnerPublicItem[],
-): HomeBrandPartnerPublicItem[] {
-  return partners.filter(partnerHasDisplayableLogo);
-}
-
 export const homeBrandPartnersService = {
   getDefaultStorage(): HomeBrandPartnersStorage {
     return DEFAULT_STORAGE;
@@ -177,28 +170,26 @@ export const homeBrandPartnersService = {
 
   async getPublicPayload(localeRaw: string | undefined): Promise<HomeBrandPartnersPublicPayload> {
     const locale = normalizeLocale(localeRaw);
-    const cacheKey = `home:brand-partners:public:v2:${locale}`;
+    const cacheKey = `home:brand-partners:public:v4:${locale}`;
 
     return getCachedJson(cacheKey, BRAND_PARTNERS_PUBLIC_CACHE_TTL_SEC, async () => {
       const storage = await loadStorage();
       const sectionTitle = storage.sectionTitle[locale];
 
       if (storage.entries.length === 0) {
-        const brands = await fetchPublishedBrands(undefined);
+        const brands = await fetchBrandsWithListedProducts(undefined);
         return {
           sectionTitle,
-          brands: filterToPartnersWithLogo(buildFromAll(brands, locale)),
+          brands: buildFromAll(brands, locale),
         };
       }
 
       const ids = [...new Set(storage.entries.map((e) => e.brandId))];
-      const rows = await fetchPublishedBrands(ids);
+      const rows = await fetchBrandsWithListedProducts(ids);
       const brandById = new Map(rows.map((b) => [b.id, b]));
       return {
         sectionTitle,
-        brands: filterToPartnersWithLogo(
-          buildFromCurated(storage, brandById, locale),
-        ),
+        brands: buildFromCurated(storage, brandById, locale),
       };
     });
   },
