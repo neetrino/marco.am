@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
-import { resolveBrandStaticLogo } from '@/lib/brand-static-logo-assets';
+import { buildBrandLogoCandidateSrcs } from '@/lib/brand-static-logo-assets';
 
 export type ProductCardBrandMarkProps = {
   name: string;
@@ -15,7 +15,8 @@ export type ProductCardBrandMarkProps = {
 };
 
 /**
- * Brand row for product cards: DB `logoUrl`, else bundled asset from `slug`, else name text.
+ * Brand row for product cards: bundled asset when slug is unknown but name matches (e.g. CSV
+ * `import-*` + `LG`), else `logoUrl` then bundled from slug/name; otherwise brand name text.
  */
 export function ProductCardBrandMark({
   name,
@@ -24,24 +25,16 @@ export function ProductCardBrandMark({
   textClassName,
   logoBoxClassName,
 }: ProductCardBrandMarkProps) {
-  const candidates = useMemo(() => {
-    const out: string[] = [];
-    const remote = logoUrl?.trim();
-    if (remote) {
-      out.push(remote);
-    }
-    const staticLogo = resolveBrandStaticLogo(slug);
-    if (staticLogo?.src && !out.includes(staticLogo.src)) {
-      out.push(staticLogo.src);
-    }
-    return out;
-  }, [logoUrl, slug]);
+  const candidates = useMemo(
+    () => buildBrandLogoCandidateSrcs(logoUrl, slug, name),
+    [logoUrl, slug, name],
+  );
 
   const [candidateIndex, setCandidateIndex] = useState(0);
 
   useEffect(() => {
     setCandidateIndex(0);
-  }, [slug, logoUrl]);
+  }, [slug, logoUrl, name]);
 
   if (candidates.length === 0 || candidateIndex >= candidates.length) {
     return (

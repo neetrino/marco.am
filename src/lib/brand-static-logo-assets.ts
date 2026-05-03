@@ -50,3 +50,58 @@ export function resolveBrandStaticLogo(slug: string): BrandStaticLogoDimensions 
   const key = slug.trim().toLowerCase();
   return SLUG_TO_LOGO[key] ?? null;
 }
+
+/**
+ * Product cards: match `slug` first, then treat normalized `name` as a slug key
+ * (e.g. import slug `import-abc12` + name `LG` → `/assets/brands/lg.svg`).
+ */
+export function resolveBrandStaticLogoForDisplay(
+  slug: string,
+  name: string,
+): BrandStaticLogoDimensions | null {
+  const fromSlug = resolveBrandStaticLogo(slug);
+  if (fromSlug) return fromSlug;
+  const nameKey = name.trim().toLowerCase();
+  if (nameKey.length === 0) return null;
+  return resolveBrandStaticLogo(nameKey);
+}
+
+/**
+ * When the DB slug is not a known key (e.g. `import-*`) but the brand name maps to a
+ * bundled asset (e.g. `LG` → `lg.svg`), prefer that asset over `logoUrl` so the card
+ * does not show a placeholder or wrong remote image.
+ */
+export function resolveBrandStaticLogoFromNameOnly(
+  slug: string,
+  name: string,
+): BrandStaticLogoDimensions | null {
+  if (resolveBrandStaticLogo(slug) !== null) return null;
+  const nameKey = name.trim().toLowerCase();
+  if (nameKey.length === 0) return null;
+  return resolveBrandStaticLogo(nameKey);
+}
+
+/**
+ * Ordered image URLs for product cards: bundled first when matched by name only, else remote first.
+ */
+export function buildBrandLogoCandidateSrcs(
+  logoUrl: string | null | undefined,
+  slug: string,
+  name: string,
+): string[] {
+  const remote = logoUrl?.trim();
+  const nameOnlyBundled = resolveBrandStaticLogoFromNameOnly(slug, name);
+  const anyBundled = resolveBrandStaticLogoForDisplay(slug, name);
+
+  const out: string[] = [];
+  if (nameOnlyBundled?.src) {
+    out.push(nameOnlyBundled.src);
+  }
+  if (remote && !out.includes(remote)) {
+    out.push(remote);
+  }
+  if (anyBundled?.src && !out.includes(anyBundled.src)) {
+    out.push(anyBundled.src);
+  }
+  return out;
+}
