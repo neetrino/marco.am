@@ -79,14 +79,15 @@ export const FOOTER_TABLET_COLUMN_CENTER_CLASS =
 export const FOOTER_GRID_NAV_COLUMNS_PAD_TOP_CLASS = 'lg:pt-9';
 
 /**
- * Company / Support cells: centered on iPad Pro; wide desktop packs content to track start (intrinsic grid cols).
+ * Company / Support cells: centered on iPad Pro; wide desktop left-aligned.
+ * `w-full` below `lg` fills grid cells; `lg:w-auto` keeps intrinsic width inside the nav flex row (`justify-between`).
  */
 export const FOOTER_GRID_COMPANY_SUPPORT_WRAPPER_CLASS =
-  `lg:flex lg:h-full lg:w-full lg:min-h-0 ${FOOTER_GRID_NAV_COLUMNS_PAD_TOP_CLASS} min-[1024px]:max-[1366px]:translate-x-0 min-[1024px]:max-[1366px]:justify-center min-[1367px]:justify-start min-[1367px]:translate-x-0`;
+  `lg:flex lg:h-full lg:min-h-0 w-full lg:w-auto lg:shrink-0 ${FOOTER_GRID_NAV_COLUMNS_PAD_TOP_CLASS} min-[1024px]:max-[1366px]:translate-x-0 min-[1024px]:max-[1366px]:justify-center min-[1367px]:justify-start min-[1367px]:translate-x-0`;
 
-/** Contacts: same — start-aligned so columns sit tight when tracks are max-content. */
+/** Contacts: same rhythm; `lg:min-w-0` allows wrapping when the flex row is narrow. */
 export const FOOTER_GRID_CONTACTS_WRAPPER_CLASS =
-  `lg:flex lg:h-full lg:w-full lg:min-h-0 ${FOOTER_GRID_NAV_COLUMNS_PAD_TOP_CLASS} min-[1024px]:max-[1366px]:justify-center min-[1367px]:justify-start`;
+  `lg:flex lg:h-full lg:min-h-0 w-full lg:w-auto lg:min-w-0 lg:shrink ${FOOTER_GRID_NAV_COLUMNS_PAD_TOP_CLASS} min-[1024px]:max-[1366px]:justify-center min-[1367px]:justify-start`;
 
 /**
  * Pipe column between nav blocks — `lg+` only (see `Footer`); hidden below `lg` so `md` 2-col flow stays 4 cells.
@@ -98,6 +99,13 @@ export const FOOTER_COLUMN_PIPE_CLASS = `hidden shrink-0 select-none lg:flex lg:
 export const FOOTER_COLUMN_PIPE_BAR_CLASS =
   'w-px flex-1 min-h-60 bg-gray-400/35 dark:bg-white/25';
 
+/**
+ * lg+: wraps Navigation, pipes, Support, Contacts in one flex row so free space splits evenly
+ * between adjacent items (`justify-between` + `gap-x-5`). `contents` keeps the same grid flow below `lg`.
+ */
+export const FOOTER_NAV_THREE_COLUMN_ROW_CLASS =
+  'contents lg:flex lg:min-h-0 lg:w-full lg:items-start lg:justify-between lg:gap-x-5 lg:self-stretch';
+
 /** Space between main footer grid and the copyright separator bar. */
 export const FOOTER_COPYRIGHT_STRIP_MARGIN_TOP_CLASS = 'mt-4';
 /** Padding under the rule, above social / copyright / payments. */
@@ -106,11 +114,11 @@ export const FOOTER_COPYRIGHT_STRIP_PADDING_TOP_CLASS = 'pt-3';
 export const FOOTER_COPYRIGHT_STRIP_STACK_GAP_CLASS = 'gap-5';
 
 /**
- * Main footer grid — brand + nav + `|` + support + `|` + contacts on `lg+` (`auto` = pipe column).
- * `max-content` text tracks; `gap-x` a bit wider so sections breathe around the pipes.
+ * Main footer grid — below `lg`: brand + four nav cells (pipes hidden). `lg+`: brand | one flex row
+ * (see {@link FOOTER_NAV_THREE_COLUMN_ROW_CLASS}) so gutters between Nav, pipes, Support, Contacts stay even.
  */
 export const FOOTER_MAIN_GRID_CLASS =
-  'grid grid-cols-1 items-start gap-6 md:grid-cols-2 md:max-[1023px]:justify-items-center lg:grid-cols-[minmax(0,22rem)_max-content_auto_max-content_auto_minmax(12rem,1fr)] lg:items-start min-[1024px]:max-[1366px]:justify-items-center min-[1367px]:justify-items-stretch lg:gap-x-5 lg:gap-y-4';
+  'grid grid-cols-1 items-start gap-6 md:grid-cols-2 md:max-[1023px]:justify-items-center lg:grid-cols-[minmax(0,22rem)_1fr] lg:items-start min-[1024px]:max-[1366px]:justify-items-center min-[1367px]:justify-items-stretch lg:gap-x-5 lg:gap-y-4';
 
 /**
  * Brand logo frame — larger than legacy 91×81; same ~91:81 aspect.

@@ -21,6 +21,7 @@ import {
   FOOTER_COLUMN_PIPE_CLASS,
   FOOTER_HEADING_TEXT_CLASS,
   FOOTER_MAIN_GRID_CLASS,
+  FOOTER_NAV_THREE_COLUMN_ROW_CLASS,
   FOOTER_NAV_BODY_TEXT_CLASS,
   FOOTER_NAV_COLUMN_HEADING_LEADING_CLASS,
   FOOTER_NAV_COLUMN_HEADING_LIST_GAP_CLASS,
@@ -219,26 +220,28 @@ export function Footer() {
             </p>
           </div>
 
-          <div className={FOOTER_GRID_COMPANY_SUPPORT_WRAPPER_CLASS}>
-            <FooterNavColumn
-              titleKey="common.footer.marco.headings.company"
-              items={FOOTER_COMPANY_LINKS}
-            />
-          </div>
-          <div className={FOOTER_COLUMN_PIPE_CLASS} aria-hidden>
-            <div className={FOOTER_COLUMN_PIPE_BAR_CLASS} />
-          </div>
-          <div className={FOOTER_GRID_COMPANY_SUPPORT_WRAPPER_CLASS}>
-            <FooterNavColumn
-              titleKey="common.footer.marco.headings.support"
-              items={FOOTER_SUPPORT_LINKS}
-            />
-          </div>
-          <div className={FOOTER_COLUMN_PIPE_CLASS} aria-hidden>
-            <div className={FOOTER_COLUMN_PIPE_BAR_CLASS} />
-          </div>
-          <div className={FOOTER_GRID_CONTACTS_WRAPPER_CLASS}>
-            <FooterContactsColumn />
+          <div className={FOOTER_NAV_THREE_COLUMN_ROW_CLASS}>
+            <div className={FOOTER_GRID_COMPANY_SUPPORT_WRAPPER_CLASS}>
+              <FooterNavColumn
+                titleKey="common.footer.marco.headings.company"
+                items={FOOTER_COMPANY_LINKS}
+              />
+            </div>
+            <div className={FOOTER_COLUMN_PIPE_CLASS} aria-hidden>
+              <div className={FOOTER_COLUMN_PIPE_BAR_CLASS} />
+            </div>
+            <div className={FOOTER_GRID_COMPANY_SUPPORT_WRAPPER_CLASS}>
+              <FooterNavColumn
+                titleKey="common.footer.marco.headings.support"
+                items={FOOTER_SUPPORT_LINKS}
+              />
+            </div>
+            <div className={FOOTER_COLUMN_PIPE_CLASS} aria-hidden>
+              <div className={FOOTER_COLUMN_PIPE_BAR_CLASS} />
+            </div>
+            <div className={FOOTER_GRID_CONTACTS_WRAPPER_CLASS}>
+              <FooterContactsColumn />
+            </div>
           </div>
         </div>
 
