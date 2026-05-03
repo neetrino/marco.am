@@ -58,7 +58,7 @@ export function CategoriesDropdownMega({
   return (
     <div className="flex h-full max-h-full min-h-0 w-full min-w-0 flex-1 flex-col divide-y divide-marco-border overflow-hidden rounded-[13px] bg-white ring-1 ring-black/15 shadow-2xl md:min-h-0 md:flex-row md:divide-y-0">
       {/* Left rail: fixed width on md+; h-full + inner min-h-0 scroll region so category list always scrolls inside the panel (flex min-height:auto cannot steal height). */}
-      <div className="relative flex h-full min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden rounded-t-[13px] bg-white md:min-h-0 md:w-[400px] md:min-w-[400px] md:max-w-[400px] md:flex-none md:shrink-0 md:rounded-l-[13px] md:rounded-r-none md:rounded-t-none md:border-r-2 md:border-r-neutral-400">
+      <div className="relative flex h-full min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden rounded-t-[13px] bg-marco-gray md:min-h-0 md:w-[400px] md:min-w-[400px] md:max-w-[400px] md:flex-none md:shrink-0 md:rounded-l-[13px] md:rounded-r-none md:rounded-t-none md:border-r-2 md:border-r-neutral-400">
         <nav
           className="flex h-full min-h-0 flex-1 flex-col overflow-hidden py-6 pl-4 pr-0 md:py-[29px] md:pl-[25px] md:pr-0"
           aria-label={t('common.navigation.categories')}
@@ -78,7 +78,7 @@ export function CategoriesDropdownMega({
                 className={`${headerCategoryNavFont.className} flex w-full min-w-0 shrink-0 items-center gap-3 rounded-[40px] px-2 py-0 text-left text-[15px] leading-[21px] tracking-[0.15px] transition-[opacity,background-color,color] duration-150 ${
                   isSelected
                     ? 'bg-marco-yellow font-bold !text-[#050505] dark:!text-[#050505]'
-                    : 'font-normal !text-[#050505] dark:!text-[#050505] hover:bg-marco-gray/45'
+                    : 'font-normal !text-[#050505] dark:!text-[#050505] hover:bg-white/35'
                 }`}
               >
                 <span className="flex size-[48px] shrink-0 items-center justify-center p-1.5 !text-[#050505] dark:!text-[#050505]">
