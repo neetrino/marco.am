@@ -13,6 +13,14 @@ export const HEADER_COMPACT_PRIMARY_NAV_MAX_WIDTH_PX = 820;
 export const HEADER_REELS_EXTERNAL_HREF = '/reels';
 
 /**
+ * Categories mega menu portal: scrim sits below `<header class="z-50">` so the header stays visible;
+ * bridge/panel sit above the scrim (and above the header when they overlap the trigger strip).
+ */
+export const HEADER_CATEGORIES_OVERLAY_Z_INDEX = 40;
+export const HEADER_CATEGORIES_BRIDGE_Z_INDEX = 55;
+export const HEADER_CATEGORIES_PANEL_Z_INDEX = 56;
+
+/**
  * Shared width + horizontal padding for both header rows — `.marco-header-container` in `globals.css`.
  * Wide desktop (1367px+): same `max-w-7xl` column as hero (no extra 1920px / 135px inset).
  */

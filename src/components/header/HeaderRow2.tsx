@@ -3,9 +3,13 @@
 import type { LanguageCode } from '../../lib/language';
 import { Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
+import { createPortal } from 'react-dom';
 import { SearchDropdown } from '../SearchDropdown';
 import { CategoriesDropdownMega } from './CategoriesDropdownMega';
 import {
+  HEADER_CATEGORIES_BRIDGE_Z_INDEX,
+  HEADER_CATEGORIES_OVERLAY_Z_INDEX,
+  HEADER_CATEGORIES_PANEL_Z_INDEX,
   HEADER_CONTAINER_CLASS,
   HEADER_SEARCH_BAR_HEIGHT_CLASS,
   HEADER_SEARCH_BAR_INNER_CLASS,
@@ -62,6 +66,7 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
   /** Align categories dropdown right edge with the header *inner* content (same as search row), not the container border box. */
   const headerRowContainerRef = useRef<HTMLDivElement>(null);
   const [categoriesDropdownLayout, setCategoriesDropdownLayout] = useState<{
+    overlayTopPx: number;
     bridge: CSSProperties;
     panel: CSSProperties;
   } | null>(null);
@@ -89,7 +94,10 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
         : 0;
       const rightEdge = cr ? cr.right - paddingRight : window.innerWidth - 16;
       const panelWidth = Math.max(280, Math.min(rightEdge, window.innerWidth - 8) - r.left);
-      const panelTop = r.bottom + gapPx - raiseDropdownByPx;
+      const headerEl = typeof document !== 'undefined' ? document.querySelector('header') : null;
+      const headerBottomPx = headerEl ? Math.ceil(headerEl.getBoundingClientRect().bottom) : 0;
+      const rawPanelTop = r.bottom + gapPx - raiseDropdownByPx;
+      const panelTop = Math.max(rawPanelTop, headerBottomPx + gapPx);
       /** Cap height to viewport so inner columns scroll; uncapped height made the list taller than the screen without overflow. */
       const bottomMargin = 8;
       const viewportH =
@@ -97,15 +105,17 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
           ? window.visualViewport.height
           : window.innerHeight;
       const rawHeight = Math.floor(viewportH - panelTop - bottomMargin);
-      const panelHeight = Math.max(240, Math.min(rawHeight, viewportH - 16));
+      const maxHeightByViewport = Math.max(0, viewportH - headerBottomPx - bottomMargin);
+      const panelHeight = Math.max(240, Math.min(rawHeight, maxHeightByViewport, viewportH - 16));
       setCategoriesDropdownLayout({
+        overlayTopPx: headerBottomPx,
         bridge: {
           position: 'fixed',
           top: r.bottom,
           left: r.left,
           width: r.width,
           height: gapPx,
-          zIndex: 69,
+          zIndex: HEADER_CATEGORIES_BRIDGE_Z_INDEX,
         },
         panel: {
           position: 'fixed',
@@ -114,7 +124,7 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
           width: panelWidth,
           height: panelHeight,
           maxHeight: panelHeight,
-          zIndex: 70,
+          zIndex: HEADER_CATEGORIES_PANEL_Z_INDEX,
         },
       });
     };
@@ -139,17 +149,10 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
     }
 
     const previousOverflow = document.body.style.overflow;
-    const previousPaddingRight = document.body.style.paddingRight;
-    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-    if (scrollbarWidth > 0) {
-      const computedPaddingRight = parseFloat(getComputedStyle(document.body).paddingRight) || 0;
-      document.body.style.paddingRight = `${computedPaddingRight + scrollbarWidth}px`;
-    }
     document.body.style.overflow = 'hidden';
 
     return () => {
       document.body.style.overflow = previousOverflow;
-      document.body.style.paddingRight = previousPaddingRight;
     };
   }, [showProductsMenu]);
 
@@ -212,36 +215,52 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
                   </span>
                 </span>
               </button>
-              {showProductsMenu && categoriesDropdownLayout && (
-                <>
-                  <div
-                    aria-hidden
-                    className="pointer-events-auto"
-                    style={categoriesDropdownLayout.bridge}
-                  />
-                  <div
-                    data-marco-categories-dropdown
-                    data-theme-static="true"
-                    className="flex h-full max-h-full min-h-0 min-w-0 flex-col overflow-hidden"
-                    style={categoriesDropdownLayout.panel}
-                  >
-                    {loadingCategories ? (
-                      <div className="h-full min-h-[200px] rounded-[13px] bg-marco-gray px-4 py-3 text-sm text-[#5d7285] shadow-2xl">
-                        {t('common.messages.loading')}
-                      </div>
-                    ) : (
-                      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-                        <Suspense fallback={null}>
-                          <CategoriesDropdownMega
-                            categories={getRootCategories(categories)}
-                            onClose={() => setShowProductsMenu(false)}
-                          />
-                        </Suspense>
-                      </div>
-                    )}
-                  </div>
-                </>
-              )}
+              {showProductsMenu &&
+                categoriesDropdownLayout &&
+                typeof document !== 'undefined' &&
+                createPortal(
+                  <>
+                    <div
+                      data-marco-categories-overlay
+                      role="presentation"
+                      className="fixed bottom-0 left-0 right-0 cursor-default bg-white dark:bg-zinc-950"
+                      style={{
+                        top: categoriesDropdownLayout.overlayTopPx,
+                        zIndex: HEADER_CATEGORIES_OVERLAY_Z_INDEX,
+                      }}
+                      aria-hidden
+                      onClick={() => setShowProductsMenu(false)}
+                    />
+                    <div
+                      aria-hidden
+                      data-marco-categories-bridge
+                      className="pointer-events-auto"
+                      style={categoriesDropdownLayout.bridge}
+                    />
+                    <div
+                      data-marco-categories-dropdown
+                      data-theme-static="true"
+                      className="flex h-full max-h-full min-h-0 min-w-0 flex-col overflow-hidden"
+                      style={categoriesDropdownLayout.panel}
+                    >
+                      {loadingCategories ? (
+                        <div className="h-full min-h-[200px] rounded-[13px] bg-white px-4 py-3 text-sm text-[#5d7285] shadow-2xl">
+                          {t('common.messages.loading')}
+                        </div>
+                      ) : (
+                        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                          <Suspense fallback={null}>
+                            <CategoriesDropdownMega
+                              categories={getRootCategories(categories)}
+                              onClose={() => setShowProductsMenu(false)}
+                            />
+                          </Suspense>
+                        </div>
+                      )}
+                    </div>
+                  </>,
+                  document.body,
+                )}
             </div>
 
             <div ref={inlineSearchRef} className={`relative z-[480] min-w-0 flex-1 ${HEADER_SEARCH_BAR_INNER_CLASS}`}>
