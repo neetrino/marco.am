@@ -1,5 +1,6 @@
 'use client';
 
+import { ChevronRight } from 'lucide-react';
 import { useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from '../../lib/i18n-client';
 import { LanguagePreferenceContext } from '../../lib/language-context';
@@ -152,6 +153,11 @@ export function CategoriesDropdownMega({
                     row.title
                   )}
                 </span>
+                <ChevronRight
+                  className="size-4 shrink-0 text-[#050505]/55 dark:text-[#050505]/55"
+                  strokeWidth={2}
+                  aria-hidden
+                />
               </button>
             );
           })}
