@@ -181,13 +181,13 @@ export const SPECIAL_OFFERS_PRICE_ROW_END_PADDING_PX =
   SPECIAL_OFFERS_CART_BUTTON_SIZE_PX + 10;
 
 /** Main price line — Montserrat Black on special-offer cards. */
-export const SPECIAL_OFFERS_PRICE_FONT_SIZE_PX = 15;
+export const SPECIAL_OFFERS_PRICE_FONT_SIZE_PX = 20;
 
 /** Strikethrough compare-at price below main price. */
-export const SPECIAL_OFFERS_OLD_PRICE_FONT_SIZE_PX = 10;
+export const SPECIAL_OFFERS_OLD_PRICE_FONT_SIZE_PX = 12;
 
 /** Line height for main price (px). */
-export const SPECIAL_OFFERS_PRICE_LINE_HEIGHT_PX = 21;
+export const SPECIAL_OFFERS_PRICE_LINE_HEIGHT_PX = 28;
 
 /**
  * Lifts the price row (`mt-auto`) slightly off the card bottom — visual breathing room.

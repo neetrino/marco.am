@@ -1,5 +1,6 @@
 import { apiClient } from '@/lib/api-client';
 import type { LanguageCode } from '@/lib/language';
+import type { ProductListingBrand } from '@/lib/types/product-listing-brand';
 
 export type RelatedProductsApiResponse = {
   data: RelatedProductRow[];
@@ -21,7 +22,7 @@ export type RelatedProductRow = {
   discountPercent?: number | null;
   image: string | null;
   inStock: boolean;
-  brand?: { id: string; name: string } | null;
+  brand?: ProductListingBrand | null;
   categories?: Array<{ id: string; slug: string; title: string }>;
   variants?: Array<{
     options?: Array<{ key: string; value: string }>;

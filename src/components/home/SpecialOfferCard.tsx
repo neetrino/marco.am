@@ -31,7 +31,6 @@ import {
   SpecialOfferCardPricing,
   SpecialOfferCartFloatingButton,
 } from './SpecialOfferCardPricing';
-import { SpecialOfferCardStars } from './SpecialOfferCardStars';
 import type { SpecialOfferProduct } from './special-offer-product.types';
 import { duplicateSingleImageForDevGalleryTest } from './special-offer-dev-gallery';
 import { useSpecialOfferCard } from './useSpecialOfferCard';
@@ -207,11 +206,6 @@ export function SpecialOfferCard({
             <SpecialOfferCardInfo
               product={product}
               brandClass={brandClass}
-              detailsPending={detailsPending}
-            />
-
-            <SpecialOfferCardStars
-              reviewCount={product.reviewCount}
               detailsPending={detailsPending}
             />
 

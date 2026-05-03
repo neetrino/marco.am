@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from '../lib/i18n-client';
 import { dedupeCardProductsByTitle } from '../lib/dedupeCardProductsByTitle';
+import type { ProductListingBrand } from '@/lib/types/product-listing-brand';
 import type { ProductLabel } from './ProductLabels';
 import { ProductCard } from './ProductCard';
 import { SpecialOfferCard } from './home/SpecialOfferCard';
@@ -18,10 +19,7 @@ interface Product {
   compareAtPrice: number | null;
   image: string | null;
   inStock: boolean;
-  brand: {
-    id: string;
-    name: string;
-  } | null;
+  brand: ProductListingBrand | null;
   defaultVariantId?: string | null;
   labels?: ProductLabel[];
   colors?: Array<{ value: string; imageUrl?: string | null; colors?: string[] | null }>;

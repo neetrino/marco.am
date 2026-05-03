@@ -1,9 +1,11 @@
 'use client';
 
 import { ProductPdpPrefetchLink } from '../ProductPdpPrefetchLink';
+import { ProductCardBrandMark } from '../ProductCard/ProductCardBrandMark';
 import Image from 'next/image';
 import type { MouseEvent } from 'react';
 import { formatCatalogPrice, type CurrencyCode } from '../../lib/currency';
+import type { ProductListingBrand } from '@/lib/types/product-listing-brand';
 import { CartIcon as CartPngIcon } from '../icons/CartIcon';
 import type { LanguageCode } from '../../lib/language';
 import { t } from '../../lib/i18n';
@@ -20,10 +22,7 @@ interface RelatedProduct {
   discountPercent?: number | null;
   image: string | null;
   inStock: boolean;
-  brand?: {
-    id: string;
-    name: string;
-  } | null;
+  brand?: ProductListingBrand | null;
   categories?: Array<{
     id: string;
     slug: string;
@@ -59,9 +58,9 @@ export function RelatedProductCard({
 }: RelatedProductCardProps) {
   const hasImage = !imageError && !!product.image;
   const hasCategoryLabels = Boolean(product.categories && product.categories.length > 0);
-  const categoryName = hasCategoryLabels
+  const categoryLineText = hasCategoryLabels
     ? product.categories!.map((c) => c.title).join(', ')
-    : product.brand?.name || 'Product';
+    : null;
 
   return (
     <div
@@ -111,10 +110,22 @@ export function RelatedProductCard({
                 {product.title}
               </h3>
 
-              {/* Category */}
-              <p className={`mb-3 text-xs ${hasCategoryLabels ? 'text-gray-500' : 'text-gray-500 dark:text-[#050505]'}`}>
-                {categoryName}
-              </p>
+              {/* Category or brand logo */}
+              <div className={`mb-3 text-xs ${hasCategoryLabels ? 'text-gray-500' : 'text-gray-500 dark:text-[#050505]'}`}>
+                {categoryLineText !== null ? (
+                  <p>{categoryLineText}</p>
+                ) : product.brand ? (
+                  <ProductCardBrandMark
+                    name={product.brand.name}
+                    slug={product.brand.slug}
+                    logoUrl={product.brand.logoUrl}
+                    textClassName="text-xs font-medium text-gray-500 dark:text-[#050505]"
+                    logoBoxClassName="h-5 w-[96px]"
+                  />
+                ) : (
+                  <p>Product</p>
+                )}
+              </div>
 
               {/* Price */}
               <div className="flex flex-col gap-1 mt-auto">

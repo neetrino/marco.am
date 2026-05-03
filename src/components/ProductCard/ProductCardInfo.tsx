@@ -1,15 +1,17 @@
 'use client';
 
+import type { ProductListingBrand } from '@/lib/types/product-listing-brand';
 import { ProductPdpPrefetchLink } from '../ProductPdpPrefetchLink';
 import { montserratArm } from '../../fonts/montserrat-arm';
 import { formatCatalogPrice, type CurrencyCode } from '../../lib/currency';
 import { useTranslation } from '../../lib/i18n-client';
+import { ProductCardBrandMark } from './ProductCardBrandMark';
 import { ProductColors } from './ProductColors';
 
 interface ProductCardInfoProps {
   slug: string;
   title: string;
-  brandName?: string | null;
+  brand: ProductListingBrand | null;
   price: number;
   originalPrice?: number | null;
   compareAtPrice?: number | null;
@@ -29,7 +31,7 @@ interface ProductCardInfoProps {
 export function ProductCardInfo({
   slug,
   title,
-  brandName,
+  brand,
   price,
   originalPrice,
   compareAtPrice,
@@ -41,17 +43,33 @@ export function ProductCardInfo({
 }: ProductCardInfoProps) {
   const { t } = useTranslation();
 
+  const brandRow =
+    brand != null ? (
+      <div className={isCompact ? 'mb-1' : 'mb-2'}>
+        <ProductCardBrandMark
+          name={brand.name}
+          slug={brand.slug}
+          logoUrl={brand.logoUrl}
+          textClassName={`${isCompact ? 'text-sm' : 'text-lg'} text-gray-500 dark:text-[#050505]`}
+          logoBoxClassName={isCompact ? 'h-5 w-[80px]' : 'h-7 w-[112px]'}
+        />
+      </div>
+    ) : (
+      <p
+        className={`${isCompact ? 'text-sm' : 'text-lg'} text-gray-500 dark:text-[#050505] ${isCompact ? 'mb-1' : 'mb-2'}`}
+      >
+        {t('common.defaults.category')}
+      </p>
+    );
+
   const titleBlock = (
     <>
-      {/* Product Title */}
-      <h3 className={`${isCompact ? 'text-base' : 'text-xl'} font-medium text-gray-900 ${isCompact ? 'mb-0.5' : 'mb-1'} line-clamp-2`}>
+      <h3
+        className={`${isCompact ? 'text-base' : 'text-xl'} font-medium text-gray-900 ${isCompact ? 'mb-0.5' : 'mb-1'} line-clamp-2`}
+      >
         {title}
       </h3>
-
-      {/* Category - Using brand name as category or default */}
-      <p className={`${isCompact ? 'text-sm' : 'text-lg'} text-gray-500 dark:text-[#050505] ${isCompact ? 'mb-1' : 'mb-2'}`}>
-        {brandName || t('common.defaults.category')}
-      </p>
+      {brandRow}
     </>
   );
 
@@ -65,36 +83,35 @@ export function ProductCardInfo({
         </ProductPdpPrefetchLink>
       )}
 
-      {/* Available Colors */}
       {colors && colors.length > 0 && (
         <ProductColors colors={colors} isCompact={isCompact} />
       )}
 
-      {/* Price */}
       <div className={`mt-2 flex items-center justify-between ${isCompact ? 'gap-2' : 'gap-4'}`}>
         <div className="flex flex-col">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <span
               className={`${montserratArm.className} ${
-                isCompact ? 'text-[18px] leading-[24px]' : 'text-[20px] leading-[28px]'
+                isCompact ? 'text-[22px] leading-[30px]' : 'text-[24px] leading-[32px]'
               } font-black text-[#181111]`}
             >
               {formatCatalogPrice(price || 0, currency)}
             </span>
             {discountPercent && discountPercent > 0 ? (
-              <span className={`rounded-full bg-blue-50 px-2 py-0.5 ${isCompact ? 'text-[11px]' : 'text-sm'} font-semibold leading-none text-blue-600`}>
+              <span
+                className={`rounded-full bg-blue-50 px-2 py-0.5 ${isCompact ? 'text-[11px]' : 'text-sm'} font-semibold leading-none text-blue-600`}
+              >
                 -{discountPercent}%
               </span>
             ) : null}
           </div>
-          {(originalPrice && originalPrice > price) || 
-           (compareAtPrice && compareAtPrice > price) ? (
-            <span className={`${isCompact ? 'text-xs' : 'text-sm'} mt-1 font-medium text-gray-400 line-through decoration-gray-300`}>
+          {(originalPrice && originalPrice > price) || (compareAtPrice && compareAtPrice > price) ? (
+            <span
+              className={`${isCompact ? 'text-xs' : 'text-sm'} mt-1 font-medium text-gray-400 line-through decoration-gray-300`}
+            >
               {formatCatalogPrice(
-                (originalPrice && originalPrice > price) 
-                  ? originalPrice 
-                  : (compareAtPrice || 0), 
-                currency
+                originalPrice && originalPrice > price ? originalPrice : (compareAtPrice || 0),
+                currency,
               )}
             </span>
           ) : null}
@@ -103,7 +120,3 @@ export function ProductCardInfo({
     </div>
   );
 }
-
-
-
-

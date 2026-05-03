@@ -40,8 +40,8 @@ export function SpecialOfferCardPricing({
           className={`${priceSkeletonBar}`}
           style={{
             height: SPECIAL_OFFERS_PRICE_LINE_HEIGHT_PX,
-            width: '72px',
-            maxWidth: '40%',
+            width: '96px',
+            maxWidth: '48%',
           }}
         />
         <div className={`mt-1 h-3 w-14 ${priceSkeletonBar}`} />
