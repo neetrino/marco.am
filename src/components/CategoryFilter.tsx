@@ -59,41 +59,15 @@ function CategoryFilterRow({
   const expanded = expandedKeys.has(key);
   const isSelected = selectedSlugs.some((s) => s.toLowerCase() === node.slug.toLowerCase());
 
+  const countClass =
+    'shrink-0 whitespace-nowrap text-base leading-6 tracking-[-0.31px] text-[#90a1b9] dark:text-white/68';
+
   return (
     <div className="flex flex-col gap-3">
       <div
-        className="flex w-full min-w-0 items-start gap-1 pr-3"
+        className="flex w-full min-w-0 items-center gap-2 pr-3"
         style={{ paddingLeft: depth > 0 ? depth * 14 : 0 }}
       >
-        <button
-          type="button"
-          disabled={!hasChildren}
-          aria-expanded={hasChildren ? expanded : undefined}
-          aria-label={
-            !hasChildren
-              ? noSubcategoriesAria(node.title)
-              : expanded
-                ? collapseAria(node.title)
-                : expandAria(node.title)
-          }
-          onClick={() => {
-            if (hasChildren) {
-              onToggleExpand(node.slug);
-            }
-          }}
-          className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-sm transition-[color,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/25 disabled:cursor-default disabled:opacity-100 ${
-            hasChildren
-              ? 'text-[#5d7285] hover:text-[#314158] enabled:cursor-pointer dark:text-[#8f9fb2] dark:hover:text-[#b8c2cf]'
-              : 'cursor-default text-[#90a1b9]/50 dark:text-white/35'
-          }`}
-        >
-          <ChevronDown
-            className={`h-5 w-5 shrink-0 transition-transform duration-200 ease-out ${
-              hasChildren && expanded ? 'rotate-0' : '-rotate-90'
-            }`}
-            aria-hidden
-          />
-        </button>
         <button
           type="button"
           onClick={() => onToggleCategory(node.slug)}
@@ -107,9 +81,44 @@ function CategoryFilterRow({
           >
             {node.title}
           </span>
-          <span className="shrink-0 text-base leading-6 tracking-[-0.31px] text-[#90a1b9] dark:text-white/68">
-            ({node.count})
-          </span>
+        </button>
+        <button
+          type="button"
+          onClick={() => onToggleCategory(node.slug)}
+          className={`${countClass} rounded-sm transition-[opacity,color] duration-200 ease-out hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/25`}
+          aria-label={`${node.title} (${node.count})`}
+        >
+          ({node.count})
+        </button>
+        <button
+          type="button"
+          disabled={!hasChildren}
+          aria-expanded={hasChildren ? expanded : undefined}
+          aria-label={
+            !hasChildren
+              ? noSubcategoriesAria(node.title)
+              : expanded
+                ? collapseAria(node.title)
+                : expandAria(node.title)
+          }
+          onClick={(e) => {
+            e.stopPropagation();
+            if (hasChildren) {
+              onToggleExpand(node.slug);
+            }
+          }}
+          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-sm transition-[color,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/25 disabled:cursor-default disabled:opacity-100 ${
+            hasChildren
+              ? 'text-[#5d7285] hover:text-[#314158] enabled:cursor-pointer dark:text-[#8f9fb2] dark:hover:text-[#b8c2cf]'
+              : 'cursor-default text-[#90a1b9]/50 dark:text-white/35'
+          }`}
+        >
+          <ChevronDown
+            className={`h-5 w-5 shrink-0 transition-transform duration-200 ease-out ${
+              hasChildren && expanded ? 'rotate-0' : '-rotate-90'
+            }`}
+            aria-hidden
+          />
         </button>
       </div>
       {hasChildren && expanded ? (
