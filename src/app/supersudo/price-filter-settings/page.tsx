@@ -280,14 +280,6 @@ export default function PriceFilterSettingsPage() {
     return null; // Will redirect
   }
 
-  const rangeIsConfigured = minPrice.trim() !== '' && maxPrice.trim() !== '';
-  const configuredCurrencies = [
-    stepSizeUSD,
-    stepSizeAMD,
-    stepSizeRUB,
-    stepSizeGEL,
-  ].filter((value) => value.trim() !== '').length;
-
   const stepValues: Record<(typeof currencyFields)[number]['key'], string> = {
     USD: stepSizeUSD,
     AMD: stepSizeAMD,
@@ -313,96 +305,6 @@ export default function PriceFilterSettingsPage() {
       onBack={() => router.push('/supersudo')}
     >
       <div className="space-y-6 pb-8">
-        <section className="overflow-hidden rounded-[28px] border border-marco-border/80 bg-gradient-to-br from-white via-marco-gray/50 to-marco-yellow/15 shadow-[0_18px_45px_rgba(16,16,16,0.08)]">
-          <div className="grid gap-6 p-5 sm:p-6 xl:grid-cols-[1.2fr_0.8fr]">
-            <div className="space-y-4">
-              <div className="inline-flex items-center gap-2 rounded-full border border-marco-yellow/50 bg-marco-yellow/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-marco-black">
-                <span className="h-2 w-2 rounded-full bg-marco-yellow" />
-                Price Filter Studio
-              </div>
-              <div className="space-y-2">
-                <h2 className="text-2xl font-semibold text-marco-black sm:text-3xl">
-                  {t('admin.priceFilter.priceFilterDefaultRange')}
-                </h2>
-                <p className="max-w-2xl text-sm leading-6 text-marco-text/75 sm:text-base">
-                  {t('admin.priceFilter.stepSizeDescription')}
-                </p>
-              </div>
-
-              <div className="grid gap-3 sm:grid-cols-3">
-                <div className="rounded-2xl border border-marco-border/80 bg-white/85 p-4 shadow-sm">
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-marco-text/60">
-                    Default Range
-                  </p>
-                  <p className="mt-2 text-lg font-semibold text-marco-black">
-                    {rangeIsConfigured ? `${minPrice} - ${maxPrice}` : 'Not configured'}
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-marco-border/80 bg-white/85 p-4 shadow-sm">
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-marco-text/60">
-                    Active Currencies
-                  </p>
-                  <p className="mt-2 text-lg font-semibold text-marco-black">
-                    {configuredCurrencies}/4
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-marco-border/80 bg-white/85 p-4 shadow-sm">
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-marco-text/60">
-                    Base Step
-                  </p>
-                  <p className="mt-2 text-lg font-semibold text-marco-black">
-                    {stepSizeUSD.trim() || 'Not set'}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-[24px] border border-marco-yellow/40 bg-gradient-to-br from-white via-[#fffdf4] to-marco-yellow/20 p-5 text-marco-black shadow-[0_16px_40px_rgba(247,206,63,0.18)]">
-              <div className="mb-4 flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-marco-text/60">
-                    Live Preview
-                  </p>
-                  <h3 className="mt-2 text-xl font-semibold">Customer filter feel</h3>
-                </div>
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-marco-yellow/50 bg-marco-yellow text-marco-black shadow-[0_10px_24px_rgba(247,206,63,0.3)]">
-                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                  </svg>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div className="rounded-2xl border border-marco-yellow/30 bg-white/90 p-4 shadow-sm">
-                  <div className="mb-3 flex items-center justify-between text-sm">
-                    <span className="text-marco-text/70">Range</span>
-                    <span className="font-semibold text-marco-black">
-                      {rangeIsConfigured ? `${minPrice} - ${maxPrice}` : 'Flexible'}
-                    </span>
-                  </div>
-                  <div className="h-3 rounded-full bg-marco-gray">
-                    <div className="h-3 w-2/3 rounded-full bg-marco-yellow" />
-                  </div>
-                </div>
-
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {currencyFields.map((field) => (
-                    <div key={field.key} className="rounded-2xl border border-marco-yellow/25 bg-white/85 p-3 shadow-sm">
-                      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-marco-text/55">
-                        {field.key}
-                      </p>
-                      <p className="mt-2 text-base font-semibold text-marco-black">
-                        {stepValues[field.key].trim() || '--'}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
           <Card className="admin-card overflow-hidden border-marco-border/70 bg-white/95 p-0 shadow-sm">
             <div className="border-b border-marco-border/70 bg-gradient-to-r from-white via-marco-gray/40 to-white px-6 py-5">
               <div className="mb-4 h-1 w-14 rounded-full bg-gradient-to-r from-marco-yellow to-marco-black/30" />
@@ -533,45 +435,6 @@ export default function PriceFilterSettingsPage() {
               </div>
             )}
           </Card>
-
-          <div className="space-y-6">
-            <Card className="admin-card overflow-hidden border-marco-border/70 bg-white/95 p-6 shadow-sm">
-              <div className="mb-4 h-1 w-14 rounded-full bg-gradient-to-r from-marco-yellow to-marco-black/30" />
-              <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-marco-yellow/25 text-marco-black">
-                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-marco-black">{t('admin.priceFilter.howItWorks')}</h3>
-                  <p className="mt-1 text-sm text-marco-text/70">
-                    These settings shape the first impression of your storefront filters.
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-5 space-y-3">
-                {[
-                  t('admin.priceFilter.stepSizeControls'),
-                  t('admin.priceFilter.differentStepSizes'),
-                  t('admin.priceFilter.defaultRange'),
-                  t('admin.priceFilter.usersCanAdjust'),
-                  t('admin.priceFilter.changesTakeEffect'),
-                ].map((item) => (
-                  <div
-                    key={item}
-                    className="flex items-start gap-3 rounded-2xl border border-marco-border/70 bg-marco-gray/30 px-4 py-3"
-                  >
-                    <span className="mt-1 h-2.5 w-2.5 rounded-full bg-marco-yellow" />
-                    <p className="text-sm leading-6 text-marco-text/85">{item}</p>
-                  </div>
-                ))}
-              </div>
-            </Card>
-
-          </div>
-        </div>
       </div>
     </AdminPageLayout>
   );

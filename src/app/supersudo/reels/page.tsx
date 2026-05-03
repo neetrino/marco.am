@@ -7,6 +7,7 @@ import { useAuth } from '@/lib/auth/AuthContext';
 import { apiClient, getApiOrErrorMessage } from '@/lib/api-client';
 import { useTranslation } from '@/lib/i18n-client';
 import type { ReelsManagementStorage } from '@/lib/schemas/reels-management.schema';
+import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '@/lib/utils/image-utils';
 import { AdminPageLayout } from '../components/AdminPageLayout';
 import { ReelPreviewDialog } from './components/ReelPreviewDialog';
 
@@ -298,6 +299,16 @@ export default function ReelsPage() {
     return null;
   }
 
+  const addReelHeaderAction = (
+    <button
+      type="button"
+      onClick={() => setIsAddFormOpen((prev) => !prev)}
+      className="inline-flex h-10 items-center rounded-lg bg-marco-yellow px-4 text-sm font-semibold text-marco-black transition hover:brightness-95"
+    >
+      {isAddFormOpen ? t('admin.common.close') : t('admin.reels.add')}
+    </button>
+  );
+
   return (
     <AdminPageLayout
       currentPath={currentPath}
@@ -306,31 +317,17 @@ export default function ReelsPage() {
       title={t('admin.reels.title')}
       backLabel={t('admin.reels.backToAdmin')}
       onBack={() => router.push('/supersudo')}
+      headerActions={addReelHeaderAction}
     >
       <div className="min-w-0 flex-1 space-y-4">
         <section className="overflow-hidden rounded-xl border border-marco-border bg-gradient-to-r from-white via-marco-gray/70 to-white p-4 text-marco-black shadow-[0_12px_28px_rgba(16,16,16,0.08)] sm:p-5">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <p className="text-xs uppercase tracking-[0.2em] text-marco-text/60">Marco Admin Studio</p>
-              <h2 className="mt-1 text-2xl font-semibold">{t('admin.reels.title')}</h2>
-              <p className="mt-2 max-w-xl text-sm text-marco-text/75">
-                Manage your reels with a clean workflow, quick uploads, and moderation visibility.
-              </p>
-            </div>
-            <button
-              onClick={() => void reload()}
-              className="inline-flex h-9 items-center rounded-lg border border-marco-yellow/70 bg-marco-yellow px-3.5 text-sm font-semibold text-marco-black transition hover:brightness-95"
-            >
-              {t('admin.reels.refreshLikes')}
-            </button>
-          </div>
-          <div className="mt-5 grid gap-3 sm:grid-cols-4">
+          <div className="grid gap-3 sm:grid-cols-4">
             <div className="rounded-xl border border-marco-border bg-white/85 p-3">
               <p className="text-xs text-marco-text/70">{t('admin.reels.list')}</p>
               <p className="mt-1 text-2xl font-semibold">{sortedItems.length}</p>
             </div>
             <div className="rounded-xl border border-marco-border bg-white/85 p-3">
-              <p className="text-xs text-marco-text/70">Active</p>
+              <p className="text-xs text-marco-text/70">{t('admin.reels.statActive')}</p>
               <p className="mt-1 text-2xl font-semibold">{activeReelsCount}</p>
             </div>
             <div className="rounded-xl border border-marco-border bg-white/85 p-3">
@@ -344,23 +341,9 @@ export default function ReelsPage() {
           </div>
         </section>
 
-        <section className="rounded-xl border border-marco-border bg-gradient-to-b from-marco-yellow/10 to-white p-4 shadow-sm sm:p-5">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900">{t('admin.reels.addNew')}</h2>
-              <p className="mt-1 text-sm text-gray-500">Fill all titles and provide a valid video source.</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setIsAddFormOpen((prev) => !prev)}
-              className="inline-flex h-10 items-center rounded-lg bg-marco-yellow px-4 text-sm font-semibold text-marco-black transition hover:brightness-95"
-            >
-              {isAddFormOpen ? t('admin.common.close') : t('admin.reels.add')}
-            </button>
-          </div>
-
-          {isAddFormOpen ? (
-            <div className="mt-4 grid gap-3 md:grid-cols-2">
+        {isAddFormOpen ? (
+          <section className="rounded-xl border border-marco-border bg-gradient-to-b from-marco-yellow/10 to-white p-4 shadow-sm sm:p-5">
+            <div className="grid gap-3 md:grid-cols-2">
               <label className="space-y-1 md:col-span-2">
                 <span className="text-xs font-medium text-gray-600">{t('admin.reels.titleHy')}</span>
                 <input
@@ -450,14 +433,14 @@ export default function ReelsPage() {
                 </button>
               </div>
             </div>
-          ) : null}
-        </section>
+          </section>
+        ) : null}
 
         <section className="admin-card">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-lg font-semibold text-gray-900">{t('admin.reels.list')}</h2>
             <span className="inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">
-              {sortedItems.length} items
+              {t('admin.reels.listCountBadge').replace('{count}', String(sortedItems.length))}
             </span>
           </div>
 
@@ -467,12 +450,31 @@ export default function ReelsPage() {
             <p className="text-sm text-gray-500">{t('admin.reels.empty')}</p>
           ) : (
             <div className="space-y-3">
-              {sortedItems.map((item) => (
+              {sortedItems.map((item) => {
+                const safePosterUrl = toSafeImgAttributeSrc(item.posterUrl ?? '');
+                return (
                 <article
                   key={item.id}
                   className="rounded-2xl border border-gray-200 bg-gradient-to-b from-white to-slate-50/70 p-4 shadow-sm transition hover:border-slate-300 hover:shadow-md"
                 >
-                  <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="flex gap-4">
+                    <div className="shrink-0">
+                      {safePosterUrl ? (
+                        <img
+                          src={toDomSafeImgSrcString(safePosterUrl)}
+                          alt=""
+                          className="h-28 w-20 rounded-xl border border-gray-200 bg-slate-100 object-cover shadow-inner"
+                        />
+                      ) : (
+                        <div
+                          className="flex h-28 w-20 items-center justify-center rounded-xl border border-dashed border-gray-200 bg-slate-50 text-xs font-medium uppercase tracking-wide text-gray-400"
+                          aria-hidden
+                        >
+                          —
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex min-w-0 flex-1 flex-wrap items-start justify-between gap-3">
                     <div className="space-y-2">
                       <p className="font-semibold text-gray-900">{item.title.hy}</p>
                       <p className="text-xs text-gray-500">ID: {item.id}</p>
@@ -531,9 +533,11 @@ export default function ReelsPage() {
                         {t('admin.reels.delete')}
                       </button>
                     </div>
+                    </div>
                   </div>
                 </article>
-              ))}
+                );
+              })}
             </div>
           )}
         </section>
