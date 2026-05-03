@@ -7,12 +7,14 @@ import { useTranslation } from '../lib/i18n-client';
 import {
   FOOTER_HEADING_TEXT_CLASS,
   FOOTER_MUTED_TEXT_CLASS,
+  FOOTER_NAV_BODY_TEXT_CLASS,
   FOOTER_NAV_COLUMN_HEADING_LEADING_CLASS,
   FOOTER_NAV_COLUMN_HEADING_LIST_GAP_CLASS,
   FOOTER_NAV_COLUMN_HEADING_TRACK_CLASS,
   FOOTER_NAV_COLUMN_LINK_LEADING_CLASS,
   FOOTER_NAV_COLUMN_LINK_WORD_SPACING_CLASS,
   FOOTER_NAV_COLUMN_LIST_ITEM_GAP_CLASS,
+  FOOTER_NAV_HEADING_TEXT_CLASS,
   NEETRINO_STUDIO_HREF,
 } from './footer.constants';
 import {
@@ -22,7 +24,7 @@ import {
   FOOTER_CONTACT_PHONE_ICON_SRC,
 } from './footer-social.constants';
 
-const FOOTER_LINK_CLASS = `${FOOTER_MUTED_TEXT_CLASS} text-xs transition-colors hover:text-marco-black`;
+const FOOTER_LINK_CLASS = `${FOOTER_MUTED_TEXT_CLASS} ${FOOTER_NAV_BODY_TEXT_CLASS} transition-colors hover:text-marco-black`;
 const FOOTER_NAV_COLUMN_LINK_CLASS = `${FOOTER_LINK_CLASS} ${FOOTER_NAV_COLUMN_LINK_WORD_SPACING_CLASS} ${FOOTER_NAV_COLUMN_LINK_LEADING_CLASS}`;
 
 export type FooterNavItem = { readonly href: string; readonly label: string };
@@ -39,7 +41,7 @@ export function FooterNavColumn({
       className={`inline-flex max-w-full flex-col ${FOOTER_NAV_COLUMN_HEADING_LIST_GAP_CLASS}`}
     >
       <p
-        className={`text-xs font-bold uppercase ${FOOTER_NAV_COLUMN_HEADING_LEADING_CLASS} ${FOOTER_NAV_COLUMN_HEADING_TRACK_CLASS} ${FOOTER_HEADING_TEXT_CLASS}`}
+        className={`${FOOTER_NAV_HEADING_TEXT_CLASS} ${FOOTER_NAV_COLUMN_HEADING_LEADING_CLASS} ${FOOTER_NAV_COLUMN_HEADING_TRACK_CLASS} ${FOOTER_HEADING_TEXT_CLASS}`}
       >
         {title}
       </p>
@@ -77,25 +79,25 @@ export function FooterContactsBlock({
   const telHref = buildTelHref(phoneTel);
 
   return (
-    <div className="inline-flex max-w-full flex-col gap-4">
+    <div className="inline-flex max-w-full flex-col gap-2">
       <p
-        className={`text-xs font-bold uppercase tracking-[0.05em] ${FOOTER_HEADING_TEXT_CLASS}`}
+        className={`${FOOTER_NAV_HEADING_TEXT_CLASS} tracking-[0.05em] ${FOOTER_HEADING_TEXT_CLASS}`}
       >
         {heading}
       </p>
-      <div className="flex items-start gap-3">
+      <div className="flex items-start gap-2">
         <MapPin
-          className="mt-0 h-4 w-4 shrink-0 -translate-x-px translate-y-[4px] self-start text-marco-yellow"
+          className="mt-0 h-[18px] w-[18px] shrink-0 -translate-x-px translate-y-[3px] self-start text-marco-yellow"
           strokeWidth={2}
           aria-hidden
         />
         <p
-          className={`text-xs leading-relaxed whitespace-pre-line ${FOOTER_MUTED_TEXT_CLASS}`}
+          className={`${FOOTER_NAV_BODY_TEXT_CLASS} leading-relaxed whitespace-pre-line ${FOOTER_MUTED_TEXT_CLASS}`}
         >
           {address}
         </p>
       </div>
-      <div className="flex items-start gap-3">
+      <div className="flex items-start gap-2">
         <img
           src={FOOTER_CONTACT_PHONE_ICON_SRC}
           alt=""
@@ -106,12 +108,12 @@ export function FooterContactsBlock({
         />
         <a
           href={telHref}
-          className="text-xs font-bold text-marco-black transition-colors hover:underline"
+          className={`${FOOTER_NAV_BODY_TEXT_CLASS} font-bold text-marco-black transition-colors hover:underline`}
         >
           {phoneDisplay}
         </a>
       </div>
-      <div className="flex items-start gap-3">
+      <div className="flex items-start gap-2">
         <img
           src={FOOTER_CONTACT_MAIL_ICON_SRC}
           alt=""
@@ -122,7 +124,7 @@ export function FooterContactsBlock({
         />
         <a
           href={`mailto:${email}`}
-          className={`text-xs transition-colors hover:text-marco-black ${FOOTER_MUTED_TEXT_CLASS}`}
+          className={`${FOOTER_NAV_BODY_TEXT_CLASS} transition-colors hover:text-marco-black ${FOOTER_MUTED_TEXT_CLASS}`}
         >
           {email}
         </a>
@@ -136,7 +138,7 @@ export function FooterCopyright() {
   const year = new Date().getFullYear();
 
   return (
-    <p className="inline-block text-center text-[9px] leading-tight text-marco-black sm:text-[10px] md:text-[11px] lg:text-xs whitespace-nowrap">
+    <p className="inline-block whitespace-nowrap text-center text-[10px] leading-tight text-marco-black sm:text-[11px] md:text-xs lg:text-[13px]">
       <span>
         {t('common.footer.marco.copyrightBefore').replace('{year}', String(year))}
       </span>

@@ -2,8 +2,9 @@
 
 import Link from 'next/link';
 
-const FOOTER_LEGAL_LINK_CLASS =
-  'text-[#6b7280] dark:text-[#cfcfcf] text-xs transition-colors hover:text-marco-black dark:hover:text-white';
+import { FOOTER_MUTED_TEXT_CLASS, FOOTER_NAV_BODY_TEXT_CLASS } from './footer.constants';
+
+const FOOTER_LEGAL_LINK_CLASS = `${FOOTER_MUTED_TEXT_CLASS} ${FOOTER_NAV_BODY_TEXT_CLASS} transition-colors hover:text-marco-black dark:hover:text-white`;
 
 export type FooterLegalLinkItem = {
   readonly id: string;
