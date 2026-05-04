@@ -177,7 +177,7 @@ export async function resolveCategoryIdsFromHyPath(
 
   for (const title of segments) {
     breadcrumb = breadcrumb ? `${breadcrumb} > ${title}` : title;
-    const found = await db.categoryTranslation.findFirst({
+    const found: { categoryId: string } | null = await db.categoryTranslation.findFirst({
       where: {
         locale: LOCALE,
         title,
@@ -194,7 +194,7 @@ export async function resolveCategoryIdsFromHyPath(
 
     const slugHy = `hy-${nanoid(10)}`;
     const slugEn = `en-${nanoid(10)}`;
-    const cat = await db.category.create({
+    const cat: { id: string } = await db.category.create({
       data: {
         parentId,
         published: true,
@@ -205,6 +205,7 @@ export async function resolveCategoryIdsFromHyPath(
           ],
         },
       },
+      select: { id: true },
     });
     ids.push(cat.id);
     parentId = cat.id;

@@ -154,7 +154,7 @@ class ProductsFiltersService {
         };
       }
 
-      let where: Prisma.ProductWhereInput = listingWhere;
+      const where: Prisma.ProductWhereInput = listingWhere;
 
       // Get products with variants (capped for filter computation)
       const FILTERS_PRODUCTS_LIMIT = 1500;
