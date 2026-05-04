@@ -4,6 +4,7 @@ import { formatCatalogPrice } from '../../../lib/currency';
 import type { CurrencyCode } from '../../../lib/currency';
 import { getProductText } from '../../../lib/i18n';
 import type { LanguageCode } from '../../../lib/language';
+import { normalizeLiteralNewlinesToLineBreaks } from '../../../lib/utils/normalize-literal-newlines';
 import { sanitizeHtml } from '../../../lib/utils/sanitize';
 import { ProductPartialStar } from './ProductPartialStar';
 import type { Product } from './types';
@@ -36,7 +37,7 @@ export function ProductInfo({
   t,
 }: ProductInfoProps) {
   const rawDescription = getProductText(language, product.id, 'longDescription') || product.description || '';
-  const sanitizedDescription = sanitizeHtml(rawDescription);
+  const sanitizedDescription = sanitizeHtml(normalizeLiteralNewlinesToLineBreaks(rawDescription));
   const hasDescription = sanitizedDescription
     .replace(/<[^>]*>/g, '')
     .replace(/&nbsp;/gi, ' ')

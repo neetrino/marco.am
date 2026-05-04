@@ -2,6 +2,7 @@
 
 import { t, getProductText } from '../../../lib/i18n';
 import type { LanguageCode } from '../../../lib/language';
+import { normalizeLiteralNewlinesToLineBreaks } from '../../../lib/utils/normalize-literal-newlines';
 import type { Product } from './types';
 import { SpecificationValueDisplay } from './ProductSpecificationsValue';
 
@@ -20,7 +21,7 @@ const MANUFACTURER_COUNTRY_LABEL = 'Արտադրող երկիր';
 const MATERIAL_LABEL = 'Նյութ';
 
 function stripTags(value: string): string {
-  return value
+  return normalizeLiteralNewlinesToLineBreaks(value)
     .replace(/<[^>]*>/g, ' ')
     .replace(/&nbsp;/gi, ' ')
     .replace(/&amp;/gi, '&')
@@ -63,6 +64,30 @@ function parseRowsFromLines(descriptionHtml: string): SpecificationRow[] {
       return { key, value };
     })
     .filter((row): row is SpecificationRow => Boolean(row));
+}
+
+/** WooCommerce-style `<strong>Label</strong> value` blocks. */
+function parseRowsFromLabeledStrong(descriptionHtml: string): SpecificationRow[] {
+  const html = normalizeLiteralNewlinesToLineBreaks(descriptionHtml);
+  const segments = html.split(/<strong[^>]*>/i);
+  const skipTitleKeys = new Set(
+    ['բնութագիր', 'description', 'спецификация', 'характеристика'].map((k) => k.toLowerCase()),
+  );
+  const rows: SpecificationRow[] = [];
+
+  for (const segment of segments) {
+    const close = segment.indexOf('</strong>');
+    if (close === -1) continue;
+    const key = stripTags(segment.slice(0, close)).trim();
+    if (!key || skipTitleKeys.has(key.toLowerCase())) continue;
+    const afterStrong = segment.slice(close + 9);
+    const valueChunk = afterStrong.split(/<(?=strong\b)/i)[0];
+    const value = stripTags(valueChunk).trim();
+    if (!value) continue;
+    rows.push({ key, value });
+  }
+
+  return rows;
 }
 
 function getMetaLabel(language: LanguageCode, key: MetaLabelKey): string {
@@ -206,7 +231,9 @@ function getFallbackRows(product: Product): SpecificationRow[] {
 }
 
 function getSpecificationRows(product: Product, language: LanguageCode): SpecificationRow[] {
-  const rawDescription = getProductText(language, product.id, 'longDescription') || product.description || '';
+  const rawDescription = normalizeLiteralNewlinesToLineBreaks(
+    getProductText(language, product.id, 'longDescription') || product.description || '',
+  );
   if (!rawDescription.trim()) {
     return ensureRequiredRows(getFallbackRows(product), product);
   }
@@ -216,9 +243,18 @@ function getSpecificationRows(product: Product, language: LanguageCode): Specifi
     return ensureRequiredRows(dedupeRows(fromTable), product);
   }
 
+  const fromStrong = parseRowsFromLabeledStrong(rawDescription);
+  if (fromStrong.length >= 2) {
+    return ensureRequiredRows(dedupeRows(fromStrong), product);
+  }
+
   const fromLines = parseRowsFromLines(rawDescription);
   if (fromLines.length > 0) {
     return ensureRequiredRows(dedupeRows(fromLines), product);
+  }
+
+  if (fromStrong.length > 0) {
+    return ensureRequiredRows(dedupeRows(fromStrong), product);
   }
 
   const plainDescription = parsePlainDescription(rawDescription, language, product);

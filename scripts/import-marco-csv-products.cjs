@@ -27,8 +27,9 @@ const prisma = new PrismaClient();
 const LOCALES = ["hy", "en", "ru"];
 const CSV_PATH =
   process.argv[2] ||
-  "C:\\Users\\ROG\\Downloads\\Telegram Desktop\\Marco - Worksheet (1).csv";
-const CONCURRENCY = Math.max(1, Number.parseInt(process.env.IMPORT_CONCURRENCY || "8", 10));
+  "C:\\Users\\ROG\\Downloads\\Telegram Desktop\\Marco - Sheet1.csv";
+/** Neon serverless often uses `connection_limit=1` — parallel workers exhaust the pool. */
+const CONCURRENCY = Math.max(1, Number.parseInt(process.env.IMPORT_CONCURRENCY || "1", 10));
 const UPDATE_EXISTING = process.env.IMPORT_UPDATE_EXISTING === "1";
 const R2_PUBLIC_URL = (process.env.R2_PUBLIC_URL || "").trim().replace(/\/$/, "");
 const R2_BUCKET_NAME = process.env.R2_BUCKET_NAME;
@@ -152,6 +153,28 @@ function parseImages(value) {
       return true;
     });
   return urls;
+}
+
+/**
+ * Woo export columns `Filter{N} - Label` → stable Prisma attribute keys `marco_filter_{N}`.
+ * @param {Record<string, string>} sampleRow First data row (or any row with same keys).
+ * @returns {{ header: string, filterIndex: number, attributeKey: string, attributeLabel: string }[]}
+ */
+function buildFilterColumnDefinitions(sampleRow) {
+  const defs = [];
+  for (const header of Object.keys(sampleRow || {})) {
+    const m = /^Filter\s*(\d+)\s*-\s*(.+)$/i.exec(header.trim());
+    if (!m) continue;
+    const filterIndex = Number.parseInt(m[1], 10);
+    if (!Number.isFinite(filterIndex)) continue;
+    defs.push({
+      header,
+      filterIndex,
+      attributeKey: `marco_filter_${filterIndex}`,
+      attributeLabel: m[2].trim(),
+    });
+  }
+  return defs.sort((a, b) => a.filterIndex - b.filterIndex);
 }
 
 function isR2Configured() {
@@ -441,7 +464,7 @@ async function ensureAttributeValue(attributeId, key, label) {
   return value.id;
 }
 
-async function upsertProduct(row, index) {
+async function upsertProduct(row, index, filterDefs) {
   const id = row.ID;
   const title = row.Name;
   if (!id || !title) {
@@ -461,7 +484,8 @@ async function upsertProduct(row, index) {
   const primaryCategoryId = categoryIds[categoryIds.length - 1] || categoryIds[0] || null;
   const slug = productSlug(row);
   const subtitle = row["Short description"] || undefined;
-  const descriptionHtml = row.description || row["Short description"] || undefined;
+  const descriptionHtml =
+    row.Description || row.description || row["Short description"] || undefined;
   const color = String(row.Color || "").trim();
   const discountPercent =
     regularPrice && compareAtPrice
@@ -474,6 +498,66 @@ async function upsertProduct(row, index) {
     colorAttributeId = await ensureAttribute("color", "Color");
     colorValueId = await ensureAttributeValue(colorAttributeId, "color", color);
   }
+
+  /** @type {{ attributeId: string, attributeKey: string, valueId: string, value: string }[]} */
+  const filterResolutions = [];
+  for (const def of filterDefs) {
+    const cell = String(row[def.header] ?? "").trim();
+    if (!cell) continue;
+    const attributeId = await ensureAttribute(def.attributeKey, def.attributeLabel);
+    const valueId = await ensureAttributeValue(attributeId, def.attributeKey, cell);
+    filterResolutions.push({
+      attributeId,
+      attributeKey: def.attributeKey,
+      valueId,
+      value: cell,
+    });
+  }
+
+  const productAttributeIdsUnique = [
+    ...new Set([
+      ...(colorAttributeId ? [colorAttributeId] : []),
+      ...filterResolutions.map((r) => r.attributeId),
+    ]),
+  ];
+
+  const variantOptionCreates = [];
+  if (color && colorValueId) {
+    variantOptionCreates.push({
+      attributeId: colorAttributeId,
+      attributeKey: "color",
+      valueId: colorValueId,
+      value: color,
+    });
+  }
+  for (const r of filterResolutions) {
+    variantOptionCreates.push({
+      attributeId: r.attributeId,
+      attributeKey: r.attributeKey,
+      valueId: r.valueId,
+      value: r.value,
+    });
+  }
+
+  const variantAttributesJson =
+    (color && colorValueId) || filterResolutions.length > 0
+      ? (() => {
+          /** @type {Record<string, Array<{ valueId: string; value: string; attributeKey: string }>>} */
+          const o = {};
+          if (color && colorValueId) {
+            o.color = [{ valueId: colorValueId, value: color, attributeKey: "color" }];
+          }
+          for (const r of filterResolutions) {
+            if (!o[r.attributeKey]) o[r.attributeKey] = [];
+            o[r.attributeKey].push({
+              valueId: r.valueId,
+              value: r.value,
+              attributeKey: r.attributeKey,
+            });
+          }
+          return o;
+        })()
+      : null;
 
   const existingVariant = await prisma.productVariant.findUnique({
     where: { sku },
@@ -495,7 +579,7 @@ async function upsertProduct(row, index) {
           publishedAt: new Date(),
           categoryIds,
           primaryCategoryId,
-          attributeIds: colorAttributeId ? [colorAttributeId] : [],
+          attributeIds: productAttributeIdsUnique,
           discountPercent,
           categories: { set: categoryIds.map((categoryId) => ({ id: categoryId })) },
         },
@@ -534,12 +618,7 @@ async function upsertProduct(row, index) {
           stock,
           imageUrl: storedMedia[0] || null,
           published: true,
-          attributes:
-            color && colorValueId
-              ? {
-                  color: [{ valueId: colorValueId, value: color, attributeKey: "color" }],
-                }
-              : null,
+          attributes: variantAttributesJson,
         },
       });
 
@@ -547,15 +626,15 @@ async function upsertProduct(row, index) {
         where: { variantId: existingVariant.id },
       });
 
-      if (color && colorValueId) {
-        await tx.productVariantOption.create({
-          data: {
+      if (variantOptionCreates.length > 0) {
+        await tx.productVariantOption.createMany({
+          data: variantOptionCreates.map((o) => ({
             variantId: existingVariant.id,
-            attributeId: colorAttributeId,
-            attributeKey: "color",
-            valueId: colorValueId,
-            value: color,
-          },
+            attributeId: o.attributeId,
+            attributeKey: o.attributeKey,
+            valueId: o.valueId,
+            value: o.value,
+          })),
         });
       }
 
@@ -563,12 +642,12 @@ async function upsertProduct(row, index) {
         where: { productId: existingVariant.productId },
       });
 
-      if (colorAttributeId) {
-        await tx.productAttribute.create({
-          data: {
+      if (productAttributeIdsUnique.length > 0) {
+        await tx.productAttribute.createMany({
+          data: productAttributeIdsUnique.map((attributeId) => ({
             productId: existingVariant.productId,
-            attributeId: colorAttributeId,
-          },
+            attributeId,
+          })),
         });
       }
     });
@@ -586,7 +665,7 @@ async function upsertProduct(row, index) {
       publishedAt: new Date(),
       categoryIds,
       primaryCategoryId,
-      attributeIds: colorAttributeId ? [colorAttributeId] : [],
+      attributeIds: productAttributeIdsUnique,
       discountPercent,
       categories:
         categoryIds.length > 0
@@ -601,13 +680,12 @@ async function upsertProduct(row, index) {
           descriptionHtml,
         })),
       },
-      productAttributes: colorAttributeId
-        ? {
-            create: {
-              attributeId: colorAttributeId,
-            },
-          }
-        : undefined,
+      productAttributes:
+        productAttributeIdsUnique.length > 0
+          ? {
+              create: productAttributeIdsUnique.map((attributeId) => ({ attributeId })),
+            }
+          : undefined,
       variants: {
         create: {
           productClass: "retail",
@@ -619,21 +697,16 @@ async function upsertProduct(row, index) {
           imageUrl: storedMedia[0] || undefined,
           position: 0,
           published: true,
-          attributes:
-            color && colorValueId
-              ? {
-                  color: [{ valueId: colorValueId, value: color, attributeKey: "color" }],
-                }
-              : undefined,
+          attributes: variantAttributesJson ?? undefined,
           options:
-            color && colorValueId
+            variantOptionCreates.length > 0
               ? {
-                  create: {
-                    attributeId: colorAttributeId,
-                    attributeKey: "color",
-                    valueId: colorValueId,
-                    value: color,
-                  },
+                  create: variantOptionCreates.map((o) => ({
+                    attributeId: o.attributeId,
+                    attributeKey: o.attributeKey,
+                    valueId: o.valueId,
+                    value: o.value,
+                  })),
                 }
               : undefined,
         },
@@ -651,6 +724,7 @@ async function main() {
 
   const content = fs.readFileSync(CSV_PATH, "utf8");
   const rows = parseCsv(content);
+  const filterDefs = rows.length > 0 ? buildFilterColumnDefinitions(rows[0]) : [];
   const stats = {
     rows: rows.length,
     created: 0,
@@ -660,6 +734,7 @@ async function main() {
   };
 
   console.log(`[import-marco] Rows found: ${rows.length}`);
+  console.log(`[import-marco] Filter columns (Woo Filter1…): ${filterDefs.length}`);
   console.log(
     `[import-marco] Mode: ${UPDATE_EXISTING ? "update existing rows" : "skip existing rows"}, concurrency: ${CONCURRENCY}`
   );
@@ -684,8 +759,11 @@ async function main() {
       await ensureAttributeValue(colorAttributeId, "color", color);
     }
   }
+  for (const def of filterDefs) {
+    await ensureAttribute(def.attributeKey, def.attributeLabel);
+  }
   console.log(
-    `[import-marco] Metadata ready: ${metadataStats.brands.size} brands, ${metadataStats.categoryFields.size} category field variants, ${metadataStats.colors.size} colors`
+    `[import-marco] Metadata ready: ${metadataStats.brands.size} brands, ${metadataStats.categoryFields.size} category field variants, ${metadataStats.colors.size} colors, ${filterDefs.length} filter attribute definitions`
   );
 
   let nextIndex = 0;
@@ -694,7 +772,7 @@ async function main() {
       const i = nextIndex;
       nextIndex += 1;
       try {
-        const result = await upsertProduct(rows[i], i);
+        const result = await upsertProduct(rows[i], i, filterDefs);
         stats[result.status] += 1;
         const processed = stats.created + stats.updated + stats.skipped + stats.errors;
         if (processed % 100 === 0) {
@@ -717,7 +795,7 @@ async function main() {
   /*
   for (let i = 0; i < rows.length; i += 1) {
     try {
-      const result = await upsertProduct(rows[i], i);
+      const result = await upsertProduct(rows[i], i, filterDefs);
       stats[result.status] += 1;
       if ((i + 1) % 100 === 0) {
         console.log(`[import-marco] Processed ${i + 1}/${rows.length}`);
