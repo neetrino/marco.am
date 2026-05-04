@@ -1,12 +1,12 @@
 'use client';
 
 import type { MouseEvent } from 'react';
-import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { ArrowUpRight, Heart } from 'lucide-react';
 import { formatCatalogPrice, type CurrencyCode } from '../../../lib/currency';
 import { t, getProductText } from '../../../lib/i18n';
 import type { LanguageCode } from '../../../lib/language';
+import { normalizeLiteralNewlinesToLineBreaks } from '../../../lib/utils/normalize-literal-newlines';
 import { sanitizeHtml } from '../../../lib/utils/sanitize';
 import { CompareIcon } from '../../../components/icons/CompareIcon';
 import {
@@ -102,12 +102,9 @@ export function ProductInfoAndActions({
   getOptionValue,
   getRequiredAttributesMessage,
 }: ProductInfoAndActionsProps) {
-  const buyNowLabelSlotRef = useRef<HTMLSpanElement | null>(null);
-  const buyNowLabelProbeRef = useRef<HTMLSpanElement | null>(null);
-  const [useShortHyBuyLabel, setUseShortHyBuyLabel] = useState(false);
   const rawDescription = getProductText(language, product.id, 'longDescription') || product.description || '';
   const buyNowFullLabel = t(language, 'product.buyNow');
-  const sanitizedDescription = sanitizeHtml(rawDescription);
+  const sanitizedDescription = sanitizeHtml(normalizeLiteralNewlinesToLineBreaks(rawDescription));
   const hasDescription = sanitizedDescription
     .replace(/<[^>]*>/g, '')
     .replace(/&nbsp;/gi, ' ')
@@ -122,37 +119,6 @@ export function ProductInfoAndActions({
     ? Math.min(5, Math.max(0, averageRating))
     : 5;
   const starFillRatio = displayRatingScore / 5;
-
-  useEffect(() => {
-    if (language !== 'hy') {
-      setUseShortHyBuyLabel(false);
-      return;
-    }
-
-    const syncHyBuyLabel = () => {
-      const slot = buyNowLabelSlotRef.current;
-      const probe = buyNowLabelProbeRef.current;
-      if (!slot || !probe) {
-        return;
-      }
-      if (!window.matchMedia('(max-width: 767px)').matches) {
-        setUseShortHyBuyLabel(false);
-        return;
-      }
-      setUseShortHyBuyLabel(probe.offsetWidth > slot.clientWidth);
-    };
-
-    syncHyBuyLabel();
-    const resizeObserver = new ResizeObserver(syncHyBuyLabel);
-    if (buyNowLabelSlotRef.current) {
-      resizeObserver.observe(buyNowLabelSlotRef.current);
-    }
-    window.addEventListener('resize', syncHyBuyLabel);
-    return () => {
-      resizeObserver.disconnect();
-      window.removeEventListener('resize', syncHyBuyLabel);
-    };
-  }, [language, buyNowFullLabel, quantity, isOutOfStock, isVariationRequired, hasUnavailableAttributes]);
 
   return (
     <div className="flex flex-col h-full">
@@ -266,20 +232,6 @@ export function ProductInfoAndActions({
             </p>
           </div>
         )}
-        {/* Show unavailable attributes message if needed */}
-        {hasUnavailableAttributes && !isVariationRequired && (
-          <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-sm text-red-800 font-medium">
-              {Array.from(unavailableAttributes.entries()).map(([attrKey]) => {
-                const productAttr = product?.productAttributes?.find((pa: any) => pa.attribute?.key === attrKey);
-                const attributeName = productAttr?.attribute?.name || attrKey.charAt(0).toUpperCase() + attrKey.slice(1);
-                return attrKey === 'color' ? t(language, 'product.color') : 
-                       attrKey === 'size' ? t(language, 'product.size') : 
-                       attributeName;
-              }).join(', ')} {t(language, 'product.outOfStock')}
-            </p>
-          </div>
-        )}
         <div className="flex -translate-y-0.5 pb-2 pt-4">
           <div className="flex w-full min-w-0 flex-nowrap items-center gap-3">
             <div className="flex h-10 shrink-0 items-center overflow-hidden rounded-xl border-2 border-gray-200 bg-white">
@@ -318,33 +270,19 @@ export function ProductInfoAndActions({
               onClick={onAddToCart}
             >
               <span
-                ref={buyNowLabelSlotRef}
                 className={`min-w-0 flex-1 whitespace-nowrap truncate ${
                   language === 'hy' ? '-ml-0.5 pl-0 md:ml-0 md:pl-2' : 'pl-2'
                 }`}
               >
-                {language === 'hy' ? (
-                  <span
-                    ref={buyNowLabelProbeRef}
-                    className="pointer-events-none absolute invisible whitespace-nowrap"
-                    aria-hidden
-                  >
-                    {buyNowFullLabel}
-                  </span>
-                ) : null}
                 {isAddingToCart
                   ? t(language, 'product.adding')
-                  : isOutOfStock
-                    ? t(language, 'product.outOfStock')
-                    : isVariationRequired
-                      ? getRequiredAttributesMessage()
-                      : hasUnavailableAttributes
+                  : isVariationRequired
+                    ? getRequiredAttributesMessage()
+                    : language === 'hy'
+                      ? buyNowFullLabel
+                      : isOutOfStock || hasUnavailableAttributes
                         ? t(language, 'product.outOfStock')
-                        : language === 'hy'
-                          ? useShortHyBuyLabel
-                            ? 'Գնել'
-                            : buyNowFullLabel
-                          : buyNowFullLabel}
+                        : buyNowFullLabel}
               </span>
               <span
                 className={`flex shrink-0 items-center justify-center rounded-full bg-black text-white ${PRODUCT_BUY_CTA_ICON_NUDGE_LEFT_CLASS}`}
