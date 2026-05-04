@@ -4,12 +4,12 @@ import { useRouter } from 'next/navigation';
 import { pushShopProductsListingUrl } from '../../lib/push-shop-products-listing-url';
 import type { FormEvent } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { coerceCurrencyCode, setStoredCurrency, type CurrencyCode, formatPrice } from '../../lib/currency';
+import { setStoredCurrency, type CurrencyCode, formatPrice } from '../../lib/currency';
 import { getStoredLanguage } from '../../lib/language';
 import { useInstantSearch } from '../hooks/useInstantSearch';
 import { useAuth } from '../../lib/auth/AuthContext';
 import { apiClient } from '../../lib/api-client';
-import { CART_KEY } from '../../lib/storageCounts';
+import { useCartSummary } from '../../lib/cart/cart-summary-context';
 import { useHeaderStorageCounts } from './useHeaderStorageCounts';
 import { useHeaderCurrency } from './useHeaderCurrency';
 import { useTranslation } from '../../lib/i18n-client';
@@ -18,17 +18,12 @@ import type { Category, CategoriesResponse } from './category-nav-types';
 
 export function useHeaderData() {
   const router = useRouter();
-  const { isLoggedIn, isLoading: authLoading, logout, isAdmin } = useAuth();
-  const authLoadingRef = useRef(false);
-  authLoadingRef.current = authLoading;
+  const { isLoggedIn, logout, isAdmin } = useAuth();
   const { t } = useTranslation();
 
   const [compareCount, setCompareCount] = useState(0);
   const [wishlistCount, setWishlistCount] = useState(0);
-  const [cartCount, setCartCount] = useState(0);
-  const [cartTotal, setCartTotal] = useState(0);
-  /** Unit of `cartTotal` from API / guest snapshot (cart totals are AMD in this app). */
-  const [cartTotalCurrency, setCartTotalCurrency] = useState<CurrencyCode>('AMD');
+  const { cartCount, cartTotal, cartTotalCurrency, fetchCart } = useCartSummary();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showLocaleCurrencyMenu, setShowLocaleCurrencyMenu] = useState(false);
   const [showProductsMenu, setShowProductsMenu] = useState(false);
@@ -62,127 +57,11 @@ export function useHeaderData() {
     lang: getStoredLanguage(),
   });
 
-  const fetchCart = useCallback(async () => {
-    if (authLoadingRef.current) {
-      return;
-    }
-    if (!isLoggedIn) {
-      if (typeof window === 'undefined') {
-        setCartCount(0);
-        setCartTotal(0);
-        setCartTotalCurrency('AMD');
-        return;
-      }
-
-      try {
-        const stored = localStorage.getItem(CART_KEY);
-        const guestCart: Array<{
-          productId: string;
-          productSlug?: string;
-          variantId: string;
-          quantity: number;
-          price?: number;
-        }> = stored ? JSON.parse(stored) : [];
-
-        if (guestCart.length === 0) {
-          setCartCount(0);
-          setCartTotal(0);
-          setCartTotalCurrency('AMD');
-          return;
-        }
-
-        const itemsCount = guestCart.reduce((sum, item) => sum + Number(item.quantity), 0);
-        const total = guestCart.reduce(
-          (sum, item) => sum + (Number(item.price) || 0) * Number(item.quantity),
-          0
-        );
-        setCartCount(itemsCount);
-        setCartTotal(total);
-        setCartTotalCurrency('AMD');
-      } catch (error) {
-        console.error('Error loading guest cart:', error);
-        setCartCount(0);
-        setCartTotal(0);
-        setCartTotalCurrency('AMD');
-      }
-      return;
-    }
-
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('auth_token');
-      if (!token) {
-        setCartCount(0);
-        setCartTotal(0);
-        setCartTotalCurrency('AMD');
-        return;
-      }
-    }
-
-    try {
-      const response = await apiClient.get<{
-        cart: {
-          itemsCount: number;
-          totals: { total: number; currency?: string };
-        };
-      }>('/api/v1/cart');
-
-      setCartCount(response.cart?.itemsCount || 0);
-      setCartTotal(response.cart?.totals?.total || 0);
-      setCartTotalCurrency(coerceCurrencyCode(response.cart?.totals?.currency, 'AMD'));
-    } catch (error: unknown) {
-      const err = error as { status?: number; statusCode?: number };
-      if (err?.status !== 401 && err?.statusCode !== 401) {
-        console.error('Error fetching cart:', error);
-      }
-      setCartCount(0);
-      setCartTotal(0);
-      setCartTotalCurrency('AMD');
-    }
-  }, [isLoggedIn]);
-
   const refreshCartOnAuth = useCallback(() => {
-    fetchCart();
+    void fetchCart();
   }, [fetchCart]);
 
   useHeaderStorageCounts(setWishlistCount, setCompareCount, refreshCartOnAuth);
-
-  useEffect(() => {
-    const handleCartUpdate = (e: Event) => {
-      if (authLoadingRef.current) {
-        return;
-      }
-      const detail = (e as CustomEvent)?.detail;
-      if (detail?.optimisticAdd) {
-        setCartCount((c) => c + (detail.optimisticAdd.quantity ?? 1));
-        setCartTotal((tot) => tot + (detail.optimisticAdd.price ?? 0) * (detail.optimisticAdd.quantity ?? 1));
-        return;
-      }
-      if (detail?.itemsCount !== undefined && detail?.total !== undefined) {
-        setCartCount(detail.itemsCount);
-        setCartTotal(detail.total);
-        setCartTotalCurrency(coerceCurrencyCode(detail.currency, 'AMD'));
-        return;
-      }
-      void fetchCart();
-    };
-
-    window.addEventListener('cart-updated', handleCartUpdate);
-
-    return () => {
-      window.removeEventListener('cart-updated', handleCartUpdate);
-    };
-  }, [fetchCart]);
-
-  /** Until auth is resolved, do not read guest cart as "logged out" — avoids phantom totals on refresh. */
-  useEffect(() => {
-    if (authLoading) {
-      setCartCount(0);
-      setCartTotal(0);
-      setCartTotalCurrency('AMD');
-      return;
-    }
-    void fetchCart();
-  }, [authLoading, isLoggedIn, fetchCart]);
 
   useHeaderCurrency(setSelectedCurrency);
 
