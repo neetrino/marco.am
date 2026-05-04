@@ -28,7 +28,8 @@ const LOCALES = ["hy", "en", "ru"];
 const CSV_PATH =
   process.argv[2] ||
   "C:\\Users\\ROG\\Downloads\\Telegram Desktop\\Marco - Sheet1.csv";
-const CONCURRENCY = Math.max(1, Number.parseInt(process.env.IMPORT_CONCURRENCY || "8", 10));
+/** Neon serverless often uses `connection_limit=1` — parallel workers exhaust the pool. */
+const CONCURRENCY = Math.max(1, Number.parseInt(process.env.IMPORT_CONCURRENCY || "1", 10));
 const UPDATE_EXISTING = process.env.IMPORT_UPDATE_EXISTING === "1";
 const R2_PUBLIC_URL = (process.env.R2_PUBLIC_URL || "").trim().replace(/\/$/, "");
 const R2_BUCKET_NAME = process.env.R2_BUCKET_NAME;
