@@ -1,7 +1,7 @@
 'use client';
 
-import { ChevronDown, ChevronUp } from 'lucide-react';
-import { useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { ChevronRight } from 'lucide-react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from '../../lib/i18n-client';
 import { LanguagePreferenceContext } from '../../lib/language-context';
 import type { Category } from './category-nav-types';
@@ -16,18 +16,10 @@ function isTechAndElectronicsCategory(value: string): boolean {
   return normalized.includes('տեխնիկա') && normalized.includes('էլեկտրոն');
 }
 
-const SCROLL_EDGE_EPS = 3;
-
-function readCategoryListScrollEdges(el: HTMLDivElement) {
-  const { scrollTop, scrollHeight, clientHeight } = el;
-  const overflow = scrollHeight - clientHeight;
-  const needsScroll = overflow > SCROLL_EDGE_EPS;
-  return {
-    needsScroll,
-    canUp: needsScroll && scrollTop > SCROLL_EDGE_EPS,
-    canDown: needsScroll && scrollTop + clientHeight < scrollHeight - SCROLL_EDGE_EPS,
-  };
-}
+/** Left mega-rail root category row — keep img attrs in sync with `h-[…] w-[…]` on the image. */
+const MEGA_ROOT_ICON_INNER_PX = 34;
+/** Lucide `size` inside `size-[48px]` icon wrap. */
+const MEGA_ROOT_LUCIDE_PX = 34;
 
 export function CategoriesDropdownMega({
   categories,
@@ -53,44 +45,6 @@ export function CategoriesDropdownMega({
     );
   }, [categoriesWithExtra]);
 
-  const categoryListRef = useRef<HTMLDivElement>(null);
-  const [listScroll, setListScroll] = useState({ needsScroll: false, canUp: false, canDown: false });
-
-  const syncListScrollEdges = useCallback(() => {
-    const el = categoryListRef.current;
-    if (!el) {
-      return;
-    }
-    setListScroll(readCategoryListScrollEdges(el));
-  }, []);
-
-  useLayoutEffect(() => {
-    syncListScrollEdges();
-  }, [categoriesWithExtra, syncListScrollEdges]);
-
-  useEffect(() => {
-    const el = categoryListRef.current;
-    if (!el) {
-      return;
-    }
-    el.addEventListener('scroll', syncListScrollEdges, { passive: true });
-    const ro = new ResizeObserver(syncListScrollEdges);
-    ro.observe(el);
-    return () => {
-      el.removeEventListener('scroll', syncListScrollEdges);
-      ro.disconnect();
-    };
-  }, [categoriesWithExtra, syncListScrollEdges]);
-
-  const scrollCategoryList = useCallback((direction: 1 | -1) => {
-    const el = categoryListRef.current;
-    if (!el) {
-      return;
-    }
-    const step = Math.max(96, Math.floor(el.clientHeight * 0.45));
-    el.scrollBy({ top: direction * step, behavior: 'smooth' });
-  }, []);
-
   const selected = categoriesWithExtra.find((c) => c.slug === selectedSlug) ?? categoriesWithExtra[0];
   if (!selected) {
     return null;
@@ -102,73 +56,45 @@ export function CategoriesDropdownMega({
   const showPromoBanner = !isTechAndElectronics;
 
   return (
-    <div className="flex h-full max-h-full min-h-0 w-full min-w-0 flex-1 flex-col divide-y divide-marco-border overflow-hidden rounded-[13px] bg-marco-gray shadow-2xl md:min-h-0 md:flex-row md:divide-x md:divide-y-0">
+    <div className="flex h-full max-h-full min-h-0 w-full min-w-0 flex-1 flex-col divide-y divide-marco-border overflow-hidden rounded-[13px] bg-white ring-1 ring-black/15 shadow-2xl md:min-h-0 md:flex-row md:divide-y-0">
       {/* Left rail: fixed width on md+; h-full + inner min-h-0 scroll region so category list always scrolls inside the panel (flex min-height:auto cannot steal height). */}
-      <div className="relative flex h-full min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden rounded-t-[13px] bg-marco-gray md:min-h-0 md:w-[400px] md:min-w-[400px] md:max-w-[400px] md:flex-none md:shrink-0 md:rounded-l-[13px] md:rounded-r-[13px] md:rounded-t-none">
-        {listScroll.needsScroll && (
-          <>
-            <button
-              type="button"
-              onClick={() => scrollCategoryList(-1)}
-              disabled={!listScroll.canUp}
-              className="absolute right-2 top-4 z-[2] flex size-9 items-center justify-center rounded-full bg-white/95 text-[#050505] shadow-md ring-1 ring-black/10 transition-[filter,opacity] hover:brightness-95 disabled:pointer-events-none disabled:opacity-35 md:right-3 md:top-6"
-              aria-label={t('common.navigation.categoriesMegaMenu.scrollListUp')}
-            >
-              <ChevronUp className="size-5 shrink-0" strokeWidth={2} aria-hidden />
-            </button>
-            <button
-              type="button"
-              onClick={() => scrollCategoryList(1)}
-              disabled={!listScroll.canDown}
-              className="absolute right-2 bottom-4 z-[2] flex size-9 items-center justify-center rounded-full bg-white/95 text-[#050505] shadow-md ring-1 ring-black/10 transition-[filter,opacity] hover:brightness-95 disabled:pointer-events-none disabled:opacity-35 md:right-3 md:bottom-6"
-              aria-label={t('common.navigation.categoriesMegaMenu.scrollListDown')}
-            >
-              <ChevronDown className="size-5 shrink-0" strokeWidth={2} aria-hidden />
-            </button>
-          </>
-        )}
+      <div className="relative flex h-full min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden rounded-t-[13px] bg-marco-gray md:min-h-0 md:w-[400px] md:min-w-[400px] md:max-w-[400px] md:flex-none md:shrink-0 md:rounded-l-[13px] md:rounded-r-none md:rounded-t-none md:border-r-2 md:border-r-neutral-400">
         <nav
-          className="flex h-full min-h-0 flex-1 flex-col overflow-hidden py-6 pl-4 pr-2 md:py-[29px] md:pl-[25px] md:pr-[25px]"
+          className="flex h-full min-h-0 flex-1 flex-col overflow-hidden py-6 pl-4 pr-0 md:py-[29px] md:pl-[25px] md:pr-0"
           aria-label={t('common.navigation.categories')}
         >
-          <div
-            ref={categoryListRef}
-            className={`flex min-h-0 flex-1 basis-0 flex-col gap-[16px] overflow-y-auto overflow-x-hidden overscroll-y-contain [-webkit-overflow-scrolling:touch] [scrollbar-gutter:stable] touch-pan-y ${listScroll.needsScroll ? 'pr-10 md:pr-12' : ''}`}
-          >
-          {categoriesWithExtra.map((category, index) => {
+          <div className="flex min-h-0 flex-1 basis-0 flex-col overflow-y-auto overflow-x-hidden overscroll-y-contain [-webkit-overflow-scrolling:touch] [scrollbar-gutter:auto] touch-pan-y scroll-pb-header-mega-category-scroll-end pb-header-mega-category-scroll-end pr-0">
+          <div className="flex flex-col gap-[18px] pr-2 md:pr-2.5">
+          {categoriesWithExtra.map((category) => {
             const isSelected = category.slug === selectedSlug;
             const row = resolveCategoryNavPresentation(category.slug, category.title, lang);
             const RowLucide = row.icon.kind === 'lucide' ? row.icon.Icon : null;
-            const titleParts = row.title.trim().split(/\s+/);
-            const canSplitLastWord = index === 0 && titleParts.length > 1;
-            const firstLineTitle = canSplitLastWord ? titleParts.slice(0, -1).join(' ') : row.title;
-            const secondLineTitle = canSplitLastWord ? titleParts[titleParts.length - 1] : '';
 
             return (
               <button
                 key={category.id}
                 type="button"
                 onClick={() => setSelectedSlug(category.slug)}
-                className={`${headerCategoryNavFont.className} flex w-full min-w-0 shrink-0 items-center gap-1.5 rounded-[35px] px-[7px] py-0 text-left text-[14px] leading-[19px] tracking-[0.14px] transition-[opacity,background-color,color] duration-150 ${
+                className={`${headerCategoryNavFont.className} flex w-full min-w-0 shrink-0 items-center gap-3 rounded-[40px] px-2 py-0 text-left text-[15px] leading-[21px] tracking-[0.15px] transition-[opacity,background-color,color] duration-150 ${
                   isSelected
                     ? 'bg-marco-yellow font-bold !text-[#050505] dark:!text-[#050505]'
-                    : 'font-normal !text-[#050505] dark:!text-[#050505] hover:opacity-90'
+                    : 'font-normal !text-[#050505] dark:!text-[#050505] hover:bg-white/35'
                 }`}
               >
-                <span className="flex size-[42px] shrink-0 items-center justify-center p-[5px] !text-[#050505] dark:!text-[#050505]">
+                <span className="flex size-[48px] shrink-0 items-center justify-center p-1.5 !text-[#050505] dark:!text-[#050505]">
                   {row.icon.kind === 'figma' ? (
                     <img
                       src={row.icon.src}
                       alt=""
-                      width={30}
-                      height={30}
-                      className="h-[30px] w-[30px] shrink-0 object-contain brightness-0"
+                      width={MEGA_ROOT_ICON_INNER_PX}
+                      height={MEGA_ROOT_ICON_INNER_PX}
+                      className="h-[34px] w-[34px] shrink-0 object-contain brightness-0"
                       draggable={false}
                     />
                   ) : (
                     RowLucide && (
                       <RowLucide
-                        size={30}
+                        size={MEGA_ROOT_LUCIDE_PX}
                         className="shrink-0 !text-[#050505] dark:!text-[#050505]"
                         strokeWidth={1.35}
                         aria-hidden
@@ -176,47 +102,47 @@ export function CategoriesDropdownMega({
                     )
                   )}
                 </span>
-                <span
-                  className={`min-w-0 flex-1 py-[7px] pr-1 ${
-                    canSplitLastWord ? 'whitespace-normal leading-[18px]' : 'whitespace-nowrap'
-                  }`}
-                >
-                  {canSplitLastWord ? (
-                    <>
-                      <span>{firstLineTitle}</span>
-                      <span className="block">{secondLineTitle}</span>
-                    </>
-                  ) : (
-                    row.title
-                  )}
+                <span className="min-w-0 flex-1 hyphens-auto py-2 pr-1 text-left [overflow-wrap:anywhere] break-words whitespace-normal">
+                  {row.title}
                 </span>
+                <ChevronRight
+                  className="size-[18px] shrink-0 self-center text-[#050505]/55 dark:text-[#050505]/55 md:size-5"
+                  strokeWidth={2}
+                  aria-hidden
+                />
               </button>
             );
           })}
           </div>
+          </div>
         </nav>
       </div>
 
-      {/* No column scroll here: only the root (left) list scrolls; avoids nested scroll areas. */}
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col self-stretch overflow-hidden rounded-b-[13px] bg-white px-5 pb-5 pt-6 md:rounded-b-none md:rounded-r-[13px] md:pl-6 md:pr-5 md:pt-6">
-        {showPromoBanner && (
-          <CategoryDropdownPromoBanner
-            badge={preview.promo.badge}
-            headline={preview.promo.headline}
-            subline={preview.promo.subline}
-            href={`/products?category=${selected.slug}`}
+      {/* Right column: promo (fixed height) + scrollable subcategory list inside flex min-h-0. */}
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col self-stretch overflow-hidden rounded-b-[13px] bg-white px-5 pb-5 pt-6 md:rounded-b-none md:rounded-r-[13px] md:border-r-2 md:border-r-neutral-400 md:pl-6 md:pr-5 md:pt-6">
+        {showPromoBanner ? (
+          <div className="shrink-0">
+            <CategoryDropdownPromoBanner
+              badge={preview.promo.badge}
+              headline={preview.promo.headline}
+              subline={preview.promo.subline}
+              href={`/products?category=${selected.slug}`}
+              onNavigate={onClose}
+              ctaLabel={t('common.buttons.shopNow')}
+            />
+          </div>
+        ) : null}
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+          <CategoryMegaSubcategoryPills
+            sectionHeadingId={`mega-menu-subcats-${selected.id}`}
+            sectionTitle={preview.title.toUpperCase()}
+            items={dedupeCategories(selected.children, lang)}
+            lang={lang}
+            productsWord={t('common.navigation.categoriesMegaMenu.productsWord')}
+            emptyMessage={t('common.navigation.categoriesMegaMenu.emptySubcategories')}
             onNavigate={onClose}
-            ctaLabel={t('common.buttons.shopNow')}
           />
-        )}
-        <CategoryMegaSubcategoryPills
-          sectionTitle={preview.title.toUpperCase()}
-          items={dedupeCategories(selected.children, lang)}
-          lang={lang}
-          productsWord={t('common.navigation.categoriesMegaMenu.productsWord')}
-          emptyMessage={t('common.navigation.categoriesMegaMenu.emptySubcategories')}
-          onNavigate={onClose}
-        />
+        </div>
       </div>
     </div>
   );

@@ -14,6 +14,13 @@ export const FOOTER_MUTED_TEXT_CLASS = 'text-[#6b7280] dark:text-[#cfcfcf]';
 /** Footer heading text. */
 export const FOOTER_HEADING_TEXT_CLASS = 'text-[#181111] dark:text-white';
 
+/** Nav / contacts column titles — slightly above legacy `text-xs` (12px). */
+export const FOOTER_NAV_HEADING_TEXT_CLASS =
+  'text-[13px] sm:text-sm font-bold uppercase';
+
+/** Nav links, contact lines — matches heading scale; muted via {@link FOOTER_MUTED_TEXT_CLASS}. */
+export const FOOTER_NAV_BODY_TEXT_CLASS = 'text-[13px] sm:text-[14px]';
+
 /**
  * Company / Support column titles — no extra letter-spacing (see default `tracking-[0.05em]` on Contacts).
  */
@@ -24,9 +31,9 @@ export const FOOTER_NAV_COLUMN_HEADING_TRACK_CLASS = 'tracking-normal';
  */
 export const FOOTER_NAV_COLUMN_LINK_WORD_SPACING_CLASS = '[word-spacing:-0.06em]';
 
-/** Compact vertical rhythm: heading → list and between list rows (was gap-3 / gap-2). */
-export const FOOTER_NAV_COLUMN_HEADING_LIST_GAP_CLASS = 'gap-2';
-export const FOOTER_NAV_COLUMN_LIST_ITEM_GAP_CLASS = 'gap-1';
+/** Tight vertical rhythm: heading → list; list rows kept close. */
+export const FOOTER_NAV_COLUMN_HEADING_LIST_GAP_CLASS = 'gap-1.5';
+export const FOOTER_NAV_COLUMN_LIST_ITEM_GAP_CLASS = 'gap-0.5';
 
 /** Tighter line-height for Company / Support heading + links (shorter column). */
 export const FOOTER_NAV_COLUMN_HEADING_LEADING_CLASS = 'leading-tight';
@@ -72,14 +79,32 @@ export const FOOTER_TABLET_COLUMN_CENTER_CLASS =
 export const FOOTER_GRID_NAV_COLUMNS_PAD_TOP_CLASS = 'lg:pt-9';
 
 /**
- * Company / Support grid cells: centered on iPad Pro band; flush right + nudge only on wide desktop.
+ * Company / Support cells: centered on iPad Pro; wide desktop left-aligned.
+ * `w-full` below `lg` fills grid cells; `lg:w-auto` keeps intrinsic width inside the nav flex row (`justify-between`).
  */
 export const FOOTER_GRID_COMPANY_SUPPORT_WRAPPER_CLASS =
-  `lg:flex lg:h-full lg:w-full lg:min-h-0 ${FOOTER_GRID_NAV_COLUMNS_PAD_TOP_CLASS} min-[1024px]:max-[1366px]:translate-x-0 min-[1024px]:max-[1366px]:justify-center min-[1367px]:justify-end min-[1367px]:-translate-x-[16px]`;
+  `lg:flex lg:h-full lg:min-h-0 w-full lg:w-auto lg:shrink-0 ${FOOTER_GRID_NAV_COLUMNS_PAD_TOP_CLASS} min-[1024px]:max-[1366px]:translate-x-0 min-[1024px]:max-[1366px]:justify-center min-[1367px]:justify-start min-[1367px]:translate-x-0`;
 
-/** Contacts column: centered on iPad Pro band; aligned to cell end on wide desktop. */
+/** Contacts: same rhythm; `lg:min-w-0` allows wrapping when the flex row is narrow. */
 export const FOOTER_GRID_CONTACTS_WRAPPER_CLASS =
-  `lg:flex lg:h-full lg:w-full lg:min-h-0 ${FOOTER_GRID_NAV_COLUMNS_PAD_TOP_CLASS} min-[1024px]:max-[1366px]:justify-center min-[1367px]:justify-end`;
+  `lg:flex lg:h-full lg:min-h-0 w-full lg:w-auto lg:min-w-0 lg:shrink ${FOOTER_GRID_NAV_COLUMNS_PAD_TOP_CLASS} min-[1024px]:max-[1366px]:justify-center min-[1367px]:justify-start`;
+
+/**
+ * Pipe column between nav blocks — `lg+` only (see `Footer`); hidden below `lg` so `md` 2-col flow stays 4 cells.
+ * `self-stretch` + inner bar `flex-1` draws a tall vertical rule (not a single glyph).
+ */
+export const FOOTER_COLUMN_PIPE_CLASS = `hidden shrink-0 select-none lg:flex lg:min-h-0 lg:flex-col lg:items-center lg:self-stretch ${FOOTER_GRID_NAV_COLUMNS_PAD_TOP_CLASS}`;
+
+/** Vertical rule inside {@link FOOTER_COLUMN_PIPE_CLASS}; `min-h-60` keeps a minimum length in short rows. */
+export const FOOTER_COLUMN_PIPE_BAR_CLASS =
+  'w-px flex-1 min-h-60 bg-gray-400/35 dark:bg-white/25';
+
+/**
+ * lg+: wraps Navigation, pipes, Support, Contacts in one flex row so free space splits evenly
+ * between adjacent items (`justify-between` + `gap-x-5`). `contents` keeps the same grid flow below `lg`.
+ */
+export const FOOTER_NAV_THREE_COLUMN_ROW_CLASS =
+  'contents lg:flex lg:min-h-0 lg:w-full lg:items-start lg:justify-between lg:gap-x-5 lg:self-stretch';
 
 /** Space between main footer grid and the copyright separator bar. */
 export const FOOTER_COPYRIGHT_STRIP_MARGIN_TOP_CLASS = 'mt-4';
@@ -89,11 +114,11 @@ export const FOOTER_COPYRIGHT_STRIP_PADDING_TOP_CLASS = 'pt-3';
 export const FOOTER_COPYRIGHT_STRIP_STACK_GAP_CLASS = 'gap-5';
 
 /**
- * Main footer columns grid — iPad Pro (1024–1366): centered cells; 1367+ Figma stretch alignment.
- * `lg:items-stretch` + brand `self-start`: nav/contact cells share row height; brand keeps intrinsic height.
+ * Main footer grid — below `lg`: brand + four nav cells (pipes hidden). `lg+`: brand | one flex row
+ * (see {@link FOOTER_NAV_THREE_COLUMN_ROW_CLASS}) so gutters between Nav, pipes, Support, Contacts stay even.
  */
 export const FOOTER_MAIN_GRID_CLASS =
-  'grid grid-cols-1 items-start gap-8 md:grid-cols-2 md:max-[1023px]:justify-items-center lg:grid-cols-4 lg:items-stretch min-[1024px]:max-[1366px]:justify-items-center min-[1367px]:justify-items-stretch lg:gap-x-4 lg:gap-y-6';
+  'grid grid-cols-1 items-start gap-6 md:grid-cols-2 md:max-[1023px]:justify-items-center lg:grid-cols-[minmax(0,22rem)_1fr] lg:items-start min-[1024px]:max-[1366px]:justify-items-center min-[1367px]:justify-items-stretch lg:gap-x-5 lg:gap-y-4';
 
 /**
  * Brand logo frame — larger than legacy 91×81; same ~91:81 aspect.
@@ -122,6 +147,6 @@ export const FOOTER_BRAND_COLUMN_GAP_CLASS = 'gap-0';
 export const FOOTER_BRAND_DESCRIPTION_OVERLAP_CLASS =
   'absolute bottom-[21px] left-0 z-10 max-w-full overflow-x-auto whitespace-pre scrollbar-hide md:max-[1023px]:left-1/2 md:max-[1023px]:-translate-x-1/2 md:max-[1023px]:text-center min-[1024px]:max-[1366px]:left-1/2 min-[1024px]:max-[1366px]:-translate-x-1/2 min-[1024px]:max-[1366px]:text-center';
 
-/** Smaller than `text-xs` so the blurb stays subtle over the logo. */
+/** Blurb over logo — one step up from legacy 10/11px, still secondary to nav. */
 export const FOOTER_BRAND_DESCRIPTION_TEXT_CLASS =
-  'text-[10px] leading-snug sm:text-[11px]';
+  'text-[11px] leading-snug sm:text-[12px]';

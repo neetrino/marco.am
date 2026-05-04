@@ -3,13 +3,13 @@
 import { ProductPdpPrefetchLink } from '@/components/ProductPdpPrefetchLink';
 import { montserratArm } from '@/fonts/montserrat-arm';
 import { formatCatalogPrice } from '@/lib/currency';
+import { ProductCardBrandMark } from '@/components/ProductCard/ProductCardBrandMark';
 import { ProductColors } from '@/components/ProductCard/ProductColors';
 import {
   SpecialOfferCartFab,
   SpecialOfferMedia,
   SpecialOfferSideActions,
   SpecialOfferWarrantyBadge,
-  StarRow,
 } from './SpecialOfferProductCardBlocks';
 import type { SpecialOfferProduct } from './SpecialOfferProductCardTypes';
 import { useSpecialOfferCardLogic, type CardLogic } from './useSpecialOfferCardLogic';
@@ -107,10 +107,16 @@ function SpecialOfferProductCardView({
           {contentLayout === 'news' ? (
             <>
               <div className="flex min-h-[1.25rem] items-center justify-between gap-2">
-                {product.brand?.name ? (
-                  <p className={`text-[11px] font-black uppercase tracking-[0.6px] md:text-xs ${brandClass}`}>
-                    {product.brand.name}
-                  </p>
+                {product.brand ? (
+                  <div className="min-w-0 flex-1">
+                    <ProductCardBrandMark
+                      name={product.brand.name}
+                      slug={product.brand.slug}
+                      logoUrl={product.brand.logoUrl}
+                      textClassName={`text-[11px] font-black uppercase tracking-[0.6px] md:text-xs ${brandClass}`}
+                      logoBoxClassName="h-5 w-[88px] md:h-6 md:w-[104px]"
+                    />
+                  </div>
                 ) : (
                   <span />
                 )}
@@ -124,10 +130,14 @@ function SpecialOfferProductCardView({
             </>
           ) : (
             <>
-              {product.brand?.name ? (
-                <p className={`text-[11px] font-black uppercase tracking-[0.6px] md:text-xs ${brandClass}`}>
-                  {product.brand.name}
-                </p>
+              {product.brand ? (
+                <ProductCardBrandMark
+                  name={product.brand.name}
+                  slug={product.brand.slug}
+                  logoUrl={product.brand.logoUrl}
+                  textClassName={`text-[11px] font-black uppercase tracking-[0.6px] md:text-xs ${brandClass}`}
+                  logoBoxClassName="h-5 w-[88px] md:h-6 md:w-[104px]"
+                />
               ) : null}
               <h3 className="mt-2 line-clamp-2 text-left text-[13px] font-bold leading-5 text-[#181111] dark:text-white md:text-sm md:leading-5">
                 {product.title}
@@ -139,13 +149,12 @@ function SpecialOfferProductCardView({
               ) : null}
             </>
           )}
-          <div className="mt-3 flex items-center gap-1">
-            <StarRow />
-          </div>
-          <div className="mt-3 flex flex-wrap items-end gap-2">
-            <p className="text-lg font-black text-[#181111] dark:text-white md:text-xl">{formatCatalogPrice(product.price, currency)}</p>
+          <div className="mt-4 flex flex-wrap items-end gap-2">
+            <p className="text-xl font-black text-[#181111] dark:text-white md:text-2xl">
+              {formatCatalogPrice(product.price, currency)}
+            </p>
             {strikePrice != null ? (
-              <span className="text-xs text-[#9ca3af] dark:text-white/55 line-through md:text-sm">
+              <span className="text-sm text-[#9ca3af] dark:text-white/55 line-through md:text-base">
                 {formatCatalogPrice(strikePrice, currency)}
               </span>
             ) : null}

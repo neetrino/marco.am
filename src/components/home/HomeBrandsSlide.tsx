@@ -3,7 +3,17 @@ import Link from 'next/link';
 import type { CSSProperties } from 'react';
 
 import type { HomeBrandPartnerPublicItem } from '@/lib/types/home-brand-partners-public';
-import { resolveBrandStaticLogo } from '@/lib/brand-static-logo-assets';
+import {
+  HOME_BRANDS_RAIL_LOGO_OVERSIZED_CELL_HEIGHT_PX,
+  HOME_BRANDS_RAIL_LOGO_OVERSIZED_CELL_MAX_WIDTH_PX,
+  HOME_BRANDS_SLIDE_CARD_OVERSIZED_MIN_HEIGHT_PX,
+  isBrandLogoCellOversizedSlug,
+} from '@/lib/brand-logo-cell-oversize';
+import {
+  GEEPAS_BUNDLED_LOGO_UI_SCALE,
+  isGeepasBundledLogoAsset,
+  resolveBrandDisplayLogoForCell,
+} from '@/lib/brand-static-logo-assets';
 
 import {
   HOME_BRANDS_RAIL_LOGO_CELL_HEIGHT_PX,
@@ -17,20 +27,24 @@ import {
   HOME_BRANDS_SLIDE_SURFACE_HEX,
 } from './home-brands-slide.constants';
 
-const brandCardShellStyle = {
-  minHeight: `${HOME_BRANDS_SLIDE_CARD_MIN_HEIGHT_PX}px`,
-  borderRadius: `${HOME_BRANDS_SLIDE_CORNER_RADIUS_PX}px`,
-  backgroundColor: HOME_BRANDS_SLIDE_SURFACE_HEX,
-} as const;
+function brandCardShellStyle(slug: string, displayName: string): CSSProperties {
+  const oversized = isBrandLogoCellOversizedSlug(slug, displayName);
+  return {
+    minHeight: `${oversized ? HOME_BRANDS_SLIDE_CARD_OVERSIZED_MIN_HEIGHT_PX : HOME_BRANDS_SLIDE_CARD_MIN_HEIGHT_PX}px`,
+    borderRadius: `${HOME_BRANDS_SLIDE_CORNER_RADIUS_PX}px`,
+    backgroundColor: HOME_BRANDS_SLIDE_SURFACE_HEX,
+  };
+}
 
 const gridStyle = {
   gap: `${HOME_BRANDS_SLIDE_GAP_PX}px`,
 } as const;
 
-function logoRailCellStyle(): CSSProperties {
+function logoRailCellStyle(slug: string, displayName: string): CSSProperties {
+  const oversized = isBrandLogoCellOversizedSlug(slug, displayName);
   return {
-    height: `${HOME_BRANDS_RAIL_LOGO_CELL_HEIGHT_PX}px`,
-    maxWidth: `${HOME_BRANDS_RAIL_LOGO_CELL_MAX_WIDTH_PX}px`,
+    height: `${oversized ? HOME_BRANDS_RAIL_LOGO_OVERSIZED_CELL_HEIGHT_PX : HOME_BRANDS_RAIL_LOGO_CELL_HEIGHT_PX}px`,
+    maxWidth: `${oversized ? HOME_BRANDS_RAIL_LOGO_OVERSIZED_CELL_MAX_WIDTH_PX : HOME_BRANDS_RAIL_LOGO_CELL_MAX_WIDTH_PX}px`,
   };
 }
 
@@ -54,41 +68,45 @@ function PartnerLogo({
   partner: HomeBrandPartnerPublicItem;
   loadEager: boolean;
 }) {
-  const remote = partner.logoUrl?.trim();
-  const bundled = !remote ? resolveBrandStaticLogo(partner.slug) : null;
+  const resolved = resolveBrandDisplayLogoForCell(
+    partner.logoUrl,
+    partner.slug,
+    partner.name,
+  );
+  const cellStyle = logoRailCellStyle(partner.slug, partner.name);
+  const sizesW = isBrandLogoCellOversizedSlug(partner.slug, partner.name)
+    ? HOME_BRANDS_RAIL_LOGO_OVERSIZED_CELL_MAX_WIDTH_PX
+    : HOME_BRANDS_RAIL_LOGO_CELL_MAX_WIDTH_PX;
 
-  if (bundled) {
+  if (resolved.mode === 'wordmark') {
     return (
       <div
-        className="relative mx-auto w-full shrink-0"
-        style={logoRailCellStyle()}
+        className="relative mx-auto flex w-full shrink-0 items-center justify-center overflow-hidden"
+        style={cellStyle}
       >
-        <Image
-          src={bundled.src}
-          alt={partner.name}
-          fill
-          className={HOME_BRANDS_RAIL_LOGO_IMAGE_CLASS}
-          sizes={`${HOME_BRANDS_RAIL_LOGO_CELL_MAX_WIDTH_PX}px`}
-          loading={loadEager ? 'eager' : 'lazy'}
-          priority={loadEager}
-          fetchPriority={loadEager ? 'high' : 'auto'}
-        />
+        <span className="line-clamp-2 max-h-full max-w-full text-center text-xs font-semibold uppercase leading-tight text-marco-black sm:text-sm">
+          {partner.name.trim() || partner.slug}
+        </span>
       </div>
     );
   }
 
-  if (remote) {
+  if (resolved.mode === 'local') {
+    const geepasBoost = isGeepasBundledLogoAsset(resolved.asset);
     return (
       <div
-        className="relative mx-auto flex w-full shrink-0 items-center justify-center overflow-hidden"
-        style={logoRailCellStyle()}
+        className={`relative mx-auto w-full shrink-0${geepasBoost ? ' overflow-visible' : ''}`}
+        style={cellStyle}
       >
-        <img
-          src={remote}
+        <Image
+          src={resolved.asset.src}
           alt={partner.name}
-          className={HOME_BRANDS_RAIL_LOGO_IMAGE_CLASS}
+          fill
+          className={`${HOME_BRANDS_RAIL_LOGO_IMAGE_CLASS}${geepasBoost ? ' origin-center' : ''}`}
+          style={geepasBoost ? { transform: `scale(${GEEPAS_BUNDLED_LOGO_UI_SCALE})` } : undefined}
+          sizes={`${sizesW}px`}
           loading={loadEager ? 'eager' : 'lazy'}
-          decoding="async"
+          priority={loadEager}
           fetchPriority={loadEager ? 'high' : 'auto'}
         />
       </div>
@@ -98,11 +116,16 @@ function PartnerLogo({
   return (
     <div
       className="relative mx-auto flex w-full shrink-0 items-center justify-center overflow-hidden"
-      style={logoRailCellStyle()}
+      style={cellStyle}
     >
-      <span className="line-clamp-2 max-h-full max-w-full text-center text-xs font-semibold uppercase leading-tight text-marco-black sm:text-sm">
-        {partner.name}
-      </span>
+      <img
+        src={resolved.src}
+        alt={partner.name}
+        className={HOME_BRANDS_RAIL_LOGO_IMAGE_CLASS}
+        loading={loadEager ? 'eager' : 'lazy'}
+        decoding="async"
+        fetchPriority={loadEager ? 'high' : 'auto'}
+      />
     </div>
   );
 }
@@ -129,7 +152,7 @@ export function HomeBrandsSlide({ partners }: HomeBrandsSlideProps) {
                 key={partner.id}
                 href={partner.href}
                 className={`flex w-full min-w-0 items-center justify-center overflow-hidden ${HOME_BRANDS_SLIDE_CARD_PADDING_CLASS}`}
-                style={brandCardShellStyle}
+                style={brandCardShellStyle(partner.slug, partner.name)}
                 aria-label={partner.name}
               >
                 <PartnerLogo partner={partner} loadEager={pageIndex === 0} />
@@ -149,11 +172,11 @@ export function HomeBrandsSlide({ partners }: HomeBrandsSlideProps) {
             <div
               key={entry.id}
               className={`flex w-full min-w-0 items-center justify-center overflow-hidden ${HOME_BRANDS_SLIDE_CARD_PADDING_CLASS}`}
-              style={brandCardShellStyle}
+              style={brandCardShellStyle(entry.id, entry.alt)}
             >
               <div
                 className="relative mx-auto w-full shrink-0"
-                style={logoRailCellStyle()}
+                style={logoRailCellStyle(entry.id, entry.alt)}
               >
                 <Image
                   src={entry.src}

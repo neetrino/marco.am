@@ -1,4 +1,5 @@
 import type { ProductLabel } from '@/components/ProductLabels';
+import type { ProductListingBrand } from '@/lib/types/product-listing-brand';
 
 export interface SpecialOfferProduct {
   id: string;
@@ -8,7 +9,7 @@ export interface SpecialOfferProduct {
   compareAtPrice?: number | null;
   image: string | null;
   inStock: boolean;
-  brand: { id: string; name: string } | null;
+  brand: ProductListingBrand | null;
   colors?: Array<{ value: string; imageUrl?: string | null; colors?: string[] | null }>;
   originalPrice?: number | null;
   discountPercent?: number | null;

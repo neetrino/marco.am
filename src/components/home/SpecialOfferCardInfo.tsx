@@ -1,5 +1,6 @@
 'use client';
 
+import { ProductCardBrandMark } from '../ProductCard/ProductCardBrandMark';
 import { ProductColors } from '../ProductCard/ProductColors';
 import { ProductPdpPrefetchLink } from '../ProductPdpPrefetchLink';
 
@@ -47,11 +48,19 @@ export function SpecialOfferCardInfo({
       style={{ marginTop: `${SPECIAL_OFFERS_IMAGE_TO_TEXT_GAP_PX}px` }}
     >
       <div className="min-w-0 flex-1">
-        <p
-          className={`text-[12px] font-black uppercase tracking-[0.6px] ${brandClass}`}
-        >
-          {product.brand?.name ?? '—'}
-        </p>
+        <div className={`min-h-[1rem] ${brandClass}`}>
+          {product.brand ? (
+            <ProductCardBrandMark
+              name={product.brand.name}
+              slug={product.brand.slug}
+              logoUrl={product.brand.logoUrl}
+              textClassName={`text-[12px] font-black uppercase tracking-[0.6px] ${brandClass}`}
+              logoBoxClassName="h-5 w-[88px] md:h-6 md:w-[104px]"
+            />
+          ) : (
+            <p className={`text-[12px] font-black uppercase tracking-[0.6px] ${brandClass}`}>—</p>
+          )}
+        </div>
         <ProductPdpPrefetchLink
           href={`/products/${product.slug}`}
           productSlug={product.slug}

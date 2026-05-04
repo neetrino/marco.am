@@ -3,8 +3,10 @@
 import { ProductPdpPrefetchLink } from '../ProductPdpPrefetchLink';
 import Image from 'next/image';
 import type { MouseEvent } from 'react';
+import type { ProductListingBrand } from '@/lib/types/product-listing-brand';
 import { formatCatalogPrice, type CurrencyCode } from '../../lib/currency';
 import { useTranslation } from '../../lib/i18n-client';
+import { ProductCardBrandMark } from './ProductCardBrandMark';
 import { ProductColors } from './ProductColors';
 import { ProductCardActions } from './ProductCardActions';
 import { ProductImagePlaceholder } from '../ProductImagePlaceholder';
@@ -18,7 +20,7 @@ interface ProductCardListProps {
     price: number;
     image: string | null;
     inStock: boolean;
-    brand: { id: string; name: string } | null;
+    brand: ProductListingBrand | null;
     labels?: ProductLabel[];
     compareAtPrice?: number | null;
     originalPrice?: number | null;
@@ -92,9 +94,21 @@ export function ProductCardList({
             <h3 className="line-clamp-2 text-xl font-medium text-gray-900 transition-colors sm:text-2xl">
               {product.title}
             </h3>
-            <p className="mt-1 text-lg text-gray-500 dark:text-[#050505] sm:text-xl">
-              {product.brand?.name || t('common.defaults.category')}
-            </p>
+            <div className="mt-1">
+              {product.brand ? (
+                <ProductCardBrandMark
+                  name={product.brand.name}
+                  slug={product.brand.slug}
+                  logoUrl={product.brand.logoUrl}
+                  textClassName="text-lg text-gray-500 dark:text-[#050505] sm:text-xl"
+                  logoBoxClassName="h-7 w-[120px] sm:h-8 sm:w-[140px]"
+                />
+              ) : (
+                <p className="text-lg text-gray-500 dark:text-[#050505] sm:text-xl">
+                  {t('common.defaults.category')}
+                </p>
+              )}
+            </div>
             {/* Available Colors */}
             {product.colors && product.colors.length > 0 && (
               <div className="mt-2 flex flex-wrap items-center gap-1.5">
@@ -106,7 +120,7 @@ export function ProductCardList({
           {/* Price */}
           <div className="flex w-full flex-shrink-0 flex-col sm:w-auto">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-lg font-semibold text-marco-black sm:text-xl">
+              <span className="text-xl font-semibold text-marco-black sm:text-2xl">
                 {formatCatalogPrice(product.price || 0, currency)}
               </span>
               {product.discountPercent && product.discountPercent > 0 ? (
@@ -117,7 +131,7 @@ export function ProductCardList({
             </div>
             {(product.originalPrice && product.originalPrice > product.price) ||
             (product.compareAtPrice && product.compareAtPrice > product.price) ? (
-              <span className="mt-0.5 text-base text-gray-500 line-through sm:text-lg">
+              <span className="mt-0.5 text-lg text-gray-500 line-through sm:text-xl">
                 {formatCatalogPrice(
                   product.originalPrice && product.originalPrice > product.price
                     ? product.originalPrice

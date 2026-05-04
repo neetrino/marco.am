@@ -425,23 +425,6 @@ export default function HeroBannerPage() {
       onBack={() => router.push('/supersudo')}
     >
       <div className="space-y-5">
-        <Card className="admin-card border border-amber-100/80 bg-gradient-to-r from-amber-50 via-white to-orange-50 shadow-sm">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="mb-1 text-xs font-semibold uppercase tracking-[0.12em] text-amber-700/90">
-                Home Page Visual
-              </p>
-              <h2 className="text-lg font-semibold text-slate-900">{t('admin.heroBanner.title')}</h2>
-              <p className="mt-1 text-sm text-slate-600">
-                {t('admin.heroBanner.uploadAutoSaveHint')}
-              </p>
-            </div>
-            <span className="rounded-full border border-amber-200 bg-white/90 px-3 py-1 text-xs font-medium text-amber-800 shadow-sm">
-              Banner Manager
-            </span>
-          </div>
-        </Card>
-
         <Card className="admin-card border border-slate-100 bg-white/95 shadow-sm">
           <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
             <ImageUploadField

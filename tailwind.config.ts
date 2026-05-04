@@ -22,6 +22,16 @@ const config: Config = {
       '2xl': '1536px',
     },
     extend: {
+      /**
+       * Mega menu left rail: bottom inset so the last category clears the floating scroll control
+       * without excess empty space (tune between ~72px tight and ~120px loose).
+       */
+      padding: {
+        'header-mega-category-scroll-end': '48px',
+      },
+      scrollPadding: {
+        'header-mega-category-scroll-end': '48px',
+      },
       colors: {
         primary: '#000000',
         secondary: '#FFFFFF',

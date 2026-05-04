@@ -26,6 +26,7 @@
     "db:studio": "pnpm --filter @white-shop/db db:studio",
     "db:seed": "node shared/db/prisma/seed.cjs",
     "db:seed:apple": "node shared/db/prisma/seed-apple-product.cjs",
+    "import:products-csv": "tsx src/scripts/import-marco-csv-products.ts",
     "db:migrate:deploy": "node src/scripts/run-migrations.js"
   },
   "dependencies": {
@@ -64,10 +65,12 @@
     "@types/react-dom": "^18.3.0",
     "@vitest/coverage-v8": "^4.0.18",
     "autoprefixer": "^10.4.0",
+    "csv-parse": "^6.2.1",
     "eslint": "^9.0.0",
     "eslint-config-next": "^16.0.7",
     "postcss": "^8.4.0",
     "tailwindcss": "^3.4.0",
+    "tsx": "^4.21.0",
     "typescript": "^5.3.0",
     "vitest": "^4.0.18"
   },

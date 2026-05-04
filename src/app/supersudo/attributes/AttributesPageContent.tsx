@@ -1,56 +1,51 @@
 'use client';
 
 import { useTranslation } from '../../../lib/i18n-client';
-import { useAttributes } from './useAttributes';
+import type { UseAttributesReturn } from './useAttributes';
 import { ValueEditForm } from './ValueEditForm';
 
-export function AttributesPageContent() {
+export function AttributesPageContent({
+  attributes,
+  loading,
+  showAddForm,
+  editingAttribute,
+  editingAttributeName,
+  savingAttribute,
+  expandedAttributes,
+  formData,
+  newValue,
+  addingValueTo,
+  deletingValue,
+  editingValue: _editingValue,
+  valueError,
+  expandedValueId,
+  editingLabel,
+  editingColors,
+  editingImageUrl,
+  savingValue,
+  imageUploading,
+  fileInputRef,
+  setShowAddForm,
+  setFormData,
+  setNewValue,
+  setEditingAttributeName,
+  setEditingLabel,
+  setEditingColors,
+  setEditingImageUrl: _setEditingImageUrl,
+  setValueError,
+  handleCreateAttribute,
+  handleDeleteAttribute,
+  handleUpdateAttributeName,
+  toggleAttributeEdit,
+  handleAddValue,
+  handleDeleteValue,
+  toggleValueEdit,
+  handleImageUpload,
+  handleRemoveImage,
+  handleSaveInlineValue,
+  toggleExpand,
+}: UseAttributesReturn) {
   const { t } = useTranslation();
-  const {
-    // State
-    attributes,
-    loading,
-    showAddForm,
-    editingAttribute,
-    editingAttributeName,
-    savingAttribute,
-    expandedAttributes,
-    formData,
-    newValue,
-    addingValueTo,
-    deletingValue,
-    editingValue: _editingValue,
-    valueError,
-    expandedValueId,
-    editingLabel,
-    editingColors,
-    editingImageUrl,
-    savingValue,
-    imageUploading,
-    fileInputRef,
-    // Actions
-    setShowAddForm,
-    setFormData,
-    setNewValue,
-    setEditingAttributeName,
-    setEditingLabel,
-    setEditingColors,
-    setEditingImageUrl: _setEditingImageUrl,
-    setValueError,
-    handleCreateAttribute,
-    handleDeleteAttribute,
-    handleUpdateAttributeName,
-    toggleAttributeEdit,
-    handleAddValue,
-    handleDeleteValue,
-    toggleValueEdit,
-    handleImageUpload,
-    handleRemoveImage,
-    handleSaveInlineValue,
-    toggleExpand,
-  } = useAttributes();
-  const totalValues = attributes.reduce((sum, attribute) => sum + attribute.values.length, 0);
-  const totalValuesLabel = t('admin.attributes.valuesPlural').replace('{count}', '').trim() || 'Values';
 
   if (loading) {
     return (
@@ -63,28 +58,6 @@ export function AttributesPageContent() {
 
   return (
     <div className="space-y-6">
-      <section className="overflow-hidden rounded-2xl border border-gray-200/80 bg-gradient-to-br from-white via-gray-50 to-amber-50/60 p-6 shadow-[0_10px_40px_-24px_rgba(17,24,39,0.35)]">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="space-y-2">
-            <p className="inline-flex items-center rounded-full border border-marco-yellow/40 bg-marco-yellow/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-gray-700">
-              Attribute Center
-            </p>
-            <h2 className="text-2xl font-semibold text-gray-900">{t('admin.attributes.title')}</h2>
-            <p className="max-w-2xl text-sm text-gray-600">{t('admin.attributes.subtitle')}</p>
-          </div>
-          <div className="grid min-w-[210px] grid-cols-2 gap-3">
-            <div className="rounded-xl border border-white/80 bg-white/80 p-3 backdrop-blur-sm">
-              <p className="text-xs font-medium uppercase tracking-wide text-gray-500">{t('admin.attributes.title')}</p>
-              <p className="mt-1 text-2xl font-semibold text-gray-900">{attributes.length}</p>
-            </div>
-            <div className="rounded-xl border border-white/80 bg-white/80 p-3 backdrop-blur-sm">
-              <p className="text-xs font-medium uppercase tracking-wide text-gray-500">{totalValuesLabel}</p>
-              <p className="mt-1 text-2xl font-semibold text-gray-900">{totalValues}</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <div className="flex items-center justify-end">
         <button
           onClick={() => setShowAddForm(!showAddForm)}

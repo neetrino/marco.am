@@ -6,6 +6,7 @@ import { useWishlist } from './hooks/useWishlist';
 import { useCompare } from './hooks/useCompare';
 import { useAddToCart } from './hooks/useAddToCart';
 import { useCurrency } from './hooks/useCurrency';
+import type { ProductListingBrand } from '@/lib/types/product-listing-brand';
 import { ProductCardList } from './ProductCard/ProductCardList';
 import { ProductCardGrid } from './ProductCard/ProductCardGrid';
 
@@ -16,10 +17,7 @@ interface Product {
   price: number;
   image: string | null;
   inStock: boolean;
-  brand: {
-    id: string;
-    name: string;
-  } | null;
+  brand: ProductListingBrand | null;
   defaultVariantId?: string | null;
   labels?: import('./ProductLabels').ProductLabel[];
   compareAtPrice?: number | null;

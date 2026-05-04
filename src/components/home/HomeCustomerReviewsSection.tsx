@@ -1,9 +1,13 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useRef } from 'react';
 
+import { HOME_LAZY_PUBLIC_SECTION_STALE_MS } from '@/constants/homeLazyPublicSections';
 import type { HomeCustomerReviewsPublicPayload } from '@/lib/services/home-customer-reviews.service';
 import { useTranslation } from '@/lib/i18n-client';
+import { queryKeys } from '@/lib/query-keys';
+import { logger } from '@/lib/utils/logger';
 
 import { HOME_PAGE_SECTION_SHELL_CLASS } from './home-page-section-shell.constants';
 import { useWhenNearViewport } from '../hooks/use-when-near-viewport';
@@ -21,35 +25,36 @@ export function HomeCustomerReviewsSection({
   initialReviews,
 }: HomeCustomerReviewsSectionProps) {
   const { lang } = useTranslation();
-  const [data, setData] =
-    useState<HomeCustomerReviewsPublicPayload>(initialReviews);
   const sectionRef = useRef<HTMLElement | null>(null);
   const nearViewport = useWhenNearViewport(sectionRef, { rootMargin: '200px 0px' });
-  const { trackRef, canPrev, canNext, scrollByPage } = useReviewCarouselScroll(
-    data.items.length,
-  );
 
-  useEffect(() => {
-    if (!nearViewport) {
-      return;
-    }
-    let cancelled = false;
-    void (async () => {
+  const reviewsQuery = useQuery({
+    queryKey: queryKeys.homeCustomerReviews(lang),
+    queryFn: async (): Promise<HomeCustomerReviewsPublicPayload> => {
       try {
         const res = await fetch(
           `/api/v1/home/customer-reviews?locale=${encodeURIComponent(lang)}`,
         );
-        if (!res.ok) return;
-        const json = (await res.json()) as HomeCustomerReviewsPublicPayload;
-        if (!cancelled) setData(json);
-      } catch {
-        // Keep SSR payload
+        if (!res.ok) {
+          throw new Error(`customer-reviews ${res.status}`);
+        }
+        return res.json() as Promise<HomeCustomerReviewsPublicPayload>;
+      } catch (err) {
+        logger.error('[HomeCustomerReviewsSection] fetch failed', { err, lang });
+        throw err;
       }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [lang, nearViewport]);
+    },
+    enabled: nearViewport,
+    staleTime: HOME_LAZY_PUBLIC_SECTION_STALE_MS,
+    placeholderData: initialReviews,
+    retry: 1,
+  });
+
+  const data = reviewsQuery.data ?? initialReviews;
+
+  const { trackRef, canPrev, canNext, scrollByPage } = useReviewCarouselScroll(
+    data.items.length,
+  );
 
   if (data.items.length === 0) {
     return null;

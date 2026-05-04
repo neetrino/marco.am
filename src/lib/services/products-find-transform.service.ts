@@ -401,7 +401,9 @@ class ProductsFindTransformService {
         brand: product.brand
           ? {
               id: product.brand.id,
+              slug: product.brand.slug,
               name: brandTranslation?.name || "",
+              logoUrl: processImageUrl(product.brand.logoUrl),
             }
           : null,
         categories,

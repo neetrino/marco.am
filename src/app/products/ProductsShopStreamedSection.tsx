@@ -18,6 +18,7 @@ import {
 } from '../../components/products/ProductsPagination';
 import { getProductsListingCached } from '../../lib/cache/products-listing-redis';
 import type { ProductLabel } from '../../components/ProductLabels';
+import type { ProductListingBrand } from '../../lib/types/product-listing-brand';
 import type { ProductsPageSearchParams } from './products-page-search-params';
 
 /** PLP row after `transformProducts` (typed as unknown[] in service). */
@@ -29,7 +30,7 @@ type ShopGridProduct = {
   compareAtPrice: number | null;
   image: string | null;
   inStock: boolean;
-  brand: { id: string; name: string } | null;
+  brand: ProductListingBrand | null;
   defaultVariantId: string | null;
   colors: Array<{ value: string; imageUrl?: string | null; colors?: string[] | null }>;
   labels: ProductLabel[];
@@ -45,7 +46,7 @@ function normalizeShopGridProduct(p: unknown): ShopGridProduct {
     originalPrice?: number | null;
     image?: string | null;
     inStock?: boolean;
-    brand?: { id: string; name: string } | null;
+    brand?: ProductListingBrand | null;
     defaultVariantId?: string | null;
     colors?: ShopGridProduct['colors'];
     labels?: ProductLabel[];

@@ -23,6 +23,8 @@ export interface Attribute {
   values: AttributeValue[];
 }
 
+export type UseAttributesReturn = ReturnType<typeof useAttributes>;
+
 export function useAttributes() {
   const { t } = useTranslation();
   const [attributes, setAttributes] = useState<Attribute[]>([]);

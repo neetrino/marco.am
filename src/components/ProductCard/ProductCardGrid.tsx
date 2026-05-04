@@ -8,6 +8,7 @@ import { ProductCardActions } from './ProductCardActions';
 import { HeaderNavbarCartIcon } from '../icons/HeaderNavbarCartIcon';
 import { useTranslation } from '../../lib/i18n-client';
 import type { CurrencyCode } from '../../lib/currency';
+import type { ProductListingBrand } from '@/lib/types/product-listing-brand';
 import type { ProductLabel } from '../ProductLabels';
 
 interface ProductCardGridProps {
@@ -18,7 +19,7 @@ interface ProductCardGridProps {
     price: number;
     image: string | null;
     inStock: boolean;
-    brand: { id: string; name: string } | null;
+    brand: ProductListingBrand | null;
     labels?: ProductLabel[];
     compareAtPrice?: number | null;
     originalPrice?: number | null;
@@ -88,7 +89,7 @@ export function ProductCardGrid({
         <ProductCardInfo
           slug={product.slug}
           title={product.title}
-          brandName={product.brand?.name}
+          brand={product.brand}
           price={product.price}
           originalPrice={product.originalPrice}
           compareAtPrice={product.compareAtPrice}

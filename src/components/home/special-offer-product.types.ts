@@ -1,3 +1,4 @@
+import type { ProductListingBrand } from '@/lib/types/product-listing-brand';
 import type { ProductLabel } from '../ProductLabels';
 
 export interface SpecialOfferProduct {
@@ -11,7 +12,7 @@ export interface SpecialOfferProduct {
   /** All product gallery URLs (`media`); omitted on older payloads — treat as `[image]`. */
   images?: string[];
   inStock: boolean;
-  brand: { id: string; name: string } | null;
+  brand: ProductListingBrand | null;
   defaultVariantId?: string | null;
   discountPercent?: number | null;
   labels?: ProductLabel[];

@@ -128,6 +128,23 @@ export default function CategoriesPage() {
     return null;
   }
 
+  const addCategoryHeaderAction = (
+    <Button
+      variant="primary"
+      size="md"
+      className="w-full shrink-0 shadow-sm transition-transform hover:-translate-y-0.5 sm:w-auto"
+      onClick={() => {
+        resetForm();
+        setShowAddModal(true);
+      }}
+    >
+      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+      </svg>
+      {t('admin.categories.addCategory')}
+    </Button>
+  );
+
   return (
     <>
       <AdminPageLayout
@@ -137,32 +154,9 @@ export default function CategoriesPage() {
         title={t('admin.categories.title')}
         backLabel={t('admin.categories.backToAdmin')}
         onBack={() => router.push('/supersudo')}
+        headerActions={addCategoryHeaderAction}
       >
         <div className="space-y-5">
-          <Card className="admin-card border-slate-200/80 bg-white/95 shadow-[0_10px_30px_rgba(2,6,23,0.06)] backdrop-blur">
-            <div className="rounded-xl border border-slate-200 bg-gradient-to-r from-slate-50 to-white p-4 sm:p-5">
-              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-                <h2 className="text-xl font-semibold tracking-tight text-slate-900">
-                  {t('admin.categories.title')}
-                </h2>
-                <Button
-                  variant="primary"
-                  size="md"
-                  className="w-full shrink-0 shadow-sm transition-transform hover:-translate-y-0.5 sm:w-auto"
-                  onClick={() => {
-                    resetForm();
-                    setShowAddModal(true);
-                  }}
-                >
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
-                  {t('admin.categories.addCategory')}
-                </Button>
-              </div>
-            </div>
-          </Card>
-
           <Card className="admin-card border-amber-300/70 bg-gradient-to-b from-amber-50/90 via-white to-white shadow-[0_12px_40px_rgba(217,119,6,0.12)] ring-1 ring-amber-200/50">
             <div className="p-4 sm:p-5">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
@@ -173,9 +167,6 @@ export default function CategoriesPage() {
                   >
                     {t('admin.categories.searchLabel')}
                   </label>
-                  <p className="mt-1 max-w-3xl text-sm leading-relaxed text-slate-600">
-                    {t('admin.categories.searchHint')}
-                  </p>
                 </div>
                 {categorySearch.trim() !== '' && (
                   <p className="shrink-0 rounded-lg bg-amber-100/90 px-3 py-1.5 text-sm font-semibold tabular-nums text-amber-950 ring-1 ring-amber-200/80">

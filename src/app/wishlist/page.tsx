@@ -7,6 +7,7 @@ import { apiClient } from '../../lib/api-client';
 import { getStoredLanguage } from '../../lib/language';
 import { useTranslation } from '../../lib/i18n-client';
 import { logger } from "@/lib/utils/logger";
+import type { ProductListingBrand } from '@/lib/types/product-listing-brand';
 import { ProductCard } from '@/components/ProductCard';
 import {
   ensureLegacyWishlistMigratedForGuest,
@@ -26,10 +27,7 @@ interface Product {
   discountPercent: number | null;
   image: string | null;
   inStock: boolean;
-  brand: {
-    id: string;
-    name: string;
-  } | null;
+  brand: ProductListingBrand | null;
 }
 
 const WISHLIST_PRODUCT_IDS_CHUNK = 500;

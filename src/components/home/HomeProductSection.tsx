@@ -15,6 +15,7 @@ import {
   NEW_ARRIVALS_CARDS_PER_VIEW,
   NEW_ARRIVALS_FETCH_LIMIT,
 } from '@/constants/specialOffersSection';
+import type { ProductListingBrand } from '@/lib/types/product-listing-brand';
 import { SpecialOfferProductCard, type SpecialOfferProduct } from '@/components/home/special-offers/SpecialOfferProductCard';
 import { CarouselArrow } from './CarouselArrow';
 
@@ -32,7 +33,7 @@ interface Product {
   compareAtPrice?: number | null;
   image: string | null;
   inStock: boolean;
-  brand: { id: string; name: string } | null;
+  brand: ProductListingBrand | null;
   colors?: Array<{ value: string; imageUrl?: string | null; colors?: string[] | null }>;
   sizes?: Array<{ value: string; imageUrl?: string | null }>;
   attributes?: Record<

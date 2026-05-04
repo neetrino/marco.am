@@ -6,7 +6,7 @@ import type { AdminMenuItem } from '../../components/AdminMenuDrawer';
  * ԿԱՐԵՎՈՐ.
  * - Մենյուի բոլոր կետերը centrally պահում ենք այստեղ, որ բոլոր admin էջերում նույնը լինի։
  * - "Discounts" label-ը նույնն է ամեն տեղ, ուղիղ տանում է `/supersudo/quick-settings` էջ։
- * - "Delivery" կետը միշտ առկա է, այդ թվում Analytics և Filter by Price էջերում sidebar-ում։
+ * - Hero/Banner-ը ցուցադրվում է Dashboard-ից հետո։ Հաղորդագրություններ, Վերլուծություն, Առաքում՝ Settings-ից առաջ։
  * 
  * Note: This function returns menu items with translated labels.
  * Use getAdminMenuTabs(t) in client components where t is from useTranslation().
@@ -39,6 +39,21 @@ export function getAdminMenuTABS(t: (path: string) => string): AdminMenuItem[] {
           strokeLinejoin="round"
           strokeWidth={2}
           d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+        />
+      </svg>
+    ),
+  },
+  {
+    id: 'hero-banner',
+    label: t('admin.menu.heroBanner'),
+    path: '/supersudo/hero-banner',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-9-9h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
         />
       </svg>
     ),
@@ -137,21 +152,6 @@ export function getAdminMenuTABS(t: (path: string) => string): AdminMenuItem[] {
     ),
   },
   {
-    id: 'hero-banner',
-    label: t('admin.menu.heroBanner'),
-    path: '/supersudo/hero-banner',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-9-9h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-        />
-      </svg>
-    ),
-  },
-  {
     id: 'users',
     label: t('admin.menu.users'),
     path: '/supersudo/users',
@@ -162,21 +162,6 @@ export function getAdminMenuTABS(t: (path: string) => string): AdminMenuItem[] {
           strokeLinejoin="round"
           strokeWidth={2}
           d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-        />
-      </svg>
-    ),
-  },
-  {
-    id: 'messages',
-    label: t('admin.menu.messages'),
-    path: '/supersudo/messages',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
         />
       </svg>
     ),
@@ -197,21 +182,6 @@ export function getAdminMenuTABS(t: (path: string) => string): AdminMenuItem[] {
     ),
   },
   {
-    id: 'analytics',
-    label: t('admin.menu.analytics'),
-    path: '/supersudo/analytics',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-        />
-      </svg>
-    ),
-  },
-  {
     id: 'price-filter-settings',
     label: t('admin.menu.filterByPrice'),
     path: '/supersudo/price-filter-settings',
@@ -222,6 +192,42 @@ export function getAdminMenuTABS(t: (path: string) => string): AdminMenuItem[] {
           strokeLinejoin="round"
           strokeWidth={2}
           d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+        />
+      </svg>
+    ),
+  },
+  {
+    id: 'messages',
+    label: t('admin.menu.messages'),
+    path: '/supersudo/messages',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+        />
+      </svg>
+    ),
+  },
+  {
+    id: 'analytics',
+    label: t('admin.menu.analytics'),
+    path: '/supersudo/analytics',
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z"
+        />
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z"
         />
       </svg>
     ),

@@ -51,9 +51,7 @@
       "viewProducts": "View all products",
       "subcategories": "Subcategories",
       "productsWord": "products",
-      "emptySubcategories": "No subcategories yet. Add child categories in the admin or run the database seed.",
-      "scrollListUp": "Scroll categories up",
-      "scrollListDown": "Scroll categories down"
+      "emptySubcategories": "No subcategories yet. Add child categories in the admin or run the database seed."
     }
   },
   "stock": {
@@ -268,6 +266,9 @@
     "lastAria": "Go to last page",
     "previousAria": "Go to previous page",
     "nextAria": "Go to next page"
+  },
+  "brandsPage": {
+    "empty": "No brands to show yet. Brands with active catalog products and a logo appear here automatically."
   },
   "notFound": {
     "title": "Page Not Found",

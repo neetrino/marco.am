@@ -225,7 +225,13 @@ export function useHeaderData() {
         setShowUserMenu(false);
       }
       if (productsMenuRef.current && !productsMenuRef.current.contains(event.target as Node)) {
-        setShowProductsMenu(false);
+        const el = event.target as HTMLElement | null;
+        const insideMega =
+          el?.closest?.('[data-marco-categories-dropdown]') ||
+          el?.closest?.('[data-marco-categories-bridge]');
+        if (!insideMega) {
+          setShowProductsMenu(false);
+        }
       }
       if (inlineSearchRef.current && !inlineSearchRef.current.contains(event.target as Node)) {
         setSearchDropdownOpen(false);
@@ -263,13 +269,17 @@ export function useHeaderData() {
       }
       if (mobileMenuOpen) {
         setMobileMenuOpen(false);
+        return;
+      }
+      if (showProductsMenu) {
+        setShowProductsMenu(false);
       }
     };
     document.addEventListener('keydown', handleEscape);
     return () => {
       document.removeEventListener('keydown', handleEscape);
     };
-  }, [mobileMenuOpen]);
+  }, [mobileMenuOpen, showProductsMenu]);
 
   const handleSearch = (e: FormEvent) => {
     e.preventDefault();

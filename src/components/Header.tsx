@@ -80,8 +80,10 @@ export function Header({ initialLanguage }: HeaderProps) {
   const effectiveRow2Hidden = isRow2Blocked ? false : isRow2Hidden;
   const row2HiddenPx = effectiveRow2Hidden ? row2HeightPx : 0;
   const row2MaxHeightPx = Math.max(0, row2HeightPx - row2HiddenPx);
-  const row2MaxHeightStyle = row2HeightPx > 0 ? `${row2MaxHeightPx}px` : undefined;
-  const row2TranslateY = `-${row2HiddenPx}px`;
+  /** When mega menu / overlays block auto-hide, row2 uses natural height — no max-height cap (avoids sub-pixel clip). */
+  const row2MaxHeightStyle =
+    isRow2Blocked ? undefined : row2HeightPx > 0 ? `${row2MaxHeightPx}px` : undefined;
+  const row2TranslateY = isRow2Blocked ? '0px' : `-${row2HiddenPx}px`;
 
   if (pathname?.startsWith('/supersudo')) {
     return null;

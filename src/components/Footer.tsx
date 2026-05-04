@@ -17,14 +17,19 @@ import {
   FOOTER_GRID_CONTACTS_WRAPPER_CLASS,
   FOOTER_COPYRIGHT_STRIP_MARGIN_TOP_CLASS,
   FOOTER_COPYRIGHT_STRIP_PADDING_TOP_CLASS,
+  FOOTER_COLUMN_PIPE_BAR_CLASS,
+  FOOTER_COLUMN_PIPE_CLASS,
   FOOTER_HEADING_TEXT_CLASS,
   FOOTER_MAIN_GRID_CLASS,
+  FOOTER_NAV_THREE_COLUMN_ROW_CLASS,
+  FOOTER_NAV_BODY_TEXT_CLASS,
   FOOTER_NAV_COLUMN_HEADING_LEADING_CLASS,
   FOOTER_NAV_COLUMN_HEADING_LIST_GAP_CLASS,
   FOOTER_NAV_COLUMN_HEADING_TRACK_CLASS,
   FOOTER_NAV_COLUMN_LINK_LEADING_CLASS,
   FOOTER_NAV_COLUMN_LINK_WORD_SPACING_CLASS,
   FOOTER_NAV_COLUMN_LIST_ITEM_GAP_CLASS,
+  FOOTER_NAV_HEADING_TEXT_CLASS,
   FOOTER_MUTED_TEXT_CLASS,
   FOOTER_SUPPORT_LINKS,
   FOOTER_SURFACE_CLASS,
@@ -40,7 +45,7 @@ import {
 import { FooterPaymentLogos } from './FooterPaymentLogos';
 import { FooterSocialLinks } from './FooterSocialLinks';
 
-const FOOTER_LINK_CLASS = `${FOOTER_MUTED_TEXT_CLASS} text-xs transition-colors hover:text-marco-black dark:hover:text-white`;
+const FOOTER_LINK_CLASS = `${FOOTER_MUTED_TEXT_CLASS} ${FOOTER_NAV_BODY_TEXT_CLASS} transition-colors hover:text-marco-black dark:hover:text-white`;
 const FOOTER_SECONDARY_EMAIL = 'marcogrouparmenia@mail.ru';
 const FOOTER_PRIMARY_PHONES = ['+374 93 52 04 06', '+374 98 19 04 06', '+374 41 34 04 06'] as const;
 
@@ -60,7 +65,7 @@ function FooterNavColumn({
       className={`flex h-full w-full max-w-full flex-col ${FOOTER_NAV_COLUMN_HEADING_LIST_GAP_CLASS} ${FOOTER_TABLET_COLUMN_CENTER_CLASS}`}
     >
       <p
-        className={`text-xs font-bold uppercase ${FOOTER_NAV_COLUMN_HEADING_LEADING_CLASS} ${FOOTER_NAV_COLUMN_HEADING_TRACK_CLASS} ${FOOTER_HEADING_TEXT_CLASS}`}
+        className={`${FOOTER_NAV_HEADING_TEXT_CLASS} ${FOOTER_NAV_COLUMN_HEADING_LEADING_CLASS} ${FOOTER_NAV_COLUMN_HEADING_TRACK_CLASS} ${FOOTER_HEADING_TEXT_CLASS}`}
       >
         {t(titleKey)}
       </p>
@@ -82,26 +87,26 @@ function FooterContactsColumn() {
 
   return (
     <div
-      className={`flex h-full w-full max-w-full flex-col gap-3 ${FOOTER_TABLET_COLUMN_CENTER_CLASS}`}
+      className={`flex h-full w-full max-w-full flex-col gap-2 ${FOOTER_TABLET_COLUMN_CENTER_CLASS}`}
     >
       <p
-        className={`text-xs font-bold uppercase ${FOOTER_NAV_COLUMN_HEADING_LEADING_CLASS} ${FOOTER_NAV_COLUMN_HEADING_TRACK_CLASS} ${FOOTER_HEADING_TEXT_CLASS}`}
+        className={`${FOOTER_NAV_HEADING_TEXT_CLASS} ${FOOTER_NAV_COLUMN_HEADING_LEADING_CLASS} ${FOOTER_NAV_COLUMN_HEADING_TRACK_CLASS} ${FOOTER_HEADING_TEXT_CLASS}`}
       >
         {t('common.footer.marco.headings.contacts')}
       </p>
-      <div className="flex items-start gap-3 md:max-[1023px]:justify-center min-[1024px]:max-[1366px]:justify-center">
+      <div className="flex items-start gap-2 md:max-[1023px]:justify-center min-[1024px]:max-[1366px]:justify-center">
         <MapPin
-          className="mt-0 h-4 w-4 shrink-0 -translate-x-px translate-y-[4px] self-start text-marco-yellow"
+          className="mt-0 h-[18px] w-[18px] shrink-0 -translate-x-px translate-y-[3px] self-start text-marco-yellow"
           strokeWidth={2}
           aria-hidden
         />
         <p
-          className={`text-xs leading-snug whitespace-pre-line ${FOOTER_MUTED_TEXT_CLASS}`}
+          className={`${FOOTER_NAV_BODY_TEXT_CLASS} leading-snug whitespace-pre-line ${FOOTER_MUTED_TEXT_CLASS}`}
         >
           {t('contact.address')}
         </p>
       </div>
-      <div className="flex items-start gap-3 md:max-[1023px]:justify-center min-[1024px]:max-[1366px]:justify-center">
+      <div className="flex items-start gap-2 md:max-[1023px]:justify-center min-[1024px]:max-[1366px]:justify-center">
         <img
           src={FOOTER_CONTACT_PHONE_ICON_SRC}
           alt=""
@@ -110,19 +115,19 @@ function FooterContactsColumn() {
           className={FOOTER_CONTACT_PHONE_ICON_CLASS}
           aria-hidden
         />
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-0.5">
           {FOOTER_PRIMARY_PHONES.map((phone) => (
             <a
               key={phone}
               href={`tel:${phone.replace(/\s/g, '')}`}
-              className={`text-xs transition-colors hover:text-marco-black hover:underline dark:hover:text-white ${FOOTER_MUTED_TEXT_CLASS}`}
+              className={`${FOOTER_NAV_BODY_TEXT_CLASS} transition-colors hover:text-marco-black hover:underline dark:hover:text-white ${FOOTER_MUTED_TEXT_CLASS}`}
             >
               {phone}
             </a>
           ))}
         </div>
       </div>
-      <div className="flex items-start gap-3 md:max-[1023px]:justify-center min-[1024px]:max-[1366px]:justify-center">
+      <div className="flex items-start gap-2 md:max-[1023px]:justify-center min-[1024px]:max-[1366px]:justify-center">
         <img
           src={FOOTER_CONTACT_MAIL_ICON_SRC}
           alt=""
@@ -133,12 +138,12 @@ function FooterContactsColumn() {
         />
         <a
           href={`mailto:${t('contact.email')}`}
-          className={`text-xs transition-colors hover:text-marco-black dark:hover:text-white ${FOOTER_MUTED_TEXT_CLASS}`}
+          className={`${FOOTER_NAV_BODY_TEXT_CLASS} transition-colors hover:text-marco-black dark:hover:text-white ${FOOTER_MUTED_TEXT_CLASS}`}
         >
           {t('contact.email')}
         </a>
       </div>
-      <div className="flex items-start gap-3 md:max-[1023px]:justify-center min-[1024px]:max-[1366px]:justify-center">
+      <div className="flex items-start gap-2 md:max-[1023px]:justify-center min-[1024px]:max-[1366px]:justify-center">
         <img
           src={FOOTER_CONTACT_MAIL_ICON_SRC}
           alt=""
@@ -149,7 +154,7 @@ function FooterContactsColumn() {
         />
         <a
           href={`mailto:${FOOTER_SECONDARY_EMAIL}`}
-          className={`text-xs transition-colors hover:text-marco-black dark:hover:text-white ${FOOTER_MUTED_TEXT_CLASS}`}
+          className={`${FOOTER_NAV_BODY_TEXT_CLASS} transition-colors hover:text-marco-black dark:hover:text-white ${FOOTER_MUTED_TEXT_CLASS}`}
         >
           {FOOTER_SECONDARY_EMAIL}
         </a>
@@ -163,7 +168,7 @@ function FooterCopyright() {
   const year = new Date().getFullYear();
 
   return (
-    <p className="inline-block whitespace-nowrap text-center text-[9px] leading-tight text-gray-500 dark:text-[#c7c7c7] sm:text-[10px] md:text-[11px] lg:text-xs">
+    <p className="inline-block whitespace-nowrap text-center text-[10px] leading-tight text-gray-500 dark:text-[#c7c7c7] sm:text-[11px] md:text-xs lg:text-[13px]">
       <span>
         {t('common.footer.marco.copyrightBefore').replace('{year}', String(year))}
       </span>
@@ -215,30 +220,38 @@ export function Footer() {
             </p>
           </div>
 
-          <div className={FOOTER_GRID_COMPANY_SUPPORT_WRAPPER_CLASS}>
-            <FooterNavColumn
-              titleKey="common.footer.marco.headings.company"
-              items={FOOTER_COMPANY_LINKS}
-            />
-          </div>
-          <div className={FOOTER_GRID_COMPANY_SUPPORT_WRAPPER_CLASS}>
-            <FooterNavColumn
-              titleKey="common.footer.marco.headings.support"
-              items={FOOTER_SUPPORT_LINKS}
-            />
-          </div>
-          <div className={FOOTER_GRID_CONTACTS_WRAPPER_CLASS}>
-            <FooterContactsColumn />
+          <div className={FOOTER_NAV_THREE_COLUMN_ROW_CLASS}>
+            <div className={FOOTER_GRID_COMPANY_SUPPORT_WRAPPER_CLASS}>
+              <FooterNavColumn
+                titleKey="common.footer.marco.headings.company"
+                items={FOOTER_COMPANY_LINKS}
+              />
+            </div>
+            <div className={FOOTER_COLUMN_PIPE_CLASS} aria-hidden>
+              <div className={FOOTER_COLUMN_PIPE_BAR_CLASS} />
+            </div>
+            <div className={FOOTER_GRID_COMPANY_SUPPORT_WRAPPER_CLASS}>
+              <FooterNavColumn
+                titleKey="common.footer.marco.headings.support"
+                items={FOOTER_SUPPORT_LINKS}
+              />
+            </div>
+            <div className={FOOTER_COLUMN_PIPE_CLASS} aria-hidden>
+              <div className={FOOTER_COLUMN_PIPE_BAR_CLASS} />
+            </div>
+            <div className={FOOTER_GRID_CONTACTS_WRAPPER_CLASS}>
+              <FooterContactsColumn />
+            </div>
           </div>
         </div>
 
         <div
-          className={`${FOOTER_COPYRIGHT_STRIP_MARGIN_TOP_CLASS} flex w-full flex-row items-center justify-between gap-4 border-t border-black/10 dark:border-white/10 ${FOOTER_COPYRIGHT_STRIP_PADDING_TOP_CLASS}`}
+          className={`${FOOTER_COPYRIGHT_STRIP_MARGIN_TOP_CLASS} flex w-full flex-row items-center justify-between gap-2 border-t border-black/10 dark:border-white/10 ${FOOTER_COPYRIGHT_STRIP_PADDING_TOP_CLASS}`}
         >
           <div className="flex shrink-0 justify-start">
             <FooterSocialLinks density="compact" />
           </div>
-          <div className="scrollbar-hide flex min-w-0 flex-1 justify-center overflow-x-auto px-3">
+          <div className="scrollbar-hide flex min-w-0 flex-1 justify-center overflow-x-auto px-2">
             <FooterCopyright />
           </div>
           <div className="flex shrink-0 justify-end">

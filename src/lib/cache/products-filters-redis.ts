@@ -41,7 +41,7 @@ export function buildProductsFiltersCacheKey(filters: {
   const hash = createHash('sha256')
     .update(stableStringifyForCacheKey(filters))
     .digest('hex');
-  return `cache:products:filters:v1:${hash}`;
+  return `cache:products:filters:v2:${hash}`;
 }
 
 export async function getProductsFiltersCached(args: {
