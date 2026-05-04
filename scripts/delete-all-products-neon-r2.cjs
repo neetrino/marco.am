@@ -1,5 +1,6 @@
 /**
- * One-off: remove all products from Postgres (Neon) and product images from R2 (`products/` prefix).
+ * One-off: remove all products from Postgres (Neon) and product images from R2
+ * (`products/` admin + import, and `product-import/` TS CSV importer).
  *
  * Usage (repo root): node scripts/delete-all-products-neon-r2.cjs
  *
@@ -44,7 +45,8 @@ const { PrismaClient } = require(path.join(
   "prisma-client",
 ));
 
-const R2_PRODUCTS_PREFIX = "products/";
+/** R2 key prefixes used for catalog product raster uploads (see upload-images + import scripts). */
+const R2_PRODUCT_PREFIXES = ["products/", "product-import/"];
 
 /**
  * @param {S3Client} client
@@ -137,14 +139,13 @@ async function main() {
       },
     });
 
-    const r2Deleted = await deleteR2ObjectsWithPrefix(
-      r2,
-      bucketName,
-      R2_PRODUCTS_PREFIX,
-    );
-    process.stdout.write(
-      `R2: deleted object count under "${R2_PRODUCTS_PREFIX}": ${r2Deleted}\n`,
-    );
+    let r2Total = 0;
+    for (const prefix of R2_PRODUCT_PREFIXES) {
+      const n = await deleteR2ObjectsWithPrefix(r2, bucketName, prefix);
+      r2Total += n;
+      process.stdout.write(`R2: deleted ${n} object(s) under "${prefix}"\n`);
+    }
+    process.stdout.write(`R2: total deleted: ${r2Total}\n`);
   } finally {
     await prisma.$disconnect();
   }
