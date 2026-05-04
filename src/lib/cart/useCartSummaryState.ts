@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../auth/AuthContext';
 import { apiClient } from '../api-client';
 import { coerceCurrencyCode, type CurrencyCode } from '../currency';
@@ -16,15 +16,13 @@ export type CartSummaryState = {
 
 export function useCartSummaryState(): CartSummaryState {
   const { isLoggedIn, isLoading: authLoading } = useAuth();
-  const authLoadingRef = useRef(false);
-  authLoadingRef.current = authLoading;
 
   const [cartCount, setCartCount] = useState(0);
   const [cartTotal, setCartTotal] = useState(0);
   const [cartTotalCurrency, setCartTotalCurrency] = useState<CurrencyCode>('AMD');
 
   const fetchCart = useCallback(async () => {
-    if (authLoadingRef.current) {
+    if (authLoading) {
       return;
     }
     if (!isLoggedIn) {
@@ -99,11 +97,11 @@ export function useCartSummaryState(): CartSummaryState {
       setCartTotal(0);
       setCartTotalCurrency('AMD');
     }
-  }, [isLoggedIn]);
+  }, [authLoading, isLoggedIn]);
 
   useEffect(() => {
     const handleCartUpdate = (e: Event) => {
-      if (authLoadingRef.current) {
+      if (authLoading) {
         return;
       }
       const detail = (e as CustomEvent)?.detail;
@@ -126,7 +124,7 @@ export function useCartSummaryState(): CartSummaryState {
     return () => {
       window.removeEventListener('cart-updated', handleCartUpdate);
     };
-  }, [fetchCart]);
+  }, [authLoading, fetchCart]);
 
   useEffect(() => {
     if (authLoading) {

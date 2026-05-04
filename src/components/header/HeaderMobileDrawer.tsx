@@ -72,19 +72,6 @@ function PrimaryNavRowIcon({ translationKey }: { translationKey: string }) {
   return <Icon className="h-6 w-6 shrink-0" size={24} strokeWidth={2} aria-hidden />;
 }
 
-function drawerUserLabel(user: {
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  phone?: string;
-}): string {
-  const full = [user.firstName, user.lastName].filter(Boolean).join(' ').trim();
-  if (full.length > 0) {
-    return full;
-  }
-  return (user.email ?? user.phone ?? '').trim();
-}
-
 function drawerProfilePrimaryLine(user: {
   firstName?: string;
   lastName?: string;
