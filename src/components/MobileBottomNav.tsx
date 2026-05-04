@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useMemo, type ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
+import { useCartSummary } from '../lib/cart/cart-summary-context';
 import { useTranslation } from '../lib/i18n-client';
 import {
   MobileNavCartBoldIcon,
@@ -71,15 +72,17 @@ function renderNavIcon(slot: MobileNavIconSlot, isActive: boolean, sizeClass: st
 interface NavItemLinkProps {
   item: MobileNavItem;
   pathname: string | null;
+  cartCount: number;
 }
 
-function NavItemLink({ item, pathname }: NavItemLinkProps) {
+function NavItemLink({ item, pathname, cartCount }: NavItemLinkProps) {
   const { label, href, icon: slot } = item;
   const isActive = isNavItemActive(pathname, href);
   const activeColor = MOBILE_NAV_ACTIVE_FOREGROUND;
   const inactiveColor = MOBILE_NAV_INACTIVE_ICON;
   const iconColor = isActive ? activeColor : inactiveColor;
   const sizeClass = 'h-6 w-6 shrink-0';
+  const showCartBadge = slot === 'cart' && cartCount > 0;
 
   const iconWithBadge = (
     <div
@@ -87,6 +90,11 @@ function NavItemLink({ item, pathname }: NavItemLinkProps) {
       style={{ color: iconColor }}
     >
       {renderNavIcon(slot, isActive, sizeClass)}
+      {showCartBadge ? (
+        <span className="pointer-events-none absolute left-1/2 top-1/2 z-10 flex h-[18px] min-w-[18px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-red-600 px-1 text-[9px] font-bold text-white tabular-nums shadow-sm ring-2 ring-white dark:ring-zinc-950">
+          {cartCount > 99 ? '99+' : cartCount}
+        </span>
+      ) : null}
     </div>
   );
 
@@ -121,6 +129,7 @@ function NavItemLink({ item, pathname }: NavItemLinkProps) {
 export function MobileBottomNav() {
   const pathname = usePathname();
   const { t } = useTranslation();
+  const { cartCount } = useCartSummary();
 
   const navItems: MobileNavItem[] = useMemo(
     () => [
@@ -145,7 +154,7 @@ export function MobileBottomNav() {
         >
           <div className="mx-auto flex max-w-md items-center justify-between px-4 pt-3 pb-2">
             {navItems.map((item) => (
-              <NavItemLink key={item.href} item={item} pathname={pathname} />
+              <NavItemLink key={item.href} item={item} pathname={pathname} cartCount={cartCount} />
             ))}
           </div>
         </div>

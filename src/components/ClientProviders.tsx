@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { AuthProvider } from '../lib/auth/AuthContext';
+import { CartSummaryProvider } from '../lib/cart/cart-summary-context';
 import { LanguagePreferenceCookieSync } from './LanguagePreferenceCookieSync';
 import { QueryProvider } from './QueryProvider';
 import { ToastContainer } from './Toast';
@@ -16,9 +17,11 @@ export function ClientProviders({ children }: { children: ReactNode }) {
     <ThemeProvider>
       <QueryProvider>
         <AuthProvider>
-          <LanguagePreferenceCookieSync />
-          {children}
-          <ToastContainer />
+          <CartSummaryProvider>
+            <LanguagePreferenceCookieSync />
+            {children}
+            <ToastContainer />
+          </CartSummaryProvider>
         </AuthProvider>
       </QueryProvider>
     </ThemeProvider>

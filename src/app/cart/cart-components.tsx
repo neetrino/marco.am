@@ -109,7 +109,7 @@ export function CartItemRow({
               onUpdateQuantity(item.id, newQuantity);
             }}
             disabled={updatingItems.has(item.id)}
-            className="w-14 h-9 text-right border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 font-medium pl-2 pr-2"
+            className="w-14 h-9 text-center md:text-right border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 font-medium pl-2 pr-2"
             title={item.variant.stock !== undefined ? t('common.messages.availableQuantity').replace('{stock}', item.variant.stock.toString()) : ''}
           />
           <button
