@@ -13,6 +13,7 @@ import {
   Phone,
   ShoppingBag,
   Tag,
+  User,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { CompareIcon } from '../icons/CompareIcon';
@@ -32,17 +33,20 @@ import {
   phoneToTelHref,
   type ContactLocationId,
 } from '../../lib/contact-locations';
-import { HeaderNavbarProfileIcon } from '../icons/HeaderNavbarProfileIcon';
 import { HeaderMobileDrawerCategories } from './HeaderMobileDrawerCategories';
 import {
   MOBILE_DRAWER_CLOSE_BTN_CLASS,
   MOBILE_DRAWER_CONTACT_COMPACT_CLASS,
   MOBILE_DRAWER_CTA_COMPACT_CLASS,
   MOBILE_DRAWER_CTA_PILL_CLASS,
+  MOBILE_DRAWER_MENU_HEADER_ROW_CLASS,
   MOBILE_DRAWER_MUTED_PILL_CLASS,
   MOBILE_DRAWER_CONTENT_MAX_CLASS,
   MOBILE_DRAWER_PANEL_CLASS,
-  MOBILE_DRAWER_USER_PILL_CLASS,
+  MOBILE_DRAWER_PROFILE_AVATAR_CLASS,
+  MOBILE_DRAWER_PROFILE_CARD_CLASS,
+  MOBILE_DRAWER_PROFILE_CARD_PRIMARY_CLASS,
+  MOBILE_DRAWER_PROFILE_CARD_SECONDARY_CLASS,
   mobileDrawerCompactPillClass,
   mobileDrawerNavPillClass,
 } from './header-mobile-drawer.classes';
@@ -79,6 +83,61 @@ function drawerUserLabel(user: {
     return full;
   }
   return (user.email ?? user.phone ?? '').trim();
+}
+
+function drawerProfilePrimaryLine(user: {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+}): string {
+  const full = [user.firstName, user.lastName].filter(Boolean).join(' ').trim();
+  if (full.length > 0) {
+    return full;
+  }
+  return (user.email ?? user.phone ?? '').trim();
+}
+
+function drawerProfileSecondaryLine(user: {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+}): string | null {
+  const full = [user.firstName, user.lastName].filter(Boolean).join(' ').trim();
+  if (!full) {
+    return null;
+  }
+  const sub = (user.email ?? user.phone ?? '').trim();
+  return sub.length > 0 ? sub : null;
+}
+
+function drawerUserInitials(user: {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+}): string {
+  const first = user.firstName?.trim();
+  const last = user.lastName?.trim();
+  if (first && last) {
+    return `${first[0] ?? ''}${last[0] ?? ''}`.toUpperCase();
+  }
+  if (first) {
+    return first.slice(0, 2).toUpperCase();
+  }
+  const email = user.email?.trim();
+  if (email && email.length > 0) {
+    return email[0]?.toUpperCase() ?? '?';
+  }
+  const phoneDigits = user.phone?.replace(/\D/g, '') ?? '';
+  if (phoneDigits.length >= 2) {
+    return phoneDigits.slice(-2);
+  }
+  if (phoneDigits.length === 1) {
+    return phoneDigits;
+  }
+  return '?';
 }
 
 function renderPrimaryNavLink(
@@ -183,6 +242,9 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
       ? (contactLocations.find((l) => l.id === callBranchId) ?? null)
       : null;
 
+  const profileCardSecondary =
+    isLoggedIn && user ? drawerProfileSecondaryLine(user) : null;
+
   const drawer = (
     <div
       className={`pointer-events-auto fixed inset-0 z-[200] ${MOBILE_DRAWER_PANEL_CLASS} ${compactPrimaryNav ? '' : 'md:hidden'}`}
@@ -193,11 +255,14 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
           className="relative flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden overscroll-y-contain px-3 min-[400px]:px-4"
         >
             <div className="flex flex-col gap-y-[clamp(0.35rem,1.2dvh,0.75rem)] pb-2 text-marco-black dark:text-white">
-              <div className="flex shrink-0 justify-end pb-1 pt-2">
+              <div className={MOBILE_DRAWER_MENU_HEADER_ROW_CLASS}>
+                <h2 className="text-base font-bold text-marco-black dark:text-white">
+                  {t('common.menu.title')}
+                </h2>
                 <button
                   type="button"
                   onClick={closeDrawer}
-                  className={MOBILE_DRAWER_CLOSE_BTN_CLASS}
+                  className={`${MOBILE_DRAWER_CLOSE_BTN_CLASS} absolute right-0 top-1/2 -translate-y-1/2`}
                   aria-label={t('common.ariaLabels.closeMenu')}
                 >
                   <svg className="mx-auto h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -211,14 +276,25 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
               aria-label={t('common.menu.title')}
             >
               {isLoggedIn && user ? (
-                <Link href="/profile" onClick={closeDrawer} className={MOBILE_DRAWER_USER_PILL_CLASS}>
-                  <span className="flex min-w-0 flex-1 items-center gap-3.5">
-                    <HeaderNavbarProfileIcon className="h-5 w-5 shrink-0 text-white" />
-                    <span className="truncate normal-case">
-                      {drawerUserLabel(user) || t('common.navigation.profile')}
-                    </span>
+                <Link href="/profile" onClick={closeDrawer} className={MOBILE_DRAWER_PROFILE_CARD_CLASS}>
+                  <span className={MOBILE_DRAWER_PROFILE_AVATAR_CLASS} aria-hidden>
+                    {drawerUserInitials(user) === '?' ? (
+                      <User className="h-7 w-7 text-marco-text/70 dark:text-zinc-400" strokeWidth={1.75} />
+                    ) : (
+                      drawerUserInitials(user)
+                    )}
                   </span>
-                  <ChevronRight className="h-5 w-5 shrink-0 text-white/90" aria-hidden />
+                  <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                    <span className={MOBILE_DRAWER_PROFILE_CARD_PRIMARY_CLASS}>
+                      {drawerProfilePrimaryLine(user) || t('common.navigation.profile')}
+                    </span>
+                    {profileCardSecondary ? (
+                      <span className={MOBILE_DRAWER_PROFILE_CARD_SECONDARY_CLASS}>
+                        {profileCardSecondary}
+                      </span>
+                    ) : null}
+                  </span>
+                  <ChevronRight className="h-5 w-5 shrink-0 text-marco-text/40 dark:text-zinc-500" aria-hidden />
                 </Link>
               ) : null}
 
