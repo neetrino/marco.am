@@ -1,18 +1,24 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   addWishlistItemClient,
   fetchWishlistProductIds,
+  PENDING_WISHLIST_PRODUCT_QUERY_PARAM,
   removeWishlistItemClient,
 } from '@/lib/wishlist/wishlist-client';
 import { getStoredLanguage, type LanguageCode } from '@/lib/language';
 import { logger } from '@/lib/utils/logger';
+import { useAuth } from '@/lib/auth/AuthContext';
 
 /**
- * Wishlist toggle backed by `GET`/`POST`/`DELETE` `/api/v1/wishlist` (guest cookie or JWT user).
+ * Wishlist toggle backed by `GET`/`DELETE` `/api/v1/wishlist` for all users; `POST` requires login.
  */
 export function useWishlist(productId: string) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { isLoggedIn, isLoading: authLoading } = useAuth();
   const [isInWishlist, setIsInWishlist] = useState(false);
   const [language, setLanguage] = useState<LanguageCode>(() => getStoredLanguage());
   const [isToggling, setIsToggling] = useState(false);
@@ -87,6 +93,19 @@ export function useWishlist(productId: string) {
 
     const previousValue = isInWishlist;
     const nextValue = !previousValue;
+    if (nextValue) {
+      if (authLoading) {
+        return;
+      }
+      if (!isLoggedIn) {
+        const redirectTarget = pathname || '/products';
+        const loginQs = new URLSearchParams();
+        loginQs.set('redirect', redirectTarget);
+        loginQs.set(PENDING_WISHLIST_PRODUCT_QUERY_PARAM, productId);
+        router.push(`/login?${loginQs.toString()}`);
+        return;
+      }
+    }
     const delta = nextValue ? 1 : -1;
     isTogglingRef.current = true;
     setIsToggling(true);

@@ -1,9 +1,12 @@
 import type { MouseEvent } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { t } from '../../../../lib/i18n';
 import type { LanguageCode } from '../../../../lib/language';
 import { getApiOrErrorMessage, getErrorHttpStatus } from '../../../../lib/api-client';
+import { useAuth } from '@/lib/auth/AuthContext';
 import {
   addWishlistItemClient,
+  PENDING_WISHLIST_PRODUCT_QUERY_PARAM,
   removeWishlistItemClient,
 } from '@/lib/wishlist/wishlist-client';
 import { addCompareItemClient, removeCompareItemClient } from '@/lib/compare/compare-client';
@@ -28,6 +31,10 @@ export function useProductActions({
   setShowMessage,
   language,
 }: UseProductActionsProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { isLoggedIn, isLoading: authLoading } = useAuth();
+
   const handleAddToWishlist = async (e: MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -38,6 +45,17 @@ export function useProductActions({
         await removeWishlistItemClient(productId, language);
         setIsInWishlist(false);
       } else {
+        if (authLoading) {
+          return;
+        }
+        if (!isLoggedIn) {
+          const redirectTarget = pathname || '/products';
+          const loginQs = new URLSearchParams();
+          loginQs.set('redirect', redirectTarget);
+          loginQs.set(PENDING_WISHLIST_PRODUCT_QUERY_PARAM, productId);
+          router.push(`/login?${loginQs.toString()}`);
+          return;
+        }
         await addWishlistItemClient(productId, language);
         setIsInWishlist(true);
       }
