@@ -2,10 +2,12 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Button } from '@shop/ui';
 import { apiClient } from '../../lib/api-client';
 import { getStoredLanguage } from '../../lib/language';
 import { useTranslation } from '../../lib/i18n-client';
+import { useAuth } from '../../lib/auth/AuthContext';
 import { logger } from "@/lib/utils/logger";
 import type { ProductListingBrand } from '@/lib/types/product-listing-brand';
 import { ProductCard } from '@/components/ProductCard';
@@ -70,6 +72,8 @@ type FetchWishlistOptions = {
  */
 export default function WishlistPage() {
   const { t } = useTranslation();
+  const router = useRouter();
+  const { isLoggedIn, isLoading: authLoading } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -114,6 +118,18 @@ export default function WishlistPage() {
   }, []);
 
   useEffect(() => {
+    if (authLoading) {
+      return;
+    }
+    if (!isLoggedIn) {
+      router.replace(`/login?redirect=${encodeURIComponent('/wishlist')}`);
+    }
+  }, [authLoading, isLoggedIn, router]);
+
+  useEffect(() => {
+    if (authLoading || !isLoggedIn) {
+      return;
+    }
     void fetchWishlistProducts();
 
     const handleWishlistUpdate = () => {
@@ -130,9 +146,12 @@ export default function WishlistPage() {
       window.removeEventListener('wishlist-updated', handleWishlistUpdate);
       window.removeEventListener('language-updated', handleLanguageUpdate);
     };
-  }, [fetchWishlistProducts]);
+  }, [authLoading, isLoggedIn, fetchWishlistProducts]);
 
   useEffect(() => {
+    if (authLoading || !isLoggedIn) {
+      return;
+    }
     const onOptimisticRemove = (ev: Event) => {
       const id = (ev as CustomEvent<{ productId?: string }>).detail?.productId;
       if (!id) {
@@ -151,9 +170,9 @@ export default function WishlistPage() {
       window.removeEventListener('wishlist-remove-optimistic', onOptimisticRemove);
       window.removeEventListener('wishlist-remove-reverted', onRevertRemove);
     };
-  }, [fetchWishlistProducts]);
+  }, [authLoading, isLoggedIn, fetchWishlistProducts]);
 
-  if (loading) {
+  if (authLoading || !isLoggedIn || loading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="animate-pulse">

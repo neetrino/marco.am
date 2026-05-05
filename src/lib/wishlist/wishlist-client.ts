@@ -1,10 +1,14 @@
 'use client';
 
 import { apiClient } from '@/lib/api-client';
+import { getAuthToken } from '@/lib/api-client/auth-utils';
 import { logger } from '@/lib/utils/logger';
 
 /** Legacy key — migrated once to the server-backed wishlist API. */
 export const LEGACY_WISHLIST_STORAGE_KEY = 'shop_wishlist';
+
+/** Query param on `/login` / `/verify` — product to add after successful auth. */
+export const PENDING_WISHLIST_PRODUCT_QUERY_PARAM = 'wishlistProductId';
 
 export type WishlistClientItem = {
   productId: string;
@@ -101,6 +105,24 @@ export async function addWishlistItemClient(productId: string, lang: string): Pr
   dispatchWishlistUpdated();
 }
 
+/**
+ * Adds one product to the wishlist after login/register (intent from URL param). Ignores invalid/empty ids.
+ */
+export async function addPendingWishlistProductIfAny(
+  productId: string | null | undefined,
+  lang: string
+): Promise<void> {
+  const trimmed = typeof productId === 'string' ? productId.trim() : '';
+  if (!trimmed) {
+    return;
+  }
+  try {
+    await addWishlistItemClient(trimmed, lang);
+  } catch (error: unknown) {
+    logger.devLog('[Wishlist] Pending product add after auth skipped or failed', { error });
+  }
+}
+
 export async function removeWishlistItemClient(productId: string, lang: string): Promise<void> {
   await apiClient.delete<WishlistClientResponse>(`/api/v1/wishlist/${encodeURIComponent(productId)}`, {
     params: { lang },
@@ -133,6 +155,9 @@ export async function mergeGuestWishlistAfterAuth(): Promise<void> {
  */
 export async function migrateLegacyWishlistFromLocalStorage(lang: string): Promise<void> {
   if (typeof window === 'undefined') return;
+  if (!getAuthToken()) {
+    return;
+  }
 
   let raw: string | null = null;
   try {

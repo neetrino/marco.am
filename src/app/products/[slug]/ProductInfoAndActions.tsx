@@ -14,12 +14,15 @@ import {
 } from '../../../components/header/header.constants';
 import { ProductAttributesSelector } from './ProductAttributesSelector';
 import { ProductPartialStar } from './ProductPartialStar';
+import { stripDuplicateSpecificationDescriptionHtml } from './strip-duplicate-specification-description-html';
 import type { Product, ProductVariant } from './types';
 
 /** Buy CTA — taller row; trailing circle with light left nudge (−4px). */
 const PRODUCT_BUY_CTA_HEIGHT_CLASS = 'h-12';
 const PRODUCT_BUY_CTA_ICON_PX = 36;
 const PRODUCT_BUY_CTA_ICON_NUDGE_LEFT_CLASS = 'translate-x-2';
+/** Keeps CTA label on one line next to icons without stretching full width. */
+const PRODUCT_BUY_CTA_LABEL_MAX_WIDTH_CLASS = 'max-w-[11rem] sm:max-w-[14rem]';
 
 interface ProductInfoAndActionsProps {
   product: Product;
@@ -104,7 +107,10 @@ export function ProductInfoAndActions({
 }: ProductInfoAndActionsProps) {
   const rawDescription = getProductText(language, product.id, 'longDescription') || product.description || '';
   const buyNowFullLabel = t(language, 'product.buyNow');
-  const sanitizedDescription = sanitizeHtml(normalizeLiteralNewlinesToLineBreaks(rawDescription));
+  const normalizedDescription = normalizeLiteralNewlinesToLineBreaks(rawDescription);
+  const descriptionWithoutDuplicateSpecs =
+    stripDuplicateSpecificationDescriptionHtml(normalizedDescription);
+  const sanitizedDescription = sanitizeHtml(descriptionWithoutDuplicateSpecs);
   const hasDescription = sanitizedDescription
     .replace(/<[^>]*>/g, '')
     .replace(/&nbsp;/gi, ' ')
@@ -233,46 +239,48 @@ export function ProductInfoAndActions({
           </div>
         )}
         <div className="flex -translate-y-0.5 pb-2 pt-4">
-          <div className="flex w-full min-w-0 flex-nowrap items-center gap-3">
-            <div className="flex h-10 shrink-0 items-center overflow-hidden rounded-xl border-2 border-gray-200 bg-white">
+          <div className="flex min-w-0 flex-nowrap items-center gap-2 sm:gap-3">
+            <div
+              className={`flex ${PRODUCT_BUY_CTA_HEIGHT_CLASS} shrink-0 items-center overflow-hidden rounded-xl border-2 border-gray-200 bg-white`}
+            >
               <button
                 onClick={() => onQuantityAdjust(-1)}
                 disabled={quantity <= 1}
-                className="flex h-10 w-7 items-center justify-center text-sm disabled:cursor-not-allowed disabled:opacity-50"
+                className={`flex ${PRODUCT_BUY_CTA_HEIGHT_CLASS} w-8 items-center justify-center text-sm disabled:cursor-not-allowed disabled:opacity-50`}
               >
                 -
               </button>
-              <div className="w-7 text-center text-sm font-bold">{quantity}</div>
+              <div className="w-8 text-center text-sm font-bold tabular-nums">{quantity}</div>
               <button
                 onClick={() => onQuantityAdjust(1)}
                 disabled={quantity >= maxQuantity}
-                className="flex h-10 w-7 items-center justify-center text-sm disabled:cursor-not-allowed disabled:opacity-50"
+                className={`flex ${PRODUCT_BUY_CTA_HEIGHT_CLASS} w-8 items-center justify-center text-sm disabled:cursor-not-allowed disabled:opacity-50`}
               >
                 +
               </button>
             </div>
             <button
               onClick={onCompareToggle}
-              className={`w-10 h-10 shrink-0 rounded-xl border-2 flex items-center justify-center transition-all duration-200 ${isInCompare ? 'border-marco-yellow bg-marco-yellow text-[#050505] dark:!text-[#050505]' : 'border-gray-200 hover:border-gray-300'}`}
+              className={`flex size-12 shrink-0 items-center justify-center rounded-xl border-2 transition-all duration-200 ${isInCompare ? 'border-marco-yellow bg-marco-yellow text-[#050505] dark:!text-[#050505]' : 'border-gray-200 hover:border-gray-300'}`}
             >
               <CompareIcon isActive={isInCompare} />
             </button>
             <button
               onClick={onAddToWishlist}
-              className={`w-10 h-10 shrink-0 rounded-xl border-2 flex items-center justify-center ${isInWishlist ? 'border-red-600 bg-red-600 text-white dark:border-red-600 dark:bg-red-600 dark:text-white' : 'border-gray-200'}`}
+              className={`flex size-12 shrink-0 items-center justify-center rounded-xl border-2 ${isInWishlist ? 'border-red-600 bg-red-600 text-white dark:border-red-600 dark:bg-red-600 dark:text-white' : 'border-gray-200'}`}
             >
               <Heart fill={isInWishlist ? 'currentColor' : 'none'} />
             </button>
             <button
               type="button"
               disabled={!canAddToCart || isAddingToCart}
-              className={`ml-auto flex min-w-0 flex-1 items-center gap-1.5 bg-marco-yellow pl-4 pr-4 text-left text-sm font-bold leading-normal text-marco-black dark:!text-[#050505] transition-[filter,transform] hover:-translate-y-0.5 hover:brightness-95 active:brightness-90 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 disabled:hover:brightness-100 md:max-w-72 md:flex-none md:pl-7 ${PRODUCT_BUY_CTA_HEIGHT_CLASS} ${HEADER_FIGMA_PILL_RADIUS_CLASS}`}
+              className={`inline-flex shrink-0 items-center gap-1.5 bg-marco-yellow px-4 text-left text-sm font-bold leading-normal text-marco-black dark:!text-[#050505] transition-[filter,transform] hover:-translate-y-0.5 hover:brightness-95 active:brightness-90 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 disabled:hover:brightness-100 ${PRODUCT_BUY_CTA_HEIGHT_CLASS} ${HEADER_FIGMA_PILL_RADIUS_CLASS}`}
               onClick={onAddToCart}
             >
               <span
-                className={`min-w-0 flex-1 whitespace-nowrap truncate ${
-                  language === 'hy' ? '-ml-0.5 pl-0 md:ml-0 md:pl-2' : 'pl-2'
-                }`}
+                className={`${PRODUCT_BUY_CTA_LABEL_MAX_WIDTH_CLASS} whitespace-nowrap ${
+                  language === 'hy' ? 'pl-0.5' : 'pl-1'
+                } truncate`}
               >
                 {isAddingToCart
                   ? t(language, 'product.adding')

@@ -7,7 +7,6 @@ import {
 import { authenticateToken } from "@/lib/middleware/auth";
 import { wishlistAddBodySchema } from "@/lib/schemas/wishlist-body.schema";
 import {
-  addWishlistItemForGuest,
   addWishlistItemForUser,
   getWishlistForGuest,
   getWishlistForUser,
@@ -61,22 +60,23 @@ export async function POST(req: NextRequest) {
       );
     }
     const { productId } = parsed.data;
-    const locale = user?.locale ?? resolveCatalogLocale(req);
 
-    if (user) {
-      const payload = await addWishlistItemForUser(user.id, productId, locale);
-      return NextResponse.json(payload, { status: 201 });
+    if (!user) {
+      return NextResponse.json(
+        {
+          type: "https://api.shop.am/problems/unauthorized",
+          title: "Unauthorized",
+          status: 401,
+          detail: "Login required to add items to the wishlist",
+          instance: req.url,
+        },
+        { status: 401 }
+      );
     }
 
-    const sessionToken = readWishlistSessionToken(req);
-    const { payload, sessionToken: token } = await addWishlistItemForGuest(
-      sessionToken,
-      productId,
-      locale
-    );
-    const res = NextResponse.json(payload, { status: 201 });
-    applyWishlistSessionCookie(res, token);
-    return res;
+    const locale = user.locale ?? resolveCatalogLocale(req);
+    const payload = await addWishlistItemForUser(user.id, productId, locale);
+    return NextResponse.json(payload, { status: 201 });
   } catch (error: unknown) {
     logger.error("Wishlist POST failed", { error });
     return toApiErrorResponse(error, req.url);

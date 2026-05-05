@@ -12,6 +12,7 @@ import {
 import { useTranslation } from '@/lib/i18n-client';
 import { getErrorMessage } from '@/lib/types/errors';
 import { logger } from '@/lib/utils/logger';
+import { PENDING_WISHLIST_PRODUCT_QUERY_PARAM } from '@/lib/wishlist/wishlist-client';
 
 const RESEND_COOLDOWN_SEC = 60;
 
@@ -20,6 +21,7 @@ function VerifyPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get('redirect') || '/';
+  const pendingWishlistProductId = searchParams.get(PENDING_WISHLIST_PRODUCT_QUERY_PARAM);
 
   const { completeVerification, resendVerificationCode, isLoading } = useAuth();
   const [code, setCode] = useState('');
@@ -72,7 +74,7 @@ function VerifyPageContent() {
     }
     setIsSubmitting(true);
     try {
-      await completeVerification(trimmed, redirectTo);
+      await completeVerification(trimmed, redirectTo, pendingWishlistProductId);
       logger.devLog('✅ [VERIFY] Completed, redirected');
     } catch (err: unknown) {
       setError(getErrorMessage(err) || t('login.verify.errors.failed'));

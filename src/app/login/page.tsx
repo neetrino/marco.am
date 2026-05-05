@@ -6,8 +6,14 @@ import { Button, Input, Card } from '@shop/ui';
 import Link from 'next/link';
 import { getErrorMessage } from '@/lib/types/errors';
 import { useAuth } from '../../lib/auth/AuthContext';
+import { syncGuestDataAfterAuth } from '../../lib/auth/sync-guest-data-after-auth';
+import { getStoredLanguage } from '../../lib/language';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '../../lib/i18n-client';
+import {
+  addPendingWishlistProductIfAny,
+  PENDING_WISHLIST_PRODUCT_QUERY_PARAM,
+} from '../../lib/wishlist/wishlist-client';
 import { Eye, EyeOff } from 'lucide-react';
 import { logger } from "@/lib/utils/logger";
 
@@ -48,6 +54,7 @@ function LoginPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams?.get('redirect') || '/';
+  const pendingWishlistProductId = searchParams?.get(PENDING_WISHLIST_PRODUCT_QUERY_PARAM);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -73,11 +80,17 @@ function LoginPageContent() {
       logger.devLog('📤 [LOGIN PAGE] Calling login function...');
       const flow = await login(emailOrPhone.trim(), password);
       if (flow.status === 'needs_verification') {
-        router.push(`/verify?redirect=${encodeURIComponent(redirectTo)}`);
+        const verifyQs = new URLSearchParams();
+        verifyQs.set('redirect', redirectTo);
+        if (pendingWishlistProductId) {
+          verifyQs.set(PENDING_WISHLIST_PRODUCT_QUERY_PARAM, pendingWishlistProductId);
+        }
+        router.push(`/verify?${verifyQs.toString()}`);
         return;
       }
       const postLoginRedirect = getPostLoginRedirect(redirectTo);
       logger.devLog('✅ [LOGIN PAGE] Login successful, redirecting to:', postLoginRedirect);
+      await addPendingWishlistProductIfAny(pendingWishlistProductId, getStoredLanguage());
       router.push(postLoginRedirect);
     } catch (err: unknown) {
       logger.error('Login page submission failed', {
@@ -91,10 +104,19 @@ function LoginPageContent() {
 
   // Redirect if already logged in
   useEffect(() => {
-    if (isLoggedIn && !isLoading) {
-      router.push(getPostLoginRedirect(redirectTo));
+    if (!isLoggedIn || isLoading) {
+      return;
     }
-  }, [isLoggedIn, isLoading, redirectTo, router]);
+    if (!pendingWishlistProductId) {
+      router.replace(getPostLoginRedirect(redirectTo));
+      return;
+    }
+    void (async () => {
+      await syncGuestDataAfterAuth();
+      await addPendingWishlistProductIfAny(pendingWishlistProductId, getStoredLanguage());
+      router.replace(getPostLoginRedirect(redirectTo));
+    })();
+  }, [isLoggedIn, isLoading, redirectTo, router, pendingWishlistProductId]);
 
   return (
     <div className="max-w-lg mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -175,11 +197,17 @@ function LoginPageContent() {
           <p className="text-sm text-gray-600">
             {t('login.form.noAccount')}{' '}
             <Link
-              href={
-                redirectTo === '/'
-                  ? '/register'
-                  : `/register?redirect=${encodeURIComponent(redirectTo)}`
-              }
+              href={(() => {
+                const qs = new URLSearchParams();
+                if (redirectTo !== '/') {
+                  qs.set('redirect', redirectTo);
+                }
+                if (pendingWishlistProductId) {
+                  qs.set(PENDING_WISHLIST_PRODUCT_QUERY_PARAM, pendingWishlistProductId);
+                }
+                const q = qs.toString();
+                return q ? `/register?${q}` : '/register';
+              })()}
               className="text-blue-600 hover:underline font-medium"
             >
               {t('login.form.signUp')}

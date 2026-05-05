@@ -6,7 +6,12 @@ import { Button, Input, Card } from '@shop/ui';
 import Link from 'next/link';
 import { getErrorMessage } from '@/lib/types/errors';
 import { useAuth } from '../../lib/auth/AuthContext';
+import { getStoredLanguage } from '../../lib/language';
 import { useTranslation } from '../../lib/i18n-client';
+import {
+  addPendingWishlistProductIfAny,
+  PENDING_WISHLIST_PRODUCT_QUERY_PARAM,
+} from '../../lib/wishlist/wishlist-client';
 import { Eye, EyeOff } from 'lucide-react';
 import { logger } from "@/lib/utils/logger";
 
@@ -28,6 +33,7 @@ function RegisterPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams?.get('redirect') || '/';
+  const pendingWishlistProductId = searchParams?.get(PENDING_WISHLIST_PRODUCT_QUERY_PARAM);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -104,11 +110,17 @@ function RegisterPageContent() {
 
       if (flow.status === 'needs_verification') {
         logger.devLog('✅ [REGISTER PAGE] Verification required, redirecting...');
-        router.push(`/verify?redirect=${encodeURIComponent(redirectTo)}`);
+        const verifyQs = new URLSearchParams();
+        verifyQs.set('redirect', redirectTo);
+        if (pendingWishlistProductId) {
+          verifyQs.set(PENDING_WISHLIST_PRODUCT_QUERY_PARAM, pendingWishlistProductId);
+        }
+        router.push(`/verify?${verifyQs.toString()}`);
         return;
       }
 
       logger.devLog('✅ [REGISTER PAGE] Registration successful, redirecting...');
+      await addPendingWishlistProductIfAny(pendingWishlistProductId, getStoredLanguage());
       router.push(redirectTo);
     } catch (err: unknown) {
       logger.error('Register page submission failed', {
@@ -296,11 +308,17 @@ function RegisterPageContent() {
           <p className="text-sm text-gray-600">
             {t('register.form.alreadyHaveAccount')}{' '}
             <Link
-              href={
-                redirectTo === '/'
-                  ? '/login'
-                  : `/login?redirect=${encodeURIComponent(redirectTo)}`
-              }
+              href={(() => {
+                const qs = new URLSearchParams();
+                if (redirectTo !== '/') {
+                  qs.set('redirect', redirectTo);
+                }
+                if (pendingWishlistProductId) {
+                  qs.set(PENDING_WISHLIST_PRODUCT_QUERY_PARAM, pendingWishlistProductId);
+                }
+                const q = qs.toString();
+                return q ? `/login?${q}` : '/login';
+              })()}
               className="text-blue-600 hover:underline font-medium"
             >
               {t('register.form.signIn')}
