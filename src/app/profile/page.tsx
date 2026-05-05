@@ -146,17 +146,19 @@ function ProfilePageContent() {
 
   return (
     <div className="marco-header-container py-8">
-      <div className="flex flex-col gap-8">
-        <ProfileHeader
-          profile={profile}
-          tabs={tabs}
-          activeTab={activeTab}
-          onTabChange={handleTabChange}
-          t={t}
-        />
+      <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-10">
+        <aside className="w-full shrink-0 lg:sticky lg:top-24 lg:w-72 lg:self-start">
+          <ProfileHeader
+            profile={profile}
+            tabs={tabs}
+            activeTab={activeTab}
+            onTabChange={handleTabChange}
+            t={t}
+          />
+        </aside>
 
         {/* Main Content */}
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0 flex-1">
           {/* Alert messages */}
           {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">

@@ -20,8 +20,8 @@ import { LanguagePreferenceProvider } from '../lib/language-context';
 const inter = Inter({ subsets: ['latin'], display: 'swap', adjustFontFallback: true });
 
 export const metadata: Metadata = {
-  title: 'Shop - Marco Group',
-  description: 'Modern e-commerce platform',
+  title: 'Marco Group',
+  description: 'Կահույքի և տեխնիկայի հուսալի մատակարար',
 };
 
 export default async function RootLayout({
