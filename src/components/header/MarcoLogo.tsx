@@ -6,6 +6,13 @@ const MARCO_LOGO_INTRINSIC_WIDTH = 1080;
 const MARCO_LOGO_INTRINSIC_HEIGHT = 1350;
 
 /**
+ * `next/image` uses `sizes` to pick a downscaled CDN URL. This logo is heavily cropped/zoomed via CSS;
+ * if `sizes` matches only the ~36–40px header slot, production serves too few pixels and the glyph looks soft.
+ * Hint a larger width so the visible crop stays sharp (dev uses `images.unoptimized` and bypasses this).
+ */
+const MARCO_LOGO_SIZES = '(min-width: 768px) 320px, 280px';
+
+/**
  * MARCO GROUP logo — Figma 111:4321 (`logo aranc fon 1`).
  * Raster is cropped/zoomed inside an 83×73 frame; md+ height matches `HEADER_ROW2_BAR_HEIGHT_CLASS` (row-2 search strip).
  */
@@ -24,7 +31,8 @@ export function MarcoLogo() {
           height={MARCO_LOGO_INTRINSIC_HEIGHT}
           className="absolute -left-[48.54%] -top-[75.88%] h-[278.35%] w-[197.08%] max-w-none"
           priority
-          sizes="(min-width: 768px) 40px, 36px"
+          quality={100}
+          sizes={MARCO_LOGO_SIZES}
         />
       </span>
     </Link>
