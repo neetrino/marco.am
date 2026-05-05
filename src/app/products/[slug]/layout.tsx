@@ -3,6 +3,7 @@ import { productsService } from "@/lib/services/products.service";
 
 const DEFAULT_TITLE = "Product";
 const SITE_NAME = "WhiteShop.am";
+const BROWSER_TAB_TITLE = "Shop - Marco Group";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -20,10 +21,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         : null;
 
     return {
-      title: `${title} | ${SITE_NAME}`,
+      title: BROWSER_TAB_TITLE,
       description: description ?? undefined,
       openGraph: {
-        title,
+        title: `${title} | ${SITE_NAME}`,
         description: description ?? undefined,
         ...(firstImage && { images: [{ url: firstImage, alt: title }] }),
         type: "website",
@@ -37,7 +38,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   } catch {
     return {
-      title: `${DEFAULT_TITLE} | ${SITE_NAME}`,
+      title: BROWSER_TAB_TITLE,
     };
   }
 }
