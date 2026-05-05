@@ -10,7 +10,7 @@ import {
   addPendingWishlistProductIfAny,
   invalidateWishlistCache,
 } from '../wishlist/wishlist-client';
-import { syncGuestDataAfterAuth } from './sync-guest-data-after-auth';
+import { scheduleGuestDataSyncAfterAuth } from './sync-guest-data-after-auth';
 
 /** Session storage keys for OTP step (same-tab only). */
 export const AUTH_VERIFICATION_TOKEN_KEY = 'auth_verification_token';
@@ -188,7 +188,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       logger.devLog('✅ [AUTH] Login successful:', { userId: response.user.id });
       persistSession(response);
-      await syncGuestDataAfterAuth();
+      scheduleGuestDataSyncAfterAuth();
       return { status: 'authenticated' };
     } catch (error: unknown) {
       logger.devLog('❌ [AUTH] Login error', { error });
@@ -257,7 +257,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       try {
         persistSession(response);
-        await syncGuestDataAfterAuth();
+        scheduleGuestDataSyncAfterAuth();
         logger.devLog('💾 [AUTH] Auth data stored in localStorage');
       } catch (storageError) {
         logger.devLog('❌ [AUTH] Failed to store auth data', { storageError });
@@ -329,7 +329,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       persistSession(response);
       clearVerificationSession();
-      await syncGuestDataAfterAuth();
+      scheduleGuestDataSyncAfterAuth();
       const lang = getStoredLanguage();
       await addPendingWishlistProductIfAny(pendingWishlistProductId, lang);
       router.push(redirectTo);
