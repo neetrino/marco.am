@@ -234,36 +234,38 @@ export function ProductPageClient({
         )}
       </div>
 
-      <div className="mt-24">
-        <RelatedProducts currentProductSlug={slug} language={language} />
-      </div>
-
       {product ? (
-        <>
+        <div className="mt-24">
           <Suspense
             fallback={
               <div
-                className="mt-16 min-h-[120px] w-full rounded-lg bg-gray-100/90 dark:bg-white/[0.06]"
+                className="min-h-[120px] w-full rounded-lg bg-gray-100/90 dark:bg-white/[0.06]"
                 aria-hidden
               />
             }
           >
             <ProductSpecifications product={product} language={language} />
           </Suspense>
+        </div>
+      ) : null}
 
-          <Suspense
-            fallback={
-              <div
-                className="mt-16 min-h-[160px] w-full rounded-lg bg-gray-100/90 dark:bg-white/[0.06]"
-                aria-hidden
-              />
-            }
-          >
-            <div id="product-reviews" className="mt-16 scroll-mt-24">
-              <ProductReviews productSlug={slug} productId={product.id} />
-            </div>
-          </Suspense>
-        </>
+      <div className={product ? 'mt-16' : 'mt-24'}>
+        <RelatedProducts currentProductSlug={slug} language={language} />
+      </div>
+
+      {product ? (
+        <Suspense
+          fallback={
+            <div
+              className="mt-16 min-h-[160px] w-full rounded-lg bg-gray-100/90 dark:bg-white/[0.06]"
+              aria-hidden
+            />
+          }
+        >
+          <div id="product-reviews" className="mt-16 scroll-mt-24">
+            <ProductReviews productSlug={slug} productId={product.id} />
+          </div>
+        </Suspense>
       ) : null}
     </div>
   );

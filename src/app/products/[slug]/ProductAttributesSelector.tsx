@@ -78,7 +78,7 @@ export function ProductAttributesSelector({
   logger.devLog('🎨 [PRODUCT ATTRIBUTES SELECTOR] product.productAttributes:', product?.productAttributes);
   
   return (
-    <div className="mt-8 p-4 bg-white border border-gray-200 rounded-2xl space-y-4">
+    <div className="mt-6 rounded-xl border border-gray-200 bg-white p-3 space-y-2 md:space-y-2.5">
       {/* Attribute Selectors - Support both new (productAttributes) and old (colorGroups) format */}
       {/* Display all attributes from attributeGroups, not just from productAttributes */}
       {attributeGroupsEntries.length > 0 ? (
@@ -96,14 +96,25 @@ export function ProductAttributesSelector({
           const isUnavailable = unavailableAttributes.get(attrKey) || false;
           
           return (
-            <div key={attrKey} className="space-y-1.5">
-              <label className={`text-xs font-bold uppercase ${isUnavailable ? 'text-red-600' : ''}`}>
+            <div
+              key={attrKey}
+              className={
+                isColor || isSize
+                  ? 'space-y-1'
+                  : 'flex flex-col gap-1 md:flex-row md:items-center md:gap-x-3'
+              }
+            >
+              <label
+                className={`text-[11px] font-bold uppercase leading-snug md:max-w-[11rem] md:shrink-0 ${
+                  isUnavailable ? 'text-red-600' : 'text-marco-black'
+                }`}
+              >
                 {attrKey === 'color' ? t(language, 'product.color') : 
                  attrKey === 'size' ? t(language, 'product.size') : 
                  attributeName}:
               </label>
               {isColor ? (
-                <div className="flex flex-wrap gap-1.5 items-center">
+                <div className="flex flex-wrap items-center gap-1 md:min-w-0 md:flex-1">
                   {attrGroups.map((g) => {
                     const isSelected = selectedColor === g.value?.toLowerCase().trim();
                     // IMPORTANT: Don't disable based on stock - show all colors, even if stock is 0
@@ -165,7 +176,7 @@ export function ProductAttributesSelector({
                   })}
                 </div>
               ) : isSize ? (
-                <div className="flex flex-wrap gap-1.5">
+                <div className="flex flex-wrap gap-1 md:min-w-0 md:flex-1">
                   {attrGroups.map((g) => {
                     // Use stock from groups (already calculated with compatibility)
                     const displayStock = g.stock;
@@ -182,10 +193,10 @@ export function ProductAttributesSelector({
                     // Keep size consistent for 2 values, reduce for more
                     const totalValues = attrGroups.length;
                     const paddingClass = totalValues > 6 
-                      ? 'px-2 py-1' 
+                      ? 'px-1.5 py-0.5' 
                       : totalValues > 3 
-                      ? 'px-2.5 py-1.5' 
-                      : 'px-3 py-2';
+                      ? 'px-2 py-1' 
+                      : 'px-2.5 py-1';
                     const textSizeClass = totalValues > 6 
                       ? 'text-xs' 
                       : 'text-sm';
@@ -222,9 +233,9 @@ export function ProductAttributesSelector({
                             }}
                           />
                         )}
-                        <div className="flex flex-col text-center">
+                        <div className="flex flex-col gap-0 text-center leading-tight">
                           <span className={`${textSizeClass} font-medium`}>{getAttributeLabel(language, attrKey, g.value)}</span>
-                          <span className={`${totalValues > 10 ? 'text-[10px]' : 'text-xs'} ${displayStock > 0 ? 'text-gray-500' : 'text-gray-400'}`}>({displayStock})</span>
+                          <span className={`${totalValues > 10 ? 'text-[10px]' : 'text-[11px]'} ${displayStock > 0 ? 'text-gray-500' : 'text-gray-400'}`}>({displayStock})</span>
                         </div>
                       </button>
                     );
@@ -232,7 +243,7 @@ export function ProductAttributesSelector({
                 </div>
               ) : (
                 // Generic attribute selector
-                <div className="flex flex-wrap gap-1.5">
+                <div className="flex min-w-0 flex-1 flex-wrap gap-1 md:justify-end">
                   {attrGroups.map((g) => {
                     const selectedValueId = selectedAttributeValues.get(attrKey);
                     const isSelected = selectedValueId === g.valueId || (!g.valueId && selectedColor === g.value);
@@ -257,10 +268,10 @@ export function ProductAttributesSelector({
                     // Keep size consistent for 2 values, reduce for more
                     const totalValues = attrGroups.length;
                     const paddingClass = totalValues > 6 
-                      ? 'px-2 py-1' 
+                      ? 'px-1.5 py-0.5' 
                       : totalValues > 3 
-                      ? 'px-3 py-1.5' 
-                      : 'px-4 py-2';
+                      ? 'px-2 py-1' 
+                      : 'px-2.5 py-1';
                     const textSizeClass = totalValues > 6 
                       ? 'text-xs' 
                       : 'text-sm';
@@ -309,9 +320,9 @@ export function ProductAttributesSelector({
                             style={{ backgroundColor: colorHex }}
                           />
                         ) : null}
-                        <div className="flex flex-col text-center">
+                        <div className="flex flex-col gap-0 text-center leading-tight">
                           <span className={textSizeClass}>{getAttributeLabel(language, attrKey, g.value)}</span>
-                          <span className={`${totalValues > 10 ? 'text-[10px]' : 'text-xs'} ${g.stock > 0 ? 'text-gray-500' : 'text-gray-400'}`}>({g.stock})</span>
+                          <span className={`${totalValues > 10 ? 'text-[10px]' : 'text-[11px]'} ${g.stock > 0 ? 'text-gray-500' : 'text-gray-400'}`}>({g.stock})</span>
                         </div>
                       </button>
                     );
@@ -325,9 +336,9 @@ export function ProductAttributesSelector({
         // Old format: Use colorGroups and sizeGroups
         <>
           {colorGroups.length > 0 && (
-            <div className="space-y-2">
-              <label className="text-sm font-medium">{t(language, 'product.color')}:</label>
-              <div className="flex flex-wrap gap-2 items-center">
+            <div className="space-y-1">
+              <label className="text-xs font-bold uppercase leading-snug">{t(language, 'product.color')}:</label>
+              <div className="flex flex-wrap items-center gap-1.5">
                 {colorGroups.map((g) => {
                   const isSelected = selectedColor === g.color?.toLowerCase().trim();
                   const isDisabled = g.stock <= 0;
@@ -361,9 +372,9 @@ export function ProductAttributesSelector({
 
       {/* Size Groups - Show only if not using new format */}
       {!product?.productAttributes && sizeGroups.length > 0 && (
-        <div className="space-y-2">
-          <label className="text-sm font-bold uppercase">{t(language, 'product.size')}</label>
-          <div className="flex flex-wrap gap-2">
+        <div className="space-y-1">
+          <label className="text-xs font-bold uppercase leading-snug">{t(language, 'product.size')}</label>
+          <div className="flex flex-wrap gap-1.5">
             {sizeGroups.map((g) => {
               let displayStock = g.stock;
               if (selectedColor) {
@@ -381,7 +392,7 @@ export function ProductAttributesSelector({
                   key={g.size} 
                   onClick={() => !isDisabled && onSizeSelect(g.size)}
                   disabled={isDisabled}
-                  className={`min-w-[50px] px-3 py-2 rounded-lg border-2 transition-all ${
+                  className={`min-w-[44px] px-2.5 py-1 rounded-lg border-2 transition-all ${
                     isSelected 
                       ? 'border-green-500 bg-gray-50' 
                       : isDisabled 
