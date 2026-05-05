@@ -6,7 +6,7 @@ import { Button, Input, Card } from '@shop/ui';
 import Link from 'next/link';
 import { getErrorMessage } from '@/lib/types/errors';
 import { useAuth } from '../../lib/auth/AuthContext';
-import { syncGuestDataAfterAuth } from '../../lib/auth/sync-guest-data-after-auth';
+import { scheduleGuestDataSyncAfterAuth } from '../../lib/auth/sync-guest-data-after-auth';
 import { getStoredLanguage } from '../../lib/language';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '../../lib/i18n-client';
@@ -112,7 +112,7 @@ function LoginPageContent() {
       return;
     }
     void (async () => {
-      await syncGuestDataAfterAuth();
+      scheduleGuestDataSyncAfterAuth();
       await addPendingWishlistProductIfAny(pendingWishlistProductId, getStoredLanguage());
       router.replace(getPostLoginRedirect(redirectTo));
     })();
