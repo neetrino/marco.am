@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { pushShopProductsListingUrl } from '../lib/push-shop-products-listing-url';
 import { apiClient } from '../lib/api-client';
@@ -9,7 +9,6 @@ import { useTranslation } from '../lib/i18n-client';
 import { useProductsFilters } from './ProductsFiltersProvider';
 import {
   PRODUCTS_FILTER_SECTION_SHELL_CLASS,
-  PRODUCTS_FILTER_SECTION_SHELL_LAST_CLASS,
   productsFiltersSectionFont,
 } from '../lib/products-filters-typography';
 import { PRODUCTS_FILTER_LIST_SCROLL_CLASS } from '../lib/products-filter-list-scroll';
@@ -20,7 +19,6 @@ interface SizeFilterProps {
   search?: string;
   minPrice?: string;
   maxPrice?: string;
-  selectedSizes?: string[];
 }
 
 interface SizeOption {
@@ -29,14 +27,25 @@ interface SizeOption {
 }
 
 
-export function SizeFilter({ category, search, minPrice, maxPrice, selectedSizes = [] }: SizeFilterProps) {
+export function SizeFilter({ category, search, minPrice, maxPrice }: SizeFilterProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const filtersContext = useProductsFilters();
   const { t } = useTranslation();
   const [sizes, setSizes] = useState<SizeOption[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selected, setSelected] = useState<string[]>(selectedSizes);
+  const [optimisticSizes, setOptimisticSizes] = useState<string[] | null>(null);
+
+  const sizesQs = searchParams.get('sizes');
+  const selectedFromUrl = useMemo(
+    () =>
+      sizesQs
+        ? sizesQs.split(',').map((s) => s.trim().toUpperCase()).filter(Boolean)
+        : [],
+    [sizesQs],
+  );
+
+  const selected = optimisticSizes ?? selectedFromUrl;
 
   useEffect(() => {
     if (filtersContext?.data?.sizes) {
@@ -52,8 +61,8 @@ export function SizeFilter({ category, search, minPrice, maxPrice, selectedSizes
   }, [category, search, minPrice, maxPrice, filtersContext?.data?.sizes, filtersContext?.loading, filtersContext === null]);
 
   useEffect(() => {
-    setSelected(selectedSizes);
-  }, [selectedSizes]);
+    setOptimisticSizes(null);
+  }, [sizesQs]);
 
   const fetchSizes = async () => {
     try {
@@ -67,6 +76,8 @@ export function SizeFilter({ category, search, minPrice, maxPrice, selectedSizes
       if (search) params.search = search;
       if (minPrice) params.minPrice = minPrice;
       if (maxPrice) params.maxPrice = maxPrice;
+      const filterParam = searchParams.get('filter');
+      if (filterParam) params.filter = filterParam;
 
       const response = await apiClient.get<{ colors: unknown[]; sizes: SizeOption[] }>('/api/v1/products/filters', { params });
 
@@ -79,25 +90,23 @@ export function SizeFilter({ category, search, minPrice, maxPrice, selectedSizes
   };
 
   const handleSizeToggle = (sizeValue: string) => {
-    const newSelected = selected.includes(sizeValue)
-      ? selected.filter((s) => s !== sizeValue)
-      : [...selected, sizeValue];
-
-    setSelected(newSelected);
-    applyFilters(newSelected);
-  };
-
-  const applyFilters = (sizesToApply: string[]) => {
+    const key = sizeValue.trim().toUpperCase();
     const params = new URLSearchParams(searchParams.toString());
+    const fromUrl =
+      optimisticSizes ??
+      params.get('sizes')?.split(',').map((s) => s.trim().toUpperCase()).filter(Boolean) ??
+      [];
+    const idx = fromUrl.indexOf(key);
+    const next = idx >= 0 ? fromUrl.filter((_, i) => i !== idx) : [...fromUrl, key];
+    setOptimisticSizes(next);
 
-    if (sizesToApply.length > 0) {
-      params.set('sizes', sizesToApply.join(','));
+    if (next.length > 0) {
+      params.set('sizes', next.join(','));
     } else {
       params.delete('sizes');
     }
 
     params.delete('page');
-
     pushShopProductsListingUrl(router, `/products?${params.toString()}`);
   };
 
@@ -128,7 +137,7 @@ export function SizeFilter({ category, search, minPrice, maxPrice, selectedSizes
   }
 
   return (
-    <section className={PRODUCTS_FILTER_SECTION_SHELL_LAST_CLASS}>
+    <section className={PRODUCTS_FILTER_SECTION_SHELL_CLASS}>
       <h3
         className={`${productsFiltersSectionFont.className} mb-4 text-base font-semibold leading-6 tracking-[-0.31px] text-[#1d293d]`}
       >

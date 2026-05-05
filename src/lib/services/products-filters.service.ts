@@ -3,6 +3,14 @@ import { Prisma } from "@white-shop/db/prisma";
 import { adminService } from "./admin.service";
 import { buildWhereClause } from "./products-find-query/query-builder";
 import { ProductWithRelations } from "./products-find-query.service";
+import type { TechnicalSpecFilters } from "./products-find-query/types";
+import {
+  hasTechnicalSpecFilters,
+  isReservedShopAttributeFilterKey,
+  normalizeTechnicalFilterToken,
+  productMatchesTechnicalSpecs,
+  type TechnicalSpecFacet,
+} from "./products-technical-filters";
 import { getAttributeBucket, isColorAttributeKey, isSizeAttributeKey } from "@/lib/attribute-keys";
 import {
   buildShopCategoryFilterTree,
@@ -32,6 +40,27 @@ function canonicalCategoryFilterKey(input: string): string {
     .replace(/\s+/g, " ");
 }
 
+function humanizeAttributeKeyTitle(key: string): string {
+  const k = key.trim();
+  if (!k) {
+    return "";
+  }
+  return k
+    .replace(/[-_]+/g, " ")
+    .split(" ")
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(" ");
+}
+
+type ExtraAttributeFacetAgg = {
+  key: string;
+  label: string;
+  labelFromDb: boolean;
+  type: string;
+  values: Map<string, { value: string; label: string; count: number }>;
+};
+
 class ProductsFiltersService {
   private getLocalizedAttributeValueLabel(
     attributeValue: {
@@ -50,6 +79,108 @@ class ProductsFiltersService {
       null;
 
     return (translation?.label || attributeValue.value || "").trim();
+  }
+
+  private getLocalizedAttributeName(
+    attribute:
+      | {
+          translations?: Array<{ locale: string; name: string }> | null;
+          key?: string | null;
+          filterable?: boolean | null;
+        }
+      | null
+      | undefined,
+    lang: string,
+    fallbackKey: string,
+  ): string {
+    const trList = attribute?.translations;
+    if (trList && trList.length > 0) {
+      const tr =
+        trList.find((t) => t.locale === lang) ??
+        trList.find((t) => Boolean(t?.name?.trim())) ??
+        trList[0];
+      const name = tr?.name?.trim();
+      if (name) {
+        return name;
+      }
+    }
+    return humanizeAttributeKeyTitle(fallbackKey);
+  }
+
+  private upsertExtraAttributeFacet(
+    facetByKey: Map<string, ExtraAttributeFacetAgg>,
+    keyNorm: string,
+    sectionLabel: string,
+    sectionLabelFromDb: boolean,
+    attrType: string,
+    displayLabel: string,
+  ): void {
+    const trimmed = displayLabel.trim();
+    if (!trimmed || !keyNorm) {
+      return;
+    }
+    const token = normalizeTechnicalFilterToken(trimmed);
+    if (!token) {
+      return;
+    }
+
+    let facet = facetByKey.get(keyNorm);
+    if (!facet) {
+      facet = {
+        key: keyNorm,
+        label: sectionLabel,
+        labelFromDb: sectionLabelFromDb,
+        type: attrType,
+        values: new Map(),
+      };
+      facetByKey.set(keyNorm, facet);
+    } else if (sectionLabelFromDb && !facet.labelFromDb) {
+      facet.label = sectionLabel;
+      facet.labelFromDb = true;
+      facet.type = attrType;
+    }
+
+    const existingVal = facet.values.get(token);
+    if (existingVal) {
+      existingVal.count += 1;
+      if (trimmed.length > existingVal.label.length) {
+        existingVal.label = trimmed;
+      }
+    } else {
+      facet.values.set(token, { value: token, label: trimmed, count: 1 });
+    }
+  }
+
+  private collectExtraFacetsFromVariantJson(
+    attrs: Record<string, unknown> | null | undefined,
+    facetByKey: Map<string, ExtraAttributeFacetAgg>,
+  ): void {
+    if (!attrs || typeof attrs !== "object") {
+      return;
+    }
+    for (const [rawKey, rawVal] of Object.entries(attrs)) {
+      const keyNorm = normalizeTechnicalFilterToken(rawKey);
+      if (!keyNorm || isReservedShopAttributeFilterKey(keyNorm)) {
+        continue;
+      }
+      const title = humanizeAttributeKeyTitle(rawKey);
+      const entries = Array.isArray(rawVal) ? rawVal : rawVal != null ? [rawVal] : [];
+      for (const entry of entries) {
+        let displayLabel = "";
+        if (entry && typeof entry === "object" && !Array.isArray(entry)) {
+          const o = entry as { label?: unknown; value?: unknown };
+          const fromLabel = typeof o.label === "string" ? o.label.trim() : "";
+          const fromValue = typeof o.value === "string" ? o.value.trim() : "";
+          displayLabel = (fromLabel || fromValue).trim();
+        } else if (entry != null) {
+          displayLabel = String(entry).trim();
+        }
+        if (!displayLabel) {
+          continue;
+        }
+        this.upsertExtraAttributeFacet(facetByKey, keyNorm, title, false, "select", displayLabel);
+      }
+    }
   }
 
   /**
@@ -134,14 +265,17 @@ class ProductsFiltersService {
   async getFilters(filters: {
     category?: string;
     search?: string;
+    filter?: string;
     minPrice?: number;
     maxPrice?: number;
     lang?: string;
+    technicalSpecs?: TechnicalSpecFilters;
   }) {
     try {
       const { where: listingWhere } = await buildWhereClause({
         category: filters.category?.trim(),
         search: filters.search?.trim(),
+        filter: filters.filter?.trim(),
         lang: filters.lang || "en",
       });
       if (listingWhere === null) {
@@ -150,6 +284,7 @@ class ProductsFiltersService {
           sizes: [],
           brands: [],
           categories: [],
+          attributeFacets: [] as TechnicalSpecFacet[],
           priceRange: { min: 0, max: 0, stepSize: null, stepSizePerCurrency: null },
         };
       }
@@ -178,7 +313,11 @@ class ProductsFiltersService {
                   include: {
                     attributeValue: {
                       include: {
-                        attribute: true,
+                        attribute: {
+                          include: {
+                            translations: true,
+                          },
+                        },
                         translations: true,
                       },
                     },
@@ -226,6 +365,13 @@ class ProductsFiltersService {
       });
     }
 
+    const technicalSpecs = filters.technicalSpecs;
+    if (hasTechnicalSpecFilters(technicalSpecs)) {
+      products = products.filter((product: ProductWithRelations) =>
+        productMatchesTechnicalSpecs(product, technicalSpecs),
+      );
+    }
+
     // Collect colors and sizes from variants
     // Use Map with lowercase key to merge colors with different cases
     // Store both count, canonical label, imageUrl and colors hex
@@ -237,6 +383,7 @@ class ProductsFiltersService {
       colors?: string[] | null;
     }>();
     const sizeMap = new Map<string, number>();
+    const extraAttributeFacetByKey = new Map<string, ExtraAttributeFacetAgg>();
     const brandMap = new Map<string, { id: string; slug: string; name: string; count: number }>();
     const categoryCountMap = new Map<string, number>();
     let rangeMin = Infinity;
@@ -346,6 +493,59 @@ class ProductsFiltersService {
                 const normalizedSize = sizeValue.trim().toUpperCase();
                 sizeMap.set(normalizedSize, (sizeMap.get(normalizedSize) || 0) + 1);
               }
+            } else {
+              const attrEntity = option.attributeValue?.attribute as
+                | {
+                    key?: string | null;
+                    type?: string | null;
+                    filterable?: boolean | null;
+                    translations?: Array<{ locale: string; name: string }> | null;
+                  }
+                | null
+                | undefined;
+
+              if (attrEntity && attrEntity.filterable === false) {
+                return;
+              }
+
+              const attrKeyRaw =
+                (typeof attrEntity?.key === "string" && attrEntity.key.trim()
+                  ? attrEntity.key
+                  : null) ??
+                (typeof option.attributeKey === "string" ? option.attributeKey : null) ??
+                (typeof option.key === "string" ? option.key : null) ??
+                (typeof option.attribute === "string" ? option.attribute : null);
+
+              if (!attrKeyRaw || typeof attrKeyRaw !== "string") {
+                return;
+              }
+
+              const keyNorm = normalizeTechnicalFilterToken(attrKeyRaw);
+              if (!keyNorm || isReservedShopAttributeFilterKey(keyNorm)) {
+                return;
+              }
+
+              let displayLabel = "";
+              if (option.attributeValue) {
+                displayLabel = this.getLocalizedAttributeValueLabel(option.attributeValue, lang);
+              } else {
+                displayLabel = String(option.value || option.label || "").trim();
+              }
+              if (!displayLabel) {
+                return;
+              }
+
+              const sectionLabel = this.getLocalizedAttributeName(attrEntity, lang, attrKeyRaw);
+              const attrType = typeof attrEntity?.type === "string" ? attrEntity.type : "select";
+              const labelFromDb = Boolean(attrEntity?.translations && attrEntity.translations.length > 0);
+              this.upsertExtraAttributeFacet(
+                extraAttributeFacetByKey,
+                keyNorm,
+                sectionLabel,
+                labelFromDb,
+                attrType,
+                displayLabel,
+              );
             }
           }
         });
@@ -388,6 +588,13 @@ class ProductsFiltersService {
           const normalizedSize = sizeValue.toUpperCase();
           sizeMap.set(normalizedSize, (sizeMap.get(normalizedSize) || 0) + 1);
         });
+
+        this.collectExtraFacetsFromVariantJson(
+          variant.attributes && typeof variant.attributes === "object"
+            ? (variant.attributes as Record<string, unknown>)
+            : null,
+          extraAttributeFacetByKey,
+        );
       });
       
       // Also check productAttributes for color attribute values with imageUrl and colors
@@ -641,11 +848,21 @@ class ProductsFiltersService {
         // use defaults
       }
 
+      const attributeFacets: TechnicalSpecFacet[] = Array.from(extraAttributeFacetByKey.values())
+        .map((facet) => ({
+          key: facet.key,
+          label: facet.label,
+          type: facet.type,
+          values: Array.from(facet.values.values()).sort((a, b) => a.label.localeCompare(b.label)),
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label));
+
       return {
         colors,
         sizes,
         brands,
         categories,
+        attributeFacets,
         priceRange: { min: priceMin, max: priceMax, stepSize, stepSizePerCurrency },
       };
     } catch (error) {
@@ -655,6 +872,7 @@ class ProductsFiltersService {
         sizes: [],
         brands: [],
         categories: [],
+        attributeFacets: [] as TechnicalSpecFacet[],
         priceRange: { min: 0, max: 0, stepSize: null, stepSizePerCurrency: null },
       };
     }

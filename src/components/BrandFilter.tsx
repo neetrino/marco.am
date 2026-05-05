@@ -51,6 +51,8 @@ export function BrandFilter({ category, search, minPrice, maxPrice }: BrandFilte
       if (search) params.search = search;
       if (minPrice) params.minPrice = minPrice;
       if (maxPrice) params.maxPrice = maxPrice;
+      const filterParam = searchParams.get('filter');
+      if (filterParam) params.filter = filterParam;
       const response = await apiClient.get<{ brands: BrandOption[] }>('/api/v1/products/filters', { params });
       const list = response.brands ?? [];
       setBrands(list);

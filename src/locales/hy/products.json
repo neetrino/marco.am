@@ -51,6 +51,12 @@
       "loading": "Բեռնվում է...",
       "clear": "Մաքրել",
       "clearAria": "Մաքրել բրենդի ֆիլտրը"
+    },
+    "attributeFacets": {
+      "sectionTitle": "Ատրիբուտներ",
+      "loading": "Բեռնվում են ատրիբուտները...",
+      "clear": "Մաքրել",
+      "clearAria": "Մաքրել ֆիլտրը՝ {name}"
     }
   },
   "header": {

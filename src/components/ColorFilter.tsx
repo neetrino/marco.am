@@ -87,6 +87,8 @@ export function ColorFilter({ category, search, minPrice, maxPrice }: ColorFilte
       if (search) params.search = search;
       if (minPrice) params.minPrice = minPrice;
       if (maxPrice) params.maxPrice = maxPrice;
+      const filterParam = searchParams.get('filter');
+      if (filterParam) params.filter = filterParam;
       const response = await apiClient.get<{ colors: ColorOption[] }>('/api/v1/products/filters', { params });
       setColors(response.colors ?? []);
     } catch (_error) {
