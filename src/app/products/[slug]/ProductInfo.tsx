@@ -53,7 +53,7 @@ export function ProductInfo({
     <div className="flex flex-col h-full">
       <div className="flex-1">
         {product.brand && <p className="text-sm text-gray-500 mb-2">{product.brand.name}</p>}
-        <h1 className="text-4xl font-bold text-marco-black mb-4">
+        <h1 className="mb-4 text-2xl font-bold text-marco-black sm:text-3xl md:text-4xl">
           {getProductText(language, product.id, 'title') || product.title}
         </h1>
         <div className="-mt-2 mb-6 flex flex-wrap items-center gap-x-2 gap-y-1">
