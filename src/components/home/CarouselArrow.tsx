@@ -19,8 +19,8 @@ export function CarouselArrow({
   const isPrev = direction === 'prev';
   const className =
     variant === 'dark'
-      ? 'border-white/80 bg-transparent text-white hover:border-[#ffca03] hover:bg-[#ffca03] hover:text-[#181111]'
-      : 'border-[#e5e7eb] bg-white text-[#374151] hover:border-[#ffca03] hover:text-[#181111] dark:hover:border-[#ffca03] dark:hover:bg-[#ffca03] dark:hover:text-[#181111]';
+      ? 'border-white/80 bg-transparent text-white enabled:hover:border-[#ffca03] enabled:hover:bg-[#ffca03] enabled:hover:text-[#181111]'
+      : 'border-[#e5e7eb] bg-white text-[#374151] enabled:hover:border-[#ffca03] enabled:hover:text-[#181111] dark:enabled:hover:border-[#ffca03] dark:enabled:hover:bg-[#ffca03] dark:enabled:hover:text-[#181111]';
 
   return (
     <button
@@ -28,7 +28,8 @@ export function CarouselArrow({
       disabled={disabled}
       onClick={onClick}
       aria-label={label}
-      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${className}`}
+      aria-disabled={disabled}
+      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border transition-colors disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-40 ${className}`}
     >
       <svg width="8" height="12" viewBox="0 0 8 12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
         {isPrev ? (

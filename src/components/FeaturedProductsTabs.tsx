@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -44,6 +44,13 @@ import type { HomeBrandPartnerPublicItem } from '@/lib/types/home-brand-partners
 import type { SpecialOfferProduct } from './home/special-offer-product.types';
 import { useIsMaxMd } from './home/use-is-max-md';
 import { HOME_PRODUCT_CHUNK_SIZE } from '../constants/homeProductChunks';
+import {
+  HOME_PROMO_PRIMARY_BANNER_ID,
+  HOME_PROMO_PRIMARY_DEFAULT_IMAGE_URL,
+  HOME_PROMO_PRIMARY_MOBILE_DEFAULT_IMAGE_URL,
+  HOME_PROMO_SECONDARY_BANNER_ID,
+  HOME_PROMO_SECONDARY_DEFAULT_IMAGE_URL,
+} from '@/lib/constants/home-hero-admin-banners';
 
 interface ProductsResponse {
   data: SpecialOfferProduct[];
@@ -59,6 +66,14 @@ interface HomeBrandPartnersResponse {
   sectionTitle: string;
   brands: HomeBrandPartnerPublicItem[];
 }
+
+type BannerSlotPayload = {
+  items: Array<{
+    id: string;
+    imageDesktopUrl: string | null;
+    imageMobileUrl: string | null;
+  }>;
+};
 
 type FilterType = 'new' | 'featured' | 'bestseller';
 
@@ -171,6 +186,15 @@ async function fetchHomeBrandPartners(
   });
 }
 
+async function fetchPromoStripBanners(language: LanguageCode): Promise<BannerSlotPayload> {
+  return apiClient.get<BannerSlotPayload>('/api/v1/banners', {
+    params: {
+      slot: 'home.promo.strip',
+      locale: language,
+    },
+  });
+}
+
 function cardVisualRowsToStubProducts(rows: CardVisualRow[]): SpecialOfferProduct[] {
   return rows.map((row) => ({
     id: row.id,
@@ -215,7 +239,13 @@ export function FeaturedProductsTabs({
   const isMaxMd = useIsMaxMd();
   const queryClient = useQueryClient();
   const [language, setLanguage] = useState<LanguageCode>(() => serverLanguage ?? 'en');
-  const [activeTab, setActiveTab] = useState<FilterType>('new');
+  const activeTab: FilterType = 'new';
+  const carouselArrowHandlersRef = useRef<{
+    scrollPrev: () => void;
+    scrollNext: () => void;
+  } | null>(null);
+  const [canScrollFeaturedPrev, setCanScrollFeaturedPrev] = useState(false);
+  const [canScrollFeaturedNext, setCanScrollFeaturedNext] = useState(false);
 
   useEffect(() => {
     const updateLanguage = () => {
@@ -272,6 +302,22 @@ export function FeaturedProductsTabs({
     initialData: initialHomeBrandPartnersPayload,
     placeholderData: (previous) => previous,
   });
+
+  const promoStripBannersQuery = useQuery({
+    queryKey: queryKeys.bannersBySlot('home.promo.strip', language),
+    queryFn: () => fetchPromoStripBanners(language),
+    staleTime: 300_000,
+  });
+
+  const promoPrimaryImageUrl =
+    promoStripBannersQuery.data?.items.find((item) => item.id === HOME_PROMO_PRIMARY_BANNER_ID)
+      ?.imageDesktopUrl ?? HOME_PROMO_PRIMARY_DEFAULT_IMAGE_URL;
+  const promoSecondaryImageUrl =
+    promoStripBannersQuery.data?.items.find((item) => item.id === HOME_PROMO_SECONDARY_BANNER_ID)
+      ?.imageDesktopUrl ?? HOME_PROMO_SECONDARY_DEFAULT_IMAGE_URL;
+  const promoPrimaryMobileImageUrl =
+    promoStripBannersQuery.data?.items.find((item) => item.id === HOME_PROMO_PRIMARY_BANNER_ID)
+      ?.imageMobileUrl ?? HOME_PROMO_PRIMARY_MOBILE_DEFAULT_IMAGE_URL;
 
   const resolvedHomeBrandPartners =
     homeBrandPartnersQuery.data?.brands ?? initialHomeBrandPartners ?? null;
@@ -353,18 +399,33 @@ export function FeaturedProductsTabs({
     }
   }, [featuredQuery.isSuccess, activeTab, language, queryClient]);
 
-  const handleTabChange = useCallback((tabId: FilterType) => {
-    setActiveTab(tabId);
-  }, []);
-
-  const shiftTab = useCallback(
-    (direction: -1 | 1) => {
-      const index = TAB_ORDER.indexOf(activeTab);
-      const nextId = TAB_ORDER[(index + direction + TAB_ORDER.length) % TAB_ORDER.length];
-      handleTabChange(nextId);
+  const setCarouselArrowHandlers = useCallback(
+    (
+      handlers: {
+        scrollPrev: () => void;
+        scrollNext: () => void;
+        canScrollPrev: boolean;
+        canScrollNext: boolean;
+      } | null,
+    ) => {
+      carouselArrowHandlersRef.current = handlers;
+      setCanScrollFeaturedPrev(handlers?.canScrollPrev ?? false);
+      setCanScrollFeaturedNext(handlers?.canScrollNext ?? false);
     },
-    [activeTab, handleTabChange],
+    [],
   );
+
+  const scrollFeaturedByArrow = useCallback((direction: -1 | 1) => {
+    const handlers = carouselArrowHandlersRef.current;
+    if (!handlers) {
+      return;
+    }
+    if (direction < 0) {
+      handlers.scrollPrev();
+      return;
+    }
+    handlers.scrollNext();
+  }, []);
 
   const sectionHeading = t(language, FEATURED_SECTION_TITLE_KEY);
 
@@ -401,17 +462,25 @@ export function FeaturedProductsTabs({
           <div className="flex shrink-0 flex-row gap-2 max-md:[margin-right:var(--fp-nav-inset-mobile)] md:[margin-right:var(--fp-nav-inset-desktop)]">
             <button
               type="button"
-              onClick={() => shiftTab(-1)}
-              className={`${FEATURED_NAV_BUTTON_CLASS} h-[var(--fp-nav-btn-h-mobile)] w-[var(--fp-nav-btn-w-mobile)] md:h-[var(--fp-nav-btn-h)] md:w-[var(--fp-nav-btn-w)]`}
+              onClick={() => scrollFeaturedByArrow(-1)}
+              disabled={!canScrollFeaturedPrev}
+              className={`${FEATURED_NAV_BUTTON_CLASS} h-[var(--fp-nav-btn-h-mobile)] w-[var(--fp-nav-btn-w-mobile)] md:h-[var(--fp-nav-btn-h)] md:w-[var(--fp-nav-btn-w)] ${
+                canScrollFeaturedPrev ? '' : 'cursor-not-allowed opacity-40'
+              }`}
               aria-label={t(language, 'home.featured_products.carousel_prev_aria')}
+              aria-disabled={!canScrollFeaturedPrev}
             >
               <ChevronLeft className={FEATURED_NAV_ICON_CLASS} strokeWidth={2} aria-hidden />
             </button>
             <button
               type="button"
-              onClick={() => shiftTab(1)}
-              className={`${FEATURED_NAV_BUTTON_CLASS} h-[var(--fp-nav-btn-h-mobile)] w-[var(--fp-nav-btn-w-mobile)] md:h-[var(--fp-nav-btn-h)] md:w-[var(--fp-nav-btn-w)]`}
+              onClick={() => scrollFeaturedByArrow(1)}
+              disabled={!canScrollFeaturedNext}
+              className={`${FEATURED_NAV_BUTTON_CLASS} h-[var(--fp-nav-btn-h-mobile)] w-[var(--fp-nav-btn-w-mobile)] md:h-[var(--fp-nav-btn-h)] md:w-[var(--fp-nav-btn-w)] ${
+                canScrollFeaturedNext ? '' : 'cursor-not-allowed opacity-40'
+              }`}
               aria-label={t(language, 'home.featured_products.carousel_next_aria')}
+              aria-disabled={!canScrollFeaturedNext}
             >
               <ChevronRight className={FEATURED_NAV_ICON_CLASS} strokeWidth={2} aria-hidden />
             </button>
@@ -435,6 +504,7 @@ export function FeaturedProductsTabs({
             resolvedHomeBrandPartners !== null ? [...resolvedHomeBrandPartners] : null
           }
           homeBrandPartnersSectionTitle={resolvedHomeBrandPartnersSectionTitle}
+          onCarouselArrowHandlersChange={setCarouselArrowHandlers}
         />
       </div>
 
@@ -443,10 +513,14 @@ export function FeaturedProductsTabs({
           <HomeAppBanner language={language} />
         </div>
         <div className="md:hidden">
-          <HomeMobileBannerProductShowcase language={language} />
+          <HomeMobileBannerProductShowcase imageUrl={promoPrimaryMobileImageUrl} />
         </div>
         <div className="hidden md:block">
-          <HomeGradientBanner language={language} />
+          <HomeGradientBanner
+            language={language}
+            promoPrimaryImageUrl={promoPrimaryImageUrl}
+            promoSecondaryImageUrl={promoSecondaryImageUrl}
+          />
         </div>
       </div>
     </section>

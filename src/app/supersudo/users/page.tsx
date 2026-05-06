@@ -6,6 +6,7 @@ import { useAuth } from '../../../lib/auth/AuthContext';
 import { Card, Button, Input } from '@shop/ui';
 import { apiClient, getApiOrErrorMessage } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
+import { showPopupConfirm } from '@/components/popup-service';
 import { AdminPageLayout } from '../components/AdminPageLayout';
 import { AdminTablePagination } from '../components/AdminTablePagination';
 import { logger } from "@/lib/utils/logger";
@@ -129,7 +130,7 @@ export default function UsersPage() {
 
   const handleBulkDelete = async () => {
     if (selectedIds.size === 0) return;
-    if (!confirm(t('admin.users.deleteConfirm').replace('{count}', selectedIds.size.toString()))) return;
+    if (!(await showPopupConfirm(t('admin.users.deleteConfirm').replace('{count}', selectedIds.size.toString())))) return;
     setBulkDeleting(true);
     try {
       const ids = Array.from(selectedIds);

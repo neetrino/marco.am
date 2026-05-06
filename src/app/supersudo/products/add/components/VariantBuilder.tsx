@@ -6,6 +6,7 @@ import { useTranslation } from '../../../../../lib/i18n-client';
 import { FormSection } from './FormSection';
 import { getColorHex } from '../../../../../lib/colorMap';
 import { CURRENCIES, type CurrencyCode } from '../../../../../lib/currency';
+import { showPopupPrompt } from '@/components/popup-service';
 import type { Attribute, GeneratedVariant } from '../types';
 import { logger } from "@/lib/utils/logger";
 
@@ -84,8 +85,8 @@ export function VariantBuilder({
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => {
-                    const price = prompt(t('admin.products.add.enterDefaultPrice'));
+                  onClick={async () => {
+                    const price = await showPopupPrompt(t('admin.products.add.enterDefaultPrice'));
                     if (price !== null) {
                       onApplyToAll('price', price);
                     }
@@ -97,8 +98,8 @@ export function VariantBuilder({
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => {
-                    const stock = prompt(t('admin.products.add.enterDefaultStock'));
+                  onClick={async () => {
+                    const stock = await showPopupPrompt(t('admin.products.add.enterDefaultStock'));
                     if (stock !== null) {
                       onApplyToAll('stock', stock);
                     }
@@ -110,8 +111,8 @@ export function VariantBuilder({
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => {
-                    const skuPrefix = prompt(t('admin.products.add.enterSkuPrefix'));
+                  onClick={async () => {
+                    const skuPrefix = await showPopupPrompt(t('admin.products.add.enterSkuPrefix'));
                     if (skuPrefix !== null) {
                       const baseSlug = skuPrefix || slug || generateSlug(title) || 'PROD';
                       onVariantUpdate((prev) =>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 
 import { chunkArray, padChunksToMinimumCount } from '../lib/chunk-array';
 import { t } from '../lib/i18n';
@@ -59,6 +59,12 @@ type FeaturedProductsStripProps = {
   homeBrandPartners: HomeBrandPartnerPublicItem[] | null;
   /** When API returns a section title, show it on the brands heading. */
   homeBrandPartnersSectionTitle?: string | null;
+  onCarouselArrowHandlersChange?: (handlers: {
+    scrollPrev: () => void;
+    scrollNext: () => void;
+    canScrollPrev: boolean;
+    canScrollNext: boolean;
+  } | null) => void;
 };
 
 /**
@@ -74,6 +80,7 @@ export function FeaturedProductsStrip({
   onRetryFetch,
   homeBrandPartners,
   homeBrandPartnersSectionTitle,
+  onCarouselArrowHandlersChange,
 }: FeaturedProductsStripProps) {
   const ctaHref = `/products?filter=${encodeURIComponent(FILTER_BY_TAB[activeTab])}`;
   const brandsFallbackTotal = HOME_BRAND_SLIDE_ENTRIES.length;
@@ -115,7 +122,11 @@ export function FeaturedProductsStrip({
   const {
     scrollerRef: featuredMobileScrollerRef,
     activePage: featuredMobileActivePage,
+    canScrollPrev: canScrollFeaturedMobilePrev,
+    canScrollNext: canScrollFeaturedMobileNext,
     scrollToPage: scrollFeaturedMobileToPage,
+    scrollPrev: scrollFeaturedMobilePrev,
+    scrollNext: scrollFeaturedMobileNext,
   } = useSpecialOffersCarousel({
     isRailVisible: isFeaturedMobileRailVisible,
     paginationPageCount: Math.max(1, mobileProductChunks.length),
@@ -124,7 +135,11 @@ export function FeaturedProductsStrip({
   const {
     scrollerRef: featuredDesktopScrollerRef,
     activePage: featuredDesktopActivePage,
+    canScrollPrev: canScrollFeaturedDesktopPrev,
+    canScrollNext: canScrollFeaturedDesktopNext,
     scrollToPage: scrollFeaturedDesktopToPage,
+    scrollPrev: scrollFeaturedDesktopPrev,
+    scrollNext: scrollFeaturedDesktopNext,
   } = useSpecialOffersCarousel({
     isRailVisible: isFeaturedDesktopRailVisible,
     paginationPageCount: desktopPaginationCount,
@@ -137,9 +152,55 @@ export function FeaturedProductsStrip({
     ? SPECIAL_OFFERS_PAGINATION_DOT_GAP_MOBILE_PX
     : SPECIAL_OFFERS_PAGINATION_DOT_GAP_DESKTOP_PX;
 
+  const canScrollFeaturedWithArrows = isMaxMd
+    ? isFeaturedMobileRailVisible && mobileProductChunks.length > 1
+    : isFeaturedDesktopRailVisible && desktopPaginationCount > 1;
+
+  useEffect(() => {
+    if (!onCarouselArrowHandlersChange) {
+      return;
+    }
+    if (!canScrollFeaturedWithArrows) {
+      onCarouselArrowHandlersChange(null);
+      return;
+    }
+    if (isMaxMd) {
+      onCarouselArrowHandlersChange({
+        scrollPrev: scrollFeaturedMobilePrev,
+        scrollNext: scrollFeaturedMobileNext,
+        canScrollPrev: canScrollFeaturedMobilePrev,
+        canScrollNext: canScrollFeaturedMobileNext,
+      });
+      return;
+    }
+    onCarouselArrowHandlersChange({
+      scrollPrev: scrollFeaturedDesktopPrev,
+      scrollNext: scrollFeaturedDesktopNext,
+      canScrollPrev: canScrollFeaturedDesktopPrev,
+      canScrollNext: canScrollFeaturedDesktopNext,
+    });
+    return () => {
+      onCarouselArrowHandlersChange(null);
+    };
+  }, [
+    onCarouselArrowHandlersChange,
+    canScrollFeaturedWithArrows,
+    isMaxMd,
+    scrollFeaturedMobilePrev,
+    scrollFeaturedMobileNext,
+    canScrollFeaturedMobilePrev,
+    canScrollFeaturedMobileNext,
+    scrollFeaturedDesktopPrev,
+    scrollFeaturedDesktopNext,
+    canScrollFeaturedDesktopPrev,
+    canScrollFeaturedDesktopNext,
+  ]);
+
   const {
     scrollerRef: brandsRailRef,
     activePage: brandsActivePage,
+    canScrollPrev: canScrollBrandsPrev,
+    canScrollNext: canScrollBrandsNext,
     scrollToPage: scrollBrandsToPage,
   } = useSpecialOffersCarousel({
     isRailVisible: showBrandsSection,
@@ -230,6 +291,8 @@ export function FeaturedProductsStrip({
           homeBrandPartnersSectionTitle={homeBrandPartnersSectionTitle}
           brandsRailRef={brandsRailRef}
           brandsActivePage={brandsActivePage}
+          canScrollBrandsPrev={canScrollBrandsPrev}
+          canScrollBrandsNext={canScrollBrandsNext}
           brandsPaginationPageCount={brandsPaginationPageCount}
           paginationDotGapPx={paginationDotGapPx}
           brandsDotsToCtaGapPx={brandsDotsToCtaGapPx}

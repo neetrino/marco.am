@@ -116,8 +116,8 @@ export async function ProductsShopFiltersColumn({
       </aside>
 
       <MobileFiltersDrawer openEventName={MOBILE_FILTERS_EVENT}>
-        <div className="space-y-0 px-4 pb-4 pt-0">
-          <div className="mb-5">
+        <div className="space-y-0 rounded-[20px] bg-white px-4 pb-4 pt-3 shadow-sm ring-1 ring-black/[0.06] dark:bg-zinc-900 dark:ring-white/10">
+          <div className="mb-4">
             <p className="text-sm font-normal leading-5 tracking-[-0.15px] text-[#62748e] dark:text-white/72">
               {t(language, 'products.filters.panelSubtitle')}
             </p>

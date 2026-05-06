@@ -17,6 +17,7 @@ import {
 } from '../lib/currency';
 import { useTranslation } from '../lib/i18n-client';
 import { pushShopProductsListingUrl } from '../lib/push-shop-products-listing-url';
+import { useMobileFiltersDraft } from './mobile-filters-draft-context';
 
 interface PriceFilterProps {
   currentMinPrice?: string;
@@ -41,7 +42,10 @@ function clampToRange(n: number, lo: number, hi: number): number {
 export function PriceFilter({ currentMinPrice, currentMaxPrice, category }: PriceFilterProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const mobileDraft = useMobileFiltersDraft();
   const { t } = useTranslation();
+  const activeSearchParams = mobileDraft?.enabled ? mobileDraft.searchParams : searchParams;
+
   const [priceRange, setPriceRange] = useState<PriceRange>({
     min: 0,
     max: 0,
@@ -212,10 +216,10 @@ export function PriceFilter({ currentMinPrice, currentMaxPrice, category }: Pric
     if (
       shouldApplyMin ||
       shouldApplyMax ||
-      searchParams.get('minPrice') ||
-      searchParams.get('maxPrice')
+      activeSearchParams.get('minPrice') ||
+      activeSearchParams.get('maxPrice')
     ) {
-      const params = new URLSearchParams(searchParams.toString());
+      const params = new URLSearchParams(activeSearchParams.toString());
 
       if (shouldApplyMin) {
         params.set('minPrice', minPrice.toString());
@@ -231,13 +235,32 @@ export function PriceFilter({ currentMinPrice, currentMaxPrice, category }: Pric
 
       params.delete('page');
 
+      if (mobileDraft?.enabled) {
+        mobileDraft.updateSearchParams((draftParams) => {
+          if (shouldApplyMin) {
+            draftParams.set('minPrice', minPrice.toString());
+          } else {
+            draftParams.delete('minPrice');
+          }
+
+          if (shouldApplyMax) {
+            draftParams.set('maxPrice', maxPrice.toString());
+          } else {
+            draftParams.delete('maxPrice');
+          }
+
+          draftParams.delete('page');
+        });
+        return;
+      }
+
       const timeoutId = setTimeout(() => {
         pushShopProductsListingUrl(router, `/products?${params.toString()}`);
       }, 300);
 
       return () => clearTimeout(timeoutId);
     }
-  }, [isDragging, minPrice, maxPrice, priceRange, searchParams, router]);
+  }, [activeSearchParams, isDragging, maxPrice, minPrice, mobileDraft, priceRange, router]);
 
   /** Slider + API use catalog price units; render label in selected display currency. */
   const formatPrice = (price: number) => {

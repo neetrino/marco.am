@@ -70,6 +70,7 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
     bridge: CSSProperties;
     panel: CSSProperties;
   } | null>(null);
+  const [mobileSearchPopupOpen, setMobileSearchPopupOpen] = useState(false);
 
   useLayoutEffect(() => {
     if (!showProductsMenu) {
@@ -155,6 +156,51 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
       document.body.style.overflow = previousOverflow;
     };
   }, [showProductsMenu]);
+
+  useEffect(() => {
+    if (!useMobileRow2 || !mobileSearchPopupOpen || typeof document === 'undefined') {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [mobileSearchPopupOpen, useMobileRow2]);
+
+  useEffect(() => {
+    if (!useMobileRow2 || !mobileSearchPopupOpen) {
+      return;
+    }
+
+    const focusId = window.setTimeout(() => {
+      headerSearchInputRef.current?.focus();
+    }, 20);
+
+    return () => {
+      window.clearTimeout(focusId);
+    };
+  }, [headerSearchInputRef, mobileSearchPopupOpen, useMobileRow2]);
+
+  useEffect(() => {
+    if (!useMobileRow2 || !mobileSearchPopupOpen) {
+      return;
+    }
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setMobileSearchPopupOpen(false);
+        setSearchDropdownOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleEscape);
+    return () => {
+      window.removeEventListener('keydown', handleEscape);
+    };
+  }, [mobileSearchPopupOpen, setSearchDropdownOpen, useMobileRow2]);
 
   return (
     <div
@@ -264,82 +310,200 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
             </div>
 
             <div ref={inlineSearchRef} className={`relative z-[480] min-w-0 flex-1 ${HEADER_SEARCH_BAR_INNER_CLASS}`}>
-              <form
-                onSubmit={handleSearch}
-                className={`flex w-full min-w-0 flex-row items-center overflow-hidden bg-marco-gray ${getHeaderSearchFormRadiusClass(row2TabletLike)} ${HEADER_SEARCH_BAR_HEIGHT_CLASS}`}
-              >
-                <div
-                  className={`flex min-h-0 min-w-0 flex-1 items-center self-stretch ${getHeaderSearchIconTextGapClass(row2TabletLike)} ${getHeaderSearchInputPaddingLeftClass(row2TabletLike)} ${getHeaderSearchInputInnerEndPadClass(row2TabletLike)}`}
-                >
-                  <span className="shrink-0 text-[rgba(33,43,54,0.46)]" aria-hidden>
-                    <HeaderSearchGlyph />
-                  </span>
-                  <div className="relative min-w-0 flex-1">
-                    <input
-                      ref={headerSearchInputRef}
-                      type="search"
-                      value={searchQuery}
-                      onChange={(e) => {
-                        const nextQuery = e.target.value;
-                        if (nextQuery.trim().length === 0) {
-                          clearSearch();
-                          return;
-                        }
-                        setSearchQuery(nextQuery);
-                        setSearchDropdownOpen(true);
-                      }}
-                      onFocus={(e) => {
-                        if (e.currentTarget.value.trim().length >= 1) setSearchDropdownOpen(true);
-                      }}
-                      onKeyDown={searchHandleKeyDown}
-                      placeholder={t('common.placeholders.search')}
-                      className="min-h-0 min-w-0 flex-1 w-full border-0 bg-transparent pr-6 text-xs leading-normal text-marco-text dark:!text-[#050505] placeholder:text-[rgba(33,43,54,0.46)] focus:outline-none focus:ring-0"
-                      aria-controls="search-results"
-                      aria-autocomplete="list"
-                    />
-                    {searchQuery.trim().length > 0 && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          clearSearch();
-                          headerSearchInputRef.current?.focus();
-                        }}
-                        className="absolute right-0 top-1/2 -translate-y-1/2 inline-flex h-4 w-4 items-center justify-center text-marco-yellow hover:brightness-95 cursor-pointer"
-                        aria-label={t('common.ariaLabels.clearSearch')}
-                      >
-                        <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
-                          <path strokeLinecap="round" d="M6 6l12 12M18 6L6 18" />
-                        </svg>
-                      </button>
-                    )}
-                  </div>
-                </div>
+              {useMobileRow2 ? (
                 <button
-                  type="submit"
-                  className={`${getHeaderSearchSubmitWidthClass(row2TabletLike)} ${getHeaderSearchSubmitClass(row2TabletLike)}`}
+                  type="button"
+                  onClick={() => {
+                    setMobileSearchPopupOpen(true);
+                    if (searchQuery.trim().length >= 1) {
+                      setSearchDropdownOpen(true);
+                    }
+                  }}
+                  className={`flex w-full min-w-0 flex-row items-center overflow-hidden bg-marco-gray text-left ${getHeaderSearchFormRadiusClass(row2TabletLike)} ${HEADER_SEARCH_BAR_HEIGHT_CLASS}`}
+                  aria-label={t('common.ariaLabels.search')}
                 >
-                  {t('common.buttons.search')}
+                  <span
+                    className={`flex min-h-0 min-w-0 flex-1 items-center self-stretch ${getHeaderSearchIconTextGapClass(row2TabletLike)} ${getHeaderSearchInputPaddingLeftClass(row2TabletLike)} ${getHeaderSearchInputInnerEndPadClass(row2TabletLike)}`}
+                  >
+                    <span className="shrink-0 text-[rgba(33,43,54,0.46)]" aria-hidden>
+                      <HeaderSearchGlyph />
+                    </span>
+                    <span className="min-w-0 flex-1 truncate text-xs leading-normal text-[rgba(33,43,54,0.46)]">
+                      {searchQuery.trim().length >= 1 ? searchQuery : t('common.placeholders.search')}
+                    </span>
+                  </span>
+                  <span
+                    className={`${getHeaderSearchSubmitWidthClass(row2TabletLike)} ${getHeaderSearchSubmitClass(row2TabletLike)}`}
+                    aria-hidden
+                  >
+                    {t('common.buttons.search')}
+                  </span>
                 </button>
-              </form>
-              <SearchDropdown
-                results={searchResults}
-                loading={searchLoading}
-                error={searchError}
-                isOpen={searchDropdownOpen}
-                selectedIndex={searchSelectedIndex}
-                query={searchQuery}
-                onResultClick={(result) => {
-                  router.push(`/products/${result.slug}`);
-                  clearSearch();
-                }}
-                onClose={() => setSearchDropdownOpen(false)}
-                onSeeAllClick={() => undefined}
-                className={
-                  useMobileRow2
-                    ? 'fixed left-3 right-3 top-[4.5rem] z-[320] mt-0'
-                    : 'max-md:fixed max-md:left-3 max-md:right-3 max-md:top-[4.5rem] max-md:mt-0 max-md:z-[320]'
-                }
-              />
+              ) : (
+                <>
+                  <form
+                    onSubmit={handleSearch}
+                    className={`flex w-full min-w-0 flex-row items-center overflow-hidden bg-marco-gray ${getHeaderSearchFormRadiusClass(row2TabletLike)} ${HEADER_SEARCH_BAR_HEIGHT_CLASS}`}
+                  >
+                    <div
+                      className={`flex min-h-0 min-w-0 flex-1 items-center self-stretch ${getHeaderSearchIconTextGapClass(row2TabletLike)} ${getHeaderSearchInputPaddingLeftClass(row2TabletLike)} ${getHeaderSearchInputInnerEndPadClass(row2TabletLike)}`}
+                    >
+                      <span className="shrink-0 text-[rgba(33,43,54,0.46)]" aria-hidden>
+                        <HeaderSearchGlyph />
+                      </span>
+                      <div className="relative min-w-0 flex-1">
+                        <input
+                          ref={headerSearchInputRef}
+                          type="search"
+                          value={searchQuery}
+                          onChange={(e) => {
+                            const nextQuery = e.target.value;
+                            if (nextQuery.trim().length === 0) {
+                              clearSearch();
+                              return;
+                            }
+                            setSearchQuery(nextQuery);
+                            setSearchDropdownOpen(true);
+                          }}
+                          onFocus={(e) => {
+                            if (e.currentTarget.value.trim().length >= 1) setSearchDropdownOpen(true);
+                          }}
+                          onKeyDown={searchHandleKeyDown}
+                          placeholder={t('common.placeholders.search')}
+                          className="min-h-0 min-w-0 flex-1 w-full border-0 bg-transparent pr-6 text-xs leading-normal text-marco-text dark:!text-[#050505] placeholder:text-[rgba(33,43,54,0.46)] focus:outline-none focus:ring-0"
+                          aria-controls="search-results"
+                          aria-autocomplete="list"
+                        />
+                        {searchQuery.trim().length > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              clearSearch();
+                              headerSearchInputRef.current?.focus();
+                            }}
+                            className="absolute right-0 top-1/2 -translate-y-1/2 inline-flex h-4 w-4 items-center justify-center text-marco-yellow hover:brightness-95 cursor-pointer"
+                            aria-label={t('common.ariaLabels.clearSearch')}
+                          >
+                            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
+                              <path strokeLinecap="round" d="M6 6l12 12M18 6L6 18" />
+                            </svg>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    <button
+                      type="submit"
+                      className={`${getHeaderSearchSubmitWidthClass(row2TabletLike)} ${getHeaderSearchSubmitClass(row2TabletLike)}`}
+                    >
+                      {t('common.buttons.search')}
+                    </button>
+                  </form>
+                  <SearchDropdown
+                    results={searchResults}
+                    loading={searchLoading}
+                    error={searchError}
+                    isOpen={searchDropdownOpen}
+                    selectedIndex={searchSelectedIndex}
+                    query={searchQuery}
+                    onResultClick={(result) => {
+                      router.push(`/products/${result.slug}`);
+                      clearSearch();
+                    }}
+                    onClose={() => setSearchDropdownOpen(false)}
+                    onSeeAllClick={() => undefined}
+                    className="max-md:fixed max-md:left-3 max-md:right-3 max-md:top-[4.5rem] max-md:mt-0 max-md:z-[320]"
+                  />
+                </>
+              )}
+              {useMobileRow2 &&
+                mobileSearchPopupOpen &&
+                typeof document !== 'undefined' &&
+                createPortal(
+                  <div className="fixed inset-0 z-[700]">
+                    <button
+                      type="button"
+                      aria-label={t('common.buttons.close')}
+                      className="absolute inset-0 bg-black/45 backdrop-blur-[1px]"
+                      onClick={() => {
+                        setMobileSearchPopupOpen(false);
+                        setSearchDropdownOpen(false);
+                      }}
+                    />
+                    <div className="relative z-[1] mx-4 mt-[4.5rem]">
+                      <form
+                        onSubmit={(event) => {
+                          handleSearch(event);
+                          if (searchQuery.trim().length >= 1) {
+                            setMobileSearchPopupOpen(false);
+                            setSearchDropdownOpen(false);
+                          }
+                        }}
+                        className="flex h-[56px] w-full min-w-0 flex-row items-center overflow-hidden rounded-[20px] bg-white px-4 shadow-2xl"
+                      >
+                        <div className="flex min-h-0 min-w-0 flex-1 items-center gap-2 self-stretch">
+                          <span className="shrink-0 text-[rgba(33,43,54,0.46)]" aria-hidden>
+                            <HeaderSearchGlyph />
+                          </span>
+                          <div className="relative min-w-0 flex-1">
+                            <input
+                              ref={headerSearchInputRef}
+                              type="search"
+                              value={searchQuery}
+                              onChange={(e) => {
+                                const nextQuery = e.target.value;
+                                if (nextQuery.trim().length === 0) {
+                                  clearSearch();
+                                  return;
+                                }
+                                setSearchQuery(nextQuery);
+                                setSearchDropdownOpen(true);
+                              }}
+                              onFocus={(e) => {
+                                if (e.currentTarget.value.trim().length >= 1) setSearchDropdownOpen(true);
+                              }}
+                              onKeyDown={searchHandleKeyDown}
+                              placeholder={t('common.placeholders.search')}
+                              className="min-h-0 min-w-0 flex-1 w-full border-0 bg-transparent pr-2 text-sm leading-normal text-[#8893a1] placeholder:text-[#a0a8b4] focus:outline-none focus:ring-0"
+                              aria-controls="search-results"
+                              aria-autocomplete="list"
+                            />
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setMobileSearchPopupOpen(false);
+                            setSearchDropdownOpen(false);
+                          }}
+                          className="inline-flex h-7 w-7 shrink-0 items-center justify-center text-[#8f99a8] hover:text-[#5d7285]"
+                          aria-label={t('common.buttons.close')}
+                        >
+                          <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" d="M6 6l12 12M18 6L6 18" />
+                          </svg>
+                        </button>
+                      </form>
+                      <SearchDropdown
+                        results={searchResults}
+                        loading={searchLoading}
+                        error={searchError}
+                        isOpen={searchDropdownOpen}
+                        selectedIndex={searchSelectedIndex}
+                        query={searchQuery}
+                        onResultClick={(result) => {
+                          router.push(`/products/${result.slug}`);
+                          clearSearch();
+                          setMobileSearchPopupOpen(false);
+                          setSearchDropdownOpen(false);
+                        }}
+                        onClose={() => setSearchDropdownOpen(false)}
+                        onSeeAllClick={() => undefined}
+                        className="!relative !left-auto !right-auto !top-auto mt-2 !z-[1] !rounded-[16px]"
+                      />
+                    </div>
+                  </div>,
+                  document.body,
+                )}
             </div>
           </div>
 

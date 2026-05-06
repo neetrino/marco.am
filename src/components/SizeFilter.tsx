@@ -13,6 +13,7 @@ import {
 } from '../lib/products-filters-typography';
 import { PRODUCTS_FILTER_LIST_SCROLL_CLASS } from '../lib/products-filter-list-scroll';
 import { ProductsFilterCheckboxVisual } from './ProductsFilterCheckbox';
+import { useMobileFiltersDraft } from './mobile-filters-draft-context';
 
 interface SizeFilterProps {
   category?: string;
@@ -30,13 +31,15 @@ interface SizeOption {
 export function SizeFilter({ category, search, minPrice, maxPrice }: SizeFilterProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const mobileDraft = useMobileFiltersDraft();
   const filtersContext = useProductsFilters();
   const { t } = useTranslation();
   const [sizes, setSizes] = useState<SizeOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [optimisticSizes, setOptimisticSizes] = useState<string[] | null>(null);
 
-  const sizesQs = searchParams.get('sizes');
+  const activeSearchParams = mobileDraft?.enabled ? mobileDraft.searchParams : searchParams;
+  const sizesQs = activeSearchParams.get('sizes');
   const selectedFromUrl = useMemo(
     () =>
       sizesQs
@@ -91,7 +94,7 @@ export function SizeFilter({ category, search, minPrice, maxPrice }: SizeFilterP
 
   const handleSizeToggle = (sizeValue: string) => {
     const key = sizeValue.trim().toUpperCase();
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(activeSearchParams.toString());
     const fromUrl =
       optimisticSizes ??
       params.get('sizes')?.split(',').map((s) => s.trim().toUpperCase()).filter(Boolean) ??
@@ -107,7 +110,19 @@ export function SizeFilter({ category, search, minPrice, maxPrice }: SizeFilterP
     }
 
     params.delete('page');
-    pushShopProductsListingUrl(router, `/products?${params.toString()}`);
+    if (mobileDraft?.enabled) {
+      mobileDraft.updateSearchParams((draftParams) => {
+        if (next.length > 0) {
+          draftParams.set('sizes', next.join(','));
+        } else {
+          draftParams.delete('sizes');
+        }
+        draftParams.delete('page');
+      });
+      return;
+    }
+    const qs = params.toString();
+    pushShopProductsListingUrl(router, qs ? `/products?${qs}` : '/products');
   };
 
   if (loading) {

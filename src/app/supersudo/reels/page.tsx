@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { apiClient, getApiOrErrorMessage } from '@/lib/api-client';
 import { useTranslation } from '@/lib/i18n-client';
+import { showPopupConfirm } from '@/components/popup-service';
 import type { ReelsManagementStorage } from '@/lib/schemas/reels-management.schema';
 import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '@/lib/utils/image-utils';
 import { AdminPageLayout } from '../components/AdminPageLayout';
@@ -214,7 +215,7 @@ export default function ReelsPage() {
     if (!storage || saving) {
       return;
     }
-    if (!confirm(t('admin.reels.deleteConfirm'))) {
+    if (!(await showPopupConfirm(t('admin.reels.deleteConfirm')))) {
       return;
     }
     const nextStorage: ReelsManagementStorage = {

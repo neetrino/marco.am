@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { bindPointerDragHorizontalScroll } from './horizontalRailWheelScroll';
-import { SPECIAL_OFFERS_SCROLL_FRACTION } from './home-special-offers.constants';
 import { useSpecialOffersRailSlotWidth } from './useSpecialOffersRailSlotWidth';
 
 function getActivePageIndex(el: HTMLDivElement, pageCount: number): number {
@@ -30,6 +29,8 @@ export function useSpecialOffersCarousel(options: UseSpecialOffersCarouselOption
   const { isRailVisible, paginationPageCount } = options;
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [activePage, setActivePage] = useState(0);
+  const [canScrollPrev, setCanScrollPrev] = useState(false);
+  const [canScrollNext, setCanScrollNext] = useState(false);
   const railSlotWidthPx = useSpecialOffersRailSlotWidth(scrollerRef, isRailVisible);
 
   const syncActivePage = useCallback(() => {
@@ -38,7 +39,30 @@ export function useSpecialOffersCarousel(options: UseSpecialOffersCarouselOption
       return;
     }
     setActivePage(getActivePageIndex(el, paginationPageCount));
+    const maxScroll = Math.max(0, el.scrollWidth - el.clientWidth);
+    const SCROLL_EPSILON_PX = 2;
+    setCanScrollPrev(el.scrollLeft > SCROLL_EPSILON_PX);
+    setCanScrollNext(el.scrollLeft < maxScroll - SCROLL_EPSILON_PX);
   }, [paginationPageCount]);
+
+  const scrollToPage = useCallback(
+    (page: number) => {
+      const el = scrollerRef.current;
+      if (!el) {
+        return;
+      }
+      const maxPage = paginationPageCount - 1;
+      const clamped = Math.max(0, Math.min(maxPage, page));
+      const maxScroll = Math.max(0, el.scrollWidth - el.clientWidth);
+      if (maxPage <= 0) {
+        el.scrollTo({ left: 0, behavior: 'smooth' });
+        return;
+      }
+      const left = (maxScroll * clamped) / maxPage;
+      el.scrollTo({ left, behavior: 'smooth' });
+    },
+    [paginationPageCount],
+  );
 
   useEffect(() => {
     if (!isRailVisible) {
@@ -67,33 +91,24 @@ export function useSpecialOffersCarousel(options: UseSpecialOffersCarouselOption
     if (!el) {
       return;
     }
-    const delta = el.clientWidth * SPECIAL_OFFERS_SCROLL_FRACTION * direction;
-    el.scrollBy({ left: delta, behavior: 'smooth' });
-  }, []);
-
-  const scrollToPage = useCallback(
-    (page: number) => {
-      const el = scrollerRef.current;
-      if (!el) {
-        return;
-      }
-      const maxPage = paginationPageCount - 1;
-      const clamped = Math.max(0, Math.min(maxPage, page));
-      const maxScroll = Math.max(0, el.scrollWidth - el.clientWidth);
-      if (maxPage <= 0) {
-        el.scrollTo({ left: 0, behavior: 'smooth' });
-        return;
-      }
-      const left = (maxScroll * clamped) / maxPage;
-      el.scrollTo({ left, behavior: 'smooth' });
-    },
-    [paginationPageCount],
-  );
+    const maxPage = paginationPageCount - 1;
+    if (maxPage <= 0) {
+      return;
+    }
+    const maxScroll = Math.max(0, el.scrollWidth - el.clientWidth);
+    if (maxScroll <= 0) {
+      return;
+    }
+    const currentPage = Math.round((el.scrollLeft / maxScroll) * maxPage);
+    scrollToPage(currentPage + direction);
+  }, [paginationPageCount, scrollToPage]);
 
   return {
     scrollerRef,
     railSlotWidthPx,
     activePage,
+    canScrollPrev,
+    canScrollNext,
     scrollToPage,
     scrollPrev: () => {
       scrollByDirection(-1);

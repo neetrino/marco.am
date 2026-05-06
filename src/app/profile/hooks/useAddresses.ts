@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { apiClient } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
+import { showPopupConfirm } from '@/components/popup-service';
 import type { Address, UserProfile } from '../types';
 
 interface UseAddressesProps {
@@ -64,7 +65,7 @@ export function useAddresses({
   };
 
   const handleDeleteAddress = async (addressId: string) => {
-    if (!confirm(t('profile.addresses.deleteConfirm'))) {
+    if (!(await showPopupConfirm(t('profile.addresses.deleteConfirm')))) {
       return;
     }
 

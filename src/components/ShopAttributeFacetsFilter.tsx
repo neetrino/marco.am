@@ -15,6 +15,7 @@ import {
 } from '@/lib/products-filters-typography';
 import { ProductsFilterCheckboxVisual } from './ProductsFilterCheckbox';
 import { ProductsFilterScrollArea } from './ProductsFilterScrollArea';
+import { useMobileFiltersDraft } from './mobile-filters-draft-context';
 
 const SPEC_QUERY_PREFIX = 'spec.';
 
@@ -35,6 +36,7 @@ function readSelectedTokens(searchParams: URLSearchParams, attributeKey: string)
 export function ShopAttributeFacetsFilter() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const mobileDraft = useMobileFiltersDraft();
   const filtersContext = useProductsFilters();
   const { t } = useTranslation();
   const [facets, setFacets] = useState<TechnicalSpecFacet[]>([]);
@@ -42,6 +44,8 @@ export function ShopAttributeFacetsFilter() {
   const [optimisticByKey, setOptimisticByKey] = useState<Record<string, string[] | null> | null>(
     null,
   );
+
+  const activeSearchParams = mobileDraft?.enabled ? mobileDraft.searchParams : searchParams;
 
   useEffect(() => {
     if (filtersContext?.data != null) {
@@ -58,18 +62,18 @@ export function ShopAttributeFacetsFilter() {
 
   useEffect(() => {
     setOptimisticByKey(null);
-  }, [searchParams]);
+  }, [activeSearchParams]);
 
   const selectedForFacet = (facetKey: string): string[] => {
     const optimistic = optimisticByKey?.[facetKey];
     if (optimistic != null) {
       return optimistic;
     }
-    return readSelectedTokens(searchParams, facetKey);
+    return readSelectedTokens(activeSearchParams, facetKey);
   };
 
   const handleToggleValue = (facetKey: string, valueToken: string) => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(activeSearchParams.toString());
     const paramName = `${SPEC_QUERY_PREFIX}${facetKey}`;
     const normalizedValue = normalizeTechnicalFilterToken(valueToken);
     const fromUrl = readSelectedTokens(params, facetKey);
@@ -87,18 +91,36 @@ export function ShopAttributeFacetsFilter() {
       params.delete(paramName);
     }
     params.delete('page');
+    if (mobileDraft?.enabled) {
+      mobileDraft.updateSearchParams((draftParams) => {
+        if (next.length > 0) {
+          draftParams.set(paramName, next.join(','));
+        } else {
+          draftParams.delete(paramName);
+        }
+        draftParams.delete('page');
+      });
+      return;
+    }
     const qs = params.toString();
     pushShopProductsListingUrl(router, qs ? `/products?${qs}` : '/products');
   };
 
   const handleClearFacet = (facetKey: string) => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(activeSearchParams.toString());
     params.delete(`${SPEC_QUERY_PREFIX}${facetKey}`);
     params.delete('page');
     setOptimisticByKey((prev) => ({
       ...(prev ?? {}),
       [facetKey]: [],
     }));
+    if (mobileDraft?.enabled) {
+      mobileDraft.updateSearchParams((draftParams) => {
+        draftParams.delete(`${SPEC_QUERY_PREFIX}${facetKey}`);
+        draftParams.delete('page');
+      });
+      return;
+    }
     const qs = params.toString();
     pushShopProductsListingUrl(router, qs ? `/products?${qs}` : '/products');
   };

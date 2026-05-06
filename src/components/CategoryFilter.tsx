@@ -14,6 +14,7 @@ import {
 } from '../lib/products-filters-typography';
 import { ProductsFilterCheckboxVisual } from './ProductsFilterCheckbox';
 import { ProductsFilterScrollArea } from './ProductsFilterScrollArea';
+import { useMobileFiltersDraft } from './mobile-filters-draft-context';
 
 interface CategoryFilterProps {
   category?: string;
@@ -151,6 +152,7 @@ export function CategoryFilter({
 }: CategoryFilterProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const mobileDraft = useMobileFiltersDraft();
   const filtersContext = useProductsFilters();
   const { t } = useTranslation();
   const [categories, setCategories] = useState<CategoryFilterOption[]>([]);
@@ -194,7 +196,8 @@ export function CategoryFilter({
   };
 
   /** URL is source of truth (avoids stale server props); slugs compared case-insensitively */
-  const categoryQs = searchParams.get('category');
+  const activeSearchParams = mobileDraft?.enabled ? mobileDraft.searchParams : searchParams;
+  const categoryQs = activeSearchParams.get('category');
   const selectedFromUrl = useMemo(
     () => (categoryQs ? categoryQs.split(',').map((s) => s.trim()).filter(Boolean) : []),
     [categoryQs]
@@ -207,29 +210,47 @@ export function CategoryFilter({
   }, [categoryQs]);
 
   const handleToggle = (slug: string) => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(activeSearchParams.toString());
     const fromUrl =
       optimisticSlugs ??
       params.get('category')?.split(',').map((s) => s.trim()).filter(Boolean) ??
       [];
     const idx = fromUrl.findIndex((s) => s.toLowerCase() === slug.toLowerCase());
-    const next = idx >= 0 ? fromUrl.filter((_, i) => i !== idx) : [...fromUrl, slug];
-    setOptimisticSlugs(next);
-    if (next.length > 0) {
-      params.set('category', next.join(','));
+    const nextSlugs = idx >= 0 ? fromUrl.filter((_, i) => i !== idx) : [...fromUrl, slug];
+    setOptimisticSlugs(nextSlugs);
+    if (nextSlugs.length > 0) {
+      params.set('category', nextSlugs.join(','));
     } else {
       params.delete('category');
     }
     params.delete('page');
+    if (mobileDraft?.enabled) {
+      mobileDraft.updateSearchParams((draftParams) => {
+        if (nextSlugs.length > 0) {
+          draftParams.set('category', nextSlugs.join(','));
+        } else {
+          draftParams.delete('category');
+        }
+        draftParams.delete('page');
+      });
+      return;
+    }
     const qs = params.toString();
     pushShopProductsListingUrl(router, qs ? `/products?${qs}` : '/products');
   };
 
   const handleClearCategories = () => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(activeSearchParams.toString());
     params.delete('category');
     params.delete('page');
     setOptimisticSlugs([]);
+    if (mobileDraft?.enabled) {
+      mobileDraft.updateSearchParams((next) => {
+        next.delete('category');
+        next.delete('page');
+      });
+      return;
+    }
     const qs = params.toString();
     pushShopProductsListingUrl(router, qs ? `/products?${qs}` : '/products');
   };

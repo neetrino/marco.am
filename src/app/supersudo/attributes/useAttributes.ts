@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef, ChangeEvent } from 'react';
 import { apiClient, getApiOrErrorMessage } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
+import { showPopupConfirm } from '@/components/popup-service';
 import { showToast } from '../../../components/Toast';
 import { logger } from "@/lib/utils/logger";
 
@@ -128,7 +129,7 @@ export function useAttributes() {
   };
 
   const handleDeleteAttribute = async (attributeId: string, attributeName: string) => {
-    if (!confirm(t('admin.attributes.deleteConfirm').replace('{name}', attributeName))) {
+    if (!(await showPopupConfirm(t('admin.attributes.deleteConfirm').replace('{name}', attributeName)))) {
       return;
     }
 
@@ -251,7 +252,7 @@ export function useAttributes() {
   };
 
   const handleDeleteValue = async (attributeId: string, valueId: string, valueLabel: string) => {
-    if (!confirm(t('admin.attributes.deleteValueConfirm').replace('{label}', valueLabel))) {
+    if (!(await showPopupConfirm(t('admin.attributes.deleteValueConfirm').replace('{label}', valueLabel)))) {
       return;
     }
 

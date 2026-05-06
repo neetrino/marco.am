@@ -10,6 +10,7 @@ import { AdminPageLayout } from '../components/AdminPageLayout';
 import { AdminTablePagination } from '../components/AdminTablePagination';
 import { logger } from '@/lib/utils/logger';
 import { processImageFile, toDomSafeImgSrcString, toSafeImgAttributeSrc } from '@/lib/utils/image-utils';
+import { showPopupConfirm } from '@/components/popup-service';
 import { showToast } from '../../../components/Toast';
 
 interface Brand {
@@ -182,7 +183,7 @@ export default function BrandsPage() {
   };
 
   const handleDeleteBrand = async (brandId: string, brandName: string) => {
-    if (!confirm(t('admin.brands.deleteConfirm').replace('{name}', brandName))) {
+    if (!(await showPopupConfirm(t('admin.brands.deleteConfirm').replace('{name}', brandName)))) {
       return;
     }
 
@@ -208,7 +209,7 @@ export default function BrandsPage() {
         ? `${selectedBrands[0].name} (+${selectedBrands.length - 1})`
         : selectedBrands[0].name;
 
-    if (!confirm(t('admin.brands.deleteConfirm').replace('{name}', previewName))) {
+    if (!(await showPopupConfirm(t('admin.brands.deleteConfirm').replace('{name}', previewName)))) {
       return;
     }
 

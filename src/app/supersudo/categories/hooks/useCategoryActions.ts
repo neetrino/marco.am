@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { apiClient } from '../../../../lib/api-client';
 import { logger } from '../../../../lib/utils/logger';
+import { showPopupConfirm } from '@/components/popup-service';
 import { showToast } from '../../../../components/Toast';
 import { useTranslation } from '../../../../lib/i18n-client';
 import { getStoredLanguage, type LanguageCode } from '../../../../lib/language';
@@ -193,7 +194,7 @@ export function useCategoryActions(): UseCategoryActionsReturn {
     categoryTitle: string,
     fetchCategories: () => Promise<void>
   ) => {
-    if (!confirm(t('admin.categories.deleteConfirm').replace('{name}', categoryTitle))) {
+    if (!(await showPopupConfirm(t('admin.categories.deleteConfirm').replace('{name}', categoryTitle)))) {
       return;
     }
 
@@ -238,7 +239,7 @@ export function useCategoryActions(): UseCategoryActionsReturn {
     const previewTitle =
       categoryIds.length > 1 ? `${firstTitle} (+${categoryIds.length - 1})` : firstTitle;
 
-    if (!confirm(t('admin.categories.deleteConfirm').replace('{name}', previewTitle))) {
+    if (!(await showPopupConfirm(t('admin.categories.deleteConfirm').replace('{name}', previewTitle)))) {
       return false;
     }
 

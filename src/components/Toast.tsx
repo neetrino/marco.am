@@ -40,17 +40,17 @@ function ToastItem({ toast, onClose }: ToastProps) {
   }, [toast.id, toast.duration, onClose]);
 
   const bgColors = {
-    success: 'bg-green-50 border-green-200 text-green-800',
-    error: 'bg-red-50 border-red-200 text-red-800',
-    warning: 'bg-yellow-50 border-yellow-200 text-yellow-800',
-    info: 'bg-blue-50 border-blue-200 text-blue-800',
+    success: 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/60 dark:text-emerald-100',
+    error: 'border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-900/60 dark:bg-rose-950/60 dark:text-rose-100',
+    warning: 'border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/60 dark:text-amber-100',
+    info: 'border-sky-200 bg-sky-50 text-sky-800 dark:border-sky-900/60 dark:bg-sky-950/60 dark:text-sky-100',
   };
 
   const iconColors = {
-    success: 'text-green-600',
-    error: 'text-red-600',
-    warning: 'text-yellow-600',
-    info: 'text-blue-600',
+    success: 'text-emerald-600 dark:text-emerald-300',
+    error: 'text-rose-600 dark:text-rose-300',
+    warning: 'text-amber-600 dark:text-amber-300',
+    info: 'text-sky-600 dark:text-sky-300',
   };
 
   const icons = {
@@ -88,8 +88,7 @@ function ToastItem({ toast, onClose }: ToastProps) {
     <div
       className={`
         ${bgColors[toast.type]}
-        border rounded-lg shadow-lg p-4 mb-3 flex items-start gap-3
-        max-w-md w-full
+        mb-3 flex w-full max-w-sm items-start gap-3 rounded-xl border p-4 shadow-[0_14px_32px_rgba(16,16,16,0.16)]
         transition-all duration-300 ease-out
         ${
           isLeaving
@@ -104,7 +103,7 @@ function ToastItem({ toast, onClose }: ToastProps) {
       <div className={`flex-shrink-0 ${iconColors[toast.type]}`}>
         {icons[toast.type]}
       </div>
-      <div className="flex-1 text-sm font-medium">{toast.message}</div>
+      <div className="flex-1 text-sm font-medium leading-5">{toast.message}</div>
       <button
         onClick={handleClose}
         className={`flex-shrink-0 ${iconColors[toast.type]} hover:opacity-70 transition-opacity`}
@@ -148,7 +147,7 @@ export function ToastContainer() {
   if (toasts.length === 0) return null;
 
   return (
-    <div className="fixed top-4 left-1/2 z-50 flex -translate-x-1/2 flex-col items-center">
+    <div className="fixed right-4 top-4 z-50 flex w-[calc(100vw-2rem)] max-w-sm flex-col items-stretch">
       {toasts.map((toast) => (
         <ToastItem key={toast.id} toast={toast} onClose={handleClose} />
       ))}
