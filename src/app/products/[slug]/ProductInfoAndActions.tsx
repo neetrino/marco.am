@@ -130,7 +130,6 @@ export function ProductInfoAndActions({
   const displayRatingScore = hasProductReviews
     ? Math.min(5, Math.max(0, averageRating))
     : 5;
-  const starFillRatio = displayRatingScore / 5;
 
   return (
     <div className="flex flex-col h-full">
@@ -161,7 +160,7 @@ export function ProductInfoAndActions({
           </div>
         </div>
         <div className="-mt-2 mb-6 flex flex-wrap items-center gap-x-2 gap-y-1">
-          <ProductPartialStar fillRatio={starFillRatio} />
+          <ProductPartialStar fillRatio={displayRatingScore / 5} />
           <span className="text-sm font-semibold tabular-nums text-marco-black">
             {displayRatingScore.toFixed(1)}
           </span>

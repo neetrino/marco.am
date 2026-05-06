@@ -76,9 +76,9 @@ export function ProductAttributesSelector({
   getOptionValue,
 }: ProductAttributesSelectorProps) {
   const attributeGroupsEntries = Array.from(attributeGroups.entries());
-  const variantAttributeEntries = attributeGroupsEntries.filter(([attrKey]) =>
-    VARIANT_PICKER_ATTRIBUTE_KEYS.has(attrKey),
-  );
+  const variantAttributeEntries = attributeGroupsEntries.filter(([attrKey]) => {
+    return VARIANT_PICKER_ATTRIBUTE_KEYS.has(attrKey);
+  });
   logger.devLog('🎨 [PRODUCT ATTRIBUTES SELECTOR] attributeGroups entries:', attributeGroupsEntries.length);
   logger.devLog('🎨 [PRODUCT ATTRIBUTES SELECTOR] attributeGroups keys:', Array.from(attributeGroups.keys()));
   logger.devLog('🎨 [PRODUCT ATTRIBUTES SELECTOR] product.productAttributes:', product?.productAttributes);
