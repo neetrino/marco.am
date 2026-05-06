@@ -17,6 +17,7 @@ import {
   resolveVisibleCategoryParentId,
   type CategoryFilterTreeNode,
 } from "@/lib/shop-category-filter-tree";
+import { getListingDiscountSettings, type ListingDiscountSettings } from "./listing-discount-settings";
 
 /** Legacy demo categories — omit from shop sidebar (not part of MARCO nav taxonomy). */
 const SHOP_FILTER_EXCLUDED_CATEGORY_CANONICAL = new Set([
@@ -62,6 +63,77 @@ type ExtraAttributeFacetAgg = {
 };
 
 class ProductsFiltersService {
+  private resolveAppliedListingDiscount(
+    product: {
+      discountPercent?: number | null;
+      primaryCategoryId?: string | null;
+      brandId?: string | null;
+    },
+    discountSettings: ListingDiscountSettings,
+  ): number {
+    const productDiscount = Number(product.discountPercent) || 0;
+    if (productDiscount > 0) {
+      return productDiscount;
+    }
+    if (product.primaryCategoryId && discountSettings.categoryDiscounts[product.primaryCategoryId]) {
+      return discountSettings.categoryDiscounts[product.primaryCategoryId];
+    }
+    if (product.brandId && discountSettings.brandDiscounts[product.brandId]) {
+      return discountSettings.brandDiscounts[product.brandId];
+    }
+    return discountSettings.globalDiscount > 0 ? discountSettings.globalDiscount : 0;
+  }
+
+  private applyListingDiscount(price: number, discountPercent: number): number {
+    if (!Number.isFinite(price) || price <= 0 || discountPercent <= 0) {
+      return Number.isFinite(price) ? price : 0;
+    }
+    return price * (1 - discountPercent / 100);
+  }
+
+  private async getPublishedVariantPriceBounds(
+    where: Prisma.ProductWhereInput,
+    discountSettings: ListingDiscountSettings,
+  ): Promise<{
+    min: number;
+    max: number;
+  }> {
+    const products = await db.product.findMany({
+      where: {
+        ...where,
+      },
+      select: {
+        discountPercent: true,
+        primaryCategoryId: true,
+        brandId: true,
+        variants: {
+          where: { published: true },
+          select: { price: true },
+        },
+      },
+    });
+
+    let min = Infinity;
+    let max = 0;
+    for (const product of products) {
+      const appliedDiscount = this.resolveAppliedListingDiscount(product, discountSettings);
+      for (const variant of product.variants) {
+        const effectivePrice = this.applyListingDiscount(variant.price, appliedDiscount);
+        if (effectivePrice < min) {
+          min = effectivePrice;
+        }
+        if (effectivePrice > max) {
+          max = effectivePrice;
+        }
+      }
+    }
+
+    return {
+      min: min === Infinity ? 0 : min,
+      max,
+    };
+  }
+
   private getLocalizedAttributeValueLabel(
     attributeValue: {
       value?: string | null;
@@ -272,6 +344,7 @@ class ProductsFiltersService {
     technicalSpecs?: TechnicalSpecFilters;
   }) {
     try {
+      const discountSettings = await getListingDiscountSettings();
       const { where: listingWhere } = await buildWhereClause({
         category: filters.category?.trim(),
         search: filters.search?.trim(),
@@ -291,7 +364,9 @@ class ProductsFiltersService {
 
       const where: Prisma.ProductWhereInput = listingWhere;
 
-      // Get products with variants (capped for filter computation)
+      const catalogPriceBounds = await this.getPublishedVariantPriceBounds(where, discountSettings);
+
+      // Get products with variants (capped for non-price facets computation)
       const FILTERS_PRODUCTS_LIMIT = 1500;
       let products: ProductWithRelations[] = [];
       try {
@@ -358,7 +433,16 @@ class ProductsFiltersService {
         if (!product || !product.variants || !Array.isArray(product.variants)) {
           return false;
         }
-        const prices = product.variants.map((v: { price?: number }) => v?.price).filter((p: number | undefined): p is number => p !== undefined);
+        const typedProduct = product as ProductWithRelations & {
+          discountPercent?: number | null;
+          primaryCategoryId?: string | null;
+          brandId?: string | null;
+        };
+        const appliedDiscount = this.resolveAppliedListingDiscount(typedProduct, discountSettings);
+        const prices = product.variants
+          .map((v: { price?: number }) => v?.price)
+          .filter((p: number | undefined): p is number => p !== undefined)
+          .map((p) => this.applyListingDiscount(p, appliedDiscount));
         if (prices.length === 0) return false;
         const minPrice = Math.min(...prices);
         return minPrice >= min && minPrice <= max;
@@ -426,10 +510,17 @@ class ProductsFiltersService {
           });
         }
       }
+      const typedProduct = product as ProductWithRelations & {
+        discountPercent?: number | null;
+        primaryCategoryId?: string | null;
+        brandId?: string | null;
+      };
+      const appliedDiscount = this.resolveAppliedListingDiscount(typedProduct, discountSettings);
       product.variants.forEach((v: { price?: number }) => {
         if (typeof v?.price === 'number') {
-          if (v.price < rangeMin) rangeMin = v.price;
-          if (v.price > rangeMax) rangeMax = v.price;
+          const effectivePrice = this.applyListingDiscount(v.price, appliedDiscount);
+          if (effectivePrice < rangeMin) rangeMin = effectivePrice;
+          if (effectivePrice > rangeMax) rangeMax = effectivePrice;
         }
       });
       product.variants.forEach((variant: any) => {
@@ -829,8 +920,15 @@ class ProductsFiltersService {
       const brands = Array.from(brandMap.values())
         .filter((b) => b.count > 0)
         .sort((a, b) => a.name.localeCompare(b.name));
-      const priceMin = rangeMin === Infinity ? 0 : Math.floor(rangeMin / 1000) * 1000;
-      const priceMax = rangeMax === 0 ? 0 : Math.ceil(rangeMax / 1000) * 1000;
+      const needsInMemoryPriceBounds =
+        Boolean(filters.minPrice || filters.maxPrice) ||
+        hasTechnicalSpecFilters(filters.technicalSpecs);
+      const rawMin = needsInMemoryPriceBounds
+        ? (rangeMin === Infinity ? 0 : rangeMin)
+        : catalogPriceBounds.min;
+      const rawMax = needsInMemoryPriceBounds ? rangeMax : catalogPriceBounds.max;
+      const priceMin = rawMin <= 0 ? 0 : Math.floor(rawMin / 1000) * 1000;
+      const priceMax = rawMax <= 0 ? 0 : Math.ceil(rawMax / 1000) * 1000;
       let stepSize: number | null = null;
       let stepSizePerCurrency: Record<string, number> | null = null;
       try {
@@ -924,31 +1022,12 @@ class ProductsFiltersService {
       }
     }
 
-    const products = await db.product.findMany({
-      where,
-      include: {
-        variants: {
-          where: {
-            published: true,
-          },
-        },
-      },
-    });
+    const discountSettings = await getListingDiscountSettings();
+    const bounds = await this.getPublishedVariantPriceBounds(where, discountSettings);
+    let minPrice = bounds.min;
+    let maxPrice = bounds.max;
 
-    let minPrice = Infinity;
-    let maxPrice = 0;
-
-    products.forEach((product: { variants: Array<{ price: number }> }) => {
-      if (product.variants.length > 0) {
-        const prices = product.variants.map((v: { price: number }) => v.price);
-        const productMin = Math.min(...prices);
-        const productMax = Math.max(...prices);
-        if (productMin < minPrice) minPrice = productMin;
-        if (productMax > maxPrice) maxPrice = productMax;
-      }
-    });
-
-    minPrice = minPrice === Infinity ? 0 : Math.floor(minPrice / 1000) * 1000;
+    minPrice = minPrice <= 0 ? 0 : Math.floor(minPrice / 1000) * 1000;
     // No products / no prices: keep 0 — UI must not show a fake cap (e.g. 100000) that mismatches real catalog
     maxPrice = maxPrice === 0 ? 0 : Math.ceil(maxPrice / 1000) * 1000;
 
