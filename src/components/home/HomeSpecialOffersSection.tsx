@@ -56,7 +56,10 @@ import { HOME_PAGE_SECTION_SHELL_CLASS } from './home-page-section-shell.constan
 import { useIsMaxMd } from './use-is-max-md';
 import { useHomeMobileProductRailScrollport } from './useHomeMobileProductRailScrollport';
 import { useSpecialOffersCarousel } from './useSpecialOffersCarousel';
-import { SPECIAL_OFFERS_PRODUCTS_LIMIT } from '@/constants/specialOffersSection';
+import {
+  SPECIAL_OFFERS_CARDS_PER_PAGE,
+  SPECIAL_OFFERS_PRODUCTS_LIMIT,
+} from '@/constants/specialOffersSection';
 
 /** Same horizontal shell as «Նորույթներ» (`FeaturedProductsTabs`) for matching card width on mobile. */
 const SECTION_CONTAINER_CLASS = HOME_PAGE_SECTION_SHELL_CLASS;
@@ -141,9 +144,13 @@ export function HomeSpecialOffersSection({
     return padChunksToMinimumCount(chunks, SPECIAL_OFFERS_MOBILE_PAGINATION_PAGE_COUNT);
   }, [products]);
 
+  const desktopPaginationPageCount = Math.max(
+    1,
+    Math.ceil(products.length / SPECIAL_OFFERS_CARDS_PER_PAGE),
+  );
   const scrollPaginationPageCount = isMaxMd
     ? Math.max(1, productChunks.length)
-    : 2;
+    : desktopPaginationPageCount;
 
   const { scrollerRef, railSlotWidthPx, activePage, scrollPrev, scrollNext, scrollToPage } =
     useSpecialOffersCarousel({ isRailVisible, paginationPageCount: scrollPaginationPageCount });
