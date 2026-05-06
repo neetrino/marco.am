@@ -20,6 +20,8 @@ export const HOME_HERO_SECONDARY_DEFAULT_IMAGE_URL =
   "/assets/brands/panasonic-figma.webp" as const;
 export const HOME_PROMO_PRIMARY_DEFAULT_IMAGE_URL =
   "/assets/home/home-gradient-banner-bg.webp" as const;
+export const HOME_PROMO_PRIMARY_MOBILE_DEFAULT_IMAGE_URL =
+  HOME_PROMO_PRIMARY_DEFAULT_IMAGE_URL;
 export const HOME_PROMO_SECONDARY_DEFAULT_IMAGE_URL = "" as const;
 
 export const HOME_HERO_DEFAULT_BANNER_ITEMS: BannerManagementStorage["banners"] = [

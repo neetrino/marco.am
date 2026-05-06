@@ -16,6 +16,7 @@ import {
   HOME_HERO_PRIMARY_TOP_DEFAULT_IMAGE_URL,
   HOME_PROMO_PRIMARY_BANNER_ID,
   HOME_PROMO_PRIMARY_DEFAULT_IMAGE_URL,
+  HOME_PROMO_PRIMARY_MOBILE_DEFAULT_IMAGE_URL,
   HOME_PROMO_SECONDARY_BANNER_ID,
   HOME_PROMO_SECONDARY_DEFAULT_IMAGE_URL,
   HOME_HERO_SECONDARY_BANNER_ID,
@@ -28,6 +29,7 @@ type HeroBannerFormState = {
   primaryBottomDesktopUrl: string;
   secondaryDesktopUrl: string;
   promoPrimaryDesktopUrl: string;
+  promoPrimaryMobileUrl: string;
   promoSecondaryDesktopUrl: string;
   mobileImageUrl: string;
 };
@@ -105,6 +107,8 @@ function buildFormState(storage: BannerManagementStorage | null): HeroBannerForm
       secondary?.imageDesktopUrl ?? HOME_HERO_SECONDARY_DEFAULT_IMAGE_URL,
     promoPrimaryDesktopUrl:
       promoPrimary?.imageDesktopUrl ?? HOME_PROMO_PRIMARY_DEFAULT_IMAGE_URL,
+    promoPrimaryMobileUrl:
+      promoPrimary?.imageMobileUrl ?? HOME_PROMO_PRIMARY_MOBILE_DEFAULT_IMAGE_URL,
     promoSecondaryDesktopUrl:
       promoSecondary?.imageDesktopUrl ?? HOME_PROMO_SECONDARY_DEFAULT_IMAGE_URL,
     mobileImageUrl: primaryTop?.imageMobileUrl ?? HERO_MOBILE_PRIMARY_IMAGE_SRC,
@@ -154,6 +158,9 @@ function buildNextHeroBannerStorageFromForm(
           imageDesktopUrl:
             normalizeOptionalUrl(form.promoPrimaryDesktopUrl) ??
             HOME_PROMO_PRIMARY_DEFAULT_IMAGE_URL,
+          imageMobileUrl:
+            normalizeOptionalUrl(form.promoPrimaryMobileUrl) ??
+            HOME_PROMO_PRIMARY_MOBILE_DEFAULT_IMAGE_URL,
         };
       }
 
@@ -233,6 +240,8 @@ type ImageUploadFieldProps = {
   currentUrl: string;
   uploadingField: UploadingField;
   onUpload: (fieldKey: keyof HeroBannerFormState, file: File) => Promise<void>;
+  onRemove?: (fieldKey: keyof HeroBannerFormState) => Promise<void>;
+  removeLabel?: string;
   previewHeightClassName: string;
 };
 
@@ -242,6 +251,8 @@ function ImageUploadField({
   currentUrl,
   uploadingField,
   onUpload,
+  onRemove,
+  removeLabel = 'Remove image',
   previewHeightClassName,
 }: ImageUploadFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -329,6 +340,18 @@ function ImageUploadField({
               </>
             )}
           </button>
+          {onRemove ? (
+            <button
+              type="button"
+              disabled={isDisabled}
+              onClick={() => {
+                void onRemove(fieldKey);
+              }}
+              className="flex w-full items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-medium text-red-700 shadow-sm transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {removeLabel}
+            </button>
+          ) : null}
         </div>
       </div>
     </>
@@ -351,6 +374,7 @@ export default function HeroBannerPage() {
     primaryBottomDesktopUrl: HOME_HERO_PRIMARY_BOTTOM_DEFAULT_IMAGE_URL,
     secondaryDesktopUrl: HOME_HERO_SECONDARY_DEFAULT_IMAGE_URL,
     promoPrimaryDesktopUrl: HOME_PROMO_PRIMARY_DEFAULT_IMAGE_URL,
+    promoPrimaryMobileUrl: HOME_PROMO_PRIMARY_MOBILE_DEFAULT_IMAGE_URL,
     promoSecondaryDesktopUrl: HOME_PROMO_SECONDARY_DEFAULT_IMAGE_URL,
     mobileImageUrl: HERO_MOBILE_PRIMARY_IMAGE_SRC,
   });
@@ -437,6 +461,27 @@ export default function HeroBannerPage() {
     }
   }
 
+  async function handleRemove(fieldKey: keyof HeroBannerFormState) {
+    try {
+      setUploadingField(fieldKey);
+      const nextForm: HeroBannerFormState = { ...form, [fieldKey]: '' };
+      const nextStorage = buildNextHeroBannerStorageFromForm(storage, nextForm);
+      const saved = await apiClient.put<BannerManagementStorage>(
+        '/api/v1/supersudo/banners',
+        nextStorage,
+      );
+      setStorage(buildHeroBannerStorage(saved));
+      setForm(buildFormState(saved));
+      alert(t('admin.heroBanner.savedSuccess'));
+    } catch (error: unknown) {
+      alert(
+        `${t('admin.heroBanner.uploadOrSaveFailed')}: ${getApiOrErrorMessage(error, 'Unknown error')}`,
+      );
+    } finally {
+      setUploadingField(null);
+    }
+  }
+
   if (isLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -504,6 +549,16 @@ export default function HeroBannerPage() {
               uploadingField={uploadingField}
               onUpload={handleUpload}
               previewHeightClassName="h-48"
+            />
+            <ImageUploadField
+              label="Mobile floor banner image"
+              fieldKey="promoPrimaryMobileUrl"
+              currentUrl={form.promoPrimaryMobileUrl}
+              uploadingField={uploadingField}
+              onUpload={handleUpload}
+              onRemove={handleRemove}
+              removeLabel="Remove mobile floor image"
+              previewHeightClassName="h-56 sm:h-72"
             />
             <ImageUploadField
               label="Promo card right (under featured products)"

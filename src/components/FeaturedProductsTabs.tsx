@@ -47,6 +47,7 @@ import { HOME_PRODUCT_CHUNK_SIZE } from '../constants/homeProductChunks';
 import {
   HOME_PROMO_PRIMARY_BANNER_ID,
   HOME_PROMO_PRIMARY_DEFAULT_IMAGE_URL,
+  HOME_PROMO_PRIMARY_MOBILE_DEFAULT_IMAGE_URL,
   HOME_PROMO_SECONDARY_BANNER_ID,
   HOME_PROMO_SECONDARY_DEFAULT_IMAGE_URL,
 } from '@/lib/constants/home-hero-admin-banners';
@@ -70,6 +71,7 @@ type BannerSlotPayload = {
   items: Array<{
     id: string;
     imageDesktopUrl: string | null;
+    imageMobileUrl: string | null;
   }>;
 };
 
@@ -313,6 +315,9 @@ export function FeaturedProductsTabs({
   const promoSecondaryImageUrl =
     promoStripBannersQuery.data?.items.find((item) => item.id === HOME_PROMO_SECONDARY_BANNER_ID)
       ?.imageDesktopUrl ?? HOME_PROMO_SECONDARY_DEFAULT_IMAGE_URL;
+  const promoPrimaryMobileImageUrl =
+    promoStripBannersQuery.data?.items.find((item) => item.id === HOME_PROMO_PRIMARY_BANNER_ID)
+      ?.imageMobileUrl ?? HOME_PROMO_PRIMARY_MOBILE_DEFAULT_IMAGE_URL;
 
   const resolvedHomeBrandPartners =
     homeBrandPartnersQuery.data?.brands ?? initialHomeBrandPartners ?? null;
@@ -508,7 +513,7 @@ export function FeaturedProductsTabs({
           <HomeAppBanner language={language} />
         </div>
         <div className="md:hidden">
-          <HomeMobileBannerProductShowcase language={language} />
+          <HomeMobileBannerProductShowcase imageUrl={promoPrimaryMobileImageUrl} />
         </div>
         <div className="hidden md:block">
           <HomeGradientBanner
