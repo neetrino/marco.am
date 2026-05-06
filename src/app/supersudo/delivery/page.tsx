@@ -6,6 +6,7 @@ import { useAuth } from '../../../lib/auth/AuthContext';
 import { Card, Button } from '@shop/ui';
 import { apiClient, getApiOrErrorMessage } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
+import { showPopupConfirm } from '@/components/popup-service';
 import { AdminPageLayout } from '../components/AdminPageLayout';
 import { logger } from "@/lib/utils/logger";
 
@@ -90,11 +91,12 @@ export default function DeliveryPage() {
     setLocations(updated);
   };
 
-  const handleDeleteLocation = (index: number) => {
-    if (confirm(t('admin.delivery.deleteLocation'))) {
-      const updated = locations.filter((_, i) => i !== index);
-      setLocations(updated);
+  const handleDeleteLocation = async (index: number) => {
+    if (!(await showPopupConfirm(t('admin.delivery.deleteLocation')))) {
+      return;
     }
+    const updated = locations.filter((_, i) => i !== index);
+    setLocations(updated);
   };
 
   if (isLoading || loading) {
@@ -243,7 +245,7 @@ export default function DeliveryPage() {
                           />
                           <button
                             type="button"
-                            onClick={() => handleDeleteLocation(index)}
+                            onClick={() => void handleDeleteLocation(index)}
                             className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-red-200 bg-red-50/80 text-red-600 transition-colors hover:border-red-300 hover:bg-red-100"
                             disabled={saving}
                             aria-label={t('admin.delivery.deleteLocation')}

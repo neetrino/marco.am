@@ -1,6 +1,7 @@
 import type { FormEvent } from 'react';
 import { apiClient, getApiOrErrorMessage } from '../../../../lib/api-client';
 import { useTranslation } from '../../../../lib/i18n-client';
+import { showPopupConfirm } from '@/components/popup-service';
 import type { Product } from '../types';
 import { logger } from "@/lib/utils/logger";
 
@@ -58,7 +59,7 @@ export function useProductHandlers({
 
   const handleBulkDelete = async () => {
     if (selectedIds.size === 0) return;
-    if (!confirm(t('admin.products.bulkDeleteConfirm').replace('{count}', selectedIds.size.toString()))) return;
+    if (!(await showPopupConfirm(t('admin.products.bulkDeleteConfirm').replace('{count}', selectedIds.size.toString())))) return;
     setBulkDeleting(true);
     try {
       const ids = Array.from(selectedIds);
@@ -78,7 +79,7 @@ export function useProductHandlers({
   };
 
   const handleDeleteProduct = async (productId: string, productTitle: string) => {
-    if (!confirm(t('admin.products.deleteConfirm').replace('{title}', productTitle))) {
+    if (!(await showPopupConfirm(t('admin.products.deleteConfirm').replace('{title}', productTitle)))) {
       return;
     }
 

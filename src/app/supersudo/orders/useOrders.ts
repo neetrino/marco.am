@@ -6,6 +6,7 @@ import { apiClient, getApiOrErrorMessage } from '../../../lib/api-client';
 import { getErrorMessage } from '@/lib/types/errors';
 import { useTranslation } from '../../../lib/i18n-client';
 import { formatPriceInCurrency, convertPrice, getStoredCurrency, initializeCurrencyRates, CurrencyCode } from '../../../lib/currency';
+import { showPopupConfirm } from '@/components/popup-service';
 import { logger } from "@/lib/utils/logger";
 import type { OrderAuditEntry } from "./types/order-audit";
 
@@ -334,7 +335,7 @@ export function useOrders() {
 
   const handleBulkDelete = async () => {
     if (selectedIds.size === 0) return;
-    if (!confirm(t('admin.orders.deleteConfirm').replace('{count}', selectedIds.size.toString()))) return;
+    if (!(await showPopupConfirm(t('admin.orders.deleteConfirm').replace('{count}', selectedIds.size.toString())))) return;
     setBulkDeleting(true);
     try {
       const ids = Array.from(selectedIds);
