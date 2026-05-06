@@ -20,7 +20,7 @@ export function MarcoLogo() {
   return (
     <Link
       href="/"
-      className="flex h-9 shrink-0 items-center md:h-10 transition-transform hover:scale-[1.02] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marco-black"
+      className="flex h-9 shrink-0 items-center md:h-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marco-black"
       aria-label="MARCO GROUP Home"
     >
       <span className="relative aspect-[83/73] h-9 w-auto shrink-0 overflow-hidden md:h-10">

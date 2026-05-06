@@ -82,11 +82,11 @@ function socialControlClass(
 ): string {
   /** Drawer footer: smaller circles so they align with nav density (header stays `h-11`). */
   const touch = comfortableTouch ? 'h-9 w-9' : 'h-11 w-11';
-  const base = `flex ${touch} shrink-0 items-center justify-center rounded-full border border-marco-black/10 bg-marco-yellow text-marco-black transition-[opacity,filter,transform] dark:border-marco-black/15 dark:bg-marco-yellow dark:text-[#050505]`;
+  const base = `flex ${touch} shrink-0 items-center justify-center rounded-full border border-marco-black/10 bg-marco-yellow text-marco-black transition-[opacity,filter] dark:border-marco-black/15 dark:bg-marco-yellow dark:text-[#050505]`;
   const desktopCompact =
     desktopBalancedIcons &&
     'min-[1367px]:h-9 min-[1367px]:w-9 min-[1367px]:[&_svg]:!h-[14px] min-[1367px]:[&_svg]:!w-[14px] min-[1367px]:[&_svg]:!max-h-[14px] min-[1367px]:[&_svg]:!max-w-[14px]';
-  return [base, desktopCompact, enabled ? 'hover:brightness-95 active:brightness-90 hover:-translate-y-0.5' : 'opacity-40']
+  return [base, desktopCompact, enabled ? 'hover:brightness-95 active:brightness-90' : 'opacity-40']
     .filter(Boolean)
     .join(' ');
 }
