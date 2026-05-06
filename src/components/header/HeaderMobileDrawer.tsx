@@ -219,6 +219,13 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
     }
   }, [mobileMenuOpen]);
 
+  useEffect(() => {
+    document.body.dataset.mobileMenuOpen = mobileMenuOpen ? 'true' : 'false';
+    return () => {
+      delete document.body.dataset.mobileMenuOpen;
+    };
+  }, [mobileMenuOpen]);
+
   if (!mobileMenuOpen) {
     return null;
   }

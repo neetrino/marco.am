@@ -812,3 +812,14 @@
 .dark [data-theme-static='true'] .border-gray-100 {
   border-color: #e5e7eb !important;
 }
+
+body[data-mobile-menu-open='true'] #tidio,
+body[data-mobile-menu-open='true'] #tidio-chat,
+body[data-mobile-menu-open='true'] #tidio-chat-iframe,
+body[data-mobile-menu-open='true'] iframe[src*='tidio.co'],
+body[data-mobile-menu-open='true'] [id^='tidio-'] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
