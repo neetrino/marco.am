@@ -382,9 +382,9 @@ export function ProductsTable({
                             openProductEditor(product.id);
                           }}
                           aria-label={t('admin.products.edit')}
-                          className="!h-5 !min-h-5 !w-5 !max-w-none shrink-0 !px-0 !py-0 gap-0 rounded-md border border-transparent text-slate-700 hover:border-slate-200 hover:bg-slate-100 hover:text-slate-900"
+                          className="!h-8 !min-h-8 !w-8 !max-w-none shrink-0 !px-0 !py-0 gap-0 rounded-md border border-transparent text-slate-700 hover:border-slate-200 hover:bg-slate-100 hover:text-slate-900"
                         >
-                          <svg className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                          <svg className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                           </svg>
                         </Button>
@@ -398,21 +398,21 @@ export function ProductsTable({
                           }}
                           disabled={deletingIds.has(product.id)}
                           aria-label={deletingIds.has(product.id) ? t('admin.products.deleting') : t('admin.products.delete')}
-                          className="!h-5 !min-h-5 !w-5 !max-w-none shrink-0 !px-0 !py-0 gap-0 rounded-md border border-transparent text-red-600 hover:border-red-100 hover:bg-red-50 hover:text-red-700 disabled:opacity-70"
+                          className="!h-8 !min-h-8 !w-8 !max-w-none shrink-0 !px-0 !py-0 gap-0 rounded-md border border-transparent text-red-600 hover:border-red-100 hover:bg-red-50 hover:text-red-700 disabled:opacity-70"
                         >
                           {deletingIds.has(product.id) ? (
                             <span className="inline-flex h-full w-full items-center justify-center" aria-hidden>
-                              <span className="h-3.5 w-3.5 animate-spin rounded-full border-b-2 border-red-600" />
+                              <span className="h-5 w-5 animate-spin rounded-full border-b-2 border-red-600" />
                             </span>
                           ) : (
-                            <svg className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                            <svg className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
                           )}
                         </Button>
                         {updatingPublishedIds.has(product.id) ? (
-                          <div className="inline-flex h-5 w-9 shrink-0 items-center justify-center rounded-full bg-slate-200">
-                            <div className="h-3.5 w-3.5 animate-spin rounded-full border-b-2 border-slate-700" />
+                          <div className="inline-flex h-6 w-10 shrink-0 items-center justify-center rounded-full bg-slate-200">
+                            <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-slate-700" />
                           </div>
                         ) : (
                           <button
@@ -421,7 +421,7 @@ export function ProductsTable({
                               event.stopPropagation();
                               handleTogglePublished(product.id, product.published, product.title);
                             }}
-                            className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 ${
+                            className={`relative inline-flex h-6 w-10 shrink-0 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 ${
                               product.published
                                 ? 'bg-emerald-500'
                                 : 'bg-slate-300'
@@ -430,8 +430,8 @@ export function ProductsTable({
                             aria-label={product.published ? `${t('admin.products.published')} - ${t('admin.products.clickToDraft')}` : `${t('admin.products.draft')} - ${t('admin.products.clickToPublished')}`}
                           >
                             <span
-                              className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform duration-200 ${
-                                product.published ? 'translate-x-[18px]' : 'translate-x-0.5'
+                              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${
+                                product.published ? 'translate-x-[21px]' : 'translate-x-1'
                               }`}
                             />
                           </button>
