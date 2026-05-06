@@ -7,6 +7,28 @@ import { getCachedJson } from "@/lib/services/read-through-json-cache";
 const CATEGORY_TREE_CACHE_TTL_SEC = 300;
 
 class CategoriesService {
+  private resolveLocalizedCategoryTranslation(
+    translations: Array<{
+      locale: string;
+      slug: string;
+      title: string;
+      fullPath: string;
+      description?: string | null;
+      seoTitle?: string | null;
+      seoDescription?: string | null;
+    }>,
+    lang: string,
+  ) {
+    const requestedLocale = lang.trim().toLowerCase();
+    return (
+      translations.find((t) => t.locale === requestedLocale) ??
+      translations.find((t) => t.locale === "en") ??
+      translations.find((t) => t.locale === "hy") ??
+      translations.find((t) => t.locale === "ru") ??
+      translations[0]
+    );
+  }
+
   /**
    * Get category tree
    */
@@ -44,11 +66,10 @@ class CategoriesService {
     categories.forEach((category: {
       id: string;
       parentId: string | null;
+      media: unknown[];
       translations: Array<{ locale: string; slug: string; title: string; fullPath: string }>;
     }) => {
-      const translation =
-        category.translations.find((t: { locale: string }) => t.locale === lang) ||
-        category.translations[0];
+      const translation = this.resolveLocalizedCategoryTranslation(category.translations, lang);
       if (!translation) return;
 
       const categoryData = {
@@ -56,6 +77,9 @@ class CategoriesService {
         slug: translation.slug,
         title: translation.title,
         fullPath: translation.fullPath,
+        media: Array.isArray(category.media)
+          ? category.media.filter((item): item is string => typeof item === 'string')
+          : [],
         productCount: 0,
         children: [] as any[],
       };
@@ -145,12 +169,9 @@ class CategoriesService {
       };
     }
 
-    const translation =
-      category.translations.find((t: { locale: string }) => t.locale === lang) ||
-      category.translations[0];
+    const translation = this.resolveLocalizedCategoryTranslation(category.translations, lang);
     const parentTranslation = category.parent
-      ? category.parent.translations.find((t: { locale: string }) => t.locale === lang) ||
-        category.parent.translations[0]
+      ? this.resolveLocalizedCategoryTranslation(category.parent.translations, lang)
       : null;
 
     return {

@@ -151,7 +151,7 @@ export function ProductInfoAndActions({
           </div>
         )}
         <div className="mb-5 flex items-start justify-between gap-4">
-          <h1 className="min-w-0 flex-1 text-4xl font-bold text-marco-black">
+          <h1 className="min-w-0 flex-1 text-2xl font-bold text-marco-black sm:text-3xl md:text-4xl">
             {getProductText(language, product.id, 'title') || product.title}
           </h1>
           <div className="shrink-0 rounded-2xl bg-[#1e1e1e] px-4 py-2.5 text-center leading-tight">

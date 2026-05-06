@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import {
   getStoredLanguage,
   persistLanguageCookie,
@@ -9,21 +9,20 @@ import {
 } from '../lib/language';
 
 /**
- * Keeps the locale cookie aligned with localStorage and refreshes RSC payloads
- * when the user changes language (no full page reload).
+ * Keeps the locale cookie aligned with localStorage.
+ * Also refreshes RSC payload after language switch so server-rendered text
+ * updates without a full page reload.
  */
 export function LanguageRouterRefresh() {
   const router = useRouter();
-  const refreshQueued = useRef(false);
 
   useEffect(() => {
     const stored = getStoredLanguage();
     const cookieBefore = readLanguageCookie();
     persistLanguageCookie(stored);
-    const needsRscSync =
-      (cookieBefore !== null && cookieBefore !== stored) ||
-      (cookieBefore === null && stored !== 'en');
-    if (needsRscSync) {
+
+    // First client mount: when SSR cookie differs from storage, sync server-rendered fragments once.
+    if (cookieBefore !== null && cookieBefore !== stored) {
       router.refresh();
     }
   }, [router]);
@@ -31,12 +30,7 @@ export function LanguageRouterRefresh() {
   useEffect(() => {
     const onLanguageUpdated = () => {
       persistLanguageCookie(getStoredLanguage());
-      if (refreshQueued.current) return;
-      refreshQueued.current = true;
-      requestAnimationFrame(() => {
-        refreshQueued.current = false;
-        router.refresh();
-      });
+      router.refresh();
     };
 
     window.addEventListener('language-updated', onLanguageUpdated);

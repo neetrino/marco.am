@@ -32,13 +32,30 @@ function childrenCount(category: Category): number {
   return category.children.length;
 }
 
+function hasCategoryMedia(category: Category): boolean {
+  return Array.isArray(category.media) && category.media.some((item) => typeof item === 'string' && item.trim().length > 0);
+}
+
 function shouldReplaceCategory(existing: Category, candidate: Category): boolean {
   const existingCount = childrenCount(existing);
   const candidateCount = childrenCount(candidate);
   if (existingCount === 0 && candidateCount > 0) {
     return true;
   }
+  if (candidateCount === existingCount && hasCategoryMedia(candidate) && !hasCategoryMedia(existing)) {
+    return true;
+  }
   return candidateCount > existingCount;
+}
+
+function mergeCategoryMedia(preferred: Category, fallback: Category): Category {
+  if (hasCategoryMedia(preferred) || !hasCategoryMedia(fallback)) {
+    return preferred;
+  }
+  return {
+    ...preferred,
+    media: fallback.media,
+  };
 }
 
 /** Same ordering and merge rules as the desktop categories mega menu. */
@@ -63,8 +80,10 @@ export function dedupeCategories(categories: Category[], lang: LanguageCode): Ca
       continue;
     }
     if (shouldReplaceCategory(result[existingIndex], category)) {
-      result[existingIndex] = category;
+      result[existingIndex] = mergeCategoryMedia(category, result[existingIndex]);
+      continue;
     }
+    result[existingIndex] = mergeCategoryMedia(result[existingIndex], category);
   }
 
   return result;

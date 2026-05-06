@@ -1,8 +1,10 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { Suspense } from 'react';
+import { Suspense, useCallback } from 'react';
 
+import { ProductReviews } from '@/components/ProductReviews';
+import { useReviews } from '@/components/ProductReviews/hooks/useReviews';
 import { RelatedProducts } from '@/components/RelatedProducts';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { apiClient } from '@/lib/api-client';
@@ -18,10 +20,6 @@ import { useProductPage } from './useProductPage';
 
 const ProductSpecifications = dynamic(() =>
   import('./ProductSpecifications').then((m) => ({ default: m.ProductSpecifications })),
-);
-
-const ProductReviews = dynamic(() =>
-  import('@/components/ProductReviews').then((m) => ({ default: m.ProductReviews })),
 );
 
 export type ProductPageClientProps = {
@@ -62,8 +60,6 @@ export function ProductPageClient({
     isInWishlist,
     isInCompare,
     quantity,
-    reviews,
-    averageRating,
     slug,
     attributeGroups,
     colorGroups,
@@ -79,7 +75,6 @@ export function ProductPageClient({
     hasUnavailableAttributes,
     unavailableAttributes,
     canAddToCart,
-    scrollToReviews,
     getOptionValue,
     adjustQuantity,
     handleColorSelect,
@@ -89,6 +84,18 @@ export function ProductPageClient({
     handleCompareToggle,
     getRequiredAttributesMessage,
   } = useProductPage({ slugParam, serverLanguage, initialVisual, initialProduct });
+
+  const { reviews, aggregate, loading, loadReviews } = useReviews(
+    product?.id,
+    slug || undefined,
+  );
+
+  const handleScrollToReviews = useCallback(() => {
+    document.getElementById('product-reviews')?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    });
+  }, []);
 
   const handleAddToCart = async () => {
     if (!canAddToCart || !product || !currentVariant) return;
@@ -197,8 +204,8 @@ export function ProductPageClient({
             discountPercent={discountPercent}
             currency={currency}
             language={language}
-            averageRating={averageRating}
-            reviewsCount={reviews.length}
+            averageRating={aggregate.averageRating}
+            reviewsCount={aggregate.reviewCount}
             quantity={quantity}
             maxQuantity={maxQuantity}
             isOutOfStock={isOutOfStock}
@@ -222,7 +229,7 @@ export function ProductPageClient({
             onAddToCart={handleAddToCart}
             onAddToWishlist={handleAddToWishlist}
             onCompareToggle={handleCompareToggle}
-            onScrollToReviews={scrollToReviews}
+            onScrollToReviews={handleScrollToReviews}
             onColorSelect={handleColorSelect}
             onSizeSelect={handleSizeSelect}
             onAttributeValueSelect={handleAttributeValueSelect}
@@ -249,24 +256,22 @@ export function ProductPageClient({
         </div>
       ) : null}
 
+      {product ? (
+        <div id="product-reviews" className="scroll-mt-28">
+          <ProductReviews
+            productId={product.id}
+            productSlug={product.slug}
+            reviews={reviews}
+            aggregate={aggregate}
+            loading={loading}
+            loadReviews={loadReviews}
+          />
+        </div>
+      ) : null}
+
       <div className={product ? 'mt-16' : 'mt-24'}>
         <RelatedProducts currentProductSlug={slug} language={language} />
       </div>
-
-      {product ? (
-        <Suspense
-          fallback={
-            <div
-              className="mt-16 min-h-[160px] w-full rounded-lg bg-gray-100/90 dark:bg-white/[0.06]"
-              aria-hidden
-            />
-          }
-        >
-          <div id="product-reviews" className="mt-16 scroll-mt-24">
-            <ProductReviews productSlug={slug} productId={product.id} />
-          </div>
-        </Suspense>
-      ) : null}
     </div>
   );
 }

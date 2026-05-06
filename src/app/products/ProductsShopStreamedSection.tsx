@@ -17,9 +17,12 @@ import {
   type PaginationSlotItem,
 } from '../../components/products/ProductsPagination';
 import { getProductsListingCached } from '../../lib/cache/products-listing-redis';
+import { searchParamsRecordToUrlSearchParams } from '../../lib/cache/products-filters-redis';
+import { parseTechnicalSpecFiltersFromSearchParams } from '../../lib/services/products-technical-filters';
 import type { ProductLabel } from '../../components/ProductLabels';
 import type { ProductListingBrand } from '../../lib/types/product-listing-brand';
 import type { ProductsPageSearchParams } from './products-page-search-params';
+import { SHOP_PLP_DEFAULT_PAGE_SIZE } from '@/lib/constants/shop-plp-pagination';
 
 /** PLP row after `transformProducts` (typed as unknown[] in service). */
 type ShopGridProduct = {
@@ -92,13 +95,17 @@ async function getProducts(
   colors?: string,
   sizes?: string,
   brand?: string,
-  limit: number = 12,
+  limit: number = SHOP_PLP_DEFAULT_PAGE_SIZE,
   filter?: string,
   language: LanguageCode = 'en',
   sort?: string,
+  rawSearchParams?: ProductsPageSearchParams,
 ) {
   try {
     const { min: validMinPrice, max: validMaxPrice } = parseUrlPriceBounds(minPrice, maxPrice);
+    const technicalSpecs = parseTechnicalSpecFiltersFromSearchParams(
+      searchParamsRecordToUrlSearchParams(rawSearchParams ?? {}),
+    );
 
     return await getProductsListingCached({
       page,
@@ -113,6 +120,7 @@ async function getProducts(
       brand: brand?.trim() || undefined,
       filter: filter?.trim() || undefined,
       sort: sort?.trim() || undefined,
+      technicalSpecs,
       /** Faster PLP: skip heavy productAttributes join (filters load client-side). */
       listingOmitProductAttributes: true,
     });
@@ -120,7 +128,7 @@ async function getProducts(
     console.error('❌ PRODUCT ERROR', e);
     return {
       data: [],
-      meta: { total: 0, page: 1, limit: 12, totalPages: 0 },
+      meta: { total: 0, page: 1, limit: SHOP_PLP_DEFAULT_PAGE_SIZE, totalPages: 0 },
     };
   }
 }
@@ -152,7 +160,7 @@ export async function ProductsShopStreamedSection({ searchParams }: ProductsShop
   const parsedLimit = limitParam && !Number.isNaN(parseInt(limitParam, 10))
     ? parseInt(limitParam, 10)
     : null;
-  const perPage = parsedLimit ? Math.min(parsedLimit, 200) : 12;
+  const perPage = parsedLimit ? Math.min(parsedLimit, 200) : SHOP_PLP_DEFAULT_PAGE_SIZE;
 
   const { min: filtersMinPrice, max: filtersMaxPrice } = parseUrlPriceBounds(
     params.minPrice,
@@ -172,6 +180,7 @@ export async function ProductsShopStreamedSection({ searchParams }: ProductsShop
     params.filter,
     language,
     params.sort,
+    raw,
   );
 
   const normalizedProducts = productsData.data.map(normalizeShopGridProduct);
@@ -189,7 +198,7 @@ export async function ProductsShopStreamedSection({ searchParams }: ProductsShop
     }
     q.set('page', String(num));
     if (!q.has('limit')) {
-      q.set('limit', params.limit ?? '12');
+      q.set('limit', params.limit ?? String(SHOP_PLP_DEFAULT_PAGE_SIZE));
     }
     return `/products?${q.toString()}`;
   };

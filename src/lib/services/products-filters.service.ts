@@ -3,12 +3,21 @@ import { Prisma } from "@white-shop/db/prisma";
 import { adminService } from "./admin.service";
 import { buildWhereClause } from "./products-find-query/query-builder";
 import { ProductWithRelations } from "./products-find-query.service";
+import type { TechnicalSpecFilters } from "./products-find-query/types";
+import {
+  hasTechnicalSpecFilters,
+  isReservedShopAttributeFilterKey,
+  normalizeTechnicalFilterToken,
+  productMatchesTechnicalSpecs,
+  type TechnicalSpecFacet,
+} from "./products-technical-filters";
 import { getAttributeBucket, isColorAttributeKey, isSizeAttributeKey } from "@/lib/attribute-keys";
 import {
   buildShopCategoryFilterTree,
   resolveVisibleCategoryParentId,
   type CategoryFilterTreeNode,
 } from "@/lib/shop-category-filter-tree";
+import { getListingDiscountSettings, type ListingDiscountSettings } from "./listing-discount-settings";
 
 /** Legacy demo categories — omit from shop sidebar (not part of MARCO nav taxonomy). */
 const SHOP_FILTER_EXCLUDED_CATEGORY_CANONICAL = new Set([
@@ -32,7 +41,99 @@ function canonicalCategoryFilterKey(input: string): string {
     .replace(/\s+/g, " ");
 }
 
+function humanizeAttributeKeyTitle(key: string): string {
+  const k = key.trim();
+  if (!k) {
+    return "";
+  }
+  return k
+    .replace(/[-_]+/g, " ")
+    .split(" ")
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(" ");
+}
+
+type ExtraAttributeFacetAgg = {
+  key: string;
+  label: string;
+  labelFromDb: boolean;
+  type: string;
+  values: Map<string, { value: string; label: string; count: number }>;
+};
+
 class ProductsFiltersService {
+  private resolveAppliedListingDiscount(
+    product: {
+      discountPercent?: number | null;
+      primaryCategoryId?: string | null;
+      brandId?: string | null;
+    },
+    discountSettings: ListingDiscountSettings,
+  ): number {
+    const productDiscount = Number(product.discountPercent) || 0;
+    if (productDiscount > 0) {
+      return productDiscount;
+    }
+    if (product.primaryCategoryId && discountSettings.categoryDiscounts[product.primaryCategoryId]) {
+      return discountSettings.categoryDiscounts[product.primaryCategoryId];
+    }
+    if (product.brandId && discountSettings.brandDiscounts[product.brandId]) {
+      return discountSettings.brandDiscounts[product.brandId];
+    }
+    return discountSettings.globalDiscount > 0 ? discountSettings.globalDiscount : 0;
+  }
+
+  private applyListingDiscount(price: number, discountPercent: number): number {
+    if (!Number.isFinite(price) || price <= 0 || discountPercent <= 0) {
+      return Number.isFinite(price) ? price : 0;
+    }
+    return price * (1 - discountPercent / 100);
+  }
+
+  private async getPublishedVariantPriceBounds(
+    where: Prisma.ProductWhereInput,
+    discountSettings: ListingDiscountSettings,
+  ): Promise<{
+    min: number;
+    max: number;
+  }> {
+    const products = await db.product.findMany({
+      where: {
+        ...where,
+      },
+      select: {
+        discountPercent: true,
+        primaryCategoryId: true,
+        brandId: true,
+        variants: {
+          where: { published: true },
+          select: { price: true },
+        },
+      },
+    });
+
+    let min = Infinity;
+    let max = 0;
+    for (const product of products) {
+      const appliedDiscount = this.resolveAppliedListingDiscount(product, discountSettings);
+      for (const variant of product.variants) {
+        const effectivePrice = this.applyListingDiscount(variant.price, appliedDiscount);
+        if (effectivePrice < min) {
+          min = effectivePrice;
+        }
+        if (effectivePrice > max) {
+          max = effectivePrice;
+        }
+      }
+    }
+
+    return {
+      min: min === Infinity ? 0 : min,
+      max,
+    };
+  }
+
   private getLocalizedAttributeValueLabel(
     attributeValue: {
       value?: string | null;
@@ -50,6 +151,108 @@ class ProductsFiltersService {
       null;
 
     return (translation?.label || attributeValue.value || "").trim();
+  }
+
+  private getLocalizedAttributeName(
+    attribute:
+      | {
+          translations?: Array<{ locale: string; name: string }> | null;
+          key?: string | null;
+          filterable?: boolean | null;
+        }
+      | null
+      | undefined,
+    lang: string,
+    fallbackKey: string,
+  ): string {
+    const trList = attribute?.translations;
+    if (trList && trList.length > 0) {
+      const tr =
+        trList.find((t) => t.locale === lang) ??
+        trList.find((t) => Boolean(t?.name?.trim())) ??
+        trList[0];
+      const name = tr?.name?.trim();
+      if (name) {
+        return name;
+      }
+    }
+    return humanizeAttributeKeyTitle(fallbackKey);
+  }
+
+  private upsertExtraAttributeFacet(
+    facetByKey: Map<string, ExtraAttributeFacetAgg>,
+    keyNorm: string,
+    sectionLabel: string,
+    sectionLabelFromDb: boolean,
+    attrType: string,
+    displayLabel: string,
+  ): void {
+    const trimmed = displayLabel.trim();
+    if (!trimmed || !keyNorm) {
+      return;
+    }
+    const token = normalizeTechnicalFilterToken(trimmed);
+    if (!token) {
+      return;
+    }
+
+    let facet = facetByKey.get(keyNorm);
+    if (!facet) {
+      facet = {
+        key: keyNorm,
+        label: sectionLabel,
+        labelFromDb: sectionLabelFromDb,
+        type: attrType,
+        values: new Map(),
+      };
+      facetByKey.set(keyNorm, facet);
+    } else if (sectionLabelFromDb && !facet.labelFromDb) {
+      facet.label = sectionLabel;
+      facet.labelFromDb = true;
+      facet.type = attrType;
+    }
+
+    const existingVal = facet.values.get(token);
+    if (existingVal) {
+      existingVal.count += 1;
+      if (trimmed.length > existingVal.label.length) {
+        existingVal.label = trimmed;
+      }
+    } else {
+      facet.values.set(token, { value: token, label: trimmed, count: 1 });
+    }
+  }
+
+  private collectExtraFacetsFromVariantJson(
+    attrs: Record<string, unknown> | null | undefined,
+    facetByKey: Map<string, ExtraAttributeFacetAgg>,
+  ): void {
+    if (!attrs || typeof attrs !== "object") {
+      return;
+    }
+    for (const [rawKey, rawVal] of Object.entries(attrs)) {
+      const keyNorm = normalizeTechnicalFilterToken(rawKey);
+      if (!keyNorm || isReservedShopAttributeFilterKey(keyNorm)) {
+        continue;
+      }
+      const title = humanizeAttributeKeyTitle(rawKey);
+      const entries = Array.isArray(rawVal) ? rawVal : rawVal != null ? [rawVal] : [];
+      for (const entry of entries) {
+        let displayLabel = "";
+        if (entry && typeof entry === "object" && !Array.isArray(entry)) {
+          const o = entry as { label?: unknown; value?: unknown };
+          const fromLabel = typeof o.label === "string" ? o.label.trim() : "";
+          const fromValue = typeof o.value === "string" ? o.value.trim() : "";
+          displayLabel = (fromLabel || fromValue).trim();
+        } else if (entry != null) {
+          displayLabel = String(entry).trim();
+        }
+        if (!displayLabel) {
+          continue;
+        }
+        this.upsertExtraAttributeFacet(facetByKey, keyNorm, title, false, "select", displayLabel);
+      }
+    }
   }
 
   /**
@@ -134,14 +337,18 @@ class ProductsFiltersService {
   async getFilters(filters: {
     category?: string;
     search?: string;
+    filter?: string;
     minPrice?: number;
     maxPrice?: number;
     lang?: string;
+    technicalSpecs?: TechnicalSpecFilters;
   }) {
     try {
+      const discountSettings = await getListingDiscountSettings();
       const { where: listingWhere } = await buildWhereClause({
         category: filters.category?.trim(),
         search: filters.search?.trim(),
+        filter: filters.filter?.trim(),
         lang: filters.lang || "en",
       });
       if (listingWhere === null) {
@@ -150,13 +357,16 @@ class ProductsFiltersService {
           sizes: [],
           brands: [],
           categories: [],
+          attributeFacets: [] as TechnicalSpecFacet[],
           priceRange: { min: 0, max: 0, stepSize: null, stepSizePerCurrency: null },
         };
       }
 
       const where: Prisma.ProductWhereInput = listingWhere;
 
-      // Get products with variants (capped for filter computation)
+      const catalogPriceBounds = await this.getPublishedVariantPriceBounds(where, discountSettings);
+
+      // Get products with variants (capped for non-price facets computation)
       const FILTERS_PRODUCTS_LIMIT = 1500;
       let products: ProductWithRelations[] = [];
       try {
@@ -178,7 +388,11 @@ class ProductsFiltersService {
                   include: {
                     attributeValue: {
                       include: {
-                        attribute: true,
+                        attribute: {
+                          include: {
+                            translations: true,
+                          },
+                        },
                         translations: true,
                       },
                     },
@@ -219,11 +433,27 @@ class ProductsFiltersService {
         if (!product || !product.variants || !Array.isArray(product.variants)) {
           return false;
         }
-        const prices = product.variants.map((v: { price?: number }) => v?.price).filter((p: number | undefined): p is number => p !== undefined);
+        const typedProduct = product as ProductWithRelations & {
+          discountPercent?: number | null;
+          primaryCategoryId?: string | null;
+          brandId?: string | null;
+        };
+        const appliedDiscount = this.resolveAppliedListingDiscount(typedProduct, discountSettings);
+        const prices = product.variants
+          .map((v: { price?: number }) => v?.price)
+          .filter((p: number | undefined): p is number => p !== undefined)
+          .map((p) => this.applyListingDiscount(p, appliedDiscount));
         if (prices.length === 0) return false;
         const minPrice = Math.min(...prices);
         return minPrice >= min && minPrice <= max;
       });
+    }
+
+    const technicalSpecs = filters.technicalSpecs;
+    if (hasTechnicalSpecFilters(technicalSpecs)) {
+      products = products.filter((product: ProductWithRelations) =>
+        productMatchesTechnicalSpecs(product, technicalSpecs),
+      );
     }
 
     // Collect colors and sizes from variants
@@ -237,6 +467,7 @@ class ProductsFiltersService {
       colors?: string[] | null;
     }>();
     const sizeMap = new Map<string, number>();
+    const extraAttributeFacetByKey = new Map<string, ExtraAttributeFacetAgg>();
     const brandMap = new Map<string, { id: string; slug: string; name: string; count: number }>();
     const categoryCountMap = new Map<string, number>();
     let rangeMin = Infinity;
@@ -279,10 +510,17 @@ class ProductsFiltersService {
           });
         }
       }
+      const typedProduct = product as ProductWithRelations & {
+        discountPercent?: number | null;
+        primaryCategoryId?: string | null;
+        brandId?: string | null;
+      };
+      const appliedDiscount = this.resolveAppliedListingDiscount(typedProduct, discountSettings);
       product.variants.forEach((v: { price?: number }) => {
         if (typeof v?.price === 'number') {
-          if (v.price < rangeMin) rangeMin = v.price;
-          if (v.price > rangeMax) rangeMax = v.price;
+          const effectivePrice = this.applyListingDiscount(v.price, appliedDiscount);
+          if (effectivePrice < rangeMin) rangeMin = effectivePrice;
+          if (effectivePrice > rangeMax) rangeMax = effectivePrice;
         }
       });
       product.variants.forEach((variant: any) => {
@@ -346,6 +584,59 @@ class ProductsFiltersService {
                 const normalizedSize = sizeValue.trim().toUpperCase();
                 sizeMap.set(normalizedSize, (sizeMap.get(normalizedSize) || 0) + 1);
               }
+            } else {
+              const attrEntity = option.attributeValue?.attribute as
+                | {
+                    key?: string | null;
+                    type?: string | null;
+                    filterable?: boolean | null;
+                    translations?: Array<{ locale: string; name: string }> | null;
+                  }
+                | null
+                | undefined;
+
+              if (attrEntity && attrEntity.filterable === false) {
+                return;
+              }
+
+              const attrKeyRaw =
+                (typeof attrEntity?.key === "string" && attrEntity.key.trim()
+                  ? attrEntity.key
+                  : null) ??
+                (typeof option.attributeKey === "string" ? option.attributeKey : null) ??
+                (typeof option.key === "string" ? option.key : null) ??
+                (typeof option.attribute === "string" ? option.attribute : null);
+
+              if (!attrKeyRaw || typeof attrKeyRaw !== "string") {
+                return;
+              }
+
+              const keyNorm = normalizeTechnicalFilterToken(attrKeyRaw);
+              if (!keyNorm || isReservedShopAttributeFilterKey(keyNorm)) {
+                return;
+              }
+
+              let displayLabel = "";
+              if (option.attributeValue) {
+                displayLabel = this.getLocalizedAttributeValueLabel(option.attributeValue, lang);
+              } else {
+                displayLabel = String(option.value || option.label || "").trim();
+              }
+              if (!displayLabel) {
+                return;
+              }
+
+              const sectionLabel = this.getLocalizedAttributeName(attrEntity, lang, attrKeyRaw);
+              const attrType = typeof attrEntity?.type === "string" ? attrEntity.type : "select";
+              const labelFromDb = Boolean(attrEntity?.translations && attrEntity.translations.length > 0);
+              this.upsertExtraAttributeFacet(
+                extraAttributeFacetByKey,
+                keyNorm,
+                sectionLabel,
+                labelFromDb,
+                attrType,
+                displayLabel,
+              );
             }
           }
         });
@@ -388,6 +679,13 @@ class ProductsFiltersService {
           const normalizedSize = sizeValue.toUpperCase();
           sizeMap.set(normalizedSize, (sizeMap.get(normalizedSize) || 0) + 1);
         });
+
+        this.collectExtraFacetsFromVariantJson(
+          variant.attributes && typeof variant.attributes === "object"
+            ? (variant.attributes as Record<string, unknown>)
+            : null,
+          extraAttributeFacetByKey,
+        );
       });
       
       // Also check productAttributes for color attribute values with imageUrl and colors
@@ -622,8 +920,15 @@ class ProductsFiltersService {
       const brands = Array.from(brandMap.values())
         .filter((b) => b.count > 0)
         .sort((a, b) => a.name.localeCompare(b.name));
-      const priceMin = rangeMin === Infinity ? 0 : Math.floor(rangeMin / 1000) * 1000;
-      const priceMax = rangeMax === 0 ? 0 : Math.ceil(rangeMax / 1000) * 1000;
+      const needsInMemoryPriceBounds =
+        Boolean(filters.minPrice || filters.maxPrice) ||
+        hasTechnicalSpecFilters(filters.technicalSpecs);
+      const rawMin = needsInMemoryPriceBounds
+        ? (rangeMin === Infinity ? 0 : rangeMin)
+        : catalogPriceBounds.min;
+      const rawMax = needsInMemoryPriceBounds ? rangeMax : catalogPriceBounds.max;
+      const priceMin = rawMin <= 0 ? 0 : Math.floor(rawMin / 1000) * 1000;
+      const priceMax = rawMax <= 0 ? 0 : Math.ceil(rawMax / 1000) * 1000;
       let stepSize: number | null = null;
       let stepSizePerCurrency: Record<string, number> | null = null;
       try {
@@ -641,11 +946,21 @@ class ProductsFiltersService {
         // use defaults
       }
 
+      const attributeFacets: TechnicalSpecFacet[] = Array.from(extraAttributeFacetByKey.values())
+        .map((facet) => ({
+          key: facet.key,
+          label: facet.label,
+          type: facet.type,
+          values: Array.from(facet.values.values()).sort((a, b) => a.label.localeCompare(b.label)),
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label));
+
       return {
         colors,
         sizes,
         brands,
         categories,
+        attributeFacets,
         priceRange: { min: priceMin, max: priceMax, stepSize, stepSizePerCurrency },
       };
     } catch (error) {
@@ -655,6 +970,7 @@ class ProductsFiltersService {
         sizes: [],
         brands: [],
         categories: [],
+        attributeFacets: [] as TechnicalSpecFacet[],
         priceRange: { min: 0, max: 0, stepSize: null, stepSizePerCurrency: null },
       };
     }
@@ -706,31 +1022,12 @@ class ProductsFiltersService {
       }
     }
 
-    const products = await db.product.findMany({
-      where,
-      include: {
-        variants: {
-          where: {
-            published: true,
-          },
-        },
-      },
-    });
+    const discountSettings = await getListingDiscountSettings();
+    const bounds = await this.getPublishedVariantPriceBounds(where, discountSettings);
+    let minPrice = bounds.min;
+    let maxPrice = bounds.max;
 
-    let minPrice = Infinity;
-    let maxPrice = 0;
-
-    products.forEach((product: { variants: Array<{ price: number }> }) => {
-      if (product.variants.length > 0) {
-        const prices = product.variants.map((v: { price: number }) => v.price);
-        const productMin = Math.min(...prices);
-        const productMax = Math.max(...prices);
-        if (productMin < minPrice) minPrice = productMin;
-        if (productMax > maxPrice) maxPrice = productMax;
-      }
-    });
-
-    minPrice = minPrice === Infinity ? 0 : Math.floor(minPrice / 1000) * 1000;
+    minPrice = minPrice <= 0 ? 0 : Math.floor(minPrice / 1000) * 1000;
     // No products / no prices: keep 0 — UI must not show a fake cap (e.g. 100000) that mismatches real catalog
     maxPrice = maxPrice === 0 ? 0 : Math.ceil(maxPrice / 1000) * 1000;
 

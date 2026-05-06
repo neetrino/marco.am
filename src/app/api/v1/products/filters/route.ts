@@ -26,6 +26,7 @@ export async function GET(req: NextRequest) {
     const filters = {
       category: searchParams.get("category") || undefined,
       search: searchParams.get("search") || undefined,
+      filter: searchParams.get("filter") || undefined,
       minPrice: (() => {
         const raw = searchParams.get("minPrice");
         const parsed = raw ? Number(raw) : undefined;
@@ -47,6 +48,7 @@ export async function GET(req: NextRequest) {
     const result = await getProductsFiltersCached({
       category: filters.category,
       search: filters.search,
+      filter: filters.filter,
       minPrice: filters.minPrice,
       maxPrice: filters.maxPrice,
       lang: filters.lang,

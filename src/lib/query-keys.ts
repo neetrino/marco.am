@@ -19,4 +19,6 @@ export const queryKeys = {
     ["api", "v1", "home", "customer-reviews", lang] as const,
   homeWhyChooseUs: (lang: LanguageCode) =>
     ["api", "v1", "home", "why-choose-us", lang] as const,
+  homeBrandPartners: (locale: LanguageCode) =>
+    ["api", "v1", "home", "brand-partners", locale] as const,
 };

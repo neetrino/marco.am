@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { getStoredCurrency } from '../../../lib/currency';
 import { getStoredLanguage, type LanguageCode } from '../../../lib/language';
 import type { PdpVisualPayload } from '@/lib/services/products-slug/product-transformer';
@@ -12,7 +12,6 @@ import { useProductImages } from './hooks/useProductImages';
 import { buildGalleryStubProduct } from './buildGalleryStubProduct';
 import { useProductFetch } from './hooks/useProductFetch';
 import { useWishlistCompare } from './hooks/useWishlistCompare';
-import { useReviews } from '../../../components/ProductReviews/hooks/useReviews';
 import { useVariantSelection } from './hooks/useVariantSelection';
 import { useProductActions } from './hooks/useProductActions';
 import { useProductQuantity } from './hooks/useProductQuantity';
@@ -124,16 +123,6 @@ export function useProductPage({
     productId: displayProduct?.id || null,
   });
 
-  const {
-    reviews,
-    aggregate,
-    loading: reviewsLoading,
-    loadReviews: reloadProductReviews,
-  } = useReviews(displayProduct?.id ?? undefined, slug || undefined);
-
-  const averageRating = aggregate.averageRating;
-  const reviewCount = aggregate.reviewCount;
-
   const { handleAddToWishlist, handleCompareToggle } = useProductActions({
     productId: displayProduct?.id || null,
     isInWishlist,
@@ -146,6 +135,13 @@ export function useProductPage({
 
   useEffect(() => {
     setLanguage(getStoredLanguage());
+    const handleLanguageUpdate = () => {
+      setLanguage(getStoredLanguage());
+    };
+    window.addEventListener('language-updated', handleLanguageUpdate);
+    return () => {
+      window.removeEventListener('language-updated', handleLanguageUpdate);
+    };
   }, []);
 
   useEffect(() => {
@@ -186,16 +182,9 @@ export function useProductPage({
     }
   }, [product, variantIdFromUrl, setSelectedVariant]);
 
-  const scrollToReviews = useCallback(() => {
-    const reviewsElement = document.getElementById('product-reviews');
-    if (reviewsElement) {
-      reviewsElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }, []);
-
   const getRequiredAttributesMessage = (): string => {
-    const needsColor = colorGroups.length > 0 && colorGroups.some(g => g.stock > 0) && !selectedColor;
-    const needsSize = sizeGroups.length > 0 && sizeGroups.some(g => g.stock > 0) && !selectedSize;
+    const needsColor = colorGroups.length > 1 && colorGroups.some((g) => g.stock > 0) && !selectedColor;
+    const needsSize = sizeGroups.length > 1 && sizeGroups.some((g) => g.stock > 0) && !selectedSize;
     
     if (needsColor && needsSize) return t(language, 'product.selectColorAndSize');
     if (needsColor) return t(language, 'product.selectColor');
@@ -228,12 +217,6 @@ export function useProductPage({
     isInWishlist,
     isInCompare,
     quantity,
-    reviews,
-    aggregate,
-    reviewsLoading,
-    reloadProductReviews,
-    averageRating,
-    reviewCount,
     slug,
     attributeGroups,
     colorGroups,
@@ -249,7 +232,6 @@ export function useProductPage({
     hasUnavailableAttributes,
     unavailableAttributes,
     canAddToCart,
-    scrollToReviews,
     getOptionValue,
     adjustQuantity,
     handleColorSelect,

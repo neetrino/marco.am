@@ -377,7 +377,7 @@ export function ProductAttributesSelector({
       ) : (
         // Old format: Use colorGroups and sizeGroups
         <>
-          {colorGroups.length > 0 && (
+          {colorGroups.length > 1 && (
             <div className="space-y-1">
               <label className="text-xs font-bold uppercase leading-snug">{t(language, 'product.color')}:</label>
               <div className="flex flex-wrap items-center gap-1.5">
@@ -415,7 +415,7 @@ export function ProductAttributesSelector({
       )}
 
       {/* Size Groups - Show only if not using new format */}
-      {!product?.productAttributes && sizeGroups.length > 0 && (
+      {!product?.productAttributes && sizeGroups.length > 1 && (
         <div className="space-y-1">
           <label className="text-xs font-bold uppercase leading-snug">{t(language, 'product.size')}</label>
           <div className="flex flex-wrap gap-1.5">

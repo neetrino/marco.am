@@ -35,10 +35,23 @@ export function ProductDiscountsCard({
 }: ProductDiscountsCardProps) {
   const { t } = useTranslation();
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredProducts = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+    if (!normalizedQuery) {
+      return products;
+    }
+
+    return products.filter((product) => {
+      const productTitle = product.title.toLowerCase();
+      return productTitle.includes(normalizedQuery);
+    });
+  }, [products, searchQuery]);
 
   const totalPages = useMemo(
-    () => Math.max(1, Math.ceil(products.length / PRODUCT_ITEMS_PER_PAGE)),
-    [products.length],
+    () => Math.max(1, Math.ceil(filteredProducts.length / PRODUCT_ITEMS_PER_PAGE)),
+    [filteredProducts.length],
   );
 
   useEffect(() => {
@@ -49,12 +62,12 @@ export function ProductDiscountsCard({
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [products.length]);
+  }, [products.length, searchQuery]);
 
   const paginatedProducts = useMemo(() => {
     const startIndex = (currentPage - 1) * PRODUCT_ITEMS_PER_PAGE;
-    return products.slice(startIndex, startIndex + PRODUCT_ITEMS_PER_PAGE);
-  }, [currentPage, products]);
+    return filteredProducts.slice(startIndex, startIndex + PRODUCT_ITEMS_PER_PAGE);
+  }, [currentPage, filteredProducts]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -71,12 +84,34 @@ export function ProductDiscountsCard({
         <p className="text-sm text-slate-600">{t('admin.quickSettings.productDiscountsSubtitle')}</p>
       </div>
 
+      <div className="mb-4 flex gap-2">
+        <Input
+          type="text"
+          value={searchQuery}
+          onChange={(event) => setSearchQuery(event.target.value)}
+          placeholder={t('admin.products.searchPlaceholder')}
+          className="border-slate-300 bg-white"
+        />
+        <Button
+          variant="ghost"
+          onClick={() => setSearchQuery('')}
+          disabled={searchQuery.length === 0}
+          className="shrink-0 text-slate-700 hover:bg-slate-100"
+        >
+          {t('admin.quickSettings.clear')}
+        </Button>
+      </div>
+
       {productsLoading ? (
         <div className="py-8 text-center">
           <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-b-2 border-slate-900"></div>
           <p className="text-slate-600">{t('admin.quickSettings.loadingProducts')}</p>
         </div>
       ) : products.length === 0 ? (
+        <div className="rounded-lg border border-dashed border-slate-300 py-8 text-center">
+          <p className="text-slate-600">{t('admin.quickSettings.noProducts')}</p>
+        </div>
+      ) : filteredProducts.length === 0 ? (
         <div className="rounded-lg border border-dashed border-slate-300 py-8 text-center">
           <p className="text-slate-600">{t('admin.quickSettings.noProducts')}</p>
         </div>
@@ -173,7 +208,7 @@ export function ProductDiscountsCard({
             <AdminTablePagination
               currentPage={currentPage}
               totalPages={totalPages}
-              totalItems={products.length}
+              totalItems={filteredProducts.length}
               onPageChange={setCurrentPage}
             />
           ) : null}

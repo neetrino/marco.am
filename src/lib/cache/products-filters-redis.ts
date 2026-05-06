@@ -33,6 +33,7 @@ export function searchParamsRecordToUrlSearchParams(
 export function buildProductsFiltersCacheKey(filters: {
   category?: string;
   search?: string;
+  filter?: string;
   minPrice?: number;
   maxPrice?: number;
   lang: string;
@@ -47,6 +48,7 @@ export function buildProductsFiltersCacheKey(filters: {
 export async function getProductsFiltersCached(args: {
   category?: string;
   search?: string;
+  filter?: string;
   minPrice?: number;
   maxPrice?: number;
   lang: string;
@@ -65,6 +67,7 @@ export async function getProductsFiltersCached(args: {
   const keyPayload = {
     category: args.category?.trim() || undefined,
     search: args.search?.trim() || undefined,
+    filter: args.filter?.trim() || undefined,
     minPrice: args.minPrice,
     maxPrice: args.maxPrice,
     lang: args.lang,
@@ -78,9 +81,11 @@ export async function getProductsFiltersCached(args: {
       productsService.getFilters({
         category: keyPayload.category,
         search: keyPayload.search,
+        filter: keyPayload.filter,
         minPrice: keyPayload.minPrice,
         maxPrice: keyPayload.maxPrice,
         lang: keyPayload.lang,
+        technicalSpecs: keyPayload.technicalSpecs,
       }),
   );
 }

@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { reviewsService } from "@/lib/services/reviews.service";
-import { authenticateToken } from "@/lib/middleware/auth";
 import { logger } from "@/lib/utils/logger";
 
 export const dynamic = "force-dynamic";
@@ -14,60 +12,29 @@ export async function PUT(
   { params }: { params: Promise<{ reviewId: string }> }
 ) {
   try {
-    // Authenticate user
-    const user = await authenticateToken(req);
-    if (!user) {
-      return NextResponse.json(
-        {
-          type: "https://api.shop.am/problems/unauthorized",
-          title: "Unauthorized",
-          status: 401,
-          detail: "Authentication required",
-          instance: req.url,
-        },
-        { status: 401 }
-      );
-    }
-
     const { reviewId } = await params;
-    const body = await req.json();
-
-    logger.devLog('📝 [REVIEWS API] PUT request:', { reviewId, userId: user.id, rating: body.rating });
-
-    // Validate request body
-    if (body.rating !== undefined && (typeof body.rating !== 'number' || body.rating < 1 || body.rating > 5)) {
-      return NextResponse.json(
-        {
-          type: "https://api.shop.am/problems/validation-error",
-          title: "Validation Error",
-          status: 400,
-          detail: "Rating must be between 1 and 5",
-          instance: req.url,
-        },
-        { status: 400 }
-      );
-    }
-
-    // Update review
-    const review = await reviewsService.updateReview(reviewId, user.id, {
-      rating: body.rating,
-      comment: body.comment,
-    });
-
-    logger.devLog('✅ [REVIEWS API] Review updated:', review.id);
-
-    return NextResponse.json(review);
-  } catch (error: any) {
-    console.error("❌ [REVIEWS API] PUT Error:", error);
+    logger.devLog("📝 [REVIEWS API] PUT blocked (reviews disabled):", { reviewId });
     return NextResponse.json(
       {
-        type: error.type || "https://api.shop.am/problems/internal-error",
-        title: error.title || "Internal Server Error",
-        status: error.status || 500,
-        detail: error.detail || error.message || "An error occurred",
+        type: "https://api.shop.am/problems/gone",
+        title: "Reviews disabled",
+        status: 410,
+        detail: "Product reviews are disabled",
         instance: req.url,
       },
-      { status: error.status || 500 }
+      { status: 410 }
+    );
+  } catch (error: unknown) {
+    const err = error as { status?: number; type?: string; title?: string; detail?: string; message?: string };
+    return NextResponse.json(
+      {
+        type: err.type || "https://api.shop.am/problems/internal-error",
+        title: err.title || "Internal Server Error",
+        status: err.status || 500,
+        detail: err.detail || err.message || "An error occurred",
+        instance: req.url,
+      },
+      { status: err.status || 500 }
     );
   }
 }
@@ -81,41 +48,29 @@ export async function DELETE(
   { params }: { params: Promise<{ reviewId: string }> }
 ) {
   try {
-    // Authenticate user
-    const user = await authenticateToken(req);
-    if (!user) {
-      return NextResponse.json(
-        {
-          type: "https://api.shop.am/problems/unauthorized",
-          title: "Unauthorized",
-          status: 401,
-          detail: "Authentication required",
-          instance: req.url,
-        },
-        { status: 401 }
-      );
-    }
-
     const { reviewId } = await params;
-
-    logger.devLog('📝 [REVIEWS API] DELETE request:', { reviewId, userId: user.id });
-
-    await reviewsService.deleteReview(reviewId, user.id);
-
-    logger.devLog('✅ [REVIEWS API] Review deleted:', reviewId);
-
-    return NextResponse.json({ success: true });
-  } catch (error: any) {
-    console.error("❌ [REVIEWS API] DELETE Error:", error);
+    logger.devLog("📝 [REVIEWS API] DELETE blocked (reviews disabled):", { reviewId });
     return NextResponse.json(
       {
-        type: error.type || "https://api.shop.am/problems/internal-error",
-        title: error.title || "Internal Server Error",
-        status: error.status || 500,
-        detail: error.detail || error.message || "An error occurred",
+        type: "https://api.shop.am/problems/gone",
+        title: "Reviews disabled",
+        status: 410,
+        detail: "Product reviews are disabled",
         instance: req.url,
       },
-      { status: error.status || 500 }
+      { status: 410 }
+    );
+  } catch (error: unknown) {
+    const err = error as { status?: number; type?: string; title?: string; detail?: string; message?: string };
+    return NextResponse.json(
+      {
+        type: err.type || "https://api.shop.am/problems/internal-error",
+        title: err.title || "Internal Server Error",
+        status: err.status || 500,
+        detail: err.detail || err.message || "An error occurred",
+        instance: req.url,
+      },
+      { status: err.status || 500 }
     );
   }
 }
