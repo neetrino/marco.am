@@ -8,10 +8,14 @@ import { useTranslation } from '../lib/i18n-client';
 import {
   MobileNavCartBoldIcon,
   MobileNavCartLinearIcon,
+  MobileNavCompareBoldIcon,
+  MobileNavCompareLinearIcon,
   MobileNavHomeBoldIcon,
   MobileNavHomeLinearIcon,
   MobileNavProfileBoldIcon,
   MobileNavProfileLinearIcon,
+  MobileNavWishlistBoldIcon,
+  MobileNavWishlistLinearIcon,
   MobileNavWishlistBagBoldIcon,
   MobileNavWishlistBagIcon,
 } from './mobile-bottom-nav-icons';
@@ -23,7 +27,7 @@ import {
   MOBILE_NAV_TOP_CORNER_RADIUS_PX,
 } from './mobile-bottom-nav.constants';
 
-export type MobileNavIconSlot = 'home' | 'shop' | 'cart' | 'profile';
+export type MobileNavIconSlot = 'home' | 'shop' | 'wishlist' | 'compare' | 'cart' | 'profile';
 
 interface MobileNavItem {
   label: string;
@@ -59,6 +63,18 @@ function renderNavIcon(slot: MobileNavIconSlot, isActive: boolean, sizeClass: st
         <MobileNavCartBoldIcon className={sizeClass} />
       ) : (
         <MobileNavCartLinearIcon className={sizeClass} />
+      );
+    case 'wishlist':
+      return isActive ? (
+        <MobileNavWishlistBoldIcon className={sizeClass} />
+      ) : (
+        <MobileNavWishlistLinearIcon className={sizeClass} />
+      );
+    case 'compare':
+      return isActive ? (
+        <MobileNavCompareBoldIcon className={sizeClass} />
+      ) : (
+        <MobileNavCompareLinearIcon className={sizeClass} />
       );
     case 'profile':
       return isActive ? (
@@ -135,6 +151,8 @@ export function MobileBottomNav() {
     () => [
       { label: t('common.navigation.home'), href: '/', icon: 'home' },
       { label: t('common.navigation.shop'), href: '/products', icon: 'shop' },
+      { label: t('common.navigation.wishlist'), href: '/wishlist', icon: 'wishlist' },
+      { label: t('common.navigation.compare'), href: '/compare', icon: 'compare' },
       { label: t('common.navigation.cart'), href: '/cart', icon: 'cart' },
       { label: t('common.navigation.profile'), href: '/profile', icon: 'profile' },
     ],

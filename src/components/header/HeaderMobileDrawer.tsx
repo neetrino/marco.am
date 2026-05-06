@@ -5,9 +5,9 @@ import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
+  Building2,
   ChevronRight,
   Clapperboard,
-  Info,
   LogOut,
   Mail,
   Phone,
@@ -16,7 +16,6 @@ import {
   User,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { CompareIcon } from '../icons/CompareIcon';
 import { MOBILE_FLOOR_NAV_HREFS } from '../mobile-bottom-nav.constants';
 import { LanguagePreferenceContext } from '../../lib/language-context';
 import { useAuth } from '../../lib/auth/AuthContext';
@@ -57,7 +56,7 @@ type Props = {
 };
 
 const PRIMARY_NAV_ICONS: Record<string, LucideIcon> = {
-  'common.navigation.about': Info,
+  'common.navigation.about': Building2,
   'common.navigation.shop': ShoppingBag,
   'common.navigation.brands': Tag,
   'common.navigation.contact': Mail,
@@ -190,7 +189,6 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
     isLoggedIn,
     logout,
     isAdmin,
-    compareCount,
     currentYear,
     categories,
     loadingCategories,
@@ -205,9 +203,6 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
       l.translationKey !== 'common.navigation.reels' &&
       l.translationKey !== 'common.navigation.shop'
   );
-  const compareNavActive = isPrimaryNavHrefActive(pathname, '/compare');
-  const compareRowClass = `${mobileDrawerNavPillClass(compareNavActive)} normal-case`;
-
   const closeDrawer = () => setMobileMenuOpen(false);
 
   useEffect(() => {
@@ -327,26 +322,6 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
                     mobileDrawerNavPillClass(isPrimaryNavHrefActive(pathname, reelsLink.href))
                   )
                 : null}
-
-              <Link
-                href="/compare"
-                onClick={closeDrawer}
-                className={compareRowClass}
-                aria-current={compareNavActive ? 'page' : undefined}
-              >
-                <span className="flex min-w-0 flex-1 items-center gap-3.5 font-semibold">
-                  <CompareIcon size={22} className="shrink-0" />
-                  <span className="truncate">{t('common.navigation.compare')}</span>
-                </span>
-                <span className="flex shrink-0 items-center gap-2">
-                  {compareCount > 0 ? (
-                    <span className="rounded-full bg-red-600 px-2 py-0.5 text-[10px] font-bold text-white">
-                      {compareCount > 99 ? '99+' : compareCount}
-                    </span>
-                  ) : null}
-                  <ChevronRight className="h-5 w-5 shrink-0 opacity-50" aria-hidden />
-                </span>
-              </Link>
 
               <div className="overflow-hidden rounded-full border border-marco-black/12 dark:border-white/12">
                 <ThemeToggleButton
