@@ -13,7 +13,6 @@ import {
   HEADER_FIGMA_PILL_RADIUS_CLASS,
 } from '../../../components/header/header.constants';
 import { ProductAttributesSelector } from './ProductAttributesSelector';
-import { ProductPartialStar } from './ProductPartialStar';
 import { stripDuplicateSpecificationDescriptionHtml } from './strip-duplicate-specification-description-html';
 import type { Product, ProductVariant } from './types';
 
@@ -32,8 +31,6 @@ interface ProductInfoAndActionsProps {
   discountPercent: number | null;
   currency: string;
   language: LanguageCode;
-  averageRating: number;
-  reviewsCount: number;
   quantity: number;
   maxQuantity: number;
   isOutOfStock: boolean;
@@ -57,7 +54,6 @@ interface ProductInfoAndActionsProps {
   onAddToCart: () => Promise<void>;
   onAddToWishlist: (e: MouseEvent) => void;
   onCompareToggle: (e: MouseEvent) => void;
-  onScrollToReviews: () => void;
   onColorSelect: (color: string) => void;
   onSizeSelect: (size: string) => void;
   onAttributeValueSelect: (attrKey: string, value: string) => void;
@@ -73,8 +69,6 @@ export function ProductInfoAndActions({
   discountPercent: _discountPercent,
   currency,
   language,
-  averageRating,
-  reviewsCount,
   quantity,
   maxQuantity,
   isOutOfStock,
@@ -98,7 +92,6 @@ export function ProductInfoAndActions({
   onAddToCart,
   onAddToWishlist,
   onCompareToggle,
-  onScrollToReviews,
   onColorSelect,
   onSizeSelect,
   onAttributeValueSelect,
@@ -119,12 +112,6 @@ export function ProductInfoAndActions({
     attributeGroups.size > 0 ||
     colorGroups.length > 0 ||
     (!product?.productAttributes && sizeGroups.length > 0);
-
-  const hasProductReviews = reviewsCount > 0;
-  const displayRatingScore = hasProductReviews
-    ? Math.min(5, Math.max(0, averageRating))
-    : 5;
-  const starFillRatio = displayRatingScore / 5;
 
   return (
     <div className="flex flex-col h-full">
@@ -153,25 +140,6 @@ export function ProductInfoAndActions({
             <p className="text-base font-bold text-marco-yellow">3 ՏԱՐԻ</p>
             <p className="text-xs font-bold uppercase tracking-[0.3px] text-white">ԵՐԱՇԽԻՔ</p>
           </div>
-        </div>
-        <div className="-mt-2 mb-6 flex flex-wrap items-center gap-x-2 gap-y-1">
-          <ProductPartialStar fillRatio={starFillRatio} />
-          <span className="text-sm font-semibold tabular-nums text-marco-black">
-            {displayRatingScore.toFixed(1)}
-          </span>
-          <span className="text-sm text-gray-400" aria-hidden>
-            ·
-          </span>
-          <button
-            type="button"
-            onClick={onScrollToReviews}
-            className="text-sm text-gray-600 underline-offset-2 transition-colors hover:text-marco-black hover:underline"
-          >
-            {reviewsCount}{' '}
-            {reviewsCount === 1
-              ? t(language, 'common.reviews.review')
-              : t(language, 'common.reviews.reviews')}
-          </button>
         </div>
         <div className="mb-6">
           <div className="flex flex-col gap-1">
