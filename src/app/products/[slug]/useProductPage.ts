@@ -183,8 +183,8 @@ export function useProductPage({
   }, [product, variantIdFromUrl, setSelectedVariant]);
 
   const getRequiredAttributesMessage = (): string => {
-    const needsColor = colorGroups.length > 0 && colorGroups.some(g => g.stock > 0) && !selectedColor;
-    const needsSize = sizeGroups.length > 0 && sizeGroups.some(g => g.stock > 0) && !selectedSize;
+    const needsColor = colorGroups.length > 1 && colorGroups.some((g) => g.stock > 0) && !selectedColor;
+    const needsSize = sizeGroups.length > 1 && sizeGroups.some((g) => g.stock > 0) && !selectedSize;
     
     if (needsColor && needsSize) return t(language, 'product.selectColorAndSize');
     if (needsColor) return t(language, 'product.selectColor');

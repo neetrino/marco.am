@@ -109,9 +109,9 @@ export function ProductInfoAndActions({
     .replace(/&nbsp;/gi, ' ')
     .trim().length > 0;
   const hasAttributeSelectors =
-    attributeGroups.size > 0 ||
-    colorGroups.length > 0 ||
-    (!product?.productAttributes && sizeGroups.length > 0);
+    Array.from(attributeGroups.values()).some((groups) => groups.length > 1) ||
+    colorGroups.length > 1 ||
+    (!product?.productAttributes && sizeGroups.length > 1);
 
   return (
     <div className="flex flex-col h-full">

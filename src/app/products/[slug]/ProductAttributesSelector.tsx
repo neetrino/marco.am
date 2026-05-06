@@ -73,7 +73,11 @@ export function ProductAttributesSelector({
   getOptionValue,
 }: ProductAttributesSelectorProps) {
   const attributeGroupsEntries = Array.from(attributeGroups.entries());
+  const selectableAttributeGroupsEntries = attributeGroupsEntries.filter(
+    ([, attrGroups]) => attrGroups.length > 1
+  );
   logger.devLog('🎨 [PRODUCT ATTRIBUTES SELECTOR] attributeGroups entries:', attributeGroupsEntries.length);
+  logger.devLog('🎨 [PRODUCT ATTRIBUTES SELECTOR] selectable attributeGroups entries:', selectableAttributeGroupsEntries.length);
   logger.devLog('🎨 [PRODUCT ATTRIBUTES SELECTOR] attributeGroups keys:', Array.from(attributeGroups.keys()));
   logger.devLog('🎨 [PRODUCT ATTRIBUTES SELECTOR] product.productAttributes:', product?.productAttributes);
   
@@ -81,9 +85,9 @@ export function ProductAttributesSelector({
     <div className="mt-6 rounded-xl border border-gray-200 bg-white p-3 space-y-2 md:space-y-2.5">
       {/* Attribute Selectors - Support both new (productAttributes) and old (colorGroups) format */}
       {/* Display all attributes from attributeGroups, not just from productAttributes */}
-      {attributeGroupsEntries.length > 0 ? (
+      {selectableAttributeGroupsEntries.length > 0 ? (
         // Use attributeGroups which contains all attributes (from productAttributes and variants)
-        Array.from(attributeGroups.entries()).map(([attrKey, attrGroups]) => {
+        selectableAttributeGroupsEntries.map(([attrKey, attrGroups]) => {
           // Try to get attribute name from productAttributes if available
           const productAttr = product?.productAttributes?.find((pa: any) => pa.attribute?.key === attrKey);
           const attributeName = productAttr?.attribute?.name || attrKey.charAt(0).toUpperCase() + attrKey.slice(1);
@@ -335,7 +339,7 @@ export function ProductAttributesSelector({
       ) : (
         // Old format: Use colorGroups and sizeGroups
         <>
-          {colorGroups.length > 0 && (
+          {colorGroups.length > 1 && (
             <div className="space-y-1">
               <label className="text-xs font-bold uppercase leading-snug">{t(language, 'product.color')}:</label>
               <div className="flex flex-wrap items-center gap-1.5">
@@ -371,7 +375,7 @@ export function ProductAttributesSelector({
       )}
 
       {/* Size Groups - Show only if not using new format */}
-      {!product?.productAttributes && sizeGroups.length > 0 && (
+      {!product?.productAttributes && sizeGroups.length > 1 && (
         <div className="space-y-1">
           <label className="text-xs font-bold uppercase leading-snug">{t(language, 'product.size')}</label>
           <div className="flex flex-wrap gap-1.5">
