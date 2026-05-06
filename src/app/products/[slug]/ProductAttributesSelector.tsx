@@ -57,6 +57,9 @@ const getColorValue = (colorName: string): string => {
   return colorMap[normalizedName] || '#CCCCCC';
 };
 
+/** Spec / marketing attributes stay in description; only variant axes are pickers on PDP. */
+export const VARIANT_PICKER_ATTRIBUTE_KEYS = new Set<string>(['color', 'size']);
+
 export function ProductAttributesSelector({
   product,
   attributeGroups,
@@ -73,17 +76,19 @@ export function ProductAttributesSelector({
   getOptionValue,
 }: ProductAttributesSelectorProps) {
   const attributeGroupsEntries = Array.from(attributeGroups.entries());
+  const variantAttributeEntries = attributeGroupsEntries.filter(([attrKey]) =>
+    VARIANT_PICKER_ATTRIBUTE_KEYS.has(attrKey),
+  );
   logger.devLog('🎨 [PRODUCT ATTRIBUTES SELECTOR] attributeGroups entries:', attributeGroupsEntries.length);
   logger.devLog('🎨 [PRODUCT ATTRIBUTES SELECTOR] attributeGroups keys:', Array.from(attributeGroups.keys()));
   logger.devLog('🎨 [PRODUCT ATTRIBUTES SELECTOR] product.productAttributes:', product?.productAttributes);
-  
+
   return (
-    <div className="mt-6 rounded-xl border border-gray-200 bg-white p-3 space-y-2 md:space-y-2.5">
+    <div className="mt-6 space-y-2 md:space-y-2.5">
       {/* Attribute Selectors - Support both new (productAttributes) and old (colorGroups) format */}
-      {/* Display all attributes from attributeGroups, not just from productAttributes */}
-      {attributeGroupsEntries.length > 0 ? (
-        // Use attributeGroups which contains all attributes (from productAttributes and variants)
-        Array.from(attributeGroups.entries()).map(([attrKey, attrGroups]) => {
+      {/* Only color/size are interactive pickers; other keys are specs (shown in description, not here). */}
+      {variantAttributeEntries.length > 0 ? (
+        variantAttributeEntries.map(([attrKey, attrGroups]) => {
           // Try to get attribute name from productAttributes if available
           const productAttr = product?.productAttributes?.find((pa: any) => pa.attribute?.key === attrKey);
           const attributeName = productAttr?.attribute?.name || attrKey.charAt(0).toUpperCase() + attrKey.slice(1);
@@ -137,41 +142,42 @@ export function ProductAttributesSelector({
                       : 'w-10 h-10';
                     
                     return (
-                      <div key={g.valueId || g.value} className="flex flex-col items-center gap-0.5">
-                        <button 
-                          onClick={() => onColorSelect(g.value)}
-                          className={`${sizeClass} rounded-full transition-all overflow-hidden ${
-                            isSelected 
-                              ? 'border-[3px] border-green-500 scale-110' 
-                              : g.stock <= 0
-                                ? 'border-2 border-gray-200 opacity-60 hover:opacity-80' 
-                                : 'border-2 border-gray-300 hover:scale-105'
-                          }`}
-                          style={hasImage ? {} : { backgroundColor: colorHex }}
-                          title={`${getAttributeLabel(language, attrKey, g.value)}${g.stock > 0 ? ` (${g.stock} ${t(language, 'product.pcs')})` : ` (${t(language, 'product.outOfStock')})`}`} 
-                        >
-                          {hasImage && processedImageUrl ? (
-                            <img 
-                              src={processedImageUrl} 
-                              alt={g.label}
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                console.error(`❌ [COLOR IMAGE] Failed to load image for color "${g.value}":`, processedImageUrl);
-                                (e.target as HTMLImageElement).style.display = 'none';
-                              }}
-                              onLoad={() => {
-                                logger.devLog(`✅ [COLOR IMAGE] Successfully loaded image for color "${g.value}":`, processedImageUrl);
-                              }}
-                            />
-                          ) : null}
-                        </button>
-                        {g.stock > 0 && (
-                          <span className={`${totalValues > 8 ? 'text-[10px]' : 'text-xs'} text-gray-500`}>{g.stock}</span>
-                        )}
-                        {g.stock <= 0 && (
-                          <span className={`${totalValues > 8 ? 'text-[10px]' : 'text-xs'} text-gray-400`}>0</span>
-                        )}
-                      </div>
+                      <button
+                        key={g.valueId || g.value}
+                        type="button"
+                        onClick={() => onColorSelect(g.value)}
+                        className={`${sizeClass} rounded-full transition-all overflow-hidden ${
+                          isSelected
+                            ? 'border-[3px] border-green-500 scale-110'
+                            : g.stock <= 0
+                              ? 'border-2 border-gray-200 opacity-60 hover:opacity-80'
+                              : 'border-2 border-gray-300 hover:scale-105'
+                        }`}
+                        style={hasImage ? {} : { backgroundColor: colorHex }}
+                        title={`${getAttributeLabel(language, attrKey, g.value)}${g.stock > 0 ? ` (${g.stock} ${t(language, 'product.pcs')})` : ` (${t(language, 'product.outOfStock')})`}`}
+                        aria-label={getAttributeLabel(language, attrKey, g.value)}
+                      >
+                        {hasImage && processedImageUrl ? (
+                          <img
+                            src={processedImageUrl}
+                            alt=""
+                            className="h-full w-full object-cover"
+                            onError={(e) => {
+                              logger.error(
+                                `[COLOR IMAGE] Failed to load image for color "${g.value}"`,
+                                processedImageUrl,
+                              );
+                              (e.target as HTMLImageElement).style.display = 'none';
+                            }}
+                            onLoad={() => {
+                              logger.devLog(
+                                `[COLOR IMAGE] Successfully loaded image for color "${g.value}":`,
+                                processedImageUrl,
+                              );
+                            }}
+                          />
+                        ) : null}
+                      </button>
                     );
                   })}
                 </div>
@@ -255,74 +261,104 @@ export function ProductAttributesSelector({
                     const processedImageUrl = g.imageUrl ? processImageUrl(g.imageUrl) : null;
                     const hasImage = processedImageUrl && processedImageUrl.trim() !== '';
                     const hasColors = g.colors && Array.isArray(g.colors) && g.colors.length > 0;
-                    const colorHex = hasColors && g.colors 
-                      ? g.colors[0] 
-                      : null;
-                    
+                    const colorHex = hasColors && g.colors ? g.colors[0] : null;
+                    const hasSwatchVisual = Boolean(
+                      (hasImage && processedImageUrl) || (hasColors && colorHex),
+                    );
+
                     // Debug logging for image issues
                     if (g.imageUrl && !hasImage) {
-                      console.warn(`⚠️ [ATTRIBUTE IMAGE] Failed to process imageUrl for attribute "${attrKey}" value "${g.value}":`, g.imageUrl);
+                      logger.warn(
+                        `[ATTRIBUTE IMAGE] Failed to process imageUrl for attribute "${attrKey}" value "${g.value}":`,
+                        g.imageUrl,
+                      );
                     }
-                    
-                    // Dynamic sizing based on number of values
-                    // Keep size consistent for 2 values, reduce for more
+
                     const totalValues = attrGroups.length;
-                    const paddingClass = totalValues > 6 
-                      ? 'px-1.5 py-0.5' 
-                      : totalValues > 3 
-                      ? 'px-2 py-1' 
-                      : 'px-2.5 py-1';
-                    const textSizeClass = totalValues > 6 
-                      ? 'text-xs' 
-                      : 'text-sm';
-                    const imageSizeClass = totalValues > 6 
-                      ? 'w-4 h-4' 
-                      : totalValues > 3 
-                      ? 'w-5 h-5' 
-                      : 'w-6 h-6';
-                    const gapClass = totalValues > 6 
-                      ? 'gap-1' 
-                      : 'gap-2';
+                    const swatchSizeClass =
+                      totalValues > 6 ? 'h-8 w-8' : totalValues > 3 ? 'h-9 w-9' : 'h-10 w-10';
+
+                    if (hasSwatchVisual) {
+                      const label = getAttributeLabel(language, attrKey, g.value);
+                      return (
+                        <button
+                          key={g.valueId || g.value}
+                          type="button"
+                          onClick={() => {
+                            if (!isDisabled) {
+                              onAttributeValueSelect(attrKey, g.valueId || g.value);
+                            }
+                          }}
+                          className={`${swatchSizeClass} flex-shrink-0 overflow-hidden rounded-full border-2 transition-all ${
+                            isSelected
+                              ? 'scale-110 border-[3px] border-green-500'
+                              : g.stock <= 0
+                                ? 'border-gray-200 opacity-60 hover:opacity-80'
+                                : 'border-gray-300 hover:scale-105'
+                          }`}
+                          style={hasImage ? {} : colorHex ? { backgroundColor: colorHex } : {}}
+                          title={`${label}${g.stock > 0 ? ` (${g.stock} ${t(language, 'product.pcs')})` : ` (${t(language, 'product.outOfStock')})`}`}
+                          aria-label={label}
+                        >
+                          {hasImage && processedImageUrl ? (
+                            <img
+                              src={processedImageUrl}
+                              alt=""
+                              className="h-full w-full object-cover"
+                              onError={(e) => {
+                                logger.error(
+                                  `[ATTRIBUTE IMAGE] Failed to load image for attribute "${attrKey}" value "${g.value}"`,
+                                  processedImageUrl,
+                                );
+                                (e.target as HTMLImageElement).style.display = 'none';
+                              }}
+                              onLoad={() => {
+                                logger.devLog(
+                                  `[ATTRIBUTE IMAGE] Successfully loaded image for attribute "${attrKey}" value "${g.value}":`,
+                                  processedImageUrl,
+                                );
+                              }}
+                            />
+                          ) : null}
+                        </button>
+                      );
+                    }
+
+                    const paddingClass =
+                      totalValues > 6
+                        ? 'px-1.5 py-0.5'
+                        : totalValues > 3
+                          ? 'px-2 py-1'
+                          : 'px-2.5 py-1';
+                    const textSizeClass = totalValues > 6 ? 'text-xs' : 'text-sm';
+                    const gapClass = totalValues > 6 ? 'gap-1' : 'gap-2';
 
                     return (
                       <button
                         key={g.valueId || g.value}
+                        type="button"
                         onClick={() => {
                           if (!isDisabled) {
                             onAttributeValueSelect(attrKey, g.valueId || g.value);
                           }
                         }}
-                        className={`${paddingClass} rounded-lg border-2 transition-all flex items-center ${gapClass} ${
+                        className={`${paddingClass} flex items-center ${gapClass} rounded-lg border-2 transition-all ${
                           isSelected
                             ? 'border-green-500 bg-gray-50'
                             : g.stock <= 0
                               ? 'border-gray-200 opacity-60 hover:opacity-80'
                               : 'border-gray-200 hover:border-gray-400'
                         }`}
-                        style={!hasImage && colorHex ? { backgroundColor: colorHex } : {}}
                       >
-                        {hasImage && processedImageUrl ? (
-                          <img 
-                            src={processedImageUrl} 
-                            alt={g.label}
-                            className={`${imageSizeClass} object-cover rounded border border-gray-300 flex-shrink-0`}
-                            onError={(e) => {
-                              console.error(`❌ [ATTRIBUTE IMAGE] Failed to load image for attribute "${attrKey}" value "${g.value}":`, processedImageUrl);
-                              (e.target as HTMLImageElement).style.display = 'none';
-                            }}
-                            onLoad={() => {
-                              logger.devLog(`✅ [ATTRIBUTE IMAGE] Successfully loaded image for attribute "${attrKey}" value "${g.value}":`, processedImageUrl);
-                            }}
-                          />
-                        ) : hasColors && colorHex ? (
-                          <div 
-                            className={`${imageSizeClass} rounded border border-gray-300 flex-shrink-0`}
-                            style={{ backgroundColor: colorHex }}
-                          />
-                        ) : null}
                         <div className="flex flex-col gap-0 text-center leading-tight">
-                          <span className={textSizeClass}>{getAttributeLabel(language, attrKey, g.value)}</span>
-                          <span className={`${totalValues > 10 ? 'text-[10px]' : 'text-[11px]'} ${g.stock > 0 ? 'text-gray-500' : 'text-gray-400'}`}>({g.stock})</span>
+                          <span className={textSizeClass}>
+                            {getAttributeLabel(language, attrKey, g.value)}
+                          </span>
+                          <span
+                            className={`${totalValues > 10 ? 'text-[10px]' : 'text-[11px]'} ${g.stock > 0 ? 'text-gray-500' : 'text-gray-400'}`}
+                          >
+                            ({g.stock})
+                          </span>
                         </div>
                       </button>
                     );
@@ -344,24 +380,26 @@ export function ProductAttributesSelector({
                   const isDisabled = g.stock <= 0;
                   
                   return (
-                    <div key={g.color} className="flex flex-col items-center gap-1">
-                      <button 
-                        onClick={() => !isDisabled && onColorSelect(g.color)}
-                        disabled={isDisabled}
-                        className={`w-10 h-10 rounded-full transition-all ${
-                          isSelected 
-                            ? 'border-[3px] border-green-500 scale-110' 
-                            : isDisabled 
-                              ? 'border-2 border-gray-100 opacity-30 grayscale cursor-not-allowed' 
-                              : 'border-2 border-gray-300 hover:scale-105'
-                        }`}
-                        style={{ backgroundColor: getColorValue(g.color) }} 
-                        title={isDisabled ? `${getAttributeLabel(language, 'color', g.color)} (${t(language, 'product.outOfStock')})` : `${getAttributeLabel(language, 'color', g.color)}${g.stock > 0 ? ` (${g.stock} ${t(language, 'product.pcs')})` : ''}`} 
-                      />
-                      {g.stock > 0 && (
-                        <span className="text-xs text-gray-500">{g.stock}</span>
-                      )}
-                    </div>
+                    <button
+                      key={g.color}
+                      type="button"
+                      onClick={() => !isDisabled && onColorSelect(g.color)}
+                      disabled={isDisabled}
+                      className={`h-10 w-10 rounded-full transition-all ${
+                        isSelected
+                          ? 'scale-110 border-[3px] border-green-500'
+                          : isDisabled
+                            ? 'cursor-not-allowed border-2 border-gray-100 opacity-30 grayscale'
+                            : 'border-2 border-gray-300 hover:scale-105'
+                      }`}
+                      style={{ backgroundColor: getColorValue(g.color) }}
+                      title={
+                        isDisabled
+                          ? `${getAttributeLabel(language, 'color', g.color)} (${t(language, 'product.outOfStock')})`
+                          : `${getAttributeLabel(language, 'color', g.color)}${g.stock > 0 ? ` (${g.stock} ${t(language, 'product.pcs')})` : ''}`
+                      }
+                      aria-label={getAttributeLabel(language, 'color', g.color)}
+                    />
                   );
                 })}
               </div>

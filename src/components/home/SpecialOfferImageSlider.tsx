@@ -25,7 +25,7 @@ interface SpecialOfferImageSliderProps {
   title: string;
   images: string[];
   onImageError: () => void;
-  layout?: 'default' | 'mobileGrid';
+  layout?: 'default' | 'mobileGrid' | 'homeGrid';
   imagePriority?: boolean;
   navigationDisabled?: boolean;
 }

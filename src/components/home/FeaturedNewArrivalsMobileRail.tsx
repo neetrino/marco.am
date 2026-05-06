@@ -7,12 +7,11 @@ import { padChunkToSize } from '../../lib/chunk-array';
 import { t } from '../../lib/i18n';
 import type { LanguageCode } from '../../lib/language';
 import { SpecialOfferCard } from './SpecialOfferCard';
+import { homeProductMobileRailPageSlideStyles } from './home-product-mobile-rail-layout';
 import {
-  SPECIAL_OFFERS_CARD_GAP_PX,
   SPECIAL_OFFERS_CARD_HEIGHT_PX,
   SPECIAL_OFFERS_CTA_LINK_CLASS,
   SPECIAL_OFFERS_MOBILE_GRID_COLUMN_GAP_PX,
-  SPECIAL_OFFERS_MOBILE_GRID_PAGE_SIZE,
   SPECIAL_OFFERS_MOBILE_GRID_ROW_GAP_PX,
   SPECIAL_OFFERS_MOBILE_GRID_SCROLLER_PADDING_BOTTOM_PX,
   SPECIAL_OFFERS_MOBILE_SCROLLER_CLASS,
@@ -21,6 +20,8 @@ import {
   SPECIAL_OFFERS_SECTION_PAGINATION_TO_CTA_GAP_MOBILE_PX,
   SPECIAL_OFFERS_SECTION_RAIL_TO_PAGINATION_GAP_MOBILE_PX,
 } from './home-special-offers.constants';
+import { FEATURED_NEW_ARRIVALS_MOBILE_RAIL_CARDS_PER_PAGE } from '../featured-products-tabs.constants';
+import { useHomeMobileProductRailScrollport } from './useHomeMobileProductRailScrollport';
 import { HOME_PRODUCT_CHUNK_SIZE } from '../../constants/homeProductChunks';
 import type { SpecialOfferProduct } from './special-offer-product.types';
 
@@ -34,8 +35,6 @@ const featuredFooterDotStyle = {
   width: SPECIAL_OFFERS_PAGINATION_DOT_SIZE_PX,
   height: SPECIAL_OFFERS_PAGINATION_DOT_SIZE_PX,
 } as const;
-
-const HOME_CARD_COMPACT_MAX_WIDTH_PX = 168;
 
 function featuredPageAriaPath(index: number): string {
   return index < FEATURED_PAGE_ARIA_KEYS.length
@@ -54,7 +53,7 @@ type FeaturedNewArrivalsMobileRailProps = {
 };
 
 /**
- * Mirrors `HomeSpecialOffersSection` mobile: scroller (cards only) → dots → CTA, same vertical gaps.
+ * Mobile «Նորույթներ»: horizontal snap pages, each 2×2 cards; scrollport width via `useHomeMobileProductRailScrollport`.
  */
 export function FeaturedNewArrivalsMobileRail({
   productChunks,
@@ -65,13 +64,16 @@ export function FeaturedNewArrivalsMobileRail({
   language,
   ctaHref,
 }: FeaturedNewArrivalsMobileRailProps) {
+  const setScrollerRef = useHomeMobileProductRailScrollport(true, scrollerRef);
+  const pageSlideStyle = homeProductMobileRailPageSlideStyles();
+
   return (
     <>
       <div
-        ref={scrollerRef}
+        ref={setScrollerRef}
         className={SPECIAL_OFFERS_MOBILE_SCROLLER_CLASS}
         style={{
-          gap: `${SPECIAL_OFFERS_CARD_GAP_PX}px`,
+          gap: 0,
           scrollSnapType: 'x mandatory',
           paddingBottom: SPECIAL_OFFERS_MOBILE_GRID_SCROLLER_PADDING_BOTTOM_PX,
         }}
@@ -79,23 +81,23 @@ export function FeaturedNewArrivalsMobileRail({
         {productChunks.map((chunk, pageIndex) => (
           <div
             key={`featured-mobile-page-${pageIndex}`}
-            className="grid min-h-0 min-w-full shrink-0 snap-start grid-cols-2 justify-items-center"
+            className="grid min-h-0 shrink-0 snap-start snap-always grid-cols-2 justify-items-stretch"
             style={{
+              ...pageSlideStyle,
               columnGap: SPECIAL_OFFERS_MOBILE_GRID_COLUMN_GAP_PX,
               rowGap: SPECIAL_OFFERS_MOBILE_GRID_ROW_GAP_PX,
             }}
           >
-            {padChunkToSize(chunk, SPECIAL_OFFERS_MOBILE_GRID_PAGE_SIZE).map(
+            {padChunkToSize(chunk, FEATURED_NEW_ARRIVALS_MOBILE_RAIL_CARDS_PER_PAGE).map(
               (product, slotIndex) => (
                 <div
                   key={`featured-slot-${pageIndex}-${slotIndex}-${product?.id ?? 'empty'}`}
-                  className="min-w-0"
+                  className="flex min-h-0 w-full min-w-0"
                 >
                   {product ? (
                     <SpecialOfferCard
                       product={product}
                       layout={cardLayout}
-                      maxWidthPx={HOME_CARD_COMPACT_MAX_WIDTH_PX}
                       imagePriority={
                         pageIndex === 0 &&
                         slotIndex < HOME_PRODUCT_CHUNK_SIZE &&
@@ -107,7 +109,7 @@ export function FeaturedNewArrivalsMobileRail({
                     />
                   ) : (
                     <div
-                      className="min-w-0"
+                      className="w-full min-w-0"
                       style={{ minHeight: SPECIAL_OFFERS_CARD_HEIGHT_PX }}
                       aria-hidden
                     />

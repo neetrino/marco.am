@@ -12,7 +12,10 @@ import { CompareIcon } from '../../../components/icons/CompareIcon';
 import {
   HEADER_FIGMA_PILL_RADIUS_CLASS,
 } from '../../../components/header/header.constants';
-import { ProductAttributesSelector } from './ProductAttributesSelector';
+import {
+  ProductAttributesSelector,
+  VARIANT_PICKER_ATTRIBUTE_KEYS,
+} from './ProductAttributesSelector';
 import { ProductPartialStar } from './ProductPartialStar';
 import { stripDuplicateSpecificationDescriptionHtml } from './strip-duplicate-specification-description-html';
 import type { Product, ProductVariant } from './types';
@@ -115,8 +118,11 @@ export function ProductInfoAndActions({
     .replace(/<[^>]*>/g, '')
     .replace(/&nbsp;/gi, ' ')
     .trim().length > 0;
+  const hasVariantPickerAttributes = Array.from(VARIANT_PICKER_ATTRIBUTE_KEYS).some(
+    (key) => (attributeGroups.get(key)?.length ?? 0) > 0,
+  );
   const hasAttributeSelectors =
-    attributeGroups.size > 0 ||
+    hasVariantPickerAttributes ||
     colorGroups.length > 0 ||
     (!product?.productAttributes && sizeGroups.length > 0);
 

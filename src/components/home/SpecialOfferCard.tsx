@@ -37,12 +37,16 @@ import { useSpecialOfferCard } from './useSpecialOfferCard';
 
 export type { SpecialOfferProduct };
 
+/** Tile layout: `mobileGrid` = 2×2 phone strip + compact chrome; `homeGrid` = fill grid cell on home desktop/tablet rails. */
+export type SpecialOfferCardLayout = 'default' | 'mobileGrid' | 'homeGrid';
+
 interface SpecialOfferCardProps {
   product: SpecialOfferProduct;
   /**
-   * `mobileGrid` — 2×2 home strip: card fills the grid cell (no 252px cap).
+   * `mobileGrid` — 2×2 home strip (compact warranty/actions, text nudge).
+   * `homeGrid` — home «Նորույթներ» 2×4 desktop page: same fill as mobile grid, default chrome.
    */
-  layout?: 'default' | 'mobileGrid';
+  layout?: SpecialOfferCardLayout;
   /**
    * `end` — align tile to the right of the cell (e.g. products catalog). Default: centered (`mx-auto`).
    */
@@ -102,12 +106,18 @@ export function SpecialOfferCard({
     (SPECIAL_OFFERS_CARD_CORNER_MASK_SIZE_PX * SPECIAL_OFFERS_CARD_CORNER_MASK_TRANSLATE_PERCENT) / 100,
   );
 
-  const shellMaxWidthStyle = {
-    maxWidth:
-      layout === 'mobileGrid'
-        ? maxWidthPx ?? SPECIAL_OFFERS_CARD_MAX_WIDTH_PX
-        : maxWidthPx ?? SPECIAL_OFFERS_CARD_MAX_WIDTH_PX,
-  };
+  const fillsHomeGridCell =
+    maxWidthPx === undefined &&
+    (layout === 'mobileGrid' || layout === 'homeGrid');
+
+  const shellMaxWidthStyle = maxWidthPx !== undefined
+    ? { maxWidth: maxWidthPx }
+    : fillsHomeGridCell
+      ? {
+          /** Fill the grid column up to the Figma rail cap — even tiles. */
+          maxWidth: `min(100%, ${SPECIAL_OFFERS_CARD_MAX_WIDTH_PX}px)`,
+        }
+      : { maxWidth: SPECIAL_OFFERS_CARD_MAX_WIDTH_PX };
 
   const textBlockShiftStyle =
     layout === 'mobileGrid'
@@ -115,7 +125,11 @@ export function SpecialOfferCard({
       : undefined;
 
   const shellAlignClass =
-    align === 'end' ? 'ml-auto mr-0' : 'mx-auto';
+    align === 'end'
+      ? 'ml-auto mr-0'
+      : fillsHomeGridCell
+        ? 'mx-0 w-full'
+        : 'mx-auto';
 
   const cardPdpEnabled = Boolean(product.slug) && !product.shellPlaceholder;
 

@@ -7,6 +7,7 @@ import { t } from '../lib/i18n';
 import type { LanguageCode } from '../lib/language';
 import type { HomeBrandPartnerPublicItem } from '@/lib/types/home-brand-partners-public';
 import {
+  FEATURED_NEW_ARRIVALS_MOBILE_RAIL_CARDS_PER_PAGE,
   FEATURED_PRODUCTS_DESKTOP_PAGE_SIZE,
   FEATURED_PRODUCTS_FOOTER_DOT_COUNT_DESKTOP,
 } from './featured-products-tabs.constants';
@@ -61,7 +62,7 @@ type FeaturedProductsStripProps = {
 };
 
 /**
- * `md+`: 2×4 cards per page, horizontal scroll (up to two pages). `max-md`: 2×2 per slide rail.
+ * `md+`: 2×4 cards per page, horizontal scroll (up to two pages). `max-md`: 2×2 cards per snap page.
  */
 export function FeaturedProductsStrip({
   language,
@@ -88,7 +89,7 @@ export function FeaturedProductsStrip({
   );
 
   const mobileProductChunks = useMemo(() => {
-    const chunks = chunkArray(products, SPECIAL_OFFERS_MOBILE_GRID_PAGE_SIZE);
+    const chunks = chunkArray(products, FEATURED_NEW_ARRIVALS_MOBILE_RAIL_CARDS_PER_PAGE);
     return padChunksToMinimumCount(chunks, SPECIAL_OFFERS_MOBILE_PAGINATION_PAGE_COUNT);
   }, [products]);
 
@@ -117,7 +118,7 @@ export function FeaturedProductsStrip({
     scrollToPage: scrollFeaturedMobileToPage,
   } = useSpecialOffersCarousel({
     isRailVisible: isFeaturedMobileRailVisible,
-    paginationPageCount: SPECIAL_OFFERS_MOBILE_PAGINATION_PAGE_COUNT,
+    paginationPageCount: Math.max(1, mobileProductChunks.length),
   });
 
   const {
@@ -155,8 +156,8 @@ export function FeaturedProductsStrip({
           rowGap: SPECIAL_OFFERS_MOBILE_GRID_ROW_GAP_PX,
         }}
       >
-        {Array.from({ length: SPECIAL_OFFERS_MOBILE_GRID_PAGE_SIZE }).map((_, i) => (
-          <div key={`sk-m-${i}`} className="min-w-0">
+        {Array.from({ length: FEATURED_NEW_ARRIVALS_MOBILE_RAIL_CARDS_PER_PAGE }).map((_, i) => (
+          <div key={`sk-m-${i}`} className="flex min-h-0 w-full min-w-0">
             <div className="w-full animate-pulse bg-gray-200" style={featuredCardSkeletonStyle} />
           </div>
         ))}

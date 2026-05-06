@@ -18,7 +18,7 @@ interface SpecialOfferCardMediaProps {
   images: string[];
   showPlaceholder: boolean;
   onImageError: () => void;
-  layout?: 'default' | 'mobileGrid';
+  layout?: 'default' | 'mobileGrid' | 'homeGrid';
   imagePriority?: boolean;
   /** No product URL yet — keep image well layout without navigation. */
   navigationDisabled?: boolean;

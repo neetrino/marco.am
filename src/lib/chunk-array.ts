@@ -12,7 +12,7 @@ export function chunkArray<T>(items: readonly T[], size: number): T[][] {
   return out;
 }
 
-/** Pad a 2×2 mobile-grid page to `size` cells (null = empty slot) — same rhythm as «Նորույթներ». */
+/** Pad a mobile rail page to `size` cells (null = empty slot). */
 export function padChunkToSize<T>(chunk: readonly T[], size: number): (T | null)[] {
   const slots: (T | null)[] = [...chunk];
   while (slots.length < size) {
@@ -21,11 +21,14 @@ export function padChunkToSize<T>(chunk: readonly T[], size: number): (T | null)
   return slots.slice(0, size);
 }
 
-/** Ensure at least `minCount` horizontal pages (empty pages = `[]`) for mobile reel pagination. */
+/**
+ * Ensure at least `minCount` horizontal pages (empty pages = `[]`) for mobile reel pagination.
+ * Does not truncate when there are more pages than `minCount`.
+ */
 export function padChunksToMinimumCount<T>(chunks: T[][], minCount: number): T[][] {
   const padded: T[][] = [...chunks];
   while (padded.length < minCount) {
     padded.push([] as T[]);
   }
-  return padded.slice(0, minCount);
+  return padded;
 }
