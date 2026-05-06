@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo, useState } from 'react';
 import { Card, Button, Input } from '@shop/ui';
 import { useTranslation } from '../../../../lib/i18n-client';
 
@@ -29,6 +30,20 @@ export function BrandDiscountsCard({
   brandSaving,
 }: BrandDiscountsCardProps) {
   const { t } = useTranslation();
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredBrands = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+    if (!normalizedQuery) {
+      return brands;
+    }
+
+    return brands.filter((brand) => {
+      const brandName = (brand.name || '').toLowerCase();
+      const brandId = brand.id.toLowerCase();
+      return brandName.includes(normalizedQuery) || brandId.includes(normalizedQuery);
+    });
+  }, [brands, searchQuery]);
 
   return (
     <Card className="admin-card mb-6 border-slate-200/80 bg-white/95 shadow-[0_12px_28px_rgba(15,23,42,0.07)]">
@@ -54,6 +69,24 @@ export function BrandDiscountsCard({
         </Button>
       </div>
 
+      <div className="mb-4 flex gap-2">
+        <Input
+          type="text"
+          value={searchQuery}
+          onChange={(event) => setSearchQuery(event.target.value)}
+          placeholder={t('admin.brands.searchPlaceholder')}
+          className="border-slate-300 bg-white"
+        />
+        <Button
+          variant="ghost"
+          onClick={() => setSearchQuery('')}
+          disabled={searchQuery.length === 0}
+          className="shrink-0 text-slate-700 hover:bg-slate-100"
+        >
+          {t('admin.quickSettings.clear')}
+        </Button>
+      </div>
+
       {brandsLoading ? (
         <div className="py-8 text-center">
           <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-b-2 border-slate-900"></div>
@@ -63,9 +96,13 @@ export function BrandDiscountsCard({
         <div className="rounded-lg border border-dashed border-slate-300 py-6 text-center text-slate-600">
           {t('admin.quickSettings.noBrands')}
         </div>
+      ) : filteredBrands.length === 0 ? (
+        <div className="rounded-lg border border-dashed border-slate-300 py-6 text-center text-slate-600">
+          {t('admin.brands.searchNoMatches')}
+        </div>
       ) : (
         <div className="max-h-[440px] overflow-y-auto rounded-xl border border-slate-100 bg-slate-50/50 p-2">
-          {brands.map((brand) => {
+          {filteredBrands.map((brand) => {
             const currentValue = brandDiscounts[brand.id];
             return (
               <div
