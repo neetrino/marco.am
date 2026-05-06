@@ -62,6 +62,8 @@ type FeaturedProductsStripProps = {
   onCarouselArrowHandlersChange?: (handlers: {
     scrollPrev: () => void;
     scrollNext: () => void;
+    canScrollPrev: boolean;
+    canScrollNext: boolean;
   } | null) => void;
 };
 
@@ -120,6 +122,8 @@ export function FeaturedProductsStrip({
   const {
     scrollerRef: featuredMobileScrollerRef,
     activePage: featuredMobileActivePage,
+    canScrollPrev: canScrollFeaturedMobilePrev,
+    canScrollNext: canScrollFeaturedMobileNext,
     scrollToPage: scrollFeaturedMobileToPage,
     scrollPrev: scrollFeaturedMobilePrev,
     scrollNext: scrollFeaturedMobileNext,
@@ -131,6 +135,8 @@ export function FeaturedProductsStrip({
   const {
     scrollerRef: featuredDesktopScrollerRef,
     activePage: featuredDesktopActivePage,
+    canScrollPrev: canScrollFeaturedDesktopPrev,
+    canScrollNext: canScrollFeaturedDesktopNext,
     scrollToPage: scrollFeaturedDesktopToPage,
     scrollPrev: scrollFeaturedDesktopPrev,
     scrollNext: scrollFeaturedDesktopNext,
@@ -162,12 +168,16 @@ export function FeaturedProductsStrip({
       onCarouselArrowHandlersChange({
         scrollPrev: scrollFeaturedMobilePrev,
         scrollNext: scrollFeaturedMobileNext,
+        canScrollPrev: canScrollFeaturedMobilePrev,
+        canScrollNext: canScrollFeaturedMobileNext,
       });
       return;
     }
     onCarouselArrowHandlersChange({
       scrollPrev: scrollFeaturedDesktopPrev,
       scrollNext: scrollFeaturedDesktopNext,
+      canScrollPrev: canScrollFeaturedDesktopPrev,
+      canScrollNext: canScrollFeaturedDesktopNext,
     });
     return () => {
       onCarouselArrowHandlersChange(null);
@@ -178,13 +188,19 @@ export function FeaturedProductsStrip({
     isMaxMd,
     scrollFeaturedMobilePrev,
     scrollFeaturedMobileNext,
+    canScrollFeaturedMobilePrev,
+    canScrollFeaturedMobileNext,
     scrollFeaturedDesktopPrev,
     scrollFeaturedDesktopNext,
+    canScrollFeaturedDesktopPrev,
+    canScrollFeaturedDesktopNext,
   ]);
 
   const {
     scrollerRef: brandsRailRef,
     activePage: brandsActivePage,
+    canScrollPrev: canScrollBrandsPrev,
+    canScrollNext: canScrollBrandsNext,
     scrollToPage: scrollBrandsToPage,
   } = useSpecialOffersCarousel({
     isRailVisible: showBrandsSection,
@@ -275,6 +291,8 @@ export function FeaturedProductsStrip({
           homeBrandPartnersSectionTitle={homeBrandPartnersSectionTitle}
           brandsRailRef={brandsRailRef}
           brandsActivePage={brandsActivePage}
+          canScrollBrandsPrev={canScrollBrandsPrev}
+          canScrollBrandsNext={canScrollBrandsNext}
           brandsPaginationPageCount={brandsPaginationPageCount}
           paginationDotGapPx={paginationDotGapPx}
           brandsDotsToCtaGapPx={brandsDotsToCtaGapPx}

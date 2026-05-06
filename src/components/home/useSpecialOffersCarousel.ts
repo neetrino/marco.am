@@ -29,6 +29,8 @@ export function useSpecialOffersCarousel(options: UseSpecialOffersCarouselOption
   const { isRailVisible, paginationPageCount } = options;
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [activePage, setActivePage] = useState(0);
+  const [canScrollPrev, setCanScrollPrev] = useState(false);
+  const [canScrollNext, setCanScrollNext] = useState(false);
   const railSlotWidthPx = useSpecialOffersRailSlotWidth(scrollerRef, isRailVisible);
 
   const syncActivePage = useCallback(() => {
@@ -37,6 +39,10 @@ export function useSpecialOffersCarousel(options: UseSpecialOffersCarouselOption
       return;
     }
     setActivePage(getActivePageIndex(el, paginationPageCount));
+    const maxScroll = Math.max(0, el.scrollWidth - el.clientWidth);
+    const SCROLL_EPSILON_PX = 2;
+    setCanScrollPrev(el.scrollLeft > SCROLL_EPSILON_PX);
+    setCanScrollNext(el.scrollLeft < maxScroll - SCROLL_EPSILON_PX);
   }, [paginationPageCount]);
 
   const scrollToPage = useCallback(
@@ -101,6 +107,8 @@ export function useSpecialOffersCarousel(options: UseSpecialOffersCarouselOption
     scrollerRef,
     railSlotWidthPx,
     activePage,
+    canScrollPrev,
+    canScrollNext,
     scrollToPage,
     scrollPrev: () => {
       scrollByDirection(-1);

@@ -66,7 +66,7 @@ const SECTION_CONTAINER_CLASS = HOME_PAGE_SECTION_SHELL_CLASS;
 
 /** Pill: default white + gray border; hover marco-yellow — same as REELS. */
 const SPECIAL_OFFERS_NAV_BUTTON_CLASS =
-  'flex shrink-0 items-center justify-center overflow-visible rounded-full border border-gray-200 bg-white p-0 text-[#181111] transition-colors hover:!border-marco-yellow hover:!bg-marco-yellow dark:border-white/25 dark:bg-transparent dark:text-white dark:hover:!border-marco-yellow dark:hover:!bg-marco-yellow dark:hover:text-[#181111] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marco-black';
+  'flex shrink-0 items-center justify-center overflow-visible rounded-full border border-gray-200 bg-white p-0 text-[#181111] transition-colors enabled:hover:!border-marco-yellow enabled:hover:!bg-marco-yellow dark:border-white/25 dark:bg-transparent dark:text-white dark:enabled:hover:!border-marco-yellow dark:enabled:hover:!bg-marco-yellow dark:enabled:hover:text-[#181111] disabled:cursor-not-allowed disabled:opacity-40 disabled:pointer-events-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marco-black';
 
 /** Match `HomeReelsSection` chevrons — larger on `max-md`. */
 const SPECIAL_OFFERS_NAV_ICON_CLASS =
@@ -152,7 +152,16 @@ export function HomeSpecialOffersSection({
     ? Math.max(1, productChunks.length)
     : desktopPaginationPageCount;
 
-  const { scrollerRef, railSlotWidthPx, activePage, scrollPrev, scrollNext, scrollToPage } =
+  const {
+    scrollerRef,
+    railSlotWidthPx,
+    activePage,
+    canScrollPrev,
+    canScrollNext,
+    scrollPrev,
+    scrollNext,
+    scrollToPage,
+  } =
     useSpecialOffersCarousel({ isRailVisible, paginationPageCount: scrollPaginationPageCount });
 
   const setMobileProductScrollerRef = useHomeMobileProductRailScrollport(
@@ -283,9 +292,11 @@ export function HomeSpecialOffersSection({
           <div className="flex shrink-0 flex-row gap-2 max-md:[margin-right:var(--so-nav-inset-mobile)] md:[margin-right:var(--so-nav-inset-desktop)]">
             <button
               type="button"
+              disabled={!canScrollPrev}
               onClick={scrollPrev}
               className={`${SPECIAL_OFFERS_NAV_BUTTON_CLASS} h-[var(--so-nav-btn-h-mobile)] w-[var(--so-nav-btn-w-mobile)] md:h-[var(--so-nav-btn-h)] md:w-[var(--so-nav-btn-w)]`}
               aria-label={tr('home.special_offers.prev_aria')}
+              aria-disabled={!canScrollPrev}
             >
               <ChevronLeft
                 className={SPECIAL_OFFERS_NAV_ICON_CLASS}
@@ -295,9 +306,11 @@ export function HomeSpecialOffersSection({
             </button>
             <button
               type="button"
+              disabled={!canScrollNext}
               onClick={scrollNext}
               className={`${SPECIAL_OFFERS_NAV_BUTTON_CLASS} h-[var(--so-nav-btn-h-mobile)] w-[var(--so-nav-btn-w-mobile)] md:h-[var(--so-nav-btn-h)] md:w-[var(--so-nav-btn-w)]`}
               aria-label={tr('home.special_offers.next_aria')}
+              aria-disabled={!canScrollNext}
             >
               <ChevronRight
                 className={SPECIAL_OFFERS_NAV_ICON_CLASS}

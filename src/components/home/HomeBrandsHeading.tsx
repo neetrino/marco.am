@@ -33,6 +33,8 @@ type HomeBrandsHeadingProps = {
   language: LanguageCode;
   onPrev: () => void;
   onNext: () => void;
+  canScrollPrev: boolean;
+  canScrollNext: boolean;
   /** When set (e.g. from `GET /api/v1/home/brand-partners`), overrides i18n title. */
   sectionTitle?: string;
 };
@@ -40,7 +42,14 @@ type HomeBrandsHeadingProps = {
 /**
  * «ԲՐԵՆԴՆԵՐ» row — matches Figma 101:4077 (Montserrat bar + round chevrons).
  */
-export function HomeBrandsHeading({ language, onPrev, onNext, sectionTitle }: HomeBrandsHeadingProps) {
+export function HomeBrandsHeading({
+  language,
+  onPrev,
+  onNext,
+  canScrollPrev,
+  canScrollNext,
+  sectionTitle,
+}: HomeBrandsHeadingProps) {
   const title = sectionTitle?.trim() ? sectionTitle.trim() : t(language, 'home.brands.title');
 
   return (
@@ -65,18 +74,22 @@ export function HomeBrandsHeading({ language, onPrev, onNext, sectionTitle }: Ho
         <button
           type="button"
           onClick={onPrev}
-          className={`${ROUND_NAV_BUTTON_CLASS} h-[var(--fp-nav-btn-h-mobile)] w-[var(--fp-nav-btn-w-mobile)] md:h-[var(--fp-nav-btn-h)] md:w-[var(--fp-nav-btn-w)]`}
+          disabled={!canScrollPrev}
+          className={`${ROUND_NAV_BUTTON_CLASS} h-[var(--fp-nav-btn-h-mobile)] w-[var(--fp-nav-btn-w-mobile)] md:h-[var(--fp-nav-btn-h)] md:w-[var(--fp-nav-btn-w)] disabled:cursor-not-allowed disabled:opacity-40`}
           aria-controls="home-brands-rail"
           aria-label={t(language, 'home.brands.carousel_prev_aria')}
+          aria-disabled={!canScrollPrev}
         >
           <ChevronLeft className={NAV_ICON_CLASS} strokeWidth={2} aria-hidden />
         </button>
         <button
           type="button"
           onClick={onNext}
-          className={`${ROUND_NAV_BUTTON_CLASS} h-[var(--fp-nav-btn-h-mobile)] w-[var(--fp-nav-btn-w-mobile)] md:h-[var(--fp-nav-btn-h)] md:w-[var(--fp-nav-btn-w)]`}
+          disabled={!canScrollNext}
+          className={`${ROUND_NAV_BUTTON_CLASS} h-[var(--fp-nav-btn-h-mobile)] w-[var(--fp-nav-btn-w-mobile)] md:h-[var(--fp-nav-btn-h)] md:w-[var(--fp-nav-btn-w)] disabled:cursor-not-allowed disabled:opacity-40`}
           aria-controls="home-brands-rail"
           aria-label={t(language, 'home.brands.carousel_next_aria')}
+          aria-disabled={!canScrollNext}
         >
           <ChevronRight className={NAV_ICON_CLASS} strokeWidth={2} aria-hidden />
         </button>

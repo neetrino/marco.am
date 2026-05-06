@@ -220,7 +220,8 @@ export function FeaturedProductsTabs({
     scrollPrev: () => void;
     scrollNext: () => void;
   } | null>(null);
-  const [areCarouselArrowsEnabled, setAreCarouselArrowsEnabled] = useState(false);
+  const [canScrollFeaturedPrev, setCanScrollFeaturedPrev] = useState(false);
+  const [canScrollFeaturedNext, setCanScrollFeaturedNext] = useState(false);
 
   useEffect(() => {
     const updateLanguage = () => {
@@ -363,10 +364,13 @@ export function FeaturedProductsTabs({
       handlers: {
         scrollPrev: () => void;
         scrollNext: () => void;
+        canScrollPrev: boolean;
+        canScrollNext: boolean;
       } | null,
     ) => {
       carouselArrowHandlersRef.current = handlers;
-      setAreCarouselArrowsEnabled(handlers !== null);
+      setCanScrollFeaturedPrev(handlers?.canScrollPrev ?? false);
+      setCanScrollFeaturedNext(handlers?.canScrollNext ?? false);
     },
     [],
   );
@@ -419,22 +423,24 @@ export function FeaturedProductsTabs({
             <button
               type="button"
               onClick={() => scrollFeaturedByArrow(-1)}
-              disabled={!areCarouselArrowsEnabled}
+              disabled={!canScrollFeaturedPrev}
               className={`${FEATURED_NAV_BUTTON_CLASS} h-[var(--fp-nav-btn-h-mobile)] w-[var(--fp-nav-btn-w-mobile)] md:h-[var(--fp-nav-btn-h)] md:w-[var(--fp-nav-btn-w)] ${
-                areCarouselArrowsEnabled ? '' : 'cursor-not-allowed opacity-40'
+                canScrollFeaturedPrev ? '' : 'cursor-not-allowed opacity-40'
               }`}
               aria-label={t(language, 'home.featured_products.carousel_prev_aria')}
+              aria-disabled={!canScrollFeaturedPrev}
             >
               <ChevronLeft className={FEATURED_NAV_ICON_CLASS} strokeWidth={2} aria-hidden />
             </button>
             <button
               type="button"
               onClick={() => scrollFeaturedByArrow(1)}
-              disabled={!areCarouselArrowsEnabled}
+              disabled={!canScrollFeaturedNext}
               className={`${FEATURED_NAV_BUTTON_CLASS} h-[var(--fp-nav-btn-h-mobile)] w-[var(--fp-nav-btn-w-mobile)] md:h-[var(--fp-nav-btn-h)] md:w-[var(--fp-nav-btn-w)] ${
-                areCarouselArrowsEnabled ? '' : 'cursor-not-allowed opacity-40'
+                canScrollFeaturedNext ? '' : 'cursor-not-allowed opacity-40'
               }`}
               aria-label={t(language, 'home.featured_products.carousel_next_aria')}
+              aria-disabled={!canScrollFeaturedNext}
             >
               <ChevronRight className={FEATURED_NAV_ICON_CLASS} strokeWidth={2} aria-hidden />
             </button>

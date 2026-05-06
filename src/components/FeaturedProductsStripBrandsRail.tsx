@@ -34,6 +34,8 @@ export type FeaturedProductsStripBrandsRailProps = {
   readonly homeBrandPartnersSectionTitle?: string | null;
   readonly brandsRailRef: Ref<HTMLDivElement>;
   readonly brandsActivePage: number;
+  readonly canScrollBrandsPrev: boolean;
+  readonly canScrollBrandsNext: boolean;
   readonly brandsPaginationPageCount: number;
   readonly paginationDotGapPx: number;
   readonly brandsDotsToCtaGapPx: number;
@@ -47,6 +49,8 @@ export function FeaturedProductsStripBrandsRail({
   homeBrandPartnersSectionTitle,
   brandsRailRef,
   brandsActivePage,
+  canScrollBrandsPrev,
+  canScrollBrandsNext,
   brandsPaginationPageCount,
   paginationDotGapPx,
   brandsDotsToCtaGapPx,
@@ -68,6 +72,8 @@ export function FeaturedProductsStripBrandsRail({
         language={language}
         onPrev={() => scrollBrandsToPage(brandsActivePage - 1)}
         onNext={() => scrollBrandsToPage(brandsActivePage + 1)}
+        canScrollPrev={canScrollBrandsPrev}
+        canScrollNext={canScrollBrandsNext}
         sectionTitle={homeBrandPartnersSectionTitle ?? undefined}
       />
       <div
