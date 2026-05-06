@@ -323,43 +323,6 @@ export default function PriceFilterSettingsPage() {
               </div>
             ) : (
               <div className="space-y-8 p-6">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="rounded-2xl border border-marco-border/80 bg-white/90 p-4 shadow-sm">
-                    <label className="mb-2 block text-sm font-medium text-marco-text/80">
-                      Minimum Price
-                    </label>
-                    <Input
-                      type="number"
-                      value={minPrice}
-                      onChange={(e) => setMinPrice(e.target.value)}
-                      placeholder="0"
-                      min="0"
-                      step="1"
-                      className="w-full"
-                    />
-                    <p className="mt-2 text-xs text-marco-text/60">
-                      Lower boundary shown when shoppers first open the price filter.
-                    </p>
-                  </div>
-                  <div className="rounded-2xl border border-marco-border/80 bg-white/90 p-4 shadow-sm">
-                    <label className="mb-2 block text-sm font-medium text-marco-text/80">
-                      Maximum Price
-                    </label>
-                    <Input
-                      type="number"
-                      value={maxPrice}
-                      onChange={(e) => setMaxPrice(e.target.value)}
-                      placeholder="1000"
-                      min="0"
-                      step="1"
-                      className="w-full"
-                    />
-                    <p className="mt-2 text-xs text-marco-text/60">
-                      Upper boundary used to build the initial customer filter range.
-                    </p>
-                  </div>
-                </div>
-
                 <div className="space-y-4">
                   <div>
                     <p className="text-sm font-semibold text-marco-black">Step Size By Currency</p>
