@@ -248,6 +248,12 @@ function AddProductPageContent() {
         onAttributesDropdownToggle={() => formState.setAttributesDropdownOpen(!formState.attributesDropdownOpen)}
         onAttributeToggle={handleAttributeToggle}
         onAttributeRemove={handleAttributeRemove}
+        onAttributeValuesOpen={(attributeId) =>
+          formState.setOpenValueModal({
+            variantId: 'variant-all',
+            attributeId,
+          })
+        }
         onVariantUpdate={formState.setGeneratedVariants}
         onVariantDelete={handleVariantDelete}
         onVariantAdd={handleVariantAdd}
@@ -268,7 +274,20 @@ function AddProductPageContent() {
       {formState.openValueModal && (
         <ValueSelectionModal
           openValueModal={formState.openValueModal}
-          variant={formState.generatedVariants.find((v) => v.id === formState.openValueModal!.variantId)}
+          variant={
+            formState.generatedVariants.find((v) => v.id === formState.openValueModal!.variantId) ||
+            (formState.openValueModal.variantId === 'variant-all'
+              ? {
+                  id: 'variant-all',
+                  selectedValueIds: Object.values(formState.selectedAttributeValueIds).flat(),
+                  price: '',
+                  compareAtPrice: '',
+                  stock: '',
+                  sku: '',
+                  image: null,
+                }
+              : undefined)
+          }
           attribute={formState.attributes.find((a) => a.id === formState.openValueModal!.attributeId)}
           selectedAttributeValueIds={formState.selectedAttributeValueIds}
           onClose={() => formState.setOpenValueModal(null)}

@@ -302,6 +302,7 @@ export function useProductVariantConversion({
           variantsCount: productVariants.length,
           firstVariantOptions: productVariants[0]?.options,
         });
+        delete (window as any).__productVariantsToConvert;
         setHasVariantsToLoad(false);
       }
     } else if (productId && attributes.length > 0) {

@@ -15,6 +15,7 @@ interface AttributesSelectionProps {
   onAttributesDropdownToggle: () => void;
   onAttributeToggle: (attributeId: string, checked: boolean) => void;
   onAttributeRemove: (attributeId: string) => void;
+  onAttributeValuesOpen: (attributeId: string) => void;
 }
 
 export function AttributesSelection({
@@ -26,6 +27,7 @@ export function AttributesSelection({
   onAttributesDropdownToggle,
   onAttributeToggle,
   onAttributeRemove,
+  onAttributeValuesOpen,
 }: AttributesSelectionProps) {
   const { t } = useTranslation();
 
@@ -121,28 +123,35 @@ export function AttributesSelection({
                   : null;
                 
                 return (
-                  <span
+                  <div
                     key={attributeId}
                     className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium border border-gray-300"
                   >
-                    {previewImage ? (
-                      <img
-                        src={previewImage}
-                        alt={attribute.name}
-                        className="w-4 h-4 object-cover rounded border border-gray-300"
-                      />
-                    ) : previewColor ? (
-                      <span
-                        className="inline-block w-4 h-4 rounded-full border border-gray-300"
-                        style={{ backgroundColor: previewColor }}
-                      />
-                    ) : null}
-                    {attribute.name}
-                    {selectedValues.length > 0 && (
-                      <span className="text-xs text-gray-600">
-                        ({selectedValues.length})
-                      </span>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => onAttributeValuesOpen(attributeId)}
+                      title={t('admin.products.add.selectValues')}
+                      className="inline-flex items-center gap-2 rounded-md hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                    >
+                      {previewImage ? (
+                        <img
+                          src={previewImage}
+                          alt={attribute.name}
+                          className="w-4 h-4 object-cover rounded border border-gray-300"
+                        />
+                      ) : previewColor ? (
+                        <span
+                          className="inline-block w-4 h-4 rounded-full border border-gray-300"
+                          style={{ backgroundColor: previewColor }}
+                        />
+                      ) : null}
+                      <span>{attribute.name}</span>
+                      {selectedValues.length > 0 && (
+                        <span className="text-xs text-gray-600">
+                          ({selectedValues.length})
+                        </span>
+                      )}
+                    </button>
                     <button
                       type="button"
                       onClick={() => onAttributeRemove(attributeId)}
@@ -152,7 +161,7 @@ export function AttributesSelection({
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                       </svg>
                     </button>
-                  </span>
+                  </div>
                 );
               })}
             </div>

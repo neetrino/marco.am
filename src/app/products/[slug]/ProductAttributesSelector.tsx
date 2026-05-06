@@ -262,6 +262,7 @@ export function ProductAttributesSelector({
                     const colorHex = hasColors && g.colors 
                       ? g.colors[0] 
                       : null;
+                    const colorOnlyOption = !hasImage && Boolean(colorHex);
                     
                     // Debug logging for image issues
                     if (g.imageUrl && !hasImage) {
@@ -296,14 +297,16 @@ export function ProductAttributesSelector({
                             onAttributeValueSelect(attrKey, g.valueId || g.value);
                           }
                         }}
-                        className={`${paddingClass} rounded-lg border-2 transition-all flex items-center ${gapClass} ${
+                        className={`${
+                          colorOnlyOption ? 'w-10 h-10 p-0 justify-center rounded-full' : `${paddingClass} rounded-lg`
+                        } border-2 transition-all flex items-center ${gapClass} ${
                           isSelected
                             ? 'border-green-500 bg-gray-50'
                             : g.stock <= 0
                               ? 'border-gray-200 opacity-60 hover:opacity-80'
                               : 'border-gray-200 hover:border-gray-400'
                         }`}
-                        style={!hasImage && colorHex ? { backgroundColor: colorHex } : {}}
+                        style={colorOnlyOption ? { backgroundColor: colorHex! } : {}}
                       >
                         {hasImage && processedImageUrl ? (
                           <img 
@@ -318,16 +321,18 @@ export function ProductAttributesSelector({
                               logger.devLog(`✅ [ATTRIBUTE IMAGE] Successfully loaded image for attribute "${attrKey}" value "${g.value}":`, processedImageUrl);
                             }}
                           />
-                        ) : hasColors && colorHex ? (
+                        ) : !colorOnlyOption && hasColors && colorHex ? (
                           <div 
-                            className={`${imageSizeClass} rounded border border-gray-300 flex-shrink-0`}
+                            className={`${imageSizeClass} rounded-full border border-gray-300 flex-shrink-0`}
                             style={{ backgroundColor: colorHex }}
                           />
                         ) : null}
-                        <div className="flex flex-col gap-0 text-center leading-tight">
-                          <span className={textSizeClass}>{getAttributeLabel(language, attrKey, g.value)}</span>
-                          <span className={`${totalValues > 10 ? 'text-[10px]' : 'text-[11px]'} ${g.stock > 0 ? 'text-gray-500' : 'text-gray-400'}`}>({g.stock})</span>
-                        </div>
+                        {!colorOnlyOption && (
+                          <div className="flex flex-col gap-0 text-center leading-tight">
+                            <span className={textSizeClass}>{getAttributeLabel(language, attrKey, g.value)}</span>
+                            <span className={`${totalValues > 10 ? 'text-[10px]' : 'text-[11px]'} ${g.stock > 0 ? 'text-gray-500' : 'text-gray-400'}`}>({g.stock})</span>
+                          </div>
+                        )}
                       </button>
                     );
                   })}
