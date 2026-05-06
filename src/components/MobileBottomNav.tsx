@@ -107,7 +107,7 @@ function NavItemLink({ item, pathname, cartCount }: NavItemLinkProps) {
     >
       {renderNavIcon(slot, isActive, sizeClass)}
       {showCartBadge ? (
-        <span className="pointer-events-none absolute left-1/2 top-1/2 z-10 flex h-[18px] min-w-[18px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-red-600 px-1 text-[9px] font-bold text-white tabular-nums shadow-sm ring-2 ring-white dark:ring-zinc-950">
+        <span className="pointer-events-none absolute -right-2 -top-2 z-10 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-600 px-1 text-[9px] font-bold text-white tabular-nums shadow-sm ring-2 ring-white dark:ring-zinc-950">
           {cartCount > 99 ? '99+' : cartCount}
         </span>
       ) : null}
