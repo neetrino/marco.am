@@ -17,6 +17,7 @@ type CategoryNode = {
   id: string;
   parentId: string | null;
   requiresSizes: boolean;
+  media: string[];
   translations: CategoryTranslation[];
 };
 
@@ -27,6 +28,7 @@ type CategoryResponseItem = {
   fullPath: string;
   seoTitle: string | null;
   seoDescription: string | null;
+  media: string[];
   parentId: string | null;
   requiresSizes: boolean;
   translations: Partial<Record<SupportedCategoryLocale, string>>;
@@ -45,6 +47,7 @@ type CategoryInput = {
   translations?: Partial<Record<SupportedCategoryLocale, string>>;
   parentId?: string;
   requiresSizes?: boolean;
+  media?: unknown;
   seoTitle?: string;
   seoDescription?: string;
 };
@@ -55,6 +58,7 @@ type CategoryUpdateInput = {
   translations?: Partial<Record<SupportedCategoryLocale, string>>;
   parentId?: string | null;
   requiresSizes?: boolean;
+  media?: unknown;
   subcategoryIds?: string[];
   seoTitle?: string | null;
   seoDescription?: string | null;
@@ -110,6 +114,7 @@ class AdminCategoriesService {
       fullPath: translation?.fullPath ?? "",
       seoTitle: translation?.seoTitle ?? null,
       seoDescription: translation?.seoDescription ?? null,
+      media: category.media,
       parentId: category.parentId,
       requiresSizes: category.requiresSizes,
       translations: this.mapTranslationsByLocale(category.translations),
@@ -144,6 +149,32 @@ class AdminCategoriesService {
 
     const normalized = value.trim();
     return normalized.length > 0 ? normalized : null;
+  }
+
+  private normalizeCategoryMedia(media: unknown): string[] {
+    if (!Array.isArray(media)) {
+      return [];
+    }
+
+    const normalized: string[] = [];
+    for (const item of media) {
+      if (typeof item !== "string") {
+        continue;
+      }
+      const trimmed = item.trim();
+      if (!trimmed) {
+        continue;
+      }
+      const isDataImage = trimmed.startsWith("data:image/");
+      const isHttpUrl = trimmed.startsWith("https://") || trimmed.startsWith("http://");
+      const isRelativePath = trimmed.startsWith("/");
+      if (!isDataImage && !isHttpUrl && !isRelativePath) {
+        continue;
+      }
+      normalized.push(trimmed);
+    }
+
+    return [...new Set(normalized)];
   }
 
   private normalizeLocalizedTitles(
@@ -376,6 +407,7 @@ class AdminCategoriesService {
             id: category.id,
             parentId: category.parentId,
             requiresSizes: category.requiresSizes,
+            media: Array.isArray(category.media) ? category.media.filter((item): item is string => typeof item === "string") : [],
             translations: category.translations,
           },
           this.defaultLocale,
@@ -405,6 +437,7 @@ class AdminCategoriesService {
     if (data.parentId) {
       await this.ensureParentExists(data.parentId);
     }
+    const normalizedMedia = this.normalizeCategoryMedia(data.media);
 
     const slugFromTitle = toSlug(primaryTitle);
     const provisionalSlug =
@@ -416,6 +449,7 @@ class AdminCategoriesService {
       data: {
         parentId: data.parentId || undefined,
         requiresSizes: data.requiresSizes ?? false,
+        media: normalizedMedia,
         published: true,
         translations: {
           create: {
@@ -500,6 +534,7 @@ class AdminCategoriesService {
           id: reloaded.id,
           parentId: reloaded.parentId,
           requiresSizes: reloaded.requiresSizes,
+          media: Array.isArray(reloaded.media) ? reloaded.media.filter((item): item is string => typeof item === "string") : [],
           translations: reloaded.translations,
         },
         locale,
@@ -523,6 +558,7 @@ class AdminCategoriesService {
           id: category.id,
           parentId: category.parentId,
           requiresSizes: category.requiresSizes,
+          media: Array.isArray(category.media) ? category.media.filter((item): item is string => typeof item === "string") : [],
           translations: category.translations,
         },
         this.defaultLocale,
@@ -533,6 +569,7 @@ class AdminCategoriesService {
             id: child.id,
             parentId: child.parentId,
             requiresSizes: child.requiresSizes,
+            media: Array.isArray(child.media) ? child.media.filter((item): item is string => typeof item === "string") : [],
             translations: child.translations,
           },
           this.defaultLocale,
@@ -601,6 +638,7 @@ class AdminCategoriesService {
       data.subcategoryIds !== undefined
         ? [...new Set(data.subcategoryIds.filter((id) => id && id !== categoryId))]
         : undefined;
+    const normalizedMedia = data.media !== undefined ? this.normalizeCategoryMedia(data.media) : undefined;
 
     if (normalizedSubcategoryIds !== undefined) {
       await this.ensureSubcategoriesExist(normalizedSubcategoryIds);
@@ -624,12 +662,13 @@ class AdminCategoriesService {
         : [];
 
     await db.$transaction(async (transaction) => {
-      if (data.parentId !== undefined || data.requiresSizes !== undefined) {
+      if (data.parentId !== undefined || data.requiresSizes !== undefined || normalizedMedia !== undefined) {
         await transaction.category.update({
           where: { id: categoryId },
           data: {
             parentId: data.parentId !== undefined ? data.parentId || null : undefined,
             requiresSizes: data.requiresSizes,
+            media: normalizedMedia,
           },
         });
       }
@@ -745,6 +784,7 @@ class AdminCategoriesService {
           id: updatedCategory.id,
           parentId: updatedCategory.parentId,
           requiresSizes: updatedCategory.requiresSizes,
+          media: Array.isArray(updatedCategory.media) ? updatedCategory.media.filter((item): item is string => typeof item === "string") : [],
           translations: updatedCategory.translations,
         },
         locale,

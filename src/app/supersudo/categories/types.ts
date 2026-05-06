@@ -6,6 +6,7 @@ export interface Category {
   fullPath?: string;
   seoTitle?: string | null;
   seoDescription?: string | null;
+  media?: string[];
   parentId: string | null;
   requiresSizes?: boolean;
   children?: Category[];
@@ -23,6 +24,7 @@ export interface CategoryFormData {
   };
   seoTitle: string;
   seoDescription: string;
+  imageUrl: string;
   parentId: string;
   requiresSizes: boolean;
   subcategoryIds: string[];

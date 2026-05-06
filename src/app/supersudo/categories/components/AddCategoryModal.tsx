@@ -1,7 +1,11 @@
 'use client';
 
+import { useMemo, useState, type ChangeEvent } from 'react';
 import { Button, Input } from '@shop/ui';
 import { useTranslation } from '../../../../lib/i18n-client';
+import { processImageFile, toDomSafeImgSrcString, toSafeImgAttributeSrc } from '../../../../lib/utils/image-utils';
+import { showToast } from '../../../../components/Toast';
+import { logger } from '../../../../lib/utils/logger';
 import { buildCategoryTree } from '../utils';
 import type { Category, CategoryFormData } from '../types';
 
@@ -26,6 +30,36 @@ export function AddCategoryModal({
 }: AddCategoryModalProps) {
   const { t } = useTranslation();
   const categoryTree = buildCategoryTree(categories);
+  const [imageUploading, setImageUploading] = useState(false);
+  const safeImagePreviewUrl = useMemo(
+    () => toSafeImgAttributeSrc(formData.imageUrl.trim()),
+    [formData.imageUrl],
+  );
+
+  const handleImageFile = async (event: ChangeEvent<HTMLInputElement>) => {
+    const imageFile = event.target.files?.[0];
+    if (!imageFile) {
+      return;
+    }
+
+    try {
+      setImageUploading(true);
+      const base64 = await processImageFile(imageFile, {
+        maxSizeMB: 1.5,
+        maxWidthOrHeight: 800,
+        useWebWorker: true,
+        fileType: 'image/jpeg',
+        initialQuality: 0.85,
+      });
+      onFormDataChange({ ...formData, imageUrl: base64 });
+    } catch (err: unknown) {
+      logger.error('Category image upload failed', { error: err });
+      showToast(t('admin.categories.imageUploadFailed'), 'error');
+    } finally {
+      setImageUploading(false);
+      event.target.value = '';
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -95,27 +129,49 @@ export function AddCategoryModal({
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t('admin.categories.seoTitle')}
+              {t('admin.categories.imageLabel')}
             </label>
             <Input
               type="text"
-              value={formData.seoTitle}
-              onChange={(e) => onFormDataChange({ ...formData, seoTitle: e.target.value })}
-              placeholder={t('admin.categories.seoTitlePlaceholder')}
-              className="w-full"
+              value={formData.imageUrl}
+              onChange={(e) => onFormDataChange({ ...formData, imageUrl: e.target.value })}
+              placeholder={t('admin.categories.imagePlaceholder')}
+              className="w-full mb-2"
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t('admin.categories.seoDescription')}
-            </label>
-            <textarea
-              value={formData.seoDescription}
-              onChange={(e) => onFormDataChange({ ...formData, seoDescription: e.target.value })}
-              placeholder={t('admin.categories.seoDescriptionPlaceholder')}
-              rows={3}
-              className="admin-field resize-y"
-            />
+            <div className="flex flex-wrap items-center gap-2">
+              <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="sr-only"
+                  disabled={imageUploading || saving}
+                  onChange={handleImageFile}
+                />
+                {imageUploading
+                  ? t('admin.categories.imageUploading')
+                  : t('admin.categories.imageUploadButton')}
+              </label>
+              {formData.imageUrl.trim() ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={saving}
+                  onClick={() => onFormDataChange({ ...formData, imageUrl: '' })}
+                >
+                  {t('admin.categories.imageRemoveButton')}
+                </Button>
+              ) : null}
+            </div>
+            {safeImagePreviewUrl ? (
+              <div className="mt-3 flex justify-center rounded-lg border border-slate-200 bg-slate-50 p-3">
+                <img
+                  src={toDomSafeImgSrcString(safeImagePreviewUrl)}
+                  alt=""
+                  className="max-h-28 max-w-full object-contain"
+                />
+              </div>
+            ) : null}
           </div>
           <div>
             <label className="flex items-center gap-2 cursor-pointer">
@@ -137,6 +193,7 @@ export function AddCategoryModal({
             onClick={onSubmit}
             disabled={
               saving ||
+              imageUploading ||
               !formData.titles.hy.trim() ||
               !formData.titles.en.trim() ||
               !formData.titles.ru.trim()

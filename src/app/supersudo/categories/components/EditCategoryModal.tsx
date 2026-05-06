@@ -1,7 +1,11 @@
 'use client';
 
+import { useMemo, useState, type ChangeEvent } from 'react';
 import { Button, Input } from '@shop/ui';
 import { useTranslation } from '../../../../lib/i18n-client';
+import { processImageFile, toDomSafeImgSrcString, toSafeImgAttributeSrc } from '../../../../lib/utils/image-utils';
+import { showToast } from '../../../../components/Toast';
+import { logger } from '../../../../lib/utils/logger';
 import { buildCategoryTree, getAncestorIds, getDescendantIds } from '../utils';
 import type { Category, CategoryFormData } from '../types';
 
@@ -27,6 +31,36 @@ export function EditCategoryModal({
   onSubmit,
 }: EditCategoryModalProps) {
   const { t } = useTranslation();
+  const [imageUploading, setImageUploading] = useState(false);
+  const safeImagePreviewUrl = useMemo(
+    () => toSafeImgAttributeSrc(formData.imageUrl.trim()),
+    [formData.imageUrl],
+  );
+
+  const handleImageFile = async (event: ChangeEvent<HTMLInputElement>) => {
+    const imageFile = event.target.files?.[0];
+    if (!imageFile) {
+      return;
+    }
+
+    try {
+      setImageUploading(true);
+      const base64 = await processImageFile(imageFile, {
+        maxSizeMB: 1.5,
+        maxWidthOrHeight: 800,
+        useWebWorker: true,
+        fileType: 'image/jpeg',
+        initialQuality: 0.85,
+      });
+      onFormDataChange({ ...formData, imageUrl: base64 });
+    } catch (err: unknown) {
+      logger.error('Category image upload failed', { error: err });
+      showToast(t('admin.categories.imageUploadFailed'), 'error');
+    } finally {
+      setImageUploading(false);
+      event.target.value = '';
+    }
+  };
 
   if (!isOpen || !editingCategory) return null;
 
@@ -42,10 +76,10 @@ export function EditCategoryModal({
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="mx-4 w-full max-w-md rounded-xl border border-gray-200 bg-white p-5">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('admin.categories.editCategory')}</h3>
-        <div className="space-y-4">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4 sm:items-center">
+      <div className="my-4 flex w-full max-w-md flex-col rounded-xl border border-gray-200 bg-white p-4 sm:p-5 max-h-[90vh]">
+        <h3 className="mb-3 text-lg font-semibold text-gray-900">{t('admin.categories.editCategory')}</h3>
+        <div className="space-y-3 overflow-y-auto pr-1">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               {t('admin.categories.categoryTitleHy')} *
@@ -106,30 +140,6 @@ export function EditCategoryModal({
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t('admin.categories.seoTitle')}
-            </label>
-            <Input
-              type="text"
-              value={formData.seoTitle}
-              onChange={(e) => onFormDataChange({ ...formData, seoTitle: e.target.value })}
-              placeholder={t('admin.categories.seoTitlePlaceholder')}
-              className="w-full"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t('admin.categories.seoDescription')}
-            </label>
-            <textarea
-              value={formData.seoDescription}
-              onChange={(e) => onFormDataChange({ ...formData, seoDescription: e.target.value })}
-              placeholder={t('admin.categories.seoDescriptionPlaceholder')}
-              rows={3}
-              className="admin-field resize-y"
-            />
-          </div>
-          <div>
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
@@ -143,10 +153,56 @@ export function EditCategoryModal({
             </label>
           </div>
           <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {t('admin.categories.imageLabel')}
+            </label>
+            <Input
+              type="text"
+              value={formData.imageUrl}
+              onChange={(e) => onFormDataChange({ ...formData, imageUrl: e.target.value })}
+              placeholder={t('admin.categories.imagePlaceholder')}
+              className="w-full mb-2"
+            />
+            <div className="flex flex-wrap items-center gap-2">
+              <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="sr-only"
+                  disabled={imageUploading || saving}
+                  onChange={handleImageFile}
+                />
+                {imageUploading
+                  ? t('admin.categories.imageUploading')
+                  : t('admin.categories.imageUploadButton')}
+              </label>
+              {formData.imageUrl.trim() ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={saving}
+                  onClick={() => onFormDataChange({ ...formData, imageUrl: '' })}
+                >
+                  {t('admin.categories.imageRemoveButton')}
+                </Button>
+              ) : null}
+            </div>
+            {safeImagePreviewUrl ? (
+              <div className="mt-3 flex justify-center rounded-lg border border-slate-200 bg-slate-50 p-3">
+                <img
+                  src={toDomSafeImgSrcString(safeImagePreviewUrl)}
+                  alt=""
+                  className="max-h-28 max-w-full object-contain"
+                />
+              </div>
+            ) : null}
+          </div>
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               {t('admin.categories.subcategories')}
             </label>
-            <div className="max-h-60 space-y-2 overflow-y-auto rounded-md border border-gray-300 p-3">
+            <div className="max-h-44 space-y-2 overflow-y-auto rounded-md border border-gray-300 p-3">
               {subcategoryCandidates.map((category) => {
                   const isChecked = formData.subcategoryIds.includes(category.id);
                   return (
@@ -183,12 +239,13 @@ export function EditCategoryModal({
             </div>
           </div>
         </div>
-        <div className="flex gap-3 mt-6">
+        <div className="flex gap-3 mt-4 border-t border-gray-200 pt-3">
           <Button
             variant="primary"
             onClick={onSubmit}
             disabled={
               saving ||
+              imageUploading ||
               !formData.titles.hy.trim() ||
               !formData.titles.en.trim() ||
               !formData.titles.ru.trim()

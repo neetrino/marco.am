@@ -8,6 +8,7 @@ import type { Category } from './category-nav-types';
 import { dedupeCategories } from './categoryNavList';
 import { resolveCategoryNavPresentation } from './categoryNavPresentation';
 import { mobileDrawerNavPillClass } from './header-mobile-drawer.classes';
+import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '../../lib/utils/image-utils';
 
 function hideBrokenCategoryIcon(event: SyntheticEvent<HTMLImageElement>) {
   const wrapper = event.currentTarget.parentElement;
@@ -73,6 +74,7 @@ export function HeaderMobileDrawerCategories({
                 category.title,
                 lang
               );
+              const categoryImage = toSafeImgAttributeSrc(category.media?.[0] ?? null);
               const CategoryIcon =
                 categoryPresentation.icon.kind === 'lucide' ? categoryPresentation.icon.Icon : null;
               const hasChildren = category.children.length > 0;
@@ -93,7 +95,17 @@ export function HeaderMobileDrawerCategories({
                     >
                       <span className="flex min-w-0 flex-1 items-center gap-3">
                         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-marco-gray dark:bg-zinc-800">
-                          {categoryPresentation.icon.kind === 'figma' ? (
+                          {categoryImage ? (
+                            <img
+                              src={toDomSafeImgSrcString(categoryImage)}
+                              alt=""
+                              width={24}
+                              height={24}
+                              className="h-6 w-6 rounded object-cover"
+                              draggable={false}
+                              onError={hideBrokenCategoryIcon}
+                            />
+                          ) : categoryPresentation.icon.kind === 'figma' ? (
                             <img
                               src={categoryPresentation.icon.src}
                               alt=""
@@ -131,7 +143,17 @@ export function HeaderMobileDrawerCategories({
                         className="flex min-w-0 items-center gap-3 rounded-xl px-2 py-2.5 text-sm font-semibold text-marco-black hover:bg-marco-gray/50 dark:text-white dark:hover:bg-zinc-800"
                       >
                         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-marco-gray dark:bg-zinc-800">
-                          {categoryPresentation.icon.kind === 'figma' ? (
+                          {categoryImage ? (
+                            <img
+                              src={toDomSafeImgSrcString(categoryImage)}
+                              alt=""
+                              width={24}
+                              height={24}
+                              className="h-6 w-6 rounded object-cover"
+                              draggable={false}
+                              onError={hideBrokenCategoryIcon}
+                            />
+                          ) : categoryPresentation.icon.kind === 'figma' ? (
                             <img
                               src={categoryPresentation.icon.src}
                               alt=""
@@ -176,6 +198,7 @@ export function HeaderMobileDrawerCategories({
                           child.title,
                           lang
                         );
+                        const childImage = toSafeImgAttributeSrc(child.media?.[0] ?? null);
                         const ChildIcon =
                           childPresentation.icon.kind === 'lucide' ? childPresentation.icon.Icon : null;
                         return (
@@ -186,7 +209,17 @@ export function HeaderMobileDrawerCategories({
                             className="flex items-start gap-2 rounded-full px-2 py-2 text-sm leading-5 text-marco-text hover:bg-white dark:text-zinc-300 dark:hover:bg-zinc-800"
                           >
                             <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-marco-gray dark:bg-zinc-800">
-                              {childPresentation.icon.kind === 'figma' ? (
+                              {childImage ? (
+                                <img
+                                  src={toDomSafeImgSrcString(childImage)}
+                                  alt=""
+                                  width={18}
+                                  height={18}
+                                  className="h-[18px] w-[18px] rounded object-cover"
+                                  draggable={false}
+                                  onError={hideBrokenCategoryIcon}
+                                />
+                              ) : childPresentation.icon.kind === 'figma' ? (
                                 <img
                                   src={childPresentation.icon.src}
                                   alt=""

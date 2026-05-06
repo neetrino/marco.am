@@ -66,6 +66,7 @@ class CategoriesService {
     categories.forEach((category: {
       id: string;
       parentId: string | null;
+      media: unknown[];
       translations: Array<{ locale: string; slug: string; title: string; fullPath: string }>;
     }) => {
       const translation = this.resolveLocalizedCategoryTranslation(category.translations, lang);
@@ -76,6 +77,9 @@ class CategoriesService {
         slug: translation.slug,
         title: translation.title,
         fullPath: translation.fullPath,
+        media: Array.isArray(category.media)
+          ? category.media.filter((item): item is string => typeof item === 'string')
+          : [],
         productCount: 0,
         children: [] as any[],
       };
