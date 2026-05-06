@@ -90,7 +90,7 @@ export function CategoriesDropdownMega({
                       alt=""
                       width={MEGA_ROOT_ICON_INNER_PX}
                       height={MEGA_ROOT_ICON_INNER_PX}
-                      className="h-[34px] w-[34px] shrink-0 rounded object-cover"
+                      className="h-[34px] w-[34px] shrink-0 object-contain"
                       draggable={false}
                     />
                   ) : row.icon.kind === 'figma' ? (

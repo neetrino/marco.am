@@ -101,7 +101,7 @@ export function HeaderMobileDrawerCategories({
                               alt=""
                               width={24}
                               height={24}
-                              className="h-6 w-6 rounded object-cover"
+                              className="h-6 w-6 object-contain"
                               draggable={false}
                               onError={hideBrokenCategoryIcon}
                             />
@@ -149,7 +149,7 @@ export function HeaderMobileDrawerCategories({
                               alt=""
                               width={24}
                               height={24}
-                              className="h-6 w-6 rounded object-cover"
+                              className="h-6 w-6 object-contain"
                               draggable={false}
                               onError={hideBrokenCategoryIcon}
                             />
@@ -215,7 +215,7 @@ export function HeaderMobileDrawerCategories({
                                   alt=""
                                   width={18}
                                   height={18}
-                                  className="h-[18px] w-[18px] rounded object-cover"
+                                  className="h-[18px] w-[18px] object-contain"
                                   draggable={false}
                                   onError={hideBrokenCategoryIcon}
                                 />

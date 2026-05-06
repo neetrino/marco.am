@@ -4,9 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AdminMenuDrawer } from '../../../components/AdminMenuDrawer';
 import { getAdminMenuTABS } from '../admin-menu.config';
-import { apiClient } from '../../../lib/api-client';
 import { getStoredLanguage, setStoredLanguage, type LanguageCode } from '../../../lib/language';
-import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '../../../lib/utils/image-utils';
 
 interface AdminSidebarProps {
   currentPath: string;
@@ -18,9 +16,6 @@ const PRODUCT_SUBMENU_ITEM_IDS = new Set(['categories', 'brands', 'attributes'])
 const PRODUCT_SECTION_PATHS = ['/supersudo/products', '/supersudo/categories', '/supersudo/brands', '/supersudo/attributes'] as const;
 const ADMIN_LANGUAGES = ['en', 'hy', 'ru'] as const;
 type AdminLanguageCode = (typeof ADMIN_LANGUAGES)[number];
-type CategoryMenuItem = {
-  media?: string[];
-};
 
 export function AdminSidebar({ currentPath, router, t }: AdminSidebarProps) {
   const adminTabs = getAdminMenuTABS(t);
@@ -30,7 +25,6 @@ export function AdminSidebar({ currentPath, router, t }: AdminSidebarProps) {
     (path) => currentPath === path || currentPath.startsWith(`${path}/`),
   );
   const [isProductsExpanded, setIsProductsExpanded] = useState(isProductsSectionActive);
-  const [categoriesMenuImageUrl, setCategoriesMenuImageUrl] = useState<string | null>(null);
   const [currentLanguage, setCurrentLanguage] = useState<AdminLanguageCode>(() => {
     const stored = getStoredLanguage();
     return stored === 'en' || stored === 'hy' || stored === 'ru' ? stored : 'en';
@@ -41,29 +35,6 @@ export function AdminSidebar({ currentPath, router, t }: AdminSidebarProps) {
       setIsProductsExpanded(true);
     }
   }, [isProductsSectionActive]);
-
-  useEffect(() => {
-    let ignore = false;
-    const fetchCategoriesMenuImage = async () => {
-      try {
-        const response = await apiClient.get<{ data: CategoryMenuItem[] }>('/api/v1/supersudo/categories');
-        const firstImage = response.data?.find((category) => (category.media?.[0] ?? '').trim().length > 0)?.media?.[0] ?? null;
-        const safeImage = toSafeImgAttributeSrc(firstImage);
-        if (!ignore) {
-          setCategoriesMenuImageUrl(safeImage);
-        }
-      } catch {
-        if (!ignore) {
-          setCategoriesMenuImageUrl(null);
-        }
-      }
-    };
-
-    void fetchCategoriesMenuImage();
-    return () => {
-      ignore = true;
-    };
-  }, []);
 
   useEffect(() => {
     const syncLanguage = () => {
@@ -129,15 +100,7 @@ export function AdminSidebar({ currentPath, router, t }: AdminSidebarProps) {
                           isActive ? 'text-marco-black' : 'text-marco-text/70 group-hover:text-marco-black'
                         }`}
                       >
-                        {tab.id === 'categories' && categoriesMenuImageUrl ? (
-                          <img
-                            src={toDomSafeImgSrcString(categoriesMenuImageUrl)}
-                            alt=""
-                            className="h-5 w-5 rounded object-cover"
-                          />
-                        ) : (
-                          tab.icon
-                        )}
+                        {tab.icon}
                       </span>
                       <span className="text-left">{tab.label}</span>
                     </span>
@@ -189,15 +152,7 @@ export function AdminSidebar({ currentPath, router, t }: AdminSidebarProps) {
                       isActive ? 'text-marco-black' : 'text-marco-text/70 group-hover:text-marco-black'
                     }`}
                   >
-                    {tab.id === 'categories' && categoriesMenuImageUrl ? (
-                      <img
-                        src={toDomSafeImgSrcString(categoriesMenuImageUrl)}
-                        alt=""
-                        className="h-5 w-5 rounded object-cover"
-                      />
-                    ) : (
-                      tab.icon
-                    )}
+                    {tab.icon}
                   </span>
                   <span className="text-left">{tab.label}</span>
                 </span>

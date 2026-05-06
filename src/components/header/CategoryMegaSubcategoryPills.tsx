@@ -70,7 +70,7 @@ function SubcategoryIcon({ icon, imageSrc }: { icon: CategoryNavIcon; imageSrc: 
           alt=""
           width={SUBPILL_FIGMA_IMG_PX}
           height={SUBPILL_FIGMA_IMG_PX}
-          className="h-[26px] w-[26px] shrink-0 rounded object-cover"
+          className="h-[26px] w-[26px] shrink-0 object-contain"
           draggable={false}
         />
       </span>

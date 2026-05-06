@@ -44,11 +44,15 @@ export function AddCategoryModal({
 
     try {
       setImageUploading(true);
+      const preferredType =
+        imageFile.type === 'image/png' || imageFile.type === 'image/webp'
+          ? imageFile.type
+          : 'image/jpeg';
       const base64 = await processImageFile(imageFile, {
         maxSizeMB: 1.5,
         maxWidthOrHeight: 800,
         useWebWorker: true,
-        fileType: 'image/jpeg',
+        fileType: preferredType,
         initialQuality: 0.85,
       });
       onFormDataChange({ ...formData, imageUrl: base64 });
