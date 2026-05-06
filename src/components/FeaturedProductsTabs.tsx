@@ -44,6 +44,12 @@ import type { HomeBrandPartnerPublicItem } from '@/lib/types/home-brand-partners
 import type { SpecialOfferProduct } from './home/special-offer-product.types';
 import { useIsMaxMd } from './home/use-is-max-md';
 import { HOME_PRODUCT_CHUNK_SIZE } from '../constants/homeProductChunks';
+import {
+  HOME_PROMO_PRIMARY_BANNER_ID,
+  HOME_PROMO_PRIMARY_DEFAULT_IMAGE_URL,
+  HOME_PROMO_SECONDARY_BANNER_ID,
+  HOME_PROMO_SECONDARY_DEFAULT_IMAGE_URL,
+} from '@/lib/constants/home-hero-admin-banners';
 
 interface ProductsResponse {
   data: SpecialOfferProduct[];
@@ -59,6 +65,13 @@ interface HomeBrandPartnersResponse {
   sectionTitle: string;
   brands: HomeBrandPartnerPublicItem[];
 }
+
+type BannerSlotPayload = {
+  items: Array<{
+    id: string;
+    imageDesktopUrl: string | null;
+  }>;
+};
 
 type FilterType = 'new' | 'featured' | 'bestseller';
 
@@ -171,6 +184,15 @@ async function fetchHomeBrandPartners(
   });
 }
 
+async function fetchPromoStripBanners(language: LanguageCode): Promise<BannerSlotPayload> {
+  return apiClient.get<BannerSlotPayload>('/api/v1/banners', {
+    params: {
+      slot: 'home.promo.strip',
+      locale: language,
+    },
+  });
+}
+
 function cardVisualRowsToStubProducts(rows: CardVisualRow[]): SpecialOfferProduct[] {
   return rows.map((row) => ({
     id: row.id,
@@ -278,6 +300,19 @@ export function FeaturedProductsTabs({
     initialData: initialHomeBrandPartnersPayload,
     placeholderData: (previous) => previous,
   });
+
+  const promoStripBannersQuery = useQuery({
+    queryKey: queryKeys.bannersBySlot('home.promo.strip', language),
+    queryFn: () => fetchPromoStripBanners(language),
+    staleTime: 300_000,
+  });
+
+  const promoPrimaryImageUrl =
+    promoStripBannersQuery.data?.items.find((item) => item.id === HOME_PROMO_PRIMARY_BANNER_ID)
+      ?.imageDesktopUrl ?? HOME_PROMO_PRIMARY_DEFAULT_IMAGE_URL;
+  const promoSecondaryImageUrl =
+    promoStripBannersQuery.data?.items.find((item) => item.id === HOME_PROMO_SECONDARY_BANNER_ID)
+      ?.imageDesktopUrl ?? HOME_PROMO_SECONDARY_DEFAULT_IMAGE_URL;
 
   const resolvedHomeBrandPartners =
     homeBrandPartnersQuery.data?.brands ?? initialHomeBrandPartners ?? null;
@@ -476,7 +511,11 @@ export function FeaturedProductsTabs({
           <HomeMobileBannerProductShowcase language={language} />
         </div>
         <div className="hidden md:block">
-          <HomeGradientBanner language={language} />
+          <HomeGradientBanner
+            language={language}
+            promoPrimaryImageUrl={promoPrimaryImageUrl}
+            promoSecondaryImageUrl={promoSecondaryImageUrl}
+          />
         </div>
       </div>
     </section>

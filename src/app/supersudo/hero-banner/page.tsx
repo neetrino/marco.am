@@ -14,6 +14,10 @@ import {
   HOME_HERO_PRIMARY_BOTTOM_DEFAULT_IMAGE_URL,
   HOME_HERO_PRIMARY_TOP_BANNER_ID,
   HOME_HERO_PRIMARY_TOP_DEFAULT_IMAGE_URL,
+  HOME_PROMO_PRIMARY_BANNER_ID,
+  HOME_PROMO_PRIMARY_DEFAULT_IMAGE_URL,
+  HOME_PROMO_SECONDARY_BANNER_ID,
+  HOME_PROMO_SECONDARY_DEFAULT_IMAGE_URL,
   HOME_HERO_SECONDARY_BANNER_ID,
   HOME_HERO_SECONDARY_DEFAULT_IMAGE_URL,
 } from '../../../lib/constants/home-hero-admin-banners';
@@ -23,6 +27,8 @@ type HeroBannerFormState = {
   primaryTopDesktopUrl: string;
   primaryBottomDesktopUrl: string;
   secondaryDesktopUrl: string;
+  promoPrimaryDesktopUrl: string;
+  promoSecondaryDesktopUrl: string;
   mobileImageUrl: string;
 };
 
@@ -45,7 +51,9 @@ function buildHeroBannerStorage(
     (banner) =>
       banner.id !== HOME_HERO_PRIMARY_TOP_BANNER_ID &&
       banner.id !== HOME_HERO_PRIMARY_BOTTOM_BANNER_ID &&
-      banner.id !== HOME_HERO_SECONDARY_BANNER_ID,
+      banner.id !== HOME_HERO_SECONDARY_BANNER_ID &&
+      banner.id !== HOME_PROMO_PRIMARY_BANNER_ID &&
+      banner.id !== HOME_PROMO_SECONDARY_BANNER_ID,
   );
 
   const mergedHeroBanners = heroDefaults.map((defaultBanner) => {
@@ -81,6 +89,12 @@ function buildFormState(storage: BannerManagementStorage | null): HeroBannerForm
   const secondary = mergedStorage.banners.find(
     (banner) => banner.id === HOME_HERO_SECONDARY_BANNER_ID,
   );
+  const promoPrimary = mergedStorage.banners.find(
+    (banner) => banner.id === HOME_PROMO_PRIMARY_BANNER_ID,
+  );
+  const promoSecondary = mergedStorage.banners.find(
+    (banner) => banner.id === HOME_PROMO_SECONDARY_BANNER_ID,
+  );
 
   return {
     primaryTopDesktopUrl:
@@ -89,6 +103,10 @@ function buildFormState(storage: BannerManagementStorage | null): HeroBannerForm
       primaryBottom?.imageDesktopUrl ?? HOME_HERO_PRIMARY_BOTTOM_DEFAULT_IMAGE_URL,
     secondaryDesktopUrl:
       secondary?.imageDesktopUrl ?? HOME_HERO_SECONDARY_DEFAULT_IMAGE_URL,
+    promoPrimaryDesktopUrl:
+      promoPrimary?.imageDesktopUrl ?? HOME_PROMO_PRIMARY_DEFAULT_IMAGE_URL,
+    promoSecondaryDesktopUrl:
+      promoSecondary?.imageDesktopUrl ?? HOME_PROMO_SECONDARY_DEFAULT_IMAGE_URL,
     mobileImageUrl: primaryTop?.imageMobileUrl ?? HERO_MOBILE_PRIMARY_IMAGE_SRC,
   };
 }
@@ -127,6 +145,24 @@ function buildNextHeroBannerStorageFromForm(
           imageDesktopUrl:
             normalizeOptionalUrl(form.secondaryDesktopUrl) ??
             HOME_HERO_SECONDARY_DEFAULT_IMAGE_URL,
+        };
+      }
+
+      if (banner.id === HOME_PROMO_PRIMARY_BANNER_ID) {
+        return {
+          ...banner,
+          imageDesktopUrl:
+            normalizeOptionalUrl(form.promoPrimaryDesktopUrl) ??
+            HOME_PROMO_PRIMARY_DEFAULT_IMAGE_URL,
+        };
+      }
+
+      if (banner.id === HOME_PROMO_SECONDARY_BANNER_ID) {
+        return {
+          ...banner,
+          imageDesktopUrl:
+            normalizeOptionalUrl(form.promoSecondaryDesktopUrl) ??
+            HOME_PROMO_SECONDARY_DEFAULT_IMAGE_URL,
         };
       }
 
@@ -314,6 +350,8 @@ export default function HeroBannerPage() {
     primaryTopDesktopUrl: HOME_HERO_PRIMARY_TOP_DEFAULT_IMAGE_URL,
     primaryBottomDesktopUrl: HOME_HERO_PRIMARY_BOTTOM_DEFAULT_IMAGE_URL,
     secondaryDesktopUrl: HOME_HERO_SECONDARY_DEFAULT_IMAGE_URL,
+    promoPrimaryDesktopUrl: HOME_PROMO_PRIMARY_DEFAULT_IMAGE_URL,
+    promoSecondaryDesktopUrl: HOME_PROMO_SECONDARY_DEFAULT_IMAGE_URL,
     mobileImageUrl: HERO_MOBILE_PRIMARY_IMAGE_SRC,
   });
 
@@ -458,6 +496,22 @@ export default function HeroBannerPage() {
               uploadingField={uploadingField}
               onUpload={handleUpload}
               previewHeightClassName="h-56 sm:h-72"
+            />
+            <ImageUploadField
+              label="Promo card left (under featured products)"
+              fieldKey="promoPrimaryDesktopUrl"
+              currentUrl={form.promoPrimaryDesktopUrl}
+              uploadingField={uploadingField}
+              onUpload={handleUpload}
+              previewHeightClassName="h-48"
+            />
+            <ImageUploadField
+              label="Promo card right (under featured products)"
+              fieldKey="promoSecondaryDesktopUrl"
+              currentUrl={form.promoSecondaryDesktopUrl}
+              uploadingField={uploadingField}
+              onUpload={handleUpload}
+              previewHeightClassName="h-48"
             />
           </div>
         </Card>

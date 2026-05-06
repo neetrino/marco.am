@@ -8,10 +8,7 @@ import {
   HOME_GRADIENT_BANNER_ASPECT_RATIO,
   HOME_GRADIENT_BANNER_CTA_ROW_OFFSET_X_PX,
   HOME_GRADIENT_BANNER_CTA_ROW_OFFSET_Y_PX,
-  HOME_GRADIENT_BANNER_HEADLINE_COLOR_HEX,
-  HOME_GRADIENT_BANNER_HEADLINE_FONT_SIZE_CLAMP,
   HOME_GRADIENT_BANNER_SURFACE_BASE_HEX,
-  HOME_GRADIENT_BANNER_HEADLINE_LINE_HEIGHT_RATIO,
   HOME_GRADIENT_BANNER_OFFSET_LEFT_PX,
   HOME_GRADIENT_BANNER_SECTION_MARGIN_TOP_PX,
   HOME_GRADIENT_BANNER_RADIUS_PX,
@@ -32,6 +29,8 @@ const montserratBanner = Montserrat({
 
 type HomeGradientBannerProps = {
   language: LanguageCode;
+  promoPrimaryImageUrl?: string;
+  promoSecondaryImageUrl?: string;
 };
 
 function buildBannerSurfaceStyle(): CSSProperties {
@@ -44,18 +43,14 @@ function buildBannerSurfaceStyle(): CSSProperties {
   };
 }
 
-const headlineStyle = {
-  color: HOME_GRADIENT_BANNER_HEADLINE_COLOR_HEX,
-  fontSize: HOME_GRADIENT_BANNER_HEADLINE_FONT_SIZE_CLAMP,
-  lineHeight: HOME_GRADIENT_BANNER_HEADLINE_LINE_HEIGHT_RATIO,
-} as const;
-
 /**
  * Gradient banner (Figma 101:4129/4145; photo fill 101:4135) + pale panel (307:2232) on large screens.
  */
-export function HomeGradientBanner({ language }: HomeGradientBannerProps) {
-  const headline = t(language, 'home.gradient_banner.headline');
-
+export function HomeGradientBanner({
+  language,
+  promoPrimaryImageUrl,
+  promoSecondaryImageUrl,
+}: HomeGradientBannerProps) {
   return (
     <div
       className="w-full bg-white pb-10 pt-6"
@@ -72,16 +67,12 @@ export function HomeGradientBanner({ language }: HomeGradientBannerProps) {
             role="region"
             aria-label={t(language, 'home.gradient_banner.aria')}
           >
-            <HomeGradientBannerBackdrop className="pointer-events-none absolute inset-0 z-0" />
+            <HomeGradientBannerBackdrop
+              className="pointer-events-none absolute inset-0 z-0"
+              imageUrl={promoPrimaryImageUrl}
+            />
             <div className="absolute inset-0 z-[1] flex flex-col pb-5 pt-4">
-              <div className="flex min-h-0 flex-1 items-center justify-center px-2">
-                <p
-                  className="pointer-events-none max-w-full text-center font-black uppercase tracking-[-0.02em]"
-                  style={headlineStyle}
-                >
-                  {headline}
-                </p>
-              </div>
+              <div className="flex min-h-0 flex-1 items-center justify-center px-2" />
               <div
                 className="pointer-events-auto flex shrink-0 justify-start"
                 style={{
@@ -94,7 +85,10 @@ export function HomeGradientBanner({ language }: HomeGradientBannerProps) {
           </div>
         </div>
         <div className="flex min-h-0 min-w-0">
-          <HomeSecondaryBanner language={language} />
+          <HomeSecondaryBanner
+            language={language}
+            promoSecondaryImageUrl={promoSecondaryImageUrl}
+          />
         </div>
       </div>
     </div>

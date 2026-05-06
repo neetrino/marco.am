@@ -21,4 +21,6 @@ export const queryKeys = {
     ["api", "v1", "home", "why-choose-us", lang] as const,
   homeBrandPartners: (locale: LanguageCode) =>
     ["api", "v1", "home", "brand-partners", locale] as const,
+  bannersBySlot: (slot: string, locale: LanguageCode) =>
+    ["api", "v1", "banners", "slot", slot, locale] as const,
 };
