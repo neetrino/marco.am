@@ -90,7 +90,8 @@
   },
   "mobileFilters": {
     "title": "Ֆիլտրեր",
-    "close": "Փակել ֆիլտրերը"
+    "close": "Փակել ֆիլտրերը",
+    "apply": "Ցույց տալ ապրանքները"
   },
   "categoryNavigation": {
     "all": "Բոլորը",

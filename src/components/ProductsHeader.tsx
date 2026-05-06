@@ -7,6 +7,7 @@ import { pushShopProductsListingUrl } from '../lib/push-shop-products-listing-ur
 import { useState, useEffect, useRef, Suspense } from 'react';
 import { useTranslation } from '../lib/i18n-client';
 import { useForcedShopGridColumns } from './useForcedShopGridColumns';
+import { MOBILE_FILTERS_EVENT } from '@/lib/events';
 
 /** Figma MARCO 218:2275 — wordmark «ԽԱՆՈՒԹ» (Montserrat Bold) */
 const productsShopTitleFont = Montserrat({
@@ -373,8 +374,8 @@ function ProductsHeaderContent({ total }: ProductsHeaderProps) {
         <div className="flex items-center justify-between gap-2">
           <button
             type="button"
-            onClick={() => window.dispatchEvent(new Event('mobile:filters-toggle'))}
-            className="inline-flex shrink-0 items-center gap-2 rounded-[30px] border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-900 transition-colors hover:bg-gray-50 dark:border-white/10 dark:bg-black dark:text-white dark:hover:bg-white/5"
+            onClick={() => window.dispatchEvent(new Event(MOBILE_FILTERS_EVENT))}
+            className="inline-flex h-10 shrink-0 items-center gap-2 rounded-full border border-marco-black/12 bg-white px-4 text-sm font-semibold text-marco-black transition-[background-color,border-color] hover:border-marco-black/25 hover:bg-marco-gray/50 dark:border-white/12 dark:bg-zinc-900 dark:text-white dark:hover:border-white/25 dark:hover:bg-zinc-800"
           >
             <svg
               width="18"

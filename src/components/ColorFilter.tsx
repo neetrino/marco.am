@@ -12,6 +12,7 @@ import {
   PRODUCTS_FILTER_SECTION_SHELL_CLASS,
   productsFiltersSectionFont,
 } from '../lib/products-filters-typography';
+import { useMobileFiltersDraft } from './mobile-filters-draft-context';
 
 interface ColorFilterProps {
   category?: string;
@@ -45,6 +46,7 @@ function isLightHex(hex: string): boolean {
 export function ColorFilter({ category, search, minPrice, maxPrice }: ColorFilterProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const mobileDraft = useMobileFiltersDraft();
   const filtersContext = useProductsFilters();
   const { t } = useTranslation();
   const [colors, setColors] = useState<ColorOption[]>([]);
@@ -63,7 +65,8 @@ export function ColorFilter({ category, search, minPrice, maxPrice }: ColorFilte
     }
   }, [category, search, minPrice, maxPrice, filtersContext?.data?.colors, filtersContext?.loading, filtersContext === null]);
 
-  const colorsQs = searchParams.get('colors');
+  const activeSearchParams = mobileDraft?.enabled ? mobileDraft.searchParams : searchParams;
+  const colorsQs = activeSearchParams.get('colors');
   const selectedFromUrl = useMemo(
     () =>
       colorsQs
@@ -99,7 +102,7 @@ export function ColorFilter({ category, search, minPrice, maxPrice }: ColorFilte
   };
 
   const handleColorToggle = (colorValue: string) => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(activeSearchParams.toString());
     const key = colorValue.toLowerCase();
     const fromUrl =
       optimisticValues ??
@@ -114,15 +117,33 @@ export function ColorFilter({ category, search, minPrice, maxPrice }: ColorFilte
       params.delete('colors');
     }
     params.delete('page');
+    if (mobileDraft?.enabled) {
+      mobileDraft.updateSearchParams((draftParams) => {
+        if (next.length > 0) {
+          draftParams.set('colors', next.join(','));
+        } else {
+          draftParams.delete('colors');
+        }
+        draftParams.delete('page');
+      });
+      return;
+    }
     const qs = params.toString();
     pushShopProductsListingUrl(router, qs ? `/products?${qs}` : '/products');
   };
 
   const handleClearColors = () => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(activeSearchParams.toString());
     params.delete('colors');
     params.delete('page');
     setOptimisticValues([]);
+    if (mobileDraft?.enabled) {
+      mobileDraft.updateSearchParams((draftParams) => {
+        draftParams.delete('colors');
+        draftParams.delete('page');
+      });
+      return;
+    }
     const qs = params.toString();
     pushShopProductsListingUrl(router, qs ? `/products?${qs}` : '/products');
   };

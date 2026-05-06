@@ -90,7 +90,8 @@
   },
   "mobileFilters": {
     "title": "Filters",
-    "close": "Close Filters"
+    "close": "Close Filters",
+    "apply": "Show products"
   },
   "categoryNavigation": {
     "all": "All",

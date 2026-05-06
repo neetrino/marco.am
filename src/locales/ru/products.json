@@ -90,7 +90,8 @@
   },
   "mobileFilters": {
     "title": "Фильтры",
-    "close": "Закрыть фильтры"
+    "close": "Закрыть фильтры",
+    "apply": "Показать товары"
   },
   "categoryNavigation": {
     "all": "Все",

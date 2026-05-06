@@ -13,6 +13,7 @@ import {
 } from '../lib/products-filters-typography';
 import { ProductsFilterCheckboxVisual } from './ProductsFilterCheckbox';
 import { ProductsFilterScrollArea } from './ProductsFilterScrollArea';
+import { useMobileFiltersDraft } from './mobile-filters-draft-context';
 
 interface BrandFilterProps {
   category?: string;
@@ -24,6 +25,7 @@ interface BrandFilterProps {
 export function BrandFilter({ category, search, minPrice, maxPrice }: BrandFilterProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const mobileDraft = useMobileFiltersDraft();
   const filtersContext = useProductsFilters();
   const { t } = useTranslation();
   const [brands, setBrands] = useState<BrandOption[]>([]);
@@ -63,7 +65,8 @@ export function BrandFilter({ category, search, minPrice, maxPrice }: BrandFilte
     }
   };
 
-  const brandQs = searchParams.get('brand');
+  const activeSearchParams = mobileDraft?.enabled ? mobileDraft.searchParams : searchParams;
+  const brandQs = activeSearchParams.get('brand');
   const selectedBrandSlugsFromUrl = useMemo(
     () => (brandQs ? brandQs.split(',').map((s) => s.trim()).filter(Boolean) : []),
     [brandQs]
@@ -76,7 +79,7 @@ export function BrandFilter({ category, search, minPrice, maxPrice }: BrandFilte
   }, [brandQs]);
 
   const handleBrandSelect = (brandSlug: string) => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(activeSearchParams.toString());
     const fromUrl =
       optimisticBrandSlugs ??
       params.get('brand')?.split(',').map((s) => s.trim()).filter(Boolean) ??
@@ -90,17 +93,33 @@ export function BrandFilter({ category, search, minPrice, maxPrice }: BrandFilte
       params.delete('brand');
     }
     params.delete('page');
-    const qs = params.toString();
-    pushShopProductsListingUrl(router, qs ? `/products?${qs}` : '/products');
+    if (mobileDraft?.enabled) {
+      mobileDraft.updateSearchParams((next) => {
+        if (newBrands.length > 0) {
+          next.set('brand', newBrands.join(','));
+        } else {
+          next.delete('brand');
+        }
+        next.delete('page');
+      });
+      return;
+    }
+    pushShopProductsListingUrl(router, params.toString() ? `/products?${params.toString()}` : '/products');
   };
 
   const handleClearBrands = () => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(activeSearchParams.toString());
     params.delete('brand');
     params.delete('page');
     setOptimisticBrandSlugs([]);
-    const qs = params.toString();
-    pushShopProductsListingUrl(router, qs ? `/products?${qs}` : '/products');
+    if (mobileDraft?.enabled) {
+      mobileDraft.updateSearchParams((next) => {
+        next.delete('brand');
+        next.delete('page');
+      });
+      return;
+    }
+    pushShopProductsListingUrl(router, params.toString() ? `/products?${params.toString()}` : '/products');
   };
 
   const hasBrandSelection = selectedBrandSlugs.length > 0;
