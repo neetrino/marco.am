@@ -78,8 +78,11 @@ export function ProductAttributesSelector({
   const attributeGroupsEntries = Array.from(attributeGroups.entries());
   const variantAttributeEntries = attributeGroupsEntries.filter(([attrKey]) =>
     VARIANT_PICKER_ATTRIBUTE_KEYS.has(attrKey),
+  const selectableAttributeGroupsEntries = attributeGroupsEntries.filter(
+    ([, attrGroups]) => attrGroups.length > 1
   );
   logger.devLog('🎨 [PRODUCT ATTRIBUTES SELECTOR] attributeGroups entries:', attributeGroupsEntries.length);
+  logger.devLog('🎨 [PRODUCT ATTRIBUTES SELECTOR] selectable attributeGroups entries:', selectableAttributeGroupsEntries.length);
   logger.devLog('🎨 [PRODUCT ATTRIBUTES SELECTOR] attributeGroups keys:', Array.from(attributeGroups.keys()));
   logger.devLog('🎨 [PRODUCT ATTRIBUTES SELECTOR] product.productAttributes:', product?.productAttributes);
 
@@ -89,6 +92,10 @@ export function ProductAttributesSelector({
       {/* Only color/size are interactive pickers; other keys are specs (shown in description, not here). */}
       {variantAttributeEntries.length > 0 ? (
         variantAttributeEntries.map(([attrKey, attrGroups]) => {
+      {/* Display all attributes from attributeGroups, not just from productAttributes */}
+      {selectableAttributeGroupsEntries.length > 0 ? (
+        // Use attributeGroups which contains all attributes (from productAttributes and variants)
+        selectableAttributeGroupsEntries.map(([attrKey, attrGroups]) => {
           // Try to get attribute name from productAttributes if available
           const productAttr = product?.productAttributes?.find(
             (pa: ProductAttribute) => pa.attribute?.key === attrKey,
@@ -272,6 +279,11 @@ export function ProductAttributesSelector({
                       (hasImage && processedImageUrl) || (hasColors && colorHex),
                     );
 
+                    const colorHex = hasColors && g.colors 
+                      ? g.colors[0] 
+                      : null;
+                    const colorOnlyOption = !hasImage && Boolean(colorHex);
+                    
                     // Debug logging for image issues
                     if (g.imageUrl && !hasImage) {
                       logger.warn(
@@ -349,6 +361,9 @@ export function ProductAttributesSelector({
                           }
                         }}
                         className={`${paddingClass} flex items-center ${gapClass} rounded-lg border-2 transition-all ${
+                        className={`${
+                          colorOnlyOption ? 'w-10 h-10 p-0 justify-center rounded-full' : `${paddingClass} rounded-lg`
+                        } border-2 transition-all flex items-center ${gapClass} ${
                           isSelected
                             ? 'border-green-500 bg-gray-50'
                             : g.stock <= 0
@@ -366,6 +381,33 @@ export function ProductAttributesSelector({
                             ({g.stock})
                           </span>
                         </div>
+                        style={colorOnlyOption ? { backgroundColor: colorHex! } : {}}
+                      >
+                        {hasImage && processedImageUrl ? (
+                          <img 
+                            src={processedImageUrl} 
+                            alt={g.label}
+                            className={`${imageSizeClass} object-cover rounded border border-gray-300 flex-shrink-0`}
+                            onError={(e) => {
+                              console.error(`❌ [ATTRIBUTE IMAGE] Failed to load image for attribute "${attrKey}" value "${g.value}":`, processedImageUrl);
+                              (e.target as HTMLImageElement).style.display = 'none';
+                            }}
+                            onLoad={() => {
+                              logger.devLog(`✅ [ATTRIBUTE IMAGE] Successfully loaded image for attribute "${attrKey}" value "${g.value}":`, processedImageUrl);
+                            }}
+                          />
+                        ) : !colorOnlyOption && hasColors && colorHex ? (
+                          <div 
+                            className={`${imageSizeClass} rounded-full border border-gray-300 flex-shrink-0`}
+                            style={{ backgroundColor: colorHex }}
+                          />
+                        ) : null}
+                        {!colorOnlyOption && (
+                          <div className="flex flex-col gap-0 text-center leading-tight">
+                            <span className={textSizeClass}>{getAttributeLabel(language, attrKey, g.value)}</span>
+                            <span className={`${totalValues > 10 ? 'text-[10px]' : 'text-[11px]'} ${g.stock > 0 ? 'text-gray-500' : 'text-gray-400'}`}>({g.stock})</span>
+                          </div>
+                        )}
                       </button>
                     );
                   })}
@@ -377,7 +419,7 @@ export function ProductAttributesSelector({
       ) : (
         // Old format: Use colorGroups and sizeGroups
         <>
-          {colorGroups.length > 0 && (
+          {colorGroups.length > 1 && (
             <div className="space-y-1">
               <label className="text-xs font-bold uppercase leading-snug">{t(language, 'product.color')}:</label>
               <div className="flex flex-wrap items-center gap-1.5">
@@ -415,7 +457,7 @@ export function ProductAttributesSelector({
       )}
 
       {/* Size Groups - Show only if not using new format */}
-      {!product?.productAttributes && sizeGroups.length > 0 && (
+      {!product?.productAttributes && sizeGroups.length > 1 && (
         <div className="space-y-1">
           <label className="text-xs font-bold uppercase leading-snug">{t(language, 'product.size')}</label>
           <div className="flex flex-wrap gap-1.5">

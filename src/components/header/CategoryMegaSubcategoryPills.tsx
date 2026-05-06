@@ -8,6 +8,7 @@ import type { Category } from './category-nav-types';
 import type { CategoryNavIcon } from './categoryNavPresentation';
 import { resolveCategoryNavPresentation } from './categoryNavPresentation';
 import { headerCategoryNavFont } from './headerCategoryNavTypography';
+import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '../../lib/utils/image-utils';
 
 /** Subcategory row icon — keep img `width`/`height` in sync with Tailwind `h-[…] w-[…]` on the image. */
 const SUBPILL_FIGMA_IMG_PX = 26;
@@ -26,6 +27,7 @@ function SubcategoryPillRow({
   onNavigate: () => void;
 }) {
   const row = resolveCategoryNavPresentation(child.slug, child.title, lang);
+  const imageSrc = toSafeImgAttributeSrc(child.media?.[0] ?? null);
   const count = child.productCount ?? 0;
   const countLine = `(${count}) ${productsWord}`;
 
@@ -36,7 +38,7 @@ function SubcategoryPillRow({
       className={`${headerCategoryNavFont.className} flex min-h-[44px] w-full min-w-0 items-center justify-between gap-2 rounded-[22px] border border-marco-border bg-white py-1 pl-2 pr-1.5 !text-[#050505] transition-[filter] hover:brightness-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/15 dark:!text-[#050505] md:gap-3 md:pl-2.5 md:pr-2`}
     >
       <span className="flex min-w-0 flex-1 items-center gap-2 md:gap-3">
-        <SubcategoryIcon icon={row.icon} />
+        <SubcategoryIcon icon={row.icon} imageSrc={imageSrc} />
         <span className="min-w-0 truncate text-left text-sm font-normal leading-[18px] tracking-[0.14px] !text-[#050505] dark:!text-[#050505]">
           {row.title}
         </span>
@@ -59,7 +61,21 @@ function SubcategoryPillRow({
   );
 }
 
-function SubcategoryIcon({ icon }: { icon: CategoryNavIcon }) {
+function SubcategoryIcon({ icon, imageSrc }: { icon: CategoryNavIcon; imageSrc: string | null }) {
+  if (imageSrc) {
+    return (
+      <span className="flex size-[34px] shrink-0 items-center justify-center !text-[#050505] dark:!text-[#050505]">
+        <img
+          src={toDomSafeImgSrcString(imageSrc)}
+          alt=""
+          width={SUBPILL_FIGMA_IMG_PX}
+          height={SUBPILL_FIGMA_IMG_PX}
+          className="h-[26px] w-[26px] shrink-0 object-contain"
+          draggable={false}
+        />
+      </span>
+    );
+  }
   if (icon.kind === 'figma') {
     return (
       <span className="flex size-[34px] shrink-0 items-center justify-center !text-[#050505] dark:!text-[#050505]">

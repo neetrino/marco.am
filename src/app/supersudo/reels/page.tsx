@@ -42,6 +42,8 @@ const EMPTY_FORM: ReelFormState = {
   posterUrl: '',
   sourceType: 'external_url',
 };
+const REELS_LIKES_LABEL = 'likes';
+const REELS_VIEWS_LABEL = 'views';
 
 function buildId(seed: string): string {
   const compact = seed.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
@@ -331,11 +333,11 @@ export default function ReelsPage() {
               <p className="mt-1 text-2xl font-semibold">{activeReelsCount}</p>
             </div>
             <div className="rounded-xl border border-marco-border bg-white/85 p-3">
-              <p className="text-xs text-marco-text/70">{t('admin.reels.likes')}</p>
+              <p className="text-xs text-marco-text/70">{REELS_LIKES_LABEL}</p>
               <p className="mt-1 text-2xl font-semibold">{totalLikes}</p>
             </div>
             <div className="rounded-xl border border-marco-border bg-white/85 p-3">
-              <p className="text-xs text-marco-text/70">{t('admin.reels.views')}</p>
+              <p className="text-xs text-marco-text/70">{REELS_VIEWS_LABEL}</p>
               <p className="mt-1 text-2xl font-semibold">{totalViews}</p>
             </div>
           </div>
@@ -498,10 +500,10 @@ export default function ReelsPage() {
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-semibold text-gray-800">
-                        {t('admin.reels.likes')}: {likesByReelId[item.id] ?? 0}
+                        {REELS_LIKES_LABEL}: {likesByReelId[item.id] ?? 0}
                       </p>
                       <p className="text-sm font-semibold text-gray-800">
-                        {t('admin.reels.views')}: {viewsByReelId[item.id] ?? 0}
+                        {REELS_VIEWS_LABEL}: {viewsByReelId[item.id] ?? 0}
                       </p>
                       {item.moderation.status !== 'approved' ? (
                         <button

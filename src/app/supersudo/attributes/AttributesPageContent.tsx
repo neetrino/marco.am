@@ -1,7 +1,10 @@
 'use client';
 
+import { useMemo, useState } from 'react';
+import { Card } from '@shop/ui';
 import { useTranslation } from '../../../lib/i18n-client';
 import type { UseAttributesReturn } from './useAttributes';
+import { filterAttributesBySearch } from './filterAttributesBySearch';
 import { ValueEditForm } from './ValueEditForm';
 
 export function AttributesPageContent({
@@ -46,6 +49,11 @@ export function AttributesPageContent({
   toggleExpand,
 }: UseAttributesReturn) {
   const { t } = useTranslation();
+  const [attributeSearch, setAttributeSearch] = useState('');
+  const filteredAttributes = useMemo(
+    () => filterAttributesBySearch(attributes, attributeSearch),
+    [attributes, attributeSearch],
+  );
 
   if (loading) {
     return (
@@ -58,6 +66,66 @@ export function AttributesPageContent({
 
   return (
     <div className="space-y-6">
+      <Card className="admin-card border-amber-300/70 bg-gradient-to-b from-amber-50/90 via-white to-white shadow-[0_12px_40px_rgba(217,119,6,0.12)] ring-1 ring-amber-200/50">
+        <div className="p-4 sm:p-5">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+            <div className="min-w-0">
+              <label
+                htmlFor="attribute-admin-search"
+                className="block text-lg font-semibold tracking-tight text-slate-900"
+              >
+                {t('admin.attributes.searchLabel')}
+              </label>
+            </div>
+            {attributeSearch.trim() !== '' && (
+              <p className="shrink-0 rounded-lg bg-amber-100/90 px-3 py-1.5 text-sm font-semibold tabular-nums text-amber-950 ring-1 ring-amber-200/80">
+                {t('admin.attributes.searchMatchCount')
+                  .replace('{matched}', String(filteredAttributes.length))
+                  .replace('{total}', String(attributes.length))}
+              </p>
+            )}
+          </div>
+          <div className="relative mt-4">
+            <svg
+              className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+            <input
+              id="attribute-admin-search"
+              type="search"
+              value={attributeSearch}
+              onChange={(e) => setAttributeSearch(e.target.value)}
+              placeholder={t('admin.attributes.searchPlaceholder')}
+              autoComplete="off"
+              className={`admin-field h-12 w-full rounded-xl border-2 border-slate-200 bg-white pl-12 text-base shadow-sm transition-[border-color,box-shadow] duration-200 placeholder:text-slate-400 focus:border-amber-500 focus:shadow-[0_0_0_4px_rgba(245,158,11,0.2)] sm:h-14 sm:pl-14 sm:text-lg ${attributeSearch.length > 0 ? 'pr-12 sm:pr-14' : 'pr-4'}`}
+              aria-label={t('admin.attributes.searchLabel')}
+            />
+            {attributeSearch.length > 0 ? (
+              <button
+                type="button"
+                className="absolute right-2 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 sm:right-3"
+                onClick={() => setAttributeSearch('')}
+                aria-label={t('admin.attributes.clearSearch')}
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            ) : null}
+          </div>
+        </div>
+      </Card>
+
       <div className="flex items-center justify-end">
         <button
           onClick={() => setShowAddForm(!showAddForm)}
@@ -129,9 +197,13 @@ export function AttributesPageContent({
               {t('admin.attributes.createAttribute')}
             </button>
           </div>
+        ) : filteredAttributes.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-amber-200 bg-amber-50/50 px-4 py-8 text-center">
+            <p className="text-sm font-medium text-amber-950">{t('admin.attributes.searchNoMatches')}</p>
+          </div>
         ) : (
           <div className="space-y-3">
-            {attributes.map((attribute) => {
+            {filteredAttributes.map((attribute) => {
               const isExpanded = expandedAttributes.has(attribute.id);
               return (
                 <div

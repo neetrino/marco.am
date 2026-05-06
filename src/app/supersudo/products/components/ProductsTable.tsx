@@ -63,6 +63,9 @@ export function ProductsTable({
 }: ProductsTableProps) {
   const { t } = useTranslation();
   const router = useRouter();
+  const openProductEditor = (productId: string) => {
+    router.push(`/supersudo/products/add?id=${productId}`);
+  };
 
   return (
     <Card className="admin-table-card overflow-hidden rounded-2xl border-slate-200/80 shadow-md shadow-slate-200/60">
@@ -243,12 +246,24 @@ export function ProductsTable({
               </thead>
               <tbody className="divide-y divide-slate-200 bg-white">
                 {sortedProducts.map((product) => (
-                  <tr key={product.id} className="group transition-colors hover:bg-amber-50/50">
+                  <tr
+                    key={product.id}
+                    className="group cursor-pointer transition-colors hover:bg-amber-50/50"
+                    onClick={() => openProductEditor(product.id)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        openProductEditor(product.id);
+                      }
+                    }}
+                    tabIndex={0}
+                  >
                     <td className="py-3 pl-6 pr-3">
                       <input
                         type="checkbox"
                         aria-label={t('admin.products.selectProduct').replace('{title}', product.title)}
                         checked={selectedIds.has(product.id)}
+                        onClick={(event) => event.stopPropagation()}
                         onChange={() => toggleSelect(product.id)}
                         className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-500"
                       />
@@ -330,7 +345,10 @@ export function ProductsTable({
                         </div>
                       ) : (
                       <button
-                        onClick={() => handleToggleFeatured(product.id, product.featured || false, product.title)}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleToggleFeatured(product.id, product.featured || false, product.title);
+                        }}
                         className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 transition-all duration-200 hover:scale-105 hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
                         title={product.featured ? t('admin.products.clickToRemoveFeatured') : t('admin.products.clickToMarkFeatured')}
                       >
@@ -359,11 +377,14 @@ export function ProductsTable({
                           variant="ghost"
                           size="sm"
                           type="button"
-                          onClick={() => router.push(`/supersudo/products/add?id=${product.id}`)}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            openProductEditor(product.id);
+                          }}
                           aria-label={t('admin.products.edit')}
-                          className="!h-5 !min-h-5 !w-5 !max-w-none shrink-0 !px-0 !py-0 gap-0 rounded-md border border-transparent text-slate-700 hover:border-slate-200 hover:bg-slate-100 hover:text-slate-900"
+                          className="!h-8 !min-h-8 !w-8 !max-w-none shrink-0 !px-0 !py-0 gap-0 rounded-md border border-transparent text-slate-700 hover:border-slate-200 hover:bg-slate-100 hover:text-slate-900"
                         >
-                          <svg className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                          <svg className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                           </svg>
                         </Button>
@@ -371,30 +392,36 @@ export function ProductsTable({
                           variant="ghost"
                           size="sm"
                           type="button"
-                          onClick={() => handleDeleteProduct(product.id, product.title)}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            handleDeleteProduct(product.id, product.title);
+                          }}
                           disabled={deletingIds.has(product.id)}
                           aria-label={deletingIds.has(product.id) ? t('admin.products.deleting') : t('admin.products.delete')}
-                          className="!h-5 !min-h-5 !w-5 !max-w-none shrink-0 !px-0 !py-0 gap-0 rounded-md border border-transparent text-red-600 hover:border-red-100 hover:bg-red-50 hover:text-red-700 disabled:opacity-70"
+                          className="!h-8 !min-h-8 !w-8 !max-w-none shrink-0 !px-0 !py-0 gap-0 rounded-md border border-transparent text-red-600 hover:border-red-100 hover:bg-red-50 hover:text-red-700 disabled:opacity-70"
                         >
                           {deletingIds.has(product.id) ? (
                             <span className="inline-flex h-full w-full items-center justify-center" aria-hidden>
-                              <span className="h-3.5 w-3.5 animate-spin rounded-full border-b-2 border-red-600" />
+                              <span className="h-5 w-5 animate-spin rounded-full border-b-2 border-red-600" />
                             </span>
                           ) : (
-                            <svg className="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                            <svg className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
                           )}
                         </Button>
                         {updatingPublishedIds.has(product.id) ? (
-                          <div className="inline-flex h-5 w-9 shrink-0 items-center justify-center rounded-full bg-slate-200">
-                            <div className="h-3.5 w-3.5 animate-spin rounded-full border-b-2 border-slate-700" />
+                          <div className="inline-flex h-6 w-10 shrink-0 items-center justify-center rounded-full bg-slate-200">
+                            <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-slate-700" />
                           </div>
                         ) : (
                           <button
                             type="button"
-                            onClick={() => handleTogglePublished(product.id, product.published, product.title)}
-                            className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 ${
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              handleTogglePublished(product.id, product.published, product.title);
+                            }}
+                            className={`relative inline-flex h-6 w-10 shrink-0 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 ${
                               product.published
                                 ? 'bg-emerald-500'
                                 : 'bg-slate-300'
@@ -403,8 +430,8 @@ export function ProductsTable({
                             aria-label={product.published ? `${t('admin.products.published')} - ${t('admin.products.clickToDraft')}` : `${t('admin.products.draft')} - ${t('admin.products.clickToPublished')}`}
                           >
                             <span
-                              className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform duration-200 ${
-                                product.published ? 'translate-x-[18px]' : 'translate-x-0.5'
+                              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${
+                                product.published ? 'translate-x-[21px]' : 'translate-x-1'
                               }`}
                             />
                           </button>

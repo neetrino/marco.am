@@ -180,10 +180,6 @@ export async function updateProductAttributes(
   tx: Prisma.TransactionClient
 ) {
   if (attributeIds !== undefined) {
-    // Ensure table exists (for Vercel deployments where migrations might not run)
-    const { ensureProductAttributesTable } = await import("../../../utils/db-ensure");
-    await ensureProductAttributesTable();
-    
     await tx.productAttribute.deleteMany({ where: { productId } });
     if (attributeIds.length > 0) {
       await tx.productAttribute.createMany({

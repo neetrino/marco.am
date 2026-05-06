@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo, useState } from 'react';
 import { Card, Button, Input } from '@shop/ui';
 import { useTranslation } from '../../../../lib/i18n-client';
 
@@ -29,6 +30,20 @@ export function CategoryDiscountsCard({
   categorySaving,
 }: CategoryDiscountsCardProps) {
   const { t } = useTranslation();
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredCategories = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+    if (!normalizedQuery) {
+      return categories;
+    }
+
+    return categories.filter((category) => {
+      const title = (category.title || '').toLowerCase();
+      const parentId = (category.parentId || '').toLowerCase();
+      return title.includes(normalizedQuery) || parentId.includes(normalizedQuery);
+    });
+  }, [categories, searchQuery]);
 
   return (
     <Card className="admin-card mb-6 border-slate-200/80 bg-white/95 shadow-[0_12px_28px_rgba(15,23,42,0.07)]">
@@ -54,6 +69,24 @@ export function CategoryDiscountsCard({
         </Button>
       </div>
 
+      <div className="mb-4 flex gap-2">
+        <Input
+          type="text"
+          value={searchQuery}
+          onChange={(event) => setSearchQuery(event.target.value)}
+          placeholder={t('admin.categories.searchPlaceholder')}
+          className="border-slate-300 bg-white"
+        />
+        <Button
+          variant="ghost"
+          onClick={() => setSearchQuery('')}
+          disabled={searchQuery.length === 0}
+          className="shrink-0 text-slate-700 hover:bg-slate-100"
+        >
+          {t('admin.quickSettings.clear')}
+        </Button>
+      </div>
+
       {categoriesLoading ? (
         <div className="py-8 text-center">
           <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-b-2 border-slate-900"></div>
@@ -63,9 +96,13 @@ export function CategoryDiscountsCard({
         <div className="rounded-lg border border-dashed border-slate-300 py-6 text-center text-slate-600">
           {t('admin.quickSettings.noCategories')}
         </div>
+      ) : filteredCategories.length === 0 ? (
+        <div className="rounded-lg border border-dashed border-slate-300 py-6 text-center text-slate-600">
+          {t('admin.categories.noSearchResults')}
+        </div>
       ) : (
         <div className="max-h-[440px] overflow-y-auto rounded-xl border border-slate-100 bg-slate-50/50 p-2">
-          {categories.map((category) => {
+          {filteredCategories.map((category) => {
             const currentValue = categoryDiscounts[category.id];
             return (
               <div

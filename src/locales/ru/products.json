@@ -51,6 +51,12 @@
       "loading": "Загрузка...",
       "clear": "Сбросить",
       "clearAria": "Сбросить фильтр по бренду"
+    },
+    "attributeFacets": {
+      "sectionTitle": "Атрибуты",
+      "loading": "Загрузка атрибутов...",
+      "clear": "Сбросить",
+      "clearAria": "Сбросить фильтр: {name}"
     }
   },
   "header": {

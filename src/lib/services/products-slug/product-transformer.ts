@@ -424,13 +424,26 @@ function buildVariantPricing(
   discountPercent: number | null;
   discountBadge: ProductDiscountBadge | null;
 } {
-  const discountedPrice = actualDiscount > 0 ? originalPrice * (1 - actualDiscount / 100) : originalPrice;
-  const oldPrice = resolveVariantOldPrice(discountedPrice, compareAtPrice);
-  const fallbackDiscountPercent = computeDiscountPercentFromPrices(discountedPrice, oldPrice);
-  const discountPercent = actualDiscount > 0 ? actualDiscount : fallbackDiscountPercent;
+  const hasManualCompareAtPrice =
+    compareAtPrice !== null && Number.isFinite(compareAtPrice) && compareAtPrice > originalPrice;
+  const currentPrice = originalPrice;
+  const computedOldPriceFromDiscount =
+    !hasManualCompareAtPrice && actualDiscount > 0 && originalPrice > 0
+      ? originalPrice / (1 - actualDiscount / 100)
+      : null;
+  const oldPrice = hasManualCompareAtPrice
+    ? resolveVariantOldPrice(currentPrice, compareAtPrice)
+    : computedOldPriceFromDiscount;
+  const fallbackDiscountPercent = computeDiscountPercentFromPrices(currentPrice, oldPrice);
+  const discountPercent =
+    hasManualCompareAtPrice
+      ? fallbackDiscountPercent
+      : actualDiscount > 0
+        ? actualDiscount
+        : fallbackDiscountPercent;
 
   return {
-    currentPrice: discountedPrice,
+    currentPrice,
     oldPrice,
     discountPercent,
     discountBadge: buildDiscountBadge(discountPercent),

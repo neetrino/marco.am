@@ -72,9 +72,10 @@ export function CategoriesList({
           <table className="w-full min-w-[760px] table-fixed divide-y divide-slate-200 bg-white">
             <colgroup>
               <col className="w-12" />
+              <col className="w-[88px]" />
               <col className="w-[36%]" />
-              <col className="w-[24%]" />
               <col className="w-[20%]" />
+              <col className="w-[16%]" />
               <col className="w-[20%]" />
             </colgroup>
             <thead className="bg-slate-50/90">
@@ -92,6 +93,9 @@ export function CategoriesList({
                     className="h-4 w-4 cursor-pointer rounded border-slate-300 text-amber-500 focus:ring-amber-400"
                     aria-label="Select page categories"
                   />
+                </th>
+                <th className="px-2 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  {t('admin.categories.imageLabel')}
                 </th>
                 <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                   Title

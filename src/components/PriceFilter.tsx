@@ -8,10 +8,15 @@ import {
   productsFiltersSectionFont,
 } from '../lib/products-filters-typography';
 import { getStoredLanguage } from '../lib/language';
-import { getStoredCurrency, formatPrice as formatCurrencyPrice, type CurrencyCode } from '../lib/currency';
+import {
+  getStoredCurrency,
+  formatCatalogPrice,
+  convertPrice,
+  CATALOG_PRICE_CURRENCY,
+  type CurrencyCode,
+} from '../lib/currency';
 import { useTranslation } from '../lib/i18n-client';
 import { pushShopProductsListingUrl } from '../lib/push-shop-products-listing-url';
-import { useProductsFilters } from './ProductsFiltersProvider';
 
 interface PriceFilterProps {
   currentMinPrice?: string;
@@ -27,7 +32,7 @@ interface PriceRange {
   stepSizePerCurrency?: Partial<Record<CurrencyCode, number>> | null;
 }
 
-/** Clamp numeric filter values to catalog bounds (same units as variant.price in DB — USD base; UI converts via formatPrice). */
+/** Clamp numeric filter values to catalog bounds (same units as listing prices). */
 function clampToRange(n: number, lo: number, hi: number): number {
   if (!Number.isFinite(n)) return lo;
   return Math.max(lo, Math.min(hi, n));
@@ -36,7 +41,6 @@ function clampToRange(n: number, lo: number, hi: number): number {
 export function PriceFilter({ currentMinPrice, currentMaxPrice, category }: PriceFilterProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const filtersContext = useProductsFilters();
   const { t } = useTranslation();
   const [priceRange, setPriceRange] = useState<PriceRange>({
     min: 0,
@@ -48,11 +52,11 @@ export function PriceFilter({ currentMinPrice, currentMaxPrice, category }: Pric
   const [maxPrice, setMaxPrice] = useState(0);
   const [isDragging, setIsDragging] = useState<'min' | 'max' | null>(null);
   const [currency, setCurrency] = useState<CurrencyCode>('USD');
-  const [standaloneLoading, setStandaloneLoading] = useState(() => filtersContext === null);
+  const [standaloneLoading, setStandaloneLoading] = useState(true);
   const sliderRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<'min' | 'max' | null>(null);
 
-  const rangeLoading = filtersContext ? filtersContext.loading : standaloneLoading;
+  const rangeLoading = standaloneLoading;
   const rangeReady = !rangeLoading && priceRange.max > 0;
 
   const roundToStep = (value: number, step: number | null | undefined): number => {
@@ -74,28 +78,25 @@ export function PriceFilter({ currentMinPrice, currentMaxPrice, category }: Pric
   }, []);
 
   useEffect(() => {
-    if (filtersContext?.data?.priceRange) {
-      setPriceRange(filtersContext.data.priceRange as PriceRange);
-      return;
-    }
-    if (filtersContext === null) {
-      const run = async () => {
-        setStandaloneLoading(true);
-        try {
-          const language = getStoredLanguage();
-          const params: Record<string, string> = { lang: language };
-          if (category) params.category = category;
-          const response = await apiClient.get<PriceRange>('/api/v1/products/price-range', { params });
-          setPriceRange(response);
-        } catch (error) {
-          console.error('Error fetching price range:', error);
-        } finally {
-          setStandaloneLoading(false);
-        }
-      };
-      void run();
-    }
-  }, [category, filtersContext?.data?.priceRange, filtersContext === null]);
+    const run = async () => {
+      setStandaloneLoading(true);
+      try {
+        const language = getStoredLanguage();
+        const params: Record<string, string> = {
+          lang: language,
+          _ts: String(Date.now()),
+        };
+        if (category) params.category = category;
+        const response = await apiClient.get<PriceRange>('/api/v1/products/price-range', { params });
+        setPriceRange(response);
+      } catch (error) {
+        console.error('Error fetching price range:', error);
+      } finally {
+        setStandaloneLoading(false);
+      }
+    };
+    void run();
+  }, [category]);
 
   useEffect(() => {
     const lo = priceRange.min;
@@ -120,7 +121,10 @@ export function PriceFilter({ currentMinPrice, currentMaxPrice, category }: Pric
     const perCurrency = priceRange.stepSizePerCurrency || {};
     const currencyStep = perCurrency[currency];
     if (currencyStep && currencyStep > 0) {
-      return currencyStep;
+      if (currency === CATALOG_PRICE_CURRENCY) {
+        return currencyStep;
+      }
+      return Math.max(1, Math.round(convertPrice(currencyStep, currency, CATALOG_PRICE_CURRENCY)));
     }
     if (priceRange.stepSize && priceRange.stepSize > 0) {
       return priceRange.stepSize;
@@ -235,12 +239,12 @@ export function PriceFilter({ currentMinPrice, currentMaxPrice, category }: Pric
     }
   }, [isDragging, minPrice, maxPrice, priceRange, searchParams, router]);
 
-  /** Slider + API use DB units (USD); formatPrice converts to the selected display currency (e.g. AMD). */
+  /** Slider + API use catalog price units; render label in selected display currency. */
   const formatPrice = (price: number) => {
     if (typeof price !== 'number' || isNaN(price) || !isFinite(price)) {
-      return formatCurrencyPrice(0, currency);
+      return formatCatalogPrice(0, currency);
     }
-    return formatCurrencyPrice(price, currency);
+    return formatCatalogPrice(price, currency);
   };
 
   const safeMinPrice: number =

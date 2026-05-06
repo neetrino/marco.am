@@ -10,6 +10,7 @@ import { CategoryDropdownPromoBanner } from './CategoryDropdownPromoBanner';
 import { dedupeCategories, normalizeCategoryKey, prepareRootCategoriesForNav } from './categoryNavList';
 import { resolveCategoryNavPresentation } from './categoryNavPresentation';
 import { headerCategoryNavFont } from './headerCategoryNavTypography';
+import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '../../lib/utils/image-utils';
 
 function isTechAndElectronicsCategory(value: string): boolean {
   const normalized = normalizeCategoryKey(value);
@@ -69,6 +70,7 @@ export function CategoriesDropdownMega({
             const isSelected = category.slug === selectedSlug;
             const row = resolveCategoryNavPresentation(category.slug, category.title, lang);
             const RowLucide = row.icon.kind === 'lucide' ? row.icon.Icon : null;
+            const categoryImage = toSafeImgAttributeSrc(category.media?.[0] ?? null);
 
             return (
               <button
@@ -82,7 +84,16 @@ export function CategoriesDropdownMega({
                 }`}
               >
                 <span className="flex size-[48px] shrink-0 items-center justify-center p-1.5 !text-[#050505] dark:!text-[#050505]">
-                  {row.icon.kind === 'figma' ? (
+                  {categoryImage ? (
+                    <img
+                      src={toDomSafeImgSrcString(categoryImage)}
+                      alt=""
+                      width={MEGA_ROOT_ICON_INNER_PX}
+                      height={MEGA_ROOT_ICON_INNER_PX}
+                      className="h-[34px] w-[34px] shrink-0 object-contain"
+                      draggable={false}
+                    />
+                  ) : row.icon.kind === 'figma' ? (
                     <img
                       src={row.icon.src}
                       alt=""

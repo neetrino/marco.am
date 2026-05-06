@@ -35,9 +35,14 @@ interface UseCategoryActionsReturn {
 }
 
 const initialFormData: CategoryFormData = {
-  title: '',
+  titles: {
+    hy: '',
+    en: '',
+    ru: '',
+  },
   seoTitle: '',
   seoDescription: '',
+  imageUrl: '',
   parentId: '',
   requiresSizes: false,
   subcategoryIds: [],
@@ -60,17 +65,24 @@ export function useCategoryActions(): UseCategoryActionsReturn {
   };
 
   const handleAddCategory = async (fetchCategories: () => Promise<void>) => {
-    if (!formData.title.trim()) {
-      showToast(t('admin.categories.titleRequired'), 'warning');
+    const titles = {
+      hy: formData.titles.hy.trim(),
+      en: formData.titles.en.trim(),
+      ru: formData.titles.ru.trim(),
+    };
+    if (!titles.hy || !titles.en || !titles.ru) {
+      showToast(t('admin.categories.titlesRequiredAllLocales'), 'warning');
       return;
     }
 
     setSaving(true);
     try {
       await apiClient.post('/api/v1/supersudo/categories', {
-        title: formData.title.trim(),
+        title: titles.en,
+        translations: titles,
         seoTitle: formData.seoTitle.trim() || undefined,
         seoDescription: formData.seoDescription.trim() || undefined,
+        media: formData.imageUrl.trim() ? [formData.imageUrl.trim()] : undefined,
         parentId: formData.parentId || undefined,
         requiresSizes: formData.requiresSizes,
         locale: categoryWriteLocale(getStoredLanguage()),
@@ -101,9 +113,14 @@ export function useCategoryActions(): UseCategoryActionsReturn {
       const categoryWithChildren = response.data;
       
       setFormData({
-        title: category.title,
+        titles: {
+          hy: categoryWithChildren.translations?.hy || categoryWithChildren.title || '',
+          en: categoryWithChildren.translations?.en || categoryWithChildren.title || '',
+          ru: categoryWithChildren.translations?.ru || categoryWithChildren.title || '',
+        },
         seoTitle: categoryWithChildren.seoTitle || '',
         seoDescription: categoryWithChildren.seoDescription || '',
+        imageUrl: categoryWithChildren.media?.[0] || '',
         parentId: category.parentId || '',
         requiresSizes: category.requiresSizes || false,
         subcategoryIds: categoryWithChildren.children?.map(child => child.id) || [],
@@ -111,9 +128,14 @@ export function useCategoryActions(): UseCategoryActionsReturn {
     } catch (err: unknown) {
       logger.error('Error fetching category children', { error: err });
       setFormData({
-        title: category.title,
+        titles: {
+          hy: category.translations?.hy || category.title || '',
+          en: category.translations?.en || category.title || '',
+          ru: category.translations?.ru || category.title || '',
+        },
         seoTitle: category.seoTitle || '',
         seoDescription: category.seoDescription || '',
+        imageUrl: category.media?.[0] || '',
         parentId: category.parentId || '',
         requiresSizes: category.requiresSizes || false,
         subcategoryIds: [],
@@ -124,17 +146,24 @@ export function useCategoryActions(): UseCategoryActionsReturn {
   };
 
   const handleUpdateCategory = async (fetchCategories: () => Promise<void>) => {
-    if (!editingCategory || !formData.title.trim()) {
-      showToast(t('admin.categories.titleRequired'), 'warning');
+    const titles = {
+      hy: formData.titles.hy.trim(),
+      en: formData.titles.en.trim(),
+      ru: formData.titles.ru.trim(),
+    };
+    if (!editingCategory || !titles.hy || !titles.en || !titles.ru) {
+      showToast(t('admin.categories.titlesRequiredAllLocales'), 'warning');
       return;
     }
 
     setSaving(true);
     try {
       await apiClient.put(`/api/v1/supersudo/categories/${editingCategory.id}`, {
-        title: formData.title.trim(),
+        title: titles.en,
+        translations: titles,
         seoTitle: formData.seoTitle.trim() || null,
         seoDescription: formData.seoDescription.trim() || null,
+        media: formData.imageUrl.trim() ? [formData.imageUrl.trim()] : [],
         parentId: formData.parentId || null,
         requiresSizes: formData.requiresSizes,
         subcategoryIds: formData.subcategoryIds,

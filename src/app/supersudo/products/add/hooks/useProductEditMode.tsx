@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api-client';
 import { CATALOG_PRICE_CURRENCY, convertPrice, type CurrencyCode } from '@/lib/currency';
@@ -55,9 +55,16 @@ export function useProductEditMode({
 }: UseProductEditModeProps) {
   const router = useRouter();
   const { t } = useTranslation();
+  const lastLoadedKeyRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (productId && isLoggedIn && isAdmin) {
+      const loadKey = `${productId}:${defaultCurrency}:${attributes.length}`;
+      if (lastLoadedKeyRef.current === loadKey) {
+        return;
+      }
+      lastLoadedKeyRef.current = loadKey;
+
       const loadProduct = async () => {
         try {
           setLoadingProduct(true);
@@ -278,6 +285,8 @@ export function useProductEditMode({
 
           logger.devLog('✅ [ADMIN] Product loaded for edit');
         } catch (err: unknown) {
+          // Allow retry after a failed load
+          lastLoadedKeyRef.current = null;
           console.error('❌ [ADMIN] Error loading product:', err);
           router.push('/supersudo/products');
         } finally {

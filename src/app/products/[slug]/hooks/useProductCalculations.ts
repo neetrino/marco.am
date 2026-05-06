@@ -61,8 +61,8 @@ export function useProductCalculations({
     return groups;
   }, [attributeGroups]);
 
-  const hasColorAttribute = colorGroups.length > 0 && colorGroups.some(g => g.stock > 0);
-  const hasSizeAttribute = sizeGroups.length > 0 && sizeGroups.some(g => g.stock > 0);
+  const hasColorAttribute = colorGroups.length > 1 && colorGroups.some((g) => g.stock > 0);
+  const hasSizeAttribute = sizeGroups.length > 1 && sizeGroups.some((g) => g.stock > 0);
   const needsColor = hasColorAttribute && !selectedColor;
   const needsSize = hasSizeAttribute && !selectedSize;
   const isVariationRequired = needsColor || needsSize;

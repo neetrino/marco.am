@@ -2,6 +2,7 @@
 
 import { Button } from '@shop/ui';
 import { useTranslation } from '../../../../lib/i18n-client';
+import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '../../../../lib/utils/image-utils';
 import type { Category, CategoryWithLevel } from '../types';
 
 interface CategoryItemProps {
@@ -23,6 +24,7 @@ export function CategoryItem({
 }: CategoryItemProps) {
   const { t } = useTranslation();
   const depthPrefix = category.level > 0 ? `${'— '.repeat(category.level)} ` : '';
+  const safeCategoryImage = toSafeImgAttributeSrc(category.media?.[0] ?? null);
 
   return (
     <tr className="group border-b border-slate-100 transition-colors hover:bg-amber-50/50">
@@ -34,6 +36,22 @@ export function CategoryItem({
           className="h-4 w-4 cursor-pointer rounded border-slate-300 text-amber-500 focus:ring-amber-400"
           aria-label={`Select ${category.title}`}
         />
+      </td>
+      <td className="px-2 py-2 align-middle">
+        {safeCategoryImage ? (
+          <img
+            src={toDomSafeImgSrcString(safeCategoryImage)}
+            alt=""
+            className="h-12 w-12 rounded-lg border border-slate-200 bg-white object-cover"
+          />
+        ) : (
+          <div
+            className="flex h-12 w-12 items-center justify-center rounded-lg border border-dashed border-slate-200 bg-slate-50 text-[10px] font-medium uppercase tracking-wide text-slate-400"
+            aria-hidden
+          >
+            —
+          </div>
+        )}
       </td>
       <td className="px-3 py-3">
         <div className="flex flex-wrap items-center gap-2">

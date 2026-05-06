@@ -181,6 +181,8 @@ export function CategoryFilter({
       if (search) params.search = search;
       if (minPrice) params.minPrice = minPrice;
       if (maxPrice) params.maxPrice = maxPrice;
+      const filterParam = searchParams.get('filter');
+      if (filterParam) params.filter = filterParam;
       const response = await apiClient.get<{ categories: CategoryFilterOption[] }>('/api/v1/products/filters', { params });
       const raw = response.categories ?? [];
       setCategories(raw.map(normalizeCategoryChildren));
