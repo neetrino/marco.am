@@ -20,10 +20,6 @@ const ProductSpecifications = dynamic(() =>
   import('./ProductSpecifications').then((m) => ({ default: m.ProductSpecifications })),
 );
 
-const ProductReviews = dynamic(() =>
-  import('@/components/ProductReviews').then((m) => ({ default: m.ProductReviews })),
-);
-
 export type ProductPageClientProps = {
   slugParam: string;
   serverLanguage: LanguageCode;
@@ -62,8 +58,6 @@ export function ProductPageClient({
     isInWishlist,
     isInCompare,
     quantity,
-    reviews,
-    averageRating,
     slug,
     attributeGroups,
     colorGroups,
@@ -79,7 +73,6 @@ export function ProductPageClient({
     hasUnavailableAttributes,
     unavailableAttributes,
     canAddToCart,
-    scrollToReviews,
     getOptionValue,
     adjustQuantity,
     handleColorSelect,
@@ -197,8 +190,6 @@ export function ProductPageClient({
             discountPercent={discountPercent}
             currency={currency}
             language={language}
-            averageRating={averageRating}
-            reviewsCount={reviews.length}
             quantity={quantity}
             maxQuantity={maxQuantity}
             isOutOfStock={isOutOfStock}
@@ -222,7 +213,6 @@ export function ProductPageClient({
             onAddToCart={handleAddToCart}
             onAddToWishlist={handleAddToWishlist}
             onCompareToggle={handleCompareToggle}
-            onScrollToReviews={scrollToReviews}
             onColorSelect={handleColorSelect}
             onSizeSelect={handleSizeSelect}
             onAttributeValueSelect={handleAttributeValueSelect}
@@ -252,21 +242,6 @@ export function ProductPageClient({
       <div className={product ? 'mt-16' : 'mt-24'}>
         <RelatedProducts currentProductSlug={slug} language={language} />
       </div>
-
-      {product ? (
-        <Suspense
-          fallback={
-            <div
-              className="mt-16 min-h-[160px] w-full rounded-lg bg-gray-100/90 dark:bg-white/[0.06]"
-              aria-hidden
-            />
-          }
-        >
-          <div id="product-reviews" className="mt-16 scroll-mt-24">
-            <ProductReviews productSlug={slug} productId={product.id} />
-          </div>
-        </Suspense>
-      ) : null}
     </div>
   );
 }

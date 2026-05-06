@@ -51,6 +51,12 @@
       "loading": "Loading...",
       "clear": "Clear",
       "clearAria": "Clear brand filter"
+    },
+    "attributeFacets": {
+      "sectionTitle": "Attributes",
+      "loading": "Loading attributes...",
+      "clear": "Clear",
+      "clearAria": "Clear filter: {name}"
     }
   },
   "header": {

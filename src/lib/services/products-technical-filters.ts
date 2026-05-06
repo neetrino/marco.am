@@ -4,6 +4,26 @@ const TECHNICAL_SPEC_PREFIX = "spec.";
 const RESERVED_ATTRIBUTE_KEYS = new Set(["color", "size"]);
 const INVALID_FILTER_TOKENS = new Set(["", "null", "undefined"]);
 
+/** Attribute keys handled by dedicated PLP controls (color / size). */
+export function isReservedShopAttributeFilterKey(key: string): boolean {
+  const normalized = key.trim().toLowerCase();
+  return !normalized || RESERVED_ATTRIBUTE_KEYS.has(normalized);
+}
+
+/**
+ * Stable signature for `spec.*` / `specs` query keys — used for PLP filter cache keys and client refetch.
+ */
+export function buildTechnicalFilterQuerySignature(searchParams: URLSearchParams): string {
+  const parts: string[] = [];
+  for (const [k, v] of searchParams.entries()) {
+    if (k.startsWith(TECHNICAL_SPEC_PREFIX) || k === "specs") {
+      parts.push(`${k}=${v}`);
+    }
+  }
+  parts.sort();
+  return parts.join("&");
+}
+
 export interface TechnicalSpecFacetValue {
   value: string;
   label: string;
@@ -33,6 +53,11 @@ interface VariantOptionLike {
 }
 
 const normalizeToken = (token: string): string => token.trim().toLowerCase();
+
+/** Normalized token for `spec.*` values and facet keys (lowercase trim). */
+export function normalizeTechnicalFilterToken(token: string): string {
+  return normalizeToken(token);
+}
 
 const splitFilterValue = (value: string): string[] =>
   value
@@ -146,6 +171,50 @@ function resolveOptionLabels(option: VariantOptionLike): string[] {
   return Array.from(labels);
 }
 
+function mergeTechnicalTokensForJsonEntry(entry: unknown): string[] {
+  const tokens = new Set<string>();
+  if (entry && typeof entry === "object" && !Array.isArray(entry)) {
+    const o = entry as { label?: unknown; value?: unknown };
+    const label = typeof o.label === "string" ? o.label.trim() : "";
+    const value = typeof o.value === "string" ? o.value.trim() : "";
+    if (label) {
+      tokens.add(normalizeToken(label));
+    }
+    if (value) {
+      tokens.add(normalizeToken(value));
+    }
+  } else if (entry != null && entry !== "") {
+    tokens.add(normalizeToken(String(entry)));
+  }
+  return Array.from(tokens).filter(Boolean);
+}
+
+function indexVariantAttributesJson(
+  variant: { attributes?: unknown },
+  index: Map<string, Set<string>>,
+): void {
+  const rawAttrs = variant.attributes;
+  if (!rawAttrs || typeof rawAttrs !== "object" || Array.isArray(rawAttrs)) {
+    return;
+  }
+  for (const [rawKey, rawVal] of Object.entries(rawAttrs as Record<string, unknown>)) {
+    const attributeKey = normalizeToken(rawKey);
+    if (!attributeKey || RESERVED_ATTRIBUTE_KEYS.has(attributeKey)) {
+      continue;
+    }
+    const entries = Array.isArray(rawVal) ? rawVal : rawVal != null ? [rawVal] : [];
+    for (const entry of entries) {
+      const tokens = mergeTechnicalTokensForJsonEntry(entry);
+      if (tokens.length === 0) {
+        continue;
+      }
+      const existing = index.get(attributeKey) ?? new Set<string>();
+      tokens.forEach((t) => existing.add(t));
+      index.set(attributeKey, existing);
+    }
+  }
+}
+
 function buildProductTechnicalSpecIndex(
   product: ProductWithRelations
 ): Map<string, Set<string>> {
@@ -168,6 +237,7 @@ function buildProductTechnicalSpecIndex(
       labels.forEach((label) => existing.add(label));
       index.set(attributeKey, existing);
     }
+    indexVariantAttributesJson(variant as { attributes?: unknown }, index);
   }
 
   return index;

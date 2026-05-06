@@ -81,4 +81,23 @@ describe("productMatchesTechnicalSpecs", () => {
       })
     ).toBe(false);
   });
+
+  it("matches technical specs from variant.attributes JSON when options are empty", () => {
+    const product = {
+      variants: [
+        {
+          options: [],
+          attributes: {
+            material: [{ value: "Cotton", label: "Cotton" }],
+          },
+        },
+      ],
+    } as unknown as ProductWithRelations;
+
+    expect(
+      productMatchesTechnicalSpecs(product, {
+        material: ["cotton"],
+      })
+    ).toBe(true);
+  });
 });

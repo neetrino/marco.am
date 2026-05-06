@@ -81,6 +81,7 @@ async function buildCategoryFilter(
         const categoryConditions = allCategoryIds.flatMap((catId: string) => [
           { primaryCategoryId: catId },
           { categoryIds: { has: catId } },
+          { categories: { some: { id: catId } } },
         ]);
 
         return { OR: categoryConditions } as Prisma.ProductWhereInput;

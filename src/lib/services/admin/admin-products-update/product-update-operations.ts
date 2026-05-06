@@ -2,6 +2,7 @@ import { db } from "@white-shop/db";
 import { Prisma } from "@white-shop/db/prisma";
 import { logger } from "../../../utils/logger";
 import { resolveProductClass } from "@/lib/constants/product-class";
+import { ensureProductAttributesTable } from "../../../utils/db-ensure";
 import type { UpdateProductData } from "./types";
 import { collectVariantImages, buildProductUpdateData, updateProductTranslation, updateProductLabels, updateProductAttributes } from "./product-updater";
 import { updateOrCreateVariant } from "./variant-updater";
@@ -32,6 +33,13 @@ export async function updateProduct(
         title: "Product not found",
         detail: `Product with id '${productId}' does not exist`,
       };
+    }
+
+    if (data.attributeIds !== undefined) {
+      const tableReady = await ensureProductAttributesTable();
+      if (!tableReady) {
+        throw new Error("Product attributes table is not available");
+      }
     }
 
     // Execute everything in a transaction for atomicity and speed

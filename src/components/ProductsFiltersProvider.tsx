@@ -9,8 +9,11 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { apiClient } from '../lib/api-client';
 import { getStoredLanguage } from '../lib/language';
+import { buildTechnicalFilterQuerySignature } from '@/lib/services/products-technical-filters';
+import type { TechnicalSpecFacet } from '@/lib/services/products-technical-filters';
 
 export interface ColorOption {
   value: string;
@@ -51,6 +54,7 @@ export interface ProductsFiltersData {
   sizes: SizeOption[];
   brands: BrandOption[];
   categories: CategoryFilterOption[];
+  attributeFacets: TechnicalSpecFacet[];
   priceRange: PriceRangeOption;
 }
 
@@ -68,6 +72,7 @@ const DEFAULT_FILTERS: ProductsFiltersData = {
   sizes: [],
   brands: [],
   categories: [],
+  attributeFacets: [],
   priceRange: { min: 0, max: 0, stepSize: null, stepSizePerCurrency: null },
 };
 
@@ -77,6 +82,7 @@ function mergeFilterPayload(payload: ProductsFiltersData): ProductsFiltersData {
     sizes: payload.sizes ?? [],
     brands: payload.brands ?? [],
     categories: payload.categories ?? [],
+    attributeFacets: payload.attributeFacets ?? [],
     priceRange: payload.priceRange ?? DEFAULT_FILTERS.priceRange,
   };
 }
@@ -84,14 +90,15 @@ function mergeFilterPayload(payload: ProductsFiltersData): ProductsFiltersData {
 interface ProductsFiltersProviderProps {
   category?: string;
   search?: string;
+  filter?: string;
   minPrice?: string;
   maxPrice?: string;
   /**
    * When the PLP prefetches filters on the server, pass the payload plus the same key
-   * built from category/search/min/max + language so the first client /filters round-trip is skipped.
+   * built from category/search/min/max + language + technical filter signature so the first client /filters round-trip is skipped.
    */
   initialFiltersData?: ProductsFiltersData | null;
-  /** Must match `getStoredLanguage()` order: category|search|minPrice|maxPrice|lang */
+  /** Must match client: category|search|minPrice|maxPrice|lang|technicalFilterSignature|filter */
   initialFiltersKey?: string | null;
   children: ReactNode;
 }
@@ -99,12 +106,14 @@ interface ProductsFiltersProviderProps {
 export function ProductsFiltersProvider({
   category,
   search,
+  filter,
   minPrice,
   maxPrice,
   initialFiltersData = null,
   initialFiltersKey = null,
   children,
 }: ProductsFiltersProviderProps) {
+  const searchParams = useSearchParams();
   const [data, setData] = useState<ProductsFiltersData | null>(() =>
     initialFiltersData && initialFiltersKey
       ? mergeFilterPayload(initialFiltersData)
@@ -115,6 +124,11 @@ export function ProductsFiltersProvider({
   );
   const [error, setError] = useState(false);
 
+  const technicalSignatureFromUrl = useMemo(
+    () => buildTechnicalFilterQuerySignature(searchParams),
+    [searchParams],
+  );
+
   const fetchFilters = useCallback(async () => {
     setLoading(true);
     setError(false);
@@ -123,14 +137,21 @@ export function ProductsFiltersProvider({
       const params: Record<string, string> = { lang };
       if (category) params.category = category;
       if (search) params.search = search;
+      if (filter) params.filter = filter;
       if (minPrice) params.minPrice = minPrice;
       if (maxPrice) params.maxPrice = maxPrice;
+      searchParams.forEach((v, k) => {
+        if (k.startsWith('spec.') || k === 'specs') {
+          params[k] = v;
+        }
+      });
       const res = await apiClient.get<ProductsFiltersData>('/api/v1/products/filters', { params });
       setData({
         colors: res.colors ?? [],
         sizes: res.sizes ?? [],
         brands: res.brands ?? [],
         categories: res.categories ?? [],
+        attributeFacets: res.attributeFacets ?? [],
         priceRange: res.priceRange ?? DEFAULT_FILTERS.priceRange,
       });
     } catch {
@@ -139,11 +160,11 @@ export function ProductsFiltersProvider({
     } finally {
       setLoading(false);
     }
-  }, [category, search, minPrice, maxPrice]);
+  }, [category, search, filter, minPrice, maxPrice, searchParams]);
 
   useEffect(() => {
     const lang = getStoredLanguage();
-    const clientKey = `${category ?? ''}|${search ?? ''}|${minPrice ?? ''}|${maxPrice ?? ''}|${lang}`;
+    const clientKey = `${category ?? ''}|${search ?? ''}|${minPrice ?? ''}|${maxPrice ?? ''}|${lang}|${technicalSignatureFromUrl}|${filter ?? ''}`;
     if (
       initialFiltersData &&
       initialFiltersKey &&
@@ -158,10 +179,12 @@ export function ProductsFiltersProvider({
   }, [
     category,
     search,
+    filter,
     minPrice,
     maxPrice,
     initialFiltersData,
     initialFiltersKey,
+    technicalSignatureFromUrl,
     fetchFilters,
   ]);
 

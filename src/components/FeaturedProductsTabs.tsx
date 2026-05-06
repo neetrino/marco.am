@@ -55,6 +55,11 @@ interface ProductsResponse {
   };
 }
 
+interface HomeBrandPartnersResponse {
+  sectionTitle: string;
+  brands: HomeBrandPartnerPublicItem[];
+}
+
 type FilterType = 'new' | 'featured' | 'bestseller';
 
 const TAB_ORDER: FilterType[] = ['new', 'bestseller', 'featured'];
@@ -158,6 +163,14 @@ async function fetchFeaturedNewVisualChunk(language: LanguageCode): Promise<Card
   return response.data ?? [];
 }
 
+async function fetchHomeBrandPartners(
+  language: LanguageCode,
+): Promise<HomeBrandPartnersResponse> {
+  return apiClient.get<HomeBrandPartnersResponse>('/api/v1/home/brand-partners', {
+    params: { locale: language },
+  });
+}
+
 function cardVisualRowsToStubProducts(rows: CardVisualRow[]): SpecialOfferProduct[] {
   return rows.map((row) => ({
     id: row.id,
@@ -243,6 +256,28 @@ export function FeaturedProductsTabs({
     /** Skip duplicate `/api/v1/products` right after SSR (react-hooks/purity disallows `Date.now()` in render). */
     refetchOnMount: initialForNewTab === undefined,
   });
+
+  const initialHomeBrandPartnersPayload =
+    language === serverLanguage && initialHomeBrandPartners !== null
+      ? {
+          sectionTitle: (initialHomeBrandPartnersSectionTitle ?? '').trim(),
+          brands: [...initialHomeBrandPartners],
+        }
+      : undefined;
+
+  const homeBrandPartnersQuery = useQuery({
+    queryKey: queryKeys.homeBrandPartners(language),
+    queryFn: () => fetchHomeBrandPartners(language),
+    staleTime: 300_000,
+    initialData: initialHomeBrandPartnersPayload,
+    placeholderData: (previous) => previous,
+  });
+
+  const resolvedHomeBrandPartners =
+    homeBrandPartnersQuery.data?.brands ?? initialHomeBrandPartners ?? null;
+  const resolvedHomeBrandPartnersSectionTitle = homeBrandPartnersQuery.data?.sectionTitle?.trim()
+    ? homeBrandPartnersQuery.data.sectionTitle.trim()
+    : null;
 
   const newStripVisualQuery = useQuery({
     queryKey: queryKeys.productsCardVisual('new', language, 1, HOME_PRODUCT_CHUNK_SIZE),
@@ -397,9 +432,9 @@ export function FeaturedProductsTabs({
             }
           }}
           homeBrandPartners={
-            initialHomeBrandPartners !== null ? [...initialHomeBrandPartners] : null
+            resolvedHomeBrandPartners !== null ? [...resolvedHomeBrandPartners] : null
           }
-          homeBrandPartnersSectionTitle={initialHomeBrandPartnersSectionTitle}
+          homeBrandPartnersSectionTitle={resolvedHomeBrandPartnersSectionTitle}
         />
       </div>
 

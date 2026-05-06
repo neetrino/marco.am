@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { AuthProvider } from '../lib/auth/AuthContext';
 import { CartSummaryProvider } from '../lib/cart/cart-summary-context';
 import { LanguagePreferenceCookieSync } from './LanguagePreferenceCookieSync';
+import { LanguageRouterRefresh } from './LanguageRouterRefresh';
 import { QueryProvider } from './QueryProvider';
 import { ToastContainer } from './Toast';
 import { ThemeProvider } from './theme/ThemeProvider';
@@ -19,6 +20,7 @@ export function ClientProviders({ children }: { children: ReactNode }) {
         <AuthProvider>
           <CartSummaryProvider>
             <LanguagePreferenceCookieSync />
+            <LanguageRouterRefresh />
             {children}
             <ToastContainer />
           </CartSummaryProvider>

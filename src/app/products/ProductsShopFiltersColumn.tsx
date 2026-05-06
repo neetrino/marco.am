@@ -1,14 +1,21 @@
+import { Suspense } from 'react';
 import { PriceFilter } from '@/components/PriceFilter';
 import { BrandFilter } from '@/components/BrandFilter';
 import { CategoryFilter } from '@/components/CategoryFilter';
 import { ColorFilter } from '@/components/ColorFilter';
+import { SizeFilter } from '@/components/SizeFilter';
+import { ShopAttributeFacetsFilter } from '@/components/ShopAttributeFacetsFilter';
 import { ProductsFiltersProvider } from '@/components/ProductsFiltersProvider';
 import { MobileFiltersDrawer } from '@/components/MobileFiltersDrawer';
 import { productsFiltersSectionFont } from '@/lib/products-filters-typography';
 import { t } from '@/lib/i18n';
 import type { LanguageCode } from '@/lib/language';
 import { MOBILE_FILTERS_EVENT } from '@/lib/events';
-import { getProductsFiltersCached } from '@/lib/cache/products-filters-redis';
+import {
+  getProductsFiltersCached,
+  searchParamsRecordToUrlSearchParams,
+} from '@/lib/cache/products-filters-redis';
+import { buildTechnicalFilterQuerySignature } from '@/lib/services/products-technical-filters';
 import type { ProductsPageSearchParams } from './products-page-search-params';
 
 export type ProductsShopFiltersColumnProps = {
@@ -17,6 +24,7 @@ export type ProductsShopFiltersColumnProps = {
   readonly params: {
     category?: string;
     search?: string;
+    filter?: string;
     minPrice?: string;
     maxPrice?: string;
     limit?: string;
@@ -38,18 +46,24 @@ export async function ProductsShopFiltersColumn({
   const filtersPayload = await getProductsFiltersCached({
     category: params.category?.trim() || undefined,
     search: params.search?.trim() || undefined,
+    filter: params.filter?.trim() || undefined,
     minPrice: filtersMinPrice,
     maxPrice: filtersMaxPrice,
     lang: language,
     rawSearchParams: raw,
   });
 
-  const initialFiltersKey = `${params.category ?? ''}|${params.search ?? ''}|${params.minPrice ?? ''}|${params.maxPrice ?? ''}|${language}`;
+  const technicalFilterSignature = buildTechnicalFilterQuerySignature(
+    searchParamsRecordToUrlSearchParams(raw),
+  );
+  const initialFiltersKey = `${params.category ?? ''}|${params.search ?? ''}|${params.minPrice ?? ''}|${params.maxPrice ?? ''}|${language}|${technicalFilterSignature}|${params.filter ?? ''}`;
 
   return (
+    <Suspense fallback={productsShopFiltersColumnSkeletonAria()}>
     <ProductsFiltersProvider
       category={params.category}
       search={params.search}
+      filter={params.filter}
       minPrice={params.minPrice}
       maxPrice={params.maxPrice}
       initialFiltersData={filtersPayload}
@@ -91,6 +105,13 @@ export async function ProductsShopFiltersColumn({
             minPrice={params.minPrice}
             maxPrice={params.maxPrice}
           />
+          <SizeFilter
+            category={params.category}
+            search={params.search}
+            minPrice={params.minPrice}
+            maxPrice={params.maxPrice}
+          />
+          <ShopAttributeFacetsFilter />
         </div>
       </aside>
 
@@ -128,9 +149,19 @@ export async function ProductsShopFiltersColumn({
             minPrice={params.minPrice}
             maxPrice={params.maxPrice}
           />
+          <div className="h-6 shrink-0" aria-hidden />
+          <SizeFilter
+            category={params.category}
+            search={params.search}
+            minPrice={params.minPrice}
+            maxPrice={params.maxPrice}
+          />
+          <div className="h-6 shrink-0" aria-hidden />
+          <ShopAttributeFacetsFilter />
         </div>
       </MobileFiltersDrawer>
     </ProductsFiltersProvider>
+    </Suspense>
   );
 }
 

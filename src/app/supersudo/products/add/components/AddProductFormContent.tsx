@@ -89,6 +89,7 @@ interface AddProductFormContentProps {
   onAttributesDropdownToggle: () => void;
   onAttributeToggle: (attributeId: string, checked: boolean) => void;
   onAttributeRemove: (attributeId: string) => void;
+  onAttributeValuesOpen: (attributeId: string) => void;
   onVariantUpdate: (variants: GeneratedVariant[] | ((prev: GeneratedVariant[]) => GeneratedVariant[])) => void;
   onVariantDelete: (variantId: string) => void;
   onVariantAdd: () => void;
@@ -155,6 +156,7 @@ export function AddProductFormContent({
   onAttributesDropdownToggle,
   onAttributeToggle,
   onAttributeRemove,
+  onAttributeValuesOpen,
   onVariantUpdate,
   onVariantDelete,
   onVariantAdd,
@@ -247,6 +249,7 @@ export function AddProductFormContent({
             onAttributesDropdownToggle={onAttributesDropdownToggle}
             onAttributeToggle={onAttributeToggle}
             onAttributeRemove={onAttributeRemove}
+            onAttributeValuesOpen={onAttributeValuesOpen}
           />
         )}
 

@@ -21,13 +21,21 @@ export function useVariantGeneration({
   selectedAttributesForVariants,
   selectedAttributeValueIds,
   attributes,
-  generatedVariants: _generatedVariants,
+  generatedVariants,
   formDataSlug,
   formDataTitle,
   isEditMode,
   productId,
   setGeneratedVariants,
 }: UseVariantGenerationProps) {
+  const areValueIdsEqual = (left: string[], right: string[]) => {
+    if (left.length !== right.length) return false;
+    for (let index = 0; index < left.length; index += 1) {
+      if (left[index] !== right[index]) return false;
+    }
+    return true;
+  };
+
   const generateVariantsFromAttributes = () => {
     logger.devLog('🚀 [VARIANT BUILDER] Generating single variant with all attributes...');
 
@@ -43,6 +51,9 @@ export function useVariantGeneration({
       const existingAutoVariant = prev.find((v) => v.id === 'variant-all');
 
       if (manuallyAddedVariants.length > 0) {
+        if (!existingAutoVariant && manuallyAddedVariants.length === prev.length) {
+          return prev;
+        }
         logger.devLog('✅ [VARIANT BUILDER] Manual variants exist, skipping auto-generated variant');
         return manuallyAddedVariants;
       }
@@ -53,6 +64,7 @@ export function useVariantGeneration({
         const selectedIds = selectedAttributeValueIds[attributeId] || [];
         allSelectedValueIds.push(...selectedIds);
       });
+      allSelectedValueIds.sort();
 
       const baseSlug = formDataSlug || generateSlug(formDataTitle) || 'PROD';
       let sku = `${baseSlug}`;
@@ -87,6 +99,19 @@ export function useVariantGeneration({
         image: existingAutoVariant?.image || null,
       };
 
+      if (
+        prev.length === 1 &&
+        prev[0]?.id === 'variant-all' &&
+        areValueIdsEqual(prev[0].selectedValueIds, autoVariant.selectedValueIds) &&
+        prev[0].price === autoVariant.price &&
+        prev[0].compareAtPrice === autoVariant.compareAtPrice &&
+        prev[0].stock === autoVariant.stock &&
+        prev[0].sku === autoVariant.sku &&
+        prev[0].image === autoVariant.image
+      ) {
+        return prev;
+      }
+
       const result = [autoVariant];
       logger.devLog('✅ [VARIANT BUILDER] Variants updated:', {
         manuallyAdded: 0,
@@ -109,7 +134,16 @@ export function useVariantGeneration({
   };
 
   useEffect(() => {
-    if (isEditMode && productId && (window as any).__productVariantsToConvert) {
+    const hasPendingInitialConversion = Boolean(
+      isEditMode &&
+      productId &&
+      (window as any).__productVariantsToConvert &&
+      selectedAttributesForVariants.size === 0
+    );
+
+    // Wait only for initial conversion from existing DB variants.
+    // If user already picked attributes, generate live rows immediately.
+    if (hasPendingInitialConversion) {
       return;
     }
 
@@ -121,7 +155,7 @@ export function useVariantGeneration({
       }
     }
      
-  }, [selectedAttributesForVariants, selectedAttributeValueIds, attributes, formDataSlug, formDataTitle, isEditMode, productId]);
+  }, [selectedAttributesForVariants, selectedAttributeValueIds, attributes, formDataSlug, formDataTitle, isEditMode, productId, generatedVariants]);
 
   return {
     generateVariantsFromAttributes,

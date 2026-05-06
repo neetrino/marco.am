@@ -1,5 +1,5 @@
 import { Card } from '@shop/ui';
-import { UserAvatar } from '../../components/UserAvatar';
+import Image from 'next/image';
 import type { UserProfile, ProfileTab, ProfileTabConfig } from './types';
 
 interface ProfileHeaderProps {
@@ -15,12 +15,16 @@ export function ProfileHeader({ profile, tabs, activeTab, onTabChange, t }: Prof
     <div className="flex w-full flex-col gap-4">
       <Card className="p-4">
         <div className="flex flex-row items-center gap-4">
-          <UserAvatar
-            firstName={profile?.firstName}
-            lastName={profile?.lastName}
-            size="lg"
-            className="flex-shrink-0"
-          />
+          <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-full border border-slate-200 bg-gradient-to-br from-slate-100 to-slate-300">
+            <Image
+              src="/assets/brand/marco-group-logo.webp"
+              alt="Marco Group logo"
+              fill
+              sizes="96px"
+              className="object-contain scale-150 translate-y-1"
+              priority
+            />
+          </div>
 
           <div className="min-w-0 flex-1 break-words">
             <h1 className="mb-1 break-words text-lg font-bold text-gray-900">
