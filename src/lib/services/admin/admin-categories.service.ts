@@ -29,6 +29,7 @@ type CategoryResponseItem = {
   seoDescription: string | null;
   parentId: string | null;
   requiresSizes: boolean;
+  translations: Partial<Record<SupportedCategoryLocale, string>>;
 };
 
 type ProblemError = {
@@ -41,6 +42,7 @@ type ProblemError = {
 type CategoryInput = {
   title: string;
   locale?: string;
+  translations?: Partial<Record<SupportedCategoryLocale, string>>;
   parentId?: string;
   requiresSizes?: boolean;
   seoTitle?: string;
@@ -50,6 +52,7 @@ type CategoryInput = {
 type CategoryUpdateInput = {
   title?: string;
   locale?: string;
+  translations?: Partial<Record<SupportedCategoryLocale, string>>;
   parentId?: string | null;
   requiresSizes?: boolean;
   subcategoryIds?: string[];
@@ -57,8 +60,11 @@ type CategoryUpdateInput = {
   seoDescription?: string | null;
 };
 
+type SupportedCategoryLocale = "hy" | "en" | "ru";
+
 class AdminCategoriesService {
   private readonly defaultLocale = "en";
+  private readonly supportedLocales: SupportedCategoryLocale[] = ["hy", "en", "ru"];
 
   private buildProblemError(status: number, title: string, detail: string): ProblemError {
     const typeByStatus = {
@@ -71,7 +77,28 @@ class AdminCategoriesService {
   }
 
   private resolveTranslation(translations: CategoryTranslation[], locale: string): CategoryTranslation | null {
-    return translations.find((translation) => translation.locale === locale) ?? translations[0] ?? null;
+    const normalizedLocale = locale.trim().toLowerCase();
+    return (
+      translations.find((translation) => translation.locale === normalizedLocale) ??
+      translations.find((translation) => translation.locale === this.defaultLocale) ??
+      translations.find((translation) => translation.locale === "hy") ??
+      translations.find((translation) => translation.locale === "ru") ??
+      translations[0] ??
+      null
+    );
+  }
+
+  private mapTranslationsByLocale(
+    translations: CategoryTranslation[],
+  ): Partial<Record<SupportedCategoryLocale, string>> {
+    const result: Partial<Record<SupportedCategoryLocale, string>> = {};
+    translations.forEach((translation) => {
+      const locale = translation.locale as SupportedCategoryLocale;
+      if (this.supportedLocales.includes(locale)) {
+        result[locale] = translation.title;
+      }
+    });
+    return result;
   }
 
   private mapCategory(category: CategoryNode, locale: string): CategoryResponseItem {
@@ -85,6 +112,7 @@ class AdminCategoriesService {
       seoDescription: translation?.seoDescription ?? null,
       parentId: category.parentId,
       requiresSizes: category.requiresSizes,
+      translations: this.mapTranslationsByLocale(category.translations),
     };
   }
 
@@ -116,6 +144,40 @@ class AdminCategoriesService {
 
     const normalized = value.trim();
     return normalized.length > 0 ? normalized : null;
+  }
+
+  private normalizeLocalizedTitles(
+    translations?: Partial<Record<SupportedCategoryLocale, string>>,
+  ): Partial<Record<SupportedCategoryLocale, string>> {
+    if (!translations) {
+      return {};
+    }
+    const normalized: Partial<Record<SupportedCategoryLocale, string>> = {};
+    this.supportedLocales.forEach((locale) => {
+      const value = translations[locale];
+      if (typeof value !== "string") {
+        return;
+      }
+      const trimmed = value.trim();
+      if (trimmed.length > 0) {
+        normalized[locale] = trimmed;
+      }
+    });
+    return normalized;
+  }
+
+  private buildCategoryTranslationsInput(args: {
+    locale?: string;
+    title?: string;
+    translations?: Partial<Record<SupportedCategoryLocale, string>>;
+  }): Partial<Record<SupportedCategoryLocale, string>> {
+    const normalized = this.normalizeLocalizedTitles(args.translations);
+    const legacyTitle = args.title?.trim();
+    const normalizedLocale = this.normalizeLocale(args.locale) as SupportedCategoryLocale;
+    if (legacyTitle && this.supportedLocales.includes(normalizedLocale)) {
+      normalized[normalizedLocale] = legacyTitle;
+    }
+    return normalized;
   }
 
   /**
@@ -327,9 +389,16 @@ class AdminCategoriesService {
    */
   async createCategory(data: CategoryInput) {
     const locale = this.normalizeLocale(data.locale);
-    const normalizedTitle = this.normalizeTitle(data.title);
+    const translationTitles = this.buildCategoryTranslationsInput({
+      locale: data.locale,
+      title: data.title,
+      translations: data.translations,
+    });
+    const entries = Object.entries(translationTitles) as Array<[SupportedCategoryLocale, string]>;
+    const primaryLocale = entries[0]?.[0] ?? (locale as SupportedCategoryLocale);
+    const primaryTitle = entries[0]?.[1] ?? this.normalizeTitle(data.title);
 
-    if (!normalizedTitle) {
+    if (!primaryTitle) {
       throw this.buildProblemError(400, "Invalid title", "Category title cannot be empty");
     }
 
@@ -337,7 +406,7 @@ class AdminCategoriesService {
       await this.ensureParentExists(data.parentId);
     }
 
-    const slugFromTitle = toSlug(normalizedTitle);
+    const slugFromTitle = toSlug(primaryTitle);
     const provisionalSlug =
       slugFromTitle.length > 0
         ? slugFromTitle
@@ -351,7 +420,7 @@ class AdminCategoriesService {
         translations: {
           create: {
             locale,
-            title: normalizedTitle,
+            title: primaryTitle,
             slug: provisionalSlug,
             fullPath: provisionalSlug,
             seoTitle: this.normalizeOptionalText(data.seoTitle),
@@ -364,7 +433,7 @@ class AdminCategoriesService {
     if (slugFromTitle.length === 0) {
       const fallback = this.stableSlugFromCategoryId(category.id);
       const createdTr = await db.categoryTranslation.findFirst({
-        where: { categoryId: category.id, locale },
+        where: { categoryId: category.id, locale: primaryLocale },
       });
       if (createdTr) {
         await db.categoryTranslation.update({
@@ -373,6 +442,49 @@ class AdminCategoriesService {
         });
       }
     }
+
+    const titleForMissing = primaryTitle;
+    const allTitles: Record<SupportedCategoryLocale, string> = {
+      hy: translationTitles.hy ?? titleForMissing,
+      en: translationTitles.en ?? titleForMissing,
+      ru: translationTitles.ru ?? titleForMissing,
+    };
+    await Promise.all(
+      this.supportedLocales.map(async (supportedLocale) => {
+        const existing = await db.categoryTranslation.findFirst({
+          where: {
+            categoryId: category.id,
+            locale: supportedLocale,
+          },
+        });
+        const nextTitle = allTitles[supportedLocale];
+        if (!nextTitle) {
+          return;
+        }
+        if (existing) {
+          await db.categoryTranslation.update({
+            where: { id: existing.id },
+            data: {
+              title: nextTitle,
+              slug: this.slugFromTitleOrCategoryId(nextTitle, category.id),
+            },
+          });
+          return;
+        }
+        const slug = this.slugFromTitleOrCategoryId(nextTitle, category.id);
+        await db.categoryTranslation.create({
+          data: {
+            categoryId: category.id,
+            locale: supportedLocale,
+            title: nextTitle,
+            slug,
+            fullPath: slug,
+            seoTitle: this.normalizeOptionalText(data.seoTitle),
+            seoDescription: this.normalizeOptionalText(data.seoDescription),
+          },
+        });
+      }),
+    );
 
     await this.rebuildFullPathForSubtree(category.id);
     const reloaded = await this.loadCategoryWithChildren(category.id);
@@ -474,10 +586,17 @@ class AdminCategoriesService {
       throw this.buildProblemError(400, "Invalid title", "Category title cannot be empty");
     }
 
+    const translationTitles = this.buildCategoryTranslationsInput({
+      locale: data.locale,
+      title: data.title,
+      translations: data.translations,
+    });
+    const hasBulkTranslations = Object.keys(translationTitles).length > 0;
     const hasTranslationPayload =
       normalizedTitle !== undefined ||
       data.seoTitle !== undefined ||
-      data.seoDescription !== undefined;
+      data.seoDescription !== undefined ||
+      hasBulkTranslations;
     const normalizedSubcategoryIds =
       data.subcategoryIds !== undefined
         ? [...new Set(data.subcategoryIds.filter((id) => id && id !== categoryId))]
@@ -516,41 +635,59 @@ class AdminCategoriesService {
       }
 
       if (hasTranslationPayload) {
-        const existingTranslation = category.translations.find(
-          (translation) => translation.locale === locale,
-        );
+        const normalizedSeoTitle = this.normalizeOptionalText(data.seoTitle ?? undefined);
+        const normalizedSeoDescription = this.normalizeOptionalText(data.seoDescription ?? undefined);
+        const targetLocales = hasBulkTranslations
+          ? this.supportedLocales.filter((supportedLocale) => translationTitles[supportedLocale])
+          : [locale as SupportedCategoryLocale];
 
-        if (!existingTranslation && normalizedTitle === undefined) {
+        if (targetLocales.length === 0) {
           throw this.buildProblemError(
             400,
             "Missing title",
-            `Category translation for locale '${locale}' requires title when creating a new translation`,
+            "At least one localized category title is required",
           );
         }
 
-        const normalizedSeoTitle = this.normalizeOptionalText(data.seoTitle ?? undefined);
-        const normalizedSeoDescription = this.normalizeOptionalText(data.seoDescription ?? undefined);
+        for (const targetLocale of targetLocales) {
+          const nextTitle = translationTitles[targetLocale];
+          const existingTranslation = category.translations.find(
+            (translation) => translation.locale === targetLocale,
+          );
+          if (!existingTranslation && !nextTitle) {
+            continue;
+          }
 
-        if (existingTranslation) {
-          await transaction.categoryTranslation.update({
-            where: { id: existingTranslation.id },
-            data: {
-              title: normalizedTitle,
-              slug:
-                normalizedTitle !== undefined
-                  ? this.slugFromTitleOrCategoryId(normalizedTitle, categoryId)
-                  : undefined,
-              seoTitle: data.seoTitle !== undefined ? normalizedSeoTitle : undefined,
-              seoDescription: data.seoDescription !== undefined ? normalizedSeoDescription : undefined,
-            },
-          });
-        } else {
-          const slug = this.slugFromTitleOrCategoryId(normalizedTitle as string, categoryId);
+          if (existingTranslation) {
+            await transaction.categoryTranslation.update({
+              where: { id: existingTranslation.id },
+              data: {
+                title: nextTitle,
+                slug:
+                  nextTitle !== undefined
+                    ? this.slugFromTitleOrCategoryId(nextTitle, categoryId)
+                    : undefined,
+                seoTitle: data.seoTitle !== undefined ? normalizedSeoTitle : undefined,
+                seoDescription: data.seoDescription !== undefined ? normalizedSeoDescription : undefined,
+              },
+            });
+            continue;
+          }
+
+          if (!nextTitle) {
+            throw this.buildProblemError(
+              400,
+              "Missing title",
+              `Category translation for locale '${targetLocale}' requires title when creating a new translation`,
+            );
+          }
+
+          const slug = this.slugFromTitleOrCategoryId(nextTitle, categoryId);
           await transaction.categoryTranslation.create({
             data: {
               categoryId,
-              locale,
-              title: normalizedTitle as string,
+              locale: targetLocale,
+              title: nextTitle,
               slug,
               fullPath: slug,
               seoTitle: normalizedSeoTitle,

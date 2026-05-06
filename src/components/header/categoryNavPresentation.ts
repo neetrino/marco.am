@@ -593,8 +593,8 @@ export function resolveCategoryNavPresentation(
     };
   }
   return {
-    /** Prefer CMS/API title so admin edits show in header; Figma row supplies icon + marketing copy. */
-    title: apiTitle.trim() ? apiTitle : labelForLang(row.labels, lang),
+    /** For mapped header categories, use locale-specific labels so header always follows active language. */
+    title: labelForLang(row.labels, lang),
     icon: { kind: 'figma', src: row.figmaIconSrc },
     description: labelForLang(row.descriptions, lang),
     promo: {

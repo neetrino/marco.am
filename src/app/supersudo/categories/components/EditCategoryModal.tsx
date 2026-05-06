@@ -48,13 +48,43 @@ export function EditCategoryModal({
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t('admin.categories.categoryTitle')} *
+              {t('admin.categories.categoryTitleHy')} *
             </label>
             <Input
               type="text"
-              value={formData.title}
-              onChange={(e) => onFormDataChange({ ...formData, title: e.target.value })}
-              placeholder={t('admin.categories.categoryTitlePlaceholder')}
+              value={formData.titles.hy}
+              onChange={(e) =>
+                onFormDataChange({ ...formData, titles: { ...formData.titles, hy: e.target.value } })
+              }
+              placeholder={t('admin.categories.categoryTitlePlaceholderHy')}
+              className="w-full"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {t('admin.categories.categoryTitleEn')} *
+            </label>
+            <Input
+              type="text"
+              value={formData.titles.en}
+              onChange={(e) =>
+                onFormDataChange({ ...formData, titles: { ...formData.titles, en: e.target.value } })
+              }
+              placeholder={t('admin.categories.categoryTitlePlaceholderEn')}
+              className="w-full"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {t('admin.categories.categoryTitleRu')} *
+            </label>
+            <Input
+              type="text"
+              value={formData.titles.ru}
+              onChange={(e) =>
+                onFormDataChange({ ...formData, titles: { ...formData.titles, ru: e.target.value } })
+              }
+              placeholder={t('admin.categories.categoryTitlePlaceholderRu')}
               className="w-full"
             />
           </div>
@@ -157,7 +187,12 @@ export function EditCategoryModal({
           <Button
             variant="primary"
             onClick={onSubmit}
-            disabled={saving || !formData.title.trim()}
+            disabled={
+              saving ||
+              !formData.titles.hy.trim() ||
+              !formData.titles.en.trim() ||
+              !formData.titles.ru.trim()
+            }
             className="flex-1"
           >
             {saving ? t('admin.categories.updating') : t('admin.categories.updateCategory')}

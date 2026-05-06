@@ -2,6 +2,7 @@ export interface Category {
   id: string;
   slug: string;
   title: string;
+  translations?: Partial<Record<'hy' | 'en' | 'ru', string>>;
   fullPath?: string;
   seoTitle?: string | null;
   seoDescription?: string | null;
@@ -15,7 +16,11 @@ export interface CategoryWithLevel extends Category {
 }
 
 export interface CategoryFormData {
-  title: string;
+  titles: {
+    hy: string;
+    en: string;
+    ru: string;
+  };
   seoTitle: string;
   seoDescription: string;
   parentId: string;

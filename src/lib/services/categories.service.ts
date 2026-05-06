@@ -7,6 +7,28 @@ import { getCachedJson } from "@/lib/services/read-through-json-cache";
 const CATEGORY_TREE_CACHE_TTL_SEC = 300;
 
 class CategoriesService {
+  private resolveLocalizedCategoryTranslation(
+    translations: Array<{
+      locale: string;
+      slug: string;
+      title: string;
+      fullPath: string;
+      description?: string | null;
+      seoTitle?: string | null;
+      seoDescription?: string | null;
+    }>,
+    lang: string,
+  ) {
+    const requestedLocale = lang.trim().toLowerCase();
+    return (
+      translations.find((t) => t.locale === requestedLocale) ??
+      translations.find((t) => t.locale === "en") ??
+      translations.find((t) => t.locale === "hy") ??
+      translations.find((t) => t.locale === "ru") ??
+      translations[0]
+    );
+  }
+
   /**
    * Get category tree
    */
@@ -46,9 +68,7 @@ class CategoriesService {
       parentId: string | null;
       translations: Array<{ locale: string; slug: string; title: string; fullPath: string }>;
     }) => {
-      const translation =
-        category.translations.find((t: { locale: string }) => t.locale === lang) ||
-        category.translations[0];
+      const translation = this.resolveLocalizedCategoryTranslation(category.translations, lang);
       if (!translation) return;
 
       const categoryData = {
@@ -145,12 +165,9 @@ class CategoriesService {
       };
     }
 
-    const translation =
-      category.translations.find((t: { locale: string }) => t.locale === lang) ||
-      category.translations[0];
+    const translation = this.resolveLocalizedCategoryTranslation(category.translations, lang);
     const parentTranslation = category.parent
-      ? category.parent.translations.find((t: { locale: string }) => t.locale === lang) ||
-        category.parent.translations[0]
+      ? this.resolveLocalizedCategoryTranslation(category.parent.translations, lang)
       : null;
 
     return {
