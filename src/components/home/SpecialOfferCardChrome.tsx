@@ -24,7 +24,7 @@ import {
 interface SpecialOfferWarrantyBadgeProps {
   line1: string;
   line2: string;
-  layout?: 'default' | 'mobileGrid';
+  layout?: 'default' | 'mobileGrid' | 'homeGrid';
 }
 
 export function SpecialOfferWarrantyBadge({
@@ -69,7 +69,7 @@ interface SpecialOfferActionsStackProps {
   compareAria: string;
   onWishlist: (e: MouseEvent) => void;
   onCompare: (e: MouseEvent) => void;
-  layout?: 'default' | 'mobileGrid';
+  layout?: 'default' | 'mobileGrid' | 'homeGrid';
   /** Pre-paint listing shells — hide hit targets without removing layout. */
   disabled?: boolean;
 }

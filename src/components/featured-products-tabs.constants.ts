@@ -39,6 +39,12 @@ export const FEATURED_PRODUCTS_TITLE_TO_GRID_GAP_PX = 42;
 export const FEATURED_PRODUCTS_TITLE_INSET_LEFT_PX = 16;
 
 /**
+ * Mobile «Նորույթներ»: one horizontal snap page = 2 rows × 2 columns (four cards).
+ * Special offers mobile rail uses two cards per page (`HOME_PRODUCT_MOBILE_RAIL_CARDS_PER_PAGE`).
+ */
+export const FEATURED_NEW_ARRIVALS_MOBILE_RAIL_CARDS_PER_PAGE = 4;
+
+/**
  * Desktop «Նորույթներ»: one horizontal page = 2 rows × 4 columns (8 cards).
  */
 export const FEATURED_PRODUCTS_DESKTOP_PAGE_SIZE = 8;

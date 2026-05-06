@@ -44,20 +44,19 @@ import {
   SPECIAL_OFFERS_SECTION_RAIL_TO_PAGINATION_GAP_DESKTOP_PX,
   SPECIAL_OFFERS_SECTION_RAIL_TO_PAGINATION_GAP_MOBILE_PX,
   SPECIAL_OFFERS_CTA_LINK_CLASS,
+  HOME_PRODUCT_MOBILE_RAIL_CARDS_PER_PAGE,
   SPECIAL_OFFERS_MOBILE_GRID_COLUMN_GAP_PX,
-  SPECIAL_OFFERS_MOBILE_GRID_PAGE_SIZE,
-  SPECIAL_OFFERS_MOBILE_GRID_ROW_GAP_PX,
   SPECIAL_OFFERS_MOBILE_GRID_SCROLLER_PADDING_BOTTOM_PX,
   SPECIAL_OFFERS_MOBILE_PAGINATION_PAGE_COUNT,
   SPECIAL_OFFERS_MOBILE_SCROLLER_CLASS,
   SPECIAL_OFFERS_SCROLLER_PADDING_BOTTOM_DESKTOP_PX,
 } from './home-special-offers.constants';
+import { homeProductMobileRailPageSlideStyles } from './home-product-mobile-rail-layout';
 import { HOME_PAGE_SECTION_SHELL_CLASS } from './home-page-section-shell.constants';
 import { useIsMaxMd } from './use-is-max-md';
+import { useHomeMobileProductRailScrollport } from './useHomeMobileProductRailScrollport';
 import { useSpecialOffersCarousel } from './useSpecialOffersCarousel';
 import { SPECIAL_OFFERS_PRODUCTS_LIMIT } from '@/constants/specialOffersSection';
-
-const HOME_CARD_COMPACT_MAX_WIDTH_PX = 168;
 
 /** Same horizontal shell as «Նորույթներ» (`FeaturedProductsTabs`) for matching card width on mobile. */
 const SECTION_CONTAINER_CLASS = HOME_PAGE_SECTION_SHELL_CLASS;
@@ -78,6 +77,12 @@ const PAGINATION_ARIA_KEYS = [
   'page_second_aria',
   'page_third_aria',
 ] as const;
+
+function specialOffersPaginationAriaPath(dotIndex: number): string {
+  return dotIndex < PAGINATION_ARIA_KEYS.length
+    ? `home.special_offers.${PAGINATION_ARIA_KEYS[dotIndex]}`
+    : 'home.special_offers.pagination_aria';
+}
 
 interface ProductsResponse {
   data: SpecialOfferProduct[];
@@ -130,17 +135,25 @@ export function HomeSpecialOffersSection({
   const isRailVisible = !error && (loading || products.length > 0);
 
   const isMaxMd = useIsMaxMd();
-  const paginationPageCount = isMaxMd
-    ? SPECIAL_OFFERS_MOBILE_PAGINATION_PAGE_COUNT
+
+  const productChunks = useMemo(() => {
+    const chunks = chunkArray(products, HOME_PRODUCT_MOBILE_RAIL_CARDS_PER_PAGE);
+    return padChunksToMinimumCount(chunks, SPECIAL_OFFERS_MOBILE_PAGINATION_PAGE_COUNT);
+  }, [products]);
+
+  const scrollPaginationPageCount = isMaxMd
+    ? Math.max(1, productChunks.length)
     : 2;
 
   const { scrollerRef, railSlotWidthPx, activePage, scrollPrev, scrollNext, scrollToPage } =
-    useSpecialOffersCarousel({ isRailVisible, paginationPageCount });
+    useSpecialOffersCarousel({ isRailVisible, paginationPageCount: scrollPaginationPageCount });
 
-  const productChunks = useMemo(() => {
-    const chunks = chunkArray(products, SPECIAL_OFFERS_MOBILE_GRID_PAGE_SIZE);
-    return padChunksToMinimumCount(chunks, SPECIAL_OFFERS_MOBILE_PAGINATION_PAGE_COUNT);
-  }, [products]);
+  const setMobileProductScrollerRef = useHomeMobileProductRailScrollport(
+    isMaxMd && isRailVisible,
+    scrollerRef,
+  );
+
+  const mobileProductPageSlideStyle = homeProductMobileRailPageSlideStyles();
 
   useEffect(() => {
     const updateLanguage = () => {
@@ -308,10 +321,10 @@ export function HomeSpecialOffersSection({
         ) : (
           <>
             <div
-              ref={scrollerRef}
+              ref={setMobileProductScrollerRef}
               className={SPECIAL_OFFERS_MOBILE_SCROLLER_CLASS}
               style={{
-                gap: `${SPECIAL_OFFERS_CARD_GAP_PX}px`,
+                gap: isMaxMd ? 0 : `${SPECIAL_OFFERS_CARD_GAP_PX}px`,
                 scrollSnapType: 'x mandatory',
                 paddingBottom: isMaxMd
                   ? SPECIAL_OFFERS_MOBILE_GRID_SCROLLER_PADDING_BOTTOM_PX
@@ -321,14 +334,15 @@ export function HomeSpecialOffersSection({
               {loading ? (
                 isMaxMd ? (
                   <div
-                    className="grid min-h-0 min-w-full shrink-0 snap-start grid-cols-2 justify-items-center"
+                    className="grid min-h-0 shrink-0 snap-start snap-always grid-cols-2 justify-items-stretch"
                     style={{
+                      ...mobileProductPageSlideStyle,
                       columnGap: SPECIAL_OFFERS_MOBILE_GRID_COLUMN_GAP_PX,
-                      rowGap: SPECIAL_OFFERS_MOBILE_GRID_ROW_GAP_PX,
+                      rowGap: 0,
                     }}
                   >
-                    {Array.from({ length: SPECIAL_OFFERS_MOBILE_GRID_PAGE_SIZE }).map((_, i) => (
-                      <div key={i} className="min-w-0">
+                    {Array.from({ length: HOME_PRODUCT_MOBILE_RAIL_CARDS_PER_PAGE }).map((_, i) => (
+                      <div key={i} className="flex min-h-0 w-full min-w-0">
                         <div
                           className="h-full w-full min-w-0 animate-pulse bg-gray-200"
                           style={{
@@ -357,27 +371,27 @@ export function HomeSpecialOffersSection({
                 productChunks.map((chunk, pageIndex) => (
                   <div
                     key={`page-${pageIndex}`}
-                    className="grid min-h-0 min-w-full shrink-0 snap-start grid-cols-2 justify-items-center"
+                    className="grid min-h-0 shrink-0 snap-start snap-always grid-cols-2 justify-items-stretch"
                     style={{
+                      ...mobileProductPageSlideStyle,
                       columnGap: SPECIAL_OFFERS_MOBILE_GRID_COLUMN_GAP_PX,
-                      rowGap: SPECIAL_OFFERS_MOBILE_GRID_ROW_GAP_PX,
+                      rowGap: 0,
                     }}
                   >
-                    {padChunkToSize(chunk, SPECIAL_OFFERS_MOBILE_GRID_PAGE_SIZE).map(
+                    {padChunkToSize(chunk, HOME_PRODUCT_MOBILE_RAIL_CARDS_PER_PAGE).map(
                       (product, slotIndex) => (
                         <div
                           key={`special-offers-slot-${pageIndex}-${slotIndex}-${product?.id ?? 'empty'}`}
-                          className="min-w-0"
+                          className="flex min-h-0 w-full min-w-0"
                         >
                           {product ? (
                             <SpecialOfferCard
                               layout="mobileGrid"
                               product={product}
-                              maxWidthPx={HOME_CARD_COMPACT_MAX_WIDTH_PX}
                             />
                           ) : (
                             <div
-                              className="min-w-0"
+                              className="w-full min-w-0"
                               style={{ minHeight: SPECIAL_OFFERS_CARD_HEIGHT_PX }}
                               aria-hidden
                             />
@@ -390,10 +404,7 @@ export function HomeSpecialOffersSection({
               ) : (
                 products.map((product, index) => (
                   <div key={`special-offers-product-${product.id}-${index}`} className={railSlotClassName} style={railSlotStyle}>
-                    <SpecialOfferCard
-                      product={product}
-                      maxWidthPx={isMaxMd ? HOME_CARD_COMPACT_MAX_WIDTH_PX : undefined}
-                    />
+                    <SpecialOfferCard product={product} />
                   </div>
                 ))
               )}
@@ -410,7 +421,7 @@ export function HomeSpecialOffersSection({
                   role="tablist"
                   aria-label={tr('home.special_offers.pagination_aria')}
                 >
-                  {Array.from({ length: paginationPageCount }, (_, dotIndex) => (
+                  {Array.from({ length: scrollPaginationPageCount }, (_, dotIndex) => (
                     <button
                       key={`special-offers-pagination-${dotIndex}`}
                       type="button"
@@ -423,9 +434,7 @@ export function HomeSpecialOffersSection({
                         activePage === dotIndex ? 'bg-[#181111] dark:!bg-[#ffca03]' : 'bg-gray-300'
                       }`}
                       style={paginationDotStyle}
-                      aria-label={tr(
-                        `home.special_offers.${PAGINATION_ARIA_KEYS[dotIndex]}`,
-                      )}
+                      aria-label={tr(specialOffersPaginationAriaPath(dotIndex))}
                     />
                   ))}
                 </div>

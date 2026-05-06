@@ -26,7 +26,7 @@ import {
 import { HOME_PRODUCT_CHUNK_SIZE } from '../../constants/homeProductChunks';
 import type { SpecialOfferProduct } from './special-offer-product.types';
 
-const DESKTOP_PAGE_GRID_CLASS = `grid min-h-0 min-w-full shrink-0 snap-start grid-cols-4 gap-x-3 md:gap-x-6 ${FEATURED_PRODUCTS_GRID_GAP_Y_CLASS}`;
+const DESKTOP_PAGE_GRID_CLASS = `grid min-h-0 min-w-full shrink-0 snap-start grid-cols-4 justify-items-stretch gap-x-3 md:gap-x-6 ${FEATURED_PRODUCTS_GRID_GAP_Y_CLASS}`;
 
 const featuredFooterDotStyle = {
   width: SPECIAL_OFFERS_PAGINATION_DOT_SIZE_PX,
@@ -91,7 +91,7 @@ export function FeaturedNewArrivalsDesktopTwoRowScroller({
           ? Array.from({ length: skeletonPageCount }, (_, pageIndex) => (
               <div key={`featured-desktop-sk-page-${pageIndex}`} className={DESKTOP_PAGE_GRID_CLASS}>
                 {Array.from({ length: FEATURED_PRODUCTS_DESKTOP_PAGE_SIZE }).map((__, i) => (
-                  <div key={`featured-desktop-sk-${pageIndex}-${i}`} className="min-w-0">
+                  <div key={`featured-desktop-sk-${pageIndex}-${i}`} className="flex min-h-0 w-full min-w-0">
                     <div className="w-full animate-pulse bg-gray-200" style={skeletonCellStyle} />
                   </div>
                 ))}
@@ -102,12 +102,12 @@ export function FeaturedNewArrivalsDesktopTwoRowScroller({
                 {padChunkToSize(pageProducts, FEATURED_PRODUCTS_DESKTOP_PAGE_SIZE).map((product, slotIndex) => (
                   <div
                     key={`featured-desktop-slot-${pageIndex}-${slotIndex}-${product?.id ?? 'empty'}`}
-                    className="min-w-0"
+                    className="flex min-h-0 w-full min-w-0"
                   >
                     {product ? (
                       <SpecialOfferCard
                         product={product}
-                        layout="default"
+                        layout="homeGrid"
                         imagePriority={
                           pageIndex === 0 &&
                           slotIndex < HOME_PRODUCT_CHUNK_SIZE &&
@@ -118,7 +118,11 @@ export function FeaturedNewArrivalsDesktopTwoRowScroller({
                         }
                       />
                     ) : (
-                      <div className="min-w-0" style={{ minHeight: SPECIAL_OFFERS_CARD_HEIGHT_PX }} aria-hidden />
+                      <div
+                        className="w-full min-w-0"
+                        style={{ minHeight: SPECIAL_OFFERS_CARD_HEIGHT_PX }}
+                        aria-hidden
+                      />
                     )}
                   </div>
                 ))}

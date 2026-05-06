@@ -21,9 +21,17 @@ export const SPECIAL_OFFERS_CARD_GAP_PX = 24;
 export const SPECIAL_OFFERS_VISIBLE_COLUMNS = 4;
 
 /**
- * Mobile (`max-md`): 2×2 grid per horizontal slide — four product cards per page.
+ * Mobile brand partners grid / legacy chunk size (four logo slots per slide where used).
  */
 export const SPECIAL_OFFERS_MOBILE_GRID_PAGE_SIZE = 4;
+
+/**
+ * Mobile product rails (`HomeSpecialOffersSection`, «Նորույթներ»): one horizontal snap page = two cards in one row.
+ */
+export const HOME_PRODUCT_MOBILE_RAIL_CARDS_PER_PAGE = 2;
+
+/** Set on the scrollport by `useHomeMobileProductRailScrollport` — slide width in px (no %-of-flex bleed). */
+export const HOME_PRODUCT_MOBILE_RAIL_PAGE_WIDTH_CSS_VAR = '--hmpr-page-px';
 
 /** Dots under the rail — three segments (same pattern as REELS). */
 export const SPECIAL_OFFERS_MOBILE_PAGINATION_PAGE_COUNT = 3;
