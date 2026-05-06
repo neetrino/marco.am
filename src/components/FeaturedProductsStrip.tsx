@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 
 import { chunkArray, padChunksToMinimumCount } from '../lib/chunk-array';
 import { t } from '../lib/i18n';
@@ -59,6 +59,10 @@ type FeaturedProductsStripProps = {
   homeBrandPartners: HomeBrandPartnerPublicItem[] | null;
   /** When API returns a section title, show it on the brands heading. */
   homeBrandPartnersSectionTitle?: string | null;
+  onCarouselArrowHandlersChange?: (handlers: {
+    scrollPrev: () => void;
+    scrollNext: () => void;
+  } | null) => void;
 };
 
 /**
@@ -74,6 +78,7 @@ export function FeaturedProductsStrip({
   onRetryFetch,
   homeBrandPartners,
   homeBrandPartnersSectionTitle,
+  onCarouselArrowHandlersChange,
 }: FeaturedProductsStripProps) {
   const ctaHref = `/products?filter=${encodeURIComponent(FILTER_BY_TAB[activeTab])}`;
   const brandsFallbackTotal = HOME_BRAND_SLIDE_ENTRIES.length;
@@ -116,6 +121,8 @@ export function FeaturedProductsStrip({
     scrollerRef: featuredMobileScrollerRef,
     activePage: featuredMobileActivePage,
     scrollToPage: scrollFeaturedMobileToPage,
+    scrollPrev: scrollFeaturedMobilePrev,
+    scrollNext: scrollFeaturedMobileNext,
   } = useSpecialOffersCarousel({
     isRailVisible: isFeaturedMobileRailVisible,
     paginationPageCount: Math.max(1, mobileProductChunks.length),
@@ -125,6 +132,8 @@ export function FeaturedProductsStrip({
     scrollerRef: featuredDesktopScrollerRef,
     activePage: featuredDesktopActivePage,
     scrollToPage: scrollFeaturedDesktopToPage,
+    scrollPrev: scrollFeaturedDesktopPrev,
+    scrollNext: scrollFeaturedDesktopNext,
   } = useSpecialOffersCarousel({
     isRailVisible: isFeaturedDesktopRailVisible,
     paginationPageCount: desktopPaginationCount,
@@ -136,6 +145,42 @@ export function FeaturedProductsStrip({
   const paginationDotGapPx = isMaxMd
     ? SPECIAL_OFFERS_PAGINATION_DOT_GAP_MOBILE_PX
     : SPECIAL_OFFERS_PAGINATION_DOT_GAP_DESKTOP_PX;
+
+  const canScrollFeaturedWithArrows = isMaxMd
+    ? isFeaturedMobileRailVisible && mobileProductChunks.length > 1
+    : isFeaturedDesktopRailVisible && desktopPaginationCount > 1;
+
+  useEffect(() => {
+    if (!onCarouselArrowHandlersChange) {
+      return;
+    }
+    if (!canScrollFeaturedWithArrows) {
+      onCarouselArrowHandlersChange(null);
+      return;
+    }
+    if (isMaxMd) {
+      onCarouselArrowHandlersChange({
+        scrollPrev: scrollFeaturedMobilePrev,
+        scrollNext: scrollFeaturedMobileNext,
+      });
+      return;
+    }
+    onCarouselArrowHandlersChange({
+      scrollPrev: scrollFeaturedDesktopPrev,
+      scrollNext: scrollFeaturedDesktopNext,
+    });
+    return () => {
+      onCarouselArrowHandlersChange(null);
+    };
+  }, [
+    onCarouselArrowHandlersChange,
+    canScrollFeaturedWithArrows,
+    isMaxMd,
+    scrollFeaturedMobilePrev,
+    scrollFeaturedMobileNext,
+    scrollFeaturedDesktopPrev,
+    scrollFeaturedDesktopNext,
+  ]);
 
   const {
     scrollerRef: brandsRailRef,

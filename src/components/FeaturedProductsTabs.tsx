@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -215,7 +215,12 @@ export function FeaturedProductsTabs({
   const isMaxMd = useIsMaxMd();
   const queryClient = useQueryClient();
   const [language, setLanguage] = useState<LanguageCode>(() => serverLanguage ?? 'en');
-  const [activeTab, setActiveTab] = useState<FilterType>('new');
+  const activeTab: FilterType = 'new';
+  const carouselArrowHandlersRef = useRef<{
+    scrollPrev: () => void;
+    scrollNext: () => void;
+  } | null>(null);
+  const [areCarouselArrowsEnabled, setAreCarouselArrowsEnabled] = useState(false);
 
   useEffect(() => {
     const updateLanguage = () => {
@@ -353,18 +358,30 @@ export function FeaturedProductsTabs({
     }
   }, [featuredQuery.isSuccess, activeTab, language, queryClient]);
 
-  const handleTabChange = useCallback((tabId: FilterType) => {
-    setActiveTab(tabId);
-  }, []);
-
-  const shiftTab = useCallback(
-    (direction: -1 | 1) => {
-      const index = TAB_ORDER.indexOf(activeTab);
-      const nextId = TAB_ORDER[(index + direction + TAB_ORDER.length) % TAB_ORDER.length];
-      handleTabChange(nextId);
+  const setCarouselArrowHandlers = useCallback(
+    (
+      handlers: {
+        scrollPrev: () => void;
+        scrollNext: () => void;
+      } | null,
+    ) => {
+      carouselArrowHandlersRef.current = handlers;
+      setAreCarouselArrowsEnabled(handlers !== null);
     },
-    [activeTab, handleTabChange],
+    [],
   );
+
+  const scrollFeaturedByArrow = useCallback((direction: -1 | 1) => {
+    const handlers = carouselArrowHandlersRef.current;
+    if (!handlers) {
+      return;
+    }
+    if (direction < 0) {
+      handlers.scrollPrev();
+      return;
+    }
+    handlers.scrollNext();
+  }, []);
 
   const sectionHeading = t(language, FEATURED_SECTION_TITLE_KEY);
 
@@ -401,16 +418,22 @@ export function FeaturedProductsTabs({
           <div className="flex shrink-0 flex-row gap-2 max-md:[margin-right:var(--fp-nav-inset-mobile)] md:[margin-right:var(--fp-nav-inset-desktop)]">
             <button
               type="button"
-              onClick={() => shiftTab(-1)}
-              className={`${FEATURED_NAV_BUTTON_CLASS} h-[var(--fp-nav-btn-h-mobile)] w-[var(--fp-nav-btn-w-mobile)] md:h-[var(--fp-nav-btn-h)] md:w-[var(--fp-nav-btn-w)]`}
+              onClick={() => scrollFeaturedByArrow(-1)}
+              disabled={!areCarouselArrowsEnabled}
+              className={`${FEATURED_NAV_BUTTON_CLASS} h-[var(--fp-nav-btn-h-mobile)] w-[var(--fp-nav-btn-w-mobile)] md:h-[var(--fp-nav-btn-h)] md:w-[var(--fp-nav-btn-w)] ${
+                areCarouselArrowsEnabled ? '' : 'cursor-not-allowed opacity-40'
+              }`}
               aria-label={t(language, 'home.featured_products.carousel_prev_aria')}
             >
               <ChevronLeft className={FEATURED_NAV_ICON_CLASS} strokeWidth={2} aria-hidden />
             </button>
             <button
               type="button"
-              onClick={() => shiftTab(1)}
-              className={`${FEATURED_NAV_BUTTON_CLASS} h-[var(--fp-nav-btn-h-mobile)] w-[var(--fp-nav-btn-w-mobile)] md:h-[var(--fp-nav-btn-h)] md:w-[var(--fp-nav-btn-w)]`}
+              onClick={() => scrollFeaturedByArrow(1)}
+              disabled={!areCarouselArrowsEnabled}
+              className={`${FEATURED_NAV_BUTTON_CLASS} h-[var(--fp-nav-btn-h-mobile)] w-[var(--fp-nav-btn-w-mobile)] md:h-[var(--fp-nav-btn-h)] md:w-[var(--fp-nav-btn-w)] ${
+                areCarouselArrowsEnabled ? '' : 'cursor-not-allowed opacity-40'
+              }`}
               aria-label={t(language, 'home.featured_products.carousel_next_aria')}
             >
               <ChevronRight className={FEATURED_NAV_ICON_CLASS} strokeWidth={2} aria-hidden />
@@ -435,6 +458,7 @@ export function FeaturedProductsTabs({
             resolvedHomeBrandPartners !== null ? [...resolvedHomeBrandPartners] : null
           }
           homeBrandPartnersSectionTitle={resolvedHomeBrandPartnersSectionTitle}
+          onCarouselArrowHandlersChange={setCarouselArrowHandlers}
         />
       </div>
 
