@@ -3,8 +3,8 @@
 import { processImageUrl } from '../../../lib/utils/image-utils';
 import { t, getAttributeLabel } from '../../../lib/i18n';
 import type { LanguageCode } from '../../../lib/language';
-import type { Product, ProductVariant } from './types';
-import { logger } from "@/lib/utils/logger";
+import type { Product, ProductAttribute, ProductVariant, VariantOption } from './types';
+import { logger } from '@/lib/utils/logger';
 
 interface AttributeGroupValue {
   valueId?: string;
@@ -39,7 +39,7 @@ interface ProductAttributesSelectorProps {
   onAttributeValueSelect: (attrKey: string, value: string) => void;
   onQuantityAdjust: (delta: number) => void;
   onAddToCart: () => Promise<void>;
-  getOptionValue: (options: any[] | undefined, key: string) => string | null;
+  getOptionValue: (options: VariantOption[] | undefined, key: string) => string | null;
   getRequiredAttributesMessage: () => string;
 }
 
@@ -90,7 +90,9 @@ export function ProductAttributesSelector({
       {variantAttributeEntries.length > 0 ? (
         variantAttributeEntries.map(([attrKey, attrGroups]) => {
           // Try to get attribute name from productAttributes if available
-          const productAttr = product?.productAttributes?.find((pa: any) => pa.attribute?.key === attrKey);
+          const productAttr = product?.productAttributes?.find(
+            (pa: ProductAttribute) => pa.attribute?.key === attrKey,
+          );
           const attributeName = productAttr?.attribute?.name || attrKey.charAt(0).toUpperCase() + attrKey.slice(1);
           const isColor = attrKey === 'color';
           const isSize = attrKey === 'size';
@@ -214,8 +216,9 @@ export function ProductAttributesSelector({
                       : 'min-w-[50px]';
 
                     return (
-                      <button 
+                      <button
                         key={g.valueId || g.value}
+                        type="button"
                         onClick={() => onSizeSelect(g.value)}
                         className={`${minWidthClass} ${paddingClass} rounded-lg border-2 transition-all flex items-center gap-1.5 ${
                           isSelected 
@@ -231,7 +234,10 @@ export function ProductAttributesSelector({
                             alt={g.label}
                             className={`${imageSizeClass} object-cover rounded border border-gray-300 flex-shrink-0`}
                             onError={(e) => {
-                              console.error(`❌ [SIZE IMAGE] Failed to load image for size "${g.value}":`, processedImageUrl);
+                              logger.error(
+                                `[SIZE IMAGE] Failed to load image for size "${g.value}"`,
+                                processedImageUrl,
+                              );
                               (e.target as HTMLImageElement).style.display = 'none';
                             }}
                             onLoad={() => {

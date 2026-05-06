@@ -18,7 +18,7 @@ import {
 } from './ProductAttributesSelector';
 import { ProductPartialStar } from './ProductPartialStar';
 import { stripDuplicateSpecificationDescriptionHtml } from './strip-duplicate-specification-description-html';
-import type { Product, ProductVariant } from './types';
+import type { AttributeGroupValue, Product, ProductVariant, VariantOption } from './types';
 
 /** Buy CTA — taller row; trailing circle with light left nudge (−4px). */
 const PRODUCT_BUY_CTA_HEIGHT_CLASS = 'h-12';
@@ -50,7 +50,7 @@ interface ProductInfoAndActionsProps {
   showMessage: string | null;
   isLoggedIn: boolean;
   currentVariant: ProductVariant | null;
-  attributeGroups: Map<string, any[]>;
+  attributeGroups: Map<string, AttributeGroupValue[]>;
   selectedColor: string | null;
   selectedSize: string | null;
   selectedAttributeValues: Map<string, string>;
@@ -64,7 +64,7 @@ interface ProductInfoAndActionsProps {
   onColorSelect: (color: string) => void;
   onSizeSelect: (size: string) => void;
   onAttributeValueSelect: (attrKey: string, value: string) => void;
-  getOptionValue: (options: any[] | undefined, key: string) => string | null;
+  getOptionValue: (options: VariantOption[] | undefined, key: string) => string | null;
   getRequiredAttributesMessage: () => string;
 }
 
