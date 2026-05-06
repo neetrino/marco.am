@@ -122,7 +122,7 @@ class AdminCategoriesService {
   }
 
   private async loadCategoryWithChildren(categoryId: string): Promise<(CategoryNode & { children: CategoryNode[] }) | null> {
-    return db.category.findUnique({
+    const category = await db.category.findUnique({
       where: { id: categoryId },
       include: {
         translations: true,
@@ -132,6 +132,25 @@ class AdminCategoriesService {
         },
       },
     });
+
+    if (!category) {
+      return null;
+    }
+
+    return {
+      id: category.id,
+      parentId: category.parentId,
+      requiresSizes: category.requiresSizes,
+      media: Array.isArray(category.media) ? category.media.filter((item): item is string => typeof item === "string") : [],
+      translations: category.translations,
+      children: category.children.map((child) => ({
+        id: child.id,
+        parentId: child.parentId,
+        requiresSizes: child.requiresSizes,
+        media: Array.isArray(child.media) ? child.media.filter((item): item is string => typeof item === "string") : [],
+        translations: child.translations,
+      })),
+    };
   }
 
   private normalizeLocale(locale?: string): string {
