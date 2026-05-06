@@ -76,20 +76,16 @@ export function parseLanguageFromServer(raw: string | undefined): LanguageCode |
   return code === 'ka' ? 'en' : code;
 }
 
-export function setStoredLanguage(language: LanguageCode, options?: { skipReload?: boolean }): void {
+export function setStoredLanguage(
+  language: LanguageCode,
+  _options?: { skipReload?: boolean }
+): void {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(LANGUAGE_STORAGE_KEY, language);
     const maxAge = 60 * 60 * 24 * 365;
     document.cookie = `${LANGUAGE_STORAGE_KEY}=${encodeURIComponent(language)};path=/;max-age=${maxAge};SameSite=Lax`;
     window.dispatchEvent(new Event('language-updated'));
-    // Only reload if skipReload is not true
-    if (!options?.skipReload) {
-      // Use a small delay to ensure state updates are visible before reload
-      setTimeout(() => {
-        window.location.reload();
-      }, 50);
-    }
   } catch (error) {
     console.error('Failed to save language:', error);
   }

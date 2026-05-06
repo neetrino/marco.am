@@ -146,6 +146,13 @@ export function useProductPage({
 
   useEffect(() => {
     setLanguage(getStoredLanguage());
+    const handleLanguageUpdate = () => {
+      setLanguage(getStoredLanguage());
+    };
+    window.addEventListener('language-updated', handleLanguageUpdate);
+    return () => {
+      window.removeEventListener('language-updated', handleLanguageUpdate);
+    };
   }, []);
 
   useEffect(() => {
