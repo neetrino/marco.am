@@ -8,6 +8,24 @@ import {
   type ProductClass,
 } from "@/lib/constants/product-class";
 
+export interface PreparedVariantInput {
+  id?: string;
+  sku?: string;
+  productClass: ProductClass;
+  price: number;
+  compareAtPrice?: number;
+  stock: number;
+  normalizedImageUrl?: string;
+  published?: boolean;
+  options?: Array<{
+    attributeKey: string;
+    value: string;
+    valueId?: string;
+  }>;
+  color?: string;
+  size?: string;
+}
+
 /**
  * Find variant by ID or SKU
  */
@@ -90,15 +108,7 @@ async function processVariantImageUrl(imageUrl: string | undefined): Promise<str
  */
 async function updateExistingVariant(
   variantId: string,
-  variant: {
-    sku?: string;
-    imageUrl?: string;
-    published?: boolean;
-  },
-  productClass: ProductClass,
-  price: number,
-  stock: number,
-  compareAtPrice: number | undefined,
+  variant: PreparedVariantInput,
   attributesJson: Record<string, unknown> | null,
   options: Array<{ valueId?: string; attributeKey?: string; value?: string }>,
   tx: Prisma.TransactionClient
@@ -108,17 +118,15 @@ async function updateExistingVariant(
     where: { variantId },
   });
   
-  const processedVariantImageUrl = await processVariantImageUrl(variant.imageUrl);
-
   await tx.productVariant.update({
     where: { id: variantId },
     data: {
       sku: variant.sku ? variant.sku.trim() : undefined,
-      productClass,
-      price,
-      compareAtPrice,
-      stock: isNaN(stock) ? 0 : stock,
-      imageUrl: processedVariantImageUrl,
+      productClass: variant.productClass,
+      price: variant.price,
+      compareAtPrice: variant.compareAtPrice,
+      stock: isNaN(variant.stock) ? 0 : variant.stock,
+      imageUrl: variant.normalizedImageUrl,
       published: variant.published !== false,
       attributes: (attributesJson || undefined) as Prisma.InputJsonValue | undefined,
       options: {
@@ -135,15 +143,7 @@ async function updateExistingVariant(
  */
 async function createNewVariant(
   productId: string,
-  variant: {
-    sku?: string;
-    imageUrl?: string;
-    published?: boolean;
-  },
-  productClass: ProductClass,
-  price: number,
-  stock: number,
-  compareAtPrice: number | undefined,
+  variant: PreparedVariantInput,
   attributesJson: Record<string, unknown> | null,
   options: Array<{ valueId?: string; attributeKey?: string; value?: string }>,
   tx: Prisma.TransactionClient
@@ -166,18 +166,16 @@ async function createNewVariant(
     }
   }
   
-  const processedVariantImageUrl = await processVariantImageUrl(variant.imageUrl);
-
   logger.info(`Creating new variant`, { sku: variant.sku || 'none' });
   const newVariant = await tx.productVariant.create({
     data: {
       productId,
       sku: variant.sku ? variant.sku.trim() : undefined,
-      productClass,
-      price,
-      compareAtPrice,
-      stock: isNaN(stock) ? 0 : stock,
-      imageUrl: processedVariantImageUrl,
+      productClass: variant.productClass,
+      price: variant.price,
+      compareAtPrice: variant.compareAtPrice,
+      stock: isNaN(variant.stock) ? 0 : variant.stock,
+      imageUrl: variant.normalizedImageUrl,
       published: variant.published !== false,
       attributes: (attributesJson || undefined) as Prisma.InputJsonValue | undefined,
       options: {
@@ -194,6 +192,51 @@ async function createNewVariant(
  * Update or create variant
  */
 export async function updateOrCreateVariant(
+  variant: PreparedVariantInput,
+  productId: string,
+  locale: string,
+  existingVariantIds: Set<string>,
+  existingSkuMap: Map<string, string>,
+  tx: Prisma.TransactionClient
+): Promise<string> {
+  // Process options and attributes
+  const { options, attributesMap } = await processVariantOptions(variant, locale, tx);
+  
+  // Convert attributesMap to JSONB format
+  const attributesJson = Object.keys(attributesMap).length > 0 ? attributesMap : null;
+
+  // Find variant
+  const { variantToUpdate, variantIdToUse } = await findVariant(
+    variant,
+    existingVariantIds,
+    existingSkuMap,
+    productId,
+    tx
+  );
+  
+  if (variantToUpdate && variantIdToUse) {
+    // Update existing variant
+    await updateExistingVariant(
+      variantIdToUse,
+      variant,
+      attributesJson,
+      options,
+      tx
+    );
+    return variantIdToUse;
+  } else {
+    // Create new variant
+    return await createNewVariant(
+      productId,
+      variant,
+      attributesJson,
+      options,
+      tx
+    );
+  }
+}
+
+export async function prepareVariantForWrite(
   variant: {
     id?: string;
     sku?: string;
@@ -211,59 +254,18 @@ export async function updateOrCreateVariant(
     color?: string;
     size?: string;
   },
-  productId: string,
-  fallbackProductClass: ProductClass,
-  locale: string,
-  existingVariantIds: Set<string>,
-  existingSkuMap: Map<string, string>,
-  tx: Prisma.TransactionClient
-): Promise<string> {
-  // Process options and attributes
-  const { options, attributesMap } = await processVariantOptions(variant, locale, tx);
-  
-  // Parse prices
+  fallbackProductClass: ProductClass
+): Promise<PreparedVariantInput> {
   const { price, stock, compareAtPrice } = parseVariantPrices(variant);
-  
-  // Convert attributesMap to JSONB format
-  const attributesJson = Object.keys(attributesMap).length > 0 ? attributesMap : null;
-  const variantProductClass = resolveProductClass(variant.productClass ?? fallbackProductClass);
+  const normalizedImageUrl = await processVariantImageUrl(variant.imageUrl);
 
-  // Find variant
-  const { variantToUpdate, variantIdToUse } = await findVariant(
-    variant,
-    existingVariantIds,
-    existingSkuMap,
-    productId,
-    tx
-  );
-  
-  if (variantToUpdate && variantIdToUse) {
-    // Update existing variant
-    await updateExistingVariant(
-      variantIdToUse,
-      variant,
-      variantProductClass,
-      price,
-      stock,
-      compareAtPrice,
-      attributesJson,
-      options,
-      tx
-    );
-    return variantIdToUse;
-  } else {
-    // Create new variant
-    return await createNewVariant(
-      productId,
-      variant,
-      variantProductClass,
-      price,
-      stock,
-      compareAtPrice,
-      attributesJson,
-      options,
-      tx
-    );
-  }
+  return {
+    ...variant,
+    productClass: resolveProductClass(variant.productClass ?? fallbackProductClass),
+    price,
+    stock,
+    compareAtPrice,
+    normalizedImageUrl,
+  };
 }
 

@@ -2,12 +2,17 @@ import { Prisma } from "@white-shop/db/prisma";
 import { logger } from "../../../utils/logger";
 import { processImageUrl, smartSplitUrls } from "../../../utils/image-utils";
 
+type AttributeValueUpdaterClient = Pick<
+  Prisma.TransactionClient,
+  "productVariant" | "attributeValue"
+>;
+
 /**
  * Update attribute value imageUrls from variant images
  */
 export async function updateAttributeValueImageUrls(
   productId: string,
-  tx: Prisma.TransactionClient
+  tx: AttributeValueUpdaterClient
 ) {
   try {
     logger.debug('Updating attribute value imageUrls from variant images...');
