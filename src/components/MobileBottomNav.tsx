@@ -231,7 +231,12 @@ export function MobileBottomNav() {
 
   return (
     <>
-      <nav className="lg:hidden pointer-events-none fixed bottom-0 left-0 right-0 z-50 w-full" aria-label="Primary">
+      <nav
+        className={`lg:hidden pointer-events-none fixed bottom-0 left-0 right-0 w-full ${
+          shopSheetOpen ? 'z-[999]' : 'z-50'
+        }`}
+        aria-label="Primary"
+      >
         <div className="pointer-events-auto mx-auto max-w-md">
           <div
             className="overflow-visible bg-white pb-[max(0.5rem,env(safe-area-inset-bottom,0px))] dark:bg-zinc-950"
