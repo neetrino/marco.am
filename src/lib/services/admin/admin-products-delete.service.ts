@@ -1,5 +1,6 @@
 import { db } from "@white-shop/db";
 import { logger } from "@/lib/utils/logger";
+import { revalidateProductCache } from "./admin-products-update/cache-revalidator";
 
 class AdminProductsDeleteService {
   /**
@@ -8,6 +9,15 @@ class AdminProductsDeleteService {
   async deleteProduct(productId: string) {
     const product = await db.product.findUnique({
       where: { id: productId },
+      select: {
+        id: true,
+        translations: {
+          select: {
+            slug: true,
+          },
+          take: 1,
+        },
+      },
     });
 
     if (!product) {
@@ -26,6 +36,7 @@ class AdminProductsDeleteService {
         published: false,
       },
     });
+    await revalidateProductCache(productId, product.translations[0]?.slug);
 
     return { success: true };
   }
@@ -38,6 +49,16 @@ class AdminProductsDeleteService {
     
     const product = await db.product.findUnique({
       where: { id: productId },
+      select: {
+        id: true,
+        discountPercent: true,
+        translations: {
+          select: {
+            slug: true,
+          },
+          take: 1,
+        },
+      },
     });
 
     if (!product) {
@@ -62,7 +83,11 @@ class AdminProductsDeleteService {
       data: {
         discountPercent: clampedDiscount,
       },
+      select: {
+        discountPercent: true,
+      },
     });
+    await revalidateProductCache(productId, product.translations[0]?.slug);
 
     logger.devLog('✅ [ADMIN PRODUCTS DELETE SERVICE] Product discount updated successfully:', {
       productId,

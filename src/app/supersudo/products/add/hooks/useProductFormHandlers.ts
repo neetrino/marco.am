@@ -388,6 +388,9 @@ export function useProductFormHandlers({
       const sizeAttribute = getSizeAttribute();
       if (colorAttribute) attributeIdsSet.add(colorAttribute.id);
       if (sizeAttribute) attributeIdsSet.add(sizeAttribute.id);
+      selectedAttributesForVariants.forEach((attributeId) => {
+        attributeIdsSet.add(attributeId);
+      });
       const attributeIds = Array.from(attributeIdsSet);
 
       // Process images

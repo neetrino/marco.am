@@ -37,16 +37,34 @@ export function useProductVariantConversion({
       const attributeValueIdsMap: Record<string, string[]> = {};
       
       productVariants.forEach((variant: any) => {
+        if (variant.attributes && typeof variant.attributes === 'object') {
+          Object.keys(variant.attributes).forEach((attributeKey) => {
+            const matchedAttribute = attributes.find((attribute) => attribute.key === attributeKey);
+            if (matchedAttribute) {
+              attributeIdsSet.add(matchedAttribute.id);
+            }
+          });
+        }
+
         if (variant.options && Array.isArray(variant.options)) {
           variant.options.forEach((opt: any) => {
             let attributeId = opt.attributeId;
             let valueId = opt.valueId;
+            let attributeKey = opt.attributeKey;
             
             if (!attributeId && opt.attributeValue) {
               attributeId = opt.attributeValue.attributeId || opt.attributeValue.attribute?.id;
+              attributeKey = opt.attributeValue.attribute?.key || attributeKey;
             }
             if (!valueId && opt.attributeValue) {
               valueId = opt.attributeValue.id;
+            }
+
+            if (!attributeId && attributeKey) {
+              const matchedAttribute = attributes.find((attribute) => attribute.key === attributeKey);
+              if (matchedAttribute) {
+                attributeId = matchedAttribute.id;
+              }
             }
             
             if (attributeId && valueId) {
