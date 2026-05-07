@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCartSummary } from '../lib/cart/cart-summary-context';
 import { useTranslation } from '../lib/i18n-client';
@@ -19,7 +19,6 @@ import {
   MobileNavReelsLinearIcon,
   MobileNavWishlistBoldIcon,
   MobileNavWishlistLinearIcon,
-  MobileNavWishlistBagBoldIcon,
   MobileNavWishlistBagIcon,
 } from './mobile-bottom-nav-icons';
 import {
@@ -57,11 +56,7 @@ function renderNavIcon(slot: MobileNavIconSlot, isActive: boolean, sizeClass: st
         <MobileNavHomeLinearIcon className={sizeClass} />
       );
     case 'shop':
-      return isActive ? (
-        <MobileNavWishlistBagBoldIcon className={sizeClass} />
-      ) : (
-        <MobileNavWishlistBagIcon className={sizeClass} />
-      );
+      return <MobileNavWishlistBagIcon className={sizeClass} />;
     case 'cart':
       return isActive ? (
         <MobileNavCartBoldIcon className={sizeClass} />
@@ -108,7 +103,7 @@ interface BaseNavItemVisualProps extends NavItemLinkProps {
 
 function NavItemVisual({ item, pathname, cartCount, onPress, variant = 'default' }: BaseNavItemVisualProps) {
   const { label, href, icon: slot } = item;
-  const isActive = isNavItemActive(pathname, href);
+  const isActive = slot === 'shop' ? false : isNavItemActive(pathname, href);
   const isCenterHighlight = variant === 'centerHome' && slot === 'shop';
   const activeColor = MOBILE_NAV_ACTIVE_FOREGROUND;
   const inactiveColor = MOBILE_NAV_INACTIVE_ICON;
@@ -189,6 +184,7 @@ export function MobileBottomNav() {
   const { t } = useTranslation();
   const { cartCount } = useCartSummary();
   const [shopSheetOpen, setShopSheetOpen] = useState(false);
+  const previousPathnameRef = useRef(pathname);
   const activeCategorySlug = searchParams?.get('category') ?? null;
 
   const handleShopPress = () => {
@@ -211,6 +207,14 @@ export function MobileBottomNav() {
   useEffect(() => {
     void router.prefetch('/products');
   }, [router]);
+
+  useEffect(() => {
+    if (previousPathnameRef.current === pathname) {
+      return;
+    }
+    previousPathnameRef.current = pathname;
+    setShopSheetOpen(false);
+  }, [pathname, shopSheetOpen]);
 
   const navItems: MobileNavItem[] = useMemo(
     () => [

@@ -22,5 +22,7 @@ export const MOBILE_NAV_LAYOUT_PADDING_BOTTOM =
  * Tidio (and similar) `bottom` offset on viewports where `MobileBottomNav` is shown (`lg:hidden`).
  * Layout padding plus clearance above the floor nav for the Tidio launcher.
  */
+const MOBILE_NAV_OVERLAY_WIDGET_CLEARANCE_REM = 2.1;
+
 export const MOBILE_NAV_OVERLAY_WIDGET_BOTTOM =
-  'calc(3.875rem + max(0.5rem, env(safe-area-inset-bottom, 0px)) + 2.625rem)';
+  `calc(3.875rem + max(0.5rem, env(safe-area-inset-bottom, 0px)) + ${MOBILE_NAV_OVERLAY_WIDGET_CLEARANCE_REM}rem)`;
