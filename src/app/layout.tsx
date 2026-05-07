@@ -6,10 +6,7 @@ import Script from 'next/script';
 import './globals.css';
 import { TidioDynamicLoader } from '../components/TidioDynamicLoader';
 import { ClientProviders } from '../components/ClientProviders';
-import { Header } from '../components/Header';
-import { Footer } from '../components/Footer';
-import { MobileBottomNav } from '../components/MobileBottomNav';
-import { MOBILE_NAV_LAYOUT_PADDING_BOTTOM } from '../components/mobile-bottom-nav.constants';
+import { AppChrome } from '../components/AppChrome';
 import {
   LANGUAGE_PREFERENCE_KEY,
   parseLanguageFromServer,
@@ -56,23 +53,7 @@ export default async function RootLayout({
         <Suspense fallback={null}>
           <LanguagePreferenceProvider initialLanguage={initialLanguage}>
             <ClientProviders>
-              <div
-                className="flex min-h-screen flex-col bg-[var(--app-bg)] max-lg:[padding-bottom:var(--mobile-nav-pb)] lg:pb-0"
-                style={
-                  {
-                    ['--mobile-nav-pb' as string]: MOBILE_NAV_LAYOUT_PADDING_BOTTOM,
-                  } as React.CSSProperties
-                }
-              >
-                <Header initialLanguage={initialLanguage} />
-                <main className="flex-1 w-full bg-[var(--app-bg)]">
-                  {children}
-                </main>
-                <div className="hidden md:block">
-                  <Footer />
-                </div>
-                <MobileBottomNav />
-              </div>
+              <AppChrome initialLanguage={initialLanguage}>{children}</AppChrome>
             </ClientProviders>
           </LanguagePreferenceProvider>
         </Suspense>

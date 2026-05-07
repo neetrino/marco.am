@@ -13,9 +13,14 @@ const TidioDeferredLoader = dynamic(
 );
 
 const ADMIN_PATH_PREFIX = '/supersudo';
+const PROFILE_PATH_PREFIX = '/profile';
 
 function isAdminPath(pathname: string): boolean {
   return pathname === ADMIN_PATH_PREFIX || pathname.startsWith(`${ADMIN_PATH_PREFIX}/`);
+}
+
+function isProfilePath(pathname: string): boolean {
+  return pathname === PROFILE_PATH_PREFIX || pathname.startsWith(`${PROFILE_PATH_PREFIX}/`);
 }
 
 function cleanupTidioForAdmin(): void {
@@ -49,15 +54,17 @@ function cleanupTidioForAdmin(): void {
 export function TidioDynamicLoader() {
   const pathname = usePathname();
   const isAdmin = isAdminPath(pathname);
+  const isProfile = isProfilePath(pathname);
+  const shouldHideTidio = isAdmin || isProfile;
 
   useEffect(() => {
-    if (!isAdmin) {
+    if (!shouldHideTidio) {
       return;
     }
     cleanupTidioForAdmin();
-  }, [isAdmin]);
+  }, [shouldHideTidio]);
 
-  if (isAdmin) {
+  if (shouldHideTidio) {
     return null;
   }
 

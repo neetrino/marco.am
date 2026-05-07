@@ -1,10 +1,11 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useState } from 'react';
 import { useAuth } from '../../lib/auth/AuthContext';
 import { useTranslation } from '../../lib/i18n-client';
 import { useProfilePage } from './useProfilePage';
 import { ProfileHeader } from './ProfileHeader';
+import { ProfileSidebarNav } from './ProfileSidebarNav';
 import { ProfileDashboard } from './ProfileDashboard';
 import { ProfilePersonalInfo } from './ProfilePersonalInfo';
 import { ProfileAddresses } from './ProfileAddresses';
@@ -12,11 +13,13 @@ import { ProfileOrders } from './ProfileOrders';
 import { ProfilePassword } from './ProfilePassword';
 import { ProfileDeleteAccount } from './ProfileDeleteAccount';
 import { OrderDetailsModal } from './OrderDetailsModal';
-import type { ProfileTabConfig } from './types';
+import { buildProfileTabs } from './ProfileTabsConfig';
+import type { ProfileTab, ProfileTabConfig } from './types';
 
 function ProfilePageContent() {
   const { isLoggedIn, isLoading: authLoading } = useAuth();
   const { t } = useTranslation();
+  const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
   
   const {
     loading,
@@ -78,88 +81,64 @@ function ProfilePageContent() {
   if (!isLoggedIn) {
     return null;
   }
+  const tabs: ProfileTabConfig[] = buildProfileTabs(t);
 
-  // Tab configuration with icons
-  const tabs: ProfileTabConfig[] = [
-    {
-      id: 'dashboard',
-      label: t('profile.tabs.dashboard'),
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-        </svg>
-      ),
-    },
-    {
-      id: 'orders',
-      label: t('profile.tabs.orders'),
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-        </svg>
-      ),
-    },
-    {
-      id: 'personal',
-      label: t('profile.tabs.personal'),
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-        </svg>
-      ),
-    },
-    {
-      id: 'addresses',
-      label: t('profile.tabs.addresses'),
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
-      ),
-    },
-    {
-      id: 'password',
-      label: t('profile.tabs.password'),
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-        </svg>
-      ),
-    },
-    {
-      id: 'deleteAccount',
-      label: t('profile.tabs.deleteAccount'),
-      variant: 'danger',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-          />
-        </svg>
-      ),
-    },
-  ];
+  const handleProfileTabChange = (tab: ProfileTab) => {
+    handleTabChange(tab);
+    setIsMobileSheetOpen(true);
+  };
+  const activeTabLabel = tabs.find((tab) => tab.id === activeTab)?.label ?? t('profile.myProfile');
 
   return (
-    <div className="marco-header-container py-8">
-      <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-10">
-        <aside className="w-full shrink-0 lg:sticky lg:top-24 lg:w-72 lg:self-start">
+    <div className="marco-header-container py-2 lg:py-8">
+      <div className="flex w-full max-w-none flex-col gap-2 px-3 py-2 lg:flex-row lg:items-start lg:gap-12 lg:px-0 lg:py-0">
+        <div className="w-full shrink-0 lg:sticky lg:top-24 lg:w-[27rem] lg:self-start">
           <ProfileHeader
             profile={profile}
-            tabs={tabs}
-            activeTab={activeTab}
-            onTabChange={handleTabChange}
+            onTabChange={handleProfileTabChange}
             t={t}
           />
-        </aside>
+          <div className="mt-1.5 lg:mt-3">
+            <ProfileSidebarNav
+              tabs={tabs}
+              activeTab={activeTab}
+              onTabChange={handleProfileTabChange}
+              t={t}
+            />
+          </div>
+        </div>
 
-        {/* Main Content */}
-        <div className="min-w-0 flex-1">
-          {/* Alert messages */}
+        {isMobileSheetOpen && (
+          <button
+            type="button"
+            onClick={() => setIsMobileSheetOpen(false)}
+            className="fixed inset-0 z-30 bg-black/40 lg:hidden"
+            aria-label={t('common.buttons.close')}
+          />
+        )}
+
+        <div
+          className={`min-w-0 flex-1 ${
+            isMobileSheetOpen
+              ? 'fixed inset-x-0 bottom-0 z-40 block h-[75vh] rounded-t-3xl border border-slate-200 bg-white shadow-[0_-20px_60px_rgba(15,23,42,0.18)] lg:static lg:z-auto lg:h-auto lg:rounded-none lg:border-0 lg:bg-transparent lg:shadow-none'
+              : 'hidden lg:block'
+          }`}
+        >
+          {isMobileSheetOpen && (
+            <div className="sticky top-0 z-10 flex items-center justify-between rounded-t-3xl border-b border-slate-200 bg-white px-4 py-3 lg:hidden">
+              <div className="h-1.5 w-12 rounded-full bg-slate-300" />
+              <p className="text-sm font-semibold text-slate-900">{activeTabLabel}</p>
+              <button
+                type="button"
+                onClick={() => setIsMobileSheetOpen(false)}
+                className="rounded-md px-2 py-1 text-sm text-slate-600 transition hover:bg-slate-100"
+              >
+                {t('common.buttons.close')}
+              </button>
+            </div>
+          )}
+
+          <div className={`${isMobileSheetOpen ? 'h-[calc(75vh-58px)] overflow-y-auto p-4 lg:h-auto lg:overflow-visible lg:p-0' : ''}`}>
           {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
               <p className="text-sm text-red-600">{error}</p>
@@ -171,7 +150,6 @@ function ProfilePageContent() {
             </div>
           )}
 
-          {/* Dashboard Tab */}
           {activeTab === 'dashboard' && (
             <ProfileDashboard
               dashboardData={dashboardData}
@@ -183,7 +161,6 @@ function ProfilePageContent() {
             />
           )}
 
-          {/* Personal Information Tab */}
           {activeTab === 'personal' && (
             <ProfilePersonalInfo
               personalInfo={personalInfo}
@@ -195,7 +172,6 @@ function ProfilePageContent() {
             />
           )}
 
-          {/* Addresses Tab */}
           {activeTab === 'addresses' && (
             <ProfileAddresses
               profile={profile}
@@ -214,7 +190,6 @@ function ProfilePageContent() {
             />
           )}
 
-          {/* Orders Tab */}
           {activeTab === 'orders' && (
             <ProfileOrders
               orders={orders}
@@ -230,7 +205,6 @@ function ProfilePageContent() {
             />
           )}
 
-          {/* Password Tab */}
           {activeTab === 'password' && (
             <ProfilePassword
               passwordForm={passwordForm}
@@ -243,7 +217,6 @@ function ProfilePageContent() {
 
           {activeTab === 'deleteAccount' && <ProfileDeleteAccount t={t} />}
 
-          {/* Order Details Modal */}
           {selectedOrder && (
             <OrderDetailsModal
               selectedOrder={selectedOrder}
@@ -256,6 +229,7 @@ function ProfilePageContent() {
               t={t}
             />
           )}
+          </div>
         </div>
       </div>
     </div>
@@ -264,13 +238,7 @@ function ProfilePageContent() {
 
 export default function ProfilePage() {
   return (
-    <Suspense fallback={
-      <div className="marco-header-container py-12">
-        <div className="text-center">
-          <p className="text-gray-600">Loading profile...</p>
-        </div>
-      </div>
-    }>
+    <Suspense fallback={<div className="marco-header-container py-12 text-center text-gray-600">Loading profile...</div>}>
       <ProfilePageContent />
     </Suspense>
   );
