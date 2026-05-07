@@ -89,9 +89,9 @@ export function ProfileSidebarNav({ tabs, activeTab, onTabChange, t }: ProfileSi
       <button
         type="button"
         onClick={logout}
-        className="flex w-full items-center gap-3 rounded-xl border border-red-100 bg-white px-3 py-2.5 text-left text-base font-medium text-red-600 transition hover:bg-red-50 lg:gap-3 lg:px-4 lg:py-3 lg:text-base"
+        className="flex w-full items-center gap-3 rounded-xl border border-[#EAB308] bg-[#FACC15] px-3 py-2.5 text-left text-base font-medium text-amber-900 transition hover:bg-[#EAB308] lg:gap-3 lg:px-4 lg:py-3 lg:text-base"
       >
-        <svg className="h-5 w-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+        <svg className="h-5 w-5 text-amber-800" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
           <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7" />
           <path strokeLinecap="round" strokeLinejoin="round" d="M3 6v12a2 2 0 002 2h8" />
         </svg>
