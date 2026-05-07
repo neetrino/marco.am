@@ -6,6 +6,17 @@ export function pushShopProductsListingUrl(
   router: { push: (href: string) => void | Promise<void>; refresh: () => void },
   href: string,
 ): void {
+  if (typeof window !== 'undefined') {
+    const currentUrl = new URL(window.location.href);
+    const targetUrl = new URL(href, window.location.origin);
+    const isSameRoute =
+      currentUrl.pathname === targetUrl.pathname && currentUrl.search === targetUrl.search;
+
+    if (isSameRoute) {
+      router.refresh();
+      return;
+    }
+  }
+
   void router.push(href);
-  router.refresh();
 }
