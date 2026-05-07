@@ -14,14 +14,12 @@ interface AppChromeProps {
 
 const PROFILE_PATH = '/profile';
 const SUPER_SUDO_PATH = '/supersudo';
-const REELS_PATH = '/reels';
 const REELS_WATCH_PATH = '/reels/watch';
 
 export function AppChrome({ children, initialLanguage }: AppChromeProps) {
   const pathname = usePathname();
   const isSupersudoRoute = pathname?.startsWith(SUPER_SUDO_PATH) ?? false;
   const isProfileRoute = pathname === PROFILE_PATH;
-  const isReelsRoute = pathname?.startsWith(REELS_PATH) ?? false;
   const hideMobileHeaderFooterForProfile = isProfileRoute && !isSupersudoRoute;
   const showMobileBottomNav = !isSupersudoRoute;
   const mainPaddingClass =
