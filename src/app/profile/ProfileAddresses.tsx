@@ -5,6 +5,20 @@ import {
 } from '@/lib/constants/profile-address-country';
 import type { Address, UserProfile } from './types';
 
+const ARMENIA_STATE_PROVINCE_OPTIONS = [
+  'Yerevan',
+  'Aragatsotn',
+  'Ararat',
+  'Armavir',
+  'Gegharkunik',
+  'Kotayk',
+  'Lori',
+  'Shirak',
+  'Syunik',
+  'Tavush',
+  'Vayots Dzor',
+] as const;
+
 interface ProfileAddressesProps {
   profile: UserProfile | null;
   showAddressForm: boolean;
@@ -66,11 +80,23 @@ export function ProfileAddresses({
                 onChange={(e) => setAddressForm({ ...addressForm, addressLine1: e.target.value })}
                 required
               />
-              <Input
-                label={t('profile.addresses.form.state')}
-                value={addressForm.state ?? ''}
-                onChange={(e) => setAddressForm({ ...addressForm, state: e.target.value })}
-              />
+              <div>
+                <label className="mb-1 block text-sm font-medium text-gray-700">
+                  {t('profile.addresses.form.state')}
+                </label>
+                <select
+                  value={addressForm.state ?? ''}
+                  onChange={(e) => setAddressForm({ ...addressForm, state: e.target.value })}
+                  className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
+                >
+                  <option value=""></option>
+                  {ARMENIA_STATE_PROVINCE_OPTIONS.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <Input
                 label={t('profile.addresses.form.postalCode')}
                 value={addressForm.postalCode ?? ''}

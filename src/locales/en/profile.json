@@ -87,6 +87,7 @@
       "addressLine2": "Address Line 2 (optional)",
       "city": "City",
       "state": "State/Province",
+      "selectState": "Select state/province",
       "postalCode": "Postal Code",
       "phone": "Phone Number",
       "isDefault": "Set as default address",
