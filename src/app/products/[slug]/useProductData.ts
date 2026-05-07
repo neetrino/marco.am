@@ -15,7 +15,6 @@ import {
   cleanImageUrls,
 } from '../../../lib/utils/image-utils';
 import { logger } from "@/lib/utils/logger";
-import type { ProductReviewsListResponse } from "@/lib/types/product-reviews";
 
 interface UseProductDataProps {
   params: Promise<{ slug?: string }>;
@@ -25,7 +24,6 @@ interface UseProductDataReturn {
   product: Product | null;
   loading: boolean;
   images: string[];
-  reviews: Array<{ rating: number }>;
   currency: CurrencyCode;
   language: LanguageCode;
   isInWishlist: boolean;
@@ -52,7 +50,6 @@ export function useProductData({
   const [language, setLanguage] = useState<LanguageCode>('en');
   const [isInWishlist, setIsInWishlist] = useState(false);
   const [isInCompare, setIsInCompare] = useState(false);
-  const [reviews, setReviews] = useState<Array<{ rating: number }>>([]);
 
   const resolvedParams = use(params);
   const rawSlug = resolvedParams?.slug ?? '';
@@ -253,33 +250,6 @@ export function useProductData({
     return () => window.removeEventListener('compare-updated', checkCompare);
   }, [product?.id]);
 
-  useEffect(() => {
-    if (!product || !slug) return;
-
-    const loadReviews = async () => {
-      try {
-        const data = await apiClient.get<ProductReviewsListResponse>(
-          `/api/v1/products/${slug}/reviews`
-        );
-        setReviews(data.reviews ?? []);
-      } catch (_error: unknown) {
-        setReviews([]);
-      }
-    };
-
-    void loadReviews();
-
-    // Listen for review updates
-    const handleReviewUpdate = () => {
-      loadReviews();
-    };
-
-    if (typeof window !== 'undefined') {
-      window.addEventListener('review-updated', handleReviewUpdate);
-      return () => window.removeEventListener('review-updated', handleReviewUpdate);
-    }
-  }, [product?.id, slug]);
-
   // Placeholder setters for image index and thumbnail start index
   // These will be provided by the component
   const setCurrentImageIndex = useCallback((_index: number) => {
@@ -294,7 +264,6 @@ export function useProductData({
     product,
     loading,
     images,
-    reviews,
     currency,
     language,
     isInWishlist,

@@ -16,8 +16,6 @@ export interface SpecialOfferProduct {
   defaultVariantId?: string | null;
   discountPercent?: number | null;
   labels?: ProductLabel[];
-  /** Published review count for `(n)` next to stars; omit when unknown. */
-  reviewCount?: number;
   colors?: Array<{
     value: string;
     imageUrl?: string | null;

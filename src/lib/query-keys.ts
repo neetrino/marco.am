@@ -15,8 +15,6 @@ export const queryKeys = {
     ["api", "v1", "products", "featured-home", filter, lang, limit] as const,
   specialOffersPromotion: (lang: LanguageCode, limit: number) =>
     ["api", "v1", "products", "special-offers", "promotion", lang, limit] as const,
-  homeCustomerReviews: (lang: LanguageCode) =>
-    ["api", "v1", "home", "customer-reviews", lang] as const,
   homeWhyChooseUs: (lang: LanguageCode) =>
     ["api", "v1", "home", "why-choose-us", lang] as const,
   homeBrandPartners: (locale: LanguageCode) =>

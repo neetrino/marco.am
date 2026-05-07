@@ -10,7 +10,6 @@ const CATEGORIES_TOP_PATTERN = "categories:top:*";
 const FOOTER_PUBLIC_PATTERN = "footer:public:*";
 const WHY_CHOOSE_PUBLIC_PATTERN = "why-choose:public:*";
 const HOME_BRAND_PARTNERS_PUBLIC_PATTERN = "home:brand-partners:public:*";
-const HOME_CUSTOMER_REVIEWS_PUBLIC_PATTERN = "home:reviews:public:*";
 
 /**
  * Read-through JSON cache (Redis when configured, else in-memory via cacheService.setex).
@@ -78,8 +77,4 @@ export async function invalidateWhyChooseUsPublicCache(): Promise<void> {
 
 export async function invalidateHomeBrandPartnersPublicCache(): Promise<void> {
   await cacheService.deletePattern(HOME_BRAND_PARTNERS_PUBLIC_PATTERN);
-}
-
-export async function invalidateHomeCustomerReviewsPublicCache(): Promise<void> {
-  await cacheService.deletePattern(HOME_CUSTOMER_REVIEWS_PUBLIC_PATTERN);
 }
