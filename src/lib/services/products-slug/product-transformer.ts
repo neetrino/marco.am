@@ -6,6 +6,7 @@ import {
   normalizeUrlForComparison,
 } from "../../utils/image-utils";
 import { logger } from "../../utils/logger";
+import { resolveProductPrice } from "@/lib/pricing/product-price";
 import { getOutOfStockLabel } from "./utils";
 import {
   buildTechnicalSpecifications,
@@ -350,27 +351,6 @@ function transformVariantImageUrl(variant: ProductVariantWithOptions): string | 
   return processedUrls.length > 0 ? processedUrls.join(',') : null;
 }
 
-function resolveVariantOldPrice(currentPrice: number, compareAtPrice: number | null): number | null {
-  if (compareAtPrice === null) {
-    return null;
-  }
-
-  return compareAtPrice > currentPrice ? compareAtPrice : null;
-}
-
-function computeDiscountPercentFromPrices(
-  currentPrice: number,
-  oldPrice: number | null
-): number | null {
-  if (!oldPrice || oldPrice <= 0 || oldPrice <= currentPrice) {
-    return null;
-  }
-
-  const rawPercent = ((oldPrice - currentPrice) / oldPrice) * 100;
-  const roundedPercent = Math.round(rawPercent);
-  return roundedPercent > 0 ? roundedPercent : null;
-}
-
 function buildDiscountBadge(discountPercent: number | null): ProductDiscountBadge | null {
   if (!discountPercent || discountPercent <= 0) {
     return null;
@@ -424,29 +404,17 @@ function buildVariantPricing(
   discountPercent: number | null;
   discountBadge: ProductDiscountBadge | null;
 } {
-  const hasManualCompareAtPrice =
-    compareAtPrice !== null && Number.isFinite(compareAtPrice) && compareAtPrice > originalPrice;
-  const currentPrice = originalPrice;
-  const computedOldPriceFromDiscount =
-    !hasManualCompareAtPrice && actualDiscount > 0 && originalPrice > 0
-      ? originalPrice / (1 - actualDiscount / 100)
-      : null;
-  const oldPrice = hasManualCompareAtPrice
-    ? resolveVariantOldPrice(currentPrice, compareAtPrice)
-    : computedOldPriceFromDiscount;
-  const fallbackDiscountPercent = computeDiscountPercentFromPrices(currentPrice, oldPrice);
-  const discountPercent =
-    hasManualCompareAtPrice
-      ? fallbackDiscountPercent
-      : actualDiscount > 0
-        ? actualDiscount
-        : fallbackDiscountPercent;
+  const resolved = resolveProductPrice({
+    currentPrice: originalPrice,
+    compareAtPrice,
+    fallbackDiscountPercent: actualDiscount,
+  });
 
   return {
-    currentPrice,
-    oldPrice,
-    discountPercent,
-    discountBadge: buildDiscountBadge(discountPercent),
+    currentPrice: resolved.currentPrice,
+    oldPrice: resolved.oldPrice,
+    discountPercent: resolved.discountPercent,
+    discountBadge: buildDiscountBadge(resolved.discountPercent),
   };
 }
 

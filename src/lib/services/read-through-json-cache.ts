@@ -18,7 +18,15 @@ export async function getCachedJson<T>(
   key: string,
   ttlSeconds: number,
   fetcher: () => Promise<T>,
+  options?: { requireSharedCache?: boolean },
 ): Promise<T> {
+  if (options?.requireSharedCache) {
+    const backend = await cacheService.getBackend();
+    if (backend === "memory") {
+      return fetcher();
+    }
+  }
+
   const hit = await cacheService.get(key);
   if (hit !== null && hit !== undefined && hit.length > 0) {
     try {

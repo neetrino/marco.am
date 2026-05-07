@@ -1,5 +1,6 @@
 import { getAttributeBucket, isColorAttributeKey } from '@/lib/attribute-keys';
 import { pickVariantForListingPrice } from '@/lib/product-variant-listing-pick';
+import { resolveProductPrice } from '@/lib/pricing/product-price';
 import { getListingDiscountSettings } from './listing-discount-settings';
 import { processImageUrl } from "../utils/image-utils";
 import { translations } from "../translations";
@@ -307,12 +308,7 @@ class ProductsFindTransformService {
       
       const availableColors = Array.from(colorMap.values());
 
-      const originalPrice = variant?.price || 0;
-      const finalPrice = originalPrice;
-      const hasManualCompareAtPrice =
-        typeof variant?.compareAtPrice === "number" &&
-        Number.isFinite(variant.compareAtPrice) &&
-        variant.compareAtPrice > originalPrice;
+      const currentPrice = variant?.price || 0;
       const productDiscount = product.discountPercent || 0;
       
       // Calculate applied discount with priority: productDiscount > categoryDiscount > brandDiscount > globalDiscount
@@ -335,20 +331,11 @@ class ProductsFindTransformService {
         }
       }
 
-      const manualDiscountPercent =
-        hasManualCompareAtPrice && variant?.compareAtPrice
-          ? Math.round(((variant.compareAtPrice - originalPrice) / variant.compareAtPrice) * 100)
-          : null;
-      const effectiveDiscountPercent =
-        manualDiscountPercent && manualDiscountPercent > 0
-          ? manualDiscountPercent
-          : appliedDiscount > 0
-            ? appliedDiscount
-            : null;
-      const computedOldPrice =
-        !hasManualCompareAtPrice && appliedDiscount > 0 && originalPrice > 0
-          ? originalPrice / (1 - appliedDiscount / 100)
-          : null;
+      const pricing = resolveProductPrice({
+        currentPrice,
+        compareAtPrice: variant?.compareAtPrice ?? null,
+        fallbackDiscountPercent: appliedDiscount > 0 ? appliedDiscount : null,
+      });
 
       // Get categories with translations
       const categories = Array.isArray(product.categories) ? product.categories.map((cat: { id: string; translations?: Array<{ locale: string; slug: string; title: string }> }) => {
@@ -422,13 +409,10 @@ class ProductsFindTransformService {
             }
           : null,
         categories,
-        price: finalPrice,
-        originalPrice:
-          hasManualCompareAtPrice
-            ? variant?.compareAtPrice || null
-            : computedOldPrice,
-        compareAtPrice: hasManualCompareAtPrice ? variant?.compareAtPrice || null : null,
-        discountPercent: effectiveDiscountPercent,
+        price: pricing.currentPrice,
+        originalPrice: pricing.oldPrice,
+        compareAtPrice: pricing.compareAtPrice,
+        discountPercent: pricing.discountPercent,
         ...(() => {
           if (!Array.isArray(product.media) || product.media.length === 0) {
             return { image: null as string | null, images: [] as string[] };

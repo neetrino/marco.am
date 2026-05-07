@@ -22,6 +22,7 @@ export async function GET(
     const cacheKey = productDetailCacheKey(slug, lang);
     const result = await getCachedJson(cacheKey, PRODUCT_DETAIL_CACHE_TTL_SEC, () =>
       productsService.findBySlug(slug, lang),
+      { requireSharedCache: true },
     );
     return NextResponse.json(result);
   } catch (error: unknown) {

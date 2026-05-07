@@ -7,6 +7,7 @@ import {
 } from '@/lib/i18n/api-locale';
 import { extractMediaUrl } from '@/lib/utils/extractMediaUrl';
 import { processImageUrl } from '@/lib/utils/image-utils';
+import { resolveProductPrice } from '@/lib/pricing/product-price';
 
 const DEFAULT_PRODUCT_LIMIT = 8;
 const DEFAULT_CATEGORY_LIMIT = 4;
@@ -165,6 +166,10 @@ function mapProductResult(
   }
 
   const firstVariant = product.variants[0];
+  const pricing = resolveProductPrice({
+    currentPrice: firstVariant?.price ?? 0,
+    compareAtPrice: firstVariant?.compareAtPrice ?? null,
+  });
   let image = extractMediaUrl(product.media);
   if (!image && firstVariant?.imageUrl) {
     image = processImageUrl(firstVariant.imageUrl);
@@ -182,8 +187,8 @@ function mapProductResult(
     id: product.id,
     slug: translation.slug,
     title: translation.title,
-    price: firstVariant?.price ?? 0,
-    compareAtPrice: firstVariant?.compareAtPrice ?? null,
+    price: pricing.currentPrice,
+    compareAtPrice: pricing.compareAtPrice ?? pricing.oldPrice,
     image,
     category: categoryTranslation?.title ?? null,
     href: `/products/${translation.slug}`,

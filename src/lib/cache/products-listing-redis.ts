@@ -73,5 +73,7 @@ export async function getProductsListingCached(
 ): Promise<ProductsListingPayload> {
   const key = buildProductsListingRedisKey(filters);
   const ttl = resolveProductsListingTtlSeconds(filters);
-  return getCachedJson<ProductsListingPayload>(key, ttl, () => productsService.findAll(filters));
+  return getCachedJson<ProductsListingPayload>(key, ttl, () => productsService.findAll(filters), {
+    requireSharedCache: true,
+  });
 }

@@ -22,6 +22,7 @@ export async function GET(
     const cacheKey = pdpVisualCacheKey(slug, lang);
     const result = await getCachedJson(cacheKey, PDP_VISUAL_CACHE_TTL_SEC, () =>
       productsService.findBySlugVisual(slug, lang),
+      { requireSharedCache: true },
     );
     return NextResponse.json(result);
   } catch (error: unknown) {
