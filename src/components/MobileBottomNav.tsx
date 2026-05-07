@@ -15,6 +15,8 @@ import {
   MobileNavHomeLinearIcon,
   MobileNavProfileBoldIcon,
   MobileNavProfileLinearIcon,
+  MobileNavReelsBoldIcon,
+  MobileNavReelsLinearIcon,
   MobileNavWishlistBoldIcon,
   MobileNavWishlistLinearIcon,
   MobileNavWishlistBagBoldIcon,
@@ -29,7 +31,7 @@ import {
 } from './mobile-bottom-nav.constants';
 import { MobileBottomNavShopSheet } from './mobile-bottom-nav-shop-sheet';
 
-export type MobileNavIconSlot = 'home' | 'shop' | 'wishlist' | 'compare' | 'cart' | 'profile';
+export type MobileNavIconSlot = 'home' | 'shop' | 'wishlist' | 'compare' | 'reels' | 'cart' | 'profile';
 
 interface MobileNavItem {
   label: string;
@@ -78,6 +80,12 @@ function renderNavIcon(slot: MobileNavIconSlot, isActive: boolean, sizeClass: st
       ) : (
         <MobileNavCompareLinearIcon className={sizeClass} />
       );
+    case 'reels':
+      return isActive ? (
+        <MobileNavReelsBoldIcon className={sizeClass} />
+      ) : (
+        <MobileNavReelsLinearIcon className={sizeClass} />
+      );
     case 'profile':
       return isActive ? (
         <MobileNavProfileBoldIcon className={sizeClass} />
@@ -95,17 +103,21 @@ interface NavItemLinkProps {
 
 interface BaseNavItemVisualProps extends NavItemLinkProps {
   onPress?: () => void;
+  variant?: 'default' | 'centerHome';
 }
 
-function NavItemVisual({ item, pathname, cartCount, onPress }: BaseNavItemVisualProps) {
+function NavItemVisual({ item, pathname, cartCount, onPress, variant = 'default' }: BaseNavItemVisualProps) {
   const { label, href, icon: slot } = item;
   const isActive = isNavItemActive(pathname, href);
+  const isCenterHighlight = variant === 'centerHome' && slot === 'shop';
   const activeColor = MOBILE_NAV_ACTIVE_FOREGROUND;
   const inactiveColor = MOBILE_NAV_INACTIVE_ICON;
-  const iconColor = isActive ? activeColor : inactiveColor;
-  const sizeClass = 'h-6 w-6 shrink-0';
+  const iconColor = isCenterHighlight ? '#111827' : isActive ? activeColor : inactiveColor;
+  const sizeClass = isCenterHighlight ? 'h-7 w-7 shrink-0' : 'h-6 w-6 shrink-0';
   const showCartBadge = slot === 'cart' && cartCount > 0;
-  const contentClass = 'flex min-h-[44px] flex-1 items-center justify-center px-1 py-1';
+  const contentClass = isCenterHighlight
+    ? 'flex h-14 w-14 items-center justify-center'
+    : 'flex min-h-[44px] flex-1 items-center justify-center px-1 py-1';
 
   const iconWithBadge = (
     <div
@@ -121,19 +133,25 @@ function NavItemVisual({ item, pathname, cartCount, onPress }: BaseNavItemVisual
     </div>
   );
 
-  const content = isActive ? (
+  const defaultContent = isActive ? (
     <span
-      className="inline-flex max-w-full items-center gap-1.5 rounded-full px-4 py-2"
-      style={{
-        backgroundColor: MOBILE_NAV_ACTIVE_PILL_BG,
-        color: activeColor,
-      }}
+      className="inline-flex items-center justify-center rounded-full px-3 py-2"
+      style={{ backgroundColor: MOBILE_NAV_ACTIVE_PILL_BG }}
     >
       {iconWithBadge}
-      <span className="truncate text-xs font-semibold leading-tight tracking-[0.24px]">{label}</span>
     </span>
   ) : (
     <span className="inline-flex items-center justify-center py-2">{iconWithBadge}</span>
+  );
+  const content = isCenterHighlight ? (
+    <span
+      className="inline-flex h-14 w-14 -translate-y-5 items-center justify-center rounded-full bg-yellow-400 shadow-[0_8px_20px_rgba(0,0,0,0.18)] ring-4 ring-white dark:ring-zinc-950"
+      aria-label={label}
+    >
+      {iconWithBadge}
+    </span>
+  ) : (
+    defaultContent
   );
 
   if (onPress) {
@@ -162,7 +180,7 @@ function NavItemVisual({ item, pathname, cartCount, onPress }: BaseNavItemVisual
 }
 
 /**
- * Fixed mobile bottom bar — MARCO Figma: white bar, yellow pill only for the active tab.
+ * Fixed mobile bottom bar with a centered floating Shop action.
  */
 export function MobileBottomNav() {
   const pathname = usePathname();
@@ -196,42 +214,60 @@ export function MobileBottomNav() {
 
   const navItems: MobileNavItem[] = useMemo(
     () => [
-      { label: t('common.navigation.home'), href: '/', icon: 'home' },
       { label: t('common.navigation.shop'), href: '/products', icon: 'shop' },
+      { label: t('common.navigation.home'), href: '/', icon: 'home' },
       { label: t('common.navigation.wishlist'), href: '/wishlist', icon: 'wishlist' },
       { label: t('common.navigation.compare'), href: '/compare', icon: 'compare' },
+      { label: t('common.navigation.reels'), href: '/reels', icon: 'reels' },
       { label: t('common.navigation.cart'), href: '/cart', icon: 'cart' },
       { label: t('common.navigation.profile'), href: '/profile', icon: 'profile' },
     ],
     [t],
   );
+  const centerItem = navItems.find((item) => item.icon === 'shop');
+  const sideItems = navItems.filter((item) => item.icon !== 'shop');
+  const leftItems = sideItems.slice(0, 3);
+  const rightItems = sideItems.slice(3);
 
   return (
     <>
       <nav className="lg:hidden pointer-events-none fixed bottom-0 left-0 right-0 z-50 w-full" aria-label="Primary">
         <div className="pointer-events-auto mx-auto max-w-md">
           <div
-            className="overflow-hidden bg-white pb-[max(0.5rem,env(safe-area-inset-bottom,0px))] dark:bg-zinc-950"
+            className="overflow-visible bg-white pb-[max(0.5rem,env(safe-area-inset-bottom,0px))] dark:bg-zinc-950"
             style={{
               borderTopLeftRadius: MOBILE_NAV_TOP_CORNER_RADIUS_PX,
               borderTopRightRadius: MOBILE_NAV_TOP_CORNER_RADIUS_PX,
               boxShadow: MOBILE_NAV_BOX_SHADOW,
             }}
           >
-            <div className="mx-auto flex max-w-md items-center justify-between px-4 pt-3 pb-2">
-              {navItems.map((item) =>
-                item.icon === 'shop' ? (
-                  <NavItemVisual
-                    key={item.href}
-                    item={item}
-                    pathname={pathname}
-                    cartCount={cartCount}
-                    onPress={handleShopPress}
-                  />
-                ) : (
-                  <NavItemVisual key={item.href} item={item} pathname={pathname} cartCount={cartCount} />
-                ),
-              )}
+            <div className="relative mx-auto max-w-md px-4 pt-3 pb-2">
+              <div className="flex items-center">
+                <div className="flex flex-1 items-center justify-between gap-1">
+                  {leftItems.map((item) => (
+                    <NavItemVisual key={item.href} item={item} pathname={pathname} cartCount={cartCount} />
+                  ))}
+                </div>
+                <div className="w-14 shrink-0" aria-hidden="true" />
+                <div className="flex flex-1 items-center justify-between gap-1">
+                  {rightItems.map((item) => (
+                    <NavItemVisual key={item.href} item={item} pathname={pathname} cartCount={cartCount} />
+                  ))}
+                </div>
+              </div>
+              {centerItem ? (
+                <div className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2">
+                  <div className="pointer-events-auto">
+                    <NavItemVisual
+                      item={centerItem}
+                      pathname={pathname}
+                      cartCount={cartCount}
+                      onPress={handleShopPress}
+                      variant="centerHome"
+                    />
+                  </div>
+                </div>
+              ) : null}
             </div>
           </div>
         </div>

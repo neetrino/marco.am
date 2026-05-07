@@ -163,17 +163,14 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
       aria-modal="true"
     >
         <div
-          className="relative flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden overscroll-y-contain px-3 min-[400px]:px-4"
+          className="relative flex min-h-0 flex-1 flex-col overflow-hidden px-3 min-[400px]:px-4"
         >
-            <div className="flex flex-col gap-y-[clamp(0.35rem,1.2dvh,0.75rem)] pb-2 text-marco-black dark:text-white">
+            <div className="flex min-h-0 flex-1 flex-col gap-y-[clamp(0.35rem,1.2dvh,0.75rem)] pb-2 text-marco-black dark:text-white">
               <div className={MOBILE_DRAWER_MENU_HEADER_ROW_CLASS}>
-                <h2 className="text-base font-bold text-marco-black dark:text-white">
-                  {t('common.menu.title')}
-                </h2>
                 <button
                   type="button"
                   onClick={closeDrawer}
-                  className={`${MOBILE_DRAWER_CLOSE_BTN_CLASS} absolute right-0 top-1/2 -translate-y-1/2`}
+                  className={`${MOBILE_DRAWER_CLOSE_BTN_CLASS} absolute right-0 top-1/2 mt-4 -translate-y-1/2 !bg-marco-yellow !text-marco-black dark:!bg-marco-yellow dark:!text-marco-black`}
                   aria-label={t('common.ariaLabels.closeMenu')}
                 >
                   <svg className="mx-auto h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -181,9 +178,9 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
                   </svg>
                 </button>
               </div>
-              <div className={`${MOBILE_DRAWER_CONTENT_MAX_CLASS} flex flex-col`}>
+              <div className={`${MOBILE_DRAWER_CONTENT_MAX_CLASS} flex min-h-0 flex-1 flex-col`}>
             <nav
-              className="flex flex-col gap-y-[clamp(0.3rem,1.1dvh,0.5rem)]"
+              className="flex min-h-0 flex-1 flex-col justify-center gap-y-[clamp(0.3rem,1.1dvh,0.5rem)] overflow-y-auto overscroll-y-contain pb-2"
               aria-label={t('common.menu.title')}
             >
               {otherPrimaryLinks.map((link) =>
@@ -253,7 +250,7 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
               )}
             </nav>
 
-              <footer className="flex shrink-0 flex-col">
+              <footer className="mt-auto flex shrink-0 flex-col pb-1">
                 {!hideHeaderSocialLinks ? (
                   <div className="mt-5 flex shrink-0 justify-center pb-2 pt-1 sm:mt-6">
                     <HeaderSocialCircleLinks comfortableTouch />
