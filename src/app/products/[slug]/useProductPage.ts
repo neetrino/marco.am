@@ -111,6 +111,7 @@ export function useProductPage({
     attributeGroups,
     selectedColor,
     selectedSize,
+    selectedAttributeValues,
   });
 
   const { quantity, setQuantity: _setQuantity, maxQuantity, adjustQuantity } = useProductQuantity({

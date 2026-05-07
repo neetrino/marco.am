@@ -14,7 +14,6 @@ import {
 } from '../../../components/header/header.constants';
 import {
   ProductAttributesSelector,
-  VARIANT_PICKER_ATTRIBUTE_KEYS,
 } from './ProductAttributesSelector';
 import { stripDuplicateSpecificationDescriptionHtml } from './strip-duplicate-specification-description-html';
 import type { AttributeGroupValue, Product, ProductVariant, VariantOption } from './types';
@@ -111,11 +110,8 @@ export function ProductInfoAndActions({
     .replace(/<[^>]*>/g, '')
     .replace(/&nbsp;/gi, ' ')
     .trim().length > 0;
-  const hasVariantPickerAttributes = Array.from(VARIANT_PICKER_ATTRIBUTE_KEYS).some(
-    (key) => (attributeGroups.get(key)?.length ?? 0) > 0,
-  );
   const hasAttributeSelectors =
-    hasVariantPickerAttributes ||
+    attributeGroups.size > 0 ||
     colorGroups.length > 0 ||
     (!product?.productAttributes && sizeGroups.length > 0);
 

@@ -33,11 +33,18 @@ export function useProductVariantConversion({
         firstVariant: productVariants[0],
       });
       
+      const hasExplicitProductAttributeIds = (window as any).__productAttributeIdsLoaded === true;
+      const explicitProductAttributeIds = Array.isArray((window as any).__productAttributeIds)
+        ? ((window as any).__productAttributeIds as string[])
+        : [];
+      const allowedAttributeIds = hasExplicitProductAttributeIds
+        ? new Set<string>(explicitProductAttributeIds)
+        : null;
       const attributeIdsSet = new Set<string>();
       const attributeValueIdsMap: Record<string, string[]> = {};
       
       productVariants.forEach((variant: any) => {
-        if (variant.attributes && typeof variant.attributes === 'object') {
+        if (!hasExplicitProductAttributeIds && variant.attributes && typeof variant.attributes === 'object') {
           Object.keys(variant.attributes).forEach((attributeKey) => {
             const matchedAttribute = attributes.find((attribute) => attribute.key === attributeKey);
             if (matchedAttribute) {
@@ -67,7 +74,11 @@ export function useProductVariantConversion({
               }
             }
             
-            if (attributeId && valueId) {
+            if (
+              attributeId &&
+              valueId &&
+              (!allowedAttributeIds || allowedAttributeIds.has(attributeId))
+            ) {
               attributeIdsSet.add(attributeId);
               
               if (!attributeValueIdsMap[attributeId]) {
@@ -81,22 +92,23 @@ export function useProductVariantConversion({
         }
       });
       
-      const productAttributeIds = (window as any).__productAttributeIds || [];
-      if (productAttributeIds.length > 0) {
-        logger.devLog('📋 [ADMIN] Adding product attributeIds to selected attributes:', productAttributeIds);
-        productAttributeIds.forEach((attrId: string) => {
+      if (hasExplicitProductAttributeIds) {
+        logger.devLog(
+          '📋 [ADMIN] Using product attributeIds as selected attributes:',
+          explicitProductAttributeIds
+        );
+        explicitProductAttributeIds.forEach((attrId: string) => {
           attributeIdsSet.add(attrId);
         });
       }
       
-      if (attributeIdsSet.size > 0) {
-        logger.devLog('📋 [ADMIN] Setting selectedAttributesForVariants with all attributes:', Array.from(attributeIdsSet));
-        setSelectedAttributesForVariants(attributeIdsSet);
-      }
+      logger.devLog(
+        '📋 [ADMIN] Setting selectedAttributesForVariants:',
+        Array.from(attributeIdsSet)
+      );
+      setSelectedAttributesForVariants(attributeIdsSet);
       
-      if (Object.keys(attributeValueIdsMap).length > 0) {
-        setSelectedAttributeValueIds(attributeValueIdsMap);
-      }
+      setSelectedAttributeValueIds(attributeValueIdsMap);
       
       interface VariantData {
         id: string;
@@ -121,6 +133,9 @@ export function useProductVariantConversion({
             const attribute = attributes.find(a => a.key === attributeKey);
             if (!attribute) {
               console.warn(`⚠️ [ADMIN] Attribute not found for key: ${attributeKey}`);
+              return;
+            }
+            if (allowedAttributeIds && !allowedAttributeIds.has(attribute.id)) {
               return;
             }
             
@@ -171,6 +186,9 @@ export function useProductVariantConversion({
                 attributeId = foundAttr.id;
                 attributeKey = foundAttr.key;
               }
+            }
+            if (allowedAttributeIds && attributeId && !allowedAttributeIds.has(attributeId)) {
+              return;
             }
             
             if (attributeId && !valueId && opt.value) {

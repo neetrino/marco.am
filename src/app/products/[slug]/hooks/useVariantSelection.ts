@@ -40,12 +40,12 @@ export function useVariantSelection({
     switchToVariantImage(variant, product, images, setCurrentImageIndex);
   }, [product, images, setCurrentImageIndex]);
 
-  const hasSelectedVariantInCurrentProduct = useMemo(() => {
+  const hasSelectedVariantInCurrentProduct = (() => {
     if (!product?.variants?.length || !selectedVariant) {
       return false;
     }
     return product.variants.some((variant) => variant.id === selectedVariant.id);
-  }, [product?.variants, selectedVariant]);
+  })();
 
   // Initialize variant when product changes
   useEffect(() => {

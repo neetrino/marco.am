@@ -58,7 +58,7 @@ export async function createAndSubmitPayload({
       featured: formData.featured,
       locale: 'en',
       variants: variants,
-      attributeIds: attributeIds.length > 0 ? attributeIds : undefined,
+      attributeIds,
     };
     
     if (finalMedia.length > 0) {

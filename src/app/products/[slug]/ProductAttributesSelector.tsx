@@ -57,7 +57,7 @@ const getColorValue = (colorName: string): string => {
   return colorMap[normalizedName] || '#CCCCCC';
 };
 
-/** Spec / marketing attributes stay in description; only variant axes are pickers on PDP. */
+/** Canonical variant picker keys for compatibility and legacy fallbacks. */
 export const VARIANT_PICKER_ATTRIBUTE_KEYS = new Set<string>(['color', 'size']);
 
 export function ProductAttributesSelector({
@@ -76,17 +76,14 @@ export function ProductAttributesSelector({
   getOptionValue,
 }: ProductAttributesSelectorProps) {
   const attributeGroupsEntries = Array.from(attributeGroups.entries());
-  const variantAttributeEntries = attributeGroupsEntries.filter(([attrKey]) => {
-    return VARIANT_PICKER_ATTRIBUTE_KEYS.has(attrKey);
-  });
+  const variantAttributeEntries = attributeGroupsEntries;
   logger.devLog('🎨 [PRODUCT ATTRIBUTES SELECTOR] attributeGroups entries:', attributeGroupsEntries.length);
   logger.devLog('🎨 [PRODUCT ATTRIBUTES SELECTOR] attributeGroups keys:', Array.from(attributeGroups.keys()));
   logger.devLog('🎨 [PRODUCT ATTRIBUTES SELECTOR] product.productAttributes:', product?.productAttributes);
 
   return (
     <div className="mt-6 space-y-2 md:space-y-2.5">
-      {/* Attribute Selectors - Support both new (productAttributes) and old (colorGroups) format */}
-      {/* Only color/size are interactive pickers; other keys are specs (shown in description, not here). */}
+      {/* Attribute selectors from saved product attribute groups */}
       {variantAttributeEntries.length > 0 ? (
         variantAttributeEntries.map(([attrKey, attrGroups]) => {
           // Try to get attribute name from productAttributes if available
