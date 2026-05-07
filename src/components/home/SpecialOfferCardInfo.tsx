@@ -5,7 +5,6 @@ import { ProductColors } from '../ProductCard/ProductColors';
 import { ProductPdpPrefetchLink } from '../ProductPdpPrefetchLink';
 
 import {
-  SPECIAL_OFFERS_COLOR_SWATCH_COLUMN_PADDING_TOP_PX,
   SPECIAL_OFFERS_COLOR_SWATCH_GAP_PX,
   SPECIAL_OFFERS_COLOR_SWATCH_SIZE_PX,
   SPECIAL_OFFERS_IMAGE_TO_TEXT_GAP_PX,
@@ -44,7 +43,7 @@ export function SpecialOfferCardInfo({
 
   return (
     <div
-      className="flex gap-2"
+      className="flex"
       style={{ marginTop: `${SPECIAL_OFFERS_IMAGE_TO_TEXT_GAP_PX}px` }}
     >
       <div className="min-w-0 flex-1">
@@ -70,23 +69,18 @@ export function SpecialOfferCardInfo({
             {product.title}
           </h3>
         </ProductPdpPrefetchLink>
+        {product.colors && product.colors.length > 1 ? (
+          <div className="mt-1">
+            <ProductColors
+              colors={product.colors}
+              isCompact
+              maxVisible={2}
+              swatchSizePx={SPECIAL_OFFERS_COLOR_SWATCH_SIZE_PX}
+              gapPx={SPECIAL_OFFERS_COLOR_SWATCH_GAP_PX}
+            />
+          </div>
+        ) : null}
       </div>
-      {product.colors && product.colors.length > 1 ? (
-        <div
-          className="shrink-0"
-          style={{
-            paddingTop: SPECIAL_OFFERS_COLOR_SWATCH_COLUMN_PADDING_TOP_PX,
-          }}
-        >
-          <ProductColors
-            colors={product.colors}
-            isCompact
-            maxVisible={2}
-            swatchSizePx={SPECIAL_OFFERS_COLOR_SWATCH_SIZE_PX}
-            gapPx={SPECIAL_OFFERS_COLOR_SWATCH_GAP_PX}
-          />
-        </div>
-      ) : null}
     </div>
   );
 }
