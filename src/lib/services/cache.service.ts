@@ -28,6 +28,8 @@ const ERROR_COOLDOWN = 30000; // Only log errors every 30 seconds
 const MEMORY_CACHE_MAX_KEYS = 300;
 const memoryCache = new Map<string, { value: string; expiresAt: number }>();
 
+export type CacheBackend = "upstash" | "redis" | "memory";
+
 function memoryGet(key: string): string | null {
   const entry = memoryCache.get(key);
   if (!entry) return null;
@@ -340,6 +342,22 @@ export function isAvailable(): boolean {
   return redisAvailable;
 }
 
+/**
+ * Resolve active cache backend. Returns "memory" when shared Redis/Upstash is unavailable.
+ */
+export async function getBackend(): Promise<CacheBackend> {
+  if (!connectionAttempted) {
+    await initRedis();
+  }
+  if (upstashClient) {
+    return "upstash";
+  }
+  if (redisClient && redisAvailable) {
+    return "redis";
+  }
+  return "memory";
+}
+
 export const cacheService = {
   get,
   set,
@@ -348,5 +366,6 @@ export const cacheService = {
   keys,
   deletePattern,
   isAvailable,
+  getBackend,
 };
 

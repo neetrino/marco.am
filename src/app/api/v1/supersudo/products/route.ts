@@ -124,6 +124,41 @@ function validateAndNormalizeFilters(searchParams: URLSearchParams): {
   };
 }
 
+function isValidAttributeIds(attributeIds: unknown): attributeIds is string[] {
+  return (
+    Array.isArray(attributeIds) &&
+    attributeIds.every((id) => typeof id === "string" && id.trim().length > 0)
+  );
+}
+
+function hasValidVariantOptions(variant: unknown): boolean {
+  if (!variant || typeof variant !== "object") {
+    return false;
+  }
+  const options = (variant as { options?: unknown }).options;
+  if (options === undefined) {
+    return true;
+  }
+  if (!Array.isArray(options)) {
+    return false;
+  }
+  return options.every((option) => {
+    if (!option || typeof option !== "object") {
+      return false;
+    }
+    const optionData = option as { valueId?: unknown; attributeKey?: unknown; value?: unknown };
+    if (typeof optionData.valueId === "string" && optionData.valueId.trim().length > 0) {
+      return true;
+    }
+    return (
+      typeof optionData.attributeKey === "string" &&
+      optionData.attributeKey.trim().length > 0 &&
+      typeof optionData.value === "string" &&
+      optionData.value.trim().length > 0
+    );
+  });
+}
+
 /**
  * GET /api/v1/supersudo/products
  * Get list of products with filters and pagination
@@ -321,6 +356,19 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (body.attributeIds !== undefined && !isValidAttributeIds(body.attributeIds)) {
+      return NextResponse.json(
+        {
+          type: "https://api.shop.am/problems/validation-error",
+          title: "Validation Error",
+          status: 400,
+          detail: "Field 'attributeIds' must be an array of non-empty strings",
+          instance: req.url,
+        },
+        { status: 400 }
+      );
+    }
+
     if (body.productClass !== undefined && normalizeProductClass(body.productClass) === null) {
       return NextResponse.json(
         {
@@ -346,6 +394,20 @@ export async function POST(req: NextRequest) {
             title: "Validation Error",
             status: 400,
             detail: `Field 'variants[${index}].productClass' must be one of: retail, wholesale`,
+            instance: req.url,
+          },
+          { status: 400 }
+        );
+      }
+
+      if (!hasValidVariantOptions(variant)) {
+        return NextResponse.json(
+          {
+            type: "https://api.shop.am/problems/validation-error",
+            title: "Validation Error",
+            status: 400,
+            detail:
+              `Field 'variants[${index}].options' must be an array of option objects with either 'valueId' or ('attributeKey' + 'value')`,
             instance: req.url,
           },
           { status: 400 }

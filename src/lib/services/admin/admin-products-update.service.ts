@@ -17,7 +17,7 @@ class AdminProductsUpdateService {
     
     // Revalidate cache for this product and related pages
     const productSlug = result.translations[0]?.slug;
-    revalidateProductCache(productId, productSlug);
+    await revalidateProductCache(productId, productSlug);
     
     return result;
   }

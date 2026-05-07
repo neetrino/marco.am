@@ -71,7 +71,6 @@ export function RelatedProducts({ currentProductSlug, language }: RelatedProduct
       inStock: product.inStock,
       brand: product.brand ?? null,
       labels: undefined,
-      reviewCount: undefined,
       defaultVariantId: undefined,
       colors:
         product.variants?.map((variant, idx) => ({

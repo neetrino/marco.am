@@ -40,17 +40,36 @@ export function useVariantSelection({
     switchToVariantImage(variant, product, images, setCurrentImageIndex);
   }, [product, images, setCurrentImageIndex]);
 
+  const hasSelectedVariantInCurrentProduct = (() => {
+    if (!product?.variants?.length || !selectedVariant) {
+      return false;
+    }
+    return product.variants.some((variant) => variant.id === selectedVariant.id);
+  })();
+
   // Initialize variant when product changes
   useEffect(() => {
-    if (product && product.variants && product.variants.length > 0 && !selectedVariant) {
-      const initialVariant = product.variants[0];
-      setSelectedVariant(initialVariant);
-      const colorValue = getOptionValueFn(initialVariant.options, 'color');
-      const sizeValue = getOptionValueFn(initialVariant.options, 'size');
-      if (colorValue) setSelectedColor(colorValue);
-      if (sizeValue) setSelectedSize(sizeValue);
+    if (!product?.variants?.length) {
+      setSelectedVariant(null);
+      setSelectedColor(null);
+      setSelectedSize(null);
+      setSelectedAttributeValues(new Map());
+      return;
     }
-  }, [product, selectedVariant, getOptionValueFn, setSelectedVariant, setSelectedColor, setSelectedSize]);
+
+    if (hasSelectedVariantInCurrentProduct) {
+      return;
+    }
+
+    const initialVariant = product.variants[0];
+    setSelectedVariant(initialVariant);
+    setSelectedAttributeValues(new Map());
+
+    const colorValue = getOptionValueFn(initialVariant.options, 'color');
+    const sizeValue = getOptionValueFn(initialVariant.options, 'size');
+    setSelectedColor(colorValue ?? null);
+    setSelectedSize(sizeValue ?? null);
+  }, [product, hasSelectedVariantInCurrentProduct, getOptionValueFn]);
 
   // Update variant when selections change
   useEffect(() => {
@@ -104,8 +123,24 @@ export function useVariantSelection({
   }, [selectedAttributeValues]);
 
   const currentVariant = useMemo(() => {
-    return selectedVariant || findVariantByColorAndSizeFn(selectedColor, selectedSize) || product?.variants?.[0] || null;
-  }, [selectedVariant, findVariantByColorAndSizeFn, selectedColor, selectedSize, product?.variants]);
+    const selectedVariantFromCurrentProduct = hasSelectedVariantInCurrentProduct
+      ? selectedVariant
+      : null;
+
+    return (
+      selectedVariantFromCurrentProduct ||
+      findVariantByColorAndSizeFn(selectedColor, selectedSize) ||
+      product?.variants?.[0] ||
+      null
+    );
+  }, [
+    selectedVariant,
+    hasSelectedVariantInCurrentProduct,
+    findVariantByColorAndSizeFn,
+    selectedColor,
+    selectedSize,
+    product?.variants,
+  ]);
 
   return {
     selectedVariant,

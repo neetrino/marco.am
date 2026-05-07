@@ -5,8 +5,43 @@ import { resolveProductClass } from "@/lib/constants/product-class";
 import { ensureProductAttributesTable } from "../../../utils/db-ensure";
 import type { UpdateProductData } from "./types";
 import { collectVariantImages, buildProductUpdateData, updateProductTranslation, updateProductLabels, updateProductAttributes } from "./product-updater";
-import { updateOrCreateVariant } from "./variant-updater";
+import { prepareVariantForWrite, updateOrCreateVariant } from "./variant-updater";
 import { updateAttributeValueImageUrls } from "./attribute-value-updater";
+
+function sanitizeUpdatePayload(data: UpdateProductData) {
+  return {
+    keys: Object.keys(data),
+    hasVariants: data.variants !== undefined,
+    variantsCount: data.variants?.length ?? 0,
+    hasMedia: data.media !== undefined,
+    mediaCount: Array.isArray(data.media) ? data.media.length : 0,
+    hasLabels: data.labels !== undefined,
+    labelsCount: data.labels?.length ?? 0,
+    hasAttributeIds: data.attributeIds !== undefined,
+    attributeIdsCount: data.attributeIds?.length ?? 0,
+    locale: data.locale ?? "en",
+  };
+}
+
+function validateProductUpdatePayload(productId: string, data: UpdateProductData): void {
+  if (!productId || typeof productId !== "string") {
+    throw {
+      status: 400,
+      type: "https://api.shop.am/problems/validation-error",
+      title: "Validation Error",
+      detail: "Invalid product id",
+    };
+  }
+
+  if (data.variants !== undefined && !Array.isArray(data.variants)) {
+    throw {
+      status: 400,
+      type: "https://api.shop.am/problems/validation-error",
+      title: "Validation Error",
+      detail: "Field 'variants' must be an array when provided",
+    };
+  }
+}
 
 /**
  * Update product
@@ -15,8 +50,13 @@ export async function updateProduct(
   productId: string,
   data: UpdateProductData
 ) {
+  const payloadSummary = sanitizeUpdatePayload(data);
+  let operationStep = "validate-payload";
+
   try {
-    logger.info('Updating product', { productId });
+    logger.info("Updating product", { productId, payloadSummary });
+    validateProductUpdatePayload(productId, data);
+    operationStep = "load-existing-product";
     
     // Check if product exists
     const existing = await db.product.findUnique({
@@ -36,31 +76,54 @@ export async function updateProduct(
     }
 
     if (data.attributeIds !== undefined) {
+      operationStep = "ensure-product-attributes-table";
       const tableReady = await ensureProductAttributesTable();
       if (!tableReady) {
         throw new Error("Product attributes table is not available");
       }
     }
 
-    // Execute everything in a transaction for atomicity and speed
+    operationStep = "prepare-update-data";
+
+    const existingVariantImageUrls =
+      data.variants === undefined
+        ? (
+            await db.productVariant.findMany({
+              where: { productId },
+              select: { imageUrl: true },
+            })
+          )
+            .map((variant) => variant.imageUrl)
+            .filter((url): url is string => typeof url === "string" && url.length > 0)
+        : [];
+
+    const fallbackProductClass = resolveProductClass(data.productClass ?? existing.productClass);
+    const preparedVariants =
+      data.variants === undefined
+        ? undefined
+        : await Promise.all(
+            data.variants.map((variant) =>
+              prepareVariantForWrite(variant, fallbackProductClass),
+            ),
+          );
+
+    const allVariantImages = await collectVariantImages(preparedVariants, existingVariantImageUrls);
+    const updateData = await buildProductUpdateData(data, allVariantImages, existing);
+
+    operationStep = "transaction-write";
+
     const result = await db.$transaction(async (tx: Prisma.TransactionClient) => {
-      // Collect all variant images to exclude from main media (if media is being updated)
-      const allVariantImages = await collectVariantImages(data.variants, productId, tx);
-
-      // 1. Update product base data
-      const updateData = await buildProductUpdateData(data, allVariantImages, existing);
-
-      // 2. Update translation
+      // 1. Update translation
       await updateProductTranslation(productId, data, tx);
 
-      // 3. Update labels
+      // 2. Update labels
       await updateProductLabels(productId, data.labels, tx);
 
-      // 3.5. Update ProductAttribute relations
+      // 3. Update ProductAttribute relations
       await updateProductAttributes(productId, data.attributeIds, tx);
 
       // 4. Update variants
-      if (data.variants !== undefined) {
+      if (preparedVariants !== undefined) {
         // Get existing variants with their IDs and SKUs for matching
         const existingVariants = await tx.productVariant.findMany({
           where: { productId },
@@ -77,15 +140,13 @@ export async function updateProduct(
         const incomingVariantIds = new Set<string>();
         
         const locale = data.locale || "en";
-        const fallbackProductClass = resolveProductClass(data.productClass ?? existing.productClass);
         
         // Process each variant: update if exists, create if new
-        if (data.variants.length > 0) {
-          for (const variant of data.variants) {
+        if (preparedVariants.length > 0) {
+          for (const variant of preparedVariants) {
             const variantId = await updateOrCreateVariant(
               variant,
               productId,
-              fallbackProductClass,
               locale,
               existingVariantIds,
               existingSkuMap,
@@ -98,21 +159,28 @@ export async function updateProduct(
         // Delete variants that are no longer in the list
         const variantsToDelete = Array.from(existingVariantIds).filter(id => !incomingVariantIds.has(id));
         if (variantsToDelete.length > 0) {
+          const cartItemsDeleteResult = await tx.cartItem.deleteMany({
+            where: {
+              productId,
+              variantId: { in: variantsToDelete },
+            },
+          });
+
           await tx.productVariant.deleteMany({
             where: {
               id: { in: variantsToDelete },
               productId,
             },
           });
-          logger.info(`Deleted ${variantsToDelete.length} variant(s)`, { variantIds: variantsToDelete });
+          logger.info(`Deleted ${variantsToDelete.length} variant(s)`, {
+            variantIds: variantsToDelete,
+            deletedCartItemsCount: cartItemsDeleteResult.count,
+          });
         }
       }
 
-      // Update attribute value imageUrls from variant images
-      await updateAttributeValueImageUrls(productId, tx);
-
       // 5. Finally update the product record itself
-      return await tx.product.update({
+      return tx.product.update({
         where: { id: productId },
         data: updateData,
         include: {
@@ -125,12 +193,26 @@ export async function updateProduct(
           labels: true,
         },
       });
+    }, {
+      maxWait: 5000,
+      timeout: 10000,
     });
+
+    operationStep = "post-commit-attribute-value-sync";
+    await updateAttributeValueImageUrls(productId, db);
 
     return result;
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    logger.error("updateProduct error", { error: errorMessage });
+    const prismaCode =
+      error instanceof Prisma.PrismaClientKnownRequestError ? error.code : undefined;
+    logger.error("updateProduct error", {
+      productId,
+      operationStep,
+      payloadSummary,
+      prismaCode,
+      error: errorMessage,
+    });
     throw error;
   }
 }

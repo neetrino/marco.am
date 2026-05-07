@@ -30,6 +30,7 @@ type HeaderProps = {
 
 export function Header({ initialLanguage }: HeaderProps) {
   const pathname = usePathname();
+  const isReelsWatchRoute = pathname?.startsWith('/reels/watch') ?? false;
   const data = useHeaderData();
   const layout = useHeaderLayoutMetrics();
   const { t } = useTranslation();
@@ -90,7 +91,13 @@ export function Header({ initialLanguage }: HeaderProps) {
   }
 
   return (
-    <header className="sticky top-0 z-50 border-b border-marco-border bg-white shadow-sm backdrop-blur-sm dark:border-white/10 dark:bg-[var(--app-bg)]">
+    <header
+      className={`sticky top-0 z-50 border-b shadow-sm backdrop-blur-sm ${
+        isReelsWatchRoute
+          ? 'border-white/10 bg-black text-white'
+          : 'border-marco-border bg-white dark:border-white/10 dark:bg-[var(--app-bg)]'
+      }`}
+    >
       <Suspense fallback={null}>
         <HeaderSearchSync
           setSearchQuery={setSearchQuery}
@@ -99,7 +106,13 @@ export function Header({ initialLanguage }: HeaderProps) {
         />
       </Suspense>
       {!compactPrimaryNav && (
-        <div className="w-full border-b border-marco-border bg-white dark:border-white/10 dark:bg-[var(--app-bg)]">
+        <div
+          className={`w-full border-b ${
+            isReelsWatchRoute
+              ? 'border-white/10 bg-black text-white'
+              : 'border-marco-border bg-white dark:border-white/10 dark:bg-[var(--app-bg)]'
+          }`}
+        >
           <HeaderDesktopTopRow innerRef={desktopTopRowInnerRef} />
         </div>
       )}
@@ -115,7 +128,9 @@ export function Header({ initialLanguage }: HeaderProps) {
         )}
 
       <div
-        className={`${HEADER_CONTAINER_CLASS} ${compactPrimaryNav ? 'flex' : 'hidden'} items-center justify-between gap-2 border-b border-marco-border py-2`}
+        className={`${HEADER_CONTAINER_CLASS} ${compactPrimaryNav ? 'flex' : 'hidden'} items-center justify-between gap-2 border-b py-2 ${
+          isReelsWatchRoute ? 'border-white/10 bg-black text-white' : 'border-marco-border'
+        }`}
       >
         <button
           type="button"

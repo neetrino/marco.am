@@ -13,12 +13,24 @@ const TidioDeferredLoader = dynamic(
 );
 
 const ADMIN_PATH_PREFIX = '/supersudo';
+const PROFILE_PATH_PREFIX = '/profile';
+const REEL_WATCH_PATH_PREFIXES = ['/reels/watch', '/reel/watch'] as const;
 
 function isAdminPath(pathname: string): boolean {
   return pathname === ADMIN_PATH_PREFIX || pathname.startsWith(`${ADMIN_PATH_PREFIX}/`);
 }
 
-function cleanupTidioForAdmin(): void {
+function isProfilePath(pathname: string): boolean {
+  return pathname === PROFILE_PATH_PREFIX || pathname.startsWith(`${PROFILE_PATH_PREFIX}/`);
+}
+
+function isReelWatchPath(pathname: string): boolean {
+  return REEL_WATCH_PATH_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  );
+}
+
+function cleanupTidioArtifacts(): void {
   const selectors = [
     '#tidio-widget-js',
     '#marco-tidio-mobile-offset',
@@ -49,15 +61,18 @@ function cleanupTidioForAdmin(): void {
 export function TidioDynamicLoader() {
   const pathname = usePathname();
   const isAdmin = isAdminPath(pathname);
+  const isProfile = isProfilePath(pathname);
+  const isReelWatch = isReelWatchPath(pathname);
+  const shouldHideTidio = isAdmin || isProfile || isReelWatch;
 
   useEffect(() => {
-    if (!isAdmin) {
+    if (!shouldHideTidio) {
       return;
     }
-    cleanupTidioForAdmin();
-  }, [isAdmin]);
+    cleanupTidioArtifacts();
+  }, [shouldHideTidio]);
 
-  if (isAdmin) {
+  if (shouldHideTidio) {
     return null;
   }
 

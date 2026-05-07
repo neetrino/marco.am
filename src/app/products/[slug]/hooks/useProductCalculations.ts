@@ -7,6 +7,7 @@ interface UseProductCalculationsProps {
   attributeGroups: Map<string, AttributeGroupValue[]>;
   selectedColor: string | null;
   selectedSize: string | null;
+  selectedAttributeValues: Map<string, string>;
 }
 
 export function useProductCalculations({
@@ -15,6 +16,7 @@ export function useProductCalculations({
   attributeGroups,
   selectedColor,
   selectedSize,
+  selectedAttributeValues,
 }: UseProductCalculationsProps) {
   const variantCurrentPrice = currentVariant?.currentPrice ?? currentVariant?.price ?? 0;
   const price = variantCurrentPrice;
@@ -61,11 +63,23 @@ export function useProductCalculations({
     return groups;
   }, [attributeGroups]);
 
-  const hasColorAttribute = colorGroups.length > 1 && colorGroups.some((g) => g.stock > 0);
-  const hasSizeAttribute = sizeGroups.length > 1 && sizeGroups.some((g) => g.stock > 0);
-  const needsColor = hasColorAttribute && !selectedColor;
-  const needsSize = hasSizeAttribute && !selectedSize;
-  const isVariationRequired = needsColor || needsSize;
+  const isValueSelectedForAttribute = (attrKey: string): boolean => {
+    if (attrKey === 'color') {
+      return Boolean(selectedColor);
+    }
+    if (attrKey === 'size') {
+      return Boolean(selectedSize);
+    }
+    return Boolean(selectedAttributeValues.get(attrKey));
+  };
+
+  const isVariationRequired = Array.from(attributeGroups.entries()).some(([attrKey, values]) => {
+    const hasSelectableValues = values.length > 1 && values.some((value) => value.stock > 0);
+    if (!hasSelectableValues) {
+      return false;
+    }
+    return !isValueSelectedForAttribute(attrKey);
+  });
 
   const unavailableAttributes = useMemo(() => {
     const unavailable = new Map<string, boolean>();

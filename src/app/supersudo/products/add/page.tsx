@@ -167,8 +167,6 @@ function AddProductPageContent() {
     newCategoryName: formState.newCategoryName,
     isEditMode,
     productId,
-    getColorAttribute,
-    getSizeAttribute,
     isClothingCategory,
   });
 

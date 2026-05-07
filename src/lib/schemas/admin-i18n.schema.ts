@@ -3,7 +3,6 @@ import { z } from "zod";
 const i18nTranslationScopeValues = [
   "home-hero",
   "home-why-choose-us",
-  "home-customer-reviews",
   "home-brand-partners",
   "home-footer",
   "banners",

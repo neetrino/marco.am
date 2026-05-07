@@ -34,7 +34,7 @@ export function ReelLikeButton({
   }, [burstVersion]);
 
   return (
-    <div className="absolute bottom-[max(9.75rem,calc(env(safe-area-inset-bottom,0px)+9rem))] right-3 z-30 md:bottom-[8.75rem] md:right-4">
+    <div className="absolute bottom-[max(11.25rem,calc(env(safe-area-inset-bottom,0px)+10.75rem))] right-3 z-30 md:bottom-[14.5rem] md:right-4">
       <div className="relative">
         {isBursting ? (
           <Heart

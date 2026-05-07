@@ -289,8 +289,8 @@ export const SPECIAL_OFFERS_IMAGE_TO_TEXT_GAP_PX = 31;
 /** On mobile 2×2 cards — shift brand/title/stars/price block down (translateY). */
 export const SPECIAL_OFFERS_CARD_TEXT_SHIFT_DOWN_MOBILE_PX = 2;
 
-/** Color variant swatches beside brand — Figma `305:2171` (Slide). */
-export const SPECIAL_OFFERS_COLOR_SWATCH_SIZE_PX = 11;
+/** Color variant swatches under title — enlarged for clearer visibility. */
+export const SPECIAL_OFFERS_COLOR_SWATCH_SIZE_PX = 15;
 
 /** Gap between swatch circles — slightly looser than 1px. */
 export const SPECIAL_OFFERS_COLOR_SWATCH_GAP_PX = 2;

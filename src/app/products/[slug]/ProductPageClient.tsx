@@ -1,10 +1,8 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { Suspense, useCallback } from 'react';
+import { Suspense } from 'react';
 
-import { ProductReviews } from '@/components/ProductReviews';
-import { useReviews } from '@/components/ProductReviews/hooks/useReviews';
 import { RelatedProducts } from '@/components/RelatedProducts';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { apiClient } from '@/lib/api-client';
@@ -84,18 +82,6 @@ export function ProductPageClient({
     handleCompareToggle,
     getRequiredAttributesMessage,
   } = useProductPage({ slugParam, serverLanguage, initialVisual, initialProduct });
-
-  const { reviews, aggregate, loading, loadReviews } = useReviews(
-    product?.id,
-    slug || undefined,
-  );
-
-  const handleScrollToReviews = useCallback(() => {
-    document.getElementById('product-reviews')?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start',
-    });
-  }, []);
 
   const handleAddToCart = async () => {
     if (!canAddToCart || !product || !currentVariant) return;
@@ -204,8 +190,6 @@ export function ProductPageClient({
             discountPercent={discountPercent}
             currency={currency}
             language={language}
-            averageRating={aggregate.averageRating}
-            reviewsCount={aggregate.reviewCount}
             quantity={quantity}
             maxQuantity={maxQuantity}
             isOutOfStock={isOutOfStock}
@@ -229,7 +213,6 @@ export function ProductPageClient({
             onAddToCart={handleAddToCart}
             onAddToWishlist={handleAddToWishlist}
             onCompareToggle={handleCompareToggle}
-            onScrollToReviews={handleScrollToReviews}
             onColorSelect={handleColorSelect}
             onSizeSelect={handleSizeSelect}
             onAttributeValueSelect={handleAttributeValueSelect}
@@ -253,19 +236,6 @@ export function ProductPageClient({
           >
             <ProductSpecifications product={product} language={language} />
           </Suspense>
-        </div>
-      ) : null}
-
-      {product ? (
-        <div id="product-reviews" className="scroll-mt-28">
-          <ProductReviews
-            productId={product.id}
-            productSlug={product.slug}
-            reviews={reviews}
-            aggregate={aggregate}
-            loading={loading}
-            loadReviews={loadReviews}
-          />
         </div>
       ) : null}
 

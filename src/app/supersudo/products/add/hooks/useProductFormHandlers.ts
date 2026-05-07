@@ -49,8 +49,6 @@ interface UseProductFormHandlersProps {
   newCategoryName: string;
   isEditMode: boolean;
   productId: string | null;
-  getColorAttribute: () => Attribute | undefined;
-  getSizeAttribute: () => Attribute | undefined;
   isClothingCategory: () => boolean;
 }
 
@@ -72,8 +70,6 @@ export function useProductFormHandlers({
   newCategoryName,
   isEditMode,
   productId,
-  getColorAttribute,
-  getSizeAttribute,
   isClothingCategory,
 }: UseProductFormHandlersProps) {
   const router = useRouter();
@@ -171,7 +167,6 @@ export function useProductFormHandlers({
         
         if (useGeneratedVariants) {
           logger.devLog('📦 [ADMIN] Using generatedVariants format:', generatedVariants.length, 'variants');
-          const _sizeAttribute = getSizeAttribute();
           
           generatedVariants.forEach((genVariant, variantIndex) => {
             const variantPriceCatalog = convertPrice(
@@ -382,13 +377,9 @@ export function useProductFormHandlers({
         finalSkuSet.add(finalSku);
       }
 
-      // Collect attribute IDs
-      const attributeIdsSet = new Set<string>();
-      const colorAttribute = getColorAttribute();
-      const sizeAttribute = getSizeAttribute();
-      if (colorAttribute) attributeIdsSet.add(colorAttribute.id);
-      if (sizeAttribute) attributeIdsSet.add(sizeAttribute.id);
-      const attributeIds = Array.from(attributeIdsSet);
+      // Persist only attributes explicitly selected for this product.
+      const attributeIds =
+        productType === 'variable' ? Array.from(selectedAttributesForVariants) : [];
 
       // Process images
       const { finalMedia, mainImage, processedVariants } = processImagesForSubmit({

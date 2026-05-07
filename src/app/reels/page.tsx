@@ -36,46 +36,19 @@ export default async function ReelsPage() {
 
   return (
     <section
-      className={`bg-[var(--app-bg)] pb-10 text-[var(--app-text)] md:pb-12 ${montserrat.className}`}
+      className={`min-h-screen bg-white pb-3 text-marco-black sm:pb-4 ${montserrat.className}`}
       aria-label={tr('home.reels_feed_region_aria')}
     >
-      <div className={`${HOME_PAGE_SECTION_SHELL_CLASS} pt-8 pb-6 md:pt-10 md:pb-8`}>
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div className="min-w-0">
-            <h1 className="relative inline-block text-2xl font-bold uppercase tracking-tight text-marco-black dark:text-white md:text-3xl">
-              {tr('home.reels_page.heading')}
-              <span
-                className="absolute -bottom-1 left-0 h-0.5 w-full bg-marco-yellow"
-                aria-hidden
-              />
-            </h1>
-            <p className="mt-3 max-w-xl text-sm text-marco-text/75 dark:text-white/70">
-              {tr('home.reels_page.subtitle')}
-            </p>
-          </div>
-          {feed.items.length > 0 ? (
-            <div className="shrink-0 text-right">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-marco-text/55 dark:text-white/50">
-                {tr('home.reels_page.available_count_label')}
-              </p>
-              <p className="text-2xl font-bold tabular-nums text-marco-black dark:text-white">
-                {feed.items.length}
-              </p>
-            </div>
-          ) : null}
-        </div>
-      </div>
-
       {feed.items.length === 0 ? (
         <div className={HOME_PAGE_SECTION_SHELL_CLASS}>
-          <div className="rounded-2xl border border-marco-border bg-marco-gray/50 px-5 py-8 text-center text-sm text-marco-text/80 dark:border-white/10 dark:bg-white/[0.06] dark:text-white/75">
+          <div className="rounded-2xl border border-marco-border bg-marco-gray/40 px-5 py-8 text-center text-sm text-marco-text/80">
             {tr('home.reels_page.empty')}
           </div>
         </div>
       ) : (
-        <div className={HOME_PAGE_SECTION_SHELL_CLASS}>
+        <div className="mx-auto w-full max-w-screen-2xl px-1 pt-1 sm:px-2 sm:pt-2">
           <div
-            className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 md:gap-5 lg:grid-cols-5 lg:gap-5"
+            className="grid grid-cols-3 gap-px sm:gap-1 md:grid-cols-4 lg:grid-cols-5"
             role="list"
           >
             {feed.items.map((item, index) => (
@@ -84,7 +57,7 @@ export default async function ReelsPage() {
                 role="listitem"
                 href={getReelsItemHref(index)}
                 aria-label={`${item.title} — ${tr('home.reels_page.watch_cta')}`}
-                className="group relative block aspect-[9/16] w-full overflow-hidden rounded-2xl border border-marco-border/90 bg-marco-gray shadow-sm outline-none ring-black/[0.04] transition-[filter,transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:border-marco-yellow/70 hover:shadow-md focus-visible:z-[1] focus-visible:ring-2 focus-visible:ring-marco-yellow focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--app-bg)] dark:border-white/10 dark:bg-zinc-900 dark:ring-white/10 dark:focus-visible:ring-offset-[var(--app-bg)]"
+                className="group relative block aspect-[9/16] w-full overflow-hidden bg-zinc-900 outline-none transition-transform duration-200 hover:scale-[1.015] focus-visible:z-[1] focus-visible:ring-2 focus-visible:ring-marco-black/80 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
               >
                 <img
                   src={item.posterUrl}
@@ -93,11 +66,11 @@ export default async function ReelsPage() {
                   loading="lazy"
                 />
                 <div
-                  className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/88 via-black/20 to-transparent opacity-95 transition-opacity duration-300 group-hover:opacity-100"
+                  className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent opacity-95 transition-opacity duration-300 group-hover:opacity-100"
                   aria-hidden
                 />
                 <div
-                  className="pointer-events-none absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-md bg-black/50 text-white shadow-md ring-1 ring-white/20 backdrop-blur-[2px] sm:right-2 sm:top-2 sm:h-7 sm:w-7"
+                  className="pointer-events-none absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur-[2px] sm:right-2 sm:top-2 sm:h-7 sm:w-7"
                   aria-hidden
                 >
                   <svg
@@ -109,8 +82,8 @@ export default async function ReelsPage() {
                     <path d="M8 5v14l11-7-11-7z" />
                   </svg>
                 </div>
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/45 to-transparent px-2 pb-2 pt-8 sm:px-2 sm:pb-2 sm:pt-9">
-                  <p className="line-clamp-2 text-left text-[10px] font-semibold leading-snug tracking-tight text-white drop-shadow-[0_1px_6px_rgba(0,0,0,0.75)] sm:text-[11px]">
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent px-1.5 pb-1.5 pt-8 sm:px-2 sm:pb-2 sm:pt-9">
+                  <p className="line-clamp-2 text-left text-[9px] font-semibold leading-snug tracking-tight text-white drop-shadow-[0_1px_6px_rgba(0,0,0,0.75)] sm:text-[10px]">
                     {item.title}
                   </p>
                 </div>

@@ -4,7 +4,7 @@ import { productsService } from '@/lib/services/products.service';
 import { getCachedJson } from '@/lib/services/read-through-json-cache';
 import { stableStringifyForCacheKey } from '@/lib/cache/stable-stringify';
 
-const PRODUCTS_LIST_CACHE_VERSION = 'v5';
+const PRODUCTS_LIST_CACHE_VERSION = 'v6';
 const PRODUCTS_CACHE_TTL = 120;
 const FEATURED_CACHE_TTL = 600;
 
@@ -73,5 +73,7 @@ export async function getProductsListingCached(
 ): Promise<ProductsListingPayload> {
   const key = buildProductsListingRedisKey(filters);
   const ttl = resolveProductsListingTtlSeconds(filters);
-  return getCachedJson<ProductsListingPayload>(key, ttl, () => productsService.findAll(filters));
+  return getCachedJson<ProductsListingPayload>(key, ttl, () => productsService.findAll(filters), {
+    requireSharedCache: true,
+  });
 }

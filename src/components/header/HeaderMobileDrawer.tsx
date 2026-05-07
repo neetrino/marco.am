@@ -8,44 +8,34 @@ import {
   Building2,
   ChevronRight,
   Clapperboard,
-  LogOut,
   Mail,
   Phone,
   ShoppingBag,
   Tag,
-  User,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { MOBILE_FLOOR_NAV_HREFS } from '../mobile-bottom-nav.constants';
 import { LanguagePreferenceContext } from '../../lib/language-context';
-import { useAuth } from '../../lib/auth/AuthContext';
 import { HeaderSocialCircleLinks } from './HeaderSocialCircleLinks';
 import { useShouldHideHeaderSocialLinks } from './useShouldHideHeaderSocialLinks';
 import { isPrimaryNavHrefActive, primaryNavLinks, type PrimaryNavLink } from './nav-config';
 import { ThemeToggleButton } from '../theme/ThemeToggleButton';
 import { useTheme } from '../theme/ThemeProvider';
 import type { useHeaderData } from './useHeaderData';
-import { prepareRootCategoriesForNav } from './categoryNavList';
 import {
   contactLocationMapHref,
   getContactLocations,
   phoneToTelHref,
   type ContactLocationId,
 } from '../../lib/contact-locations';
-import { HeaderMobileDrawerCategories } from './HeaderMobileDrawerCategories';
 import {
   MOBILE_DRAWER_CLOSE_BTN_CLASS,
   MOBILE_DRAWER_CONTACT_COMPACT_CLASS,
   MOBILE_DRAWER_CTA_COMPACT_CLASS,
   MOBILE_DRAWER_CTA_PILL_CLASS,
   MOBILE_DRAWER_MENU_HEADER_ROW_CLASS,
-  MOBILE_DRAWER_MUTED_PILL_CLASS,
   MOBILE_DRAWER_CONTENT_MAX_CLASS,
   MOBILE_DRAWER_PANEL_CLASS,
-  MOBILE_DRAWER_PROFILE_AVATAR_CLASS,
-  MOBILE_DRAWER_PROFILE_CARD_CLASS,
-  MOBILE_DRAWER_PROFILE_CARD_PRIMARY_CLASS,
-  MOBILE_DRAWER_PROFILE_CARD_SECONDARY_CLASS,
   mobileDrawerCompactPillClass,
   mobileDrawerNavPillClass,
 } from './header-mobile-drawer.classes';
@@ -69,61 +59,6 @@ function PrimaryNavRowIcon({ translationKey }: { translationKey: string }) {
     return null;
   }
   return <Icon className="h-6 w-6 shrink-0" size={24} strokeWidth={2} aria-hidden />;
-}
-
-function drawerProfilePrimaryLine(user: {
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  phone?: string;
-}): string {
-  const full = [user.firstName, user.lastName].filter(Boolean).join(' ').trim();
-  if (full.length > 0) {
-    return full;
-  }
-  return (user.email ?? user.phone ?? '').trim();
-}
-
-function drawerProfileSecondaryLine(user: {
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  phone?: string;
-}): string | null {
-  const full = [user.firstName, user.lastName].filter(Boolean).join(' ').trim();
-  if (!full) {
-    return null;
-  }
-  const sub = (user.email ?? user.phone ?? '').trim();
-  return sub.length > 0 ? sub : null;
-}
-
-function drawerUserInitials(user: {
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  phone?: string;
-}): string {
-  const first = user.firstName?.trim();
-  const last = user.lastName?.trim();
-  if (first && last) {
-    return `${first[0] ?? ''}${last[0] ?? ''}`.toUpperCase();
-  }
-  if (first) {
-    return first.slice(0, 2).toUpperCase();
-  }
-  const email = user.email?.trim();
-  if (email && email.length > 0) {
-    return email[0]?.toUpperCase() ?? '?';
-  }
-  const phoneDigits = user.phone?.replace(/\D/g, '') ?? '';
-  if (phoneDigits.length >= 2) {
-    return phoneDigits.slice(-2);
-  }
-  if (phoneDigits.length === 1) {
-    return phoneDigits;
-  }
-  return '?';
 }
 
 function renderPrimaryNavLink(
@@ -176,9 +111,6 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
   const { theme, mounted: themeMounted } = useTheme();
   const drawerThemeDark = themeMounted && theme === 'dark';
   const lang = useContext(LanguagePreferenceContext);
-  const { user } = useAuth();
-  const [categoriesOpen, setCategoriesOpen] = useState(false);
-  const [expandedCategorySlug, setExpandedCategorySlug] = useState<string | null>(null);
   const [callFlow, setCallFlow] = useState<'idle' | 'branches' | 'phones'>('idle');
   const [callBranchId, setCallBranchId] = useState<ContactLocationId | null>(null);
   const hideHeaderSocialLinks = useShouldHideHeaderSocialLinks();
@@ -187,14 +119,9 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
     mobileMenuOpen,
     setMobileMenuOpen,
     isLoggedIn,
-    logout,
     isAdmin,
     currentYear,
-    categories,
-    loadingCategories,
-    getRootCategories,
   } = data;
-  const rootCategories = prepareRootCategoriesForNav(getRootCategories(categories), lang);
   const floorNavHrefSet = new Set<string>(MOBILE_FLOOR_NAV_HREFS);
   const drawerPrimaryNavLinks = primaryNavLinks.filter((link) => !floorNavHrefSet.has(link.href));
   const reelsLink = drawerPrimaryNavLinks.find((l) => l.translationKey === 'common.navigation.reels');
@@ -207,8 +134,6 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
 
   useEffect(() => {
     if (!mobileMenuOpen) {
-      setCategoriesOpen(false);
-      setExpandedCategorySlug(null);
       setCallFlow('idle');
       setCallBranchId(null);
     }
@@ -231,9 +156,6 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
       ? (contactLocations.find((l) => l.id === callBranchId) ?? null)
       : null;
 
-  const profileCardSecondary =
-    isLoggedIn && user ? drawerProfileSecondaryLine(user) : null;
-
   const drawer = (
     <div
       className={`pointer-events-auto fixed inset-0 z-[200] ${MOBILE_DRAWER_PANEL_CLASS} ${compactPrimaryNav ? '' : 'md:hidden'}`}
@@ -241,17 +163,14 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
       aria-modal="true"
     >
         <div
-          className="relative flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-hidden overscroll-y-contain px-3 min-[400px]:px-4"
+          className="relative flex min-h-0 flex-1 flex-col overflow-hidden px-3 min-[400px]:px-4"
         >
-            <div className="flex flex-col gap-y-[clamp(0.35rem,1.2dvh,0.75rem)] pb-2 text-marco-black dark:text-white">
+            <div className="flex min-h-0 flex-1 flex-col gap-y-[clamp(0.35rem,1.2dvh,0.75rem)] pb-2 text-marco-black dark:text-white">
               <div className={MOBILE_DRAWER_MENU_HEADER_ROW_CLASS}>
-                <h2 className="text-base font-bold text-marco-black dark:text-white">
-                  {t('common.menu.title')}
-                </h2>
                 <button
                   type="button"
                   onClick={closeDrawer}
-                  className={`${MOBILE_DRAWER_CLOSE_BTN_CLASS} absolute right-0 top-1/2 -translate-y-1/2`}
+                  className={`${MOBILE_DRAWER_CLOSE_BTN_CLASS} absolute right-0 top-1/2 mt-4 -translate-y-1/2 !bg-marco-yellow !text-marco-black dark:!bg-marco-yellow dark:!text-marco-black`}
                   aria-label={t('common.ariaLabels.closeMenu')}
                 >
                   <svg className="mx-auto h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -259,46 +178,11 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
                   </svg>
                 </button>
               </div>
-              <div className={`${MOBILE_DRAWER_CONTENT_MAX_CLASS} flex flex-col`}>
+              <div className={`${MOBILE_DRAWER_CONTENT_MAX_CLASS} flex min-h-0 flex-1 flex-col`}>
             <nav
-              className="flex flex-col gap-y-[clamp(0.3rem,1.1dvh,0.5rem)]"
+              className="flex min-h-0 flex-1 flex-col justify-center gap-y-[clamp(0.3rem,1.1dvh,0.5rem)] overflow-y-auto overscroll-y-contain pb-2"
               aria-label={t('common.menu.title')}
             >
-              {isLoggedIn && user ? (
-                <Link href="/profile" onClick={closeDrawer} className={MOBILE_DRAWER_PROFILE_CARD_CLASS}>
-                  <span className={MOBILE_DRAWER_PROFILE_AVATAR_CLASS} aria-hidden>
-                    {drawerUserInitials(user) === '?' ? (
-                      <User className="h-7 w-7 text-marco-text/70 dark:text-zinc-400" strokeWidth={1.75} />
-                    ) : (
-                      drawerUserInitials(user)
-                    )}
-                  </span>
-                  <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                    <span className={MOBILE_DRAWER_PROFILE_CARD_PRIMARY_CLASS}>
-                      {drawerProfilePrimaryLine(user) || t('common.navigation.profile')}
-                    </span>
-                    {profileCardSecondary ? (
-                      <span className={MOBILE_DRAWER_PROFILE_CARD_SECONDARY_CLASS}>
-                        {profileCardSecondary}
-                      </span>
-                    ) : null}
-                  </span>
-                  <ChevronRight className="h-5 w-5 shrink-0 text-marco-text/40 dark:text-zinc-500" aria-hidden />
-                </Link>
-              ) : null}
-
-              <HeaderMobileDrawerCategories
-                t={t}
-                lang={lang}
-                loadingCategories={loadingCategories}
-                rootCategories={rootCategories}
-                categoriesOpen={categoriesOpen}
-                setCategoriesOpen={setCategoriesOpen}
-                expandedCategorySlug={expandedCategorySlug}
-                setExpandedCategorySlug={setExpandedCategorySlug}
-                onNavigate={closeDrawer}
-              />
-
               {otherPrimaryLinks.map((link) =>
                 renderPrimaryNavLink(
                   link,
@@ -308,10 +192,6 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
                   mobileDrawerNavPillClass(isPrimaryNavHrefActive(pathname, link.href))
                 )
               )}
-
-              <Link href="/products" onClick={closeDrawer} className={MOBILE_DRAWER_CTA_PILL_CLASS}>
-                {t('common.navigation.shop')}
-              </Link>
 
               {reelsLink
                 ? renderPrimaryNavLink(
@@ -348,17 +228,6 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
                       <ChevronRight className="h-5 w-5 shrink-0" aria-hidden />
                     </Link>
                   ) : null}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      closeDrawer();
-                      logout();
-                    }}
-                    className={`${MOBILE_DRAWER_MUTED_PILL_CLASS} text-marco-black dark:text-white`}
-                  >
-                    <span>{t('common.navigation.logout')}</span>
-                    <LogOut className="h-5 w-5 shrink-0" strokeWidth={2} aria-hidden />
-                  </button>
                 </>
               ) : (
                 <>
@@ -381,7 +250,7 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
               )}
             </nav>
 
-              <footer className="flex shrink-0 flex-col">
+              <footer className="mt-auto flex shrink-0 flex-col pb-1">
                 {!hideHeaderSocialLinks ? (
                   <div className="mt-5 flex shrink-0 justify-center pb-2 pt-1 sm:mt-6">
                     <HeaderSocialCircleLinks comfortableTouch />

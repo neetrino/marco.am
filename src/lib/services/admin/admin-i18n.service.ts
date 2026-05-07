@@ -5,7 +5,6 @@ import {
 } from "@/lib/schemas/admin-i18n.schema";
 import { homeHeroBannerService } from "@/lib/services/home-hero-banner.service";
 import { whyChooseUsService } from "@/lib/services/why-choose-us.service";
-import { homeCustomerReviewsService } from "@/lib/services/home-customer-reviews.service";
 import { homeBrandPartnersService } from "@/lib/services/home-brand-partners.service";
 import { siteFooterService } from "@/lib/services/site-footer.service";
 import { bannerManagementService } from "@/lib/services/banner-management.service";
@@ -45,16 +44,6 @@ const scopeConfigs: Record<I18nTranslationScope, ScopeConfig<unknown>> = {
     updateStorage: (payload) =>
       whyChooseUsService.updateAdminStorage(
         payload as Parameters<typeof whyChooseUsService.updateAdminStorage>[0],
-      ),
-  },
-  "home-customer-reviews": {
-    scope: "home-customer-reviews",
-    getStorage: () => homeCustomerReviewsService.getAdminStorage(),
-    updateStorage: (payload) =>
-      homeCustomerReviewsService.updateAdminStorage(
-        payload as Parameters<
-          typeof homeCustomerReviewsService.updateAdminStorage
-        >[0],
       ),
   },
   "home-brand-partners": {

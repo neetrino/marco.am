@@ -13,29 +13,24 @@ import { normalizeProductClass } from "@/lib/constants/product-class";
  */
 export async function collectVariantImages(
   variants: UpdateProductData['variants'],
-  productId: string,
-  tx: Prisma.TransactionClient
+  existingVariantImageUrls: string[] = []
 ): Promise<string[]> {
   const allVariantImages: string[] = [];
   
   if (variants !== undefined) {
     variants.forEach((variant) => {
-      if (variant.imageUrl) {
-        const urls = smartSplitUrls(variant.imageUrl);
+      const normalizedImageCandidate = (variant as { normalizedImageUrl?: string }).normalizedImageUrl;
+      const variantImage = normalizedImageCandidate ?? variant.imageUrl;
+
+      if (variantImage) {
+        const urls = smartSplitUrls(variantImage);
         allVariantImages.push(...urls);
       }
     });
   } else {
-    // If variants not being updated, get existing variant images
-    const existingVariants = await tx.productVariant.findMany({
-      where: { productId },
-      select: { imageUrl: true },
-    });
-    existingVariants.forEach((variant) => {
-      if (variant.imageUrl) {
-        const urls = smartSplitUrls(variant.imageUrl);
-        allVariantImages.push(...urls);
-      }
+    existingVariantImageUrls.forEach((imageUrl) => {
+      const urls = smartSplitUrls(imageUrl);
+      allVariantImages.push(...urls);
     });
   }
   

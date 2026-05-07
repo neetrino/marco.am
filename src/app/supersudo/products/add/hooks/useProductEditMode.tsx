@@ -205,10 +205,12 @@ export function useProductEditMode({
             setHasVariantsToLoad(true);
           }
 
-          if (product.attributeIds && product.attributeIds.length > 0) {
-            (window as any).__productAttributeIds = product.attributeIds;
-            logger.devLog('📋 [ADMIN] Product attributeIds loaded:', product.attributeIds);
-          }
+          const productAttributeIds = Array.isArray(product.attributeIds)
+            ? product.attributeIds
+            : [];
+          (window as any).__productAttributeIds = productAttributeIds;
+          (window as any).__productAttributeIdsLoaded = true;
+          logger.devLog('📋 [ADMIN] Product attributeIds loaded:', productAttributeIds);
 
           const variants = product.variants || [];
           const hasVariants = variants.length > 0;

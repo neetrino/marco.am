@@ -264,6 +264,58 @@ export function MobileNavCompareBoldIcon({ className }: NavGlyphProps) {
   );
 }
 
+export function MobileNavReelsLinearIcon({ className }: NavGlyphProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      aria-hidden
+    >
+      <rect
+        x="3"
+        y="3"
+        width="18"
+        height="18"
+        rx="5"
+        stroke="currentColor"
+        strokeWidth={1.7}
+      />
+      <path
+        d="M10 9.5L15 12L10 14.5V9.5Z"
+        stroke="currentColor"
+        strokeWidth={1.7}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M7.5 3L10 7M13.5 3L16 7"
+        stroke="currentColor"
+        strokeWidth={1.7}
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+export function MobileNavReelsBoldIcon({ className }: NavGlyphProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      aria-hidden
+    >
+      <path
+        d="M8.4 3C7.75 3 7.25 3.59 7.36 4.23L7.83 7H11.89L10.54 3H8.4ZM12.65 3L14 7H17.99L16.3 3H12.65ZM18.44 8.5H5.56C4.14 8.5 3 9.64 3 11.06V17.94C3 19.36 4.14 20.5 5.56 20.5H18.44C19.86 20.5 21 19.36 21 17.94V11.06C21 9.64 19.86 8.5 18.44 8.5ZM10.75 15.74V13.26C10.75 12.64 11.43 12.25 11.97 12.56L14.12 13.8C14.67 14.11 14.67 14.89 14.12 15.2L11.97 16.44C11.43 16.75 10.75 16.36 10.75 15.74Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
 /** Active cart — bolder stroke (Figma vuesax/bold/shopping-cart). */
 export function MobileNavCartBoldIcon({ className }: NavGlyphProps) {
   const sw = 2.25;

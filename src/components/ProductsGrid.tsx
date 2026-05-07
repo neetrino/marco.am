@@ -45,7 +45,6 @@ function toSpecialOfferProduct(p: Product): SpecialOfferProduct {
     defaultVariantId: p.defaultVariantId ?? undefined,
     discountPercent,
     labels: p.labels,
-    reviewCount: undefined,
     colors: p.colors,
   };
 }
