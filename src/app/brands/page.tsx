@@ -16,8 +16,6 @@ import {
   isBrandLogoCellOversizedSlug,
 } from '@/lib/brand-logo-cell-oversize';
 import {
-  GEEPAS_BUNDLED_LOGO_UI_SCALE,
-  isGeepasBundledLogoAsset,
   resolveBrandDisplayLogoForCell,
 } from '@/lib/brand-static-logo-assets';
 import { homeBrandPartnersService } from '@/lib/services/home-brand-partners.service';
@@ -64,18 +62,16 @@ function BrandDirectoryLogo({ partner }: { partner: HomeBrandPartnerPublicItem }
   }
 
   if (resolved.mode === 'local') {
-    const geepasBoost = isGeepasBundledLogoAsset(resolved.asset);
     return (
       <div
-        className={`relative mx-auto w-full shrink-0${geepasBoost ? ' overflow-visible' : ''}`}
+        className="relative mx-auto w-full shrink-0 overflow-hidden"
         style={cell}
       >
         <Image
           src={resolved.asset.src}
           alt={partner.name}
           fill
-          className={`${BRANDS_DIRECTORY_LOGO_IMAGE_CLASS}${geepasBoost ? ' origin-center' : ''}`}
-          style={geepasBoost ? { transform: `scale(${GEEPAS_BUNDLED_LOGO_UI_SCALE})` } : undefined}
+          className={BRANDS_DIRECTORY_LOGO_IMAGE_CLASS}
           sizes={`${sizesWidth}px`}
           loading="lazy"
         />
@@ -124,7 +120,7 @@ export default async function BrandsPage() {
             {t(language, 'common.brandsPage.empty')}
           </p>
         ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
             {brands.map((partner) => (
               <Link
                 key={partner.id}
