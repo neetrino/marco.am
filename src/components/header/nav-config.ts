@@ -8,6 +8,7 @@ export const primaryNavLinks: PrimaryNavLink[] = [
   { href: '/brands', translationKey: 'common.navigation.brands' },
   { href: '/about', translationKey: 'common.navigation.about' },
   { href: '/contact', translationKey: 'common.navigation.contact' },
+  { href: '/reels', translationKey: 'common.navigation.reels' },
 ];
 
 /** Match current route to primary nav `href` without treating `/` as a prefix of everything. */
