@@ -113,7 +113,7 @@ export function PopupProvider() {
   const isConfirm = activeRequest.kind === 'confirm';
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/45 p-4 backdrop-blur-[1px]">
+    <div className="fixed inset-0 z-[1300] flex items-center justify-center bg-black/45 p-4 backdrop-blur-[1px]">
       <div className="w-full max-w-md rounded-2xl border border-[var(--app-border)] bg-[var(--app-surface)] p-5 shadow-[0_24px_56px_rgba(16,16,16,0.3)]">
         <p className="text-sm leading-6 text-[var(--app-text)]">{activeRequest.message}</p>
         {isPrompt ? (

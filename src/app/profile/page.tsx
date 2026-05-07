@@ -112,7 +112,7 @@ function ProfilePageContent() {
           <button
             type="button"
             onClick={() => setIsMobileSheetOpen(false)}
-            className="fixed inset-0 z-30 bg-black/40 lg:hidden"
+            className="fixed inset-0 z-[1100] bg-black/40 lg:hidden"
             aria-label={t('common.buttons.close')}
           />
         )}
@@ -120,7 +120,7 @@ function ProfilePageContent() {
         <div
           className={`min-w-0 flex-1 ${
             isMobileSheetOpen
-              ? 'fixed inset-x-0 bottom-0 z-40 block h-[75vh] rounded-t-3xl border border-slate-200 bg-white shadow-[0_-20px_60px_rgba(15,23,42,0.18)] lg:static lg:z-auto lg:h-auto lg:rounded-none lg:border-0 lg:bg-transparent lg:shadow-none'
+              ? 'fixed inset-x-0 bottom-0 z-[1110] block h-[75vh] rounded-t-3xl border border-slate-200 bg-white shadow-[0_-20px_60px_rgba(15,23,42,0.18)] lg:static lg:z-auto lg:h-auto lg:rounded-none lg:border-0 lg:bg-transparent lg:shadow-none'
               : 'hidden lg:block'
           }`}
         >
