@@ -95,7 +95,6 @@ function ProfilePageContent() {
         <div className="w-full shrink-0 lg:sticky lg:top-24 lg:w-[27rem] lg:self-start">
           <ProfileHeader
             profile={profile}
-            onTabChange={handleProfileTabChange}
             t={t}
           />
           <div className="mt-1.5 lg:mt-3">
