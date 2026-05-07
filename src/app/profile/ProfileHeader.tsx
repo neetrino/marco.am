@@ -17,11 +17,11 @@ export function ProfileHeader({ profile, tabs, activeTab, onTabChange, t }: Prof
         <div className="flex flex-row items-center gap-4">
           <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-full border border-slate-200 bg-gradient-to-br from-slate-100 to-slate-300">
             <Image
-              src="/assets/brand/marco-group-logo.webp"
-              alt="Marco Group logo"
+              src="/assets/profile/user-profile.png"
+              alt="User profile avatar"
               fill
               sizes="96px"
-              className="object-contain scale-150 translate-y-1"
+              className="object-cover scale-[1.40]"
               priority
             />
           </div>
