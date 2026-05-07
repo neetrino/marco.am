@@ -25,7 +25,11 @@ export function AppChrome({ children, initialLanguage }: AppChromeProps) {
     showMobileBottomNav && !isProfileRoute ? 'pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] lg:pb-0' : '';
 
   const headerNode = <Header initialLanguage={initialLanguage} />;
-  const footerNode = <Footer />;
+  const footerNode = (
+    <div className="hidden lg:block">
+      <Footer />
+    </div>
+  );
 
   return (
     <>
@@ -33,7 +37,7 @@ export function AppChrome({ children, initialLanguage }: AppChromeProps) {
       <main className={mainPaddingClass}>
         {children}
       </main>
-      {hideMobileHeaderFooterForProfile ? <div className="hidden lg:block">{footerNode}</div> : footerNode}
+      {footerNode}
       {showMobileBottomNav && <MobileBottomNav />}
     </>
   );
