@@ -1,8 +1,6 @@
 import type { FormEvent } from 'react';
 import { Button, Input, Card } from '@shop/ui';
 import {
-  PROFILE_ADDRESS_COUNTRY_CODES,
-  PROFILE_ADDRESS_COUNTRY_LABEL_KEYS,
   getProfileAddressCountryLabel,
 } from '@/lib/constants/profile-address-country';
 import type { Address, UserProfile } from './types';
@@ -63,37 +61,9 @@ export function ProfileAddresses({
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
-                label={t('profile.addresses.form.firstName')}
-                value={addressForm.firstName ?? ''}
-                onChange={(e) => setAddressForm({ ...addressForm, firstName: e.target.value })}
-              />
-              <Input
-                label={t('profile.addresses.form.lastName')}
-                value={addressForm.lastName ?? ''}
-                onChange={(e) => setAddressForm({ ...addressForm, lastName: e.target.value })}
-              />
-              <div className="md:col-span-2">
-                <Input
-                  label={t('profile.addresses.form.company')}
-                  value={addressForm.company ?? ''}
-                  onChange={(e) => setAddressForm({ ...addressForm, company: e.target.value })}
-                />
-              </div>
-              <Input
                 label={t('profile.addresses.form.addressLine1')}
                 value={addressForm.addressLine1}
                 onChange={(e) => setAddressForm({ ...addressForm, addressLine1: e.target.value })}
-                required
-              />
-              <Input
-                label={t('profile.addresses.form.addressLine2')}
-                value={addressForm.addressLine2 ?? ''}
-                onChange={(e) => setAddressForm({ ...addressForm, addressLine2: e.target.value })}
-              />
-              <Input
-                label={t('profile.addresses.form.city')}
-                value={addressForm.city}
-                onChange={(e) => setAddressForm({ ...addressForm, city: e.target.value })}
                 required
               />
               <Input
@@ -105,31 +75,6 @@ export function ProfileAddresses({
                 label={t('profile.addresses.form.postalCode')}
                 value={addressForm.postalCode ?? ''}
                 onChange={(e) => setAddressForm({ ...addressForm, postalCode: e.target.value })}
-              />
-              <div className="flex flex-col gap-1">
-                <label htmlFor="profile-address-country" className="text-sm font-medium text-gray-700">
-                  {t('profile.addresses.country')}
-                </label>
-                <select
-                  id="profile-address-country"
-                  value={addressForm.countryCode || 'AM'}
-                  onChange={(e) =>
-                    setAddressForm({ ...addressForm, countryCode: e.target.value })
-                  }
-                  className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
-                >
-                  {PROFILE_ADDRESS_COUNTRY_CODES.map((code) => (
-                    <option key={code} value={code}>
-                      {t(PROFILE_ADDRESS_COUNTRY_LABEL_KEYS[code])}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <Input
-                type="tel"
-                label={t('profile.addresses.form.phone')}
-                value={addressForm.phone ?? ''}
-                onChange={(e) => setAddressForm({ ...addressForm, phone: e.target.value })}
               />
             </div>
             <label className="flex items-center">
