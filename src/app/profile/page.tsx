@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useAuth } from '../../lib/auth/AuthContext';
 import { useTranslation } from '../../lib/i18n-client';
 import { useProfilePage } from './useProfilePage';
@@ -20,6 +20,7 @@ function ProfilePageContent() {
   const { isLoggedIn, isLoading: authLoading } = useAuth();
   const { t } = useTranslation();
   const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
   
   const {
     loading,
@@ -67,6 +68,23 @@ function ProfilePageContent() {
     handleReOrder,
     currency,
   } = useProfilePage();
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 1023px)');
+    const updateViewport = () => setIsMobileViewport(mediaQuery.matches);
+    updateViewport();
+
+    mediaQuery.addEventListener('change', updateViewport);
+    return () => mediaQuery.removeEventListener('change', updateViewport);
+  }, []);
+
+  useEffect(() => {
+    if (!isMobileViewport || activeTab !== 'dashboard') {
+      return;
+    }
+
+    handleTabChange('orders');
+  }, [activeTab, handleTabChange, isMobileViewport]);
 
   if (authLoading || loading) {
     return (
@@ -149,7 +167,7 @@ function ProfilePageContent() {
             </div>
           )}
 
-          {activeTab === 'dashboard' && (
+          {activeTab === 'dashboard' && !isMobileViewport && (
             <ProfileDashboard
               dashboardData={dashboardData}
               dashboardLoading={dashboardLoading}

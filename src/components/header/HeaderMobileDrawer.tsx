@@ -10,6 +10,7 @@ import {
   Clapperboard,
   Mail,
   Phone,
+  Scale,
   ShoppingBag,
   Tag,
 } from 'lucide-react';
@@ -48,6 +49,7 @@ type Props = {
 const PRIMARY_NAV_ICONS: Record<string, LucideIcon> = {
   'common.navigation.about': Building2,
   'common.navigation.shop': ShoppingBag,
+  'common.navigation.compare': Scale,
   'common.navigation.brands': Tag,
   'common.navigation.contact': Mail,
   'common.navigation.reels': Clapperboard,

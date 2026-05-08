@@ -9,14 +9,10 @@ import { pushShopProductsListingUrl } from '../lib/push-shop-products-listing-ur
 import {
   MobileNavCartBoldIcon,
   MobileNavCartLinearIcon,
-  MobileNavCompareBoldIcon,
-  MobileNavCompareLinearIcon,
   MobileNavHomeBoldIcon,
   MobileNavHomeLinearIcon,
   MobileNavProfileBoldIcon,
   MobileNavProfileLinearIcon,
-  MobileNavReelsBoldIcon,
-  MobileNavReelsLinearIcon,
   MobileNavWishlistBoldIcon,
   MobileNavWishlistLinearIcon,
   MobileNavWishlistBagIcon,
@@ -30,7 +26,7 @@ import {
 } from './mobile-bottom-nav.constants';
 import { MobileBottomNavShopSheet } from './mobile-bottom-nav-shop-sheet';
 
-export type MobileNavIconSlot = 'home' | 'shop' | 'wishlist' | 'compare' | 'reels' | 'cart' | 'profile';
+export type MobileNavIconSlot = 'home' | 'shop' | 'wishlist' | 'cart' | 'profile';
 
 interface MobileNavItem {
   label: string;
@@ -68,18 +64,6 @@ function renderNavIcon(slot: MobileNavIconSlot, isActive: boolean, sizeClass: st
         <MobileNavWishlistBoldIcon className={sizeClass} />
       ) : (
         <MobileNavWishlistLinearIcon className={sizeClass} />
-      );
-    case 'compare':
-      return isActive ? (
-        <MobileNavCompareBoldIcon className={sizeClass} />
-      ) : (
-        <MobileNavCompareLinearIcon className={sizeClass} />
-      );
-    case 'reels':
-      return isActive ? (
-        <MobileNavReelsBoldIcon className={sizeClass} />
-      ) : (
-        <MobileNavReelsLinearIcon className={sizeClass} />
       );
     case 'profile':
       return isActive ? (
@@ -221,8 +205,6 @@ export function MobileBottomNav() {
       { label: t('common.navigation.shop'), href: '/products', icon: 'shop' },
       { label: t('common.navigation.home'), href: '/', icon: 'home' },
       { label: t('common.navigation.wishlist'), href: '/wishlist', icon: 'wishlist' },
-      { label: t('common.navigation.compare'), href: '/compare', icon: 'compare' },
-      { label: t('common.navigation.reels'), href: '/reels', icon: 'reels' },
       { label: t('common.navigation.cart'), href: '/cart', icon: 'cart' },
       { label: t('common.navigation.profile'), href: '/profile', icon: 'profile' },
     ],
@@ -230,8 +212,9 @@ export function MobileBottomNav() {
   );
   const centerItem = navItems.find((item) => item.icon === 'shop');
   const sideItems = navItems.filter((item) => item.icon !== 'shop');
-  const leftItems = sideItems.slice(0, 3);
-  const rightItems = sideItems.slice(3);
+  const sideSplitIndex = Math.ceil(sideItems.length / 2);
+  const leftItems = sideItems.slice(0, sideSplitIndex);
+  const rightItems = sideItems.slice(sideSplitIndex);
 
   return (
     <>

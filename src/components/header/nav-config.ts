@@ -5,6 +5,7 @@ export type PrimaryNavLink =
 export const primaryNavLinks: PrimaryNavLink[] = [
   { href: '/', translationKey: 'common.navigation.home' },
   { href: '/products', translationKey: 'common.navigation.shop' },
+  { href: '/compare', translationKey: 'common.navigation.compare' },
   { href: '/brands', translationKey: 'common.navigation.brands' },
   { href: '/about', translationKey: 'common.navigation.about' },
   { href: '/contact', translationKey: 'common.navigation.contact' },

@@ -21,6 +21,7 @@ import {
   REELS_CAROUSEL_NAV_INSET_RIGHT_MOBILE_PX,
 } from './home-reels.constants';
 import {
+  HOME_PRODUCT_MOBILE_RAIL_PAGE_GAP_PX,
   SPECIAL_OFFERS_CARD_GAP_PX,
   SPECIAL_OFFERS_CARD_HEIGHT_PX,
   SPECIAL_OFFERS_CARD_MAX_WIDTH_PX,
@@ -344,7 +345,9 @@ export function HomeSpecialOffersSection({
               ref={setMobileProductScrollerRef}
               className={SPECIAL_OFFERS_MOBILE_SCROLLER_CLASS}
               style={{
-                gap: isMaxMd ? 0 : `${SPECIAL_OFFERS_CARD_GAP_PX}px`,
+                gap: isMaxMd
+                  ? `${HOME_PRODUCT_MOBILE_RAIL_PAGE_GAP_PX}px`
+                  : `${SPECIAL_OFFERS_CARD_GAP_PX}px`,
                 scrollSnapType: 'x mandatory',
                 paddingBottom: isMaxMd
                   ? SPECIAL_OFFERS_MOBILE_GRID_SCROLLER_PADDING_BOTTOM_PX
