@@ -33,6 +33,9 @@ export const HOME_PRODUCT_MOBILE_RAIL_CARDS_PER_PAGE = 2;
 /** Set on the scrollport by `useHomeMobileProductRailScrollport` — slide width in px (no %-of-flex bleed). */
 export const HOME_PRODUCT_MOBILE_RAIL_PAGE_WIDTH_CSS_VAR = '--hmpr-page-px';
 
+/** Visual spacer between adjacent mobile snap pages (prevents cards from looking glued while dragging). */
+export const HOME_PRODUCT_MOBILE_RAIL_PAGE_GAP_PX = 10;
+
 /** Dots under the rail — three segments (same pattern as REELS). */
 export const SPECIAL_OFFERS_MOBILE_PAGINATION_PAGE_COUNT = 3;
 

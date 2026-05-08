@@ -9,6 +9,7 @@ import type { LanguageCode } from '../../lib/language';
 import { SpecialOfferCard } from './SpecialOfferCard';
 import { homeProductMobileRailPageSlideStyles } from './home-product-mobile-rail-layout';
 import {
+  HOME_PRODUCT_MOBILE_RAIL_PAGE_GAP_PX,
   SPECIAL_OFFERS_CARD_HEIGHT_PX,
   SPECIAL_OFFERS_CTA_LINK_CLASS,
   SPECIAL_OFFERS_MOBILE_GRID_COLUMN_GAP_PX,
@@ -73,7 +74,7 @@ export function FeaturedNewArrivalsMobileRail({
         ref={setScrollerRef}
         className={SPECIAL_OFFERS_MOBILE_SCROLLER_CLASS}
         style={{
-          gap: 0,
+          gap: `${HOME_PRODUCT_MOBILE_RAIL_PAGE_GAP_PX}px`,
           scrollSnapType: 'x mandatory',
           paddingBottom: SPECIAL_OFFERS_MOBILE_GRID_SCROLLER_PADDING_BOTTOM_PX,
         }}
