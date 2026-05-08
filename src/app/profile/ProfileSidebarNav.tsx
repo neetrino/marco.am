@@ -1,5 +1,4 @@
 import { useAuth } from '../../lib/auth/AuthContext';
-import { Settings } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type { ProfileTab, ProfileTabConfig } from './types';
 
@@ -13,6 +12,8 @@ interface ProfileSidebarNavProps {
 export function ProfileSidebarNav({ tabs, activeTab, onTabChange, t }: ProfileSidebarNavProps) {
   const { logout } = useAuth();
   const router = useRouter();
+  const desktopTabs = tabs;
+  const mobileTabs = tabs.filter((tab) => tab.id !== 'dashboard');
 
   return (
     <div className="flex w-full flex-col gap-2">
@@ -35,22 +36,44 @@ export function ProfileSidebarNav({ tabs, activeTab, onTabChange, t }: ProfileSi
 
         <div className="mb-2 border-b border-slate-200/80 lg:hidden" />
 
-        <div className="mb-2">
-          <button
-            type="button"
-            onClick={() => onTabChange('password')}
-            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-base font-medium text-slate-700 transition hover:bg-slate-100"
-          >
-            <Settings className="h-5 w-5 text-slate-500" strokeWidth={2} aria-hidden />
-            <span className="flex-1">Settings</span>
-            <svg className="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="m9 6 6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
+        <div className="flex flex-col gap-1.5 lg:hidden">
+          {mobileTabs.map((tab) => {
+            const isDanger = tab.variant === 'danger';
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => onTabChange(tab.id)}
+                aria-current={isActive ? 'page' : undefined}
+                className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-base font-medium transition lg:gap-3 lg:px-3 lg:py-3 lg:text-base ${
+                  isActive
+                    ? 'bg-[#fff4bf] text-[#7a5a00]'
+                    : isDanger
+                      ? 'text-red-600 hover:bg-red-50'
+                      : 'text-slate-700 hover:bg-slate-100'
+                }`}
+              >
+                <span className={isActive ? 'text-[#8c6500]' : isDanger ? 'text-red-600' : 'text-slate-500'}>
+                  {tab.icon}
+                </span>
+                <span className="flex-1">{tab.label}</span>
+                <svg
+                  className={`h-4 w-4 ${isActive ? 'text-[#8c6500]' : isDanger ? 'text-red-400' : 'text-slate-400'}`}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="m9 6 6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+            );
+          })}
         </div>
 
-        <div className="flex flex-col gap-1.5">
-          {tabs.map((tab) => {
+        <div className="hidden flex-col gap-1.5 lg:flex">
+          {desktopTabs.map((tab) => {
             const isDanger = tab.variant === 'danger';
             const isActive = activeTab === tab.id;
             return (
