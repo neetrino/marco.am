@@ -31,6 +31,9 @@ export function HeaderDesktopTopRow({ innerRef }: HeaderDesktopTopRowProps) {
   const pathname = usePathname();
   const hideHeaderSocialLinks = useShouldHideHeaderSocialLinks();
   const { t } = useTranslation();
+  const desktopPrimaryNavLinks = primaryNavLinks.filter(
+    (item) => item.translationKey !== 'common.navigation.compare',
+  );
 
   return (
     <div
@@ -43,7 +46,7 @@ export function HeaderDesktopTopRow({ innerRef }: HeaderDesktopTopRowProps) {
           className={`flex h-10 shrink-0 flex-nowrap items-center ${HEADER_LOGO_TO_NAV_GAP_CLASS} ${HEADER_FIGMA_NAV_LINK_GAP_CLASS} text-xs font-bold capitalize leading-[18px] text-marco-text dark:text-white/88`}
           aria-label="Main"
         >
-          {primaryNavLinks.map((item) => {
+          {desktopPrimaryNavLinks.map((item) => {
             const label = t(item.translationKey);
             const active = isPrimaryNavHrefActive(pathname, item.href);
             const navClass = getHeaderPrimaryNavDesktopLinkClass(active);

@@ -34,7 +34,9 @@ export function Header({ initialLanguage }: HeaderProps) {
   const data = useHeaderData();
   const layout = useHeaderLayoutMetrics();
   const { t } = useTranslation();
+  const [desktopTopRowHeightPx, setDesktopTopRowHeightPx] = useState(0);
   const [row2HeightPx, setRow2HeightPx] = useState(0);
+  const desktopTopRowContentRef = useRef<HTMLDivElement>(null);
   const row2ContentRef = useRef<HTMLDivElement>(null);
 
   const { compactPrimaryNav, viewportWidth, desktopTopRowInnerRef, desktopTopRowMeasureRef } = layout;
@@ -55,9 +57,28 @@ export function Header({ initialLanguage }: HeaderProps) {
   } = data;
 
   const isRow2Blocked = showProductsMenu || showUserMenu || showLocaleCurrencyMenu || searchDropdownOpen;
-  const isRow2Hidden = useHeaderRow2AutoHide({
+  const isAutoHidden = useHeaderRow2AutoHide({
     isBlocked: isRow2Blocked,
   });
+
+  useLayoutEffect(() => {
+    const node = desktopTopRowContentRef.current;
+    if (!node) {
+      return;
+    }
+
+    const syncHeight = () => {
+      setDesktopTopRowHeightPx(node.scrollHeight);
+    };
+
+    syncHeight();
+    const observer = new ResizeObserver(syncHeight);
+    observer.observe(node);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
   useLayoutEffect(() => {
     const node = row2ContentRef.current;
@@ -78,7 +99,18 @@ export function Header({ initialLanguage }: HeaderProps) {
     };
   }, []);
 
-  const effectiveRow2Hidden = isRow2Blocked ? false : isRow2Hidden;
+  const effectiveDesktopTopRowHidden = isRow2Blocked ? false : !compactPrimaryNav && isAutoHidden;
+  const desktopTopRowHiddenPx = effectiveDesktopTopRowHidden ? desktopTopRowHeightPx : 0;
+  const desktopTopRowMaxHeightPx = Math.max(0, desktopTopRowHeightPx - desktopTopRowHiddenPx);
+  const desktopTopRowMaxHeightStyle =
+    compactPrimaryNav
+      ? undefined
+      : desktopTopRowHeightPx > 0
+        ? `${desktopTopRowMaxHeightPx}px`
+        : undefined;
+  const desktopTopRowTranslateY = compactPrimaryNav ? '0px' : `-${desktopTopRowHiddenPx}px`;
+
+  const effectiveRow2Hidden = isRow2Blocked ? false : compactPrimaryNav && isAutoHidden;
   const row2HiddenPx = effectiveRow2Hidden ? row2HeightPx : 0;
   const row2MaxHeightPx = Math.max(0, row2HeightPx - row2HiddenPx);
   /** When mega menu / overlays block auto-hide, row2 uses natural height — no max-height cap (avoids sub-pixel clip). */
@@ -107,13 +139,26 @@ export function Header({ initialLanguage }: HeaderProps) {
       </Suspense>
       {!compactPrimaryNav && (
         <div
-          className={`w-full border-b ${
-            isReelsWatchRoute
-              ? 'border-white/10 bg-black text-white'
-              : 'border-marco-border bg-white dark:border-white/10 dark:bg-[var(--app-bg)]'
-          }`}
+          className={`w-full ${HEADER_ROW2_WRAPPER_CLASS} overflow-hidden`}
+          style={{
+            maxHeight: desktopTopRowMaxHeightStyle,
+          }}
         >
-          <HeaderDesktopTopRow innerRef={desktopTopRowInnerRef} />
+          <div
+            ref={desktopTopRowContentRef}
+            className={HEADER_ROW2_CONTENT_CLASS}
+            style={{ transform: `translateY(${desktopTopRowTranslateY})` }}
+          >
+            <div
+              className={`w-full border-b ${
+                isReelsWatchRoute
+                  ? 'border-white/10 bg-black text-white'
+                  : 'border-marco-border bg-white dark:border-white/10 dark:bg-[var(--app-bg)]'
+              }`}
+            >
+              <HeaderDesktopTopRow innerRef={desktopTopRowInnerRef} />
+            </div>
+          </div>
         </div>
       )}
       {compactPrimaryNav &&
