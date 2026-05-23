@@ -1,5 +1,5 @@
 import type { Config } from 'tailwindcss';
-import { MARCO_ANTHRACITE, MARCO_YELLOW } from './src/lib/constants/brand-colors';
+import { MARCO_ANTHRACITE, MARCO_YELLOW } from './src/lib/constants/brand-colors.js';
 
 const config: Config = {
   darkMode: 'class',
