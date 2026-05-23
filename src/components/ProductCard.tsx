@@ -24,6 +24,7 @@ interface Product {
   originalPrice?: number | null;
   globalDiscount?: number | null;
   discountPercent?: number | null;
+  isSpecialPrice?: boolean;
   colors?: Array<{ value: string; imageUrl?: string | null; colors?: string[] | null }>;
 }
 

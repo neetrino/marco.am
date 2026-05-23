@@ -28,6 +28,7 @@ type RelatedProduct = {
   originalPrice?: number | null;
   compareAtPrice: number | null;
   discountPercent?: number | null;
+  isSpecialPrice?: boolean;
   image: string | null;
   inStock: boolean;
   brand?: {

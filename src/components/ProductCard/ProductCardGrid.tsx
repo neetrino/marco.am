@@ -24,6 +24,7 @@ interface ProductCardGridProps {
     compareAtPrice?: number | null;
     originalPrice?: number | null;
     discountPercent?: number | null;
+    isSpecialPrice?: boolean;
     colors?: Array<{ value: string; imageUrl?: string | null; colors?: string[] | null }>;
   };
   currency: CurrencyCode;
@@ -94,6 +95,7 @@ export function ProductCardGrid({
           originalPrice={product.originalPrice}
           compareAtPrice={product.compareAtPrice}
           discountPercent={product.discountPercent}
+          isSpecialPrice={product.isSpecialPrice}
           currency={currency}
           colors={product.colors}
           isCompact={isCompact}

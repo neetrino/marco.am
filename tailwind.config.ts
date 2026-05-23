@@ -1,4 +1,5 @@
 import type { Config } from 'tailwindcss';
+import { MARCO_ANTHRACITE, MARCO_YELLOW } from './src/lib/constants/brand-colors';
 
 const config: Config = {
   darkMode: 'class',
@@ -33,15 +34,15 @@ const config: Config = {
         'header-mega-category-scroll-end': '48px',
       },
       colors: {
-        primary: '#000000',
+        primary: MARCO_ANTHRACITE,
         secondary: '#FFFFFF',
         success: '#10B981',
         warning: '#F59E0B',
         error: '#EF4444',
         info: '#3B82F6',
         marco: {
-          yellow: '#ffca03',
-          black: '#101010',
+          yellow: MARCO_YELLOW,
+          black: MARCO_ANTHRACITE,
           gray: '#f4f4f4',
           border: '#ebebeb',
           text: '#333333',

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
@@ -35,20 +35,20 @@ function SubcategoryPillRow({
     <Link
       href={`/products?category=${child.slug}`}
       onClick={onNavigate}
-      className={`${headerCategoryNavFont.className} flex min-h-[44px] w-full min-w-0 items-center justify-between gap-2 rounded-[22px] border border-marco-border bg-white py-1 pl-2 pr-1.5 !text-[#050505] transition-[filter] hover:brightness-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/15 dark:!text-[#050505] md:gap-3 md:pl-2.5 md:pr-2`}
+      className={`${headerCategoryNavFont.className} flex min-h-[44px] w-full min-w-0 items-center justify-between gap-2 rounded-[22px] border border-marco-border bg-white py-1 pl-2 pr-1.5 !text-[#383838] transition-[filter] hover:brightness-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/15 dark:!text-[#383838] md:gap-3 md:pl-2.5 md:pr-2`}
     >
       <span className="flex min-w-0 flex-1 items-center gap-2 md:gap-3">
         <SubcategoryIcon icon={row.icon} imageSrc={imageSrc} />
-        <span className="min-w-0 truncate text-left text-sm font-normal leading-[18px] tracking-[0.14px] !text-[#050505] dark:!text-[#050505]">
+        <span className="min-w-0 truncate text-left text-sm font-normal leading-[18px] tracking-[0.14px] !text-[#383838] dark:!text-[#383838]">
           {row.title}
         </span>
       </span>
       <span className="flex shrink-0 items-center gap-2 md:gap-3">
-        <span className="whitespace-nowrap text-xs font-normal leading-[18px] tracking-[0.12px] !text-[#050505] dark:!text-[#050505] md:text-sm">
+        <span className="whitespace-nowrap text-xs font-normal leading-[18px] tracking-[0.12px] !text-[#383838] dark:!text-[#383838] md:text-sm">
           {countLine}
         </span>
         <span
-          className="flex size-8 shrink-0 items-center justify-center rounded-full !bg-[#050505] text-white dark:!bg-[#050505]"
+          className="flex size-8 shrink-0 items-center justify-center rounded-full !bg-[#383838] text-white dark:!bg-[#383838]"
           aria-hidden
         >
           <ArrowUpRight
@@ -64,7 +64,7 @@ function SubcategoryPillRow({
 function SubcategoryIcon({ icon, imageSrc }: { icon: CategoryNavIcon; imageSrc: string | null }) {
   if (imageSrc) {
     return (
-      <span className="flex size-[34px] shrink-0 items-center justify-center !text-[#050505] dark:!text-[#050505]">
+      <span className="flex size-[34px] shrink-0 items-center justify-center !text-[#383838] dark:!text-[#383838]">
         <img
           src={toDomSafeImgSrcString(imageSrc)}
           alt=""
@@ -78,7 +78,7 @@ function SubcategoryIcon({ icon, imageSrc }: { icon: CategoryNavIcon; imageSrc: 
   }
   if (icon.kind === 'figma') {
     return (
-      <span className="flex size-[34px] shrink-0 items-center justify-center !text-[#050505] dark:!text-[#050505]">
+      <span className="flex size-[34px] shrink-0 items-center justify-center !text-[#383838] dark:!text-[#383838]">
         <img
           src={icon.src}
           alt=""
@@ -92,10 +92,10 @@ function SubcategoryIcon({ icon, imageSrc }: { icon: CategoryNavIcon; imageSrc: 
   }
   const RowLucide: LucideIcon = icon.Icon;
   return (
-    <span className="flex size-[34px] shrink-0 items-center justify-center !text-[#050505] dark:!text-[#050505]">
+    <span className="flex size-[34px] shrink-0 items-center justify-center !text-[#383838] dark:!text-[#383838]">
       <RowLucide
         size={SUBPILL_LUCIDE_STROKE_PX}
-        className="shrink-0 !text-[#050505] dark:!text-[#050505]"
+        className="shrink-0 !text-[#383838] dark:!text-[#383838]"
         strokeWidth={1.35}
         aria-hidden
       />
@@ -126,7 +126,7 @@ export function CategoryMegaSubcategoryPills({
     <div className="shrink-0 px-2.5 pt-2.5">
       <h2
         id={sectionHeadingId}
-        className={`${headerCategoryNavFont.className} text-[22px] font-bold uppercase leading-tight tracking-[-0.02em] !text-[#050505] md:text-[28px] md:leading-[1.1] lg:text-[34px] lg:leading-[39px] dark:!text-[#050505]`}
+        className={`${headerCategoryNavFont.className} text-[22px] font-bold uppercase leading-tight tracking-[-0.02em] !text-[#383838] md:text-[28px] md:leading-[1.1] lg:text-[34px] lg:leading-[39px] dark:!text-[#383838]`}
       >
         {sectionTitle}
       </h2>
@@ -139,7 +139,7 @@ export function CategoryMegaSubcategoryPills({
       <div className="mt-2 flex min-h-0 min-w-0 shrink-0 flex-col gap-4 overflow-hidden">
         {headerBlock}
         <p
-          className={`${headerCategoryNavFont.className} px-2.5 text-sm leading-relaxed !text-[#050505] md:text-base dark:!text-[#050505]`}
+          className={`${headerCategoryNavFont.className} px-2.5 text-sm leading-relaxed !text-[#383838] md:text-base dark:!text-[#383838]`}
         >
           {emptyMessage}
         </p>

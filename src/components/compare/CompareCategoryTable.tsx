@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import type { MouseEvent } from 'react';
 import Image from 'next/image';
@@ -77,7 +77,7 @@ export function CompareCategoryTable({
                   aria-label={t('common.buttons.remove')}
                 >
                   <svg
-                    className="h-4 w-4 !text-[#9ca3af] transition-colors group-hover:!text-[#050505] dark:group-hover:!text-[#050505]"
+                    className="h-4 w-4 !text-[#9ca3af] transition-colors group-hover:!text-[#383838] dark:group-hover:!text-[#383838]"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -221,7 +221,7 @@ export function CompareCategoryTable({
                       type="button"
                       onClick={(e) => handleAddToCart(e, product)}
                       disabled={addingToCart.has(product.id)}
-                      className="inline-flex h-10 items-center justify-center whitespace-nowrap rounded-full bg-marco-yellow px-6 text-sm font-bold !text-[#050505] transition-[filter] hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50 dark:!text-[#050505]"
+                      className="inline-flex h-10 items-center justify-center whitespace-nowrap rounded-full bg-marco-yellow px-6 text-sm font-bold !text-[#383838] transition-[filter] hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50 dark:!text-[#383838]"
                     >
                       {addingToCart.has(product.id)
                         ? t('common.messages.adding')

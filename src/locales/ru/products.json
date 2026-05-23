@@ -85,6 +85,9 @@
     "filters": "Фильтры",
     "sortProducts": "Сортировать товары"
   },
+  "pricing": {
+    "special_price": "Специальная цена"
+  },
   "grid": {
     "noProducts": "Товары не найдены."
   },

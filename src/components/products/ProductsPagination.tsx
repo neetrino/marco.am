@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import Link from 'next/link';
 import { useTranslation } from '../../lib/i18n-client';
@@ -155,7 +155,7 @@ export function ProductsPagination({
           <span key={item.page}>
             {item.page === page ? (
               <span
-                className={`${PAGINATION_PAGE_BASE} border border-[#050505] bg-[#ffffff] font-bold text-[#050505]`}
+                className={`${PAGINATION_PAGE_BASE} border border-[#383838] bg-[#ffffff] font-bold text-[#383838]`}
                 aria-current="page"
               >
                 {item.page}

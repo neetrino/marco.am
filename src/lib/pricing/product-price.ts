@@ -3,6 +3,8 @@ export interface ResolvedProductPrice {
   oldPrice: number | null;
   compareAtPrice: number | null;
   discountPercent: number | null;
+  /** Manual compare-at price without % discount (legacy «հատուկ գին»). */
+  isSpecialPrice: boolean;
 }
 
 interface ResolveProductPriceInput {
@@ -50,16 +52,22 @@ export function resolveProductPrice(input: ResolveProductPriceInput): ResolvedPr
     ? compareAtPrice
     : computeOldPriceFromDiscount(currentPrice, fallbackDiscountPercent);
   const discountFromPrices = computeDiscountPercent(currentPrice, oldPrice);
-  const discountPercent = hasCompareAt
-    ? discountFromPrices
-    : fallbackDiscountPercent && fallbackDiscountPercent > 0
-      ? fallbackDiscountPercent
-      : discountFromPrices;
+  const appliedDiscountPercent =
+    fallbackDiscountPercent && fallbackDiscountPercent > 0 ? fallbackDiscountPercent : 0;
+  const isSpecialPrice = hasCompareAt && appliedDiscountPercent <= 0;
+  const discountPercent = isSpecialPrice
+    ? null
+    : hasCompareAt
+      ? discountFromPrices
+      : appliedDiscountPercent > 0
+        ? appliedDiscountPercent
+        : discountFromPrices;
 
   return {
     currentPrice,
     oldPrice,
     compareAtPrice: hasCompareAt ? compareAtPrice : null,
     discountPercent,
+    isSpecialPrice,
   };
 }

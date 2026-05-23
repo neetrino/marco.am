@@ -1,4 +1,4 @@
-export type ProductsFilterCheckboxVariant = 'default' | 'checkmark';
+﻿export type ProductsFilterCheckboxVariant = 'default' | 'checkmark';
 
 interface ProductsFilterCheckboxVisualProps {
   readonly checked: boolean;
@@ -36,7 +36,7 @@ export function ProductsFilterCheckboxVisual({
           viewBox="0 0 12 10"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          className={isCheckmark ? 'text-marco-black dark:text-white' : 'text-white dark:text-[#050505]'}
+          className={isCheckmark ? 'text-marco-black dark:text-white' : 'text-white dark:text-[#383838]'}
         >
           <path
             d="M1 5l3.5 3.5L11 1"

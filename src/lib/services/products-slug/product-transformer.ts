@@ -48,7 +48,7 @@ type ProductGalleryImage = {
 };
 
 type ProductDiscountBadge = {
-  type: "percentage";
+  type: "percentage" | "special_price";
   value: number;
   label: string;
 };
@@ -351,7 +351,18 @@ function transformVariantImageUrl(variant: ProductVariantWithOptions): string | 
   return processedUrls.length > 0 ? processedUrls.join(',') : null;
 }
 
-function buildDiscountBadge(discountPercent: number | null): ProductDiscountBadge | null {
+function buildDiscountBadge(
+  discountPercent: number | null,
+  isSpecialPrice: boolean,
+): ProductDiscountBadge | null {
+  if (isSpecialPrice) {
+    return {
+      type: "special_price",
+      value: 0,
+      label: "special_price",
+    };
+  }
+
   if (!discountPercent || discountPercent <= 0) {
     return null;
   }
@@ -414,7 +425,7 @@ function buildVariantPricing(
     currentPrice: resolved.currentPrice,
     oldPrice: resolved.oldPrice,
     discountPercent: resolved.discountPercent,
-    discountBadge: buildDiscountBadge(resolved.discountPercent),
+    discountBadge: buildDiscountBadge(resolved.discountPercent, resolved.isSpecialPrice),
   };
 }
 

@@ -15,6 +15,7 @@ export interface SpecialOfferProduct {
   brand: ProductListingBrand | null;
   defaultVariantId?: string | null;
   discountPercent?: number | null;
+  isSpecialPrice?: boolean;
   labels?: ProductLabel[];
   colors?: Array<{
     value: string;

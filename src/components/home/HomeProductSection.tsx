@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -171,7 +171,7 @@ export function HomeProductSection({ titleKey, filter }: HomeProductSectionProps
             <button
               type="button"
               onClick={() => fetchProducts()}
-              className="rounded-full bg-[#101010] px-6 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+              className="rounded-full bg-[#383838] px-6 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
             >
               {tr('home.featured_products.tryAgain')}
             </button>
@@ -228,7 +228,7 @@ export function HomeProductSection({ titleKey, filter }: HomeProductSectionProps
 
   return (
     <section className="bg-white py-10 md:py-14">
-      <h2 className="text-center text-xl font-black uppercase tracking-wide text-[#101010] md:text-2xl">
+      <h2 className="text-center text-xl font-black uppercase tracking-wide text-[#383838] md:text-2xl">
         {title}
       </h2>
 
@@ -252,7 +252,7 @@ export function HomeProductSection({ titleKey, filter }: HomeProductSectionProps
             <button
               type="button"
               onClick={() => fetchProducts()}
-              className="rounded-full bg-[#101010] px-6 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+              className="rounded-full bg-[#383838] px-6 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
             >
               {t(language, 'home.featured_products.tryAgain')}
             </button>
@@ -273,7 +273,7 @@ export function HomeProductSection({ titleKey, filter }: HomeProductSectionProps
       <div className="mt-10 flex justify-center">
         <Link
           href={seeAllHref}
-          className="inline-flex min-w-[200px] items-center justify-center rounded-full bg-[#101010] px-10 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+          className="inline-flex min-w-[200px] items-center justify-center rounded-full bg-[#383838] px-10 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
         >
           {t(language, 'common.search.seeAll')}
         </Link>

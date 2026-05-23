@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { ProductPdpPrefetchLink } from '@/components/ProductPdpPrefetchLink';
 
@@ -167,7 +167,7 @@ export function SpecialOfferCard({
         ) : null}
         <span
           aria-hidden
-          className="pointer-events-none absolute bottom-0 right-0 z-0 max-md:hidden rounded-full [box-shadow:inset_0_0_0_1px_var(--special-offers-card-cutout-bg)] dark:[box-shadow:inset_0_0_0_1px_#050505]"
+          className="pointer-events-none absolute bottom-0 right-0 z-0 max-md:hidden rounded-full [box-shadow:inset_0_0_0_1px_var(--special-offers-card-cutout-bg)] dark:[box-shadow:inset_0_0_0_1px_#383838]"
           style={{
             width: SPECIAL_OFFERS_CARD_CORNER_MASK_SIZE_PX,
             height: SPECIAL_OFFERS_CARD_CORNER_MASK_SIZE_PX,
@@ -252,6 +252,7 @@ export function SpecialOfferCard({
       <SpecialOfferActionsStack
         layout={layout}
         showDiscountPill={!detailsPending && showDiscountPill}
+        isSpecialPrice={product.isSpecialPrice}
         discountPercent={product.discountPercent}
         isInWishlist={isInWishlist}
         isInCompare={isInCompare}

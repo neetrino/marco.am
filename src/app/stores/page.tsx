@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { Card, Button } from '@shop/ui';
 import Link from 'next/link';
@@ -180,7 +180,7 @@ export default function StoresPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="!h-11 w-full !rounded-full !border-0 !bg-marco-yellow !px-6 !text-sm font-semibold uppercase tracking-wide !text-marco-black dark:!text-[#050505] hover:!brightness-95"
+                  className="!h-11 w-full !rounded-full !border-0 !bg-marco-yellow !px-6 !text-sm font-semibold uppercase tracking-wide !text-marco-black dark:!text-[#383838] hover:!brightness-95"
                 >
                   {t('stores.getDirections')}
                 </Button>

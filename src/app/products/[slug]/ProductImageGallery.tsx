@@ -13,6 +13,7 @@ interface ProductImageGalleryProps {
   images: string[];
   product: Product;
   discountPercent: number | null;
+  isSpecialPrice?: boolean;
   language: LanguageCode;
   currentImageIndex: number;
   onImageIndexChange: Dispatch<SetStateAction<number>>;
@@ -28,6 +29,7 @@ export function ProductImageGallery({
   images,
   product,
   discountPercent,
+  isSpecialPrice = false,
   language,
   currentImageIndex,
   onImageIndexChange,
@@ -151,9 +153,17 @@ export function ProductImageGallery({
           )}
           
           {/* Discount Badge on Image - Blue circle in top-right */}
-          {discountPercent && (
-            <div className="absolute top-4 right-4 w-14 h-14 bg-marco-yellow text-marco-black rounded-full flex items-center justify-center text-sm font-bold z-10 shadow-[0_2px_8px_rgba(0,0,0,0.2)]">
-              -{discountPercent}%
+          {(isSpecialPrice || discountPercent) && (
+            <div
+              className={`absolute top-4 right-4 z-10 flex items-center justify-center bg-marco-yellow font-bold text-marco-black shadow-[0_2px_8px_rgba(0,0,0,0.2)] ${
+                isSpecialPrice
+                  ? 'max-w-[120px] rounded-full px-3 py-2 text-center text-xs leading-tight'
+                  : 'h-14 w-14 rounded-full text-sm'
+              }`}
+            >
+              {isSpecialPrice
+                ? t(language, 'products.pricing.special_price')
+                : `-${discountPercent}%`}
             </div>
           )}
 

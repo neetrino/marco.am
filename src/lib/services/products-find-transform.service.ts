@@ -413,6 +413,7 @@ class ProductsFindTransformService {
         originalPrice: pricing.oldPrice,
         compareAtPrice: pricing.compareAtPrice,
         discountPercent: pricing.discountPercent,
+        isSpecialPrice: pricing.isSpecialPrice,
         ...(() => {
           if (!Array.isArray(product.media) || product.media.length === 0) {
             return { image: null as string | null, images: [] as string[] };

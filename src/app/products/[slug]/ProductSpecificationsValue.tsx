@@ -1,20 +1,18 @@
 'use client';
 
-import { splitSpecificationValueParts } from './product-specifications-value';
+import {
+  splitSpecificationFootnote,
+  splitSpecificationValueParts,
+} from './product-specifications-value';
 
 interface SpecificationValueDisplayProps {
   value: string;
 }
 
-export function SpecificationValueDisplay({ value }: SpecificationValueDisplayProps) {
-  const trimmed = value.trim();
-  if (!trimmed || trimmed === '-') {
-    return <span className="text-gray-400">—</span>;
-  }
-
-  const parts = splitSpecificationValueParts(trimmed);
+function SpecificationMainValue({ main }: { main: string }) {
+  const parts = splitSpecificationValueParts(main);
   if (parts.length <= 1) {
-    return <span className="break-words leading-relaxed">{trimmed}</span>;
+    return <span className="break-words leading-relaxed">{main}</span>;
   }
 
   return (
@@ -27,5 +25,26 @@ export function SpecificationValueDisplay({ value }: SpecificationValueDisplayPr
         </li>
       ))}
     </ul>
+  );
+}
+
+export function SpecificationValueDisplay({ value }: SpecificationValueDisplayProps) {
+  const trimmed = value.trim();
+  if (!trimmed || trimmed === '-') {
+    return <span className="text-gray-400">—</span>;
+  }
+
+  const { main, footnote } = splitSpecificationFootnote(trimmed);
+  if (!footnote) {
+    return <SpecificationMainValue main={main} />;
+  }
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <SpecificationMainValue main={main} />
+      <span className="block break-words text-xs font-normal leading-relaxed text-gray-500 md:text-sm">
+        {footnote}
+      </span>
+    </div>
   );
 }

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import Image from 'next/image';
 import type { MouseEvent } from 'react';
@@ -66,8 +66,8 @@ function CompareCircleGlyph({ isActive }: { isActive: boolean }) {
     <CompareIcon
       isActive={isActive}
       size={18}
-      className={isActive ? 'text-[#050505]' : 'text-white'}
-      color={isActive ? '#050505' : '#ffffff'}
+      className={isActive ? 'text-[#383838]' : 'text-white'}
+      color={isActive ? '#383838' : '#ffffff'}
     />
   );
 }
@@ -105,7 +105,7 @@ export function SpecialOfferSideActions({
       type="button"
       onClick={onWishlist}
       className={`flex size-9 shrink-0 items-center justify-center rounded-full shadow-sm transition-opacity hover:opacity-90 md:size-10 ${
-        isInWishlist ? 'bg-red-600 text-white' : 'bg-[#050505] text-white'
+        isInWishlist ? 'bg-red-600 text-white' : 'bg-[#383838] text-white'
       }`}
       title={isInWishlist ? t('common.messages.removedFromWishlist') : t('common.messages.addedToWishlist')}
       aria-label={isInWishlist ? t('common.ariaLabels.removeFromWishlist') : t('common.ariaLabels.addToWishlist')}
@@ -120,7 +120,7 @@ export function SpecialOfferSideActions({
       type="button"
       onClick={onCompare}
       className={`flex size-9 shrink-0 items-center justify-center overflow-visible rounded-full p-0 shadow-sm transition-opacity hover:opacity-90 md:size-10 ${
-        isInCompare ? 'bg-marco-yellow text-[#050505]' : 'bg-[#050505] text-white'
+        isInCompare ? 'bg-marco-yellow text-[#383838]' : 'bg-[#383838] text-white'
       }`}
       title={isInCompare ? t('common.messages.removedFromCompare') : t('common.messages.addedToCompare')}
       aria-label={isInCompare ? t('common.ariaLabels.removeFromCompare') : t('common.ariaLabels.addToCompare')}
@@ -130,9 +130,14 @@ export function SpecialOfferSideActions({
   );
 
   const discountPill =
-    product.discountPercent != null && product.discountPercent > 0 ? (
-      <div key="discount" className="rounded-full bg-[#ffca03] px-2 py-1">
-        <span className="text-[10px] font-bold text-white">-{product.discountPercent}%</span>
+    product.isSpecialPrice ||
+    (product.discountPercent != null && product.discountPercent > 0) ? (
+      <div key="discount" className="max-w-[88px] rounded-full bg-[#ffca03] px-2 py-1 text-center">
+        <span className="text-[10px] font-bold leading-tight text-white">
+          {product.isSpecialPrice
+            ? t('products.pricing.special_price')
+            : `-${product.discountPercent}%`}
+        </span>
       </div>
     ) : null;
 
@@ -199,7 +204,7 @@ export function SpecialOfferCartFab({
       type="button"
       onClick={onCart}
       disabled={!product.inStock || isAddingToCart}
-      className="absolute bottom-0 right-0 z-20 flex size-[54px] translate-x-1/2 translate-y-1/2 items-center justify-center rounded-full bg-[#ffca03] p-0 text-white shadow-[0_4px_14px_rgba(0,0,0,0.12)] transition-transform hover:scale-[1.03] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#181111] disabled:cursor-not-allowed disabled:opacity-50 dark:outline dark:outline-2 dark:outline-[#050505] md:size-[62px]"
+      className="absolute bottom-0 right-0 z-20 flex size-[54px] translate-x-1/2 translate-y-1/2 items-center justify-center rounded-full bg-[#ffca03] p-0 text-white shadow-[0_4px_14px_rgba(0,0,0,0.12)] transition-transform hover:scale-[1.03] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#181111] disabled:cursor-not-allowed disabled:opacity-50 dark:outline dark:outline-2 dark:outline-[#383838] md:size-[62px]"
       title={product.inStock ? t('common.buttons.addToCart') : t('common.stock.outOfStock')}
       aria-label={product.inStock ? t('common.ariaLabels.addToCart') : t('common.ariaLabels.outOfStock')}
     >

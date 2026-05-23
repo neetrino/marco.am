@@ -1,4 +1,4 @@
-import Link from 'next/link';
+﻿import Link from 'next/link';
 import { Button, Card } from '@shop/ui';
 import {
   ADMIN_ORDER_LIST_STATUS_VALUES,
@@ -50,7 +50,7 @@ export function ProfileOrders({
         onClick={() => onOrdersStatusFilterChange('')}
         className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
           ordersStatusFilter === ''
-            ? 'bg-marco-yellow text-[#050505] dark:text-[#050505] border-marco-yellow'
+            ? 'bg-marco-yellow text-[#383838] dark:text-[#383838] border-marco-yellow'
             : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
         }`}
       >
@@ -63,7 +63,7 @@ export function ProfileOrders({
           onClick={() => onOrdersStatusFilterChange(value)}
           className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
             ordersStatusFilter === value
-              ? 'bg-marco-yellow text-[#050505] dark:text-[#050505] border-marco-yellow'
+              ? 'bg-marco-yellow text-[#383838] dark:text-[#383838] border-marco-yellow'
               : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
           }`}
         >
@@ -104,7 +104,7 @@ export function ProfileOrders({
             <Button
               type="button"
               variant="outline"
-              className="mr-2 !h-10 !rounded-full !border !border-gray-300 !bg-white !px-5 !text-sm !font-medium !text-gray-700 transition-colors hover:!bg-gray-50 dark:!border-[#ffffff] dark:!bg-[#ffffff] dark:!text-[#050505] dark:hover:!bg-[#f2f2f2]"
+              className="mr-2 !h-10 !rounded-full !border !border-gray-300 !bg-white !px-5 !text-sm !font-medium !text-gray-700 transition-colors hover:!bg-gray-50 dark:!border-[#ffffff] dark:!bg-[#ffffff] dark:!text-[#383838] dark:hover:!bg-[#f2f2f2]"
               onClick={() => onOrdersStatusFilterChange('')}
             >
               {t('profile.orders.showAllOrders')}

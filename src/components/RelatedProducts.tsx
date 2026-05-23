@@ -54,10 +54,6 @@ export function RelatedProducts({ currentProductSlug, language }: RelatedProduct
 
   function toSpecialOfferProduct(product: (typeof products)[number]): SpecialOfferProduct {
     const compareAt = product.compareAtPrice ?? product.originalPrice ?? null;
-    let discountPercent = product.discountPercent ?? null;
-    if (discountPercent == null && compareAt != null && compareAt > product.price) {
-      discountPercent = Math.round(((compareAt - product.price) / compareAt) * 100);
-    }
     return {
       id: product.id,
       slug: product.slug,
@@ -65,7 +61,8 @@ export function RelatedProducts({ currentProductSlug, language }: RelatedProduct
       price: product.price,
       compareAtPrice: compareAt ?? undefined,
       originalPrice: compareAt ?? undefined,
-      discountPercent,
+      discountPercent: product.discountPercent ?? null,
+      isSpecialPrice: product.isSpecialPrice ?? false,
       image: product.image,
       images: product.image ? [product.image] : undefined,
       inStock: product.inStock,

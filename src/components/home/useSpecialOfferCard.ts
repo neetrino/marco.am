@@ -39,7 +39,8 @@ export function useSpecialOfferCard(
   const [imageError, setImageError] = useState(false);
 
   const showDiscountPill =
-    product.discountPercent != null && product.discountPercent > 0;
+    Boolean(product.isSpecialPrice) ||
+    (product.discountPercent != null && product.discountPercent > 0);
 
   const oldPrice =
     product.originalPrice && product.originalPrice > product.price

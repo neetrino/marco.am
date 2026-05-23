@@ -13,6 +13,7 @@ export interface SpecialOfferProduct {
   colors?: Array<{ value: string; imageUrl?: string | null; colors?: string[] | null }>;
   originalPrice?: number | null;
   discountPercent?: number | null;
+  isSpecialPrice?: boolean;
   labels?: ProductLabel[];
   defaultVariantId?: string | null;
 }

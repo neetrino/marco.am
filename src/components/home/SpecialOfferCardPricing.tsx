@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import type { MouseEvent } from 'react';
 
@@ -101,7 +101,7 @@ export function SpecialOfferCartFloatingButton({
           type="button"
           onClick={onAddToCart}
           disabled={disabled}
-          className="relative flex items-center justify-center overflow-hidden rounded-full bg-[#ffca03] shadow-sm transition-transform hover:scale-105 disabled:cursor-not-allowed disabled:opacity-50 dark:outline dark:outline-2 dark:outline-[#050505]"
+          className="relative flex items-center justify-center overflow-hidden rounded-full bg-[#ffca03] shadow-sm transition-transform hover:scale-105 disabled:cursor-not-allowed disabled:opacity-50 dark:outline dark:outline-2 dark:outline-[#383838]"
           style={{
             width: SPECIAL_OFFERS_CART_BUTTON_SIZE_PX,
             height: SPECIAL_OFFERS_CART_BUTTON_SIZE_PX,

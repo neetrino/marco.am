@@ -1,6 +1,7 @@
 'use client';
 
 import type { MouseEvent } from 'react';
+import { useTranslation } from '@/lib/i18n-client';
 import { Heart } from 'lucide-react';
 
 import { CompareIcon } from '../icons/CompareIcon';
@@ -62,6 +63,7 @@ export function SpecialOfferWarrantyBadge({
 
 interface SpecialOfferActionsStackProps {
   showDiscountPill: boolean;
+  isSpecialPrice?: boolean;
   discountPercent: number | null | undefined;
   isInWishlist: boolean;
   isInCompare: boolean;
@@ -76,6 +78,7 @@ interface SpecialOfferActionsStackProps {
 
 export function SpecialOfferActionsStack({
   showDiscountPill,
+  isSpecialPrice = false,
   discountPercent,
   isInWishlist,
   isInCompare,
@@ -86,6 +89,7 @@ export function SpecialOfferActionsStack({
   layout = 'default',
   disabled = false,
 }: SpecialOfferActionsStackProps) {
+  const { t } = useTranslation();
   const rightPx =
     SPECIAL_OFFERS_ACTIONS_STACK_RIGHT_FROM_CARD_OUTER_PX -
     SPECIAL_OFFERS_ACTIONS_STACK_OUTSET_RIGHT_PX +
@@ -131,8 +135,8 @@ export function SpecialOfferActionsStack({
         />
       </button>
       {showDiscountPill ? (
-        <div className="rounded-full bg-marco-yellow px-2 py-1 text-[10px] font-bold text-white">
-          -{discountPercent}%
+        <div className="max-w-[88px] rounded-full bg-marco-yellow px-2 py-1 text-center text-[10px] font-bold leading-tight text-white">
+          {isSpecialPrice ? t('products.pricing.special_price') : `-${discountPercent}%`}
         </div>
       ) : null}
     </div>
