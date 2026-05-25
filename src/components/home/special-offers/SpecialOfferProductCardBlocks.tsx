@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import Image from 'next/image';
 import type { MouseEvent } from 'react';
@@ -6,6 +6,8 @@ import { ProductImagePlaceholder } from '@/components/ProductImagePlaceholder';
 import { ProductLabels } from '@/components/ProductLabels';
 import { CompareIcon } from '@/components/icons/CompareIcon';
 import type { SpecialOfferProduct } from './SpecialOfferProductCardTypes';
+import { ProductWarrantyBadge } from '@/components/ProductCard/ProductWarrantyBadge';
+import type { ProductWarrantyYears } from '@/lib/constants/product-warranty';
 
 /** Figma 101:3500 — exact vector path (asset was mis-saved as .png; inline SVG avoids MIME mismatch) */
 function SpecialOfferAddToCartGlyph({ className }: { className?: string }) {
@@ -72,11 +74,10 @@ function CompareCircleGlyph({ isActive }: { isActive: boolean }) {
   );
 }
 
-export function SpecialOfferWarrantyBadge({ line1, line2 }: { line1: string; line2: string }) {
+export function SpecialOfferWarrantyBadge({ years }: { years: ProductWarrantyYears }) {
   return (
-    <div className="pointer-events-none absolute left-3 top-3 z-20 rounded-2xl bg-[#1e1e1e] px-2 py-2 text-center leading-[15px] md:left-4 md:top-4">
-      <p className="text-[12px] font-bold text-[#ffca03] md:text-[14px]">{line1}</p>
-      <p className="text-[10px] font-bold uppercase text-white md:text-[11px]">{line2}</p>
+    <div className="pointer-events-none absolute left-3 top-3 z-20 md:left-4 md:top-4">
+      <ProductWarrantyBadge years={years} size="promo" />
     </div>
   );
 }

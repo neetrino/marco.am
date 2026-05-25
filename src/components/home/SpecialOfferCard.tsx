@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { ProductPdpPrefetchLink } from '@/components/ProductPdpPrefetchLink';
 
@@ -132,6 +132,7 @@ export function SpecialOfferCard({
         : 'mx-auto';
 
   const cardPdpEnabled = Boolean(product.slug) && !product.shellPlaceholder;
+  const warrantyYears = product.warrantyYears ?? product.warrantyBadge?.years ?? null;
 
   return (
     <div
@@ -192,11 +193,9 @@ export function SpecialOfferCard({
           className="relative z-10 flex min-h-0 flex-1 flex-col px-4 pb-6"
           style={{ paddingTop: SPECIAL_OFFERS_CARD_PADDING_TOP_PX }}
         >
-          <SpecialOfferWarrantyBadge
-            layout={layout}
-            line1={t('home.special_offers.warranty_line1')}
-            line2={t('home.special_offers.warranty_line2')}
-          />
+          {warrantyYears ? (
+            <SpecialOfferWarrantyBadge layout={layout} years={warrantyYears} />
+          ) : null}
 
           <SpecialOfferCardMedia
             layout={layout}

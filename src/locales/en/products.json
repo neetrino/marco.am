@@ -108,6 +108,11 @@
       "new": "NEW",
       "sale": "SALE"
     }
+  },
+  "warranty": {
+    "years_suffix": "YRS",
+    "label": "WARRANTY",
+    "badge_aria": "{years} year warranty"
   }
 }
 

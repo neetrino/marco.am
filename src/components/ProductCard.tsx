@@ -20,6 +20,8 @@ interface Product {
   brand: ProductListingBrand | null;
   defaultVariantId?: string | null;
   labels?: import('./ProductLabels').ProductLabel[];
+  warrantyYears?: import('@/lib/constants/product-warranty').ProductWarrantyYears | null;
+  warrantyBadge?: { years: import('@/lib/constants/product-warranty').ProductWarrantyYears } | null;
   compareAtPrice?: number | null;
   originalPrice?: number | null;
   globalDiscount?: number | null;

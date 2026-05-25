@@ -18,6 +18,7 @@ interface CreateAndSubmitPayloadProps {
     featuredImageIndex: number;
     mainProductImage: string;
     labels: ProductLabel[];
+    warrantyYears: number | null;
   };
   finalBrandIds: string[];
   finalPrimaryCategoryId: string;
@@ -77,6 +78,8 @@ export async function createAndSubmitPayload({
         position: label.position,
         color: label.color || null,
       }));
+
+    payload.warrantyYears = formData.warrantyYears;
 
     logger.devLog('📤 [ADMIN] Sending payload:', JSON.stringify(payload, null, 2));
     

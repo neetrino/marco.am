@@ -100,6 +100,7 @@ export interface ProductData {
   /** Featured/main image URL when stored separately from `media`. */
   mainProductImage?: string;
   labels?: ProductLabel[];
+  warrantyYears?: number | null;
   variants?: AdminProductVariantRow[];
 }
 

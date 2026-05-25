@@ -24,6 +24,8 @@ interface Product {
   brand: ProductListingBrand | null;
   defaultVariantId?: string | null;
   labels?: ProductLabel[];
+  warrantyYears?: import('@/lib/constants/product-warranty').ProductWarrantyYears | null;
+  warrantyBadge?: { years: import('@/lib/constants/product-warranty').ProductWarrantyYears } | null;
   colors?: Array<{ value: string; imageUrl?: string | null; colors?: string[] | null }>;
 }
 
@@ -44,6 +46,8 @@ function toSpecialOfferProduct(p: Product): SpecialOfferProduct {
     discountPercent: p.discountPercent ?? null,
     isSpecialPrice: p.isSpecialPrice ?? false,
     labels: p.labels,
+    warrantyYears: p.warrantyYears ?? p.warrantyBadge?.years ?? null,
+    warrantyBadge: p.warrantyBadge,
     colors: p.colors,
   };
 }

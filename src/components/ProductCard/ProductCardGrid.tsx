@@ -21,6 +21,8 @@ interface ProductCardGridProps {
     inStock: boolean;
     brand: ProductListingBrand | null;
     labels?: ProductLabel[];
+    warrantyYears?: import('@/lib/constants/product-warranty').ProductWarrantyYears | null;
+    warrantyBadge?: { years: import('@/lib/constants/product-warranty').ProductWarrantyYears } | null;
     compareAtPrice?: number | null;
     originalPrice?: number | null;
     discountPercent?: number | null;
@@ -79,6 +81,7 @@ export function ProductCardGrid({
             image={product.image}
             title={product.title}
             labels={product.labels}
+            warrantyYears={product.warrantyYears ?? product.warrantyBadge?.years ?? null}
             imageError={imageError}
             onImageError={onImageError}
             isCompact={isCompact}

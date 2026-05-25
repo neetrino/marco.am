@@ -12,25 +12,20 @@ import {
   SPECIAL_OFFERS_ACTIONS_STACK_RIGHT_FROM_CARD_OUTER_PX,
   SPECIAL_OFFERS_ACTIONS_STACK_SHIFT_LEFT_PX,
   SPECIAL_OFFERS_ACTIONS_STACK_TOP_FROM_CARD_OUTER_PX,
-  SPECIAL_OFFERS_WARRANTY_BADGE_ACCENT,
-  SPECIAL_OFFERS_WARRANTY_BADGE_BG,
   SPECIAL_OFFERS_WARRANTY_BADGE_LEFT_INSET_MOBILE_GRID_PX,
   SPECIAL_OFFERS_WARRANTY_BADGE_LEFT_INSET_PX,
-  SPECIAL_OFFERS_WARRANTY_BADGE_MIN_HEIGHT_PX,
-  SPECIAL_OFFERS_WARRANTY_BADGE_MIN_WIDTH_PX,
-  SPECIAL_OFFERS_WARRANTY_BADGE_RADIUS_PX,
   SPECIAL_OFFERS_WARRANTY_BADGE_TOP_INSET_PX,
 } from './home-special-offers.constants';
+import { ProductWarrantyBadge } from '@/components/ProductCard/ProductWarrantyBadge';
+import type { ProductWarrantyYears } from '@/lib/constants/product-warranty';
 
 interface SpecialOfferWarrantyBadgeProps {
-  line1: string;
-  line2: string;
+  years: ProductWarrantyYears;
   layout?: 'default' | 'mobileGrid' | 'homeGrid';
 }
 
 export function SpecialOfferWarrantyBadge({
-  line1,
-  line2,
+  years,
   layout = 'default',
 }: SpecialOfferWarrantyBadgeProps) {
   const leftInsetPx =
@@ -40,23 +35,13 @@ export function SpecialOfferWarrantyBadge({
 
   return (
     <div
-      className="absolute z-30 flex flex-col items-center justify-center px-2 py-1 text-center font-bold not-italic"
+      className="absolute z-30"
       style={{
         left: leftInsetPx,
         top: SPECIAL_OFFERS_WARRANTY_BADGE_TOP_INSET_PX,
-        minWidth: SPECIAL_OFFERS_WARRANTY_BADGE_MIN_WIDTH_PX,
-        minHeight: SPECIAL_OFFERS_WARRANTY_BADGE_MIN_HEIGHT_PX,
-        borderRadius: SPECIAL_OFFERS_WARRANTY_BADGE_RADIUS_PX,
-        backgroundColor: SPECIAL_OFFERS_WARRANTY_BADGE_BG,
       }}
     >
-      <span
-        className="whitespace-nowrap text-[14px] leading-[15px]"
-        style={{ color: SPECIAL_OFFERS_WARRANTY_BADGE_ACCENT }}
-      >
-        {line1}
-      </span>
-      <span className="text-[11px] leading-[15px] text-white">{line2}</span>
+      <ProductWarrantyBadge years={years} size="promo" />
     </div>
   );
 }

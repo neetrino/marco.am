@@ -17,6 +17,7 @@ import {
   resolveProductClass,
   type ProductClass,
 } from "@/lib/constants/product-class";
+import { normalizeProductWarrantyYears } from "@/lib/constants/product-warranty";
 import { logger } from "@/lib/utils/logger";
 import type { PrismaTransactionClient } from "@/lib/types/prisma";
 import { getErrorMessage, getPrismaErrorCode } from "@/lib/types/errors";
@@ -142,6 +143,7 @@ class AdminProductsCreateService {
       position: string;
       color?: string | null;
     }>;
+    warrantyYears?: number | null;
     attributeIds?: string[];
     variants: Array<{
       price: string | number;
@@ -386,6 +388,7 @@ class AdminProductsCreateService {
             media: finalMedia,
             published: data.published,
             featured: data.featured ?? false,
+            warrantyYears: normalizeProductWarrantyYears(data.warrantyYears),
             publishedAt: data.published ? new Date() : undefined,
             translations: {
               create: {

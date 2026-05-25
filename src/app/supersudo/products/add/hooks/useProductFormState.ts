@@ -24,6 +24,7 @@ export function useProductFormState() {
     mainProductImage: '' as string,
     variants: [] as Variant[],
     labels: [] as ProductLabel[],
+    warrantyYears: null as number | null,
   });
   const [categoriesExpanded, setCategoriesExpanded] = useState(false);
   const [brandsExpanded, setBrandsExpanded] = useState(false);
