@@ -3,6 +3,10 @@ import { logger } from '../../lib/utils/logger';
 import type { Cart, CartItem } from './types';
 import { CART_KEY } from './constants';
 import { cartLineSubtotal, resolveGuestUnitPrice } from './line-subtotal';
+import {
+  formatCartVariantOptionFromApi,
+  type CartVariantOption,
+} from '../../lib/cart/format-cart-variant-options';
 
 /**
  * Product data from API
@@ -19,6 +23,11 @@ interface ProductData {
     price: number;
     originalPrice?: number | null;
     stock?: number;
+    options?: Array<{
+      attribute?: string;
+      key?: string;
+      value?: string;
+    }>;
   }>;
 }
 
@@ -70,6 +79,9 @@ async function fetchGuestCartItems(
           : null;
 
         const unitPrice = resolveGuestUnitPrice(variant.price, item.price);
+        const variantOptions: CartVariantOption[] = (variant.options ?? [])
+          .map((option) => formatCartVariantOptionFromApi(option))
+          .filter((option): option is CartVariantOption => option !== null);
 
         return {
           item: {
@@ -78,6 +90,7 @@ async function fetchGuestCartItems(
               id: variant._id?.toString() || variant.id,
               sku: variant.sku || '',
               stock: variant.stock !== undefined ? variant.stock : undefined,
+              options: variantOptions,
               product: {
                 id: productData.id,
                 title: translation?.title || t('common.messages.product'),
