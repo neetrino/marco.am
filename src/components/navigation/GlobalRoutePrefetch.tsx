@@ -6,12 +6,22 @@ import { getStoredLanguage } from '@/lib/language';
 
 const PREFETCH_ROUTES = ['/', '/products', '/cart', '/wishlist', '/profile', '/reels'] as const;
 const PRODUCTS_PREFETCH_QUERY = 'page=1&limit=12&listingOmitProductAttributes=1';
+type IdleCapableWindow = Window &
+  typeof globalThis & {
+    requestIdleCallback?: (
+      callback: IdleRequestCallback,
+      options?: IdleRequestOptions,
+    ) => number;
+    cancelIdleCallback?: (handle: number) => void;
+  };
 
 function shouldSkipIdlePrefetch(): boolean {
   if (typeof navigator === 'undefined') {
     return false;
   }
-  const connection = navigator.connection as
+  const connection = (navigator as Navigator & {
+    connection?: { saveData?: boolean; effectiveType?: string };
+  }).connection as
     | { saveData?: boolean; effectiveType?: string }
     | undefined;
   if (!connection) {
@@ -43,6 +53,7 @@ export function GlobalRoutePrefetch() {
     if (shouldSkipIdlePrefetch()) {
       return;
     }
+    const idleWindow = window as IdleCapableWindow;
     const run = () => {
       for (const route of routesToPrefetch) {
         if (warmedRef.current.has(route)) {
@@ -53,12 +64,16 @@ export function GlobalRoutePrefetch() {
       }
       warmProductsApi(getStoredLanguage());
     };
-    if ('requestIdleCallback' in window) {
-      const id = window.requestIdleCallback(run, { timeout: 2500 });
-      return () => window.cancelIdleCallback(id);
+    if (typeof idleWindow.requestIdleCallback === 'function') {
+      const id = idleWindow.requestIdleCallback(run, { timeout: 2500 });
+      return () => {
+        if (typeof idleWindow.cancelIdleCallback === 'function') {
+          idleWindow.cancelIdleCallback(id);
+        }
+      };
     }
-    const timerId = window.setTimeout(run, 450);
-    return () => window.clearTimeout(timerId);
+    const timerId = globalThis.setTimeout(run, 450);
+    return () => globalThis.clearTimeout(timerId);
   }, [router, routesToPrefetch]);
 
   useEffect(() => {

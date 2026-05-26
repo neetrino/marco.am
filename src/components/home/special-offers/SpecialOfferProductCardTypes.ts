@@ -19,4 +19,5 @@ export interface SpecialOfferProduct {
   warrantyYears?: ProductWarrantyYears | null;
   warrantyBadge?: { years: ProductWarrantyYears } | null;
   defaultVariantId?: string | null;
+  requiresAttributeSelection?: boolean | null;
 }

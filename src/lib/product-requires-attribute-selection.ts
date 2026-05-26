@@ -12,7 +12,7 @@ type ListingVariantOption = {
 export type ListingVariantForSelection = {
   stock?: number | null;
   options?: ListingVariantOption[] | null;
-  attributes?: Record<string, unknown> | null;
+  attributes?: unknown;
 };
 
 function normalizeAttributeValue(value: string): string {
@@ -74,6 +74,10 @@ function collectJsonAttributeValues(
   }
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
 /**
  * True when the product exposes more than one selectable attribute value (e.g. multiple colors).
  * Matches PLP swatches: if the card shows attribute choices, cart should open PDP first.
@@ -101,12 +105,7 @@ export function productRequiresAttributeSelection(
       attributeValues.get(parsed.key)!.add(parsed.value);
     }
 
-    if (
-      options.length === 0 &&
-      variant.attributes &&
-      typeof variant.attributes === 'object' &&
-      !Array.isArray(variant.attributes)
-    ) {
+    if (options.length === 0 && isRecord(variant.attributes)) {
       collectJsonAttributeValues(variant.attributes, attributeValues);
     }
   }
