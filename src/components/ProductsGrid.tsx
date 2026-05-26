@@ -27,6 +27,7 @@ interface Product {
   warrantyYears?: import('@/lib/constants/product-warranty').ProductWarrantyYears | null;
   warrantyBadge?: { years: import('@/lib/constants/product-warranty').ProductWarrantyYears } | null;
   colors?: Array<{ value: string; imageUrl?: string | null; colors?: string[] | null }>;
+  requiresAttributeSelection?: boolean | null;
 }
 
 function toSpecialOfferProduct(p: Product): SpecialOfferProduct {
@@ -49,6 +50,7 @@ function toSpecialOfferProduct(p: Product): SpecialOfferProduct {
     warrantyYears: p.warrantyYears ?? p.warrantyBadge?.years ?? null,
     warrantyBadge: p.warrantyBadge,
     colors: p.colors,
+    requiresAttributeSelection: p.requiresAttributeSelection,
   };
 }
 

@@ -1,4 +1,5 @@
 import { getAttributeBucket, isColorAttributeKey } from '@/lib/attribute-keys';
+import { productRequiresAttributeSelection } from '@/lib/product-requires-attribute-selection';
 import {
   normalizeProductWarrantyYears,
   type ProductWarrantyYears,
@@ -457,6 +458,7 @@ class ProductsFindTransformService {
         warrantyBadge,
         keySpecs,
         colors: availableColors, // Add available colors array
+        requiresAttributeSelection: productRequiresAttributeSelection(variants),
       };
     });
 
