@@ -1,4 +1,4 @@
-﻿import Link from 'next/link';
+import Link from 'next/link';
 import { Button, Card } from '@shop/ui';
 import {
   ADMIN_ORDER_LIST_STATUS_VALUES,
@@ -165,11 +165,10 @@ export function ProfileOrders({
               <div className="text-right ml-4">
                 <p className="text-lg font-bold text-gray-900">
                   {(() => {
-                    if (order.subtotal !== undefined && order.discountAmount !== undefined && order.taxAmount !== undefined) {
+                    if (order.subtotal !== undefined && order.discountAmount !== undefined) {
                       const subtotalAMD = convertPrice(order.subtotal, 'USD', 'AMD');
                       const discountAMD = convertPrice(order.discountAmount, 'USD', 'AMD');
-                      const taxAMD = convertPrice(order.taxAmount, 'USD', 'AMD');
-                      const totalWithoutShippingAMD = subtotalAMD - discountAMD + taxAMD;
+                      const totalWithoutShippingAMD = subtotalAMD - discountAMD;
                       const totalDisplay = currency === 'AMD' ? totalWithoutShippingAMD : convertPrice(totalWithoutShippingAMD, 'AMD', currency);
                       return formatPriceInCurrency(totalDisplay, currency);
                     } else {

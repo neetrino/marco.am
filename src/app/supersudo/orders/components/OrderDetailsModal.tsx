@@ -2,12 +2,7 @@
 
 import { useTranslation } from '../../../../lib/i18n-client';
 import { CurrencyCode } from '../../../../lib/currency';
-import { OrderDetailsMeta } from './OrderDetailsMeta';
-import { OrderDetailsTotals } from './OrderDetailsTotals';
-import { OrderDetailsItems } from './OrderDetailsItems';
-import { OrderDetailsCustomer } from './OrderDetailsCustomer';
-import { OrderDetailsPayment } from './OrderDetailsPayment';
-import { OrderDetailsNotes } from './OrderDetailsNotes';
+import { OrderDetailsBody } from './OrderDetailsBody';
 import type { OrderDetails } from '../useOrders';
 
 interface OrderDetailsModalProps {
@@ -63,20 +58,12 @@ export function OrderDetailsModal({
               <p className="text-gray-600">{t('admin.orders.orderDetails.loadingOrderDetails')}</p>
             </div>
           ) : orderDetails ? (
-            <div className="space-y-6">
-              <OrderDetailsMeta orderDetails={orderDetails} formatCurrency={formatCurrency} />
-              <OrderDetailsItems orderDetails={orderDetails} formatCurrency={formatCurrency} />
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <OrderDetailsCustomer orderDetails={orderDetails} />
-                <OrderDetailsPayment orderDetails={orderDetails} formatCurrency={formatCurrency} />
-              </div>
-              <OrderDetailsTotals orderDetails={orderDetails} formatCurrency={formatCurrency} />
-              <OrderDetailsNotes
-                orderDetails={orderDetails}
-                saving={savingAdminNotes}
-                onSaveAdminNotes={onSaveAdminNotes}
-              />
-            </div>
+            <OrderDetailsBody
+              orderDetails={orderDetails}
+              savingAdminNotes={savingAdminNotes}
+              onSaveAdminNotes={onSaveAdminNotes}
+              formatCurrency={formatCurrency}
+            />
           ) : (
             <div className="text-sm text-gray-600 py-6">{t('admin.orders.orderDetails.failedToLoad')}</div>
           )}

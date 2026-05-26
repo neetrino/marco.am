@@ -84,6 +84,27 @@
     "failedToLoadCart": "Failed to load cart",
     "failedToCreateOrder": "Failed to create order. Please try again.",
     "notesTooLong": "Notes must be at most 2000 characters"
+  },
+  "success": {
+    "title": "Order placed successfully",
+    "subtitle": "Thank you for your order. We will receive your request and contact you shortly.",
+    "ourOrders": {
+      "title": "Our orders",
+      "description": "View order status, payment, and delivery details in your account.",
+      "orderNumber": "Order #{number}",
+      "viewOrders": "View orders",
+      "paymentMethod": "Payment method",
+      "sku": "SKU",
+      "price": "Price"
+    },
+    "help": {
+      "title": "Need help?",
+      "description": "If you have questions about your order, call us."
+    },
+    "buttons": {
+      "orderAgain": "Order again",
+      "home": "Home"
+    }
   }
 }
 
