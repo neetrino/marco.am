@@ -73,11 +73,13 @@ export function OrdersPageContent() {
           searchParams={searchParams}
         />
 
-        <BulkSelectionControls
-          selectedCount={selectedIds.size}
-          onBulkDelete={handleBulkDelete}
-          bulkDeleting={bulkDeleting}
-        />
+        {selectedIds.size > 0 ? (
+          <BulkSelectionControls
+            selectedCount={selectedIds.size}
+            onBulkDelete={handleBulkDelete}
+            bulkDeleting={bulkDeleting}
+          />
+        ) : null}
 
         <OrdersTable
           orders={orders}

@@ -376,22 +376,16 @@ export default function ProductsPage() {
         setPage={setPage}
       />
 
-      <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-stretch sm:gap-4">
-        <div className="flex min-h-[72px] shrink-0 items-center rounded-2xl border border-slate-200/80 bg-white/95 px-4 py-3 shadow-sm shadow-slate-200/60 sm:max-w-[min(100%,20rem)]">
-          <p className="text-sm font-medium text-slate-700">
-            <span>{t('admin.products.title')}</span>
-            <span className="ml-1.5 font-normal tabular-nums text-slate-500">
-              ({loading ? '…' : (meta?.total ?? 0)})
-            </span>
-          </p>
+      {selectedIds.size > 0 ? (
+        <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-stretch sm:gap-4">
+          <BulkSelectionControls
+            selectedCount={selectedIds.size}
+            onBulkDelete={handlers.handleBulkDelete}
+            bulkDeleting={bulkDeleting}
+            wrapperClassName="flex min-h-[72px] min-w-0 flex-1 flex-col"
+          />
         </div>
-        <BulkSelectionControls
-          selectedCount={selectedIds.size}
-          onBulkDelete={handlers.handleBulkDelete}
-          bulkDeleting={bulkDeleting}
-          wrapperClassName="flex min-h-[72px] min-w-0 flex-1 flex-col"
-        />
-      </div>
+      ) : null}
 
       <ProductsTable
         loading={loading}
@@ -410,6 +404,7 @@ export default function ProductsPage() {
         updatingPublishedIds={updatingPublishedIds}
         updatingFeaturedIds={updatingFeaturedIds}
         meta={meta}
+        totalCount={loading ? null : (meta?.total ?? 0)}
         page={page}
         setPage={setPage}
       />

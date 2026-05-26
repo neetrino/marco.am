@@ -24,6 +24,7 @@ interface ProductsTableProps {
   updatingPublishedIds: Set<string>;
   updatingFeaturedIds: Set<string>;
   meta: ProductsResponse['meta'] | null;
+  totalCount: number | null;
   page: number;
   setPage: (page: number | ((prev: number) => number)) => void;
 }
@@ -58,6 +59,7 @@ export function ProductsTable({
   updatingPublishedIds,
   updatingFeaturedIds,
   meta,
+  totalCount,
   page,
   setPage,
 }: ProductsTableProps) {
@@ -100,6 +102,9 @@ export function ProductsTable({
                       className="inline-flex items-center gap-1 text-slate-500 transition-colors hover:text-slate-800"
                     >
                       <span>{t('admin.products.product')}</span>
+                      {typeof totalCount === 'number' ? (
+                        <span className="normal-case tabular-nums text-slate-400">({totalCount})</span>
+                      ) : null}
                       <span className="flex flex-col gap-0.5">
                         <svg
                           className={`w-2.5 h-2.5 ${
@@ -268,8 +273,8 @@ export function ProductsTable({
                         className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-500"
                       />
                     </td>
-                    <td className="max-w-xs py-3 pl-6 pr-3 align-top">
-                      <div className="flex items-start gap-2.5">
+                    <td className="max-w-xs py-3 pl-6 pr-3 align-middle">
+                      <div className="flex items-center gap-2.5">
                         {product.image && (
                           <img
                             src={processImageUrl(product.image)}
