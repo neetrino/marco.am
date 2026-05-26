@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+﻿import type { CSSProperties } from 'react';
 import { ArrowUpRight } from 'lucide-react';
 import { Montserrat } from 'next/font/google';
 
@@ -93,7 +93,7 @@ export function HomeSecondaryBannerCta({ language }: HomeSecondaryBannerCtaProps
       href={HOME_SECONDARY_BANNER_CTA_HREF}
       ariaLabel={ariaLabel}
       slackStopPad={`${HOME_SECONDARY_BANNER_CTA_SLACK_HOVER_END_INSET_INLINE_START_PX}px`}
-      className={`${montserratSlateCta.className} pointer-events-auto bg-black font-bold text-white transition hover:-translate-y-0.5 active:translate-y-px focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marco-black dark:text-[#050505] ${hyDesktopPillClass}`}
+      className={`${montserratSlateCta.className} pointer-events-auto bg-marco-black font-bold text-white transition hover:-translate-y-0.5 active:translate-y-px focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marco-black dark:text-[#383838] ${hyDesktopPillClass}`}
       style={linkStyle}
       trailClassName="bg-marco-yellow"
       labelWrapperClassName={`min-w-0 shrink whitespace-nowrap text-left transition-colors [transition-duration:var(--slack-dur)] [transition-timing-function:var(--slack-ease)] motion-reduce:transition-none group-hover:text-marco-black group-focus-visible:text-marco-black dark:group-hover:text-marco-black dark:group-focus-visible:text-marco-black ${hyLabelTransformClass}`}

@@ -24,6 +24,7 @@ export interface UpdateProductData {
     position: string;
     color?: string | null;
   }>;
+  warrantyYears?: number | null;
   attributeIds?: string[];
   variants?: Array<{
     id?: string;

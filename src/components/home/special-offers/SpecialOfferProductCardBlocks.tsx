@@ -6,6 +6,8 @@ import { ProductImagePlaceholder } from '@/components/ProductImagePlaceholder';
 import { ProductLabels } from '@/components/ProductLabels';
 import { CompareIcon } from '@/components/icons/CompareIcon';
 import type { SpecialOfferProduct } from './SpecialOfferProductCardTypes';
+import { ProductWarrantyBadge } from '@/components/ProductCard/ProductWarrantyBadge';
+import type { ProductWarrantyYears } from '@/lib/constants/product-warranty';
 
 /** Figma 101:3500 — exact vector path (asset was mis-saved as .png; inline SVG avoids MIME mismatch) */
 function SpecialOfferAddToCartGlyph({ className }: { className?: string }) {
@@ -66,17 +68,16 @@ function CompareCircleGlyph({ isActive }: { isActive: boolean }) {
     <CompareIcon
       isActive={isActive}
       size={18}
-      className={isActive ? 'text-[#050505]' : 'text-white'}
-      color={isActive ? '#050505' : '#ffffff'}
+      className={isActive ? 'text-[#383838]' : 'text-white'}
+      color={isActive ? '#383838' : '#ffffff'}
     />
   );
 }
 
-export function SpecialOfferWarrantyBadge({ line1, line2 }: { line1: string; line2: string }) {
+export function SpecialOfferWarrantyBadge({ years }: { years: ProductWarrantyYears }) {
   return (
-    <div className="pointer-events-none absolute left-3 top-3 z-20 rounded-2xl bg-[#1e1e1e] px-2 py-2 text-center leading-[15px] md:left-4 md:top-4">
-      <p className="text-[12px] font-bold text-[#ffca03] md:text-[14px]">{line1}</p>
-      <p className="text-[10px] font-bold uppercase text-white md:text-[11px]">{line2}</p>
+    <div className="pointer-events-none absolute left-3 top-3 z-20 md:left-4 md:top-4">
+      <ProductWarrantyBadge years={years} size="promo" />
     </div>
   );
 }
@@ -105,7 +106,7 @@ export function SpecialOfferSideActions({
       type="button"
       onClick={onWishlist}
       className={`flex size-9 shrink-0 items-center justify-center rounded-full shadow-sm transition-opacity hover:opacity-90 md:size-10 ${
-        isInWishlist ? 'bg-red-600 text-white' : 'bg-[#050505] text-white'
+        isInWishlist ? 'bg-red-600 text-white' : 'bg-[#383838] text-white'
       }`}
       title={isInWishlist ? t('common.messages.removedFromWishlist') : t('common.messages.addedToWishlist')}
       aria-label={isInWishlist ? t('common.ariaLabels.removeFromWishlist') : t('common.ariaLabels.addToWishlist')}
@@ -120,7 +121,7 @@ export function SpecialOfferSideActions({
       type="button"
       onClick={onCompare}
       className={`flex size-9 shrink-0 items-center justify-center overflow-visible rounded-full p-0 shadow-sm transition-opacity hover:opacity-90 md:size-10 ${
-        isInCompare ? 'bg-marco-yellow text-[#050505]' : 'bg-[#050505] text-white'
+        isInCompare ? 'bg-marco-yellow text-[#383838]' : 'bg-[#383838] text-white'
       }`}
       title={isInCompare ? t('common.messages.removedFromCompare') : t('common.messages.addedToCompare')}
       aria-label={isInCompare ? t('common.ariaLabels.removeFromCompare') : t('common.ariaLabels.addToCompare')}
@@ -130,9 +131,14 @@ export function SpecialOfferSideActions({
   );
 
   const discountPill =
-    product.discountPercent != null && product.discountPercent > 0 ? (
-      <div key="discount" className="rounded-full bg-[#ffca03] px-2 py-1">
-        <span className="text-[10px] font-bold text-white">-{product.discountPercent}%</span>
+    product.isSpecialPrice ||
+    (product.discountPercent != null && product.discountPercent > 0) ? (
+      <div key="discount" className="max-w-[88px] rounded-full bg-[#ffca03] px-2 py-1 text-center">
+        <span className="text-[10px] font-bold leading-tight text-white">
+          {product.isSpecialPrice
+            ? t('products.pricing.special_price')
+            : `-${product.discountPercent}%`}
+        </span>
       </div>
     ) : null;
 
@@ -199,7 +205,7 @@ export function SpecialOfferCartFab({
       type="button"
       onClick={onCart}
       disabled={!product.inStock || isAddingToCart}
-      className="absolute bottom-0 right-0 z-20 flex size-[54px] translate-x-1/2 translate-y-1/2 items-center justify-center rounded-full bg-[#ffca03] p-0 text-white shadow-[0_4px_14px_rgba(0,0,0,0.12)] transition-transform hover:scale-[1.03] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#181111] disabled:cursor-not-allowed disabled:opacity-50 dark:outline dark:outline-2 dark:outline-[#050505] md:size-[62px]"
+      className="absolute bottom-0 right-0 z-20 flex size-[54px] translate-x-1/2 translate-y-1/2 items-center justify-center rounded-full bg-[#ffca03] p-0 text-white shadow-[0_4px_14px_rgba(0,0,0,0.12)] transition-transform hover:scale-[1.03] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#181111] disabled:cursor-not-allowed disabled:opacity-50 dark:outline dark:outline-2 dark:outline-[#383838] md:size-[62px]"
       title={product.inStock ? t('common.buttons.addToCart') : t('common.stock.outOfStock')}
       aria-label={product.inStock ? t('common.ariaLabels.addToCart') : t('common.ariaLabels.outOfStock')}
     >

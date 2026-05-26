@@ -21,9 +21,12 @@ interface ProductCardGridProps {
     inStock: boolean;
     brand: ProductListingBrand | null;
     labels?: ProductLabel[];
+    warrantyYears?: import('@/lib/constants/product-warranty').ProductWarrantyYears | null;
+    warrantyBadge?: { years: import('@/lib/constants/product-warranty').ProductWarrantyYears } | null;
     compareAtPrice?: number | null;
     originalPrice?: number | null;
     discountPercent?: number | null;
+    isSpecialPrice?: boolean;
     colors?: Array<{ value: string; imageUrl?: string | null; colors?: string[] | null }>;
   };
   currency: CurrencyCode;
@@ -78,6 +81,7 @@ export function ProductCardGrid({
             image={product.image}
             title={product.title}
             labels={product.labels}
+            warrantyYears={product.warrantyYears ?? product.warrantyBadge?.years ?? null}
             imageError={imageError}
             onImageError={onImageError}
             isCompact={isCompact}
@@ -94,6 +98,7 @@ export function ProductCardGrid({
           originalPrice={product.originalPrice}
           compareAtPrice={product.compareAtPrice}
           discountPercent={product.discountPercent}
+          isSpecialPrice={product.isSpecialPrice}
           currency={currency}
           colors={product.colors}
           isCompact={isCompact}

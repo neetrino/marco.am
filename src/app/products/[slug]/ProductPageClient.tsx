@@ -67,6 +67,7 @@ export function ProductPageClient({
     originalPrice,
     compareAtPrice,
     discountPercent,
+    isSpecialPrice,
     maxQuantity,
     isOutOfStock,
     isVariationRequired,
@@ -165,6 +166,7 @@ export function ProductPageClient({
 
   const galleryDiscount =
     product != null ? discountPercent : (productVisual?.discountPercent ?? null);
+  const galleryIsSpecialPrice = product != null ? isSpecialPrice : false;
 
   return (
     <div className="marco-header-container py-12">
@@ -173,6 +175,7 @@ export function ProductPageClient({
           images={images}
           product={displayProduct}
           discountPercent={galleryDiscount}
+          isSpecialPrice={galleryIsSpecialPrice}
           language={language}
           currentImageIndex={currentImageIndex}
           onImageIndexChange={setCurrentImageIndex}

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { ChevronRight } from 'lucide-react';
 import { useContext, useEffect, useMemo, useState } from 'react';
@@ -79,11 +79,11 @@ export function CategoriesDropdownMega({
                 onClick={() => setSelectedSlug(category.slug)}
                 className={`${headerCategoryNavFont.className} flex w-full min-w-0 shrink-0 items-center gap-3 rounded-[40px] px-2 py-0 text-left text-[15px] leading-[21px] tracking-[0.15px] transition-[opacity,background-color,color] duration-150 ${
                   isSelected
-                    ? 'bg-marco-yellow font-bold !text-[#050505] dark:!text-[#050505]'
-                    : 'font-normal !text-[#050505] dark:!text-[#050505] hover:bg-white/35'
+                    ? 'bg-marco-yellow font-bold !text-[#383838] dark:!text-[#383838]'
+                    : 'font-normal !text-[#383838] dark:!text-[#383838] hover:bg-white/35'
                 }`}
               >
-                <span className="flex size-[48px] shrink-0 items-center justify-center p-1.5 !text-[#050505] dark:!text-[#050505]">
+                <span className="flex size-[48px] shrink-0 items-center justify-center p-1.5 !text-[#383838] dark:!text-[#383838]">
                   {categoryImage ? (
                     <img
                       src={toDomSafeImgSrcString(categoryImage)}
@@ -106,7 +106,7 @@ export function CategoriesDropdownMega({
                     RowLucide && (
                       <RowLucide
                         size={MEGA_ROOT_LUCIDE_PX}
-                        className="shrink-0 !text-[#050505] dark:!text-[#050505]"
+                        className="shrink-0 !text-[#383838] dark:!text-[#383838]"
                         strokeWidth={1.35}
                         aria-hidden
                       />
@@ -117,7 +117,7 @@ export function CategoriesDropdownMega({
                   {row.title}
                 </span>
                 <ChevronRight
-                  className="size-[18px] shrink-0 self-center text-[#050505]/55 dark:text-[#050505]/55 md:size-5"
+                  className="size-[18px] shrink-0 self-center text-[#383838]/55 dark:text-[#383838]/55 md:size-5"
                   strokeWidth={2}
                   aria-hidden
                 />

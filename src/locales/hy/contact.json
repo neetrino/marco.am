@@ -19,7 +19,7 @@
     "whatsapp": "https://wa.me/37441350406",
     "viber": "viber://chat?number=37441350406"
   },
-  "callToUs": {"title":"Զանգահարեք մեզ","description":"Մենք հասանելի ենք շաբաթվա 7 օր, օրվա 24 ժամ:"},
+  "callToUs": {"title":"Զանգահարեք մեզ","description":"Մենք հասանելի ենք շաբաթվա 7 օր:"},
   "writeToUs": {"title":"Գրեք մեզ","description":"Լրացրեք մեր ձևը, և մենք կկապվենք ձեզ հետ 24 ժամվա ընթացքում:","emailLabel":"Էլ. փոստ"},
   "headquarter": {"title":"Գլխավոր գրասենյակ","hours":{"weekdays":"Երկուշաբթի - Ուրբաթ: 9:00-20:00","saturday":"Շաբաթ: 11:00 - 15:00"}},
   "form": {"title":"Ուղարկել մեզ հաղորդագրություն","name":"Անուն *","namePlaceholder":"Ձեր անունը","email":"Էլ. փոստ *","emailPlaceholder":"marcofurniture@mail.ru","subject":"Թեմա *","subjectPlaceholder":"Ինչի՞ մասին է","message":"Հաղորդագրություն","messagePlaceholder":"Ձեր հաղորդագրությունը...","submit":"Ուղարկել","submitting":"Ուղարկվում է...","submitSuccess":"Ձեր հաղորդագրությունը հաջողությամբ ուղարկվեց","submitError":"Սխալ: Չհաջողվեց ուղարկել հաղորդագրությունը"}

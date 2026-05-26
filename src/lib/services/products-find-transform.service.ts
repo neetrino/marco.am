@@ -1,4 +1,8 @@
 import { getAttributeBucket, isColorAttributeKey } from '@/lib/attribute-keys';
+import {
+  normalizeProductWarrantyYears,
+  type ProductWarrantyYears,
+} from '@/lib/constants/product-warranty';
 import { pickVariantForListingPrice } from '@/lib/product-variant-listing-pick';
 import { resolveProductPrice } from '@/lib/pricing/product-price';
 import { getListingDiscountSettings } from './listing-discount-settings';
@@ -27,9 +31,7 @@ type ProductListLabel = {
 };
 
 type WarrantyBadge = {
-  text: string;
-  color: string | null;
-  position: string | null;
+  years: ProductWarrantyYears;
 };
 
 function formatSpecLabel(key: string): string {
@@ -140,16 +142,33 @@ function buildKeySpecs(
   return specs;
 }
 
-function extractWarrantyBadge(labels: ProductListLabel[]): WarrantyBadge | null {
+function extractWarrantyYearsFromLabel(labels: ProductListLabel[]): ProductWarrantyYears | null {
   const warrantyLabel = labels.find((label) => WARRANTY_LABEL_PATTERN.test(label.value));
   if (!warrantyLabel) {
     return null;
   }
-  return {
-    text: warrantyLabel.value,
-    color: warrantyLabel.color ?? null,
-    position: warrantyLabel.position ?? null,
-  };
+  const match = warrantyLabel.value.match(/([123])/);
+  if (!match) {
+    return null;
+  }
+  const parsed = Number.parseInt(match[1], 10);
+  return normalizeProductWarrantyYears(parsed);
+}
+
+function filterListingLabels(labels: ProductListLabel[]): ProductListLabel[] {
+  return labels.filter((label) => !WARRANTY_LABEL_PATTERN.test(label.value));
+}
+
+function resolveWarrantyBadge(
+  warrantyYears: number | null | undefined,
+  labels: ProductListLabel[],
+): WarrantyBadge | null {
+  const fromField = normalizeProductWarrantyYears(warrantyYears);
+  if (fromField) {
+    return { years: fromField };
+  }
+  const fromLabel = extractWarrantyYearsFromLabel(labels);
+  return fromLabel ? { years: fromLabel } : null;
 }
 
 /**
@@ -391,9 +410,12 @@ class ProductsFindTransformService {
           }
         }
         
-        return existingLabels;
+        return filterListingLabels(existingLabels);
       })();
-      const warrantyBadge = extractWarrantyBadge(labels);
+      const warrantyBadge = resolveWarrantyBadge(
+        product.warrantyYears,
+        Array.isArray(product.labels) ? product.labels : [],
+      );
       return {
         id: product.id,
         slug,
@@ -413,6 +435,7 @@ class ProductsFindTransformService {
         originalPrice: pricing.oldPrice,
         compareAtPrice: pricing.compareAtPrice,
         discountPercent: pricing.discountPercent,
+        isSpecialPrice: pricing.isSpecialPrice,
         ...(() => {
           if (!Array.isArray(product.media) || product.media.length === 0) {
             return { image: null as string | null, images: [] as string[] };

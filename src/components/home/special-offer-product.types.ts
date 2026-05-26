@@ -1,5 +1,6 @@
 import type { ProductListingBrand } from '@/lib/types/product-listing-brand';
 import type { ProductLabel } from '../ProductLabels';
+import type { ProductWarrantyYears } from '@/lib/constants/product-warranty';
 
 export interface SpecialOfferProduct {
   id: string;
@@ -15,7 +16,10 @@ export interface SpecialOfferProduct {
   brand: ProductListingBrand | null;
   defaultVariantId?: string | null;
   discountPercent?: number | null;
+  isSpecialPrice?: boolean;
   labels?: ProductLabel[];
+  warrantyYears?: ProductWarrantyYears | null;
+  warrantyBadge?: { years: ProductWarrantyYears } | null;
   colors?: Array<{
     value: string;
     imageUrl?: string | null;

@@ -22,7 +22,7 @@ export interface ProductVariant {
   currentPrice?: number;
   oldPrice?: number | null;
   discountBadge?: {
-    type: 'percentage';
+    type: 'percentage' | 'special_price';
     value: number;
     label: string;
   } | null;
@@ -96,7 +96,7 @@ export interface Product {
   currentPrice?: number | null;
   oldPrice?: number | null;
   discountBadge?: {
-    type: 'percentage';
+    type: 'percentage' | 'special_price';
     value: number;
     label: string;
   } | null;
@@ -104,7 +104,7 @@ export interface Product {
     currentPrice: number | null;
     oldPrice: number | null;
     discountBadge: {
-      type: 'percentage';
+      type: 'percentage' | 'special_price';
       value: number;
       label: string;
     } | null;

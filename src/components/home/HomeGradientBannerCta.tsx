@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+﻿import type { CSSProperties } from 'react';
 import { ArrowUpRight } from 'lucide-react';
 import { Montserrat } from 'next/font/google';
 
@@ -132,7 +132,7 @@ export function HomeGradientBannerCta({ language }: HomeGradientBannerCtaProps) 
       ariaLabel={ariaLabel}
       slackChipRestInsetInlineEndPx={HOME_GRADIENT_BANNER_CTA_SLACK_REST_INSET_INLINE_END_PX}
       slackStopPad={`${HOME_GRADIENT_BANNER_CTA_SLACK_HOVER_END_INSET_INLINE_START_PX}px`}
-      className={`${montserratSlateCta.className} pointer-events-auto bg-marco-yellow font-bold text-[#050505] transition hover:-translate-y-0.5 active:translate-y-px dark:text-[#050505] ${enDesktopPillClass}`}
+      className={`${montserratSlateCta.className} pointer-events-auto bg-marco-yellow font-bold text-[#383838] transition hover:-translate-y-0.5 active:translate-y-px dark:text-[#383838] ${enDesktopPillClass}`}
       style={linkStyle}
       trailClassName="bg-marco-black"
       labelWrapperClassName={`transition-colors [transition-duration:var(--slack-dur)] [transition-timing-function:var(--slack-ease)] motion-reduce:transition-none group-hover:text-white group-focus-visible:text-white dark:group-hover:text-white dark:group-focus-visible:text-white ${labelSpanClassName} ${language === 'hy' ? labelHyDesktopClass : ''} ${labelRuTranslateClass}`}

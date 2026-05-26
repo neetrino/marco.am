@@ -1,4 +1,4 @@
-import Image from 'next/image';
+﻿import Image from 'next/image';
 import Link from 'next/link';
 import { cookies } from 'next/headers';
 import type { CSSProperties } from 'react';
@@ -54,7 +54,7 @@ function BrandDirectoryLogo({ partner }: { partner: HomeBrandPartnerPublicItem }
         className="mx-auto flex w-full shrink-0 items-center justify-center overflow-hidden px-1"
         style={cell}
       >
-        <span className="line-clamp-2 max-h-full max-w-full text-center text-base font-semibold uppercase leading-tight tracking-[0.14em] text-[#050505] dark:text-[#050505] md:text-lg">
+        <span className="line-clamp-2 max-h-full max-w-full text-center text-base font-semibold uppercase leading-tight tracking-[0.14em] text-[#383838] dark:text-[#383838] md:text-lg">
           {partner.name.trim() || partner.slug}
         </span>
       </div>
@@ -110,7 +110,7 @@ export default async function BrandsPage() {
     <div className="w-full pb-16 pt-10">
       <div className="marco-header-container">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-[#050505] dark:text-white md:text-4xl">
+          <h1 className="text-3xl font-bold text-[#383838] dark:text-white md:text-4xl">
             {t(language, 'common.navigation.brands')}
           </h1>
         </div>

@@ -85,6 +85,9 @@
     "filters": "Фильтры",
     "sortProducts": "Сортировать товары"
   },
+  "pricing": {
+    "special_price": "Специальная цена"
+  },
   "grid": {
     "noProducts": "Товары не найдены."
   },
@@ -105,5 +108,10 @@
     },
     "scrollLeft": "Прокрутить категории влево",
     "scrollRight": "Прокрутить категории вправо"
+  },
+  "warranty": {
+    "years_suffix": "ГОДА",
+    "label": "ГАРАНТИЯ",
+    "badge_aria": "Гарантия {years} года"
   }
 }

@@ -231,7 +231,7 @@ export function ProductInfoAndActions({
             </div>
             <button
               onClick={onCompareToggle}
-              className={`flex size-12 shrink-0 items-center justify-center rounded-xl border-2 transition-all duration-200 ${isInCompare ? 'border-marco-yellow bg-marco-yellow text-[#050505] dark:!text-[#050505]' : 'border-gray-200 hover:border-gray-300'}`}
+              className={`flex size-12 shrink-0 items-center justify-center rounded-xl border-2 transition-all duration-200 ${isInCompare ? 'border-marco-yellow bg-marco-yellow text-marco-black dark:!text-marco-black' : 'border-gray-200 hover:border-gray-300'}`}
             >
               <CompareIcon isActive={isInCompare} />
             </button>
@@ -244,7 +244,7 @@ export function ProductInfoAndActions({
             <button
               type="button"
               disabled={!canAddToCart || isAddingToCart}
-              className={`inline-flex shrink-0 items-center gap-1.5 bg-marco-yellow px-4 text-left text-sm font-bold leading-normal text-marco-black dark:!text-[#050505] transition-[filter,transform] hover:-translate-y-0.5 hover:brightness-95 active:brightness-90 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 disabled:hover:brightness-100 ${PRODUCT_BUY_CTA_HEIGHT_CLASS} ${HEADER_FIGMA_PILL_RADIUS_CLASS}`}
+              className={`inline-flex shrink-0 items-center gap-1.5 bg-marco-yellow px-4 text-left text-sm font-bold leading-normal text-marco-black dark:!text-marco-black transition-[filter,transform] hover:-translate-y-0.5 hover:brightness-95 active:brightness-90 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 disabled:hover:brightness-100 ${PRODUCT_BUY_CTA_HEIGHT_CLASS} ${HEADER_FIGMA_PILL_RADIUS_CLASS}`}
               onClick={onAddToCart}
             >
               <span

@@ -1,6 +1,7 @@
 import { apiClient } from '@/lib/api-client';
 import type { LanguageCode } from '@/lib/language';
 import type { ProductListingBrand } from '@/lib/types/product-listing-brand';
+import type { ProductWarrantyYears } from '@/lib/constants/product-warranty';
 
 export type RelatedProductsApiResponse = {
   data: RelatedProductRow[];
@@ -20,6 +21,7 @@ export type RelatedProductRow = {
   originalPrice?: number | null;
   compareAtPrice: number | null;
   discountPercent?: number | null;
+  isSpecialPrice?: boolean;
   image: string | null;
   inStock: boolean;
   brand?: ProductListingBrand | null;
@@ -28,6 +30,8 @@ export type RelatedProductRow = {
     options?: Array<{ key: string; value: string }>;
   }>;
   recommendationRule?: string;
+  warrantyYears?: ProductWarrantyYears | null;
+  warrantyBadge?: { years: ProductWarrantyYears } | null;
 };
 
 function encodeProductSlugForPath(productSlug: string): string {

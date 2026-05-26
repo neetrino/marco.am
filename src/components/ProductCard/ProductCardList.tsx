@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { ProductPdpPrefetchLink } from '../ProductPdpPrefetchLink';
 import Image from 'next/image';
@@ -11,6 +11,7 @@ import { ProductColors } from './ProductColors';
 import { ProductCardActions } from './ProductCardActions';
 import { ProductImagePlaceholder } from '../ProductImagePlaceholder';
 import type { ProductLabel } from '../ProductLabels';
+import { ProductPricePromoBadge } from './ProductPricePromoBadge';
 
 interface ProductCardListProps {
   product: {
@@ -25,6 +26,7 @@ interface ProductCardListProps {
     compareAtPrice?: number | null;
     originalPrice?: number | null;
     discountPercent?: number | null;
+    isSpecialPrice?: boolean;
     colors?: Array<{ value: string; imageUrl?: string | null; colors?: string[] | null }>;
   };
   currency: CurrencyCode;
@@ -100,11 +102,11 @@ export function ProductCardList({
                   name={product.brand.name}
                   slug={product.brand.slug}
                   logoUrl={product.brand.logoUrl}
-                  textClassName="text-lg text-gray-500 dark:text-[#050505] sm:text-xl"
+                  textClassName="text-lg text-gray-500 dark:text-[#383838] sm:text-xl"
                   logoBoxClassName="h-7 w-[120px] sm:h-8 sm:w-[140px]"
                 />
               ) : (
-                <p className="text-lg text-gray-500 dark:text-[#050505] sm:text-xl">
+                <p className="text-lg text-gray-500 dark:text-[#383838] sm:text-xl">
                   {t('common.defaults.category')}
                 </p>
               )}
@@ -123,11 +125,11 @@ export function ProductCardList({
               <span className="text-xl font-semibold text-marco-black sm:text-2xl">
                 {formatCatalogPrice(product.price || 0, currency)}
               </span>
-              {product.discountPercent && product.discountPercent > 0 ? (
-                <span className="text-xs font-semibold text-marco-black sm:text-sm">
-                  -{product.discountPercent}%
-                </span>
-              ) : null}
+              <ProductPricePromoBadge
+                discountPercent={product.discountPercent}
+                isSpecialPrice={product.isSpecialPrice}
+                className="bg-transparent px-0 py-0 text-marco-black"
+              />
             </div>
             {(product.originalPrice && product.originalPrice > product.price) ||
             (product.compareAtPrice && product.compareAtPrice > product.price) ? (

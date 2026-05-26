@@ -36,13 +36,15 @@ export function SpecialOfferProductCard({
   showWarrantyBadge = true,
 }: SpecialOfferProductCardProps) {
   const logic = useSpecialOfferCardLogic(product);
+  const warrantyYears = product.warrantyYears ?? product.warrantyBadge?.years ?? null;
   return (
     <SpecialOfferProductCardView
       product={product}
       logic={logic}
       sideActionStack={sideActionStack}
       contentLayout={contentLayout}
-      showWarrantyBadge={showWarrantyBadge}
+      showWarrantyBadge={showWarrantyBadge && warrantyYears !== null}
+      warrantyYears={warrantyYears}
     />
   );
 }
@@ -53,12 +55,14 @@ function SpecialOfferProductCardView({
   sideActionStack,
   contentLayout,
   showWarrantyBadge,
+  warrantyYears,
 }: {
   product: SpecialOfferProduct;
   logic: CardLogic;
   sideActionStack: 'wishlist-first' | 'compare-first';
   contentLayout: 'default' | 'news';
   showWarrantyBadge: boolean;
+  warrantyYears: import('@/lib/constants/product-warranty').ProductWarrantyYears | null;
 }) {
   const {
     currency,
@@ -89,8 +93,8 @@ function SpecialOfferProductCardView({
       >
         <span className="sr-only">{product.title}</span>
       </ProductPdpPrefetchLink>
-      {showWarrantyBadge ? (
-        <SpecialOfferWarrantyBadge line1={t('home.special_offers_warranty_line1')} line2={t('home.special_offers_warranty_line2')} />
+      {showWarrantyBadge && warrantyYears ? (
+        <SpecialOfferWarrantyBadge years={warrantyYears} />
       ) : null}
       <SpecialOfferSideActions
         product={product}

@@ -17,20 +17,20 @@ interface Product {
   title: string;
   price: number;
   compareAtPrice: number | null;
+  discountPercent?: number | null;
+  isSpecialPrice?: boolean;
   image: string | null;
   inStock: boolean;
   brand: ProductListingBrand | null;
   defaultVariantId?: string | null;
   labels?: ProductLabel[];
+  warrantyYears?: import('@/lib/constants/product-warranty').ProductWarrantyYears | null;
+  warrantyBadge?: { years: import('@/lib/constants/product-warranty').ProductWarrantyYears } | null;
   colors?: Array<{ value: string; imageUrl?: string | null; colors?: string[] | null }>;
 }
 
 function toSpecialOfferProduct(p: Product): SpecialOfferProduct {
   const compareAt = p.compareAtPrice ?? null;
-  let discountPercent: number | null = null;
-  if (compareAt != null && compareAt > p.price) {
-    discountPercent = Math.round(((compareAt - p.price) / compareAt) * 100);
-  }
   return {
     id: p.id,
     slug: p.slug,
@@ -43,8 +43,11 @@ function toSpecialOfferProduct(p: Product): SpecialOfferProduct {
     inStock: p.inStock,
     brand: p.brand,
     defaultVariantId: p.defaultVariantId ?? undefined,
-    discountPercent,
+    discountPercent: p.discountPercent ?? null,
+    isSpecialPrice: p.isSpecialPrice ?? false,
     labels: p.labels,
+    warrantyYears: p.warrantyYears ?? p.warrantyBadge?.years ?? null,
+    warrantyBadge: p.warrantyBadge,
     colors: p.colors,
   };
 }

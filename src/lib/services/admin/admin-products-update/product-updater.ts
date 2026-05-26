@@ -7,6 +7,7 @@ import {
 } from "@/lib/utils/normalize-inbound-raster-to-webp-data-url";
 import type { UpdateProductData } from "./types";
 import { normalizeProductClass } from "@/lib/constants/product-class";
+import { normalizeProductWarrantyYears } from "@/lib/constants/product-warranty";
 
 /**
  * Collect variant images from data or existing variants
@@ -44,28 +45,14 @@ export async function buildProductUpdateData(
   data: UpdateProductData,
   allVariantImages: string[],
   existing: { publishedAt: Date | null }
-): Promise<{
-  brandId?: string | null;
-  productClass?: "retail" | "wholesale";
-  primaryCategoryId?: string | null;
-  categoryIds?: string[];
-  media?: string[];
-  published?: boolean;
-  publishedAt?: Date;
-  featured?: boolean;
-}> {
-  const updateData: {
-    brandId?: string | null;
-    productClass?: "retail" | "wholesale";
-    primaryCategoryId?: string | null;
-    categoryIds?: string[];
-    media?: string[];
-    published?: boolean;
-    publishedAt?: Date;
-    featured?: boolean;
-  } = {};
-  
-  if (data.brandId !== undefined) updateData.brandId = data.brandId || null;
+): Promise<Prisma.ProductUpdateInput> {
+  const updateData: Prisma.ProductUpdateInput = {};
+
+  if (data.brandId !== undefined) {
+    updateData.brand = data.brandId
+      ? { connect: { id: data.brandId } }
+      : { disconnect: true };
+  }
   if (data.productClass !== undefined) {
     const normalizedClass = normalizeProductClass(data.productClass);
     if (normalizedClass) {
@@ -103,6 +90,10 @@ export async function buildProductUpdateData(
   }
   
   if (data.featured !== undefined) updateData.featured = data.featured;
+
+  if (data.warrantyYears !== undefined) {
+    updateData.warrantyYears = normalizeProductWarrantyYears(data.warrantyYears);
+  }
   
   return updateData;
 }

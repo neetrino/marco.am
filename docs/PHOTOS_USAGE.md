@@ -58,9 +58,6 @@
 | `src/components/Footer.tsx` | Подвал (иконки и т.д.). |
 | `src/components/HeroCarousel.tsx` | Главная: слайдер (внешние URL, не из БД). |
 | `src/components/FeaturesSection.tsx` | Блок фич (картинки). |
-| `src/components/CategoryNavigation/*` | Иконки категорий. |
-| `src/components/TopCategories.tsx` | Топ категории: фото товара. |
-| `src/components/CategoryGrid.tsx` | Сетка категорий: фото товара. |
 | `src/components/FeaturedProductsTabs.tsx` | Вкладки «Featured»: данные о товарах (фото через карточки). |
 | `src/components/UserAvatar.tsx` | Аватар пользователя. |
 | `src/components/LanguageSwitcherHeader.tsx` | Флаги (внешняя ссылка). |

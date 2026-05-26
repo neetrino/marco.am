@@ -4,13 +4,16 @@ import Image from "next/image";
 import { ProductLabels } from "../ProductLabels";
 import { ProductPdpPrefetchLink } from "../ProductPdpPrefetchLink";
 import { ProductImagePlaceholder } from "../ProductImagePlaceholder";
+import { ProductWarrantyBadge } from "./ProductWarrantyBadge";
 import type { ProductLabel } from "../ProductLabels";
+import type { ProductWarrantyYears } from "@/lib/constants/product-warranty";
 
 interface ProductCardImageProps {
   slug: string;
   image: string | null;
   title: string;
   labels?: ProductLabel[];
+  warrantyYears?: ProductWarrantyYears | null;
   imageError: boolean;
   onImageError: () => void;
   isCompact?: boolean;
@@ -29,6 +32,7 @@ export function ProductCardImage({
   image,
   title,
   labels,
+  warrantyYears,
   imageError,
   onImageError,
   isCompact: _isCompact = false,
@@ -66,6 +70,11 @@ export function ProductCardImage({
           {imageBlock}
         </ProductPdpPrefetchLink>
       )}
+      {warrantyYears ? (
+        <div className="absolute left-2 top-2 z-30">
+          <ProductWarrantyBadge years={warrantyYears} size="catalog" />
+        </div>
+      ) : null}
       {labels && labels.length > 0 && <ProductLabels labels={labels} />}
     </div>
   );

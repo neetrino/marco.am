@@ -1,9 +1,10 @@
-@tailwind base;
+﻿@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
+    --marco-anthracite: #383838;
     --app-bg: #ffffff;
     --app-bg-muted: #f8fafc;
     --app-surface: #ffffff;
@@ -17,16 +18,16 @@
   }
 
   .dark {
-    --app-bg: #101010;
-    --app-bg-muted: #101010;
-    --app-surface: #101010;
-    --app-surface-muted: #101010;
-    --app-border: #2d2d2d;
-    --app-border-strong: #454545;
+    --app-bg: var(--marco-anthracite);
+    --app-bg-muted: #333333;
+    --app-surface: var(--marco-anthracite);
+    --app-surface-muted: #333333;
+    --app-border: #4a4a4a;
+    --app-border-strong: #5c5c5c;
     --app-text: #ffffff;
     --app-text-muted: #f1f5f9;
     --app-text-soft: #dbe4ee;
-    --special-offers-card-cutout-bg: #101010;
+    --special-offers-card-cutout-bg: var(--marco-anthracite);
   }
 
   html {
@@ -278,7 +279,7 @@
   color: var(--app-text-muted) !important;
 }
 
-.dark [class*='text-\\[\\#101010\\]'],
+.dark [class*='text-\\[\\#383838\\]'],
 .dark [class*='text-\\[\\#181111\\]'] {
   color: var(--app-text) !important;
 }
@@ -404,14 +405,14 @@
 .dark button.bg-gray-900,
 .dark a.bg-gray-900 {
   background-color: #f5f5f5 !important;
-  color: #050505 !important;
+  color: var(--marco-anthracite) !important;
   border-color: #f5f5f5 !important;
 }
 
-.dark button[class*='bg-\\[\\#101010\\]'],
-.dark a[class*='bg-\\[\\#101010\\]'] {
+.dark button[class*='bg-\\[\\#383838\\]'],
+.dark a[class*='bg-\\[\\#383838\\]'] {
   background-color: #f5f5f5 !important;
-  color: #050505 !important;
+  color: var(--marco-anthracite) !important;
   border-color: #f5f5f5 !important;
 }
 
@@ -427,11 +428,11 @@
 .dark [class*='rounded-xl'][class*='bg-black'],
 .dark [class*='rounded-lg'][class*='bg-marco-black'],
 .dark [class*='rounded-lg'][class*='bg-black'],
-.dark [class*='rounded-full'][class*='bg-\\[\\#101010\\]'],
-.dark [class*='rounded-\\[60px\\]'][class*='bg-\\[\\#101010\\]'],
-.dark [class*='rounded-\\[68px\\]'][class*='bg-\\[\\#101010\\]'] {
+.dark [class*='rounded-full'][class*='bg-\\[\\#383838\\]'],
+.dark [class*='rounded-\\[60px\\]'][class*='bg-\\[\\#383838\\]'],
+.dark [class*='rounded-\\[68px\\]'][class*='bg-\\[\\#383838\\]'] {
   background-color: #f5f5f5 !important;
-  color: #050505 !important;
+  color: var(--marco-anthracite) !important;
   border-color: #f5f5f5 !important;
 }
 
@@ -443,11 +444,11 @@
   .bg-marco-black,
   .bg-black,
   .bg-gray-900,
-  [class*='bg-\\[\\#101010\\]'],
+  [class*='bg-\\[\\#383838\\]'],
   [class*='rounded-full'][class*='bg-marco-black'],
   [class*='rounded-full'][class*='bg-black'],
   [class*='rounded-full'][class*='bg-gray-900'],
-  [class*='rounded-full'][class*='bg-\\[\\#101010\\]'],
+  [class*='rounded-full'][class*='bg-\\[\\#383838\\]'],
   [class*='rounded-2xl'][class*='bg-marco-black'],
   [class*='rounded-2xl'][class*='bg-black'],
   [class*='rounded-xl'][class*='bg-marco-black'],
@@ -455,10 +456,10 @@
   [class*='rounded-lg'][class*='bg-marco-black'],
   [class*='rounded-lg'][class*='bg-black'],
   [class*='rounded-\\[60px\\]'][class*='bg-black'],
-  [class*='rounded-\\[60px\\]'][class*='bg-\\[\\#101010\\]'],
+  [class*='rounded-\\[60px\\]'][class*='bg-\\[\\#383838\\]'],
   [class*='rounded-\\[68px\\]'][class*='bg-marco-black'],
   [class*='rounded-\\[68px\\]'][class*='bg-black'],
-  [class*='rounded-\\[68px\\]'][class*='bg-\\[\\#101010\\]']
+  [class*='rounded-\\[68px\\]'][class*='bg-\\[\\#383838\\]']
 ) :is(
   .text-white,
   .text-white\/90,
@@ -473,10 +474,10 @@
   [class*='text-marco-text/'],
   [class*='text-marco-black/'],
   [class*='text-black/'],
-  [class*='text-\\[\\#101010\\]'],
+  [class*='text-\\[\\#383838\\]'],
   [class*='text-\\[\\#181111\\]']
 ) {
-  color: #050505 !important;
+  color: var(--marco-anthracite) !important;
 }
 
 @media (min-width: 640px) {

@@ -21,6 +21,7 @@ export interface AddProductFormState {
   mainProductImage: string;
   variants: Variant[];
   labels: ProductLabel[];
+  warrantyYears: number | null;
 }
 
 /**
@@ -63,6 +64,10 @@ export function buildFormData(
       position: label.position || 'top-left',
       color: label.color || null,
     })),
+    warrantyYears:
+      product.warrantyYears === 1 || product.warrantyYears === 2 || product.warrantyYears === 3
+        ? product.warrantyYears
+        : null,
   };
 }
 

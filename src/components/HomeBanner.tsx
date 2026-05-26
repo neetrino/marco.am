@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import Image from 'next/image';
 import Link from 'next/link';
@@ -164,11 +164,11 @@ function SofaCard({ copy }: { copy: HeroBannerCopy }) {
 
       <Link
         href="/products"
-        className="absolute z-10 flex items-center justify-center overflow-hidden rounded-[68px] bg-[#facc15] py-1 pl-4 pr-14 antialiased dark:!text-[#050505]"
+        className="absolute z-10 flex items-center justify-center overflow-hidden rounded-[68px] bg-[#facc15] py-1 pl-4 pr-14 antialiased dark:!text-[#383838]"
         style={{ left: x(524), top: by(700), width: bx(243), height: by(56) }}
       >
         <span
-          className={`${montserratArm.className} min-w-0 text-center text-base font-bold leading-6 text-[#000] dark:!text-[#050505]`}
+          className={`${montserratArm.className} min-w-0 text-center text-base font-bold leading-6 text-marco-black dark:!text-[#383838]`}
         >
           {copy.buyNow}
         </span>
@@ -321,7 +321,7 @@ function HelpPromoEllipseButton({ ariaLabel }: { ariaLabel: string }) {
     <Link
       href="/contact"
       aria-label={ariaLabel}
-      className="inline-flex shrink-0 cursor-pointer rounded-full outline-none transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#101010]/30"
+      className="inline-flex shrink-0 cursor-pointer rounded-full outline-none transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#383838]/30"
     >
       <HelpPromoEllipse />
     </Link>
@@ -394,7 +394,7 @@ export function HomeBanner() {
                 className={`${montserratArm.className} absolute z-20 whitespace-nowrap font-black antialiased`}
                 style={{ left: bx(162), top: by(88), fontSize: bx(60), lineHeight: `${by(72)}px` }}
               >
-                <span className="home-banner-hero-stroke text-[#000]">{heroCopy.free} </span>
+                <span className="home-banner-hero-stroke text-marco-black">{heroCopy.free} </span>
                 <span className="home-banner-hero-stroke text-[#FFF]">{heroCopy.delivery}</span>
               </p>
 

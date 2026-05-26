@@ -85,6 +85,9 @@
     "filters": "Ֆիլտրեր",
     "sortProducts": "Դասավորել ապրանքները"
   },
+  "pricing": {
+    "special_price": "Հատուկ գին"
+  },
   "grid": {
     "noProducts": "Ապրանքներ չգտնվեցին։"
   },
@@ -105,5 +108,10 @@
     },
     "scrollLeft": "Ոլորել կատեգորիաները ձախ",
     "scrollRight": "Ոլորել կատեգորիաները աջ"
+  },
+  "warranty": {
+    "years_suffix": "ՏԱՐԻ",
+    "label": "ԵՐԱՇԽԻՔ",
+    "badge_aria": "{years} տարի երաշխիք"
   }
 }

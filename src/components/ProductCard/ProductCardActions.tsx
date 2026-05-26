@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import type { MouseEvent } from 'react';
 import { Heart, X } from 'lucide-react';
@@ -47,7 +47,7 @@ export function ProductCardActions({
         onClick={onCompareToggle}
         className={`${buttonSize} rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
           isInCompare
-            ? 'border-marco-yellow bg-marco-yellow text-marco-black shadow-lg dark:border-marco-yellow dark:bg-marco-yellow dark:!text-[#050505]'
+            ? 'border-marco-yellow bg-marco-yellow text-marco-black shadow-lg dark:border-marco-yellow dark:bg-marco-yellow dark:!text-[#383838]'
             : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50 dark:border-marco-black dark:bg-marco-black dark:text-white dark:hover:border-marco-black dark:hover:bg-marco-black'
         }`}
         title={isInCompare ? t('common.messages.removedFromCompare') : t('common.messages.addedToCompare')}

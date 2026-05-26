@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import type { ProductListingBrand } from '@/lib/types/product-listing-brand';
 import { ProductPdpPrefetchLink } from '../ProductPdpPrefetchLink';
@@ -7,6 +7,7 @@ import { formatCatalogPrice, type CurrencyCode } from '../../lib/currency';
 import { useTranslation } from '../../lib/i18n-client';
 import { ProductCardBrandMark } from './ProductCardBrandMark';
 import { ProductColors } from './ProductColors';
+import { ProductPricePromoBadge } from './ProductPricePromoBadge';
 
 interface ProductCardInfoProps {
   slug: string;
@@ -16,6 +17,7 @@ interface ProductCardInfoProps {
   originalPrice?: number | null;
   compareAtPrice?: number | null;
   discountPercent?: number | null;
+  isSpecialPrice?: boolean;
   currency: CurrencyCode;
   colors?: Array<{ value: string; imageUrl?: string | null; colors?: string[] | null }>;
   isCompact?: boolean;
@@ -36,6 +38,7 @@ export function ProductCardInfo({
   originalPrice,
   compareAtPrice,
   discountPercent,
+  isSpecialPrice = false,
   currency,
   colors,
   isCompact = false,
@@ -50,13 +53,13 @@ export function ProductCardInfo({
           name={brand.name}
           slug={brand.slug}
           logoUrl={brand.logoUrl}
-          textClassName={`${isCompact ? 'text-sm' : 'text-lg'} text-gray-500 dark:text-[#050505]`}
+          textClassName={`${isCompact ? 'text-sm' : 'text-lg'} text-gray-500 dark:text-[#383838]`}
           logoBoxClassName={isCompact ? 'h-5 w-[80px]' : 'h-7 w-[112px]'}
         />
       </div>
     ) : (
       <p
-        className={`${isCompact ? 'text-sm' : 'text-lg'} text-gray-500 dark:text-[#050505] ${isCompact ? 'mb-1' : 'mb-2'}`}
+        className={`${isCompact ? 'text-sm' : 'text-lg'} text-gray-500 dark:text-[#383838] ${isCompact ? 'mb-1' : 'mb-2'}`}
       >
         {t('common.defaults.category')}
       </p>
@@ -97,13 +100,11 @@ export function ProductCardInfo({
             >
               {formatCatalogPrice(price || 0, currency)}
             </span>
-            {discountPercent && discountPercent > 0 ? (
-              <span
-                className={`rounded-full bg-blue-50 px-2 py-0.5 ${isCompact ? 'text-[11px]' : 'text-sm'} font-semibold leading-none text-blue-600`}
-              >
-                -{discountPercent}%
-              </span>
-            ) : null}
+            <ProductPricePromoBadge
+              discountPercent={discountPercent}
+              isSpecialPrice={isSpecialPrice}
+              isCompact={isCompact}
+            />
           </div>
           {(originalPrice && originalPrice > price) || (compareAtPrice && compareAtPrice > price) ? (
             <span

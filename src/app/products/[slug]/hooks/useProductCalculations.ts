@@ -25,16 +25,25 @@ export function useProductCalculations({
   const fallbackOldPrice =
     originalPrice ??
     (typeof compareAtPrice === 'number' && compareAtPrice > variantCurrentPrice ? compareAtPrice : null);
+  const isSpecialPrice =
+    currentVariant?.discountBadge?.type === 'special_price' ||
+    product?.discountBadge?.type === 'special_price' ||
+    product?.pricing?.discountBadge?.type === 'special_price';
   const inferredDiscountPercent =
-    fallbackOldPrice && fallbackOldPrice > variantCurrentPrice
+    !isSpecialPrice &&
+    fallbackOldPrice &&
+    fallbackOldPrice > variantCurrentPrice
       ? Math.round(((fallbackOldPrice - variantCurrentPrice) / fallbackOldPrice) * 100)
       : null;
-  const discountPercent =
-    currentVariant?.discountBadge?.value ??
-    currentVariant?.productDiscount ??
-    product?.discountBadge?.value ??
-    product?.productDiscount ??
-    inferredDiscountPercent;
+  const discountPercent = isSpecialPrice
+    ? null
+    : currentVariant?.discountBadge?.type === 'percentage'
+      ? currentVariant.discountBadge.value
+      : product?.discountBadge?.type === 'percentage'
+        ? product.discountBadge.value
+        : currentVariant?.productDiscount ??
+          product?.productDiscount ??
+          inferredDiscountPercent;
   const isOutOfStock = !currentVariant || currentVariant.stock <= 0;
 
   const colorGroups = useMemo(() => {
@@ -113,6 +122,7 @@ export function useProductCalculations({
     originalPrice: fallbackOldPrice ?? null,
     compareAtPrice: compareAtPrice ?? null,
     discountPercent,
+    isSpecialPrice,
     isOutOfStock,
     colorGroups,
     sizeGroups,

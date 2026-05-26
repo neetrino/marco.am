@@ -132,6 +132,7 @@ export function SpecialOfferCard({
         : 'mx-auto';
 
   const cardPdpEnabled = Boolean(product.slug) && !product.shellPlaceholder;
+  const warrantyYears = product.warrantyYears ?? product.warrantyBadge?.years ?? null;
 
   return (
     <div
@@ -167,7 +168,7 @@ export function SpecialOfferCard({
         ) : null}
         <span
           aria-hidden
-          className="pointer-events-none absolute bottom-0 right-0 z-0 max-md:hidden rounded-full [box-shadow:inset_0_0_0_1px_var(--special-offers-card-cutout-bg)] dark:[box-shadow:inset_0_0_0_1px_#050505]"
+          className="pointer-events-none absolute bottom-0 right-0 z-0 max-md:hidden rounded-full [box-shadow:inset_0_0_0_1px_var(--special-offers-card-cutout-bg)] dark:[box-shadow:inset_0_0_0_1px_#383838]"
           style={{
             width: SPECIAL_OFFERS_CARD_CORNER_MASK_SIZE_PX,
             height: SPECIAL_OFFERS_CARD_CORNER_MASK_SIZE_PX,
@@ -192,11 +193,9 @@ export function SpecialOfferCard({
           className="relative z-10 flex min-h-0 flex-1 flex-col px-4 pb-6"
           style={{ paddingTop: SPECIAL_OFFERS_CARD_PADDING_TOP_PX }}
         >
-          <SpecialOfferWarrantyBadge
-            layout={layout}
-            line1={t('home.special_offers.warranty_line1')}
-            line2={t('home.special_offers.warranty_line2')}
-          />
+          {warrantyYears ? (
+            <SpecialOfferWarrantyBadge layout={layout} years={warrantyYears} />
+          ) : null}
 
           <SpecialOfferCardMedia
             layout={layout}
@@ -252,6 +251,7 @@ export function SpecialOfferCard({
       <SpecialOfferActionsStack
         layout={layout}
         showDiscountPill={!detailsPending && showDiscountPill}
+        isSpecialPrice={product.isSpecialPrice}
         discountPercent={product.discountPercent}
         isInWishlist={isInWishlist}
         isInCompare={isInCompare}

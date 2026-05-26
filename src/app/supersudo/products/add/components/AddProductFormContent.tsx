@@ -19,7 +19,9 @@ import { SimpleProductFields } from './SimpleProductFields';
 import { AttributesSelection } from './AttributesSelection';
 import { VariantBuilder } from './VariantBuilder';
 import { ProductLabels } from './ProductLabels';
+import { ProductWarrantyField } from './ProductWarrantyField';
 import { Publishing } from './Publishing';
+import type { ProductWarrantyYears } from '@/lib/constants/product-warranty';
 import { FormActions } from './FormActions';
 
 interface AddProductFormContentProps {
@@ -34,6 +36,7 @@ interface AddProductFormContentProps {
     imageUrls: string[];
     featuredImageIndex: number;
     labels: ProductLabel[];
+    warrantyYears: number | null;
     featured: boolean;
     variants: Variant[];
   };
@@ -98,6 +101,7 @@ interface AddProductFormContentProps {
   onAddLabel: () => void;
   onRemoveLabel: (index: number) => void;
   onUpdateLabel: (index: number, field: keyof ProductLabel, value: ProductLabel[keyof ProductLabel]) => void;
+  onWarrantyYearsChange: (years: ProductWarrantyYears | null) => void;
   onFeaturedChange: (featured: boolean) => void;
   onProductClassChange: (productClass: ProductClass) => void;
   onVariantsUpdate: (updater: (prev: Variant[]) => Variant[]) => void;
@@ -165,6 +169,7 @@ export function AddProductFormContent({
   onAddLabel,
   onRemoveLabel,
   onUpdateLabel,
+  onWarrantyYearsChange,
   onFeaturedChange,
   onProductClassChange,
   onVariantsUpdate,
@@ -276,6 +281,17 @@ export function AddProductFormContent({
               generateSlug={generateSlug}
             />
           )}
+
+        <ProductWarrantyField
+          warrantyYears={
+            formData.warrantyYears === 1 ||
+            formData.warrantyYears === 2 ||
+            formData.warrantyYears === 3
+              ? formData.warrantyYears
+              : null
+          }
+          onChange={onWarrantyYearsChange}
+        />
 
         <ProductLabels
           labels={formData.labels}

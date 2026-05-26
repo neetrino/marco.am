@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { ProductPdpPrefetchLink } from '../ProductPdpPrefetchLink';
 import { ProductCardBrandMark } from '../ProductCard/ProductCardBrandMark';
@@ -11,6 +11,7 @@ import type { LanguageCode } from '../../lib/language';
 import { t } from '../../lib/i18n';
 import { logger } from "@/lib/utils/logger";
 import { ProductImagePlaceholder } from '../ProductImagePlaceholder';
+import { ProductPricePromoBadge } from '../ProductCard/ProductPricePromoBadge';
 
 interface RelatedProduct {
   id: string;
@@ -20,6 +21,7 @@ interface RelatedProduct {
   originalPrice?: number | null;
   compareAtPrice: number | null;
   discountPercent?: number | null;
+  isSpecialPrice?: boolean;
   image: string | null;
   inStock: boolean;
   brand?: ProductListingBrand | null;
@@ -111,7 +113,7 @@ export function RelatedProductCard({
               </h3>
 
               {/* Category or brand logo */}
-              <div className={`mb-3 text-xs ${hasCategoryLabels ? 'text-gray-500' : 'text-gray-500 dark:text-[#050505]'}`}>
+              <div className={`mb-3 text-xs ${hasCategoryLabels ? 'text-gray-500' : 'text-gray-500 dark:text-[#383838]'}`}>
                 {categoryLineText !== null ? (
                   <p>{categoryLineText}</p>
                 ) : product.brand ? (
@@ -119,7 +121,7 @@ export function RelatedProductCard({
                     name={product.brand.name}
                     slug={product.brand.slug}
                     logoUrl={product.brand.logoUrl}
-                    textClassName="text-xs font-medium text-gray-500 dark:text-[#050505]"
+                    textClassName="text-xs font-medium text-gray-500 dark:text-[#383838]"
                     logoBoxClassName="h-5 w-[96px]"
                   />
                 ) : (
@@ -133,11 +135,11 @@ export function RelatedProductCard({
                   <span className="text-lg font-bold text-gray-900">
                     {formatCatalogPrice(product.price, currency)}
                   </span>
-                  {product.discountPercent && product.discountPercent > 0 && (
-                    <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
-                      -{product.discountPercent}%
-                    </span>
-                  )}
+                  <ProductPricePromoBadge
+                    discountPercent={product.discountPercent}
+                    isSpecialPrice={product.isSpecialPrice}
+                    isCompact
+                  />
                 </div>
                 {(product.originalPrice && product.originalPrice > product.price) || 
                  (product.compareAtPrice && product.compareAtPrice > product.price) ? (

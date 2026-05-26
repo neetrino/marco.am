@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import Link from 'next/link';
 import { useTranslation } from '@/lib/i18n-client';
@@ -16,7 +16,7 @@ export function HomeSecondaryBanners() {
             <span className="text-4xl font-black uppercase tracking-tight text-[#ffca03] md:text-5xl">
               {t('home.secondary_banner_label')}
             </span>
-            <span className="mt-6 inline-flex w-fit items-center justify-center rounded-full bg-[#ffca03] px-8 py-3 text-sm font-bold text-[#101010]">
+            <span className="mt-6 inline-flex w-fit items-center justify-center rounded-full bg-[#ffca03] px-8 py-3 text-sm font-bold text-[#383838]">
               {t('home.banner_shop_now')}
             </span>
           </Link>
@@ -28,7 +28,7 @@ export function HomeSecondaryBanners() {
             <span className="text-4xl font-black uppercase tracking-tight text-white md:text-5xl">
               {t('home.secondary_banner_label')}
             </span>
-            <span className="mt-6 inline-flex w-fit items-center justify-center rounded-full bg-[#101010] px-8 py-3 text-sm font-bold text-white">
+            <span className="mt-6 inline-flex w-fit items-center justify-center rounded-full bg-[#383838] px-8 py-3 text-sm font-bold text-white">
               {t('home.banner_shop_now')}
             </span>
           </Link>

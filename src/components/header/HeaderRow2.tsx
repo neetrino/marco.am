@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import type { LanguageCode } from '../../lib/language';
 import { Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react';
@@ -233,10 +233,10 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
                 ref={categoriesTriggerRef}
                 type="button"
                 onClick={() => setShowProductsMenu((open) => !open)}
-                className={`flex w-full items-center !bg-[#050505] !text-white dark:!bg-white dark:!text-[#050505] dark:ring-1 dark:ring-black/10 ${getHeaderCategoryButtonClass(
+                className={`flex w-full items-center !bg-[#383838] !text-white dark:!bg-white dark:!text-[#383838] dark:ring-1 dark:ring-black/10 ${getHeaderCategoryButtonClass(
                   row2TabletLike,
                   row2DesktopLike,
-                )} [&_svg]:!text-white dark:[&_svg]:!text-[#050505]`}
+                )} [&_svg]:!text-white dark:[&_svg]:!text-[#383838]`}
                 aria-expanded={showProductsMenu}
                 aria-haspopup="true"
               >
@@ -370,7 +370,7 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
                           }}
                           onKeyDown={searchHandleKeyDown}
                           placeholder={t('common.placeholders.search')}
-                          className="min-h-0 min-w-0 flex-1 w-full border-0 bg-transparent pr-6 text-xs leading-normal text-marco-text dark:!text-[#050505] placeholder:text-[rgba(33,43,54,0.46)] focus:outline-none focus:ring-0"
+                          className="min-h-0 min-w-0 flex-1 w-full border-0 bg-transparent pr-6 text-xs leading-normal text-marco-text dark:!text-[#383838] placeholder:text-[rgba(33,43,54,0.46)] focus:outline-none focus:ring-0"
                           aria-controls="search-results"
                           aria-autocomplete="list"
                         />

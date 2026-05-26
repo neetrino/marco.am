@@ -1,11 +1,11 @@
-'use client';
+﻿'use client';
 
 import type { LucideIcon } from 'lucide-react';
 import { Facebook, Instagram, Send } from 'lucide-react';
 import { useTranslation } from '../../lib/i18n-client';
 
 const SOCIAL_VECTOR_ICON_PX = 20;
-const SOCIAL_LUCIDE_CLASS = 'shrink-0 text-marco-black dark:text-[#050505]';
+const SOCIAL_LUCIDE_CLASS = 'shrink-0 text-marco-black dark:text-[#383838]';
 
 function WhatsAppGlyph({ className, size = SOCIAL_VECTOR_ICON_PX }: { className?: string; size?: number }) {
   return (
@@ -82,7 +82,7 @@ function socialControlClass(
 ): string {
   /** Drawer footer: smaller circles so they align with nav density (header stays `h-11`). */
   const touch = comfortableTouch ? 'h-9 w-9' : 'h-11 w-11';
-  const base = `flex ${touch} shrink-0 items-center justify-center rounded-full border border-marco-black/10 bg-marco-yellow text-marco-black transition-[opacity,filter] dark:border-marco-black/15 dark:bg-marco-yellow dark:text-[#050505]`;
+  const base = `flex ${touch} shrink-0 items-center justify-center rounded-full border border-marco-black/10 bg-marco-yellow text-marco-black transition-[opacity,filter] dark:border-marco-black/15 dark:bg-marco-yellow dark:text-[#383838]`;
   const desktopCompact =
     desktopBalancedIcons &&
     'min-[1367px]:h-9 min-[1367px]:w-9 min-[1367px]:[&_svg]:!h-[14px] min-[1367px]:[&_svg]:!w-[14px] min-[1367px]:[&_svg]:!max-h-[14px] min-[1367px]:[&_svg]:!max-w-[14px]';
@@ -95,7 +95,7 @@ function SocialGlyph({ entry, iconPx }: { entry: SocialEntry; iconPx: number }) 
   if (isGlyphEntry(entry)) {
     const { Glyph } = entry;
     return (
-      <Glyph className="shrink-0 text-marco-black transition-colors dark:text-[#050505]" size={iconPx} />
+      <Glyph className="shrink-0 text-marco-black transition-colors dark:text-[#383838]" size={iconPx} />
     );
   }
   const { Icon } = entry;

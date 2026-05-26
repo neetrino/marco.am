@@ -86,9 +86,9 @@ export const SITE_CONTENT_DEFAULT_STORAGE: SiteContentStorage = {
         en: "Call Us:",
       },
       description: {
-        hy: "Մենք հասանելի ենք շաբաթվա 7 օր, օրվա 24 ժամ:",
-        ru: "Мы доступны 24/7, 7 дней в неделю.",
-        en: "We are available 24/7, 7 days a week.",
+        hy: "Մենք հասանելի ենք շաբաթվա 7 օր:",
+        ru: "Мы доступны 7 дней в неделю.",
+        en: "We are available 7 days a week.",
       },
     },
     writeToUs: {

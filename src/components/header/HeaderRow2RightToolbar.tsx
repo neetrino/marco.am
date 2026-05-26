@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -184,9 +184,9 @@ export function HeaderRow2RightToolbar({ data, compactPrimaryNav, headerMobileLi
 
       <Link
         href="/cart"
-        className={`relative !bg-[#050505] !text-white dark:!bg-white dark:!text-[#050505] dark:ring-1 dark:ring-black/10 ${HEADER_CART_BUTTON_CLASS}`}
+        className={`relative !bg-[#383838] !text-white dark:!bg-white dark:!text-[#383838] dark:ring-1 dark:ring-black/10 ${HEADER_CART_BUTTON_CLASS}`}
       >
-        <HeaderNavbarCartIcon className="h-[21px] w-[22px] shrink-0 !text-white dark:!text-[#050505]" />
+        <HeaderNavbarCartIcon className="h-[21px] w-[22px] shrink-0 !text-white dark:!text-[#383838]" />
         <span className="tabular-nums text-inherit">
           {formatMoneyInCurrency(cartTotal, cartTotalCurrency, selectedCurrency)}
         </span>

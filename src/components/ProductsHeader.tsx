@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { Montserrat } from 'next/font/google';
 import Link from 'next/link';
@@ -89,7 +89,7 @@ function ProductsViewGridDenseDotsIcon({ className }: { readonly className?: str
   );
 }
 
-/** Sort trigger: #101010 — same symmetric pill radius as view toggles (`rounded-full`) */
+/** Sort trigger: #383838 — same symmetric pill radius as view toggles (`rounded-full`) */
 const SORT_TRIGGER_CLASS =
   'flex h-10 min-w-[160px] items-center justify-between gap-2 rounded-full bg-marco-black px-4 text-sm font-normal leading-normal text-white transition-[filter] hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25 active:brightness-90';
 
@@ -112,7 +112,7 @@ const VIEW_TOGGLE_SEGMENT_BASE =
 
 function viewToggleSegmentClass(isActive: boolean): string {
   return isActive
-    ? `${VIEW_TOGGLE_SEGMENT_BASE} bg-[#ffffff] text-[#050505] dark:bg-[#ffffff] dark:text-[#050505]`
+    ? `${VIEW_TOGGLE_SEGMENT_BASE} bg-[#ffffff] text-[#383838] dark:bg-[#ffffff] dark:text-[#383838]`
     : `${VIEW_TOGGLE_SEGMENT_BASE} text-marco-black dark:text-white hover:bg-[#fafafa] dark:hover:bg-white/10`;
 }
 

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { ArrowUpRight } from 'lucide-react';
 import Image from 'next/image';
@@ -199,7 +199,7 @@ function HomePromoStackedProductCardCta({ ariaLabel }: HomePromoStackedProductCa
       style={ctaPillStyle}
     >
       <span
-        className={`${montserratCta.className} min-w-0 flex-1 truncate text-left text-xs font-bold leading-4 text-marco-black dark:!text-[#050505] sm:text-sm sm:leading-5`}
+        className={`${montserratCta.className} min-w-0 flex-1 truncate text-left text-xs font-bold leading-4 text-marco-black dark:!text-[#383838] sm:text-sm sm:leading-5`}
       >
         {t('home.promo_featured_cta')}
       </span>

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Row-2 compact toolbar (narrow categories pill, tight search pill, etc.) from `md` through this width — includes iPad Pro 12.9″ landscape (~1366px). Full Figma desktop row-2 from 1367px.
  * Tailwind: `md:max-[1366px]:…` / `min-[1367px]:…` (keep literals static for JIT).
  */
@@ -168,7 +168,7 @@ export function getHeaderSearchSubmitWidthClass(tabletLike: boolean): string {
 export function getHeaderSearchSubmitClass(tabletLike: boolean): string {
   const radius = getHeaderSearchFormRadiusClass(tabletLike);
   const textShrink = tabletLike ? 'md:text-[11px]' : '';
-  return `flex items-center justify-center self-center ${HEADER_SEARCH_SUBMIT_HEIGHT_CLASS} shrink-0 bg-marco-yellow text-xs font-semibold leading-normal text-[#050505] dark:text-[#050505] transition-[filter] hover:brightness-95 active:brightness-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/15 ${textShrink} ${radius}`.trim();
+  return `flex items-center justify-center self-center ${HEADER_SEARCH_SUBMIT_HEIGHT_CLASS} shrink-0 bg-marco-yellow text-xs font-semibold leading-normal text-[#383838] dark:text-[#383838] transition-[filter] hover:brightness-95 active:brightness-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/15 ${textShrink} ${radius}`.trim();
 }
 
 export function getHeaderCategoryButtonClass(tabletLike: boolean, ipadDesktopRow2Like = false): string {
@@ -205,7 +205,7 @@ export const HEADER_SEARCH_SUBMIT_WIDTH_CLASS =
 /**
  * Yellow submit — centered in `HEADER_SEARCH_BAR_HEIGHT_CLASS` track; radius matches search pill.
  */
-export const HEADER_SEARCH_SUBMIT_CLASS = `flex items-center justify-center self-center ${HEADER_SEARCH_SUBMIT_HEIGHT_CLASS} shrink-0 bg-marco-yellow text-xs font-semibold leading-normal text-[#050505] dark:text-[#050505] transition-[filter] hover:brightness-95 active:brightness-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/15 md:max-[1366px]:text-[11px] ${HEADER_SEARCH_FORM_RADIUS_CLASS}`;
+export const HEADER_SEARCH_SUBMIT_CLASS = `flex items-center justify-center self-center ${HEADER_SEARCH_SUBMIT_HEIGHT_CLASS} shrink-0 bg-marco-yellow text-xs font-semibold leading-normal text-[#383838] dark:text-[#383838] transition-[filter] hover:brightness-95 active:brightness-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/15 md:max-[1366px]:text-[11px] ${HEADER_SEARCH_FORM_RADIUS_CLASS}`;
 
 /** Language + currency pill — height matches `HEADER_ROW2_BAR_HEIGHT_CLASS` */
 export const HEADER_LOCALE_PILL_HEIGHT_CLASS = HEADER_ROW2_BAR_HEIGHT_CLASS;
@@ -242,9 +242,9 @@ export function getHeaderToolbarIconSurfaceClass(active: boolean): string {
     'transition-[background-color,color] duration-200 ' +
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/25';
   if (active) {
-    return `${frame} bg-marco-yellow text-marco-black dark:!bg-marco-yellow dark:!text-[#050505]`.trim();
+    return `${frame} bg-marco-yellow text-marco-black dark:!bg-marco-yellow dark:!text-[#383838]`.trim();
   }
-  return `${frame} bg-marco-gray text-gray-900 hover:bg-marco-yellow hover:text-marco-black dark:!bg-[#050505] dark:text-white dark:hover:!bg-marco-yellow dark:hover:!text-[#050505]`.trim();
+  return `${frame} bg-marco-gray text-gray-900 hover:bg-marco-yellow hover:text-marco-black dark:!bg-[#383838] dark:text-white dark:hover:!bg-marco-yellow dark:hover:!text-[#383838]`.trim();
 }
 
 /**
@@ -259,9 +259,9 @@ export function getHeaderThemeToggleButtonClass(resolvedDark: boolean): string {
     'transition-[background-color,color,filter] duration-200 ' +
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/25';
   if (resolvedDark) {
-    return `${frame} !bg-[#050505] text-white hover:!bg-marco-yellow hover:!text-[#050505] dark:!bg-[#050505] dark:hover:!bg-marco-yellow dark:hover:!text-[#050505]`.trim();
+    return `${frame} !bg-[#383838] text-white hover:!bg-marco-yellow hover:!text-[#383838] dark:!bg-[#383838] dark:hover:!bg-marco-yellow dark:hover:!text-[#383838]`.trim();
   }
-  return `${frame} bg-marco-yellow text-[#050505] hover:brightness-95 active:brightness-90`.trim();
+  return `${frame} bg-marco-yellow text-[#383838] hover:brightness-95 active:brightness-90`.trim();
 }
 
 /** Cart pill — same height as row-2 strip; wider pill for icon + price (Figma 111:4281 — gap 11px icon ↔ price) */
@@ -270,10 +270,10 @@ export const HEADER_CART_BUTTON_CLASS =
 
 /**
  * Mobile header top row — round dark controls (Figma 314:2501 search, 314:2503 menu).
- * Compact: `p-2.5` (10px), inner glyph 24×24px (`h-6 w-6`); fill `#050401`.
+ * Compact: `p-2.5` (10px), inner glyph 24×24px (`h-6 w-6`); fill `#383838`.
  */
 export const HEADER_MOBILE_HEADER_ROUND_CONTROL_CLASS =
-  'flex shrink-0 items-center justify-center rounded-full bg-[#050401] p-2.5 text-white shadow-sm transition-[opacity,filter] hover:opacity-95 active:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/25';
+  'flex shrink-0 items-center justify-center rounded-full bg-[#383838] p-2.5 text-white shadow-sm transition-[opacity,filter] hover:opacity-95 active:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/25';
 
 /** Figma 314:2501 — mobile search FAB (same shell as {@link HEADER_MOBILE_HEADER_ROUND_CONTROL_CLASS}). */
 export const HEADER_MOBILE_SEARCH_FAB_CLASS = HEADER_MOBILE_HEADER_ROUND_CONTROL_CLASS;
@@ -292,10 +292,10 @@ export function getHeaderPrimaryNavDesktopLinkClass(active: boolean): string {
     'after:pointer-events-none after:absolute after:inset-x-0 after:bottom-2 after:block after:h-1 after:origin-left ' +
     'after:scale-x-0 after:bg-marco-yellow after:content-[\'\'] after:transition-transform after:duration-300 ' +
     'after:ease-out ' +
-    'hover:text-marco-black dark:hover:text-[#050505] ' +
+    'hover:text-marco-black dark:hover:text-[#383838] ' +
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/25';
   if (active) {
-    return `${shell} before:opacity-100 after:scale-x-0 text-marco-black dark:text-[#050505]`.trim();
+    return `${shell} before:opacity-100 after:scale-x-0 text-marco-black dark:text-[#383838]`.trim();
   }
   return `${shell} before:opacity-0 hover:after:scale-x-100 text-marco-text dark:text-white/88`.trim();
 }

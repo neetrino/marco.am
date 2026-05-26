@@ -97,6 +97,10 @@ export async function getProductById(productId: string) {
     categoryIds: product.categoryIds || [],
     attributeIds: allAttributeIds, // All attribute IDs that this product has
     published: product.published,
+    warrantyYears:
+      product.warrantyYears === 1 || product.warrantyYears === 2 || product.warrantyYears === 3
+        ? product.warrantyYears
+        : null,
     media: Array.isArray(product.media) ? product.media : [],
     labels: labels.map((label: { id: string; type: string; value: string; position: string; color: string | null }) => ({
       id: label.id,
