@@ -32,7 +32,9 @@
     "deliveryDescription": "We will deliver your order to your address",
     "freePickup": "Free (Store Pickup)",
     "loading": "Loading...",
-    "enterCity": "Enter City"
+    "enterCity": "Enter City",
+    "selectCity": "Select city",
+    "noCitiesAvailable": "No delivery cities available"
   },
   "payment": {
     "cash": "Cash",

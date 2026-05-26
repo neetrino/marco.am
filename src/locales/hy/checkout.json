@@ -32,7 +32,9 @@
     "deliveryDescription": "Մենք կառաքենք ձեր պատվերը ձեր հասցեին",
     "freePickup": "Անվճար (Խանութից)",
     "loading": "Բեռնվում է...",
-    "enterCity": "Մուտքագրել քաղաք"
+    "enterCity": "Մուտքագրել քաղաք",
+    "selectCity": "Ընտրեք քաղաքը",
+    "noCitiesAvailable": "Առաքման քաղաքներ հասանելի չեն"
   },
   "payment": {
     "cash": "Կանխիկ",

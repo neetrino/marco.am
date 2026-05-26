@@ -12,7 +12,6 @@ import { logger } from "@/lib/utils/logger";
 
 interface DeliveryLocation {
   id?: string;
-  country: string;
   city: string;
   price: number;
 }
@@ -81,7 +80,7 @@ export default function DeliveryPage() {
   };
 
   const handleAddLocation = () => {
-    setLocations([...locations, { country: '', city: '', price: 1000 }]);
+    setLocations([...locations, { city: '', price: 1000 }]);
     setEditingId(`new-${Date.now()}`);
   };
 
@@ -191,10 +190,7 @@ export default function DeliveryPage() {
                         </div>
                         <div>
                           <p className="text-sm font-semibold text-marco-black">
-                            {location.city.trim() || location.country.trim() || `${t('admin.delivery.title')} ${index + 1}`}
-                          </p>
-                          <p className="text-xs uppercase tracking-[0.14em] text-marco-text/55">
-                            {location.country.trim() || t('admin.delivery.country')}
+                            {location.city.trim() || `${t('admin.delivery.title')} ${index + 1}`}
                           </p>
                         </div>
                       </div>
@@ -204,19 +200,7 @@ export default function DeliveryPage() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                      <div>
-                        <label className="mb-2 block text-sm font-medium text-marco-text/80">
-                          {t('admin.delivery.country')}
-                        </label>
-                        <input
-                          type="text"
-                          value={location.country}
-                          onChange={(e) => handleUpdateLocation(index, 'country', e.target.value)}
-                          className="admin-field border-marco-border/80 bg-white/95 shadow-sm focus:border-marco-yellow focus:shadow-[0_0_0_3px_rgba(247,206,63,0.18)]"
-                          placeholder={t('admin.delivery.countryPlaceholder')}
-                        />
-                      </div>
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                       <div>
                         <label className="mb-2 block text-sm font-medium text-marco-text/80">
                           {t('admin.delivery.city')}

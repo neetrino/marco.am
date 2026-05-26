@@ -32,7 +32,9 @@
     "deliveryDescription": "Мы доставим ваш заказ по вашему адресу",
     "freePickup": "Бесплатно (Самовывоз)",
     "loading": "Загрузка...",
-    "enterCity": "Введите город"
+    "enterCity": "Введите город",
+    "selectCity": "Выберите город",
+    "noCitiesAvailable": "Нет доступных городов доставки"
   },
   "payment": {
     "cash": "Наличные",

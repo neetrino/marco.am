@@ -13,7 +13,13 @@ import { useUserProfile } from './hooks/useUserProfile';
 import { useOrderSubmission } from './hooks/useOrderSubmission';
 import { useOrderSummary } from './hooks/useOrderSummary';
 import { isCourierShipping } from '../../lib/constants/shipping-method';
+import { apiClient } from '../../lib/api-client';
+import { logger } from '../../lib/utils/logger';
 import type { CheckoutFormData } from './types';
+
+type DeliveryLocationsResponse = {
+  cities: string[];
+};
 
 export function useCheckout() {
   const { isLoggedIn, isLoading } = useAuth();
@@ -23,6 +29,8 @@ export function useCheckout() {
   const [_language, setLanguage] = useState(getStoredLanguage());
   const [logoErrors, setLogoErrors] = useState<Record<string, boolean>>({});
   const [showShippingModal, setShowShippingModal] = useState(false);
+  const [deliveryCities, setDeliveryCities] = useState<string[]>([]);
+  const [loadingDeliveryCities, setLoadingDeliveryCities] = useState(false);
 
   const paymentMethods = usePaymentMethods();
   const checkoutSchema = useCheckoutSchema();
@@ -62,6 +70,50 @@ export function useCheckout() {
     shippingCity
   );
   useUserProfile(isLoggedIn, isLoading, setValue);
+
+  useEffect(() => {
+    let active = true;
+
+    const fetchDeliveryCities = async () => {
+      setLoadingDeliveryCities(true);
+      try {
+        const response = await apiClient.get<DeliveryLocationsResponse>('/api/v1/delivery/locations');
+        if (!active) {
+          return;
+        }
+        setDeliveryCities(Array.isArray(response.cities) ? response.cities : []);
+      } catch (err: unknown) {
+        if (!active) {
+          return;
+        }
+        logger.warn('Failed to fetch checkout delivery cities', { error: err });
+        setDeliveryCities([]);
+      } finally {
+        if (active) {
+          setLoadingDeliveryCities(false);
+        }
+      }
+    };
+
+    void fetchDeliveryCities();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    const normalizedCity = shippingCity?.trim();
+    if (!normalizedCity || deliveryCities.length === 0) {
+      return;
+    }
+    const cityExists = deliveryCities.some(
+      (city) => city.toLowerCase() === normalizedCity.toLowerCase()
+    );
+    if (!cityExists) {
+      setValue('shippingCity', '', { shouldValidate: true, shouldDirty: true });
+    }
+  }, [deliveryCities, shippingCity, setValue]);
 
   const { submitOrder } = useOrderSubmission({
     cart,
@@ -154,6 +206,8 @@ export function useCheckout() {
     setLogoErrors,
     showShippingModal,
     setShowShippingModal,
+    deliveryCities,
+    loadingDeliveryCities,
     checkoutTotals,
     loadingCheckoutTotals,
     checkoutTotalsStale,

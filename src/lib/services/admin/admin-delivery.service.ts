@@ -1,5 +1,12 @@
 import { db } from "@white-shop/db";
 
+type DeliveryLocationRecord = {
+  id?: string;
+  city: string;
+  price: number;
+  country?: string;
+};
+
 class AdminDeliveryService {
   /**
    * Get delivery settings
@@ -15,9 +22,13 @@ class AdminDeliveryService {
       };
     }
 
-    const value = setting.value as { locations?: Array<{ id?: string; country: string; city: string; price: number }> };
+    const value = setting.value as { locations?: DeliveryLocationRecord[] };
     return {
-      locations: value.locations || [],
+      locations: (value.locations || []).map((location) => ({
+        id: location.id,
+        city: location.city,
+        price: location.price,
+      })),
     };
   }
 
@@ -34,13 +45,14 @@ class AdminDeliveryService {
       return 0;
     }
 
-    const value = setting.value as { locations?: Array<{ country: string; city: string; price: number }> };
+    const value = setting.value as { locations?: DeliveryLocationRecord[] };
     const locations = value.locations || [];
 
-    // Find matching location (case-insensitive)
+    // Backward compatibility: match city + country for legacy records that still include country.
     const location = locations.find(
       (loc) => 
         loc.city.toLowerCase().trim() === city.toLowerCase().trim() &&
+        !!loc.country &&
         loc.country.toLowerCase().trim() === country.toLowerCase().trim()
     );
 
@@ -62,7 +74,7 @@ class AdminDeliveryService {
   /**
    * Update delivery settings
    */
-  async updateDeliverySettings(data: { locations: Array<{ id?: string; country: string; city: string; price: number }> }) {
+  async updateDeliverySettings(data: { locations: Array<{ id?: string; city: string; price: number }> }) {
     if (!Array.isArray(data.locations)) {
       throw {
         status: 400,
@@ -74,12 +86,12 @@ class AdminDeliveryService {
 
     // Validate each location
     for (const location of data.locations) {
-      if (!location.country || !location.city) {
+      if (!location.city) {
         throw {
           status: 400,
           type: "https://api.shop.am/problems/validation-error",
           title: "Validation Error",
-          detail: "Each location must have country and city",
+          detail: "Each location must have city",
         };
       }
       if (typeof location.price !== 'number' || location.price < 0) {
@@ -94,7 +106,8 @@ class AdminDeliveryService {
 
     // Generate IDs for new locations
     const locationsWithIds = data.locations.map((location, index) => ({
-      ...location,
+      city: location.city.trim(),
+      price: location.price,
       id: location.id || `location-${Date.now()}-${index}`,
     }));
 
@@ -107,7 +120,7 @@ class AdminDeliveryService {
       create: {
         key: 'delivery-locations',
         value: { locations: locationsWithIds },
-        description: 'Delivery prices by country and city',
+        description: 'Delivery prices by city',
       },
     });
 
