@@ -3,6 +3,8 @@ import { toApiErrorResponse } from "@/lib/api/next-route-error";
 import { parseTechnicalSpecFiltersFromSearchParams } from "@/lib/services/products-technical-filters";
 import { getProductsFiltersCached } from "@/lib/cache/products-filters-redis";
 
+const PRODUCTS_FILTERS_API_CACHE_CONTROL = "public, max-age=60, stale-while-revalidate=180";
+
 export async function GET(req: NextRequest) {
   try {
     let searchParams: URLSearchParams;
@@ -54,7 +56,11 @@ export async function GET(req: NextRequest) {
       lang: filters.lang,
       technicalSpecs: filters.technicalSpecs,
     });
-    return NextResponse.json(result);
+    return NextResponse.json(result, {
+      headers: {
+        "Cache-Control": PRODUCTS_FILTERS_API_CACHE_CONTROL,
+      },
+    });
   } catch (error: unknown) {
     console.error("❌ [PRODUCTS FILTERS] Error:", error);
     return toApiErrorResponse(error, req.url || "");
