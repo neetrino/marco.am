@@ -293,27 +293,21 @@ export default function UsersPage() {
               </form>
             </Card>
 
-            <div className={`mb-4 flex items-center justify-between rounded-xl border px-4 py-3 transition-all ${
-              selectedIds.size > 0
-                ? 'border-amber-200/80 bg-amber-50/80'
-                : 'border-slate-200 bg-slate-50/70'
-            }`}>
-              <div className={`text-sm font-medium ${selectedIds.size > 0 ? 'text-amber-900' : 'text-slate-600'}`}>
-                {t('admin.users.selectedUsers').replace('{count}', selectedIds.size.toString())}
+            {selectedIds.size > 0 ? (
+              <div className="mb-4 flex items-center justify-between rounded-xl border border-amber-200/80 bg-amber-50/80 px-4 py-3 transition-all">
+                <div className="text-sm font-medium text-amber-900">
+                  {t('admin.users.selectedUsers').replace('{count}', selectedIds.size.toString())}
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={handleBulkDelete}
+                  disabled={bulkDeleting}
+                  className="border-amber-300 bg-white text-amber-900 hover:bg-amber-100"
+                >
+                  {bulkDeleting ? t('admin.users.deleting') : t('admin.users.deleteSelected')}
+                </Button>
               </div>
-              <Button
-                variant="outline"
-                onClick={handleBulkDelete}
-                disabled={selectedIds.size === 0 || bulkDeleting}
-                className={`${
-                  selectedIds.size > 0
-                    ? 'border-amber-300 bg-white text-amber-900 hover:bg-amber-100'
-                    : 'border-slate-200 bg-white text-slate-400'
-                }`}
-              >
-                {bulkDeleting ? t('admin.users.deleting') : t('admin.users.deleteSelected')}
-              </Button>
-            </div>
+            ) : null}
 
             {/* Users Table */}
             <Card className="admin-table-card overflow-hidden rounded-2xl border-slate-200/80 shadow-md shadow-slate-200/60">

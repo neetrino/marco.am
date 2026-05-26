@@ -3,6 +3,10 @@ import { logger } from "../utils/logger";
 import { extractMediaUrl } from "../utils/extractMediaUrl";
 import { promoCodesService } from "./promo-codes.service";
 import { resolveProductClass } from "../constants/product-class";
+import {
+  formatCartVariantOptionFromDb,
+  type CartVariantOption,
+} from "../cart/format-cart-variant-options";
 
 class CartService {
   /**
@@ -42,6 +46,20 @@ class CartService {
                     translations: true,
                   },
                 },
+                options: {
+                  include: {
+                    attributeValue: {
+                      include: {
+                        attribute: {
+                          include: {
+                            translations: true,
+                          },
+                        },
+                        translations: true,
+                      },
+                    },
+                  },
+                },
               },
             },
             product: {
@@ -72,6 +90,20 @@ class CartService {
                   product: {
                     include: {
                       translations: true,
+                    },
+                  },
+                  options: {
+                    include: {
+                      attributeValue: {
+                        include: {
+                          attribute: {
+                            include: {
+                              translations: true,
+                            },
+                          },
+                          translations: true,
+                        },
+                      },
                     },
                   },
                 },
@@ -110,6 +142,18 @@ class CartService {
           price: number;
           compareAtPrice?: number | null;
           productClass?: string | null;
+          options?: Array<{
+            attributeKey: string | null;
+            value: string | null;
+            attributeValue: {
+              value: string;
+              translations: Array<{ locale: string; label: string }>;
+              attribute: {
+                key: string;
+                translations: Array<{ locale: string; name: string }>;
+              };
+            } | null;
+          }>;
         };
       }) => {
         const product = item.product;
@@ -155,6 +199,9 @@ class CartService {
             id: variant?.id ?? item.variantId,
             sku: variant?.sku ?? "",
             stock: variant?.stock ?? 0,
+            options: (variant?.options ?? [])
+              .map((option) => formatCartVariantOptionFromDb(option, locale))
+              .filter((option): option is CartVariantOption => option !== null),
             product: {
               id: product?.id ?? "",
               title: translation?.title ?? "",

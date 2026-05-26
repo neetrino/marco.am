@@ -22,6 +22,8 @@ export default function CheckoutPage() {
     setLogoErrors,
     showShippingModal,
     setShowShippingModal,
+    deliveryCities,
+    loadingDeliveryCities,
     loadingCheckoutTotals,
     checkoutTotalsStale,
     register,
@@ -86,6 +88,8 @@ export default function CheckoutPage() {
             setLogoErrors={setLogoErrors}
             error={error}
             setError={setError}
+            deliveryCities={deliveryCities}
+            loadingDeliveryCities={loadingDeliveryCities}
           />
 
           {/* Order Summary */}
@@ -125,6 +129,8 @@ export default function CheckoutPage() {
         currency={currency}
         loadingCheckoutTotals={loadingCheckoutTotals}
         checkoutTotalsStale={checkoutTotalsStale}
+        deliveryCities={deliveryCities}
+        loadingDeliveryCities={loadingDeliveryCities}
         onSubmit={onSubmit}
       />
     </div>

@@ -6,6 +6,7 @@ import type { CheckoutTotalsResponse } from '../../../lib/types/checkout-totals'
 import type { CheckoutFormData, Cart, CartItem } from '../types';
 import type { CheckoutFormFieldName } from '../utils/checkout-api-errors';
 import { parseCheckoutSubmissionError } from '../utils/checkout-api-errors';
+import { saveCheckoutSuccessSnapshotFromCheckout } from '../success/checkout-success-snapshot';
 
 interface UseOrderSubmissionProps {
   cart: Cart | null;
@@ -103,7 +104,18 @@ export function useOrderSubmission({
         return;
       }
 
-      router.push(`/orders/${response.order.number}`);
+      saveCheckoutSuccessSnapshotFromCheckout(
+        cart,
+        data,
+        response.order,
+        {
+          subtotal: checkoutTotals?.subtotal ?? cart.totals.subtotal,
+          shippingAmount: checkoutTotals?.shippingAmount ?? cart.totals.shipping,
+          discount: cart.totals.discount,
+        }
+      );
+
+      router.push(`/checkout/success?order=${encodeURIComponent(response.order.number)}`);
     } catch (err: unknown) {
       const parsedError = parseCheckoutSubmissionError(err, t);
       parsedError.fieldErrors.forEach((fieldError) => {

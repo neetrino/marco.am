@@ -11,6 +11,7 @@ interface OrdersFiltersProps {
   statusFilter: string;
   paymentStatusFilter: string;
   searchQuery: string;
+  totalOrders?: number;
   updateMessage: { type: 'success' | 'error'; text: string } | null;
   setStatusFilter: (value: string) => void;
   setPaymentStatusFilter: (value: string) => void;
@@ -24,6 +25,7 @@ export function OrdersFilters({
   statusFilter,
   paymentStatusFilter,
   searchQuery,
+  totalOrders = 0,
   updateMessage,
   setStatusFilter,
   setPaymentStatusFilter,
@@ -124,47 +126,53 @@ export function OrdersFilters({
 
   return (
     <Card className="admin-card mb-1 border-slate-200/80 bg-white/95 shadow-[0_10px_30px_rgba(2,6,23,0.06)] backdrop-blur">
-      <div className="flex flex-wrap items-center gap-3">
-        <div
-          className="relative max-w-full overflow-x-auto rounded-xl border border-slate-200/80 bg-slate-100/70 p-1"
-          role="group"
-          aria-label={t('admin.orders.orderStatusFilters')}
-        >
+      <div className="space-y-3">
+        <div className="flex flex-wrap items-start justify-between gap-3">
           <div
-            className={`absolute top-1 h-[calc(100%-0.5rem)] rounded-lg border border-yellow-400/80 bg-gradient-to-r from-amber-300 to-yellow-400 shadow-[0_8px_20px_rgba(251,191,36,0.35)] transition-[left,width,opacity,transform,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[left,width,transform] ${
-              indicatorStyle.ready ? 'opacity-100' : 'opacity-0'
-            } ${isIndicatorMoving ? 'scale-[1.03] -translate-y-[1px] shadow-[0_10px_24px_rgba(251,191,36,0.45)]' : 'scale-100 translate-y-0'}`}
-            style={{
-              left: `${indicatorStyle.left + 2}px`,
-              width: `${Math.max(indicatorStyle.width - 2, 0)}px`,
-            }}
-            aria-hidden="true"
-          />
-          <div className="relative z-10 inline-flex min-w-max items-center gap-2">
-            {statusValues.map((value, index) => {
-              const isActive = statusFilter === value;
-              const label = statusLabels[index];
+            className="relative max-w-full overflow-x-auto rounded-xl border border-slate-200/80 bg-slate-100/70 p-1"
+            role="group"
+            aria-label={t('admin.orders.orderStatusFilters')}
+          >
+            <div
+              className={`absolute top-1 h-[calc(100%-0.5rem)] rounded-lg border border-yellow-400/80 bg-gradient-to-r from-amber-300 to-yellow-400 shadow-[0_8px_20px_rgba(251,191,36,0.35)] transition-[left,width,opacity,transform,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-[left,width,transform] ${
+                indicatorStyle.ready ? 'opacity-100' : 'opacity-0'
+              } ${isIndicatorMoving ? 'scale-[1.03] -translate-y-[1px] shadow-[0_10px_24px_rgba(251,191,36,0.45)]' : 'scale-100 translate-y-0'}`}
+              style={{
+                left: `${indicatorStyle.left + 2}px`,
+                width: `${Math.max(indicatorStyle.width - 2, 0)}px`,
+              }}
+              aria-hidden="true"
+            />
+            <div className="relative z-10 inline-flex min-w-max items-center gap-2">
+              {statusValues.map((value, index) => {
+                const isActive = statusFilter === value;
+                const label = statusLabels[index];
 
-              return (
-                <button
-                  key={value || 'all'}
-                  ref={(element) => {
-                    buttonRefs.current[index] = element;
-                  }}
-                  type="button"
-                  onClick={() => handleStatusChange(value)}
-                  className={`inline-flex h-10 shrink-0 whitespace-nowrap items-center justify-center rounded-lg border px-4 text-center text-sm font-medium leading-5 transition-colors ${
-                    isActive
-                      ? 'border-transparent bg-transparent text-marco-black'
-                      : 'border-transparent bg-white text-gray-700 hover:border-slate-200 hover:bg-slate-50'
-                  }`}
-                >
-                  {label}
-                </button>
-              );
-            })}
+                return (
+                  <button
+                    key={value || 'all'}
+                    ref={(element) => {
+                      buttonRefs.current[index] = element;
+                    }}
+                    type="button"
+                    onClick={() => handleStatusChange(value)}
+                    className={`inline-flex h-10 shrink-0 whitespace-nowrap items-center justify-center rounded-lg border px-4 text-center text-sm font-medium leading-5 transition-colors ${
+                      isActive
+                        ? 'border-transparent bg-transparent text-marco-black'
+                        : 'border-transparent bg-white text-gray-700 hover:border-slate-200 hover:bg-slate-50'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <div className="inline-flex h-10 items-center rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-700 shadow-sm">
+            {t('admin.orders.totalOrdersCount').replace('{count}', totalOrders.toLocaleString())}
           </div>
         </div>
+        <div className="flex flex-wrap items-center gap-3">
         <select
           className="admin-field h-10 min-w-[210px] border-slate-300 bg-white shadow-sm"
           value={paymentStatusFilter}
@@ -207,6 +215,7 @@ export function OrdersFilters({
             {updateMessage.text}
           </div>
         )}
+        </div>
       </div>
     </Card>
   );

@@ -358,10 +358,16 @@ class OrdersService {
 
             const quantity = Number(item.quantity);
             const variantId = item.variantId;
-            const updated = await tx.$executeRaw(
-              Prisma.sql`UPDATE product_variants SET stock = stock - ${quantity} WHERE id = ${variantId} AND stock >= ${quantity}`
-            );
-            if (updated === 0) {
+            const stockUpdate = await tx.productVariant.updateMany({
+              where: {
+                id: variantId,
+                stock: { gte: quantity },
+              },
+              data: {
+                stock: { decrement: quantity },
+              },
+            });
+            if (stockUpdate.count === 0) {
               const variant = await tx.productVariant.findUnique({
                 where: { id: variantId },
                 select: { sku: true, stock: true },
@@ -649,6 +655,7 @@ class OrdersService {
       status: order.status,
       paymentStatus: order.paymentStatus,
       fulfillmentStatus: order.fulfillmentStatus,
+      paymentMethod: order.payments[0]?.method ?? order.payments[0]?.provider ?? 'cash',
       links: buildCustomerOrderLinks(order.number),
       items: order.items.map((item: OrderItemWithVariant) => {
         const variantOptions = item.variant?.options?.map((opt) => {

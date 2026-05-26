@@ -405,33 +405,25 @@ export default function BrandsPage() {
           </div>
         </Card>
 
-        <div className="mb-1 min-h-[72px]">
-          <Card
-            className={`h-full p-4 transition-all duration-200 ${
-              selectedBrandIds.length > 0
-                ? 'border border-amber-200/80 bg-amber-50/80 shadow-sm'
-                : 'border border-slate-200 bg-slate-50/70 shadow-sm'
-            }`}
-          >
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className={`text-sm font-medium ${selectedBrandIds.length > 0 ? 'text-amber-900' : 'text-slate-600'}`}>
-                {t('admin.brands.selectedBrandsCount').replace('{count}', String(selectedBrandIds.length))}
+        {selectedBrandIds.length > 0 ? (
+          <div className="mb-1">
+            <Card className="h-full border border-amber-200/80 bg-amber-50/80 p-4 shadow-sm transition-all duration-200">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="text-sm font-medium text-amber-900">
+                  {t('admin.brands.selectedBrandsCount').replace('{count}', String(selectedBrandIds.length))}
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={handleBulkDeleteBrands}
+                  disabled={deletingBulk}
+                  className="border-amber-300 bg-white text-amber-900 hover:bg-amber-100"
+                >
+                  {deletingBulk ? t('admin.common.loading') : t('admin.brands.deleteSelected')}
+                </Button>
               </div>
-              <Button
-                variant="outline"
-                onClick={handleBulkDeleteBrands}
-                disabled={deletingBulk || selectedBrandIds.length === 0}
-                className={`${
-                  selectedBrandIds.length > 0
-                    ? 'border-amber-300 bg-white text-amber-900 hover:bg-amber-100'
-                    : 'border-slate-200 bg-white text-slate-400'
-                }`}
-              >
-                {deletingBulk ? t('admin.common.loading') : t('admin.brands.deleteSelected')}
-              </Button>
-            </div>
-          </Card>
-        </div>
+            </Card>
+          </div>
+        ) : null}
 
         <Card className="admin-card border-slate-200/80 bg-white shadow-[0_10px_24px_rgba(15,23,42,0.07)]">
           {loading ? (

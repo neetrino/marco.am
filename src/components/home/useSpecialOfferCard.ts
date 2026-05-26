@@ -35,6 +35,8 @@ export function useSpecialOfferCard(
     inStock: product.inStock,
     defaultVariantId: product.defaultVariantId ?? undefined,
     price: product.price,
+    requiresAttributeSelection: product.requiresAttributeSelection,
+    colors: product.colors,
   });
   const [imageError, setImageError] = useState(false);
 

@@ -28,6 +28,7 @@ interface Product {
   discountPercent?: number | null;
   isSpecialPrice?: boolean;
   colors?: Array<{ value: string; imageUrl?: string | null; colors?: string[] | null }>;
+  requiresAttributeSelection?: boolean | null;
 }
 
 type ViewMode = 'list' | 'grid-2' | 'grid-3';
@@ -54,6 +55,8 @@ export function ProductCard({ product, viewMode = 'grid-3', wishlistPage = false
     inStock: product.inStock,
     defaultVariantId: product.defaultVariantId ?? undefined,
     price: product.price,
+    requiresAttributeSelection: product.requiresAttributeSelection,
+    colors: product.colors,
   });
   const [imageError, setImageError] = useState(false);
 

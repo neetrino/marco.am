@@ -1,3 +1,5 @@
+import type { CartVariantOption } from '../../lib/cart/format-cart-variant-options';
+
 /**
  * Cart item interface
  */
@@ -7,6 +9,7 @@ export interface CartItem {
     id: string;
     sku: string;
     stock?: number;
+    options?: CartVariantOption[];
     product: {
       id: string;
       title: string;

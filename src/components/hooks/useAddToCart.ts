@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { apiClient } from '../../lib/api-client';
 import { useAuth } from '../../lib/auth/AuthContext';
 import { useTranslation } from '../../lib/i18n-client';
+import { resolveRequiresAttributeSelection } from '@/lib/product-requires-attribute-selection';
 
 interface ProductDetails {
   id: string;
@@ -26,6 +27,9 @@ interface UseAddToCartProps {
   defaultVariantId?: string | null;
   /** Unit price (AMD) — stored in guest cart so Header doesn't need extra API calls. */
   price?: number;
+  /** When true (or inferred from multiple colors), cart click opens PDP for attribute selection. */
+  requiresAttributeSelection?: boolean | null;
+  colors?: Array<{ value: string }> | null;
 }
 
 /**
@@ -33,14 +37,31 @@ interface UseAddToCartProps {
  * @param props - Product information
  * @returns Object with loading state and addToCart function
  */
-export function useAddToCart({ productId, productSlug, inStock, defaultVariantId, price: propPrice }: UseAddToCartProps) {
+export function useAddToCart({
+  productId,
+  productSlug,
+  inStock,
+  defaultVariantId,
+  price: propPrice,
+  requiresAttributeSelection,
+  colors,
+}: UseAddToCartProps) {
   const router = useRouter();
   const { isLoggedIn } = useAuth();
   const { t } = useTranslation();
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const needsAttributeSelection = resolveRequiresAttributeSelection({
+    requiresAttributeSelection,
+    colors,
+  });
 
   const addToCart = async () => {
     if (!inStock) {
+      return;
+    }
+
+    if (needsAttributeSelection) {
+      router.push(`/products/${encodeURIComponent(productSlug.trim())}`);
       return;
     }
 

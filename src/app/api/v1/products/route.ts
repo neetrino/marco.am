@@ -3,12 +3,18 @@ import { logger } from "@/lib/utils/logger";
 import { parseProductListFiltersFromSearchParams } from "@/lib/cache/parse-products-list-filters";
 import { getProductsListingCached } from "@/lib/cache/products-listing-redis";
 
+const PRODUCTS_API_CACHE_CONTROL = "public, max-age=30, stale-while-revalidate=120";
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const filters = parseProductListFiltersFromSearchParams(searchParams);
     const result = await getProductsListingCached(filters);
-    return NextResponse.json(result);
+    return NextResponse.json(result, {
+      headers: {
+        "Cache-Control": PRODUCTS_API_CACHE_CONTROL,
+      },
+    });
   } catch (error: unknown) {
     logger.error("Products API error", { error });
     const err = error as { type?: string; title?: string; status?: number; detail?: string; message?: string };

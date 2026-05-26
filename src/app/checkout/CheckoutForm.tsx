@@ -19,6 +19,8 @@ interface CheckoutFormProps {
   setLogoErrors: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
   error: string | null;
   setError: React.Dispatch<React.SetStateAction<string | null>>;
+  deliveryCities: string[];
+  loadingDeliveryCities: boolean;
 }
 
 export function CheckoutForm({
@@ -32,6 +34,8 @@ export function CheckoutForm({
   setLogoErrors,
   error,
   setError,
+  deliveryCities,
+  loadingDeliveryCities,
 }: CheckoutFormProps) {
   const { t } = useTranslation();
 
@@ -116,10 +120,10 @@ export function CheckoutForm({
             />
           </div>
           <div>
-            <Input
-              label={t('checkout.form.city')}
-              type="text"
-              placeholder={t('checkout.placeholders.city')}
+            <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-slate-300">
+              {t('checkout.form.city')}
+            </label>
+            <select
               {...register('shippingCity', {
                 onChange: () => {
                   if (error) {
@@ -127,9 +131,31 @@ export function CheckoutForm({
                   }
                 },
               })}
-              error={errors.shippingCity?.message}
-              disabled={isSubmitting}
-            />
+              disabled={isSubmitting || loadingDeliveryCities}
+              className={`w-full rounded-lg border bg-white px-3 py-2 text-sm text-gray-900 focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/20 disabled:cursor-not-allowed disabled:bg-gray-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-200 dark:focus:ring-slate-200/20 dark:disabled:bg-slate-800 ${
+                errors.shippingCity?.message ? 'border-error focus:ring-error' : 'border-gray-300'
+              }`}
+            >
+              <option value="">
+                {loadingDeliveryCities
+                  ? t('checkout.shipping.loading')
+                  : t('checkout.shipping.selectCity')}
+              </option>
+              {!loadingDeliveryCities &&
+                deliveryCities.map((city) => (
+                  <option key={city} value={city}>
+                    {city}
+                  </option>
+                ))}
+              {!loadingDeliveryCities && deliveryCities.length === 0 ? (
+                <option value="" disabled>
+                  {t('checkout.shipping.noCitiesAvailable')}
+                </option>
+              ) : null}
+            </select>
+            {errors.shippingCity?.message ? (
+              <p className="mt-1 text-sm text-error">{errors.shippingCity.message}</p>
+            ) : null}
           </div>
         </div>
       </Card>

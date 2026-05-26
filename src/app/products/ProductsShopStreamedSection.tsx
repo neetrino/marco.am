@@ -36,6 +36,7 @@ type ShopGridProduct = {
   brand: ProductListingBrand | null;
   defaultVariantId: string | null;
   colors: Array<{ value: string; imageUrl?: string | null; colors?: string[] | null }>;
+  requiresAttributeSelection?: boolean | null;
   labels: ProductLabel[];
 };
 
@@ -52,6 +53,7 @@ function normalizeShopGridProduct(p: unknown): ShopGridProduct {
     brand?: ProductListingBrand | null;
     defaultVariantId?: string | null;
     colors?: ShopGridProduct['colors'];
+    requiresAttributeSelection?: boolean | null;
     labels?: ProductLabel[];
   };
   return {
@@ -65,6 +67,7 @@ function normalizeShopGridProduct(p: unknown): ShopGridProduct {
     brand: row.brand ?? null,
     defaultVariantId: row.defaultVariantId ?? null,
     colors: row.colors ?? [],
+    requiresAttributeSelection: row.requiresAttributeSelection ?? null,
     labels: row.labels ?? [],
   };
 }

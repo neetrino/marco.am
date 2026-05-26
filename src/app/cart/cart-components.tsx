@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { ProductPdpPrefetchLink } from '../../components/ProductPdpPrefetchLink';
 import Image from 'next/image';
@@ -7,6 +7,10 @@ import { coerceCurrencyCode, formatMoneyInCurrency, type CurrencyCode } from '..
 import type { Cart, CartItem } from './types';
 import { cartLineSubtotal } from './line-subtotal';
 import { ProductImagePlaceholder } from '../../components/ProductImagePlaceholder';
+import {
+  dedupeCartVariantOptions,
+  shouldShowCartSku,
+} from '../../lib/cart/format-cart-variant-options';
 
 /**
  * Cart item row component
@@ -32,9 +36,19 @@ export function CartItemRow({
   t,
 }: CartItemRowProps) {
   const currencyCode = currency as CurrencyCode;
+  const variantOptions = dedupeCartVariantOptions(
+    item.variant.options ?? [],
+    item.variant.product.title
+  );
+  const showSku = shouldShowCartSku(
+    item.variant.sku,
+    item.variant.product.title,
+    variantOptions
+  );
+
   return (
     <div
-      className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 px-4 sm:px-6 py-6 hover:bg-gray-50 transition-colors relative"
+      className="grid grid-cols-1 md:grid-cols-12 md:items-start gap-4 md:gap-6 px-4 sm:px-6 py-6 hover:bg-gray-50 transition-colors relative"
     >
       <button
         onClick={() => onRemove(item.id)}
@@ -77,14 +91,19 @@ export function CartItemRow({
           >
             {item.variant.product.title}
           </ProductPdpPrefetchLink>
-          {item.variant.sku && (
+          {variantOptions.map((option) => (
+            <p key={option.attributeKey} className="text-xs text-gray-500 mt-1">
+              {option.attributeName}: {option.value}
+            </p>
+          ))}
+          {showSku && (
             <p className="text-xs text-gray-500 mt-1">{t('common.messages.sku')}: {item.variant.sku}</p>
           )}
         </div>
       </div>
 
       {/* Quantity */}
-      <div className="md:col-span-2 flex flex-col items-start md:items-center justify-center md:-ml-[20px]">
+      <div className="md:col-span-2 flex flex-col items-start md:-ml-[20px]">
         <p className="mb-2 text-xs font-semibold tracking-wide text-gray-500 uppercase md:hidden">
           {t('common.messages.quantity')}
         </p>
@@ -127,11 +146,11 @@ export function CartItemRow({
       </div>
 
       {/* Subtotal */}
-      <div className="md:col-span-3 flex flex-col md:flex-row md:items-center md:justify-start md:ml-4">
+      <div className="md:col-span-3 flex w-full flex-col items-start md:items-center">
         <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 md:hidden">
           {t('common.messages.subtotal')}
         </p>
-        <div className="mt-1 flex flex-col gap-1 md:mt-0 md:pl-[20px]">
+        <div className="mt-1 flex flex-col items-start gap-1 md:mt-0 md:items-center">
           <span className="text-lg font-bold text-marco-black">
             {formatMoneyInCurrency(
               cartLineSubtotal(item.price, item.quantity),
@@ -237,7 +256,7 @@ export function OrderSummary({ cart, currency, t }: OrderSummaryProps) {
           <div className="flex justify-between text-gray-600">
             <span>{t('common.cart.shipping')}</span>
             <span className="ml-auto min-w-[120px] text-right">
-              {t('common.cart.free')}
+              {t('common.cart.calculated')}
             </span>
           </div>
           <div className="border-t border-gray-200 pt-4">

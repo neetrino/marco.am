@@ -25,6 +25,8 @@ interface CheckoutModalsProps {
   currency: 'USD' | 'AMD' | 'EUR' | 'RUB' | 'GEL';
   loadingCheckoutTotals: boolean;
   checkoutTotalsStale?: boolean;
+  deliveryCities: string[];
+  loadingDeliveryCities: boolean;
   onSubmit: (data: CheckoutFormData) => void;
 }
 
@@ -43,6 +45,8 @@ export function CheckoutModals({
   currency,
   loadingCheckoutTotals,
   checkoutTotalsStale,
+  deliveryCities,
+  loadingDeliveryCities,
   onSubmit,
 }: CheckoutModalsProps) {
   return (
@@ -62,6 +66,8 @@ export function CheckoutModals({
         shippingCity={shippingCity}
         loadingCheckoutTotals={loadingCheckoutTotals}
         checkoutTotalsStale={checkoutTotalsStale}
+        deliveryCities={deliveryCities}
+        loadingDeliveryCities={loadingDeliveryCities}
         onSubmit={onSubmit}
       />
 

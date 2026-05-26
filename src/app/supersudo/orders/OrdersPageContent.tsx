@@ -64,6 +64,7 @@ export function OrdersPageContent() {
           statusFilter={statusFilter}
           paymentStatusFilter={paymentStatusFilter}
           searchQuery={searchQuery}
+          totalOrders={meta?.total}
           updateMessage={updateMessage}
           setStatusFilter={setStatusFilter}
           setPaymentStatusFilter={setPaymentStatusFilter}
@@ -73,11 +74,13 @@ export function OrdersPageContent() {
           searchParams={searchParams}
         />
 
-        <BulkSelectionControls
-          selectedCount={selectedIds.size}
-          onBulkDelete={handleBulkDelete}
-          bulkDeleting={bulkDeleting}
-        />
+        {selectedIds.size > 0 ? (
+          <BulkSelectionControls
+            selectedCount={selectedIds.size}
+            onBulkDelete={handleBulkDelete}
+            bulkDeleting={bulkDeleting}
+          />
+        ) : null}
 
         <OrdersTable
           orders={orders}

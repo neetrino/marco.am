@@ -25,6 +25,7 @@ export interface SpecialOfferProduct {
     imageUrl?: string | null;
     colors?: string[] | null;
   }>;
+  requiresAttributeSelection?: boolean | null;
   /** When true, card shows image + neutral skeletons for text/price until full row arrives. */
   detailsPending?: boolean;
   /**
