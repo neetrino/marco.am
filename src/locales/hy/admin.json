@@ -666,6 +666,7 @@
     "searchPlaceholder": "Որոնել ըստ պատվերի համարի, հաճախորդի, էլ. փոստի, հեռախոսի...",
     "allStatuses": "Բոլոր կարգավիճակները",
     "orderStatusFilters": "Ֆիլտրել պատվերները ըստ կարգավիճակի",
+    "totalOrdersCount": "Ընդհանուր պատվերներ՝ {count}",
     "statusNew": "Նոր",
     "statusInProcess": "Ընթացքում",
     "statusDelivered": "Առաքված",

@@ -64,6 +64,7 @@ export function OrdersPageContent() {
           statusFilter={statusFilter}
           paymentStatusFilter={paymentStatusFilter}
           searchQuery={searchQuery}
+          totalOrders={meta?.total}
           updateMessage={updateMessage}
           setStatusFilter={setStatusFilter}
           setPaymentStatusFilter={setPaymentStatusFilter}

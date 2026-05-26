@@ -665,6 +665,7 @@
     "searchPlaceholder": "Search by order number, customer, email, phone...",
     "allStatuses": "All Statuses",
     "orderStatusFilters": "Filter orders by status",
+    "totalOrdersCount": "Total orders: {count}",
     "statusNew": "New",
     "statusInProcess": "In process",
     "statusDelivered": "Delivered",

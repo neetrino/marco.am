@@ -660,6 +660,7 @@
     "searchPlaceholder": "Поиск по номеру заказа, клиенту, email, телефону...",
     "allStatuses": "Все статусы",
     "orderStatusFilters": "Фильтр заказов по статусу",
+    "totalOrdersCount": "Всего заказов: {count}",
     "statusNew": "Новый",
     "statusInProcess": "В обработке",
     "statusDelivered": "Доставлен",
