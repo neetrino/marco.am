@@ -27,6 +27,7 @@ interface UseProductFormHandlersProps {
     mainProductImage: string;
     variants: Variant[];
     labels: any[];
+    warrantyYears: number | null;
   };
   setFormData: (updater: (prev: any) => any) => void;
   setLoading: (loading: boolean) => void;
