@@ -60,6 +60,16 @@ const getColorValue = (colorName: string): string => {
 /** Canonical variant picker keys for compatibility and legacy fallbacks. */
 export const VARIANT_PICKER_ATTRIBUTE_KEYS = new Set<string>(['color', 'size']);
 
+const getDistinctAttributeOptionCount = (attrGroups: AttributeGroupValue[]): number => {
+  const distinctValues = new Set<string>();
+  attrGroups.forEach((group) => {
+    const normalizedFallbackValue = group.value.toLowerCase().trim();
+    const uniqueValueKey = group.valueId ?? normalizedFallbackValue;
+    distinctValues.add(uniqueValueKey);
+  });
+  return distinctValues.size;
+};
+
 export function ProductAttributesSelector({
   product,
   attributeGroups,
@@ -76,7 +86,9 @@ export function ProductAttributesSelector({
   getOptionValue,
 }: ProductAttributesSelectorProps) {
   const attributeGroupsEntries = Array.from(attributeGroups.entries());
-  const variantAttributeEntries = attributeGroupsEntries;
+  const variantAttributeEntries = attributeGroupsEntries.filter(([, attrGroups]) => {
+    return getDistinctAttributeOptionCount(attrGroups) > 1;
+  });
   logger.devLog('🎨 [PRODUCT ATTRIBUTES SELECTOR] attributeGroups entries:', attributeGroupsEntries.length);
   logger.devLog('🎨 [PRODUCT ATTRIBUTES SELECTOR] attributeGroups keys:', Array.from(attributeGroups.keys()));
   logger.devLog('🎨 [PRODUCT ATTRIBUTES SELECTOR] product.productAttributes:', product?.productAttributes);

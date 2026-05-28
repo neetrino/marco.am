@@ -2,6 +2,7 @@ import { apiClient } from '@/lib/api-client';
 import type { LanguageCode } from '@/lib/language';
 import type { ProductListingBrand } from '@/lib/types/product-listing-brand';
 import type { ProductWarrantyYears } from '@/lib/constants/product-warranty';
+import { logger } from '@/lib/utils/logger';
 
 export type RelatedProductsApiResponse = {
   data: RelatedProductRow[];
@@ -34,6 +35,12 @@ export type RelatedProductRow = {
   warrantyBadge?: { years: ProductWarrantyYears } | null;
 };
 
+const RELATED_PRODUCTS_TIMEOUT_MS = 12_000;
+const EMPTY_RELATED_PRODUCTS_RESPONSE: RelatedProductsApiResponse = {
+  data: [],
+  meta: { total: 0, limit: 0 },
+};
+
 function encodeProductSlugForPath(productSlug: string): string {
   const trimmed = productSlug.trim();
   const normalized = (() => {
@@ -46,13 +53,38 @@ function encodeProductSlugForPath(productSlug: string): string {
   return encodeURIComponent(normalized);
 }
 
+function isRequestTimeoutError(error: unknown): boolean {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  const message = error.message.toLowerCase();
+  return message.includes('request timeout') || message.includes(' did not respond within ');
+}
+
 export async function fetchRelatedProducts(
   productSlug: string,
   lang: LanguageCode,
   limit = 10,
 ): Promise<RelatedProductsApiResponse> {
   const encodedSlug = encodeProductSlugForPath(productSlug);
-  return apiClient.get<RelatedProductsApiResponse>(`/api/v1/products/${encodedSlug}/related`, {
-    params: { limit: String(limit), lang },
-  });
+  try {
+    return await apiClient.get<RelatedProductsApiResponse>(`/api/v1/products/${encodedSlug}/related`, {
+      params: { limit: String(limit), lang },
+      timeoutMs: RELATED_PRODUCTS_TIMEOUT_MS,
+      suppressNetworkErrorLogging: true,
+    });
+  } catch (error: unknown) {
+    if (isRequestTimeoutError(error)) {
+      logger.devWarn('⏱️ [RELATED PRODUCTS] Request timed out, falling back to empty state', {
+        productSlug,
+        limit,
+        lang,
+        timeoutMs: RELATED_PRODUCTS_TIMEOUT_MS,
+      });
+      return EMPTY_RELATED_PRODUCTS_RESPONSE;
+    }
+
+    throw error;
+  }
 }

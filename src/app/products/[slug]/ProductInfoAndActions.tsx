@@ -106,14 +106,17 @@ export function ProductInfoAndActions({
   const descriptionWithoutDuplicateSpecs =
     stripDuplicateSpecificationDescriptionHtml(normalizedDescription);
   const sanitizedDescription = sanitizeHtml(descriptionWithoutDuplicateSpecs);
+  const hasMultiValueAttributeGroup = Array.from(attributeGroups.values()).some(
+    (values) => values.length > 1,
+  );
   const hasDescription = sanitizedDescription
     .replace(/<[^>]*>/g, '')
     .replace(/&nbsp;/gi, ' ')
     .trim().length > 0;
   const hasAttributeSelectors =
-    attributeGroups.size > 0 ||
-    colorGroups.length > 0 ||
-    (!product?.productAttributes && sizeGroups.length > 0);
+    hasMultiValueAttributeGroup ||
+    colorGroups.length > 1 ||
+    (!product?.productAttributes && sizeGroups.length > 1);
 
   return (
     <div className="flex flex-col h-full">
