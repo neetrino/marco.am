@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useLayoutEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import type { LanguageCode } from '../lib/language';
 import { useTranslation } from '../lib/i18n-client';
@@ -29,8 +29,10 @@ type HeaderProps = {
 };
 
 export function Header({ initialLanguage }: HeaderProps) {
-  const pathname = usePathname();
-  const isReelsWatchRoute = pathname?.startsWith('/reels/watch') ?? false;
+  const pathname = usePathname() ?? '';
+  const [isHydrated, setIsHydrated] = useState(false);
+  const stablePathname = isHydrated ? pathname : '';
+  const isReelsWatchRoute = stablePathname.startsWith('/reels/watch');
   const data = useHeaderData();
   const layout = useHeaderLayoutMetrics();
   const { t } = useTranslation();
@@ -60,6 +62,10 @@ export function Header({ initialLanguage }: HeaderProps) {
   const isAutoHidden = useHeaderRow2AutoHide({
     isBlocked: isRow2Blocked,
   });
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   useLayoutEffect(() => {
     const node = desktopTopRowContentRef.current;
@@ -118,7 +124,7 @@ export function Header({ initialLanguage }: HeaderProps) {
     isRow2Blocked ? undefined : row2HeightPx > 0 ? `${row2MaxHeightPx}px` : undefined;
   const row2TranslateY = isRow2Blocked ? '0px' : `-${row2HiddenPx}px`;
 
-  if (pathname?.startsWith('/supersudo')) {
+  if (stablePathname.startsWith('/supersudo')) {
     return null;
   }
 

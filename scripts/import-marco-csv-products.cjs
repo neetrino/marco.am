@@ -33,6 +33,16 @@ const CONCURRENCY = Math.max(1, Number.parseInt(process.env.IMPORT_CONCURRENCY |
 const UPDATE_EXISTING = process.env.IMPORT_UPDATE_EXISTING === "1";
 const R2_PUBLIC_URL = (process.env.R2_PUBLIC_URL || "").trim().replace(/\/$/, "");
 const R2_BUCKET_NAME = process.env.R2_BUCKET_NAME;
+const IMAGE_FETCH_TIMEOUT_MS = Math.max(
+  5000,
+  Number.parseInt(process.env.IMPORT_IMAGE_TIMEOUT_MS || "45000", 10)
+);
+const ROW_TIMEOUT_MS = Math.max(
+  30000,
+  Number.parseInt(process.env.IMPORT_ROW_TIMEOUT_MS || "180000", 10)
+);
+const SKIP_R2_UPLOAD = process.env.IMPORT_SKIP_R2 === "1";
+const ALLOW_NO_PRICE = process.env.IMPORT_ALLOW_NO_PRICE === "1";
 const r2 =
   process.env.R2_ACCOUNT_ID &&
   process.env.R2_ACCESS_KEY_ID &&
@@ -140,6 +150,19 @@ function parseInteger(value) {
   return parsed === null ? 0 : Math.max(0, Math.trunc(parsed));
 }
 
+function inferProductClass(value) {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (!normalized) return "retail";
+  if (
+    normalized.includes("մեծածախ") ||
+    normalized.includes("wholesale") ||
+    normalized.includes("опт")
+  ) {
+    return "wholesale";
+  }
+  return "retail";
+}
+
 function parseImages(value) {
   if (!value) return [];
   const seen = new Set();
@@ -221,7 +244,12 @@ async function migrateImageToR2(sourceUrl, rowId, imageIndex) {
   if (!isR2Configured()) return sourceUrl;
   if (isR2Url(sourceUrl)) return sourceUrl;
 
-  const response = await fetch(sourceUrl);
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), IMAGE_FETCH_TIMEOUT_MS);
+  const response = await fetch(sourceUrl, {
+    signal: controller.signal,
+    headers: { "user-agent": "MarcoImport/1.0" },
+  }).finally(() => clearTimeout(timeout));
   if (!response.ok) {
     throw new Error(`Failed to fetch image (${response.status}) from ${sourceUrl}`);
   }
@@ -242,9 +270,31 @@ async function migrateImageToR2(sourceUrl, rowId, imageIndex) {
 async function migrateImagesToR2(urls, rowId) {
   const results = [];
   for (let i = 0; i < urls.length; i += 1) {
-    results.push(await migrateImageToR2(urls[i], rowId, i));
+    try {
+      results.push(await migrateImageToR2(urls[i], rowId, i));
+    } catch (error) {
+      console.warn(
+        `[import-marco] Image migration failed for row ${rowId}, image #${i + 1}: ${error.message}`
+      );
+    }
   }
   return results.filter(Boolean);
+}
+
+async function withRowTimeout(task, rowId) {
+  let timer = null;
+  try {
+    return await Promise.race([
+      task(),
+      new Promise((_, reject) => {
+        timer = setTimeout(() => {
+          reject(new Error(`Row timeout after ${ROW_TIMEOUT_MS}ms (ID: ${rowId})`));
+        }, ROW_TIMEOUT_MS);
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
 }
 
 function splitCategoryPaths(value) {
@@ -471,17 +521,25 @@ async function upsertProduct(row, index, filterDefs) {
     return { status: "skipped", reason: "missing ID or Name" };
   }
 
-  const sku = `MARCO-${id}`;
-  const price = parseNumber(row["Sale price"]) ?? parseNumber(row.price) ?? 0;
+  const skuFromSheet = String(row.SKU || row["Артикул"] || row["Արտիկուլ"] || "").trim();
+  const skuFallbackTail = hashText(`${id}-${title}`, 8).toUpperCase();
+  const sku = skuFromSheet || `MARCO-${id}-${skuFallbackTail}`;
   const regularPrice = parseNumber(row.price);
+  const salePrice = parseNumber(row["Sale price"]);
+  const hasExplicitPrice = salePrice !== null || regularPrice !== null;
+  const price = hasExplicitPrice ? salePrice ?? regularPrice : 0;
+  if (!hasExplicitPrice && !ALLOW_NO_PRICE) {
+    return { status: "skipped", reason: "no price" };
+  }
   const compareAtPrice =
-    regularPrice !== null && regularPrice > price ? regularPrice : null;
-  const stock = parseInteger(row.Stock);
+    hasExplicitPrice && regularPrice !== null && regularPrice > price ? regularPrice : null;
+  const stock = hasExplicitPrice ? parseInteger(row.Stock) : 0;
   const media = parseImages(row.Images);
-  const storedMedia = await migrateImagesToR2(media, id);
+  const storedMedia = SKIP_R2_UPLOAD ? media : await migrateImagesToR2(media, id);
   const brandId = await ensureBrand(row.Brand);
   const categoryIds = await ensureCategories(row.Category);
   const primaryCategoryId = categoryIds[categoryIds.length - 1] || categoryIds[0] || null;
+  const productClass = inferProductClass(row.Type);
   const slug = productSlug(row);
   const subtitle = row["Short description"] || undefined;
   const descriptionHtml =
@@ -574,6 +632,7 @@ async function upsertProduct(row, index, filterDefs) {
         where: { id: existingVariant.productId },
         data: {
           brandId,
+          productClass,
           media: storedMedia,
           published: true,
           publishedAt: new Date(),
@@ -613,6 +672,7 @@ async function upsertProduct(row, index, filterDefs) {
       await tx.productVariant.update({
         where: { id: existingVariant.id },
         data: {
+          productClass,
           price,
           compareAtPrice,
           stock,
@@ -688,7 +748,7 @@ async function upsertProduct(row, index, filterDefs) {
           : undefined,
       variants: {
         create: {
-          productClass: "retail",
+          productClass,
           sku,
           barcode: id,
           price,
@@ -738,6 +798,8 @@ async function main() {
   console.log(
     `[import-marco] Mode: ${UPDATE_EXISTING ? "update existing rows" : "skip existing rows"}, concurrency: ${CONCURRENCY}`
   );
+  console.log(`[import-marco] Images: ${SKIP_R2_UPLOAD ? "keep source URLs (R2 skipped)" : "upload to R2"}`);
+  console.log(`[import-marco] No-price rows: ${ALLOW_NO_PRICE ? "import as view-only (stock=0)" : "skip"}`);
   await prisma.$connect();
 
   console.log("[import-marco] Preparing brands, categories, and attributes...");
@@ -772,7 +834,10 @@ async function main() {
       const i = nextIndex;
       nextIndex += 1;
       try {
-        const result = await upsertProduct(rows[i], i, filterDefs);
+        const result = await withRowTimeout(
+          () => upsertProduct(rows[i], i, filterDefs),
+          rows[i].ID || "unknown"
+        );
         stats[result.status] += 1;
         const processed = stats.created + stats.updated + stats.skipped + stats.errors;
         if (processed % 100 === 0) {
