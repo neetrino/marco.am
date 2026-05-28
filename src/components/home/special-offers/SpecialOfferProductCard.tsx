@@ -64,6 +64,7 @@ function SpecialOfferProductCardView({
   showWarrantyBadge: boolean;
   warrantyYears: import('@/lib/constants/product-warranty').ProductWarrantyYears | null;
 }) {
+  const hasDisplayPrice = product.price > 0;
   const {
     currency,
     showPlaceholder,
@@ -153,19 +154,23 @@ function SpecialOfferProductCardView({
               ) : null}
             </>
           )}
-          <div className="mt-4 flex flex-wrap items-end gap-2">
-            <p className="text-xl font-black text-[#181111] dark:text-white md:text-2xl">
-              {formatCatalogPrice(product.price, currency)}
-            </p>
-            {strikePrice != null ? (
-              <span className="text-sm text-[#9ca3af] dark:text-white/55 line-through md:text-base">
-                {formatCatalogPrice(strikePrice, currency)}
-              </span>
-            ) : null}
-          </div>
+          {hasDisplayPrice ? (
+            <div className="mt-4 flex flex-wrap items-end gap-2">
+              <p className="text-xl font-black text-[#181111] dark:text-white md:text-2xl">
+                {formatCatalogPrice(product.price, currency)}
+              </p>
+              {strikePrice != null ? (
+                <span className="text-sm text-[#9ca3af] dark:text-white/55 line-through md:text-base">
+                  {formatCatalogPrice(strikePrice, currency)}
+                </span>
+              ) : null}
+            </div>
+          ) : null}
         </div>
       </div>
-      <SpecialOfferCartFab product={product} isAddingToCart={isAddingToCart} onCart={handleCart} t={t} />
+      {hasDisplayPrice ? (
+        <SpecialOfferCartFab product={product} isAddingToCart={isAddingToCart} onCart={handleCart} t={t} />
+      ) : null}
     </article>
   );
 }

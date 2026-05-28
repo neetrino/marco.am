@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import type { ProductListingBrand } from '@/lib/types/product-listing-brand';
 import { ProductPdpPrefetchLink } from '../ProductPdpPrefetchLink';
@@ -45,6 +45,7 @@ export function ProductCardInfo({
   omitPdpLink = false,
 }: ProductCardInfoProps) {
   const { t } = useTranslation();
+  const hasDisplayPrice = price > 0;
 
   const brandRow =
     brand != null ? (
@@ -90,34 +91,36 @@ export function ProductCardInfo({
         <ProductColors colors={colors} isCompact={isCompact} />
       )}
 
-      <div className={`mt-2 flex items-center justify-between ${isCompact ? 'gap-2' : 'gap-4'}`}>
-        <div className="flex flex-col">
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <span
-              className={`${montserratArm.className} ${
-                isCompact ? 'text-[22px] leading-[30px]' : 'text-[24px] leading-[32px]'
-              } font-black text-[#181111]`}
-            >
-              {formatCatalogPrice(price || 0, currency)}
-            </span>
-            <ProductPricePromoBadge
-              discountPercent={discountPercent}
-              isSpecialPrice={isSpecialPrice}
-              isCompact={isCompact}
-            />
+      {hasDisplayPrice ? (
+        <div className={`mt-2 flex items-center justify-between ${isCompact ? 'gap-2' : 'gap-4'}`}>
+          <div className="flex flex-col">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              <span
+                className={`${montserratArm.className} ${
+                  isCompact ? 'text-[22px] leading-[30px]' : 'text-[24px] leading-[32px]'
+                } font-black text-[#181111]`}
+              >
+                {formatCatalogPrice(price, currency)}
+              </span>
+              <ProductPricePromoBadge
+                discountPercent={discountPercent}
+                isSpecialPrice={isSpecialPrice}
+                isCompact={isCompact}
+              />
+            </div>
+            {(originalPrice && originalPrice > price) || (compareAtPrice && compareAtPrice > price) ? (
+              <span
+                className={`${isCompact ? 'text-xs' : 'text-sm'} mt-1 font-medium text-gray-400 line-through decoration-gray-300`}
+              >
+                {formatCatalogPrice(
+                  originalPrice && originalPrice > price ? originalPrice : (compareAtPrice || 0),
+                  currency,
+                )}
+              </span>
+            ) : null}
           </div>
-          {(originalPrice && originalPrice > price) || (compareAtPrice && compareAtPrice > price) ? (
-            <span
-              className={`${isCompact ? 'text-xs' : 'text-sm'} mt-1 font-medium text-gray-400 line-through decoration-gray-300`}
-            >
-              {formatCatalogPrice(
-                originalPrice && originalPrice > price ? originalPrice : (compareAtPrice || 0),
-                currency,
-              )}
-            </span>
-          ) : null}
         </div>
-      </div>
+      ) : null}
     </div>
   );
 }

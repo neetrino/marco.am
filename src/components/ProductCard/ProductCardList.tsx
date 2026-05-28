@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { ProductPdpPrefetchLink } from '../ProductPdpPrefetchLink';
 import Image from 'next/image';
@@ -58,6 +58,7 @@ export function ProductCardList({
   wishlistPage = false,
 }: ProductCardListProps) {
   const { t } = useTranslation();
+  const hasDisplayPrice = product.price > 0;
   const listSurfaceClass = wishlistPage
     ? 'border border-gray-200 shadow-sm dark:border-white/30'
     : '';
@@ -119,30 +120,31 @@ export function ProductCardList({
             )}
           </div>
 
-          {/* Price */}
-          <div className="flex w-full flex-shrink-0 flex-col sm:w-auto">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xl font-semibold text-marco-black sm:text-2xl">
-                {formatCatalogPrice(product.price || 0, currency)}
-              </span>
-              <ProductPricePromoBadge
-                discountPercent={product.discountPercent}
-                isSpecialPrice={product.isSpecialPrice}
-                className="bg-transparent px-0 py-0 text-marco-black"
-              />
+          {hasDisplayPrice ? (
+            <div className="flex w-full flex-shrink-0 flex-col sm:w-auto">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xl font-semibold text-marco-black sm:text-2xl">
+                  {formatCatalogPrice(product.price, currency)}
+                </span>
+                <ProductPricePromoBadge
+                  discountPercent={product.discountPercent}
+                  isSpecialPrice={product.isSpecialPrice}
+                  className="bg-transparent px-0 py-0 text-marco-black"
+                />
+              </div>
+              {(product.originalPrice && product.originalPrice > product.price) ||
+              (product.compareAtPrice && product.compareAtPrice > product.price) ? (
+                <span className="mt-0.5 text-lg text-gray-500 line-through sm:text-xl">
+                  {formatCatalogPrice(
+                    product.originalPrice && product.originalPrice > product.price
+                      ? product.originalPrice
+                      : (product.compareAtPrice || 0),
+                    currency
+                  )}
+                </span>
+              ) : null}
             </div>
-            {(product.originalPrice && product.originalPrice > product.price) ||
-            (product.compareAtPrice && product.compareAtPrice > product.price) ? (
-              <span className="mt-0.5 text-lg text-gray-500 line-through sm:text-xl">
-                {formatCatalogPrice(
-                  product.originalPrice && product.originalPrice > product.price
-                    ? product.originalPrice
-                    : (product.compareAtPrice || 0),
-                  currency
-                )}
-              </span>
-            ) : null}
-          </div>
+          ) : null}
         </ProductPdpPrefetchLink>
 
         {/* Action Buttons: outside PDP link to avoid anchor nesting with buttons */}
@@ -157,6 +159,7 @@ export function ProductCardList({
             onWishlistToggle={onWishlistToggle}
             onCompareToggle={onCompareToggle}
             onAddToCart={onAddToCart}
+            showCartButton={hasDisplayPrice}
           />
         </div>
       </div>

@@ -74,6 +74,7 @@ export function SpecialOfferCard({
   imagePriority = false,
   detailsPending: detailsPendingProp = false,
 }: SpecialOfferCardProps) {
+  const hasDisplayPrice = product.price > 0;
   const detailsPending = detailsPendingProp || Boolean(product.detailsPending);
   const {
     t,
@@ -133,6 +134,7 @@ export function SpecialOfferCard({
 
   const cardPdpEnabled = Boolean(product.slug) && !product.shellPlaceholder;
   const warrantyYears = product.warrantyYears ?? product.warrantyBadge?.years ?? null;
+  const shouldShowCartCutouts = hasDisplayPrice;
 
   return (
     <div
@@ -166,17 +168,19 @@ export function SpecialOfferCard({
             <span className="sr-only">{product.title}</span>
           </ProductPdpPrefetchLink>
         ) : null}
-        <span
-          aria-hidden
-          className="pointer-events-none absolute bottom-0 right-0 z-0 max-md:hidden rounded-full [box-shadow:inset_0_0_0_1px_var(--special-offers-card-cutout-bg)] dark:[box-shadow:inset_0_0_0_1px_#383838]"
-          style={{
-            width: SPECIAL_OFFERS_CARD_CORNER_MASK_SIZE_PX,
-            height: SPECIAL_OFFERS_CARD_CORNER_MASK_SIZE_PX,
-            backgroundColor: 'var(--special-offers-card-cutout-bg)',
-            transform: `translate(${cornerTranslatePx}px, ${cornerTranslatePx}px)`,
-          }}
-        />
-        {showMobileBottomNotch ? (
+        {shouldShowCartCutouts ? (
+          <span
+            aria-hidden
+            className="pointer-events-none absolute bottom-0 right-0 z-0 max-md:hidden rounded-full [box-shadow:inset_0_0_0_1px_var(--special-offers-card-cutout-bg)] dark:[box-shadow:inset_0_0_0_1px_#383838]"
+            style={{
+              width: SPECIAL_OFFERS_CARD_CORNER_MASK_SIZE_PX,
+              height: SPECIAL_OFFERS_CARD_CORNER_MASK_SIZE_PX,
+              backgroundColor: 'var(--special-offers-card-cutout-bg)',
+              transform: `translate(${cornerTranslatePx}px, ${cornerTranslatePx}px)`,
+            }}
+          />
+        ) : null}
+        {shouldShowCartCutouts && showMobileBottomNotch ? (
           <span
             aria-hidden
             className="pointer-events-none absolute bottom-0 left-1/2 z-0 md:hidden max-w-full -translate-x-1/2"
@@ -222,31 +226,35 @@ export function SpecialOfferCard({
               detailsPending={detailsPending}
             />
 
-            <div
-              className="mt-auto w-full min-w-0"
-              style={{
-                marginBottom: SPECIAL_OFFERS_PRICE_BLOCK_LIFT_FROM_BOTTOM_PX,
-              }}
-            >
-              <SpecialOfferCardPricing
-                price={product.price}
-                oldPrice={oldPrice}
-                currency={currency}
-                detailsPending={detailsPending}
-              />
-            </div>
+            {hasDisplayPrice ? (
+              <div
+                className="mt-auto w-full min-w-0"
+                style={{
+                  marginBottom: SPECIAL_OFFERS_PRICE_BLOCK_LIFT_FROM_BOTTOM_PX,
+                }}
+              >
+                <SpecialOfferCardPricing
+                  price={product.price}
+                  oldPrice={oldPrice}
+                  currency={currency}
+                  detailsPending={detailsPending}
+                />
+              </div>
+            ) : null}
           </div>
         </div>
       </article>
 
-      <SpecialOfferCartFloatingButton
-        inStock={product.inStock}
-        isAddingToCart={isAddingToCart}
-        addToCartAria={t('common.ariaLabels.addToCart')}
-        outOfStockAria={t('common.ariaLabels.outOfStock')}
-        onAddToCart={handleCart}
-        interactionLocked={detailsPending}
-      />
+      {hasDisplayPrice ? (
+        <SpecialOfferCartFloatingButton
+          inStock={product.inStock}
+          isAddingToCart={isAddingToCart}
+          addToCartAria={t('common.ariaLabels.addToCart')}
+          outOfStockAria={t('common.ariaLabels.outOfStock')}
+          onAddToCart={handleCart}
+          interactionLocked={detailsPending}
+        />
+      ) : null}
 
       <SpecialOfferActionsStack
         layout={layout}
