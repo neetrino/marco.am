@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@shop/ui';
 import { apiClient } from '../../../lib/api-client';
 import { postCustomerReorder } from '@/lib/orders/post-customer-reorder';
+import { dispatchOpenCartDrawer } from '@/lib/cart/cart-drawer-context';
 import { logger } from '@/lib/utils/logger';
 import { getStoredCurrency } from '../../../lib/currency';
 import { useAuth } from '../../../lib/auth/AuthContext';
@@ -80,7 +81,7 @@ export default function OrderPage() {
       const result = await postCustomerReorder(order.number, order.links);
       window.dispatchEvent(new Event('cart-updated'));
       if (result.added.length > 0) {
-        router.push('/cart');
+        dispatchOpenCartDrawer();
       } else {
         setReorderError(t('orders.buttons.reorderFailed'));
       }

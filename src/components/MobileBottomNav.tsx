@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCartSummary } from '../lib/cart/cart-summary-context';
+import { useCartDrawer } from '../lib/cart/cart-drawer-context';
 import { useTranslation } from '../lib/i18n-client';
 import { pushShopProductsListingUrl } from '../lib/push-shop-products-listing-url';
 import {
@@ -37,9 +38,6 @@ interface MobileNavItem {
 function isNavItemActive(pathname: string | null, href: string): boolean {
   if (!pathname) return false;
   if (href === '/') return pathname === '/';
-  if (href === '/cart') {
-    return pathname === '/cart' || pathname.startsWith('/cart/');
-  }
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
@@ -167,12 +165,17 @@ export function MobileBottomNav() {
   const searchParams = useSearchParams();
   const { t } = useTranslation();
   const { cartCount } = useCartSummary();
+  const { openCartDrawer } = useCartDrawer();
   const [shopSheetOpen, setShopSheetOpen] = useState(false);
   const previousPathnameRef = useRef(pathname);
   const activeCategorySlug = searchParams?.get('category') ?? null;
 
   const handleShopPress = () => {
     setShopSheetOpen(true);
+  };
+
+  const handleCartPress = () => {
+    openCartDrawer();
   };
 
   const handleShopCategorySelect = (slug: string | null) => {
@@ -205,7 +208,7 @@ export function MobileBottomNav() {
       { label: t('common.navigation.shop'), href: '/products', icon: 'shop' },
       { label: t('common.navigation.home'), href: '/', icon: 'home' },
       { label: t('common.navigation.wishlist'), href: '/wishlist', icon: 'wishlist' },
-      { label: t('common.navigation.cart'), href: '/cart', icon: 'cart' },
+      { label: t('common.navigation.cart'), href: '#cart', icon: 'cart' },
       { label: t('common.navigation.profile'), href: '/profile', icon: 'profile' },
     ],
     [t],
@@ -243,7 +246,13 @@ export function MobileBottomNav() {
                 <div className="w-14 shrink-0" aria-hidden="true" />
                 <div className="flex flex-1 items-center justify-between gap-1">
                   {rightItems.map((item) => (
-                    <NavItemVisual key={item.href} item={item} pathname={pathname} cartCount={cartCount} />
+                    <NavItemVisual
+                      key={item.href}
+                      item={item}
+                      pathname={pathname}
+                      cartCount={cartCount}
+                      onPress={item.icon === 'cart' ? handleCartPress : undefined}
+                    />
                   ))}
                 </div>
               </div>

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { Card, Button } from '@shop/ui';
 import { useTranslation } from '../../../../lib/i18n-client';
+import { useCartDrawer } from '../../../../lib/cart/cart-drawer-context';
 import { formatPriceInCurrency, convertPrice } from '../../../../lib/currency';
 import type { Order } from '../types';
 
@@ -20,6 +21,7 @@ export function OrderSummary({
   loadingShipping,
 }: OrderSummaryProps) {
   const { t } = useTranslation();
+  const { openCartDrawer } = useCartDrawer();
 
   const subtotalDisplay = (() => {
     const subtotalAMD = convertPrice(order.totals.subtotal, 'USD', 'AMD');
@@ -100,11 +102,9 @@ export function OrderSummary({
             {t('orders.buttons.continueShopping')}
           </Button>
         </Link>
-        <Link href="/cart">
-          <Button variant="ghost" className="w-full">
-            {t('orders.buttons.viewCart')}
-          </Button>
-        </Link>
+        <Button variant="ghost" className="w-full" onClick={openCartDrawer}>
+          {t('orders.buttons.viewCart')}
+        </Button>
       </div>
     </Card>
   );

@@ -840,10 +840,15 @@
 }
 
 body[data-mobile-menu-open='true'] #tidio,
+body[data-cart-drawer-open='true'] #tidio,
 body[data-mobile-menu-open='true'] #tidio-chat,
+body[data-cart-drawer-open='true'] #tidio-chat,
 body[data-mobile-menu-open='true'] #tidio-chat-iframe,
+body[data-cart-drawer-open='true'] #tidio-chat-iframe,
 body[data-mobile-menu-open='true'] iframe[src*='tidio.co'],
-body[data-mobile-menu-open='true'] [id^='tidio-'] {
+body[data-cart-drawer-open='true'] iframe[src*='tidio.co'],
+body[data-mobile-menu-open='true'] [id^='tidio-'],
+body[data-cart-drawer-open='true'] [id^='tidio-'] {
   display: none !important;
   visibility: hidden !important;
   opacity: 0 !important;

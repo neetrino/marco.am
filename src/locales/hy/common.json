@@ -75,7 +75,10 @@
     "promoLoginRequired": "Մուտք գործեք՝ պրոմո կոդը կիրառելու համար",
     "promoApplyFailed": "Պրոմո կոդը չհաջողվեց կիրառել",
     "items": "ապրանք",
-    "item": "ապրանք"
+    "item": "ապրանք",
+    "myCart": "Իմ զամբյուղը",
+    "shippingNotCalculated": "Չի հաշվարկվել",
+    "viewFullCart": "Դիտել ամբողջական զամբյուղը"
   },
   "wishlist": {
     "title": "Իմ ցանկությունների ցուցակ",

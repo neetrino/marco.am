@@ -75,7 +75,10 @@
     "promoLoginRequired": "Sign in to apply a promo code",
     "promoApplyFailed": "Could not apply promo code",
     "items": "items",
-    "item": "item"
+    "item": "item",
+    "myCart": "My Cart",
+    "shippingNotCalculated": "Not calculated",
+    "viewFullCart": "View full cart"
   },
   "wishlist": {
     "title": "My Wishlist",

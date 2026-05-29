@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useCartDrawer } from '../../lib/cart/cart-drawer-context';
 import type { LanguageCode } from '../../lib/language';
 import { HeaderLocaleCurrencyPill } from './HeaderLocaleCurrencyPill';
 import {
@@ -45,6 +46,7 @@ function isProfileToolbarPathActive(pathname: string, isLoggedIn: boolean): bool
 
 export function HeaderRow2RightToolbar({ data, compactPrimaryNav, headerMobileLike, initialLanguage }: Props) {
   const pathname = usePathname();
+  const { openCartDrawer } = useCartDrawer();
   const { theme, mounted: themeMounted } = useTheme();
   const themeToggleResolvedDark = themeMounted && theme === 'dark';
   const {
@@ -182,9 +184,11 @@ export function HeaderRow2RightToolbar({ data, compactPrimaryNav, headerMobileLi
         </Link>
       </div>
 
-      <Link
-        href="/cart"
+      <button
+        type="button"
+        onClick={openCartDrawer}
         className={`relative !bg-[#383838] !text-white dark:!bg-white dark:!text-[#383838] dark:ring-1 dark:ring-black/10 ${HEADER_CART_BUTTON_CLASS}`}
+        aria-label={t('common.navigation.cart')}
       >
         <HeaderNavbarCartIcon className="h-[21px] w-[22px] shrink-0 !text-white dark:!text-[#383838]" />
         <span className="tabular-nums text-inherit">
@@ -195,7 +199,7 @@ export function HeaderRow2RightToolbar({ data, compactPrimaryNav, headerMobileLi
             {cartCount > 99 ? '99+' : cartCount}
           </span>
         )}
-      </Link>
+      </button>
     </div>
   );
 }

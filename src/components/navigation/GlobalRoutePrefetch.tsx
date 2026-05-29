@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { getStoredLanguage } from '@/lib/language';
 
-const PREFETCH_ROUTES = ['/', '/products', '/cart', '/wishlist', '/profile', '/reels'] as const;
+const PREFETCH_ROUTES = ['/', '/products', '/wishlist', '/profile', '/reels'] as const;
 const PRODUCTS_PREFETCH_QUERY = 'page=1&limit=12&listingOmitProductAttributes=1';
 type IdleCapableWindow = Window &
   typeof globalThis & {

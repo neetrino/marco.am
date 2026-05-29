@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, type MouseEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { apiClient } from '../../../lib/api-client';
 import { postCustomerReorder } from '@/lib/orders/post-customer-reorder';
+import { dispatchOpenCartDrawer } from '@/lib/cart/cart-drawer-context';
 import { isAdminOrderListStatus } from '@/lib/constants/admin-order-list-status';
 import { useTranslation } from '../../../lib/i18n-client';
 import type { OrderDetails, OrderListItem, ProfileTab } from '../types';
@@ -168,7 +169,7 @@ export function useOrders({
           skippedCount > 0 ? `, ${skippedCount} ${t('profile.orderDetails.skipped')}` : '';
         onSuccess(`${addedCount} ${t('profile.orderDetails.itemsAdded')}${skippedText}`);
         setTimeout(() => {
-          router.push('/cart');
+          dispatchOpenCartDrawer();
         }, 1500);
       } else {
         onError(t('profile.orderDetails.failedToAdd'));
