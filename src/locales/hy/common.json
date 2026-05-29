@@ -68,6 +68,12 @@
     "total": "Ընդամենը",
     "free": "Անվճար",
     "calculated": "Հաշվարկվող",
+    "discount": "Զեղչ",
+    "promoCode": "Պրոմո կոդ",
+    "promoCodePlaceholder": "Մուտքագրեք ձեր կուպոնը",
+    "applyPromo": "Կիրառել",
+    "promoLoginRequired": "Մուտք գործեք՝ պրոմո կոդը կիրառելու համար",
+    "promoApplyFailed": "Պրոմո կոդը չհաջողվեց կիրառել",
     "items": "ապրանք",
     "item": "ապրանք"
   },

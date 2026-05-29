@@ -128,7 +128,13 @@ export default function CartPage() {
           onUpdateQuantity={onUpdateQuantity}
           t={t}
         />
-        <OrderSummary cart={cart} currency={currency} t={t} />
+        <OrderSummary
+          cart={cart}
+          currency={currency}
+          isLoggedIn={isLoggedIn}
+          onCouponApplied={loadCart}
+          t={t}
+        />
       </div>
     </div>
   );

@@ -68,6 +68,12 @@
     "total": "Total",
     "free": "Free",
     "calculated": "Calculated",
+    "discount": "Discount",
+    "promoCode": "Promo code",
+    "promoCodePlaceholder": "Enter your coupon",
+    "applyPromo": "Apply",
+    "promoLoginRequired": "Sign in to apply a promo code",
+    "promoApplyFailed": "Could not apply promo code",
     "items": "items",
     "item": "item"
   },

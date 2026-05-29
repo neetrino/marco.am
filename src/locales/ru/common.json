@@ -68,6 +68,12 @@
     "total": "Итого",
     "free": "Бесплатно",
     "calculated": "Рассчитывается",
+    "discount": "Скидка",
+    "promoCode": "Промокод",
+    "promoCodePlaceholder": "Введите купон",
+    "applyPromo": "Применить",
+    "promoLoginRequired": "Войдите, чтобы применить промокод",
+    "promoApplyFailed": "Не удалось применить промокод",
     "items": "товаров",
     "item": "товар"
   },

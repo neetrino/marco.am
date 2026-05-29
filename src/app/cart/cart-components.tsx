@@ -2,7 +2,6 @@
 
 import { ProductPdpPrefetchLink } from '../../components/ProductPdpPrefetchLink';
 import Image from 'next/image';
-import { Button } from '@shop/ui';
 import { coerceCurrencyCode, formatMoneyInCurrency, type CurrencyCode } from '../../lib/currency';
 import type { Cart, CartItem } from './types';
 import { cartLineSubtotal } from './line-subtotal';
@@ -227,70 +226,5 @@ export function CartTable({
   );
 }
 
-/**
- * Order summary component
- */
-interface OrderSummaryProps {
-  cart: Cart;
-  currency: string;
-  t: (key: string) => string;
-}
-
-export function OrderSummary({ cart, currency, t }: OrderSummaryProps) {
-  const currencyCode = currency as CurrencyCode;
-  const amountCurrency = coerceCurrencyCode(cart.totals.currency, 'AMD');
-
-  return (
-    <div className="lg:col-span-1">
-      <div className="bg-white rounded-lg border border-gray-200 p-6 lg:sticky lg:top-24">
-        <h2 className="text-xl font-semibold text-gray-900 mb-6">
-          {t('common.cart.orderSummary')}
-        </h2>
-        <div className="space-y-4 mb-6">
-          <div className="flex justify-between text-gray-600">
-            <span>{t('common.cart.subtotal')}</span>
-            <span className="ml-auto min-w-[120px] text-right">
-              {formatMoneyInCurrency(cart.totals.subtotal, amountCurrency, currencyCode)}
-            </span>
-          </div>
-          <div className="flex justify-between text-gray-600">
-            <span>{t('common.cart.shipping')}</span>
-            <span className="ml-auto min-w-[120px] text-right">
-              {t('common.cart.calculated')}
-            </span>
-          </div>
-          <div className="border-t border-gray-200 pt-4">
-            <div className="flex justify-between text-lg font-bold text-gray-900">
-              <span>{t('common.cart.total')}</span>
-              <span className="ml-auto min-w-[120px] text-right">
-                {formatMoneyInCurrency(cart.totals.total, amountCurrency, currencyCode)}
-              </span>
-            </div>
-          </div>
-        </div>
-        <Button 
-          variant="primary" 
-          className="w-full !h-12 !rounded-full !flex !items-center !justify-center !text-center bg-marco-yellow !text-marco-black dark:!text-[#383838] !font-bold !hover:bg-marco-yellow !hover:brightness-100 !active:brightness-100" 
-          size="lg"
-          onClick={() => {
-            // Allow guest checkout - no redirect to login
-            window.location.href = '/checkout';
-          }}
-        >
-          {t('common.buttons.proceedToCheckout')}
-        </Button>
-        <Button
-          variant="outline"
-          className="mt-3 w-full !h-11 !rounded-full !font-bold text-marco-black hover:bg-marco-yellow/10"
-          size="md"
-          onClick={() => {
-            window.location.href = '/products';
-          }}
-        >
-          {t('common.buttons.browseProducts')}
-        </Button>
-      </div>
-    </div>
-  );
-}
+export { OrderSummary } from './order-summary';
 

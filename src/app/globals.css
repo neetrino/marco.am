@@ -109,6 +109,31 @@
     animation: fade-in 0.3s ease-out;
   }
 
+  .cart-order-summary-receipt {
+    position: relative;
+    border-radius: 1rem 1rem 0 0;
+    background: var(--app-surface);
+    box-shadow: 0 2px 16px rgba(16, 16, 16, 0.08);
+    padding: 1.5rem;
+  }
+
+  .dark .cart-order-summary-receipt {
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+  }
+
+  .cart-order-summary-receipt-edge {
+    height: 20px;
+    background-color: transparent;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='20' viewBox='0 0 32 20'%3E%3Cpath d='M0 0 L8 20 L16 0 L24 20 L32 0 Z' fill='%23ffffff'/%3E%3C/svg%3E");
+    background-repeat: repeat-x;
+    background-size: 32px 20px;
+    filter: drop-shadow(0 6px 8px rgba(16, 16, 16, 0.06));
+  }
+
+  .dark .cart-order-summary-receipt-edge {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='20' viewBox='0 0 32 20'%3E%3Cpath d='M0 0 L8 20 L16 0 L24 20 L32 0 Z' fill='%23383838'/%3E%3C/svg%3E");
+  }
+
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
