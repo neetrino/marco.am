@@ -1,5 +1,4 @@
 import type { CheckoutPaymentMethodId } from '../../lib/constants/checkout-payment-method';
-import type { PickupBranchId } from '../../lib/constants/pickup-branches';
 import type { ShippingMethodId } from '../../lib/constants/shipping-method';
 
 export type CheckoutFormData = {
@@ -13,7 +12,7 @@ export type CheckoutFormData = {
   paymentMethod: CheckoutPaymentMethodId;
   shippingAddress?: string;
   shippingCity?: string;
-  pickupBranchId?: PickupBranchId | '';
+  pickupBranchId?: string | '';
 };
 
 export interface CartItem {

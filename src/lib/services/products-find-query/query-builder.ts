@@ -1,5 +1,4 @@
 import { Prisma } from "@white-shop/db/prisma";
-import { db } from "@white-shop/db";
 import { getBestsellerProductIdsCached } from "@/lib/cache/bestseller-product-ids-redis";
 import { logger } from "../../utils/logger";
 import type { ProductFilters } from "./types";

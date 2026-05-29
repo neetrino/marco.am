@@ -262,3 +262,5 @@ export function useCheckout() {
     isLoggedIn,
   };
 }
+
+export type CheckoutHandleSubmit = ReturnType<typeof useCheckout>['handleSubmit'];

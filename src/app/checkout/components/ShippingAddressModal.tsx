@@ -1,7 +1,7 @@
 'use client';
 
 import { Button, Input } from '@shop/ui';
-import { UseFormRegister, UseFormHandleSubmit, UseFormSetValue, FieldErrors } from 'react-hook-form';
+import { UseFormRegister, UseFormSetValue, FieldErrors } from 'react-hook-form';
 import { useTranslation } from '../../../lib/i18n-client';
 import { ContactInformation } from './ContactInformation';
 import { OrderSummaryModal } from './OrderSummaryModal';
@@ -9,7 +9,8 @@ import type { PickupBranchId } from '../../../lib/constants/pickup-branches';
 import type { PickupBranch } from '../../../lib/constants/pickup-branches';
 import type { CheckoutPaymentMethodId } from '../../../lib/constants/checkout-payment-method';
 import type { ShippingMethodId } from '../../../lib/constants/shipping-method';
-import { CheckoutFormData, Cart } from '../types';
+import type { CheckoutFormData, Cart } from '../types';
+import type { CheckoutHandleSubmit } from '../useCheckout';
 import { CheckoutSelectMenu } from './CheckoutSelectMenu';
 import {
   CHECKOUT_FIELD_CELL_CLASS,
@@ -21,7 +22,7 @@ interface ShippingAddressModalProps {
   isOpen: boolean;
   onClose: () => void;
   register: UseFormRegister<CheckoutFormData>;
-  handleSubmit: UseFormHandleSubmit<CheckoutFormData>;
+  handleSubmit: CheckoutHandleSubmit;
   setValue: UseFormSetValue<CheckoutFormData>;
   errors: FieldErrors<CheckoutFormData>;
   isSubmitting: boolean;
@@ -253,7 +254,7 @@ export function ShippingAddressModal({
             onClick={handleSubmit(
               (data) => {
                 onClose();
-                onSubmit(data);
+                onSubmit(data as unknown as CheckoutFormData);
               },
               handleValidationError
             )}

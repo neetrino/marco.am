@@ -110,8 +110,6 @@ async function handleErrorResponse(
   options?: Pick<RequestOptions, "suppressHttpErrorLogging">,
 ): Promise<never> {
   const isUnauthorized = response.status === 401;
-  const isNotFound = response.status === 404;
-  const isValidationLike = response.status === 422;
 
   if (isUnauthorized) {
     handleUnauthorized();

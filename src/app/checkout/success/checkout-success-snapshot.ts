@@ -51,6 +51,7 @@ export function buildOrderDetailsSnapshot(input: CheckoutOrderSnapshotInput): Or
               input.form.pickupBranchId,
               getStoredLanguage()
             ),
+            city: '',
             countryCode: 'AM',
             phone: input.form.phone,
           }

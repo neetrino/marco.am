@@ -1,17 +1,18 @@
 'use client';
 
-import { UseFormRegister, UseFormHandleSubmit, UseFormSetValue, FieldErrors } from "react-hook-form";
+import { UseFormRegister, UseFormSetValue, FieldErrors } from "react-hook-form";
 import { ShippingAddressModal } from './components/ShippingAddressModal';
 import type { CheckoutPaymentMethodId } from '../../lib/constants/checkout-payment-method';
 import type { ShippingMethodId } from '../../lib/constants/shipping-method';
 import type { PickupBranch } from '../../lib/constants/pickup-branches';
-import { CheckoutFormData, Cart } from './types';
+import type { CheckoutFormData, Cart } from './types';
+import type { CheckoutHandleSubmit } from './useCheckout';
 
 interface CheckoutModalsProps {
   showShippingModal: boolean;
   setShowShippingModal: (show: boolean) => void;
   register: UseFormRegister<CheckoutFormData>;
-  handleSubmit: UseFormHandleSubmit<CheckoutFormData>;
+  handleSubmit: CheckoutHandleSubmit;
   setValue: UseFormSetValue<CheckoutFormData>;
   errors: FieldErrors<CheckoutFormData>;
   isSubmitting: boolean;
