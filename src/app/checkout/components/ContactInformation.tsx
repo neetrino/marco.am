@@ -25,6 +25,7 @@ export function ContactInformation({
         <Input
           label={t('checkout.form.email')}
           type="email"
+          required
           {...register('email')}
           error={errors.email?.message}
           disabled={isSubmitting}
@@ -34,6 +35,7 @@ export function ContactInformation({
         <Input
           label={t('checkout.form.phone')}
           type="tel"
+          required
           placeholder={t('checkout.placeholders.phone')}
           {...register('phone')}
           error={errors.phone?.message}

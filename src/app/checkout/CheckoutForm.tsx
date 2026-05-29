@@ -49,6 +49,7 @@ export function CheckoutForm({
             <Input
               label={t('checkout.form.firstName')}
               type="text"
+              required
               {...register('firstName')}
               error={errors.firstName?.message}
               disabled={isSubmitting}
@@ -56,6 +57,7 @@ export function CheckoutForm({
             <Input
               label={t('checkout.form.lastName')}
               type="text"
+              required
               {...register('lastName')}
               error={errors.lastName?.message}
               disabled={isSubmitting}
@@ -65,6 +67,7 @@ export function CheckoutForm({
             <Input
               label={t('checkout.form.email')}
               type="email"
+              required
               {...register('email')}
               error={errors.email?.message}
               disabled={isSubmitting}
@@ -72,6 +75,7 @@ export function CheckoutForm({
             <Input
               label={t('checkout.form.phone')}
               type="tel"
+              required
               placeholder={t('checkout.placeholders.phone')}
               {...register('phone')}
               error={errors.phone?.message}
@@ -107,6 +111,7 @@ export function CheckoutForm({
             <Input
               label={t('checkout.form.address')}
               type="text"
+              required
               placeholder={t('checkout.placeholders.address')}
               {...register('shippingAddress', {
                 onChange: () => {
@@ -122,6 +127,10 @@ export function CheckoutForm({
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-slate-300">
               {t('checkout.form.city')}
+              <span className="text-error" aria-hidden="true">
+                {' '}
+                *
+              </span>
             </label>
             <select
               {...register('shippingCity', {
@@ -131,6 +140,7 @@ export function CheckoutForm({
                   }
                 },
               })}
+              aria-required
               disabled={isSubmitting || loadingDeliveryCities}
               className={`w-full rounded-lg border bg-white px-3 py-2 text-sm text-gray-900 focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/20 disabled:cursor-not-allowed disabled:bg-gray-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-200 dark:focus:ring-slate-200/20 dark:disabled:bg-slate-800 ${
                 errors.shippingCity?.message ? 'border-error focus:ring-error' : 'border-gray-300'

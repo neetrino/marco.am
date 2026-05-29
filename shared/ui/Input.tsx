@@ -5,10 +5,12 @@ import React, { InputHTMLAttributes, forwardRef } from 'react';
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
+  /** Shows a red asterisk next to the label. */
+  required?: boolean;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  function Input({ label, error, className = '', onKeyDown, ...props }, ref) {
+  function Input({ label, error, className = '', onKeyDown, required, ...props }, ref) {
     // Ensure pipe character (|) works in all input fields
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
       // Allow pipe character (|) - key code 220 or Shift+Backslash
@@ -28,10 +30,17 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-slate-300">
             {label}
+            {required ? (
+              <span className="text-error" aria-hidden="true">
+                {' '}
+                *
+              </span>
+            ) : null}
           </label>
         )}
         <input
           ref={ref}
+          aria-required={required || undefined}
           className={`w-full rounded-lg border bg-white px-3 py-2 text-sm text-gray-900 focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/20 disabled:cursor-not-allowed disabled:bg-gray-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:border-slate-200 dark:focus:ring-slate-200/20 dark:disabled:bg-slate-800 ${
             error ? 'border-error focus:ring-error' : 'border-gray-300'
           } ${className}`}
