@@ -93,44 +93,23 @@ class ProductsFiltersService {
 
   private async getPublishedVariantPriceBounds(
     where: Prisma.ProductWhereInput,
-    discountSettings: ListingDiscountSettings,
+    _discountSettings: ListingDiscountSettings,
   ): Promise<{
     min: number;
     max: number;
   }> {
-    const products = await db.product.findMany({
+    const aggregate = await db.productVariant.aggregate({
       where: {
-        ...where,
+        published: true,
+        product: where,
       },
-      select: {
-        discountPercent: true,
-        primaryCategoryId: true,
-        brandId: true,
-        variants: {
-          where: { published: true },
-          select: { price: true },
-        },
-      },
+      _min: { price: true },
+      _max: { price: true },
     });
 
-    let min = Infinity;
-    let max = 0;
-    for (const product of products) {
-      const appliedDiscount = this.resolveAppliedListingDiscount(product, discountSettings);
-      for (const variant of product.variants) {
-        const effectivePrice = this.applyListingDiscount(variant.price, appliedDiscount);
-        if (effectivePrice < min) {
-          min = effectivePrice;
-        }
-        if (effectivePrice > max) {
-          max = effectivePrice;
-        }
-      }
-    }
-
     return {
-      min: min === Infinity ? 0 : min,
-      max,
+      min: aggregate._min.price ?? 0,
+      max: aggregate._max.price ?? 0,
     };
   }
 
@@ -367,7 +346,7 @@ class ProductsFiltersService {
       const catalogPriceBounds = await this.getPublishedVariantPriceBounds(where, discountSettings);
 
       // Get products with variants (capped for non-price facets computation)
-      const FILTERS_PRODUCTS_LIMIT = 1500;
+      const FILTERS_PRODUCTS_LIMIT = 700;
       let products: ProductWithRelations[] = [];
       try {
         products = (await db.product.findMany({
@@ -393,19 +372,6 @@ class ProductsFiltersService {
                             translations: true,
                           },
                         },
-                        translations: true,
-                      },
-                    },
-                  },
-                },
-              },
-            },
-            productAttributes: {
-              include: {
-                attribute: {
-                  include: {
-                    values: {
-                      include: {
                         translations: true,
                       },
                     },
@@ -688,24 +654,6 @@ class ProductsFiltersService {
         );
       });
       
-      // Also check productAttributes for color attribute values with imageUrl and colors
-      if ((product as any).productAttributes && Array.isArray((product as any).productAttributes)) {
-        (product as any).productAttributes.forEach((productAttr: any) => {
-          if (isColorAttributeKey(productAttr.attribute?.key) && productAttr.attribute?.values) {
-            productAttr.attribute.values.forEach((attrValue: any) => {
-              const colorValue = this.getLocalizedAttributeValueLabel(attrValue, lang);
-              if (colorValue) {
-                this.upsertColorFacet(colorMap, {
-                  label: colorValue,
-                  countIncrement: 0,
-                  imageUrl: attrValue.imageUrl || null,
-                  colors: attrValue.colors || null,
-                });
-              }
-            });
-          }
-        });
-      }
     });
 
     const categoryIdsWithProducts = Array.from(categoryCountMap.keys());

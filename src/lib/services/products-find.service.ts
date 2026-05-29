@@ -2,6 +2,7 @@ import { ProductFilters } from "./products-find-query.service";
 import { productsFindQueryService } from "./products-find-query.service";
 import { productsFindFilterService } from "./products-find-filter.service";
 import { productsFindTransformService } from "./products-find-transform.service";
+import { hasTechnicalSpecFilters } from "./products-technical-filters";
 import {
   decodeProductCursor,
   encodeProductCursor,
@@ -59,12 +60,11 @@ class ProductsFindService {
     const { products, bestsellerProductIds, total: totalFromQuery } =
       await productsFindQueryService.buildQueryAndFetch(filters);
 
-    // Step 2: Filter products in memory (price, colors, sizes, brand) and sort
-    const filteredProducts = productsFindFilterService.filterProducts(
-      products,
-      filters,
-      bestsellerProductIds
-    );
+    const requiresInMemoryFiltering =
+      totalFromQuery === undefined || hasTechnicalSpecFilters(filters.technicalSpecs);
+    const filteredProducts = requiresInMemoryFiltering
+      ? productsFindFilterService.filterProducts(products, filters, bestsellerProductIds)
+      : products;
 
     // Step 3: Pagination — use server total when provided (no filters), else client slice
     const total =

@@ -2,4 +2,5 @@
  * Default page size for `/products` when the `limit` query param is omitted.
  * Pagination URLs set `limit` to this value so page changes keep the same page size.
  */
-export const SHOP_PLP_DEFAULT_PAGE_SIZE = 24;
+export const SHOP_PLP_DEFAULT_PAGE_SIZE = 21;
+export const SHOP_PLP_MAX_PAGE_SIZE = 60;

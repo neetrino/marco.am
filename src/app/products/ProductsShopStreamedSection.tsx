@@ -22,7 +22,10 @@ import { parseTechnicalSpecFiltersFromSearchParams } from '../../lib/services/pr
 import type { ProductLabel } from '../../components/ProductLabels';
 import type { ProductListingBrand } from '../../lib/types/product-listing-brand';
 import type { ProductsPageSearchParams } from './products-page-search-params';
-import { SHOP_PLP_DEFAULT_PAGE_SIZE } from '@/lib/constants/shop-plp-pagination';
+import {
+  SHOP_PLP_DEFAULT_PAGE_SIZE,
+  SHOP_PLP_MAX_PAGE_SIZE,
+} from '@/lib/constants/shop-plp-pagination';
 
 /** PLP row after `transformProducts` (typed as unknown[] in service). */
 type ShopGridProduct = {
@@ -163,7 +166,9 @@ export async function ProductsShopStreamedSection({ searchParams }: ProductsShop
   const parsedLimit = limitParam && !Number.isNaN(parseInt(limitParam, 10))
     ? parseInt(limitParam, 10)
     : null;
-  const perPage = parsedLimit ? Math.min(parsedLimit, 200) : SHOP_PLP_DEFAULT_PAGE_SIZE;
+  const perPage = parsedLimit
+    ? Math.min(parsedLimit, SHOP_PLP_MAX_PAGE_SIZE)
+    : SHOP_PLP_DEFAULT_PAGE_SIZE;
 
   const { min: filtersMinPrice, max: filtersMaxPrice } = parseUrlPriceBounds(
     params.minPrice,

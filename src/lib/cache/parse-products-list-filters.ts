@@ -1,5 +1,9 @@
 import type { ProductFilters } from '@/lib/services/products-find-query/types';
 import { parseTechnicalSpecFiltersFromSearchParams } from '@/lib/services/products-technical-filters';
+import {
+  SHOP_PLP_DEFAULT_PAGE_SIZE,
+  SHOP_PLP_MAX_PAGE_SIZE,
+} from '@/lib/constants/shop-plp-pagination';
 
 /**
  * Normalized product list filters from request query (API route + any caller).
@@ -38,8 +42,8 @@ export function parseProductListFiltersFromSearchParams(
     productIdsFromQuery.length > 0
       ? Math.min(Math.max(productIdsFromQuery.length, 1), 500)
       : Number.isInteger(parsedLimit) && parsedLimit > 0
-        ? Math.min(parsedLimit, 200)
-        : 12;
+        ? Math.min(parsedLimit, SHOP_PLP_MAX_PAGE_SIZE)
+        : SHOP_PLP_DEFAULT_PAGE_SIZE;
 
   const cursor = searchParams.get('cursor') || undefined;
   const technicalSpecs = parseTechnicalSpecFiltersFromSearchParams(searchParams);

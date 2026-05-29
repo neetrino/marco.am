@@ -2,12 +2,10 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { apiClient } from '../lib/api-client';
 import {
   PRODUCTS_FILTER_SECTION_SHELL_CLASS,
   productsFiltersSectionFont,
 } from '../lib/products-filters-typography';
-import { getStoredLanguage } from '../lib/language';
 import {
   getStoredCurrency,
   formatCatalogPrice,
@@ -18,6 +16,7 @@ import {
 import { useTranslation } from '../lib/i18n-client';
 import { pushShopProductsListingUrl } from '../lib/push-shop-products-listing-url';
 import { useMobileFiltersDraft } from './mobile-filters-draft-context';
+import { useProductsFilters } from './ProductsFiltersProvider';
 
 interface PriceFilterProps {
   currentMinPrice?: string;
@@ -43,6 +42,7 @@ export function PriceFilter({ currentMinPrice, currentMaxPrice, category }: Pric
   const router = useRouter();
   const searchParams = useSearchParams();
   const mobileDraft = useMobileFiltersDraft();
+  const filtersContext = useProductsFilters();
   const { t } = useTranslation();
   const activeSearchParams = mobileDraft?.enabled ? mobileDraft.searchParams : searchParams;
 
@@ -56,11 +56,10 @@ export function PriceFilter({ currentMinPrice, currentMaxPrice, category }: Pric
   const [maxPrice, setMaxPrice] = useState(0);
   const [isDragging, setIsDragging] = useState<'min' | 'max' | null>(null);
   const [currency, setCurrency] = useState<CurrencyCode>('USD');
-  const [standaloneLoading, setStandaloneLoading] = useState(true);
   const sliderRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<'min' | 'max' | null>(null);
 
-  const rangeLoading = standaloneLoading;
+  const rangeLoading = filtersContext?.loading ?? false;
   const rangeReady = !rangeLoading && priceRange.max > 0;
 
   const roundToStep = (value: number, step: number | null | undefined): number => {
@@ -82,25 +81,17 @@ export function PriceFilter({ currentMinPrice, currentMaxPrice, category }: Pric
   }, []);
 
   useEffect(() => {
-    const run = async () => {
-      setStandaloneLoading(true);
-      try {
-        const language = getStoredLanguage();
-        const params: Record<string, string> = {
-          lang: language,
-          _ts: String(Date.now()),
-        };
-        if (category) params.category = category;
-        const response = await apiClient.get<PriceRange>('/api/v1/products/price-range', { params });
-        setPriceRange(response);
-      } catch (error) {
-        console.error('Error fetching price range:', error);
-      } finally {
-        setStandaloneLoading(false);
-      }
-    };
-    void run();
-  }, [category]);
+    const incomingRange = filtersContext?.data?.priceRange;
+    if (!incomingRange) {
+      return;
+    }
+    setPriceRange({
+      min: incomingRange.min ?? 0,
+      max: incomingRange.max ?? 0,
+      stepSize: incomingRange.stepSize ?? null,
+      stepSizePerCurrency: incomingRange.stepSizePerCurrency ?? null,
+    });
+  }, [filtersContext?.data?.priceRange, category]);
 
   useEffect(() => {
     const lo = priceRange.min;

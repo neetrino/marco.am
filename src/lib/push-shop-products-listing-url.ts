@@ -1,3 +1,5 @@
+import { startTransition } from "react";
+
 /**
  * Navigate to the shop listing (`/products` or `/products?…`) and refetch server
  * components so the grid and meta match the URL after client-side navigation.
@@ -13,10 +15,14 @@ export function pushShopProductsListingUrl(
       currentUrl.pathname === targetUrl.pathname && currentUrl.search === targetUrl.search;
 
     if (isSameRoute) {
-      router.refresh();
+      startTransition(() => {
+        router.refresh();
+      });
       return;
     }
   }
 
-  void router.push(href);
+  startTransition(() => {
+    void router.push(href);
+  });
 }

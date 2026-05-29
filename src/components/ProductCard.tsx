@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import type { MouseEvent } from 'react';
 import { useWishlist } from './hooks/useWishlist';
 import { useCompare } from './hooks/useCompare';
@@ -44,7 +44,11 @@ interface ProductCardProps {
  * Product card component with Compare, Wishlist and Cart icons
  * Displays product image, title, category, price and action buttons
  */
-export function ProductCard({ product, viewMode = 'grid-3', wishlistPage = false }: ProductCardProps) {
+export const ProductCard = memo(function ProductCard({
+  product,
+  viewMode = 'grid-3',
+  wishlistPage = false,
+}: ProductCardProps) {
   const isCompact = viewMode === 'grid-3';
   const currency = useCurrency();
   const { isInWishlist, toggleWishlist } = useWishlist(product.id);
@@ -60,25 +64,23 @@ export function ProductCard({ product, viewMode = 'grid-3', wishlistPage = false
   });
   const [imageError, setImageError] = useState(false);
 
-  const handleWishlistToggle = (e: MouseEvent) => {
+  const handleWishlistToggle = useCallback((e: MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     void toggleWishlist();
-  };
+  }, [toggleWishlist]);
 
-  // Handle compare toggle
-  const handleCompareToggle = (e: MouseEvent) => {
+  const handleCompareToggle = useCallback((e: MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     void toggleCompare();
-  };
+  }, [toggleCompare]);
 
-  // Handle add to cart
-  const handleAddToCart = (e: MouseEvent) => {
+  const handleAddToCart = useCallback((e: MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     void addToCart();
-  };
+  }, [addToCart]);
 
   // List view layout
   if (viewMode === 'list') {
@@ -116,5 +118,7 @@ export function ProductCard({ product, viewMode = 'grid-3', wishlistPage = false
       wishlistPage={wishlistPage}
     />
   );
-}
+});
+
+ProductCard.displayName = 'ProductCard';
 

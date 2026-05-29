@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from '../lib/i18n-client';
 import { dedupeCardProductsByTitle } from '../lib/dedupeCardProductsByTitle';
 import type { ProductListingBrand } from '@/lib/types/product-listing-brand';
@@ -55,6 +55,8 @@ function toSpecialOfferProduct(p: Product): SpecialOfferProduct {
 }
 
 type ViewMode = 'list' | 'grid-2' | 'grid-3';
+const PRODUCTS_RENDER_BATCH_SIZE = 3;
+const PRODUCTS_RENDER_BATCH_DELAY_MS = 3000;
 
 interface ProductsGridProps {
   products: Product[];
@@ -70,7 +72,7 @@ export function ProductsGrid({ products, sortBy = 'default' }: ProductsGridProps
   /** Same as home featured strip: `default` (fixed card width) on md+, `mobileGrid` on small screens */
   const specialOfferLayout = isMaxMd ? 'mobileGrid' : 'default';
   const [viewMode, setViewMode] = useState<ViewMode>('grid-2');
-  const [sortedProducts, setSortedProducts] = useState<Product[]>(products);
+  const [visibleCount, setVisibleCount] = useState(PRODUCTS_RENDER_BATCH_SIZE);
 
   // Load view mode from localStorage
   useEffect(() => {
@@ -96,8 +98,7 @@ export function ProductsGrid({ products, sortBy = 'default' }: ProductsGridProps
     };
   }, []);
 
-  // Sort products
-  useEffect(() => {
+  const sortedProducts = useMemo(() => {
     const sorted = [...products];
 
     switch (sortBy) {
@@ -118,8 +119,26 @@ export function ProductsGrid({ products, sortBy = 'default' }: ProductsGridProps
         break;
     }
 
-    setSortedProducts(dedupeCardProductsByTitle(sorted));
+    return dedupeCardProductsByTitle(sorted);
   }, [products, sortBy]);
+
+  useEffect(() => {
+    setVisibleCount(Math.min(PRODUCTS_RENDER_BATCH_SIZE, sortedProducts.length));
+  }, [sortedProducts]);
+
+  useEffect(() => {
+    if (visibleCount >= sortedProducts.length) {
+      return;
+    }
+    const timerId = window.setTimeout(() => {
+      setVisibleCount((prev) =>
+        Math.min(prev + PRODUCTS_RENDER_BATCH_SIZE, sortedProducts.length),
+      );
+    }, PRODUCTS_RENDER_BATCH_DELAY_MS);
+    return () => {
+      window.clearTimeout(timerId);
+    };
+  }, [visibleCount, sortedProducts.length]);
 
   /** Tighter on smallest phones; roomier gaps on mobile shop before `md` desktop columns */
   const gridGapClass = 'gap-x-4 gap-y-12 md:gap-x-6 md:gap-y-12';
@@ -159,7 +178,7 @@ export function ProductsGrid({ products, sortBy = 'default' }: ProductsGridProps
 
   return (
     <div className={getGridClasses()}>
-      {sortedProducts.map((product) => (
+      {sortedProducts.slice(0, visibleCount).map((product) => (
         <div
           key={product.id}
           className={
