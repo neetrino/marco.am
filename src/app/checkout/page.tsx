@@ -40,6 +40,7 @@ export default function CheckoutPage() {
     orderSummary,
     handlePlaceOrder,
     onSubmit,
+    fetchCart,
   } = useCheckout();
 
   if (loading) {
@@ -109,6 +110,7 @@ export default function CheckoutPage() {
             checkoutTotalsStale={checkoutTotalsStale}
             error={error}
             isSubmitting={isSubmitting}
+            onCartRefresh={fetchCart}
             onPlaceOrder={(e) => {
               if (e) {
                 handlePlaceOrder(e);

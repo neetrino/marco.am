@@ -57,10 +57,12 @@ export function useOrderSummary({
         subtotalAMD: 0,
         taxAMD: 0,
         shippingAMD: 0,
+        discountAMD: 0,
         totalAMD: 0,
         subtotalDisplay: 0,
         taxDisplay: 0,
         shippingDisplay: 0,
+        discountDisplay: 0,
         totalDisplay: 0,
       };
     }
@@ -81,6 +83,8 @@ export function useOrderSummary({
       const taxDisplay = currency === "AMD" ? taxAMD : convertPrice(taxAMD, "AMD", currency);
       const shippingDisplay =
         currency === "AMD" ? shippingAMD : convertPrice(shippingAMD, "AMD", currency);
+      const discountDisplay =
+        currency === "AMD" ? discountAmount : convertPrice(discountAmount, "AMD", currency);
       const totalDisplay =
         currency === "AMD" ? totalAMD : convertPrice(totalAMD, "AMD", currency);
 
@@ -88,10 +92,12 @@ export function useOrderSummary({
         subtotalAMD,
         taxAMD,
         shippingAMD,
+        discountAMD: discountAmount,
         totalAMD,
         subtotalDisplay,
         taxDisplay,
         shippingDisplay,
+        discountDisplay,
         totalDisplay,
       };
     }
@@ -103,17 +109,23 @@ export function useOrderSummary({
         ? cart.totals.tax
         : convertPrice(cart.totals.tax, "USD", "AMD");
     const shippingAMD = 0;
+    const discountAMD =
+      cart.totals.currency === "AMD"
+        ? cart.totals.discount
+        : convertPrice(cart.totals.discount, "USD", "AMD");
     const totalFromCartAmd = cartTotalsTotalAmd(cart);
     const totalAMD =
       lineSubAmd <= 0 && totalFromCartAmd > 0
         ? totalFromCartAmd
-        : subtotalAMD + taxAMD + shippingAMD;
+        : subtotalAMD - discountAMD + taxAMD + shippingAMD;
 
     const subtotalDisplay =
       currency === "AMD" ? subtotalAMD : convertPrice(subtotalAMD, "AMD", currency);
     const taxDisplay = currency === "AMD" ? taxAMD : convertPrice(taxAMD, "AMD", currency);
     const shippingDisplay =
       currency === "AMD" ? shippingAMD : convertPrice(shippingAMD, "AMD", currency);
+    const discountDisplay =
+      currency === "AMD" ? discountAMD : convertPrice(discountAMD, "AMD", currency);
     const totalDisplay =
       currency === "AMD" ? totalAMD : convertPrice(totalAMD, "AMD", currency);
 
@@ -121,10 +133,12 @@ export function useOrderSummary({
       subtotalAMD,
       taxAMD,
       shippingAMD,
+      discountAMD,
       totalAMD,
       subtotalDisplay,
       taxDisplay,
       shippingDisplay,
+      discountDisplay,
       totalDisplay,
     };
   }, [cart, checkoutTotals, currency]);

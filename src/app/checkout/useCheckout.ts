@@ -241,6 +241,7 @@ export function useCheckout() {
     // Actions
     handlePlaceOrder,
     onSubmit,
+    fetchCart,
     // Auth
     isLoggedIn,
   };

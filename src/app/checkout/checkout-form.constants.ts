@@ -46,3 +46,15 @@ export const CHECKOUT_FULFILLMENT_TOGGLE_ACTIVE_CLASS =
 
 export const CHECKOUT_FULFILLMENT_TOGGLE_INACTIVE_CLASS =
   'border-[var(--app-border)] bg-[var(--app-surface-muted)]/80 text-[var(--app-text)] hover:border-marco-yellow/45 hover:bg-marco-yellow/[0.06] dark:border-[var(--app-border-strong)] dark:bg-[var(--app-surface-muted)]/50 dark:hover:border-marco-yellow/40 dark:hover:bg-marco-yellow/[0.08]';
+
+export const CHECKOUT_ORDER_SUMMARY_TITLE_CLASS =
+  'text-xl font-semibold text-[var(--app-text)]';
+
+export const CHECKOUT_ORDER_SUMMARY_PROMO_APPLY_CLASS =
+  'shrink-0 rounded-xl bg-marco-yellow px-4 text-sm font-bold text-marco-black transition-[filter] hover:brightness-95 active:brightness-90 disabled:cursor-not-allowed disabled:opacity-50 dark:!text-marco-black';
+
+export const CHECKOUT_ORDER_SUMMARY_PRIMARY_BUTTON_CLASS =
+  'w-full !min-h-12 !rounded-xl !text-sm !font-bold';
+
+export const CHECKOUT_ORDER_SUMMARY_SECONDARY_BUTTON_CLASS =
+  'w-full !min-h-12 !rounded-xl !border-marco-yellow !text-marco-black hover:!bg-marco-yellow/10 dark:!border-marco-yellow dark:!text-white dark:hover:!bg-marco-yellow/10';
