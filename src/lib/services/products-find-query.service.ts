@@ -1,5 +1,5 @@
 import { buildWhereClause } from "./products-find-query/query-builder";
-import { executeProductQuery } from "./products-find-query/query-executor";
+import { executeProductListingQuery } from "./products-find-query/query-executor";
 import { db } from "@white-shop/db";
 import type { ProductFilters, ProductWithRelations } from "./products-find-query/types";
 import { hasTechnicalSpecFilters } from "./products-technical-filters";
@@ -17,7 +17,7 @@ class ProductsFindQueryService {
     bestsellerProductIds: string[];
     total?: number;
   }> {
-    const { limit = 12, page = 1, sort } = filters;
+    const { limit = 12, page = 1, sort, filter } = filters;
 
     const { where, bestsellerProductIds } = await buildWhereClause(filters);
 
@@ -34,18 +34,15 @@ class ProductsFindQueryService {
       sort === "price-desc" ||
       sort === "price" ||
       sort === "popular" ||
-      sort === "bestseller";
+      sort === "bestseller" ||
+      filter === "promotion" ||
+      filter === "special_offer";
 
-    const needOverFetch =
-      Boolean(filters.category || filters.search) ||
-      filters.minPrice != null ||
-      filters.maxPrice != null ||
-      Boolean(filters.colors || filters.sizes || filters.brand) ||
-      hasTechnicalSpecFilters(filters.technicalSpecs) ||
-      requiresSortOverFetch;
+    const needOverFetch = hasTechnicalSpecFilters(filters.technicalSpecs) || requiresSortOverFetch;
 
     const queryOpts = {
       omitProductAttributes: Boolean(filters.listingOmitProductAttributes),
+      lang: filters.lang ?? "en",
     };
 
     if (!needOverFetch) {
@@ -55,7 +52,7 @@ class ProductsFindQueryService {
         Boolean(filters.skipExactTotalCount) && filters.cursor === undefined;
 
       if (canSkipCount) {
-        const products = await executeProductQuery(where, limit, skip, queryOpts);
+        const products = await executeProductListingQuery(where, limit, skip, queryOpts);
         const total =
           products.length < limit ? skip + products.length : skip + limit + 1;
         return {
@@ -67,7 +64,7 @@ class ProductsFindQueryService {
 
       const [total, products] = await Promise.all([
         db.product.count({ where }),
-        executeProductQuery(where, limit, skip, queryOpts),
+        executeProductListingQuery(where, limit, skip, queryOpts),
       ]);
       return {
         products,
@@ -77,7 +74,7 @@ class ProductsFindQueryService {
     }
 
     const fetchLimit = Math.min(limit * 10, 200);
-    const products = await executeProductQuery(where, fetchLimit, 0, queryOpts);
+    const products = await executeProductListingQuery(where, fetchLimit, 0, queryOpts);
 
     return {
       products,

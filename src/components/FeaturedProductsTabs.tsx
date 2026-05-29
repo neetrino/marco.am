@@ -142,6 +142,7 @@ async function fetchFeaturedStrip(
     lang: language,
     filter,
     omitProductAttributes: '1',
+    skipExactTotalCount: '1',
   };
   const response = await apiClient.get<ProductsResponse>('/api/v1/products', {
     params,

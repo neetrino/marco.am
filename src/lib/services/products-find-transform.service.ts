@@ -11,17 +11,7 @@ import { processImageUrl } from "../utils/image-utils";
 import { translations } from "../translations";
 import { ProductWithRelations } from "./products-find-query.service";
 
-/** Storefront path prefix for product detail (PDP) links in list responses. */
-const PRODUCT_DETAIL_PATH_PREFIX = "/products";
-const SPEC_ATTRIBUTE_EXCLUDE_KEYS = new Set(["color", "size"]);
-const MAX_KEY_SPECS = 4;
 const WARRANTY_LABEL_PATTERN = /(warranty|guarantee|երաշխ|гарант|garanti)/i;
-
-type ProductSpec = {
-  key: string;
-  label: string;
-  value: string;
-};
 
 type ProductListLabel = {
   id: string;
@@ -34,114 +24,6 @@ type ProductListLabel = {
 type WarrantyBadge = {
   years: ProductWarrantyYears;
 };
-
-function formatSpecLabel(key: string): string {
-  return key
-    .split(/[_-]/g)
-    .filter(Boolean)
-    .map((chunk) => chunk.charAt(0).toUpperCase() + chunk.slice(1))
-    .join(" ");
-}
-
-function addSpecIfMissing(specs: ProductSpec[], spec: ProductSpec): void {
-  if (specs.length >= MAX_KEY_SPECS) {
-    return;
-  }
-  const alreadyExists = specs.some((entry) => entry.key === spec.key);
-  if (!alreadyExists) {
-    specs.push(spec);
-  }
-}
-
-function buildKeySpecs(
-  product: ProductWithRelations,
-  variant: ProductWithRelations["variants"][number] | null,
-  lang: string,
-): ProductSpec[] {
-  const specs: ProductSpec[] = [];
-  const options = Array.isArray(variant?.options) ? variant.options : [];
-  options.forEach((option) => {
-    if ("attributeValue" in option && option.attributeValue) {
-      const key = option.attributeValue.attribute?.key;
-      if (!key || SPEC_ATTRIBUTE_EXCLUDE_KEYS.has(key)) {
-        return;
-      }
-      const valueTranslation =
-        option.attributeValue.translations?.find((t) => t.locale === lang) ??
-        option.attributeValue.translations?.[0];
-      const value = (valueTranslation?.label || option.attributeValue.value || "").trim();
-      if (!value) {
-        return;
-      }
-      addSpecIfMissing(specs, {
-        key,
-        label: formatSpecLabel(key),
-        value,
-      });
-      return;
-    }
-
-    const key = typeof option.attributeKey === "string" ? option.attributeKey.trim() : "";
-    if (!key || SPEC_ATTRIBUTE_EXCLUDE_KEYS.has(key)) {
-      return;
-    }
-    const value = typeof option.value === "string" ? option.value.trim() : "";
-    if (!value) {
-      return;
-    }
-    addSpecIfMissing(specs, {
-      key,
-      label: formatSpecLabel(key),
-      value,
-    });
-  });
-
-  if (specs.length >= MAX_KEY_SPECS) {
-    return specs;
-  }
-
-  const productAttributes = Array.isArray(product.productAttributes)
-    ? product.productAttributes
-    : [];
-  productAttributes.forEach((productAttribute) => {
-    const row = productAttribute as NonNullable<ProductWithRelations["productAttributes"]>[number] & {
-      attribute?: {
-        key: string;
-        translations?: Array<{ locale: string; name?: string }>;
-        values?: Array<{
-          value?: string;
-          translations?: Array<{ locale: string; label?: string }>;
-        }>;
-      };
-    };
-    const attribute = row.attribute;
-    const key = attribute?.key;
-    if (!key || SPEC_ATTRIBUTE_EXCLUDE_KEYS.has(key)) {
-      return;
-    }
-    const attrTranslation =
-      attribute.translations?.find((t: { locale: string }) => t.locale === lang) ??
-      attribute.translations?.[0];
-    const firstValue = Array.isArray(attribute.values) ? attribute.values[0] : undefined;
-    if (!firstValue) {
-      return;
-    }
-    const valueTranslation =
-      firstValue.translations?.find((t: { locale: string }) => t.locale === lang) ??
-      firstValue.translations?.[0];
-    const value = (valueTranslation?.label || firstValue.value || "").trim();
-    if (!value) {
-      return;
-    }
-    addSpecIfMissing(specs, {
-      key,
-      label: (attrTranslation?.name || formatSpecLabel(key)).trim(),
-      value,
-    });
-  });
-
-  return specs;
-}
 
 function extractWarrantyYearsFromLabel(labels: ProductListLabel[]): ProductWarrantyYears | null {
   const warrantyLabel = labels.find((label) => WARRANTY_LABEL_PATTERN.test(label.value));
@@ -357,18 +239,6 @@ class ProductsFindTransformService {
         fallbackDiscountPercent: appliedDiscount > 0 ? appliedDiscount : null,
       });
 
-      // Get categories with translations
-      const categories = Array.isArray(product.categories) ? product.categories.map((cat: { id: string; translations?: Array<{ locale: string; slug: string; title: string }> }) => {
-        const catTranslations = Array.isArray(cat.translations) ? cat.translations : [];
-        const catTranslation = catTranslations.find((t: { locale: string }) => t.locale === lang) || catTranslations[0] || null;
-        return {
-          id: cat.id,
-          slug: catTranslation?.slug || "",
-          title: catTranslation?.title || "",
-        };
-      }) : [];
-      const keySpecs = buildKeySpecs(product, variant, lang);
-
       const slug = translation?.slug || "";
       const labels: ProductListLabel[] = (() => {
         // Map existing labels
@@ -420,7 +290,6 @@ class ProductsFindTransformService {
       return {
         id: product.id,
         slug,
-        href: slug ? `${PRODUCT_DETAIL_PATH_PREFIX}/${slug}` : "",
         title: translation?.title || "",
         defaultVariantId: variant?.id ?? null,
         brand: product.brand
@@ -431,7 +300,6 @@ class ProductsFindTransformService {
               logoUrl: processImageUrl(product.brand.logoUrl),
             }
           : null,
-        categories,
         price: pricing.currentPrice,
         originalPrice: pricing.oldPrice,
         compareAtPrice: pricing.compareAtPrice,
@@ -456,7 +324,6 @@ class ProductsFindTransformService {
         inStock: (variant?.stock || 0) > 0,
         labels,
         warrantyBadge,
-        keySpecs,
         colors: availableColors, // Add available colors array
         requiresAttributeSelection: productRequiresAttributeSelection(variants),
       };

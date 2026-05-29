@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import Link from 'next/link';
+import { useCartDrawer } from '../../lib/cart/cart-drawer-context';
 
 export default function CheckoutError({
   error,
@@ -10,6 +10,8 @@ export default function CheckoutError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const { openCartDrawer } = useCartDrawer();
+
   useEffect(() => {
     if (process.env.NODE_ENV === 'production') {
       // e.g. Sentry.captureException(error);
@@ -29,9 +31,13 @@ export default function CheckoutError({
           >
             Try again
           </button>
-          <Link href="/cart" className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium">
+          <button
+            type="button"
+            onClick={openCartDrawer}
+            className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium"
+          >
             Cart
-          </Link>
+          </button>
         </div>
       </div>
     </div>

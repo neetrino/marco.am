@@ -239,7 +239,7 @@ export default function CategoriesPage() {
                 onTogglePageSelection={handleTogglePageSelection}
                 onEdit={handleEditCategory}
                 onDelete={(categoryId, categoryTitle) =>
-                  handleDeleteCategory(categoryId, categoryTitle, fetchCategories)
+                  handleDeleteCategory(categoryId, categoryTitle, fetchCategories, categories)
                 }
               />
             )}

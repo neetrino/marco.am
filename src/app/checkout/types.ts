@@ -12,6 +12,7 @@ export type CheckoutFormData = {
   paymentMethod: CheckoutPaymentMethodId;
   shippingAddress?: string;
   shippingCity?: string;
+  pickupBranchId?: string | '';
 };
 
 export interface CartItem {
@@ -33,6 +34,7 @@ export interface CartItem {
 
 export interface Cart {
   id: string;
+  couponCode?: string | null;
   items: CartItem[];
   totals: {
     subtotal: number;

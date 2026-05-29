@@ -5,9 +5,10 @@
   "description": "WhiteShop.am — Next.js app at root, pnpm workspace",
   "scripts": {
     "predev": "node scripts/ensure-prisma-generated.cjs",
-    "dev": "next dev -p 3000",
-    "dev:webpack": "next dev --no-turbo -p 3000",
-    "dev:clean": "node -e \"require('fs').rmSync('.next', {recursive: true, force: true})\" && next dev -p 3000",
+    "dev": "next dev --webpack -p 3000",
+    "dev:turbo": "next dev -p 3000",
+    "dev:webpack": "next dev --webpack -p 3000",
+    "dev:clean": "node -e \"require('fs').rmSync('.next', {recursive: true, force: true})\" && next dev --webpack -p 3000",
     "prebuild": "node src/scripts/prisma-prebuild-fallback.cjs",
     "prebuild:migrate": "node src/scripts/run-migrations.js",
     "build": "pnpm run prebuild && next build",

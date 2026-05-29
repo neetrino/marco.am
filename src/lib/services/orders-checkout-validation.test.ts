@@ -11,7 +11,14 @@ const base = {
 describe("validateCheckoutCustomer", () => {
   it("returns normalized fields for pickup", () => {
     const r = validateCheckoutCustomer(
-      { ...base, shippingMethod: "pickup" },
+      {
+        ...base,
+        shippingMethod: "pickup",
+        shippingAddress: {
+          address: "Ք․ Երևան Ալեք Մանուկյան 23",
+          pickupBranchId: "yerevan",
+        },
+      },
       "pickup"
     );
     expect(r.email).toBe("a@b.co");
@@ -73,7 +80,14 @@ describe("validateCheckoutCustomer", () => {
   it("rejects too long notes", () => {
     try {
       validateCheckoutCustomer(
-        { ...base, notes: "x".repeat(2001) },
+        {
+          ...base,
+          notes: "x".repeat(2001),
+          shippingAddress: {
+            address: "Թումանյան մ/ճ",
+            pickupBranchId: "tumanyan",
+          },
+        },
         "pickup"
       );
       expect.fail("expected throw");
@@ -85,5 +99,30 @@ describe("validateCheckoutCustomer", () => {
         ])
       );
     }
+  });
+
+  it("requires pickup branch for store pickup", () => {
+    try {
+      validateCheckoutCustomer({ ...base, shippingMethod: "pickup" }, "pickup");
+      expect.fail("expected throw");
+    } catch (e: unknown) {
+      const err = e as { detail?: string; errors?: Array<{ field?: string }> };
+      expect(err.detail).toMatch(/Pickup branch/);
+      expect(err.errors?.map((item) => item.field)).toContain("pickupBranchId");
+    }
+  });
+
+  it("accepts pickup with branch", () => {
+    const r = validateCheckoutCustomer(
+      {
+        ...base,
+        shippingAddress: {
+          address: "Ք․ Երևան Ալեք Մանուկյան 23",
+          pickupBranchId: "yerevan",
+        },
+      },
+      "pickup"
+    );
+    expect(r.firstName).toBe("A");
   });
 });

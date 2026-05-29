@@ -8,6 +8,7 @@ type CheckoutFieldName =
   | "phone"
   | "shippingAddress"
   | "shippingCity"
+  | "pickupBranchId"
   | "notes";
 
 type CheckoutValidationIssue = {
@@ -41,6 +42,7 @@ const CHECKOUT_FIELD_NAMES: readonly CheckoutFieldName[] = [
   "phone",
   "shippingAddress",
   "shippingCity",
+  "pickupBranchId",
   "notes",
 ];
 
@@ -53,6 +55,7 @@ const CODE_TO_TRANSLATION_KEY: Record<string, string> = {
   invalid_phone: "checkout.errors.invalidPhone",
   required_shipping_address: "checkout.errors.addressRequired",
   required_shipping_city: "checkout.errors.cityRequired",
+  required_pickup_branch: "checkout.errors.branchRequired",
   notes_too_long: "checkout.errors.notesTooLong",
 };
 

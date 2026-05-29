@@ -109,6 +109,33 @@
     animation: fade-in 0.3s ease-out;
   }
 
+  .checkout-order-summary-receipt-shell {
+    filter: drop-shadow(0 4px 20px rgba(16, 16, 16, 0.08));
+  }
+
+  .dark .checkout-order-summary-receipt-shell {
+    filter: drop-shadow(0 8px 28px rgba(0, 0, 0, 0.32));
+  }
+
+  .cart-order-summary-receipt {
+    position: relative;
+    border-radius: 1rem 1rem 0 0;
+    background: var(--app-surface);
+    padding: 1.5rem;
+  }
+
+  .cart-order-summary-receipt-edge {
+    height: 20px;
+    background-color: transparent;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='20' viewBox='0 0 32 20'%3E%3Cpath d='M0 0 L8 20 L16 0 L24 20 L32 0 Z' fill='%23ffffff'/%3E%3C/svg%3E");
+    background-repeat: repeat-x;
+    background-size: 32px 20px;
+  }
+
+  .dark .cart-order-summary-receipt-edge {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='20' viewBox='0 0 32 20'%3E%3Cpath d='M0 0 L8 20 L16 0 L24 20 L32 0 Z' fill='%23383838'/%3E%3C/svg%3E");
+  }
+
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -815,10 +842,15 @@
 }
 
 body[data-mobile-menu-open='true'] #tidio,
+body[data-cart-drawer-open='true'] #tidio,
 body[data-mobile-menu-open='true'] #tidio-chat,
+body[data-cart-drawer-open='true'] #tidio-chat,
 body[data-mobile-menu-open='true'] #tidio-chat-iframe,
+body[data-cart-drawer-open='true'] #tidio-chat-iframe,
 body[data-mobile-menu-open='true'] iframe[src*='tidio.co'],
-body[data-mobile-menu-open='true'] [id^='tidio-'] {
+body[data-cart-drawer-open='true'] iframe[src*='tidio.co'],
+body[data-mobile-menu-open='true'] [id^='tidio-'],
+body[data-cart-drawer-open='true'] [id^='tidio-'] {
   display: none !important;
   visibility: hidden !important;
   opacity: 0 !important;

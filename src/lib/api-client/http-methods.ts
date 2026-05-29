@@ -90,6 +90,19 @@ function handleNetworkError(
 /**
  * Handle error response
  */
+function errorDetailFromBody(errorData: unknown, errorText: string, statusText: string): string {
+  if (errorData && typeof errorData === 'object' && 'detail' in errorData) {
+    const detail = (errorData as { detail: unknown }).detail;
+    if (typeof detail === 'string' && detail.trim().length > 0) {
+      return detail;
+    }
+  }
+  if (errorText.trim().length > 0) {
+    return errorText;
+  }
+  return statusText;
+}
+
 async function handleErrorResponse(
   response: Response,
   url: string,
@@ -97,45 +110,25 @@ async function handleErrorResponse(
   options?: Pick<RequestOptions, "suppressHttpErrorLogging">,
 ): Promise<never> {
   const isUnauthorized = response.status === 401;
-  const isNotFound = response.status === 404;
-  const isValidationLike = response.status === 422;
-  
-  // Log expected, non-fatal statuses as warnings.
-  if (shouldLogWarning(response.status)) {
-    if (isNotFound) {
-      console.warn(`⚠️ [API CLIENT] Not Found (404): ${url}`);
-    } else if (isValidationLike) {
-      console.warn(`⚠️ [API CLIENT] Validation response (422): ${url}`);
-    } else {
-      console.warn(`⚠️ [API CLIENT] Expected error response (${response.status}): ${url}`);
-    }
-  }
-  // Log other errors (except 401 which is expected)
-  else if (shouldLogError(response.status) && !options?.suppressHttpErrorLogging) {
-    console.error(`❌ [API CLIENT] Error: ${response.status} ${response.statusText}`, {
-      url,
-      status: response.status,
-      statusText: response.statusText,
-      headers: Object.fromEntries(response.headers.entries()),
-    });
-  }
-  
-  // Handle 401 Unauthorized - clear token and redirect
+
   if (isUnauthorized) {
     handleUnauthorized();
   }
-  
+
   const { errorText, errorData } = await parseErrorResponse(response);
-  
-  // Log error details
-  if (isNotFound) {
-    console.warn('⚠️ [API CLIENT] Not Found response:', errorData || errorText);
-  } else if (isValidationLike) {
-    console.warn('⚠️ [API CLIENT] Validation response:', errorData || errorText);
-  } else if (!isUnauthorized && shouldLogError(response.status) && !options?.suppressHttpErrorLogging) {
-    console.error('❌ [API CLIENT] Error response:', errorData || errorText);
+  const detail = errorDetailFromBody(errorData, errorText, response.statusText);
+
+  if (!options?.suppressHttpErrorLogging) {
+    if (shouldLogWarning(response.status)) {
+      console.warn(`⚠️ [API CLIENT] ${response.status}: ${detail}`, { url });
+    } else if (!isUnauthorized && shouldLogError(response.status)) {
+      console.error(`❌ [API CLIENT] Error: ${response.status} ${response.statusText}`, {
+        url,
+        detail: errorData ?? errorText,
+      });
+    }
   }
-  
+
   throw createApiError(response, errorText, errorData);
 }
 

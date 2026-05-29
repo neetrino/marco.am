@@ -128,12 +128,14 @@ export async function DELETE(
     }
 
     const { id } = await params;
-    logger.devLog("🗑️ [ADMIN CATEGORIES] DELETE request:", id);
+    const cascadeParam = req.nextUrl.searchParams.get('cascade');
+    const cascade = cascadeParam === '1' || cascadeParam?.toLowerCase() === 'true';
+    logger.devLog("🗑️ [ADMIN CATEGORIES] DELETE request:", { id, cascade });
 
-    await adminService.deleteCategory(id);
+    const result = await adminService.deleteCategory(id, { cascade });
     logger.devLog("✅ [ADMIN CATEGORIES] Category deleted:", id);
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json(result);
   } catch (error: any) {
     console.error("❌ [ADMIN CATEGORIES] DELETE Error:", error);
     return NextResponse.json(

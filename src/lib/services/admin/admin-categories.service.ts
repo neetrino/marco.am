@@ -74,6 +74,7 @@ class AdminCategoriesService {
     const typeByStatus = {
       400: "https://api.shop.am/problems/bad-request",
       404: "https://api.shop.am/problems/not-found",
+      422: "https://api.shop.am/problems/unprocessable-entity",
     } as const;
 
     const type = typeByStatus[status as keyof typeof typeByStatus] ?? "https://api.shop.am/problems/internal-error";
@@ -845,10 +846,45 @@ class AdminCategoriesService {
     return false;
   }
 
+  private async loadSubtreeCategoryIds(rootCategoryId: string): Promise<string[]> {
+    const categories = await db.category.findMany({
+      where: { deletedAt: null },
+      select: { id: true, parentId: true },
+    });
+
+    const childMap = new Map<string, string[]>();
+    categories.forEach((category) => {
+      if (!category.parentId) {
+        return;
+      }
+      const siblings = childMap.get(category.parentId) ?? [];
+      siblings.push(category.id);
+      childMap.set(category.parentId, siblings);
+    });
+
+    return this.collectDescendantIds(rootCategoryId, childMap);
+  }
+
+  private async countActiveProductsInCategories(categoryIds: string[]): Promise<number> {
+    if (categoryIds.length === 0) {
+      return 0;
+    }
+
+    return db.product.count({
+      where: {
+        deletedAt: null,
+        OR: [
+          { primaryCategoryId: { in: categoryIds } },
+          { categoryIds: { hasSome: categoryIds } },
+        ],
+      },
+    });
+  }
+
   /**
    * Delete category (soft delete)
    */
-  async deleteCategory(categoryId: string) {
+  async deleteCategory(categoryId: string, options?: { cascade?: boolean }) {
     logger.devLog('🗑️ [ADMIN SERVICE] deleteCategory called:', categoryId);
     
     const category = await db.category.findFirst({
@@ -873,27 +909,45 @@ class AdminCategoriesService {
     // Check if category has children
     const childrenCount = category.children ? category.children.length : 0;
     if (childrenCount > 0) {
-      throw this.buildProblemError(
-        400,
-        "Cannot delete category",
-        `This category has ${childrenCount} child categor${childrenCount > 1 ? "ies" : "y"}. Please delete or move child categories first.`,
-      );
+      if (!options?.cascade) {
+        throw this.buildProblemError(
+          422,
+          "Cannot delete category",
+          `This category has ${childrenCount} child categor${childrenCount > 1 ? "ies" : "y"}. Please delete or move child categories first.`,
+        );
+      }
+
+      const subtreeIds = await this.loadSubtreeCategoryIds(categoryId);
+      const productsCount = await this.countActiveProductsInCategories(subtreeIds);
+      if (productsCount > 0) {
+        throw this.buildProblemError(
+          422,
+          "Cannot delete category",
+          `This category tree has ${productsCount} associated product${productsCount > 1 ? "s" : ""}. Remove products from these categories first.`,
+        );
+      }
+
+      await db.category.updateMany({
+        where: { id: { in: subtreeIds } },
+        data: {
+          deletedAt: new Date(),
+          published: false,
+        },
+      });
+
+      logger.devLog('✅ [ADMIN SERVICE] Category subtree deleted:', {
+        categoryId,
+        deletedCount: subtreeIds.length,
+      });
+      await invalidateCategoryPublicCaches();
+      return { success: true, deletedCount: subtreeIds.length };
     }
 
-    // Check if category has products (using count for better performance)
-    const productsCount = await db.product.count({
-      where: {
-        OR: [
-          { primaryCategoryId: categoryId },
-          { categoryIds: { has: categoryId } },
-        ],
-        deletedAt: null,
-      },
-    });
+    const productsCount = await this.countActiveProductsInCategories([categoryId]);
 
     if (productsCount > 0) {
       throw this.buildProblemError(
-        400,
+        422,
         "Cannot delete category",
         `This category has ${productsCount} associated product${productsCount > 1 ? "s" : ""}. Please remove products from this category first.`,
       );

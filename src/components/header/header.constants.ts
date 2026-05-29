@@ -21,6 +21,11 @@ export const HEADER_CATEGORIES_BRIDGE_Z_INDEX = 55;
 export const HEADER_CATEGORIES_PANEL_Z_INDEX = 56;
 
 /**
+ * Row-1 phone/address dropdowns — above row-2 search (`z-[480]`), below mobile search overlay (`z-[700]`).
+ */
+export const HEADER_CONTACT_PICKER_DROPDOWN_Z_CLASS = 'z-[500]';
+
+/**
  * Shared width + horizontal padding for both header rows — `.marco-header-container` in `globals.css`.
  * Wide desktop (1367px+): same `max-w-7xl` column as hero (no extra 1920px / 135px inset).
  */

@@ -83,7 +83,7 @@ export function ProductInfoAndActions({
   isInCompare,
   showMessage,
   isLoggedIn: _isLoggedIn,
-  currentVariant: _currentVariant,
+  currentVariant,
   attributeGroups,
   selectedColor,
   selectedSize,
@@ -106,14 +106,18 @@ export function ProductInfoAndActions({
   const descriptionWithoutDuplicateSpecs =
     stripDuplicateSpecificationDescriptionHtml(normalizedDescription);
   const sanitizedDescription = sanitizeHtml(descriptionWithoutDuplicateSpecs);
+  const hasMultiValueAttributeGroup = Array.from(attributeGroups.values()).some(
+    (values) => values.length > 1,
+  );
   const hasDescription = sanitizedDescription
     .replace(/<[^>]*>/g, '')
     .replace(/&nbsp;/gi, ' ')
     .trim().length > 0;
+  const displaySku = currentVariant?.sku || product.variants.find((variant) => Boolean(variant.sku))?.sku || null;
   const hasAttributeSelectors =
-    attributeGroups.size > 0 ||
-    colorGroups.length > 0 ||
-    (!product?.productAttributes && sizeGroups.length > 0);
+    hasMultiValueAttributeGroup ||
+    colorGroups.length > 1 ||
+    (!product?.productAttributes && sizeGroups.length > 1);
 
   return (
     <div className="flex flex-col h-full">
@@ -135,9 +139,16 @@ export function ProductInfoAndActions({
           </div>
         )}
         <div className="mb-5 flex items-start justify-between gap-4">
-          <h1 className="min-w-0 flex-1 text-2xl font-bold text-marco-black sm:text-3xl md:text-4xl">
-            {getProductText(language, product.id, 'title') || product.title}
-          </h1>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-2xl font-bold text-marco-black sm:text-3xl md:text-4xl">
+              {getProductText(language, product.id, 'title') || product.title}
+            </h1>
+            {displaySku && (
+              <p className="mt-2 text-sm text-gray-500">
+                {t(language, 'common.messages.sku')}: <span className="font-medium text-gray-700">{displaySku}</span>
+              </p>
+            )}
+          </div>
           <div className="shrink-0 rounded-2xl bg-[#1e1e1e] px-4 py-2.5 text-center leading-tight">
             <p className="text-base font-bold text-marco-yellow">3 ՏԱՐԻ</p>
             <p className="text-xs font-bold uppercase tracking-[0.3px] text-white">ԵՐԱՇԽԻՔ</p>

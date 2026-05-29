@@ -68,8 +68,19 @@
     "total": "Итого",
     "free": "Бесплатно",
     "calculated": "Рассчитывается",
+    "discount": "Скидка",
+    "promoCode": "Промокод",
+    "promoCodePlaceholder": "Введите купон",
+    "applyPromo": "Применить",
+    "promoLoginRequired": "Войдите, чтобы применить промокод",
+    "promoApplyFailed": "Не удалось применить промокод",
+    "promoApplied": "Применён: {code}",
+    "removePromo": "Удалить",
     "items": "товаров",
-    "item": "товар"
+    "item": "товар",
+    "myCart": "Моя корзина",
+    "shippingNotCalculated": "Не рассчитано",
+    "viewFullCart": "Открыть полную корзину"
   },
   "wishlist": {
     "title": "Мое избранное",

@@ -1,8 +1,59 @@
 import { Prisma } from "@white-shop/db/prisma";
-import { db } from "@white-shop/db";
+import { getBestsellerProductIdsCached } from "@/lib/cache/bestseller-product-ids-redis";
 import { logger } from "../../utils/logger";
 import type { ProductFilters } from "./types";
 import { getAllChildCategoryIds, findCategoryBySlug } from "./category-utils";
+
+const COLOR_ATTRIBUTE_KEYS = ["color", "colors", "colour"] as const;
+const SIZE_ATTRIBUTE_KEYS = ["size", "sizes"] as const;
+
+function parseCsvTokens(
+  raw: string | undefined,
+  transform?: (token: string) => string,
+): string[] {
+  if (!raw) {
+    return [];
+  }
+  return raw
+    .split(",")
+    .map((token) => token.trim())
+    .filter((token) => token.length > 0)
+    .map((token) => (transform ? transform(token) : token));
+}
+
+function buildCaseInsensitiveStringOr(
+  field: "value" | "name" | "slug" | "label",
+  tokens: string[],
+): Array<Record<string, { equals: string; mode: Prisma.QueryMode }>> {
+  return tokens.map((token) => ({
+    [field]: {
+      equals: token,
+      mode: Prisma.QueryMode.insensitive,
+    },
+  }));
+}
+
+function buildOptionValueFilter(tokens: string[]): Prisma.ProductVariantOptionWhereInput {
+  return {
+    OR: [
+      ...buildCaseInsensitiveStringOr("value", tokens),
+      {
+        attributeValue: {
+          OR: [
+            ...buildCaseInsensitiveStringOr("value", tokens),
+            {
+              translations: {
+                some: {
+                  OR: buildCaseInsensitiveStringOr("label", tokens),
+                },
+              },
+            },
+          ],
+        },
+      },
+    ],
+  };
+}
 
 /**
  * Build search filter for where clause
@@ -140,66 +191,19 @@ async function buildFilterFilter(
   }
 
   if (filter === "bestseller") {
-    type BestsellerVariant = { variantId: string | null; _sum: { quantity: number | null } };
-    const raw = await db.orderItem.groupBy({
-      by: ["variantId"],
-      _sum: { quantity: true },
-      where: {
-        variantId: {
-          not: null,
-        },
-      },
-      orderBy: {
-        _sum: {
-          quantity: "desc" as const,
-        },
-      },
-      take: 200,
-    });
-    const bestsellerVariants: BestsellerVariant[] = raw as BestsellerVariant[];
+    const rankedIds = await getBestsellerProductIdsCached();
+    bestsellerProductIds.push(...rankedIds);
 
-    const variantIds = bestsellerVariants
-      .map((item) => item.variantId)
-      .filter((id): id is string => Boolean(id));
-
-    if (variantIds.length > 0) {
-      const variantProductMap = await db.productVariant.findMany({
-        where: { id: { in: variantIds } },
-        select: { id: true, productId: true },
-      });
-
-      const variantToProduct = new Map<string, string>();
-      variantProductMap.forEach(({ id, productId }: { id: string; productId: string }) => {
-        variantToProduct.set(id, productId);
-      });
-
-      const productSales = new Map<string, number>();
-      bestsellerVariants.forEach((item: BestsellerVariant) => {
-        const variantId = item.variantId;
-        if (!variantId) return;
-        const productId = variantToProduct.get(variantId);
-        if (!productId) return;
-        const qty = item._sum?.quantity || 0;
-        productSales.set(productId, (productSales.get(productId) || 0) + qty);
-      });
-
-      bestsellerProductIds.push(
-        ...Array.from(productSales.entries())
-          .sort((a, b) => (b[1] || 0) - (a[1] || 0))
-          .map(([productId]) => productId)
-      );
-
-      if (bestsellerProductIds.length > 0) {
-        return {
-          where: {
-            ...existingWhere,
-            id: {
-              in: bestsellerProductIds,
-            },
+    if (bestsellerProductIds.length > 0) {
+      return {
+        where: {
+          ...existingWhere,
+          id: {
+            in: bestsellerProductIds,
           },
-          bestsellerProductIds,
-        };
-      }
+        },
+        bestsellerProductIds,
+      };
     }
   }
 
@@ -222,6 +226,11 @@ export async function buildWhereClause(
     category,
     search,
     filter,
+    brand,
+    minPrice,
+    maxPrice,
+    colors,
+    sizes,
     lang = "en",
   } = filters;
 
@@ -263,6 +272,156 @@ export async function buildWhereClause(
   const filterResult = await buildFilterFilter(filter || "", where);
   where = filterResult.where;
   bestsellerProductIds.push(...filterResult.bestsellerProductIds);
+
+  const andConditions: Prisma.ProductWhereInput[] = [];
+
+  const brandTokensRaw = parseCsvTokens(brand);
+  const brandTokensNormalized = parseCsvTokens(brand, (token) => token.toLowerCase());
+  if (brandTokensRaw.length > 0 || brandTokensNormalized.length > 0) {
+    andConditions.push({
+      OR: [
+        {
+          brandId: {
+            in: brandTokensRaw,
+          },
+        },
+        ...brandTokensNormalized.map((token) => ({
+          brand: {
+            slug: {
+              equals: token,
+              mode: Prisma.QueryMode.insensitive,
+            },
+          },
+        })),
+        ...brandTokensNormalized.map((token) => ({
+          brand: {
+            translations: {
+              some: {
+                name: {
+                  equals: token,
+                  mode: Prisma.QueryMode.insensitive,
+                },
+              },
+            },
+          },
+        })),
+      ],
+    });
+  }
+
+  if (minPrice !== undefined || maxPrice !== undefined) {
+    const priceCondition: Prisma.FloatFilter = {};
+    if (minPrice !== undefined) {
+      priceCondition.gte = minPrice;
+    }
+    if (maxPrice !== undefined) {
+      priceCondition.lte = maxPrice;
+    }
+    andConditions.push({
+      variants: {
+        some: {
+          published: true,
+          price: priceCondition,
+        },
+      },
+    });
+  }
+
+  const colorTokens = parseCsvTokens(colors, (token) => token.toLowerCase());
+  if (colorTokens.length > 0) {
+    andConditions.push({
+      variants: {
+        some: {
+          published: true,
+          options: {
+            some: {
+              OR: [
+                {
+                  AND: [
+                    { attributeKey: { in: [...COLOR_ATTRIBUTE_KEYS] } },
+                    buildOptionValueFilter(colorTokens),
+                  ],
+                },
+                {
+                  attributeValue: {
+                    attribute: {
+                      key: {
+                        in: [...COLOR_ATTRIBUTE_KEYS],
+                      },
+                    },
+                    OR: [
+                      ...buildCaseInsensitiveStringOr("value", colorTokens),
+                      {
+                        translations: {
+                          some: {
+                            OR: buildCaseInsensitiveStringOr("label", colorTokens),
+                          },
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        },
+      },
+    });
+  }
+
+  const sizeTokens = parseCsvTokens(sizes, (token) => token.toUpperCase());
+  if (sizeTokens.length > 0) {
+    andConditions.push({
+      variants: {
+        some: {
+          published: true,
+          options: {
+            some: {
+              OR: [
+                {
+                  AND: [
+                    { attributeKey: { in: [...SIZE_ATTRIBUTE_KEYS] } },
+                    buildOptionValueFilter(sizeTokens),
+                  ],
+                },
+                {
+                  attributeValue: {
+                    attribute: {
+                      key: {
+                        in: [...SIZE_ATTRIBUTE_KEYS],
+                      },
+                    },
+                    OR: [
+                      ...buildCaseInsensitiveStringOr("value", sizeTokens),
+                      {
+                        translations: {
+                          some: {
+                            OR: buildCaseInsensitiveStringOr("label", sizeTokens),
+                          },
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        },
+      },
+    });
+  }
+
+  if (andConditions.length > 0) {
+    const existingAnd = Array.isArray(where.AND)
+      ? where.AND
+      : where.AND
+        ? [where.AND]
+        : [];
+    where = {
+      ...where,
+      AND: [...existingAnd, ...andConditions],
+    };
+  }
 
   return {
     where,

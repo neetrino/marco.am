@@ -257,8 +257,10 @@ model Product {
   compareItems    CompareItem[]
 
   @@index([brandId])
+  @@index([primaryCategoryId])
   @@index([published, publishedAt])
   @@index([published, deletedAt])
+  @@index([published, deletedAt, createdAt(sort: Desc)])
   @@index([categoryIds], type: Gin)
   @@index([featured])
   @@index([deletedAt])
@@ -280,6 +282,7 @@ model ProductTranslation {
 
   @@unique([productId, locale])
   @@index([slug, locale])
+  @@index([locale, title])
   @@map("product_translations")
 }
 
@@ -308,6 +311,8 @@ model ProductVariant {
   orderItems OrderItem[]
 
   @@index([productId])
+  @@index([published, price])
+  @@index([productId, published, price])
   @@map("product_variants")
 }
 
@@ -324,6 +329,7 @@ model ProductVariantOption {
 
   @@index([variantId])
   @@index([valueId])
+  @@index([attributeKey, value])
   @@map("product_variant_options")
 }
 

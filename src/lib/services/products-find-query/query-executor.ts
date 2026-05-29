@@ -8,6 +8,11 @@ export type ExecuteProductQueryOptions = {
   omitProductAttributes?: boolean;
 };
 
+export type ExecuteProductListingQueryOptions = {
+  omitProductAttributes?: boolean;
+  lang?: string;
+};
+
 /**
  * Base include configuration for product queries
  */
@@ -172,6 +177,130 @@ export async function executeProductQuery(
 
     throw error;
   }
+}
+
+function buildPreferredLocales(lang: string): string[] {
+  const normalized = lang.trim().toLowerCase();
+  return normalized === "en" ? ["en"] : [normalized, "en"];
+}
+
+/**
+ * Lean listing query for PLP/home strips.
+ * Uses `select` to keep payload and serialization small.
+ */
+export async function executeProductListingQuery(
+  where: Prisma.ProductWhereInput,
+  limit: number,
+  skip: number = 0,
+  options: ExecuteProductListingQueryOptions = {},
+): Promise<ProductWithRelations[]> {
+  const locales = buildPreferredLocales(options.lang ?? "en");
+  const includeProductAttributes = !options.omitProductAttributes;
+
+  const products = await db.product.findMany({
+    where,
+    orderBy: { createdAt: "desc" },
+    skip,
+    take: limit,
+    select: {
+      id: true,
+      brandId: true,
+      primaryCategoryId: true,
+      discountPercent: true,
+      warrantyYears: true,
+      createdAt: true,
+      media: true,
+      translations: {
+        where: { locale: { in: locales } },
+        select: {
+          locale: true,
+          title: true,
+          slug: true,
+          subtitle: true,
+        },
+      },
+      brand: {
+        select: {
+          id: true,
+          slug: true,
+          logoUrl: true,
+          translations: {
+            where: { locale: { in: locales } },
+            select: {
+              locale: true,
+              name: true,
+            },
+          },
+        },
+      },
+      variants: {
+        where: { published: true },
+        select: {
+          id: true,
+          price: true,
+          compareAtPrice: true,
+          stock: true,
+          attributes: true,
+          options: {
+            select: {
+              attributeKey: true,
+              value: true,
+              attributeValue: {
+                select: {
+                  value: true,
+                  imageUrl: true,
+                  colors: true,
+                  attribute: { select: { key: true } },
+                  translations: {
+                    where: { locale: { in: locales } },
+                    select: { locale: true, label: true },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      labels: true,
+      categories: {
+        select: {
+          id: true,
+          translations: {
+            where: { locale: { in: locales } },
+            select: { locale: true, slug: true, title: true },
+          },
+        },
+      },
+      productAttributes: includeProductAttributes
+        ? {
+            select: {
+              attribute: {
+                select: {
+                  key: true,
+                  translations: {
+                    where: { locale: { in: locales } },
+                    select: { locale: true, name: true },
+                  },
+                  values: {
+                    select: {
+                      value: true,
+                      imageUrl: true,
+                      colors: true,
+                      translations: {
+                        where: { locale: { in: locales } },
+                        select: { locale: true, label: true },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          }
+        : false,
+    },
+  });
+
+  return products as unknown as ProductWithRelations[];
 }
 
 /**

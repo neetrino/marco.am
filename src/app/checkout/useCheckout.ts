@@ -8,11 +8,13 @@ import { useTranslation } from '../../lib/i18n-client';
 import { usePaymentMethods } from './utils/payment-methods';
 import { useCheckoutSchema } from './utils/validation-schema';
 import { useCheckoutTotals } from './hooks/useCheckoutTotals';
+import { useCheckoutPromo } from './hooks/useCheckoutPromo';
 import { useCart } from './hooks/useCart';
 import { useUserProfile } from './hooks/useUserProfile';
 import { useOrderSubmission } from './hooks/useOrderSubmission';
 import { useOrderSummary } from './hooks/useOrderSummary';
 import { isCourierShipping } from '../../lib/constants/shipping-method';
+import { getPickupBranches } from '../../lib/constants/pickup-branches';
 import { apiClient } from '../../lib/api-client';
 import { logger } from '../../lib/utils/logger';
 import type { CheckoutFormData } from './types';
@@ -23,7 +25,7 @@ type DeliveryLocationsResponse = {
 
 export function useCheckout() {
   const { isLoggedIn, isLoading } = useAuth();
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const [error, setError] = useState<string | null>(null);
   const [currency, setCurrency] = useState(getStoredCurrency());
   const [_language, setLanguage] = useState(getStoredLanguage());
@@ -55,19 +57,33 @@ export function useCheckout() {
       paymentMethod: 'cash',
       shippingAddress: '',
       shippingCity: '',
+      pickupBranchId: '',
     },
   });
 
   const paymentMethod = watch('paymentMethod');
   const shippingMethod = watch('shippingMethod');
   const shippingCity = watch('shippingCity');
+  const pickupBranchId = watch('pickupBranchId');
+  const customerEmail = watch('email');
+  const pickupBranches = getPickupBranches(lang);
 
   const { cart, loading, fetchCart } = useCart(isLoggedIn, isLoading);
+  const { appliedCouponCode, applyPromo, clearPromo } = useCheckoutPromo({
+    isLoggedIn,
+    cart,
+    shippingMethod,
+    shippingCity,
+    customerEmail,
+    onCartRefresh: fetchCart,
+  });
   const { checkoutTotals, loadingCheckoutTotals, checkoutTotalsStale } = useCheckoutTotals(
     cart,
     isLoggedIn,
     shippingMethod,
-    shippingCity
+    shippingCity,
+    appliedCouponCode,
+    customerEmail
   );
   useUserProfile(isLoggedIn, isLoading, setValue);
 
@@ -119,6 +135,7 @@ export function useCheckout() {
     cart,
     isLoggedIn,
     checkoutTotals,
+    appliedCouponCode,
     setError,
     clearFieldErrors: () => clearErrors(),
     setFieldError: (field, message) =>
@@ -161,10 +178,6 @@ export function useCheckout() {
     };
   }, [isLoggedIn, isLoading, fetchCart]);
 
-  useEffect(() => {
-    setValue('shippingMethod', 'courier');
-  }, [setValue]);
-
   const handlePlaceOrder = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -175,6 +188,18 @@ export function useCheckout() {
       
       if (!hasShippingAddress || !hasShippingCity) {
         setError(t('checkout.errors.fillShippingAddress'));
+        const shippingSection = document.querySelector('[data-shipping-section]');
+        if (shippingSection) {
+          shippingSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return;
+      }
+    } else if (shippingMethod === 'pickup') {
+      const formData = watch();
+      const hasPickupBranch = formData.pickupBranchId && formData.pickupBranchId.trim().length > 0;
+
+      if (!hasPickupBranch) {
+        setError(t('checkout.errors.branchRequired'));
         const shippingSection = document.querySelector('[data-shipping-section]');
         if (shippingSection) {
           shippingSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -208,6 +233,7 @@ export function useCheckout() {
     setShowShippingModal,
     deliveryCities,
     loadingDeliveryCities,
+    pickupBranches,
     checkoutTotals,
     loadingCheckoutTotals,
     checkoutTotalsStale,
@@ -222,12 +248,19 @@ export function useCheckout() {
     paymentMethod,
     shippingMethod,
     shippingCity,
+    pickupBranchId,
     paymentMethods,
     orderSummary,
+    appliedCouponCode,
+    applyPromo,
+    clearPromo,
     // Actions
     handlePlaceOrder,
     onSubmit,
+    fetchCart,
     // Auth
     isLoggedIn,
   };
 }
+
+export type CheckoutHandleSubmit = ReturnType<typeof useCheckout>['handleSubmit'];

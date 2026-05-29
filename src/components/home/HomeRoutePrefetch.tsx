@@ -12,7 +12,6 @@ export function HomeRoutePrefetch() {
   useEffect(() => {
     const run = () => {
       router.prefetch('/products');
-      router.prefetch('/cart');
       router.prefetch('/reels');
     };
     const w = typeof window !== 'undefined' ? window : null;

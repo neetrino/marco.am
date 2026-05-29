@@ -1,4 +1,6 @@
 import type { OrderDetails } from '@/app/profile/types';
+import { getPickupBranchLabel, isPickupBranchId } from '@/lib/constants/pickup-branches';
+import { getStoredLanguage } from '@/lib/language';
 import type { Cart, CheckoutFormData } from '../types';
 
 const CHECKOUT_SUCCESS_SNAPSHOT_KEY = 'checkout_success_snapshot';
@@ -39,7 +41,21 @@ export function buildOrderDetailsSnapshot(input: CheckoutOrderSnapshotInput): Or
           countryCode: 'AM',
           phone: input.form.phone,
         }
-      : null;
+      : input.form.shippingMethod === 'pickup' &&
+          input.form.pickupBranchId &&
+          isPickupBranchId(input.form.pickupBranchId)
+        ? {
+            firstName: input.form.firstName,
+            lastName: input.form.lastName,
+            addressLine1: getPickupBranchLabel(
+              input.form.pickupBranchId,
+              getStoredLanguage()
+            ),
+            city: '',
+            countryCode: 'AM',
+            phone: input.form.phone,
+          }
+        : null;
 
   return {
     id: input.orderId,
