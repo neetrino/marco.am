@@ -20,6 +20,7 @@ export function useCheckoutSchema() {
     paymentMethod: z.literal("cash"),
     shippingAddress: z.string().optional(),
     shippingCity: z.string().optional(),
+    pickupBranchId: z.string().optional(),
   }).refine((data) => {
     if (data.shippingMethod === 'courier') {
       return data.shippingAddress && data.shippingAddress.trim().length > 0;
@@ -36,6 +37,14 @@ export function useCheckoutSchema() {
   }, {
     message: t('checkout.errors.cityRequired'),
     path: ['shippingCity'],
+  }).refine((data) => {
+    if (data.shippingMethod === 'pickup') {
+      return data.pickupBranchId && data.pickupBranchId.trim().length > 0;
+    }
+    return true;
+  }, {
+    message: t('checkout.errors.branchRequired'),
+    path: ['pickupBranchId'],
   });
 }
 

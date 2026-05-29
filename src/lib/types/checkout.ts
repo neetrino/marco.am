@@ -24,6 +24,8 @@ export interface CheckoutData {
     addressLine1?: string;
     /** Alias used by storefront checkout form */
     address?: string;
+    /** Store pickup branch id (checkout pickup flow) */
+    pickupBranchId?: string;
     addressLine2?: string;
     city?: string;
     state?: string;

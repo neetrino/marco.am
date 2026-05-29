@@ -24,16 +24,18 @@ export default function CheckoutPage() {
     setShowShippingModal,
     deliveryCities,
     loadingDeliveryCities,
+    pickupBranches,
     loadingCheckoutTotals,
     checkoutTotalsStale,
     register,
+    setValue,
     handleSubmit,
     errors,
     isSubmitting,
-    setValue,
     paymentMethod,
     shippingMethod,
     shippingCity,
+    pickupBranchId,
     paymentMethods,
     orderSummary,
     handlePlaceOrder,
@@ -88,6 +90,10 @@ export default function CheckoutPage() {
             setLogoErrors={setLogoErrors}
             error={error}
             setError={setError}
+            shippingMethod={shippingMethod}
+            pickupBranches={pickupBranches}
+            pickupBranchId={pickupBranchId ?? ''}
+            shippingCity={shippingCity ?? ''}
             deliveryCities={deliveryCities}
             loadingDeliveryCities={loadingDeliveryCities}
           />
@@ -119,11 +125,13 @@ export default function CheckoutPage() {
         setShowShippingModal={setShowShippingModal}
         register={register}
         handleSubmit={handleSubmit}
+        setValue={setValue}
         errors={errors}
         isSubmitting={isSubmitting}
         shippingMethod={shippingMethod}
         paymentMethod={paymentMethod}
         shippingCity={shippingCity}
+        pickupBranchId={pickupBranchId}
         cart={cart}
         orderSummary={orderSummary}
         currency={currency}
@@ -131,6 +139,7 @@ export default function CheckoutPage() {
         checkoutTotalsStale={checkoutTotalsStale}
         deliveryCities={deliveryCities}
         loadingDeliveryCities={loadingDeliveryCities}
+        pickupBranches={pickupBranches}
         onSubmit={onSubmit}
       />
     </div>

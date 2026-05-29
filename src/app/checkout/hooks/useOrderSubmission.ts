@@ -6,6 +6,7 @@ import type { CheckoutTotalsResponse } from '../../../lib/types/checkout-totals'
 import type { CheckoutFormData, Cart, CartItem } from '../types';
 import type { CheckoutFormFieldName } from '../utils/checkout-api-errors';
 import { parseCheckoutSubmissionError } from '../utils/checkout-api-errors';
+import { getPickupBranchLabel, isPickupBranchId } from '../../../lib/constants/pickup-branches';
 import { saveCheckoutSuccessSnapshotFromCheckout } from '../success/checkout-success-snapshot';
 
 interface UseOrderSubmissionProps {
@@ -26,7 +27,7 @@ export function useOrderSubmission({
   setFieldError,
 }: UseOrderSubmissionProps) {
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
 
   const submitOrder = async (data: CheckoutFormData) => {
     setError(null);
@@ -49,14 +50,20 @@ export function useOrderSubmission({
         cartId = 'guest-cart';
       }
 
-      const shippingAddress = data.shippingMethod === 'courier' && 
-        data.shippingAddress && 
-        data.shippingCity
-        ? {
-            address: data.shippingAddress,
-            city: data.shippingCity,
-          }
-        : undefined;
+      const shippingAddress =
+        data.shippingMethod === 'courier' && data.shippingAddress && data.shippingCity
+          ? {
+              address: data.shippingAddress,
+              city: data.shippingCity,
+            }
+          : data.shippingMethod === 'pickup' &&
+              data.pickupBranchId &&
+              isPickupBranchId(data.pickupBranchId)
+            ? {
+                address: getPickupBranchLabel(data.pickupBranchId, lang),
+                pickupBranchId: data.pickupBranchId,
+              }
+            : undefined;
 
       const shippingAmount =
         data.shippingMethod === 'courier' && checkoutTotals

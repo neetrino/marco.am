@@ -1,4 +1,5 @@
 import { isCourierShipping, type ShippingMethodId } from "../constants/shipping-method";
+import { isPickupBranchId } from "../constants/pickup-branches";
 import type { CheckoutData } from "../types/checkout";
 import { isValidEmail } from "../utils/email";
 
@@ -17,6 +18,7 @@ type CheckoutValidationField =
   | "lastName"
   | "shippingAddress"
   | "shippingCity"
+  | "pickupBranchId"
   | "notes";
 
 type CheckoutValidationCode =
@@ -28,6 +30,7 @@ type CheckoutValidationCode =
   | "required_last_name"
   | "required_shipping_address"
   | "required_shipping_city"
+  | "required_pickup_branch"
   | "notes_too_long";
 
 export type CheckoutValidationIssue = {
@@ -146,6 +149,25 @@ export function validateCheckoutCustomer(
         });
       }
       throwValidation(requiredShippingIssues);
+    }
+  }
+
+  if (shippingMethod === "pickup") {
+    const sa = data.shippingAddress;
+    const branchId =
+      typeof sa?.pickupBranchId === "string" ? sa.pickupBranchId.trim() : "";
+    const branchLabel = (sa?.addressLine1 ?? sa?.address ?? "").trim();
+    const hasValidBranch =
+      (branchId.length > 0 && isPickupBranchId(branchId)) || branchLabel.length > 0;
+
+    if (!hasValidBranch) {
+      throwValidation([
+        {
+          field: "pickupBranchId",
+          code: "required_pickup_branch",
+          message: "Pickup branch is required for store pickup",
+        },
+      ]);
     }
   }
 

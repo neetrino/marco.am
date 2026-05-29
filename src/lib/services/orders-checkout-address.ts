@@ -42,6 +42,25 @@ export function buildOrderAddressJson(
     return { shippingAddress: json, billingAddress: json };
   }
 
+  if (shippingMethod === "pickup" && shippingAddress) {
+    const branchId =
+      typeof shippingAddress.pickupBranchId === "string"
+        ? shippingAddress.pickupBranchId.trim()
+        : "";
+    const line = (
+      shippingAddress.addressLine1 ??
+      shippingAddress.address ??
+      ""
+    ).trim();
+    const merged: Record<string, string> = {
+      ...base,
+      ...(line ? { addressLine1: line } : {}),
+      ...(branchId ? { pickupBranchId: branchId } : {}),
+    };
+    const json = JSON.parse(JSON.stringify(merged)) as Prisma.InputJsonValue;
+    return { shippingAddress: json, billingAddress: json };
+  }
+
   if (Object.keys(base).length === 0) {
     return { shippingAddress: undefined, billingAddress: undefined };
   }

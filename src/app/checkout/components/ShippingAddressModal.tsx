@@ -1,19 +1,28 @@
 'use client';
 
 import { Button, Input } from '@shop/ui';
-import { UseFormRegister, UseFormHandleSubmit, FieldErrors } from 'react-hook-form';
+import { UseFormRegister, UseFormHandleSubmit, UseFormSetValue, FieldErrors } from 'react-hook-form';
 import { useTranslation } from '../../../lib/i18n-client';
 import { ContactInformation } from './ContactInformation';
 import { OrderSummaryModal } from './OrderSummaryModal';
+import type { PickupBranchId } from '../../../lib/constants/pickup-branches';
+import type { PickupBranch } from '../../../lib/constants/pickup-branches';
 import type { CheckoutPaymentMethodId } from '../../../lib/constants/checkout-payment-method';
 import type { ShippingMethodId } from '../../../lib/constants/shipping-method';
 import { CheckoutFormData, Cart } from '../types';
+import { CheckoutSelectMenu } from './CheckoutSelectMenu';
+import {
+  CHECKOUT_FIELD_CELL_CLASS,
+  CHECKOUT_FIELD_ROW_CLASS,
+  CHECKOUT_INPUT_FIELD_CLASS,
+} from '../checkout-form.constants';
 
 interface ShippingAddressModalProps {
   isOpen: boolean;
   onClose: () => void;
   register: UseFormRegister<CheckoutFormData>;
   handleSubmit: UseFormHandleSubmit<CheckoutFormData>;
+  setValue: UseFormSetValue<CheckoutFormData>;
   errors: FieldErrors<CheckoutFormData>;
   isSubmitting: boolean;
   shippingMethod: ShippingMethodId;
@@ -26,10 +35,12 @@ interface ShippingAddressModalProps {
   };
   currency: 'USD' | 'AMD' | 'EUR' | 'RUB' | 'GEL';
   shippingCity?: string;
+  pickupBranchId?: string;
   loadingCheckoutTotals: boolean;
   checkoutTotalsStale?: boolean;
   deliveryCities: string[];
   loadingDeliveryCities: boolean;
+  pickupBranches: PickupBranch[];
   onSubmit: (data: CheckoutFormData) => void;
 }
 
@@ -38,6 +49,7 @@ export function ShippingAddressModal({
   onClose,
   register,
   handleSubmit,
+  setValue,
   errors,
   isSubmitting,
   shippingMethod,
@@ -46,10 +58,12 @@ export function ShippingAddressModal({
   orderSummary,
   currency,
   shippingCity,
+  pickupBranchId,
   loadingCheckoutTotals,
   checkoutTotalsStale,
   deliveryCities,
   loadingDeliveryCities,
+  pickupBranches,
   onSubmit,
 }: ShippingAddressModalProps) {
   const { t } = useTranslation();
@@ -104,54 +118,43 @@ export function ShippingAddressModal({
           <>
             <div className="mb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('checkout.shippingAddress')}</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
+              <div className={CHECKOUT_FIELD_ROW_CLASS}>
+                <div className={CHECKOUT_FIELD_CELL_CLASS}>
                   <Input
                     label={t('checkout.form.address')}
                     type="text"
                     required
                     placeholder={t('checkout.placeholders.address')}
+                    className={CHECKOUT_INPUT_FIELD_CLASS}
                     {...register('shippingAddress')}
                     error={errors.shippingAddress?.message}
                     disabled={isSubmitting}
                   />
                 </div>
-                <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
-                    {t('checkout.form.city')}
-                    <span className="text-error" aria-hidden="true">
-                      {' '}
-                      *
-                    </span>
-                  </label>
-                  <select
-                    {...register('shippingCity')}
-                    aria-required
-                    disabled={isSubmitting || loadingDeliveryCities}
-                    className={`w-full rounded-lg border bg-white px-3 py-2 text-sm text-gray-900 focus:border-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900/20 disabled:cursor-not-allowed disabled:bg-gray-50 ${
-                      errors.shippingCity?.message ? 'border-error focus:ring-error' : 'border-gray-300'
-                    }`}
-                  >
-                    <option value="">
-                      {loadingDeliveryCities
+                <div className={CHECKOUT_FIELD_CELL_CLASS}>
+                  <input type="hidden" {...register('shippingCity')} />
+                  <CheckoutSelectMenu
+                    label={t('checkout.form.city')}
+                    placeholder={
+                      loadingDeliveryCities
                         ? t('checkout.shipping.loading')
-                        : t('checkout.shipping.selectCity')}
-                    </option>
-                    {!loadingDeliveryCities &&
-                      deliveryCities.map((city) => (
-                        <option key={city} value={city}>
-                          {city}
-                        </option>
-                      ))}
-                    {!loadingDeliveryCities && deliveryCities.length === 0 ? (
-                      <option value="" disabled>
-                        {t('checkout.shipping.noCitiesAvailable')}
-                      </option>
-                    ) : null}
-                  </select>
-                  {errors.shippingCity?.message ? (
-                    <p className="mt-1 text-sm text-error">{errors.shippingCity.message}</p>
-                  ) : null}
+                        : t('checkout.shipping.selectCity')
+                    }
+                    options={deliveryCities.map((city) => ({
+                      value: city,
+                      label: city,
+                    }))}
+                    value={shippingCity ?? ''}
+                    onChange={(nextValue) => {
+                      setValue('shippingCity', nextValue, {
+                        shouldValidate: true,
+                        shouldDirty: true,
+                      });
+                    }}
+                    disabled={isSubmitting || loadingDeliveryCities || deliveryCities.length === 0}
+                    required
+                    error={errors.shippingCity?.message}
+                  />
                 </div>
               </div>
             </div>
@@ -184,6 +187,29 @@ export function ShippingAddressModal({
           </>
         ) : (
           <div className="mb-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('checkout.shippingMethod')}</h3>
+            <input type="hidden" {...register('pickupBranchId')} />
+            <CheckoutSelectMenu
+              label={t('checkout.form.branchAddress')}
+              placeholder={t('checkout.shipping.selectBranch')}
+              options={pickupBranches.map((branch) => ({
+                value: branch.id,
+                label: branch.label,
+              }))}
+              value={pickupBranchId ?? ''}
+              onChange={(nextValue) => {
+                setValue('pickupBranchId', nextValue as PickupBranchId, {
+                  shouldValidate: true,
+                  shouldDirty: true,
+                });
+              }}
+              disabled={isSubmitting}
+              required
+              showMapPin
+              menuTitle={t('checkout.shipping.selectBranch')}
+              error={errors.pickupBranchId?.message}
+            />
+
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
               <p className="text-sm text-blue-800">
                 <strong>{t('checkout.shipping.storePickup')}:</strong> {t('checkout.messages.storePickupInfo')}
