@@ -38,9 +38,10 @@ export function OrderSummary({
   const { t } = useTranslation();
 
   return (
-    <div>
-      <Card className="p-6 sticky top-4">
-        <h2 className="text-xl font-semibold text-gray-900 mb-6">{t('checkout.orderSummary')}</h2>
+    <div className="lg:col-span-1">
+      <div className="pb-5 lg:sticky lg:top-28 lg:z-10">
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-6">{t('checkout.orderSummary')}</h2>
         {checkoutTotalsStale ? (
           <p className="mb-4 text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
             {t('checkout.messages.totalsStaleWarning')}
@@ -90,7 +91,8 @@ export function OrderSummary({
         >
           {isSubmitting ? t('checkout.buttons.processing') : t('checkout.buttons.placeOrder')}
         </Button>
-      </Card>
+        </Card>
+      </div>
     </div>
   );
 }
