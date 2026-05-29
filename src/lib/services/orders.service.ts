@@ -254,8 +254,18 @@ class OrdersService {
 
       // Calculate totals
       const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+      let resolvedCouponCode = couponCode;
+      if (!resolvedCouponCode && userId && cartId && cartId !== 'guest-cart') {
+        const couponRow = await db.cart.findFirst({
+          where: { id: cartId, userId },
+          select: { couponCode: true },
+        });
+        resolvedCouponCode = couponRow?.couponCode ?? undefined;
+      }
+
       const promoDiscount = await promoCodesService.resolveDiscount({
-        couponCode,
+        couponCode: resolvedCouponCode,
         subtotal,
         userId,
         customerEmail: email,

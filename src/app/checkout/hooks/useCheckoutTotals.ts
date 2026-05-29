@@ -20,7 +20,9 @@ export function useCheckoutTotals(
   cart: Cart | null,
   isLoggedIn: boolean,
   shippingMethod: ShippingMethodId,
-  shippingCity: string | undefined
+  shippingCity: string | undefined,
+  couponCode?: string | null,
+  customerEmail?: string
 ) {
   const [totals, setTotals] = useState<CheckoutTotalsResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -52,6 +54,13 @@ export function useCheckoutTotals(
           body.items = buildGuestPayloadItems(cart);
         }
 
+        if (couponCode?.trim()) {
+          body.couponCode = couponCode.trim().toUpperCase();
+        }
+        if (!isLoggedIn && customerEmail?.trim()) {
+          body.customerEmail = customerEmail.trim();
+        }
+
         const response = await apiClient.post<CheckoutTotalsResponse>(
           "/api/v1/checkout/totals",
           body
@@ -74,7 +83,7 @@ export function useCheckoutTotals(
 
     const id = window.setTimeout(run, DEBOUNCE_MS);
     return () => window.clearTimeout(id);
-  }, [cart, isLoggedIn, shippingMethod, shippingCity]);
+  }, [cart, isLoggedIn, shippingMethod, shippingCity, couponCode, customerEmail]);
 
   const displayTotals = totals ?? lastGoodRef.current;
 

@@ -74,6 +74,8 @@
     "applyPromo": "Կիրառել",
     "promoLoginRequired": "Մուտք գործեք՝ պրոմո կոդը կիրառելու համար",
     "promoApplyFailed": "Պրոմո կոդը չհաջողվեց կիրառել",
+    "promoApplied": "Կիրառված է՝ {code}",
+    "removePromo": "Հեռացնել",
     "items": "ապրանք",
     "item": "ապրանք",
     "myCart": "Իմ զամբյուղը",

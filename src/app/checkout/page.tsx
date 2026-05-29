@@ -41,6 +41,9 @@ export default function CheckoutPage() {
     handlePlaceOrder,
     onSubmit,
     fetchCart,
+    appliedCouponCode,
+    applyPromo,
+    clearPromo,
   } = useCheckout();
 
   if (loading) {
@@ -111,6 +114,9 @@ export default function CheckoutPage() {
             error={error}
             isSubmitting={isSubmitting}
             onCartRefresh={fetchCart}
+            appliedCouponCode={appliedCouponCode}
+            onApplyPromo={applyPromo}
+            onClearPromo={clearPromo}
             onPlaceOrder={(e) => {
               if (e) {
                 handlePlaceOrder(e);

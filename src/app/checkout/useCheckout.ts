@@ -8,6 +8,7 @@ import { useTranslation } from '../../lib/i18n-client';
 import { usePaymentMethods } from './utils/payment-methods';
 import { useCheckoutSchema } from './utils/validation-schema';
 import { useCheckoutTotals } from './hooks/useCheckoutTotals';
+import { useCheckoutPromo } from './hooks/useCheckoutPromo';
 import { useCart } from './hooks/useCart';
 import { useUserProfile } from './hooks/useUserProfile';
 import { useOrderSubmission } from './hooks/useOrderSubmission';
@@ -64,14 +65,25 @@ export function useCheckout() {
   const shippingMethod = watch('shippingMethod');
   const shippingCity = watch('shippingCity');
   const pickupBranchId = watch('pickupBranchId');
+  const customerEmail = watch('email');
   const pickupBranches = getPickupBranches(lang);
 
   const { cart, loading, fetchCart } = useCart(isLoggedIn, isLoading);
+  const { appliedCouponCode, applyPromo, clearPromo } = useCheckoutPromo({
+    isLoggedIn,
+    cart,
+    shippingMethod,
+    shippingCity,
+    customerEmail,
+    onCartRefresh: fetchCart,
+  });
   const { checkoutTotals, loadingCheckoutTotals, checkoutTotalsStale } = useCheckoutTotals(
     cart,
     isLoggedIn,
     shippingMethod,
-    shippingCity
+    shippingCity,
+    appliedCouponCode,
+    customerEmail
   );
   useUserProfile(isLoggedIn, isLoading, setValue);
 
@@ -123,6 +135,7 @@ export function useCheckout() {
     cart,
     isLoggedIn,
     checkoutTotals,
+    appliedCouponCode,
     setError,
     clearFieldErrors: () => clearErrors(),
     setFieldError: (field, message) =>
@@ -238,6 +251,9 @@ export function useCheckout() {
     pickupBranchId,
     paymentMethods,
     orderSummary,
+    appliedCouponCode,
+    applyPromo,
+    clearPromo,
     // Actions
     handlePlaceOrder,
     onSubmit,

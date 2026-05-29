@@ -74,6 +74,8 @@
     "applyPromo": "Применить",
     "promoLoginRequired": "Войдите, чтобы применить промокод",
     "promoApplyFailed": "Не удалось применить промокод",
+    "promoApplied": "Применён: {code}",
+    "removePromo": "Удалить",
     "items": "товаров",
     "item": "товар",
     "myCart": "Моя корзина",

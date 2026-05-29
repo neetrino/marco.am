@@ -13,6 +13,7 @@ interface UseOrderSubmissionProps {
   cart: Cart | null;
   isLoggedIn: boolean;
   checkoutTotals: CheckoutTotalsResponse | null;
+  appliedCouponCode?: string | null;
   setError: (error: string | null) => void;
   clearFieldErrors: () => void;
   setFieldError: (field: CheckoutFormFieldName, message: string) => void;
@@ -22,6 +23,7 @@ export function useOrderSubmission({
   cart,
   isLoggedIn,
   checkoutTotals,
+  appliedCouponCode,
   setError,
   clearFieldErrors,
   setFieldError,
@@ -89,6 +91,7 @@ export function useOrderSubmission({
       }>('/api/v1/orders/checkout', {
         cartId: cartId,
         ...(items ? { items } : {}),
+        ...(appliedCouponCode ? { couponCode: appliedCouponCode } : {}),
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email,
@@ -104,6 +107,9 @@ export function useOrderSubmission({
 
       if (!isLoggedIn && !needsOnlinePayment) {
         clearGuestCart();
+        if (typeof window !== 'undefined') {
+          sessionStorage.removeItem('shop_checkout_coupon');
+        }
       }
 
       if (response.payment?.paymentUrl) {
@@ -118,7 +124,7 @@ export function useOrderSubmission({
         {
           subtotal: checkoutTotals?.subtotal ?? cart.totals.subtotal,
           shippingAmount: checkoutTotals?.shippingAmount ?? cart.totals.shipping,
-          discount: cart.totals.discount,
+          discount: checkoutTotals?.discountAmount ?? cart.totals.discount,
         }
       );
 

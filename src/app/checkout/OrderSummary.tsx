@@ -7,7 +7,7 @@ import { useTranslation } from '../../lib/i18n-client';
 import { formatPriceInCurrency } from '../../lib/currency';
 import { isCourierShipping, type ShippingMethodId } from '../../lib/constants/shipping-method';
 import { useAuth } from '../../lib/auth/AuthContext';
-import { apiClient } from '../../lib/api-client';
+import { getPromoErrorMessage } from './hooks/useCheckoutPromo';
 import {
   CHECKOUT_FIELD_LABEL_CLASS,
   CHECKOUT_INPUT_FIELD_CLASS,
@@ -35,6 +35,9 @@ interface OrderSummaryProps {
   isSubmitting: boolean;
   onPlaceOrder: (e?: React.FormEvent) => void;
   onCartRefresh: () => void;
+  appliedCouponCode?: string | null;
+  onApplyPromo: (code: string) => Promise<string | null>;
+  onClearPromo?: () => Promise<void>;
 }
 
 function SummaryRow({
@@ -66,17 +69,20 @@ export function OrderSummary({
   isSubmitting,
   onPlaceOrder,
   onCartRefresh,
+  appliedCouponCode,
+  onApplyPromo,
+  onClearPromo,
 }: OrderSummaryProps) {
   const router = useRouter();
   const { isLoggedIn } = useAuth();
   const { t } = useTranslation();
-  const [promoInput, setPromoInput] = useState(cart?.couponCode ?? '');
+  const [promoInput, setPromoInput] = useState(appliedCouponCode ?? cart?.couponCode ?? '');
   const [promoError, setPromoError] = useState<string | null>(null);
   const [applyingPromo, setApplyingPromo] = useState(false);
 
   useEffect(() => {
-    setPromoInput(cart?.couponCode ?? '');
-  }, [cart?.couponCode]);
+    setPromoInput(appliedCouponCode ?? cart?.couponCode ?? '');
+  }, [appliedCouponCode, cart?.couponCode]);
 
   const shippingValue =
     shippingMethod === 'pickup'
@@ -89,19 +95,38 @@ export function OrderSummary({
             (shippingCity ? ` (${shippingCity})` : ` (${t('checkout.shipping.courier')})`);
 
   const handleApplyPromo = async () => {
-    if (!isLoggedIn) {
-      setPromoError(t('common.cart.promoLoginRequired'));
-      return;
-    }
-
     setApplyingPromo(true);
     setPromoError(null);
     try {
-      await apiClient.put('/api/v1/cart/coupon', { couponCode: promoInput.trim() });
-      onCartRefresh();
-      window.dispatchEvent(new Event('cart-updated'));
-    } catch {
-      setPromoError(t('common.cart.promoApplyFailed'));
+      const errorCode = await onApplyPromo(promoInput.trim());
+      if (errorCode === 'empty') {
+        setPromoError(t('common.cart.promoCodePlaceholder'));
+        return;
+      }
+      if (isLoggedIn) {
+        onCartRefresh();
+      }
+    } catch (err: unknown) {
+      setPromoError(getPromoErrorMessage(err, t));
+    } finally {
+      setApplyingPromo(false);
+    }
+  };
+
+  const handleClearPromo = async () => {
+    if (!onClearPromo || !appliedCouponCode) {
+      return;
+    }
+    setApplyingPromo(true);
+    setPromoError(null);
+    try {
+      await onClearPromo();
+      setPromoInput('');
+      if (isLoggedIn) {
+        onCartRefresh();
+      }
+    } catch (err: unknown) {
+      setPromoError(getPromoErrorMessage(err, t));
     } finally {
       setApplyingPromo(false);
     }
@@ -126,7 +151,7 @@ export function OrderSummary({
                   type="text"
                   value={promoInput}
                   onChange={(event) => {
-                    setPromoInput(event.target.value);
+                    setPromoInput(event.target.value.toUpperCase());
                     if (promoError) {
                       setPromoError(null);
                     }
@@ -146,6 +171,23 @@ export function OrderSummary({
               </div>
               {promoError ? (
                 <p className="mt-2 text-sm text-error">{promoError}</p>
+              ) : null}
+              {appliedCouponCode ? (
+                <div className="mt-2 flex items-center justify-between gap-2 text-sm">
+                  <span className="text-success">
+                    {t('common.cart.promoApplied').replace('{code}', appliedCouponCode)}
+                  </span>
+                  {onClearPromo ? (
+                    <button
+                      type="button"
+                      onClick={() => void handleClearPromo()}
+                      disabled={isSubmitting || applyingPromo}
+                      className="text-[var(--app-text-muted)] underline-offset-2 hover:underline"
+                    >
+                      {t('common.cart.removePromo')}
+                    </button>
+                  ) : null}
+                </div>
               ) : null}
             </div>
 

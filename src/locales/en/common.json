@@ -74,6 +74,8 @@
     "applyPromo": "Apply",
     "promoLoginRequired": "Sign in to apply a promo code",
     "promoApplyFailed": "Could not apply promo code",
+    "promoApplied": "Applied: {code}",
+    "removePromo": "Remove",
     "items": "items",
     "item": "item",
     "myCart": "My Cart",
