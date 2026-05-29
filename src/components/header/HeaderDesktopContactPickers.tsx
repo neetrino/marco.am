@@ -11,12 +11,13 @@ import {
   phoneToTelHref,
 } from '../../lib/contact-locations';
 import {
+  HEADER_CONTACT_PICKER_DROPDOWN_Z_CLASS,
   HEADER_FIGMA_CONTACT_ADDRESS_ICON_TEXT_GAP_CLASS,
   HEADER_FIGMA_CONTACT_PHONE_ICON_TEXT_GAP_CLASS,
 } from './header.constants';
 
 const DROPDOWN_PANEL_CLASS =
-  'absolute right-0 top-full z-[70] mt-2 max-h-[min(24rem,70vh)] w-[min(20rem,calc(100vw-2rem))] overflow-y-auto overflow-x-hidden rounded-xl border border-gray-200/90 bg-white py-2 shadow-xl dark:border-white/15 dark:bg-[var(--app-bg)]';
+  `absolute right-0 top-full ${HEADER_CONTACT_PICKER_DROPDOWN_Z_CLASS} mt-2 max-h-[min(24rem,70vh)] w-[min(20rem,calc(100vw-2rem))] overflow-y-auto overflow-x-hidden rounded-xl border border-gray-200/90 bg-white py-2 shadow-xl dark:border-white/15 dark:bg-[var(--app-bg)]`;
 
 const TRIGGER_BASE_CLASS =
   'flex h-10 shrink-0 items-center text-marco-text transition-colors hover:text-marco-black dark:text-white/82 dark:hover:text-white';
@@ -173,7 +174,11 @@ function HeaderDesktopAddressPicker({
   );
 }
 
-export function HeaderDesktopContactPickers() {
+type HeaderDesktopContactPickersProps = {
+  onOpenChange?: (open: boolean) => void;
+};
+
+export function HeaderDesktopContactPickers({ onOpenChange }: HeaderDesktopContactPickersProps) {
   const pathname = usePathname();
   const { t, lang } = useTranslation();
   const locations = useMemo(() => getContactLocations(lang), [lang]);
@@ -181,6 +186,10 @@ export function HeaderDesktopContactPickers() {
   const [openMenu, setOpenMenu] = useState<'phone' | 'address' | null>(null);
   const phoneRef = useRef<HTMLDivElement | null>(null);
   const addressRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    onOpenChange?.(openMenu !== null);
+  }, [openMenu, onOpenChange]);
 
   useEffect(() => {
     setOpenMenu(null);

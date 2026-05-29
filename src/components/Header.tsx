@@ -15,6 +15,7 @@ import { useHeaderLayoutMetrics } from './header/useHeaderLayoutMetrics';
 import { useHeaderRow2AutoHide } from './header/useHeaderRow2AutoHide';
 import {
   HEADER_CONTAINER_CLASS,
+  HEADER_CONTACT_PICKER_DROPDOWN_Z_CLASS,
   HEADER_MOBILE_HEADER_ROUND_CONTROL_CLASS,
   HEADER_COMPACT_PRIMARY_NAV_MAX_WIDTH_PX,
 } from './header/header.constants';
@@ -38,6 +39,7 @@ export function Header({ initialLanguage }: HeaderProps) {
   const { t } = useTranslation();
   const [desktopTopRowHeightPx, setDesktopTopRowHeightPx] = useState(0);
   const [row2HeightPx, setRow2HeightPx] = useState(0);
+  const [contactPickerOpen, setContactPickerOpen] = useState(false);
   const desktopTopRowContentRef = useRef<HTMLDivElement>(null);
   const row2ContentRef = useRef<HTMLDivElement>(null);
 
@@ -145,7 +147,11 @@ export function Header({ initialLanguage }: HeaderProps) {
       </Suspense>
       {!compactPrimaryNav && (
         <div
-          className={`w-full ${HEADER_ROW2_WRAPPER_CLASS} overflow-hidden`}
+          className={`w-full ${HEADER_ROW2_WRAPPER_CLASS} ${
+            contactPickerOpen
+              ? `relative overflow-visible ${HEADER_CONTACT_PICKER_DROPDOWN_Z_CLASS}`
+              : 'overflow-hidden'
+          }`}
           style={{
             maxHeight: desktopTopRowMaxHeightStyle,
           }}
@@ -162,7 +168,10 @@ export function Header({ initialLanguage }: HeaderProps) {
                   : 'border-marco-border bg-white dark:border-white/10 dark:bg-[var(--app-bg)]'
               }`}
             >
-              <HeaderDesktopTopRow innerRef={desktopTopRowInnerRef} />
+              <HeaderDesktopTopRow
+                innerRef={desktopTopRowInnerRef}
+                onContactPickerOpenChange={setContactPickerOpen}
+              />
             </div>
           </div>
         </div>

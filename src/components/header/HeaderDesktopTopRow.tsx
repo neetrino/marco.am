@@ -22,12 +22,16 @@ import { isPrimaryNavHrefActive, primaryNavLinks } from './nav-config';
 
 type HeaderDesktopTopRowProps = {
   innerRef: Ref<HTMLDivElement>;
+  onContactPickerOpenChange?: (open: boolean) => void;
 };
 
 /**
  * Full-width first stripe: logo, primary nav, socials, phone, stores.
  */
-export function HeaderDesktopTopRow({ innerRef }: HeaderDesktopTopRowProps) {
+export function HeaderDesktopTopRow({
+  innerRef,
+  onContactPickerOpenChange,
+}: HeaderDesktopTopRowProps) {
   const pathname = usePathname();
   const hideHeaderSocialLinks = useShouldHideHeaderSocialLinks();
   const { t } = useTranslation();
@@ -90,7 +94,7 @@ export function HeaderDesktopTopRow({ innerRef }: HeaderDesktopTopRowProps) {
       <div
         className={`flex h-10 min-w-0 shrink-0 flex-nowrap items-center ${HEADER_FIGMA_CONTACT_CLUSTER_GAP_CLASS}`}
       >
-        <HeaderDesktopContactPickers />
+        <HeaderDesktopContactPickers onOpenChange={onContactPickerOpenChange} />
       </div>
     </div>
   );
