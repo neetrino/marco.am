@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { apiClient } from '../../../../lib/api-client';
+import { apiClient, getApiOrErrorMessage } from '../../../../lib/api-client';
 import { logger } from '../../../../lib/utils/logger';
 import { showPopupConfirm } from '@/components/popup-service';
 import { showToast } from '../../../../components/Toast';
 import { useTranslation } from '../../../../lib/i18n-client';
 import { getStoredLanguage, type LanguageCode } from '../../../../lib/language';
 import { notifyShopCategoryTreeUpdated } from '../../../../lib/shop-category-tree-sync';
+import { getDescendantIds } from '../utils';
 import type { Category, CategoryFormData } from '../types';
 
 /** Category translations in DB use shop locales; Georgian UI maps to `en` like storefront. */
@@ -26,7 +27,12 @@ interface UseCategoryActionsReturn {
   handleAddCategory: (fetchCategories: () => Promise<void>) => Promise<void>;
   handleEditCategory: (category: Category) => Promise<void>;
   handleUpdateCategory: (fetchCategories: () => Promise<void>) => Promise<void>;
-  handleDeleteCategory: (categoryId: string, categoryTitle: string, fetchCategories: () => Promise<void>) => Promise<void>;
+  handleDeleteCategory: (
+    categoryId: string,
+    categoryTitle: string,
+    fetchCategories: () => Promise<void>,
+    allCategories: Category[],
+  ) => Promise<void>;
   handleDeleteCategories: (
     categoryIds: string[],
     categoryTitles: string[],
@@ -192,36 +198,40 @@ export function useCategoryActions(): UseCategoryActionsReturn {
   const handleDeleteCategory = async (
     categoryId: string,
     categoryTitle: string,
-    fetchCategories: () => Promise<void>
+    fetchCategories: () => Promise<void>,
+    allCategories: Category[],
   ) => {
-    if (!(await showPopupConfirm(t('admin.categories.deleteConfirm').replace('{name}', categoryTitle)))) {
+    const descendantCount = getDescendantIds(allCategories, categoryId).size;
+    const confirmMessage =
+      descendantCount > 0
+        ? t('admin.categories.deleteWithChildrenConfirm')
+            .replace('{name}', categoryTitle)
+            .replace('{count}', String(descendantCount))
+        : t('admin.categories.deleteConfirm').replace('{name}', categoryTitle);
+
+    if (!(await showPopupConfirm(confirmMessage))) {
       return;
     }
 
     try {
-      logger.info('Deleting category', { categoryId, categoryTitle });
-      await apiClient.delete(`/api/v1/supersudo/categories/${categoryId}`);
+      logger.info('Deleting category', { categoryId, categoryTitle, descendantCount });
+      const deleteOptions =
+        descendantCount > 0 ? { params: { cascade: 'true' } as const } : undefined;
+      await apiClient.delete(`/api/v1/supersudo/categories/${categoryId}`, deleteOptions);
       logger.info('Category deleted successfully');
       await fetchCategories();
       notifyShopCategoryTreeUpdated();
-      showToast(t('admin.categories.deletedSuccess'), 'success');
+      const successMessage =
+        descendantCount > 0
+          ? t('admin.categories.deletedSuccessWithChildren').replace(
+              '{count}',
+              String(descendantCount),
+            )
+          : t('admin.categories.deletedSuccess');
+      showToast(successMessage, 'success');
     } catch (err: unknown) {
-      logger.error('Error deleting category', { error: err });
-      let errorMessage = 'Unknown error occurred';
-      if (err && typeof err === 'object') {
-        if ('data' in err && err.data && typeof err.data === 'object' && 'detail' in err.data) {
-          errorMessage = String(err.data.detail);
-        } else if ('detail' in err) {
-          errorMessage = String(err.detail);
-        } else if ('message' in err) {
-          errorMessage = String(err.message);
-        } else if ('response' in err && err.response && typeof err.response === 'object' && 'data' in err.response) {
-          const responseData = err.response as { data?: { detail?: string } };
-          if (responseData.data?.detail) {
-            errorMessage = responseData.data.detail;
-          }
-        }
-      }
+      logger.warn('Category delete rejected', { error: err });
+      const errorMessage = getApiOrErrorMessage(err, t('admin.common.unknownErrorFallback'));
       showToast(t('admin.categories.errorDeleting').replace('{message}', errorMessage), 'error');
     }
   };
@@ -249,7 +259,10 @@ export function useCategoryActions(): UseCategoryActionsReturn {
         categoryIds.map((categoryId) => apiClient.delete(`/api/v1/supersudo/categories/${categoryId}`))
       );
 
-      const failedCount = results.filter((result) => result.status === 'rejected').length;
+      const failures = results.filter(
+        (result): result is PromiseRejectedResult => result.status === 'rejected',
+      );
+      const failedCount = failures.length;
       await fetchCategories();
       if (failedCount < categoryIds.length) {
         notifyShopCategoryTreeUpdated();
@@ -257,7 +270,14 @@ export function useCategoryActions(): UseCategoryActionsReturn {
       if (failedCount === 0) {
         showToast(t('admin.categories.deletedSuccess'), 'success');
       } else {
-        const failureMessage = `${failedCount} categories failed to delete`;
+        const firstDetail = getApiOrErrorMessage(
+          failures[0]?.reason,
+          t('admin.common.unknownErrorFallback'),
+        );
+        const failureMessage =
+          failedCount === 1
+            ? firstDetail
+            : `${failedCount} categories failed to delete. ${firstDetail}`;
         showToast(t('admin.categories.errorDeleting').replace('{message}', failureMessage), 'error');
       }
 

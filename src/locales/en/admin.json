@@ -269,7 +269,9 @@
     "errorCreating": "Error creating category",
     "errorUpdating": "Error updating category",
     "deleteConfirm": "Are you sure you want to delete category \"{name}\"? This action cannot be undone.",
+    "deleteWithChildrenConfirm": "Category \"{name}\" has {count} subcategories. Delete this category and all subcategories? This cannot be undone.",
     "deletedSuccess": "Category successfully deleted",
+    "deletedSuccessWithChildren": "Category and {count} subcategories successfully deleted",
     "errorDeleting": "Error deleting category: {message}"
   },
   "delivery": {

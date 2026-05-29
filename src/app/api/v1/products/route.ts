@@ -2,26 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { logger } from "@/lib/utils/logger";
 import { parseProductListFiltersFromSearchParams } from "@/lib/cache/parse-products-list-filters";
 import { getProductsListingCached } from "@/lib/cache/products-listing-redis";
-import { getProductsFiltersCached } from "@/lib/cache/products-filters-redis";
 
 const PRODUCTS_API_CACHE_CONTROL = "public, max-age=30, stale-while-revalidate=120";
+
+const EMPTY_LISTING_FILTERS = {
+  availableCategories: [] as const,
+  availableBrands: [] as const,
+};
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const filters = parseProductListFiltersFromSearchParams(searchParams);
-    const [result, filterMetadata] = await Promise.all([
-      getProductsListingCached(filters),
-      getProductsFiltersCached({
-        category: filters.category,
-        search: filters.search,
-        filter: filters.filter,
-        minPrice: filters.minPrice,
-        maxPrice: filters.maxPrice,
-        lang: filters.lang ?? "en",
-        technicalSpecs: filters.technicalSpecs,
-      }),
-    ]);
+    const result = await getProductsListingCached(filters);
 
     const response = {
       items: result.data,
@@ -33,10 +26,8 @@ export async function GET(req: NextRequest) {
         hasNextPage: result.meta.hasNextPage,
         nextCursor: result.meta.nextCursor,
       },
-      filters: {
-        availableCategories: filterMetadata.categories,
-        availableBrands: filterMetadata.brands,
-      },
+      // Facets are served by GET /api/v1/products/filters — kept for backward compatibility.
+      filters: EMPTY_LISTING_FILTERS,
       // Backward-compatible aliases for existing callers.
       data: result.data,
       meta: result.meta,

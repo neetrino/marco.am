@@ -1,8 +1,10 @@
-import { loadEnvConfig } from "@next/env";
 import { PrismaClient } from "./generated/prisma-client";
 
-/** Ensures `.env` is applied before Prisma reads `DATABASE_URL` (Next.js Turbopack / early imports). */
-loadEnvConfig(process.cwd(), process.env.NODE_ENV === "development");
+/**
+ * Do not import `@next/env` here.
+ * This module is shared across app/server entrypoints, and `@next/env` pulls Node-only
+ * builtins (`crypto`) that break non-Node bundles during dependency analysis.
+ */
 
 const globalForPrisma = globalThis as typeof globalThis & {
   prisma?: PrismaClient;

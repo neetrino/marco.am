@@ -156,7 +156,7 @@ const prismaTraceGlobs = [prismaGeneratedTraceGlob, prismaCwdFallbackTraceGlob];
 const nextConfig = {
   reactStrictMode: true,
   // Keep workspace DB + generated Prisma client as Node externals so query engine `.node` paths resolve at runtime (bundling breaks `__dirname` for native engines).
-  serverExternalPackages: ['@white-shop/db', '@prisma/client'],
+  serverExternalPackages: ['@white-shop/db', '@prisma/client', 'sharp'],
   outputFileTracingIncludes: {
     // Picomatch: `/*` matches one segment only; `/` is the App Router root; deep routes need `/**/*` and `/api/**/*`.
     '/': prismaTraceGlobs,
@@ -216,12 +216,22 @@ const nextConfig = {
   // This ensures type safety in production builds
   images: {
     remotePatterns: buildImageRemotePatterns(),
+    // Explicitly allow both default quality and header logo quality.
+    qualities: [100, 75],
     // Allow unoptimized images for development (images will use unoptimized prop)
     // Ensure image optimization is enabled for production
     formats: ['image/avif', 'image/webp'],
     // In development, disable image optimization globally to allow any local IP
     // Components can still use unoptimized prop, but this ensures all images work
     unoptimized: process.env.NODE_ENV === 'development',
+  },
+  async rewrites() {
+    return [
+      {
+        source: '/assets/brands/geepas.png',
+        destination: '/assets/brands/geepas.webp',
+      },
+    ];
   },
   // Fix for HMR issues in Next.js 15
   webpack: (config, { dev, isServer }) => {

@@ -12,22 +12,6 @@ export function normalizeCategoryKey(value: string): string {
     .replace(/\s+/g, ' ');
 }
 
-const HIDDEN_ROOT_CATEGORY_TITLES = new Set<string>([
-  normalizeCategoryKey('Ջրի դիսպենսերներ'),
-  normalizeCategoryKey('Կենցաղային տեխնիկա'),
-  normalizeCategoryKey('Խոհանոցային տեխնիկա'),
-  normalizeCategoryKey('Կահույքի պատրաստման պարագաներ'),
-  normalizeCategoryKey('Խոշոր կենցաղային տեխնիկա'),
-  normalizeCategoryKey('Աուդիո և վիդեո համակարգեր'),
-]);
-
-function isHiddenRootCategory(category: Category, lang: LanguageCode): boolean {
-  const presentation = resolveCategoryNavPresentation(category.slug, category.title, lang);
-  const presentationTitleKey = normalizeCategoryKey(presentation.title);
-  const apiTitleKey = normalizeCategoryKey(category.title);
-  return HIDDEN_ROOT_CATEGORY_TITLES.has(presentationTitleKey) || HIDDEN_ROOT_CATEGORY_TITLES.has(apiTitleKey);
-}
-
 function childrenCount(category: Category): number {
   return category.children.length;
 }
@@ -89,10 +73,7 @@ export function dedupeCategories(categories: Category[], lang: LanguageCode): Ca
   return result;
 }
 
-/** Root list for header nav: hidden API-only roots removed, then deduped like mega menu. */
+/** Root list for header nav: keep DB roots and apply only shared dedupe rules. */
 export function prepareRootCategoriesForNav(categories: Category[], lang: LanguageCode): Category[] {
-  return dedupeCategories(
-    categories.filter((category) => !isHiddenRootCategory(category, lang)),
-    lang,
-  );
+  return dedupeCategories(categories, lang);
 }

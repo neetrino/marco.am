@@ -56,6 +56,10 @@ export function parseProductListFiltersFromSearchParams(
   const cardVisualOnly =
     cardVisualRaw === '1' || cardVisualRaw?.toLowerCase() === 'true' ? true : undefined;
 
+  const skipCountRaw = searchParams.get('skipExactTotalCount');
+  const skipExactTotalCount =
+    skipCountRaw === '1' || skipCountRaw?.toLowerCase() === 'true' ? true : undefined;
+
   return {
     category: searchParams.get('category') || undefined,
     search: searchParams.get('search') || undefined,
@@ -74,5 +78,6 @@ export function parseProductListFiltersFromSearchParams(
     productIds: productIdsFromQuery.length > 0 ? productIdsFromQuery : undefined,
     listingOmitProductAttributes,
     cardVisualOnly,
+    skipExactTotalCount,
   };
 }
