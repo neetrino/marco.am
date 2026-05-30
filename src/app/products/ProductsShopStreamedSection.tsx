@@ -145,11 +145,26 @@ interface ProductsShopStreamedSectionProps {
   readonly searchParams: Promise<ProductsPageSearchParams>;
 }
 
+interface ProductsShopUrlParams {
+  readonly page: string | undefined;
+  readonly limit: string | undefined;
+  readonly search: string | undefined;
+  readonly category: string | undefined;
+  readonly minPrice: string | undefined;
+  readonly maxPrice: string | undefined;
+  readonly colors: string | undefined;
+  readonly sizes: string | undefined;
+  readonly brand: string | undefined;
+  readonly filter: string | undefined;
+  readonly pricePresence: 'with' | 'without' | undefined;
+  readonly sort: string | undefined;
+}
+
 export async function ProductsShopStreamedSection({ searchParams }: ProductsShopStreamedSectionProps) {
   const [cookieStore, raw] = await Promise.all([cookies(), searchParams]);
   const language: LanguageCode =
     parseLanguageFromServer(cookieStore.get(LANGUAGE_PREFERENCE_KEY)?.value) ?? 'en';
-  const params = {
+  const params: ProductsShopUrlParams = {
     page: firstParam(raw.page),
     limit: firstParam(raw.limit),
     search: firstParam(raw.search),
