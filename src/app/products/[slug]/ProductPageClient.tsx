@@ -86,13 +86,15 @@ export function ProductPageClient({
 
   const handleAddToCart = async () => {
     if (!canAddToCart || !product || !currentVariant) return;
+    const unitPrice = Number(currentVariant.currentPrice ?? currentVariant.price) || 0;
+    if (unitPrice <= 0) {
+      return;
+    }
     setIsAddingToCart(true);
     try {
       if (!isLoggedIn) {
         const stored = localStorage.getItem('shop_cart_guest');
         const cart = stored ? JSON.parse(stored) : [];
-        const unitPrice =
-          Number(currentVariant.currentPrice ?? currentVariant.price) || 0;
         const existing = cart.find(
           (
             i: unknown,

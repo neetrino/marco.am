@@ -4,6 +4,7 @@ import type { MouseEvent } from 'react';
 import { Heart, X } from 'lucide-react';
 import { CompareIcon } from '../icons/CompareIcon';
 import { HeaderNavbarCartIcon } from '../icons/HeaderNavbarCartIcon';
+import { NoPriceLockIcon } from '../icons/NoPriceLockIcon';
 import { useTranslation } from '../../lib/i18n-client';
 
 interface ProductCardActionsProps {
@@ -19,6 +20,7 @@ interface ProductCardActionsProps {
   onAddToCart: (e: MouseEvent) => void;
   showOnHover?: boolean;
   showCartButton?: boolean;
+  showPriceLockedIcon?: boolean;
 }
 
 /**
@@ -36,6 +38,7 @@ export function ProductCardActions({
   onAddToCart,
   showOnHover = false,
   showCartButton = true,
+  showPriceLockedIcon = false,
 }: ProductCardActionsProps) {
   const { t } = useTranslation();
   const buttonSize = isCompact ? 'w-10 h-10' : 'w-12 h-12';
@@ -125,6 +128,10 @@ export function ProductCardActions({
             <HeaderNavbarCartIcon className={isCompact ? 'h-[18px] w-[18px]' : 'h-[22px] w-[21px]'} />
           )}
         </button>
+      ) : showPriceLockedIcon ? (
+        <span className={`${buttonSize} inline-flex items-center justify-center`}>
+          <NoPriceLockIcon className={isCompact ? 'h-[22px] w-[22px]' : 'h-[26px] w-[26px]'} />
+        </span>
       ) : null}
     </div>
   );

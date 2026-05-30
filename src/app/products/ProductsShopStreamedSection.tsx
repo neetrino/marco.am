@@ -103,6 +103,7 @@ async function getProducts(
   brand?: string,
   limit: number = SHOP_PLP_DEFAULT_PAGE_SIZE,
   filter?: string,
+  pricePresence?: 'with' | 'without',
   language: LanguageCode = 'en',
   sort?: string,
   rawSearchParams?: ProductsPageSearchParams,
@@ -125,6 +126,7 @@ async function getProducts(
       sizes: sizes?.trim() || undefined,
       brand: brand?.trim() || undefined,
       filter: filter?.trim() || undefined,
+      pricePresence,
       sort: sort?.trim() || undefined,
       technicalSpecs,
       /** Faster PLP: skip heavy productAttributes join (filters load client-side). */
@@ -158,6 +160,12 @@ export async function ProductsShopStreamedSection({ searchParams }: ProductsShop
     sizes: firstParam(raw.sizes),
     brand: firstParam(raw.brand),
     filter: firstParam(raw.filter),
+    pricePresence:
+      firstParam(raw.pricePresence) === 'without'
+        ? 'without'
+        : firstParam(raw.pricePresence) === 'with'
+          ? 'with'
+          : undefined,
     sort: firstParam(raw.sort),
   };
 
@@ -186,6 +194,7 @@ export async function ProductsShopStreamedSection({ searchParams }: ProductsShop
     params.brand,
     perPage,
     params.filter,
+    params.pricePresence,
     language,
     params.sort,
     raw,

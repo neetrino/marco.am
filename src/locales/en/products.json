@@ -82,11 +82,23 @@
       "grid2": "Grid View 2x2",
       "grid3": "Grid View 3x3"
     },
+    "pricePresence": {
+      "withPrice": "With Price",
+      "withoutPrice": "Without Price",
+      "switchAria": "Toggle between with-price and without-price products"
+    },
     "filters": "Filters",
     "sortProducts": "Sort Products"
   },
   "pricing": {
     "special_price": "Special price"
+  },
+  "noPrice": {
+    "label": "No Price • Made to Order",
+    "popupTitle": "This product is not available for direct purchase",
+    "popupDescription": "You cannot buy this product immediately. You can place an order request so we can make or source it for you.",
+    "browseButton": "View Product Details",
+    "orderButton": "Order"
   },
   "grid": {
     "noProducts": "No products found."

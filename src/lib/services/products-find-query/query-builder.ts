@@ -226,6 +226,7 @@ export async function buildWhereClause(
     category,
     search,
     filter,
+    pricePresence,
     brand,
     minPrice,
     maxPrice,
@@ -322,6 +323,30 @@ export async function buildWhereClause(
         some: {
           published: true,
           price: priceCondition,
+        },
+      },
+    });
+  }
+
+  if (pricePresence === "with") {
+    andConditions.push({
+      variants: {
+        some: {
+          published: true,
+          price: {
+            gt: 0,
+          },
+        },
+      },
+    });
+  } else if (pricePresence === "without") {
+    andConditions.push({
+      variants: {
+        none: {
+          published: true,
+          price: {
+            gt: 0,
+          },
         },
       },
     });

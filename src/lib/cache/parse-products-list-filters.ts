@@ -59,11 +59,15 @@ export function parseProductListFiltersFromSearchParams(
   const skipCountRaw = searchParams.get('skipExactTotalCount');
   const skipExactTotalCount =
     skipCountRaw === '1' || skipCountRaw?.toLowerCase() === 'true' ? true : undefined;
+  const rawPricePresence = searchParams.get('pricePresence');
+  const pricePresence =
+    rawPricePresence === 'with' || rawPricePresence === 'without' ? rawPricePresence : undefined;
 
   return {
     category: searchParams.get('category') || undefined,
     search: searchParams.get('search') || undefined,
     filter: searchParams.get('filter') || searchParams.get('filters') || undefined,
+    pricePresence,
     minPrice: normalizedMinPrice,
     maxPrice: normalizedMaxPrice,
     colors: searchParams.get('colors') || undefined,
