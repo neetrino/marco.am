@@ -1,6 +1,7 @@
 import {
   dispatchShopProductsListingParams,
 } from '@/lib/shop-products-listing-params-event';
+import { notifyShopProductsListingFetch } from '@/lib/shop-products-listing-client-cache';
 import { syncShopProductsListingQueryString } from '@/lib/use-shop-products-listing-search-params';
 
 type ShopListingRouter = {
@@ -23,10 +24,12 @@ export function pushShopProductsListingUrl(_router: ShopListingRouter, href: str
     return;
   }
 
-  dispatchShopProductsListingParams(href);
   const queryString = targetUrl.search.startsWith('?')
     ? targetUrl.search.slice(1)
     : targetUrl.search;
+
+  notifyShopProductsListingFetch(queryString);
+  dispatchShopProductsListingParams(href);
   syncShopProductsListingQueryString(queryString);
   window.history.pushState(null, '', href);
 }

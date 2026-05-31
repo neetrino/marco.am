@@ -35,7 +35,6 @@ interface RegisterData {
 
 interface AuthResponse {
   user: User;
-  token: string;
 }
 
 export type AuthFlowResult =
@@ -62,7 +61,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const AUTH_TOKEN_KEY = 'auth_token';
 const AUTH_USER_KEY = 'auth_user';
 
 function isPendingVerification(
@@ -83,9 +81,8 @@ function isAuthSuccess(x: unknown): x is AuthResponse {
   return (
     typeof x === 'object' &&
     x !== null &&
-    'token' in x &&
     'user' in x &&
-    typeof (x as AuthResponse).token === 'string'
+    typeof (x as AuthResponse).user === 'object'
   );
 }
 
@@ -96,9 +93,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
 
   const persistSession = (response: AuthResponse) => {
-    localStorage.setItem(AUTH_TOKEN_KEY, response.token);
     localStorage.setItem(AUTH_USER_KEY, JSON.stringify(response.user));
-    setToken(response.token);
+    setToken('cookie-session');
     setUser(response.user);
     window.dispatchEvent(new Event('auth-updated'));
   };
@@ -113,39 +109,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    logger.devLog('🔐 [AUTH] Loading auth state from localStorage...');
+    logger.devLog('🔐 [AUTH] Loading auth state from persisted user snapshot...');
 
     const loadAuthState = async () => {
       try {
-        const storedToken = localStorage.getItem(AUTH_TOKEN_KEY);
         const storedUser = localStorage.getItem(AUTH_USER_KEY);
 
-        if (storedToken && storedUser) {
+        if (storedUser) {
           logger.devLog('✅ [AUTH] Found stored auth data');
           const parsedUser = JSON.parse(storedUser) as User;
+          const profileData = await apiClient.get<User>('/api/v1/users/profile');
+          const refreshedUser = {
+            ...parsedUser,
+            ...profileData,
+            roles: Array.isArray(profileData.roles) ? profileData.roles : parsedUser.roles,
+          };
 
-          if (!parsedUser.roles || !Array.isArray(parsedUser.roles)) {
-            logger.devLog('⚠️ [AUTH] User data missing roles, fetching from API...');
-            try {
-              const profileData = await apiClient.get<{ roles: string[] }>('/api/v1/users/profile');
-              if (profileData.roles) {
-                parsedUser.roles = profileData.roles;
-                localStorage.setItem(AUTH_USER_KEY, JSON.stringify(parsedUser));
-                logger.devLog('✅ [AUTH] Roles updated from API:', profileData.roles);
-              }
-            } catch (fetchError) {
-              logger.devLog('❌ [AUTH] Failed to fetch user roles', { fetchError });
-            }
-          }
-
-          setToken(storedToken);
-          setUser(parsedUser);
+          localStorage.setItem(AUTH_USER_KEY, JSON.stringify(refreshedUser));
+          setToken('cookie-session');
+          setUser(refreshedUser);
         } else {
           logger.devLog('ℹ️ [AUTH] No stored auth data found');
         }
       } catch (error) {
         logger.devLog('❌ [AUTH] Error loading auth state', { error });
-        localStorage.removeItem(AUTH_TOKEN_KEY);
         localStorage.removeItem(AUTH_USER_KEY);
       } finally {
         setIsLoading(false);
@@ -258,7 +245,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         persistSession(response);
         scheduleGuestDataSyncAfterAuth();
-        logger.devLog('💾 [AUTH] Auth data stored in localStorage');
+        logger.devLog('💾 [AUTH] Auth user snapshot stored');
       } catch (storageError) {
         logger.devLog('❌ [AUTH] Failed to store auth data', { storageError });
         throw new Error('Failed to save authentication data');
@@ -354,7 +341,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     logger.devLog('🔐 [AUTH] Logging out...');
 
-    localStorage.removeItem(AUTH_TOKEN_KEY);
+    void apiClient.post('/api/v1/auth/logout', {}, { skipAuth: true }).catch((error: unknown) => {
+      logger.devLog('Logout cookie clear request failed', { error });
+    });
+
     localStorage.removeItem(AUTH_USER_KEY);
     clearVerificationSession();
 

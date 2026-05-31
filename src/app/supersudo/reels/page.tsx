@@ -234,13 +234,11 @@ export default function ReelsPage() {
 
     setUploadingVideo(true);
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
       const payload = new FormData();
       payload.append('file', file);
 
       const response = await fetch('/api/v1/supersudo/reels/upload-video', {
         method: 'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         body: payload,
       });
 
@@ -271,13 +269,11 @@ export default function ReelsPage() {
 
     setUploadingPoster(true);
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
       const payload = new FormData();
       payload.append('file', file);
 
       const response = await fetch('/api/v1/supersudo/reels/upload-poster', {
         method: 'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         body: payload,
       });
 

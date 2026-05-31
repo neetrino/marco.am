@@ -1,4 +1,4 @@
-import { Suspense } from 'react';
+import type { ReactNode } from 'react';
 import { PriceFilter } from '@/components/PriceFilter';
 import { BrandFilter } from '@/components/BrandFilter';
 import { CategoryFilter } from '@/components/CategoryFilter';
@@ -11,15 +11,9 @@ import { productsFiltersSectionFont } from '@/lib/products-filters-typography';
 import { t } from '@/lib/i18n';
 import type { LanguageCode } from '@/lib/language';
 import { MOBILE_FILTERS_EVENT } from '@/lib/events';
-import {
-  getProductsFiltersCached,
-  searchParamsRecordToUrlSearchParams,
-} from '@/lib/cache/products-filters-redis';
-import { buildTechnicalFilterQuerySignature } from '@/lib/services/products-technical-filters';
-import type { ProductsPageSearchParams } from './products-page-search-params';
+import type { ProductsFiltersData } from '@/components/ProductsFiltersProvider';
 
 export type ProductsShopFiltersColumnProps = {
-  readonly raw: ProductsPageSearchParams;
   readonly language: LanguageCode;
   readonly params: {
     category?: string;
@@ -29,47 +23,38 @@ export type ProductsShopFiltersColumnProps = {
     maxPrice?: string;
     limit?: string;
   };
-  readonly filtersMinPrice: number | undefined;
-  readonly filtersMaxPrice: number | undefined;
+  readonly initialFiltersData?: ProductsFiltersData | null;
+  readonly initialFiltersKey?: string | null;
+  /** When true, facet fetch waits for streamed server hydration (PLP shell paints first). */
+  readonly awaitServerHydration?: boolean;
+  readonly children?: ReactNode;
 };
 
 /**
- * Sidebar + mobile filter drawer: streams after the PLP grid so listing data is not blocked on facet queries.
+ * Sidebar + mobile filter drawer. When the server prefetches facets, data is hydrated
+ * immediately; otherwise `ProductsFiltersProvider` fetches on the client.
  */
-export async function ProductsShopFiltersColumn({
-  raw,
+export function ProductsShopFiltersColumn({
   language,
   params,
-  filtersMinPrice,
-  filtersMaxPrice,
+  initialFiltersData = null,
+  initialFiltersKey = null,
+  awaitServerHydration = false,
+  children,
 }: ProductsShopFiltersColumnProps) {
-  const filtersPayload = await getProductsFiltersCached({
-    category: params.category?.trim() || undefined,
-    search: params.search?.trim() || undefined,
-    filter: params.filter?.trim() || undefined,
-    minPrice: filtersMinPrice,
-    maxPrice: filtersMaxPrice,
-    lang: language,
-    includeCategories: false,
-    rawSearchParams: raw,
-  });
-
-  const technicalFilterSignature = buildTechnicalFilterQuerySignature(
-    searchParamsRecordToUrlSearchParams(raw),
-  );
-  const initialFiltersKey = `${params.category ?? ''}|${params.search ?? ''}|${params.minPrice ?? ''}|${params.maxPrice ?? ''}|${language}|${technicalFilterSignature}|${params.filter ?? ''}`;
-
   return (
-    <Suspense fallback={productsShopFiltersColumnSkeletonAria()}>
     <ProductsFiltersProvider
       category={params.category}
       search={params.search}
       filter={params.filter}
       minPrice={params.minPrice}
       maxPrice={params.maxPrice}
-      initialFiltersData={filtersPayload}
+      language={language}
+      initialFiltersData={initialFiltersData}
       initialFiltersKey={initialFiltersKey}
+      awaitServerHydration={awaitServerHydration}
     >
+      {children}
       <aside className="hidden w-[16rem] shrink-0 bg-white dark:bg-[var(--app-bg)] min-[744px]:sticky min-[744px]:top-4 min-[744px]:z-10 min-[744px]:self-start min-[744px]:block xl:w-[20rem]">
         <div className="border-r border-solid border-[#e2e8f0] dark:border-white/20 pb-4 pt-4 min-[744px]:pl-0 min-[744px]:pr-3 xl:pb-6 xl:pt-6 xl:pr-6">
           <div className="mb-4 flex flex-col gap-1 lg:mb-5 xl:mb-6">
@@ -162,11 +147,10 @@ export async function ProductsShopFiltersColumn({
         </div>
       </MobileFiltersDrawer>
     </ProductsFiltersProvider>
-    </Suspense>
   );
 }
 
-export function productsShopFiltersColumnSkeletonAria() {
+export function productsShopFiltersColumnSkeleton() {
   return (
     <aside
       className="hidden w-[16rem] shrink-0 min-[744px]:block xl:w-[20rem]"

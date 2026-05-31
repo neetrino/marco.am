@@ -1,45 +1,34 @@
 import { Suspense } from 'react';
-import {
-  ProductsShopFiltersColumn,
-  productsShopFiltersColumnSkeletonAria,
-} from './ProductsShopFiltersColumn';
-import { resolveProductsShopListingServerContext } from '@/lib/products-shop-listing-server-context';
+import type { ProductsShopListingServerContext } from '@/lib/products-shop-listing-server-context';
+import { ProductsShopFiltersColumn } from './ProductsShopFiltersColumn';
+import { ProductsShopFiltersDataSection } from './ProductsShopFiltersDataSection';
 import type { ProductsPageSearchParams } from './products-page-search-params';
 import { ProductsShopListingSection } from './ProductsShopListingSection';
 import { ProductsShopLoadingSkeleton } from './ProductsShopLoadingSkeleton';
 
-type ProductsShopFiltersSectionProps = {
-  readonly searchParams: Promise<ProductsPageSearchParams>;
-};
-
-async function ProductsShopFiltersSection({ searchParams }: ProductsShopFiltersSectionProps) {
-  const raw = await searchParams;
-  const ctx = await resolveProductsShopListingServerContext(raw);
-
-  return (
-    <ProductsShopFiltersColumn
-      raw={raw}
-      language={ctx.language}
-      params={ctx.params}
-      filtersMinPrice={ctx.filtersMinPrice}
-      filtersMaxPrice={ctx.filtersMaxPrice}
-    />
-  );
-}
-
 interface ProductsShopStreamedSectionProps {
-  readonly searchParams: Promise<ProductsPageSearchParams>;
+  readonly raw: ProductsPageSearchParams;
+  readonly ctx: ProductsShopListingServerContext;
 }
 
-export function ProductsShopStreamedSection({ searchParams }: ProductsShopStreamedSectionProps) {
+/**
+ * Filter shell paints immediately; facet payload and listing grid stream in parallel.
+ */
+export function ProductsShopStreamedSection({ raw, ctx }: ProductsShopStreamedSectionProps) {
   return (
     <div className="marco-header-container flex flex-col min-[744px]:flex-row min-[744px]:gap-5 xl:gap-8">
-      <Suspense fallback={productsShopFiltersColumnSkeletonAria()}>
-        <ProductsShopFiltersSection searchParams={searchParams} />
-      </Suspense>
+      <ProductsShopFiltersColumn
+        language={ctx.language}
+        params={ctx.params}
+        awaitServerHydration
+      >
+        <Suspense fallback={null}>
+          <ProductsShopFiltersDataSection raw={raw} ctx={ctx} />
+        </Suspense>
+      </ProductsShopFiltersColumn>
 
       <Suspense fallback={<ProductsShopLoadingSkeleton variant="grid" />}>
-        <ProductsShopListingSection searchParams={searchParams} />
+        <ProductsShopListingSection raw={raw} />
       </Suspense>
     </div>
   );

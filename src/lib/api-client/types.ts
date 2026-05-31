@@ -3,7 +3,7 @@
  */
 export interface RequestOptions extends globalThis.RequestInit {
   params?: Record<string, string>;
-  skipAuth?: boolean; // Skip automatic token injection
+  skipAuth?: boolean; // Kept for call-site compatibility; auth uses HttpOnly cookies.
   timeoutMs?: number;
   suppressNetworkErrorLogging?: boolean;
   suppressAbortErrorLogging?: boolean;

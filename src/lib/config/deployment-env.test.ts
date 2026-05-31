@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   getCorsAllowedOrigin,
+  getCorsAllowedOrigins,
   getDeploymentTier,
   getPublicAppUrl,
 } from "./deployment-env";
@@ -59,6 +60,14 @@ describe("deployment-env", () => {
       vi.stubEnv("CORS_ORIGIN", "https://api.example/");
       vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://web.example");
       expect(getCorsAllowedOrigin()).toBe("https://api.example");
+    });
+
+    it("supports comma-separated CORS origins", () => {
+      vi.stubEnv("CORS_ORIGIN", "https://shop.example/, https://admin.example/");
+      expect(getCorsAllowedOrigins()).toEqual([
+        "https://shop.example",
+        "https://admin.example",
+      ]);
     });
 
     it("uses localhost in development when no explicit origin", () => {
