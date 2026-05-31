@@ -20,6 +20,7 @@ export function MarcoLogo() {
   return (
     <Link
       href="/"
+      prefetch
       className="flex h-9 shrink-0 items-center md:h-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marco-black"
       aria-label="MARCO GROUP Home"
     >

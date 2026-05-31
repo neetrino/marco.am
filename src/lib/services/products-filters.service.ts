@@ -1,5 +1,6 @@
 import { db } from "@white-shop/db";
 import { Prisma } from "@white-shop/db/prisma";
+import { unstable_cache } from "next/cache";
 import { adminService } from "./admin.service";
 import { buildWhereClause } from "./products-find-query/query-builder";
 import { ProductWithRelations } from "./products-find-query.service";
@@ -31,6 +32,21 @@ const SHOP_FILTER_EXCLUDED_CATEGORY_CANONICAL = new Set([
   "shoes",
   "sports",
 ]);
+
+const FILTERS_PRODUCTS_LIMIT = 240;
+const FILTERS_VARIANTS_PER_PRODUCT_LIMIT = 12;
+const FILTERS_CATEGORY_DESCENDANT_ENRICHMENT_MAX_ROWS = 80;
+
+function buildPreferredLocales(lang: string): string[] {
+  const normalized = lang.trim().toLowerCase();
+  return normalized === "en" ? ["en"] : [normalized, "en"];
+}
+
+const getPriceFilterSettingsCached = unstable_cache(
+  async () => adminService.getPriceFilterSettings(),
+  ["products-filters-price-settings-v1"],
+  { revalidate: 300, tags: ["price-filter-settings"] },
+);
 
 function canonicalCategoryFilterKey(input: string): string {
   return input
@@ -321,8 +337,14 @@ class ProductsFiltersService {
     maxPrice?: number;
     lang?: string;
     technicalSpecs?: TechnicalSpecFilters;
+    includeCategories?: boolean;
+    categoriesOnly?: boolean;
   }) {
     try {
+      const preferredLocales = buildPreferredLocales(filters.lang || "en");
+      const lang = filters.lang || "en";
+      const includeCategories = filters.includeCategories !== false;
+      const categoriesOnly = filters.categoriesOnly === true;
       const discountSettings = await getListingDiscountSettings();
       const { where: listingWhere } = await buildWhereClause({
         category: filters.category?.trim(),
@@ -343,36 +365,176 @@ class ProductsFiltersService {
 
       const where: Prisma.ProductWhereInput = listingWhere;
 
+      if (categoriesOnly && includeCategories) {
+        const categoryRows = await db.category.findMany({
+          where: {
+            published: true,
+            deletedAt: null,
+            products: { some: where },
+          },
+          include: { translations: true },
+          orderBy: { position: "asc" },
+        });
+
+        const categoryCounts = new Map<string, number>();
+        for (const cat of categoryRows) {
+          categoryCounts.set(cat.id, 1);
+        }
+
+        const rowsById = new Map<
+          string,
+          { id: string; parentId: string | null; position: number; slug: string; title: string; count: number }
+        >();
+        const skippedParentById = new Map<string, string | null>();
+        const rootRows: Array<{ id: string; parentId: string | null }> = [];
+
+        for (const cat of categoryRows) {
+          if (
+            this.isShopFilterCategoryExcludedFromTranslations(
+              cat.translations.map((t) => ({ slug: t.slug, title: t.title })),
+            )
+          ) {
+            continue;
+          }
+          const tr = cat.translations.find((t) => t.locale === lang) || cat.translations[0];
+          if (!tr) {
+            continue;
+          }
+          const row = {
+            id: cat.id,
+            parentId: cat.parentId,
+            position: cat.position,
+            slug: tr.slug,
+            title: tr.title,
+            count: categoryCounts.get(cat.id) || 1,
+          };
+          rowsById.set(cat.id, row);
+          rootRows.push({ id: cat.id, parentId: cat.parentId });
+        }
+
+        let frontier = new Set(
+          rootRows.map((r) => r.parentId).filter((pid): pid is string => Boolean(pid)),
+        );
+        let guard = 0;
+        while (frontier.size > 0 && guard < 40) {
+          guard += 1;
+          const toFetch = [...frontier].filter((id) => !rowsById.has(id));
+          frontier = new Set();
+          if (toFetch.length === 0) {
+            break;
+          }
+          const parents = await db.category.findMany({
+            where: {
+              id: { in: toFetch },
+              published: true,
+              deletedAt: null,
+            },
+            include: { translations: true },
+            orderBy: { position: "asc" },
+          });
+          for (const cat of parents) {
+            if (
+              this.isShopFilterCategoryExcludedFromTranslations(
+                cat.translations.map((t) => ({ slug: t.slug, title: t.title })),
+              )
+            ) {
+              skippedParentById.set(cat.id, cat.parentId ?? null);
+              if (cat.parentId) {
+                frontier.add(cat.parentId);
+              }
+              continue;
+            }
+            const tr = cat.translations.find((t) => t.locale === lang) || cat.translations[0];
+            if (!tr) {
+              skippedParentById.set(cat.id, cat.parentId ?? null);
+              if (cat.parentId) {
+                frontier.add(cat.parentId);
+              }
+              continue;
+            }
+            if (!rowsById.has(cat.id)) {
+              rowsById.set(cat.id, {
+                id: cat.id,
+                parentId: cat.parentId,
+                position: cat.position,
+                slug: tr.slug,
+                title: tr.title,
+                count: categoryCounts.get(cat.id) || 0,
+              });
+            }
+            if (cat.parentId && !rowsById.has(cat.parentId)) {
+              frontier.add(cat.parentId);
+            }
+          }
+        }
+
+        const visibleIds = new Set(rowsById.keys());
+        const allRows = Array.from(rowsById.values());
+        const treeRows = allRows.map((r) => ({
+          id: r.id,
+          parentId: resolveVisibleCategoryParentId(r.parentId, visibleIds, skippedParentById),
+          position: r.position,
+          slug: r.slug,
+          title: r.title,
+        }));
+        const counts = new Map(allRows.map((r) => [r.id, r.count] as const));
+        const categories = buildShopCategoryFilterTree(treeRows, counts, new Set<string>());
+
+        return {
+          colors: [],
+          sizes: [],
+          brands: [],
+          categories,
+          attributeFacets: [] as TechnicalSpecFacet[],
+          priceRange: { min: 0, max: 0, stepSize: null, stepSizePerCurrency: null },
+        };
+      }
+
       const catalogPriceBounds = await this.getPublishedVariantPriceBounds(where, discountSettings);
 
-      // Get products with variants (capped for non-price facets computation)
-      const FILTERS_PRODUCTS_LIMIT = 700;
       let products: ProductWithRelations[] = [];
       try {
         products = (await db.product.findMany({
           where,
           take: FILTERS_PRODUCTS_LIMIT,
-          include: {
+          select: {
+            id: true,
+            brandId: true,
+            primaryCategoryId: true,
+            categoryIds: true,
+            discountPercent: true,
             brand: {
-              include: {
-                translations: true,
+              select: {
+                id: true,
+                slug: true,
+                translations: {
+                  where: { locale: { in: preferredLocales } },
+                  select: { locale: true, name: true },
+                },
               },
             },
             variants: {
               where: {
                 published: true,
               },
-              include: {
+              take: FILTERS_VARIANTS_PER_PRODUCT_LIMIT,
+              select: {
+                price: true,
+                attributes: true,
                 options: {
                   include: {
                     attributeValue: {
-                      include: {
+                      select: {
+                        value: true,
+                        imageUrl: true,
+                        colors: true,
                         attribute: {
-                          include: {
-                            translations: true,
-                          },
+                          select: { key: true, type: true, filterable: true },
                         },
-                        translations: true,
+                        translations: {
+                          where: { locale: { in: preferredLocales } },
+                          select: { locale: true, label: true },
+                        },
                       },
                     },
                   },
@@ -425,7 +587,6 @@ class ProductsFiltersService {
     // Collect colors and sizes from variants
     // Use Map with lowercase key to merge colors with different cases
     // Store both count, canonical label, imageUrl and colors hex
-    const lang = filters.lang || 'en';
     const colorMap = new Map<string, { 
       count: number; 
       label: string; 
@@ -435,7 +596,7 @@ class ProductsFiltersService {
     const sizeMap = new Map<string, number>();
     const extraAttributeFacetByKey = new Map<string, ExtraAttributeFacetAgg>();
     const brandMap = new Map<string, { id: string; slug: string; name: string; count: number }>();
-    const categoryCountMap = new Map<string, number>();
+    const categoryCountMap = includeCategories ? new Map<string, number>() : null;
     let rangeMin = Infinity;
     let rangeMax = 0;
 
@@ -447,16 +608,18 @@ class ProductsFiltersService {
         primaryCategoryId?: string | null;
         categoryIds?: string[];
       };
-      const categoryIdsForProduct = new Set<string>();
-      if (catProduct.primaryCategoryId) {
-        categoryIdsForProduct.add(catProduct.primaryCategoryId);
+      if (includeCategories && categoryCountMap) {
+        const categoryIdsForProduct = new Set<string>();
+        if (catProduct.primaryCategoryId) {
+          categoryIdsForProduct.add(catProduct.primaryCategoryId);
+        }
+        (catProduct.categoryIds || []).forEach((id) => {
+          categoryIdsForProduct.add(id);
+        });
+        categoryIdsForProduct.forEach((id) => {
+          categoryCountMap.set(id, (categoryCountMap.get(id) || 0) + 1);
+        });
       }
-      (catProduct.categoryIds || []).forEach((id) => {
-        categoryIdsForProduct.add(id);
-      });
-      categoryIdsForProduct.forEach((id) => {
-        categoryCountMap.set(id, (categoryCountMap.get(id) || 0) + 1);
-      });
       if (product.brand?.id) {
         const b = product.brand as {
           id: string;
@@ -656,9 +819,12 @@ class ProductsFiltersService {
       
     });
 
-    const categoryIdsWithProducts = Array.from(categoryCountMap.keys());
+    const categoryIdsWithProducts = includeCategories && categoryCountMap
+      ? Array.from(categoryCountMap.keys())
+      : [];
     let categories: CategoryFilterTreeNode[] = [];
     if (categoryIdsWithProducts.length > 0) {
+      const categoryCounts = categoryCountMap ?? new Map<string, number>();
       const categoryRows = await db.category.findMany({
         where: {
           id: { in: categoryIdsWithProducts },
@@ -690,7 +856,7 @@ class ProductsFiltersService {
           if (!tr) {
             return null;
           }
-          const count = categoryCountMap.get(cat.id) || 0;
+          const count = categoryCounts.get(cat.id) || 0;
           if (count === 0) {
             return null;
           }
@@ -754,7 +920,7 @@ class ProductsFiltersService {
             }
             continue;
           }
-          const count = categoryCountMap.get(cat.id) || 0;
+          const count = categoryCounts.get(cat.id) || 0;
           rowsById.set(cat.id, {
             id: cat.id,
             parentId: cat.parentId,
@@ -771,50 +937,52 @@ class ProductsFiltersService {
 
       /** Load published subcategories from DB so every parent with real children gets an expand control (not only facets with products). */
       const enrichedOnlyIds = new Set<string>();
-      let prevRowCount = -1;
-      let descendantWalkGuard = 0;
-      while (rowsById.size !== prevRowCount && descendantWalkGuard < 25) {
-        descendantWalkGuard += 1;
-        prevRowCount = rowsById.size;
-        const parentIds = [...rowsById.keys()];
-        if (parentIds.length === 0) {
-          break;
-        }
-        const publishedChildren = await db.category.findMany({
-          where: {
-            parentId: { in: parentIds },
-            published: true,
-            deletedAt: null,
-          },
-          include: { translations: true },
-          orderBy: { position: "asc" },
-        });
-        for (const cat of publishedChildren) {
-          if (
-            this.isShopFilterCategoryExcludedFromTranslations(
-              cat.translations.map((t) => ({ slug: t.slug, title: t.title })),
-            )
-          ) {
-            continue;
+      if (rowsById.size <= FILTERS_CATEGORY_DESCENDANT_ENRICHMENT_MAX_ROWS) {
+        let prevRowCount = -1;
+        let descendantWalkGuard = 0;
+        while (rowsById.size !== prevRowCount && descendantWalkGuard < 25) {
+          descendantWalkGuard += 1;
+          prevRowCount = rowsById.size;
+          const parentIds = [...rowsById.keys()];
+          if (parentIds.length === 0) {
+            break;
           }
-          const tr =
-            cat.translations.find((t) => t.locale === lang) || cat.translations[0];
-          if (!tr) {
-            continue;
-          }
-          if (rowsById.has(cat.id)) {
-            continue;
-          }
-          const count = categoryCountMap.get(cat.id) || 0;
-          rowsById.set(cat.id, {
-            id: cat.id,
-            parentId: cat.parentId,
-            position: cat.position,
-            slug: tr.slug,
-            title: tr.title,
-            count,
+          const publishedChildren = await db.category.findMany({
+            where: {
+              parentId: { in: parentIds },
+              published: true,
+              deletedAt: null,
+            },
+            include: { translations: true },
+            orderBy: { position: "asc" },
           });
-          enrichedOnlyIds.add(cat.id);
+          for (const cat of publishedChildren) {
+            if (
+              this.isShopFilterCategoryExcludedFromTranslations(
+                cat.translations.map((t) => ({ slug: t.slug, title: t.title })),
+              )
+            ) {
+              continue;
+            }
+            const tr =
+              cat.translations.find((t) => t.locale === lang) || cat.translations[0];
+            if (!tr) {
+              continue;
+            }
+            if (rowsById.has(cat.id)) {
+              continue;
+            }
+            const count = categoryCounts.get(cat.id) || 0;
+            rowsById.set(cat.id, {
+              id: cat.id,
+              parentId: cat.parentId,
+              position: cat.position,
+              slug: tr.slug,
+              title: tr.title,
+              count,
+            });
+            enrichedOnlyIds.add(cat.id);
+          }
         }
       }
 
@@ -880,7 +1048,7 @@ class ProductsFiltersService {
       let stepSize: number | null = null;
       let stepSizePerCurrency: Record<string, number> | null = null;
       try {
-        const settings = await adminService.getPriceFilterSettings();
+        const settings = await getPriceFilterSettingsCached();
         stepSize = settings.stepSize ?? null;
         if (settings.stepSizePerCurrency) {
           stepSizePerCurrency = {
@@ -989,7 +1157,7 @@ class ProductsFiltersService {
     } | null = null;
 
     try {
-      const settings = await adminService.getPriceFilterSettings();
+      const settings = await getPriceFilterSettingsCached();
       stepSize = settings.stepSize ?? null;
 
       if (settings.stepSizePerCurrency) {

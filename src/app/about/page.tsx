@@ -3,9 +3,6 @@
 import Image from 'next/image';
 import { useTranslation } from '../../lib/i18n-client';
 
-export const dynamic = 'force-dynamic';
-export const dynamicParams = true;
-
 const aboutParagraphKeys = [
   'about.description.paragraph1',
   'about.description.paragraph2',

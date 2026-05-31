@@ -50,6 +50,7 @@ export async function ProductsShopFiltersColumn({
     minPrice: filtersMinPrice,
     maxPrice: filtersMaxPrice,
     lang: language,
+    includeCategories: false,
     rawSearchParams: raw,
   });
 

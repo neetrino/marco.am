@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { useShopProductsListingSearchParams } from '@/lib/use-shop-products-listing-search-params';
 import { pushShopProductsListingUrl } from '../lib/push-shop-products-listing-url';
 import { apiClient } from '../lib/api-client';
 import { getStoredLanguage } from '../lib/language';
@@ -151,7 +152,7 @@ export function CategoryFilter({
   maxPrice,
 }: CategoryFilterProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const searchParams = useShopProductsListingSearchParams();
   const mobileDraft = useMobileFiltersDraft();
   const filtersContext = useProductsFilters();
   const { t } = useTranslation();
@@ -162,23 +163,36 @@ export function CategoryFilter({
   const [expandedKeys, setExpandedKeys] = useState<ReadonlySet<string>>(() => new Set());
 
   useEffect(() => {
-    if (filtersContext?.data?.categories) {
+    if (filtersContext?.data?.categories?.length) {
       setCategories(filtersContext.data.categories.map(normalizeCategoryChildren));
       setLoading(false);
       return;
     }
     if (filtersContext === null) {
       fetchCategories();
-    } else {
-      setLoading(filtersContext.loading);
+    } else if (filtersContext.loading) {
+      setLoading(true);
     }
-  }, [category, search, minPrice, maxPrice, filtersContext?.data?.categories, filtersContext?.loading, filtersContext === null]);
+  }, [
+    category,
+    search,
+    minPrice,
+    maxPrice,
+    filtersContext?.data?.categories,
+    filtersContext?.loading,
+    filtersContext?.categoriesLoading,
+    filtersContext === null,
+  ]);
 
   const fetchCategories = async () => {
     try {
       setLoading(true);
       const language = getStoredLanguage();
-      const params: Record<string, string> = { lang: language };
+      const params: Record<string, string> = {
+        lang: language,
+        includeCategories: '1',
+        categoriesOnly: '1',
+      };
       if (category) params.category = category;
       if (search) params.search = search;
       if (minPrice) params.minPrice = minPrice;

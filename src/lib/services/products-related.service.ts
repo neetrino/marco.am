@@ -246,14 +246,9 @@ class ProductsRelatedService {
       }
     };
 
-    const fetchCandidates = async (
+    const fetchCandidateBatch = async (
       filters: Record<string, string | number | undefined>,
-      rule: RelatedRule
-    ): Promise<void> => {
-      if (selectedProducts.length >= limit) {
-        return;
-      }
-
+    ): Promise<RelatedProduct[]> => {
       const batchLimit = Math.max(limit * QUERY_BATCH_MULTIPLIER, limit);
       const response = (await productsService.findAll({
         ...filters,
@@ -261,37 +256,25 @@ class ProductsRelatedService {
         limit: batchLimit,
         page: 1,
       })) as ProductListResponse;
-      tryAppendProducts(response.data, rule);
+      return response.data;
     };
 
     const primaryCategorySlug = baseProduct.categories?.[0]?.slug;
-    if (primaryCategorySlug) {
-      await fetchCandidates(
-        {
-          category: primaryCategorySlug,
-          sort: "popular",
-        },
-        "category"
-      );
-    }
-
     const brandId = baseProduct.brand?.id;
-    if (brandId) {
-      await fetchCandidates(
-        {
-          brand: brandId,
-          sort: "popular",
-        },
-        "brand"
-      );
-    }
 
-    await fetchCandidates(
-      {
-        sort: "popular",
-      },
-      "other"
-    );
+    const [categoryBatch, brandBatch, otherBatch] = await Promise.all([
+      primaryCategorySlug
+        ? fetchCandidateBatch({ category: primaryCategorySlug, sort: "popular" })
+        : Promise.resolve([] as RelatedProduct[]),
+      brandId
+        ? fetchCandidateBatch({ brand: brandId, sort: "popular" })
+        : Promise.resolve([] as RelatedProduct[]),
+      fetchCandidateBatch({ sort: "popular" }),
+    ]);
+
+    tryAppendProducts(categoryBatch, "category");
+    tryAppendProducts(brandBatch, "brand");
+    tryAppendProducts(otherBatch, "other");
 
     const data = selectedProducts.slice(0, limit);
     const rules = data.reduce(

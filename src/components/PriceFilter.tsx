@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { useShopProductsListingSearchParams } from '@/lib/use-shop-products-listing-search-params';
 import {
   PRODUCTS_FILTER_SECTION_SHELL_CLASS,
   productsFiltersSectionFont,
@@ -40,7 +41,7 @@ function clampToRange(n: number, lo: number, hi: number): number {
 
 export function PriceFilter({ currentMinPrice, currentMaxPrice, category }: PriceFilterProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const searchParams = useShopProductsListingSearchParams();
   const mobileDraft = useMobileFiltersDraft();
   const filtersContext = useProductsFilters();
   const { t } = useTranslation();

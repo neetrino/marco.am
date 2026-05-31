@@ -1,28 +1,32 @@
-import { startTransition } from "react";
+import {
+  dispatchShopProductsListingParams,
+} from '@/lib/shop-products-listing-params-event';
+import { syncShopProductsListingQueryString } from '@/lib/use-shop-products-listing-search-params';
+
+type ShopListingRouter = {
+  push: (href: string, options?: { scroll?: boolean }) => void | Promise<void>;
+  refresh: () => void;
+};
 
 /**
- * Navigate to the shop listing (`/products` or `/products?…`) and refetch server
- * components so the grid and meta match the URL after client-side navigation.
+ * Update the shop listing URL without an App Router navigation (no RSC refetch).
+ * Dispatches an instant client fetch event, then syncs the address bar via history API.
  */
-export function pushShopProductsListingUrl(
-  router: { push: (href: string) => void | Promise<void>; refresh: () => void },
-  href: string,
-): void {
-  if (typeof window !== 'undefined') {
-    const currentUrl = new URL(window.location.href);
-    const targetUrl = new URL(href, window.location.origin);
-    const isSameRoute =
-      currentUrl.pathname === targetUrl.pathname && currentUrl.search === targetUrl.search;
-
-    if (isSameRoute) {
-      startTransition(() => {
-        router.refresh();
-      });
-      return;
-    }
+export function pushShopProductsListingUrl(_router: ShopListingRouter, href: string): void {
+  if (typeof window === 'undefined') {
+    return;
   }
 
-  startTransition(() => {
-    void router.push(href);
-  });
+  const currentUrl = new URL(window.location.href);
+  const targetUrl = new URL(href, window.location.origin);
+  if (currentUrl.pathname === targetUrl.pathname && currentUrl.search === targetUrl.search) {
+    return;
+  }
+
+  dispatchShopProductsListingParams(href);
+  const queryString = targetUrl.search.startsWith('?')
+    ? targetUrl.search.slice(1)
+    : targetUrl.search;
+  syncShopProductsListingQueryString(queryString);
+  window.history.pushState(null, '', href);
 }

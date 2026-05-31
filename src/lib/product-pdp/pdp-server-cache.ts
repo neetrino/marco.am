@@ -1,9 +1,12 @@
 import { unstable_cache } from 'next/cache';
 
 import type { LanguageCode } from '@/lib/language';
+import { productsRelatedService } from '@/lib/services/products-related.service';
 import { productsService } from '@/lib/services/products.service';
 
 import { PDP_NEXT_CACHE_REVALIDATE_SECONDS } from './pdp-query-cache';
+
+export const PDP_RELATED_SSR_LIMIT = 10;
 
 /**
  * Cached Prisma read for PDP first paint (shared with pre-App Router path).
@@ -20,5 +23,15 @@ export const getCachedPdpVisual = unstable_cache(
 export const getCachedPdpDetail = unstable_cache(
   async (slug: string, lang: LanguageCode) => productsService.findBySlug(slug, lang),
   ['pdp-ssr-detail-v1'],
+  { revalidate: PDP_NEXT_CACHE_REVALIDATE_SECONDS },
+);
+
+/**
+ * Related carousel rows for SSR — hydrates React Query so the PDP section paints without a client round-trip.
+ */
+export const getCachedPdpRelated = unstable_cache(
+  async (slug: string, lang: LanguageCode, limit: number) =>
+    productsRelatedService.findBySlug(slug, lang, limit),
+  ['pdp-ssr-related-v1'],
   { revalidate: PDP_NEXT_CACHE_REVALIDATE_SECONDS },
 );

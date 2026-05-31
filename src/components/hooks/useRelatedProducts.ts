@@ -9,26 +9,39 @@ import { queryKeys } from '../../lib/query-keys';
 import {
   fetchRelatedProducts,
   type RelatedProductRow,
+  type RelatedProductsApiResponse,
 } from '@/lib/product-pdp/fetch-related-products';
 import { PDP_RELATED_GC_TIME_MS, PDP_RELATED_STALE_TIME_MS } from '@/lib/product-pdp/pdp-query-cache';
 
 interface UseRelatedProductsProps {
   productSlug: string;
   language: LanguageCode;
+  /** SSR payload — instant carousel on first paint when slug/lang match. */
+  initialRelatedProducts?: RelatedProductsApiResponse | null;
 }
 
-const RELATED_LIMIT = 10;
+export const RELATED_PRODUCTS_LIMIT = 10;
 
 /**
  * Related products for PDP — React Query cache + dedupe (shared key with hover prefetch).
  */
-export function useRelatedProducts({ productSlug, language }: UseRelatedProductsProps) {
+export function useRelatedProducts({
+  productSlug,
+  language,
+  initialRelatedProducts = null,
+}: UseRelatedProductsProps) {
   const trimmed = productSlug.trim();
 
+  const initialData =
+    initialRelatedProducts != null && initialRelatedProducts.data.length > 0
+      ? initialRelatedProducts
+      : undefined;
+
   const query = useQuery({
-    queryKey: queryKeys.relatedProducts(trimmed, language, RELATED_LIMIT),
-    queryFn: () => fetchRelatedProducts(trimmed, language, RELATED_LIMIT),
+    queryKey: queryKeys.relatedProducts(trimmed, language, RELATED_PRODUCTS_LIMIT),
+    queryFn: () => fetchRelatedProducts(trimmed, language, RELATED_PRODUCTS_LIMIT),
     enabled: Boolean(trimmed),
+    initialData,
     staleTime: PDP_RELATED_STALE_TIME_MS,
     gcTime: PDP_RELATED_GC_TIME_MS,
     retry: 1,
@@ -39,8 +52,10 @@ export function useRelatedProducts({ productSlug, language }: UseRelatedProducts
     if (!rows?.length) {
       return [];
     }
-    return dedupeCardProductsByTitle(rows).slice(0, RELATED_LIMIT);
+    return dedupeCardProductsByTitle(rows).slice(0, RELATED_PRODUCTS_LIMIT);
   }, [query.data]);
 
-  return { products, loading: query.isPending };
+  const loading = query.isPending && products.length === 0;
+
+  return { products, loading };
 }

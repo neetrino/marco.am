@@ -72,6 +72,7 @@ export function ProductCardGrid({
       <ProductPdpPrefetchLink
         href={`/products/${product.slug}`}
         productSlug={product.slug}
+        prefetchData={false}
         className="block cursor-pointer rounded-t-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-marco-yellow focus-visible:ring-offset-2"
         aria-label={product.title}
       >

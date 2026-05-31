@@ -33,6 +33,119 @@ const normalizeBrandTokens = (brand?: string): { raw: Set<string>; normalized: S
   };
 };
 
+function normalizeTechnicalSpecsForFastCheck(
+  specs?: ProductFilters["technicalSpecs"],
+): Record<string, Set<string>> {
+  if (!specs || typeof specs !== "object") {
+    return {};
+  }
+  const out: Record<string, Set<string>> = {};
+  for (const [k, values] of Object.entries(specs)) {
+    if (!Array.isArray(values) || values.length === 0) {
+      continue;
+    }
+    const key = k.trim().toLowerCase();
+    if (!key) {
+      continue;
+    }
+    out[key] = new Set(values.map((v) => String(v).trim().toLowerCase()).filter(Boolean));
+  }
+  return out;
+}
+
+function productFastMatchesTechnicalSpecs(
+  product: ProductWithRelations,
+  normalizedSpecs: Record<string, Set<string>>,
+): boolean {
+  const entries = Object.entries(normalizedSpecs);
+  if (entries.length === 0) {
+    return true;
+  }
+  const variants = Array.isArray(product.variants) ? product.variants : [];
+  if (variants.length === 0) {
+    return false;
+  }
+
+  const bucketsByKey = new Map<string, Set<string>>();
+  for (const variant of variants) {
+    const options = Array.isArray(variant.options) ? variant.options : [];
+    for (const opt of options) {
+      const option = opt as VariantOptionLike;
+      const keyRaw =
+        option.attributeValue?.attribute?.key ??
+        option.attributeKey ??
+        option.key ??
+        option.attribute;
+      const key = typeof keyRaw === "string" ? keyRaw.trim().toLowerCase() : "";
+      if (!key || key === "color" || key === "size") {
+        continue;
+      }
+
+      const bucket = bucketsByKey.get(key) ?? new Set<string>();
+      const translated =
+        option.attributeValue?.translations
+          ?.map((tr) => tr.label?.trim().toLowerCase())
+          .filter((v): v is string => Boolean(v)) ?? [];
+      translated.forEach((v) => bucket.add(v));
+
+      const valueRaw =
+        option.attributeValue?.value ??
+        option.value ??
+        option.label;
+      if (typeof valueRaw === "string") {
+        const val = valueRaw.trim().toLowerCase();
+        if (val) {
+          bucket.add(val);
+        }
+      }
+      bucketsByKey.set(key, bucket);
+    }
+
+    const attrsRaw = (variant as { attributes?: unknown }).attributes;
+    if (attrsRaw && typeof attrsRaw === "object" && !Array.isArray(attrsRaw)) {
+      for (const [rawKey, rawVal] of Object.entries(attrsRaw as Record<string, unknown>)) {
+        const key = rawKey.trim().toLowerCase();
+        if (!key || key === "color" || key === "size") {
+          continue;
+        }
+        const bucket = bucketsByKey.get(key) ?? new Set<string>();
+        const arr = Array.isArray(rawVal) ? rawVal : rawVal == null ? [] : [rawVal];
+        for (const entry of arr) {
+          if (entry && typeof entry === "object" && !Array.isArray(entry)) {
+            const obj = entry as { label?: unknown; value?: unknown };
+            const fromLabel = typeof obj.label === "string" ? obj.label.trim().toLowerCase() : "";
+            const fromValue = typeof obj.value === "string" ? obj.value.trim().toLowerCase() : "";
+            if (fromLabel) bucket.add(fromLabel);
+            if (fromValue) bucket.add(fromValue);
+          } else if (entry != null) {
+            const str = String(entry).trim().toLowerCase();
+            if (str) bucket.add(str);
+          }
+        }
+        bucketsByKey.set(key, bucket);
+      }
+    }
+  }
+
+  for (const [key, wanted] of entries) {
+    const got = bucketsByKey.get(key);
+    if (!got) {
+      return false;
+    }
+    let ok = false;
+    for (const candidate of wanted) {
+      if (got.has(candidate)) {
+        ok = true;
+        break;
+      }
+    }
+    if (!ok) {
+      return false;
+    }
+  }
+  return true;
+}
+
 type SupportedSort = "newest" | "popular" | "price-asc" | "price-desc";
 
 function resolveSort(sort?: string): SupportedSort {
@@ -303,10 +416,14 @@ class ProductsFindFilterService {
       });
     }
 
-    if (technicalSpecs && Object.keys(technicalSpecs).length > 0) {
-      products = products.filter((product: ProductWithRelations) =>
-        productMatchesTechnicalSpecs(product, technicalSpecs)
-      );
+    const normalizedSpecs = normalizeTechnicalSpecsForFastCheck(technicalSpecs);
+    if (Object.keys(normalizedSpecs).length > 0) {
+      products = products.filter((product: ProductWithRelations) => {
+        if (productFastMatchesTechnicalSpecs(product, normalizedSpecs)) {
+          return true;
+        }
+        return productMatchesTechnicalSpecs(product, technicalSpecs);
+      });
     }
 
     // Sort

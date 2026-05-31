@@ -1,7 +1,7 @@
-export type ProductsShopLoadingSkeletonVariant = 'full' | 'body';
+export type ProductsShopLoadingSkeletonVariant = 'full' | 'body' | 'grid';
 
 type ProductsShopLoadingSkeletonProps = {
-  /** `body` = grid + filter column only (real header already on screen). */
+  /** `body` = grid + filter column; `grid` = product grid cell only (parallel listing Suspense). */
   readonly variant?: ProductsShopLoadingSkeletonVariant;
 };
 
@@ -13,6 +13,26 @@ export function ProductsShopLoadingSkeleton({ variant = 'full' }: ProductsShopLo
   const bar = 'rounded-md bg-slate-200 animate-pulse dark:bg-slate-600';
   const block = 'rounded-lg bg-slate-200 animate-pulse dark:bg-slate-600';
   const card = 'h-[260px] w-full max-w-[286px] rounded-lg bg-slate-200 animate-pulse sm:h-[280px] dark:bg-slate-600';
+
+  const gridSkeleton = (
+    <div className="min-h-[48vh] min-w-0 flex-1 overflow-x-hidden bg-slate-50/80 pt-4 pb-6 min-[744px]:min-h-[52vh] min-[744px]:w-auto min-[744px]:bg-transparent min-[744px]:py-4 dark:bg-slate-950/40 min-[744px]:dark:bg-transparent">
+      <div className="grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3 md:gap-x-6 md:gap-y-12">
+        {Array.from({ length: 9 }, (_, i) => (
+          <div key={i} className="flex min-w-0 justify-end pr-2 sm:pr-3 md:pr-4">
+            <div className={card} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  if (variant === 'grid') {
+    return (
+      <div className="min-w-0 flex-1 w-full" aria-busy="true" aria-label="Loading products">
+        {gridSkeleton}
+      </div>
+    );
+  }
 
   const headerSkeleton =
     variant === 'full' ? (
@@ -50,15 +70,7 @@ export function ProductsShopLoadingSkeleton({ variant = 'full' }: ProductsShopLo
           </div>
         </aside>
 
-        <div className="min-h-[48vh] min-w-0 flex-1 overflow-x-hidden bg-slate-50/80 pt-4 pb-6 min-[744px]:min-h-[52vh] min-[744px]:w-auto min-[744px]:bg-transparent min-[744px]:py-4 dark:bg-slate-950/40 min-[744px]:dark:bg-transparent">
-          <div className="grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3 md:gap-x-6 md:gap-y-12">
-            {Array.from({ length: 9 }, (_, i) => (
-              <div key={i} className="flex min-w-0 justify-end pr-2 sm:pr-3 md:pr-4">
-                <div className={card} />
-              </div>
-            ))}
-          </div>
-        </div>
+        {gridSkeleton}
       </div>
     </div>
   );

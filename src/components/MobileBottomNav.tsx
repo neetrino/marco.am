@@ -147,7 +147,7 @@ function NavItemVisual({ item, pathname, cartCount, onPress, variant = 'default'
   return (
     <Link
       href={href}
-      {...(href === '/' || href === '/products' ? { prefetch: true as const } : {})}
+      prefetch
       aria-current={isActive ? 'page' : undefined}
       className={contentClass}
     >

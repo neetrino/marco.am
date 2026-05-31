@@ -8,6 +8,7 @@ import { Footer } from './Footer';
 import { Header } from './Header';
 import { MobileBottomNav } from './MobileBottomNav';
 import { GlobalRoutePrefetch } from './navigation/GlobalRoutePrefetch';
+import { RouteNavigationIndicator } from './navigation/RouteNavigationIndicator';
 
 interface AppChromeProps {
   children: ReactNode;
@@ -51,6 +52,7 @@ export function AppChrome({ children, initialLanguage }: AppChromeProps) {
       </main>
       {footerNode}
       <GlobalRoutePrefetch />
+      <RouteNavigationIndicator />
       {showMobileBottomNav && <MobileBottomNav />}
     </>
   );
