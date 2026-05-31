@@ -2,10 +2,15 @@
 
 import { useEffect, useMemo, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import { primaryNavInternalHrefs } from '@/components/header/nav-config';
 import { getStoredLanguage } from '@/lib/language';
 
-const PREFETCH_ROUTES = ['/', '/products', '/wishlist', '/profile', '/reels'] as const;
+const EXTRA_PREFETCH_ROUTES = ['/wishlist', '/profile', '/login'] as const;
+const PREFETCH_ROUTES = [...new Set([...primaryNavInternalHrefs, ...EXTRA_PREFETCH_ROUTES])];
+/** Header routes warmed first so dev compile starts before the user clicks. */
+const PRIORITY_PREFETCH_ROUTES = [...primaryNavInternalHrefs];
 const PRODUCTS_PREFETCH_QUERY = 'page=1&limit=12&listingOmitProductAttributes=1';
+const INTERACTION_PREFETCH_MAX_SEGMENTS = 2;
 type IdleCapableWindow = Window &
   typeof globalThis & {
     requestIdleCallback?: (
@@ -36,6 +41,29 @@ function warmProductsApi(language: string): void {
   void fetch(`/api/v1/products/filters?lang=${encodeURIComponent(language)}`, { cache: 'force-cache' });
 }
 
+function getPrefetchableInternalPath(href: string): string | null {
+  try {
+    const parsed = new URL(href, window.location.origin);
+    if (parsed.origin !== window.location.origin) {
+      return null;
+    }
+    if (parsed.pathname.startsWith('/api/')) {
+      return null;
+    }
+    return parsed.pathname;
+  } catch {
+    return null;
+  }
+}
+
+function shouldInteractionPrefetch(pathname: string): boolean {
+  if (pathname === '/') {
+    return true;
+  }
+  const segments = pathname.split('/').filter(Boolean);
+  return segments.length <= INTERACTION_PREFETCH_MAX_SEGMENTS;
+}
+
 /**
  * Prefetches high-traffic routes + public products payload during idle time.
  */
@@ -44,6 +72,7 @@ export function GlobalRoutePrefetch() {
   const router = useRouter();
   const warmedRef = useRef<Set<string>>(new Set());
   const interactionWarmedRef = useRef<Set<string>>(new Set());
+  const warmProductsLangRef = useRef<Set<string>>(new Set());
   const routesToPrefetch = useMemo(
     () => PREFETCH_ROUTES.filter((route) => route !== pathname),
     [pathname],
@@ -53,26 +82,45 @@ export function GlobalRoutePrefetch() {
     if (shouldSkipIdlePrefetch()) {
       return;
     }
-    const idleWindow = window as IdleCapableWindow;
-    const run = () => {
-      for (const route of routesToPrefetch) {
-        if (warmedRef.current.has(route)) {
-          continue;
-        }
-        warmedRef.current.add(route);
-        void router.prefetch(route);
+    for (const route of PRIORITY_PREFETCH_ROUTES) {
+      if (warmedRef.current.has(route)) {
+        continue;
       }
-      warmProductsApi(getStoredLanguage());
+      warmedRef.current.add(route);
+      void router.prefetch(route);
+    }
+  }, [router]);
+
+  useEffect(() => {
+    if (shouldSkipIdlePrefetch()) {
+      return;
+    }
+
+    for (const route of routesToPrefetch) {
+      if (warmedRef.current.has(route)) {
+        continue;
+      }
+      warmedRef.current.add(route);
+      void router.prefetch(route);
+    }
+
+    const idleWindow = window as IdleCapableWindow;
+    const warmApi = () => {
+      const language = getStoredLanguage();
+      if (!warmProductsLangRef.current.has(language)) {
+        warmProductsLangRef.current.add(language);
+        warmProductsApi(language);
+      }
     };
     if (typeof idleWindow.requestIdleCallback === 'function') {
-      const id = idleWindow.requestIdleCallback(run, { timeout: 2500 });
+      const id = idleWindow.requestIdleCallback(warmApi, { timeout: 2500 });
       return () => {
         if (typeof idleWindow.cancelIdleCallback === 'function') {
           idleWindow.cancelIdleCallback(id);
         }
       };
     }
-    const timerId = globalThis.setTimeout(run, 450);
+    const timerId = globalThis.setTimeout(warmApi, 450);
     return () => globalThis.clearTimeout(timerId);
   }, [router, routesToPrefetch]);
 
@@ -86,20 +134,21 @@ export function GlobalRoutePrefetch() {
         return;
       }
       const href = anchor.getAttribute('href');
-      if (!href || !href.startsWith('/')) {
+      if (!href) {
         return;
       }
-      if (href.startsWith('//') || href.startsWith('/api/')) {
+      const internalPath = getPrefetchableInternalPath(href);
+      if (!internalPath || !shouldInteractionPrefetch(internalPath)) {
         return;
       }
-      if (interactionWarmedRef.current.has(href)) {
+      if (interactionWarmedRef.current.has(internalPath)) {
         return;
       }
-      interactionWarmedRef.current.add(href);
-      void router.prefetch(href);
+      interactionWarmedRef.current.add(internalPath);
+      void router.prefetch(internalPath);
     };
 
-    const onPointerMove = (event: PointerEvent) => {
+    const onPointerOver = (event: PointerEvent) => {
       prefetchFromElement(event.target);
     };
     const onFocusIn = (event: FocusEvent) => {
@@ -109,12 +158,12 @@ export function GlobalRoutePrefetch() {
       prefetchFromElement(event.target);
     };
 
-    document.addEventListener('pointermove', onPointerMove, { passive: true });
+    document.addEventListener('pointerover', onPointerOver, { passive: true });
     document.addEventListener('focusin', onFocusIn, { passive: true });
     document.addEventListener('pointerdown', onPointerDown, { passive: true });
 
     return () => {
-      document.removeEventListener('pointermove', onPointerMove);
+      document.removeEventListener('pointerover', onPointerOver);
       document.removeEventListener('focusin', onFocusIn);
       document.removeEventListener('pointerdown', onPointerDown);
     };

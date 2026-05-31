@@ -1,7 +1,46 @@
 ﻿'use client';
 
 import Link from 'next/link';
+import type { ReactNode } from 'react';
 import { useTranslation } from '../../lib/i18n-client';
+
+type PaginationNavLinkProps = {
+  readonly href: string;
+  readonly className: string;
+  readonly children: ReactNode;
+  readonly ariaLabel?: string;
+  readonly onNavigate?: (href: string) => void;
+};
+
+function PaginationNavLink({
+  href,
+  className,
+  children,
+  ariaLabel,
+  onNavigate,
+}: PaginationNavLinkProps) {
+  if (!onNavigate) {
+    return (
+      <Link href={href} className={className} aria-label={ariaLabel}>
+        {children}
+      </Link>
+    );
+  }
+  return (
+    <Link
+      href={href}
+      prefetch
+      className={className}
+      aria-label={ariaLabel}
+      onClick={(event) => {
+        event.preventDefault();
+        onNavigate(href);
+      }}
+    >
+      {children}
+    </Link>
+  );
+}
 
 /** Figma MARCO 218:2304 — control pill (white or grey) */
 const PAGINATION_CONTROL_BASE =
@@ -86,6 +125,8 @@ export interface ProductsPaginationProps {
   readonly hrefLast: string;
   /** Precomputed from server — no functions across RSC/client boundary */
   readonly slotItems: readonly PaginationSlotItem[];
+  /** When set, pagination uses instant client fetch instead of default Link navigation. */
+  readonly onNavigate?: (href: string) => void;
 }
 
 export function ProductsPagination({
@@ -96,6 +137,7 @@ export function ProductsPagination({
   hrefNext,
   hrefLast,
   slotItems,
+  onNavigate,
 }: ProductsPaginationProps) {
   const { t } = useTranslation();
 
@@ -109,14 +151,15 @@ export function ProductsPagination({
     >
       {/* First */}
       {page > 1 ? (
-        <Link
+        <PaginationNavLink
           href={hrefFirst}
+          onNavigate={onNavigate}
           className={`${PAGINATION_CONTROL_GREY} gap-1 dark:text-[#313131]`}
-          aria-label={t('common.pagination.firstAria')}
+          ariaLabel={t('common.pagination.firstAria')}
         >
           <IconChevronsLeft className="shrink-0 text-[#313131] dark:text-[#313131]" />
           <span className="text-[#313131] dark:text-[#313131]">{t('common.pagination.first')}</span>
-        </Link>
+        </PaginationNavLink>
       ) : (
         <span className={`${inactiveGrey} gap-1 dark:text-[#313131]`} aria-disabled="true">
           <IconChevronsLeft className="shrink-0 text-[#313131] dark:text-[#313131]" />
@@ -126,14 +169,15 @@ export function ProductsPagination({
 
       {/* Back (previous page) */}
       {page > 1 ? (
-        <Link
+        <PaginationNavLink
           href={hrefBack}
+          onNavigate={onNavigate}
           className={`${PAGINATION_CONTROL_WHITE} gap-1`}
-          aria-label={t('common.pagination.previousAria')}
+          ariaLabel={t('common.pagination.previousAria')}
         >
           <IconChevronLeft className="shrink-0 text-[#313131] dark:text-white" />
           <span>{t('common.pagination.previous')}</span>
-        </Link>
+        </PaginationNavLink>
       ) : (
         <span className={`${inactiveControl} gap-1`} aria-disabled="true">
           <IconChevronLeft className="shrink-0" />
@@ -161,12 +205,13 @@ export function ProductsPagination({
                 {item.page}
               </span>
             ) : (
-              <Link
+              <PaginationNavLink
                 href={item.href}
+                onNavigate={onNavigate}
                 className={`${PAGINATION_PAGE_BASE} bg-white font-normal text-[#313131] hover:bg-[#fafafa] dark:text-white`}
               >
                 {item.page}
-              </Link>
+              </PaginationNavLink>
             )}
           </span>
         )
@@ -174,14 +219,15 @@ export function ProductsPagination({
 
       {/* Next */}
       {page < totalPages ? (
-        <Link
+        <PaginationNavLink
           href={hrefNext}
+          onNavigate={onNavigate}
           className={`${PAGINATION_CONTROL_WHITE} gap-1`}
-          aria-label={t('common.pagination.nextAria')}
+          ariaLabel={t('common.pagination.nextAria')}
         >
           <span>{t('common.pagination.next')}</span>
           <IconChevronRight className="shrink-0 text-[#313131] dark:text-white" />
-        </Link>
+        </PaginationNavLink>
       ) : (
         <span className={`${inactiveControl} gap-1`} aria-disabled="true">
           <span>{t('common.pagination.next')}</span>
@@ -191,14 +237,15 @@ export function ProductsPagination({
 
       {/* Last */}
       {page < totalPages ? (
-        <Link
+        <PaginationNavLink
           href={hrefLast}
+          onNavigate={onNavigate}
           className={`${PAGINATION_CONTROL_GREY} gap-1 dark:text-[#313131]`}
-          aria-label={t('common.pagination.lastAria')}
+          ariaLabel={t('common.pagination.lastAria')}
         >
           <span className="text-[#313131] dark:text-[#313131]">{t('common.pagination.last')}</span>
           <IconChevronsRight className="shrink-0 text-[#313131] dark:text-[#313131]" />
-        </Link>
+        </PaginationNavLink>
       ) : (
         <span className={`${inactiveGrey} gap-1 dark:text-[#313131]`} aria-disabled="true">
           <span className="text-[#313131] dark:text-[#313131]">{t('common.pagination.last')}</span>

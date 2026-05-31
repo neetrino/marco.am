@@ -1,12 +1,12 @@
 'use client';
 
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { Ref } from 'react';
 import { useTranslation } from '../../lib/i18n-client';
 import { MarcoLogo } from './MarcoLogo';
 import { HeaderDesktopContactPickers } from './HeaderDesktopContactPickers';
 import { HeaderSocialCircleLinks } from './HeaderSocialCircleLinks';
+import { HeaderPrimaryNavLink } from './HeaderPrimaryNavLink';
 import { useShouldHideHeaderSocialLinks } from './useShouldHideHeaderSocialLinks';
 import {
   HEADER_CONTAINER_CLASS,
@@ -69,17 +69,14 @@ export function HeaderDesktopTopRow({
               );
             }
             return (
-              <Link
+              <HeaderPrimaryNavLink
                 key={item.translationKey}
                 href={item.href}
-                {...(item.href === '/' || item.href === '/products'
-                  ? { prefetch: true as const }
-                  : {})}
                 className={navClass}
                 aria-current={active ? 'page' : undefined}
               >
                 {label}
-              </Link>
+              </HeaderPrimaryNavLink>
             );
           })}
         </nav>

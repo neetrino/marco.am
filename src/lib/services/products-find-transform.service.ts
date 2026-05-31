@@ -91,14 +91,12 @@ class ProductsFindTransformService {
       const variants = Array.isArray(product.variants) ? product.variants : [];
       const variant = pickVariantForListingPrice(variants);
 
-      // Get all unique colors from ALL variants with imageUrl and colors hex (support both new and old format)
-      // IMPORTANT: Only collect colors that actually exist in variants
-      // IMPORTANT: Process ALL variants to get ALL colors, not just the first variant
+      // Get all unique colors from variants with imageUrl + hex colors.
+      // Limit scanned variants on PLP to keep filter interactions responsive.
       const colorMap = new Map<string, { value: string; imageUrl?: string | null; colors?: string[] | null }>();
-      
-      
-      // Process all variants to collect all unique colors
-      variants.forEach((v) => {
+      const variantsForColorScan = variants.slice(0, 10);
+
+      variantsForColorScan.forEach((v) => {
         // First, try to get ALL color options from variant.options (not just the first one)
         const options = Array.isArray(v.options) ? v.options : [];
         const colorOptions = options.filter((opt: ProductWithRelations['variants'][number]['options'][number]) => {

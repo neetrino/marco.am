@@ -122,6 +122,7 @@ export function HeaderRow2RightToolbar({ data, compactPrimaryNav, headerMobileLi
                 >
                   <Link
                     href="/profile"
+                    prefetch
                     className="block border-b border-gray-100 px-5 py-3 text-sm font-medium text-gray-700 transition-all duration-150 hover:bg-gradient-to-r hover:from-gray-50 hover:to-white"
                     onClick={() => setShowUserMenu(false)}
                   >
@@ -153,6 +154,7 @@ export function HeaderRow2RightToolbar({ data, compactPrimaryNav, headerMobileLi
           ) : (
             <Link
               href="/login"
+              prefetch
               className={getHeaderToolbarIconSurfaceClass(profileToolbarActive)}
               aria-current={profileToolbarActive ? 'page' : undefined}
             >
@@ -163,6 +165,7 @@ export function HeaderRow2RightToolbar({ data, compactPrimaryNav, headerMobileLi
 
         <Link
           href="/compare"
+          prefetch
           className={getHeaderToolbarIconSurfaceClass(compareToolbarActive)}
           aria-current={compareToolbarActive ? 'page' : undefined}
         >
@@ -174,6 +177,7 @@ export function HeaderRow2RightToolbar({ data, compactPrimaryNav, headerMobileLi
 
         <Link
           href="/wishlist"
+          prefetch
           className={getHeaderToolbarIconSurfaceClass(wishlistToolbarActive)}
           aria-current={wishlistToolbarActive ? 'page' : undefined}
         >

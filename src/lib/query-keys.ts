@@ -21,4 +21,10 @@ export const queryKeys = {
     ["api", "v1", "home", "brand-partners", locale] as const,
   bannersBySlot: (slot: string, locale: LanguageCode) =>
     ["api", "v1", "banners", "slot", slot, locale] as const,
+  wishlistProductIdsRoot: () => ["api", "v1", "wishlist", "ids"] as const,
+  wishlistProductIds: (lang: LanguageCode) =>
+    ["api", "v1", "wishlist", "ids", lang] as const,
+  compareProductIdsRoot: () => ["api", "v1", "compare", "ids"] as const,
+  compareProductIds: (lang: LanguageCode) =>
+    ["api", "v1", "compare", "ids", lang] as const,
 };

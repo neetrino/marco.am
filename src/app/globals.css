@@ -109,6 +109,19 @@
     animation: fade-in 0.3s ease-out;
   }
 
+  @keyframes route-nav-progress {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(400%);
+    }
+  }
+
+  .route-nav-indicator-bar {
+    animation: route-nav-progress 1s ease-in-out infinite;
+  }
+
   .checkout-order-summary-receipt-shell {
     filter: drop-shadow(0 4px 20px rgba(16, 16, 16, 0.08));
   }

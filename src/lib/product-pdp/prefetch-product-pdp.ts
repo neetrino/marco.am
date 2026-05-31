@@ -7,13 +7,8 @@ import { queryKeys } from '@/lib/query-keys';
 import {
   PDP_QUERY_GC_TIME_MS,
   PDP_QUERY_STALE_TIME_MS,
-  PDP_RELATED_GC_TIME_MS,
-  PDP_RELATED_STALE_TIME_MS,
 } from './pdp-query-cache';
 import { fetchProductDetail, fetchProductVisual } from './product-pdp-fetchers';
-import { fetchRelatedProducts } from './fetch-related-products';
-
-const RELATED_PREFETCH_LIMIT = 10;
 
 function baseProductSlug(raw: string): string {
   const parts = raw.includes(':') ? raw.split(':') : [raw];
@@ -34,24 +29,14 @@ export function prefetchProductPdp(
     return Promise.resolve();
   }
 
-  return Promise.all([
-    queryClient.prefetchQuery({
+  // Keep PLP lightweight: prefetch only the PDP core payloads.
+  // Related products are fetched on PDP itself to avoid request floods from listing cards.
+  return queryClient
+    .prefetchQuery({
       queryKey: queryKeys.productVisual(slug, lang),
       queryFn: () => fetchProductVisual(slug, lang),
       staleTime: PDP_QUERY_STALE_TIME_MS,
       gcTime: PDP_QUERY_GC_TIME_MS,
-    }),
-    queryClient.prefetchQuery({
-      queryKey: queryKeys.productDetail(slug, lang),
-      queryFn: () => fetchProductDetail(slug, lang),
-      staleTime: PDP_QUERY_STALE_TIME_MS,
-      gcTime: PDP_QUERY_GC_TIME_MS,
-    }),
-    queryClient.prefetchQuery({
-      queryKey: queryKeys.relatedProducts(slug, lang, RELATED_PREFETCH_LIMIT),
-      queryFn: () => fetchRelatedProducts(slug, lang, RELATED_PREFETCH_LIMIT),
-      staleTime: PDP_RELATED_STALE_TIME_MS,
-      gcTime: PDP_RELATED_GC_TIME_MS,
-    }),
-  ]).then(() => undefined);
+    })
+    .then(() => undefined);
 }

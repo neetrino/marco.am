@@ -38,6 +38,8 @@ export function buildProductsFiltersCacheKey(filters: {
   maxPrice?: number;
   lang: string;
   technicalSpecs: TechnicalSpecFilters;
+  includeCategories?: boolean;
+  categoriesOnly?: boolean;
 }): string {
   const hash = createHash('sha256')
     .update(stableStringifyForCacheKey(filters))
@@ -52,6 +54,8 @@ export async function getProductsFiltersCached(args: {
   minPrice?: number;
   maxPrice?: number;
   lang: string;
+  includeCategories?: boolean;
+  categoriesOnly?: boolean;
   /** Precomputed (e.g. API route) — must match `parseTechnicalSpecFiltersFromSearchParams` for the same request. */
   technicalSpecs?: TechnicalSpecFilters;
   /** PLP `searchParams` record — used when `technicalSpecs` is omitted. */
@@ -72,6 +76,8 @@ export async function getProductsFiltersCached(args: {
     maxPrice: args.maxPrice,
     lang: args.lang,
     technicalSpecs,
+    includeCategories: args.includeCategories !== false,
+    categoriesOnly: args.categoriesOnly === true,
   };
   const cacheKey = buildProductsFiltersCacheKey(keyPayload);
   return getCachedJson<ProductsFiltersCachedPayload>(
@@ -86,6 +92,8 @@ export async function getProductsFiltersCached(args: {
         maxPrice: keyPayload.maxPrice,
         lang: keyPayload.lang,
         technicalSpecs: keyPayload.technicalSpecs,
+        includeCategories: keyPayload.includeCategories,
+        categoriesOnly: keyPayload.categoriesOnly,
       }),
   );
 }
