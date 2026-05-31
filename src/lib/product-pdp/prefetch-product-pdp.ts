@@ -8,7 +8,7 @@ import {
   PDP_QUERY_GC_TIME_MS,
   PDP_QUERY_STALE_TIME_MS,
 } from './pdp-query-cache';
-import { fetchProductDetail, fetchProductVisual } from './product-pdp-fetchers';
+import { fetchProductVisual } from './product-pdp-fetchers';
 
 function baseProductSlug(raw: string): string {
   const parts = raw.includes(':') ? raw.split(':') : [raw];
