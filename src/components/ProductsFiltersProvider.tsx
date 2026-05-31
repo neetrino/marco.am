@@ -5,16 +5,24 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
   type ReactNode,
 } from 'react';
 import { useShopProductsListingSearchParams } from '@/lib/use-shop-products-listing-search-params';
+import { SHOP_PRODUCTS_LISTING_PARAMS_EVENT } from '@/lib/shop-products-listing-params-event';
 import { apiClient } from '../lib/api-client';
 import { getStoredLanguage } from '../lib/language';
+import type { LanguageCode } from '../lib/language';
 import { buildTechnicalFilterQuerySignature } from '@/lib/services/products-technical-filters';
 import type { TechnicalSpecFacet } from '@/lib/services/products-technical-filters';
+import { buildProductsFiltersClientKey } from '@/lib/products-filters-client-key';
+import {
+  readShopFiltersCache,
+  writeShopFiltersCache,
+} from '@/lib/shop-products-filters-client-cache';
 
 export interface ColorOption {
   value: string;
@@ -69,6 +77,10 @@ interface ProductsFiltersContextValue {
 
 const ProductsFiltersContext = createContext<ProductsFiltersContextValue | null>(null);
 
+type ApplyFiltersPayload = (payload: ProductsFiltersData, key: string) => void;
+
+const ProductsFiltersHydrationContext = createContext<ApplyFiltersPayload | null>(null);
+
 const DEFAULT_FILTERS: ProductsFiltersData = {
   colors: [],
   sizes: [],
@@ -77,6 +89,9 @@ const DEFAULT_FILTERS: ProductsFiltersData = {
   attributeFacets: [],
   priceRange: { min: 0, max: 0, stepSize: null, stepSizePerCurrency: null },
 };
+
+const FACET_REFETCH_DELAY_MS = 400;
+const SERVER_HYDRATION_FALLBACK_MS = 4_000;
 
 function mergeFilterPayload(payload: ProductsFiltersData): ProductsFiltersData {
   return {
@@ -89,19 +104,27 @@ function mergeFilterPayload(payload: ProductsFiltersData): ProductsFiltersData {
   };
 }
 
+function buildFacetRefetchScopeKey(searchParams: URLSearchParams, lang: string): string {
+  const params = new URLSearchParams(searchParams.toString());
+  params.delete('page');
+  params.delete('sort');
+  params.delete('limit');
+  params.set('lang', lang);
+  return params.toString();
+}
+
 interface ProductsFiltersProviderProps {
   category?: string;
   search?: string;
   filter?: string;
   minPrice?: string;
   maxPrice?: string;
-  /**
-   * When the PLP prefetches filters on the server, pass the payload plus the same key
-   * built from category/search/min/max + language + technical filter signature so the first client /filters round-trip is skipped.
-   */
+  /** SSR locale — keeps `initialFiltersKey` aligned with the server prefetch key on hydration. */
+  language?: LanguageCode;
   initialFiltersData?: ProductsFiltersData | null;
-  /** Must match client: category|search|minPrice|maxPrice|lang|technicalFilterSignature|filter */
   initialFiltersKey?: string | null;
+  /** PLP: skip client fetch until streamed RSC payload hydrates the provider. */
+  awaitServerHydration?: boolean;
   children: ReactNode;
 }
 
@@ -111,8 +134,10 @@ export function ProductsFiltersProvider({
   filter,
   minPrice,
   maxPrice,
+  language: languageProp,
   initialFiltersData = null,
   initialFiltersKey = null,
+  awaitServerHydration = false,
   children,
 }: ProductsFiltersProviderProps) {
   const searchParams = useShopProductsListingSearchParams();
@@ -125,11 +150,12 @@ export function ProductsFiltersProvider({
     () => !(initialFiltersData && initialFiltersKey),
   );
   const [error, setError] = useState(false);
-  const [categoriesLoading, setCategoriesLoading] = useState(false);
   const syncedFiltersKeyRef = useRef<string | null>(
     initialFiltersData && initialFiltersKey ? initialFiltersKey : null,
   );
   const hasFiltersDataRef = useRef(Boolean(initialFiltersData && initialFiltersKey));
+  const lastFacetScopeRef = useRef<string | null>(null);
+  const facetRefetchTimerRef = useRef<number | null>(null);
 
   const technicalSignatureFromUrl = useMemo(
     () => buildTechnicalFilterQuerySignature(searchParams),
@@ -137,9 +163,30 @@ export function ProductsFiltersProvider({
   );
 
   const filtersClientKey = useMemo(() => {
-    const lang = getStoredLanguage();
-    return `${category ?? ''}|${search ?? ''}|${minPrice ?? ''}|${maxPrice ?? ''}|${lang}|${technicalSignatureFromUrl}|${filter ?? ''}`;
-  }, [category, search, minPrice, maxPrice, technicalSignatureFromUrl, filter]);
+    const lang = languageProp ?? getStoredLanguage();
+    return buildProductsFiltersClientKey({
+      category,
+      search,
+      minPrice,
+      maxPrice,
+      filter,
+      language: lang,
+      technicalFilterSignature: technicalSignatureFromUrl,
+    });
+  }, [category, search, minPrice, maxPrice, languageProp, technicalSignatureFromUrl, filter]);
+
+  const applyFiltersPayload = useCallback(
+    (payload: ProductsFiltersData, key: string) => {
+      const merged = mergeFilterPayload(payload);
+      setData(merged);
+      setLoading(false);
+      setError(false);
+      syncedFiltersKeyRef.current = key;
+      hasFiltersDataRef.current = true;
+      writeShopFiltersCache(key, merged);
+    },
+    [],
+  );
 
   const fetchFilters = useCallback(async () => {
     setError(false);
@@ -147,30 +194,43 @@ export function ProductsFiltersProvider({
       setLoading(true);
     }
     try {
-      const lang = getStoredLanguage();
+      const lang = languageProp ?? getStoredLanguage();
       const params: Record<string, string> = { lang };
-      if (category) params.category = category;
-      if (search) params.search = search;
-      if (filter) params.filter = filter;
-      if (minPrice) params.minPrice = minPrice;
-      if (maxPrice) params.maxPrice = maxPrice;
+      const categoryParam = searchParams.get('category') ?? category;
+      const searchParam = searchParams.get('search') ?? search;
+      const minPriceParam = searchParams.get('minPrice') ?? minPrice;
+      const maxPriceParam = searchParams.get('maxPrice') ?? maxPrice;
+      const filterParam = searchParams.get('filter') ?? filter;
+      if (categoryParam) params.category = categoryParam;
+      if (searchParam) params.search = searchParam;
+      if (filterParam) params.filter = filterParam;
+      if (minPriceParam) params.minPrice = minPriceParam;
+      if (maxPriceParam) params.maxPrice = maxPriceParam;
       searchParams.forEach((v, k) => {
         if (k.startsWith('spec.') || k === 'specs') {
           params[k] = v;
         }
       });
       const res = await apiClient.get<ProductsFiltersData>('/api/v1/products/filters', {
-        params: { ...params, includeCategories: '0' },
+        params: { ...params, includeCategories: '1' },
       });
-      setData((prev) => ({
+      setData({
         colors: res.colors ?? [],
         sizes: res.sizes ?? [],
         brands: res.brands ?? [],
-        categories: prev?.categories ?? [],
+        categories: res.categories ?? [],
         attributeFacets: res.attributeFacets ?? [],
         priceRange: res.priceRange ?? DEFAULT_FILTERS.priceRange,
-      }));
+      });
       hasFiltersDataRef.current = true;
+      writeShopFiltersCache(filtersClientKey, {
+        colors: res.colors ?? [],
+        sizes: res.sizes ?? [],
+        brands: res.brands ?? [],
+        categories: res.categories ?? [],
+        attributeFacets: res.attributeFacets ?? [],
+        priceRange: res.priceRange ?? DEFAULT_FILTERS.priceRange,
+      });
     } catch {
       setError(true);
       setData(DEFAULT_FILTERS);
@@ -178,117 +238,137 @@ export function ProductsFiltersProvider({
     } finally {
       setLoading(false);
     }
-  }, [category, search, filter, minPrice, maxPrice, searchParams]);
+  }, [category, search, filter, minPrice, maxPrice, languageProp, searchParams, filtersClientKey]);
 
-  useEffect(() => {
+  const fetchFiltersRef = useRef(fetchFilters);
+  fetchFiltersRef.current = fetchFilters;
+
+  useLayoutEffect(() => {
     if (
       initialFiltersData &&
       initialFiltersKey &&
       initialFiltersKey === filtersClientKey
     ) {
       if (syncedFiltersKeyRef.current !== filtersClientKey) {
-        syncedFiltersKeyRef.current = filtersClientKey;
-        setData(mergeFilterPayload(initialFiltersData));
-        setLoading(false);
-        setError(false);
-        hasFiltersDataRef.current = true;
+        applyFiltersPayload(initialFiltersData, filtersClientKey);
       }
       return;
     }
 
-    syncedFiltersKeyRef.current = null;
-    void fetchFilters();
-  }, [filtersClientKey, initialFiltersData, initialFiltersKey, fetchFilters]);
-
-  useEffect(() => {
-    if (
-      initialFiltersData?.categories?.length &&
-      initialFiltersKey === filtersClientKey
-    ) {
-      setData((prev) => {
-        const nextCategories = initialFiltersData.categories ?? [];
-        if (prev?.categories === nextCategories) {
-          return prev;
-        }
-        if (!prev) {
-          return mergeFilterPayload({ ...initialFiltersData, categories: nextCategories });
-        }
-        return { ...prev, categories: nextCategories };
-      });
+    if (syncedFiltersKeyRef.current === filtersClientKey && hasFiltersDataRef.current) {
       return;
     }
 
-    let cancelled = false;
+    const cached = readShopFiltersCache(filtersClientKey);
+    if (cached) {
+      applyFiltersPayload(cached, filtersClientKey);
+      return;
+    }
 
-    const loadCategories = async () => {
-      setCategoriesLoading(true);
-      try {
-        const lang = getStoredLanguage();
-        const params: Record<string, string> = {
-          lang,
-          includeCategories: '1',
-          categoriesOnly: '1',
-        };
-        if (category) params.category = category;
-        if (search) params.search = search;
-        if (filter) params.filter = filter;
-        if (minPrice) params.minPrice = minPrice;
-        if (maxPrice) params.maxPrice = maxPrice;
-        searchParams.forEach((v, k) => {
-          if (k.startsWith('spec.') || k === 'specs') {
-            params[k] = v;
-          }
-        });
-        const res = await apiClient.get<ProductsFiltersData>('/api/v1/products/filters', { params });
-        if (cancelled) {
-          return;
-        }
-        setData((prev) => ({
-          colors: prev?.colors ?? [],
-          sizes: prev?.sizes ?? [],
-          brands: prev?.brands ?? [],
-          categories: res.categories ?? [],
-          attributeFacets: prev?.attributeFacets ?? [],
-          priceRange: prev?.priceRange ?? DEFAULT_FILTERS.priceRange,
-        }));
-      } catch {
-        // Keep existing filters payload; categories can stay empty on failure.
-      } finally {
-        if (!cancelled) {
-          setCategoriesLoading(false);
-        }
-      }
-    };
+    if (awaitServerHydration && syncedFiltersKeyRef.current === null) {
+      return;
+    }
 
-    void loadCategories();
-
-    return () => {
-      cancelled = true;
-    };
+    syncedFiltersKeyRef.current = filtersClientKey;
+    void fetchFiltersRef.current();
   }, [
     filtersClientKey,
     initialFiltersData,
     initialFiltersKey,
-    category,
-    search,
-    filter,
-    minPrice,
-    maxPrice,
-    searchParams,
+    awaitServerHydration,
+    applyFiltersPayload,
   ]);
+
+  useEffect(() => {
+    if (!awaitServerHydration || hasFiltersDataRef.current) {
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      if (hasFiltersDataRef.current || syncedFiltersKeyRef.current === filtersClientKey) {
+        return;
+      }
+      syncedFiltersKeyRef.current = filtersClientKey;
+      void fetchFiltersRef.current();
+    }, SERVER_HYDRATION_FALLBACK_MS);
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [awaitServerHydration, filtersClientKey]);
+
+  useEffect(() => {
+    const scheduleFacetRefetch = () => {
+      const lang = languageProp ?? getStoredLanguage();
+      const scopeKey = buildFacetRefetchScopeKey(searchParams, lang);
+      if (scopeKey === lastFacetScopeRef.current) {
+        return;
+      }
+      lastFacetScopeRef.current = scopeKey;
+      if (facetRefetchTimerRef.current !== null) {
+        window.clearTimeout(facetRefetchTimerRef.current);
+      }
+      facetRefetchTimerRef.current = window.setTimeout(() => {
+        facetRefetchTimerRef.current = null;
+        void fetchFiltersRef.current();
+      }, FACET_REFETCH_DELAY_MS);
+    };
+
+    window.addEventListener(SHOP_PRODUCTS_LISTING_PARAMS_EVENT, scheduleFacetRefetch);
+    return () => {
+      window.removeEventListener(SHOP_PRODUCTS_LISTING_PARAMS_EVENT, scheduleFacetRefetch);
+      if (facetRefetchTimerRef.current !== null) {
+        window.clearTimeout(facetRefetchTimerRef.current);
+      }
+    };
+  }, [languageProp, searchParams]);
+
+  const applyServerHydration = useCallback(
+    (payload: ProductsFiltersData, key: string) => {
+      if (key !== filtersClientKey) {
+        return;
+      }
+      if (syncedFiltersKeyRef.current === key && hasFiltersDataRef.current) {
+        return;
+      }
+      applyFiltersPayload(payload, key);
+    },
+    [applyFiltersPayload, filtersClientKey],
+  );
+
+  const categoriesLoading = loading && !(data?.categories?.length ?? 0);
 
   const value = useMemo<ProductsFiltersContextValue>(
     () => ({ data, loading, categoriesLoading, error, refetch: fetchFilters }),
-    [data, loading, categoriesLoading, error, fetchFilters]
+    [data, loading, categoriesLoading, error, fetchFilters],
   );
 
   return (
-    <ProductsFiltersContext.Provider value={value}>
-      {children}
-    </ProductsFiltersContext.Provider>
+    <ProductsFiltersHydrationContext.Provider value={applyServerHydration}>
+      <ProductsFiltersContext.Provider value={value}>
+        {children}
+      </ProductsFiltersContext.Provider>
+    </ProductsFiltersHydrationContext.Provider>
   );
 }
 
 export function useProductsFilters(): ProductsFiltersContextValue | null {
   return useContext(ProductsFiltersContext);
+}
+
+type ProductsFiltersServerHydrationProps = {
+  readonly initialFiltersData: ProductsFiltersData;
+  readonly initialFiltersKey: string;
+};
+
+/** Applies streamed RSC facet payload into the mounted PLP filter provider. */
+export function ProductsFiltersServerHydration({
+  initialFiltersData,
+  initialFiltersKey,
+}: ProductsFiltersServerHydrationProps) {
+  const hydrate = useContext(ProductsFiltersHydrationContext);
+
+  useLayoutEffect(() => {
+    hydrate?.(initialFiltersData, initialFiltersKey);
+  }, [hydrate, initialFiltersData, initialFiltersKey]);
+
+  return null;
 }

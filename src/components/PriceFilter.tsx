@@ -248,7 +248,7 @@ export function PriceFilter({ currentMinPrice, currentMaxPrice, category }: Pric
 
       const timeoutId = setTimeout(() => {
         pushShopProductsListingUrl(router, `/products?${params.toString()}`);
-      }, 300);
+      }, 150);
 
       return () => clearTimeout(timeoutId);
     }

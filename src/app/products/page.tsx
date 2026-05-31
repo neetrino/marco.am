@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
-import { ProductsShopLoadingSkeleton } from './ProductsShopLoadingSkeleton';
+import { resolveProductsShopListingServerContext } from '@/lib/products-shop-listing-server-context';
 import { ProductsShopClientShell } from './ProductsShopClientShell';
+import { ProductsShopFiltersPrefetch } from './ProductsShopFiltersPrefetch';
 import { ProductsShopStreamedSection } from './ProductsShopStreamedSection';
 import type { ProductsPageSearchParams } from './products-page-search-params';
 
@@ -9,15 +10,18 @@ interface ProductsPageProps {
 }
 
 /**
- * Header (`ProductsShopClientShell`) paints immediately; listing streams inside Suspense
- * so breadcrumb + «Խանութ» are not replaced by a skeleton during fetch.
+ * Header paints immediately; filter shell paints with parsed URL context; facet data streams in.
  */
-export default function ProductsPage({ searchParams }: ProductsPageProps) {
+export default async function ProductsPage({ searchParams }: ProductsPageProps) {
+  const raw = await searchParams;
+  const ctx = await resolveProductsShopListingServerContext(raw);
+
   return (
     <ProductsShopClientShell>
-      <Suspense fallback={<ProductsShopLoadingSkeleton variant="body" />}>
-        <ProductsShopStreamedSection searchParams={searchParams} />
+      <Suspense fallback={null}>
+        <ProductsShopFiltersPrefetch raw={raw} ctx={ctx} />
       </Suspense>
+      <ProductsShopStreamedSection raw={raw} ctx={ctx} />
     </ProductsShopClientShell>
   );
 }
