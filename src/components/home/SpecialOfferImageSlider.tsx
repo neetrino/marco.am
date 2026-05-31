@@ -133,7 +133,7 @@ export function SpecialOfferImageSlider({
 
   return (
     <div
-      className="relative isolate z-10 w-full max-md:z-20"
+      className="pointer-events-auto relative isolate z-10 w-full max-md:z-20"
       style={{ height: wellHeightPx }}
     >
       {/* Images only — clipped; dots stay outside this layer so they paint on top. */}

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { apiClient } from '../../lib/api-client';
 import { useAuth } from '../../lib/auth/AuthContext';
 import { useTranslation } from '../../lib/i18n-client';
+import { dispatchOpenCartDrawer } from '@/lib/cart/cart-drawer-context';
 import { resolveRequiresAttributeSelection } from '@/lib/product-requires-attribute-selection';
 
 interface ProductDetails {
@@ -124,6 +125,7 @@ export function useAddToCart({
 
         localStorage.setItem(CART_KEY, JSON.stringify(cart));
         window.dispatchEvent(new Event('cart-updated'));
+        dispatchOpenCartDrawer();
       } catch (error: unknown) {
         console.error('❌ [PRODUCT CARD] Error adding to guest cart:', error);
         const err = error as { message?: string; status?: number };
@@ -174,6 +176,7 @@ export function useAddToCart({
       window.dispatchEvent(new CustomEvent('cart-updated', {
         detail: response.cartSummary || null,
       }));
+      dispatchOpenCartDrawer();
     } catch (error: unknown) {
       console.error('❌ [PRODUCT CARD] Error adding to cart:', error);
 
