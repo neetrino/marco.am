@@ -39,6 +39,12 @@ export type AuthPendingVerification = {
 export type RegisterResult = AuthSuccess | AuthPendingVerification;
 export type LoginResult = AuthSuccess | AuthPendingVerification;
 
+export function isAuthPendingVerification(
+  result: LoginResult | RegisterResult
+): result is AuthPendingVerification {
+  return "needsVerification" in result && result.needsVerification;
+}
+
 function normalizeEmail(email?: string): string | undefined {
   const t = email?.trim().toLowerCase();
   return t || undefined;
