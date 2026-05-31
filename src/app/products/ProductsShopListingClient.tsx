@@ -110,6 +110,7 @@ export function ProductsShopListingClient({
   const queryRef = useRef(initialQueryString);
   const productsRef = useRef(initialProducts);
   const fetchGenerationRef = useRef(0);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     productsRef.current = products;
@@ -143,12 +144,19 @@ export function ProductsShopListingClient({
     async (nextQueryString: string, options?: { silent?: boolean }) => {
       const generation = fetchGenerationRef.current + 1;
       fetchGenerationRef.current = generation;
+      abortControllerRef.current?.abort();
+      const abortController = new AbortController();
+      abortControllerRef.current = abortController;
       if (!options?.silent) {
         setIsFetching(true);
+      } else {
+        setIsFetching(false);
       }
       try {
         const response = await apiClient.get<ProductsListingApiResponse>('/api/v1/products', {
           params: buildListingApiParams(nextQueryString),
+          signal: abortController.signal,
+          suppressAbortErrorLogging: true,
         });
         if (generation !== fetchGenerationRef.current) {
           return;
@@ -158,6 +166,9 @@ export function ProductsShopListingClient({
         if (generation !== fetchGenerationRef.current) {
           return;
         }
+        if (abortController.signal.aborted) {
+          return;
+        }
         if (!options?.silent) {
           setProducts([]);
           setMeta({ total: 0, page: 1, limit: SHOP_PLP_DEFAULT_PAGE_SIZE, totalPages: 0 });
@@ -165,6 +176,9 @@ export function ProductsShopListingClient({
           reportTotal(0);
         }
       } finally {
+        if (abortControllerRef.current === abortController) {
+          abortControllerRef.current = null;
+        }
         if (generation === fetchGenerationRef.current && !options?.silent) {
           setIsFetching(false);
         }
@@ -210,6 +224,9 @@ export function ProductsShopListingClient({
   useEffect(() => {
     registerShopProductsListingFetchListener(syncFromQueryString);
     return () => {
+      fetchGenerationRef.current += 1;
+      abortControllerRef.current?.abort();
+      abortControllerRef.current = null;
       registerShopProductsListingFetchListener(null);
     };
   }, [syncFromQueryString]);

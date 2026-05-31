@@ -67,16 +67,6 @@ export function useCartSummaryState(): CartSummaryState {
       return;
     }
 
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('auth_token');
-      if (!token) {
-        setCartCount(0);
-        setCartTotal(0);
-        setCartTotalCurrency('AMD');
-        return;
-      }
-    }
-
     try {
       const response = await apiClient.get<{
         cart: {

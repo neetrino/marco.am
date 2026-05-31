@@ -3,15 +3,8 @@ import { nanoid } from "nanoid";
 import { authenticateToken, requireAdmin } from "@/lib/middleware/auth";
 import { uploadToR2, isR2Configured } from "@/lib/r2";
 import { prepareRasterForR2Upload } from "@/lib/utils/prepare-raster-for-r2-upload";
+import { parseAdminImageDataUrl } from "@/lib/utils/validate-admin-image-upload";
 import { logger } from "@/lib/utils/logger";
-
-function parseDataUrl(dataUrl: string): { mime: string; buffer: Buffer } | null {
-  const match = dataUrl.match(/^data:(image\/[a-z+]+);base64,(.+)$/i);
-  if (!match) return null;
-  const mime = match[1].toLowerCase();
-  const buffer = Buffer.from(match[2], "base64");
-  return { mime, buffer };
-}
 
 export async function POST(req: NextRequest) {
   try {
@@ -47,10 +40,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const parsed = parseDataUrl(body.image);
+    const parsed = parseAdminImageDataUrl(body.image);
     if (!parsed) {
       return NextResponse.json(
-        { type: "https://api.shop.am/problems/validation-error", title: "Validation Error", status: 400, detail: "Invalid data URL", instance: req.url },
+        { type: "https://api.shop.am/problems/validation-error", title: "Validation Error", status: 400, detail: "Invalid, unsupported, or oversized image", instance: req.url },
         { status: 400 },
       );
     }

@@ -71,19 +71,30 @@ export function getPublicAppUrl(): string {
 }
 
 /**
- * Value for `Access-Control-Allow-Origin`. Prefer `CORS_ORIGIN` when the API is served under a different host than the storefront.
+ * Values allowed for `Access-Control-Allow-Origin`.
+ * Prefer `CORS_ORIGIN` when the API is served under a different host than the storefront.
  */
-export function getCorsAllowedOrigin(): string {
+export function getCorsAllowedOrigins(): string[] {
   const cors = process.env.CORS_ORIGIN?.trim();
   if (cors) {
-    return stripTrailingSlash(cors);
+    return cors
+      .split(",")
+      .map((origin) => stripTrailingSlash(origin.trim()))
+      .filter(Boolean);
   }
   const nextPublic = process.env.NEXT_PUBLIC_APP_URL?.trim();
   if (nextPublic) {
-    return stripTrailingSlash(nextPublic);
+    return [stripTrailingSlash(nextPublic)];
   }
   if (process.env.NODE_ENV === "development") {
-    return "http://localhost:3000";
+    return ["http://localhost:3000"];
   }
-  return getPublicAppUrl();
+  return [getPublicAppUrl()];
+}
+
+/**
+ * Backwards-compatible single-origin accessor for callers/tests that only need the primary origin.
+ */
+export function getCorsAllowedOrigin(): string {
+  return getCorsAllowedOrigins()[0] ?? "";
 }
