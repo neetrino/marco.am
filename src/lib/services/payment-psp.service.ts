@@ -1,7 +1,10 @@
 import { createHmac, randomUUID, timingSafeEqual } from "crypto";
 import { z } from "zod";
 import { db } from "@white-shop/db";
-import { getPublicAppUrl } from "../config/deployment-env";
+import { resolvePaymentCheckoutBaseUrl } from "../config/payment-env";
+
+/** Tolerance for decimal/float comparison on payment amounts (AMD). */
+const PAYMENT_AMOUNT_TOLERANCE = 0.01;
 
 const DEFAULT_SESSION_TTL_MS = 15 * 60 * 1000;
 
@@ -104,13 +107,78 @@ function getSessionTtlMs(): number {
 }
 
 function buildPaymentUrl(sessionId: string, orderNumber: string): string {
-  const base =
-    process.env.PAYMENT_PSP_CHECKOUT_BASE_URL?.trim() ||
-    `${getPublicAppUrl()}/api/v1/payments/mock-hosted`;
+  const base = resolvePaymentCheckoutBaseUrl();
   const separator = base.includes("?") ? "&" : "?";
   return `${base}${separator}session=${encodeURIComponent(sessionId)}&order=${encodeURIComponent(
     orderNumber
   )}`;
+}
+
+function toPaymentAmount(value: unknown): number {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+  if (
+    typeof value === "object" &&
+    value !== null &&
+    "toNumber" in value &&
+    typeof (value as { toNumber: () => number }).toNumber === "function"
+  ) {
+    return (value as { toNumber: () => number }).toNumber();
+  }
+  return Number(value);
+}
+
+/**
+ * Ensures `payment.succeeded` webhooks include amount/currency matching the stored payment.
+ */
+export function assertWebhookPaymentAmountMatches(
+  event: PaymentWebhookPayload,
+  payment: { amount: unknown; currency: string }
+): void {
+  if (event.type !== "payment.succeeded") {
+    return;
+  }
+
+  if (event.data.amount === undefined) {
+    throw {
+      status: 400,
+      type: "https://api.shop.am/problems/validation-error",
+      title: "Validation Error",
+      detail: "payment.succeeded webhook must include data.amount",
+    };
+  }
+
+  if (!event.data.currency) {
+    throw {
+      status: 400,
+      type: "https://api.shop.am/problems/validation-error",
+      title: "Validation Error",
+      detail: "payment.succeeded webhook must include data.currency",
+    };
+  }
+
+  const expectedAmount = toPaymentAmount(payment.amount);
+  if (
+    !Number.isFinite(expectedAmount) ||
+    Math.abs(event.data.amount - expectedAmount) > PAYMENT_AMOUNT_TOLERANCE
+  ) {
+    throw {
+      status: 400,
+      type: "https://api.shop.am/problems/validation-error",
+      title: "Validation Error",
+      detail: "Webhook amount does not match payment record",
+    };
+  }
+
+  if (event.data.currency.toUpperCase() !== payment.currency.toUpperCase()) {
+    throw {
+      status: 400,
+      type: "https://api.shop.am/problems/validation-error",
+      title: "Validation Error",
+      detail: "Webhook currency does not match payment record",
+    };
+  }
 }
 
 function parseWebhookPayload(rawPayload: unknown): PaymentWebhookPayload {
@@ -186,8 +254,11 @@ export async function createCardPaymentSession(input: SessionInput): Promise<Ses
   };
 }
 
-export async function processPaymentWebhook(payload: unknown): Promise<{ processed: boolean }> {
+export async function processPaymentWebhook(
+  payload: unknown
+): Promise<{ processed: boolean; duplicate?: boolean }> {
   const event = parseWebhookPayload(payload);
+
   const payment = await db.payment.findFirst({
     where: { providerTransactionId: event.data.sessionId },
     include: { order: true },
@@ -202,6 +273,8 @@ export async function processPaymentWebhook(payload: unknown): Promise<{ process
     };
   }
 
+  assertWebhookPaymentAmountMatches(event, payment);
+
   const transition = webhookTransitions[event.type];
   const now = new Date();
   const nextOrderStatus =
@@ -209,7 +282,25 @@ export async function processPaymentWebhook(payload: unknown): Promise<{ process
       ? "processing"
       : payment.order.status;
 
+  let duplicate = false;
+
   await db.$transaction(async (tx) => {
+    const existingWebhook = await tx.orderEvent.findFirst({
+      where: {
+        type: "payment_webhook_processed",
+        data: {
+          path: ["eventId"],
+          equals: event.eventId,
+        },
+      },
+      select: { id: true },
+    });
+
+    if (existingWebhook) {
+      duplicate = true;
+      return;
+    }
+
     await tx.payment.update({
       where: { id: payment.id },
       data: {
@@ -252,6 +343,10 @@ export async function processPaymentWebhook(payload: unknown): Promise<{ process
       },
     });
   });
+
+  if (duplicate) {
+    return { processed: true, duplicate: true };
+  }
 
   return { processed: true };
 }
