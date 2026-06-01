@@ -94,37 +94,16 @@ export function ProductPageClient({
     setIsAddingToCart(true);
     try {
       if (!isLoggedIn) {
-        const stored = localStorage.getItem('shop_cart_guest');
-        const cart = stored ? JSON.parse(stored) : [];
-        const existing = cart.find(
-          (
-            i: unknown,
-          ): i is {
-            variantId: string;
-            quantity: number;
-            productId?: string;
-            productSlug?: string;
-            price?: number;
-          } =>
-            typeof i === 'object' &&
-            i !== null &&
-            'variantId' in i &&
-            i.variantId === currentVariant.id,
-        );
-        if (existing) {
-          existing.quantity += quantity;
-          if (unitPrice > 0) {
-            existing.price = unitPrice;
-          }
-        } else {
-          cart.push({
+        const snapshotImage = images[currentImageIndex] ?? images[0] ?? null;
+        await runGuestCartMutation(() => {
+          upsertGuestCartItem({
             productId: product.id,
             productSlug: product.slug,
             variantId: currentVariant.id,
             quantityDelta: quantity,
             price: unitPrice,
-            title: productTitle,
-            image: productImage,
+            title: product.title,
+            image: snapshotImage,
             sku: currentVariant.sku,
             stock: currentVariant.stock,
           });
