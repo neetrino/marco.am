@@ -121,18 +121,6 @@ export function ShippingAddressModal({
               <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('checkout.shippingAddress')}</h3>
               <div className={CHECKOUT_FIELD_ROW_CLASS}>
                 <div className={CHECKOUT_FIELD_CELL_CLASS}>
-                  <Input
-                    label={t('checkout.form.address')}
-                    type="text"
-                    required
-                    placeholder={t('checkout.placeholders.address')}
-                    className={CHECKOUT_INPUT_FIELD_CLASS}
-                    {...register('shippingAddress')}
-                    error={errors.shippingAddress?.message}
-                    disabled={isSubmitting}
-                  />
-                </div>
-                <div className={CHECKOUT_FIELD_CELL_CLASS}>
                   <input type="hidden" {...register('shippingCity')} />
                   <CheckoutSelectMenu
                     label={t('checkout.form.city')}
@@ -155,6 +143,18 @@ export function ShippingAddressModal({
                     disabled={isSubmitting || loadingDeliveryCities || deliveryCities.length === 0}
                     required
                     error={errors.shippingCity?.message}
+                  />
+                </div>
+                <div className={CHECKOUT_FIELD_CELL_CLASS}>
+                  <Input
+                    label={t('checkout.form.address')}
+                    type="text"
+                    required
+                    placeholder={t('checkout.placeholders.address')}
+                    className={CHECKOUT_INPUT_FIELD_CLASS}
+                    {...register('shippingAddress')}
+                    error={errors.shippingAddress?.message}
+                    disabled={isSubmitting}
                   />
                 </div>
               </div>

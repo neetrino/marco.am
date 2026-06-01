@@ -66,16 +66,6 @@ export function FulfillmentMethodSection({
       <div className="mb-4 grid grid-cols-2 gap-2">
         <button
           type="button"
-          onClick={() => handleMethodChange('courier')}
-          disabled={isSubmitting}
-          className={`rounded-xl border px-3 py-2.5 text-center text-xs font-bold uppercase tracking-wide transition-colors disabled:cursor-not-allowed disabled:opacity-60 sm:text-sm ${
-            !isPickup ? CHECKOUT_FULFILLMENT_TOGGLE_ACTIVE_CLASS : CHECKOUT_FULFILLMENT_TOGGLE_INACTIVE_CLASS
-          }`}
-        >
-          {t('checkout.shipping.deliveryToggle')}
-        </button>
-        <button
-          type="button"
           onClick={() => handleMethodChange('pickup')}
           disabled={isSubmitting}
           className={`rounded-xl border px-3 py-2.5 text-center text-xs font-bold uppercase tracking-wide transition-colors disabled:cursor-not-allowed disabled:opacity-60 sm:text-sm ${
@@ -83,6 +73,16 @@ export function FulfillmentMethodSection({
           }`}
         >
           {t('checkout.shipping.pickupToggle')}
+        </button>
+        <button
+          type="button"
+          onClick={() => handleMethodChange('courier')}
+          disabled={isSubmitting}
+          className={`rounded-xl border px-3 py-2.5 text-center text-xs font-bold uppercase tracking-wide transition-colors disabled:cursor-not-allowed disabled:opacity-60 sm:text-sm ${
+            !isPickup ? CHECKOUT_FULFILLMENT_TOGGLE_ACTIVE_CLASS : CHECKOUT_FULFILLMENT_TOGGLE_INACTIVE_CLASS
+          }`}
+        >
+          {t('checkout.shipping.deliveryToggle')}
         </button>
       </div>
 
@@ -134,24 +134,6 @@ export function FulfillmentMethodSection({
       ) : (
         <div className={CHECKOUT_FIELD_ROW_CLASS}>
           <div className={CHECKOUT_FIELD_CELL_CLASS}>
-            <Input
-              label={t('checkout.form.address')}
-              type="text"
-              required
-              placeholder={t('checkout.placeholders.address')}
-              className={CHECKOUT_INPUT_FIELD_CLASS}
-              {...register('shippingAddress', {
-                onChange: () => {
-                  if (error) {
-                    setError(null);
-                  }
-                },
-              })}
-              error={errors.shippingAddress?.message}
-              disabled={isSubmitting}
-            />
-          </div>
-          <div className={CHECKOUT_FIELD_CELL_CLASS}>
             <input type="hidden" {...register('shippingCity')} />
             <CheckoutSelectMenu
               label={t('checkout.form.city')}
@@ -177,6 +159,24 @@ export function FulfillmentMethodSection({
               disabled={isSubmitting || loadingDeliveryCities || deliveryCities.length === 0}
               required
               error={errors.shippingCity?.message}
+            />
+          </div>
+          <div className={CHECKOUT_FIELD_CELL_CLASS}>
+            <Input
+              label={t('checkout.form.address')}
+              type="text"
+              required
+              placeholder={t('checkout.placeholders.address')}
+              className={CHECKOUT_INPUT_FIELD_CLASS}
+              {...register('shippingAddress', {
+                onChange: () => {
+                  if (error) {
+                    setError(null);
+                  }
+                },
+              })}
+              error={errors.shippingAddress?.message}
+              disabled={isSubmitting}
             />
           </div>
         </div>
