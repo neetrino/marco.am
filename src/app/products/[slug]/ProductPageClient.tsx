@@ -6,8 +6,8 @@ import { Suspense } from 'react';
 import { RelatedProducts } from '@/components/RelatedProducts';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { apiClient } from '@/lib/api-client';
+import { runGuestCartMutation, upsertGuestCartItem } from '@/app/cart/guest-cart-local';
 import { t } from '@/lib/i18n';
-import type { RelatedProductsApiResponse } from '@/lib/product-pdp/fetch-related-products';
 import type { PdpVisualPayload } from '@/lib/services/products-slug/product-transformer';
 import type { LanguageCode } from '@/lib/language';
 
@@ -25,10 +25,8 @@ export type ProductPageClientProps = {
   slugParam: string;
   serverLanguage: LanguageCode;
   initialVisual: PdpVisualPayload | null;
-  /** SSR full product — hydrates client cache so refresh / hard navigation can paint without waiting on `/api`. */
+  /** SSR full product when available; otherwise detail streams or client fetch. */
   initialProduct: Product | null;
-  /** SSR related carousel rows — instant paint without client fetch on first load. */
-  initialRelatedProducts?: RelatedProductsApiResponse | null;
 };
 
 export function ProductPageClient({
@@ -36,7 +34,6 @@ export function ProductPageClient({
   serverLanguage,
   initialVisual,
   initialProduct,
-  initialRelatedProducts = null,
 }: ProductPageClientProps) {
   const { isLoggedIn } = useAuth();
 
@@ -124,11 +121,14 @@ export function ProductPageClient({
             productId: product.id,
             productSlug: product.slug,
             variantId: currentVariant.id,
-            quantity,
+            quantityDelta: quantity,
             price: unitPrice,
+            title: productTitle,
+            image: productImage,
+            sku: currentVariant.sku,
+            stock: currentVariant.stock,
           });
-        }
-        localStorage.setItem('shop_cart_guest', JSON.stringify(cart));
+        });
       } else {
         await apiClient.post('/api/v1/cart/items', {
           productId: product.id,
@@ -249,11 +249,7 @@ export function ProductPageClient({
       ) : null}
 
       <div className={product ? 'mt-16' : 'mt-24'}>
-        <RelatedProducts
-          currentProductSlug={slug}
-          language={language}
-          initialRelatedProducts={initialRelatedProducts}
-        />
+        <RelatedProducts currentProductSlug={slug} language={language} />
       </div>
     </div>
   );

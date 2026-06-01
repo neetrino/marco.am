@@ -54,6 +54,7 @@ export function CartDrawerItemRow({
         >
           {item.variant.product.image ? (
             <Image
+              key={item.variant.product.image}
               src={item.variant.product.image}
               alt={item.variant.product.title}
               fill

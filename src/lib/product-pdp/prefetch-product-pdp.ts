@@ -8,7 +8,7 @@ import {
   PDP_QUERY_GC_TIME_MS,
   PDP_QUERY_STALE_TIME_MS,
 } from './pdp-query-cache';
-import { fetchProductVisual } from './product-pdp-fetchers';
+import { fetchProductDetail, fetchProductVisual } from './product-pdp-fetchers';
 
 function baseProductSlug(raw: string): string {
   const parts = raw.includes(':') ? raw.split(':') : [raw];
@@ -17,7 +17,7 @@ function baseProductSlug(raw: string): string {
 
 /**
  * Warms React Query cache before navigating to `/products/[slug]` so the PDP paints faster
- * (especially the main image from `/visual`).
+ * (gallery from `/visual`, price/actions from full detail).
  */
 export function prefetchProductPdp(
   queryClient: QueryClient,
@@ -29,14 +29,19 @@ export function prefetchProductPdp(
     return Promise.resolve();
   }
 
-  // Keep PLP lightweight: prefetch only the PDP core payloads.
-  // Related products are fetched on PDP itself to avoid request floods from listing cards.
-  return queryClient
-    .prefetchQuery({
-      queryKey: queryKeys.productVisual(slug, lang),
-      queryFn: () => fetchProductVisual(slug, lang),
-      staleTime: PDP_QUERY_STALE_TIME_MS,
-      gcTime: PDP_QUERY_GC_TIME_MS,
-    })
-    .then(() => undefined);
+  const visualPrefetch = queryClient.prefetchQuery({
+    queryKey: queryKeys.productVisual(slug, lang),
+    queryFn: () => fetchProductVisual(slug, lang),
+    staleTime: PDP_QUERY_STALE_TIME_MS,
+    gcTime: PDP_QUERY_GC_TIME_MS,
+  });
+
+  const detailPrefetch = queryClient.prefetchQuery({
+    queryKey: queryKeys.productDetail(slug, lang),
+    queryFn: () => fetchProductDetail(slug, lang),
+    staleTime: PDP_QUERY_STALE_TIME_MS,
+    gcTime: PDP_QUERY_GC_TIME_MS,
+  });
+
+  return Promise.all([visualPrefetch, detailPrefetch]).then(() => undefined);
 }

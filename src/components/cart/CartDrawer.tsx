@@ -7,6 +7,7 @@ import { X } from 'lucide-react';
 import { useCartData } from '../../app/cart/use-cart-data';
 import { coerceCurrencyCode } from '../../lib/currency';
 import { useCartDrawer } from '../../lib/cart/cart-drawer-context';
+import { useCartSummary } from '../../lib/cart/cart-summary-context';
 import { CartIcon } from '../icons/CartIcon';
 import { CART_DRAWER_OVERLAY_CLASS, CART_DRAWER_PANEL_CLASS } from './cart-drawer.constants';
 import { CartDrawerItemRow } from './CartDrawerItemRow';
@@ -15,8 +16,10 @@ import { CartDrawerSummary } from './CartDrawerSummary';
 export function CartDrawer() {
   const router = useRouter();
   const { isOpen, closeCartDrawer } = useCartDrawer();
+  const { cartCount } = useCartSummary();
+  const prefetchCart = isOpen || cartCount > 0;
   const { cart, loading, currency, updatingItems, onRemoveItem, onUpdateQuantity, t } =
-    useCartData({ enabled: isOpen });
+    useCartData({ enabled: prefetchCart });
 
   const handleClose = useCallback(() => {
     closeCartDrawer();

@@ -206,6 +206,30 @@ async function buildFilterFilter(
     }
   }
 
+  if (filter === "promotion" || filter === "special_offer") {
+    return {
+      where: {
+        AND: [
+          existingWhere,
+          {
+            OR: [
+              { discountPercent: { gt: 0 } },
+              {
+                variants: {
+                  some: {
+                    published: true,
+                    compareAtPrice: { gt: 0 },
+                  },
+                },
+              },
+            ],
+          },
+        ],
+      },
+      bestsellerProductIds,
+    };
+  }
+
   return {
     where: existingWhere,
     bestsellerProductIds,

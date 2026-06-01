@@ -59,6 +59,8 @@ export const ProductCard = memo(function ProductCard({
     inStock: product.inStock,
     defaultVariantId: product.defaultVariantId ?? undefined,
     price: product.price,
+    title: product.title,
+    image: product.image,
     requiresAttributeSelection: product.requiresAttributeSelection,
     colors: product.colors,
   });

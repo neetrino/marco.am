@@ -1,5 +1,6 @@
 import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
+import { isMockPaymentFlowAllowed } from "@/lib/config/payment-env";
 import { db } from "@white-shop/db";
 import { processPaymentWebhook } from "@/lib/services/payment-psp.service";
 import { getPublicAppUrl } from "@/lib/config/deployment-env";
@@ -26,6 +27,18 @@ function toWebhookType(status: MockStatus):
 }
 
 export async function GET(req: NextRequest) {
+  if (!isMockPaymentFlowAllowed()) {
+    return NextResponse.json(
+      {
+        type: "https://api.shop.am/problems/not-found",
+        title: "Not Found",
+        status: 404,
+        detail: "Mock payment flow is disabled in production",
+      },
+      { status: 404 }
+    );
+  }
+
   const { searchParams } = new URL(req.url);
   const sessionId = searchParams.get("session");
   const status = getMockStatus(searchParams.get("status"));
@@ -80,4 +93,3 @@ export async function GET(req: NextRequest) {
   redirectUrl.searchParams.set("payment", status);
   return NextResponse.redirect(redirectUrl);
 }
-

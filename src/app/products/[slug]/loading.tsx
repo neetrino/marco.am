@@ -1,7 +1,7 @@
 import { ProductInfoPrimarySkeleton } from './ProductInfoPrimarySkeleton';
 
 /**
- * Shown immediately on client navigation to `/products/[slug]` while the server segment streams.
+ * Progressive PDP placeholder — gallery well + info column (matches post-visual first paint).
  */
 export default function ProductSlugLoading() {
   return (

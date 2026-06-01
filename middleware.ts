@@ -1,32 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Ratelimit } from "@upstash/ratelimit";
-import { Redis } from "@upstash/redis";
 import * as jose from "jose";
 import { readAuthSessionToken } from "@/lib/auth/auth-session-cookie";
-import { getCorsAllowedOrigins, getDeploymentTier } from "@/lib/config/deployment-env";
-
-let authRatelimit: Ratelimit | undefined;
-let adminUploadRatelimit: Ratelimit | undefined;
-
-function getClientIp(request: NextRequest): string {
-  return (
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    request.headers.get("x-real-ip") ||
-    "unknown"
-  );
-}
-
-function rateLimitConfigError(detail: string): NextResponse {
-  return NextResponse.json(
-    {
-      type: "https://api.shop.am/problems/internal-error",
-      title: "Internal Server Error",
-      status: 503,
-      detail,
-    },
-    { status: 503 }
-  );
-}
+import { getCorsAllowedOrigins } from "@/lib/config/deployment-env";
+import {
+  AUTH_RESEND_RATE_LIMIT_MAX,
+  AUTH_RESEND_RATE_LIMIT_WINDOW,
+  AUTH_RESEND_RATELIMIT_PREFIX,
+  AUTH_VERIFY_RATE_LIMIT_MAX,
+  AUTH_VERIFY_RATE_LIMIT_WINDOW,
+  AUTH_VERIFY_RATELIMIT_PREFIX,
+} from "@/lib/constants/auth-rate-limit";
+import {
+  enforceUpstashRateLimit,
+} from "@/lib/middleware/upstash-rate-limit";
 
 function isUnsafeMethod(method: string): boolean {
   return method !== "GET" && method !== "HEAD" && method !== "OPTIONS";
@@ -108,71 +94,54 @@ async function requireAdminAuth(request: NextRequest): Promise<NextResponse | nu
 
 /** Rate limit for auth endpoints (login/register) by IP */
 async function checkAuthRateLimit(request: NextRequest): Promise<NextResponse | null> {
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
-  if (!url || !token) {
-    if (getDeploymentTier() === "production") {
-      return rateLimitConfigError("Authentication rate limiting is not configured");
-    }
-    return null;
-  }
-
-  if (authRatelimit === undefined) {
-    const redis = new Redis({ url, token });
-    authRatelimit = new Ratelimit({
-      redis,
-      limiter: Ratelimit.slidingWindow(10, "60 s"),
+  return enforceUpstashRateLimit(
+    request,
+    {
       prefix: "ratelimit:auth",
-    });
-  }
+      limit: 10,
+      window: "60 s",
+      detail: "Too many login/register attempts. Try again later.",
+    },
+    true
+  );
+}
 
-  const { success } = await authRatelimit.limit(getClientIp(request));
-  if (!success) {
-    return NextResponse.json(
-      {
-        type: "https://api.shop.am/problems/too-many-requests",
-        title: "Too Many Requests",
-        status: 429,
-        detail: "Too many login/register attempts. Try again later.",
-      },
-      { status: 429 }
-    );
-  }
-  return null;
+async function checkAuthVerifyRateLimit(request: NextRequest): Promise<NextResponse | null> {
+  return enforceUpstashRateLimit(
+    request,
+    {
+      prefix: AUTH_VERIFY_RATELIMIT_PREFIX,
+      limit: AUTH_VERIFY_RATE_LIMIT_MAX,
+      window: AUTH_VERIFY_RATE_LIMIT_WINDOW,
+      detail: "Too many verification attempts. Try again later.",
+    },
+    true
+  );
+}
+
+async function checkAuthResendRateLimit(request: NextRequest): Promise<NextResponse | null> {
+  return enforceUpstashRateLimit(
+    request,
+    {
+      prefix: AUTH_RESEND_RATELIMIT_PREFIX,
+      limit: AUTH_RESEND_RATE_LIMIT_MAX,
+      window: AUTH_RESEND_RATE_LIMIT_WINDOW,
+      detail: "Too many verification resend requests. Try again later.",
+    },
+    true
+  );
 }
 
 async function checkAdminUploadRateLimit(request: NextRequest): Promise<NextResponse | null> {
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
-  if (!url || !token) {
-    if (getDeploymentTier() === "production") {
-      return rateLimitConfigError("Admin upload rate limiting is not configured");
-    }
-    return null;
-  }
-
-  if (adminUploadRatelimit === undefined) {
-    const redis = new Redis({ url, token });
-    adminUploadRatelimit = new Ratelimit({
-      redis,
-      limiter: Ratelimit.slidingWindow(20, "10 m"),
-      prefix: "ratelimit:admin-upload",
-    });
-  }
-
-  const { success } = await adminUploadRatelimit.limit(getClientIp(request));
-  if (success) {
-    return null;
-  }
-
-  return NextResponse.json(
+  return enforceUpstashRateLimit(
+    request,
     {
-      type: "https://api.shop.am/problems/too-many-requests",
-      title: "Too Many Requests",
-      status: 429,
+      prefix: "ratelimit:admin-upload",
+      limit: 20,
+      window: "10 m",
       detail: "Too many upload attempts. Try again later.",
     },
-    { status: 429 }
+    true
   );
 }
 
@@ -194,6 +163,14 @@ function getCorsHeaders(request: NextRequest): Record<string, string> {
   return headers;
 }
 
+function applyCorsHeaders(
+  response: NextResponse,
+  corsHeaders: Record<string, string>
+): NextResponse {
+  Object.entries(corsHeaders).forEach(([key, value]) => response.headers.set(key, value));
+  return response;
+}
+
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
@@ -204,23 +181,20 @@ export async function middleware(request: NextRequest) {
     }
     const sameOriginResponse = checkSameOriginRequest(request);
     if (sameOriginResponse) {
-      Object.entries(corsHeaders).forEach(([k, v]) => sameOriginResponse.headers.set(k, v));
-      return sameOriginResponse;
+      return applyCorsHeaders(sameOriginResponse, corsHeaders);
     }
     const response = NextResponse.next();
-    Object.entries(corsHeaders).forEach(([key, value]) => response.headers.set(key, value));
-    // Run auth/rate-limit for protected paths, then return response with CORS
+    applyCorsHeaders(response, corsHeaders);
+
     if (pathname.startsWith("/api/v1/supersudo/")) {
       const authRes = await requireAdminAuth(request);
       if (authRes) {
-        Object.entries(corsHeaders).forEach(([k, v]) => authRes.headers.set(k, v));
-        return authRes;
+        return applyCorsHeaders(authRes, corsHeaders);
       }
       if (pathname.includes("/upload-") && request.method === "POST") {
         const uploadRateLimitResponse = await checkAdminUploadRateLimit(request);
         if (uploadRateLimitResponse) {
-          Object.entries(corsHeaders).forEach(([k, v]) => uploadRateLimitResponse.headers.set(k, v));
-          return uploadRateLimitResponse;
+          return applyCorsHeaders(uploadRateLimitResponse, corsHeaders);
         }
       }
     } else if (
@@ -229,8 +203,20 @@ export async function middleware(request: NextRequest) {
     ) {
       const rateLimitResponse = await checkAuthRateLimit(request);
       if (rateLimitResponse) {
-        Object.entries(corsHeaders).forEach(([k, v]) => rateLimitResponse.headers.set(k, v));
-        return rateLimitResponse;
+        return applyCorsHeaders(rateLimitResponse, corsHeaders);
+      }
+    } else if (pathname === "/api/v1/auth/verify" && request.method === "POST") {
+      const rateLimitResponse = await checkAuthVerifyRateLimit(request);
+      if (rateLimitResponse) {
+        return applyCorsHeaders(rateLimitResponse, corsHeaders);
+      }
+    } else if (
+      pathname === "/api/v1/auth/resend-verification" &&
+      request.method === "POST"
+    ) {
+      const rateLimitResponse = await checkAuthResendRateLimit(request);
+      if (rateLimitResponse) {
+        return applyCorsHeaders(rateLimitResponse, corsHeaders);
       }
     }
     return response;
@@ -244,6 +230,8 @@ export const config = {
     "/api/v1/supersudo/:path*",
     "/api/v1/auth/login",
     "/api/v1/auth/register",
+    "/api/v1/auth/verify",
+    "/api/v1/auth/resend-verification",
     "/api/v1/:path*",
     "/api/health",
   ],
