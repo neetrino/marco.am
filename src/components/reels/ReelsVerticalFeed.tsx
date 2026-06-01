@@ -1,17 +1,14 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { ChevronDown, ChevronUp, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { Montserrat } from 'next/font/google';
 
 import { apiClient } from '../../lib/api-client';
 import { useTranslation } from '../../lib/i18n-client';
 import type { PublicReelItem } from '../../lib/schemas/reels-management.schema';
-import { ReelLikeButton } from './ReelLikeButton';
-import { ReelOverlay } from './ReelOverlay';
-import { ReelVideoPlayer } from './ReelVideoPlayer';
+import { ReelsFeedSlide } from './ReelsFeedSlide';
 import {
   REELS_FEED_SCROLL_CONTAINER_CLASS,
   REELS_FEED_SLIDE_ID_PREFIX,
@@ -79,76 +76,6 @@ export function ReelsVerticalFeed({ initialIndex, items }: ReelsVerticalFeedProp
       });
   }, [activeIndex, reelItems]);
 
-  const feedContent = useMemo(() => {
-    return reelItems.map((item, index) => {
-      const isActive = index === activeIndex;
-      return (
-        <article
-          id={`${REELS_FEED_SLIDE_ID_PREFIX}${index}`}
-          key={item.id}
-          aria-posinset={index + 1}
-          aria-setsize={reelItems.length}
-          className="relative flex h-full min-h-full shrink-0 snap-start snap-always items-center justify-center p-3"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) {
-              router.push('/reels');
-            }
-          }}
-        >
-          <div
-            className={`relative h-[95dvh] w-[min(95vw,30rem)] overflow-hidden rounded-[1.75rem] bg-black transition border ${
-              isActive
-                ? 'border-white/20 shadow-[0_26px_60px_rgba(0,0,0,0.5)]'
-                : 'border-white/10 shadow-[0_12px_34px_rgba(0,0,0,0.35)]'
-            }`}
-          >
-            <ReelVideoPlayer
-              reelId={item.id}
-              title={item.title}
-              videoUrl={item.videoUrl}
-              poster={item.poster}
-              isActive={isActive}
-              shouldReduceMotion={shouldReduceMotion}
-              onDoubleTapLike={(reelId) => {
-                toggleLike({
-                  reelId,
-                  forceLiked: true,
-                  registerBurst: true,
-                });
-              }}
-            />
-            <Link
-              href="/reels"
-              className="absolute right-2 top-2 z-30 inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/30 bg-black/45 text-white shadow-[0_8px_20px_rgba(0,0,0,0.24)] transition-all duration-200 hover:border-marco-yellow hover:bg-marco-yellow hover:text-marco-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-              aria-label={t('home.reels_feed_back_aria')}
-            >
-              <X className="h-5 w-5" strokeWidth={2} aria-hidden />
-            </Link>
-            <ReelOverlay title={item.title} />
-            <ReelLikeButton
-              ariaLabel={t('home.reels_feed_like_aria')}
-              liked={item.likedByCurrentUser}
-              burstVersion={doubleTapBurstById[item.id] ?? 0}
-              disabled={pendingLikeById[item.id] === true}
-              onToggle={() => {
-                toggleLike({ reelId: item.id });
-              }}
-            />
-          </div>
-        </article>
-      );
-    });
-  }, [
-    activeIndex,
-    doubleTapBurstById,
-    pendingLikeById,
-    reelItems,
-    router,
-    shouldReduceMotion,
-    t,
-    toggleLike,
-  ]);
-
   return (
     <div
       className={`fixed inset-0 z-[120] isolate bg-black/70 text-white backdrop-blur-xl ${montserrat.className}`}
@@ -185,7 +112,33 @@ export function ReelsVerticalFeed({ initialIndex, items }: ReelsVerticalFeedProp
         role="feed"
         aria-label={t('home.reels_feed_region_aria')}
       >
-        {feedContent}
+        {reelItems.map((item, index) => (
+          <ReelsFeedSlide
+            key={item.id}
+            item={item}
+            index={index}
+            activeIndex={activeIndex}
+            totalCount={reelItems.length}
+            shouldReduceMotion={shouldReduceMotion}
+            pendingLikeById={pendingLikeById}
+            doubleTapBurstById={doubleTapBurstById}
+            backAriaLabel={t('home.reels_feed_back_aria')}
+            likeAriaLabel={t('home.reels_feed_like_aria')}
+            onClose={() => {
+              router.push('/reels');
+            }}
+            onToggleLike={(reelId) => {
+              toggleLike({ reelId });
+            }}
+            onDoubleTapLike={(reelId) => {
+              toggleLike({
+                reelId,
+                forceLiked: true,
+                registerBurst: true,
+              });
+            }}
+          />
+        ))}
       </div>
       {reelItems.length === 0 ? (
         <div className="absolute inset-0 flex items-center justify-center px-6 text-center text-sm text-white/70">

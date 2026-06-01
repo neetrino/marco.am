@@ -11,6 +11,7 @@ export type ExecuteProductQueryOptions = {
 export type ExecuteProductListingQueryOptions = {
   omitProductAttributes?: boolean;
   lang?: string;
+  orderBy?: Prisma.ProductOrderByWithRelationInput | Prisma.ProductOrderByWithRelationInput[];
 };
 
 /**
@@ -197,9 +198,11 @@ export async function executeProductListingQuery(
   const locales = buildPreferredLocales(options.lang ?? "en");
   const includeProductAttributes = !options.omitProductAttributes;
 
+  const orderBy = options.orderBy ?? { createdAt: "desc" };
+
   const products = await db.product.findMany({
     where,
-    orderBy: { createdAt: "desc" },
+    orderBy,
     skip,
     take: limit,
     select: {
