@@ -30,6 +30,8 @@ function RelatedProductsCardItemInner({
     productSlug: product.slug,
     inStock: product.inStock,
     price: product.price,
+    title: product.title,
+    image: product.image,
     colors: product.variants?.map((variant, idx) => ({
       value: variant.options?.[0]?.value ?? String(idx),
     })),

@@ -1,129 +1,172 @@
+import { fetchProductDetail } from '../../lib/product-pdp/product-pdp-fetchers';
+import { getStoredLanguage } from '../../lib/language';
 import { apiClient } from '../../lib/api-client';
 import { logger } from '../../lib/utils/logger';
+import type { Product, ProductVariant } from '../products/[slug]/types';
 import type { Cart, CartItem } from './types';
-import { CART_KEY } from './constants';
+import {
+  buildGuestCartFromStorage,
+  persistGuestCartSnapshots,
+  readStoredGuestCart,
+  type StoredGuestCartItem,
+} from './guest-cart-local';
+import { fetchGuestCartCatalogProducts, type GuestCartCatalogProduct } from './guest-cart-catalog-fetch';
 import { cartLineSubtotal, resolveGuestUnitPrice } from './line-subtotal';
 import {
   formatCartVariantOptionFromApi,
   type CartVariantOption,
 } from '../../lib/cart/format-cart-variant-options';
+import {
+  findGuestCartVariant,
+  normalizeProductSlug,
+  resolveGuestCartItemImage,
+} from './guest-cart-product-utils';
 
-/**
- * Product data from API
- */
-interface ProductData {
-  id: string;
-  slug: string;
-  translations?: Array<{ title: string; locale: string }>;
-  media?: Array<{ url?: string; src?: string } | string>;
-  variants?: Array<{
-    _id: string;
-    id: string;
-    sku: string;
-    price: number;
-    originalPrice?: number | null;
-    stock?: number;
-    options?: Array<{
-      attribute?: string;
-      key?: string;
-      value?: string;
-    }>;
-  }>;
+export { buildGuestCartFromStorage } from './guest-cart-local';
+
+async function fetchProductDetailBySlug(slug: string): Promise<Product | null> {
+  try {
+    const lang = getStoredLanguage();
+    return await fetchProductDetail(slug, lang);
+  } catch (error: unknown) {
+    const errorObj = error as { status?: number; statusCode?: number };
+    if (errorObj?.status === 404 || errorObj?.statusCode === 404) {
+      return null;
+    }
+    logger.error(`Error fetching product detail for slug ${slug}`, { error });
+    return null;
+  }
 }
 
-/**
- * Guest cart item
- */
-interface GuestCartItem {
-  productId: string;
-  productSlug?: string;
-  variantId: string;
-  quantity: number;
-  /** Snapshot when added to cart — used if product API returns 0 price */
-  price?: number;
-}
-
-/**
- * Fetch guest cart items with product details
- */
-async function fetchGuestCartItems(
-  guestCart: GuestCartItem[],
-  t: (key: string) => string
-): Promise<Array<{ item: CartItem | null; shouldRemove: boolean }>> {
-  return Promise.all(
-    guestCart.map(async (item, index) => {
-      try {
-        // If productSlug is missing, product cannot be fetched (API expects slug)
-        if (!item.productSlug) {
-          logger.warn(`Product ${item.productId} does not have slug, removing from cart`);
-          return { item: null, shouldRemove: true };
-        }
-
-        // Get product data by slug
-        const productData = await apiClient.get<ProductData>(`/api/v1/products/${item.productSlug}`);
-
-        const variant = productData.variants?.find(v => 
-          (v._id?.toString() || v.id) === item.variantId
-        ) || productData.variants?.[0];
-
-        if (!variant) {
-          logger.warn(`Variant ${item.variantId} not found for product ${item.productId}`);
-          return { item: null, shouldRemove: true };
-        }
-
-        const translation = productData.translations?.[0];
-        const imageUrl = productData.media?.[0] 
-          ? (typeof productData.media[0] === 'string' 
-              ? productData.media[0] 
-              : productData.media[0].url || productData.media[0].src)
-          : null;
-
-        const unitPrice = resolveGuestUnitPrice(variant.price, item.price);
-        const variantOptions: CartVariantOption[] = (variant.options ?? [])
-          .map((option) => formatCartVariantOptionFromApi(option))
-          .filter((option): option is CartVariantOption => option !== null);
-
-        return {
-          item: {
-            id: `${item.productId}-${item.variantId}-${index}`,
-            variant: {
-              id: variant._id?.toString() || variant.id,
-              sku: variant.sku || '',
-              stock: variant.stock !== undefined ? variant.stock : undefined,
-              options: variantOptions,
-              product: {
-                id: productData.id,
-                title: translation?.title || t('common.messages.product'),
-                slug: productData.slug,
-                image: imageUrl,
-              },
-            },
-            quantity: Number(item.quantity),
-            price: unitPrice,
-            originalPrice: variant.originalPrice || null,
-            total: cartLineSubtotal(unitPrice, item.quantity),
-          },
-          shouldRemove: false,
-        };
-      } catch (error: unknown) {
-        // If product not found (404), remove it from localStorage
-        const errorObj = error as { status?: number; statusCode?: number };
-        if (errorObj?.status === 404 || errorObj?.statusCode === 404) {
-          logger.warn(`Product ${item.productId} not found (404), removing from cart`);
-          return { item: null, shouldRemove: true };
-        }
-        logger.error(`Error fetching product ${item.productId}`, { error });
-        return { item: null, shouldRemove: false };
-      }
-    })
+async function fetchProductDetailsBySlugs(slugs: string[]): Promise<Map<string, Product>> {
+  const uniqueSlugs = [...new Set(slugs.map((slug) => slug.trim()).filter(Boolean))];
+  const entries = await Promise.all(
+    uniqueSlugs.map(async (slug) => {
+      const product = await fetchProductDetailBySlug(slug);
+      return [slug, product] as const;
+    }),
   );
+
+  const bySlug = new Map<string, Product>();
+  for (const [slug, product] of entries) {
+    if (product) {
+      bySlug.set(slug, product);
+      const responseSlug = normalizeProductSlug(product.slug);
+      if (responseSlug && responseSlug !== slug) {
+        bySlug.set(responseSlug, product);
+      }
+    }
+  }
+  return bySlug;
 }
 
-/**
- * Build cart from valid items
- */
-function buildCartFromItems(validItems: CartItem[]): Cart {
-  const subtotal = validItems.reduce((sum, item) => sum + cartLineSubtotal(item.price, item.quantity), 0);
+function resolveCartLineTitle(
+  catalog: GuestCartCatalogProduct | undefined,
+  detail: Product | undefined,
+  storedTitle: string | undefined,
+  fallback: string,
+): string {
+  const detailTitle = detail?.title?.trim();
+  if (detailTitle) {
+    return detailTitle;
+  }
+  const catalogTitle = catalog?.title?.trim();
+  if (catalogTitle) {
+    return catalogTitle;
+  }
+  const cachedTitle = storedTitle?.trim();
+  if (cachedTitle) {
+    return cachedTitle;
+  }
+  return fallback;
+}
+
+function resolveCartLineImage(
+  catalog: GuestCartCatalogProduct | undefined,
+  detail: Product | undefined,
+  variant: ProductVariant | undefined,
+  storedImage: string | null | undefined,
+): string | null {
+  if (storedImage) {
+    return storedImage;
+  }
+  if (detail && variant) {
+    const detailImage = resolveGuestCartItemImage(detail, variant);
+    if (detailImage) {
+      return detailImage;
+    }
+  }
+  return catalog?.image ?? null;
+}
+
+function mapGuestItemToCartItem(
+  item: StoredGuestCartItem,
+  index: number,
+  catalog: GuestCartCatalogProduct | undefined,
+  detail: Product | undefined,
+  t: (key: string) => string,
+): { item: CartItem | null; shouldRemove: boolean; snapshot?: Partial<StoredGuestCartItem> } {
+  const slug =
+    normalizeProductSlug(catalog?.slug) ??
+    normalizeProductSlug(detail?.slug) ??
+    normalizeProductSlug(item.productSlug);
+
+  if (!slug && !item.productId) {
+    return { item: null, shouldRemove: true };
+  }
+
+  const variant = detail ? findGuestCartVariant(detail, item.variantId) : undefined;
+  const title = resolveCartLineTitle(catalog, detail, item.title, t('common.messages.product'));
+  const resolvedImage = resolveCartLineImage(catalog, detail, variant, item.image ?? null);
+  const unitPrice = resolveGuestUnitPrice(
+    Number(variant?.currentPrice ?? variant?.price ?? catalog?.price ?? item.price ?? 0),
+    item.price,
+  );
+  const variantOptions: CartVariantOption[] = (variant?.options ?? [])
+    .map((option) => formatCartVariantOptionFromApi(option))
+    .filter((option): option is CartVariantOption => option !== null);
+
+  const snapshot: Partial<StoredGuestCartItem> = {
+    title,
+    image: resolvedImage,
+    sku: variant?.sku ?? item.sku ?? '',
+    stock: variant?.stock ?? item.stock,
+    originalPrice: variant?.originalPrice ?? variant?.oldPrice ?? item.originalPrice ?? null,
+    options: variantOptions.length > 0 ? variantOptions : item.options,
+    price: unitPrice,
+    productSlug: slug,
+  };
+
+  return {
+    item: {
+      id: `${item.productId}-${item.variantId}-${index}`,
+      variant: {
+        id: item.variantId,
+        sku: variant?.sku ?? item.sku ?? '',
+        stock: variant?.stock ?? item.stock,
+        options: variantOptions.length > 0 ? variantOptions : item.options,
+        product: {
+          id: item.productId,
+          title,
+          slug: slug ?? '',
+          image: resolvedImage,
+        },
+      },
+      quantity: Number(item.quantity),
+      price: unitPrice,
+      originalPrice: variant?.originalPrice ?? variant?.oldPrice ?? item.originalPrice ?? null,
+      total: cartLineSubtotal(unitPrice, item.quantity),
+    },
+    shouldRemove: false,
+    snapshot,
+  };
+}
+
+function buildCartFromResolvedItems(validItems: CartItem[]): Cart {
+  const subtotal = validItems.reduce(
+    (sum, item) => sum + cartLineSubtotal(item.price, item.quantity),
+    0,
+  );
   const itemsCount = validItems.reduce((sum, item) => sum + Number(item.quantity), 0);
 
   return {
@@ -141,55 +184,73 @@ function buildCartFromItems(validItems: CartItem[]): Cart {
   };
 }
 
-/**
- * Fetch guest cart
- */
 export async function fetchGuestCart(
-  t: (key: string) => string
+  t: (key: string) => string,
 ): Promise<Cart | null> {
   if (typeof window === 'undefined') {
     return null;
   }
 
   try {
-    const stored = localStorage.getItem(CART_KEY);
-    const guestCart: GuestCartItem[] = stored ? JSON.parse(stored) : [];
-    
-    if (guestCart.length === 0) {
+    const guestCartAtStart = readStoredGuestCart();
+    if (guestCartAtStart.length === 0) {
       return null;
     }
 
-    // Get product details from API
-    const itemsWithDetails = await fetchGuestCartItems(guestCart, t);
+    const guestCart = readStoredGuestCart();
+    const productIds = [
+      ...new Set([
+        ...guestCartAtStart.map((item) => item.productId),
+        ...guestCart.map((item) => item.productId),
+      ]),
+    ];
+    const catalogById = await fetchGuestCartCatalogProducts(productIds);
 
-    // Remove items that were not found
-    const itemsToRemove = itemsWithDetails
-      .map((result, index) => result.shouldRemove ? index : -1)
-      .filter(index => index !== -1);
-    
-    if (itemsToRemove.length > 0) {
-      const updatedCart = guestCart.filter((_, index) => !itemsToRemove.includes(index));
-      localStorage.setItem(CART_KEY, JSON.stringify(updatedCart));
-    }
+    const slugsForDetail = [
+      ...new Set(
+        guestCart
+          .map(
+            (item) =>
+              normalizeProductSlug(catalogById.get(item.productId)?.slug) ??
+              normalizeProductSlug(item.productSlug),
+          )
+          .filter((slug): slug is string => Boolean(slug)),
+      ),
+    ];
+    const detailBySlug = await fetchProductDetailsBySlugs(slugsForDetail);
+
+    const itemsWithDetails = guestCart.map((item, index) => {
+      const catalog = catalogById.get(item.productId);
+      const slug =
+        normalizeProductSlug(catalog?.slug) ?? normalizeProductSlug(item.productSlug);
+      const detail = slug ? detailBySlug.get(slug) : undefined;
+      return mapGuestItemToCartItem(item, index, catalog, detail, t);
+    });
+
+    const snapshotPatches = new Map<string, Partial<StoredGuestCartItem>>();
+    itemsWithDetails.forEach((result, index) => {
+      const row = guestCart[index];
+      if (row && result.snapshot) {
+        snapshotPatches.set(`${row.productId}:${row.variantId}`, result.snapshot);
+      }
+    });
+    persistGuestCartSnapshots(guestCart, snapshotPatches);
 
     const validItems = itemsWithDetails
-      .map(result => result.item)
+      .map((result) => result.item)
       .filter((item): item is CartItem => item !== null);
-    
+
     if (validItems.length === 0) {
-      return null;
+      return buildGuestCartFromStorage(t);
     }
 
-    return buildCartFromItems(validItems);
+    return buildCartFromResolvedItems(validItems);
   } catch (error: unknown) {
     logger.error('Error loading guest cart', { error });
-    return null;
+    return buildGuestCartFromStorage(t);
   }
 }
 
-/**
- * Fetch logged-in user cart
- */
 export async function fetchLoggedInCart(): Promise<Cart | null> {
   try {
     const response = await apiClient.get<{ cart: Cart }>('/api/v1/cart');
@@ -200,19 +261,12 @@ export async function fetchLoggedInCart(): Promise<Cart | null> {
   }
 }
 
-/**
- * Fetch cart (guest or logged-in)
- */
 export async function fetchCart(
   isLoggedIn: boolean,
-  t: (key: string) => string
+  t: (key: string) => string,
 ): Promise<Cart | null> {
   if (!isLoggedIn) {
     return fetchGuestCart(t);
   }
   return fetchLoggedInCart();
 }
-
-
-
-
