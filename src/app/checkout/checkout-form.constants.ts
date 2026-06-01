@@ -7,7 +7,10 @@ export const CHECKOUT_FIELD_ROW_CLASS = 'grid grid-cols-1 gap-4 md:grid-cols-2 m
 export const CHECKOUT_FIELD_CELL_CLASS = 'min-w-0 w-full';
 
 export const CHECKOUT_INPUT_FIELD_CLASS =
-  '!h-11 !rounded-xl !border-[var(--app-border)] !bg-[var(--app-surface)] !px-4 !py-0 !text-sm !shadow-[0_1px_2px_rgba(16,16,16,0.05)] focus:!border-marco-yellow/55 focus:!outline-none focus:!ring-2 focus:!ring-marco-yellow/30 dark:!border-[var(--app-border-strong)] dark:!bg-[var(--app-surface-muted)]/60';
+  '!h-11 !rounded-xl !border-2 !border-[var(--app-border)] !bg-[var(--app-surface)] !px-4 !py-0 !text-sm !shadow-[0_1px_2px_rgba(16,16,16,0.05)] focus:!border-marco-yellow/55 focus:!outline-none focus:!ring-2 focus:!ring-marco-yellow/30 dark:!border-[var(--app-border-strong)] dark:!bg-[var(--app-surface-muted)]/60';
+
+export const CHECKOUT_PROMO_INPUT_FIELD_CLASS =
+  '!h-11 !rounded-xl !border-2 !border-marco-yellow/65 !bg-[var(--app-surface)] !px-4 !py-0 !text-sm !shadow-[0_1px_2px_rgba(16,16,16,0.05)] focus:!border-marco-yellow focus:!outline-none focus:!ring-2 focus:!ring-marco-yellow/30 dark:!border-marco-yellow/55 dark:!bg-[var(--app-surface-muted)]/60';
 
 export const CHECKOUT_SELECT_TRIGGER_BASE_CLASS =
   'flex h-11 w-full items-center gap-3 rounded-xl border bg-[var(--app-surface)] px-4 text-left text-sm shadow-[0_1px_2px_rgba(16,16,16,0.05)] transition-[border-color,box-shadow,background-color] hover:border-marco-yellow/45 hover:shadow-[0_4px_16px_rgba(16,16,16,0.07)] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60 dark:bg-[var(--app-surface-muted)]/60 sm:text-[15px]';

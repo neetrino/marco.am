@@ -87,13 +87,14 @@ export function ProductPageClient({
 
   const handleAddToCart = async () => {
     if (!canAddToCart || !product || !currentVariant) return;
+    const unitPrice = Number(currentVariant.currentPrice ?? currentVariant.price) || 0;
+    if (unitPrice <= 0) {
+      return;
+    }
     setIsAddingToCart(true);
     try {
       if (!isLoggedIn) {
-        const unitPrice =
-          Number(currentVariant.currentPrice ?? currentVariant.price) || 0;
-        const productTitle = displayProduct?.title ?? product.title ?? '';
-        const productImage = images[0] ?? currentVariant.imageUrl ?? null;
+        const snapshotImage = images[currentImageIndex] ?? images[0] ?? null;
         await runGuestCartMutation(() => {
           upsertGuestCartItem({
             productId: product.id,
@@ -101,8 +102,8 @@ export function ProductPageClient({
             variantId: currentVariant.id,
             quantityDelta: quantity,
             price: unitPrice,
-            title: productTitle,
-            image: productImage,
+            title: product.title,
+            image: snapshotImage,
             sku: currentVariant.sku,
             stock: currentVariant.stock,
           });

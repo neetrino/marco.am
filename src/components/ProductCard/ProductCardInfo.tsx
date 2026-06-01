@@ -120,7 +120,13 @@ export function ProductCardInfo({
             ) : null}
           </div>
         </div>
-      ) : null}
+      ) : (
+        <div className="mt-2">
+          <span className="inline-flex rounded-full bg-[#f4f4f4] px-3 py-1 text-xs font-semibold text-[#383838]">
+            {t('products.noPrice.label')}
+          </span>
+        </div>
+      )}
     </div>
   );
 }

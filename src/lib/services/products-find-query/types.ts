@@ -7,6 +7,7 @@ export interface ProductFilters {
   category?: string;
   search?: string;
   filter?: string;
+  pricePresence?: "with" | "without";
   minPrice?: number;
   maxPrice?: number;
   colors?: string;

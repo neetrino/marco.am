@@ -9,6 +9,7 @@ import type { LanguageCode } from '../../../lib/language';
 import { normalizeLiteralNewlinesToLineBreaks } from '../../../lib/utils/normalize-literal-newlines';
 import { sanitizeHtml } from '../../../lib/utils/sanitize';
 import { CompareIcon } from '../../../components/icons/CompareIcon';
+import { openTidioChat } from '@/lib/tidio/open-tidio-chat';
 import {
   HEADER_FIGMA_PILL_RADIUS_CLASS,
 } from '../../../components/header/header.constants';
@@ -102,6 +103,8 @@ export function ProductInfoAndActions({
 }: ProductInfoAndActionsProps) {
   const rawDescription = getProductText(language, product.id, 'longDescription') || product.description || '';
   const buyNowFullLabel = t(language, 'product.buyNow');
+  const orderNowLabel = t(language, 'product.orderNow');
+  const noPriceLabel = t(language, 'products.noPrice.label');
   const normalizedDescription = normalizeLiteralNewlinesToLineBreaks(rawDescription);
   const descriptionWithoutDuplicateSpecs =
     stripDuplicateSpecificationDescriptionHtml(normalizedDescription);
@@ -118,6 +121,7 @@ export function ProductInfoAndActions({
     hasMultiValueAttributeGroup ||
     colorGroups.length > 1 ||
     (!product?.productAttributes && sizeGroups.length > 1);
+  const hasDisplayPrice = Number.isFinite(price) && price > 0;
 
   return (
     <div className="flex flex-col h-full">
@@ -156,15 +160,23 @@ export function ProductInfoAndActions({
         </div>
         <div className="mb-6">
           <div className="flex flex-col gap-1">
-            {/* Discounted price with discount percentage */}
-            <div className="flex items-center gap-2">
-              <p className="text-3xl font-bold text-marco-black">{formatCatalogPrice(price, currency as CurrencyCode)}</p>
-            </div>
-            {/* Original price below discounted price - full width, not inline */}
-            {(originalPrice || (compareAtPrice && compareAtPrice > price)) && (
-              <p className="mt-1 ml-px text-xl text-gray-500 line-through decoration-gray-400">
-                {formatCatalogPrice(originalPrice || compareAtPrice || 0, currency as CurrencyCode)}
-              </p>
+            {hasDisplayPrice ? (
+              <>
+                {/* Discounted price with discount percentage */}
+                <div className="flex items-center gap-2">
+                  <p className="text-3xl font-bold text-marco-black">{formatCatalogPrice(price, currency as CurrencyCode)}</p>
+                </div>
+                {/* Original price below discounted price - full width, not inline */}
+                {(originalPrice || (compareAtPrice && compareAtPrice > price)) && (
+                  <p className="mt-1 ml-px text-xl text-gray-500 line-through decoration-gray-400">
+                    {formatCatalogPrice(originalPrice || compareAtPrice || 0, currency as CurrencyCode)}
+                  </p>
+                )}
+              </>
+            ) : (
+              <span className="inline-flex w-fit rounded-full bg-[#f4f4f4] px-3 py-1 text-sm font-semibold text-[#383838]">
+                {noPriceLabel}
+              </span>
             )}
           </div>
         </div>
@@ -221,25 +233,27 @@ export function ProductInfoAndActions({
         )}
         <div className="flex -translate-y-0.5 pb-2 pt-4">
           <div className="flex min-w-0 flex-nowrap items-center gap-2 sm:gap-3">
-            <div
-              className={`flex ${PRODUCT_BUY_CTA_HEIGHT_CLASS} shrink-0 items-center overflow-hidden rounded-xl border-2 border-gray-200 bg-white`}
-            >
-              <button
-                onClick={() => onQuantityAdjust(-1)}
-                disabled={quantity <= 1}
-                className={`flex ${PRODUCT_BUY_CTA_HEIGHT_CLASS} w-8 items-center justify-center text-sm disabled:cursor-not-allowed disabled:opacity-50`}
+            {hasDisplayPrice ? (
+              <div
+                className={`flex ${PRODUCT_BUY_CTA_HEIGHT_CLASS} shrink-0 items-center overflow-hidden rounded-xl border-2 border-gray-200 bg-white`}
               >
-                -
-              </button>
-              <div className="w-8 text-center text-sm font-bold tabular-nums">{quantity}</div>
-              <button
-                onClick={() => onQuantityAdjust(1)}
-                disabled={quantity >= maxQuantity}
-                className={`flex ${PRODUCT_BUY_CTA_HEIGHT_CLASS} w-8 items-center justify-center text-sm disabled:cursor-not-allowed disabled:opacity-50`}
-              >
-                +
-              </button>
-            </div>
+                <button
+                  onClick={() => onQuantityAdjust(-1)}
+                  disabled={quantity <= 1}
+                  className={`flex ${PRODUCT_BUY_CTA_HEIGHT_CLASS} w-8 items-center justify-center text-sm disabled:cursor-not-allowed disabled:opacity-50`}
+                >
+                  -
+                </button>
+                <div className="w-8 text-center text-sm font-bold tabular-nums">{quantity}</div>
+                <button
+                  onClick={() => onQuantityAdjust(1)}
+                  disabled={quantity >= maxQuantity}
+                  className={`flex ${PRODUCT_BUY_CTA_HEIGHT_CLASS} w-8 items-center justify-center text-sm disabled:cursor-not-allowed disabled:opacity-50`}
+                >
+                  +
+                </button>
+              </div>
+            ) : null}
             <button
               onClick={onCompareToggle}
               className={`flex size-12 shrink-0 items-center justify-center rounded-xl border-2 transition-all duration-200 ${isInCompare ? 'border-marco-yellow bg-marco-yellow text-marco-black dark:!text-marco-black' : 'border-gray-200 hover:border-gray-300'}`}
@@ -254,24 +268,26 @@ export function ProductInfoAndActions({
             </button>
             <button
               type="button"
-              disabled={!canAddToCart || isAddingToCart}
+              disabled={hasDisplayPrice ? !canAddToCart || isAddingToCart : false}
               className={`inline-flex shrink-0 items-center gap-1.5 bg-marco-yellow px-4 text-left text-sm font-bold leading-normal text-marco-black dark:!text-marco-black transition-[filter,transform] hover:-translate-y-0.5 hover:brightness-95 active:brightness-90 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 disabled:hover:brightness-100 ${PRODUCT_BUY_CTA_HEIGHT_CLASS} ${HEADER_FIGMA_PILL_RADIUS_CLASS}`}
-              onClick={onAddToCart}
+              onClick={hasDisplayPrice ? onAddToCart : openTidioChat}
             >
               <span
                 className={`${PRODUCT_BUY_CTA_LABEL_MAX_WIDTH_CLASS} whitespace-nowrap ${
                   language === 'hy' ? 'pl-0.5' : 'pl-1'
                 } truncate`}
               >
-                {isAddingToCart
-                  ? t(language, 'product.adding')
-                  : isVariationRequired
-                    ? getRequiredAttributesMessage()
-                    : language === 'hy'
-                      ? buyNowFullLabel
-                      : isOutOfStock || hasUnavailableAttributes
-                        ? t(language, 'product.outOfStock')
-                        : buyNowFullLabel}
+                {!hasDisplayPrice
+                  ? orderNowLabel
+                  : isAddingToCart
+                    ? t(language, 'product.adding')
+                    : isVariationRequired
+                      ? getRequiredAttributesMessage()
+                      : language === 'hy'
+                        ? buyNowFullLabel
+                        : isOutOfStock || hasUnavailableAttributes
+                          ? t(language, 'product.outOfStock')
+                          : buyNowFullLabel}
               </span>
               <span
                 className={`flex shrink-0 items-center justify-center rounded-full bg-black text-white ${PRODUCT_BUY_CTA_ICON_NUDGE_LEFT_CLASS}`}

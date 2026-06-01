@@ -36,6 +36,7 @@ export function buildProductsListingRedisKey(filters: ProductFilters): string {
     category: filters.category ?? null,
     search: filters.search ?? null,
     filter: filters.filter ?? null,
+    pricePresence: filters.pricePresence ?? null,
     minPrice: filters.minPrice ?? null,
     maxPrice: filters.maxPrice ?? null,
     colors: filters.colors ?? null,

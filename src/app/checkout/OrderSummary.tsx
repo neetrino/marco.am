@@ -10,7 +10,7 @@ import { useAuth } from '../../lib/auth/AuthContext';
 import { getPromoErrorMessage } from './hooks/useCheckoutPromo';
 import {
   CHECKOUT_FIELD_LABEL_CLASS,
-  CHECKOUT_INPUT_FIELD_CLASS,
+  CHECKOUT_PROMO_INPUT_FIELD_CLASS,
   CHECKOUT_ORDER_SUMMARY_PRIMARY_BUTTON_CLASS,
   CHECKOUT_ORDER_SUMMARY_PROMO_APPLY_CLASS,
   CHECKOUT_ORDER_SUMMARY_SECONDARY_BUTTON_CLASS,
@@ -158,7 +158,7 @@ export function OrderSummary({
                   }}
                   placeholder={t('common.cart.promoCodePlaceholder')}
                   disabled={isSubmitting || applyingPromo}
-                  className={`min-w-0 flex-1 placeholder:text-[var(--app-text-soft)] disabled:opacity-60 ${CHECKOUT_INPUT_FIELD_CLASS}`}
+                  className={`min-w-0 flex-1 placeholder:text-[var(--app-text-soft)] disabled:opacity-60 ${CHECKOUT_PROMO_INPUT_FIELD_CLASS}`}
                 />
                 <button
                   type="button"

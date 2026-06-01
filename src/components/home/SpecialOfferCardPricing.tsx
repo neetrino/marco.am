@@ -1,12 +1,13 @@
 ﻿'use client';
 
-import type { MouseEvent } from 'react';
+import { useState, type MouseEvent } from 'react';
 
 import { formatCatalogPrice } from '../../lib/currency';
 import type { CurrencyCode } from '../../lib/currency';
 import {
   SpecialOfferCartFigmaIcon,
 } from './SpecialOfferCartFigmaArt';
+import { NoPriceLockIcon } from '@/components/icons/NoPriceLockIcon';
 import {
   SPECIAL_OFFERS_CART_BUTTON_SIZE_PX,
   SPECIAL_OFFERS_CART_BUTTON_SPINNER_PX,
@@ -73,11 +74,13 @@ export function SpecialOfferCardPricing({
 }
 
 interface SpecialOfferCartFloatingButtonProps {
+  hasDisplayPrice: boolean;
   inStock: boolean;
   isAddingToCart: boolean;
   addToCartAria: string;
   outOfStockAria: string;
   onAddToCart: (e: MouseEvent) => void;
+  onNoPriceClick?: (e: MouseEvent) => void;
   /** When true (e.g. listing details still loading), cart is non-interactive. */
   interactionLocked?: boolean;
 }
@@ -86,27 +89,47 @@ interface SpecialOfferCartFloatingButtonProps {
  * Absolutely positioned at the bottom-right of the card — does not affect card height.
  */
 export function SpecialOfferCartFloatingButton({
+  hasDisplayPrice,
   inStock,
   isAddingToCart,
   addToCartAria,
   outOfStockAria,
   onAddToCart,
+  onNoPriceClick,
   interactionLocked = false,
 }: SpecialOfferCartFloatingButtonProps) {
-  const disabled = interactionLocked || !inStock || isAddingToCart;
+  const [lockTapPulse, setLockTapPulse] = useState(false);
+  const disabled = hasDisplayPrice
+    ? interactionLocked || !inStock || isAddingToCart
+    : interactionLocked;
+  const handleButtonClick = (event: MouseEvent) => {
+    if (hasDisplayPrice) {
+      onAddToCart(event);
+      return;
+    }
+    setLockTapPulse(true);
+    window.setTimeout(() => setLockTapPulse(false), 180);
+    onNoPriceClick?.(event);
+  };
   return (
     <div className="pointer-events-none absolute max-md:z-50 max-md:bottom-[var(--so-cart-bottom-mobile)] max-md:left-1/2 max-md:right-auto max-md:-translate-x-1/2 md:z-30 md:bottom-[var(--so-cart-bottom-desktop)] md:left-auto md:right-[var(--so-cart-right-desktop)] md:translate-x-0">
       <div className="pointer-events-auto">
         <button
           type="button"
-          onClick={onAddToCart}
+          onClick={handleButtonClick}
           disabled={disabled}
-          className="relative flex items-center justify-center overflow-hidden rounded-full bg-[#ffca03] shadow-sm transition-transform hover:scale-105 disabled:cursor-not-allowed disabled:opacity-50 dark:outline dark:outline-2 dark:outline-[#383838]"
+          className="relative flex items-center justify-center overflow-hidden rounded-full bg-[#ffca03] shadow-sm transition-transform hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 dark:outline dark:outline-2 dark:outline-[#383838]"
           style={{
             width: SPECIAL_OFFERS_CART_BUTTON_SIZE_PX,
             height: SPECIAL_OFFERS_CART_BUTTON_SIZE_PX,
           }}
-          aria-label={inStock ? addToCartAria : outOfStockAria}
+          aria-label={
+            hasDisplayPrice
+              ? inStock
+                ? addToCartAria
+                : outOfStockAria
+              : 'No price product action'
+          }
         >
           {isAddingToCart ? (
             <>
@@ -136,8 +159,14 @@ export function SpecialOfferCartFloatingButton({
                 />
               </svg>
             </>
-          ) : (
+          ) : hasDisplayPrice ? (
             <SpecialOfferCartFigmaIcon />
+          ) : (
+            <NoPriceLockIcon
+              className={`h-[28px] w-[28px] transition-transform duration-150 md:h-[32px] md:w-[32px] ${
+                lockTapPulse ? 'translate-y-[1px] scale-110' : ''
+              }`}
+            />
           )}
         </button>
       </div>

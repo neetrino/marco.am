@@ -1,6 +1,9 @@
 'use client';
 
+import { useCallback, useState, type MouseEvent } from 'react';
+
 import { ProductPdpPrefetchLink } from '@/components/ProductPdpPrefetchLink';
+import { NoPriceProductPopup } from '@/components/products/NoPriceProductPopup';
 
 import {
   getSpecialOfferBrandTextClass,
@@ -134,7 +137,36 @@ export function SpecialOfferCard({
 
   const cardPdpEnabled = Boolean(product.slug) && !product.shellPlaceholder;
   const warrantyYears = product.warrantyYears ?? product.warrantyBadge?.years ?? null;
-  const shouldShowCartCutouts = hasDisplayPrice;
+  const shouldShowCartCutouts = true;
+  const [showNoPricePopup, setShowNoPricePopup] = useState(false);
+  const handleNoPriceCardClick = useCallback((event: MouseEvent<HTMLAnchorElement>) => {
+    if (hasDisplayPrice || detailsPending) {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    setShowNoPricePopup(true);
+  }, [hasDisplayPrice, detailsPending]);
+  const handleNoPriceButtonClick = useCallback((event: MouseEvent) => {
+    if (hasDisplayPrice || detailsPending) {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    setShowNoPricePopup(true);
+  }, [hasDisplayPrice, detailsPending]);
+  const handleNoPriceSurfaceClick = useCallback((event: MouseEvent<HTMLDivElement>) => {
+    if (hasDisplayPrice || detailsPending) {
+      return;
+    }
+    const target = event.target as HTMLElement;
+    if (target.closest('button,[role="button"],[data-no-price-ignore="true"]')) {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    setShowNoPricePopup(true);
+  }, [hasDisplayPrice, detailsPending]);
 
   return (
     <div
@@ -147,6 +179,7 @@ export function SpecialOfferCard({
         ['--so-cart-bottom-desktop' as string]: `${SPECIAL_OFFERS_CART_BUTTON_INSET_BOTTOM_PX}px`,
         ['--so-cart-right-desktop' as string]: `${SPECIAL_OFFERS_CART_BUTTON_INSET_RIGHT_PX}px`,
       }}
+      onClickCapture={handleNoPriceSurfaceClick}
     >
       <article
         className="relative flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden"
@@ -164,6 +197,7 @@ export function SpecialOfferCard({
             className="absolute inset-0 z-[1] focus:outline-none focus-visible:ring-2 focus-visible:ring-marco-yellow focus-visible:ring-offset-2"
             style={{ borderRadius: SPECIAL_OFFERS_CARD_SHELL_RADIUS_PX }}
             aria-label={product.title}
+            onClick={handleNoPriceCardClick}
           >
             <span className="sr-only">{product.title}</span>
           </ProductPdpPrefetchLink>
@@ -240,21 +274,27 @@ export function SpecialOfferCard({
                   detailsPending={detailsPending}
                 />
               </div>
-            ) : null}
+            ) : (
+              <div className="mt-auto">
+                <span className="inline-flex rounded-full bg-[#f4f4f4] px-3 py-1 text-xs font-semibold text-[#383838]">
+                  {t('products.noPrice.label')}
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </article>
 
-      {hasDisplayPrice ? (
-        <SpecialOfferCartFloatingButton
-          inStock={product.inStock}
-          isAddingToCart={isAddingToCart}
-          addToCartAria={t('common.ariaLabels.addToCart')}
-          outOfStockAria={t('common.ariaLabels.outOfStock')}
-          onAddToCart={handleCart}
-          interactionLocked={detailsPending}
-        />
-      ) : null}
+      <SpecialOfferCartFloatingButton
+        hasDisplayPrice={hasDisplayPrice}
+        inStock={product.inStock}
+        isAddingToCart={isAddingToCart}
+        addToCartAria={t('common.ariaLabels.addToCart')}
+        outOfStockAria={t('common.ariaLabels.outOfStock')}
+        onAddToCart={handleCart}
+        onNoPriceClick={handleNoPriceButtonClick}
+        interactionLocked={detailsPending}
+      />
 
       <SpecialOfferActionsStack
         layout={layout}
@@ -269,6 +309,13 @@ export function SpecialOfferCard({
         onCompare={handleCompare}
         disabled={Boolean(product.shellPlaceholder)}
       />
+      {cardPdpEnabled ? (
+        <NoPriceProductPopup
+          isOpen={showNoPricePopup}
+          productSlug={product.slug}
+          onClose={() => setShowNoPricePopup(false)}
+        />
+      ) : null}
     </div>
   );
 }

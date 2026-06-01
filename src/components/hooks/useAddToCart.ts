@@ -118,9 +118,11 @@ export function useAddToCart({
     requiresAttributeSelection,
     colors,
   });
+  const hasPurchasablePrice =
+    typeof propPrice === 'number' ? Number.isFinite(propPrice) && propPrice > 0 : true;
 
   const addToCart = async () => {
-    if (!inStock) {
+    if (!inStock || !hasPurchasablePrice) {
       return;
     }
 
@@ -177,6 +179,10 @@ export function useAddToCart({
           );
           snapshotTitle = detailSnapshot.title;
           snapshotImage = detailSnapshot.image;
+        }
+        if (!variantPrice || variantPrice <= 0) {
+          setIsAddingToCart(false);
+          return;
         }
 
         await runGuestCartMutation(() => {
@@ -241,6 +247,11 @@ export function useAddToCart({
           return;
         }
         variantId = productDetails.variants[0].id;
+        const fetchedPrice = productDetails.variants[0].price;
+        if (!fetchedPrice || fetchedPrice <= 0) {
+          setIsAddingToCart(false);
+          return;
+        }
       }
 
       const response = await apiClient.post<{

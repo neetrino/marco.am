@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { Montserrat } from 'next/font/google';
 import Link from 'next/link';
@@ -38,6 +38,7 @@ type SortOption =
 type SortParamOption = Exclude<SortOption, 'bestsellers' | 'curated'>;
 type FilterParamOption = Extract<SortOption, 'bestsellers' | 'curated'>;
 type SortMenuOption = Exclude<SortOption, 'default'>;
+type PricePresenceOption = 'with' | 'without';
 
 /** Figma MARCO 218:2319 — sliders / sort control, white on dark trigger */
 function ProductsSortSlidersIcon({ className }: { readonly className?: string }) {
@@ -111,10 +112,22 @@ const VIEW_TOGGLE_GROUP_CLASS =
 const VIEW_TOGGLE_SEGMENT_BASE =
   'inline-flex min-w-[44px] flex-1 items-center justify-center px-3 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-marco-black border-r border-[#dedede] last:border-r-0';
 
+const PRICE_PRESENCE_GROUP_CLASS =
+  'flex h-10 min-h-10 shrink-0 items-stretch overflow-hidden rounded-full border border-solid border-marco-black/20 bg-white';
+
+const PRICE_PRESENCE_SEGMENT_BASE =
+  'inline-flex min-w-[112px] flex-1 items-center justify-center whitespace-nowrap px-4 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-marco-black border-r border-marco-black/15 last:border-r-0';
+
 function viewToggleSegmentClass(isActive: boolean): string {
   return isActive
     ? `${VIEW_TOGGLE_SEGMENT_BASE} bg-[#ffffff] text-[#383838] dark:bg-[#ffffff] dark:text-[#383838]`
     : `${VIEW_TOGGLE_SEGMENT_BASE} text-marco-black dark:text-white hover:bg-[#fafafa] dark:hover:bg-white/10`;
+}
+
+function pricePresenceSegmentClass(isActive: boolean): string {
+  return isActive
+    ? `${PRICE_PRESENCE_SEGMENT_BASE} bg-marco-yellow text-marco-black`
+    : `${PRICE_PRESENCE_SEGMENT_BASE} bg-white text-marco-black/80 hover:bg-marco-gray/50`;
 }
 
 function ProductsShopTitleBlock({ total }: { readonly total?: number }) {
@@ -170,6 +183,7 @@ function ProductsHeaderContent({ total }: ProductsHeaderProps) {
   const forcedShopGridCols = useForcedShopGridColumns();
   const [viewMode, setViewMode] = useState<ViewMode>('grid-2');
   const [sortBy, setSortBy] = useState<SortOption>('default');
+  const [pricePresence, setPricePresence] = useState<PricePresenceOption>('with');
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const sortDropdownRef = useRef<HTMLDivElement>(null);
   const mobileSortDropdownRef = useRef<HTMLDivElement>(null);
@@ -210,9 +224,16 @@ function ProductsHeaderContent({ total }: ProductsHeaderProps) {
     const sortParam = searchParams.get('sort') as SortOption | null;
     if (sortParam && sortOptions.some((opt) => opt.value === sortParam)) {
       setSortBy(sortParam);
-      return;
+    } else {
+      setSortBy('default');
     }
-    setSortBy('default');
+
+    const rawPricePresence = searchParams.get('pricePresence');
+    if (rawPricePresence === 'without') {
+      setPricePresence('without');
+    } else {
+      setPricePresence('with');
+    }
   }, [searchParams]);
 
   // Close dropdown when clicking outside
@@ -268,6 +289,17 @@ function ProductsHeaderContent({ total }: ProductsHeaderProps) {
     pushShopProductsListingUrl(router, `/products?${params.toString()}`);
   };
 
+  const handlePricePresenceChange = (nextPricePresence: PricePresenceOption) => {
+    if (nextPricePresence === pricePresence) {
+      return;
+    }
+    setPricePresence(nextPricePresence);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('pricePresence', nextPricePresence);
+    params.delete('page');
+    pushShopProductsListingUrl(router, `/products?${params.toString()}`);
+  };
+
   return (
     <div className="marco-header-container pb-2 pt-[58px] sm:pb-4">
       {/* Desktop: All elements in one horizontal line */}
@@ -313,6 +345,25 @@ function ProductsHeaderContent({ total }: ProductsHeaderProps) {
               </button>
             </div>
           )}
+
+          <div className={PRICE_PRESENCE_GROUP_CLASS} role="group" aria-label={t('products.header.pricePresence.switchAria')}>
+            <button
+              type="button"
+              onClick={() => handlePricePresenceChange('with')}
+              className={pricePresenceSegmentClass(pricePresence === 'with')}
+              aria-pressed={pricePresence === 'with'}
+            >
+              {t('products.header.pricePresence.withPrice')}
+            </button>
+            <button
+              type="button"
+              onClick={() => handlePricePresenceChange('without')}
+              className={pricePresenceSegmentClass(pricePresence === 'without')}
+              aria-pressed={pricePresence === 'without'}
+            >
+              {t('products.header.pricePresence.withoutPrice')}
+            </button>
+          </div>
 
           {/* Sort dropdown — panel width matches trigger; rows h-10 like trigger */}
           <div className="relative w-max min-w-0" ref={sortDropdownRef}>
