@@ -1,9 +1,15 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { primaryNavInternalHrefs } from '@/components/header/nav-config';
+import {
+  fetchHomeBrandPartnersClient,
+  HOME_BRAND_PARTNERS_QUERY_STALE_MS,
+} from '@/lib/home-brand-partners-client';
 import { getStoredLanguage } from '@/lib/language';
+import { queryKeys } from '@/lib/query-keys';
 
 const EXTRA_PREFETCH_ROUTES = ['/wishlist', '/profile', '/login'] as const;
 const PREFETCH_ROUTES = [...new Set([...primaryNavInternalHrefs, ...EXTRA_PREFETCH_ROUTES])];
@@ -41,7 +47,8 @@ function warmProductsApi(language: string): void {
   void fetch(`/api/v1/products/filters?lang=${encodeURIComponent(language)}`, { cache: 'force-cache' });
 }
 
-function warmBrandPartnersApi(language: string): void {
+function warmBrandPartnersApi(language: string, prefetchBrandPartners: () => void): void {
+  prefetchBrandPartners();
   void fetch(`/api/v1/home/brand-partners?locale=${encodeURIComponent(language)}`, {
     cache: 'force-cache',
   });
@@ -76,6 +83,7 @@ function shouldInteractionPrefetch(pathname: string): boolean {
 export function GlobalRoutePrefetch() {
   const pathname = usePathname();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const warmedRef = useRef<Set<string>>(new Set());
   const interactionWarmedRef = useRef<Set<string>>(new Set());
   const warmProductsLangRef = useRef<Set<string>>(new Set());
@@ -116,7 +124,13 @@ export function GlobalRoutePrefetch() {
       if (!warmProductsLangRef.current.has(language)) {
         warmProductsLangRef.current.add(language);
         warmProductsApi(language);
-        warmBrandPartnersApi(language);
+        warmBrandPartnersApi(language, () => {
+          void queryClient.prefetchQuery({
+            queryKey: queryKeys.homeBrandPartners(language),
+            queryFn: () => fetchHomeBrandPartnersClient(language),
+            staleTime: HOME_BRAND_PARTNERS_QUERY_STALE_MS,
+          });
+        });
       }
     };
     if (typeof idleWindow.requestIdleCallback === 'function') {
@@ -129,7 +143,7 @@ export function GlobalRoutePrefetch() {
     }
     const timerId = globalThis.setTimeout(warmApi, 450);
     return () => globalThis.clearTimeout(timerId);
-  }, [router, routesToPrefetch]);
+  }, [queryClient, router, routesToPrefetch]);
 
   useEffect(() => {
     const prefetchFromElement = (target: EventTarget | null) => {

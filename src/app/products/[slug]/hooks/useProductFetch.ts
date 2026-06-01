@@ -64,11 +64,16 @@ export function useProductFetch({
       ? initialProduct
       : undefined;
 
+  const visualInitialData =
+    initialVisual != null && initialVisual.slug === slug && lang === serverLanguage
+      ? initialVisual
+      : undefined;
+
   const visualQuery = useQuery({
     queryKey: queryKeys.productVisual(slug, lang),
     queryFn: () => fetchProductVisual(slug, lang),
     enabled,
-    initialData: initialVisual ?? undefined,
+    initialData: visualInitialData,
     placeholderData: keepPreviousData,
     staleTime: PDP_QUERY_STALE_TIME_MS,
     gcTime: PDP_QUERY_GC_TIME_MS,
@@ -123,13 +128,12 @@ export function useProductFetch({
 
   const detailsPending = Boolean(productVisual && !product && detailQuery.isPending);
 
-  const pdpInitialShell = blockingEmpty || awaitingDetailShell;
-
   return {
     product,
     productVisual,
-    loading: pdpInitialShell,
-    blockingEmpty: pdpInitialShell,
+    loading: blockingEmpty || awaitingDetailShell,
+    /** Full-page skeleton only until gallery visual exists — detail may still stream. */
+    blockingEmpty,
     blockingVisualOnly: blockingEmpty,
     awaitingDetailShell,
     detailsPending,
