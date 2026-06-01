@@ -1,3 +1,4 @@
+import { getDeploymentTier } from "@/lib/config/deployment-env";
 import { logger } from "@/lib/utils/logger";
 
 const TURNSTILE_VERIFY_URL =
@@ -11,7 +12,8 @@ type TurnstileVerifyJson = {
 
 /**
  * Verifies a Cloudflare Turnstile token when `TURNSTILE_SECRET_KEY` is set.
- * When the secret is not configured, returns `true` (dev / no captcha).
+ * In production, returns `false` when the secret is not configured (fail closed).
+ * In development/staging without a secret, returns `true` (no captcha).
  */
 export async function verifyContactTurnstileToken(
   token: string | undefined,
@@ -19,6 +21,10 @@ export async function verifyContactTurnstileToken(
 ): Promise<boolean> {
   const secret = process.env.TURNSTILE_SECRET_KEY;
   if (!secret) {
+    if (getDeploymentTier() === "production") {
+      logger.error("Contact Turnstile secret is not configured in production");
+      return false;
+    }
     return true;
   }
   if (!token || typeof token !== "string" || !token.trim()) {

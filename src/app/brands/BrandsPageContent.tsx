@@ -1,7 +1,11 @@
+'use client';
+
+import { useQuery } from '@tanstack/react-query';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { CSSProperties } from 'react';
 
+import { StaticPageLoadingSkeleton } from '@/components/navigation/StaticPageLoadingSkeleton';
 import {
   BRANDS_DIRECTORY_CARD_MIN_HEIGHT_PX,
   BRANDS_DIRECTORY_LOGO_CELL_HEIGHT_PX,
@@ -15,14 +19,13 @@ import {
   isBrandLogoCellOversizedSlug,
 } from '@/lib/brand-logo-cell-oversize';
 import { resolveBrandDisplayLogoForCell } from '@/lib/brand-static-logo-assets';
+import {
+  fetchHomeBrandPartnersClient,
+  HOME_BRAND_PARTNERS_QUERY_STALE_MS,
+} from '@/lib/home-brand-partners-client';
+import { useTranslation } from '@/lib/i18n-client';
+import { queryKeys } from '@/lib/query-keys';
 import type { HomeBrandPartnerPublicItem } from '@/lib/types/home-brand-partners-public';
-import { t } from '@/lib/i18n';
-import type { LanguageCode } from '@/lib/language';
-
-type BrandsPageContentProps = {
-  readonly brands: readonly HomeBrandPartnerPublicItem[];
-  readonly language: LanguageCode;
-};
 
 function brandDirectoryLogoCellStyle(slug: string, displayName: string): CSSProperties {
   const oversized = isBrandLogoCellOversizedSlug(slug, displayName);
@@ -92,16 +95,7 @@ function BrandDirectoryLogo({ partner }: { partner: HomeBrandPartnerPublicItem }
   );
 }
 
-/** Brand grid — sync; data is resolved in the page segment before paint. */
-export function BrandsPageContent({ brands, language }: BrandsPageContentProps) {
-  if (brands.length === 0) {
-    return (
-      <p className="text-center text-slate-600 dark:text-slate-400">
-        {t(language, 'common.brandsPage.empty')}
-      </p>
-    );
-  }
-
+function BrandsDirectoryGrid({ brands }: { brands: readonly HomeBrandPartnerPublicItem[] }) {
   return (
     <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
       {brands.map((partner) => (
@@ -123,4 +117,31 @@ export function BrandsPageContent({ brands, language }: BrandsPageContentProps) 
       ))}
     </div>
   );
+}
+
+/** Brand grid — client fetch; idle prefetch seeds React Query before navigation. */
+export function BrandsPageContent() {
+  const { t, lang } = useTranslation();
+  const brandPartnersQuery = useQuery({
+    queryKey: queryKeys.homeBrandPartners(lang),
+    queryFn: () => fetchHomeBrandPartnersClient(lang),
+    staleTime: HOME_BRAND_PARTNERS_QUERY_STALE_MS,
+    placeholderData: (previous) => previous,
+  });
+
+  const brands = brandPartnersQuery.data?.brands;
+
+  if (brandPartnersQuery.isPending && brands === undefined) {
+    return <StaticPageLoadingSkeleton variant="grid-body" />;
+  }
+
+  if (!brands || brands.length === 0) {
+    return (
+      <p className="text-center text-slate-600 dark:text-slate-400">
+        {t('common.brandsPage.empty')}
+      </p>
+    );
+  }
+
+  return <BrandsDirectoryGrid brands={brands} />;
 }

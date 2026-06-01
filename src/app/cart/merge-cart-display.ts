@@ -81,7 +81,6 @@ export function mergeCartDisplayState(
     return next;
   }
 
-  const nextByKey = new Map(next.items.map((item) => [cartItemKey(item), item]));
   const previousByKey = new Map(previous.items.map((item) => [cartItemKey(item), item]));
   const mergedItems: CartItem[] = [];
   const seenKeys = new Set<string>();
