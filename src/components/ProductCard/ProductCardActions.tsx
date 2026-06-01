@@ -97,7 +97,7 @@ export function ProductCardActions({
 
   if (showOnHover) {
     return (
-      <div className={`absolute ${isCompact ? 'top-1.5 right-1.5' : 'top-3 right-3'} flex flex-col ${actionsGapClass} opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10`}>
+      <div className={`absolute ${isCompact ? 'top-1.5 right-1.5' : 'top-3 right-3'} flex flex-col ${actionsGapClass} opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-200 z-10`}>
         {actions}
       </div>
     );

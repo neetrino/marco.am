@@ -2,7 +2,8 @@
 
 import { Montserrat } from 'next/font/google';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { useShopProductsListingSearchParams } from '@/lib/use-shop-products-listing-search-params';
 import { pushShopProductsListingUrl } from '../lib/push-shop-products-listing-url';
 import { useState, useEffect, useRef, Suspense } from 'react';
 import { useTranslation } from '../lib/i18n-client';
@@ -177,7 +178,7 @@ interface ProductsHeaderProps {
 
 function ProductsHeaderContent({ total }: ProductsHeaderProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const searchParams = useShopProductsListingSearchParams();
   const { t } = useTranslation();
   const forcedShopGridCols = useForcedShopGridColumns();
   const [viewMode, setViewMode] = useState<ViewMode>('grid-2');

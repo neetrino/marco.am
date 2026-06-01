@@ -1,75 +1,59 @@
-import { useState, useEffect, useCallback } from 'react';
-import { fetchWishlistProductIds } from '@/lib/wishlist/wishlist-client';
-import { getStoredLanguage, type LanguageCode } from '@/lib/language';
-import { fetchCompareProductIds } from '@/lib/compare/compare-client';
+import { useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+
+import { useCompareProductIds } from '@/components/hooks/useCompareProductIds';
+import { useWishlistProductIds } from '@/components/hooks/useWishlistProductIds';
 
 interface UseWishlistCompareProps {
   productId: string | null;
 }
 
+function patchMembershipIds(
+  ids: string[],
+  productId: string,
+  include: boolean,
+): string[] {
+  const has = ids.includes(productId);
+  if (include && !has) {
+    return [...ids, productId];
+  }
+  if (!include && has) {
+    return ids.filter((id) => id !== productId);
+  }
+  return ids;
+}
+
 export function useWishlistCompare({ productId }: UseWishlistCompareProps) {
-  const [isInWishlist, setIsInWishlist] = useState(false);
-  const [isInCompare, setIsInCompare] = useState(false);
-  const [language, setLanguage] = useState<LanguageCode>(() => getStoredLanguage());
+  const queryClient = useQueryClient();
+  const { ids: wishlistIds, queryKey: wishlistKey } = useWishlistProductIds();
+  const { ids: compareIds, queryKey: compareKey } = useCompareProductIds();
 
-  const refreshWishlist = useCallback(async () => {
-    if (!productId) {
-      setIsInWishlist(false);
-      return;
-    }
-    try {
-      const ids = await fetchWishlistProductIds(language);
-      setIsInWishlist(ids.includes(productId));
-    } catch {
-      setIsInWishlist(false);
-    }
-  }, [productId, language]);
+  const isInWishlist = productId ? wishlistIds.includes(productId) : false;
+  const isInCompare = productId ? compareIds.includes(productId) : false;
 
-  useEffect(() => {
-    const onLang = () => setLanguage(getStoredLanguage());
-    window.addEventListener('language-updated', onLang);
-    return () => window.removeEventListener('language-updated', onLang);
-  }, []);
-
-  useEffect(() => {
-    void refreshWishlist();
-  }, [refreshWishlist]);
-
-  useEffect(() => {
-    const onUpdate = () => {
-      void refreshWishlist();
-    };
-    window.addEventListener('wishlist-updated', onUpdate);
-    window.addEventListener('auth-updated', onUpdate);
-    return () => {
-      window.removeEventListener('wishlist-updated', onUpdate);
-      window.removeEventListener('auth-updated', onUpdate);
-    };
-  }, [refreshWishlist]);
-
-  useEffect(() => {
-    if (!productId) return;
-
-    const checkCompare = async () => {
-      try {
-        const compare = await fetchCompareProductIds(language);
-        setIsInCompare(compare.includes(productId));
-      } catch {
-        setIsInCompare(false);
+  const setIsInWishlist = useCallback(
+    (value: boolean) => {
+      if (!productId) {
+        return;
       }
-    };
+      queryClient.setQueryData<string[]>(wishlistKey, (current = []) =>
+        patchMembershipIds(current, productId, value),
+      );
+    },
+    [productId, queryClient, wishlistKey],
+  );
 
-    void checkCompare();
-    const onCompare = () => {
-      void checkCompare();
-    };
-    window.addEventListener('compare-updated', onCompare);
-    window.addEventListener('auth-updated', onCompare);
-    return () => {
-      window.removeEventListener('compare-updated', onCompare);
-      window.removeEventListener('auth-updated', onCompare);
-    };
-  }, [language, productId]);
+  const setIsInCompare = useCallback(
+    (value: boolean) => {
+      if (!productId) {
+        return;
+      }
+      queryClient.setQueryData<string[]>(compareKey, (current = []) =>
+        patchMembershipIds(current, productId, value),
+      );
+    },
+    [productId, queryClient, compareKey],
+  );
 
   return { isInWishlist, setIsInWishlist, isInCompare, setIsInCompare };
 }

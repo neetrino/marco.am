@@ -42,7 +42,7 @@ export function SpecialOfferCardMedia({
   if (showPlaceholder) {
     return (
       <div
-        className="relative z-0 mt-0 flex w-full items-center justify-center overflow-hidden bg-white p-6 max-md:z-20"
+        className="pointer-events-auto relative z-0 mt-0 flex w-full items-center justify-center overflow-hidden bg-white p-6 max-md:z-20"
         style={{
           height: SPECIAL_OFFERS_IMAGE_WELL_HEIGHT_PX,
           borderRadius: SPECIAL_OFFERS_IMAGE_WELL_RADIUS_PX,
@@ -76,7 +76,7 @@ export function SpecialOfferCardMedia({
 
   const singleSrc = images[0] as string;
 
-  const singleImageWellClass = `relative z-0 mt-0 flex w-full items-center justify-center overflow-hidden ${imageWellBgClass} ${imageWellPaddingClass} max-md:z-20`;
+  const singleImageWellClass = `pointer-events-auto relative z-0 mt-0 flex w-full items-center justify-center overflow-hidden ${imageWellBgClass} ${imageWellPaddingClass} max-md:z-20`;
   const singleImageWellStyle = {
     height: SPECIAL_OFFERS_IMAGE_WELL_HEIGHT_PX,
     borderRadius: SPECIAL_OFFERS_IMAGE_WELL_RADIUS_PX,

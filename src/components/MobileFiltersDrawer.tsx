@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback, useTransition } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { useShopProductsListingSearchParams } from '@/lib/use-shop-products-listing-search-params';
+import { pushShopProductsListingUrl } from '@/lib/push-shop-products-listing-url';
 import { useTranslation } from '../lib/i18n-client';
 import { logger } from '@/lib/utils/logger';
 import {
@@ -32,10 +34,9 @@ export function MobileFiltersDrawer({
 }: MobileFiltersDrawerProps) {
   const { t } = useTranslation();
   const router = useRouter();
-  const urlSearchParams = useSearchParams();
+  const urlSearchParams = useShopProductsListingSearchParams();
   const defaultTitle = title || t('products.mobileFilters.title');
   const [open, setOpen] = useState(false);
-  const [isPending, startTransition] = useTransition();
   const [draftSearchParams, setDraftSearchParams] = useState<URLSearchParams>(
     () => new URLSearchParams(urlSearchParams.toString())
   );
@@ -52,10 +53,8 @@ export function MobileFiltersDrawer({
       return;
     }
     const href = qs ? `/products?${qs}` : '/products';
-    startTransition(() => {
-      void router.push(href);
-    });
-  }, [closeDrawer, draftSearchParams, router, startTransition, urlSearchParams]);
+    pushShopProductsListingUrl(router, href);
+  }, [closeDrawer, draftSearchParams, router, urlSearchParams]);
 
   useEffect(() => {
     if (open) {
@@ -143,7 +142,6 @@ export function MobileFiltersDrawer({
               <button
                 type="button"
                 onClick={handleApplyFilters}
-                disabled={isPending}
                 className="flex min-h-[3.25rem] w-full items-center justify-center rounded-full bg-marco-yellow px-6 py-3 text-xs font-bold uppercase tracking-wide text-marco-black transition-[filter] duration-200 hover:brightness-95 active:brightness-90"
               >
                 {t('products.mobileFilters.apply')}

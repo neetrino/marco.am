@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { authService } from "@/lib/services/auth.service";
+import { authService, isAuthPendingVerification } from "@/lib/services/auth.service";
 import { toApiError } from "@/lib/types/errors";
 import { logger } from "@/lib/utils/logger";
 import { safeParseRegister } from "@/lib/schemas/auth.schema";
+import { applyAuthSessionCookie } from "@/lib/auth/auth-session-cookie";
 
 export async function POST(req: NextRequest) {
   try {
@@ -25,7 +26,7 @@ export async function POST(req: NextRequest) {
       );
     }
     const result = await authService.register(parsed.data);
-    if ("needsVerification" in result && result.needsVerification) {
+    if (isAuthPendingVerification(result)) {
       return NextResponse.json(
         {
           needsVerification: true,
@@ -35,7 +36,9 @@ export async function POST(req: NextRequest) {
         { status: 201 }
       );
     }
-    return NextResponse.json(result, { status: 201 });
+    const response = NextResponse.json({ user: result.user }, { status: 201 });
+    applyAuthSessionCookie(response, result.token);
+    return response;
   } catch (error: unknown) {
     logger.error("Registration error", { error });
     const apiError = toApiError(error, req.url);

@@ -6,7 +6,7 @@ import { dedupeCardProductsByTitle } from '../lib/dedupeCardProductsByTitle';
 import type { ProductListingBrand } from '@/lib/types/product-listing-brand';
 import type { ProductLabel } from './ProductLabels';
 import { ProductCard } from './ProductCard';
-import { SpecialOfferCard } from './home/SpecialOfferCard';
+import { ProductsGridOfferCard } from './ProductsGridOfferCard';
 import type { SpecialOfferProduct } from './home/special-offer-product.types';
 import { useIsMaxMd } from './home/use-is-max-md';
 import { useForcedShopGridColumns } from './useForcedShopGridColumns';
@@ -55,8 +55,11 @@ function toSpecialOfferProduct(p: Product): SpecialOfferProduct {
 }
 
 type ViewMode = 'list' | 'grid-2' | 'grid-3';
-const PRODUCTS_RENDER_BATCH_SIZE = 3;
-const PRODUCTS_RENDER_BATCH_DELAY_MS = 3000;
+/** Progressive paint kicks in for typical PLP page size (21 cards). */
+const PRODUCTS_PROGRESSIVE_RENDER_THRESHOLD = 12;
+const PRODUCTS_INITIAL_RENDER_BATCH_SIZE = 12;
+const PRODUCTS_RENDER_BATCH_SIZE = 9;
+const PRODUCTS_RENDER_BATCH_DELAY_MS = 16;
 
 interface ProductsGridProps {
   products: Product[];
@@ -72,7 +75,7 @@ export function ProductsGrid({ products, sortBy = 'default' }: ProductsGridProps
   /** Same as home featured strip: `default` (fixed card width) on md+, `mobileGrid` on small screens */
   const specialOfferLayout = isMaxMd ? 'mobileGrid' : 'default';
   const [viewMode, setViewMode] = useState<ViewMode>('grid-2');
-  const [visibleCount, setVisibleCount] = useState(PRODUCTS_RENDER_BATCH_SIZE);
+  const [visibleCount, setVisibleCount] = useState(products.length);
 
   // Load view mode from localStorage
   useEffect(() => {
@@ -115,19 +118,34 @@ export function ProductsGrid({ products, sortBy = 'default' }: ProductsGridProps
         sorted.sort((a, b) => b.title.localeCompare(a.title));
         break;
       default:
-        // Keep original order
         break;
     }
 
     return dedupeCardProductsByTitle(sorted);
   }, [products, sortBy]);
 
-  useEffect(() => {
-    setVisibleCount(Math.min(PRODUCTS_RENDER_BATCH_SIZE, sortedProducts.length));
-  }, [sortedProducts]);
+  const offerProducts = useMemo(
+    () => sortedProducts.map((product) => toSpecialOfferProduct(product)),
+    [sortedProducts],
+  );
+
+  const productsFingerprint = useMemo(
+    () => sortedProducts.map((product) => product.id).join(','),
+    [sortedProducts],
+  );
+
+  const shouldUseProgressiveRender = sortedProducts.length > PRODUCTS_PROGRESSIVE_RENDER_THRESHOLD;
 
   useEffect(() => {
-    if (visibleCount >= sortedProducts.length) {
+    if (!shouldUseProgressiveRender) {
+      setVisibleCount(sortedProducts.length);
+      return;
+    }
+    setVisibleCount(Math.min(PRODUCTS_INITIAL_RENDER_BATCH_SIZE, sortedProducts.length));
+  }, [productsFingerprint, shouldUseProgressiveRender, sortedProducts.length]);
+
+  useEffect(() => {
+    if (!shouldUseProgressiveRender || visibleCount >= sortedProducts.length) {
       return;
     }
     const timerId = window.setTimeout(() => {
@@ -138,7 +156,7 @@ export function ProductsGrid({ products, sortBy = 'default' }: ProductsGridProps
     return () => {
       window.clearTimeout(timerId);
     };
-  }, [visibleCount, sortedProducts.length]);
+  }, [shouldUseProgressiveRender, visibleCount, sortedProducts.length]);
 
   /** Tighter on smallest phones; roomier gaps on mobile shop before `md` desktop columns */
   const gridGapClass = 'gap-x-4 gap-y-12 md:gap-x-6 md:gap-y-12';
@@ -178,7 +196,7 @@ export function ProductsGrid({ products, sortBy = 'default' }: ProductsGridProps
 
   return (
     <div className={getGridClasses()}>
-      {sortedProducts.slice(0, visibleCount).map((product) => (
+      {sortedProducts.slice(0, visibleCount).map((product, index) => (
         <div
           key={product.id}
           className={
@@ -190,10 +208,9 @@ export function ProductsGrid({ products, sortBy = 'default' }: ProductsGridProps
           {useListLayout ? (
             <ProductCard product={product} viewMode="list" />
           ) : (
-            <SpecialOfferCard
-              product={toSpecialOfferProduct(product)}
+            <ProductsGridOfferCard
+              product={offerProducts[index]!}
               layout={specialOfferLayout}
-              align="end"
               maxWidthPx={PRODUCTS_CARD_MAX_WIDTH_PX}
             />
           )}

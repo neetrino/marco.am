@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import * as jwt from "jsonwebtoken";
 import { db } from "@white-shop/db";
+import { readAuthSessionToken } from "@/lib/auth/auth-session-cookie";
 
 export interface AuthUser {
   id: string;
@@ -18,7 +19,8 @@ export async function authenticateToken(
 ): Promise<AuthUser | null> {
   try {
     const authHeader = request.headers.get("authorization");
-    const token = authHeader?.split(" ")[1]; // Bearer TOKEN
+    const bearerToken = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
+    const token = bearerToken ?? readAuthSessionToken(request);
 
     if (!token) {
       return null;

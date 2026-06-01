@@ -3,7 +3,7 @@
 import { ProductPdpPrefetchLink } from '../ProductPdpPrefetchLink';
 import { ProductCardBrandMark } from '../ProductCard/ProductCardBrandMark';
 import Image from 'next/image';
-import type { MouseEvent } from 'react';
+import { memo, type MouseEvent } from 'react';
 import { formatCatalogPrice, type CurrencyCode } from '../../lib/currency';
 import type { ProductListingBrand } from '@/lib/types/product-listing-brand';
 import { CartIcon as CartPngIcon } from '../icons/CartIcon';
@@ -47,7 +47,7 @@ interface RelatedProductCardProps {
 /**
  * Single product card component for RelatedProducts carousel
  */
-export function RelatedProductCard({
+function RelatedProductCardInner({
   product,
   currency,
   language,
@@ -93,7 +93,8 @@ export function RelatedProductCard({
                   alt={product.title}
                   fill
                   className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                  loading="lazy"
                   unoptimized
                   onError={() => onImageError(product.id)}
                 />
@@ -181,6 +182,4 @@ export function RelatedProductCard({
   );
 }
 
-
-
-
+export const RelatedProductCard = memo(RelatedProductCardInner);

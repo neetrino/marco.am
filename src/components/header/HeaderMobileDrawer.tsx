@@ -19,6 +19,7 @@ import { MOBILE_FLOOR_NAV_HREFS } from '../mobile-bottom-nav.constants';
 import { LanguagePreferenceContext } from '../../lib/language-context';
 import { HeaderSocialCircleLinks } from './HeaderSocialCircleLinks';
 import { useShouldHideHeaderSocialLinks } from './useShouldHideHeaderSocialLinks';
+import { HeaderPrimaryNavLink } from './HeaderPrimaryNavLink';
 import { isPrimaryNavHrefActive, primaryNavLinks, type PrimaryNavLink } from './nav-config';
 import { ThemeToggleButton } from '../theme/ThemeToggleButton';
 import { useTheme } from '../theme/ThemeProvider';
@@ -96,7 +97,7 @@ function renderPrimaryNavLink(
     );
   }
   return (
-    <Link
+    <HeaderPrimaryNavLink
       key={link.translationKey}
       href={link.href}
       onClick={onClose}
@@ -104,7 +105,7 @@ function renderPrimaryNavLink(
       aria-current={active ? 'page' : undefined}
     >
       {content}
-    </Link>
+    </HeaderPrimaryNavLink>
   );
 }
 

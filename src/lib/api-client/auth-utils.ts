@@ -1,12 +1,15 @@
-const AUTH_TOKEN_KEY = 'auth_token';
+import { logger } from "@/lib/utils/logger";
+
+const AUTH_USER_KEY = 'auth_user';
 
 /**
- * Get auth token from localStorage
+ * Client cannot read the HttpOnly auth cookie. This only reports whether
+ * the browser has a persisted user snapshot for UI state.
  */
 export function getAuthToken(): string | null {
   if (typeof window === 'undefined') return null;
   try {
-    return localStorage.getItem(AUTH_TOKEN_KEY);
+    return localStorage.getItem(AUTH_USER_KEY) ? 'cookie-session' : null;
   } catch {
     return null;
   }
@@ -18,8 +21,7 @@ export function getAuthToken(): string | null {
 export function handleUnauthorized() {
   if (typeof window === 'undefined') return;
   
-  console.warn('⚠️ [API CLIENT] Unauthorized (401) - clearing auth data');
-  localStorage.removeItem('auth_token');
+  logger.warn('[API CLIENT] Unauthorized (401) - clearing auth data');
   localStorage.removeItem('auth_user');
   
   // Trigger auth update event to notify AuthContext

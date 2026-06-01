@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { useShopProductsListingSearchParams } from '@/lib/use-shop-products-listing-search-params';
 import { pushShopProductsListingUrl } from '../lib/push-shop-products-listing-url';
 import { apiClient } from '../lib/api-client';
 import { getStoredLanguage } from '../lib/language';
@@ -30,7 +31,7 @@ interface SizeOption {
 
 export function SizeFilter({ category, search, minPrice, maxPrice }: SizeFilterProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const searchParams = useShopProductsListingSearchParams();
   const mobileDraft = useMobileFiltersDraft();
   const filtersContext = useProductsFilters();
   const { t } = useTranslation();

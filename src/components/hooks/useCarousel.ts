@@ -5,6 +5,7 @@ import { useState, useEffect, useRef, type MouseEvent, type TouchEvent } from 'r
 interface UseCarouselProps {
   itemCount: number;
   visibleItems: number;
+  /** Set to 0 to disable auto-rotation. Default: 5000ms. */
   autoRotateInterval?: number;
 }
 
@@ -21,9 +22,9 @@ export function useCarousel({ itemCount, visibleItems, autoRotateInterval = 5000
 
   const maxIndex = Math.max(0, itemCount - visibleItems);
 
-  // Auto-rotate carousel
+  // Auto-rotate carousel (skip when interval is 0 or fewer items than viewport)
   useEffect(() => {
-    if (itemCount <= visibleItems || isDragging) return;
+    if (autoRotateInterval <= 0 || itemCount <= visibleItems || isDragging) return;
 
     const interval = setInterval(() => {
       setCurrentIndex((prevIndex) => {

@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   useCallback,
-  useEffect,
   useRef,
   type ComponentProps,
   type ReactNode,
@@ -23,17 +22,20 @@ export type ProductPdpPrefetchLinkProps = LinkProps & {
   children: ReactNode;
   /** Next.js route prefetch; keep true so the RSC payload is prepared. */
   prefetchRoute?: boolean;
+  /** Disable data prefetch when route churn is high (e.g. PLP filtering). */
+  prefetchData?: boolean;
 };
 
 /**
- * Warms Next route + React Query as soon as the link is near the viewport (or on hover / touch),
- * so a click navigates to PDP without waiting on cold network.
+ * Warms Next route + React Query on direct user intent (hover/focus/touch),
+ * so PLP does not flood the backend while preserving fast PDP navigation.
  */
 export function ProductPdpPrefetchLink({
   productSlug,
   href,
   children,
   prefetchRoute = true,
+  prefetchData = true,
   onMouseEnter,
   onFocus,
   onPointerDown,
@@ -42,42 +44,23 @@ export function ProductPdpPrefetchLink({
 }: ProductPdpPrefetchLinkProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const linkRef = useRef<HTMLAnchorElement | null>(null);
-  const viewportWarmed = useRef(false);
+  const warmedRef = useRef(false);
 
   const warm = useCallback(() => {
-    void prefetchProductPdp(queryClient, productSlug, getStoredLanguage());
+    if (warmedRef.current) {
+      return;
+    }
+    warmedRef.current = true;
+    if (prefetchData) {
+      void prefetchProductPdp(queryClient, productSlug, getStoredLanguage());
+    }
     if (prefetchRoute) {
       void router.prefetch(href);
     }
-  }, [queryClient, productSlug, href, prefetchRoute, router]);
-
-  useEffect(() => {
-    if (!prefetchRoute || typeof IntersectionObserver === 'undefined') {
-      return;
-    }
-    const el = linkRef.current;
-    if (!el) {
-      return;
-    }
-    const io = new IntersectionObserver(
-      (entries) => {
-        const hit = entries.some((e) => e.isIntersecting);
-        if (!hit || viewportWarmed.current) {
-          return;
-        }
-        viewportWarmed.current = true;
-        warm();
-      },
-      { root: null, rootMargin: '320px 0px 200px 0px', threshold: 0 },
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, [prefetchRoute, warm, href]);
+  }, [queryClient, productSlug, href, prefetchRoute, prefetchData, router]);
 
   return (
     <Link
-      ref={linkRef}
       href={href}
       prefetch={prefetchRoute ? true : false}
       onMouseEnter={(e) => {

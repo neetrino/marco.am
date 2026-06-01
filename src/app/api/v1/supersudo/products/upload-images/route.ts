@@ -3,16 +3,11 @@ import { nanoid } from "nanoid";
 import { authenticateToken, requireAdmin } from "@/lib/middleware/auth";
 import { uploadToR2, isR2Configured } from "@/lib/r2";
 import { prepareRasterForR2Upload } from "@/lib/utils/prepare-raster-for-r2-upload";
+import {
+  getMaxAdminImageCount,
+  parseAdminImageDataUrl,
+} from "@/lib/utils/validate-admin-image-upload";
 import { logger } from "@/lib/utils/logger";
-
-function parseDataUrl(dataUrl: string): { mime: string; buffer: Buffer } | null {
-  const match = dataUrl.match(/^data:(image\/[a-z+]+);base64,(.+)$/i);
-  if (!match) return null;
-  const mime = match[1].toLowerCase();
-  const base64 = match[2];
-  const buffer = Buffer.from(base64, "base64");
-  return { mime, buffer };
-}
 
 /**
  * POST /api/v1/supersudo/products/upload-images
@@ -82,6 +77,19 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (body.images.length > getMaxAdminImageCount()) {
+      return NextResponse.json(
+        {
+          type: "https://api.shop.am/problems/validation-error",
+          title: "Validation Error",
+          status: 400,
+          detail: `Maximum ${getMaxAdminImageCount()} images are allowed per upload`,
+          instance: req.url,
+        },
+        { status: 400 }
+      );
+    }
+
     const validImages: string[] = [];
     for (let i = 0; i < body.images.length; i++) {
       const image = body.images[i];
@@ -104,14 +112,14 @@ export async function POST(req: NextRequest) {
     const urls: string[] = [];
 
     for (let i = 0; i < validImages.length; i++) {
-      const parsed = parseDataUrl(validImages[i]);
+      const parsed = parseAdminImageDataUrl(validImages[i]);
       if (!parsed) {
         return NextResponse.json(
           {
             type: "https://api.shop.am/problems/validation-error",
             title: "Validation Error",
             status: 400,
-            detail: `Invalid data URL at index ${i}`,
+            detail: `Invalid, unsupported, or oversized image at index ${i}`,
             instance: req.url,
           },
           { status: 400 }
@@ -140,7 +148,7 @@ export async function POST(req: NextRequest) {
     logger.info("Admin upload images: done", { count: urls.length, totalTime });
 
     return NextResponse.json({ urls }, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     const totalTime = Date.now() - requestStartTime;
     const err = error as { message?: string; status?: number; type?: string; title?: string; detail?: string };
     logger.error("Admin upload images: POST error", {

@@ -6,7 +6,8 @@ import {
   parseLanguageFromServer,
   type LanguageCode,
 } from '@/lib/language';
-import { getCachedPdpDetail, getCachedPdpVisual } from '@/lib/product-pdp/pdp-server-cache';
+import { getCachedPdpDetail, getCachedPdpRelated, getCachedPdpVisual, PDP_RELATED_SSR_LIMIT } from '@/lib/product-pdp/pdp-server-cache';
+import type { RelatedProductsApiResponse } from '@/lib/product-pdp/fetch-related-products';
 
 import type { Product } from './types';
 
@@ -25,9 +26,11 @@ export default async function ProductPage({ params }: PageProps) {
 
   let initialVisual = null;
   let initialProduct: Product | null = null;
-  const [visualSettled, detailSettled] = await Promise.allSettled([
+  let initialRelatedProducts: RelatedProductsApiResponse | null = null;
+  const [visualSettled, detailSettled, relatedSettled] = await Promise.allSettled([
     getCachedPdpVisual(baseSlug, serverLanguage),
     getCachedPdpDetail(baseSlug, serverLanguage),
+    getCachedPdpRelated(baseSlug, serverLanguage, PDP_RELATED_SSR_LIMIT),
   ]);
   if (visualSettled.status === 'fulfilled') {
     initialVisual = visualSettled.value;
@@ -36,6 +39,9 @@ export default async function ProductPage({ params }: PageProps) {
     /* Same payload shape as GET /api/v1/products/[slug] (Prisma transform). */
     initialProduct = detailSettled.value as Product;
   }
+  if (relatedSettled.status === 'fulfilled') {
+    initialRelatedProducts = relatedSettled.value;
+  }
 
   return (
     <ProductPageClient
@@ -43,6 +49,7 @@ export default async function ProductPage({ params }: PageProps) {
       serverLanguage={serverLanguage}
       initialVisual={initialVisual}
       initialProduct={initialProduct}
+      initialRelatedProducts={initialRelatedProducts}
     />
   );
 }

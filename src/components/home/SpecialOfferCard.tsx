@@ -228,7 +228,7 @@ export function SpecialOfferCard({
           />
         ) : null}
         <div
-          className="relative z-10 flex min-h-0 flex-1 flex-col px-4 pb-6"
+          className="pointer-events-none relative z-10 flex min-h-0 flex-1 flex-col px-4 pb-6"
           style={{ paddingTop: SPECIAL_OFFERS_CARD_PADDING_TOP_PX }}
         >
           {warrantyYears ? (

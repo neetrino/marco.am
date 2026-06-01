@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 
 const FILTER_SCROLLBAR_THUMB_HEIGHT = 88;
 
@@ -15,14 +15,16 @@ export function ProductsFilterScrollArea({
 }: ProductsFilterScrollAreaProps) {
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
-  const [thumbTop, setThumbTop] = useState(0);
-  const [showThumb, setShowThumb] = useState(false);
+  const trackRef = useRef<HTMLDivElement | null>(null);
+  const thumbRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const viewport = viewportRef.current;
     const content = contentRef.current;
+    const track = trackRef.current;
+    const thumb = thumbRef.current;
 
-    if (!viewport || !content) {
+    if (!viewport || !content || !track || !thumb) {
       return;
     }
 
@@ -31,16 +33,16 @@ export function ProductsFilterScrollArea({
       const maxScrollTop = scrollHeight - clientHeight;
       const shouldShowThumb = maxScrollTop > 0;
 
-      setShowThumb(shouldShowThumb);
+      track.hidden = !shouldShowThumb;
 
       if (!shouldShowThumb) {
-        setThumbTop(0);
+        thumb.style.transform = 'translateY(0px)';
         return;
       }
 
       const maxThumbTop = Math.max(clientHeight - FILTER_SCROLLBAR_THUMB_HEIGHT, 0);
       const nextThumbTop = maxThumbTop * (scrollTop / maxScrollTop);
-      setThumbTop(nextThumbTop);
+      thumb.style.transform = `translateY(${nextThumbTop}px)`;
     };
 
     const handleScroll = () => {
@@ -65,7 +67,7 @@ export function ProductsFilterScrollArea({
       resizeObserver.disconnect();
       window.removeEventListener('resize', updateThumb);
     };
-  }, [children]);
+  }, []);
 
   return (
     <div className="relative">
@@ -76,17 +78,20 @@ export function ProductsFilterScrollArea({
         <div ref={contentRef}>{children}</div>
       </div>
 
-      {showThumb ? (
-        <div className="pointer-events-none absolute bottom-0 right-0 top-0 w-[6px] opacity-100">
-          <div
-            className="absolute right-0 w-[6px] rounded-full bg-[#d6dee8]"
-            style={{
-              height: `${FILTER_SCROLLBAR_THUMB_HEIGHT}px`,
-              transform: `translateY(${thumbTop}px)`,
-            }}
-          />
-        </div>
-      ) : null}
+      <div
+        ref={trackRef}
+        hidden
+        className="pointer-events-none absolute bottom-0 right-0 top-0 w-[6px] opacity-100"
+      >
+        <div
+          ref={thumbRef}
+          className="absolute right-0 w-[6px] rounded-full bg-[#d6dee8]"
+          style={{
+            height: `${FILTER_SCROLLBAR_THUMB_HEIGHT}px`,
+            transform: 'translateY(0px)',
+          }}
+        />
+      </div>
     </div>
   );
 }

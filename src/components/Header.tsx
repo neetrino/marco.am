@@ -154,6 +154,7 @@ export function Header({ initialLanguage }: HeaderProps) {
           }`}
           style={{
             maxHeight: desktopTopRowMaxHeightStyle,
+            pointerEvents: effectiveDesktopTopRowHidden ? 'none' : undefined,
           }}
         >
           <div
@@ -229,6 +230,7 @@ export function Header({ initialLanguage }: HeaderProps) {
         } ${HEADER_ROW2_WRAPPER_CLASS}`}
         style={{
           maxHeight: row2MaxHeightStyle,
+          pointerEvents: effectiveRow2Hidden ? 'none' : undefined,
         }}
       >
         <div

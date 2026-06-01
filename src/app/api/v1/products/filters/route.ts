@@ -5,6 +5,20 @@ import { getProductsFiltersCached } from "@/lib/cache/products-filters-redis";
 
 const PRODUCTS_FILTERS_API_CACHE_CONTROL = "public, max-age=60, stale-while-revalidate=180";
 
+function parseBooleanFlag(raw: string | null): boolean | undefined {
+  if (raw === null) {
+    return undefined;
+  }
+  const normalized = raw.trim().toLowerCase();
+  if (normalized === "1" || normalized === "true" || normalized === "yes") {
+    return true;
+  }
+  if (normalized === "0" || normalized === "false" || normalized === "no") {
+    return false;
+  }
+  return undefined;
+}
+
 export async function GET(req: NextRequest) {
   try {
     let searchParams: URLSearchParams;
@@ -29,6 +43,8 @@ export async function GET(req: NextRequest) {
       category: searchParams.get("category") || undefined,
       search: searchParams.get("search") || undefined,
       filter: searchParams.get("filter") || undefined,
+      includeCategories: parseBooleanFlag(searchParams.get("includeCategories")),
+      categoriesOnly: parseBooleanFlag(searchParams.get("categoriesOnly")),
       minPrice: (() => {
         const raw = searchParams.get("minPrice");
         const parsed = raw ? Number(raw) : undefined;
@@ -55,6 +71,8 @@ export async function GET(req: NextRequest) {
       maxPrice: filters.maxPrice,
       lang: filters.lang,
       technicalSpecs: filters.technicalSpecs,
+      includeCategories: filters.includeCategories,
+      categoriesOnly: filters.categoriesOnly,
     });
     return NextResponse.json(result, {
       headers: {

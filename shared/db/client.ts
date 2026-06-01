@@ -140,7 +140,7 @@ function isTransientDbConnectionError(error: unknown): boolean {
     return true;
   }
   if (error instanceof Error) {
-    return /Can't reach database server|ECONNREFUSED|ETIMEDOUT|ENOTFOUND|Connection terminated unexpectedly/i.test(
+    return /Can't reach database server|ECONNREFUSED|ETIMEDOUT|ENOTFOUND|ECONNRESET|Connection terminated unexpectedly|forcibly closed by the remote host|Connection reset/i.test(
       error.message,
     );
   }

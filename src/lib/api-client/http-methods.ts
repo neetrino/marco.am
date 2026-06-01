@@ -291,7 +291,7 @@ export async function postRequest<T>(
     if (!response.ok) {
       const isUnauthorized = response.status === 401;
       
-      // Handle 401 Unauthorized - clear token and redirect
+      // Handle 401 Unauthorized - clear auth state and redirect
       if (isUnauthorized) {
         handleUnauthorized();
       }

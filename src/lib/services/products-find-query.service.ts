@@ -73,7 +73,10 @@ class ProductsFindQueryService {
       };
     }
 
-    const fetchLimit = Math.min(limit * 10, 200);
+    // Over-fetch window for in-memory technical/spec sorting path.
+    // Keep it tight to avoid slow PLP renders on every filter interaction.
+    const requestedWindow = Math.max(1, page) * limit;
+    const fetchLimit = Math.min(Math.max(requestedWindow * 3, limit * 4), 120);
     const products = await executeProductListingQuery(where, fetchLimit, 0, queryOpts);
 
     return {

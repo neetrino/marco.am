@@ -70,6 +70,11 @@ const mediaSources = ["'self'", 'blob:', 'https:'];
 if (r2Origin) {
   mediaSources.push(r2Origin);
 }
+const isDevelopment = process.env.NODE_ENV === 'development';
+const scriptSources = ["'self'", "'unsafe-inline'", 'https://code.tidio.co'];
+if (isDevelopment) {
+  scriptSources.push("'unsafe-eval'");
+}
 
 /** Next/Image `remotePatterns` — R2 URLs must be listed or optimization returns 400. */
 function buildImageRemotePatterns() {
@@ -197,12 +202,15 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://code.tidio.co",
+              `script-src ${scriptSources.join(' ')}`,
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com https://code.tidio.co data:",
               "img-src 'self' data: https: blob:",
               `media-src ${mediaSources.join(' ')}`,
               "connect-src 'self' https: wss://socket.tidio.co",
+              "base-uri 'self'",
+              "form-action 'self'",
+              "object-src 'none'",
               // Contact page + footer map iframes (Google Maps / OSM); default-src alone blocks embeds
               "frame-src 'self' https://www.google.com https://google.com https://maps.google.com https://www.openstreetmap.org https://openstreetmap.org",
               "frame-ancestors 'none'",
