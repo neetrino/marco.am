@@ -28,6 +28,7 @@ function hadClientSideListingFilters(queryString: string): boolean {
   return (
     Boolean(params.get('brand')) ||
     Boolean(params.get('colors')) ||
+    Boolean(params.get('sizes')) ||
     Boolean(params.get('minPrice')) ||
     Boolean(params.get('maxPrice'))
   );
@@ -49,6 +50,7 @@ export function applyOptimisticShopListingFilter(
     params.get('search') ||
     params.get('filter') ||
     params.get('sort') ||
+    params.get('sizes') ||
     (params.has('page') && params.get('page') !== '1')
   ) {
     return null;

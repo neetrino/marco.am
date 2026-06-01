@@ -64,11 +64,17 @@ const PRODUCTS_RENDER_BATCH_DELAY_MS = 16;
 interface ProductsGridProps {
   products: Product[];
   sortBy?: string;
+  /** PLP: render all cards at once — avoids batch paint flicker after filter changes. */
+  disableProgressiveRender?: boolean;
 }
 
 const PRODUCTS_CARD_MAX_WIDTH_PX = 286;
 
-export function ProductsGrid({ products, sortBy = 'default' }: ProductsGridProps) {
+export function ProductsGrid({
+  products,
+  sortBy = 'default',
+  disableProgressiveRender = false,
+}: ProductsGridProps) {
   const { t } = useTranslation();
   const isMaxMd = useIsMaxMd();
   const forcedShopCols = useForcedShopGridColumns();
@@ -134,7 +140,8 @@ export function ProductsGrid({ products, sortBy = 'default' }: ProductsGridProps
     [sortedProducts],
   );
 
-  const shouldUseProgressiveRender = sortedProducts.length > PRODUCTS_PROGRESSIVE_RENDER_THRESHOLD;
+  const shouldUseProgressiveRender =
+    !disableProgressiveRender && sortedProducts.length > PRODUCTS_PROGRESSIVE_RENDER_THRESHOLD;
 
   useEffect(() => {
     if (!shouldUseProgressiveRender) {

@@ -391,13 +391,25 @@ export function FeaturedProductsTabs({
       return;
     }
     const others = TAB_ORDER.filter((tab) => tab !== activeTab).map((tab) => FILTER_BY_TAB[tab]);
-    for (const f of others) {
-      void queryClient.prefetchQuery({
-        queryKey: queryKeys.featuredHomeStrip(f, language, FEATURED_PRODUCTS_VISIBLE_COUNT),
-        queryFn: () => fetchFeaturedStrip(f, language),
-        staleTime: 300_000,
-      });
+    const prefetchOtherTabs = () => {
+      for (const f of others) {
+        void queryClient.prefetchQuery({
+          queryKey: queryKeys.featuredHomeStrip(f, language, FEATURED_PRODUCTS_VISIBLE_COUNT),
+          queryFn: () => fetchFeaturedStrip(f, language),
+          staleTime: 300_000,
+        });
+      }
+    };
+    const w = typeof window !== 'undefined' ? window : null;
+    if (!w) {
+      return;
     }
+    if ('requestIdleCallback' in w) {
+      const id = w.requestIdleCallback(prefetchOtherTabs, { timeout: 5000 });
+      return () => w.cancelIdleCallback(id);
+    }
+    const t = window.setTimeout(prefetchOtherTabs, 1500);
+    return () => window.clearTimeout(t);
   }, [featuredQuery.isSuccess, activeTab, language, queryClient]);
 
   const setCarouselArrowHandlers = useCallback(

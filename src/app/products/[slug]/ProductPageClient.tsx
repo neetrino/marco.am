@@ -6,6 +6,7 @@ import { Suspense } from 'react';
 import { RelatedProducts } from '@/components/RelatedProducts';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { apiClient } from '@/lib/api-client';
+import { runGuestCartMutation, upsertGuestCartItem } from '@/app/cart/guest-cart-local';
 import { t } from '@/lib/i18n';
 import type { RelatedProductsApiResponse } from '@/lib/product-pdp/fetch-related-products';
 import type { PdpVisualPayload } from '@/lib/services/products-slug/product-transformer';
@@ -93,40 +94,23 @@ export function ProductPageClient({
     setIsAddingToCart(true);
     try {
       if (!isLoggedIn) {
-        const stored = localStorage.getItem('shop_cart_guest');
-        const cart = stored ? JSON.parse(stored) : [];
         const unitPrice =
           Number(currentVariant.currentPrice ?? currentVariant.price) || 0;
-        const existing = cart.find(
-          (
-            i: unknown,
-          ): i is {
-            variantId: string;
-            quantity: number;
-            productId?: string;
-            productSlug?: string;
-            price?: number;
-          } =>
-            typeof i === 'object' &&
-            i !== null &&
-            'variantId' in i &&
-            i.variantId === currentVariant.id,
-        );
-        if (existing) {
-          existing.quantity += quantity;
-          if (unitPrice > 0) {
-            existing.price = unitPrice;
-          }
-        } else {
-          cart.push({
+        const productTitle = displayProduct?.title ?? product.title ?? '';
+        const productImage = images[0] ?? currentVariant.imageUrl ?? null;
+        await runGuestCartMutation(() => {
+          upsertGuestCartItem({
             productId: product.id,
             productSlug: product.slug,
             variantId: currentVariant.id,
-            quantity,
+            quantityDelta: quantity,
             price: unitPrice,
+            title: productTitle,
+            image: productImage,
+            sku: currentVariant.sku,
+            stock: currentVariant.stock,
           });
-        }
-        localStorage.setItem('shop_cart_guest', JSON.stringify(cart));
+        });
       } else {
         await apiClient.post('/api/v1/cart/items', {
           productId: product.id,

@@ -1,6 +1,5 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { cookies } from 'next/headers';
 import type { CSSProperties } from 'react';
 
 import {
@@ -16,14 +15,14 @@ import {
   isBrandLogoCellOversizedSlug,
 } from '@/lib/brand-logo-cell-oversize';
 import { resolveBrandDisplayLogoForCell } from '@/lib/brand-static-logo-assets';
-import { homeBrandPartnersService } from '@/lib/services/home-brand-partners.service';
 import type { HomeBrandPartnerPublicItem } from '@/lib/types/home-brand-partners-public';
 import { t } from '@/lib/i18n';
-import {
-  LANGUAGE_PREFERENCE_KEY,
-  parseLanguageFromServer,
-  type LanguageCode,
-} from '@/lib/language';
+import type { LanguageCode } from '@/lib/language';
+
+type BrandsPageContentProps = {
+  readonly brands: readonly HomeBrandPartnerPublicItem[];
+  readonly language: LanguageCode;
+};
 
 function brandDirectoryLogoCellStyle(slug: string, displayName: string): CSSProperties {
   const oversized = isBrandLogoCellOversizedSlug(slug, displayName);
@@ -93,14 +92,8 @@ function BrandDirectoryLogo({ partner }: { partner: HomeBrandPartnerPublicItem }
   );
 }
 
-/** Brand grid — streamed so the page shell paints before DB work finishes. */
-export async function BrandsPageContent() {
-  const cookieStore = await cookies();
-  const language: LanguageCode =
-    parseLanguageFromServer(cookieStore.get(LANGUAGE_PREFERENCE_KEY)?.value) ?? 'en';
-
-  const { brands } = await homeBrandPartnersService.getPublicPayload(language);
-
+/** Brand grid — sync; data is resolved in the page segment before paint. */
+export function BrandsPageContent({ brands, language }: BrandsPageContentProps) {
   if (brands.length === 0) {
     return (
       <p className="text-center text-slate-600 dark:text-slate-400">

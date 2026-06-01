@@ -1,9 +1,34 @@
+import { Prisma } from "@white-shop/db/prisma";
 import { buildWhereClause } from "./products-find-query/query-builder";
 import { executeProductListingQuery } from "./products-find-query/query-executor";
 import { db } from "@white-shop/db";
 import type { ProductFilters, ProductWithRelations } from "./products-find-query/types";
 import { hasTechnicalSpecFilters } from "./products-technical-filters";
 import { decodeProductCursor } from "./products-pagination-cursor";
+
+const PROMOTION_DB_SORT_KEYS = new Set([
+  undefined,
+  "createdAt",
+  "createdAt-desc",
+  "newest",
+]);
+
+function promotionUsesDbSort(filter: string | undefined, sort: string | undefined): boolean {
+  return (
+    (filter === "promotion" || filter === "special_offer") &&
+    PROMOTION_DB_SORT_KEYS.has(sort)
+  );
+}
+
+function resolveListingOrderBy(
+  filters: ProductFilters,
+): Prisma.ProductOrderByWithRelationInput | Prisma.ProductOrderByWithRelationInput[] | undefined {
+  const { filter, sort } = filters;
+  if (promotionUsesDbSort(filter, sort)) {
+    return [{ discountPercent: "desc" }, { createdAt: "desc" }];
+  }
+  return { createdAt: "desc" };
+}
 
 /**
  * Service for building and executing product find queries
@@ -35,14 +60,15 @@ class ProductsFindQueryService {
       sort === "price" ||
       sort === "popular" ||
       sort === "bestseller" ||
-      filter === "promotion" ||
-      filter === "special_offer";
+      ((filter === "promotion" || filter === "special_offer") &&
+        !promotionUsesDbSort(filter, sort));
 
     const needOverFetch = hasTechnicalSpecFilters(filters.technicalSpecs) || requiresSortOverFetch;
 
     const queryOpts = {
       omitProductAttributes: Boolean(filters.listingOmitProductAttributes),
       lang: filters.lang ?? "en",
+      orderBy: resolveListingOrderBy(filters),
     };
 
     if (!needOverFetch) {

@@ -5,8 +5,10 @@ import { getStoredCurrency } from '../../lib/currency';
 import { useTranslation } from '../../lib/i18n-client';
 import { useAuth } from '../../lib/auth/AuthContext';
 import type { Cart } from './types';
-import { fetchCart } from './cart-fetcher';
+import { buildGuestCartFromStorage, fetchCart } from './cart-fetcher';
 import { handleRemoveItem, handleUpdateQuantity } from './cart-handlers';
+import { isGenericCartTitle, mergeCartDisplayState } from './merge-cart-display';
+import { preloadNewCartImages } from './preload-cart-images';
 
 export function useCartData(options?: { enabled?: boolean }) {
   const enabled = options?.enabled ?? true;
@@ -18,30 +20,105 @@ export function useCartData(options?: { enabled?: boolean }) {
   const [updatingItems, setUpdatingItems] = useState<Set<string>>(new Set());
   const isLocalUpdateRef = useRef(false);
   const cartFetchGenerationRef = useRef(0);
+  const cartRef = useRef<Cart | null>(null);
+  cartRef.current = cart;
+
+  const invalidateInFlightCartLoads = useCallback(() => {
+    cartFetchGenerationRef.current += 1;
+  }, []);
+
+  const syncGuestCartFromStorage = useCallback(() => {
+    const snapshot = buildGuestCartFromStorage(t);
+    setCart(snapshot);
+    setLoading(false);
+    return snapshot;
+  }, [t]);
+
+  const hydrateGuestCartInBackground = useCallback(
+    async (snapshot: Cart | null) => {
+      const needsHydration = snapshot?.items.some(
+        (row) => !row.variant.product.image || isGenericCartTitle(row.variant.product.title),
+      );
+      if (!needsHydration) {
+        return;
+      }
+
+      const generation = ++cartFetchGenerationRef.current;
+      try {
+        const cartData = await fetchCart(false, t);
+        if (generation !== cartFetchGenerationRef.current) {
+          return;
+        }
+        if (!cartData) {
+          syncGuestCartFromStorage();
+          return;
+        }
+
+        const latestSnapshot = buildGuestCartFromStorage(t);
+        const mergeBase = latestSnapshot ?? snapshot ?? cartRef.current;
+        const merged = mergeCartDisplayState(mergeBase, cartData);
+        if (generation !== cartFetchGenerationRef.current) {
+          return;
+        }
+        setCart(merged);
+        void preloadNewCartImages(mergeBase, merged);
+      } catch (_error: unknown) {
+        if (generation === cartFetchGenerationRef.current) {
+          syncGuestCartFromStorage();
+        }
+      }
+    },
+    [syncGuestCartFromStorage, t],
+  );
 
   const loadCart = useCallback(async () => {
-    if (authLoading) {
+    const waitForAuth = isLoggedIn && authLoading;
+    if (waitForAuth) {
       return;
     }
+
+    if (!isLoggedIn) {
+      const snapshot = syncGuestCartFromStorage();
+      await hydrateGuestCartInBackground(snapshot);
+      return;
+    }
+
     const generation = ++cartFetchGenerationRef.current;
-    try {
+    const hasCachedCart = cartRef.current !== null;
+    if (!hasCachedCart) {
       setLoading(true);
-      const cartData = await fetchCart(isLoggedIn, t);
+    }
+
+    try {
+      const cartData = await fetchCart(true, t);
       if (generation !== cartFetchGenerationRef.current) {
         return;
       }
-      setCart(cartData);
+      if (!cartData) {
+        if (!hasCachedCart) {
+          setCart(null);
+        }
+        return;
+      }
+      const merged = mergeCartDisplayState(cartRef.current, cartData);
+      if (generation !== cartFetchGenerationRef.current) {
+        return;
+      }
+      setCart(merged);
+      void preloadNewCartImages(cartRef.current, merged);
     } catch (_error: unknown) {
       if (generation !== cartFetchGenerationRef.current) {
         return;
       }
-      setCart(null);
+      if (!hasCachedCart) {
+        setCart(null);
+      }
     } finally {
       if (generation === cartFetchGenerationRef.current) {
         setLoading(false);
       }
     }
-  }, [authLoading, isLoggedIn, t]);
+  }, [authLoading, hydrateGuestCartInBackground, isLoggedIn, syncGuestCartFromStorage, t]);
 
   useEffect(() => {
     const handleCurrencyUpdate = () => {
@@ -52,6 +129,19 @@ export function useCartData(options?: { enabled?: boolean }) {
       if (!enabled) {
         return;
       }
+
+      if (!isLoggedIn) {
+        const snapshot = syncGuestCartFromStorage();
+        if (isLocalUpdateRef.current) {
+          isLocalUpdateRef.current = false;
+          invalidateInFlightCartLoads();
+          return;
+        }
+        invalidateInFlightCartLoads();
+        void hydrateGuestCartInBackground(snapshot);
+        return;
+      }
+
       if (isLocalUpdateRef.current) {
         isLocalUpdateRef.current = false;
         return;
@@ -70,7 +160,8 @@ export function useCartData(options?: { enabled?: boolean }) {
     window.addEventListener('cart-updated', handleCartUpdate);
     window.addEventListener('auth-updated', handleAuthUpdate);
 
-    if (!authLoading && enabled) {
+    const canLoad = enabled && (!authLoading || !isLoggedIn);
+    if (canLoad) {
       void loadCart();
     }
 
@@ -79,21 +170,31 @@ export function useCartData(options?: { enabled?: boolean }) {
       window.removeEventListener('cart-updated', handleCartUpdate);
       window.removeEventListener('auth-updated', handleAuthUpdate);
     };
-  }, [authLoading, enabled, loadCart]);
+  }, [
+    authLoading,
+    enabled,
+    hydrateGuestCartInBackground,
+    invalidateInFlightCartLoads,
+    isLoggedIn,
+    loadCart,
+    syncGuestCartFromStorage,
+  ]);
 
   const onRemoveItem = useCallback(
     async (itemId: string) => {
       if (!cart) {
         return;
       }
+      invalidateInFlightCartLoads();
       isLocalUpdateRef.current = true;
       await handleRemoveItem(itemId, cart, isLoggedIn, setCart, loadCart);
     },
-    [cart, isLoggedIn, loadCart],
+    [cart, invalidateInFlightCartLoads, isLoggedIn, loadCart],
   );
 
   const onUpdateQuantity = useCallback(
     async (itemId: string, quantity: number) => {
+      invalidateInFlightCartLoads();
       isLocalUpdateRef.current = true;
       await handleUpdateQuantity(
         itemId,
@@ -106,7 +207,7 @@ export function useCartData(options?: { enabled?: boolean }) {
         t,
       );
     },
-    [cart, isLoggedIn, loadCart, t],
+    [cart, invalidateInFlightCartLoads, isLoggedIn, loadCart, t],
   );
 
   return {

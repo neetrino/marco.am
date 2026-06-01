@@ -41,6 +41,12 @@ function warmProductsApi(language: string): void {
   void fetch(`/api/v1/products/filters?lang=${encodeURIComponent(language)}`, { cache: 'force-cache' });
 }
 
+function warmBrandPartnersApi(language: string): void {
+  void fetch(`/api/v1/home/brand-partners?locale=${encodeURIComponent(language)}`, {
+    cache: 'force-cache',
+  });
+}
+
 function getPrefetchableInternalPath(href: string): string | null {
   try {
     const parsed = new URL(href, window.location.origin);
@@ -110,6 +116,7 @@ export function GlobalRoutePrefetch() {
       if (!warmProductsLangRef.current.has(language)) {
         warmProductsLangRef.current.add(language);
         warmProductsApi(language);
+        warmBrandPartnersApi(language);
       }
     };
     if (typeof idleWindow.requestIdleCallback === 'function') {
