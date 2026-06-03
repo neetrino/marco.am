@@ -4,7 +4,7 @@ import type { MouseEvent } from 'react';
 import { Heart, X } from 'lucide-react';
 import { CompareIcon } from '../icons/CompareIcon';
 import { HeaderNavbarCartIcon } from '../icons/HeaderNavbarCartIcon';
-import { NoPriceLockIcon } from '../icons/NoPriceLockIcon';
+import { NoPriceArrowIcon } from '../icons/NoPriceArrowIcon';
 import { useTranslation } from '../../lib/i18n-client';
 
 interface ProductCardActionsProps {
@@ -130,7 +130,7 @@ export function ProductCardActions({
         </button>
       ) : showPriceLockedIcon ? (
         <span className={`${buttonSize} inline-flex items-center justify-center`}>
-          <NoPriceLockIcon className={isCompact ? 'h-[22px] w-[22px]' : 'h-[26px] w-[26px]'} />
+          <NoPriceArrowIcon className={isCompact ? 'h-[22px] w-[22px]' : 'h-[26px] w-[26px]'} />
         </span>
       ) : null}
     </div>

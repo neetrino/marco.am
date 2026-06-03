@@ -1,9 +1,9 @@
 'use client';
 
-import { useCallback, useState, type MouseEvent } from 'react';
+import { useCallback, type MouseEvent } from 'react';
+import { useRouter } from 'next/navigation';
 
 import { ProductPdpPrefetchLink } from '@/components/ProductPdpPrefetchLink';
-import { NoPriceProductPopup } from '@/components/products/NoPriceProductPopup';
 
 import {
   getSpecialOfferBrandTextClass,
@@ -135,38 +135,18 @@ export function SpecialOfferCard({
         ? 'mx-0 w-full'
         : 'mx-auto';
 
+  const router = useRouter();
   const cardPdpEnabled = Boolean(product.slug) && !product.shellPlaceholder;
   const warrantyYears = product.warrantyYears ?? product.warrantyBadge?.years ?? null;
   const shouldShowCartCutouts = true;
-  const [showNoPricePopup, setShowNoPricePopup] = useState(false);
-  const handleNoPriceCardClick = useCallback((event: MouseEvent<HTMLAnchorElement>) => {
-    if (hasDisplayPrice || detailsPending) {
-      return;
-    }
-    event.preventDefault();
-    event.stopPropagation();
-    setShowNoPricePopup(true);
-  }, [hasDisplayPrice, detailsPending]);
   const handleNoPriceButtonClick = useCallback((event: MouseEvent) => {
-    if (hasDisplayPrice || detailsPending) {
+    if (hasDisplayPrice || detailsPending || !product.slug) {
       return;
     }
     event.preventDefault();
     event.stopPropagation();
-    setShowNoPricePopup(true);
-  }, [hasDisplayPrice, detailsPending]);
-  const handleNoPriceSurfaceClick = useCallback((event: MouseEvent<HTMLDivElement>) => {
-    if (hasDisplayPrice || detailsPending) {
-      return;
-    }
-    const target = event.target as HTMLElement;
-    if (target.closest('button,[role="button"],[data-no-price-ignore="true"]')) {
-      return;
-    }
-    event.preventDefault();
-    event.stopPropagation();
-    setShowNoPricePopup(true);
-  }, [hasDisplayPrice, detailsPending]);
+    router.push(`/products/${encodeURIComponent(product.slug.trim())}`);
+  }, [detailsPending, hasDisplayPrice, product.slug, router]);
 
   return (
     <div
@@ -179,7 +159,6 @@ export function SpecialOfferCard({
         ['--so-cart-bottom-desktop' as string]: `${SPECIAL_OFFERS_CART_BUTTON_INSET_BOTTOM_PX}px`,
         ['--so-cart-right-desktop' as string]: `${SPECIAL_OFFERS_CART_BUTTON_INSET_RIGHT_PX}px`,
       }}
-      onClickCapture={handleNoPriceSurfaceClick}
     >
       <article
         className="relative flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden"
@@ -197,7 +176,6 @@ export function SpecialOfferCard({
             className="absolute inset-0 z-[1] focus:outline-none focus-visible:ring-2 focus-visible:ring-marco-yellow focus-visible:ring-offset-2"
             style={{ borderRadius: SPECIAL_OFFERS_CARD_SHELL_RADIUS_PX }}
             aria-label={product.title}
-            onClick={handleNoPriceCardClick}
           >
             <span className="sr-only">{product.title}</span>
           </ProductPdpPrefetchLink>
@@ -309,13 +287,6 @@ export function SpecialOfferCard({
         onCompare={handleCompare}
         disabled={Boolean(product.shellPlaceholder)}
       />
-      {cardPdpEnabled ? (
-        <NoPriceProductPopup
-          isOpen={showNoPricePopup}
-          productSlug={product.slug}
-          onClose={() => setShowNoPricePopup(false)}
-        />
-      ) : null}
     </div>
   );
 }

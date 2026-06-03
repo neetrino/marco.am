@@ -2,7 +2,7 @@
 
 import { ProductPdpPrefetchLink } from '../ProductPdpPrefetchLink';
 import Image from 'next/image';
-import { useCallback, useState, type MouseEvent } from 'react';
+import type { MouseEvent } from 'react';
 import type { ProductListingBrand } from '@/lib/types/product-listing-brand';
 import { formatCatalogPrice, type CurrencyCode } from '../../lib/currency';
 import { useTranslation } from '../../lib/i18n-client';
@@ -12,7 +12,6 @@ import { ProductCardActions } from './ProductCardActions';
 import { ProductImagePlaceholder } from '../ProductImagePlaceholder';
 import type { ProductLabel } from '../ProductLabels';
 import { ProductPricePromoBadge } from './ProductPricePromoBadge';
-import { NoPriceProductPopup } from '../products/NoPriceProductPopup';
 
 interface ProductCardListProps {
   product: {
@@ -60,46 +59,22 @@ export function ProductCardList({
 }: ProductCardListProps) {
   const { t } = useTranslation();
   const hasDisplayPrice = product.price > 0;
-  const [showNoPricePopup, setShowNoPricePopup] = useState(false);
-  const handleCardClick = useCallback((event: MouseEvent<HTMLAnchorElement>) => {
-    if (hasDisplayPrice) {
-      return;
-    }
-    event.preventDefault();
-    event.stopPropagation();
-    setShowNoPricePopup(true);
-  }, [hasDisplayPrice]);
-  const handleNoPriceSurfaceClick = useCallback((event: MouseEvent<HTMLDivElement>) => {
-    if (hasDisplayPrice) {
-      return;
-    }
-    const target = event.target as HTMLElement;
-    if (target.closest('button,[role="button"],[data-no-price-ignore="true"]')) {
-      return;
-    }
-    event.preventDefault();
-    event.stopPropagation();
-    setShowNoPricePopup(true);
-  }, [hasDisplayPrice]);
   const listSurfaceClass = wishlistPage
     ? 'border border-gray-200 shadow-sm dark:border-white/30'
     : '';
 
   return (
-    <>
-      <div
-        className={`bg-white rounded-lg overflow-hidden hover:bg-gray-50 transition-colors ${listSurfaceClass}`}
-        onClickCapture={handleNoPriceSurfaceClick}
-      >
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4 px-5 sm:px-6 py-4 sm:py-5">
-          <ProductPdpPrefetchLink
-            href={`/products/${product.slug}`}
-            productSlug={product.slug}
-            prefetchData={false}
-            className="flex min-w-0 flex-1 flex-col gap-4 sm:flex-row sm:items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-marco-yellow focus-visible:ring-offset-2 rounded-lg"
-            aria-label={product.title}
-            onClick={handleCardClick}
-          >
+    <div
+      className={`bg-white rounded-lg overflow-hidden hover:bg-gray-50 transition-colors ${listSurfaceClass}`}
+    >
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4 px-5 sm:px-6 py-4 sm:py-5">
+        <ProductPdpPrefetchLink
+          href={`/products/${product.slug}`}
+          productSlug={product.slug}
+          prefetchData={false}
+          className="flex min-w-0 flex-1 flex-col gap-4 sm:flex-row sm:items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-marco-yellow focus-visible:ring-offset-2 rounded-lg"
+          aria-label={product.title}
+        >
           {/* Product Image */}
           <div className="relative h-36 w-36 flex-shrink-0 self-start overflow-hidden rounded-xl border-2 border-gray-300 bg-gray-100 sm:self-center">
             {!imageError && product.image ? (
@@ -148,38 +123,38 @@ export function ProductCardList({
             )}
           </div>
 
-            {hasDisplayPrice ? (
-              <div className="flex w-full flex-shrink-0 flex-col sm:w-auto">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-xl font-semibold text-marco-black sm:text-2xl">
-                    {formatCatalogPrice(product.price, currency)}
-                  </span>
-                  <ProductPricePromoBadge
-                    discountPercent={product.discountPercent}
-                    isSpecialPrice={product.isSpecialPrice}
-                    className="bg-transparent px-0 py-0 text-marco-black"
-                  />
-                </div>
-                {(product.originalPrice && product.originalPrice > product.price) ||
-                (product.compareAtPrice && product.compareAtPrice > product.price) ? (
-                  <span className="mt-0.5 text-lg text-gray-500 line-through sm:text-xl">
-                    {formatCatalogPrice(
-                      product.originalPrice && product.originalPrice > product.price
-                        ? product.originalPrice
-                        : (product.compareAtPrice || 0),
-                      currency
-                    )}
-                  </span>
-                ) : null}
-              </div>
-            ) : (
-              <div className="flex w-full flex-shrink-0 items-center sm:w-auto">
-                <span className="rounded-full bg-[#f4f4f4] px-3 py-1 text-xs font-semibold text-[#383838]">
-                  {t('products.noPrice.label')}
+          {hasDisplayPrice ? (
+            <div className="flex w-full flex-shrink-0 flex-col sm:w-auto">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xl font-semibold text-marco-black sm:text-2xl">
+                  {formatCatalogPrice(product.price, currency)}
                 </span>
+                <ProductPricePromoBadge
+                  discountPercent={product.discountPercent}
+                  isSpecialPrice={product.isSpecialPrice}
+                  className="bg-transparent px-0 py-0 text-marco-black"
+                />
               </div>
-            )}
-          </ProductPdpPrefetchLink>
+              {(product.originalPrice && product.originalPrice > product.price) ||
+              (product.compareAtPrice && product.compareAtPrice > product.price) ? (
+                <span className="mt-0.5 text-lg text-gray-500 line-through sm:text-xl">
+                  {formatCatalogPrice(
+                    product.originalPrice && product.originalPrice > product.price
+                      ? product.originalPrice
+                      : (product.compareAtPrice || 0),
+                    currency
+                  )}
+                </span>
+              ) : null}
+            </div>
+          ) : (
+            <div className="flex w-full flex-shrink-0 items-center sm:w-auto">
+              <span className="rounded-full bg-[#f4f4f4] px-3 py-1 text-xs font-semibold text-[#383838]">
+                {t('products.noPrice.label')}
+              </span>
+            </div>
+          )}
+        </ProductPdpPrefetchLink>
 
         {/* Action Buttons: outside PDP link to avoid anchor nesting with buttons */}
         <div className="self-start sm:self-center">
@@ -197,15 +172,7 @@ export function ProductCardList({
             showPriceLockedIcon={!hasDisplayPrice}
           />
         </div>
-        </div>
       </div>
-      {product.slug ? (
-        <NoPriceProductPopup
-          isOpen={showNoPricePopup}
-          productSlug={product.slug}
-          onClose={() => setShowNoPricePopup(false)}
-        />
-      ) : null}
-    </>
+    </div>
   );
 }

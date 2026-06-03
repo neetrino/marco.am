@@ -7,7 +7,7 @@ import type { CurrencyCode } from '../../lib/currency';
 import {
   SpecialOfferCartFigmaIcon,
 } from './SpecialOfferCartFigmaArt';
-import { NoPriceLockIcon } from '@/components/icons/NoPriceLockIcon';
+import { NoPriceArrowIcon } from '@/components/icons/NoPriceArrowIcon';
 import {
   SPECIAL_OFFERS_CART_BUTTON_SIZE_PX,
   SPECIAL_OFFERS_CART_BUTTON_SPINNER_PX,
@@ -98,7 +98,7 @@ export function SpecialOfferCartFloatingButton({
   onNoPriceClick,
   interactionLocked = false,
 }: SpecialOfferCartFloatingButtonProps) {
-  const [lockTapPulse, setLockTapPulse] = useState(false);
+  const [arrowTapPulse, setArrowTapPulse] = useState(false);
   const disabled = hasDisplayPrice
     ? interactionLocked || !inStock || isAddingToCart
     : interactionLocked;
@@ -107,8 +107,8 @@ export function SpecialOfferCartFloatingButton({
       onAddToCart(event);
       return;
     }
-    setLockTapPulse(true);
-    window.setTimeout(() => setLockTapPulse(false), 180);
+    setArrowTapPulse(true);
+    window.setTimeout(() => setArrowTapPulse(false), 180);
     onNoPriceClick?.(event);
   };
   return (
@@ -162,9 +162,9 @@ export function SpecialOfferCartFloatingButton({
           ) : hasDisplayPrice ? (
             <SpecialOfferCartFigmaIcon />
           ) : (
-            <NoPriceLockIcon
+            <NoPriceArrowIcon
               className={`h-[28px] w-[28px] transition-transform duration-150 md:h-[32px] md:w-[32px] ${
-                lockTapPulse ? 'translate-y-[1px] scale-110' : ''
+                arrowTapPulse ? 'translate-y-[1px] scale-110' : ''
               }`}
             />
           )}

@@ -9,7 +9,6 @@ import type { LanguageCode } from '../../../lib/language';
 import { normalizeLiteralNewlinesToLineBreaks } from '../../../lib/utils/normalize-literal-newlines';
 import { sanitizeHtml } from '../../../lib/utils/sanitize';
 import { CompareIcon } from '../../../components/icons/CompareIcon';
-import { openTidioChat } from '@/lib/tidio/open-tidio-chat';
 import {
   HEADER_FIGMA_PILL_RADIUS_CLASS,
 } from '../../../components/header/header.constants';
@@ -103,7 +102,6 @@ export function ProductInfoAndActions({
 }: ProductInfoAndActionsProps) {
   const rawDescription = getProductText(language, product.id, 'longDescription') || product.description || '';
   const buyNowFullLabel = t(language, 'product.buyNow');
-  const orderNowLabel = t(language, 'product.orderNow');
   const noPriceLabel = t(language, 'products.noPrice.label');
   const normalizedDescription = normalizeLiteralNewlinesToLineBreaks(rawDescription);
   const descriptionWithoutDuplicateSpecs =
@@ -266,20 +264,19 @@ export function ProductInfoAndActions({
             >
               <Heart fill={isInWishlist ? 'currentColor' : 'none'} />
             </button>
-            <button
-              type="button"
-              disabled={hasDisplayPrice ? !canAddToCart || isAddingToCart : false}
-              className={`inline-flex shrink-0 items-center gap-1.5 bg-marco-yellow px-4 text-left text-sm font-bold leading-normal text-marco-black dark:!text-marco-black transition-[filter,transform] hover:-translate-y-0.5 hover:brightness-95 active:brightness-90 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 disabled:hover:brightness-100 ${PRODUCT_BUY_CTA_HEIGHT_CLASS} ${HEADER_FIGMA_PILL_RADIUS_CLASS}`}
-              onClick={hasDisplayPrice ? onAddToCart : openTidioChat}
-            >
-              <span
-                className={`${PRODUCT_BUY_CTA_LABEL_MAX_WIDTH_CLASS} whitespace-nowrap ${
-                  language === 'hy' ? 'pl-0.5' : 'pl-1'
-                } truncate`}
+            {hasDisplayPrice ? (
+              <button
+                type="button"
+                disabled={!canAddToCart || isAddingToCart}
+                className={`inline-flex shrink-0 items-center gap-1.5 bg-marco-yellow px-4 text-left text-sm font-bold leading-normal text-marco-black dark:!text-marco-black transition-[filter,transform] hover:-translate-y-0.5 hover:brightness-95 active:brightness-90 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 disabled:hover:brightness-100 ${PRODUCT_BUY_CTA_HEIGHT_CLASS} ${HEADER_FIGMA_PILL_RADIUS_CLASS}`}
+                onClick={onAddToCart}
               >
-                {!hasDisplayPrice
-                  ? orderNowLabel
-                  : isAddingToCart
+                <span
+                  className={`${PRODUCT_BUY_CTA_LABEL_MAX_WIDTH_CLASS} whitespace-nowrap ${
+                    language === 'hy' ? 'pl-0.5' : 'pl-1'
+                  } truncate`}
+                >
+                  {isAddingToCart
                     ? t(language, 'product.adding')
                     : isVariationRequired
                       ? getRequiredAttributesMessage()
@@ -288,18 +285,19 @@ export function ProductInfoAndActions({
                         : isOutOfStock || hasUnavailableAttributes
                           ? t(language, 'product.outOfStock')
                           : buyNowFullLabel}
-              </span>
-              <span
-                className={`flex shrink-0 items-center justify-center rounded-full bg-black text-white ${PRODUCT_BUY_CTA_ICON_NUDGE_LEFT_CLASS}`}
-                style={{
-                  width: PRODUCT_BUY_CTA_ICON_PX,
-                  height: PRODUCT_BUY_CTA_ICON_PX,
-                }}
-                aria-hidden
-              >
-                <ArrowUpRight className="size-3.5" strokeWidth={2.5} />
-              </span>
-            </button>
+                </span>
+                <span
+                  className={`flex shrink-0 items-center justify-center rounded-full bg-black text-white ${PRODUCT_BUY_CTA_ICON_NUDGE_LEFT_CLASS}`}
+                  style={{
+                    width: PRODUCT_BUY_CTA_ICON_PX,
+                    height: PRODUCT_BUY_CTA_ICON_PX,
+                  }}
+                  aria-hidden
+                >
+                  <ArrowUpRight className="size-3.5" strokeWidth={2.5} />
+                </span>
+              </button>
+            ) : null}
           </div>
         </div>
       </div>
