@@ -8,10 +8,17 @@ import type { RelatedProductsApiResponse } from '@/lib/product-pdp/fetch-related
 import { useRelatedProducts } from './hooks/useRelatedProducts';
 import { useCarousel } from './hooks/useCarousel';
 import { useVisibleCards } from './hooks/useVisibleCards';
-import { useCurrency } from './hooks/useCurrency';
 import { CarouselDots } from './RelatedProducts/CarouselDots';
 import { RelatedProductsCardItem } from './RelatedProducts/RelatedProductsCardItem';
 import { useIsMaxMd } from './home/use-is-max-md';
+import {
+  SPECIAL_OFFERS_CARD_BG,
+  SPECIAL_OFFERS_CARD_HEIGHT_PX,
+  SPECIAL_OFFERS_CARD_MAX_WIDTH_PX,
+  SPECIAL_OFFERS_CARD_SHELL_RADIUS_PX,
+  SPECIAL_OFFERS_IMAGE_WELL_HEIGHT_PX,
+  SPECIAL_OFFERS_MOBILE_GRID_SCROLLER_PADDING_BOTTOM_PX,
+} from './home/home-special-offers.constants';
 import {
   REELS_CAROUSEL_NAV_BUTTON_HEIGHT_MOBILE_PX,
   REELS_CAROUSEL_NAV_BUTTON_HEIGHT_PX,
@@ -35,12 +42,30 @@ const RELATED_SKELETON_COUNT = 4;
 
 function RelatedProductsSkeleton({ count }: { count: number }) {
   return (
-    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-6">
+    <div className="flex gap-4 overflow-hidden lg:gap-6">
       {Array.from({ length: count }, (_, index) => (
-        <div key={`related-skeleton-${index}`} className="animate-pulse">
-          <div className="mb-4 aspect-square rounded-lg bg-gray-200" />
-          <div className="mb-2 h-4 w-3/4 rounded bg-gray-200" />
-          <div className="h-4 w-1/2 rounded bg-gray-200" />
+        <div
+          key={`related-skeleton-${index}`}
+          className="mx-auto w-full max-w-[252px] flex-shrink-0 animate-pulse"
+          style={{ maxWidth: SPECIAL_OFFERS_CARD_MAX_WIDTH_PX }}
+        >
+          <div
+            className="w-full"
+            style={{
+              height: SPECIAL_OFFERS_CARD_HEIGHT_PX,
+              borderRadius: SPECIAL_OFFERS_CARD_SHELL_RADIUS_PX,
+              backgroundColor: SPECIAL_OFFERS_CARD_BG,
+            }}
+          >
+            <div className="p-4">
+              <div
+                className="mb-4 rounded-[19px] bg-gray-200/80"
+                style={{ height: SPECIAL_OFFERS_IMAGE_WELL_HEIGHT_PX }}
+              />
+              <div className="mb-2 h-4 w-3/4 rounded bg-gray-200/80" />
+              <div className="h-4 w-1/2 rounded bg-gray-200/80" />
+            </div>
+          </div>
         </div>
       ))}
     </div>
@@ -57,7 +82,6 @@ export function RelatedProducts({
   initialRelatedProducts = null,
 }: RelatedProductsProps) {
   const isMaxMd = useIsMaxMd();
-  const currency = useCurrency();
   const visibleCards = useVisibleCards();
   const { products, loading } = useRelatedProducts({
     productSlug: currentProductSlug,
@@ -159,7 +183,10 @@ export function RelatedProducts({
           <div className="relative -mx-4 sm:mx-0">
             <div
               ref={carouselRef}
-              className="relative select-none overflow-hidden pb-10"
+              className="relative select-none overflow-hidden max-md:pb-[var(--related-carousel-pad-bottom)] md:pb-6"
+              style={{
+                ['--related-carousel-pad-bottom' as string]: `${SPECIAL_OFFERS_MOBILE_GRID_SCROLLER_PADDING_BOTTOM_PX}px`,
+              }}
               onMouseDown={handleMouseDown}
               onMouseMove={handleMouseMove}
               onMouseUp={handleMouseUp}
@@ -189,10 +216,7 @@ export function RelatedProducts({
                   >
                     <RelatedProductsCardItem
                       product={product}
-                      currency={currency}
-                      language={language}
                       hasMoved={hasMoved}
-                      width="100%"
                     />
                   </div>
                 ))}

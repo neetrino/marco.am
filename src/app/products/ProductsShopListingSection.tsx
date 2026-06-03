@@ -30,6 +30,7 @@ async function fetchProductsListing(raw: ProductsPageSearchParams) {
       brand: ctx.params.brand?.trim() || undefined,
       filter: ctx.params.filter?.trim() || undefined,
       sort: ctx.params.sort?.trim() || undefined,
+      pricePresence: ctx.pricePresence,
       technicalSpecs,
       listingOmitProductAttributes: true,
     });

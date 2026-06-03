@@ -19,6 +19,12 @@ function firstParam(value: string | string[] | undefined): string | undefined {
   return Array.isArray(value) ? value[0] : value;
 }
 
+function parsePricePresence(
+  value: string | undefined,
+): ProductsShopListingServerContext['pricePresence'] {
+  return value === 'with' || value === 'without' ? value : undefined;
+}
+
 function parseUrlPriceBounds(minPrice?: string, maxPrice?: string) {
   const parsedMin = minPrice ? Number(minPrice) : undefined;
   const parsedMax = maxPrice ? Number(maxPrice) : undefined;
@@ -44,7 +50,9 @@ export type ProductsShopListingServerContext = {
     brand?: string;
     filter?: string;
     sort?: string;
+    pricePresence?: string;
   };
+  pricePresence?: 'with' | 'without';
   page: number;
   perPage: number;
   filtersMinPrice: number | undefined;
@@ -74,7 +82,10 @@ export const resolveProductsShopListingServerContext = cache(
       brand: firstParam(raw.brand),
       filter: firstParam(raw.filter),
       sort: firstParam(raw.sort),
+      pricePresence: firstParam(raw.pricePresence),
     };
+
+    const pricePresence = parsePricePresence(params.pricePresence);
 
     const page = parseInt(params.page || '1', 10);
     const limitParam = params.limit?.trim();
@@ -93,6 +104,7 @@ export const resolveProductsShopListingServerContext = cache(
       raw,
       language,
       params,
+      pricePresence,
       page,
       perPage,
       filtersMinPrice,

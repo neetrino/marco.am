@@ -51,6 +51,7 @@ export function applyOptimisticShopListingFilter(
     params.get('filter') ||
     params.get('sort') ||
     params.get('sizes') ||
+    params.get('pricePresence') ||
     (params.has('page') && params.get('page') !== '1')
   ) {
     return null;

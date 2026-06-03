@@ -1,13 +1,13 @@
 'use client';
 
-import { useCallback, useState, type MouseEvent } from 'react';
+import type { MouseEvent } from 'react';
+import { useRouter } from 'next/navigation';
 import { ProductPdpPrefetchLink } from '../ProductPdpPrefetchLink';
 import { ProductCardImage } from './ProductCardImage';
 import { ProductCardInfo } from './ProductCardInfo';
 import { ProductCardActions } from './ProductCardActions';
 import { HeaderNavbarCartIcon } from '../icons/HeaderNavbarCartIcon';
-import { NoPriceLockIcon } from '../icons/NoPriceLockIcon';
-import { NoPriceProductPopup } from '../products/NoPriceProductPopup';
+import { NoPriceArrowIcon } from '../icons/NoPriceArrowIcon';
 import { useTranslation } from '../../lib/i18n-client';
 import type { CurrencyCode } from '../../lib/currency';
 import type { ProductListingBrand } from '@/lib/types/product-listing-brand';
@@ -62,47 +62,30 @@ export function ProductCardGrid({
   onAddToCart,
   wishlistPage = false,
 }: ProductCardGridProps) {
+  const router = useRouter();
   const { t } = useTranslation();
   const hasDisplayPrice = product.price > 0;
-  const [showNoPricePopup, setShowNoPricePopup] = useState(false);
-  const handleCardClick = useCallback((event: MouseEvent<HTMLAnchorElement>) => {
-    if (hasDisplayPrice) {
-      return;
-    }
+
+  const handleNoPriceNavigate = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     event.stopPropagation();
-    setShowNoPricePopup(true);
-  }, [hasDisplayPrice]);
-  const handleNoPriceSurfaceClick = useCallback((event: MouseEvent<HTMLDivElement>) => {
-    if (hasDisplayPrice) {
-      return;
-    }
-    const target = event.target as HTMLElement;
-    if (target.closest('button,[role="button"],[data-no-price-ignore="true"]')) {
-      return;
-    }
-    event.preventDefault();
-    event.stopPropagation();
-    setShowNoPricePopup(true);
-  }, [hasDisplayPrice]);
+    router.push(`/products/${encodeURIComponent(product.slug.trim())}`);
+  };
 
   const cardSurfaceClass = wishlistPage
     ? 'border border-gray-200 shadow-sm hover:shadow-md dark:border-white/30'
     : 'hover:shadow-md';
 
   return (
-    <>
-      <div
-        className={`bg-white rounded-lg overflow-hidden transition-shadow relative group ${cardSurfaceClass}`}
-        onClickCapture={handleNoPriceSurfaceClick}
-      >
+    <div
+      className={`bg-white rounded-lg overflow-hidden transition-shadow relative group ${cardSurfaceClass}`}
+    >
       <ProductPdpPrefetchLink
         href={`/products/${product.slug}`}
         productSlug={product.slug}
         prefetchData={false}
         className="block cursor-pointer rounded-t-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-marco-yellow focus-visible:ring-offset-2"
         aria-label={product.title}
-        onClick={handleCardClick}
       >
         {/* Product Image */}
         <div className="aspect-square bg-gray-100 relative overflow-hidden">
@@ -175,18 +158,16 @@ export function ProductCardGrid({
             )}
           </button>
         ) : (
-          <NoPriceLockIcon className={isCompact ? 'h-[26px] w-[26px]' : 'h-8 w-8'} />
+          <button
+            type="button"
+            onClick={handleNoPriceNavigate}
+            className={`${isCompact ? 'h-[26px] w-[26px]' : 'h-8 w-8'} inline-flex items-center justify-center transition-transform hover:scale-105 active:scale-95`}
+            aria-label={product.title}
+          >
+            <NoPriceArrowIcon className="h-full w-full" />
+          </button>
         )}
       </div>
-      </div>
-      {product.slug ? (
-        <NoPriceProductPopup
-          isOpen={showNoPricePopup}
-          productSlug={product.slug}
-          onClose={() => setShowNoPricePopup(false)}
-        />
-      ) : null}
-    </>
+    </div>
   );
 }
-

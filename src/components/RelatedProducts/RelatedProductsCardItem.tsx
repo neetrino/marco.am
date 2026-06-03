@@ -1,60 +1,65 @@
 'use client';
 
-import { memo, useState, type MouseEvent } from 'react';
+import { memo, useMemo } from 'react';
 
-import { useAddToCart } from '@/components/hooks/useAddToCart';
-import type { CurrencyCode } from '@/lib/currency';
+import { SpecialOfferCard } from '@/components/home/SpecialOfferCard';
+import type { SpecialOfferProduct } from '@/components/home/special-offer-product.types';
+import { useIsMaxMd } from '@/components/home/use-is-max-md';
+import { SPECIAL_OFFERS_CARD_MAX_WIDTH_PX } from '@/components/home/home-special-offers.constants';
 import type { RelatedProductRow } from '@/lib/product-pdp/fetch-related-products';
-import type { LanguageCode } from '@/lib/language';
-
-import { RelatedProductCard } from './RelatedProductCard';
 
 interface RelatedProductsCardItemProps {
   product: RelatedProductRow;
-  currency: CurrencyCode;
-  language: LanguageCode;
   hasMoved: boolean;
-  width: string;
+}
+
+function toSpecialOfferProduct(row: RelatedProductRow): SpecialOfferProduct {
+  const compareAt = row.compareAtPrice ?? null;
+  return {
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    price: row.price,
+    compareAtPrice: compareAt ?? undefined,
+    originalPrice: row.originalPrice ?? compareAt ?? undefined,
+    image: row.image,
+    images: row.image ? [row.image] : undefined,
+    inStock: row.inStock,
+    brand: row.brand ?? null,
+    discountPercent: row.discountPercent ?? null,
+    isSpecialPrice: row.isSpecialPrice ?? false,
+    warrantyYears: row.warrantyYears ?? row.warrantyBadge?.years ?? null,
+    warrantyBadge: row.warrantyBadge,
+  };
 }
 
 function RelatedProductsCardItemInner({
   product,
-  currency,
-  language,
   hasMoved,
-  width,
 }: RelatedProductsCardItemProps) {
-  const [imageError, setImageError] = useState(false);
-  const { isAddingToCart, addToCart } = useAddToCart({
-    productId: product.id,
-    productSlug: product.slug,
-    inStock: product.inStock,
-    price: product.price,
-    title: product.title,
-    image: product.image,
-    colors: product.variants?.map((variant, idx) => ({
-      value: variant.options?.[0]?.value ?? String(idx),
-    })),
-  });
-
-  const handleAddToCart = (event: MouseEvent, _item: RelatedProductRow) => {
-    event.preventDefault();
-    event.stopPropagation();
-    void addToCart();
-  };
+  const isMaxMd = useIsMaxMd();
+  const specialOfferProduct = useMemo(
+    () => toSpecialOfferProduct(product),
+    [product],
+  );
 
   return (
-    <RelatedProductCard
-      product={product}
-      currency={currency}
-      language={language}
-      isAddingToCart={isAddingToCart}
-      hasMoved={hasMoved}
-      onAddToCart={handleAddToCart}
-      onImageError={() => setImageError(true)}
-      imageError={imageError}
-      width={width}
-    />
+    <div
+      className="flex h-full w-full justify-center"
+      onClickCapture={(event) => {
+        if (hasMoved) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+      }}
+    >
+      <SpecialOfferCard
+        product={specialOfferProduct}
+        layout={isMaxMd ? 'mobileGrid' : 'default'}
+        align="center"
+        maxWidthPx={SPECIAL_OFFERS_CARD_MAX_WIDTH_PX}
+      />
+    </div>
   );
 }
 

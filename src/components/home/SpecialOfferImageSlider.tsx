@@ -16,9 +16,11 @@ import {
   SPECIAL_OFFERS_GALLERY_PIP_INACTIVE,
   SPECIAL_OFFERS_GALLERY_PIP_SIZE_PX,
   SPECIAL_OFFERS_IMAGE_WELL_HEIGHT_PX,
-  SPECIAL_OFFERS_IMAGE_WELL_RADIUS_PX,
 } from './home-special-offers.constants';
 import { useSpecialOfferImageGallery } from './useSpecialOfferImageGallery';
+
+/** Tailwind-safe image well radius — full bleed on mobile (`max-md`). */
+const SPECIAL_OFFERS_IMAGE_WELL_RADIUS_CLASS = 'max-md:rounded-none md:rounded-[19px]';
 
 interface SpecialOfferImageSliderProps {
   slug: string;
@@ -120,7 +122,6 @@ export function SpecialOfferImageSlider({
   const ariaTemplate = t('home.special_offers.gallery_dot_aria');
   const paginationAria = t('home.special_offers.gallery_pagination_aria');
 
-  const wellRadiusPx = SPECIAL_OFFERS_IMAGE_WELL_RADIUS_PX;
   const wellHeightPx = SPECIAL_OFFERS_IMAGE_WELL_HEIGHT_PX;
   const imageTranslateY = 0;
   const imageNudgeLeftPx = 0;
@@ -138,8 +139,7 @@ export function SpecialOfferImageSlider({
     >
       {/* Images only — clipped; dots stay outside this layer so they paint on top. */}
       <div
-        className={`absolute inset-0 overflow-hidden ${imageWellBgClass}`}
-        style={{ borderRadius: wellRadiusPx }}
+        className={`absolute inset-0 overflow-hidden ${imageWellBgClass} ${SPECIAL_OFFERS_IMAGE_WELL_RADIUS_CLASS}`}
       >
         <div
           ref={scrollerRef}

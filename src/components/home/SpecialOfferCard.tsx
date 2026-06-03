@@ -1,9 +1,9 @@
 'use client';
 
-import { useCallback, useState, type MouseEvent } from 'react';
+import { useCallback, type MouseEvent } from 'react';
+import { useRouter } from 'next/navigation';
 
 import { ProductPdpPrefetchLink } from '@/components/ProductPdpPrefetchLink';
-import { NoPriceProductPopup } from '@/components/products/NoPriceProductPopup';
 
 import {
   getSpecialOfferBrandTextClass,
@@ -16,6 +16,9 @@ import {
   SPECIAL_OFFERS_CARD_MOBILE_NOTCH_WIDTH_PX,
   SPECIAL_OFFERS_CARD_MAX_WIDTH_PX,
   SPECIAL_OFFERS_CARD_PADDING_TOP_PX,
+  SPECIAL_OFFERS_CARD_PADDING_TOP_CSS_VAR,
+  SPECIAL_OFFERS_CARD_PADDING_X_CSS_VAR,
+  SPECIAL_OFFERS_CARD_PADDING_X_PX,
   SPECIAL_OFFERS_CARD_SHELL_RADIUS_PX,
   SPECIAL_OFFERS_CART_BUTTON_INSET_BOTTOM_PX,
   SPECIAL_OFFERS_CART_BUTTON_INSET_RIGHT_PX,
@@ -135,51 +138,32 @@ export function SpecialOfferCard({
         ? 'mx-0 w-full'
         : 'mx-auto';
 
+  const router = useRouter();
   const cardPdpEnabled = Boolean(product.slug) && !product.shellPlaceholder;
   const warrantyYears = product.warrantyYears ?? product.warrantyBadge?.years ?? null;
   const shouldShowCartCutouts = true;
-  const [showNoPricePopup, setShowNoPricePopup] = useState(false);
-  const handleNoPriceCardClick = useCallback((event: MouseEvent<HTMLAnchorElement>) => {
-    if (hasDisplayPrice || detailsPending) {
-      return;
-    }
-    event.preventDefault();
-    event.stopPropagation();
-    setShowNoPricePopup(true);
-  }, [hasDisplayPrice, detailsPending]);
   const handleNoPriceButtonClick = useCallback((event: MouseEvent) => {
-    if (hasDisplayPrice || detailsPending) {
+    if (hasDisplayPrice || detailsPending || !product.slug) {
       return;
     }
     event.preventDefault();
     event.stopPropagation();
-    setShowNoPricePopup(true);
-  }, [hasDisplayPrice, detailsPending]);
-  const handleNoPriceSurfaceClick = useCallback((event: MouseEvent<HTMLDivElement>) => {
-    if (hasDisplayPrice || detailsPending) {
-      return;
-    }
-    const target = event.target as HTMLElement;
-    if (target.closest('button,[role="button"],[data-no-price-ignore="true"]')) {
-      return;
-    }
-    event.preventDefault();
-    event.stopPropagation();
-    setShowNoPricePopup(true);
-  }, [hasDisplayPrice, detailsPending]);
+    router.push(`/products/${encodeURIComponent(product.slug.trim())}`);
+  }, [detailsPending, hasDisplayPrice, product.slug, router]);
 
   return (
     <div
-      className={`relative z-10 min-w-0 w-full max-w-full font-sans hover:z-30 focus-within:z-30 ${shellAlignClass}`}
+      className={`relative z-10 min-w-0 w-full max-w-full font-sans hover:z-30 focus-within:z-30 max-md:[--special-offers-card-pad-x:0px] max-md:[--special-offers-card-pad-top:0px] ${shellAlignClass}`}
       style={{
         ...shellMaxWidthStyle,
+        [SPECIAL_OFFERS_CARD_PADDING_X_CSS_VAR as string]: `${SPECIAL_OFFERS_CARD_PADDING_X_PX}px`,
+        [SPECIAL_OFFERS_CARD_PADDING_TOP_CSS_VAR as string]: `${SPECIAL_OFFERS_CARD_PADDING_TOP_PX}px`,
         ['--so-cart-bottom-mobile' as string]: `${
           mobileCartButtonBottomPx ?? SPECIAL_OFFERS_CART_BUTTON_MOBILE_BOTTOM_PX
         }px`,
         ['--so-cart-bottom-desktop' as string]: `${SPECIAL_OFFERS_CART_BUTTON_INSET_BOTTOM_PX}px`,
         ['--so-cart-right-desktop' as string]: `${SPECIAL_OFFERS_CART_BUTTON_INSET_RIGHT_PX}px`,
       }}
-      onClickCapture={handleNoPriceSurfaceClick}
     >
       <article
         className="relative flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden"
@@ -197,7 +181,6 @@ export function SpecialOfferCard({
             className="absolute inset-0 z-[1] focus:outline-none focus-visible:ring-2 focus-visible:ring-marco-yellow focus-visible:ring-offset-2"
             style={{ borderRadius: SPECIAL_OFFERS_CARD_SHELL_RADIUS_PX }}
             aria-label={product.title}
-            onClick={handleNoPriceCardClick}
           >
             <span className="sr-only">{product.title}</span>
           </ProductPdpPrefetchLink>
@@ -228,8 +211,7 @@ export function SpecialOfferCard({
           />
         ) : null}
         <div
-          className="pointer-events-none relative z-10 flex min-h-0 flex-1 flex-col px-4 pb-6"
-          style={{ paddingTop: SPECIAL_OFFERS_CARD_PADDING_TOP_PX }}
+          className="pointer-events-none relative z-10 flex min-h-0 flex-1 flex-col px-4 pb-6 pt-3 max-md:px-0 max-md:pt-0"
         >
           {warrantyYears ? (
             <SpecialOfferWarrantyBadge layout={layout} years={warrantyYears} />
@@ -251,7 +233,7 @@ export function SpecialOfferCard({
           />
 
           <div
-            className="pointer-events-none flex min-h-0 w-full flex-1 flex-col"
+            className="pointer-events-none flex min-h-0 w-full flex-1 flex-col max-md:px-4"
             style={textBlockShiftStyle}
           >
             <SpecialOfferCardInfo
@@ -275,10 +257,15 @@ export function SpecialOfferCard({
                 />
               </div>
             ) : (
-              <div className="mt-auto">
-                <span className="inline-flex rounded-full bg-[#f4f4f4] px-3 py-1 text-xs font-semibold text-[#383838]">
+              <div
+                className="mt-auto w-full min-w-0 max-md:pr-0 md:[padding-right:var(--special-offers-price-pad-end)]"
+                style={{
+                  marginBottom: SPECIAL_OFFERS_PRICE_BLOCK_LIFT_FROM_BOTTOM_PX,
+                }}
+              >
+                <p className="text-sm font-semibold leading-snug text-[#383838]">
                   {t('products.noPrice.label')}
-                </span>
+                </p>
               </div>
             )}
           </div>
@@ -309,13 +296,6 @@ export function SpecialOfferCard({
         onCompare={handleCompare}
         disabled={Boolean(product.shellPlaceholder)}
       />
-      {cardPdpEnabled ? (
-        <NoPriceProductPopup
-          isOpen={showNoPricePopup}
-          productSlug={product.slug}
-          onClose={() => setShowNoPricePopup(false)}
-        />
-      ) : null}
     </div>
   );
 }
