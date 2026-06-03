@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
-const os = require('os');
 const path = require('path');
+const {
+  getPreferredLanIPv4Addresses,
+} = require('./scripts/lib/lan-ip.cjs');
 
 function getPublicR2Origin() {
   const raw = process.env.R2_PUBLIC_URL;
@@ -25,41 +27,20 @@ function getHostnameFromUrl(raw) {
   }
 }
 
-function isPrivateIpv4(address) {
-  if (address.startsWith('10.') || address.startsWith('192.168.')) {
-    return true;
-  }
-
-  const match = /^172\.(\d+)\./.exec(address);
-  if (!match) {
-    return false;
-  }
-
-  const secondOctet = Number(match[1]);
-  return secondOctet >= 16 && secondOctet <= 31;
-}
-
 function getAllowedDevOrigins() {
   const hosts = new Set(['localhost', '127.0.0.1']);
   const envHosts = [
     getHostnameFromUrl(process.env.NEXT_PUBLIC_APP_URL),
     getHostnameFromUrl(process.env.APP_URL),
+    getHostnameFromUrl(process.env.NEXT_PUBLIC_API_URL),
   ].filter(Boolean);
 
   for (const host of envHosts) {
     hosts.add(host);
   }
 
-  for (const networkGroup of Object.values(os.networkInterfaces())) {
-    for (const network of networkGroup ?? []) {
-      if (network.internal || network.family !== 'IPv4') {
-        continue;
-      }
-
-      if (isPrivateIpv4(network.address)) {
-        hosts.add(network.address);
-      }
-    }
+  for (const address of getPreferredLanIPv4Addresses()) {
+    hosts.add(address);
   }
 
   return Array.from(hosts);

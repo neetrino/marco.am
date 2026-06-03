@@ -339,9 +339,13 @@ export function MobileHeaderLocaleCurrencyButton({
         aria-expanded={showMenu}
         aria-label={ariaLabel}
         data-theme-static="true"
-        className={`${HEADER_MOBILE_HEADER_ROUND_CONTROL_CLASS} dark:!bg-white dark:ring-1 dark:ring-black/15`}
+        className={`${HEADER_MOBILE_HEADER_ROUND_CONTROL_CLASS} gap-1 px-3 dark:!bg-white dark:ring-1 dark:ring-black/15`}
       >
-        <Globe className="h-6 w-6 shrink-0 dark:!text-black" strokeWidth={2.25} aria-hidden />
+        <Globe className="h-5 w-5 shrink-0 dark:!text-black" strokeWidth={2.25} aria-hidden />
+        <span className="text-xs font-bold leading-none dark:!text-black" aria-hidden>
+          /
+        </span>
+        <Banknote className="h-5 w-5 shrink-0 dark:!text-black" strokeWidth={2} aria-hidden />
       </button>
       {showMenu && (
         <LocaleCurrencyMenu

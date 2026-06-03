@@ -16,6 +16,9 @@ import {
   SPECIAL_OFFERS_CARD_MOBILE_NOTCH_WIDTH_PX,
   SPECIAL_OFFERS_CARD_MAX_WIDTH_PX,
   SPECIAL_OFFERS_CARD_PADDING_TOP_PX,
+  SPECIAL_OFFERS_CARD_PADDING_TOP_CSS_VAR,
+  SPECIAL_OFFERS_CARD_PADDING_X_CSS_VAR,
+  SPECIAL_OFFERS_CARD_PADDING_X_PX,
   SPECIAL_OFFERS_CARD_SHELL_RADIUS_PX,
   SPECIAL_OFFERS_CART_BUTTON_INSET_BOTTOM_PX,
   SPECIAL_OFFERS_CART_BUTTON_INSET_RIGHT_PX,
@@ -150,9 +153,11 @@ export function SpecialOfferCard({
 
   return (
     <div
-      className={`relative z-10 min-w-0 w-full max-w-full font-sans hover:z-30 focus-within:z-30 ${shellAlignClass}`}
+      className={`relative z-10 min-w-0 w-full max-w-full font-sans hover:z-30 focus-within:z-30 max-md:[--special-offers-card-pad-x:0px] max-md:[--special-offers-card-pad-top:0px] ${shellAlignClass}`}
       style={{
         ...shellMaxWidthStyle,
+        [SPECIAL_OFFERS_CARD_PADDING_X_CSS_VAR as string]: `${SPECIAL_OFFERS_CARD_PADDING_X_PX}px`,
+        [SPECIAL_OFFERS_CARD_PADDING_TOP_CSS_VAR as string]: `${SPECIAL_OFFERS_CARD_PADDING_TOP_PX}px`,
         ['--so-cart-bottom-mobile' as string]: `${
           mobileCartButtonBottomPx ?? SPECIAL_OFFERS_CART_BUTTON_MOBILE_BOTTOM_PX
         }px`,
@@ -206,8 +211,7 @@ export function SpecialOfferCard({
           />
         ) : null}
         <div
-          className="pointer-events-none relative z-10 flex min-h-0 flex-1 flex-col px-4 pb-6"
-          style={{ paddingTop: SPECIAL_OFFERS_CARD_PADDING_TOP_PX }}
+          className="pointer-events-none relative z-10 flex min-h-0 flex-1 flex-col px-4 pb-6 pt-3 max-md:px-0 max-md:pt-0"
         >
           {warrantyYears ? (
             <SpecialOfferWarrantyBadge layout={layout} years={warrantyYears} />
@@ -229,7 +233,7 @@ export function SpecialOfferCard({
           />
 
           <div
-            className="pointer-events-none flex min-h-0 w-full flex-1 flex-col"
+            className="pointer-events-none flex min-h-0 w-full flex-1 flex-col max-md:px-4"
             style={textBlockShiftStyle}
           >
             <SpecialOfferCardInfo

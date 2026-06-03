@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useShopProductsListingSearchParams } from '@/lib/use-shop-products-listing-search-params';
 import { pushShopProductsListingUrl } from '../lib/push-shop-products-listing-url';
 import { useState, useEffect, useRef, Suspense } from 'react';
+import { Banknote } from 'lucide-react';
 import { useTranslation } from '../lib/i18n-client';
 import { useForcedShopGridColumns } from './useForcedShopGridColumns';
 import { MOBILE_FILTERS_EVENT } from '@/lib/events';
@@ -116,7 +117,7 @@ const PRICE_PRESENCE_GROUP_CLASS =
   'flex h-10 min-h-10 shrink-0 items-stretch overflow-hidden rounded-full border border-solid border-marco-black/20 bg-white';
 
 const PRICE_PRESENCE_SEGMENT_BASE =
-  'inline-flex min-w-[112px] flex-1 items-center justify-center whitespace-nowrap px-4 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-marco-black border-r border-marco-black/15 last:border-r-0';
+  'inline-flex min-w-[112px] flex-1 items-center justify-center gap-1.5 whitespace-nowrap px-4 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-marco-black border-r border-marco-black/15 last:border-r-0';
 
 function viewToggleSegmentClass(isActive: boolean): string {
   return isActive
@@ -124,10 +125,64 @@ function viewToggleSegmentClass(isActive: boolean): string {
     : `${VIEW_TOGGLE_SEGMENT_BASE} text-marco-black dark:text-white hover:bg-[#fafafa] dark:hover:bg-white/10`;
 }
 
-function pricePresenceSegmentClass(isActive: boolean): string {
+const PRICE_PRESENCE_SEGMENT_MOBILE_BASE =
+  'inline-flex min-w-0 flex-1 items-center justify-center gap-1 whitespace-nowrap px-2 text-xs font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-marco-black border-r border-marco-black/15 last:border-r-0';
+
+function pricePresenceSegmentClass(isActive: boolean, mobile = false): string {
+  const base = mobile ? PRICE_PRESENCE_SEGMENT_MOBILE_BASE : PRICE_PRESENCE_SEGMENT_BASE;
   return isActive
-    ? `${PRICE_PRESENCE_SEGMENT_BASE} bg-marco-yellow text-marco-black`
-    : `${PRICE_PRESENCE_SEGMENT_BASE} bg-white text-marco-black/80 hover:bg-marco-gray/50`;
+    ? `${base} bg-marco-yellow text-marco-black`
+    : `${base} bg-white text-marco-black/80 hover:bg-marco-gray/50`;
+}
+
+type ProductsPricePresenceSwitchProps = {
+  readonly pricePresence: PricePresenceOption;
+  readonly switchAria: string;
+  readonly withPriceLabel: string;
+  readonly withoutPriceLabel: string;
+  readonly onChange: (next: PricePresenceOption) => void;
+  readonly mobile?: boolean;
+  readonly className?: string;
+};
+
+function ProductsPricePresenceSwitch({
+  pricePresence,
+  switchAria,
+  withPriceLabel,
+  withoutPriceLabel,
+  onChange,
+  mobile = false,
+  className = '',
+}: ProductsPricePresenceSwitchProps) {
+  return (
+    <div
+      className={`${PRICE_PRESENCE_GROUP_CLASS} ${mobile ? 'w-full' : ''} ${className}`.trim()}
+      role="group"
+      aria-label={switchAria}
+    >
+      <button
+        type="button"
+        onClick={() => onChange('with')}
+        className={pricePresenceSegmentClass(pricePresence === 'with', mobile)}
+        aria-pressed={pricePresence === 'with'}
+      >
+        <Banknote
+          className={mobile ? 'h-3.5 w-3.5 shrink-0' : 'h-4 w-4 shrink-0'}
+          strokeWidth={2}
+          aria-hidden
+        />
+        {withPriceLabel}
+      </button>
+      <button
+        type="button"
+        onClick={() => onChange('without')}
+        className={pricePresenceSegmentClass(pricePresence === 'without', mobile)}
+        aria-pressed={pricePresence === 'without'}
+      >
+        {withoutPriceLabel}
+      </button>
+    </div>
+  );
 }
 
 function ProductsShopTitleBlock({ total }: { readonly total?: number }) {
@@ -300,6 +355,12 @@ function ProductsHeaderContent({ total }: ProductsHeaderProps) {
     pushShopProductsListingUrl(router, `/products?${params.toString()}`);
   };
 
+  const pricePresenceLabels = {
+    switchAria: t('products.header.pricePresence.switchAria'),
+    withPrice: t('products.header.pricePresence.withPrice'),
+    withoutPrice: t('products.header.pricePresence.withoutPrice'),
+  };
+
   return (
     <div className="marco-header-container pb-2 pt-[58px] sm:pb-4">
       {/* Desktop: All elements in one horizontal line */}
@@ -346,24 +407,13 @@ function ProductsHeaderContent({ total }: ProductsHeaderProps) {
             </div>
           )}
 
-          <div className={PRICE_PRESENCE_GROUP_CLASS} role="group" aria-label={t('products.header.pricePresence.switchAria')}>
-            <button
-              type="button"
-              onClick={() => handlePricePresenceChange('with')}
-              className={pricePresenceSegmentClass(pricePresence === 'with')}
-              aria-pressed={pricePresence === 'with'}
-            >
-              {t('products.header.pricePresence.withPrice')}
-            </button>
-            <button
-              type="button"
-              onClick={() => handlePricePresenceChange('without')}
-              className={pricePresenceSegmentClass(pricePresence === 'without')}
-              aria-pressed={pricePresence === 'without'}
-            >
-              {t('products.header.pricePresence.withoutPrice')}
-            </button>
-          </div>
+          <ProductsPricePresenceSwitch
+            pricePresence={pricePresence}
+            switchAria={pricePresenceLabels.switchAria}
+            withPriceLabel={pricePresenceLabels.withPrice}
+            withoutPriceLabel={pricePresenceLabels.withoutPrice}
+            onChange={handlePricePresenceChange}
+          />
 
           {/* Sort dropdown — panel width matches trigger; rows h-10 like trigger */}
           <div className="relative w-max min-w-0" ref={sortDropdownRef}>
@@ -493,6 +543,15 @@ function ProductsHeaderContent({ total }: ProductsHeaderProps) {
             </div>
           </div>
         </div>
+
+        <ProductsPricePresenceSwitch
+          pricePresence={pricePresence}
+          switchAria={pricePresenceLabels.switchAria}
+          withPriceLabel={pricePresenceLabels.withPrice}
+          withoutPriceLabel={pricePresenceLabels.withoutPrice}
+          onChange={handlePricePresenceChange}
+          mobile
+        />
       </div>
     </div>
   );

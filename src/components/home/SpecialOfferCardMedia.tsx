@@ -6,11 +6,11 @@ import { ProductPdpPrefetchLink } from '../ProductPdpPrefetchLink';
 import { ProductImagePlaceholder } from '../ProductImagePlaceholder';
 
 import { shouldBypassNextImageOptimizer } from '../../lib/utils/should-bypass-next-image-optimizer';
-import {
-  SPECIAL_OFFERS_IMAGE_WELL_HEIGHT_PX,
-  SPECIAL_OFFERS_IMAGE_WELL_RADIUS_PX,
-} from './home-special-offers.constants';
+import { SPECIAL_OFFERS_IMAGE_WELL_HEIGHT_PX } from './home-special-offers.constants';
 import { SpecialOfferImageSlider } from './SpecialOfferImageSlider';
+
+/** Tailwind-safe image well radius — full bleed on mobile (`max-md`). */
+const SPECIAL_OFFERS_IMAGE_WELL_RADIUS_CLASS = 'max-md:rounded-none md:rounded-[19px]';
 
 interface SpecialOfferCardMediaProps {
   slug: string;
@@ -39,13 +39,13 @@ export function SpecialOfferCardMedia({
   const imageFillClass = 'object-cover object-center';
   const imageWellPaddingClass = 'p-0';
   const imageWellBgClass = 'bg-transparent';
+
   if (showPlaceholder) {
     return (
       <div
-        className="pointer-events-auto relative z-0 mt-0 flex w-full items-center justify-center overflow-hidden bg-white p-6 max-md:z-20"
+        className={`pointer-events-auto relative z-0 mt-0 flex w-full items-center justify-center overflow-hidden bg-white p-6 max-md:z-20 max-md:p-0 ${SPECIAL_OFFERS_IMAGE_WELL_RADIUS_CLASS}`}
         style={{
           height: SPECIAL_OFFERS_IMAGE_WELL_HEIGHT_PX,
-          borderRadius: SPECIAL_OFFERS_IMAGE_WELL_RADIUS_PX,
         }}
       >
         <div
@@ -76,10 +76,9 @@ export function SpecialOfferCardMedia({
 
   const singleSrc = images[0] as string;
 
-  const singleImageWellClass = `pointer-events-auto relative z-0 mt-0 flex w-full items-center justify-center overflow-hidden ${imageWellBgClass} ${imageWellPaddingClass} max-md:z-20`;
+  const singleImageWellClass = `pointer-events-auto relative z-0 mt-0 flex w-full items-center justify-center overflow-hidden ${imageWellBgClass} ${imageWellPaddingClass} max-md:z-20 ${SPECIAL_OFFERS_IMAGE_WELL_RADIUS_CLASS}`;
   const singleImageWellStyle = {
     height: SPECIAL_OFFERS_IMAGE_WELL_HEIGHT_PX,
-    borderRadius: SPECIAL_OFFERS_IMAGE_WELL_RADIUS_PX,
   } as const;
 
   const singleImageInner = (

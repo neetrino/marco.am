@@ -252,11 +252,20 @@ export const SPECIAL_OFFERS_GALLERY_PIP_INACTIVE = '#d1d5db';
 /** Active gallery pip fill (matches warranty accent). */
 export const SPECIAL_OFFERS_GALLERY_PIP_ACTIVE = '#FFCA03';
 
-/** Top padding under card shell before image well (Figma ~17). */
+/** Top padding under card shell before image well (`md+`). */
 export const SPECIAL_OFFERS_CARD_PADDING_TOP_PX = 12;
 
-/** Inner horizontal padding — matches `px-4` on the card content column. */
+/** CSS variable on the card shell — vertical inset before image (`md+`). */
+export const SPECIAL_OFFERS_CARD_PADDING_TOP_CSS_VAR = '--special-offers-card-pad-top';
+
+/** Inner horizontal padding — matches `px-4` on the card content column (`md+`). */
 export const SPECIAL_OFFERS_CARD_PADDING_X_PX = 16;
+
+/** Mobile: image well spans card edge-to-edge — no inner horizontal inset. */
+export const SPECIAL_OFFERS_CARD_PADDING_X_MOBILE_PX = 0;
+
+/** CSS variable on the card shell — drives padding + overlay icon offsets. */
+export const SPECIAL_OFFERS_CARD_PADDING_X_CSS_VAR = '--special-offers-card-pad-x';
 
 /**
  * Wishlist / compare / discount — `top` from the **outer** card wrapper (stack is outside `overflow:hidden`).
