@@ -1,6 +1,7 @@
 'use client';
 
 import type { MouseEvent } from 'react';
+import { useRouter } from 'next/navigation';
 import { ProductPdpPrefetchLink } from '../ProductPdpPrefetchLink';
 import { ProductCardImage } from './ProductCardImage';
 import { ProductCardInfo } from './ProductCardInfo';
@@ -61,8 +62,15 @@ export function ProductCardGrid({
   onAddToCart,
   wishlistPage = false,
 }: ProductCardGridProps) {
+  const router = useRouter();
   const { t } = useTranslation();
   const hasDisplayPrice = product.price > 0;
+
+  const handleNoPriceNavigate = (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    router.push(`/products/${encodeURIComponent(product.slug.trim())}`);
+  };
 
   const cardSurfaceClass = wishlistPage
     ? 'border border-gray-200 shadow-sm hover:shadow-md dark:border-white/30'
@@ -150,7 +158,14 @@ export function ProductCardGrid({
             )}
           </button>
         ) : (
-          <NoPriceArrowIcon className={isCompact ? 'h-[26px] w-[26px]' : 'h-8 w-8'} />
+          <button
+            type="button"
+            onClick={handleNoPriceNavigate}
+            className={`${isCompact ? 'h-[26px] w-[26px]' : 'h-8 w-8'} inline-flex items-center justify-center transition-transform hover:scale-105 active:scale-95`}
+            aria-label={product.title}
+          >
+            <NoPriceArrowIcon className="h-full w-full" />
+          </button>
         )}
       </div>
     </div>

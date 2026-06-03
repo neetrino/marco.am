@@ -7,7 +7,7 @@ import type { CurrencyCode } from '../../lib/currency';
 import {
   SpecialOfferCartFigmaIcon,
 } from './SpecialOfferCartFigmaArt';
-import { NoPriceArrowIcon } from '@/components/icons/NoPriceArrowIcon';
+import { NoPriceArrowGlyph } from '@/components/icons/NoPriceArrowIcon';
 import {
   SPECIAL_OFFERS_CART_BUTTON_SIZE_PX,
   SPECIAL_OFFERS_CART_BUTTON_SPINNER_PX,
@@ -162,8 +162,8 @@ export function SpecialOfferCartFloatingButton({
           ) : hasDisplayPrice ? (
             <SpecialOfferCartFigmaIcon />
           ) : (
-            <NoPriceArrowIcon
-              className={`h-[28px] w-[28px] transition-transform duration-150 md:h-[32px] md:w-[32px] ${
+            <NoPriceArrowGlyph
+              className={`h-[22px] w-[22px] transition-transform duration-150 md:h-[26px] md:w-[26px] ${
                 arrowTapPulse ? 'translate-y-[1px] scale-110' : ''
               }`}
             />

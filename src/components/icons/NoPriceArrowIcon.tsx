@@ -12,6 +12,23 @@ type NoPriceArrowIconProps = {
 };
 
 /**
+ * Black up-right arrow only — for yellow circular buttons that already provide the fill.
+ */
+export function NoPriceArrowGlyph({ className }: NoPriceArrowIconProps) {
+  return (
+    <svg
+      className={className}
+      viewBox={`0 0 ${VIEWBOX} ${VIEWBOX}`}
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
+      <path d={ARROW_PATH} fill={ARROW_FILL} />
+    </svg>
+  );
+}
+
+/**
  * Arrow-in-yellow-circle glyph for products without a display price.
  */
 export function NoPriceArrowIcon({ className }: NoPriceArrowIconProps) {

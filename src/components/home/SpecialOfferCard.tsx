@@ -253,10 +253,15 @@ export function SpecialOfferCard({
                 />
               </div>
             ) : (
-              <div className="mt-auto">
-                <span className="inline-flex rounded-full bg-[#f4f4f4] px-3 py-1 text-xs font-semibold text-[#383838]">
+              <div
+                className="mt-auto w-full min-w-0 max-md:pr-0 md:[padding-right:var(--special-offers-price-pad-end)]"
+                style={{
+                  marginBottom: SPECIAL_OFFERS_PRICE_BLOCK_LIFT_FROM_BOTTOM_PX,
+                }}
+              >
+                <p className="text-sm font-semibold leading-snug text-[#383838]">
                   {t('products.noPrice.label')}
-                </span>
+                </p>
               </div>
             )}
           </div>
