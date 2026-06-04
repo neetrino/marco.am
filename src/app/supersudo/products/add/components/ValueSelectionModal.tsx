@@ -132,7 +132,7 @@ export function ValueSelectionModal({
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition-colors"
-            aria-label="Close"
+            aria-label={t('admin.common.close')}
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -150,7 +150,7 @@ export function ValueSelectionModal({
               onChange={(e) => handleSelectAll(e.target.checked)}
               className="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-gray-500"
             />
-            <span className="text-sm font-medium text-gray-900">All</span>
+            <span className="text-sm font-medium text-gray-900">{t('admin.users.all')}</span>
           </label>
 
           <div className="border-t border-gray-200 my-3"></div>

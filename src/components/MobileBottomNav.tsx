@@ -225,7 +225,7 @@ export function MobileBottomNav() {
         className={`lg:hidden pointer-events-none fixed bottom-0 left-0 right-0 w-full ${
           shopSheetOpen ? 'z-[999]' : 'z-50'
         }`}
-        aria-label="Primary"
+        aria-label={t('common.ariaLabels.primaryNav')}
       >
         <div className="pointer-events-auto mx-auto max-w-md">
           <div

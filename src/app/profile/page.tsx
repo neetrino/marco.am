@@ -255,8 +255,17 @@ function ProfilePageContent() {
 
 export default function ProfilePage() {
   return (
-    <Suspense fallback={<div className="marco-header-container py-12 text-center text-gray-600">Loading profile...</div>}>
+    <Suspense fallback={<ProfilePageSuspenseFallback />}>
       <ProfilePageContent />
     </Suspense>
+  );
+}
+
+function ProfilePageSuspenseFallback() {
+  const { t } = useTranslation();
+  return (
+    <div className="marco-header-container py-12 text-center text-gray-600">
+      {t('profile.common.loadingProfile')}
+    </div>
   );
 }

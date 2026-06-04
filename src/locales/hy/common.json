@@ -44,7 +44,7 @@
     "stores": "Խանութներ",
     "shop": "Խանութ",
     "brands": "Բրենդներ",
-    "reels": "Reels",
+    "reels": "Ռիլեր",
     "addresses": "Հասցեներ",
     "openInMaps": "Տեսնել քարտեզում",
     "categoriesMegaMenu": {
@@ -119,6 +119,7 @@
     "comment": "Ձեր կարծիքը",
     "commentPlaceholder": "Կիսվեք ձեր մտքերով այս ապրանքի մասին...",
     "submitReview": "Ուղարկել կարծիք",
+    "submit": "Ուղարկել կարծիք",
     "submitting": "Ուղարկվում է...",
     "loginRequired": "Խնդրում ենք մուտք գործել կարծիք գրելու համար",
     "ratingRequired": "Խնդրում ենք ընտրել գնահատական",
@@ -128,6 +129,7 @@
     "noReviews": "Կարծիքներ դեռ չկան: Դարձեք առաջինը, ով կգրի կարծիք:",
     "review": "կարծիք",
     "reviews": "կարծիք",
+    "cancel": "Չեղարկել",
     "policyPrefix": "Հաստատում եմ, որ ծանոթ եմ և ընդունում եմ",
     "policyTermsLink": "օգտագործման պայմանները",
     "policySuffix": " և խանութի կարծիքների կանոնները։",
@@ -208,7 +210,25 @@
     "fullscreenImage": "Լիաէկրան պատկեր",
     "socialLinks": "Սոցիալ ցանցեր",
     "headerChoosePhone": "Ընտրեք զանգահարելու համարը",
-    "headerChooseAddress": "Ընտրեք խանութի հասցեն կամ բացեք քարտեզը"
+    "headerChooseAddress": "Ընտրեք խանութի հասցեն կամ բացեք քարտեզը",
+    "loading": "Բեռնվում է",
+    "loadingProducts": "Ապրանքները բեռնվում են",
+    "loadingShop": "Խանութը բեռնվում է",
+    "loadingFilters": "Ֆիլտրերը բեռնվում են",
+    "loadingProductDetails": "Ապրանքի մանրամասները բեռնվում են",
+    "loadingAdmin": "Ադմինը բեռնվում է",
+    "loadingCheckout": "Վճարումը բեռնվում է",
+    "close": "Փակել",
+    "previousTeamMember": "Նախորդ թիմակից",
+    "nextTeamMember": "Հաջորդ թիմակից",
+    "previousReel": "Նախորդ reel",
+    "nextReel": "Հաջորդ reel",
+    "scrollToTop": "Ոլորել վերև",
+    "previousProducts": "Նախորդ ապրանքներ",
+    "nextProducts": "Հաջորդ ապրանքներ",
+    "mainNav": "Հիմնական նավիգացիա",
+    "primaryNav": "Հիմնական նավիգացիա",
+    "logoHome": "MARCO GROUP — Գլխավոր"
   },
   "placeholders": {
     "search": "Որոնել ապրանքներ"
@@ -284,5 +304,19 @@
     "title": "Էջը չի գտնվել",
     "description": "Ձեր փնտրած էջը գոյություն չունի կամ տեղափոխվել է:",
     "goHome": "Գնալ գլխավոր էջ"
+  },
+  "errors": {
+    "genericTitle": "Ինչ-որ բան սխալ է",
+    "genericDescription": "Սխալ է տեղի ունեցել։ Խնդրում ենք կրկին փորձել կամ վերադառնալ գլխավոր էջ։",
+    "tryAgain": "Կրկին փորձել",
+    "goHome": "Գլխավոր էջ",
+    "checkoutTitle": "Վճարման սխալ",
+    "checkoutDescription": "Ինչ-որ բան սխալ է։ Խնդրում ենք կրկին փորձել կամ ստուգել զամբյուղը։",
+    "cart": "Զամբյուղ",
+    "adminTitle": "Ադմինի սխալ",
+    "adminDescription": "Ինչ-որ բան սխալ է։ Խնդրում ենք կրկին փորձել։",
+    "adminLink": "Ադմին",
+    "productsTitle": "Չհաջողվեց բեռնել ապրանքները",
+    "productsDescription": "Խնդրում ենք կրկին փորձել։"
   }
 }

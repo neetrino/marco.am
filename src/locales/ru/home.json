@@ -1,5 +1,5 @@
 {
-  "reels_title": "REELS",
+  "reels_title": "РИЛСЫ",
   "reels_captions": "Стиральные машины|Пылесосы|Мелкая техника|Смарт TV|Холодильники",
   "reels_scroll_prev": "Предыдущие reels",
   "reels_scroll_next": "Следующие reels",
@@ -20,7 +20,7 @@
   "app_store": "App Store",
   "google_play": "Google Play",
   "app_qr_aria": "QR-код для загрузки приложения",
-  "secondary_banner_label": "BANNER",
+  "secondary_banner_label": "БАННЕР",
   "banner_shop_now": "Купить сейчас",
   "chat_fab_aria": "Связаться с нами",
   "hero_title": "Почувствуйте силу технологий:",
@@ -66,7 +66,7 @@
   "promo_side_card_two_aria": "Бесплатная доставка — перейти к товарам",
   "promo_smartphones_banner_aria": "Акция — перейти к товарам",
   "promo_smartphones_banner_cta": "ЕЩЁ",
-  "reels_title": "REELS",
+  "reels_title": "РИЛСЫ",
   "reels_prev_aria": "Прокрутить влево",
   "reels_next_aria": "Прокрутить вправо",
   "reels_pagination_aria": "Навигация по Reels",
@@ -139,16 +139,16 @@
   },
   "gradient_banner": {
     "aria": "MARCO — промо-баннер",
-    "headline": "BANNER"
+    "headline": "БАННЕР"
   },
   "secondary_banner": {
     "aria": "MARCO — промо-блок",
     "cta": "ЕЩЁ"
   },
   "reels_page": {
-    "meta_title": "Reels — MARCO",
+    "meta_title": "Ролики — MARCO",
     "meta_description": "Выберите ролик для просмотра",
-    "heading": "Reels",
+    "heading": "Ролики",
     "subtitle": "Нажмите на ролик и смотрите в полноэкранном режиме.",
     "available_count_label": "Доступные ролики",
     "empty": "Ролики пока недоступны.",

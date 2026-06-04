@@ -6,7 +6,7 @@ import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { useShopProductsListingSearchParams } from '@/lib/use-shop-products-listing-search-params';
 import { pushShopProductsListingUrl } from '@/lib/push-shop-products-listing-url';
-import { useTranslation } from '../lib/i18n-client';
+import { useShopFiltersTranslation } from './ProductsFiltersProvider';
 import { logger } from '@/lib/utils/logger';
 import {
   MOBILE_DRAWER_CLOSE_BTN_CLASS,
@@ -32,7 +32,7 @@ export function MobileFiltersDrawer({
   children,
   openEventName,
 }: MobileFiltersDrawerProps) {
-  const { t } = useTranslation();
+  const { t } = useShopFiltersTranslation();
   const router = useRouter();
   const urlSearchParams = useShopProductsListingSearchParams();
   const defaultTitle = title || t('products.mobileFilters.title');

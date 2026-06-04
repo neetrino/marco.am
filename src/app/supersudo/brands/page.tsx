@@ -459,20 +459,20 @@ export default function BrandsPage() {
                             checked={allOnPageSelected}
                             onChange={(event) => handleTogglePageSelection(event.target.checked)}
                             className="h-4 w-4 cursor-pointer rounded border-slate-300 text-amber-500 focus:ring-amber-400"
-                            aria-label="Select page brands"
+                            aria-label={t('admin.brands.selectPage')}
                           />
                         </th>
                         <th className="px-2 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                           {t('admin.brands.logo')}
                         </th>
                         <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                          Name
+                          {t('admin.brands.tableName')}
                         </th>
                         <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                          Slug
+                          {t('admin.brands.tableSlug')}
                         </th>
                         <th className="px-3 py-2 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
-                          Actions
+                          {t('admin.brands.tableActions')}
                         </th>
                       </tr>
                     </thead>
@@ -487,7 +487,7 @@ export default function BrandsPage() {
                               checked={selectedBrandIds.includes(brand.id)}
                               onChange={(event) => handleToggleSelect(brand.id, event.target.checked)}
                               className="h-4 w-4 cursor-pointer rounded border-slate-300 text-amber-500 focus:ring-amber-400"
-                              aria-label={`Select ${brand.name}`}
+                              aria-label={t('admin.brands.selectItem').replace('{name}', brand.name)}
                             />
                           </td>
                           <td className="px-2 py-2 align-middle">

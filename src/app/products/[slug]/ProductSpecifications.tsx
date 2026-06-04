@@ -19,54 +19,15 @@ interface ProductSpecificationsProps {
 }
 
 type MetaLabelKey = 'brand' | 'category' | 'sku' | 'variants' | 'availability';
-const MANUFACTURER_COUNTRY_LABEL = 'Արտադրող երկիր';
-const MATERIAL_LABEL = 'Նյութ';
 
 function getMetaLabel(language: LanguageCode, key: MetaLabelKey): string {
-  const labels: Record<LanguageCode, Record<MetaLabelKey, string>> = {
-    en: {
-      brand: 'Brand',
-      category: 'Category',
-      sku: 'SKU',
-      variants: 'Variants',
-      availability: 'Availability',
-    },
-    ru: {
-      brand: 'Бренд',
-      category: 'Категория',
-      sku: 'Артикул',
-      variants: 'Варианты',
-      availability: 'Наличие',
-    },
-    hy: {
-      brand: 'Ապրանքանիշ',
-      category: 'Կատեգորիա',
-      sku: 'Արտիկուլ',
-      variants: 'Տարբերակներ',
-      availability: 'Առկայություն',
-    },
-    ka: {
-      brand: 'ბრენდი',
-      category: 'კატეგორია',
-      sku: 'SKU',
-      variants: 'ვარიანტები',
-      availability: 'ხელმისაწვდომობა',
-    },
-  };
-
-  return labels[language]?.[key] || labels.en[key];
+  return t(language, `product.specifications.${key}`);
 }
 
 function getAvailabilityValue(product: Product, language: LanguageCode): string {
   const hasStock = product.variants.some((variant) => variant.stock > 0);
   if (hasStock) {
-    return language === 'ru'
-      ? 'В наличии'
-      : language === 'hy'
-        ? 'Առկա է'
-        : language === 'ka'
-          ? 'ხელმისაწვდომია'
-          : 'In stock';
+    return t(language, 'product.specifications.inStock');
   }
   return t(language, 'product.outOfStock');
 }
@@ -120,16 +81,18 @@ function getAttributeValue(product: Product, keys: string[]): string | null {
   return values.length > 0 ? values.join(', ') : null;
 }
 
-function ensureRequiredRows(rows: SpecificationRow[], product: Product): SpecificationRow[] {
+function ensureRequiredRows(rows: SpecificationRow[], product: Product, language: LanguageCode): SpecificationRow[] {
   const normalizedKeys = new Set(rows.map((row) => row.key.toLowerCase().trim()));
   const manufacturerCountry = getAttributeValue(product, ['country', 'origin', 'manufacturer_country', 'արտադրող երկիր']);
   const material = getAttributeValue(product, ['material', 'composition', 'նյութ']);
+  const countryLabel = t(language, 'product.specifications.manufacturerCountry');
+  const materialLabel = t(language, 'product.specifications.material');
 
-  if (!normalizedKeys.has(MANUFACTURER_COUNTRY_LABEL.toLowerCase())) {
-    rows.push({ key: MANUFACTURER_COUNTRY_LABEL, value: manufacturerCountry || '-' });
+  if (!normalizedKeys.has(countryLabel.toLowerCase())) {
+    rows.push({ key: countryLabel, value: manufacturerCountry || '-' });
   }
-  if (!normalizedKeys.has(MATERIAL_LABEL.toLowerCase())) {
-    rows.push({ key: MATERIAL_LABEL, value: material || '-' });
+  if (!normalizedKeys.has(materialLabel.toLowerCase())) {
+    rows.push({ key: materialLabel, value: material || '-' });
   }
 
   return rows;
@@ -167,34 +130,34 @@ function getSpecificationRows(product: Product, language: LanguageCode): Specifi
     getProductText(language, product.id, 'longDescription') || product.description || '',
   );
   if (!rawDescription.trim()) {
-    return ensureRequiredRows(getFallbackRows(product), product);
+    return ensureRequiredRows(getFallbackRows(product), product, language);
   }
 
   const fromTable = parseRowsFromTable(rawDescription);
   if (fromTable.length > 0) {
-    return ensureRequiredRows(dedupeRows(fromTable), product);
+    return ensureRequiredRows(dedupeRows(fromTable), product, language);
   }
 
   const fromStrong = parseRowsFromLabeledStrong(rawDescription);
   if (fromStrong.length >= 2) {
-    return ensureRequiredRows(dedupeRows(fromStrong), product);
+    return ensureRequiredRows(dedupeRows(fromStrong), product, language);
   }
 
   const fromLines = parseRowsFromLines(rawDescription);
   if (fromLines.length > 0) {
-    return ensureRequiredRows(dedupeRows(fromLines), product);
+    return ensureRequiredRows(dedupeRows(fromLines), product, language);
   }
 
   if (fromStrong.length > 0) {
-    return ensureRequiredRows(dedupeRows(fromStrong), product);
+    return ensureRequiredRows(dedupeRows(fromStrong), product, language);
   }
 
   const plainDescription = parsePlainDescription(rawDescription, language, product);
   if (plainDescription.length > 0) {
-    return ensureRequiredRows(dedupeRows(plainDescription), product);
+    return ensureRequiredRows(dedupeRows(plainDescription), product, language);
   }
 
-  return ensureRequiredRows(getFallbackRows(product), product);
+  return ensureRequiredRows(getFallbackRows(product), product, language);
 }
 
 export function ProductSpecifications({ product, language }: ProductSpecificationsProps) {

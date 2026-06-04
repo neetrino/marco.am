@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from '../lib/i18n-client';
 
 export function ScrollToTop() {
+  const { t } = useTranslation();
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -35,7 +37,7 @@ export function ScrollToTop() {
         <button
           onClick={scrollToTop}
           className="fixed bottom-8 right-8 z-50 bg-gray-900 text-white p-3 rounded-full shadow-lg hover:bg-gray-800 transition-all duration-300 hover:scale-110 flex items-center justify-center w-12 h-12"
-          aria-label="Scroll to top"
+          aria-label={t('common.ariaLabels.scrollToTop')}
         >
           <svg
             className="w-6 h-6"

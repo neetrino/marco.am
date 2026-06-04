@@ -12,17 +12,21 @@ const MARCO_LOGO_INTRINSIC_HEIGHT = 1350;
  */
 const MARCO_LOGO_SIZES = '(min-width: 768px) 320px, 280px';
 
+type MarcoLogoProps = {
+  readonly ariaLabel?: string;
+};
+
 /**
  * MARCO GROUP logo — Figma 111:4321 (`logo aranc fon 1`).
  * Raster is cropped/zoomed inside an 83×73 frame; md+ height matches `HEADER_ROW2_BAR_HEIGHT_CLASS` (row-2 search strip).
  */
-export function MarcoLogo() {
+export function MarcoLogo({ ariaLabel = 'MARCO GROUP Home' }: MarcoLogoProps) {
   return (
     <Link
       href="/"
       prefetch
       className="flex h-9 shrink-0 items-center md:h-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marco-black"
-      aria-label="MARCO GROUP Home"
+      aria-label={ariaLabel}
     >
       <span className="relative aspect-[83/73] h-9 w-auto shrink-0 overflow-hidden md:h-10">
         <Image

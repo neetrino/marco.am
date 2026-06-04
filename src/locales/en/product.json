@@ -26,7 +26,17 @@
   "errorAddingToCart": "Error adding to cart",
   "pcs": "pcs",
   "outOfStockLabel": "Out of Stock",
-  "noRelatedProducts": "Related products not found"
+  "noRelatedProducts": "Related products not found",
+  "specifications": {
+    "brand": "Brand",
+    "category": "Category",
+    "sku": "SKU",
+    "variants": "Variants",
+    "availability": "Availability",
+    "inStock": "In stock",
+    "manufacturerCountry": "Country of manufacture",
+    "material": "Material"
+  }
 }
 
 

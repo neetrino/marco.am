@@ -273,7 +273,15 @@
     "deleteWithChildrenConfirm": "Category \"{name}\" has {count} subcategories. Delete this category and all subcategories? This cannot be undone.",
     "deletedSuccess": "Category successfully deleted",
     "deletedSuccessWithChildren": "Category and {count} subcategories successfully deleted",
-    "errorDeleting": "Error deleting category: {message}"
+    "errorDeleting": "Error deleting category: {message}",
+    "tableTitle": "Title",
+    "tableSlug": "Slug",
+    "tableParent": "Parent",
+    "tableActions": "Actions",
+    "selectPage": "Select all categories on this page",
+    "selectItem": "Select {name}",
+    "sizesBadge": "Sizes",
+    "noParent": "—"
   },
   "delivery": {
     "title": "Delivery",
@@ -651,6 +659,7 @@
     "howItWorks": "How It Works:",
     "stepSizeControls": "Step size controls how the price slider moves (e.g., 100 = increments of 100)",
     "differentStepSizes": "You can set different step sizes for USD, AMD, RUB and GEL",
+    "defaultRange": "Default min/max range is derived from actual product prices",
     "usersCanAdjust": "Users can still adjust the full range using the slider on products page",
     "changesTakeEffect": "Changes take effect immediately after saving",
     "saveSettings": "Save Settings",
@@ -661,7 +670,11 @@
     "minPriceInvalid": "Min price must be a valid positive number",
     "maxPriceInvalid": "Max price must be a valid positive number",
     "stepSizeInvalid": "{label} must be a valid positive number",
-    "minMustBeLess": "Min price must be less than max price"
+    "minMustBeLess": "Min price must be less than max price",
+    "configureFilterRange": "Configure Filter Range",
+    "configureFilterRangeDescription": "Set the public-facing default range and step sizes for every supported currency.",
+    "stepSizeByCurrency": "Step Size By Currency",
+    "stepSizeByCurrencyHint": "Use a smaller step for denser filters and a bigger step for faster browsing."
   },
   "brands": {
     "title": "Brands",
@@ -701,7 +714,12 @@
     "logoUploading": "Processing…",
     "logoInvalidFile": "Please choose an image file.",
     "selectedBrandsCount": "Selected brands: {count}",
-    "deleteSelected": "Delete selected"
+    "deleteSelected": "Delete selected",
+    "tableName": "Name",
+    "tableSlug": "Slug",
+    "tableActions": "Actions",
+    "selectPage": "Select all brands on this page",
+    "selectItem": "Select {name}"
   },
   "orders": {
     "title": "View Orders",
@@ -891,7 +909,15 @@
     "savedAfterUpload": "Image uploaded to storage and saved. It will show on the storefront shortly.",
     "uploadOrSaveFailed": "Upload or save failed",
     "errorLoading": "Failed to load hero banner: {message}",
-    "errorSaving": "Failed to save hero banner: {message}"
+    "errorSaving": "Failed to save hero banner: {message}",
+    "desktopCard1": "Desktop card 1",
+    "desktopCard2": "Desktop card 2",
+    "desktopCard3": "Desktop card 3",
+    "mobileHeroImage": "Mobile hero image",
+    "promoCardLeft": "Promo card left (under featured products)",
+    "promoCardRight": "Promo card right (under featured products)",
+    "mobileFloorBannerImage": "Mobile floor banner image",
+    "removeMobileFloorImage": "Remove mobile floor image"
   },
   "common": {
     "loading": "Loading...",
@@ -907,6 +933,10 @@
     "saving": "Saving...",
     "back": "Back",
     "backToAdmin": "Back to Admin Dashboard",
+    "adminPanel": "Admin Panel",
+    "quickAccess": "Quick Access",
+    "toggleProductsSubmenu": "Toggle products submenu",
+    "closeMenu": "Close menu",
     "tablePagination": {
       "showingPage": "Showing page {page} of {totalPages} ({total} total)",
       "previous": "Previous",

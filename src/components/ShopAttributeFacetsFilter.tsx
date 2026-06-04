@@ -4,12 +4,11 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useShopProductsListingSearchParams } from '@/lib/use-shop-products-listing-search-params';
 import { pushShopProductsListingUrl } from '@/lib/push-shop-products-listing-url';
-import { useTranslation } from '@/lib/i18n-client';
 import {
   normalizeTechnicalFilterToken,
   type TechnicalSpecFacet,
 } from '@/lib/services/products-technical-filters';
-import { useProductsFilters } from './ProductsFiltersProvider';
+import { useProductsFilters, useShopFiltersTranslation } from './ProductsFiltersProvider';
 import {
   PRODUCTS_FILTER_SECTION_SHELL_LAST_CLASS,
   productsFiltersSectionFont,
@@ -39,7 +38,7 @@ export function ShopAttributeFacetsFilter() {
   const searchParams = useShopProductsListingSearchParams();
   const mobileDraft = useMobileFiltersDraft();
   const filtersContext = useProductsFilters();
-  const { t } = useTranslation();
+  const { t } = useShopFiltersTranslation();
   const [facets, setFacets] = useState<TechnicalSpecFacet[]>([]);
   const [loading, setLoading] = useState(true);
   const [optimisticByKey, setOptimisticByKey] = useState<Record<string, string[] | null> | null>(

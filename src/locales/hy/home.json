@@ -1,5 +1,5 @@
 {
-  "reels_title": "REELS",
+  "reels_title": "ՌԻԼԵՐ",
   "reels_captions": "Լվացքի մեքենաներ|Փոշեկուլներ|Մանր տեխնիկա|Սմարթ TV|Սառցարան",
   "reels_scroll_prev": "Նախորդ reels",
   "reels_scroll_next": "Հաջորդ reels",
@@ -20,7 +20,7 @@
   "app_store": "App Store",
   "google_play": "Google Play",
   "app_qr_aria": "Հավելվածը ներբեռնելու QR կոդ",
-  "secondary_banner_label": "BANNER",
+  "secondary_banner_label": "ԲԱՆՆԵՐ",
   "banner_shop_now": "Գնել հիմա",
   "chat_fab_aria": "Կապ հաստատել",
   "hero_title": "Զգացեք տեխնոլոգիայի հզորությունը:",
@@ -66,7 +66,7 @@
   "promo_side_card_two_aria": "Անվճար առաքում — բացել ապրանքները",
   "promo_smartphones_banner_aria": "Ակցիա — բացել ապրանքները",
   "promo_smartphones_banner_cta": "ԱՎԵԼԻՆ",
-  "reels_title": "REELS",
+  "reels_title": "ՌԻԼԵՐ",
   "reels_prev_aria": "Տեղափոխել ձախ",
   "reels_next_aria": "Տեղափոխել աջ",
   "reels_pagination_aria": "Reels-ի էջացում",
@@ -139,7 +139,7 @@
   },
   "gradient_banner": {
     "aria": "Մարքո — պրոմո բաններ",
-    "headline": "BANNER"
+    "headline": "ԲԱՆՆԵՐ"
   },
   "secondary_banner": {
     "aria": "Մարքո — պրոմո տարածք",
@@ -148,11 +148,11 @@
   "reels_page": {
     "meta_title": "Reels — MARCO",
     "meta_description": "Ընտրեք reel՝ դիտելու համար",
-    "heading": "Reels",
+    "heading": "Ռիլեր",
     "subtitle": "Սեղմեք reel-ի վրա և դիտեք այն ամբողջ էկրանով։",
     "available_count_label": "Հասանելի reels",
     "empty": "Reels-ը դեռ հասանելի չեն։",
-    "card_badge": "Reel",
+    "card_badge": "Ռիլ",
     "watch_cta": "Դիտել reel",
     "preview_previous_aria": "Նախորդ reel",
     "preview_next_aria": "Հաջորդ reel"

@@ -91,23 +91,23 @@ export function CategoriesList({
                       )
                     }
                     className="h-4 w-4 cursor-pointer rounded border-slate-300 text-amber-500 focus:ring-amber-400"
-                    aria-label="Select page categories"
+                    aria-label={t('admin.categories.selectPage')}
                   />
                 </th>
                 <th className="px-2 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                   {t('admin.categories.imageLabel')}
                 </th>
                 <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Title
+                  {t('admin.categories.tableTitle')}
                 </th>
                 <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Slug
+                  {t('admin.categories.tableSlug')}
                 </th>
                 <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Parent
+                  {t('admin.categories.tableParent')}
                 </th>
                 <th className="px-3 py-2 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Actions
+                  {t('admin.categories.tableActions')}
                 </th>
               </tr>
             </thead>

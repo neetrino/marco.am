@@ -101,7 +101,7 @@ export function AdminMenuDrawer({ tabs, currentPath }: AdminMenuDrawerProps) {
                   setOpen(false);
                 }}
                 className="h-10 w-10 rounded-full border border-marco-border text-marco-text/80 transition-colors hover:bg-marco-gray hover:text-marco-black"
-                aria-label="Закрыть меню админки"
+                aria-label={t('admin.common.closeMenu')}
               >
                 <svg className="mx-auto h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -149,7 +149,7 @@ export function AdminMenuDrawer({ tabs, currentPath }: AdminMenuDrawerProps) {
                         </span>
                       </button>
                       <button
-                        aria-label="Toggle products submenu"
+                        aria-label={t('admin.common.toggleProductsSubmenu')}
                         onClick={() => setIsProductsExpanded((prev) => !prev)}
                         className={`flex h-10 w-10 items-center justify-center rounded-xl transition-colors ${
                           isActive

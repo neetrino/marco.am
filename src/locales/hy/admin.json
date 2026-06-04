@@ -11,10 +11,10 @@
     "promoCodes": "Պրոմո կոդեր",
     "users": "Օգտատերեր",
     "messages": "Հաղորդագրություններ",
-    "reels": "Reels",
+    "reels": "Ռիլեր",
     "analytics": "Վերլուծություն",
     "filterByPrice": "Զտել ըստ գնի",
-    "heroBanner": "Hero / Banner",
+    "heroBanner": "Գլխավոր բանнер",
     "delivery": "Առաքում",
     "settings": "Կարգավորումներ"
   },
@@ -224,7 +224,7 @@
     }
   },
   "categories": {
-    "title": "Կատեգորիաներր",
+    "title": "Կատեգորիաներ",
     "backToAdmin": "Վերադառնալ ադմինիստրատորի վահան",
     "loadingCategories": "Բեռնվում են կատեգորիաները...",
     "noCategories": "Կատեգորիաներ չեն գտնվել",
@@ -273,7 +273,15 @@
     "deleteWithChildrenConfirm": "«{name}» կատեգորիան ունի {count} ենթակատեգորիա: Ջնջե՞լ կատեգորիան և բոլոր ենթակատեգորիաները: Այս գործողությունը չի կարող հետարկվել:",
     "deletedSuccess": "Կատեգորիան հաջողությամբ ջնջվեց",
     "deletedSuccessWithChildren": "Կատեգորիան և {count} ենթակատեգորիա հաջողությամբ ջնջվեցին",
-    "errorDeleting": "Սխալ կատեգորիան ջնջելիս: {message}"
+    "errorDeleting": "Սխալ կատեգորիան ջնջելիս: {message}",
+    "tableTitle": "Վերնագիր",
+    "tableSlug": "Slug",
+    "tableParent": "Ծնող",
+    "tableActions": "Գործողություններ",
+    "selectPage": "Ընտրել այս էջի բոլոր կատեգորիաները",
+    "selectItem": "Ընտրել {name}",
+    "sizesBadge": "Չափեր",
+    "noParent": "—"
   },
   "delivery": {
     "title": "Առաքում",
@@ -623,7 +631,7 @@
     "productDiscounts": "Ապրանքի զեղչեր",
     "productDiscountsSubtitle": "Սահմանել անհատական զեղչի տոկոս յուրաքանչյուր ապրանքի համար",
     "loadingProducts": "Բեռնվում են ապրանքները...",
-    "noProducts": "No products found",
+    "noProducts": "Ապրանքներ չեն գտնվել",
     "showingPage": "Էջ {page} / {totalPages} ({total} ապրանք)",
     "previous": "Նախորդ",
     "next": "Հաջորդ",
@@ -662,7 +670,11 @@
     "minPriceInvalid": "Նվազագույն գինը պետք է լինի վավեր դրական թիվ",
     "maxPriceInvalid": "Առավելագույն գինը պետք է լինի վավեր դրական թիվ",
     "stepSizeInvalid": "{label} պետք է լինի վավեր դրական թիվ",
-    "minMustBeLess": "Նվազագույն գինը պետք է փոքր լինի առավելագույն գնից"
+    "minMustBeLess": "Նվազագույն գինը պետք է փոքր լինի առավելագույն գնից",
+    "configureFilterRange": "Կարգավորել զտիչի միջակայքը",
+    "configureFilterRangeDescription": "Սահմանեք հրապարակային լռելյայն միջակայքը և քայլի չափերը յուրաքանչյուր արժույթի համար։",
+    "stepSizeByCurrency": "Քայլի չափը ըստ արժույթի",
+    "stepSizeByCurrencyHint": "Օգտագործեք ավելի փոքր քայլ՝ ավելի խիտ զտիչի համար, և ավելի մեծ քայլ՝ արագ դիտման համար։"
   },
   "brands": {
     "title": "Բրենդներ",
@@ -702,7 +714,12 @@
     "logoUploading": "Մշակվում է…",
     "logoInvalidFile": "Ընտրեք նկարի ֆայլ։",
     "selectedBrandsCount": "Ընտրված բրենդներ՝ {count}",
-    "deleteSelected": "Ջնջել ընտրվածները"
+    "deleteSelected": "Ջնջել ընտրվածները",
+    "tableName": "Անվանում",
+    "tableSlug": "Slug",
+    "tableActions": "Գործողություններ",
+    "selectPage": "Ընտրել այս էջի բոլոր բրենդները",
+    "selectItem": "Ընտրել {name}"
   },
   "orders": {
     "title": "Դիտել պատվերները",
@@ -847,14 +864,14 @@
     "titleHy": "Վերնագիր (HY)",
     "titleRu": "Վերնագիր (RU)",
     "titleEn": "Վերնագիր (EN)",
-    "videoUrl": "Video URL",
+    "videoUrl": "Տեսանյութի URL",
     "uploadVideo": "Upload video ֆայլ",
     "uploadingVideo": "Video-ն վերբեռնվում է...",
     "posterUrl": "Poster URL (ընտրովի)",
     "uploadPoster": "Upload poster նկար",
     "uploadingPoster": "Poster-ը վերբեռնվում է...",
     "externalSource": "Արտաքին URL",
-    "adminUpload": "Admin upload",
+    "adminUpload": "Ադմինից վերբեռնում",
     "add": "Ավելացնել reel",
     "saving": "Պահվում է...",
     "list": "Reels ցուցակ",
@@ -874,7 +891,7 @@
     "failedToSave": "Չհաջողվեց պահպանել փոփոխությունները"
   },
   "heroBanner": {
-    "title": "Hero / Banner",
+    "title": "Գլխավոր բանнер",
     "subtitle": "Կառավարեք home page-ի hero banner-ի desktop և mobile նկարները",
     "uploadAutoSaveHint": "Յուրաքանչյուր վերբեռնում պահվում է Cloudflare R2-ում և անմիջապես գրանցվում է կարգավորումներում, որպեսզի կայքը ցույց տա նոր նկարը (քեշը կարող է մի քանի վայրկյան տևել)։",
     "backToAdmin": "Վերադառնալ ադմինիստրատորի վահան",
@@ -892,7 +909,15 @@
     "savedAfterUpload": "Նկարը բեռնվել է պահոց և պահպանվել է։ Կայքում կցուցադրվի մի քանի վայրկյանից։",
     "uploadOrSaveFailed": "Բեռնումը կամ պահպանումը ձախողվեց",
     "errorLoading": "Չհաջողվեց բեռնել hero banner-ը: {message}",
-    "errorSaving": "Չհաջողվեց պահպանել hero banner-ը: {message}"
+    "errorSaving": "Չհաջողվեց պահպանել hero banner-ը: {message}",
+    "desktopCard1": "Desktop քարտ 1",
+    "desktopCard2": "Desktop քարտ 2",
+    "desktopCard3": "Desktop քարտ 3",
+    "mobileHeroImage": "Mobile hero պատկեր",
+    "promoCardLeft": "Promo քարտ ձախ (featured ապրանքների տակ)",
+    "promoCardRight": "Promo քարտ աջ (featured ապրանքների տակ)",
+    "mobileFloorBannerImage": "Mobile floor banner պատկեր",
+    "removeMobileFloorImage": "Հեռացնել mobile floor պատկերը"
   },
   "common": {
     "loading": "Բեռնվում է...",
@@ -908,6 +933,10 @@
     "saving": "Պահվում է...",
     "back": "Վերադառնալ",
     "backToAdmin": "Վերադառնալ ադմինիստրատորի վահան",
+    "adminPanel": "Ադմին էջ",
+    "quickAccess": "Արագ մուտք",
+    "toggleProductsSubmenu": "Բացել/փակել ապրանքների ենթամենյու",
+    "closeMenu": "Փակել մենյուն",
     "tablePagination": {
       "showingPage": "Ցուցադրվում է {page} էջը {totalPages}-ից ({total} ընդամենը)",
       "previous": "Նախորդ",

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslation } from '../lib/i18n-client';
 
 export type ToastType = 'success' | 'error' | 'warning' | 'info';
 
@@ -17,6 +18,7 @@ interface ToastProps {
 }
 
 function ToastItem({ toast, onClose }: ToastProps) {
+  const { t } = useTranslation();
   const [isVisible, setIsVisible] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
 
@@ -107,7 +109,7 @@ function ToastItem({ toast, onClose }: ToastProps) {
       <button
         onClick={handleClose}
         className={`flex-shrink-0 ${iconColors[toast.type]} hover:opacity-70 transition-opacity`}
-        aria-label="Close"
+        aria-label={t('common.ariaLabels.close')}
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
