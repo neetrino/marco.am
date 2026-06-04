@@ -165,7 +165,7 @@ export function useAttributes() {
       setEditingAttribute(null);
       setEditingAttributeName('');
       fetchAttributes();
-      showToast(t('admin.attributes.nameUpdatedSuccess') || 'Attribute name updated successfully', 'success');
+      showToast(t('admin.attributes.nameUpdatedSuccess'), 'success');
     } catch (err: unknown) {
       console.error('❌ [ADMIN] Error updating attribute name:', err);
       const errorMessage = getApiOrErrorMessage(err, 'Failed to update attribute name');

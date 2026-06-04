@@ -111,6 +111,7 @@
     "sale": "Sale",
     "scrollLeft": "Scroll left",
     "scrollRight": "Scroll right",
+    "categoryFallbackBadge": "CAT",
     "labels": {
       "all": "ALL",
       "new": "NEW",

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Facebook, Twitter, Linkedin, Instagram } from 'lucide-react';
 import { logger } from "@/lib/utils/logger";
+import { useTranslation } from '../lib/i18n-client';
 
 /**
  * Интерфейс для члена команды
@@ -92,6 +93,7 @@ const teamMembers: TeamMember[] = [
  * Отображает карточки членов команды с возможностью прокрутки
  */
 export function TeamCarousel() {
+  const { t } = useTranslation();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [visibleCards, setVisibleCards] = useState(4);
 
@@ -253,7 +255,7 @@ export function TeamCarousel() {
           <button
             onClick={goToPrevious}
             className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-8 md:-translate-x-12 bg-transparent hover:bg-transparent text-gray-900 p-3 transition-all z-10 hover:scale-110"
-            aria-label="Previous team member"
+            aria-label={t('common.ariaLabels.previousTeamMember')}
           >
             <svg
               className="w-5 h-5"
@@ -273,7 +275,7 @@ export function TeamCarousel() {
           <button
             onClick={goToNext}
             className="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-8 md:translate-x-12 bg-transparent hover:bg-transparent text-gray-900 p-3 transition-all z-10 hover:scale-110"
-            aria-label="Next team member"
+            aria-label={t('common.ariaLabels.nextTeamMember')}
           >
             <svg
               className="w-5 h-5"

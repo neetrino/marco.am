@@ -1,3 +1,7 @@
+'use client';
+
+import { useTranslation } from '@/lib/i18n-client';
+
 type StaticPageLoadingSkeletonProps = {
   readonly variant?: 'default' | 'grid' | 'grid-body' | 'reels';
 };
@@ -8,12 +12,15 @@ const pulse = 'animate-pulse rounded-md bg-slate-200 dark:bg-slate-600';
  * Instant placeholder for marketing/static routes while RSC payload or dev compile finishes.
  */
 export function StaticPageLoadingSkeleton({ variant = 'default' }: StaticPageLoadingSkeletonProps) {
+  const { t } = useTranslation();
+  const loadingLabel = t('common.ariaLabels.loading');
+
   if (variant === 'grid' || variant === 'grid-body') {
     return (
       <div
         className="w-full"
         aria-busy="true"
-        aria-label="Loading"
+        aria-label={loadingLabel}
       >
         {variant === 'grid' ? <div className={`mb-8 h-10 w-48 ${pulse}`} /> : null}
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
@@ -30,7 +37,7 @@ export function StaticPageLoadingSkeleton({ variant = 'default' }: StaticPageLoa
       <div
         className="mx-auto w-full max-w-screen-2xl px-1 pt-1 sm:px-2 sm:pt-2"
         aria-busy="true"
-        aria-label="Loading"
+        aria-label={loadingLabel}
       >
         <div className="grid grid-cols-3 gap-px sm:gap-1 md:grid-cols-4 lg:grid-cols-5">
           {Array.from({ length: 10 }, (_, index) => (
@@ -45,7 +52,7 @@ export function StaticPageLoadingSkeleton({ variant = 'default' }: StaticPageLoa
     <div
       className="marco-header-container min-h-[50vh] py-10 md:py-14"
       aria-busy="true"
-      aria-label="Loading"
+      aria-label={loadingLabel}
     >
       <div className={`mb-4 h-4 w-32 ${pulse}`} />
       <div className={`mb-8 h-10 w-64 max-w-full ${pulse}`} />

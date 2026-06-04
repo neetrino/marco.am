@@ -45,10 +45,10 @@ export function HeaderDesktopTopRow({
       className={`${HEADER_CONTAINER_CLASS} flex w-full min-w-0 flex-nowrap items-center ${HEADER_FIGMA_PADDING_Y_CLASS} ${HEADER_FIGMA_CLUSTER_GAP_CLASS}`}
     >
       <div className="flex min-w-0 flex-1 flex-nowrap items-center">
-        <MarcoLogo />
+        <MarcoLogo ariaLabel={t('common.ariaLabels.logoHome')} />
         <nav
           className={`flex h-10 shrink-0 flex-nowrap items-center ${HEADER_LOGO_TO_NAV_GAP_CLASS} ${HEADER_FIGMA_NAV_LINK_GAP_CLASS} text-xs font-bold capitalize leading-[18px] text-marco-text dark:text-white/88`}
-          aria-label="Main"
+          aria-label={t('common.ariaLabels.mainNav')}
         >
           {desktopPrimaryNavLinks.map((item) => {
             const label = t(item.translationKey);

@@ -1,12 +1,15 @@
 'use client';
 
+import { useTranslation } from '../../../lib/i18n-client';
+
 /**
  * Fixed-height placeholders matching the primary PDP info column rhythm (no fake prices/titles).
  */
 export function ProductInfoPrimarySkeleton() {
+  const { t } = useTranslation();
   const bar = 'rounded-md bg-gray-200/80 dark:bg-white/10';
   return (
-    <div className="min-w-0 space-y-6" aria-busy="true" aria-label="Loading product details">
+    <div className="min-w-0 space-y-6" aria-busy="true" aria-label={t('common.ariaLabels.loadingProductDetails')}>
       <div className="space-y-3">
         <div className={`h-4 w-28 ${bar}`} />
         <div className={`h-9 w-full max-w-md ${bar}`} />

@@ -161,7 +161,7 @@ export function MobileBottomNavShopSheet({
                 >
                   <span className="flex h-full flex-col items-center gap-2 text-center">
                     <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/80 text-[11px] font-bold text-marco-black dark:bg-zinc-800 dark:text-zinc-200">
-                      ALL
+                      {t('products.categoryNavigation.labels.all')}
                     </span>
                     <span className="line-clamp-2 min-w-0">{t('products.categoryNavigation.shopAll')}</span>
                   </span>
@@ -188,7 +188,9 @@ export function MobileBottomNavShopSheet({
                             className="h-[34px] w-[34px] object-contain"
                           />
                         ) : (
-                          <span className="text-[9px] font-bold text-marco-text/80 dark:text-zinc-300">CAT</span>
+                          <span className="text-[9px] font-bold text-marco-text/80 dark:text-zinc-300">
+                            {t('products.categoryNavigation.categoryFallbackBadge')}
+                          </span>
                         )}
                       </span>
                       <span className="line-clamp-2 min-w-0">{category.title}</span>

@@ -1,3 +1,7 @@
+'use client';
+
+import { useTranslation } from '@/lib/i18n-client';
+
 export type ProductsShopLoadingSkeletonVariant = 'full' | 'body' | 'grid';
 
 type ProductsShopLoadingSkeletonProps = {
@@ -10,6 +14,7 @@ type ProductsShopLoadingSkeletonProps = {
  * Used by Suspense fallback and `loading.tsx` so navigations are never a blank white main.
  */
 export function ProductsShopLoadingSkeleton({ variant = 'full' }: ProductsShopLoadingSkeletonProps) {
+  const { t } = useTranslation();
   const bar = 'rounded-md bg-slate-200 animate-pulse dark:bg-slate-600';
   const block = 'rounded-lg bg-slate-200 animate-pulse dark:bg-slate-600';
   const card = 'h-[260px] w-full max-w-[286px] rounded-lg bg-slate-200 animate-pulse sm:h-[280px] dark:bg-slate-600';
@@ -28,7 +33,7 @@ export function ProductsShopLoadingSkeleton({ variant = 'full' }: ProductsShopLo
 
   if (variant === 'grid') {
     return (
-      <div className="min-w-0 flex-1 w-full" aria-busy="true" aria-label="Loading products">
+      <div className="min-w-0 flex-1 w-full" aria-busy="true" aria-label={t('common.ariaLabels.loadingProducts')}>
         {gridSkeleton}
       </div>
     );
@@ -55,7 +60,7 @@ export function ProductsShopLoadingSkeleton({ variant = 'full' }: ProductsShopLo
     <div
       className="w-full max-w-full min-h-[min(72vh,820px)] bg-[var(--app-bg)] pb-4 md:min-h-[min(68vh,760px)] md:pb-32 lg:pb-40"
       aria-busy="true"
-      aria-label="Loading shop"
+      aria-label={t('common.ariaLabels.loadingShop')}
     >
       {headerSkeleton}
 

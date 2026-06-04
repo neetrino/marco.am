@@ -115,7 +115,8 @@
       "sale": "РАСПРОДАЖА"
     },
     "scrollLeft": "Прокрутить категории влево",
-    "scrollRight": "Прокрутить категории вправо"
+    "scrollRight": "Прокрутить категории вправо",
+    "categoryFallbackBadge": "КАТ"
   },
   "warranty": {
     "years_suffix": "ГОДА",

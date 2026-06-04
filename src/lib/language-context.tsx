@@ -4,6 +4,7 @@ import {
   createContext,
   useState,
   useEffect,
+  useLayoutEffect,
   type ReactNode,
 } from 'react';
 import type { LanguageCode } from './language';
@@ -23,6 +24,17 @@ export function LanguagePreferenceProvider({
   readonly children: ReactNode;
 }) {
   const [lang, setLang] = useState<LanguageCode>(initialLanguage);
+
+  useLayoutEffect(() => {
+    const stored = getStoredLanguage();
+    setLang((prev) => {
+      if (stored === prev) {
+        return prev;
+      }
+      clearTranslationCache();
+      return stored;
+    });
+  }, []);
 
   useEffect(() => {
     const sync = () => {

@@ -249,14 +249,14 @@ export function AttributesPageContent({
                               {savingAttribute ? (
                                 <>
                                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                  {t('admin.attributes.saving') || 'Saving...'}
+                                  {t('admin.attributes.saving')}
                                 </>
                               ) : (
                                 <>
                                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                   </svg>
-                                  {t('admin.attributes.save') || 'Save'}
+                                  {t('admin.attributes.save')}
                                 </>
                               )}
                             </button>
@@ -296,7 +296,7 @@ export function AttributesPageContent({
                         <button
                           onClick={() => toggleAttributeEdit(attribute)}
                           className="rounded-lg px-3 py-2 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
-                          title={t('admin.attributes.editAttribute') || 'Edit attribute'}
+                          title={t('admin.attributes.editAttribute')}
                         >
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -412,7 +412,7 @@ export function AttributesPageContent({
                                     <button
                                       onClick={() => toggleValueEdit(attribute.id, value)}
                                       className="rounded-lg p-1 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
-                                      title={t('admin.attributes.configureValue') || 'Configure value'}
+                                      title={t('admin.attributes.configureValue')}
                                     >
                                       <svg
                                         className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`}

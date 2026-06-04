@@ -115,7 +115,8 @@
       "sale": "ԶԵՂՉ"
     },
     "scrollLeft": "Ոլորել կատեգորիաները ձախ",
-    "scrollRight": "Ոլորել կատեգորիաները աջ"
+    "scrollRight": "Ոլորել կատեգորիաները աջ",
+    "categoryFallbackBadge": "ԿԱՏ"
   },
   "warranty": {
     "years_suffix": "ՏԱՐԻ",

@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslation } from '@/lib/i18n-client';
 import { HOME_PAGE_SECTION_SHELL_CLASS } from '@/components/home/home-page-section-shell.constants';
 import {
   SPECIAL_OFFERS_CARD_HEIGHT_PX,
@@ -16,11 +19,13 @@ const cardSkeletonStyle = {
  * Matches real card height so layout does not jump when content replaces this.
  */
 export function HomeProductRailsSkeleton() {
+  const { t } = useTranslation();
+
   return (
     <section
       className="bg-white py-8 sm:py-10"
       aria-busy="true"
-      aria-label="Loading products"
+      aria-label={t('common.ariaLabels.loadingProducts')}
     >
       <div className={HOME_PAGE_SECTION_SHELL_CLASS}>
         <div className="mb-8 flex flex-row flex-wrap items-end justify-between gap-4">

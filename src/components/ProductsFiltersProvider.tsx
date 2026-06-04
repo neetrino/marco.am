@@ -14,8 +14,9 @@ import {
 import { useShopProductsListingSearchParams } from '@/lib/use-shop-products-listing-search-params';
 import { SHOP_PRODUCTS_LISTING_PARAMS_EVENT } from '@/lib/shop-products-listing-params-event';
 import { apiClient } from '../lib/api-client';
-import { getStoredLanguage } from '../lib/language';
+import { t as translate } from '../lib/i18n';
 import type { LanguageCode } from '../lib/language';
+import { LanguagePreferenceContext } from '../lib/language-context';
 import { buildTechnicalFilterQuerySignature } from '@/lib/services/products-technical-filters';
 import type { TechnicalSpecFacet } from '@/lib/services/products-technical-filters';
 import { buildProductsFiltersClientKey } from '@/lib/products-filters-client-key';
@@ -73,6 +74,8 @@ interface ProductsFiltersContextValue {
   categoriesLoading: boolean;
   error: boolean;
   refetch: () => void;
+  /** SSR / listing locale — aligned with facet API `lang` and filter copy. */
+  language: LanguageCode;
 }
 
 const ProductsFiltersContext = createContext<ProductsFiltersContextValue | null>(null);
@@ -140,6 +143,8 @@ export function ProductsFiltersProvider({
   awaitServerHydration = false,
   children,
 }: ProductsFiltersProviderProps) {
+  const preferenceLang = useContext(LanguagePreferenceContext);
+  const resolvedLanguage = languageProp ?? preferenceLang;
   const searchParams = useShopProductsListingSearchParams();
   const [data, setData] = useState<ProductsFiltersData | null>(() =>
     initialFiltersData && initialFiltersKey
@@ -163,7 +168,7 @@ export function ProductsFiltersProvider({
   );
 
   const filtersClientKey = useMemo(() => {
-    const lang = languageProp ?? getStoredLanguage();
+    const lang = resolvedLanguage;
     return buildProductsFiltersClientKey({
       category,
       search,
@@ -173,7 +178,7 @@ export function ProductsFiltersProvider({
       language: lang,
       technicalFilterSignature: technicalSignatureFromUrl,
     });
-  }, [category, search, minPrice, maxPrice, languageProp, technicalSignatureFromUrl, filter]);
+  }, [category, search, minPrice, maxPrice, resolvedLanguage, technicalSignatureFromUrl, filter]);
 
   const applyFiltersPayload = useCallback(
     (payload: ProductsFiltersData, key: string) => {
@@ -194,7 +199,7 @@ export function ProductsFiltersProvider({
       setLoading(true);
     }
     try {
-      const lang = languageProp ?? getStoredLanguage();
+      const lang = resolvedLanguage;
       const params: Record<string, string> = { lang };
       const categoryParam = searchParams.get('category') ?? category;
       const searchParam = searchParams.get('search') ?? search;
@@ -238,7 +243,7 @@ export function ProductsFiltersProvider({
     } finally {
       setLoading(false);
     }
-  }, [category, search, filter, minPrice, maxPrice, languageProp, searchParams, filtersClientKey]);
+  }, [category, search, filter, minPrice, maxPrice, resolvedLanguage, searchParams, filtersClientKey]);
 
   const fetchFiltersRef = useRef(fetchFilters);
   fetchFiltersRef.current = fetchFilters;
@@ -297,7 +302,7 @@ export function ProductsFiltersProvider({
 
   useEffect(() => {
     const scheduleFacetRefetch = () => {
-      const lang = languageProp ?? getStoredLanguage();
+      const lang = resolvedLanguage;
       const scopeKey = buildFacetRefetchScopeKey(searchParams, lang);
       if (scopeKey === lastFacetScopeRef.current) {
         return;
@@ -319,7 +324,7 @@ export function ProductsFiltersProvider({
         window.clearTimeout(facetRefetchTimerRef.current);
       }
     };
-  }, [languageProp, searchParams]);
+  }, [resolvedLanguage, searchParams]);
 
   const applyServerHydration = useCallback(
     (payload: ProductsFiltersData, key: string) => {
@@ -337,8 +342,8 @@ export function ProductsFiltersProvider({
   const categoriesLoading = loading && !(data?.categories?.length ?? 0);
 
   const value = useMemo<ProductsFiltersContextValue>(
-    () => ({ data, loading, categoriesLoading, error, refetch: fetchFilters }),
-    [data, loading, categoriesLoading, error, fetchFilters],
+    () => ({ data, loading, categoriesLoading, error, refetch: fetchFilters, language: resolvedLanguage }),
+    [data, loading, categoriesLoading, error, fetchFilters, resolvedLanguage],
   );
 
   return (
@@ -352,6 +357,20 @@ export function ProductsFiltersProvider({
 
 export function useProductsFilters(): ProductsFiltersContextValue | null {
   return useContext(ProductsFiltersContext);
+}
+
+/**
+ * Translation hook for shop PLP filter UI — uses listing locale from {@link ProductsFiltersProvider}
+ * so section titles match facet API language (Categories, Brands, Attributes, etc.).
+ */
+export function useShopFiltersTranslation() {
+  const filtersCtx = useContext(ProductsFiltersContext);
+  const preferenceLang = useContext(LanguagePreferenceContext);
+  const lang = filtersCtx?.language ?? preferenceLang;
+
+  const tFn = useCallback((path: string) => translate(lang, path), [lang]);
+
+  return useMemo(() => ({ t: tFn, lang }), [tFn, lang]);
 }
 
 type ProductsFiltersServerHydrationProps = {

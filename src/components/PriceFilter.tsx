@@ -14,10 +14,9 @@ import {
   CATALOG_PRICE_CURRENCY,
   type CurrencyCode,
 } from '../lib/currency';
-import { useTranslation } from '../lib/i18n-client';
 import { pushShopProductsListingUrl } from '../lib/push-shop-products-listing-url';
 import { useMobileFiltersDraft } from './mobile-filters-draft-context';
-import { useProductsFilters } from './ProductsFiltersProvider';
+import { useProductsFilters, useShopFiltersTranslation } from './ProductsFiltersProvider';
 
 interface PriceFilterProps {
   currentMinPrice?: string;
@@ -44,7 +43,7 @@ export function PriceFilter({ currentMinPrice, currentMaxPrice, category }: Pric
   const searchParams = useShopProductsListingSearchParams();
   const mobileDraft = useMobileFiltersDraft();
   const filtersContext = useProductsFilters();
-  const { t } = useTranslation();
+  const { t } = useShopFiltersTranslation();
   const activeSearchParams = mobileDraft?.enabled ? mobileDraft.searchParams : searchParams;
 
   const [priceRange, setPriceRange] = useState<PriceRange>({

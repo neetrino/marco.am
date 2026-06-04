@@ -150,12 +150,12 @@ export function ProductsShopFiltersColumn({
   );
 }
 
-export function productsShopFiltersColumnSkeleton() {
+export function productsShopFiltersColumnSkeleton(language: LanguageCode = 'en') {
   return (
     <aside
       className="hidden w-[16rem] shrink-0 min-[744px]:block xl:w-[20rem]"
       aria-busy="true"
-      aria-label="Loading filters"
+      aria-label={t(language, 'common.ariaLabels.loadingFilters')}
     >
       <div className="space-y-3 border-r border-slate-200/90 pb-4 pt-4 dark:border-white/15 min-[744px]:pr-3 xl:space-y-4 xl:pb-6 xl:pt-6 xl:pr-6">
         <div className="h-5 w-28 animate-pulse rounded-md bg-slate-200 dark:bg-slate-600" />

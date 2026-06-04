@@ -26,7 +26,17 @@
   "errorAddingToCart": "Ошибка при добавлении в корзину",
   "pcs": "шт",
   "outOfStockLabel": "Нет в наличии",
-  "noRelatedProducts": "Похожие товары не найдены"
+  "noRelatedProducts": "Похожие товары не найдены",
+  "specifications": {
+    "brand": "Бренд",
+    "category": "Категория",
+    "sku": "Артикул",
+    "variants": "Варианты",
+    "availability": "Наличие",
+    "inStock": "В наличии",
+    "manufacturerCountry": "Страна производства",
+    "material": "Материал"
+  }
 }
 
 

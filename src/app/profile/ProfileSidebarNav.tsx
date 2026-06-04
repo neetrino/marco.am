@@ -27,7 +27,7 @@ export function ProfileSidebarNav({ tabs, activeTab, onTabChange, t }: ProfileSi
             <svg className="h-5 w-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10.5l9-7 9 7M5.5 9.5V20h13V9.5" />
             </svg>
-            <span className="flex-1">Home</span>
+            <span className="flex-1">{t('common.navigation.home')}</span>
             <svg className="h-4 w-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="m9 6 6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
             </svg>

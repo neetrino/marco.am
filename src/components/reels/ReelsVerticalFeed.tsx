@@ -90,7 +90,7 @@ export function ReelsVerticalFeed({ initialIndex, items }: ReelsVerticalFeedProp
             type="button"
             onClick={() => scrollToReelByIndex(activeIndex - 1)}
             className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/30 bg-black/45 text-white shadow-[0_8px_20px_rgba(0,0,0,0.24)] transition-all duration-200 hover:border-marco-yellow hover:bg-marco-yellow hover:text-marco-black disabled:cursor-not-allowed disabled:opacity-45"
-            aria-label="Previous reel"
+            aria-label={t('common.ariaLabels.previousReel')}
             disabled={activeIndex <= 0}
           >
             <ChevronUp className="h-5 w-5" strokeWidth={2} aria-hidden />
@@ -99,7 +99,7 @@ export function ReelsVerticalFeed({ initialIndex, items }: ReelsVerticalFeedProp
             type="button"
             onClick={() => scrollToReelByIndex(activeIndex + 1)}
             className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/30 bg-black/45 text-white shadow-[0_8px_20px_rgba(0,0,0,0.24)] transition-all duration-200 hover:border-marco-yellow hover:bg-marco-yellow hover:text-marco-black disabled:cursor-not-allowed disabled:opacity-45"
-            aria-label="Next reel"
+            aria-label={t('common.ariaLabels.nextReel')}
             disabled={activeIndex >= reelItems.length - 1}
           >
             <ChevronDown className="h-5 w-5" strokeWidth={2} aria-hidden />

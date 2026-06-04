@@ -309,10 +309,10 @@ export default function PriceFilterSettingsPage() {
             <div className="border-b border-marco-border/70 bg-gradient-to-r from-white via-marco-gray/40 to-white px-6 py-5">
               <div className="mb-4 h-1 w-14 rounded-full bg-gradient-to-r from-marco-yellow to-marco-black/30" />
               <h3 className="text-xl font-semibold text-marco-black">
-                Configure Filter Range
+                {t('admin.priceFilter.configureFilterRange')}
               </h3>
               <p className="mt-1 text-sm text-marco-text/70">
-                Set the public-facing default range and step sizes for every supported currency.
+                {t('admin.priceFilter.configureFilterRangeDescription')}
               </p>
             </div>
 
@@ -325,9 +325,9 @@ export default function PriceFilterSettingsPage() {
               <div className="space-y-8 p-6">
                 <div className="space-y-4">
                   <div>
-                    <p className="text-sm font-semibold text-marco-black">Step Size By Currency</p>
+                    <p className="text-sm font-semibold text-marco-black">{t('admin.priceFilter.stepSizeByCurrency')}</p>
                     <p className="mt-1 text-sm text-marco-text/70">
-                      Use a smaller step for denser filters and a bigger step for faster browsing.
+                      {t('admin.priceFilter.stepSizeByCurrencyHint')}
                     </p>
                   </div>
                   <div className="grid gap-4 md:grid-cols-2">

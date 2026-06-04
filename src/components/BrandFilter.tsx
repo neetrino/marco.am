@@ -6,8 +6,7 @@ import { useShopProductsListingSearchParams } from '@/lib/use-shop-products-list
 import { pushShopProductsListingUrl } from '../lib/push-shop-products-listing-url';
 import { apiClient } from '../lib/api-client';
 import { getStoredLanguage } from '../lib/language';
-import { useTranslation } from '../lib/i18n-client';
-import { useProductsFilters, type BrandOption } from './ProductsFiltersProvider';
+import { useProductsFilters, useShopFiltersTranslation, type BrandOption } from './ProductsFiltersProvider';
 import {
   PRODUCTS_FILTER_SECTION_SHELL_CLASS,
   productsFiltersSectionFont,
@@ -28,7 +27,7 @@ export function BrandFilter({ category, search, minPrice, maxPrice }: BrandFilte
   const searchParams = useShopProductsListingSearchParams();
   const mobileDraft = useMobileFiltersDraft();
   const filtersContext = useProductsFilters();
-  const { t } = useTranslation();
+  const { t } = useShopFiltersTranslation();
   const [brands, setBrands] = useState<BrandOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [optimisticBrandSlugs, setOptimisticBrandSlugs] = useState<string[] | null>(null);

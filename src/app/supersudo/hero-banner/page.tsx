@@ -511,7 +511,7 @@ export default function HeroBannerPage() {
         <Card className="admin-card border border-slate-100 bg-white/95 shadow-sm">
           <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
             <ImageUploadField
-              label="Desktop card 1"
+              label={t('admin.heroBanner.desktopCard1')}
               fieldKey="primaryTopDesktopUrl"
               currentUrl={form.primaryTopDesktopUrl}
               uploadingField={uploadingField}
@@ -519,7 +519,7 @@ export default function HeroBannerPage() {
               previewHeightClassName="h-48"
             />
             <ImageUploadField
-              label="Desktop card 2"
+              label={t('admin.heroBanner.desktopCard2')}
               fieldKey="primaryBottomDesktopUrl"
               currentUrl={form.primaryBottomDesktopUrl}
               uploadingField={uploadingField}
@@ -527,7 +527,7 @@ export default function HeroBannerPage() {
               previewHeightClassName="h-48"
             />
             <ImageUploadField
-              label="Desktop card 3"
+              label={t('admin.heroBanner.desktopCard3')}
               fieldKey="secondaryDesktopUrl"
               currentUrl={form.secondaryDesktopUrl}
               uploadingField={uploadingField}
@@ -535,7 +535,7 @@ export default function HeroBannerPage() {
               previewHeightClassName="h-[25rem]"
             />
             <ImageUploadField
-              label="Mobile hero image"
+              label={t('admin.heroBanner.mobileHeroImage')}
               fieldKey="mobileImageUrl"
               currentUrl={form.mobileImageUrl}
               uploadingField={uploadingField}
@@ -543,7 +543,7 @@ export default function HeroBannerPage() {
               previewHeightClassName="h-56 sm:h-72"
             />
             <ImageUploadField
-              label="Promo card left (under featured products)"
+              label={t('admin.heroBanner.promoCardLeft')}
               fieldKey="promoPrimaryDesktopUrl"
               currentUrl={form.promoPrimaryDesktopUrl}
               uploadingField={uploadingField}
@@ -551,17 +551,17 @@ export default function HeroBannerPage() {
               previewHeightClassName="h-48"
             />
             <ImageUploadField
-              label="Mobile floor banner image"
+              label={t('admin.heroBanner.mobileFloorBannerImage')}
               fieldKey="promoPrimaryMobileUrl"
               currentUrl={form.promoPrimaryMobileUrl}
               uploadingField={uploadingField}
               onUpload={handleUpload}
               onRemove={handleRemove}
-              removeLabel="Remove mobile floor image"
+              removeLabel={t('admin.heroBanner.removeMobileFloorImage')}
               previewHeightClassName="h-56 sm:h-72"
             />
             <ImageUploadField
-              label="Promo card right (under featured products)"
+              label={t('admin.heroBanner.promoCardRight')}
               fieldKey="promoSecondaryDesktopUrl"
               currentUrl={form.promoSecondaryDesktopUrl}
               uploadingField={uploadingField}

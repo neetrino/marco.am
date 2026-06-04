@@ -7,8 +7,7 @@ import { pushShopProductsListingUrl } from '../lib/push-shop-products-listing-ur
 import { apiClient } from '../lib/api-client';
 import { getStoredLanguage } from '../lib/language';
 import { getColorHex } from '../lib/colorMap';
-import { useTranslation } from '../lib/i18n-client';
-import { useProductsFilters } from './ProductsFiltersProvider';
+import { useProductsFilters, useShopFiltersTranslation } from './ProductsFiltersProvider';
 import {
   PRODUCTS_FILTER_SECTION_SHELL_CLASS,
   productsFiltersSectionFont,
@@ -49,7 +48,7 @@ export function ColorFilter({ category, search, minPrice, maxPrice }: ColorFilte
   const searchParams = useShopProductsListingSearchParams();
   const mobileDraft = useMobileFiltersDraft();
   const filtersContext = useProductsFilters();
-  const { t } = useTranslation();
+  const { t } = useShopFiltersTranslation();
   const [colors, setColors] = useState<ColorOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [optimisticValues, setOptimisticValues] = useState<string[] | null>(null);

@@ -6,8 +6,7 @@ import { useShopProductsListingSearchParams } from '@/lib/use-shop-products-list
 import { pushShopProductsListingUrl } from '../lib/push-shop-products-listing-url';
 import { apiClient } from '../lib/api-client';
 import { getStoredLanguage } from '../lib/language';
-import { useTranslation } from '../lib/i18n-client';
-import { useProductsFilters } from './ProductsFiltersProvider';
+import { useProductsFilters, useShopFiltersTranslation } from './ProductsFiltersProvider';
 import {
   PRODUCTS_FILTER_SECTION_SHELL_CLASS,
   productsFiltersSectionFont,
@@ -34,7 +33,7 @@ export function SizeFilter({ category, search, minPrice, maxPrice }: SizeFilterP
   const searchParams = useShopProductsListingSearchParams();
   const mobileDraft = useMobileFiltersDraft();
   const filtersContext = useProductsFilters();
-  const { t } = useTranslation();
+  const { t } = useShopFiltersTranslation();
   const [sizes, setSizes] = useState<SizeOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [optimisticSizes, setOptimisticSizes] = useState<string[] | null>(null);

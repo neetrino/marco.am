@@ -64,7 +64,7 @@ export function AdminSidebar({ currentPath, router, t }: AdminSidebarProps) {
       <aside className="hidden lg:block lg:w-64 flex-shrink-0">
         <nav className="fixed left-0 top-0 z-40 flex h-screen w-64 flex-col border-r border-marco-border bg-white/95 p-3 shadow-[0_8px_24px_rgba(16,16,16,0.06)] backdrop-blur-sm">
           <div className="mb-3 border-b border-marco-border pb-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-marco-text/70">Admin Panel</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-marco-text/70">{t('admin.common.adminPanel')}</p>
           </div>
           <div className="flex-1 space-y-1 overflow-y-auto">
           {sidebarTabs.map((tab) => {
@@ -106,7 +106,7 @@ export function AdminSidebar({ currentPath, router, t }: AdminSidebarProps) {
                     </span>
                   </button>
                   <button
-                    aria-label="Toggle products submenu"
+                    aria-label={t('admin.common.toggleProductsSubmenu')}
                     onClick={() => setIsProductsExpanded((prev) => !prev)}
                     className={`flex h-10 w-10 items-center justify-center rounded-xl transition-colors ${
                       isActive
@@ -182,7 +182,7 @@ export function AdminSidebar({ currentPath, router, t }: AdminSidebarProps) {
                     {homeTab.icon}
                   </span>
                   <span className="text-left leading-tight">
-                    <span className="block text-xs font-medium uppercase tracking-[0.08em] text-current/70">Quick Access</span>
+                    <span className="block text-xs font-medium uppercase tracking-[0.08em] text-current/70">{t('admin.common.quickAccess')}</span>
                     <span className="block">{homeTab.label}</span>
                   </span>
                 </span>
