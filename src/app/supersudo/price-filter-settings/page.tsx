@@ -13,26 +13,26 @@ const currencyFields = [
   {
     key: 'USD',
     labelKey: 'admin.priceFilter.stepSizeUsd',
+    hintKey: 'admin.priceFilter.currencyHintUsd',
     placeholder: '100',
-    hint: 'Base currency',
   },
   {
     key: 'AMD',
     labelKey: 'admin.priceFilter.stepSizeAmd',
+    hintKey: 'admin.priceFilter.currencyHintAmd',
     placeholder: '5000',
-    hint: 'Armenian dram',
   },
   {
     key: 'RUB',
     labelKey: 'admin.priceFilter.stepSizeRub',
+    hintKey: 'admin.priceFilter.currencyHintRub',
     placeholder: '500',
-    hint: 'Russian ruble',
   },
   {
     key: 'GEL',
     labelKey: 'admin.priceFilter.stepSizeGel',
+    hintKey: 'admin.priceFilter.currencyHintGel',
     placeholder: '10',
-    hint: 'Georgian lari',
   },
 ] as const;
 
@@ -342,7 +342,7 @@ export default function PriceFilterSettingsPage() {
                               {t(field.labelKey)}
                             </label>
                             <p className="mt-1 text-xs uppercase tracking-[0.14em] text-marco-text/55">
-                              {field.hint}
+                              {t(field.hintKey)}
                             </p>
                           </div>
                           <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-marco-yellow/25 text-sm font-semibold text-marco-black transition-colors group-hover:bg-marco-yellow/40">

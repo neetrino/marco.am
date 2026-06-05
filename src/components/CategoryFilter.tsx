@@ -180,6 +180,7 @@ export function CategoryFilter({
     filtersContext?.data?.categories,
     filtersContext?.loading,
     filtersContext?.categoriesLoading,
+    filtersContext?.language,
     filtersContext === null,
   ]);
 

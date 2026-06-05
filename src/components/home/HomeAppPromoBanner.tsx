@@ -1,13 +1,16 @@
+'use client';
+
 import Image from 'next/image';
 import { HOME_APP_BANNER_PUBLIC_PATH } from '@/constants/homeAppBanner';
-import { t } from '@/lib/i18n';
-import { DEFAULT_LANGUAGE } from '@/lib/language';
+import { useTranslation } from '@/lib/i18n-client';
 
 /** Figma app promo area after BRANDS — raster source from MARCO home export. */
 const BANNER_WIDTH = 1527;
 const BANNER_HEIGHT = 570;
 
 export function HomeAppPromoBanner() {
+  const { t } = useTranslation();
+
   return (
     <section className="bg-white py-8 md:py-10 xl:py-12">
       <div
@@ -16,7 +19,7 @@ export function HomeAppPromoBanner() {
       >
         <Image
           src={HOME_APP_BANNER_PUBLIC_PATH}
-          alt={t(DEFAULT_LANGUAGE, 'home.app_promo_title')}
+          alt={t('home.app_promo_title')}
           fill
           priority={false}
           sizes="(max-width: 768px) 100vw, (max-width: 1600px) calc(100vw - 32px), 1527px"

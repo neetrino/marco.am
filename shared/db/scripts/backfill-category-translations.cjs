@@ -71,7 +71,7 @@ const { PrismaClient } = require(path.resolve(__dirname, '../generated/prisma-cl
 const prisma = new PrismaClient();
 const TITLE_MAP = safeJsonRead(TITLE_MAP_PATH);
 
-async function upsertTranslation(categoryId, locale, titleValue) {
+async function upsertTranslation(categoryId, locale, titleValue, referenceRow) {
   const existing = await prisma.categoryTranslation.findUnique({
     where: {
       categoryId_locale: {
@@ -95,11 +95,11 @@ async function upsertTranslation(categoryId, locale, titleValue) {
         categoryId,
         locale,
         title: titleValue,
-        slug: '',
-        fullPath: '',
-        description: null,
-        seoTitle: null,
-        seoDescription: null,
+        slug: referenceRow?.slug ?? '',
+        fullPath: referenceRow?.fullPath ?? '',
+        description: referenceRow?.description ?? null,
+        seoTitle: referenceRow?.seoTitle ?? null,
+        seoDescription: referenceRow?.seoDescription ?? null,
       },
     });
   }
@@ -110,6 +110,9 @@ async function upsertTranslation(categoryId, locale, titleValue) {
     },
     data: {
       title: titleValue,
+      ...(existing.slug.trim().length === 0 && referenceRow?.slug
+        ? { slug: referenceRow.slug, fullPath: referenceRow.fullPath ?? '' }
+        : {}),
     },
   });
 }
@@ -169,22 +172,28 @@ async function runBackfill() {
 
     categoriesMatched += 1;
 
+    const referenceRow =
+      hyRow ??
+      translations.find((item) => item.locale === 'en') ??
+      translations[0] ??
+      null;
+
     if (!hyRow || hyRow.title !== localized.hy) {
-      await upsertTranslation(categoryId, 'hy', localized.hy);
+      await upsertTranslation(categoryId, 'hy', localized.hy, referenceRow);
       titlesUpdated += 1;
     }
 
     if (!enRow || enRow.title !== localized.en) {
-      await upsertTranslation(categoryId, 'en', localized.en);
+      await upsertTranslation(categoryId, 'en', localized.en, referenceRow);
       titlesUpdated += 1;
     }
 
     if (!ruRow) {
-      await upsertTranslation(categoryId, 'ru', localized.ru);
+      await upsertTranslation(categoryId, 'ru', localized.ru, referenceRow);
       ruCreated += 1;
       titlesUpdated += 1;
     } else if (ruRow.title !== localized.ru) {
-      await upsertTranslation(categoryId, 'ru', localized.ru);
+      await upsertTranslation(categoryId, 'ru', localized.ru, referenceRow);
       titlesUpdated += 1;
     }
   }

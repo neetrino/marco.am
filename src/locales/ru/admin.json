@@ -281,7 +281,9 @@
     "selectPage": "Выбрать все категории на этой странице",
     "selectItem": "Выбрать {name}",
     "sizesBadge": "Размеры",
-    "noParent": "—"
+    "noParent": "—",
+    "selectedCategoriesCount": "Выбрано категорий: {count}",
+    "bulkDeleteSelected": "Удалить выбранные"
   },
   "delivery": {
     "title": "Доставка",
@@ -581,6 +583,8 @@
     "amd": "AMD - Армянский драм",
     "usd": "USD - Доллар США",
     "eur": "EUR - Евро",
+    "rub": "RUB - Российский рубль",
+    "gel": "GEL - Грузинский лари",
     "enableOnlinePayments": "Включить онлайн-платежи",
     "saveSettings": "Сохранить настройки",
     "saving": "Сохранение...",
@@ -674,7 +678,11 @@
     "configureFilterRange": "Настроить диапазон фильтра",
     "configureFilterRangeDescription": "Установите публичный диапазон по умолчанию и размер шага для каждой поддерживаемой валюты.",
     "stepSizeByCurrency": "Размер шага по валютам",
-    "stepSizeByCurrencyHint": "Используйте меньший шаг для более плотного фильтра и больший — для быстрого просмотра."
+    "stepSizeByCurrencyHint": "Используйте меньший шаг для более плотного фильтра и больший — для быстрого просмотра.",
+    "currencyHintUsd": "Базовая валюта",
+    "currencyHintAmd": "Армянский драм",
+    "currencyHintRub": "Российский рубль",
+    "currencyHintGel": "Грузинский лари"
   },
   "brands": {
     "title": "Бренды",
@@ -917,7 +925,13 @@
     "promoCardLeft": "Promo карточка слева (под featured товарами)",
     "promoCardRight": "Promo карточка справа (под featured товарами)",
     "mobileFloorBannerImage": "Mobile floor banner изображение",
-    "removeMobileFloorImage": "Удалить mobile floor изображение"
+    "removeMobileFloorImage": "Удалить mobile floor изображение",
+    "changeImage": "Изменить изображение",
+    "removeImage": "Удалить изображение",
+    "viewFullSize": "Просмотр в полном размере",
+    "clickToUpload": "Нажмите для загрузки",
+    "uploadImage": "Загрузить изображение",
+    "uploading": "Загрузка…"
   },
   "common": {
     "loading": "Загрузка...",

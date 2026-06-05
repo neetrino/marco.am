@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useContext } from 'react';
 import Image from 'next/image';
-import { LANGUAGES, type LanguageCode, getStoredLanguage, setStoredLanguage } from '../lib/language';
-import { logger } from "@/lib/utils/logger";
+import { LANGUAGES, type LanguageCode, setStoredLanguage } from '../lib/language';
+import { LanguagePreferenceContext } from '../lib/language-context';
+import { logger } from '@/lib/utils/logger';
 
 const ChevronDownIcon = () => (
   <svg width="10" height="10" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -11,7 +12,6 @@ const ChevronDownIcon = () => (
   </svg>
 );
 
-// Language icons/flags
 const getLanguageIcon = (code: LanguageCode): React.ReactNode => {
   const icons: Record<LanguageCode, React.ReactNode> = {
     en: (
@@ -44,19 +44,18 @@ const getLanguageIcon = (code: LanguageCode): React.ReactNode => {
         unoptimized
       />
     ),
-    ka: '🌐', // Georgian - fallback icon since it's not displayed in header
+    ka: '🌐',
   };
   return icons[code] || '🌐';
 };
 
-// Language colors for better visual distinction
 export function getLanguageColor(code: LanguageCode, isActive: boolean): string {
   if (isActive) {
     const colors: Record<LanguageCode, string> = {
       en: 'bg-blue-50 border-blue-200',
       hy: 'bg-orange-50 border-orange-200',
       ru: 'bg-red-50 border-red-200',
-      ka: 'bg-gray-100 border-gray-200', // Georgian - fallback color since it's not displayed in header
+      ka: 'bg-gray-100 border-gray-200',
     };
     return colors[code] || 'bg-gray-100 border-gray-200';
   }
@@ -64,40 +63,14 @@ export function getLanguageColor(code: LanguageCode, isActive: boolean): string 
 }
 
 /**
- * Language Switcher Component for Header
- * Uses only locales-based translations, no Google Translate
+ * Language switcher — updates locale via storage + context (no full page reload).
  */
 export function LanguageSwitcherHeader() {
+  const currentLang = useContext(LanguagePreferenceContext);
   const [showMenu, setShowMenu] = useState(false);
-  // Start with 'en' to avoid hydration mismatch, then update in useEffect
-  const [currentLang, setCurrentLang] = useState<LanguageCode>('en');
   const menuRef = useRef<HTMLDivElement>(null);
+  const displayLang: LanguageCode = currentLang === 'ka' ? 'en' : currentLang;
 
-  // Update current language on mount and when it changes
-  useEffect(() => {
-    // Update on mount to ensure we have the latest language from localStorage
-    const storedLang = getStoredLanguage();
-    // If stored language is 'ka' (Georgian), fallback to 'en' for header display
-    const displayLang = storedLang === 'ka' ? 'en' : storedLang;
-    // Only update if different to avoid unnecessary re-renders
-    if (displayLang !== currentLang) {
-      setCurrentLang(displayLang);
-    }
-
-    const handleLanguageUpdate = () => {
-      const newLang = getStoredLanguage();
-      // If new language is 'ka' (Georgian), fallback to 'en' for header display
-      const displayLang = newLang === 'ka' ? 'en' : newLang;
-      setCurrentLang(displayLang);
-    };
-
-    window.addEventListener('language-updated', handleLanguageUpdate);
-    return () => {
-      window.removeEventListener('language-updated', handleLanguageUpdate);
-    };
-  }, [currentLang]); // Include currentLang to check for changes
-
-  // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -111,25 +84,13 @@ export function LanguageSwitcherHeader() {
     };
   }, []);
 
-  /**
-   * Switches the page language using our i18n system
-   */
   const changeLanguage = (langCode: LanguageCode) => {
-    if (typeof window !== 'undefined' && currentLang !== langCode) {
+    if (typeof window !== 'undefined' && displayLang !== langCode) {
       logger.devInfo('[LanguageSwitcher] Changing language', {
-        from: currentLang,
+        from: displayLang,
         to: langCode,
       });
-
-      // Close menu first
       setShowMenu(false);
-      
-      // Immediately update the UI state to prevent showing 'en' during reload
-      const displayLang = langCode === 'ka' ? 'en' : langCode;
-      setCurrentLang(displayLang);
-      
-      // Update language - this will reload the page after a small delay
-      // The delay ensures the UI state is updated before reload
       setStoredLanguage(langCode);
     }
   };
@@ -143,9 +104,9 @@ export function LanguageSwitcherHeader() {
         className="flex items-center gap-1 sm:gap-2 bg-transparent md:bg-white px-2 sm:px-3 py-1.5 sm:py-2 text-gray-800 transition-colors"
       >
         <span className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center text-base sm:text-lg leading-none">
-          {getLanguageIcon(currentLang)}
+          {getLanguageIcon(displayLang)}
         </span>
-        <span className="text-xs sm:text-sm font-medium">{LANGUAGES[currentLang].name}</span>
+        <span className="text-xs sm:text-sm font-medium">{LANGUAGES[displayLang].name}</span>
         <ChevronDownIcon />
       </button>
       {showMenu && (
@@ -154,12 +115,12 @@ export function LanguageSwitcherHeader() {
           className="absolute top-full right-0 mt-2 w-48 bg-white shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
         >
           {Object.values(LANGUAGES)
-            .filter((lang) => lang.code !== 'ka') // Exclude Georgian (ka) from header
+            .filter((lang) => lang.code !== 'ka')
             .map((lang) => {
-            const isActive = currentLang === lang.code;
+            const isActive = displayLang === lang.code;
             const icon = getLanguageIcon(lang.code);
             const colorClass = getLanguageColor(lang.code, isActive);
-            
+
             return (
               <button
                 key={lang.code}
@@ -190,4 +151,3 @@ export function LanguageSwitcherHeader() {
     </div>
   );
 }
-

@@ -9,6 +9,7 @@ import type { LanguageCode } from '../../../lib/language';
 import { normalizeLiteralNewlinesToLineBreaks } from '../../../lib/utils/normalize-literal-newlines';
 import { sanitizeHtml } from '../../../lib/utils/sanitize';
 import { CompareIcon } from '../../../components/icons/CompareIcon';
+import { ProductWarrantyBadge } from '../../../components/ProductCard/ProductWarrantyBadge';
 import {
   HEADER_FIGMA_PILL_RADIUS_CLASS,
 } from '../../../components/header/header.constants';
@@ -151,10 +152,7 @@ export function ProductInfoAndActions({
               </p>
             )}
           </div>
-          <div className="shrink-0 rounded-2xl bg-[#1e1e1e] px-4 py-2.5 text-center leading-tight">
-            <p className="text-base font-bold text-marco-yellow">3 ՏԱՐԻ</p>
-            <p className="text-xs font-bold uppercase tracking-[0.3px] text-white">ԵՐԱՇԽԻՔ</p>
-          </div>
+          <ProductWarrantyBadge years={3} size="promo" className="shrink-0" />
         </div>
         <div className="mb-6">
           <div className="flex flex-col gap-1">

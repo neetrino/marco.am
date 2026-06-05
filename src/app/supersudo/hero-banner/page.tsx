@@ -188,6 +188,8 @@ function fileToDataUrl(file: File): Promise<string> {
 }
 
 function ImageLightbox({ url, label, onClose, onReplace }: { url: string; label: string; onClose: () => void; onReplace: () => void }) {
+  const { t } = useTranslation();
+
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.key === 'Escape') onClose();
@@ -227,7 +229,7 @@ function ImageLightbox({ url, label, onClose, onReplace }: { url: string; label:
           <svg className="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
           </svg>
-          Change image
+          {t('admin.heroBanner.changeImage')}
         </button>
       </div>
     </div>
@@ -252,9 +254,11 @@ function ImageUploadField({
   uploadingField,
   onUpload,
   onRemove,
-  removeLabel = 'Remove image',
+  removeLabel,
   previewHeightClassName,
 }: ImageUploadFieldProps) {
+  const { t } = useTranslation();
+  const resolvedRemoveLabel = removeLabel ?? t('admin.heroBanner.removeImage');
   const inputRef = useRef<HTMLInputElement>(null);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const isUploading = uploadingField === fieldKey;
@@ -294,7 +298,7 @@ function ImageUploadField({
                   <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0zm0 0l4 4" />
                   </svg>
-                  View full size
+                  {t('admin.heroBanner.viewFullSize')}
                 </span>
               </div>
             </div>
@@ -303,7 +307,7 @@ function ImageUploadField({
               className={`${previewHeightClassName} flex w-full cursor-pointer items-center justify-center rounded-xl border border-dashed border-slate-300 bg-white text-sm text-slate-400 hover:border-slate-400 hover:text-slate-500 transition`}
               onClick={openFilePicker}
             >
-              Click to upload
+              {t('admin.heroBanner.clickToUpload')}
             </div>
           )}
 
@@ -329,14 +333,14 @@ function ImageUploadField({
             {isUploading ? (
               <>
                 <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-slate-700" />
-                Uploading…
+                {t('admin.heroBanner.uploading')}
               </>
             ) : (
               <>
                 <svg className="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                 </svg>
-                {hasImage ? 'Change image' : 'Upload image'}
+                {hasImage ? t('admin.heroBanner.changeImage') : t('admin.heroBanner.uploadImage')}
               </>
             )}
           </button>
@@ -349,7 +353,7 @@ function ImageUploadField({
               }}
               className="flex w-full items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-medium text-red-700 shadow-sm transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {removeLabel}
+              {resolvedRemoveLabel}
             </button>
           ) : null}
         </div>

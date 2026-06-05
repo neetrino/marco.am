@@ -1,6 +1,7 @@
 'use client';
 
 import { ProductCardBrandMark } from '../ProductCard/ProductCardBrandMark';
+import { PRODUCT_CARD_BRAND_LOGO_BOX_SPECIAL_OFFER_CLASS } from '../ProductCard/product-card-brand-logo.constants';
 import { ProductColors } from '../ProductCard/ProductColors';
 import { ProductPdpPrefetchLink } from '../ProductPdpPrefetchLink';
 
@@ -54,7 +55,7 @@ export function SpecialOfferCardInfo({
               slug={product.brand.slug}
               logoUrl={product.brand.logoUrl}
               textClassName={`text-[12px] font-black uppercase tracking-[0.6px] ${brandClass}`}
-              logoBoxClassName="h-5 w-[88px] md:h-6 md:w-[104px]"
+              logoBoxClassName={PRODUCT_CARD_BRAND_LOGO_BOX_SPECIAL_OFFER_CLASS}
             />
           ) : (
             <p className={`text-[12px] font-black uppercase tracking-[0.6px] ${brandClass}`}>—</p>

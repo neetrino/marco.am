@@ -306,7 +306,7 @@ export function TeamCarousel() {
                   ? 'bg-gray-900 w-8'
                   : 'bg-gray-300 hover:bg-gray-400 w-2'
               }`}
-              aria-label={`Go to slide ${index + 1}`}
+              aria-label={t('common.ariaLabels.goToSlide').replace('{number}', String(index + 1))}
             />
           ))}
         </div>

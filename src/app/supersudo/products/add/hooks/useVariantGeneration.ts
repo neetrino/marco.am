@@ -9,7 +9,6 @@ interface UseVariantGenerationProps {
   selectedAttributesForVariants: Set<string>;
   selectedAttributeValueIds: Record<string, string[]>;
   attributes: Attribute[];
-  generatedVariants: GeneratedVariant[];
   formDataSlug: string;
   formDataTitle: string;
   isEditMode: boolean;
@@ -21,7 +20,6 @@ export function useVariantGeneration({
   selectedAttributesForVariants,
   selectedAttributeValueIds,
   attributes,
-  generatedVariants,
   formDataSlug,
   formDataTitle,
   isEditMode,
@@ -42,7 +40,7 @@ export function useVariantGeneration({
     const selectedAttrs = Array.from(selectedAttributesForVariants);
     if (selectedAttrs.length === 0) {
       logger.devLog('⚠️ [VARIANT BUILDER] No attributes selected');
-      setGeneratedVariants(() => []);
+      setGeneratedVariants((prev) => (prev.length === 0 ? prev : []));
       return;
     }
 
@@ -151,11 +149,10 @@ export function useVariantGeneration({
       generateVariantsFromAttributes();
     } else {
       if (!isEditMode) {
-        setGeneratedVariants(() => []);
+        setGeneratedVariants((prev) => (prev.length === 0 ? prev : []));
       }
     }
-     
-  }, [selectedAttributesForVariants, selectedAttributeValueIds, attributes, formDataSlug, formDataTitle, isEditMode, productId, generatedVariants]);
+  }, [selectedAttributesForVariants, selectedAttributeValueIds, attributes, formDataSlug, formDataTitle, isEditMode, productId]);
 
   return {
     generateVariantsFromAttributes,

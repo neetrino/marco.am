@@ -6,6 +6,7 @@ import { CartDrawerProvider } from '../lib/cart/cart-drawer-context';
 import { CartSummaryProvider } from '../lib/cart/cart-summary-context';
 import { LanguagePreferenceCookieSync } from './LanguagePreferenceCookieSync';
 import { LanguageRouterRefresh } from './LanguageRouterRefresh';
+import { LanguageHtmlUpdater } from './LanguageHtmlUpdater';
 import { PopupProvider } from './PopupProvider';
 import { QueryProvider } from './QueryProvider';
 import { ToastContainer } from './Toast';
@@ -24,6 +25,7 @@ export function ClientProviders({ children }: { children: ReactNode }) {
             <CartDrawerProvider>
               <LanguagePreferenceCookieSync />
               <LanguageRouterRefresh />
+              <LanguageHtmlUpdater />
               {children}
               <ToastContainer />
               <PopupProvider />

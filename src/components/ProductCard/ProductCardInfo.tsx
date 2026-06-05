@@ -6,6 +6,10 @@ import { montserratArm } from '../../fonts/montserrat-arm';
 import { formatCatalogPrice, type CurrencyCode } from '../../lib/currency';
 import { useTranslation } from '../../lib/i18n-client';
 import { ProductCardBrandMark } from './ProductCardBrandMark';
+import {
+  PRODUCT_CARD_BRAND_LOGO_BOX_CLASS,
+  PRODUCT_CARD_BRAND_LOGO_BOX_COMPACT_CLASS,
+} from './product-card-brand-logo.constants';
 import { ProductColors } from './ProductColors';
 import { ProductPricePromoBadge } from './ProductPricePromoBadge';
 
@@ -55,7 +59,9 @@ export function ProductCardInfo({
           slug={brand.slug}
           logoUrl={brand.logoUrl}
           textClassName={`${isCompact ? 'text-sm' : 'text-lg'} text-gray-500 dark:text-[#383838]`}
-          logoBoxClassName={isCompact ? 'h-5 w-[80px]' : 'h-7 w-[112px]'}
+          logoBoxClassName={
+            isCompact ? PRODUCT_CARD_BRAND_LOGO_BOX_COMPACT_CLASS : PRODUCT_CARD_BRAND_LOGO_BOX_CLASS
+          }
         />
       </div>
     ) : (

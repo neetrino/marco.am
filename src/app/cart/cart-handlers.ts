@@ -112,7 +112,7 @@ export async function handleUpdateQuantity(
   }
 
   if (cartItem.variant.stock !== undefined && quantity > cartItem.variant.stock) {
-    alert(`Մատչելի քանակը ${cartItem.variant.stock} հատ է: Դուք չեք կարող ավելացնել ավելի շատ քանակ:`);
+    alert(t('common.messages.stockExceeded').replace('{stock}', String(cartItem.variant.stock)));
     return;
   }
 

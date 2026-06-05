@@ -1,5 +1,5 @@
 {
-  "phone": "+374 41 350 406",
+  "phone": "060 500 406",
   "email": "marcofurniture@mail.ru",
   "pageTitle": "CONTACT US",
   "drawerCall": {
@@ -9,15 +9,27 @@
     "cancel": "Back"
   },
   "mapSectionTitle": "Our locations on the map",
+  "deliveryPhonesLabel": "For delivery",
+  "locations": {
+    "yerevan": {
+      "address": "23 Alek Manukyan St, Yerevan"
+    },
+    "argavand": {
+      "address": "1 Airport St, Argavand"
+    },
+    "parakar": {
+      "address": "1 Mesrop Mashtots St, Parakar"
+    }
+  },
   "address": "23 Alek Manukyan St, Yerevan",
   "workingHours": "Mon-Fri 10:00-19:00",
   "social": {
     "instagram": "https://www.instagram.com/marco_electronics?igsh=MXQwZ2ZtenU5bmhzaQ%3D%3D",
     "facebook": "https://www.facebook.com/marcoelectronicss?mibextid=wwXIfr&rdid=Nj7NUSDoayMfRNf1&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1AvqAFX6o9%2F%3Fmibextid%3DwwXIfr",
     "linkedin": "",
-    "telegram": "https://t.me/+37441350406",
-    "whatsapp": "https://wa.me/37441350406",
-    "viber": "viber://chat?number=37441350406"
+    "telegram": "https://t.me/+37460500406",
+    "whatsapp": "https://wa.me/37460500406",
+    "viber": "viber://chat?number=37460500406"
   },
   "callToUs": {"title":"Call Us","description":"We are available 7 days a week."},
   "writeToUs": {"title":"Write to Us","description":"Fill out our form and we will contact you within 24 hours.","emailLabel":"Email"},
