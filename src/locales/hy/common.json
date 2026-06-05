@@ -1,4 +1,10 @@
 {
+  "meta": {
+    "title": "Marco Group",
+    "description": "Կահույքի և տեխնիկայի հուսալի մատակարար",
+    "productTabTitle": "Shop - Marco Group",
+    "siteName": "Marco Group"
+  },
   "buttons": {
     "addToCart": "Ավելացնել զամբյուղ",
     "addToWishlist": "Ավելացնել ցանկությունների ցուցակ",
@@ -317,6 +323,9 @@
     "adminDescription": "Ինչ-որ բան սխալ է։ Խնդրում ենք կրկին փորձել։",
     "adminLink": "Ադմին",
     "productsTitle": "Չհաջողվեց բեռնել ապրանքները",
-    "productsDescription": "Խնդրում ենք կրկին փորձել։"
+    "productsDescription": "Խնդրում ենք կրկին փորձել։",
+    "apiConnectionRefused": "Ցանցային սխալ՝ չհաջողվեց միանալ {url} հասցեին։ Ստուգեք, որ սերվերը գործարկված է։",
+    "apiRouteUnreachable": "Ցանցային սխալ՝ չհաջողվեց հասնել API route {url} հասցեին։ Ստուգեք, որ dev server-ը գործարկված է։",
+    "apiNetworkGeneric": "Ցանցային սխալ՝ չհաջողվեց միանալ {url} հասցեին։"
   }
 }

@@ -19,6 +19,7 @@ import {
   type CategoryFilterTreeNode,
 } from "@/lib/shop-category-filter-tree";
 import { getListingDiscountSettings, type ListingDiscountSettings } from "./listing-discount-settings";
+import { resolveCategoryTranslation } from "@/lib/i18n/category-translation";
 
 /** Legacy demo categories — omit from shop sidebar (not part of MARCO nav taxonomy). */
 const SHOP_FILTER_EXCLUDED_CATEGORY_CANONICAL = new Set([
@@ -396,7 +397,7 @@ class ProductsFiltersService {
           ) {
             continue;
           }
-          const tr = cat.translations.find((t) => t.locale === lang) || cat.translations[0];
+          const tr = resolveCategoryTranslation(cat.translations, lang);
           if (!tr) {
             continue;
           }
@@ -444,7 +445,7 @@ class ProductsFiltersService {
               }
               continue;
             }
-            const tr = cat.translations.find((t) => t.locale === lang) || cat.translations[0];
+            const tr = resolveCategoryTranslation(cat.translations, lang);
             if (!tr) {
               skippedParentById.set(cat.id, cat.parentId ?? null);
               if (cat.parentId) {
@@ -851,8 +852,7 @@ class ProductsFiltersService {
             ),
         )
         .map((cat) => {
-          const tr =
-            cat.translations.find((t) => t.locale === lang) || cat.translations[0];
+          const tr = resolveCategoryTranslation(cat.translations, lang);
           if (!tr) {
             return null;
           }
@@ -911,8 +911,7 @@ class ProductsFiltersService {
             }
             continue;
           }
-          const tr =
-            cat.translations.find((t) => t.locale === lang) || cat.translations[0];
+          const tr = resolveCategoryTranslation(cat.translations, lang);
           if (!tr) {
             skippedParentById.set(cat.id, cat.parentId ?? null);
             if (cat.parentId) {
@@ -964,8 +963,7 @@ class ProductsFiltersService {
             ) {
               continue;
             }
-            const tr =
-              cat.translations.find((t) => t.locale === lang) || cat.translations[0];
+            const tr = resolveCategoryTranslation(cat.translations, lang);
             if (!tr) {
               continue;
             }

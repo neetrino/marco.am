@@ -285,8 +285,12 @@ export function t(lang: LanguageCode | undefined, path: string): string {
   // Navigate through nested keys
   let value = getNestedValue(translationObj, keys);
 
-  // If value not found in requested language, try English fallback
+  // If value not found in requested language
   if (value === null && lang !== 'en') {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn(`[i18n] Missing translation: ${lang}/${path}`);
+      return `[missing:${lang}/${path}]`;
+    }
     const enTranslationObj = loadTranslation('en', namespace);
     if (enTranslationObj) {
       value = getNestedValue(enTranslationObj, keys);
@@ -295,6 +299,10 @@ export function t(lang: LanguageCode | undefined, path: string): string {
 
   // Return result - can be string or array
   if (value === null || value === undefined) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn(`[i18n] Missing translation: ${lang}/${path}`);
+      return `[missing:${lang}/${path}]`;
+    }
     return path;
   }
   

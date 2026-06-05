@@ -15,19 +15,22 @@
     --app-text-muted: #4b5563;
     --app-text-soft: #6b7280;
     --special-offers-card-cutout-bg: #ffffff;
+    --text-on-yellow: #181111;
   }
 
   .dark {
-    --app-bg: var(--marco-anthracite);
-    --app-bg-muted: #333333;
-    --app-surface: var(--marco-anthracite);
-    --app-surface-muted: #333333;
-    --app-border: #4a4a4a;
-    --app-border-strong: #5c5c5c;
+    --marco-dark-bg: #1e1e1e;
+    --marco-dark-bg-muted: #262626;
+    --app-bg: var(--marco-dark-bg);
+    --app-bg-muted: var(--marco-dark-bg-muted);
+    --app-surface: var(--marco-dark-bg);
+    --app-surface-muted: var(--marco-dark-bg-muted);
+    --app-border: #323232;
+    --app-border-strong: #404040;
     --app-text: #ffffff;
     --app-text-muted: #f1f5f9;
     --app-text-soft: #dbe4ee;
-    --special-offers-card-cutout-bg: var(--marco-anthracite);
+    --special-offers-card-cutout-bg: var(--marco-dark-bg);
   }
 
   html {
@@ -146,7 +149,7 @@
   }
 
   .dark .cart-order-summary-receipt-edge {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='20' viewBox='0 0 32 20'%3E%3Cpath d='M0 0 L8 20 L16 0 L24 20 L32 0 Z' fill='%23383838'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='20' viewBox='0 0 32 20'%3E%3Cpath d='M0 0 L8 20 L16 0 L24 20 L32 0 Z' fill='%231e1e1e'/%3E%3C/svg%3E");
   }
 
   .scrollbar-hide {
@@ -518,6 +521,49 @@
   [class*='text-\\[\\#181111\\]']
 ) {
   color: var(--marco-anthracite) !important;
+}
+
+/**
+ * Dark mode — legible dark text on solid brand-yellow surfaces.
+ * Overrides global “invert text to white” rules above (nav pills, CTAs, cart, etc.).
+ */
+.dark :is(
+  [class~='bg-marco-yellow'],
+  [class*='\\!bg-marco-yellow'],
+  .header-primary-nav-link--active,
+  .header-primary-nav-link:hover
+) {
+  color: var(--text-on-yellow) !important;
+}
+
+.dark :is(
+  [class~='bg-marco-yellow'],
+  [class*='\\!bg-marco-yellow'],
+  [class*='hover\\:bg-marco-yellow']:hover,
+  [class*='hover\\:\\!bg-marco-yellow']:hover
+) {
+  color: var(--text-on-yellow) !important;
+}
+
+.dark :is(
+  [class~='bg-marco-yellow'],
+  [class*='\\!bg-marco-yellow'],
+  .header-primary-nav-link--active,
+  .header-primary-nav-link:hover,
+  [class*='hover\\:bg-marco-yellow']:hover,
+  [class*='hover\\:\\!bg-marco-yellow']:hover
+) :is(
+  .text-white,
+  .text-marco-black,
+  [class*='text-white'],
+  [class*='text-marco-black'],
+  [class*='text-\\[\\#383838\\]'],
+  [class*='text-\\[\\#181111\\]'],
+  [class*='text-gray-900'],
+  [class*='text-gray-800'],
+  [class*='text-black']
+) {
+  color: var(--text-on-yellow) !important;
 }
 
 @media (min-width: 640px) {

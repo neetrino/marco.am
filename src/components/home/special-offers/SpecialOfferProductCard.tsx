@@ -4,6 +4,7 @@ import { ProductPdpPrefetchLink } from '@/components/ProductPdpPrefetchLink';
 import { montserratArm } from '@/fonts/montserrat-arm';
 import { formatCatalogPrice } from '@/lib/currency';
 import { ProductCardBrandMark } from '@/components/ProductCard/ProductCardBrandMark';
+import { PRODUCT_CARD_BRAND_LOGO_BOX_SPECIAL_OFFER_CLASS } from '@/components/ProductCard/product-card-brand-logo.constants';
 import { ProductColors } from '@/components/ProductCard/ProductColors';
 import {
   SpecialOfferCartFab,
@@ -119,7 +120,7 @@ function SpecialOfferProductCardView({
                       slug={product.brand.slug}
                       logoUrl={product.brand.logoUrl}
                       textClassName={`text-[11px] font-black uppercase tracking-[0.6px] md:text-xs ${brandClass}`}
-                      logoBoxClassName="h-5 w-[88px] md:h-6 md:w-[104px]"
+                      logoBoxClassName={PRODUCT_CARD_BRAND_LOGO_BOX_SPECIAL_OFFER_CLASS}
                     />
                   </div>
                 ) : (
@@ -141,7 +142,7 @@ function SpecialOfferProductCardView({
                   slug={product.brand.slug}
                   logoUrl={product.brand.logoUrl}
                   textClassName={`text-[11px] font-black uppercase tracking-[0.6px] md:text-xs ${brandClass}`}
-                  logoBoxClassName="h-5 w-[88px] md:h-6 md:w-[104px]"
+                  logoBoxClassName={PRODUCT_CARD_BRAND_LOGO_BOX_SPECIAL_OFFER_CLASS}
                 />
               ) : null}
               <h3 className="mt-2 line-clamp-2 text-left text-[13px] font-bold leading-5 text-[#181111] dark:text-white md:text-sm md:leading-5">

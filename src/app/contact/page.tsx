@@ -164,10 +164,10 @@ export default function ContactPage() {
         message: '',
       });
       
-      alert(t('contact.form.submitSuccess') || 'Ձեր հաղորդագրությունը հաջողությամբ ուղարկվեց');
+      alert(t('contact.form.submitSuccess'));
     } catch (error: unknown) {
       console.error('Error submitting contact form:', error);
-      alert(t('contact.form.submitError') || 'Սխալ: ' + (getErrorMessage(error) || 'Չհաջողվեց ուղարկել հաղորդագրությունը'));
+      alert(`${t('contact.form.submitError')} ${getErrorMessage(error) ?? ''}`.trim());
     } finally {
       setSubmitting(false);
     }
@@ -330,7 +330,7 @@ export default function ContactPage() {
                   className="w-full !h-11 !rounded-full !border-0 !bg-marco-yellow !py-0 text-sm font-semibold uppercase tracking-wide !text-marco-black hover:!brightness-95 focus:!ring-2 focus:!ring-marco-yellow/50 sm:!text-base"
                   disabled={submitting}
                 >
-                  {submitting ? (t('contact.form.submitting') || 'Ուղարկվում է...') : t('contact.form.submit')}
+                  {submitting ? t('contact.form.submitting') : t('contact.form.submit')}
                 </Button>
               </form>
             </Card>

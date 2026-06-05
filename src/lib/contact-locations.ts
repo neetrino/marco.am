@@ -1,6 +1,15 @@
 import type { LanguageCode } from './language';
+import { t } from './i18n';
 
 export type ContactLocationId = 'yerevan' | 'argavand' | 'parakar';
+
+export type ContactPhoneSectionId = ContactLocationId | 'delivery';
+
+export type ContactPhoneSection = {
+  id: ContactPhoneSectionId;
+  label: string;
+  phones: readonly string[];
+};
 
 /** WGS84 center for embedded map — pin sits at this point (refine via Google Maps if needed). */
 export type ContactLocationMapCenter = {
@@ -17,55 +26,44 @@ export type ContactLocation = {
   map: ContactLocationMapCenter;
 };
 
-function resolveLang(lang: LanguageCode): 'hy' | 'ru' | 'en' {
-  if (lang === 'hy') {
-    return 'hy';
-  }
-  if (lang === 'ru') {
-    return 'ru';
-  }
-  return 'en';
-}
-
 /**
  * Store / showroom locations (addresses and phones). Shared by Contact page and header pickers.
  */
 export function getContactLocations(lang: LanguageCode): ContactLocation[] {
-  const l = resolveLang(lang);
-
   return [
     {
       id: 'yerevan',
-      address:
-        l === 'hy'
-          ? 'Ք․ Երևան Ալեք Մանուկյան 23'
-          : l === 'ru'
-            ? 'г. Ереван, Алек Манукян 23'
-            : '23 Alek Manukyan St, Yerevan',
+      address: t(lang, 'contact.locations.yerevan.address'),
       phones: ['+374 93 52 04 06', '+374 98 19 04 06', '011 52 04 06'],
       map: { lat: 40.173852, lng: 44.521961, zoom: 18 },
     },
     {
       id: 'argavand',
-      address:
-        l === 'hy'
-          ? 'Արգավանդ Օդանավակայան 1'
-          : l === 'ru'
-            ? 'Аргаванд, Аэропорт 1'
-            : '1 Airport St, Argavand',
+      address: t(lang, 'contact.locations.argavand.address'),
       phones: ['+374 93 58 04 09', '+374 41 34 04 06', '+374 77 64 04 06'],
       map: { lat: 40.1518, lng: 44.3962, zoom: 17 },
     },
     {
       id: 'parakar',
-      address:
-        l === 'hy'
-          ? 'Գ. Փարաքար Մեսրոպ Մաշտոցի 1'
-          : l === 'ru'
-            ? 'с. Паракар, Месроп Маштоц 1'
-            : '1 Mesrop Mashtots St, Parakar',
+      address: t(lang, 'contact.locations.parakar.address'),
       phones: ['+374 77 51 04 06'],
       map: { lat: 40.163887, lng: 44.403473, zoom: 18 },
+    },
+  ];
+}
+
+/** Header / drawer phone picker sections — store branches plus delivery. */
+export function getContactPhoneSections(lang: LanguageCode): ContactPhoneSection[] {
+  return [
+    ...getContactLocations(lang).map((loc) => ({
+      id: loc.id,
+      label: loc.address,
+      phones: loc.phones,
+    })),
+    {
+      id: 'delivery',
+      label: t(lang, 'contact.deliveryPhonesLabel'),
+      phones: ['+374 41 35 04 06'],
     },
   ];
 }

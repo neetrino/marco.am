@@ -118,14 +118,18 @@ export const FOOTER_COPYRIGHT_STRIP_STACK_GAP_CLASS = 'gap-5';
  * (see {@link FOOTER_NAV_THREE_COLUMN_ROW_CLASS}) so gutters between Nav, pipes, Support, Contacts stay even.
  */
 export const FOOTER_MAIN_GRID_CLASS =
-  'grid grid-cols-1 items-start gap-6 md:grid-cols-2 md:max-[1023px]:justify-items-center lg:grid-cols-[minmax(0,22rem)_1fr] lg:items-start min-[1024px]:max-[1366px]:justify-items-center min-[1367px]:justify-items-stretch lg:gap-x-5 lg:gap-y-4';
+  'grid grid-cols-1 items-start gap-6 md:grid-cols-2 md:max-[1023px]:justify-items-center lg:grid-cols-[minmax(0,26rem)_1fr] lg:items-start min-[1024px]:max-[1366px]:justify-items-center min-[1367px]:justify-items-stretch lg:gap-x-5 lg:gap-y-4';
+
+/** Footer MARCO GROUP logo frame (91:81 aspect). */
+export const FOOTER_BRAND_LOGO_WIDTH_PX = 380;
+export const FOOTER_BRAND_LOGO_HEIGHT_PX = 340;
 
 /**
  * Brand logo frame — larger than legacy 91×81; same ~91:81 aspect.
  * Blurb overlays the lower area via {@link FOOTER_BRAND_DESCRIPTION_OVERLAP_CLASS} (logo position unchanged).
  */
 export const FOOTER_BRAND_LOGO_BOX_CLASS =
-  'relative z-0 h-[285px] w-[320px] shrink-0';
+  'relative z-0 h-[340px] w-[380px] shrink-0';
 
 /**
  * Lifts the MARCO mark: stronger from `md` so its top lines up with the Company column heading;

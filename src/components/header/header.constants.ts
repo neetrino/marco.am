@@ -271,7 +271,20 @@ export function getHeaderThemeToggleButtonClass(resolvedDark: boolean): string {
 
 /** Cart pill — same height as row-2 strip; wider pill for icon + price (Figma 111:4281 — gap 11px icon ↔ price) */
 export const HEADER_CART_BUTTON_CLASS =
-  'self-center flex h-10 min-w-[124px] items-center justify-center gap-[11px] rounded-[68px] pl-4 pr-3.5 text-xs font-bold leading-tight transition-[opacity,filter] hover:opacity-95 active:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25';
+  'self-center flex h-10 min-w-[124px] items-center justify-center gap-[11px] rounded-[68px] pl-4 pr-3.5 text-xs font-bold leading-tight transition-[background-color,color,filter] duration-200 hover:brightness-95 active:brightness-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/25';
+
+/**
+ * Row-2 cart pill — brand yellow (logo accent), not anthracite.
+ *
+ * @param resolvedDark pass `mounted && theme === 'dark'` from `useTheme()`.
+ */
+export function getHeaderCartButtonClass(resolvedDark: boolean): string {
+  const frame = `${HEADER_CART_BUTTON_CLASS} relative`;
+  if (resolvedDark) {
+    return `${frame} !bg-marco-yellow !text-[#383838] dark:!bg-marco-yellow dark:!text-[#383838]`.trim();
+  }
+  return `${frame} bg-marco-yellow text-[#383838]`.trim();
+}
 
 /**
  * Mobile header top row — round dark controls (Figma 314:2501 search, 314:2503 menu).
@@ -289,7 +302,7 @@ export const HEADER_MOBILE_SEARCH_FAB_CLASS = HEADER_MOBILE_HEADER_ROUND_CONTROL
  */
 export function getHeaderPrimaryNavDesktopLinkClass(active: boolean): string {
   const shell =
-    'relative z-0 inline-flex h-10 shrink-0 items-center whitespace-nowrap ' +
+    'header-primary-nav-link relative z-0 inline-flex h-10 shrink-0 items-center whitespace-nowrap ' +
     'transition-[color] duration-200 ' +
     'before:pointer-events-none before:absolute before:left-1/2 before:top-1/2 before:z-[-1] ' +
     'before:h-9 before:w-[calc(100%+20px)] before:-translate-x-1/2 before:-translate-y-1/2 before:rounded-full ' +
@@ -300,7 +313,7 @@ export function getHeaderPrimaryNavDesktopLinkClass(active: boolean): string {
     'hover:text-marco-black dark:hover:text-[#383838] ' +
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/25';
   if (active) {
-    return `${shell} before:opacity-100 after:scale-x-0 text-marco-black dark:text-[#383838]`.trim();
+    return `${shell} header-primary-nav-link--active before:opacity-100 after:scale-x-0 text-marco-black dark:text-[#383838]`.trim();
   }
   return `${shell} before:opacity-0 hover:after:scale-x-100 text-marco-text dark:text-white/88`.trim();
 }

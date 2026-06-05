@@ -1,68 +1,35 @@
-﻿'use client';
+'use client';
 
 import { Card, Button } from '@shop/ui';
 import Link from 'next/link';
 import { useTranslation } from '../../lib/i18n-client';
 
 export default function StoresPage() {
-  const { t, lang } = useTranslation();
+  const { t } = useTranslation();
   const stores = [
     {
       id: 1,
-      name: 'Main Store',
-      address:
-        lang === 'hy'
-          ? 'Ք․ Երևան Ալեք Մանուկյան 23'
-          : lang === 'ru'
-            ? 'г. Ереван, Алек Манукян 23'
-            : '23 Alek Manukyan St, Yerevan',
+      nameKey: 'stores.locations.mainStore.name' as const,
+      addressKey: 'stores.locations.mainStore.address' as const,
+      hoursKey: 'stores.locations.mainStore.hours' as const,
       phone: '+374 93 52 04 06',
       emails: ['marcofurniture@mail.ru', 'marcogrouparmenia@mail.ru'],
-      hours:
-        lang === 'hy'
-          ? 'Երկ-Շբթ: 09:00 - 20:00'
-          : lang === 'ru'
-            ? 'Пн-Сб: 09:00 - 20:00'
-            : 'Mon-Sat: 9:00 AM - 8:00 PM',
-      image: 'https://via.placeholder.com/400x300?text=Main+Store',
     },
     {
       id: 2,
-      name: 'Shopping Mall Branch',
-      address:
-        lang === 'hy'
-          ? 'Արգավանդ Օդանավակայան 1'
-          : lang === 'ru'
-            ? 'Аргаванд, Аэропорт 1'
-            : '1 Airport St, Argavand',
+      nameKey: 'stores.locations.mallBranch.name' as const,
+      addressKey: 'stores.locations.mallBranch.address' as const,
+      hoursKey: 'stores.locations.mallBranch.hours' as const,
       phone: '+374 93 58 04 09',
       emails: ['marcofurniture@mail.ru', 'marcogrouparmenia@mail.ru'],
-      hours:
-        lang === 'hy'
-          ? 'Երկ-Կիր: 10:00 - 22:00'
-          : lang === 'ru'
-            ? 'Пн-Вс: 10:00 - 22:00'
-            : 'Mon-Sun: 10:00 AM - 10:00 PM',
-      image: 'https://via.placeholder.com/400x300?text=Mall+Branch',
     },
     {
       id: 3,
-      name: 'Downtown Location',
-      address:
-        lang === 'hy'
-          ? 'Գ. Փարաքար Մեսրոպ Մաշտոցի 1'
-          : lang === 'ru'
-            ? 'с. Паракар, Месроп Маштоц 1'
-            : '1 Mesrop Mashtots St, Parakar',
+      nameKey: 'stores.locations.downtown.name' as const,
+      addressKey: 'stores.locations.downtown.address' as const,
+      hoursKey: 'stores.locations.downtown.hours' as const,
       phone: '+374 77 51 04 06',
       emails: ['marcofurniture@mail.ru', 'marcogrouparmenia@mail.ru'],
-      hours:
-        lang === 'hy'
-          ? 'Երկ-Ուրբ: 08:00 - 19:00'
-          : lang === 'ru'
-            ? 'Пн-Пт: 08:00 - 19:00'
-            : 'Mon-Fri: 8:00 AM - 7:00 PM',
-      image: 'https://via.placeholder.com/400x300?text=Downtown',
     },
   ];
 
@@ -80,11 +47,11 @@ export default function StoresPage() {
           <Card key={store.id} className="overflow-hidden hover:shadow-lg transition-shadow">
             <div className="aspect-video bg-gray-200 relative">
               <div className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center">
-                <span className="text-gray-600 text-lg font-semibold">{store.name}</span>
+                <span className="text-gray-600 text-lg font-semibold">{t(store.nameKey)}</span>
               </div>
             </div>
             <div className="p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">{store.name}</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">{t(store.nameKey)}</h2>
               
               <div className="space-y-3 mb-6">
                 <div className="flex items-start gap-3">
@@ -107,7 +74,7 @@ export default function StoresPage() {
                       d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
                     />
                   </svg>
-                  <p className="text-gray-600 text-sm">{store.address}</p>
+                  <p className="text-gray-600 text-sm">{t(store.addressKey)}</p>
                 </div>
 
                 <div className="flex items-start gap-3">
@@ -172,7 +139,7 @@ export default function StoresPage() {
                       d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                   </svg>
-                  <p className="text-gray-600 text-sm">{store.hours}</p>
+                  <p className="text-gray-600 text-sm">{t(store.hoursKey)}</p>
                 </div>
               </div>
 

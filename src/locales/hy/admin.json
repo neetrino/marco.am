@@ -281,7 +281,9 @@
     "selectPage": "Ընտրել այս էջի բոլոր կատեգորիաները",
     "selectItem": "Ընտրել {name}",
     "sizesBadge": "Չափեր",
-    "noParent": "—"
+    "noParent": "—",
+    "selectedCategoriesCount": "Ընտրված կատեգորիաներ՝ {count}",
+    "bulkDeleteSelected": "Ջնջել ընտրվածները"
   },
   "delivery": {
     "title": "Առաքում",
@@ -581,6 +583,8 @@
     "amd": "ԴՐԱՄ - Հայկական դրամ",
     "usd": "USD - ԱՄՆ դոլար",
     "eur": "EUR - Եվրո",
+    "rub": "RUB - Ռուսական ռուբլի",
+    "gel": "GEL - Վրացական լարի",
     "enableOnlinePayments": "Միացնել առցանց վճարումները",
     "saveSettings": "Պահել կարգավորումները",
     "saving": "Պահվում է...",
@@ -674,7 +678,11 @@
     "configureFilterRange": "Կարգավորել զտիչի միջակայքը",
     "configureFilterRangeDescription": "Սահմանեք հրապարակային լռելյայն միջակայքը և քայլի չափերը յուրաքանչյուր արժույթի համար։",
     "stepSizeByCurrency": "Քայլի չափը ըստ արժույթի",
-    "stepSizeByCurrencyHint": "Օգտագործեք ավելի փոքր քայլ՝ ավելի խիտ զտիչի համար, և ավելի մեծ քայլ՝ արագ դիտման համար։"
+    "stepSizeByCurrencyHint": "Օգտագործեք ավելի փոքր քայլ՝ ավելի խիտ զտիչի համար, և ավելի մեծ քայլ՝ արագ դիտման համար։",
+    "currencyHintUsd": "Բազային արժույթ",
+    "currencyHintAmd": "Հայկական դրամ",
+    "currencyHintRub": "Ռուսական ռուբլի",
+    "currencyHintGel": "Վրացական լարի"
   },
   "brands": {
     "title": "Բրենդներ",
@@ -917,7 +925,13 @@
     "promoCardLeft": "Promo քարտ ձախ (featured ապրանքների տակ)",
     "promoCardRight": "Promo քարտ աջ (featured ապրանքների տակ)",
     "mobileFloorBannerImage": "Mobile floor banner պատկեր",
-    "removeMobileFloorImage": "Հեռացնել mobile floor պատկերը"
+    "removeMobileFloorImage": "Հեռացնել mobile floor պատկերը",
+    "changeImage": "Փոխել նկարը",
+    "removeImage": "Հեռացնել նկարը",
+    "viewFullSize": "Դիտել ամբողջական չափով",
+    "clickToUpload": "Սեղմեք վերբեռնելու համար",
+    "uploadImage": "Վերբեռնել նկար",
+    "uploading": "Վերբեռնվում է…"
   },
   "common": {
     "loading": "Բեռնվում է...",

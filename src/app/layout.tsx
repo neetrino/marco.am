@@ -13,13 +13,20 @@ import {
   type LanguageCode,
 } from '../lib/language';
 import { LanguagePreferenceProvider } from '../lib/language-context';
+import { t } from '../lib/i18n';
 
 const inter = Inter({ subsets: ['latin'], display: 'swap', adjustFontFallback: true });
 
-export const metadata: Metadata = {
-  title: 'Marco Group',
-  description: 'Կահույքի և տեխնիկայի հուսալի մատակարար',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const cookieStore = await cookies();
+  const lang: LanguageCode =
+    parseLanguageFromServer(cookieStore.get(LANGUAGE_PREFERENCE_KEY)?.value) ?? 'en';
+
+  return {
+    title: t(lang, 'common.meta.title'),
+    description: t(lang, 'common.meta.description'),
+  };
+}
 
 export default async function RootLayout({
   children,

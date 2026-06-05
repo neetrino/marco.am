@@ -81,7 +81,6 @@ function AddProductPageContent() {
     selectedAttributesForVariants: formState.selectedAttributesForVariants,
     selectedAttributeValueIds: formState.selectedAttributeValueIds,
     attributes: formState.attributes,
-    generatedVariants: formState.generatedVariants,
     formDataSlug: formState.formData.slug,
     formDataTitle: formState.formData.title,
     isEditMode,

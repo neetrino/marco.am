@@ -40,10 +40,10 @@ export default function SupportPage() {
             <div>
               <p className="text-sm font-medium text-gray-700 mb-1">{t('support.contactUs.phone')}</p>
               <a
-                href="tel:+37441350406"
+                href="tel:+37460500406"
                 className="text-marco-yellow hover:underline"
               >
-                +374 41 350406
+                060 500 406
               </a>
             </div>
             <div>

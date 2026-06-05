@@ -281,7 +281,9 @@
     "selectPage": "Select all categories on this page",
     "selectItem": "Select {name}",
     "sizesBadge": "Sizes",
-    "noParent": "—"
+    "noParent": "—",
+    "selectedCategoriesCount": "Selected categories: {count}",
+    "bulkDeleteSelected": "Delete selected"
   },
   "delivery": {
     "title": "Delivery",
@@ -581,6 +583,8 @@
     "amd": "AMD - Armenian Dram",
     "usd": "USD - US Dollar",
     "eur": "EUR - Euro",
+    "rub": "RUB - Russian Ruble",
+    "gel": "GEL - Georgian Lari",
     "enableOnlinePayments": "Enable Online Payments",
     "saveSettings": "Save Settings",
     "saving": "Saving...",
@@ -674,7 +678,11 @@
     "configureFilterRange": "Configure Filter Range",
     "configureFilterRangeDescription": "Set the public-facing default range and step sizes for every supported currency.",
     "stepSizeByCurrency": "Step Size By Currency",
-    "stepSizeByCurrencyHint": "Use a smaller step for denser filters and a bigger step for faster browsing."
+    "stepSizeByCurrencyHint": "Use a smaller step for denser filters and a bigger step for faster browsing.",
+    "currencyHintUsd": "Base currency",
+    "currencyHintAmd": "Armenian dram",
+    "currencyHintRub": "Russian ruble",
+    "currencyHintGel": "Georgian lari"
   },
   "brands": {
     "title": "Brands",
@@ -917,7 +925,13 @@
     "promoCardLeft": "Promo card left (under featured products)",
     "promoCardRight": "Promo card right (under featured products)",
     "mobileFloorBannerImage": "Mobile floor banner image",
-    "removeMobileFloorImage": "Remove mobile floor image"
+    "removeMobileFloorImage": "Remove mobile floor image",
+    "changeImage": "Change image",
+    "removeImage": "Remove image",
+    "viewFullSize": "View full size",
+    "clickToUpload": "Click to upload",
+    "uploadImage": "Upload image",
+    "uploading": "Uploading…"
   },
   "common": {
     "loading": "Loading...",

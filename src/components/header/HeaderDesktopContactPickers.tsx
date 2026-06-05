@@ -8,7 +8,9 @@ import { useTranslation } from '../../lib/i18n-client';
 import {
   contactLocationMapHref,
   getContactLocations,
+  getContactPhoneSections,
   phoneToTelHref,
+  type ContactPhoneSection,
 } from '../../lib/contact-locations';
 import {
   HEADER_CONTACT_PICKER_DROPDOWN_Z_CLASS,
@@ -27,7 +29,7 @@ type PhonePickerProps = {
   open: boolean;
   onToggle: () => void;
   phoneDisplay: string;
-  locations: ReturnType<typeof getContactLocations>;
+  phoneSections: readonly ContactPhoneSection[];
   triggerClassName: string;
 };
 
@@ -36,7 +38,7 @@ function HeaderDesktopPhonePicker({
   open,
   onToggle,
   phoneDisplay,
-  locations,
+  phoneSections,
   triggerClassName,
 }: PhonePickerProps) {
   const { t } = useTranslation();
@@ -69,17 +71,17 @@ function HeaderDesktopPhonePicker({
           role="menu"
           aria-label={t('common.ariaLabels.headerChoosePhone')}
         >
-          {locations.map((loc, idx) => (
+          {phoneSections.map((section, idx) => (
             <div
-              key={loc.id}
+              key={section.id}
               className={`px-3 py-2 ${idx > 0 ? 'border-t border-gray-100 pt-3 dark:border-white/10' : ''}`}
             >
               <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-marco-text/70 dark:text-white/55">
-                {loc.address}
+                {section.label}
               </p>
               <ul className="flex flex-col gap-0.5">
-                {loc.phones.map((phone) => (
-                  <li key={`${loc.id}-${phone}`}>
+                {section.phones.map((phone) => (
+                  <li key={`${section.id}-${phone}`}>
                     <a
                       role="menuitem"
                       href={phoneToTelHref(phone)}
@@ -182,6 +184,7 @@ export function HeaderDesktopContactPickers({ onOpenChange }: HeaderDesktopConta
   const pathname = usePathname();
   const { t, lang } = useTranslation();
   const locations = useMemo(() => getContactLocations(lang), [lang]);
+  const phoneSections = useMemo(() => getContactPhoneSections(lang), [lang]);
   const phoneDisplay = t('contact.phone').trim();
   const [openMenu, setOpenMenu] = useState<'phone' | 'address' | null>(null);
   const phoneRef = useRef<HTMLDivElement | null>(null);
@@ -238,7 +241,7 @@ export function HeaderDesktopContactPickers({ onOpenChange }: HeaderDesktopConta
         open={openMenu === 'phone'}
         onToggle={() => setOpenMenu((m) => (m === 'phone' ? null : 'phone'))}
         phoneDisplay={phoneDisplay}
-        locations={locations}
+        phoneSections={phoneSections}
         triggerClassName={`${TRIGGER_BASE_CLASS} ${HEADER_FIGMA_CONTACT_PHONE_ICON_TEXT_GAP_CLASS}`}
       />
       <HeaderDesktopAddressPicker

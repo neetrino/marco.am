@@ -188,7 +188,7 @@ export function SpecialOfferCard({
         {shouldShowCartCutouts ? (
           <span
             aria-hidden
-            className="pointer-events-none absolute bottom-0 right-0 z-0 max-md:hidden rounded-full [box-shadow:inset_0_0_0_1px_var(--special-offers-card-cutout-bg)] dark:[box-shadow:inset_0_0_0_1px_#383838]"
+            className="pointer-events-none absolute bottom-0 right-0 z-0 max-md:hidden rounded-full [box-shadow:inset_0_0_0_1px_var(--special-offers-card-cutout-bg)]"
             style={{
               width: SPECIAL_OFFERS_CARD_CORNER_MASK_SIZE_PX,
               height: SPECIAL_OFFERS_CARD_CORNER_MASK_SIZE_PX,

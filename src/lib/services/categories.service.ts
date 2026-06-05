@@ -2,33 +2,12 @@ import { db } from "@white-shop/db";
 
 import { filterExcludedShopCategoryTree } from "@/lib/constants/excluded-shop-category-slugs";
 import { getCachedJson } from "@/lib/services/read-through-json-cache";
+import { resolveCategoryTranslation } from "@/lib/i18n/category-translation";
 
 /** Categories change rarely; longer TTL improves Redis hit rate (invalidated on admin category writes). */
 const CATEGORY_TREE_CACHE_TTL_SEC = 300;
 
 class CategoriesService {
-  private resolveLocalizedCategoryTranslation(
-    translations: Array<{
-      locale: string;
-      slug: string;
-      title: string;
-      fullPath: string;
-      description?: string | null;
-      seoTitle?: string | null;
-      seoDescription?: string | null;
-    }>,
-    lang: string,
-  ) {
-    const requestedLocale = lang.trim().toLowerCase();
-    return (
-      translations.find((t) => t.locale === requestedLocale) ??
-      translations.find((t) => t.locale === "en") ??
-      translations.find((t) => t.locale === "hy") ??
-      translations.find((t) => t.locale === "ru") ??
-      translations[0]
-    );
-  }
-
   /**
    * Get category tree
    */
@@ -69,7 +48,7 @@ class CategoriesService {
       media: unknown[];
       translations: Array<{ locale: string; slug: string; title: string; fullPath: string }>;
     }) => {
-      const translation = this.resolveLocalizedCategoryTranslation(category.translations, lang);
+      const translation = resolveCategoryTranslation(category.translations, lang);
       if (!translation) return;
 
       const categoryData = {
@@ -169,9 +148,9 @@ class CategoriesService {
       };
     }
 
-    const translation = this.resolveLocalizedCategoryTranslation(category.translations, lang);
+    const translation = resolveCategoryTranslation(category.translations, lang);
     const parentTranslation = category.parent
-      ? this.resolveLocalizedCategoryTranslation(category.parent.translations, lang)
+      ? resolveCategoryTranslation(category.parent.translations, lang)
       : null;
 
     return {

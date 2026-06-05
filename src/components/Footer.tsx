@@ -12,6 +12,7 @@ import {
   FOOTER_BRAND_DESCRIPTION_TEXT_CLASS,
   FOOTER_BRAND_LOGO_BOX_CLASS,
   FOOTER_BRAND_LOGO_SHIFT_CLASS,
+  FOOTER_BRAND_LOGO_WIDTH_PX,
   FOOTER_COMPANY_LINKS,
   FOOTER_GRID_COMPANY_SUPPORT_WRAPPER_CLASS,
   FOOTER_GRID_CONTACTS_WRAPPER_CLASS,
@@ -209,7 +210,7 @@ export function Footer() {
                 alt="MARCO GROUP"
                 fill
                 className="object-contain object-left-top md:max-[1023px]:object-center min-[1024px]:max-[1366px]:object-center"
-                sizes="320px"
+                sizes={`${FOOTER_BRAND_LOGO_WIDTH_PX}px`}
                 priority={false}
               />
             </div>

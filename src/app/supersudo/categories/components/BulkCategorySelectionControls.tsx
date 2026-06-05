@@ -26,7 +26,7 @@ export function BulkCategorySelectionControls({
       <Card className="h-full border border-amber-200/80 bg-amber-50/80 p-4 shadow-sm transition-all duration-200">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="text-sm font-medium text-amber-900">
-            {`Selected categories: ${selectedCount}`}
+            {t('admin.categories.selectedCategoriesCount').replace('{count}', String(selectedCount))}
           </div>
           <Button
             variant="outline"
@@ -34,7 +34,7 @@ export function BulkCategorySelectionControls({
             disabled={deletingBulk}
             className="border-amber-300 bg-white text-amber-900 hover:bg-amber-100"
           >
-            {deletingBulk ? t('admin.common.loading') : `${t('admin.common.delete')} Selected`}
+            {deletingBulk ? t('admin.common.loading') : t('admin.categories.bulkDeleteSelected')}
           </Button>
         </div>
       </Card>

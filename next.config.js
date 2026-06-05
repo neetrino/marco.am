@@ -192,8 +192,8 @@ const nextConfig = {
               "base-uri 'self'",
               "form-action 'self'",
               "object-src 'none'",
-              // Contact page + footer map iframes (Google Maps / OSM); default-src alone blocks embeds
-              "frame-src 'self' https://www.google.com https://google.com https://maps.google.com https://www.openstreetmap.org https://openstreetmap.org",
+              // Map embeds (Google Maps / OSM) + About page YouTube hero; default-src alone blocks embeds
+              "frame-src 'self' https://www.google.com https://google.com https://maps.google.com https://www.openstreetmap.org https://openstreetmap.org https://www.youtube.com https://youtube.com https://www.youtube-nocookie.com https://youtube-nocookie.com",
               "frame-ancestors 'none'",
             ].join('; '),
           },

@@ -26,9 +26,9 @@ import { useTheme } from '../theme/ThemeProvider';
 import type { useHeaderData } from './useHeaderData';
 import {
   contactLocationMapHref,
-  getContactLocations,
+  getContactPhoneSections,
   phoneToTelHref,
-  type ContactLocationId,
+  type ContactPhoneSectionId,
 } from '../../lib/contact-locations';
 import {
   MOBILE_DRAWER_CLOSE_BTN_CLASS,
@@ -115,7 +115,7 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
   const drawerThemeDark = themeMounted && theme === 'dark';
   const lang = useContext(LanguagePreferenceContext);
   const [callFlow, setCallFlow] = useState<'idle' | 'branches' | 'phones'>('idle');
-  const [callBranchId, setCallBranchId] = useState<ContactLocationId | null>(null);
+  const [callBranchId, setCallBranchId] = useState<ContactPhoneSectionId | null>(null);
   const hideHeaderSocialLinks = useShouldHideHeaderSocialLinks();
   const {
     t,
@@ -153,10 +153,10 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
     return null;
   }
 
-  const contactLocations = getContactLocations(lang);
-  const callSelectedLocation =
+  const contactPhoneSections = getContactPhoneSections(lang);
+  const callSelectedSection =
     callFlow === 'phones' && callBranchId !== null
-      ? (contactLocations.find((l) => l.id === callBranchId) ?? null)
+      ? (contactPhoneSections.find((section) => section.id === callBranchId) ?? null)
       : null;
 
   const drawer = (
@@ -286,18 +286,18 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
                             {t('contact.drawerCall.chooseBranchTitle')}
                           </p>
                           <div className="flex flex-col gap-2">
-                            {contactLocations.map((loc) => (
+                            {contactPhoneSections.map((section) => (
                               <button
-                                key={loc.id}
+                                key={section.id}
                                 type="button"
                                 onClick={() => {
-                                  setCallBranchId(loc.id);
+                                  setCallBranchId(section.id);
                                   setCallFlow('phones');
                                 }}
                                 className={mobileDrawerCompactPillClass(false)}
                               >
                                 <span className="min-w-0 flex-1 whitespace-normal text-left leading-snug">
-                                  {loc.address}
+                                  {section.label}
                                 </span>
                                 <ChevronRight className="h-5 w-5 shrink-0 opacity-50" aria-hidden />
                               </button>
@@ -313,26 +313,28 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
                         </div>
                       ) : null}
 
-                      {callSelectedLocation ? (
+                      {callSelectedSection ? (
                         <div className="space-y-2.5">
                           <p className="text-left text-xs font-bold leading-snug text-marco-black dark:text-white">
-                            {callSelectedLocation.address}
+                            {callSelectedSection.label}
                           </p>
-                          <Link
-                            href={contactLocationMapHref(callSelectedLocation.id)}
-                            onClick={closeDrawer}
-                            className="inline-flex text-[10px] font-semibold uppercase tracking-wide text-marco-yellow underline-offset-2 hover:underline"
-                          >
-                            {t('contact.mapSectionTitle')}
-                          </Link>
+                          {callSelectedSection.id !== 'delivery' ? (
+                            <Link
+                              href={contactLocationMapHref(callSelectedSection.id)}
+                              onClick={closeDrawer}
+                              className="inline-flex text-[10px] font-semibold uppercase tracking-wide text-marco-yellow underline-offset-2 hover:underline"
+                            >
+                              {t('contact.mapSectionTitle')}
+                            </Link>
+                          ) : null}
                           <div className="flex flex-col gap-2">
-                            {callSelectedLocation.phones.map((phone) => (
+                            {callSelectedSection.phones.map((phone) => (
                               <a
-                                key={`${callSelectedLocation.id}-${phone}`}
+                                key={`${callSelectedSection.id}-${phone}`}
                                 href={phoneToTelHref(phone)}
                                 onClick={closeDrawer}
                                 className={`${MOBILE_DRAWER_CONTACT_COMPACT_CLASS} normal-case`}
-                                aria-label={`${callSelectedLocation.address} — ${phone}`}
+                                aria-label={`${callSelectedSection.label} — ${phone}`}
                               >
                                 <Phone className="h-6 w-6 shrink-0" strokeWidth={2} aria-hidden />
                                 <span>{phone}</span>

@@ -20,7 +20,7 @@ interface Settings {
 
 interface CurrencyField {
   code: 'USD' | 'AMD' | 'EUR' | 'RUB' | 'GEL';
-  label: string;
+  labelKey: 'admin.settings.usd' | 'admin.settings.amd' | 'admin.settings.eur' | 'admin.settings.rub' | 'admin.settings.gel';
   placeholder: string;
   disabled?: boolean;
   defaultValue: number;
@@ -35,11 +35,11 @@ const DEFAULT_CURRENCY_RATES: Record<CurrencyField['code'], number> = {
 };
 
 const CURRENCY_FIELDS: CurrencyField[] = [
-  { code: 'USD', label: 'US Dollar', placeholder: '1', disabled: true, defaultValue: 1 },
-  { code: 'AMD', label: 'Armenian Dram', placeholder: '400', defaultValue: 400 },
-  { code: 'EUR', label: 'Euro', placeholder: '0.92', defaultValue: 0.92 },
-  { code: 'RUB', label: 'Russian Ruble', placeholder: '90', defaultValue: 90 },
-  { code: 'GEL', label: 'Georgian Lari', placeholder: '2.7', defaultValue: 2.7 },
+  { code: 'USD', labelKey: 'admin.settings.usd', placeholder: '1', disabled: true, defaultValue: 1 },
+  { code: 'AMD', labelKey: 'admin.settings.amd', placeholder: '400', defaultValue: 400 },
+  { code: 'EUR', labelKey: 'admin.settings.eur', placeholder: '0.92', defaultValue: 0.92 },
+  { code: 'RUB', labelKey: 'admin.settings.rub', placeholder: '90', defaultValue: 90 },
+  { code: 'GEL', labelKey: 'admin.settings.gel', placeholder: '2.7', defaultValue: 2.7 },
 ];
 
 export default function SettingsPage() {
@@ -433,7 +433,7 @@ export default function SettingsPage() {
                             </span>
                           ) : null}
                         </div>
-                        <p className="mt-3 text-sm font-semibold text-marco-black">{field.label}</p>
+                        <p className="mt-3 text-sm font-semibold text-marco-black">{t(field.labelKey)}</p>
                       </div>
 
                       <div className="rounded-2xl border border-marco-border/70 bg-white/85 px-3 py-2 text-right shadow-sm">

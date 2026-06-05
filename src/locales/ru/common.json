@@ -1,4 +1,10 @@
 {
+  "meta": {
+    "title": "Marco Group",
+    "description": "Надёжный поставщик мебели и бытовой техники",
+    "productTabTitle": "Shop - Marco Group",
+    "siteName": "Marco Group"
+  },
   "buttons": {
     "addToCart": "Добавить в корзину",
     "addToWishlist": "Добавить в избранное",
@@ -317,6 +323,9 @@
     "adminDescription": "Что-то пошло не так. Пожалуйста, попробуйте снова.",
     "adminLink": "Админ",
     "productsTitle": "Не удалось загрузить товары",
-    "productsDescription": "Пожалуйста, попробуйте снова."
+    "productsDescription": "Пожалуйста, попробуйте снова.",
+    "apiConnectionRefused": "Сетевая ошибка: не удалось подключиться к {url}. Проверьте, что сервер запущен.",
+    "apiRouteUnreachable": "Сетевая ошибка: не удалось достичь API route {url}. Проверьте, что dev server запущен.",
+    "apiNetworkGeneric": "Сетевая ошибка: не удалось подключиться к {url}."
   }
 }

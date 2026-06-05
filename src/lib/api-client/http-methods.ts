@@ -5,6 +5,8 @@ import { getHeaders } from "./headers";
 import { handleUnauthorized } from "./auth-utils";
 import { shouldLogError, shouldLogWarning, parseErrorResponse, createApiError } from "./error-handler";
 import { logger } from "@/lib/utils/logger";
+import { t } from "@/lib/i18n";
+import { getStoredLanguage } from "@/lib/language";
 
 type NetworkErrorOptions = Pick<
   RequestOptions,
@@ -67,24 +69,19 @@ function handleNetworkError(
     networkError.message?.includes('Network request failed');
   
   if (isConnectionRefused) {
-    const errorMessage = baseUrl 
-      ? `⚠️ API սերվերը հասանելի չէ!\n\n` +
-        `Չհաջողվեց միանալ ${baseUrl}\n\n` +
-        `Լուծում:\n` +
-        `1. Համոզվեք, որ API սերվերը գործարկված է\n` +
-        `2. Ստուգեք, որ ${baseUrl.split(':').pop() || 'port'} պորտը զբաղված չէ այլ գործընթացով\n\n` +
-        `Հարցման URL: ${url}`
-      : `⚠️ API route-ը հասանելի չէ!\n\n` +
-        `Չհաջողվեց միանալ Next.js API route-ին: ${url}\n\n` +
-        `Լուծում:\n` +
-        `1. Համոզվեք, որ Next.js dev server-ը գործարկված է (npm run dev)\n` +
-        `2. Ստուգեք, որ API route-ը գոյություն ունի: ${url}\n\n`;
-    
+    const lang = getStoredLanguage();
+    const errorMessage = baseUrl
+      ? t(lang, 'common.errors.apiConnectionRefused').replace('{url}', baseUrl)
+      : t(lang, 'common.errors.apiRouteUnreachable').replace('{url}', url);
+
     console.error('❌ [API CLIENT]', errorMessage);
     throw new Error(errorMessage);
   }
-  
-  throw new Error(`Ցանցային սխալ: Չհաջողվեց միանալ API-ին ${url}. ${networkError.message || 'Խնդրում ենք ստուգել, արդյոք Next.js server-ը գործարկված է:'}`);
+
+  const lang = getStoredLanguage();
+  throw new Error(
+    `${t(lang, 'common.errors.apiNetworkGeneric').replace('{url}', url)} ${networkError.message ?? ''}`.trim(),
+  );
 }
 
 /**

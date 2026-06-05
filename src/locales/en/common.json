@@ -1,4 +1,10 @@
 {
+  "meta": {
+    "title": "Marco Group",
+    "description": "Reliable supplier of furniture and home appliances",
+    "productTabTitle": "Shop - Marco Group",
+    "siteName": "Marco Group"
+  },
   "buttons": {
     "addToCart": "Add to Cart",
     "addToWishlist": "Add to Wishlist",
@@ -317,7 +323,10 @@
     "adminDescription": "Something went wrong. Please try again.",
     "adminLink": "Admin",
     "productsTitle": "Failed to load products",
-    "productsDescription": "Please try again."
+    "productsDescription": "Please try again.",
+    "apiConnectionRefused": "Network error: Could not connect to {url}. Please check that the server is running.",
+    "apiRouteUnreachable": "Network error: Could not reach API route {url}. Please check that the dev server is running.",
+    "apiNetworkGeneric": "Network error: Could not connect to {url}."
   }
 }
 
