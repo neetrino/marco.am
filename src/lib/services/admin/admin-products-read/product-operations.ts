@@ -1,9 +1,31 @@
 import { logger } from "../../../utils/logger";
+import { expandCategoryIdsWithDescendants } from "../../category-subtree.service";
 import type { ProductFilters } from "./types";
 import { buildProductWhereClause, buildProductOrderByClause } from "./query-builder";
 import { executeProductListQuery, executeProductDetailQuery } from "./query-executor";
 import { formatProductForList } from "./product-formatter";
 import { formatVariantForAdmin } from "./variant-formatter";
+
+async function withExpandedCategoryFilters(filters: ProductFilters): Promise<ProductFilters> {
+  const selectedCategoryIds =
+    filters.categories && filters.categories.length > 0
+      ? filters.categories
+      : filters.category
+        ? [filters.category]
+        : [];
+
+  if (selectedCategoryIds.length === 0) {
+    return filters;
+  }
+
+  const expandedCategoryIds = await expandCategoryIdsWithDescendants(selectedCategoryIds);
+
+  return {
+    ...filters,
+    categories: expandedCategoryIds,
+    category: undefined,
+  };
+}
 
 /**
  * Get products for admin
@@ -16,8 +38,9 @@ export async function getProducts(filters: ProductFilters) {
   const limit = filters.limit || 20;
   const skip = (page - 1) * limit;
 
-  const where = buildProductWhereClause(filters);
-  const orderBy = buildProductOrderByClause(filters);
+  const resolvedFilters = await withExpandedCategoryFilters(filters);
+  const where = buildProductWhereClause(resolvedFilters);
+  const orderBy = buildProductOrderByClause(resolvedFilters);
 
   logger.debug('Executing database queries...', { where: JSON.stringify(where, null, 2) });
 

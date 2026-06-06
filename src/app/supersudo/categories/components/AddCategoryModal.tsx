@@ -6,11 +6,14 @@ import { useTranslation } from '../../../../lib/i18n-client';
 import { processImageFile, toDomSafeImgSrcString, toSafeImgAttributeSrc } from '../../../../lib/utils/image-utils';
 import { showToast } from '../../../../components/Toast';
 import { logger } from '../../../../lib/utils/logger';
-import { buildCategoryTree } from '../utils';
+import { translateAdminCategoryLabel } from '../admin-category-labels';
 import type { Category, CategoryFormData } from '../types';
+
+export type AddCategoryModalMode = 'root' | 'subcategory';
 
 interface AddCategoryModalProps {
   isOpen: boolean;
+  mode: AddCategoryModalMode;
   formData: CategoryFormData;
   categories: Category[];
   saving: boolean;
@@ -21,6 +24,7 @@ interface AddCategoryModalProps {
 
 export function AddCategoryModal({
   isOpen,
+  mode,
   formData,
   categories,
   saving,
@@ -29,7 +33,8 @@ export function AddCategoryModal({
   onSubmit,
 }: AddCategoryModalProps) {
   const { t } = useTranslation();
-  const categoryTree = buildCategoryTree(categories);
+  const rootCategories = categories.filter((category) => !category.parentId);
+  const isSubcategoryMode = mode === 'subcategory';
   const [imageUploading, setImageUploading] = useState(false);
   const safeImagePreviewUrl = useMemo(
     () => toSafeImgAttributeSrc(formData.imageUrl.trim()),
@@ -70,7 +75,11 @@ export function AddCategoryModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div className="mx-4 w-full max-w-md rounded-xl border border-gray-200 bg-white p-5">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('admin.categories.addCategory')}</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          {isSubcategoryMode
+            ? translateAdminCategoryLabel(t, 'admin.categories.addSubcategory', 'Add subcategory')
+            : t('admin.categories.addCategory')}
+        </h3>
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -114,23 +123,26 @@ export function AddCategoryModal({
               className="w-full"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t('admin.categories.parentCategory')}
-            </label>
-            <select
-              value={formData.parentId}
-              onChange={(e) => onFormDataChange({ ...formData, parentId: e.target.value })}
-              className="admin-field"
-            >
-              <option value="">{t('admin.categories.rootCategory')}</option>
-              {categoryTree.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {`${'— '.repeat(category.level)}${category.title}`}
-                </option>
-              ))}
-            </select>
-          </div>
+          {isSubcategoryMode ? (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {t('admin.categories.parentCategory')} *
+              </label>
+              <select
+                value={formData.parentId}
+                onChange={(e) => onFormDataChange({ ...formData, parentId: e.target.value })}
+                className="admin-field"
+                required
+              >
+                <option value="">{translateAdminCategoryLabel(t, 'admin.categories.selectParentCategory', t('admin.categories.parentCategory'))}</option>
+                {rootCategories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : null}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               {t('admin.categories.imageLabel')}

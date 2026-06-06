@@ -1,8 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from '../../../../lib/i18n-client';
-import { buildCategoryTree } from '../utils';
+import { translateAdminCategoryLabel } from '../admin-category-labels';
+import {
+  countDirectSubcategories,
+  filterCategoriesForAdminView,
+  sortSubcategoriesForAdmin,
+  type AdminCategoryView,
+} from '../utils';
 import { CategoryItem } from './CategoryItem';
 import { AdminTablePagination } from '../../components/AdminTablePagination';
 import type { Category, CategoryWithLevel } from '../types';
@@ -11,6 +17,7 @@ interface CategoriesListProps {
   categories: Category[];
   /** Full list for resolving parent titles when `categories` is filtered. Defaults to `categories`. */
   categoryLookupList?: Category[];
+  viewMode: AdminCategoryView;
   /** When non-empty and list is empty, show “no search results” instead of “no categories”. */
   searchQuery?: string;
   selectedCategoryIds: string[];
@@ -25,6 +32,7 @@ const ITEMS_PER_PAGE = 20;
 export function CategoriesList({
   categories,
   categoryLookupList,
+  viewMode,
   searchQuery = '',
   selectedCategoryIds,
   onToggleSelect,
@@ -36,28 +44,42 @@ export function CategoriesList({
   const [currentPage, setCurrentPage] = useState(1);
   const lookup = categoryLookupList ?? categories;
 
-  const categoryTree = buildCategoryTree(categories);
+  const viewCategories = useMemo((): CategoryWithLevel[] => {
+    const scoped = filterCategoriesForAdminView(categories, viewMode);
+    const sorted =
+      viewMode === 'subcategories' ? sortSubcategoriesForAdmin(scoped, lookup) : scoped;
+    return sorted.map((category) => ({ ...category, level: viewMode === 'roots' ? 0 : 1 }));
+  }, [categories, lookup, viewMode]);
 
-  // Pagination calculations
-  const totalPages = Math.ceil(categoryTree.length / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(viewCategories.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
-  const paginatedCategories = categoryTree.slice(startIndex, endIndex);
+  const paginatedCategories = viewCategories.slice(startIndex, endIndex);
   const selectedOnPage = paginatedCategories.filter((category) =>
     selectedCategoryIds.includes(category.id)
   ).length;
   const allOnPageSelected = paginatedCategories.length > 0 && selectedOnPage === paginatedCategories.length;
+  const isRootView = viewMode === 'roots';
 
-  // Reset to page 1 when categories change
   useEffect(() => {
     setCurrentPage(1);
-  }, [categories.length, searchQuery]);
+  }, [categories.length, searchQuery, viewMode]);
 
-  if (categoryTree.length === 0) {
+  if (viewCategories.length === 0) {
     const emptyMessage =
       searchQuery.trim().length > 0
         ? t('admin.categories.noSearchResults')
-        : t('admin.categories.noCategories');
+        : isRootView
+          ? translateAdminCategoryLabel(
+              t,
+              'admin.categories.noRootCategories',
+              t('admin.categories.noCategories'),
+            )
+          : translateAdminCategoryLabel(
+              t,
+              'admin.categories.noSubcategories',
+              t('admin.categories.noCategories'),
+            );
     return (
       <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50/70 px-4 py-8 text-center">
         <p className="text-sm font-medium text-slate-600">{emptyMessage}</p>
@@ -67,7 +89,12 @@ export function CategoriesList({
 
   return (
     <>
-      <div className="overflow-hidden rounded-xl border border-slate-200">
+      <div
+        id={isRootView ? 'admin-categories-panel-roots' : 'admin-categories-panel-subcategories'}
+        role="tabpanel"
+        aria-labelledby={isRootView ? 'admin-categories-tab-roots' : 'admin-categories-tab-subcategories'}
+        className="overflow-hidden rounded-xl border border-slate-200"
+      >
         <div className="overflow-x-auto">
           <table className="w-full min-w-[760px] table-fixed divide-y divide-slate-200 bg-white">
             <colgroup>
@@ -104,7 +131,13 @@ export function CategoriesList({
                   {t('admin.categories.tableSlug')}
                 </th>
                 <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  {t('admin.categories.tableParent')}
+                  {isRootView
+                    ? translateAdminCategoryLabel(
+                        t,
+                        'admin.categories.tableSubcategoryCount',
+                        t('admin.categories.subcategories'),
+                      )
+                    : t('admin.categories.tableParent')}
                 </th>
                 <th className="px-3 py-2 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
                   {t('admin.categories.tableActions')}
@@ -112,7 +145,7 @@ export function CategoriesList({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {paginatedCategories.map((category: CategoryWithLevel) => {
+              {paginatedCategories.map((category) => {
                 const parentCategory = category.parentId
                   ? lookup.find((item) => item.id === category.parentId)
                   : null;
@@ -122,6 +155,8 @@ export function CategoriesList({
                     key={category.id}
                     category={category}
                     parentCategory={parentCategory || null}
+                    viewMode={viewMode}
+                    subcategoryCount={countDirectSubcategories(lookup, category.id)}
                     selected={selectedCategoryIds.includes(category.id)}
                     onToggleSelect={onToggleSelect}
                     onEdit={onEdit}
@@ -137,13 +172,9 @@ export function CategoriesList({
       <AdminTablePagination
         currentPage={currentPage}
         totalPages={totalPages}
-        totalItems={categoryTree.length}
+        totalItems={viewCategories.length}
         onPageChange={setCurrentPage}
       />
     </>
   );
 }
-
-
-
-

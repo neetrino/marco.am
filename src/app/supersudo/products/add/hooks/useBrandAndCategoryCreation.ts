@@ -7,6 +7,7 @@ interface UseBrandAndCategoryCreationProps {
   formData: {
     brandIds: string[];
     primaryCategoryId: string;
+    categoryIds: string[];
   };
   useNewBrand: boolean;
   newBrandName: string;
@@ -32,12 +33,14 @@ export function useBrandAndCategoryCreation({
   const createBrandAndCategory = async (): Promise<{
     finalBrandIds: string[];
     finalPrimaryCategoryId: string;
+    finalCategoryIds: string[];
     creationMessages: string[];
     error: boolean;
   }> => {
     const creationMessages: string[] = [];
     const finalBrandIds = [...formData.brandIds];
     let finalPrimaryCategoryId = formData.primaryCategoryId;
+    const finalCategoryIds = [...formData.categoryIds];
 
     // Create new brand if provided
     if (useNewBrand && newBrandName.trim()) {
@@ -58,7 +61,7 @@ export function useBrandAndCategoryCreation({
       } catch (err: unknown) {
         console.error('❌ [ADMIN] Error creating brand:', err);
         setLoading(false);
-        return { finalBrandIds, finalPrimaryCategoryId, creationMessages, error: true };
+        return { finalBrandIds, finalPrimaryCategoryId, finalCategoryIds, creationMessages, error: true };
       }
     }
 
@@ -73,6 +76,9 @@ export function useBrandAndCategoryCreation({
         });
         if (categoryResponse.data) {
           finalPrimaryCategoryId = categoryResponse.data.id;
+          if (!finalCategoryIds.includes(categoryResponse.data.id)) {
+            finalCategoryIds.push(categoryResponse.data.id);
+          }
           setCategories((prev) => [...prev, categoryResponse.data]);
           logger.devLog('✅ [ADMIN] Category created:', categoryResponse.data.id);
           creationMessages.push(
@@ -82,11 +88,11 @@ export function useBrandAndCategoryCreation({
       } catch (err: unknown) {
         console.error('❌ [ADMIN] Error creating category:', err);
         setLoading(false);
-        return { finalBrandIds, finalPrimaryCategoryId, creationMessages, error: true };
+        return { finalBrandIds, finalPrimaryCategoryId, finalCategoryIds, creationMessages, error: true };
       }
     }
 
-    return { finalBrandIds, finalPrimaryCategoryId, creationMessages, error: false };
+    return { finalBrandIds, finalPrimaryCategoryId, finalCategoryIds, creationMessages, error: false };
   };
 
   return { createBrandAndCategory };

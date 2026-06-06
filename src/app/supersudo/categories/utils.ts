@@ -1,5 +1,36 @@
 import type { Category, CategoryWithLevel } from './types';
 
+export type AdminCategoryView = 'roots' | 'subcategories';
+
+export function filterCategoriesForAdminView(
+  categories: Category[],
+  view: AdminCategoryView,
+): Category[] {
+  if (view === 'roots') {
+    return categories.filter((category) => !category.parentId);
+  }
+  return categories.filter((category) => Boolean(category.parentId));
+}
+
+export function countDirectSubcategories(categories: Category[], parentId: string): number {
+  return categories.filter((category) => category.parentId === parentId).length;
+}
+
+export function sortSubcategoriesForAdmin(
+  categories: Category[],
+  lookup: Category[],
+): Category[] {
+  return [...categories].sort((a, b) => {
+    const parentA = lookup.find((item) => item.id === a.parentId)?.title ?? '';
+    const parentB = lookup.find((item) => item.id === b.parentId)?.title ?? '';
+    const byParent = parentA.localeCompare(parentB, undefined, { sensitivity: 'base' });
+    if (byParent !== 0) {
+      return byParent;
+    }
+    return a.title.localeCompare(b.title, undefined, { sensitivity: 'base' });
+  });
+}
+
 /**
  * Build category tree with hierarchy levels
  */

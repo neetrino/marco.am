@@ -23,6 +23,10 @@ import type { PrismaTransactionClient } from "@/lib/types/prisma";
 import { getErrorMessage, getPrismaErrorCode } from "@/lib/types/errors";
 import { cacheService } from "../cache.service";
 import { invalidateCategoryPublicCaches } from "../read-through-json-cache";
+import {
+  normalizeProductCategoryLinks,
+  toProductCategoriesConnect,
+} from "../product-category-links.service";
 
 type ProductMediaItem = string | { url: string };
 
@@ -379,11 +383,20 @@ class AdminProductsCreateService {
         logger.devLog('📸 [ADMIN PRODUCTS CREATE SERVICE] Final main media count:', finalMedia.length);
         logger.devLog('📸 [ADMIN PRODUCTS CREATE SERVICE] Variant images excluded:', allVariantImages.length);
 
+        const categoryLinks = await normalizeProductCategoryLinks(
+          {
+            primaryCategoryId: data.primaryCategoryId,
+            categoryIds: data.categoryIds,
+          },
+          tx,
+        );
+
         const product = await tx.product.create({
           data: {
             brandId: data.brandId || undefined,
-            primaryCategoryId: data.primaryCategoryId || undefined,
-            categoryIds: data.categoryIds || [],
+            primaryCategoryId: categoryLinks.primaryCategoryId ?? undefined,
+            categoryIds: categoryLinks.categoryIds,
+            categories: toProductCategoriesConnect(categoryLinks.categoryIds),
             productClass: resolveProductClass(data.productClass),
             media: finalMedia,
             published: data.published,

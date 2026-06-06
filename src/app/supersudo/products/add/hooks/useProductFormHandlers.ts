@@ -116,7 +116,7 @@ export function useProductFormHandlers({
       if (brandCategoryResult.error) {
         return;
       }
-      const { finalBrandIds, finalPrimaryCategoryId, creationMessages } = brandCategoryResult;
+      const { finalBrandIds, finalPrimaryCategoryId, finalCategoryIds, creationMessages } = brandCategoryResult;
 
       // Convert generated variants to formData format
       convertGeneratedVariantsToFormData();
@@ -396,6 +396,7 @@ export function useProductFormHandlers({
         formData: currentFormData,
         finalBrandIds,
         finalPrimaryCategoryId,
+        finalCategoryIds,
         variants: finalVariants,
         attributeIds,
         finalMedia,

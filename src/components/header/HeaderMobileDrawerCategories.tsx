@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { ChevronDown, LayoutGrid } from 'lucide-react';
 import type { LanguageCode } from '../../lib/language';
 import type { Category } from './category-nav-types';
-import { dedupeCategories } from './categoryNavList';
+import { prepareSubcategoriesForNav } from './categoryNavList';
 import { resolveCategoryNavPresentation } from './categoryNavPresentation';
 import { mobileDrawerNavPillClass } from './header-mobile-drawer.classes';
 import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '../../lib/utils/image-utils';
@@ -192,7 +192,7 @@ export function HeaderMobileDrawerCategories({
                       >
                         {t('common.navigation.categoriesMegaMenu.viewProducts')}
                       </Link>
-                      {dedupeCategories(category.children, lang).map((child) => {
+                      {prepareSubcategoriesForNav(category, lang).map((child) => {
                         const childPresentation = resolveCategoryNavPresentation(
                           child.slug,
                           child.title,

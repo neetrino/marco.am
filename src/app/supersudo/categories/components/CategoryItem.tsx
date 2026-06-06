@@ -2,12 +2,16 @@
 
 import { Button } from '@shop/ui';
 import { useTranslation } from '../../../../lib/i18n-client';
+import { translateAdminCategoryLabel } from '../admin-category-labels';
 import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '../../../../lib/utils/image-utils';
+import type { AdminCategoryView } from '../utils';
 import type { Category, CategoryWithLevel } from '../types';
 
 interface CategoryItemProps {
   category: CategoryWithLevel;
   parentCategory: Category | null;
+  viewMode: AdminCategoryView;
+  subcategoryCount?: number;
   selected: boolean;
   onToggleSelect: (categoryId: string, checked: boolean) => void;
   onEdit: (category: Category) => void;
@@ -17,14 +21,26 @@ interface CategoryItemProps {
 export function CategoryItem({
   category,
   parentCategory,
+  viewMode,
+  subcategoryCount = 0,
   selected,
   onToggleSelect,
   onEdit,
   onDelete,
 }: CategoryItemProps) {
   const { t } = useTranslation();
-  const depthPrefix = category.level > 0 ? `${'— '.repeat(category.level)} ` : '';
   const safeCategoryImage = toSafeImgAttributeSrc(category.media?.[0] ?? null);
+  const isRootView = viewMode === 'roots';
+  const rootBadge = translateAdminCategoryLabel(
+    t,
+    'admin.categories.badgeRoot',
+    t('admin.categories.title'),
+  );
+  const subBadge = translateAdminCategoryLabel(
+    t,
+    'admin.categories.badgeSubcategory',
+    t('admin.categories.subcategories'),
+  );
 
   return (
     <tr className="group border-b border-slate-100 transition-colors hover:bg-amber-50/50">
@@ -56,7 +72,16 @@ export function CategoryItem({
       <td className="px-3 py-3">
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-sm font-semibold text-slate-900 group-hover:text-amber-900">
-            {`${depthPrefix}${category.title}`}
+            {category.title}
+          </span>
+          <span
+            className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
+              isRootView
+                ? 'border border-amber-200 bg-amber-100 text-amber-900'
+                : 'border border-sky-200 bg-sky-50 text-sky-900'
+            }`}
+          >
+            {isRootView ? rootBadge : subBadge}
           </span>
           {category.requiresSizes && (
             <span className="rounded-full border border-slate-300 bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">
@@ -66,7 +91,17 @@ export function CategoryItem({
         </div>
       </td>
       <td className="px-3 py-3 text-sm text-slate-600">{category.slug}</td>
-      <td className="px-3 py-3 text-sm text-slate-600">{parentCategory?.title || t('admin.categories.noParent')}</td>
+      {isRootView ? (
+        <td className="px-3 py-3 text-sm font-medium tabular-nums text-slate-700">
+          {subcategoryCount > 0
+            ? subcategoryCount
+            : translateAdminCategoryLabel(t, 'admin.categories.noSubcategoriesShort', '0')}
+        </td>
+      ) : (
+        <td className="px-3 py-3 text-sm text-slate-600">
+          {parentCategory?.title || t('admin.categories.noParent')}
+        </td>
+      )}
       <td className="px-3 py-3">
         <div className="flex justify-end gap-2">
           <Button
@@ -90,7 +125,3 @@ export function CategoryItem({
     </tr>
   );
 }
-
-
-
-

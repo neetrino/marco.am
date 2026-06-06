@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from '../lib/i18n-client';
 import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '../lib/utils/image-utils';
 import type { Category } from './header/category-nav-types';
+import { prepareSubcategoriesForNav } from './header/categoryNavList';
 import { MOBILE_NAV_LAYOUT_PADDING_BOTTOM } from './mobile-bottom-nav.constants';
 import { flattenCategoryTree, normalizeSearchValue, useMobileShopCategories } from './mobile-bottom-nav-shop-sheet-data';
 
@@ -46,7 +47,7 @@ export function MobileBottomNavShopSheet({
   onClose,
   onSelectCategory,
 }: MobileBottomNavShopSheetProps) {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const { categories, searchIndex, loading } = useMobileShopCategories(open);
   const [searchQuery, setSearchQuery] = useState('');
   const normalizedSearchQuery = normalizeSearchValue(searchQuery);
@@ -214,7 +215,7 @@ export function MobileBottomNavShopSheet({
                         {category.title}
                       </p>
                       <div className="grid grid-cols-2 gap-2">
-                        {category.children.map((child) => {
+                        {prepareSubcategoriesForNav(category, lang).map((child) => {
                           const isChildActive = activeCategorySlug === child.slug;
                           const childImage = getCategoryImage(child);
                           return (

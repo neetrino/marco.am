@@ -283,7 +283,20 @@
     "sizesBadge": "Sizes",
     "noParent": "—",
     "selectedCategoriesCount": "Selected categories: {count}",
-    "bulkDeleteSelected": "Delete selected"
+    "bulkDeleteSelected": "Delete selected",
+    "tabRootCategories": "Main categories",
+    "tabSubcategories": "Subcategories",
+    "viewTabsLabel": "Category type",
+    "viewTabsHint": "Main and subcategories are shown in separate lists",
+    "addSubcategory": "Add subcategory",
+    "selectParentCategory": "Select main category",
+    "parentRequired": "Please select a main category",
+    "badgeRoot": "Main",
+    "badgeSubcategory": "Sub",
+    "tableSubcategoryCount": "Subcategories",
+    "noSubcategoriesShort": "0",
+    "noRootCategories": "No main categories found",
+    "noSubcategories": "No subcategories found"
   },
   "delivery": {
     "title": "Delivery",

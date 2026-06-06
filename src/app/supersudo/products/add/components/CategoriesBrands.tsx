@@ -4,11 +4,13 @@ import { Input } from '@shop/ui';
 import { useTranslation } from '../../../../../lib/i18n-client';
 import { FormSection } from './FormSection';
 import type { Category, Brand, Variant } from '../types';
+import { applyProductCategorySelectionChange } from '../utils/productCategorySelection';
 
 interface CategoriesBrandsProps {
   categories: Category[];
   brands: Brand[];
   categoryIds: string[];
+  primaryCategoryId: string;
   brandIds: string[];
   categoriesExpanded: boolean;
   brandsExpanded: boolean;
@@ -33,6 +35,7 @@ export function CategoriesBrands({
   categories,
   brands,
   categoryIds,
+  primaryCategoryId,
   brandIds,
   categoriesExpanded,
   brandsExpanded,
@@ -55,9 +58,11 @@ export function CategoriesBrands({
   const { t } = useTranslation();
 
   // Build category tree structure
+  type CategoryTreeNode = Category & { children: CategoryTreeNode[] };
+
   const buildCategoryTree = () => {
-    const categoryMap = new Map<string, Category & { children: Category[] }>();
-    const rootCategories: (Category & { children: Category[] })[] = [];
+    const categoryMap = new Map<string, CategoryTreeNode>();
+    const rootCategories: CategoryTreeNode[] = [];
 
     // First pass: create map and identify root categories
     categories.forEach((category) => {
@@ -75,19 +80,30 @@ export function CategoriesBrands({
       }
     });
 
-    // Flatten tree for display (parent first, then children)
+    const depthPaddingClass = (depth: number): string => {
+      if (depth <= 0) return '';
+      if (depth === 1) return 'pl-6';
+      if (depth === 2) return 'pl-10';
+      if (depth === 3) return 'pl-14';
+      return 'pl-16';
+    };
+
     const flattenTree = (
-      nodes: (Category & { children: Category[] })[],
-      result: (Category & { isSubcategory: boolean })[] = []
-    ): (Category & { isSubcategory: boolean })[] => {
-      nodes.forEach((node) => {
-        result.push({ ...node, isSubcategory: false });
-        if (node.children && node.children.length > 0) {
-          node.children.forEach((child) => {
-            result.push({ ...child, isSubcategory: true });
-          });
+      nodes: CategoryTreeNode[],
+      depth = 0,
+      result: (CategoryTreeNode & { isSubcategory: boolean; depth: number; depthClass: string })[] = [],
+    ): (CategoryTreeNode & { isSubcategory: boolean; depth: number; depthClass: string })[] => {
+      for (const node of nodes) {
+        result.push({
+          ...node,
+          isSubcategory: depth > 0,
+          depth,
+          depthClass: depthPaddingClass(depth),
+        });
+        if (node.children.length > 0) {
+          flattenTree(node.children, depth + 1, result);
         }
-      });
+      }
       return result;
     };
 
@@ -97,12 +113,21 @@ export function CategoriesBrands({
   const displayCategories = buildCategoryTree();
 
   const handleCategoryChange = (categoryId: string, checked: boolean) => {
-    const newCategoryIds = checked
-      ? [...categoryIds, categoryId]
-      : categoryIds.filter((id) => id !== categoryId);
+    const newCategoryIds = applyProductCategorySelectionChange(
+      categoryIds,
+      categoryId,
+      checked,
+      categories,
+    );
 
-    // Set primary category if it's the first one
-    const newPrimaryCategoryId = newCategoryIds.length > 0 ? newCategoryIds[0] : '';
+    let newPrimaryCategoryId = primaryCategoryId;
+    if (checked) {
+      if (!primaryCategoryId || !newCategoryIds.includes(primaryCategoryId)) {
+        newPrimaryCategoryId = categoryId;
+      }
+    } else if (primaryCategoryId === categoryId) {
+      newPrimaryCategoryId = newCategoryIds[0] ?? '';
+    }
 
     const selectedCategory = categories.find((cat) => cat.id === categoryId);
     const newIsSizeRequired = selectedCategory?.requiresSizes ?? false;
@@ -196,26 +221,40 @@ export function CategoriesBrands({
                     <div className="p-2">
                       <div className="space-y-1">
                         {displayCategories.map((category) => (
-                          <label
+                          <div
                             key={category.id}
-                            className={`flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded ${
-                              category.isSubcategory ? 'pl-6' : ''
-                            }`}
+                            className={`flex items-center gap-2 hover:bg-gray-50 p-2 rounded ${category.depthClass}`}
                           >
-                            <input
-                              type="checkbox"
-                              checked={categoryIds.includes(category.id)}
-                              onChange={(e) => handleCategoryChange(category.id, e.target.checked)}
-                              className="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-gray-500"
-                            />
-                            <span
-                              className={`text-gray-700 ${
-                                category.isSubcategory ? 'text-xs' : 'text-sm font-semibold'
-                              }`}
-                            >
-                              {category.title}
-                            </span>
-                          </label>
+                            <label className="flex flex-1 items-center space-x-2 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={categoryIds.includes(category.id)}
+                                onChange={(e) => handleCategoryChange(category.id, e.target.checked)}
+                                className="w-4 h-4 text-gray-900 border-gray-300 rounded focus:ring-gray-500"
+                              />
+                              <span
+                                className={`text-gray-700 ${
+                                  category.isSubcategory ? 'text-xs' : 'text-sm font-semibold'
+                                }`}
+                              >
+                                {category.title}
+                                {primaryCategoryId === category.id ? (
+                                  <span className="ml-1 text-xs font-normal text-gray-500">
+                                    ({t('admin.products.add.primaryCategory')})
+                                  </span>
+                                ) : null}
+                              </span>
+                            </label>
+                            {categoryIds.includes(category.id) && primaryCategoryId !== category.id ? (
+                              <button
+                                type="button"
+                                onClick={() => onPrimaryCategoryIdChange(category.id)}
+                                className="shrink-0 text-xs text-gray-500 hover:text-gray-800"
+                              >
+                                {t('admin.products.add.setPrimaryCategory')}
+                              </button>
+                            ) : null}
+                          </div>
                         ))}
                       </div>
                     </div>

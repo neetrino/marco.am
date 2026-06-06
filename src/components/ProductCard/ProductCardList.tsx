@@ -7,7 +7,6 @@ import type { ProductListingBrand } from '@/lib/types/product-listing-brand';
 import { formatCatalogPrice, type CurrencyCode } from '../../lib/currency';
 import { useTranslation } from '../../lib/i18n-client';
 import { ProductCardBrandMark } from './ProductCardBrandMark';
-import { PRODUCT_CARD_BRAND_LOGO_BOX_LIST_CLASS } from './product-card-brand-logo.constants';
 import { ProductColors } from './ProductColors';
 import { ProductCardActions } from './ProductCardActions';
 import { ProductImagePlaceholder } from '../ProductImagePlaceholder';
@@ -107,8 +106,7 @@ export function ProductCardList({
                   name={product.brand.name}
                   slug={product.brand.slug}
                   logoUrl={product.brand.logoUrl}
-                  textClassName="text-lg text-gray-500 dark:text-[#383838] sm:text-xl"
-                  logoBoxClassName={PRODUCT_CARD_BRAND_LOGO_BOX_LIST_CLASS}
+                  size="list"
                 />
               ) : (
                 <p className="text-lg text-gray-500 dark:text-[#383838] sm:text-xl">

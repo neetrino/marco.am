@@ -19,6 +19,7 @@ const SLUG_ALIASES: Record<string, string> = {
   'disa-kulp': 'disa',
   'fgv-formenti-giovenzana': 'fgv',
   'lg-wordmark': 'lg',
+  lex: 'lex-life-expert',
   'mf-furniture-hardware': 'mf',
   nnobel: 'nobel',
   'panasonic-blue': 'panasonic',
@@ -171,6 +172,26 @@ export function resolveBrandStaticLogo(slug: string): BrandStaticLogoDimensions 
 
 export function isGeepasBundledLogoAsset(asset: BrandStaticLogoDimensions): boolean {
   return asset.src.toLowerCase().includes("geepas");
+}
+
+/** Per-brand UI scale so bundled artwork reads at similar visual weight on product cards. */
+export function resolveProductCardBrandLogoUiScale(
+  slug: string,
+  name: string,
+  src: string,
+): number {
+  const slugKey = slug.trim().toLowerCase();
+  const nameKey = name.trim().toLowerCase();
+
+  if (
+    isGeepasBundledLogoAsset({ src, width: 0, height: 0 }) ||
+    slugKey === "geepas" ||
+    nameKey === "geepas"
+  ) {
+    return GEEPAS_BUNDLED_LOGO_UI_SCALE;
+  }
+
+  return 1;
 }
 
 /**

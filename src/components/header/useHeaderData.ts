@@ -15,6 +15,7 @@ import { useHeaderCurrency } from './useHeaderCurrency';
 import { useTranslation } from '../../lib/i18n-client';
 import { subscribeShopCategoryTreeUpdated } from '../../lib/shop-category-tree-sync';
 import type { Category, CategoriesResponse } from './category-nav-types';
+import { prepareRootCategoriesForNav } from './categoryNavList';
 
 export function useHeaderData() {
   const router = useRouter();
@@ -184,7 +185,8 @@ export function useHeaderData() {
     window.dispatchEvent(new Event('currency-updated'));
   };
 
-  const getRootCategories = (cats: Category[]): Category[] => cats;
+  const getRootCategories = (cats: Category[]): Category[] =>
+    prepareRootCategoriesForNav(cats, getStoredLanguage());
 
   return {
     router,

@@ -31,6 +31,7 @@ import enCheckout from '../locales/en/checkout.json';
 import enRegister from '../locales/en/register.json';
 import enCategories from '../locales/en/categories.json';
 import enOrders from '../locales/en/orders.json';
+/** Static import — touch this file after editing locale JSON so Turbopack re-bundles admin strings. */
 import enAdmin from '../locales/en/admin.json';
 
 import hyCommon from '../locales/hy/common.json';
