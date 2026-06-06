@@ -283,7 +283,20 @@
     "sizesBadge": "Размеры",
     "noParent": "—",
     "selectedCategoriesCount": "Выбрано категорий: {count}",
-    "bulkDeleteSelected": "Удалить выбранные"
+    "bulkDeleteSelected": "Удалить выбранные",
+    "tabRootCategories": "Основные категории",
+    "tabSubcategories": "Подкатегории",
+    "viewTabsLabel": "Тип категории",
+    "viewTabsHint": "Основные и подкатегории показаны в отдельных списках",
+    "addSubcategory": "Добавить подкатегорию",
+    "selectParentCategory": "Выберите основную категорию",
+    "parentRequired": "Выберите основную категорию",
+    "badgeRoot": "Основная",
+    "badgeSubcategory": "Подкат.",
+    "tableSubcategoryCount": "Подкатегории",
+    "noSubcategoriesShort": "0",
+    "noRootCategories": "Основные категории не найдены",
+    "noSubcategories": "Подкатегории не найдены"
   },
   "delivery": {
     "title": "Доставка",

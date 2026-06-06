@@ -22,6 +22,7 @@ interface CreateAndSubmitPayloadProps {
   };
   finalBrandIds: string[];
   finalPrimaryCategoryId: string;
+  finalCategoryIds: string[];
   variants: Variant[];
   attributeIds: string[];
   finalMedia: string[];
@@ -37,6 +38,7 @@ export async function createAndSubmitPayload({
   formData,
   finalBrandIds,
   finalPrimaryCategoryId,
+  finalCategoryIds,
   variants,
   attributeIds,
   finalMedia,
@@ -47,6 +49,13 @@ export async function createAndSubmitPayload({
   setLoading,
   router,
 }: CreateAndSubmitPayloadProps): Promise<void> {
+  const resolvedCategoryIds =
+    finalCategoryIds.length > 0
+      ? finalCategoryIds
+      : finalPrimaryCategoryId
+        ? [finalPrimaryCategoryId]
+        : formData.categoryIds;
+
   const payload: Record<string, unknown> = {
       title: formData.title,
       slug: formData.slug,
@@ -54,7 +63,7 @@ export async function createAndSubmitPayload({
       productClass: formData.productClass,
       brandId: finalBrandIds.length > 0 ? finalBrandIds[0] : undefined,
       primaryCategoryId: finalPrimaryCategoryId || undefined,
-      categoryIds: formData.categoryIds.length > 0 ? formData.categoryIds : undefined,
+      categoryIds: resolvedCategoryIds.length > 0 ? resolvedCategoryIds : undefined,
       published: isEditMode ? formData.published : true,
       featured: formData.featured,
       locale: 'en',

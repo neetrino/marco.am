@@ -31,6 +31,9 @@
     "db:seed": "node shared/db/prisma/seed.cjs",
     "db:seed:apple": "node shared/db/prisma/seed-apple-product.cjs",
     "import:products-csv": "tsx src/scripts/import-marco-csv-products.ts",
+    "backfill:product-categories": "tsx src/scripts/backfill-product-category-links.ts",
+    "backfill:product-brands": "tsx src/scripts/backfill-product-brands.ts",
+    "export:marco-xlsx-brands": "python src/scripts/export-marco-xlsx-brands.py",
     "db:migrate:deploy": "node src/scripts/run-migrations.js"
   },
   "dependencies": {

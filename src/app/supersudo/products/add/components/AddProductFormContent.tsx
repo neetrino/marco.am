@@ -210,6 +210,7 @@ export function AddProductFormContent({
           categories={categories}
           brands={brands}
           categoryIds={formData.categoryIds}
+          primaryCategoryId={formData.primaryCategoryId}
           brandIds={formData.brandIds}
           categoriesExpanded={categoriesExpanded}
           brandsExpanded={brandsExpanded}

@@ -9,10 +9,14 @@ import { useCategories } from './hooks/useCategories';
 import { useCategoryActions } from './hooks/useCategoryActions';
 import { AdminPageLayout } from '../components/AdminPageLayout';
 import { CategoriesList } from './components/CategoriesList';
+import { CategoriesViewTabs } from './components/CategoriesViewTabs';
 import { BulkCategorySelectionControls } from './components/BulkCategorySelectionControls';
-import { AddCategoryModal } from './components/AddCategoryModal';
+import { AddCategoryModal, type AddCategoryModalMode } from './components/AddCategoryModal';
 import { EditCategoryModal } from './components/EditCategoryModal';
 import type { Category } from './types';
+import { filterCategoriesForAdminView } from './utils';
+import { translateAdminCategoryLabel } from './admin-category-labels';
+import { showToast } from '../../../components/Toast';
 
 export default function CategoriesPage() {
   const { t } = useTranslation();
@@ -40,6 +44,16 @@ export default function CategoriesPage() {
   } = useCategoryActions();
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
   const [categorySearch, setCategorySearch] = useState('');
+  const [activeView, setActiveView] = useState<'roots' | 'subcategories'>('roots');
+  const [addModalMode, setAddModalMode] = useState<AddCategoryModalMode>('root');
+  const rootCategoryCount = useMemo(
+    () => filterCategoriesForAdminView(categories, 'roots').length,
+    [categories],
+  );
+  const subcategoryCount = useMemo(
+    () => filterCategoriesForAdminView(categories, 'subcategories').length,
+    [categories],
+  );
   const filteredCategories = useMemo((): Category[] => {
     const raw = categorySearch.trim().toLowerCase();
     if (!raw) {
@@ -68,6 +82,10 @@ export default function CategoriesPage() {
       }
     }
   }, [isLoggedIn, isAdmin, isLoading, router]);
+
+  useEffect(() => {
+    setSelectedCategoryIds([]);
+  }, [activeView]);
 
   useEffect(() => {
     setSelectedCategoryIds((prevIds) =>
@@ -128,21 +146,39 @@ export default function CategoriesPage() {
     return null;
   }
 
-  const addCategoryHeaderAction = (
-    <Button
-      variant="primary"
-      size="md"
-      className="w-full shrink-0 shadow-sm transition-transform hover:-translate-y-0.5 sm:w-auto"
-      onClick={() => {
-        resetForm();
-        setShowAddModal(true);
-      }}
-    >
-      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-      </svg>
-      {t('admin.categories.addCategory')}
-    </Button>
+  const addCategoryHeaderActions = (
+    <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+      <Button
+        variant="outline"
+        size="md"
+        className="w-full shrink-0 border-slate-300 bg-white shadow-sm transition-transform hover:-translate-y-0.5 sm:w-auto"
+        onClick={() => {
+          resetForm();
+          setAddModalMode('subcategory');
+          setShowAddModal(true);
+        }}
+      >
+        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+        </svg>
+        {translateAdminCategoryLabel(t, 'admin.categories.addSubcategory', 'Add subcategory')}
+      </Button>
+      <Button
+        variant="primary"
+        size="md"
+        className="w-full shrink-0 shadow-sm transition-transform hover:-translate-y-0.5 sm:w-auto"
+        onClick={() => {
+          resetForm();
+          setAddModalMode('root');
+          setShowAddModal(true);
+        }}
+      >
+        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+        </svg>
+        {t('admin.categories.addCategory')}
+      </Button>
+    </div>
   );
 
   return (
@@ -154,7 +190,7 @@ export default function CategoriesPage() {
         title={t('admin.categories.title')}
         backLabel={t('admin.categories.backToAdmin')}
         onBack={() => router.push('/supersudo')}
-        headerActions={addCategoryHeaderAction}
+        headerActions={addCategoryHeaderActions}
       >
         <div className="space-y-5">
           <Card className="admin-card border-amber-300/70 bg-gradient-to-b from-amber-50/90 via-white to-white shadow-[0_12px_40px_rgba(217,119,6,0.12)] ring-1 ring-amber-200/50">
@@ -223,6 +259,15 @@ export default function CategoriesPage() {
             onBulkDelete={handleBulkDelete}
           />
 
+          <Card className="admin-card border-slate-200/80 bg-white p-4 shadow-[0_10px_24px_rgba(15,23,42,0.07)] sm:p-5">
+            <CategoriesViewTabs
+              activeView={activeView}
+              rootCount={rootCategoryCount}
+              subcategoryCount={subcategoryCount}
+              onViewChange={setActiveView}
+            />
+          </Card>
+
           <Card className="admin-card border-slate-200/80 bg-white shadow-[0_10px_24px_rgba(15,23,42,0.07)]">
             {loading ? (
               <div className="rounded-xl border border-slate-200 bg-slate-50/70 py-10 text-center">
@@ -233,6 +278,7 @@ export default function CategoriesPage() {
               <CategoriesList
                 categories={filteredCategories}
                 categoryLookupList={categories}
+                viewMode={activeView}
                 searchQuery={categorySearch}
                 selectedCategoryIds={selectedCategoryIds}
                 onToggleSelect={handleToggleSelect}
@@ -249,6 +295,7 @@ export default function CategoriesPage() {
 
       <AddCategoryModal
         isOpen={showAddModal}
+        mode={addModalMode}
         formData={formData}
         categories={categories}
         saving={saving}
@@ -257,7 +304,20 @@ export default function CategoriesPage() {
           resetForm();
         }}
         onFormDataChange={setFormData}
-        onSubmit={() => handleAddCategory(fetchCategories)}
+        onSubmit={async () => {
+          if (addModalMode === 'subcategory' && !formData.parentId.trim()) {
+            showToast(
+              translateAdminCategoryLabel(
+                t,
+                'admin.categories.parentRequired',
+                'Please select a main category',
+              ),
+              'warning',
+            );
+            return;
+          }
+          await handleAddCategory(fetchCategories);
+        }}
       />
 
       <EditCategoryModal

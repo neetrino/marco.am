@@ -7,6 +7,7 @@ import type { UpdateProductData } from "./types";
 import { collectVariantImages, buildProductUpdateData, updateProductTranslation, updateProductLabels, updateProductAttributes } from "./product-updater";
 import { prepareVariantForWrite, updateOrCreateVariant } from "./variant-updater";
 import { updateAttributeValueImageUrls } from "./attribute-value-updater";
+import { normalizeProductCategoryLinks } from "../../product-category-links.service";
 
 function sanitizeUpdatePayload(data: UpdateProductData) {
   return {
@@ -108,7 +109,25 @@ export async function updateProduct(
           );
 
     const allVariantImages = await collectVariantImages(preparedVariants, existingVariantImageUrls);
-    const updateData = await buildProductUpdateData(data, allVariantImages, existing);
+
+    const categoryLinks =
+      data.primaryCategoryId !== undefined || data.categoryIds !== undefined
+        ? await normalizeProductCategoryLinks({
+            primaryCategoryId:
+              data.primaryCategoryId !== undefined
+                ? data.primaryCategoryId
+                : existing.primaryCategoryId,
+            categoryIds:
+              data.categoryIds !== undefined ? data.categoryIds : existing.categoryIds,
+          })
+        : undefined;
+
+    const updateData = await buildProductUpdateData(
+      data,
+      allVariantImages,
+      existing,
+      categoryLinks,
+    );
 
     operationStep = "transaction-write";
 

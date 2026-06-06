@@ -8,6 +8,8 @@ import {
 import type { UpdateProductData } from "./types";
 import { normalizeProductClass } from "@/lib/constants/product-class";
 import { normalizeProductWarrantyYears } from "@/lib/constants/product-warranty";
+import type { NormalizedProductCategoryLinks } from "../../product-category-links.service";
+import { toProductCategoriesSet } from "../../product-category-links.service";
 
 /**
  * Collect variant images from data or existing variants
@@ -44,7 +46,8 @@ export async function collectVariantImages(
 export async function buildProductUpdateData(
   data: UpdateProductData,
   allVariantImages: string[],
-  existing: { publishedAt: Date | null }
+  existing: { publishedAt: Date | null },
+  categoryLinks?: NormalizedProductCategoryLinks,
 ): Promise<Prisma.ProductUpdateInput> {
   const updateData: Prisma.ProductUpdateInput = {};
 
@@ -59,8 +62,14 @@ export async function buildProductUpdateData(
       updateData.productClass = normalizedClass;
     }
   }
-  if (data.primaryCategoryId !== undefined) updateData.primaryCategoryId = data.primaryCategoryId || null;
-  if (data.categoryIds !== undefined) updateData.categoryIds = data.categoryIds || [];
+  if (categoryLinks !== undefined) {
+    updateData.primaryCategoryId = categoryLinks.primaryCategoryId;
+    updateData.categoryIds = categoryLinks.categoryIds;
+    updateData.categories = toProductCategoriesSet(categoryLinks.categoryIds);
+  } else {
+    if (data.primaryCategoryId !== undefined) updateData.primaryCategoryId = data.primaryCategoryId || null;
+    if (data.categoryIds !== undefined) updateData.categoryIds = data.categoryIds || [];
+  }
   
   if (data.media !== undefined) {
     const normalizedMedia = await normalizeProductMediaPayload(

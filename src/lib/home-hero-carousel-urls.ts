@@ -34,3 +34,4 @@ export function buildHeroCarouselImageUrls(
     mobile: resolveHeroMobileImageUrl(primaryItems[0]?.imageMobileUrl),
   };
 }
+

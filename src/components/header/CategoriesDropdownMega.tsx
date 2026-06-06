@@ -7,7 +7,7 @@ import { LanguagePreferenceContext } from '../../lib/language-context';
 import type { Category } from './category-nav-types';
 import { CategoryMegaSubcategoryPills } from './CategoryMegaSubcategoryPills';
 import { CategoryDropdownPromoBanner } from './CategoryDropdownPromoBanner';
-import { dedupeCategories, normalizeCategoryKey, prepareRootCategoriesForNav } from './categoryNavList';
+import { normalizeCategoryKey, prepareRootCategoriesForNav, prepareSubcategoriesForNav } from './categoryNavList';
 import { resolveCategoryNavPresentation } from './categoryNavPresentation';
 import { headerCategoryNavFont } from './headerCategoryNavTypography';
 import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '../../lib/utils/image-utils';
@@ -47,6 +47,11 @@ export function CategoriesDropdownMega({
   }, [categoriesWithExtra]);
 
   const selected = categoriesWithExtra.find((c) => c.slug === selectedSlug) ?? categoriesWithExtra[0];
+  const subcategoryItems = useMemo(
+    () => (selected ? prepareSubcategoriesForNav(selected, lang) : []),
+    [selected, lang],
+  );
+
   if (!selected) {
     return null;
   }
@@ -147,7 +152,7 @@ export function CategoriesDropdownMega({
           <CategoryMegaSubcategoryPills
             sectionHeadingId={`mega-menu-subcats-${selected.id}`}
             sectionTitle={preview.title.toUpperCase()}
-            items={dedupeCategories(selected.children, lang)}
+            items={subcategoryItems}
             lang={lang}
             productsWord={t('common.navigation.categoriesMegaMenu.productsWord')}
             emptyMessage={t('common.navigation.categoriesMegaMenu.emptySubcategories')}

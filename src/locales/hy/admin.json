@@ -283,7 +283,20 @@
     "sizesBadge": "Չափեր",
     "noParent": "—",
     "selectedCategoriesCount": "Ընտրված կատեգորիաներ՝ {count}",
-    "bulkDeleteSelected": "Ջնջել ընտրվածները"
+    "bulkDeleteSelected": "Ջնջել ընտրվածները",
+    "tabRootCategories": "Հիմնական կատեգորիաներ",
+    "tabSubcategories": "Ենթակատեգորիաներ",
+    "viewTabsLabel": "Կատեգորիաների տեսակ",
+    "viewTabsHint": "Հիմնական և ենթակատեգորիաները ցուցադրվում են առանձին",
+    "addSubcategory": "Ավելացնել ենթակատեգորիա",
+    "selectParentCategory": "Ընտրել հիմնական կատեգորիա",
+    "parentRequired": "Խնդրում ենք ընտրել հիմնական կատեգորիա",
+    "badgeRoot": "Հիմնական",
+    "badgeSubcategory": "Ենթակատեգորիա",
+    "tableSubcategoryCount": "Ենթակատեգորիաներ",
+    "noSubcategoriesShort": "0",
+    "noRootCategories": "Հիմնական կատեգորիաներ չեն գտնվել",
+    "noSubcategories": "Ենթակատեգորիաներ չեն գտնվել"
   },
   "delivery": {
     "title": "Առաքում",

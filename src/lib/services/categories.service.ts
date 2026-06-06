@@ -1,6 +1,8 @@
 import { db } from "@white-shop/db";
 
-import { filterExcludedShopCategoryTree } from "@/lib/constants/excluded-shop-category-slugs";
+import {
+  filterHeaderNavCategoryTree,
+} from "@/lib/constants/excluded-shop-category-slugs";
 import { getCachedJson } from "@/lib/services/read-through-json-cache";
 import { resolveCategoryTranslation } from "@/lib/i18n/category-translation";
 
@@ -12,7 +14,7 @@ class CategoriesService {
    * Get category tree
    */
   async getTree(lang: string = "en") {
-    const cacheKey = `categories:tree:v1:${lang}`;
+    const cacheKey = `categories:tree:v3:${lang}`;
     return getCachedJson(cacheKey, CATEGORY_TREE_CACHE_TTL_SEC, () =>
       this.buildCategoryTree(lang),
     );
@@ -86,31 +88,68 @@ class CategoriesService {
 
     const allIds = Array.from(categoryMap.keys()) as string[];
     if (allIds.length > 0) {
-      const counts = await db.product.groupBy({
-        by: ["primaryCategoryId"],
+      const childrenByParent = new Map<string, string[]>();
+      for (const category of categories) {
+        if (!category.parentId) {
+          continue;
+        }
+        const siblings = childrenByParent.get(category.parentId) ?? [];
+        siblings.push(category.id);
+        childrenByParent.set(category.parentId, siblings);
+      }
+
+      const subtreeByCategoryId = new Map<string, Set<string>>();
+      const collectSubtreeIds = (categoryId: string): Set<string> => {
+        const cached = subtreeByCategoryId.get(categoryId);
+        if (cached) {
+          return cached;
+        }
+
+        const subtree = new Set<string>([categoryId]);
+        const stack = [categoryId];
+        while (stack.length > 0) {
+          const current = stack.pop()!;
+          for (const childId of childrenByParent.get(current) ?? []) {
+            if (!subtree.has(childId)) {
+              subtree.add(childId);
+              stack.push(childId);
+            }
+          }
+        }
+
+        subtreeByCategoryId.set(categoryId, subtree);
+        return subtree;
+      };
+
+      const products = await db.product.findMany({
         where: {
           published: true,
           deletedAt: null,
-          primaryCategoryId: { in: allIds },
+          OR: [
+            { primaryCategoryId: { in: allIds } },
+            { categoryIds: { hasSome: allIds } },
+          ],
         },
-        _count: { id: true },
+        select: { primaryCategoryId: true, categoryIds: true },
       });
-      const countMap = new Map<string, number>();
-      for (const row of counts) {
-        if (row.primaryCategoryId) {
-          countMap.set(row.primaryCategoryId, row._count.id);
-        }
-      }
+
       for (const id of allIds) {
+        const subtree = collectSubtreeIds(id);
+        const count = products.filter(
+          (product) =>
+            (product.primaryCategoryId !== null && subtree.has(product.primaryCategoryId)) ||
+            product.categoryIds.some((categoryId) => subtree.has(categoryId)),
+        ).length;
+
         const node = categoryMap.get(id) as { productCount: number } | undefined;
         if (node) {
-          node.productCount = countMap.get(id) ?? 0;
+          node.productCount = count;
         }
       }
     }
 
     return {
-      data: filterExcludedShopCategoryTree(rootCategories),
+      data: filterHeaderNavCategoryTree(rootCategories),
     };
   }
 

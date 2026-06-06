@@ -1,13 +1,58 @@
-/** Brand logo box on standard product grid cards. */
-export const PRODUCT_CARD_BRAND_LOGO_BOX_CLASS = 'h-10 w-[160px]';
+export type ProductCardBrandLogoSize = 'grid' | 'gridCompact' | 'list' | 'specialOffer';
 
-/** Brand logo box on compact product grid cards (e.g. narrow rails). */
-export const PRODUCT_CARD_BRAND_LOGO_BOX_COMPACT_CLASS = 'h-7 w-[112px]';
+export type ProductCardBrandLogoSizeConfig = {
+  rowClassName: string;
+  imageClassName: string;
+  wordmarkClassName: string;
+};
 
-/** Brand logo box on list-layout product cards. */
+/**
+ * Height-first logo sizing: every mark renders at the same visual height; width follows aspect ratio.
+ */
+export const PRODUCT_CARD_BRAND_LOGO_SIZES: Record<
+  ProductCardBrandLogoSize,
+  ProductCardBrandLogoSizeConfig
+> = {
+  grid: {
+    rowClassName: 'flex min-h-7 max-w-[120px] items-center overflow-visible',
+    imageClassName: 'h-7 w-auto max-w-[120px] object-contain object-left origin-left',
+    wordmarkClassName:
+      'truncate text-sm font-semibold uppercase leading-none tracking-wide text-gray-500 dark:text-[#383838]',
+  },
+  gridCompact: {
+    rowClassName: 'flex min-h-6 max-w-[96px] items-center overflow-visible',
+    imageClassName: 'h-6 w-auto max-w-[96px] object-contain object-left origin-left',
+    wordmarkClassName:
+      'truncate text-xs font-semibold uppercase leading-none tracking-wide text-gray-500 dark:text-[#383838]',
+  },
+  list: {
+    rowClassName: 'flex min-h-7 max-w-[120px] items-center overflow-visible sm:min-h-8 sm:max-w-[132px]',
+    imageClassName:
+      'h-7 w-auto max-w-[120px] object-contain object-left origin-left sm:h-8 sm:max-w-[132px]',
+    wordmarkClassName:
+      'truncate text-sm font-semibold uppercase leading-none tracking-wide text-gray-500 dark:text-[#383838] sm:text-base',
+  },
+  specialOffer: {
+    rowClassName: 'flex min-h-6 max-w-[96px] items-center overflow-visible md:min-h-7 md:max-w-[108px]',
+    imageClassName:
+      'h-6 w-auto max-w-[96px] object-contain object-left origin-left md:h-7 md:max-w-[108px]',
+    wordmarkClassName:
+      'truncate text-xs font-semibold uppercase leading-none tracking-wide text-gray-500 dark:text-[#383838] md:text-sm',
+  },
+};
+
+/** @deprecated Use `PRODUCT_CARD_BRAND_LOGO_SIZES.grid.rowClassName` via `size="grid"`. */
+export const PRODUCT_CARD_BRAND_LOGO_BOX_CLASS =
+  PRODUCT_CARD_BRAND_LOGO_SIZES.grid.rowClassName;
+
+/** @deprecated Use `size="gridCompact"`. */
+export const PRODUCT_CARD_BRAND_LOGO_BOX_COMPACT_CLASS =
+  PRODUCT_CARD_BRAND_LOGO_SIZES.gridCompact.rowClassName;
+
+/** @deprecated Use `size="list"`. */
 export const PRODUCT_CARD_BRAND_LOGO_BOX_LIST_CLASS =
-  'h-10 w-[160px] sm:h-11 sm:w-[180px]';
+  PRODUCT_CARD_BRAND_LOGO_SIZES.list.rowClassName;
 
-/** Brand logo box on special-offer / home promo cards. */
+/** @deprecated Use `size="specialOffer"`. */
 export const PRODUCT_CARD_BRAND_LOGO_BOX_SPECIAL_OFFER_CLASS =
-  'h-7 w-[120px] md:h-8 md:w-[140px]';
+  PRODUCT_CARD_BRAND_LOGO_SIZES.specialOffer.rowClassName;
