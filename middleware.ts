@@ -18,6 +18,14 @@ function isUnsafeMethod(method: string): boolean {
   return method !== "GET" && method !== "HEAD" && method !== "OPTIONS";
 }
 
+function isSameDocumentOrigin(request: NextRequest, origin: string): boolean {
+  try {
+    return new URL(origin).origin === request.nextUrl.origin;
+  } catch {
+    return false;
+  }
+}
+
 function checkSameOriginRequest(request: NextRequest): NextResponse | null {
   if (!isUnsafeMethod(request.method)) {
     return null;
@@ -25,6 +33,10 @@ function checkSameOriginRequest(request: NextRequest): NextResponse | null {
 
   const origin = request.headers.get("origin");
   if (!origin) {
+    return null;
+  }
+
+  if (isSameDocumentOrigin(request, origin)) {
     return null;
   }
 
