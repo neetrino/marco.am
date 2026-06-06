@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { ChevronDown, LayoutGrid } from 'lucide-react';
 import type { LanguageCode } from '../../lib/language';
 import type { Category } from './category-nav-types';
-import { prepareRootCategoriesForNav, prepareSubcategoriesForNav } from './categoryNavList';
+import { prepareSubcategoriesForNav } from './categoryNavList';
 import { resolveCategoryNavPresentation } from './categoryNavPresentation';
 import { mobileDrawerNavPillClass } from './header-mobile-drawer.classes';
 import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '../../lib/utils/image-utils';

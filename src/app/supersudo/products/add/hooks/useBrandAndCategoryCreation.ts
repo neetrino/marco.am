@@ -40,7 +40,7 @@ export function useBrandAndCategoryCreation({
     const creationMessages: string[] = [];
     const finalBrandIds = [...formData.brandIds];
     let finalPrimaryCategoryId = formData.primaryCategoryId;
-    let finalCategoryIds = [...formData.categoryIds];
+    const finalCategoryIds = [...formData.categoryIds];
 
     // Create new brand if provided
     if (useNewBrand && newBrandName.trim()) {

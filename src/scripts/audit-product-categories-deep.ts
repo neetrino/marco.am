@@ -93,14 +93,6 @@ async function main(): Promise<void> {
       }
     }
 
-    const explicitCount = product.categoryIds.filter((id) => {
-      const row = graph.get(id);
-      if (!row?.parentId) {
-        return true;
-      }
-      return !product.categoryIds.includes(row.parentId);
-    }).length;
-
     if (
       product.categoryIds.length > 0 &&
       normalized.categoryIds.length > product.categoryIds.length
