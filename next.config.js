@@ -214,14 +214,6 @@ const nextConfig = {
     // Components can still use unoptimized prop, but this ensures all images work
     unoptimized: process.env.NODE_ENV === 'development',
   },
-  async rewrites() {
-    return [
-      {
-        source: '/assets/brands/geepas.png',
-        destination: '/assets/brands/geepas.webp',
-      },
-    ];
-  },
   // Fix for HMR issues in Next.js 15
   webpack: (config, { dev, isServer }) => {
     if (dev && !isServer) {

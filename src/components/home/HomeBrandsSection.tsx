@@ -40,10 +40,10 @@ function BrandLogo({ brand }: { brand: BrandKey }) {
   if (brand === 'hisense') {
     return (
       <Image
-        src="/assets/brands/hisense.svg"
+        src="/assets/brands/hisense.png"
         alt="Hisense"
-        width={486}
-        height={109}
+        width={1000}
+        height={1000}
         className="h-auto w-[240px] max-w-full md:w-[300px]"
         unoptimized
         priority={false}
@@ -54,10 +54,10 @@ function BrandLogo({ brand }: { brand: BrandKey }) {
   if (brand === 'samsung') {
     return (
       <Image
-        src="/assets/brands/samsung.svg"
+        src="/assets/brands/samsung.png"
         alt="Samsung"
-        width={423}
-        height={140}
+        width={1000}
+        height={1000}
         className="h-auto w-[250px] max-w-full md:w-[305px]"
         unoptimized
         priority={false}
@@ -68,10 +68,10 @@ function BrandLogo({ brand }: { brand: BrandKey }) {
   if (brand === 'lg') {
     return (
       <Image
-        src="/assets/brands/lg.svg"
+        src="/assets/brands/lg.png"
         alt="LG"
-        width={346}
-        height={140}
+        width={1000}
+        height={1000}
         className="h-auto w-[215px] max-w-full md:w-[270px]"
         unoptimized
         priority={false}
@@ -82,10 +82,10 @@ function BrandLogo({ brand }: { brand: BrandKey }) {
   if (brand === 'panasonic') {
     return (
       <Image
-        src="/assets/brands/panasonic.svg"
+        src="/assets/brands/panasonic.png"
         alt="Panasonic"
-        width={486}
-        height={127}
+        width={1000}
+        height={1000}
         className="h-auto w-[240px] max-w-full md:w-[300px]"
         unoptimized
         priority={false}
