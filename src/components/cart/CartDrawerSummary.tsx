@@ -18,7 +18,7 @@ export function CartDrawerSummary({ cart, currency, onCheckout, t }: CartDrawerS
       : t('common.cart.shippingNotCalculated');
 
   return (
-    <div className="border-t border-marco-border/80 bg-[#f4f4f4] px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 dark:border-white/10 dark:bg-zinc-950">
+    <div className="mt-4 border-t border-marco-border/80 bg-[#f4f4f4] pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 dark:border-white/10 dark:bg-zinc-950">
       <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-marco-black dark:text-white">
         {t('common.cart.orderSummary')}
       </h3>

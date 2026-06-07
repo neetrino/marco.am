@@ -1,9 +1,12 @@
 import { normalizeLiteralNewlinesToLineBreaks } from '../../../lib/utils/normalize-literal-newlines';
 
 import {
+  isSpecHeadingLine,
   parseRowsFromLabeledStrong,
+  parseRowsFromListItems,
   parseRowsFromTable,
   stripTags,
+  type SpecificationRow,
 } from './product-spec-description-parsing';
 
 function escapeRegExp(value: string): string {
@@ -25,7 +28,39 @@ function findSpecificationHeadingStrongIndex(html: string): number {
       return m.index;
     }
   }
+
+  const h1Match = html.match(/<h1[^>]*>[\s\S]*?<\/h1>/i);
+  if (h1Match && h1Match.index !== undefined && isSpecHeadingLine(h1Match[0])) {
+    return h1Match.index;
+  }
+
   return -1;
+}
+
+function findSpecBlockStart(html: string, rows: SpecificationRow[], headingIdx: number): number {
+  const candidates: number[] = [];
+
+  if (headingIdx >= 0) {
+    candidates.push(extendRemovalStartToBlockOpen(html, headingIdx));
+  }
+
+  if (rows.length > 0) {
+    const firstKeyIdx = findFirstRowStrongIndex(html, rows[0].key);
+    if (firstKeyIdx >= 0) {
+      candidates.push(extendRemovalStartToBlockOpen(html, firstKeyIdx));
+    }
+
+    const plainKeyIdx = html.indexOf(rows[0].key);
+    if (plainKeyIdx >= 0) {
+      candidates.push(extendRemovalStartToBlockOpen(html, plainKeyIdx));
+    }
+  }
+
+  if (candidates.length === 0) {
+    return -1;
+  }
+
+  return Math.min(...candidates);
 }
 
 function findFirstRowStrongIndex(html: string, firstRowKey: string): number {
@@ -39,19 +74,36 @@ function findFirstRowStrongIndex(html: string, firstRowKey: string): number {
  */
 function extendRemovalStartToBlockOpen(html: string, strongIndex: number): number {
   let best = strongIndex;
-  for (const tag of ['<p', '<div'] as const) {
+  for (const tag of ['<h1', '<h2', '<h3', '<h4', '<h5', '<h6', '<p', '<div'] as const) {
     const open = html.lastIndexOf(tag, strongIndex);
     if (open < 0) continue;
     const between = html.slice(open, strongIndex);
-    const ok =
-      tag === '<p'
-        ? /^<p[^>]*>\s*$/i.test(between)
-        : /^<div[^>]*>\s*$/i.test(between);
+    const ok = new RegExp(`^${tag}[^>]*>\\s*$`, 'i').test(between);
     if (ok) {
       best = Math.min(best, open);
     }
   }
   return best;
+}
+
+/** Removes empty wrappers left after cutting a spec block mid-document. */
+function trimOrphanedHtmlWrappers(html: string): string {
+  return html
+    .replace(/<h[1-6][^>]*>\s*<\/h[1-6]>/gi, '')
+    .replace(/<p[^>]*>\s*<\/p>/gi, '')
+    .replace(/<div[^>]*>\s*<\/div>/gi, '')
+    .trim();
+}
+
+function stripListSpecificationBlock(html: string): string {
+  const rows = parseRowsFromListItems(html);
+  const headingIdx = findSpecificationHeadingStrongIndex(html);
+  if (rows.length < 2 || headingIdx < 0) {
+    return html;
+  }
+
+  const removeStart = extendRemovalStartToBlockOpen(html, headingIdx);
+  return trimOrphanedHtmlWrappers(html.slice(0, removeStart).replace(/\s+$/u, ''));
 }
 
 function stripSpecificationTables(html: string): string {
@@ -62,22 +114,18 @@ function stripSpecificationTables(html: string): string {
 
 function stripStrongLabeledSpecificationBlock(html: string): string {
   const rows = parseRowsFromLabeledStrong(html);
-  if (rows.length < 2) {
-    return html;
-  }
   const headingIdx = findSpecificationHeadingStrongIndex(html);
-  const firstKeyIdx = findFirstRowStrongIndex(html, rows[0].key);
-  let blockStart = -1;
-  if (headingIdx >= 0 && firstKeyIdx >= 0) {
-    blockStart = Math.min(headingIdx, firstKeyIdx);
-  } else {
-    blockStart = headingIdx >= 0 ? headingIdx : firstKeyIdx;
-  }
-  if (blockStart < 0) {
+  const hasSpecBlock = rows.length >= 2 || (rows.length >= 1 && headingIdx >= 0);
+  if (!hasSpecBlock) {
     return html;
   }
-  const removeStart = extendRemovalStartToBlockOpen(html, blockStart);
-  const before = html.slice(0, removeStart).replace(/\s+$/u, '');
+
+  const removeStart = findSpecBlockStart(html, rows, headingIdx);
+  if (removeStart < 0) {
+    return html;
+  }
+
+  const before = trimOrphanedHtmlWrappers(html.slice(0, removeStart).replace(/\s+$/u, ''));
   return before;
 }
 
@@ -99,8 +147,13 @@ export function stripDuplicateSpecificationDescriptionHtml(descriptionHtml: stri
 
   const withoutStrongBlock = stripStrongLabeledSpecificationBlock(withoutTables);
   if (withoutStrongBlock !== withoutTables) {
-    return withoutStrongBlock.replace(/\s+$/u, '');
+    return trimOrphanedHtmlWrappers(withoutStrongBlock.replace(/\s+$/u, ''));
   }
 
-  return withoutTables;
+  const withoutListBlock = stripListSpecificationBlock(withoutTables);
+  if (withoutListBlock !== withoutTables) {
+    return trimOrphanedHtmlWrappers(withoutListBlock.replace(/\s+$/u, ''));
+  }
+
+  return trimOrphanedHtmlWrappers(withoutTables);
 }

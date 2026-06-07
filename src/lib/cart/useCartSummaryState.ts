@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../auth/AuthContext';
 import { apiClient } from '../api-client';
 import { coerceCurrencyCode, type CurrencyCode } from '../currency';
-import { CART_KEY } from '../storageCounts';
+import { loadGuestCartTotals } from './guest-cart-totals';
 import { logger } from '../utils/logger';
 
 export type CartSummaryState = {
@@ -34,27 +34,7 @@ export function useCartSummaryState(): CartSummaryState {
       }
 
       try {
-        const stored = localStorage.getItem(CART_KEY);
-        const guestCart: Array<{
-          productId: string;
-          productSlug?: string;
-          variantId: string;
-          quantity: number;
-          price?: number;
-        }> = stored ? JSON.parse(stored) : [];
-
-        if (guestCart.length === 0) {
-          setCartCount(0);
-          setCartTotal(0);
-          setCartTotalCurrency('AMD');
-          return;
-        }
-
-        const itemsCount = guestCart.reduce((sum, item) => sum + Number(item.quantity), 0);
-        const total = guestCart.reduce(
-          (sum, item) => sum + (Number(item.price) || 0) * Number(item.quantity),
-          0
-        );
+        const { itemsCount, total } = await loadGuestCartTotals();
         setCartCount(itemsCount);
         setCartTotal(total);
         setCartTotalCurrency('AMD');

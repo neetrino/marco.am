@@ -14,6 +14,18 @@ describe('stripDuplicateSpecificationDescriptionHtml', () => {
     expect(stripDuplicateSpecificationDescriptionHtml(html)).toBe('<p>Above</p><p>Tail</p>');
   });
 
+  it('removes h1 spec heading and strong-labeled rows', () => {
+    const html =
+      '<h1><strong>ԲՆՈՒԹԱԳԻՐ</strong></h1>\\n\\n<strong>Արտադրող երկիր</strong> Հայաստան\\n\\n<strong>Հումք</strong> Գործվածք';
+    expect(stripDuplicateSpecificationDescriptionHtml(html)).toBe('');
+  });
+
+  it('removes single spec row when a spec heading is present', () => {
+    const html =
+      '<h1><strong>ԲՆՈՒԹԱԳԻՐ</strong></h1>\\n<strong>Գույն</strong> Սև/Ոսկի/Խրոմ';
+    expect(stripDuplicateSpecificationDescriptionHtml(html)).toBe('');
+  });
+
   it('returns unchanged when there is no detectable spec block', () => {
     const html = '<p><strong>One label</strong> only value</p>';
     expect(stripDuplicateSpecificationDescriptionHtml(html)).toBe(html);
