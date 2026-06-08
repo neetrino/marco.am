@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { pushShopProductsListingUrl } from '../../lib/push-shop-products-listing-url';
 import type { FormEvent } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -17,8 +17,11 @@ import { subscribeShopCategoryTreeUpdated } from '../../lib/shop-category-tree-s
 import type { Category, CategoriesResponse } from './category-nav-types';
 import { prepareRootCategoriesForNav } from './categoryNavList';
 
+const PRODUCTS_PATH_PREFIX = '/products';
+
 export function useHeaderData() {
   const router = useRouter();
+  const pathname = usePathname() ?? '';
   const { isLoggedIn, logout, isAdmin } = useAuth();
   const { t } = useTranslation();
 
@@ -33,6 +36,7 @@ export function useHeaderData() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [, setSelectedCategory] = useState<Category | null>(null);
   const [loadingCategories, setLoadingCategories] = useState(false);
+  const categoriesLoadedRef = useRef(false);
   const currentYear = new Date().getFullYear();
 
   const userMenuRef = useRef<HTMLDivElement>(null);
@@ -73,6 +77,7 @@ export function useHeaderData() {
         params: { lang: getStoredLanguage() },
       });
       setCategories(response.data || []);
+      categoriesLoadedRef.current = true;
     } catch (err: unknown) {
       console.error('Error fetching categories:', err);
       setCategories([]);
@@ -81,9 +86,20 @@ export function useHeaderData() {
     }
   }, []);
 
+  const shouldEagerLoadCategories = pathname.startsWith(PRODUCTS_PATH_PREFIX);
+
   useEffect(() => {
-    fetchCategories();
-  }, [fetchCategories]);
+    if (shouldEagerLoadCategories) {
+      void fetchCategories();
+    }
+  }, [shouldEagerLoadCategories, fetchCategories]);
+
+  useEffect(() => {
+    if (!showProductsMenu || categoriesLoadedRef.current) {
+      return;
+    }
+    void fetchCategories();
+  }, [showProductsMenu, fetchCategories]);
 
   useEffect(() => {
     return subscribeShopCategoryTreeUpdated(() => {
@@ -93,11 +109,13 @@ export function useHeaderData() {
 
   useEffect(() => {
     const onLanguage = () => {
-      fetchCategories();
+      if (categoriesLoadedRef.current || shouldEagerLoadCategories || showProductsMenu) {
+        void fetchCategories();
+      }
     };
     window.addEventListener('language-updated', onLanguage);
     return () => window.removeEventListener('language-updated', onLanguage);
-  }, [fetchCategories]);
+  }, [fetchCategories, shouldEagerLoadCategories, showProductsMenu]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

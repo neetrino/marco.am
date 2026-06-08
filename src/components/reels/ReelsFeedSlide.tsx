@@ -7,7 +7,6 @@ import { memo } from 'react';
 
 import { shouldBypassNextImageOptimizer } from '@/lib/utils/should-bypass-next-image-optimizer';
 
-import { ReelLikeButton } from './ReelLikeButton';
 import { ReelOverlay } from './ReelOverlay';
 import { ReelVideoPlayer } from './ReelVideoPlayer';
 import { REELS_FEED_SLIDE_ID_PREFIX } from './reels-vertical-feed.constants';
@@ -75,6 +74,15 @@ export const ReelsFeedSlide = memo(function ReelsFeedSlide({
             isActive={isActive}
             shouldReduceMotion={shouldReduceMotion}
             onDoubleTapLike={onDoubleTapLike}
+            likeControl={{
+              ariaLabel: likeAriaLabel,
+              liked: item.likedByCurrentUser,
+              burstVersion: doubleTapBurstById[item.id] ?? 0,
+              disabled: pendingLikeById[item.id] === true,
+              onToggle: () => {
+                onToggleLike(item.id);
+              },
+            }}
           />
         ) : (
           <div className="absolute inset-0 bg-black">
@@ -98,20 +106,7 @@ export const ReelsFeedSlide = memo(function ReelsFeedSlide({
         >
           <X className="h-5 w-5" strokeWidth={2} aria-hidden />
         </Link>
-        {isNearActive ? (
-          <>
-            <ReelOverlay title={item.title} />
-            <ReelLikeButton
-              ariaLabel={likeAriaLabel}
-              liked={item.likedByCurrentUser}
-              burstVersion={doubleTapBurstById[item.id] ?? 0}
-              disabled={pendingLikeById[item.id] === true}
-              onToggle={() => {
-                onToggleLike(item.id);
-              }}
-            />
-          </>
-        ) : null}
+        {isNearActive ? <ReelOverlay title={item.title} /> : null}
       </div>
     </article>
   );

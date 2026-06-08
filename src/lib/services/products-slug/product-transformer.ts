@@ -14,6 +14,7 @@ import {
   type ProductVariantForTechnicalSpecification,
 } from "./technical-specifications";
 import type { ProductWithFullRelations, ProductVariantWithOptions } from "./types";
+import { normalizeLiteralNewlinesToLineBreaks } from "../../utils/normalize-literal-newlines";
 
 type ProductTranslationShape = {
   locale: string;
@@ -585,6 +586,13 @@ function resolveProductTranslation(
   return translations[0] ?? null;
 }
 
+function normalizeProductDescriptionHtml(value: string | null | undefined): string | null {
+  if (typeof value !== "string" || value.trim().length === 0) {
+    return null;
+  }
+  return normalizeLiteralNewlinesToLineBreaks(value);
+}
+
 function buildProductDescriptionI18nMap(
   translations: ProductTranslationShape[]
 ): ProductDescriptionI18nMap {
@@ -595,7 +603,7 @@ function buildProductDescriptionI18nMap(
 
     acc[item.locale] = {
       shortDescription: item.subtitle ?? null,
-      fullDescription: item.descriptionHtml ?? null,
+      fullDescription: normalizeProductDescriptionHtml(item.descriptionHtml),
     };
 
     return acc;
@@ -694,8 +702,8 @@ export async function transformProduct(
     title: translation?.title || "",
     subtitle: translation?.subtitle || null,
     shortDescription: translation?.subtitle || null,
-    description: translation?.descriptionHtml || null,
-    fullDescription: translation?.descriptionHtml || null,
+    description: normalizeProductDescriptionHtml(translation?.descriptionHtml),
+    fullDescription: normalizeProductDescriptionHtml(translation?.descriptionHtml),
     i18n: {
       requestedLocale: lang,
       availableLocales: Object.keys(descriptionI18n),

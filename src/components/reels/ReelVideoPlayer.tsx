@@ -3,7 +3,17 @@
 import { useEffect, useRef, useState } from 'react';
 import { Heart, Pause, Play, Volume2, VolumeX } from 'lucide-react';
 
+import { ReelLikeButton } from './ReelLikeButton';
+
 type TapIntent = 'single' | 'double';
+
+export type ReelVideoPlayerLikeControl = {
+  ariaLabel: string;
+  liked: boolean;
+  burstVersion: number;
+  disabled: boolean;
+  onToggle: () => void;
+};
 
 export type ReelVideoPlayerProps = {
   reelId: string;
@@ -13,6 +23,7 @@ export type ReelVideoPlayerProps = {
   isActive: boolean;
   shouldReduceMotion: boolean;
   onDoubleTapLike: (reelId: string) => void;
+  likeControl?: ReelVideoPlayerLikeControl;
 };
 
 function resolveTapIntent(deltaMs: number): TapIntent {
@@ -27,6 +38,7 @@ export function ReelVideoPlayer({
   isActive,
   shouldReduceMotion,
   onDoubleTapLike,
+  likeControl,
 }: ReelVideoPlayerProps) {
   void poster;
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -188,6 +200,21 @@ export function ReelVideoPlayer({
       )}
       {!videoFailed ? (
         <div className="absolute bottom-[max(5rem,calc(env(safe-area-inset-bottom,0px)+4.45rem))] right-3 z-30 flex flex-col items-center gap-2 md:bottom-8 md:right-4">
+          {likeControl ? (
+            <div
+              onPointerUp={(event) => {
+                event.stopPropagation();
+              }}
+            >
+              <ReelLikeButton
+                ariaLabel={likeControl.ariaLabel}
+                liked={likeControl.liked}
+                burstVersion={likeControl.burstVersion}
+                disabled={likeControl.disabled}
+                onToggle={likeControl.onToggle}
+              />
+            </div>
+          ) : null}
           <button
             type="button"
             onPointerUp={(event) => {

@@ -2,6 +2,10 @@ import { ProductFilters } from "./products-find-query.service";
 import { productsFindQueryService } from "./products-find-query.service";
 import { productsFindFilterService } from "./products-find-filter.service";
 import { productsFindTransformService } from "./products-find-transform.service";
+import {
+  trimProductsForHomeStripListing,
+  type HomeStripListingProduct,
+} from "./home-strip-listing-payload";
 import { hasTechnicalSpecFilters } from "./products-technical-filters";
 import {
   decodeProductCursor,
@@ -26,6 +30,20 @@ function toCardVisualOnlyRows(
     image: row.image,
     images: row.images?.length ? row.images : row.image ? [row.image] : ([] as string[]),
   }));
+}
+
+function applyListingOutputShape<T extends HomeStripListingProduct>(
+  rows: T[],
+  filters: ProductFilters,
+): T[] | ReturnType<typeof toCardVisualOnlyRows> {
+  let shaped: HomeStripListingProduct[] = rows;
+  if (filters.homeStripListing) {
+    shaped = trimProductsForHomeStripListing(shaped);
+  }
+  if (filters.cardVisualOnly) {
+    return toCardVisualOnlyRows(shaped as never[]);
+  }
+  return shaped as T[];
 }
 
 function buildProductsMeta(total: number, limit: number, page: number, start: number): ProductsMeta {
@@ -92,15 +110,18 @@ class ProductsFindService {
       });
       const slice = transformedAll.slice(start, start + limit);
       return {
-        data: filters.cardVisualOnly ? toCardVisualOnlyRows(slice as never[]) : slice,
+        data: applyListingOutputShape(slice as HomeStripListingProduct[], filters),
         meta: buildProductsMeta(total, limit, normalizedPage, start),
       };
     }
 
-    const data = await productsFindTransformService.transformProducts(paginatedProducts, lang);
+    const data = (await productsFindTransformService.transformProducts(
+      paginatedProducts,
+      lang,
+    )) as HomeStripListingProduct[];
 
     return {
-      data: filters.cardVisualOnly ? toCardVisualOnlyRows(data as never[]) : data,
+      data: applyListingOutputShape(data, filters),
       meta: buildProductsMeta(total, limit, normalizedPage, start),
     };
   }

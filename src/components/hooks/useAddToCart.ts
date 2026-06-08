@@ -12,6 +12,7 @@ import {
   runGuestCartMutation,
   upsertGuestCartItem,
 } from '@/app/cart/guest-cart-local';
+import { computeGuestCartTotalsFromStorage } from '@/lib/cart/guest-cart-totals';
 import { fetchGuestCartCatalogProducts } from '@/app/cart/guest-cart-catalog-fetch';
 
 interface ProductDetails {
@@ -150,13 +151,22 @@ export function useAddToCart({
 
         if (defaultVariantId) {
           variantId = defaultVariantId;
-          const catalogSnapshot = await resolveGuestCartSnapshot(
-            productId,
-            snapshotTitle,
-            snapshotImage,
-          );
-          snapshotTitle = catalogSnapshot.title;
-          snapshotImage = catalogSnapshot.image;
+          const catalogById = await fetchGuestCartCatalogProducts([productId]);
+          const catalogRow = catalogById.get(productId);
+          if (!variantPrice && catalogRow?.price) {
+            variantPrice = catalogRow.price;
+          }
+          snapshotTitle = snapshotTitle || catalogRow?.title?.trim();
+          snapshotImage = snapshotImage || catalogRow?.image || null;
+          if (!snapshotTitle || !snapshotImage) {
+            const catalogSnapshot = await resolveGuestCartSnapshot(
+              productId,
+              snapshotTitle,
+              snapshotImage,
+            );
+            snapshotTitle = catalogSnapshot.title ?? snapshotTitle;
+            snapshotImage = catalogSnapshot.image ?? snapshotImage;
+          }
         } else {
           const encodedSlug = encodeURIComponent(productSlug.trim());
           const productDetails = await apiClient.get<ProductDetails>(
@@ -208,7 +218,16 @@ export function useAddToCart({
           });
         });
 
-        window.dispatchEvent(new Event('cart-updated'));
+        const guestTotals = computeGuestCartTotalsFromStorage(readStoredGuestCart());
+        window.dispatchEvent(
+          new CustomEvent('cart-updated', {
+            detail: {
+              itemsCount: guestTotals.itemsCount,
+              total: guestTotals.total,
+              currency: 'AMD',
+            },
+          }),
+        );
         dispatchOpenCartDrawer();
       } catch (error: unknown) {
         if (error instanceof Error && error.message === 'INSUFFICIENT_STOCK') {

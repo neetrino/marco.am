@@ -1,11 +1,23 @@
 /**
  * When true, pass `unoptimized` to `next/image` so the browser loads `src` directly.
- * - Absolute URLs (R2, CDN): avoids `/_next/image` 400 when remote allowlist / fetch differs by environment.
- * - `/assets/hero/*`: avoids optimizer 404 for static hero rasters on some deployments.
+ * Known storefront hosts (marco.am) use the optimizer in production for WebP/AVIF + sizing.
  */
+import { isStorefrontImageOptimizerHost } from '@/lib/constants/storefront-image-hosts';
+
 export function shouldBypassNextImageOptimizer(src: string): boolean {
-  if (src.startsWith('http://') || src.startsWith('https://')) {
+  if (src.startsWith('/assets/hero/')) {
     return true;
   }
-  return src.startsWith('/assets/hero/');
+  if (src.startsWith('http://') || src.startsWith('https://')) {
+    try {
+      const hostname = new URL(src).hostname;
+      if (isStorefrontImageOptimizerHost(hostname)) {
+        return false;
+      }
+    } catch {
+      return true;
+    }
+    return true;
+  }
+  return false;
 }

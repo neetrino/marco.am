@@ -97,6 +97,7 @@ export function useReelsFeedData(items: PublicReelItem[]): UseReelsFeedDataResul
 
   useEffect(() => {
     const controller = new AbortController();
+
     const syncFeedLikes = async () => {
       try {
         const payload = await apiClient.get<PublicReelsApiResponse>('/api/v1/reels', {
@@ -109,9 +110,33 @@ export function useReelsFeedData(items: PublicReelItem[]): UseReelsFeedDataResul
         // Keep SSR state on failure.
       }
     };
-    void syncFeedLikes();
+
+    const w = typeof window !== 'undefined' ? window : null;
+    if (!w) {
+      return undefined;
+    }
+
+    let idleId: number | undefined;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+    const run = () => {
+      void syncFeedLikes();
+    };
+
+    if ('requestIdleCallback' in w) {
+      idleId = w.requestIdleCallback(run, { timeout: 8000 });
+    } else {
+      timeoutId = setTimeout(run, 3000);
+    }
+
     return () => {
       controller.abort();
+      if (idleId !== undefined && 'cancelIdleCallback' in w) {
+        w.cancelIdleCallback(idleId);
+      }
+      if (timeoutId !== undefined) {
+        clearTimeout(timeoutId);
+      }
     };
   }, []);
 

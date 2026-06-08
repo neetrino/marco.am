@@ -6,7 +6,7 @@ import { ArrowUpRight, Heart } from 'lucide-react';
 import { formatCatalogPrice, type CurrencyCode } from '../../../lib/currency';
 import { t, getProductText } from '../../../lib/i18n';
 import type { LanguageCode } from '../../../lib/language';
-import { normalizeLiteralNewlinesToLineBreaks } from '../../../lib/utils/normalize-literal-newlines';
+import { normalizeDescriptionHtmlForDisplay } from '../../../lib/utils/normalize-literal-newlines';
 import { sanitizeHtml } from '../../../lib/utils/sanitize';
 import { CompareIcon } from '../../../components/icons/CompareIcon';
 import { ProductWarrantyBadge } from '../../../components/ProductCard/ProductWarrantyBadge';
@@ -104,10 +104,10 @@ export function ProductInfoAndActions({
   const rawDescription = getProductText(language, product.id, 'longDescription') || product.description || '';
   const buyNowFullLabel = t(language, 'product.buyNow');
   const noPriceLabel = t(language, 'products.noPrice.label');
-  const normalizedDescription = normalizeLiteralNewlinesToLineBreaks(rawDescription);
   const descriptionWithoutDuplicateSpecs =
-    stripDuplicateSpecificationDescriptionHtml(normalizedDescription);
-  const sanitizedDescription = sanitizeHtml(descriptionWithoutDuplicateSpecs);
+    stripDuplicateSpecificationDescriptionHtml(rawDescription);
+  const normalizedDescription = normalizeDescriptionHtmlForDisplay(descriptionWithoutDuplicateSpecs);
+  const sanitizedDescription = sanitizeHtml(normalizedDescription);
   const hasMultiValueAttributeGroup = Array.from(attributeGroups.values()).some(
     (values) => values.length > 1,
   );

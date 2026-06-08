@@ -129,8 +129,8 @@ export function CartDrawer() {
               </button>
             </div>
           ) : (
-            <>
-              <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-4">
+            <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
+              <div className="space-y-3">
                 {cart.items.map((item) => (
                   <CartDrawerItemRow
                     key={item.id}
@@ -151,7 +151,7 @@ export function CartDrawer() {
                 onCheckout={handleProceedToCheckout}
                 t={t}
               />
-            </>
+            </div>
           )}
         </div>
       </aside>

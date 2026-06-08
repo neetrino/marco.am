@@ -261,6 +261,7 @@ model Product {
   @@index([published, publishedAt])
   @@index([published, deletedAt])
   @@index([published, deletedAt, createdAt(sort: Desc)])
+  @@index([published, deletedAt, discountPercent(sort: Desc), createdAt(sort: Desc)])
   @@index([categoryIds], type: Gin)
   @@index([featured])
   @@index([deletedAt])
@@ -313,6 +314,7 @@ model ProductVariant {
   @@index([productId])
   @@index([published, price])
   @@index([productId, published, price])
+  @@index([published, compareAtPrice, productId])
   @@map("product_variants")
 }
 

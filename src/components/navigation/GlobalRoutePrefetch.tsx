@@ -17,6 +17,9 @@ const PREFETCH_ROUTES = [...new Set([...primaryNavInternalHrefs, ...EXTRA_PREFET
 const PRIORITY_PREFETCH_ROUTES = [...primaryNavInternalHrefs];
 const PRODUCTS_PREFETCH_QUERY = 'page=1&limit=12&listingOmitProductAttributes=1';
 const INTERACTION_PREFETCH_MAX_SEGMENTS = 2;
+/** Home SSR already loads product rails + brand partners — defer API warm to avoid DB spikes. */
+const HOME_API_WARM_DEFER_MS = 12_000;
+const HOME_PATH = '/';
 type IdleCapableWindow = Window &
   typeof globalThis & {
     requestIdleCallback?: (
@@ -70,11 +73,25 @@ function getPrefetchableInternalPath(href: string): string | null {
 }
 
 function shouldInteractionPrefetch(pathname: string): boolean {
-  if (pathname === '/') {
-    return true;
+  if (pathname === HOME_PATH) {
+    return false;
   }
   const segments = pathname.split('/').filter(Boolean);
   return segments.length <= INTERACTION_PREFETCH_MAX_SEGMENTS;
+}
+
+function scheduleIdleWork(run: () => void, timeoutMs: number): () => void {
+  const idleWindow = window as IdleCapableWindow;
+  if (typeof idleWindow.requestIdleCallback === 'function') {
+    const id = idleWindow.requestIdleCallback(run, { timeout: timeoutMs });
+    return () => {
+      if (typeof idleWindow.cancelIdleCallback === 'function') {
+        idleWindow.cancelIdleCallback(id);
+      }
+    };
+  }
+  const timerId = globalThis.setTimeout(run, Math.min(timeoutMs, 3000));
+  return () => globalThis.clearTimeout(timerId);
 }
 
 /**
@@ -118,7 +135,6 @@ export function GlobalRoutePrefetch() {
       void router.prefetch(route);
     }
 
-    const idleWindow = window as IdleCapableWindow;
     const warmApi = () => {
       const language = getStoredLanguage();
       if (!warmProductsLangRef.current.has(language)) {
@@ -133,17 +149,14 @@ export function GlobalRoutePrefetch() {
         });
       }
     };
-    if (typeof idleWindow.requestIdleCallback === 'function') {
-      const id = idleWindow.requestIdleCallback(warmApi, { timeout: 2500 });
-      return () => {
-        if (typeof idleWindow.cancelIdleCallback === 'function') {
-          idleWindow.cancelIdleCallback(id);
-        }
-      };
-    }
-    const timerId = globalThis.setTimeout(warmApi, 450);
-    return () => globalThis.clearTimeout(timerId);
-  }, [queryClient, router, routesToPrefetch]);
+
+    const apiWarmCancel =
+      pathname === HOME_PATH
+        ? scheduleIdleWork(warmApi, HOME_API_WARM_DEFER_MS)
+        : scheduleIdleWork(warmApi, 2500);
+
+    return apiWarmCancel;
+  }, [queryClient, router, routesToPrefetch, pathname]);
 
   useEffect(() => {
     const prefetchFromElement = (target: EventTarget | null) => {

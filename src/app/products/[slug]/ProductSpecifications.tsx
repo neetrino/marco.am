@@ -7,6 +7,7 @@ import type { Product } from './types';
 import {
   parseRowsFromLabeledStrong,
   parseRowsFromLines,
+  parseRowsFromListItems,
   parseRowsFromTable,
   stripTags,
   type SpecificationRow,
@@ -143,6 +144,11 @@ function getSpecificationRows(product: Product, language: LanguageCode): Specifi
     return ensureRequiredRows(dedupeRows(fromStrong), product, language);
   }
 
+  const fromListItems = parseRowsFromListItems(rawDescription);
+  if (fromListItems.length >= 2) {
+    return ensureRequiredRows(dedupeRows(fromListItems), product, language);
+  }
+
   const fromLines = parseRowsFromLines(rawDescription);
   if (fromLines.length > 0) {
     return ensureRequiredRows(dedupeRows(fromLines), product, language);
@@ -150,6 +156,10 @@ function getSpecificationRows(product: Product, language: LanguageCode): Specifi
 
   if (fromStrong.length > 0) {
     return ensureRequiredRows(dedupeRows(fromStrong), product, language);
+  }
+
+  if (fromListItems.length > 0) {
+    return ensureRequiredRows(dedupeRows(fromListItems), product, language);
   }
 
   const plainDescription = parsePlainDescription(rawDescription, language, product);

@@ -4,6 +4,8 @@ import { SPECIAL_OFFERS_PRODUCTS_LIMIT } from '@/constants/specialOffersSection'
 import { getProductsListingCached } from '@/lib/cache/products-listing-redis';
 import { dedupeCardProductsByTitle } from '@/lib/dedupeCardProductsByTitle';
 import type { LanguageCode } from '@/lib/language';
+import { bannerManagementService } from '@/lib/services/banner-management.service';
+import type { PublicBannersPayload } from '@/lib/services/banner-management.service';
 import { homeBrandPartnersService } from '@/lib/services/home-brand-partners.service';
 import type { HomeBrandPartnerPublicItem } from '@/lib/types/home-brand-partners-public';
 
@@ -12,6 +14,7 @@ export type HomeProductRailsData = {
   newProducts: SpecialOfferProduct[];
   brandPartners: readonly HomeBrandPartnerPublicItem[] | null;
   brandPartnersSectionTitle: string | null;
+  promoStripBanners: PublicBannersPayload | null;
 };
 
 /**
@@ -20,7 +23,8 @@ export type HomeProductRailsData = {
 export async function fetchHomeProductRailsData(
   lang: LanguageCode,
 ): Promise<HomeProductRailsData> {
-  const [promotionOutcome, newOutcome, partnersOutcome] = await Promise.allSettled([
+  const [promotionOutcome, newOutcome, partnersOutcome, promoBannersOutcome] =
+    await Promise.allSettled([
     getProductsListingCached({
       page: 1,
       limit: SPECIAL_OFFERS_PRODUCTS_LIMIT,
@@ -29,6 +33,7 @@ export async function fetchHomeProductRailsData(
       sort: 'createdAt',
       listingOmitProductAttributes: true,
       skipExactTotalCount: true,
+      homeStripListing: true,
     }),
     getProductsListingCached({
       page: 1,
@@ -38,14 +43,20 @@ export async function fetchHomeProductRailsData(
       sort: 'createdAt',
       listingOmitProductAttributes: true,
       skipExactTotalCount: true,
+      homeStripListing: true,
     }),
     homeBrandPartnersService.getPublicPayload(lang),
+    bannerManagementService.getPublicSlotPayload({
+      slot: 'home.promo.strip',
+      localeRaw: lang,
+    }),
   ]);
 
   let promotionProducts: SpecialOfferProduct[] = [];
   let newProducts: SpecialOfferProduct[] = [];
   let brandPartners: readonly HomeBrandPartnerPublicItem[] | null = null;
   let brandPartnersSectionTitle: string | null = null;
+  let promoStripBanners: PublicBannersPayload | null = null;
 
   if (promotionOutcome.status === 'fulfilled') {
     promotionProducts = dedupeCardProductsByTitle(
@@ -66,10 +77,15 @@ export async function fetchHomeProductRailsData(
       : null;
   }
 
+  if (promoBannersOutcome.status === 'fulfilled') {
+    promoStripBanners = promoBannersOutcome.value;
+  }
+
   return {
     promotionProducts,
     newProducts,
     brandPartners,
     brandPartnersSectionTitle,
+    promoStripBanners,
   };
 }

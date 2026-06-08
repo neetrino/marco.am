@@ -9,6 +9,7 @@ import { PrismaClient } from "./generated/prisma-client";
 const globalForPrisma = globalThis as typeof globalThis & {
   prisma?: PrismaClient;
   prismaResolvedDatabaseUrl?: string;
+  neonDirectHostWarned?: boolean;
 };
 
 /**
@@ -192,8 +193,22 @@ function createPrismaClient(resolvedDatabaseUrl: string): PrismaClient {
  * Single Prisma instance per process via `globalThis` (Next.js dev HMR + production).
  * Uses one global client in all NODE_ENV — avoids duplicate pools and connection storms.
  */
+function warnDirectNeonHostOnce(databaseUrl: string): void {
+  if (!databaseUrl.includes("neon.tech") || databaseUrl.includes("pooler")) {
+    return;
+  }
+  if (globalForPrisma.neonDirectHostWarned) {
+    return;
+  }
+  globalForPrisma.neonDirectHostWarned = true;
+  console.warn(
+    "[DB] DATABASE_URL uses a direct Neon host (no -pooler). For app traffic use the pooled connection string from Neon dashboard — reduces connection resets and 20s+ spikes on home page.",
+  );
+}
+
 function getPrismaClient(): PrismaClient {
   const resolvedDatabaseUrl = resolveDatabaseUrlWithClientEncoding();
+  warnDirectNeonHostOnce(resolvedDatabaseUrl);
   process.env.DATABASE_URL = resolvedDatabaseUrl;
 
   if (

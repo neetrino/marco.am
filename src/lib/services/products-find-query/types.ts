@@ -33,6 +33,10 @@ export interface ProductFilters {
    * when exact totals matter (e.g. PLP footer); avoid with `cursor` pagination.
    */
   skipExactTotalCount?: boolean;
+  /**
+   * Home strips only: lean DB select + promotion ID resolver (no PLP category/options joins).
+   */
+  homeStripListing?: boolean;
 }
 
 export type TechnicalSpecFilters = Record<string, string[]>;

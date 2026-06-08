@@ -196,7 +196,7 @@ export function resolveProductCardBrandLogoUiScale(
 
 /**
  * Product cards: match `slug` first, then treat normalized `name` as a slug key
- * (e.g. import slug `import-abc12` + name `LG` → `/assets/brands/lg.svg`).
+ * (e.g. import slug `import-abc12` + name `LG` → `/assets/brands/lg.png`).
  */
 export function resolveBrandStaticLogoForDisplay(
   slug: string,

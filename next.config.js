@@ -57,6 +57,9 @@ if (isDevelopment) {
   scriptSources.push("'unsafe-eval'");
 }
 
+/** Default storefront media host(s) — also set NEXT_IMAGE_REMOTE_HOSTS for extra CDNs. */
+const DEFAULT_STOREFRONT_IMAGE_HOSTS = ['marco.am', 'www.marco.am'];
+
 /** Next/Image `remotePatterns` — R2 URLs must be listed or optimization returns 400. */
 function buildImageRemotePatterns() {
   const patterns = [
@@ -118,11 +121,15 @@ function buildImageRemotePatterns() {
     pathname: '/**',
   });
 
-  const extraImageHosts = (process.env.NEXT_IMAGE_REMOTE_HOSTS || '')
-    .split(',')
-    .map((s) => s.trim().toLowerCase())
-    .filter(Boolean);
-  for (const hostname of extraImageHosts) {
+  const extraImageHosts = [
+    ...DEFAULT_STOREFRONT_IMAGE_HOSTS,
+    ...(process.env.NEXT_IMAGE_REMOTE_HOSTS || '')
+      .split(',')
+      .map((s) => s.trim().toLowerCase())
+      .filter(Boolean),
+  ];
+  const uniqueImageHosts = [...new Set(extraImageHosts)];
+  for (const hostname of uniqueImageHosts) {
     patterns.push({
       protocol: 'https',
       hostname,
@@ -210,17 +217,8 @@ const nextConfig = {
     // Allow unoptimized images for development (images will use unoptimized prop)
     // Ensure image optimization is enabled for production
     formats: ['image/avif', 'image/webp'],
-    // In development, disable image optimization globally to allow any local IP
-    // Components can still use unoptimized prop, but this ensures all images work
-    unoptimized: process.env.NODE_ENV === 'development',
-  },
-  async rewrites() {
-    return [
-      {
-        source: '/assets/brands/geepas.png',
-        destination: '/assets/brands/geepas.webp',
-      },
-    ];
+    // Set NEXT_IMAGE_UNOPTIMIZED=true only when local-only images break in dev.
+    unoptimized: process.env.NEXT_IMAGE_UNOPTIMIZED === 'true',
   },
   // Fix for HMR issues in Next.js 15
   webpack: (config, { dev, isServer }) => {

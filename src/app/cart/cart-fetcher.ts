@@ -244,7 +244,19 @@ export async function fetchGuestCart(
       return buildGuestCartFromStorage(t);
     }
 
-    return buildCartFromResolvedItems(validItems);
+    const cart = buildCartFromResolvedItems(validItems);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('cart-updated', {
+          detail: {
+            itemsCount: cart.itemsCount,
+            total: cart.totals.total,
+            currency: cart.totals.currency,
+          },
+        }),
+      );
+    }
+    return cart;
   } catch (error: unknown) {
     logger.error('Error loading guest cart', { error });
     return buildGuestCartFromStorage(t);
