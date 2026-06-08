@@ -94,7 +94,6 @@ const DEFAULT_FILTERS: ProductsFiltersData = {
 };
 
 const FACET_REFETCH_DELAY_MS = 400;
-const SERVER_HYDRATION_FALLBACK_MS = 4_000;
 
 function mergeFilterPayload(payload: ProductsFiltersData): ProductsFiltersData {
   return {
@@ -104,6 +103,82 @@ function mergeFilterPayload(payload: ProductsFiltersData): ProductsFiltersData {
     categories: payload.categories ?? [],
     attributeFacets: payload.attributeFacets ?? [],
     priceRange: payload.priceRange ?? DEFAULT_FILTERS.priceRange,
+  };
+}
+
+function readBrowserQueryString(): string {
+  if (typeof window === 'undefined') {
+    return '';
+  }
+  return window.location.search.startsWith('?')
+    ? window.location.search.slice(1)
+    : window.location.search;
+}
+
+function resolveInitialFiltersFromCache(args: {
+  category?: string;
+  search?: string;
+  filter?: string;
+  minPrice?: string;
+  maxPrice?: string;
+  language: LanguageCode;
+  initialFiltersData: ProductsFiltersData | null;
+  initialFiltersKey: string | null;
+}): {
+  data: ProductsFiltersData | null;
+  loading: boolean;
+  syncedKey: string | null;
+  hasData: boolean;
+} {
+  const {
+    category,
+    search,
+    filter,
+    minPrice,
+    maxPrice,
+    language,
+    initialFiltersData,
+    initialFiltersKey,
+  } = args;
+
+  if (initialFiltersData && initialFiltersKey) {
+    return {
+      data: mergeFilterPayload(initialFiltersData),
+      loading: false,
+      syncedKey: initialFiltersKey,
+      hasData: true,
+    };
+  }
+
+  if (typeof window === 'undefined') {
+    return { data: null, loading: true, syncedKey: null, hasData: false };
+  }
+
+  const urlParams = new URLSearchParams(readBrowserQueryString());
+  const categoryParam = urlParams.get('category') ?? category;
+  const searchParam = urlParams.get('search') ?? search;
+  const minPriceParam = urlParams.get('minPrice') ?? minPrice;
+  const maxPriceParam = urlParams.get('maxPrice') ?? maxPrice;
+  const filterParam = urlParams.get('filter') ?? filter;
+  const key = buildProductsFiltersClientKey({
+    category: categoryParam ?? undefined,
+    search: searchParam ?? undefined,
+    minPrice: minPriceParam ?? undefined,
+    maxPrice: maxPriceParam ?? undefined,
+    filter: filterParam ?? undefined,
+    language,
+    technicalFilterSignature: buildTechnicalFilterQuerySignature(urlParams),
+  });
+  const cached = readShopFiltersCache(key);
+  if (!cached) {
+    return { data: null, loading: true, syncedKey: null, hasData: false };
+  }
+
+  return {
+    data: mergeFilterPayload(cached),
+    loading: false,
+    syncedKey: key,
+    hasData: true,
   };
 }
 
@@ -140,25 +215,34 @@ export function ProductsFiltersProvider({
   language: languageProp,
   initialFiltersData = null,
   initialFiltersKey = null,
-  awaitServerHydration = false,
+  awaitServerHydration: _awaitServerHydration = false,
   children,
 }: ProductsFiltersProviderProps) {
+  void _awaitServerHydration;
   const preferenceLang = useContext(LanguagePreferenceContext);
   const resolvedLanguage = languageProp ?? preferenceLang;
   const searchParams = useShopProductsListingSearchParams();
-  const [data, setData] = useState<ProductsFiltersData | null>(() =>
-    initialFiltersData && initialFiltersKey
-      ? mergeFilterPayload(initialFiltersData)
-      : null,
+  const mountFiltersStateRef = useRef<ReturnType<typeof resolveInitialFiltersFromCache> | null>(
+    null,
   );
-  const [loading, setLoading] = useState(
-    () => !(initialFiltersData && initialFiltersKey),
-  );
+  if (mountFiltersStateRef.current === null) {
+    mountFiltersStateRef.current = resolveInitialFiltersFromCache({
+      category,
+      search,
+      filter,
+      minPrice,
+      maxPrice,
+      language: resolvedLanguage,
+      initialFiltersData,
+      initialFiltersKey,
+    });
+  }
+  const mountFiltersState = mountFiltersStateRef.current;
+  const [data, setData] = useState<ProductsFiltersData | null>(mountFiltersState.data);
+  const [loading, setLoading] = useState(mountFiltersState.loading);
   const [error, setError] = useState(false);
-  const syncedFiltersKeyRef = useRef<string | null>(
-    initialFiltersData && initialFiltersKey ? initialFiltersKey : null,
-  );
-  const hasFiltersDataRef = useRef(Boolean(initialFiltersData && initialFiltersKey));
+  const syncedFiltersKeyRef = useRef<string | null>(mountFiltersState.syncedKey);
+  const hasFiltersDataRef = useRef(mountFiltersState.hasData);
   const lastFacetScopeRef = useRef<string | null>(null);
   const facetRefetchTimerRef = useRef<number | null>(null);
 
@@ -270,35 +354,9 @@ export function ProductsFiltersProvider({
       return;
     }
 
-    if (awaitServerHydration && syncedFiltersKeyRef.current === null) {
-      return;
-    }
-
     syncedFiltersKeyRef.current = filtersClientKey;
     void fetchFiltersRef.current();
-  }, [
-    filtersClientKey,
-    initialFiltersData,
-    initialFiltersKey,
-    awaitServerHydration,
-    applyFiltersPayload,
-  ]);
-
-  useEffect(() => {
-    if (!awaitServerHydration || hasFiltersDataRef.current) {
-      return;
-    }
-    const timer = window.setTimeout(() => {
-      if (hasFiltersDataRef.current || syncedFiltersKeyRef.current === filtersClientKey) {
-        return;
-      }
-      syncedFiltersKeyRef.current = filtersClientKey;
-      void fetchFiltersRef.current();
-    }, SERVER_HYDRATION_FALLBACK_MS);
-    return () => {
-      window.clearTimeout(timer);
-    };
-  }, [awaitServerHydration, filtersClientKey]);
+  }, [filtersClientKey, initialFiltersData, initialFiltersKey, applyFiltersPayload]);
 
   useEffect(() => {
     const scheduleFacetRefetch = () => {

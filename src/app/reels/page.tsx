@@ -3,10 +3,11 @@ import { Suspense } from 'react';
 import { cookies } from 'next/headers';
 import { Montserrat } from 'next/font/google';
 
-import { StaticPageLoadingSkeleton } from '@/components/navigation/StaticPageLoadingSkeleton';
 import { t } from '@/lib/i18n';
 import { LANGUAGE_PREFERENCE_KEY, parseLanguageFromServer } from '@/lib/language';
+import { ReelsPageCacheFallback } from './ReelsPageCacheFallback';
 import { ReelsPageContent } from './ReelsPageContent';
+import { ReelsPagePrefetch } from './ReelsPagePrefetch';
 
 const montserrat = Montserrat({
   subsets: ['latin'],
@@ -35,7 +36,10 @@ export default async function ReelsPage() {
       className={`min-h-screen bg-white pb-3 text-marco-black sm:pb-4 ${montserrat.className}`}
       aria-label={tr('home.reels_feed_region_aria')}
     >
-      <Suspense fallback={<StaticPageLoadingSkeleton variant="reels" />}>
+      <Suspense fallback={null}>
+        <ReelsPagePrefetch />
+      </Suspense>
+      <Suspense fallback={<ReelsPageCacheFallback />}>
         <ReelsPageContent />
       </Suspense>
     </section>

@@ -2,8 +2,9 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
-import { useTranslation } from '@/lib/i18n-client';
 import { getReelsItemHref } from '@/lib/reels/reels-url';
+import type { LanguageCode } from '@/lib/language';
+import { writeReelsPageCache } from '@/lib/reels-page-client-cache';
 import type { PublicReelItem } from '@/lib/schemas/reels-management.schema';
 
 import { ReelsGridTile } from './ReelsGridTile';
@@ -15,20 +16,31 @@ import {
 } from './reels-page-grid.constants';
 
 export type ReelsPageGridProps = {
-  items: PublicReelItem[];
+  readonly items: PublicReelItem[];
+  readonly watchCtaLabel: string;
+  readonly language: LanguageCode;
+  readonly disableProgressiveRender?: boolean;
 };
 
-/** Reels index grid with progressive paint so navigation feels instant. */
-export function ReelsPageGrid({ items }: ReelsPageGridProps) {
-  const { t } = useTranslation();
-  const watchCtaLabel = t('home.reels_page.watch_cta');
+/** Reels index grid — optional progressive paint for very large feeds. */
+export function ReelsPageGrid({
+  items,
+  watchCtaLabel,
+  language,
+  disableProgressiveRender = false,
+}: ReelsPageGridProps) {
   const itemsFingerprint = useMemo(() => items.map((item) => item.id).join(','), [items]);
-  const shouldUseProgressiveRender = items.length > REELS_PAGE_PROGRESSIVE_RENDER_THRESHOLD;
+  const shouldUseProgressiveRender =
+    !disableProgressiveRender && items.length > REELS_PAGE_PROGRESSIVE_RENDER_THRESHOLD;
   const [visibleCount, setVisibleCount] = useState(() =>
     shouldUseProgressiveRender
       ? Math.min(REELS_PAGE_INITIAL_RENDER_BATCH_SIZE, items.length)
       : items.length,
   );
+
+  useEffect(() => {
+    writeReelsPageCache(language, items, watchCtaLabel);
+  }, [items, itemsFingerprint, language, watchCtaLabel]);
 
   useEffect(() => {
     if (!shouldUseProgressiveRender) {

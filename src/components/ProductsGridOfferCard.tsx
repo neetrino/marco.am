@@ -10,12 +10,14 @@ interface ProductsGridOfferCardProps {
   product: SpecialOfferProduct;
   layout: SpecialOfferCardLayout;
   maxWidthPx: number;
+  imagePriority?: boolean;
 }
 
 function ProductsGridOfferCardInner({
   product,
   layout,
   maxWidthPx,
+  imagePriority = false,
 }: ProductsGridOfferCardProps) {
   return (
     <SpecialOfferCard
@@ -23,6 +25,7 @@ function ProductsGridOfferCardInner({
       layout={layout}
       align="end"
       maxWidthPx={maxWidthPx}
+      imagePriority={imagePriority}
     />
   );
 }

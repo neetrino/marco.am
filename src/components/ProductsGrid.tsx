@@ -9,6 +9,7 @@ import { ProductCard } from './ProductCard';
 import { ProductsGridOfferCard } from './ProductsGridOfferCard';
 import type { SpecialOfferProduct } from './home/special-offer-product.types';
 import { useIsMaxMd } from './home/use-is-max-md';
+import { SHOP_PLP_LCP_IMAGE_PRIORITY_COUNT } from '@/lib/constants/shop-plp-pagination';
 import { useForcedShopGridColumns } from './useForcedShopGridColumns';
 
 interface Product {
@@ -55,6 +56,20 @@ function toSpecialOfferProduct(p: Product): SpecialOfferProduct {
 }
 
 type ViewMode = 'list' | 'grid-2' | 'grid-3';
+
+/** Sort modes already applied by the listing API — skip redundant client re-sort. */
+const SERVER_SORTED_SORT_KEYS = new Set([
+  'default',
+  'price-asc',
+  'price-desc',
+  'price',
+  'popular',
+  'bestseller',
+  'newest',
+  'createdAt',
+  'createdAt-desc',
+]);
+
 /** Progressive paint kicks in for typical PLP page size (21 cards). */
 const PRODUCTS_PROGRESSIVE_RENDER_THRESHOLD = 12;
 const PRODUCTS_INITIAL_RENDER_BATCH_SIZE = 12;
@@ -110,21 +125,17 @@ export function ProductsGrid({
   const sortedProducts = useMemo(() => {
     const sorted = [...products];
 
-    switch (sortBy) {
-      case 'price-asc':
-        sorted.sort((a, b) => a.price - b.price);
-        break;
-      case 'price-desc':
-        sorted.sort((a, b) => b.price - a.price);
-        break;
-      case 'name-asc':
-        sorted.sort((a, b) => a.title.localeCompare(b.title));
-        break;
-      case 'name-desc':
-        sorted.sort((a, b) => b.title.localeCompare(a.title));
-        break;
-      default:
-        break;
+    if (!SERVER_SORTED_SORT_KEYS.has(sortBy)) {
+      switch (sortBy) {
+        case 'name-asc':
+          sorted.sort((a, b) => a.title.localeCompare(b.title));
+          break;
+        case 'name-desc':
+          sorted.sort((a, b) => b.title.localeCompare(a.title));
+          break;
+        default:
+          break;
+      }
     }
 
     return dedupeCardProductsByTitle(sorted);
@@ -219,6 +230,7 @@ export function ProductsGrid({
               product={offerProducts[index]!}
               layout={specialOfferLayout}
               maxWidthPx={PRODUCTS_CARD_MAX_WIDTH_PX}
+              imagePriority={index < SHOP_PLP_LCP_IMAGE_PRIORITY_COUNT}
             />
           )}
         </div>

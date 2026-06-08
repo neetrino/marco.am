@@ -211,6 +211,8 @@ export function ProductsShopListingClient({
       if (optimistic !== null) {
         setProducts(optimistic);
         setShowGridSkeleton(false);
+      } else if (productsRef.current.length > 0) {
+        setShowGridSkeleton(false);
       } else {
         setProducts([]);
         setShowGridSkeleton(true);
@@ -287,7 +289,7 @@ export function ProductsShopListingClient({
         <ProductsShopLoadingSkeleton variant="grid" />
       ) : products.length > 0 ? (
         <>
-          <ProductsGrid products={products} sortBy={sortBy} />
+          <ProductsGrid products={products} sortBy={sortBy} disableProgressiveRender />
           {meta.totalPages > 1 ? (
             <ProductsPagination
               page={page}

@@ -1,5 +1,6 @@
 import { getAttributeBucket, isColorAttributeKey } from '@/lib/attribute-keys';
 import { productRequiresAttributeSelection } from '@/lib/product-requires-attribute-selection';
+import { PRODUCT_LISTING_VARIANTS_PER_PRODUCT_LIMIT } from '@/lib/constants/product-listing-query-limits';
 import {
   normalizeProductWarrantyYears,
   type ProductWarrantyYears,
@@ -94,7 +95,7 @@ class ProductsFindTransformService {
       // Get all unique colors from variants with imageUrl + hex colors.
       // Limit scanned variants on PLP to keep filter interactions responsive.
       const colorMap = new Map<string, { value: string; imageUrl?: string | null; colors?: string[] | null }>();
-      const variantsForColorScan = variants.slice(0, 10);
+      const variantsForColorScan = variants.slice(0, PRODUCT_LISTING_VARIANTS_PER_PRODUCT_LIMIT);
 
       variantsForColorScan.forEach((v) => {
         // First, try to get ALL color options from variant.options (not just the first one)

@@ -11,6 +11,7 @@ import { t } from '../lib/i18n';
 import { logger } from '../lib/utils/logger';
 import { queryKeys } from '../lib/query-keys';
 import { dedupeCardProductsByTitle } from '../lib/dedupeCardProductsByTitle';
+import { buildHomeStripListingApiParams } from '@/lib/constants/home-listing-api-params';
 import { FeaturedProductsStrip } from './FeaturedProductsStrip';
 import { HomeAppBanner } from './home/HomeAppBanner';
 import { HomeGradientBanner } from './home/HomeGradientBanner';
@@ -131,14 +132,12 @@ async function fetchFeaturedStrip(
   filter: string,
   language: LanguageCode,
 ): Promise<SpecialOfferProduct[]> {
-  const params: Record<string, string> = {
-    page: '1',
+  const params = buildHomeStripListingApiParams({
     limit: String(FEATURED_PRODUCTS_VISIBLE_COUNT),
     lang: language,
     filter,
-    omitProductAttributes: '1',
-    skipExactTotalCount: '1',
-  };
+    sort: 'createdAt',
+  });
   const response = await apiClient.get<ProductsResponse>('/api/v1/products', {
     params,
     suppressHttpErrorLogging: true,
@@ -281,6 +280,7 @@ export function FeaturedProductsTabs({
     initialData: initialForNewTab,
     /** Skip duplicate `/api/v1/products` right after SSR (react-hooks/purity disallows `Date.now()` in render). */
     refetchOnMount: initialForNewTab === undefined,
+    refetchOnWindowFocus: false,
   });
 
   const initialHomeBrandPartnersPayload =
@@ -372,9 +372,10 @@ export function FeaturedProductsTabs({
   ]);
 
   const loading =
-    activeTab === 'new' && initialForNewTab === undefined
-      ? !products.length && newStripVisualQuery.isPending && featuredQuery.isPending
-      : featuredQuery.isPending;
+    products.length === 0 &&
+    (activeTab === 'new' && initialForNewTab === undefined
+      ? newStripVisualQuery.isPending && featuredQuery.isPending
+      : featuredQuery.isPending);
   const error = featuredQuery.isError ? t(language, 'home.featured_products.errorLoading') : null;
 
   useEffect(() => {

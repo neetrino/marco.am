@@ -3,9 +3,8 @@ import type { ProductsShopListingServerContext } from '@/lib/products-shop-listi
 import { ProductsShopFiltersColumn } from './ProductsShopFiltersColumn';
 import { ProductsShopFiltersDataSection } from './ProductsShopFiltersDataSection';
 import type { ProductsPageSearchParams } from './products-page-search-params';
+import { ProductsShopListingCacheFallback } from './ProductsShopListingCacheFallback';
 import { ProductsShopListingSection } from './ProductsShopListingSection';
-import { ProductsShopLoadingSkeleton } from './ProductsShopLoadingSkeleton';
-
 interface ProductsShopStreamedSectionProps {
   readonly raw: ProductsPageSearchParams;
   readonly ctx: ProductsShopListingServerContext;
@@ -27,7 +26,7 @@ export function ProductsShopStreamedSection({ raw, ctx }: ProductsShopStreamedSe
         </Suspense>
       </ProductsShopFiltersColumn>
 
-      <Suspense fallback={<ProductsShopLoadingSkeleton variant="grid" />}>
+      <Suspense fallback={<ProductsShopListingCacheFallback />}>
         <ProductsShopListingSection raw={raw} />
       </Suspense>
     </div>

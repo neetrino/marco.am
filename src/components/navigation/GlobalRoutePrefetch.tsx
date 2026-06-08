@@ -4,18 +4,19 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { primaryNavInternalHrefs } from '@/components/header/nav-config';
-import {
-  fetchHomeBrandPartnersClient,
-  HOME_BRAND_PARTNERS_QUERY_STALE_MS,
-} from '@/lib/home-brand-partners-client';
+import { warmBrandsPageClientCache } from '@/lib/brands-page-prefetch';
+import { warmReelsPageClientCache } from '@/lib/reels-page-prefetch';
 import { getStoredLanguage } from '@/lib/language';
-import { queryKeys } from '@/lib/query-keys';
+import { warmShopProductsClientCaches } from '@/lib/shop-products-plp-prefetch';
+import type { LanguageCode } from '@/lib/language';
 
 const EXTRA_PREFETCH_ROUTES = ['/wishlist', '/profile', '/login'] as const;
 const PREFETCH_ROUTES = [...new Set([...primaryNavInternalHrefs, ...EXTRA_PREFETCH_ROUTES])];
 /** Header routes warmed first so dev compile starts before the user clicks. */
 const PRIORITY_PREFETCH_ROUTES = [...primaryNavInternalHrefs];
-const PRODUCTS_PREFETCH_QUERY = 'page=1&limit=12&listingOmitProductAttributes=1';
+const PRODUCTS_SHOP_PATH = '/products';
+const BRANDS_PATH = '/brands';
+const REELS_PATH = '/reels';
 const INTERACTION_PREFETCH_MAX_SEGMENTS = 2;
 /** Home SSR already loads product rails + brand partners — defer API warm to avoid DB spikes. */
 const HOME_API_WARM_DEFER_MS = 12_000;
@@ -44,20 +45,24 @@ function shouldSkipIdlePrefetch(): boolean {
   return Boolean(connection.saveData) || connection.effectiveType === 'slow-2g';
 }
 
-function warmProductsApi(language: string): void {
-  const url = `/api/v1/products?${PRODUCTS_PREFETCH_QUERY}&lang=${encodeURIComponent(language)}`;
-  void fetch(url, { cache: 'force-cache' });
-  void fetch(`/api/v1/products/filters?lang=${encodeURIComponent(language)}`, { cache: 'force-cache' });
+function warmProductsApi(language: LanguageCode): void {
+  warmShopProductsClientCaches(language);
 }
 
-function warmBrandPartnersApi(language: string, prefetchBrandPartners: () => void): void {
-  prefetchBrandPartners();
-  void fetch(`/api/v1/home/brand-partners?locale=${encodeURIComponent(language)}`, {
-    cache: 'force-cache',
-  });
+function warmBrandPartnersApi(
+  language: LanguageCode,
+  queryClient: ReturnType<typeof useQueryClient>,
+): void {
+  warmBrandsPageClientCache(queryClient, language);
 }
 
-function getPrefetchableInternalPath(href: string): string | null {
+type PrefetchableInternalRoute = {
+  pathname: string;
+  queryString: string;
+  prefetchKey: string;
+};
+
+function parsePrefetchableInternalRoute(href: string): PrefetchableInternalRoute | null {
   try {
     const parsed = new URL(href, window.location.origin);
     if (parsed.origin !== window.location.origin) {
@@ -66,7 +71,12 @@ function getPrefetchableInternalPath(href: string): string | null {
     if (parsed.pathname.startsWith('/api/')) {
       return null;
     }
-    return parsed.pathname;
+    const queryString = parsed.search.startsWith('?') ? parsed.search.slice(1) : parsed.search;
+    return {
+      pathname: parsed.pathname,
+      queryString,
+      prefetchKey: `${parsed.pathname}?${queryString}`,
+    };
   } catch {
     return null;
   }
@@ -119,8 +129,17 @@ export function GlobalRoutePrefetch() {
       }
       warmedRef.current.add(route);
       void router.prefetch(route);
+      if (route === PRODUCTS_SHOP_PATH) {
+        warmProductsApi(getStoredLanguage());
+      }
+      if (route === BRANDS_PATH) {
+        warmBrandsPageClientCache(queryClient, getStoredLanguage());
+      }
+      if (route === REELS_PATH) {
+        warmReelsPageClientCache(getStoredLanguage());
+      }
     }
-  }, [router]);
+  }, [queryClient, router]);
 
   useEffect(() => {
     if (shouldSkipIdlePrefetch()) {
@@ -140,13 +159,8 @@ export function GlobalRoutePrefetch() {
       if (!warmProductsLangRef.current.has(language)) {
         warmProductsLangRef.current.add(language);
         warmProductsApi(language);
-        warmBrandPartnersApi(language, () => {
-          void queryClient.prefetchQuery({
-            queryKey: queryKeys.homeBrandPartners(language),
-            queryFn: () => fetchHomeBrandPartnersClient(language),
-            staleTime: HOME_BRAND_PARTNERS_QUERY_STALE_MS,
-          });
-        });
+        warmBrandPartnersApi(language, queryClient);
+        warmReelsPageClientCache(language);
       }
     };
 
@@ -171,15 +185,25 @@ export function GlobalRoutePrefetch() {
       if (!href) {
         return;
       }
-      const internalPath = getPrefetchableInternalPath(href);
-      if (!internalPath || !shouldInteractionPrefetch(internalPath)) {
+      const route = parsePrefetchableInternalRoute(href);
+      if (!route || !shouldInteractionPrefetch(route.pathname)) {
         return;
       }
-      if (interactionWarmedRef.current.has(internalPath)) {
+      if (interactionWarmedRef.current.has(route.prefetchKey)) {
         return;
       }
-      interactionWarmedRef.current.add(internalPath);
-      void router.prefetch(internalPath);
+      interactionWarmedRef.current.add(route.prefetchKey);
+      void router.prefetch(route.pathname);
+      const language = getStoredLanguage();
+      if (route.pathname === PRODUCTS_SHOP_PATH) {
+        warmShopProductsClientCaches(language, route.queryString);
+      }
+      if (route.pathname === BRANDS_PATH) {
+        warmBrandsPageClientCache(queryClient, language);
+      }
+      if (route.pathname === REELS_PATH) {
+        warmReelsPageClientCache(language);
+      }
     };
 
     const onPointerOver = (event: PointerEvent) => {
@@ -201,7 +225,7 @@ export function GlobalRoutePrefetch() {
       document.removeEventListener('focusin', onFocusIn);
       document.removeEventListener('pointerdown', onPointerDown);
     };
-  }, [router]);
+  }, [queryClient, router]);
 
   return null;
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { CSSProperties } from 'react';
@@ -8,6 +8,7 @@ import type { CSSProperties } from 'react';
 import { StaticPageLoadingSkeleton } from '@/components/navigation/StaticPageLoadingSkeleton';
 import {
   BRANDS_DIRECTORY_CARD_MIN_HEIGHT_PX,
+  BRANDS_DIRECTORY_LCP_IMAGE_PRIORITY_COUNT,
   BRANDS_DIRECTORY_LOGO_CELL_HEIGHT_PX,
   BRANDS_DIRECTORY_LOGO_CELL_MAX_WIDTH_PX,
   BRANDS_DIRECTORY_LOGO_IMAGE_CLASS,
@@ -24,8 +25,17 @@ import {
   HOME_BRAND_PARTNERS_QUERY_STALE_MS,
 } from '@/lib/home-brand-partners-client';
 import { useTranslation } from '@/lib/i18n-client';
+import type { LanguageCode } from '@/lib/language';
 import { queryKeys } from '@/lib/query-keys';
-import type { HomeBrandPartnerPublicItem } from '@/lib/types/home-brand-partners-public';
+import type {
+  HomeBrandPartnerPublicItem,
+  HomeBrandPartnersPublicPayload,
+} from '@/lib/types/home-brand-partners-public';
+
+type BrandsPageContentProps = {
+  readonly initialPayload?: HomeBrandPartnersPublicPayload;
+  readonly serverLanguage?: LanguageCode;
+};
 
 function brandDirectoryLogoCellStyle(slug: string, displayName: string): CSSProperties {
   const oversized = isBrandLogoCellOversizedSlug(slug, displayName);
@@ -36,7 +46,13 @@ function brandDirectoryLogoCellStyle(slug: string, displayName: string): CSSProp
   };
 }
 
-function BrandDirectoryLogo({ partner }: { partner: HomeBrandPartnerPublicItem }) {
+function BrandDirectoryLogo({
+  partner,
+  imagePriority,
+}: {
+  partner: HomeBrandPartnerPublicItem;
+  imagePriority: boolean;
+}) {
   const resolved = resolveBrandDisplayLogoForCell(
     partner.logoUrl,
     partner.slug,
@@ -73,7 +89,8 @@ function BrandDirectoryLogo({ partner }: { partner: HomeBrandPartnerPublicItem }
           fill
           className={BRANDS_DIRECTORY_LOGO_IMAGE_CLASS}
           sizes={`${sizesWidth}px`}
-          loading="lazy"
+          priority={imagePriority}
+          loading={imagePriority ? undefined : 'lazy'}
         />
       </div>
     );
@@ -88,8 +105,9 @@ function BrandDirectoryLogo({ partner }: { partner: HomeBrandPartnerPublicItem }
         src={resolved.src}
         alt={partner.name}
         className={BRANDS_DIRECTORY_LOGO_IMAGE_CLASS}
-        loading="lazy"
+        loading={imagePriority ? 'eager' : 'lazy'}
         decoding="async"
+        fetchPriority={imagePriority ? 'high' : 'auto'}
       />
     </div>
   );
@@ -98,7 +116,7 @@ function BrandDirectoryLogo({ partner }: { partner: HomeBrandPartnerPublicItem }
 function BrandsDirectoryGrid({ brands }: { brands: readonly HomeBrandPartnerPublicItem[] }) {
   return (
     <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
-      {brands.map((partner) => (
+      {brands.map((partner, index) => (
         <Link
           key={partner.id}
           href={partner.href}
@@ -112,26 +130,58 @@ function BrandsDirectoryGrid({ brands }: { brands: readonly HomeBrandPartnerPubl
           className="group flex items-center justify-center rounded-2xl border border-marco-border bg-[#ffffff] px-4 py-5 sm:px-5 sm:py-6 transition-colors hover:border-marco-black/30 hover:bg-[#f8f8f8] dark:bg-[#ffffff] dark:hover:bg-[#f8f8f8]"
           aria-label={partner.name}
         >
-          <BrandDirectoryLogo partner={partner} />
+          <BrandDirectoryLogo
+            partner={partner}
+            imagePriority={index < BRANDS_DIRECTORY_LCP_IMAGE_PRIORITY_COUNT}
+          />
         </Link>
       ))}
     </div>
   );
 }
 
-/** Brand grid — client fetch; idle prefetch seeds React Query before navigation. */
-export function BrandsPageContent() {
+function resolveInitialBrandPartnersPayload(
+  lang: LanguageCode,
+  serverLanguage: LanguageCode | undefined,
+  initialPayload: HomeBrandPartnersPublicPayload | undefined,
+  cachedPayload: HomeBrandPartnersPublicPayload | undefined,
+): HomeBrandPartnersPublicPayload | undefined {
+  if (initialPayload && serverLanguage === lang) {
+    return initialPayload;
+  }
+  return cachedPayload;
+}
+
+/** Brand grid — SSR + React Query cache; idle/hover prefetch avoids loading flash on navigation. */
+export function BrandsPageContent({
+  initialPayload,
+  serverLanguage,
+}: BrandsPageContentProps) {
   const { t, lang } = useTranslation();
+  const queryClient = useQueryClient();
+  const cachedPayload = queryClient.getQueryData<HomeBrandPartnersPublicPayload>(
+    queryKeys.homeBrandPartners(lang),
+  );
+  const initialData = resolveInitialBrandPartnersPayload(
+    lang,
+    serverLanguage,
+    initialPayload,
+    cachedPayload,
+  );
+
   const brandPartnersQuery = useQuery({
     queryKey: queryKeys.homeBrandPartners(lang),
     queryFn: () => fetchHomeBrandPartnersClient(lang),
     staleTime: HOME_BRAND_PARTNERS_QUERY_STALE_MS,
+    initialData,
     placeholderData: (previous) => previous,
+    refetchOnMount: initialData === undefined,
+    refetchOnWindowFocus: false,
   });
 
   const brands = brandPartnersQuery.data?.brands;
 
-  if (brandPartnersQuery.isPending && brands === undefined) {
+  if (brands === undefined && brandPartnersQuery.isPending) {
     return <StaticPageLoadingSkeleton variant="grid-body" />;
   }
 
