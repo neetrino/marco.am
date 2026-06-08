@@ -38,46 +38,77 @@ export function ProductDescriptionFields({ entries, onChange }: ProductDescripti
       {entries.length === 0 ? (
         <p className="text-sm text-gray-500">{t('admin.products.add.descriptionFieldsEmpty')}</p>
       ) : (
-        <div className="space-y-3">
-          {entries.map((entry, index) => (
-            <div
-              key={`description-entry-${index}`}
-              className="grid gap-2 rounded-xl border border-gray-200 bg-gray-50/60 p-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)_auto] sm:items-start"
-            >
-              <div>
-                <label className="mb-1 block text-xs font-medium text-gray-600">
-                  {t('admin.products.add.descriptionFieldTitle')}
-                </label>
-                <Input
-                  type="text"
-                  value={entry.title}
-                  onChange={(event) => updateEntry(index, 'title', event.target.value)}
-                  placeholder={t('admin.products.add.descriptionFieldTitlePlaceholder')}
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-xs font-medium text-gray-600">
-                  {t('admin.products.add.descriptionFieldValue')}
-                </label>
-                <textarea
-                  className="admin-field min-h-[4.5rem] w-full resize-y"
-                  rows={2}
-                  value={entry.value}
-                  onChange={(event) => updateEntry(index, 'value', event.target.value)}
-                  placeholder={t('admin.products.add.descriptionFieldValuePlaceholder')}
-                />
-              </div>
-              <button
-                type="button"
-                onClick={() => removeEntry(index)}
-                className="inline-flex h-10 items-center justify-center gap-1 rounded-lg border border-red-200 px-3 text-sm text-red-600 transition hover:bg-red-50 sm:mt-6"
-                aria-label={t('admin.products.add.removeDescriptionRow')}
-              >
-                <Trash2 className="h-4 w-4" />
-                <span className="sm:hidden">{t('admin.products.add.remove')}</span>
-              </button>
-            </div>
-          ))}
+        <div className="overflow-hidden rounded-xl border border-slate-200 shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="min-w-full table-fixed divide-y divide-slate-200 bg-white">
+              <colgroup>
+                <col className="w-[30%]" />
+                <col />
+                <col className="w-14" />
+              </colgroup>
+              <thead className="bg-slate-50/90">
+                <tr>
+                  <th
+                    scope="col"
+                    className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-slate-500"
+                  >
+                    {t('admin.products.add.descriptionFieldTitle')}
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wide text-slate-500"
+                  >
+                    {t('admin.products.add.descriptionFieldValue')}
+                  </th>
+                  <th scope="col" className="px-2 py-2.5">
+                    <span className="sr-only">{t('admin.products.add.removeDescriptionRow')}</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {entries.map((entry, index) => (
+                  <tr key={`description-entry-${index}`} className="transition-colors hover:bg-slate-50/70">
+                    <td className="px-4 py-3 align-top">
+                      <label className="sr-only" htmlFor={`description-title-${index}`}>
+                        {t('admin.products.add.descriptionFieldTitle')}
+                      </label>
+                      <Input
+                        id={`description-title-${index}`}
+                        type="text"
+                        value={entry.title}
+                        onChange={(event) => updateEntry(index, 'title', event.target.value)}
+                        placeholder={t('admin.products.add.descriptionFieldTitlePlaceholder')}
+                        className="border-slate-200 bg-white shadow-sm"
+                      />
+                    </td>
+                    <td className="px-4 py-3 align-top">
+                      <label className="sr-only" htmlFor={`description-value-${index}`}>
+                        {t('admin.products.add.descriptionFieldValue')}
+                      </label>
+                      <textarea
+                        id={`description-value-${index}`}
+                        className="admin-field min-h-[2.75rem] w-full resize-y border-slate-200 bg-white shadow-sm"
+                        rows={2}
+                        value={entry.value}
+                        onChange={(event) => updateEntry(index, 'value', event.target.value)}
+                        placeholder={t('admin.products.add.descriptionFieldValuePlaceholder')}
+                      />
+                    </td>
+                    <td className="px-2 py-3 align-middle">
+                      <button
+                        type="button"
+                        onClick={() => removeEntry(index)}
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-red-200 text-red-600 transition hover:border-red-300 hover:bg-red-50"
+                        aria-label={t('admin.products.add.removeDescriptionRow')}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
