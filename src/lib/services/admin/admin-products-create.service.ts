@@ -18,6 +18,10 @@ import {
   type ProductClass,
 } from "@/lib/constants/product-class";
 import { normalizeProductWarrantyYears } from "@/lib/constants/product-warranty";
+import {
+  toPrismaProductDescription,
+  type ProductDescriptionEntry,
+} from "@/lib/products/product-description";
 import { logger } from "@/lib/utils/logger";
 import type { PrismaTransactionClient } from "@/lib/types/prisma";
 import { getErrorMessage, getPrismaErrorCode } from "@/lib/types/errors";
@@ -131,7 +135,7 @@ class AdminProductsCreateService {
     title: string;
     slug: string;
     subtitle?: string;
-    descriptionHtml?: string;
+    description?: ProductDescriptionEntry[];
     brandId?: string;
     primaryCategoryId?: string;
     categoryIds?: string[];
@@ -409,7 +413,9 @@ class AdminProductsCreateService {
                 title: data.title,
                 slug: data.slug,
                 subtitle: data.subtitle || undefined,
-                descriptionHtml: data.descriptionHtml || undefined,
+                description: data.description?.length
+                  ? toPrismaProductDescription(data.description)
+                  : undefined,
               },
             },
             variants: {

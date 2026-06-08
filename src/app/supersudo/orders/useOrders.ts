@@ -8,6 +8,13 @@ import { useTranslation } from '../../../lib/i18n-client';
 import { formatPriceInCurrency, convertPrice, getStoredCurrency, initializeCurrencyRates, CurrencyCode } from '../../../lib/currency';
 import { showPopupConfirm } from '@/components/popup-service';
 import { logger } from "@/lib/utils/logger";
+import { ADMIN_CACHE_KEYS, buildAdminListCacheKey } from '@/lib/admin/admin-cache-keys';
+import { beginAdminDataFetch } from '@/lib/admin/admin-fetch-helpers';
+import {
+  ADMIN_SESSION_CACHE_TTL_MS,
+  readAdminSessionCache,
+  writeAdminSessionCache,
+} from '@/lib/admin/admin-session-cache';
 import type { OrderAuditEntry } from "./types/order-audit";
 
 export type { OrderAuditEntry };
@@ -110,8 +117,20 @@ export function useOrders() {
   const { t } = useTranslation();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [orders, setOrders] = useState<Order[]>(() => {
+    const cached = readAdminSessionCache<OrdersResponse>(
+      ADMIN_CACHE_KEYS.ordersDefault,
+      ADMIN_SESSION_CACHE_TTL_MS,
+    );
+    return cached?.data ?? [];
+  });
+  const [loading, setLoading] = useState(() => {
+    const cached = readAdminSessionCache<OrdersResponse>(
+      ADMIN_CACHE_KEYS.ordersDefault,
+      ADMIN_SESSION_CACHE_TTL_MS,
+    );
+    return !cached;
+  });
   const [currency, setCurrency] = useState<CurrencyCode>(getStoredCurrency());
   /** Sync initial filter state from URL so the first fetch matches shared links / refresh. */
   const [statusFilter, setStatusFilter] = useState(
@@ -150,8 +169,22 @@ export function useOrders() {
   }, [searchParams]);
 
   const fetchOrders = useCallback(async () => {
+    const cacheKey = buildAdminListCacheKey('orders', {
+      page: page.toString(),
+      limit: '20',
+      status: statusFilter || '',
+      paymentStatus: paymentStatusFilter || '',
+      search: searchQuery || '',
+      sortBy: sortBy || '',
+      sortOrder: sortOrder || '',
+    });
+    const cached = readAdminSessionCache<OrdersResponse>(cacheKey, ADMIN_SESSION_CACHE_TTL_MS);
     try {
-      setLoading(true);
+      beginAdminDataFetch(Boolean(cached?.data?.length), setLoading);
+      if (cached) {
+        setOrders(cached.data);
+        setMeta(cached.meta ?? null);
+      }
       logger.devLog('📦 [ADMIN] Fetching orders...', { page, statusFilter, paymentStatusFilter, searchQuery, sortBy, sortOrder });
       
       const response = await apiClient.get<OrdersResponse>('/api/v1/supersudo/orders', {
@@ -169,6 +202,7 @@ export function useOrders() {
       logger.devLog('✅ [ADMIN] Orders fetched:', response);
       setOrders(response.data || []);
       setMeta(response.meta || null);
+      writeAdminSessionCache(cacheKey, response);
     } catch (err: unknown) {
       logger.error('Admin orders list fetch failed', { error: err });
     } finally {

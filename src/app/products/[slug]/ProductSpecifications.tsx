@@ -1,17 +1,13 @@
 'use client';
 
-import { t, getProductText } from '../../../lib/i18n';
+import { t } from '../../../lib/i18n';
 import type { LanguageCode } from '../../../lib/language';
-import { normalizeLiteralNewlinesToLineBreaks } from '../../../lib/utils/normalize-literal-newlines';
-import type { Product } from './types';
 import {
-  parseRowsFromLabeledStrong,
-  parseRowsFromLines,
-  parseRowsFromListItems,
-  parseRowsFromTable,
-  stripTags,
-  type SpecificationRow,
-} from './product-spec-description-parsing';
+  getProductDescriptionSpecs,
+  type ProductDescriptionEntry,
+} from '../../../lib/products/product-description';
+import type { Product } from './types';
+import { isPopulatedSpecificationValue } from './product-specifications-value';
 import { SpecificationValueDisplay } from './ProductSpecificationsValue';
 
 interface ProductSpecificationsProps {
@@ -19,97 +15,23 @@ interface ProductSpecificationsProps {
   language: LanguageCode;
 }
 
-type MetaLabelKey = 'brand' | 'category' | 'sku' | 'variants' | 'availability';
-
-function getMetaLabel(language: LanguageCode, key: MetaLabelKey): string {
-  return t(language, `product.specifications.${key}`);
+function filterPopulatedRows(rows: ProductDescriptionEntry[]): ProductDescriptionEntry[] {
+  return rows.filter(
+    (row) => row.title.trim().length > 0 && isPopulatedSpecificationValue(row.value),
+  );
 }
 
-function getAvailabilityValue(product: Product, language: LanguageCode): string {
-  const hasStock = product.variants.some((variant) => variant.stock > 0);
-  if (hasStock) {
-    return t(language, 'product.specifications.inStock');
-  }
-  return t(language, 'product.outOfStock');
-}
-
-function parsePlainDescription(descriptionHtml: string, language: LanguageCode, product: Product): SpecificationRow[] {
-  const plainText = stripTags(descriptionHtml);
-  const firstCategory = product.categories?.[0]?.title || null;
-  const firstSku = product.variants.find((variant) => Boolean(variant.sku))?.sku || null;
-  const rows: SpecificationRow[] = [];
-
-  if (plainText) {
-    rows.push({
-      key: t(language, 'product.description_title'),
-      value: plainText,
-    });
-  }
-
-  if (product.brand?.name) {
-    rows.push({ key: getMetaLabel(language, 'brand'), value: product.brand.name });
-  }
-  if (firstCategory) {
-    rows.push({ key: getMetaLabel(language, 'category'), value: firstCategory });
-  }
-  if (firstSku) {
-    rows.push({ key: getMetaLabel(language, 'sku'), value: firstSku });
-  }
-
-  rows.push({
-    key: getMetaLabel(language, 'variants'),
-    value: String(product.variants.length),
-  });
-  rows.push({
-    key: getMetaLabel(language, 'availability'),
-    value: getAvailabilityValue(product, language),
-  });
-
-  return rows;
-}
-
-function getAttributeValue(product: Product, keys: string[]): string | null {
-  const normalizedKeys = keys.map((key) => key.toLowerCase());
-  const matched = product.productAttributes?.find((item) => {
-    const attrKey = item.attribute.key.toLowerCase();
-    const attrName = item.attribute.name.toLowerCase();
-    return normalizedKeys.some((key) => attrKey.includes(key) || attrName.includes(key));
-  });
-  if (!matched) {
-    return null;
-  }
-  const values = matched.attribute.values.map((value) => value.label || value.value).filter(Boolean);
-  return values.length > 0 ? values.join(', ') : null;
-}
-
-function ensureRequiredRows(rows: SpecificationRow[], product: Product, language: LanguageCode): SpecificationRow[] {
-  const normalizedKeys = new Set(rows.map((row) => row.key.toLowerCase().trim()));
-  const manufacturerCountry = getAttributeValue(product, ['country', 'origin', 'manufacturer_country', 'արտադրող երկիր']);
-  const material = getAttributeValue(product, ['material', 'composition', 'նյութ']);
-  const countryLabel = t(language, 'product.specifications.manufacturerCountry');
-  const materialLabel = t(language, 'product.specifications.material');
-
-  if (!normalizedKeys.has(countryLabel.toLowerCase())) {
-    rows.push({ key: countryLabel, value: manufacturerCountry || '-' });
-  }
-  if (!normalizedKeys.has(materialLabel.toLowerCase())) {
-    rows.push({ key: materialLabel, value: material || '-' });
-  }
-
-  return rows;
-}
-
-function dedupeRows(rows: SpecificationRow[]): SpecificationRow[] {
+function dedupeRows(rows: ProductDescriptionEntry[]): ProductDescriptionEntry[] {
   const seen = new Set<string>();
   return rows.filter((row) => {
-    const key = `${row.key.toLowerCase()}::${row.value.toLowerCase()}`;
+    const key = `${row.title.toLowerCase()}::${row.value.toLowerCase()}`;
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
   });
 }
 
-function getFallbackRows(product: Product): SpecificationRow[] {
+function getFallbackRows(product: Product): ProductDescriptionEntry[] {
   if (!Array.isArray(product.productAttributes) || product.productAttributes.length === 0) {
     return [];
   }
@@ -119,55 +41,28 @@ function getFallbackRows(product: Product): SpecificationRow[] {
       const values = item.attribute.values.map((value) => value.label || value.value).filter(Boolean);
       if (values.length === 0) return null;
       return {
-        key: item.attribute.name,
+        title: item.attribute.name,
         value: values.join(', '),
       };
     })
-    .filter((row): row is SpecificationRow => Boolean(row));
+    .filter((row): row is ProductDescriptionEntry => Boolean(row));
 }
 
-function getSpecificationRows(product: Product, language: LanguageCode): SpecificationRow[] {
-  const rawDescription = normalizeLiteralNewlinesToLineBreaks(
-    getProductText(language, product.id, 'longDescription') || product.description || '',
-  );
-  if (!rawDescription.trim()) {
-    return ensureRequiredRows(getFallbackRows(product), product, language);
+function resolveDescriptionEntries(product: Product, language: LanguageCode): ProductDescriptionEntry[] {
+  const localizedEntries = product.i18n?.descriptions[language]?.entries;
+  if (localizedEntries && localizedEntries.length > 0) {
+    return localizedEntries;
+  }
+  return product.description ?? [];
+}
+
+function getSpecificationRows(product: Product, language: LanguageCode): ProductDescriptionEntry[] {
+  const descriptionEntries = getProductDescriptionSpecs(resolveDescriptionEntries(product, language));
+  if (descriptionEntries.length > 0) {
+    return filterPopulatedRows(dedupeRows(descriptionEntries));
   }
 
-  const fromTable = parseRowsFromTable(rawDescription);
-  if (fromTable.length > 0) {
-    return ensureRequiredRows(dedupeRows(fromTable), product, language);
-  }
-
-  const fromStrong = parseRowsFromLabeledStrong(rawDescription);
-  if (fromStrong.length >= 2) {
-    return ensureRequiredRows(dedupeRows(fromStrong), product, language);
-  }
-
-  const fromListItems = parseRowsFromListItems(rawDescription);
-  if (fromListItems.length >= 2) {
-    return ensureRequiredRows(dedupeRows(fromListItems), product, language);
-  }
-
-  const fromLines = parseRowsFromLines(rawDescription);
-  if (fromLines.length > 0) {
-    return ensureRequiredRows(dedupeRows(fromLines), product, language);
-  }
-
-  if (fromStrong.length > 0) {
-    return ensureRequiredRows(dedupeRows(fromStrong), product, language);
-  }
-
-  if (fromListItems.length > 0) {
-    return ensureRequiredRows(dedupeRows(fromListItems), product, language);
-  }
-
-  const plainDescription = parsePlainDescription(rawDescription, language, product);
-  if (plainDescription.length > 0) {
-    return ensureRequiredRows(dedupeRows(plainDescription), product, language);
-  }
-
-  return ensureRequiredRows(getFallbackRows(product), product, language);
+  return filterPopulatedRows(getFallbackRows(product));
 }
 
 export function ProductSpecifications({ product, language }: ProductSpecificationsProps) {
@@ -185,10 +80,10 @@ export function ProductSpecifications({ product, language }: ProductSpecificatio
       <dl className="mt-6 divide-y divide-gray-100 overflow-hidden rounded-2xl border border-gray-200/90 bg-white shadow-sm ring-1 ring-black/[0.02]">
         {rows.map((row, index) => (
           <div
-            key={`${row.key}-${index}`}
+            key={`${row.title}-${index}`}
             className="grid gap-2 px-4 py-4 sm:grid-cols-[minmax(0,11rem)_minmax(0,1fr)] sm:items-start sm:gap-x-8 sm:px-5 sm:py-4"
           >
-            <dt className="text-sm font-medium tracking-tight text-gray-500 md:text-base">{row.key}</dt>
+            <dt className="text-sm font-medium tracking-tight text-gray-500 md:text-base">{row.title}</dt>
             <dd className="min-w-0 text-sm font-medium text-marco-black md:text-base">
               <SpecificationValueDisplay value={row.value} />
             </dd>
@@ -198,4 +93,3 @@ export function ProductSpecifications({ product, language }: ProductSpecificatio
     </section>
   );
 }
-

@@ -14,7 +14,7 @@
     "reels": "Ռիլեր",
     "analytics": "Վերլուծություն",
     "filterByPrice": "Զտել ըստ գնի",
-    "heroBanner": "Գլխավոր բանнер",
+    "heroBanner": "Գլխավոր բաններ",
     "delivery": "Առաքում",
     "settings": "Կարգավորումներ"
   },
@@ -493,6 +493,14 @@
       "title": "Վերնագիր",
       "slug": "Slug",
       "description": "Նկարագրություն",
+      "descriptionFieldsHint": "Ավելացրեք բնութագրի տողեր՝ վերնագիր և արժեք (առանց HTML)։",
+      "descriptionFieldsEmpty": "Դեռ նկարագրության տողեր չկան։",
+      "descriptionFieldTitle": "Վերնագիր",
+      "descriptionFieldTitlePlaceholder": "Օր.՝ Հումք",
+      "descriptionFieldValue": "Արժեք",
+      "descriptionFieldValuePlaceholder": "Օր.՝ Գործվածք",
+      "addDescriptionRow": "Ավելացնել տող",
+      "removeDescriptionRow": "Հեռացնել տող",
       "categoriesAndBrands": "Կատեգորիաներ և Բրենդներ",
       "categories": "Կատեգորիաներ",
       "selectMultiple": "(Ընտրել մի քանիսը)",
@@ -912,7 +920,7 @@
     "failedToSave": "Չհաջողվեց պահպանել փոփոխությունները"
   },
   "heroBanner": {
-    "title": "Գլխավոր բանнер",
+    "title": "Գլխավոր բաններ",
     "subtitle": "Կառավարեք home page-ի hero banner-ի desktop և mobile նկարները",
     "uploadAutoSaveHint": "Յուրաքանչյուր վերբեռնում պահվում է Cloudflare R2-ում և անմիջապես գրանցվում է կարգավորումներում, որպեսզի կայքը ցույց տա նոր նկարը (քեշը կարող է մի քանի վայրկյան տևել)։",
     "backToAdmin": "Վերադառնալ ադմինիստրատորի վահան",

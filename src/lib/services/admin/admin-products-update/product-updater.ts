@@ -10,6 +10,7 @@ import { normalizeProductClass } from "@/lib/constants/product-class";
 import { normalizeProductWarrantyYears } from "@/lib/constants/product-warranty";
 import type { NormalizedProductCategoryLinks } from "../../product-category-links.service";
 import { toProductCategoriesSet } from "../../product-category-links.service";
+import { toPrismaProductDescription } from "@/lib/products/product-description";
 
 /**
  * Collect variant images from data or existing variants
@@ -115,7 +116,7 @@ export async function updateProductTranslation(
   data: UpdateProductData,
   tx: Prisma.TransactionClient
 ) {
-  if (data.title || data.slug || data.subtitle !== undefined || data.descriptionHtml !== undefined) {
+  if (data.title || data.slug || data.subtitle !== undefined || data.description !== undefined) {
     const locale = data.locale || "en";
     await tx.productTranslation.upsert({
       where: {
@@ -128,7 +129,9 @@ export async function updateProductTranslation(
         ...(data.title && { title: data.title }),
         ...(data.slug && { slug: data.slug }),
         ...(data.subtitle !== undefined && { subtitle: data.subtitle || null }),
-        ...(data.descriptionHtml !== undefined && { descriptionHtml: data.descriptionHtml || null }),
+        ...(data.description !== undefined && {
+          description: toPrismaProductDescription(data.description),
+        }),
       },
       create: {
         productId,
@@ -136,7 +139,7 @@ export async function updateProductTranslation(
         title: data.title || "",
         slug: data.slug || "",
         subtitle: data.subtitle || null,
-        descriptionHtml: data.descriptionHtml || null,
+        description: toPrismaProductDescription(data.description ?? []),
       },
     });
   }

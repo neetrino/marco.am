@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { useAuth } from '../../../lib/auth/AuthContext';
 import { apiClient, getApiOrErrorMessage } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
 import { getStoredCurrency, initializeCurrencyRates, type CurrencyCode } from '../../../lib/currency';
@@ -13,23 +12,45 @@ import { ProductsTable } from './components/ProductsTable';
 import { useProductHandlers } from './hooks/useProductHandlers';
 import type { Product, ProductsResponse, Category } from './types';
 import { logger } from "@/lib/utils/logger";
+import {
+  readAdminCategoriesCache,
+  writeAdminCategoriesCache,
+} from '@/lib/admin/admin-reference-data-cache';
+import { ADMIN_CACHE_KEYS, buildAdminListCacheKey } from '@/lib/admin/admin-cache-keys';
+import { beginAdminDataFetch } from '@/lib/admin/admin-fetch-helpers';
+import {
+  ADMIN_SESSION_CACHE_TTL_MS,
+  readAdminSessionCache,
+  writeAdminSessionCache,
+} from '@/lib/admin/admin-session-cache';
+
+type AdminProductsCachePayload = {
+  data: Product[];
+  meta: ProductsResponse['meta'] | null;
+};
 
 export default function ProductsPage() {
   const { t } = useTranslation();
-  const { isLoggedIn, isAdmin, isLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const defaultProductsCache = readAdminSessionCache<AdminProductsCachePayload>(
+    ADMIN_CACHE_KEYS.productsDefault,
+    ADMIN_SESSION_CACHE_TTL_MS,
+  );
+  const cachedCategories = readAdminCategoriesCache<Category>();
+  const hadProductsCacheRef = useRef(Boolean(defaultProductsCache));
+  const hadCategoriesCacheRef = useRef(Boolean(cachedCategories?.length));
+  const [products, setProducts] = useState<Product[]>(defaultProductsCache?.data ?? []);
+  const [loading, setLoading] = useState(!hadProductsCacheRef.current);
   const [search, setSearch] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [categories, setCategories] = useState<Category[]>(cachedCategories ?? []);
+  const [categoriesLoading, setCategoriesLoading] = useState(!hadCategoriesCacheRef.current);
   const [categoriesExpanded, setCategoriesExpanded] = useState(false);
   const [skuSearch, setSkuSearch] = useState('');
   const [stockFilter, setStockFilter] = useState<'all' | 'inStock' | 'outOfStock'>('all');
   const [page, setPage] = useState(1);
-  const [meta, setMeta] = useState<ProductsResponse['meta'] | null>(null);
+  const [meta, setMeta] = useState<ProductsResponse['meta'] | null>(defaultProductsCache?.meta ?? null);
   const [minPrice, setMinPrice] = useState<string>('');
   const [maxPrice, setMaxPrice] = useState<string>('');
   const [sortBy, setSortBy] = useState<string>('createdAt-desc');
@@ -40,15 +61,6 @@ export default function ProductsPage() {
   const [updatingPublishedIds, setUpdatingPublishedIds] = useState<Set<string>>(new Set());
   const [updatingFeaturedIds, setUpdatingFeaturedIds] = useState<Set<string>>(new Set());
   const [currency, setCurrency] = useState<CurrencyCode>('USD');
-
-  useEffect(() => {
-    if (!isLoading) {
-      if (!isLoggedIn || !isAdmin) {
-        router.push('/supersudo');
-        return;
-      }
-    }
-  }, [isLoggedIn, isAdmin, isLoading, router]);
 
   // Initialize currency rates and listen for currency changes
   useEffect(() => {
@@ -82,10 +94,8 @@ export default function ProductsPage() {
 
   // Fetch categories on mount
   useEffect(() => {
-    if (isLoggedIn && isAdmin) {
-      fetchCategories();
-    }
-  }, [isLoggedIn, isAdmin]);
+    fetchCategories();
+  }, []);
 
   // Close category dropdown when clicking outside
   useEffect(() => {
@@ -106,29 +116,48 @@ export default function ProductsPage() {
 
   const fetchCategories = async () => {
     try {
-      setCategoriesLoading(true);
+      beginAdminDataFetch(hadCategoriesCacheRef.current, setCategoriesLoading);
       logger.devLog('📂 [ADMIN] Fetching categories...');
       const response = await apiClient.get<{ data: Category[] }>('/api/v1/supersudo/categories');
-      setCategories(response.data || []);
-      logger.devLog('✅ [ADMIN] Categories loaded:', response.data?.length || 0);
+      const nextCategories = response.data || [];
+      setCategories(nextCategories);
+      writeAdminCategoriesCache(nextCategories);
+      hadCategoriesCacheRef.current = true;
+      logger.devLog('✅ [ADMIN] Categories loaded:', nextCategories.length);
     } catch (err: unknown) {
       console.error('❌ [ADMIN] Error fetching categories:', err);
-      setCategories([]);
+      if (!hadCategoriesCacheRef.current) {
+        setCategories([]);
+      }
     } finally {
       setCategoriesLoading(false);
     }
   };
 
   useEffect(() => {
-    if (isLoggedIn && isAdmin) {
-      fetchProducts();
-    }
+    fetchProducts();
      
-  }, [isLoggedIn, isAdmin, page, search, selectedCategories, skuSearch, stockFilter, sortBy, minPrice, maxPrice]);
+  }, [page, search, selectedCategories, skuSearch, stockFilter, sortBy, minPrice, maxPrice]);
 
   const fetchProducts = async () => {
+    const cacheKey = buildAdminListCacheKey('products', {
+      page: page.toString(),
+      limit: '20',
+      search: search.trim(),
+      category: selectedCategories.size > 0 ? Array.from(selectedCategories).join(',') : '',
+      sku: skuSearch.trim(),
+      minPrice: minPrice.trim(),
+      maxPrice: maxPrice.trim(),
+      sort: sortBy.startsWith('createdAt') ? sortBy : '',
+      stockFilter,
+    });
+    const cached = readAdminSessionCache<AdminProductsCachePayload>(cacheKey, ADMIN_SESSION_CACHE_TTL_MS);
     try {
-      setLoading(true);
+      beginAdminDataFetch(Boolean(cached?.data?.length), setLoading);
+      if (cached) {
+        setProducts(cached.data);
+        setMeta(cached.meta);
+      }
       const params: Record<string, string> = {
         page: page.toString(),
         limit: '20',
@@ -185,8 +214,13 @@ export default function ProductsPage() {
 
       setProducts(filteredProducts);
       setMeta(response.meta || null);
+      writeAdminSessionCache(cacheKey, { data: filteredProducts, meta: response.meta || null });
+      hadProductsCacheRef.current = true;
     } catch (err: unknown) {
       console.error('❌ [ADMIN] Error fetching products:', err);
+      if (!hadProductsCacheRef.current) {
+        setProducts([]);
+      }
       alert(t('admin.products.errorLoading').replace('{message}', getApiOrErrorMessage(err, t('admin.common.unknownErrorFallback'))));
     } finally {
       setLoading(false);
@@ -304,21 +338,6 @@ export default function ProductsPage() {
     setStockFilter('all');
     setPage(1);
   };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600">{t('admin.common.loading')}</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isLoggedIn || !isAdmin) {
-    return null;
-  }
 
   const currentPath = pathname || '/supersudo/products';
 

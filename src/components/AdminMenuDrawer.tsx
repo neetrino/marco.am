@@ -2,9 +2,9 @@
 
 import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { logger } from "@/lib/utils/logger";
 import { useTranslation } from '../lib/i18n-client';
+import { AdminNavLink } from '@/app/supersudo/components/AdminNavLink';
 
 export interface AdminMenuItem {
   id: string;
@@ -26,7 +26,6 @@ interface AdminMenuDrawerProps {
  * Renders a mobile-friendly admin hamburger menu that mirrors the desktop sidebar.
  */
 export function AdminMenuDrawer({ tabs, currentPath }: AdminMenuDrawerProps) {
-  const router = useRouter();
   const [open, setOpen] = useState(false);
   const isProductsSectionActive = PRODUCT_SECTION_PATHS.some(
     (path) => currentPath === path || currentPath.startsWith(`${path}/`),
@@ -54,11 +53,10 @@ export function AdminMenuDrawer({ tabs, currentPath }: AdminMenuDrawerProps) {
   }, [open]);
 
   /**
-   * Handles navigation button clicks inside the drawer.
+   * Closes the drawer after navigation starts.
    */
-  const handleNavigate = (path: string) => {
-    logger.devInfo('[AdminMenuDrawer] Navigating to admin path', { path });
-    router.push(path);
+  const handleNavigate = () => {
+    logger.devInfo('[AdminMenuDrawer] Closing drawer after navigation');
     setOpen(false);
   };
 
@@ -129,8 +127,9 @@ export function AdminMenuDrawer({ tabs, currentPath }: AdminMenuDrawerProps) {
                 if (isProductsItem) {
                   return (
                     <div key={tab.id} className="flex items-center gap-1 px-2 py-1">
-                      <button
-                        onClick={() => handleNavigate(tab.path)}
+                      <AdminNavLink
+                        href={tab.path}
+                        onNavigate={handleNavigate}
                         className={`group flex flex-1 items-center rounded-xl px-3 py-3 text-left text-sm font-semibold transition-colors ${
                           isActive
                             ? 'bg-marco-yellow text-marco-black'
@@ -147,7 +146,7 @@ export function AdminMenuDrawer({ tabs, currentPath }: AdminMenuDrawerProps) {
                           </span>
                           {tab.label}
                         </span>
-                      </button>
+                      </AdminNavLink>
                       <button
                         aria-label={t('admin.common.toggleProductsSubmenu')}
                         onClick={() => setIsProductsExpanded((prev) => !prev)}
@@ -176,11 +175,10 @@ export function AdminMenuDrawer({ tabs, currentPath }: AdminMenuDrawerProps) {
                 }
 
                 return (
-                  <button
+                  <AdminNavLink
                     key={tab.id}
-                    onClick={() => {
-                      handleNavigate(tab.path);
-                    }}
+                    href={tab.path}
+                    onNavigate={handleNavigate}
                     className={`group flex w-full items-center justify-between px-4 py-3 text-left text-sm font-semibold transition-colors ${
                       tab.isSubCategory ? 'pl-9' : ''
                     } ${
@@ -207,7 +205,7 @@ export function AdminMenuDrawer({ tabs, currentPath }: AdminMenuDrawerProps) {
                     >
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
-                  </button>
+                  </AdminNavLink>
                 );
               })}
             </div>

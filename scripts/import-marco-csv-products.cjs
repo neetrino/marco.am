@@ -25,6 +25,42 @@ const { PrismaClient } = require(path.join(
 const prisma = new PrismaClient();
 
 const LOCALES = ["hy", "en", "ru"];
+
+function stripDescriptionTags(value) {
+  return String(value)
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function parseDescriptionHtmlToEntries(descriptionHtml) {
+  if (!descriptionHtml || !String(descriptionHtml).trim()) {
+    return undefined;
+  }
+
+  const html = String(descriptionHtml).replace(/\\n/g, "\n");
+  const rows = [];
+  for (const line of html.split(/\n+/)) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    const labelFirst = trimmed.match(/<strong[^>]*>([\s\S]*?)<\/strong>/i);
+    if (labelFirst) {
+      const title = stripDescriptionTags(labelFirst[1]);
+      const value = stripDescriptionTags(trimmed.slice(labelFirst.index + labelFirst[0].length));
+      if (title && value) {
+        rows.push({ title, value });
+      }
+    }
+  }
+
+  if (rows.length > 0) {
+    return rows;
+  }
+
+  const plain = stripDescriptionTags(html);
+  return plain ? [{ title: "", value: plain }] : undefined;
+}
 const CSV_PATH =
   process.argv[2] ||
   "C:\\Users\\ROG\\Downloads\\Telegram Desktop\\Marco - Sheet1.csv";
@@ -542,8 +578,9 @@ async function upsertProduct(row, index, filterDefs) {
   const productClass = inferProductClass(row.Type);
   const slug = productSlug(row);
   const subtitle = row["Short description"] || undefined;
-  const descriptionHtml =
-    row.Description || row.description || row["Short description"] || undefined;
+  const description = parseDescriptionHtmlToEntries(
+    row.Description || row.description || row["Short description"] || undefined,
+  );
   const color = String(row.Color || "").trim();
   const discountPercent =
     regularPrice && compareAtPrice
@@ -656,7 +693,7 @@ async function upsertProduct(row, index, filterDefs) {
             title,
             slug,
             subtitle,
-            descriptionHtml,
+            description,
           },
           create: {
             productId: existingVariant.productId,
@@ -664,7 +701,7 @@ async function upsertProduct(row, index, filterDefs) {
             title,
             slug,
             subtitle,
-            descriptionHtml,
+            description,
           },
         });
       }
@@ -737,7 +774,7 @@ async function upsertProduct(row, index, filterDefs) {
           title,
           slug,
           subtitle,
-          descriptionHtml,
+          description,
         })),
       },
       productAttributes:

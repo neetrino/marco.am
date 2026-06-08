@@ -22,13 +22,14 @@ import { ProductLabels } from './ProductLabels';
 import { ProductWarrantyField } from './ProductWarrantyField';
 import { Publishing } from './Publishing';
 import type { ProductWarrantyYears } from '@/lib/constants/product-warranty';
+import type { ProductDescriptionEntry } from '@/lib/products/product-description';
 import { FormActions } from './FormActions';
 
 interface AddProductFormContentProps {
   formData: {
     title: string;
     slug: string;
-    descriptionHtml: string;
+    description: ProductDescriptionEntry[];
     productClass: ProductClass;
     brandIds: string[];
     categoryIds: string[];
@@ -71,7 +72,7 @@ interface AddProductFormContentProps {
   variantImageInputRefs: React.MutableRefObject<Record<string, HTMLInputElement | null>>;
   onTitleChange: (e: ChangeEvent<HTMLInputElement>) => void;
   onSlugChange: (e: ChangeEvent<HTMLInputElement>) => void;
-  onDescriptionChange: (e: ChangeEvent<HTMLTextAreaElement>) => void;
+  onDescriptionChange: (entries: ProductDescriptionEntry[]) => void;
   onProductTypeChange: (type: 'simple' | 'variable') => void;
   onUploadImages: (event: ChangeEvent<HTMLInputElement>) => Promise<void>;
   onRemoveImage: (index: number) => void;
@@ -189,7 +190,7 @@ export function AddProductFormContent({
           setProductType={onProductTypeChange}
           title={formData.title}
           slug={formData.slug}
-          descriptionHtml={formData.descriptionHtml}
+          description={formData.description}
           onTitleChange={onTitleChange}
           onSlugChange={onSlugChange}
           onDescriptionChange={onDescriptionChange}

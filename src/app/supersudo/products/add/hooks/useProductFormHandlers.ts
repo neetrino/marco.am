@@ -10,12 +10,13 @@ import { createAndSubmitPayload } from './useProductPayloadCreation';
 import type { ProductClass } from '@/lib/constants/product-class';
 import { logger } from "@/lib/utils/logger";
 import { findAttributeBySemanticKey } from '@/lib/attribute-keys';
+import type { ProductDescriptionEntry } from '@/lib/products/product-description';
 
 interface UseProductFormHandlersProps {
   formData: {
     title: string;
     slug: string;
-    descriptionHtml: string;
+    description: ProductDescriptionEntry[];
     productClass: ProductClass;
     brandIds: string[];
     primaryCategoryId: string;

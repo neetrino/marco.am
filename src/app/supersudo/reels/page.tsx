@@ -8,7 +8,15 @@ import { apiClient, getApiOrErrorMessage } from '@/lib/api-client';
 import { useTranslation } from '@/lib/i18n-client';
 import { showPopupConfirm } from '@/components/popup-service';
 import type { ReelsManagementStorage } from '@/lib/schemas/reels-management.schema';
+import { REELS_MANAGEMENT_STORAGE_VERSION } from '@/lib/constants/reels-management';
 import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '@/lib/utils/image-utils';
+import { ADMIN_CACHE_KEYS } from '@/lib/admin/admin-cache-keys';
+import { beginAdminDataFetch } from '@/lib/admin/admin-fetch-helpers';
+import {
+  ADMIN_SESSION_CACHE_TTL_MS,
+  readAdminSessionCache,
+  writeAdminSessionCache,
+} from '@/lib/admin/admin-session-cache';
 import { AdminPageLayout } from '../components/AdminPageLayout';
 import { ReelPreviewDialog } from './components/ReelPreviewDialog';
 
@@ -62,18 +70,36 @@ function getModerationTone(status: string): string {
   return 'bg-amber-50 text-amber-700 ring-1 ring-amber-100';
 }
 
+type ReelsAdminCachePayload = {
+  reelsStorage: ReelsManagementStorage;
+  likesByReelId: Record<string, number>;
+  viewsByReelId: Record<string, number>;
+};
+
+const EMPTY_REELS_STORAGE: ReelsManagementStorage = {
+  version: REELS_MANAGEMENT_STORAGE_VERSION,
+  items: [],
+};
+
 export default function ReelsPage() {
   const { t } = useTranslation();
-  const { user, isLoggedIn, isAdmin, isLoading } = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const currentPath = pathname || '/supersudo/reels';
 
-  const [loading, setLoading] = useState(true);
+  const cachedReels = readAdminSessionCache<ReelsAdminCachePayload>(
+    ADMIN_CACHE_KEYS.reelsAdmin,
+    ADMIN_SESSION_CACHE_TTL_MS,
+  );
+  const hadCacheRef = useRef(Boolean(cachedReels));
+  const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [storage, setStorage] = useState<ReelsManagementStorage | null>(null);
-  const [likesByReelId, setLikesByReelId] = useState<Record<string, number>>({});
-  const [viewsByReelId, setViewsByReelId] = useState<Record<string, number>>({});
+  const [storage, setStorage] = useState<ReelsManagementStorage>(
+    cachedReels?.reelsStorage ?? EMPTY_REELS_STORAGE,
+  );
+  const [likesByReelId, setLikesByReelId] = useState<Record<string, number>>(cachedReels?.likesByReelId ?? {});
+  const [viewsByReelId, setViewsByReelId] = useState<Record<string, number>>(cachedReels?.viewsByReelId ?? {});
   const [form, setForm] = useState<ReelFormState>(EMPTY_FORM);
   const [isAddFormOpen, setIsAddFormOpen] = useState(false);
   const [uploadingVideo, setUploadingVideo] = useState(false);
@@ -82,14 +108,8 @@ export default function ReelsPage() {
   const videoInputRef = useRef<HTMLInputElement | null>(null);
   const posterInputRef = useRef<HTMLInputElement | null>(null);
 
-  useEffect(() => {
-    if (!isLoading && (!isLoggedIn || !isAdmin)) {
-      router.push('/supersudo');
-    }
-  }, [isAdmin, isLoading, isLoggedIn, router]);
-
   const reload = useCallback(async () => {
-    setLoading(true);
+    beginAdminDataFetch(hadCacheRef.current, setLoading);
     try {
       const [reelsStorage, likes, views] = await Promise.all([
         apiClient.get<ReelsManagementStorage>('/api/v1/supersudo/reels'),
@@ -99,18 +119,24 @@ export default function ReelsPage() {
       setStorage(reelsStorage);
       setLikesByReelId(likes.likesByReelId);
       setViewsByReelId(views.viewsByReelId);
+      writeAdminSessionCache(ADMIN_CACHE_KEYS.reelsAdmin, {
+        reelsStorage,
+        likesByReelId: likes.likesByReelId,
+        viewsByReelId: views.viewsByReelId,
+      });
+      hadCacheRef.current = true;
     } catch (error: unknown) {
-      alert(getApiOrErrorMessage(error, t('admin.reels.failedToLoad')));
+      if (!hadCacheRef.current) {
+        alert(getApiOrErrorMessage(error, t('admin.reels.failedToLoad')));
+      }
     } finally {
       setLoading(false);
     }
   }, [t]);
 
   useEffect(() => {
-    if (isLoggedIn && isAdmin) {
-      void reload();
-    }
-  }, [isAdmin, isLoggedIn, reload]);
+    void reload();
+  }, [reload]);
 
   const canAdd = useMemo(() => {
     return form.titleHy.trim().length > 0 && form.videoUrl.trim().length > 0;
@@ -294,10 +320,6 @@ export default function ReelsPage() {
     }
   };
 
-  if (isLoading || (!isLoggedIn || !isAdmin)) {
-    return null;
-  }
-
   const addReelHeaderAction = (
     <button
       type="button"
@@ -443,7 +465,7 @@ export default function ReelsPage() {
             </span>
           </div>
 
-          {loading ? (
+          {loading && sortedItems.length === 0 ? (
             <p className="text-sm text-gray-500">{t('admin.reels.loading')}</p>
           ) : sortedItems.length === 0 ? (
             <p className="text-sm text-gray-500">{t('admin.reels.empty')}</p>

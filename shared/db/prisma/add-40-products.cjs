@@ -111,7 +111,7 @@ async function main() {
             title,
             slug,
             subtitle: `Hand-picked ${title.toLowerCase()}`,
-            descriptionHtml: `<p>Demo catalog item batch 2, #${i + 1}.</p>`,
+            description: [{ title: "", value: `Demo catalog item batch 2, #${i + 1}.` }],
           },
         },
         variants: {

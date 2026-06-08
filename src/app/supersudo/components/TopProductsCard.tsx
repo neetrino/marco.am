@@ -40,7 +40,7 @@ export function TopProductsCard({ topProducts, topProductsLoading }: TopProducts
         </Button>
       </div>
       <div className="space-y-3">
-        {topProductsLoading ? (
+        {topProductsLoading && topProducts.length === 0 ? (
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
               <div key={i} className="animate-pulse">

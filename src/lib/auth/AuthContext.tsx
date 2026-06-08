@@ -1,6 +1,13 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useLayoutEffect,
+  ReactNode,
+} from 'react';
 import { useRouter } from 'next/navigation';
 import { apiClient, ApiError, getClientErrorDetail, getErrorHttpStatus } from '../api-client';
 import { getErrorMessage } from '../types/errors';
@@ -11,6 +18,7 @@ import {
   invalidateWishlistCache,
 } from '../wishlist/wishlist-client';
 import { scheduleGuestDataSyncAfterAuth } from './sync-guest-data-after-auth';
+import { AUTH_USER_KEY, readStoredAuthUser } from './read-stored-auth-user';
 
 /** Session storage keys for OTP step (same-tab only). */
 export const AUTH_VERIFICATION_TOKEN_KEY = 'auth_verification_token';
@@ -61,8 +69,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const AUTH_USER_KEY = 'auth_user';
-
 function isPendingVerification(
   x: unknown
 ): x is { needsVerification: true; channel: 'email' | 'phone'; verificationToken: string } {
@@ -87,6 +93,7 @@ function isAuthSuccess(x: unknown): x is AuthResponse {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  // Start logged-out so SSR and the hydration pass match (localStorage is client-only).
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -108,38 +115,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  useLayoutEffect(() => {
+    const storedUser = readStoredAuthUser();
+    if (!storedUser) {
+      return;
+    }
+    setToken('cookie-session');
+    setUser(storedUser);
+  }, []);
+
   useEffect(() => {
     logger.devLog('🔐 [AUTH] Loading auth state from persisted user snapshot...');
 
-    const loadAuthState = async () => {
+    const validateStoredSession = async () => {
       try {
-        const storedUser = localStorage.getItem(AUTH_USER_KEY);
+        const storedUser = readStoredAuthUser();
 
         if (storedUser) {
           logger.devLog('✅ [AUTH] Found stored auth data');
-          const parsedUser = JSON.parse(storedUser) as User;
-          const profileData = await apiClient.get<User>('/api/v1/users/profile');
-          const refreshedUser = {
-            ...parsedUser,
-            ...profileData,
-            roles: Array.isArray(profileData.roles) ? profileData.roles : parsedUser.roles,
-          };
+          try {
+            const profileData = await apiClient.get<User>('/api/v1/users/profile');
+            const refreshedUser = {
+              ...storedUser,
+              ...profileData,
+              roles: Array.isArray(profileData.roles) ? profileData.roles : storedUser.roles,
+            };
 
-          localStorage.setItem(AUTH_USER_KEY, JSON.stringify(refreshedUser));
-          setToken('cookie-session');
-          setUser(refreshedUser);
+            localStorage.setItem(AUTH_USER_KEY, JSON.stringify(refreshedUser));
+            setUser(refreshedUser);
+          } catch (error) {
+            logger.devLog('❌ [AUTH] Stored session invalid — clearing snapshot', { error });
+            localStorage.removeItem(AUTH_USER_KEY);
+            setToken(null);
+            setUser(null);
+          }
         } else {
           logger.devLog('ℹ️ [AUTH] No stored auth data found');
         }
       } catch (error) {
         logger.devLog('❌ [AUTH] Error loading auth state', { error });
         localStorage.removeItem(AUTH_USER_KEY);
+        setToken(null);
+        setUser(null);
       } finally {
         setIsLoading(false);
       }
     };
 
-    loadAuthState();
+    void validateStoredSession();
   }, []);
 
   const login = async (emailOrPhone: string, password: string): Promise<AuthFlowResult> => {

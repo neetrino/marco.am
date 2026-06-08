@@ -1,10 +1,9 @@
 /**
- * Find products whose descriptionHtml contains legacy literal \\n or /n sequences.
+ * Legacy diagnostic — descriptionHtml was replaced by structured JSON `description`.
  * Usage: pnpm exec tsx src/scripts/find-products-literal-newlines.ts
  */
 
-import { loadEnvConfig } from "@next/env";
-import { db } from "@white-shop/db";
+import { loadEnvConfig } from '@next/env';
 
 function loadEnv(): void {
   loadEnvConfig(process.cwd());
@@ -12,36 +11,12 @@ function loadEnv(): void {
 
 async function main(): Promise<void> {
   loadEnv();
-
-  const translations = await db.productTranslation.findMany({
-    where: {
-      locale: "hy",
-      OR: [{ descriptionHtml: { contains: "\\n" } }, { descriptionHtml: { contains: "/n" } }],
-    },
-    select: {
-      title: true,
-      slug: true,
-      productId: true,
-    },
-  });
-
   process.stdout.write(
-    [
-      `Հայերեն description-ով product-ներ literal \\n / /n-ով: ${translations.length}`,
-      "",
-      "Օրինակներ (առաջին 20):",
-      ...translations
-        .slice(0, 20)
-        .map((row) => `- ${row.title} (${row.slug})`),
-    ].join("\n") + "\n",
+    'descriptionHtml column was removed. Use product_translations.description JSON instead.\n',
   );
 }
 
-main()
-  .catch((error: unknown) => {
-    console.error(error);
-    process.exitCode = 1;
-  })
-  .finally(async () => {
-    await db.$disconnect();
-  });
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

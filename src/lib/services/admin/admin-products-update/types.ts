@@ -1,4 +1,5 @@
 import type { ProductClass } from "@/lib/constants/product-class";
+import type { ProductDescriptionEntry } from "@/lib/products/product-description";
 
 /**
  * Update product data interface
@@ -7,7 +8,7 @@ export interface UpdateProductData {
   title?: string;
   slug?: string;
   subtitle?: string;
-  descriptionHtml?: string;
+  description?: ProductDescriptionEntry[];
   brandId?: string;
   productClass?: ProductClass;
   primaryCategoryId?: string;

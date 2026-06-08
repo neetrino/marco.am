@@ -21,9 +21,20 @@ export function splitSpecificationFootnote(value: string): SpecificationValueFoo
   return { main, footnote };
 }
 
+const EMPTY_SPECIFICATION_VALUES = new Set(['-', '—', '–', 'n/a', 'na']);
+
+/** Whether a spec value should appear on the PDP (non-empty, not a placeholder dash). */
+export function isPopulatedSpecificationValue(value: string): boolean {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return false;
+  }
+  return !EMPTY_SPECIFICATION_VALUES.has(trimmed.toLowerCase());
+}
+
 export function splitSpecificationValueParts(value: string): string[] {
   const trimmed = value.trim();
-  if (!trimmed || trimmed === '-') {
+  if (!isPopulatedSpecificationValue(trimmed)) {
     return [];
   }
   const parts = trimmed.split(COMMA_LIST_SPLIT).map((p) => p.trim()).filter(Boolean);

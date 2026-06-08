@@ -2,6 +2,7 @@
  * Utilities for building product form data
  */
 
+import type { ProductDescriptionEntry } from '@/lib/products/product-description';
 import type { ProductData, Variant, ProductLabel } from '../types';
 import type { ProductClass } from '@/lib/constants/product-class';
 
@@ -9,7 +10,7 @@ import type { ProductClass } from '@/lib/constants/product-class';
 export interface AddProductFormState {
   title: string;
   slug: string;
-  descriptionHtml: string;
+  description: ProductDescriptionEntry[];
   productClass: ProductClass;
   brandIds: string[];
   primaryCategoryId: string;
@@ -39,7 +40,7 @@ export function buildFormData(
   return {
     title: product.title || '',
     slug: product.slug || '',
-    descriptionHtml: product.descriptionHtml || '',
+    description: product.description ?? [],
     productClass: product.productClass || 'retail',
     brandIds: brandIds,
     primaryCategoryId: product.primaryCategoryId || '',

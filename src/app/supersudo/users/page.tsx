@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { useAuth } from '../../../lib/auth/AuthContext';
 import { Card, Button, Input } from '@shop/ui';
 import { apiClient, getApiOrErrorMessage } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
@@ -10,6 +9,13 @@ import { showPopupConfirm } from '@/components/popup-service';
 import { AdminPageLayout } from '../components/AdminPageLayout';
 import { AdminTablePagination } from '../components/AdminTablePagination';
 import { logger } from "@/lib/utils/logger";
+import { ADMIN_CACHE_KEYS, buildAdminListCacheKey } from '@/lib/admin/admin-cache-keys';
+import { beginAdminDataFetch } from '@/lib/admin/admin-fetch-helpers';
+import {
+  ADMIN_SESSION_CACHE_TTL_MS,
+  readAdminSessionCache,
+  writeAdminSessionCache,
+} from '@/lib/admin/admin-session-cache';
 
 interface User {
   id: string;
@@ -35,12 +41,23 @@ interface UsersResponse {
 
 export default function UsersPage() {
   const { t } = useTranslation();
-  const { isLoggedIn, isAdmin, isLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const currentPath = pathname || '/supersudo/users';
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [users, setUsers] = useState<User[]>(() => {
+    const cached = readAdminSessionCache<UsersResponse>(
+      ADMIN_CACHE_KEYS.usersDefault,
+      ADMIN_SESSION_CACHE_TTL_MS,
+    );
+    return cached?.data ?? [];
+  });
+  const [loading, setLoading] = useState(() => {
+    const cached = readAdminSessionCache<UsersResponse>(
+      ADMIN_CACHE_KEYS.usersDefault,
+      ADMIN_SESSION_CACHE_TTL_MS,
+    );
+    return !cached;
+  });
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [meta, setMeta] = useState<UsersResponse['meta'] | null>(null);
@@ -48,18 +65,20 @@ export default function UsersPage() {
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [roleFilter, setRoleFilter] = useState<'all' | 'admin' | 'customer'>('all');
 
-  useEffect(() => {
-    if (!isLoading) {
-      if (!isLoggedIn || !isAdmin) {
-        router.push('/supersudo');
-        return;
-      }
-    }
-  }, [isLoggedIn, isAdmin, isLoading, router]);
-
   const fetchUsers = useCallback(async () => {
+    const cacheKey = buildAdminListCacheKey('users', {
+      page: page.toString(),
+      limit: '20',
+      search: search || '',
+      role: roleFilter === 'all' ? '' : roleFilter,
+    });
+    const cached = readAdminSessionCache<UsersResponse>(cacheKey, ADMIN_SESSION_CACHE_TTL_MS);
     try {
-      setLoading(true);
+      beginAdminDataFetch(Boolean(cached?.data?.length), setLoading);
+      if (cached) {
+        setUsers(cached.data);
+        setMeta(cached.meta ?? null);
+      }
       logger.devLog('👥 [ADMIN] Fetching users...', { page, search, roleFilter });
       
       const response = await apiClient.get<UsersResponse>('/api/v1/supersudo/users', {
@@ -74,6 +93,7 @@ export default function UsersPage() {
       logger.devLog('✅ [ADMIN] Users fetched:', response);
       setUsers(response.data || []);
       setMeta(response.meta || null);
+      writeAdminSessionCache(cacheKey, response);
     } catch (err) {
       console.error('❌ [ADMIN] Error fetching users:', err);
     } finally {
@@ -82,11 +102,9 @@ export default function UsersPage() {
   }, [page, search, roleFilter]);
 
   useEffect(() => {
-    if (isLoggedIn && isAdmin) {
-      fetchUsers();
-    }
+    fetchUsers();
      
-  }, [isLoggedIn, isAdmin, page, search, roleFilter]);
+  }, [fetchUsers]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -171,21 +189,6 @@ export default function UsersPage() {
       alert(t('admin.users.errorUpdatingStatus').replace('{message}', getApiOrErrorMessage(err, t('admin.common.unknownErrorFallback'))));
     }
   };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600">{t('admin.common.loading')}</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isLoggedIn || !isAdmin) {
-    return null;
-  }
 
   // Տեսանելի օգտատերերի filter Admin / Customer ֆիլտրով
   const filteredUsers =

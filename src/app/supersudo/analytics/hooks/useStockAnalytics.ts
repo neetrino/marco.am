@@ -1,8 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 import { STOCK_ANALYTICS_PAGE_LIMIT } from '@/lib/constants/stock-analytics-ui';
 import { apiClient } from '../../../../lib/api-client';
 import { logger } from '../../../../lib/utils/logger';
+import { buildAdminListCacheKey } from '@/lib/admin/admin-cache-keys';
+import { beginAdminDataFetch } from '@/lib/admin/admin-fetch-helpers';
+import {
+  ADMIN_SESSION_CACHE_TTL_MS,
+  readAdminSessionCache,
+  writeAdminSessionCache,
+} from '@/lib/admin/admin-session-cache';
 import type { StockAnalyticsData } from '../types';
 
 interface UseStockAnalyticsParams {
@@ -25,8 +32,17 @@ export function useStockAnalytics({
   isAdmin,
   locale,
 }: UseStockAnalyticsParams): UseStockAnalyticsReturn {
-  const [stockAnalytics, setStockAnalytics] = useState<StockAnalyticsData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const stockCacheKey = buildAdminListCacheKey('analytics/stock', {
+    locale,
+    limit: String(STOCK_ANALYTICS_PAGE_LIMIT),
+  });
+  const cachedStock = readAdminSessionCache<StockAnalyticsData>(
+    stockCacheKey,
+    ADMIN_SESSION_CACHE_TTL_MS,
+  );
+  const hadCacheRef = useRef(Boolean(cachedStock));
+  const [stockAnalytics, setStockAnalytics] = useState<StockAnalyticsData | null>(cachedStock);
+  const [loading, setLoading] = useState(!hadCacheRef.current);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
@@ -36,7 +52,7 @@ export function useStockAnalytics({
 
     const fetchStock = async () => {
       try {
-        setLoading(true);
+        beginAdminDataFetch(hadCacheRef.current, setLoading);
         setFailed(false);
         const result = await apiClient.get<StockAnalyticsData>('/api/v1/supersudo/analytics/stock', {
           params: {
@@ -45,9 +61,13 @@ export function useStockAnalytics({
           },
         });
         setStockAnalytics(result);
+        writeAdminSessionCache(stockCacheKey, result);
+        hadCacheRef.current = true;
       } catch (err: unknown) {
         logger.error('Admin stock analytics request failed', { error: err });
-        setStockAnalytics(null);
+        if (!hadCacheRef.current) {
+          setStockAnalytics(null);
+        }
         setFailed(true);
       } finally {
         setLoading(false);
@@ -55,7 +75,7 @@ export function useStockAnalytics({
     };
 
     void fetchStock();
-  }, [isLoggedIn, isAdmin, locale]);
+  }, [isLoggedIn, isAdmin, locale, stockCacheKey]);
 
   return { stockAnalytics, loading, failed };
 }

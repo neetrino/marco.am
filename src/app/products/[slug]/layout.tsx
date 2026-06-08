@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
+import { formatProductDescriptionForSeo } from "@/lib/products/product-description";
 import { productsService } from "@/lib/services/products.service";
 import { t } from "@/lib/i18n";
 import {
@@ -25,7 +26,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
     const product = await productsService.findBySlug(slug, lang);
     const title = product.seo?.title || product.title || DEFAULT_TITLE;
-    const description = product.seo?.description || product.description || null;
+    const description =
+      product.seo?.description || formatProductDescriptionForSeo(product.description ?? []) || null;
     const firstImage =
       Array.isArray(product.media) && product.media.length > 0
         ? String(product.media[0])

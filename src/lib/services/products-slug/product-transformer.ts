@@ -14,14 +14,17 @@ import {
   type ProductVariantForTechnicalSpecification,
 } from "./technical-specifications";
 import type { ProductWithFullRelations, ProductVariantWithOptions } from "./types";
-import { normalizeLiteralNewlinesToLineBreaks } from "../../utils/normalize-literal-newlines";
+import {
+  parseProductDescriptionJson,
+  type ProductDescriptionEntry,
+} from "@/lib/products/product-description";
 
 type ProductTranslationShape = {
   locale: string;
   title?: string | null;
   slug?: string | null;
   subtitle?: string | null;
-  descriptionHtml?: string | null;
+  description?: unknown;
   seoTitle?: string | null;
   seoDescription?: string | null;
 };
@@ -30,7 +33,7 @@ type ProductDescriptionI18nMap = Record<
   string,
   {
     shortDescription: string | null;
-    fullDescription: string | null;
+    entries: ProductDescriptionEntry[];
   }
 >;
 
@@ -586,13 +589,6 @@ function resolveProductTranslation(
   return translations[0] ?? null;
 }
 
-function normalizeProductDescriptionHtml(value: string | null | undefined): string | null {
-  if (typeof value !== "string" || value.trim().length === 0) {
-    return null;
-  }
-  return normalizeLiteralNewlinesToLineBreaks(value);
-}
-
 function buildProductDescriptionI18nMap(
   translations: ProductTranslationShape[]
 ): ProductDescriptionI18nMap {
@@ -603,7 +599,7 @@ function buildProductDescriptionI18nMap(
 
     acc[item.locale] = {
       shortDescription: item.subtitle ?? null,
-      fullDescription: normalizeProductDescriptionHtml(item.descriptionHtml),
+      entries: parseProductDescriptionJson(item.description),
     };
 
     return acc;
@@ -702,8 +698,7 @@ export async function transformProduct(
     title: translation?.title || "",
     subtitle: translation?.subtitle || null,
     shortDescription: translation?.subtitle || null,
-    description: normalizeProductDescriptionHtml(translation?.descriptionHtml),
-    fullDescription: normalizeProductDescriptionHtml(translation?.descriptionHtml),
+    description: parseProductDescriptionJson(translation?.description),
     i18n: {
       requestedLocale: lang,
       availableLocales: Object.keys(descriptionI18n),

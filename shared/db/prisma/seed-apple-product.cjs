@@ -89,7 +89,7 @@ async function main() {
           title: `Demo product (${BRAND_NAME})`,
           slug: PRODUCT_SLUG,
           subtitle: "Placeholder — replace when importing real catalog.",
-          descriptionHtml: "<p>Seed demo product for Apple brand QA.</p>",
+          description: [{ title: "", value: "Seed demo product for Apple brand QA." }],
         },
       },
       variants: {

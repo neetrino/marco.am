@@ -6,6 +6,13 @@ import { useTranslation } from '../../../lib/i18n-client';
 import { showPopupConfirm } from '@/components/popup-service';
 import { showToast } from '../../../components/Toast';
 import { logger } from "@/lib/utils/logger";
+import { ADMIN_CACHE_KEYS } from '@/lib/admin/admin-cache-keys';
+import { beginAdminDataFetch } from '@/lib/admin/admin-fetch-helpers';
+import {
+  ADMIN_SESSION_CACHE_TTL_MS,
+  readAdminSessionCache,
+  writeAdminSessionCache,
+} from '@/lib/admin/admin-session-cache';
 
 export interface AttributeValue {
   id: string;
@@ -28,8 +35,13 @@ export type UseAttributesReturn = ReturnType<typeof useAttributes>;
 
 export function useAttributes() {
   const { t } = useTranslation();
-  const [attributes, setAttributes] = useState<Attribute[]>([]);
-  const [loading, setLoading] = useState(true);
+  const cachedAttributes = readAdminSessionCache<{ data: Attribute[] }>(
+    ADMIN_CACHE_KEYS.attributes,
+    ADMIN_SESSION_CACHE_TTL_MS,
+  );
+  const hadCacheRef = useRef(Boolean(cachedAttributes?.data?.length));
+  const [attributes, setAttributes] = useState<Attribute[]>(cachedAttributes?.data ?? []);
+  const [loading, setLoading] = useState(!hadCacheRef.current);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingAttribute, setEditingAttribute] = useState<string | null>(null);
   const [editingAttributeName, setEditingAttributeName] = useState('');
@@ -58,7 +70,7 @@ export function useAttributes() {
 
   const fetchAttributes = useCallback(async () => {
     try {
-      setLoading(true);
+      beginAdminDataFetch(hadCacheRef.current, setLoading);
       logger.devLog('📋 [ADMIN] Fetching attributes...');
       const response = await apiClient.get<{ data: Attribute[] }>('/api/v1/supersudo/attributes');
       logger.devLog('📋 [ADMIN] Attributes response:', response.data);
@@ -82,10 +94,14 @@ export function useAttributes() {
         });
       }
       setAttributes(response.data || []);
+      writeAdminSessionCache(ADMIN_CACHE_KEYS.attributes, response);
+      hadCacheRef.current = true;
       logger.devLog('✅ [ADMIN] Attributes loaded:', response.data?.length || 0);
     } catch (err) {
       console.error('❌ [ADMIN] Error fetching attributes:', err);
-      setAttributes([]);
+      if (!hadCacheRef.current) {
+        setAttributes([]);
+      }
     } finally {
       setLoading(false);
     }
