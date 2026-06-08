@@ -1,4 +1,4 @@
-import { db } from "@white-shop/db";
+﻿import { db } from "@white-shop/db";
 import { Prisma } from "@white-shop/db/prisma";
 import { unstable_cache } from "next/cache";
 import { adminService } from "./admin.service";
@@ -16,27 +16,17 @@ import { getAttributeBucket, isColorAttributeKey, isSizeAttributeKey } from "@/l
 import {
   buildShopCategoryFilterTree,
   resolveVisibleCategoryParentId,
-  type CategoryFilterTreeNode,
 } from "@/lib/shop-category-filter-tree";
+import {
+  PRODUCT_FILTERS_SAMPLE_PRODUCT_LIMIT,
+  PRODUCT_FILTERS_VARIANTS_PER_PRODUCT_LIMIT,
+} from "@/lib/constants/product-filters-query-limits";
+import { isShopFilterCategoryExcludedFromTranslations } from "@/lib/constants/shop-filter-excluded-categories";
+import { buildShopFilterCategoriesFromCountMap } from "./products-filters-category-tree";
+import { aggregateBrandFacetsFromWhere, getPublishedVariantPriceBounds } from "./products-filters-sql-facets";
+import { buildShopFiltersViaSqlAggregation } from "./products-filters-sql-path";
 import { getListingDiscountSettings, type ListingDiscountSettings } from "./listing-discount-settings";
 import { resolveCategoryTranslation } from "@/lib/i18n/category-translation";
-
-/** Legacy demo categories — omit from shop sidebar (not part of MARCO nav taxonomy). */
-const SHOP_FILTER_EXCLUDED_CATEGORY_CANONICAL = new Set([
-  "accessories",
-  "books",
-  "clothing",
-  "electronics",
-  "home and garden",
-  /** Slug `home-garden` normalizes to spaces without "and". */
-  "home garden",
-  "shoes",
-  "sports",
-]);
-
-const FILTERS_PRODUCTS_LIMIT = 240;
-const FILTERS_VARIANTS_PER_PRODUCT_LIMIT = 12;
-const FILTERS_CATEGORY_DESCENDANT_ENRICHMENT_MAX_ROWS = 80;
 
 function buildPreferredLocales(lang: string): string[] {
   const normalized = lang.trim().toLowerCase();
@@ -48,15 +38,6 @@ const getPriceFilterSettingsCached = unstable_cache(
   ["products-filters-price-settings-v1"],
   { revalidate: 300, tags: ["price-filter-settings"] },
 );
-
-function canonicalCategoryFilterKey(input: string): string {
-  return input
-    .trim()
-    .toLowerCase()
-    .replace(/\s*&\s*/g, " and ")
-    .replace(/[-_]+/g, " ")
-    .replace(/\s+/g, " ");
-}
 
 function humanizeAttributeKeyTitle(key: string): string {
   const k = key.trim();
@@ -106,28 +87,6 @@ class ProductsFiltersService {
       return Number.isFinite(price) ? price : 0;
     }
     return price * (1 - discountPercent / 100);
-  }
-
-  private async getPublishedVariantPriceBounds(
-    where: Prisma.ProductWhereInput,
-    _discountSettings: ListingDiscountSettings,
-  ): Promise<{
-    min: number;
-    max: number;
-  }> {
-    const aggregate = await db.productVariant.aggregate({
-      where: {
-        published: true,
-        product: where,
-      },
-      _min: { price: true },
-      _max: { price: true },
-    });
-
-    return {
-      min: aggregate._min.price ?? 0,
-      max: aggregate._max.price ?? 0,
-    };
   }
 
   private getLocalizedAttributeValueLabel(
@@ -251,25 +210,6 @@ class ProductsFiltersService {
     }
   }
 
-  /**
-   * Match legacy demo categories in any locale — `en` slug may differ from `hy`/`ru` slug on the same row.
-   */
-  private isShopFilterCategoryExcludedFromTranslations(
-    translations: Array<{ slug: string; title: string }>,
-  ): boolean {
-    for (const tr of translations) {
-      const slugKey = canonicalCategoryFilterKey(tr.slug);
-      const titleKey = canonicalCategoryFilterKey(tr.title);
-      if (
-        SHOP_FILTER_EXCLUDED_CATEGORY_CANONICAL.has(slugKey) ||
-        SHOP_FILTER_EXCLUDED_CATEGORY_CANONICAL.has(titleKey)
-      ) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   private upsertColorFacet(
     colorMap: Map<
       string,
@@ -391,7 +331,7 @@ class ProductsFiltersService {
 
         for (const cat of categoryRows) {
           if (
-            this.isShopFilterCategoryExcludedFromTranslations(
+            isShopFilterCategoryExcludedFromTranslations(
               cat.translations.map((t) => ({ slug: t.slug, title: t.title })),
             )
           ) {
@@ -435,7 +375,7 @@ class ProductsFiltersService {
           });
           for (const cat of parents) {
             if (
-              this.isShopFilterCategoryExcludedFromTranslations(
+              isShopFilterCategoryExcludedFromTranslations(
                 cat.translations.map((t) => ({ slug: t.slug, title: t.title })),
               )
             ) {
@@ -491,20 +431,31 @@ class ProductsFiltersService {
         };
       }
 
-      const catalogPriceBounds = await this.getPublishedVariantPriceBounds(where, discountSettings);
+      const needsInMemoryPostFilter =
+        Boolean(filters.minPrice || filters.maxPrice) ||
+        hasTechnicalSpecFilters(filters.technicalSpecs);
 
-      let products: ProductWithRelations[] = [];
-      try {
-        products = (await db.product.findMany({
+      if (!needsInMemoryPostFilter) {
+        return buildShopFiltersViaSqlAggregation({
           where,
-          take: FILTERS_PRODUCTS_LIMIT,
-          select: {
-            id: true,
-            brandId: true,
-            primaryCategoryId: true,
-            categoryIds: true,
-            discountPercent: true,
-            brand: {
+          filters,
+          lang,
+          preferredLocales,
+          includeCategories,
+        });
+      }
+
+      const needsInMemoryPriceBounds = needsInMemoryPostFilter;
+      const collectBrandsInMemory = needsInMemoryPostFilter;
+
+      const facetProductSelect = {
+        id: true,
+        brandId: true,
+        primaryCategoryId: true,
+        categoryIds: true,
+        discountPercent: true,
+        brand: collectBrandsInMemory
+          ? {
               select: {
                 id: true,
                 slug: true,
@@ -513,39 +464,56 @@ class ProductsFiltersService {
                   select: { locale: true, name: true },
                 },
               },
-            },
-            variants: {
-              where: {
-                published: true,
-              },
-              take: FILTERS_VARIANTS_PER_PRODUCT_LIMIT,
+            }
+          : false,
+        variants: {
+          where: {
+            published: true,
+          },
+          take: PRODUCT_FILTERS_VARIANTS_PER_PRODUCT_LIMIT,
+          select: {
+            price: true,
+            attributes: true,
+            options: {
               select: {
-                price: true,
-                attributes: true,
-                options: {
-                  include: {
-                    attributeValue: {
-                      select: {
-                        value: true,
-                        imageUrl: true,
-                        colors: true,
-                        attribute: {
-                          select: { key: true, type: true, filterable: true },
-                        },
-                        translations: {
-                          where: { locale: { in: preferredLocales } },
-                          select: { locale: true, label: true },
-                        },
-                      },
+                attributeKey: true,
+                value: true,
+                attributeValue: {
+                  select: {
+                    value: true,
+                    imageUrl: true,
+                    colors: true,
+                    attribute: {
+                      select: { key: true, type: true, filterable: true },
+                    },
+                    translations: {
+                      where: { locale: { in: preferredLocales } },
+                      select: { locale: true, label: true },
                     },
                   },
                 },
               },
             },
           },
-        })) as unknown as ProductWithRelations[];
+        },
+      } as const;
+
+      let products: ProductWithRelations[] = [];
+      let catalogPriceBounds = { min: 0, max: 0 };
+      try {
+        const [priceBounds, productRows] = await Promise.all([
+          getPublishedVariantPriceBounds(where),
+          db.product.findMany({
+            where,
+            orderBy: { createdAt: "desc" },
+            take: PRODUCT_FILTERS_SAMPLE_PRODUCT_LIMIT,
+            select: facetProductSelect,
+          }),
+        ]);
+        catalogPriceBounds = priceBounds;
+        products = productRows as unknown as ProductWithRelations[];
       } catch (dbError) {
-        console.error('❌ [PRODUCTS FILTERS SERVICE] Error fetching products in getFilters:', dbError);
+        console.error('âŒ [PRODUCTS FILTERS SERVICE] Error fetching products in getFilters:', dbError);
         throw dbError;
       }
 
@@ -621,7 +589,7 @@ class ProductsFiltersService {
           categoryCountMap.set(id, (categoryCountMap.get(id) || 0) + 1);
         });
       }
-      if (product.brand?.id) {
+      if (collectBrandsInMemory && product.brand?.id) {
         const b = product.brand as {
           id: string;
           slug?: string;
@@ -646,13 +614,15 @@ class ProductsFiltersService {
         brandId?: string | null;
       };
       const appliedDiscount = this.resolveAppliedListingDiscount(typedProduct, discountSettings);
-      product.variants.forEach((v: { price?: number }) => {
-        if (typeof v?.price === 'number') {
-          const effectivePrice = this.applyListingDiscount(v.price, appliedDiscount);
-          if (effectivePrice < rangeMin) rangeMin = effectivePrice;
-          if (effectivePrice > rangeMax) rangeMax = effectivePrice;
-        }
-      });
+      if (needsInMemoryPriceBounds) {
+        product.variants.forEach((v: { price?: number }) => {
+          if (typeof v?.price === 'number') {
+            const effectivePrice = this.applyListingDiscount(v.price, appliedDiscount);
+            if (effectivePrice < rangeMin) rangeMin = effectivePrice;
+            if (effectivePrice > rangeMax) rangeMax = effectivePrice;
+          }
+        });
+      }
       product.variants.forEach((variant: any) => {
         if (!variant || !variant.options || !Array.isArray(variant.options)) {
           return;
@@ -820,182 +790,10 @@ class ProductsFiltersService {
       
     });
 
-    const categoryIdsWithProducts = includeCategories && categoryCountMap
-      ? Array.from(categoryCountMap.keys())
-      : [];
-    let categories: CategoryFilterTreeNode[] = [];
-    if (categoryIdsWithProducts.length > 0) {
-      const categoryCounts = categoryCountMap ?? new Map<string, number>();
-      const categoryRows = await db.category.findMany({
-        where: {
-          id: { in: categoryIdsWithProducts },
-          published: true,
-          deletedAt: null,
-        },
-        include: { translations: true },
-        orderBy: { position: "asc" },
-      });
-      type FilterCategoryRow = {
-        id: string;
-        parentId: string | null;
-        position: number;
-        slug: string;
-        title: string;
-        count: number;
-      };
-
-      const facetRows = categoryRows
-        .filter(
-          (cat) =>
-            !this.isShopFilterCategoryExcludedFromTranslations(
-              cat.translations.map((t) => ({ slug: t.slug, title: t.title })),
-            ),
-        )
-        .map((cat) => {
-          const tr = resolveCategoryTranslation(cat.translations, lang);
-          if (!tr) {
-            return null;
-          }
-          const count = categoryCounts.get(cat.id) || 0;
-          if (count === 0) {
-            return null;
-          }
-          return {
-            id: cat.id,
-            parentId: cat.parentId,
-            position: cat.position,
-            slug: tr.slug,
-            title: tr.title,
-            count,
-          };
-        })
-        .filter((c): c is FilterCategoryRow => c !== null);
-
-      const rowsById = new Map<string, FilterCategoryRow>();
-      /** Omitted categories (excluded / no translation): map id → next parentId for chain resolution */
-      const skippedParentById = new Map<string, string | null>();
-      for (const r of facetRows) {
-        rowsById.set(r.id, r);
-      }
-
-      let frontier = new Set(
-        facetRows.map((r) => r.parentId).filter((pid): pid is string => Boolean(pid)),
-      );
-      let ancestorWalkGuard = 0;
-
-      while (frontier.size > 0 && ancestorWalkGuard < 40) {
-        ancestorWalkGuard += 1;
-        const toFetch = [...frontier].filter((id) => !rowsById.has(id));
-        frontier = new Set();
-        if (toFetch.length === 0) {
-          break;
-        }
-        const parentRows = await db.category.findMany({
-          where: {
-            id: { in: toFetch },
-            published: true,
-            deletedAt: null,
-          },
-          include: { translations: true },
-          orderBy: { position: "asc" },
-        });
-        for (const cat of parentRows) {
-          if (
-            this.isShopFilterCategoryExcludedFromTranslations(
-              cat.translations.map((t) => ({ slug: t.slug, title: t.title })),
-            )
-          ) {
-            skippedParentById.set(cat.id, cat.parentId ?? null);
-            if (cat.parentId) {
-              frontier.add(cat.parentId);
-            }
-            continue;
-          }
-          const tr = resolveCategoryTranslation(cat.translations, lang);
-          if (!tr) {
-            skippedParentById.set(cat.id, cat.parentId ?? null);
-            if (cat.parentId) {
-              frontier.add(cat.parentId);
-            }
-            continue;
-          }
-          const count = categoryCounts.get(cat.id) || 0;
-          rowsById.set(cat.id, {
-            id: cat.id,
-            parentId: cat.parentId,
-            position: cat.position,
-            slug: tr.slug,
-            title: tr.title,
-            count,
-          });
-          if (cat.parentId && !rowsById.has(cat.parentId)) {
-            frontier.add(cat.parentId);
-          }
-        }
-      }
-
-      /** Load published subcategories from DB so every parent with real children gets an expand control (not only facets with products). */
-      const enrichedOnlyIds = new Set<string>();
-      if (rowsById.size <= FILTERS_CATEGORY_DESCENDANT_ENRICHMENT_MAX_ROWS) {
-        let prevRowCount = -1;
-        let descendantWalkGuard = 0;
-        while (rowsById.size !== prevRowCount && descendantWalkGuard < 25) {
-          descendantWalkGuard += 1;
-          prevRowCount = rowsById.size;
-          const parentIds = [...rowsById.keys()];
-          if (parentIds.length === 0) {
-            break;
-          }
-          const publishedChildren = await db.category.findMany({
-            where: {
-              parentId: { in: parentIds },
-              published: true,
-              deletedAt: null,
-            },
-            include: { translations: true },
-            orderBy: { position: "asc" },
-          });
-          for (const cat of publishedChildren) {
-            if (
-              this.isShopFilterCategoryExcludedFromTranslations(
-                cat.translations.map((t) => ({ slug: t.slug, title: t.title })),
-              )
-            ) {
-              continue;
-            }
-            const tr = resolveCategoryTranslation(cat.translations, lang);
-            if (!tr) {
-              continue;
-            }
-            if (rowsById.has(cat.id)) {
-              continue;
-            }
-            const count = categoryCounts.get(cat.id) || 0;
-            rowsById.set(cat.id, {
-              id: cat.id,
-              parentId: cat.parentId,
-              position: cat.position,
-              slug: tr.slug,
-              title: tr.title,
-              count,
-            });
-            enrichedOnlyIds.add(cat.id);
-          }
-        }
-      }
-
-      const visibleIds = new Set(rowsById.keys());
-      const allRows = Array.from(rowsById.values());
-      const treeRows = allRows.map((r) => ({
-        id: r.id,
-        parentId: resolveVisibleCategoryParentId(r.parentId, visibleIds, skippedParentById),
-        position: r.position,
-        slug: r.slug,
-        title: r.title,
-      }));
-      const counts = new Map(allRows.map((r) => [r.id, r.count] as const));
-      categories = buildShopCategoryFilterTree(treeRows, counts, enrichedOnlyIds);
-    }
+    const categories = await buildShopFilterCategoriesFromCountMap(
+      includeCategories && categoryCountMap ? categoryCountMap : null,
+      lang,
+    );
 
     // Convert maps to arrays
     const colors: Array<{ value: string; label: string; count: number; imageUrl?: string | null; colors?: string[] | null }> = Array.from(
@@ -1029,14 +827,11 @@ class ProductsFiltersService {
       // Sort colors alphabetically
       colors.sort((a: { label: string }, b: { label: string }) => a.label.localeCompare(b.label));
 
-      // Shop sidebar: only brands that appear in the current facet sample (category + search from DB,
-      // then price in memory). Omits brands with zero matching products on this PLP scope.
-      const brands = Array.from(brandMap.values())
-        .filter((b) => b.count > 0)
-        .sort((a, b) => a.name.localeCompare(b.name));
-      const needsInMemoryPriceBounds =
-        Boolean(filters.minPrice || filters.maxPrice) ||
-        hasTechnicalSpecFilters(filters.technicalSpecs);
+      const brands = collectBrandsInMemory
+        ? Array.from(brandMap.values())
+            .filter((b) => b.count > 0)
+            .sort((a, b) => a.name.localeCompare(b.name))
+        : await aggregateBrandFacetsFromWhere(where, lang, preferredLocales);
       const rawMin = needsInMemoryPriceBounds
         ? (rangeMin === Infinity ? 0 : rangeMin)
         : catalogPriceBounds.min;
@@ -1078,7 +873,7 @@ class ProductsFiltersService {
         priceRange: { min: priceMin, max: priceMax, stepSize, stepSizePerCurrency },
       };
     } catch (error) {
-      console.error('❌ [PRODUCTS FILTERS SERVICE] Error in getFilters:', error);
+      console.error('âŒ [PRODUCTS FILTERS SERVICE] Error in getFilters:', error);
       return {
         colors: [],
         sizes: [],
@@ -1089,6 +884,7 @@ class ProductsFiltersService {
       };
     }
   }
+
 
   /**
    * Get price range
@@ -1136,13 +932,12 @@ class ProductsFiltersService {
       }
     }
 
-    const discountSettings = await getListingDiscountSettings();
-    const bounds = await this.getPublishedVariantPriceBounds(where, discountSettings);
+    const bounds = await getPublishedVariantPriceBounds(where);
     let minPrice = bounds.min;
     let maxPrice = bounds.max;
 
     minPrice = minPrice <= 0 ? 0 : Math.floor(minPrice / 1000) * 1000;
-    // No products / no prices: keep 0 — UI must not show a fake cap (e.g. 100000) that mismatches real catalog
+    // No products / no prices: keep 0 â€” UI must not show a fake cap (e.g. 100000) that mismatches real catalog
     maxPrice = maxPrice === 0 ? 0 : Math.ceil(maxPrice / 1000) * 1000;
 
     // Load price filter settings to provide optional step sizes per currency
@@ -1170,7 +965,7 @@ class ProductsFiltersService {
         };
       }
     } catch (error) {
-      console.error('❌ [PRODUCTS FILTERS SERVICE] Error loading price filter settings for price range:', error);
+      console.error('âŒ [PRODUCTS FILTERS SERVICE] Error loading price filter settings for price range:', error);
     }
 
     return {

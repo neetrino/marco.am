@@ -1,9 +1,6 @@
-import { StaticPageLoadingSkeleton } from '@/components/navigation/StaticPageLoadingSkeleton';
-
+/**
+ * Reels shells stream from RSC — avoid a route-level skeleton on navigation.
+ */
 export default function ReelsLoading() {
-  return (
-    <section className="min-h-screen bg-white pb-3 sm:pb-4">
-      <StaticPageLoadingSkeleton variant="reels" />
-    </section>
-  );
+  return null;
 }

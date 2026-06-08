@@ -1,5 +1,6 @@
-import { StaticPageLoadingSkeleton } from '@/components/navigation/StaticPageLoadingSkeleton';
-
+/**
+ * About shells stream from RSC — avoid a route-level skeleton on navigation.
+ */
 export default function AboutLoading() {
-  return <StaticPageLoadingSkeleton />;
+  return null;
 }

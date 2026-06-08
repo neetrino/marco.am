@@ -6,7 +6,7 @@ import {
   parseLanguageFromServer,
   type LanguageCode,
 } from '@/lib/language';
-import { fetchHomeProductRailsData } from './home-product-rails-data';
+import { getHomeProductRailsDataCached } from './home-product-rails-data';
 
 /**
  * Both home product strips resolve together (one Suspense, parallel Redis/DB).
@@ -16,7 +16,7 @@ export async function HomeProductRailsBoundary() {
   const lang: LanguageCode =
     parseLanguageFromServer(cookieStore.get(LANGUAGE_PREFERENCE_KEY)?.value) ?? 'en';
 
-  const rails = await fetchHomeProductRailsData(lang);
+  const rails = await getHomeProductRailsDataCached(lang);
 
   return (
     <>

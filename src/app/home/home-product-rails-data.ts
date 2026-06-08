@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { FEATURED_PRODUCTS_VISIBLE_COUNT } from '@/components/featured-products-tabs.constants';
 import type { SpecialOfferProduct } from '@/components/home/special-offer-product.types';
 import { SPECIAL_OFFERS_PRODUCTS_LIMIT } from '@/constants/specialOffersSection';
@@ -20,7 +21,7 @@ export type HomeProductRailsData = {
 /**
  * Fetches both home product strips and brand partners in one parallel round-trip.
  */
-export async function fetchHomeProductRailsData(
+async function fetchHomeProductRailsData(
   lang: LanguageCode,
 ): Promise<HomeProductRailsData> {
   const [promotionOutcome, newOutcome, partnersOutcome, promoBannersOutcome] =
@@ -89,3 +90,6 @@ export async function fetchHomeProductRailsData(
     promoStripBanners,
   };
 }
+
+/** Deduped per-request rails payload — shared by prefetch + boundary. */
+export const getHomeProductRailsDataCached = cache(fetchHomeProductRailsData);

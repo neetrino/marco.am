@@ -9,3 +9,6 @@ export const BRANDS_DIRECTORY_LOGO_CELL_MAX_WIDTH_PX = 400;
 export const BRANDS_DIRECTORY_CARD_MIN_HEIGHT_PX = 224;
 
 export const BRANDS_DIRECTORY_LOGO_IMAGE_CLASS = 'max-h-full max-w-full object-contain';
+
+/** First N brand logos use priority loading for faster above-the-fold LCP. */
+export const BRANDS_DIRECTORY_LCP_IMAGE_PRIORITY_COUNT = 6;

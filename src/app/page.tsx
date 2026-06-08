@@ -2,7 +2,7 @@ import { Suspense } from 'react';
 import { HomePageLayoutShell } from '@/components/home/HomePageLayoutShell';
 import { HomeRoutePrefetch } from '@/components/home/HomeRoutePrefetch';
 import { HomeProductRailsBoundary } from './home/HomeProductRailsBoundary';
-import { HomeProductRailsSkeleton } from './home/HomeProductRailsSkeleton';
+import { HomeProductRailsPrefetch } from './home/HomeProductRailsPrefetch';
 import { HomeHeroBannerSection } from './HomeHeroBannerSection';
 import { HomeHeroBannerFallback, HomeReelsRailFallback } from './HomeHeroReelsFallback';
 import { HomeReelsBelowHero } from './HomeReelsBelowHero';
@@ -21,7 +21,10 @@ export default function HomePage() {
         <HomeReelsBelowHero />
       </Suspense>
 
-      <Suspense fallback={<HomeProductRailsSkeleton />}>
+      <Suspense fallback={null}>
+        <HomeProductRailsPrefetch />
+      </Suspense>
+      <Suspense fallback={null}>
         <HomeProductRailsBoundary />
       </Suspense>
 

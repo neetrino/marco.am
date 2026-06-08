@@ -1,5 +1,6 @@
 import { Prisma } from "@white-shop/db/prisma";
 import { db } from "@white-shop/db";
+import { PRODUCT_LISTING_VARIANTS_PER_PRODUCT_LIMIT } from "@/lib/constants/product-listing-query-limits";
 import { ensureProductVariantAttributesColumn } from "../../utils/db-ensure";
 import { logger } from "../../utils/logger";
 import type { ProductWithRelations } from "./types";
@@ -238,6 +239,7 @@ export async function executeProductListingQuery(
       },
       variants: {
         where: { published: true },
+        take: PRODUCT_LISTING_VARIANTS_PER_PRODUCT_LIMIT,
         select: {
           id: true,
           price: true,

@@ -61,6 +61,10 @@ import {
   SPECIAL_OFFERS_CARDS_PER_PAGE,
   SPECIAL_OFFERS_PRODUCTS_LIMIT,
 } from '@/constants/specialOffersSection';
+import {
+  buildHomeStripListingApiParams,
+  HOME_RAIL_LCP_IMAGE_PRIORITY_COUNT,
+} from '@/lib/constants/home-listing-api-params';
 
 /** Same horizontal shell as «Նորույթներ» (`FeaturedProductsTabs`) for matching card width on mobile. */
 const SECTION_CONTAINER_CLASS = HOME_PAGE_SECTION_SHELL_CLASS;
@@ -118,22 +122,23 @@ export function HomeSpecialOffersSection({
     queryKey: queryKeys.specialOffersPromotion(language, SPECIAL_OFFERS_PRODUCTS_LIMIT),
     queryFn: async () => {
       const response = await apiClient.get<ProductsResponse>('/api/v1/products', {
-        params: {
-          page: '1',
+        params: buildHomeStripListingApiParams({
           limit: String(SPECIAL_OFFERS_PRODUCTS_LIMIT),
           lang: language,
           filter: 'promotion',
-        },
+          sort: 'createdAt',
+        }),
       });
       return dedupeCardProductsByTitle(response.data ?? []);
     },
     staleTime: 300_000,
     initialData: initialPromotion,
     refetchOnMount: initialPromotion === undefined,
+    refetchOnWindowFocus: false,
   });
 
   const products = specialOffersQuery.data ?? [];
-  const loading = specialOffersQuery.isPending;
+  const loading = products.length === 0 && specialOffersQuery.isPending;
   const error = specialOffersQuery.isError ? t(language, 'home.special_offers.error_loading') : null;
 
   const isRailVisible = !error && (loading || products.length > 0);
@@ -411,6 +416,10 @@ export function HomeSpecialOffersSection({
                             <SpecialOfferCard
                               layout="mobileGrid"
                               product={product}
+                              imagePriority={
+                                pageIndex === 0 &&
+                                slotIndex < HOME_RAIL_LCP_IMAGE_PRIORITY_COUNT
+                              }
                             />
                           ) : (
                             <div
@@ -427,7 +436,10 @@ export function HomeSpecialOffersSection({
               ) : (
                 products.map((product, index) => (
                   <div key={`special-offers-product-${product.id}-${index}`} className={railSlotClassName} style={railSlotStyle}>
-                    <SpecialOfferCard product={product} />
+                    <SpecialOfferCard
+                      product={product}
+                      imagePriority={index < HOME_RAIL_LCP_IMAGE_PRIORITY_COUNT}
+                    />
                   </div>
                 ))
               )}

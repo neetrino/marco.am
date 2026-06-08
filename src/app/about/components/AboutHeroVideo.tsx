@@ -52,6 +52,9 @@ export function AboutHeroVideo({ videoId, title }: AboutHeroVideoProps) {
                 src={thumbnailUrl}
                 alt=""
                 className="absolute inset-0 h-full w-full object-cover"
+                loading="eager"
+                decoding="async"
+                fetchPriority="high"
                 onError={() => {
                   setThumbnailUrl(buildYouTubeThumbnailUrl(videoId, 'mq'));
                 }}
