@@ -1,4 +1,5 @@
 import { normalizeLiteralNewlinesToLineBreaks } from '../utils/normalize-literal-newlines';
+import { decodeCommonHtmlEntities } from '../utils/decode-common-html-entities';
 
 export interface SpecificationRow {
   key: string;
@@ -6,12 +7,10 @@ export interface SpecificationRow {
 }
 
 export function stripTags(value: string): string {
-  return normalizeLiteralNewlinesToLineBreaks(value)
-    .replace(/<[^>]*>/g, ' ')
-    .replace(/&nbsp;/gi, ' ')
-    .replace(/&amp;/gi, '&')
-    .replace(/&quot;/gi, '"')
-    .replace(/&#39;/gi, "'")
+  return decodeCommonHtmlEntities(
+    normalizeLiteralNewlinesToLineBreaks(value)
+      .replace(/<[^>]*>/g, ' '),
+  )
     .replace(/\s+/g, ' ')
     .trim();
 }
