@@ -108,7 +108,6 @@ interface AddProductFormContentProps {
   onVariantsUpdate: (updater: (prev: Variant[]) => Variant[]) => void;
   onApplyToAllVariants: (field: 'price' | 'compareAtPrice' | 'stock' | 'sku', value: string) => void;
   isClothingCategory: () => boolean;
-  generateSlug: (text: string) => string;
   handleSubmit: (e: React.FormEvent) => void;
 }
 
@@ -176,7 +175,6 @@ export function AddProductFormContent({
   onVariantsUpdate,
   onApplyToAllVariants,
   isClothingCategory,
-  generateSlug,
   handleSubmit,
 }: AddProductFormContentProps) {
   return (
@@ -271,8 +269,6 @@ export function AddProductFormContent({
               hasVariantsToLoad={hasVariantsToLoad}
               defaultCurrency={defaultCurrency}
               imageUploadLoading={imageUploadLoading}
-              slug={formData.slug}
-              title={formData.title}
               variantImageInputRefs={variantImageInputRefs}
               onVariantUpdate={onVariantUpdate}
               onVariantDelete={onVariantDelete}
@@ -280,7 +276,6 @@ export function AddProductFormContent({
               onApplyToAll={onApplyToAllVariants}
               onVariantImageUpload={onVariantImageUpload}
               onOpenValueModal={onOpenValueModal}
-              generateSlug={generateSlug}
             />
           )}
 

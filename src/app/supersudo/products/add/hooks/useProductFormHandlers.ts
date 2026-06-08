@@ -92,7 +92,6 @@ export function useProductFormHandlers({
     selectedAttributesForVariants,
     generatedVariants,
     attributes,
-    formDataSlug: formData.slug,
     setFormData,
   });
 
@@ -130,8 +129,20 @@ export function useProductFormHandlers({
         setLoading(false);
         return;
       }
-      if (!validateVariants()) {
+      const validationError = validateVariants();
+      if (validationError) {
+        alert(validationError);
         return;
+      }
+
+      if (productType === 'variable' && generatedVariants.length > 0) {
+        for (const genVariant of generatedVariants) {
+          if (!genVariant.sku?.trim()) {
+            alert('Բոլոր տարբերակների SKU-ն պարտադիր է');
+            setLoading(false);
+            return;
+          }
+        }
       }
 
       // Process variants for API
@@ -170,7 +181,7 @@ export function useProductFormHandlers({
         if (useGeneratedVariants) {
           logger.devLog('📦 [ADMIN] Using generatedVariants format:', generatedVariants.length, 'variants');
           
-          generatedVariants.forEach((genVariant, variantIndex) => {
+          generatedVariants.forEach((genVariant) => {
             const variantPriceCatalog = convertPrice(
               parseFloat(genVariant.price || '0'),
               defaultCurrency,
@@ -197,19 +208,23 @@ export function useProductFormHandlers({
             
             const attributeKeys = Object.keys(attributeValueMap);
             if (attributeKeys.length === 0) {
-              const finalSku = genVariant.sku || `${currentFormData.slug || 'PROD'}-${Date.now()}-${variantIndex + 1}`;
-              let uniqueSku = finalSku;
-              let skuCounter = 1;
-              while (variantSkuSet.has(uniqueSku)) {
-                uniqueSku = `${finalSku}-${skuCounter}`;
-                skuCounter++;
+              const finalSku = genVariant.sku?.trim() ?? '';
+              if (!finalSku) {
+                alert('Բոլոր տարբերակների SKU-ն պարտադիր է');
+                setLoading(false);
+                return;
               }
-              variantSkuSet.add(uniqueSku);
+              if (variantSkuSet.has(finalSku)) {
+                alert(`Կրկնվող SKU՝ «${finalSku}»`);
+                setLoading(false);
+                return;
+              }
+              variantSkuSet.add(finalSku);
               variants.push({
                 price: variantPriceCatalog,
                 compareAtPrice: variantCompareAtPriceCatalog,
                 stock: parseInt(genVariant.stock || '0') || 0,
-                sku: uniqueSku,
+                sku: finalSku,
                 imageUrl: genVariant.image || undefined,
                 published: true,
               });
@@ -234,7 +249,7 @@ export function useProductFormHandlers({
               
               const combinations = generateCombinations(attributeValueGroups);
               
-              combinations.forEach((combination, comboIndex) => {
+              combinations.forEach((combination) => {
                 const variantOptions: Array<{ attributeKey: string; value: string; valueId?: string }> = [];
                 combination.forEach((valueId) => {
                   const attribute = attributes.find(a => a.values.some(v => v.id === valueId));
@@ -246,26 +261,24 @@ export function useProductFormHandlers({
                   }
                 });
                 
-                const baseSlug = currentFormData.slug || 'PROD';
-                const valueParts = variantOptions.map(opt => opt.value.toUpperCase().replace(/\s+/g, '-'));
-                const skuSuffix = valueParts.length > 0 ? `-${valueParts.join('-')}` : '';
-                const finalSku = genVariant.sku 
-                  ? `${genVariant.sku}${skuSuffix}`
-                  : `${baseSlug.toUpperCase()}-${Date.now()}-${variantIndex + 1}-${comboIndex + 1}${skuSuffix}`;
-                
-                let uniqueSku = finalSku;
-                let skuCounter = 1;
-                while (variantSkuSet.has(uniqueSku)) {
-                  uniqueSku = `${finalSku}-${skuCounter}`;
-                  skuCounter++;
+                const finalSku = genVariant.sku?.trim() ?? '';
+                if (!finalSku) {
+                  alert('Բոլոր տարբերակների SKU-ն պարտադիր է');
+                  setLoading(false);
+                  return;
                 }
-                variantSkuSet.add(uniqueSku);
+                if (variantSkuSet.has(finalSku)) {
+                  alert(`Կրկնվող SKU՝ «${finalSku}»`);
+                  setLoading(false);
+                  return;
+                }
+                variantSkuSet.add(finalSku);
                 
                 variants.push({
                   price: variantPriceCatalog,
                   compareAtPrice: variantCompareAtPriceCatalog,
                   stock: parseInt(genVariant.stock || '0') || 0,
-                  sku: uniqueSku,
+                  sku: finalSku,
                   imageUrl: genVariant.image || undefined,
                   published: true,
                   options: variantOptions.length > 0 ? variantOptions : undefined,
@@ -276,7 +289,7 @@ export function useProductFormHandlers({
         } else {
           // Legacy formData.variants processing (simplified)
           logger.devLog('📦 [ADMIN] Using formData.variants format (legacy)');
-          currentFormData.variants.forEach((variant, variantIndex) => {
+          currentFormData.variants.forEach((variant) => {
             const variantPriceCatalog = convertPrice(
               parseFloat(variant.price || '0'),
               defaultCurrency,
@@ -293,25 +306,24 @@ export function useProductFormHandlers({
             const colorDataArray = variant.colors || [];
             // Simplified variant processing - full logic would be in separate hook
             if (colorDataArray.length > 0) {
-              colorDataArray.forEach((colorData, colorIndex) => {
+              colorDataArray.forEach((colorData) => {
                 const colorSizes = colorData.sizes || [];
                 const colorSizeStocks = colorData.sizeStocks || {};
                 if (colorSizes.length > 0) {
                   colorSizes.forEach((size) => {
                     const stockForVariant = colorSizeStocks[size] || colorData.stock || '0';
-                    const skuSuffix = colorDataArray.length > 1 || colorSizes.length > 1 
-                      ? `-${colorIndex + 1}-${colorSizes.indexOf(size) + 1}` : '';
-                    let finalSku = colorData.sizeLabels?.[size] || variant.sku ? `${variant.sku?.trim()}${skuSuffix}` : undefined;
-                    if (!finalSku || finalSku === '') {
-                      finalSku = `${currentFormData.slug || 'PROD'}-${Date.now()}-${variantIndex + 1}-${colorIndex + 1}-${colorSizes.indexOf(size) + 1}`;
+                    const finalSku = (colorData.sizeLabels?.[size] || variant.sku || '').trim();
+                    if (!finalSku) {
+                      alert('Բոլոր տարբերակների SKU-ն պարտադիր է');
+                      setLoading(false);
+                      return;
                     }
-                    let uniqueSku = finalSku;
-                    let skuCounter = 1;
-                    while (variantSkuSet.has(uniqueSku)) {
-                      uniqueSku = `${finalSku}-${skuCounter}`;
-                      skuCounter++;
+                    if (variantSkuSet.has(finalSku)) {
+                      alert(`Կրկնվող SKU՝ «${finalSku}»`);
+                      setLoading(false);
+                      return;
                     }
-                    variantSkuSet.add(uniqueSku);
+                    variantSkuSet.add(finalSku);
                     const variantImageUrl = colorData.images && colorData.images.length > 0 ? colorData.images.join(',') : undefined;
                     const sizePrice = colorData.sizePrices?.[size];
                     const finalPrice =
@@ -345,7 +357,7 @@ export function useProductFormHandlers({
                       color: colorData.colorValue,
                       size: size,
                       stock: parseInt(stockForVariant) || 0,
-                      sku: uniqueSku,
+                      sku: finalSku,
                       imageUrl: variantImageUrl,
                       options: variantOptions.length > 0 ? variantOptions : undefined,
                     });
@@ -357,26 +369,23 @@ export function useProductFormHandlers({
         }
       }
 
-      // Final SKU validation
+      // Final SKU validation — manual entry only, no auto-generation
       const finalSkuSet = new Set<string>();
-      for (let i = 0; i < variants.length; i++) {
-        const variant = variants[i];
-        if (!variant.sku || variant.sku.trim() === '') {
-          const baseSlug = currentFormData.slug || 'PROD';
-          variant.sku = `${baseSlug.toUpperCase()}-${Date.now()}-${i + 1}`;
-        } else {
-          variant.sku = variant.sku.trim();
+      for (const variant of variants) {
+        const sku = variant.sku?.trim() ?? '';
+        if (!sku) {
+          alert('Բոլոր տարբերակների SKU-ն պարտադիր է');
+          setLoading(false);
+          return;
         }
-        let finalSku = variant.sku;
-        let skuCounter = 1;
-        while (finalSkuSet.has(finalSku)) {
-          const baseSlug = currentFormData.slug || 'PROD';
-          finalSku = `${baseSlug.toUpperCase()}-${Date.now()}-${i + 1}-${skuCounter}-${Math.random().toString(36).substr(2, 4)}`;
-          skuCounter++;
+        if (finalSkuSet.has(sku)) {
+          alert(`Կրկնվող SKU՝ «${sku}»`);
+          setLoading(false);
+          return;
         }
-        variant.sku = finalSku;
+        variant.sku = sku;
         variant.productClass = variant.productClass || selectedProductClass;
-        finalSkuSet.add(finalSku);
+        finalSkuSet.add(sku);
       }
 
       // Persist only attributes explicitly selected for this product.

@@ -144,7 +144,9 @@ export function ProductInfoAndActions({
               </p>
             )}
           </div>
-          <ProductWarrantyBadge years={3} size="promo" className="shrink-0" />
+          {product.warrantyYears ? (
+            <ProductWarrantyBadge years={product.warrantyYears} size="promo" className="shrink-0" />
+          ) : null}
         </div>
         <div className="mb-6">
           <div className="flex flex-col gap-1">

@@ -1,3 +1,4 @@
+import { normalizeProductWarrantyYears } from "@/lib/constants/product-warranty";
 import { pickVariantForListingPrice } from "@/lib/product-variant-listing-pick";
 import { db } from "@white-shop/db";
 import {
@@ -740,6 +741,7 @@ export async function transformProduct(
     createdAt: product.createdAt,
     updatedAt: product.updatedAt,
     productAttributes: transformProductAttributes(product, lang),
+    warrantyYears: normalizeProductWarrantyYears(product.warrantyYears),
   };
 }
 
