@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api-client';
 import { CURRENCIES, type CurrencyCode } from '@/lib/currency';
 import type { Brand, Category, Attribute } from '../types';
@@ -7,9 +6,6 @@ import { logger } from "@/lib/utils/logger";
 import { findAttributeBySemanticKey } from '@/lib/attribute-keys';
 
 interface UseProductDataLoadingProps {
-  isLoggedIn: boolean;
-  isAdmin: boolean;
-  isLoading: boolean;
   setBrands: (brands: Brand[]) => void;
   setCategories: (categories: Category[]) => void;
   setAttributes: (attributes: Attribute[]) => void;
@@ -24,9 +20,6 @@ interface UseProductDataLoadingProps {
 }
 
 export function useProductDataLoading({
-  isLoggedIn,
-  isAdmin,
-  isLoading,
   setBrands,
   setCategories,
   setAttributes,
@@ -39,18 +32,6 @@ export function useProductDataLoading({
   brandsExpanded,
   setBrandsExpanded,
 }: UseProductDataLoadingProps) {
-  const router = useRouter();
-
-  // Auth check
-  useEffect(() => {
-    if (!isLoading) {
-      if (!isLoggedIn || !isAdmin) {
-        router.push('/supersudo');
-        return;
-      }
-    }
-  }, [isLoggedIn, isAdmin, isLoading, router]);
-
   // Close attributes dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -84,10 +65,8 @@ export function useProductDataLoading({
       }
     };
     
-    if (isLoggedIn && isAdmin) {
-      loadDefaultCurrency();
-    }
-  }, [isLoggedIn, isAdmin, setDefaultCurrency]);
+    loadDefaultCurrency();
+  }, [setDefaultCurrency]);
 
   // Fetch brands, categories, and attributes
   useEffect(() => {

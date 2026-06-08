@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { useAuth } from '../../../lib/auth/AuthContext';
 import { apiClient, getApiOrErrorMessage } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
 import { QuickSettingsContent } from './QuickSettingsContent';
@@ -28,7 +27,6 @@ interface AdminBrand {
 
 export default function QuickSettingsPage() {
   const { t } = useTranslation();
-  const { isLoggedIn, isAdmin, isLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [globalDiscount, setGlobalDiscount] = useState<number>(0);
@@ -344,28 +342,11 @@ export default function QuickSettingsPage() {
   };
 
   useEffect(() => {
-    if (!isLoading && isLoggedIn && isAdmin) {
-      fetchSettings();
-      fetchProducts();
-      fetchCategories();
-      fetchBrands();
-    }
-  }, [isLoading, isLoggedIn, isAdmin, fetchSettings, fetchProducts, fetchCategories, fetchBrands]);
-
-  useEffect(() => {
-    if (!isLoading) {
-      if (!isLoggedIn) {
-        logger.devLog('❌ [QUICK SETTINGS] User not logged in, redirecting to login...');
-        router.push('/login');
-        return;
-      }
-      if (!isAdmin) {
-        logger.devLog('❌ [QUICK SETTINGS] User is not admin, redirecting to home...');
-        router.push('/');
-        return;
-      }
-    }
-  }, [isLoggedIn, isAdmin, isLoading, router]);
+    fetchSettings();
+    fetchProducts();
+    fetchCategories();
+    fetchBrands();
+  }, [fetchSettings, fetchProducts, fetchCategories, fetchBrands]);
 
   // Get current path to highlight active tab
   const [currentPath, setCurrentPath] = useState(pathname || '/supersudo/quick-settings');
@@ -375,21 +356,6 @@ export default function QuickSettingsPage() {
       setCurrentPath(pathname);
     }
   }, [pathname]);
-
-  if (isLoading) {
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600">{t('admin.common.loading')}</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isLoggedIn || !isAdmin) {
-    return null; // Will redirect
-  }
 
   return (
     <QuickSettingsContent

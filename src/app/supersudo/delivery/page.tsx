@@ -1,14 +1,20 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { useAuth } from '../../../lib/auth/AuthContext';
 import { Card, Button } from '@shop/ui';
 import { apiClient, getApiOrErrorMessage } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
 import { showPopupConfirm } from '@/components/popup-service';
 import { AdminPageLayout } from '../components/AdminPageLayout';
 import { logger } from "@/lib/utils/logger";
+import { ADMIN_CACHE_KEYS } from '@/lib/admin/admin-cache-keys';
+import { beginAdminDataFetch } from '@/lib/admin/admin-fetch-helpers';
+import {
+  ADMIN_SESSION_CACHE_TTL_MS,
+  readAdminSessionCache,
+  writeAdminSessionCache,
+} from '@/lib/admin/admin-session-cache';
 
 interface DeliveryLocation {
   id?: string;
@@ -22,40 +28,36 @@ interface DeliverySettings {
 
 export default function DeliveryPage() {
   const { t } = useTranslation();
-  const { isLoggedIn, isAdmin, isLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const cachedDelivery = readAdminSessionCache<DeliverySettings>(
+    ADMIN_CACHE_KEYS.delivery,
+    ADMIN_SESSION_CACHE_TTL_MS,
+  );
+  const hadCacheRef = useRef(Boolean(cachedDelivery));
   const [saving, setSaving] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [locations, setLocations] = useState<DeliveryLocation[]>([]);
+  const [loading, setLoading] = useState(!hadCacheRef.current);
+  const [locations, setLocations] = useState<DeliveryLocation[]>(cachedDelivery?.locations ?? []);
   const [_editingId, setEditingId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isLoading) {
-      if (!isLoggedIn || !isAdmin) {
-        router.push('/supersudo');
-        return;
-      }
-    }
-  }, [isLoggedIn, isAdmin, isLoading, router]);
-
-  useEffect(() => {
-    if (isLoggedIn && isAdmin) {
-      fetchDeliverySettings();
-    }
-  }, [isLoggedIn, isAdmin]);
+    fetchDeliverySettings();
+  }, []);
 
   const fetchDeliverySettings = async () => {
     try {
-      setLoading(true);
+      beginAdminDataFetch(hadCacheRef.current, setLoading);
       logger.devLog('🚚 [ADMIN] Fetching delivery settings...');
       const data = await apiClient.get<DeliverySettings>('/api/v1/supersudo/delivery');
       setLocations(data.locations || []);
+      writeAdminSessionCache(ADMIN_CACHE_KEYS.delivery, data);
+      hadCacheRef.current = true;
       logger.devLog('✅ [ADMIN] Delivery settings loaded:', data);
     } catch (err: unknown) {
       logger.error('Admin delivery settings fetch failed', { error: err });
-      // Use defaults if error
-      setLocations([]);
+      if (!hadCacheRef.current) {
+        setLocations([]);
+      }
     } finally {
       setLoading(false);
     }
@@ -98,7 +100,7 @@ export default function DeliveryPage() {
     setLocations(updated);
   };
 
-  if (isLoading || loading) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -107,10 +109,6 @@ export default function DeliveryPage() {
         </div>
       </div>
     );
-  }
-
-  if (!isLoggedIn || !isAdmin) {
-    return null;
   }
 
   const currentPath = pathname || '/supersudo/delivery';

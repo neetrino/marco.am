@@ -1,7 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { apiClient } from '../../../../lib/api-client';
 import { logger } from '../../../../lib/utils/logger';
 import { useTranslation } from '../../../../lib/i18n-client';
+import { ADMIN_CACHE_KEYS, buildAdminListCacheKey } from '@/lib/admin/admin-cache-keys';
+import { beginAdminDataFetch } from '@/lib/admin/admin-fetch-helpers';
+import {
+  ADMIN_SESSION_CACHE_TTL_MS,
+  readAdminSessionCache,
+  writeAdminSessionCache,
+} from '@/lib/admin/admin-session-cache';
 import type { AnalyticsData, AdminStatsSummary, OrderStatusBreakdownData } from '../types';
 
 interface UseAnalyticsParams {
@@ -33,13 +40,22 @@ export function useAnalytics({
   isAdmin,
 }: UseAnalyticsParams): UseAnalyticsReturn {
   const { t } = useTranslation();
-  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
+  const cachedAnalytics = readAdminSessionCache<AnalyticsData>(
+    ADMIN_CACHE_KEYS.analyticsWeek,
+    ADMIN_SESSION_CACHE_TTL_MS,
+  );
+  const cachedBreakdown = readAdminSessionCache<OrderStatusBreakdownData>(
+    ADMIN_CACHE_KEYS.analyticsOrderStatus,
+    ADMIN_SESSION_CACHE_TTL_MS,
+  );
+  const hadCacheRef = useRef(Boolean(cachedAnalytics));
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(cachedAnalytics);
   const [orderStatusBreakdown, setOrderStatusBreakdown] =
-    useState<OrderStatusBreakdownData | null>(null);
+    useState<OrderStatusBreakdownData | null>(cachedBreakdown);
   const [orderStatusBreakdownFailed, setOrderStatusBreakdownFailed] =
     useState(false);
   const [totalUsers, setTotalUsers] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!hadCacheRef.current);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -48,8 +64,20 @@ export function useAnalytics({
     }
 
     const fetchAnalytics = async () => {
+      const analyticsCacheKey = buildAdminListCacheKey('analytics', {
+        period,
+        startDate: period === 'custom' ? startDate : '',
+        endDate: period === 'custom' ? endDate : '',
+      });
+      const cachedForPeriod = readAdminSessionCache<AnalyticsData>(
+        analyticsCacheKey,
+        ADMIN_SESSION_CACHE_TTL_MS,
+      );
       try {
-        setLoading(true);
+        beginAdminDataFetch(Boolean(cachedForPeriod), setLoading);
+        if (cachedForPeriod) {
+          setAnalytics(cachedForPeriod);
+        }
         setError(null);
         setOrderStatusBreakdownFailed(false);
         const params: Record<string, string> = {
@@ -73,12 +101,15 @@ export function useAnalytics({
         if (analyticsResult.status === 'fulfilled') {
           logger.info('Analytics data loaded', { period, hasData: !!analyticsResult.value });
           setAnalytics(analyticsResult.value);
+          writeAdminSessionCache(analyticsCacheKey, analyticsResult.value);
+          hadCacheRef.current = true;
         } else {
           throw analyticsResult.reason;
         }
 
         if (breakdownResult.status === 'fulfilled') {
           setOrderStatusBreakdown(breakdownResult.value);
+          writeAdminSessionCache(ADMIN_CACHE_KEYS.analyticsOrderStatus, breakdownResult.value);
           setOrderStatusBreakdownFailed(false);
         } else {
           logger.error('Order status breakdown request failed', {

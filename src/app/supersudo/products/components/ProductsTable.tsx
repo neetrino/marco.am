@@ -71,7 +71,7 @@ export function ProductsTable({
 
   return (
     <Card className="admin-table-card overflow-hidden rounded-2xl border-slate-200/80 shadow-md shadow-slate-200/60">
-      {loading ? (
+      {loading && products.length === 0 ? (
         <div className="p-8 text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
           <p className="text-gray-600">{t('admin.products.loadingProducts')}</p>

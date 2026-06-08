@@ -3,11 +3,17 @@
 import { useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Button, Card } from '@shop/ui';
-import { useAuth } from '../../../lib/auth/AuthContext';
 import { apiClient, getApiOrErrorMessage } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
 import { AdminPageLayout } from '../components/AdminPageLayout';
 import type { BannerManagementStorage } from '../../../lib/schemas/banner-management.schema';
+import { ADMIN_CACHE_KEYS } from '@/lib/admin/admin-cache-keys';
+import { beginAdminDataFetch } from '@/lib/admin/admin-fetch-helpers';
+import {
+  ADMIN_SESSION_CACHE_TTL_MS,
+  readAdminSessionCache,
+  writeAdminSessionCache,
+} from '@/lib/admin/admin-session-cache';
 import {
   HOME_HERO_DEFAULT_BANNER_ITEMS,
   HOME_HERO_PRIMARY_BOTTOM_BANNER_ID,
@@ -364,52 +370,46 @@ function ImageUploadField({
 
 export default function HeroBannerPage() {
   const { t } = useTranslation();
-  const { isLoggedIn, isAdmin, isLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const currentPath = pathname || '/supersudo/hero-banner';
 
-  const [loading, setLoading] = useState(true);
+  const cachedBanners = readAdminSessionCache<BannerManagementStorage>(
+    ADMIN_CACHE_KEYS.banners,
+    ADMIN_SESSION_CACHE_TTL_MS,
+  );
+  const hadCacheRef = useRef(Boolean(cachedBanners));
+  const [loading, setLoading] = useState(!hadCacheRef.current);
   const [saving, setSaving] = useState(false);
   const [uploadingField, setUploadingField] = useState<UploadingField>(null);
-  const [storage, setStorage] = useState<BannerManagementStorage | null>(null);
-  const [form, setForm] = useState<HeroBannerFormState>({
-    primaryTopDesktopUrl: HOME_HERO_PRIMARY_TOP_DEFAULT_IMAGE_URL,
-    primaryBottomDesktopUrl: HOME_HERO_PRIMARY_BOTTOM_DEFAULT_IMAGE_URL,
-    secondaryDesktopUrl: HOME_HERO_SECONDARY_DEFAULT_IMAGE_URL,
-    promoPrimaryDesktopUrl: HOME_PROMO_PRIMARY_DEFAULT_IMAGE_URL,
-    promoPrimaryMobileUrl: HOME_PROMO_PRIMARY_MOBILE_DEFAULT_IMAGE_URL,
-    promoSecondaryDesktopUrl: HOME_PROMO_SECONDARY_DEFAULT_IMAGE_URL,
-    mobileImageUrl: HERO_MOBILE_PRIMARY_IMAGE_SRC,
-  });
+  const [storage, setStorage] = useState<BannerManagementStorage | null>(
+    buildHeroBannerStorage(cachedBanners),
+  );
+  const [form, setForm] = useState<HeroBannerFormState>(() => buildFormState(cachedBanners));
 
   useEffect(() => {
-    if (!isLoading && (!isLoggedIn || !isAdmin)) {
-      router.push('/supersudo');
-    }
-  }, [isAdmin, isLoading, isLoggedIn, router]);
-
-  useEffect(() => {
-    if (!isLoading && isLoggedIn && isAdmin) {
-      void fetchHeroBanner();
-    }
-  }, [isAdmin, isLoading, isLoggedIn]);
+    void fetchHeroBanner();
+  }, []);
 
   async function fetchHeroBanner() {
     try {
-      setLoading(true);
+      beginAdminDataFetch(hadCacheRef.current, setLoading);
       const data = await apiClient.get<BannerManagementStorage>('/api/v1/supersudo/banners');
       setStorage(buildHeroBannerStorage(data));
       setForm(buildFormState(data));
+      writeAdminSessionCache(ADMIN_CACHE_KEYS.banners, data);
+      hadCacheRef.current = true;
     } catch (error: unknown) {
-      alert(
-        t('admin.heroBanner.errorLoading').replace(
-          '{message}',
-          getApiOrErrorMessage(error, 'Failed to load hero banner'),
-        ),
-      );
-      setStorage(buildHeroBannerStorage(null));
-      setForm(buildFormState(null));
+      if (!hadCacheRef.current) {
+        alert(
+          t('admin.heroBanner.errorLoading').replace(
+            '{message}',
+            getApiOrErrorMessage(error, 'Failed to load hero banner'),
+          ),
+        );
+        setStorage(buildHeroBannerStorage(null));
+        setForm(buildFormState(null));
+      }
     } finally {
       setLoading(false);
     }
@@ -486,7 +486,7 @@ export default function HeroBannerPage() {
     }
   }
 
-  if (isLoading || loading) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -495,10 +495,6 @@ export default function HeroBannerPage() {
         </div>
       </div>
     );
-  }
-
-  if (!isLoggedIn || !isAdmin) {
-    return null;
   }
 
   return (

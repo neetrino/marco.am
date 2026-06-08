@@ -1,48 +1,48 @@
-import { useCallback, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { apiClient, getApiOrErrorMessage } from '@/lib/api-client';
 import { logger } from '@/lib/utils/logger';
+import { ADMIN_CACHE_KEYS } from '@/lib/admin/admin-cache-keys';
+import { beginAdminDataFetch } from '@/lib/admin/admin-fetch-helpers';
+import {
+  ADMIN_SESSION_CACHE_TTL_MS,
+  readAdminSessionCache,
+  writeAdminSessionCache,
+} from '@/lib/admin/admin-session-cache';
 import { showPopupConfirm } from '@/components/popup-service';
 import { showToast } from '@/components/Toast';
 import type { AdminPromoCode, PromoCodeFormState } from './types';
 import { createEmptyPromoCodeForm, normalizePromoCodeInput } from './promo-code-form.utils';
 
 type UsePromoCodesAdminOptions = {
-  isLoggedIn: boolean;
-  isAdmin: boolean;
-  isLoading: boolean;
   t: (key: string) => string;
 };
 
-export function usePromoCodesAdmin({
-  isLoggedIn,
-  isAdmin,
-  isLoading,
-  t,
-}: UsePromoCodesAdminOptions) {
-  const router = useRouter();
-  const [records, setRecords] = useState<AdminPromoCode[]>([]);
-  const [loading, setLoading] = useState(true);
+export function usePromoCodesAdmin({ t }: UsePromoCodesAdminOptions) {
+  const cachedPromoCodes = readAdminSessionCache<{ promoCodes: AdminPromoCode[] }>(
+    ADMIN_CACHE_KEYS.promoCodes,
+    ADMIN_SESSION_CACHE_TTL_MS,
+  );
+  const hadCacheRef = useRef(Boolean(cachedPromoCodes?.promoCodes?.length));
+  const [records, setRecords] = useState<AdminPromoCode[]>(cachedPromoCodes?.promoCodes ?? []);
+  const [loading, setLoading] = useState(!hadCacheRef.current);
   const [saving, setSaving] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [form, setForm] = useState<PromoCodeFormState>(createEmptyPromoCodeForm());
 
-  useEffect(() => {
-    if (!isLoading && (!isLoggedIn || !isAdmin)) {
-      router.push('/supersudo');
-    }
-  }, [isLoggedIn, isAdmin, isLoading, router]);
-
   const fetchPromoCodes = useCallback(async () => {
     try {
-      setLoading(true);
+      beginAdminDataFetch(hadCacheRef.current, setLoading);
       const response = await apiClient.get<{ promoCodes: AdminPromoCode[] }>(
         '/api/v1/supersudo/promo-codes'
       );
       setRecords(response.promoCodes ?? []);
+      writeAdminSessionCache(ADMIN_CACHE_KEYS.promoCodes, response);
+      hadCacheRef.current = true;
     } catch (err: unknown) {
       logger.error('Admin promo codes fetch failed', { error: err });
-      setRecords([]);
+      if (!hadCacheRef.current) {
+        setRecords([]);
+      }
       showToast(t('admin.promoCodes.loadFailed'), 'error');
     } finally {
       setLoading(false);
@@ -50,10 +50,8 @@ export function usePromoCodesAdmin({
   }, [t]);
 
   useEffect(() => {
-    if (isLoggedIn && isAdmin) {
-      void fetchPromoCodes();
-    }
-  }, [isLoggedIn, isAdmin, fetchPromoCodes]);
+    void fetchPromoCodes();
+  }, [fetchPromoCodes]);
 
   const openCreateModal = () => {
     setForm(createEmptyPromoCodeForm());

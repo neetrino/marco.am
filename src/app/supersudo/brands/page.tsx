@@ -1,14 +1,18 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { useAuth } from '../../../lib/auth/AuthContext';
 import { Card, Button } from '@shop/ui';
 import { apiClient, getApiOrErrorMessage } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
 import { AdminPageLayout } from '../components/AdminPageLayout';
 import { AdminTablePagination } from '../components/AdminTablePagination';
 import { logger } from '@/lib/utils/logger';
+import { beginAdminDataFetch } from '@/lib/admin/admin-fetch-helpers';
+import {
+  readAdminBrandsCache,
+  writeAdminBrandsCache,
+} from '@/lib/admin/admin-reference-data-cache';
 import { processImageFile, toDomSafeImgSrcString, toSafeImgAttributeSrc } from '@/lib/utils/image-utils';
 import { showPopupConfirm } from '@/components/popup-service';
 import { showToast } from '../../../components/Toast';
@@ -24,13 +28,14 @@ const ITEMS_PER_PAGE = 20;
 
 export default function BrandsPage() {
   const { t } = useTranslation();
-  const { isLoggedIn, isAdmin, isLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const currentPath = pathname || '/supersudo/brands';
 
-  const [brands, setBrands] = useState<Brand[]>([]);
-  const [loading, setLoading] = useState(true);
+  const cachedBrands = readAdminBrandsCache<Brand>();
+  const hadCacheRef = useRef(Boolean(cachedBrands?.length));
+  const [brands, setBrands] = useState<Brand[]>(cachedBrands ?? []);
+  const [loading, setLoading] = useState(!hadCacheRef.current);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingBrand, setEditingBrand] = useState<Brand | null>(null);
@@ -58,7 +63,7 @@ export default function BrandsPage() {
 
   const fetchBrands = useCallback(async () => {
     try {
-      setLoading(true);
+      beginAdminDataFetch(hadCacheRef.current, setLoading);
       logger.devLog('[ADMIN] Fetching brands...');
       const response = await apiClient.get<{ data: Array<Brand & { logoUrl?: string | null }> }>(
         '/api/v1/supersudo/brands'
@@ -72,10 +77,14 @@ export default function BrandsPage() {
           logoUrl: b.logoUrl ?? null,
         }))
       );
+      writeAdminBrandsCache(rows);
+      hadCacheRef.current = true;
       logger.devLog('[ADMIN] Brands loaded:', response.data?.length || 0);
     } catch (err: unknown) {
       logger.error('Error fetching brands', { error: err });
-      setBrands([]);
+      if (!hadCacheRef.current) {
+        setBrands([]);
+      }
       showToast(t('admin.brands.loading'), 'error');
     } finally {
       setLoading(false);
@@ -85,15 +94,6 @@ export default function BrandsPage() {
   useEffect(() => {
     fetchBrands();
   }, [fetchBrands]);
-
-  useEffect(() => {
-    if (!isLoading) {
-      if (!isLoggedIn || !isAdmin) {
-        router.push('/supersudo');
-        return;
-      }
-    }
-  }, [isLoggedIn, isAdmin, isLoading, router]);
 
   useEffect(() => {
     setSelectedBrandIds((prevIds) => prevIds.filter((brandId) => brands.some((brand) => brand.id === brandId)));
@@ -304,21 +304,6 @@ export default function BrandsPage() {
       setSaving(false);
     }
   };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600">{t('admin.common.loading')}</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isLoggedIn || !isAdmin) {
-    return null;
-  }
 
   const addBrandHeaderAction = (
     <Button

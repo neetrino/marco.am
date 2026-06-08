@@ -3,7 +3,6 @@
 import { usePathname, useRouter } from 'next/navigation';
 import { Button, Card } from '@shop/ui';
 import { Copy, Pencil, Trash2 } from 'lucide-react';
-import { useAuth } from '@/lib/auth/AuthContext';
 import { useTranslation } from '@/lib/i18n-client';
 import { logger } from '@/lib/utils/logger';
 import { AdminPageLayout } from '../components/AdminPageLayout';
@@ -26,7 +25,6 @@ function formatDiscount(
 
 export default function PromoCodesPage() {
   const { t } = useTranslation();
-  const { isLoggedIn, isAdmin, isLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const currentPath = pathname || '/supersudo/promo-codes';
@@ -43,7 +41,7 @@ export default function PromoCodesPage() {
     closeModal,
     savePromoCode,
     deletePromoCode,
-  } = usePromoCodesAdmin({ isLoggedIn, isAdmin, isLoading, t });
+  } = usePromoCodesAdmin({ t });
 
   const handleCopyCode = async (code: string) => {
     try {
@@ -53,7 +51,7 @@ export default function PromoCodesPage() {
     }
   };
 
-  if (isLoading || loading) {
+  if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
@@ -62,10 +60,6 @@ export default function PromoCodesPage() {
         </div>
       </div>
     );
-  }
-
-  if (!isLoggedIn || !isAdmin) {
-    return null;
   }
 
   return (

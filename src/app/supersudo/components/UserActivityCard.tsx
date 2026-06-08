@@ -147,7 +147,7 @@ export function UserActivityCard({ userActivity, userActivityLoading }: UserActi
           {t('admin.dashboard.recentRegistrations')} & {t('admin.dashboard.mostActiveUsers')}
         </span>
       </div>
-      {userActivityLoading ? (
+      {userActivityLoading && !userActivity ? (
         <LoadingSection />
       ) : userActivity ? (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">

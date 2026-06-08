@@ -41,7 +41,7 @@ export function RecentOrdersCard({ recentOrders, recentOrdersLoading }: RecentOr
         </Button>
       </div>
       <div className="space-y-3">
-        {recentOrdersLoading ? (
+        {recentOrdersLoading && recentOrders.length === 0 ? (
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
               <div key={i} className="animate-pulse">

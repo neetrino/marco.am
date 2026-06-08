@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { useAuth } from '../../../lib/auth/AuthContext';
 import { Card, Button } from '@shop/ui';
 import { useTranslation } from '../../../lib/i18n-client';
 import { useCategories } from './hooks/useCategories';
@@ -20,7 +19,6 @@ import { showToast } from '../../../components/Toast';
 
 export default function CategoriesPage() {
   const { t } = useTranslation();
-  const { isLoggedIn, isAdmin, isLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const currentPath = pathname || '/supersudo/categories';
@@ -75,15 +73,6 @@ export default function CategoriesPage() {
   );
 
   useEffect(() => {
-    if (!isLoading) {
-      if (!isLoggedIn || !isAdmin) {
-        router.push('/supersudo');
-        return;
-      }
-    }
-  }, [isLoggedIn, isAdmin, isLoading, router]);
-
-  useEffect(() => {
     setSelectedCategoryIds([]);
   }, [activeView]);
 
@@ -130,21 +119,6 @@ export default function CategoriesPage() {
       setSelectedCategoryIds([]);
     }
   };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600">{t('admin.common.loading')}</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isLoggedIn || !isAdmin) {
-    return null;
-  }
 
   const addCategoryHeaderActions = (
     <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">

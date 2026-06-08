@@ -1,14 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { memo, useEffect, useState, useSyncExternalStore } from 'react';
 import { AdminMenuDrawer } from '../../../components/AdminMenuDrawer';
 import { getAdminMenuTABS } from '../admin-menu.config';
 import { getStoredLanguage, setStoredLanguage, type LanguageCode } from '../../../lib/language';
+import { AdminNavLink } from './AdminNavLink';
 
 interface AdminSidebarProps {
   currentPath: string;
-  router: ReturnType<typeof useRouter>;
   t: ReturnType<typeof import('../../../lib/i18n-client').useTranslation>['t'];
 }
 
@@ -17,7 +16,24 @@ const PRODUCT_SECTION_PATHS = ['/supersudo/products', '/supersudo/categories', '
 const ADMIN_LANGUAGES = ['en', 'hy', 'ru'] as const;
 type AdminLanguageCode = (typeof ADMIN_LANGUAGES)[number];
 
-export function AdminSidebar({ currentPath, router, t }: AdminSidebarProps) {
+const DEFAULT_ADMIN_LANGUAGE: AdminLanguageCode = 'en';
+
+function normalizeAdminLanguage(code: LanguageCode | string | null | undefined): AdminLanguageCode {
+  return code === 'en' || code === 'hy' || code === 'ru' ? code : DEFAULT_ADMIN_LANGUAGE;
+}
+
+function readAdminSidebarLanguage(): AdminLanguageCode {
+  return normalizeAdminLanguage(getStoredLanguage());
+}
+
+function subscribeAdminSidebarLanguage(onStoreChange: () => void): () => void {
+  window.addEventListener('language-updated', onStoreChange);
+  return () => {
+    window.removeEventListener('language-updated', onStoreChange);
+  };
+}
+
+export const AdminSidebar = memo(function AdminSidebar({ currentPath, t }: AdminSidebarProps) {
   const adminTabs = getAdminMenuTABS(t);
   const homeTab = adminTabs.find((tab) => tab.id === 'home');
   const sidebarTabs = adminTabs.filter((tab) => tab.id !== 'home');
@@ -25,10 +41,11 @@ export function AdminSidebar({ currentPath, router, t }: AdminSidebarProps) {
     (path) => currentPath === path || currentPath.startsWith(`${path}/`),
   );
   const [isProductsExpanded, setIsProductsExpanded] = useState(isProductsSectionActive);
-  const [currentLanguage, setCurrentLanguage] = useState<AdminLanguageCode>(() => {
-    const stored = getStoredLanguage();
-    return stored === 'en' || stored === 'hy' || stored === 'ru' ? stored : 'en';
-  });
+  const currentLanguage = useSyncExternalStore(
+    subscribeAdminSidebarLanguage,
+    readAdminSidebarLanguage,
+    () => DEFAULT_ADMIN_LANGUAGE,
+  );
 
   useEffect(() => {
     if (isProductsSectionActive) {
@@ -36,23 +53,10 @@ export function AdminSidebar({ currentPath, router, t }: AdminSidebarProps) {
     }
   }, [isProductsSectionActive]);
 
-  useEffect(() => {
-    const syncLanguage = () => {
-      const stored = getStoredLanguage();
-      setCurrentLanguage(stored === 'en' || stored === 'hy' || stored === 'ru' ? stored : 'en');
-    };
-
-    window.addEventListener('language-updated', syncLanguage);
-    return () => {
-      window.removeEventListener('language-updated', syncLanguage);
-    };
-  }, []);
-
   const handleLanguageChange = (language: AdminLanguageCode) => {
     if (currentLanguage === language) {
       return;
     }
-    setCurrentLanguage(language);
     setStoredLanguage(language as LanguageCode, { skipReload: true });
   };
 
@@ -86,8 +90,8 @@ export function AdminSidebar({ currentPath, router, t }: AdminSidebarProps) {
             if (isProductsItem) {
               return (
                 <div key={tab.id} className="group flex items-center gap-1">
-                  <button
-                    onClick={() => router.push(tab.path)}
+                  <AdminNavLink
+                    href={tab.path}
                     className={`flex-1 flex items-center rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors duration-200 ${
                       isActive
                         ? 'bg-marco-yellow text-marco-black shadow-sm'
@@ -104,7 +108,7 @@ export function AdminSidebar({ currentPath, router, t }: AdminSidebarProps) {
                       </span>
                       <span className="text-left">{tab.label}</span>
                     </span>
-                  </button>
+                  </AdminNavLink>
                   <button
                     aria-label={t('admin.common.toggleProductsSubmenu')}
                     onClick={() => setIsProductsExpanded((prev) => !prev)}
@@ -133,11 +137,9 @@ export function AdminSidebar({ currentPath, router, t }: AdminSidebarProps) {
             }
 
             return (
-              <button
+              <AdminNavLink
                 key={tab.id}
-                onClick={() => {
-                  router.push(tab.path);
-                }}
+                href={tab.path}
                 className={`group w-full flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors duration-200 ${
                   tab.isSubCategory ? 'pl-9' : ''
                 } ${
@@ -156,15 +158,14 @@ export function AdminSidebar({ currentPath, router, t }: AdminSidebarProps) {
                   </span>
                   <span className="text-left">{tab.label}</span>
                 </span>
-              </button>
+              </AdminNavLink>
             );
           })}
           </div>
           <div className="mt-3 border-t border-marco-border pt-3">
             {homeTab ? (
-              <button
-                type="button"
-                onClick={() => router.push(homeTab.path)}
+              <AdminNavLink
+                href={homeTab.path}
                 className={`group mb-3 w-full flex items-center justify-between rounded-2xl border px-3 py-3 text-sm font-semibold transition-all duration-200 ${
                   currentPath === '/'
                     ? 'border-marco-yellow bg-marco-yellow/90 text-marco-black shadow-[0_8px_20px_rgba(247,206,63,0.35)]'
@@ -196,7 +197,7 @@ export function AdminSidebar({ currentPath, router, t }: AdminSidebarProps) {
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
-              </button>
+              </AdminNavLink>
             ) : null}
             <div className="grid grid-cols-3 gap-2">
               {ADMIN_LANGUAGES.map((language) => {
@@ -223,5 +224,5 @@ export function AdminSidebar({ currentPath, router, t }: AdminSidebarProps) {
       </aside>
     </>
   );
-}
+});
 

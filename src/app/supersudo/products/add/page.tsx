@@ -23,7 +23,7 @@ import { isClothingCategory as checkIsClothingCategory, generateSlug } from './u
 
 function AddProductPageContent() {
   const { t } = useTranslation();
-  const { isLoggedIn, isAdmin, isLoading } = useAuth();
+  const { isLoggedIn, isAdmin } = useAuth();
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -34,9 +34,6 @@ function AddProductPageContent() {
   const formState = useProductFormState();
 
   useProductDataLoading({
-    isLoggedIn,
-    isAdmin,
-    isLoading,
     setBrands: formState.setBrands,
     setCategories: formState.setCategories,
     setAttributes: formState.setAttributes,
@@ -169,21 +166,15 @@ function AddProductPageContent() {
     isClothingCategory,
   });
 
-  if (isLoading || formState.loadingProduct) {
+  if (formState.loadingProduct) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600">
-            {formState.loadingProduct ? t('admin.products.add.loadingProduct') : t('admin.products.add.loading')}
-          </p>
+          <p className="text-gray-600">{t('admin.products.add.loadingProduct')}</p>
         </div>
       </div>
     );
-  }
-
-  if (!isLoggedIn || !isAdmin) {
-    return null;
   }
 
   return (

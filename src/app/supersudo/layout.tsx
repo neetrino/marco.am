@@ -1,16 +1,7 @@
 import type { ReactNode } from 'react';
 
-import { AdminThemeGuard } from './AdminThemeGuard';
+import { AdminLayoutClient } from './AdminLayoutClient';
 
-export default function SupersudoLayout({
-  children,
-}: {
-  children: ReactNode;
-}) {
-  return (
-    <>
-      <AdminThemeGuard />
-      {children}
-    </>
-  );
+export default function SupersudoLayout({ children }: { children: ReactNode }) {
+  return <AdminLayoutClient>{children}</AdminLayoutClient>;
 }

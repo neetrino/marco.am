@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '../../../lib/auth/AuthContext';
 import { Card } from '@shop/ui';
@@ -20,7 +20,7 @@ import { StockAnalyticsSection } from './components/StockAnalyticsSection';
 
 export default function AnalyticsPage() {
   const { t, lang } = useTranslation();
-  const { isLoggedIn, isAdmin, isLoading } = useAuth();
+  const { isLoggedIn, isAdmin } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const currentPath = pathname || '/supersudo/analytics';
@@ -51,30 +51,6 @@ export default function AnalyticsPage() {
     isAdmin: isAdmin ?? false,
     locale: lang,
   });
-
-  useEffect(() => {
-    if (!isLoading) {
-      if (!isLoggedIn || !isAdmin) {
-        router.push('/supersudo');
-        return;
-      }
-    }
-  }, [isLoggedIn, isAdmin, isLoading, router]);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600">{t('admin.common.loading')}</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isLoggedIn || !isAdmin) {
-    return null;
-  }
 
   return (
     <AdminPageLayout

@@ -1,14 +1,20 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { useAuth } from '../../../lib/auth/AuthContext';
 import { Card, Button } from '@shop/ui';
 import { apiClient, getApiOrErrorMessage } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
 import { clearCurrencyRatesCache } from '../../../lib/currency';
 import { AdminPageLayout } from '../components/AdminPageLayout';
 import { logger } from '@/lib/utils/logger';
+import { ADMIN_CACHE_KEYS } from '@/lib/admin/admin-cache-keys';
+import { beginAdminDataFetch } from '@/lib/admin/admin-fetch-helpers';
+import {
+  ADMIN_SESSION_CACHE_TTL_MS,
+  readAdminSessionCache,
+  writeAdminSessionCache,
+} from '@/lib/admin/admin-session-cache';
 
 interface Settings {
   defaultCurrency?: string;
@@ -44,37 +50,33 @@ const CURRENCY_FIELDS: CurrencyField[] = [
 
 export default function SettingsPage() {
   const { t } = useTranslation();
-  const { isLoggedIn, isAdmin, isLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const currentPath = pathname || '/supersudo/settings';
+  const cachedSettings = readAdminSessionCache<Settings>(
+    ADMIN_CACHE_KEYS.settings,
+    ADMIN_SESSION_CACHE_TTL_MS,
+  );
+  const hadCacheRef = useRef(Boolean(cachedSettings));
   const [saving, setSaving] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [settings, setSettings] = useState<Settings>({
-    defaultCurrency: 'AMD',
-    currencyRates: DEFAULT_CURRENCY_RATES,
-  });
+  const [loading, setLoading] = useState(!hadCacheRef.current);
+  const [settings, setSettings] = useState<Settings>(
+    cachedSettings ?? {
+      defaultCurrency: 'AMD',
+      currencyRates: DEFAULT_CURRENCY_RATES,
+    },
+  );
 
   useEffect(() => {
-    if (!isLoading) {
-      if (!isLoggedIn || !isAdmin) {
-        router.push('/supersudo');
-      }
-    }
-  }, [isLoggedIn, isAdmin, isLoading, router]);
-
-  useEffect(() => {
-    if (isLoggedIn && isAdmin) {
-      void fetchSettings();
-    }
-  }, [isLoggedIn, isAdmin]);
+    void fetchSettings();
+  }, []);
 
   const fetchSettings = async () => {
     try {
-      setLoading(true);
+      beginAdminDataFetch(hadCacheRef.current, setLoading);
       logger.devLog('[ADMIN] Fetching settings...');
       const data = await apiClient.get<Settings>('/api/v1/supersudo/settings');
-      setSettings({
+      const nextSettings = {
         defaultCurrency: data.defaultCurrency || 'AMD',
         globalDiscount: data.globalDiscount,
         categoryDiscounts: data.categoryDiscounts,
@@ -83,14 +85,19 @@ export default function SettingsPage() {
           ...DEFAULT_CURRENCY_RATES,
           ...data.currencyRates,
         },
-      });
+      };
+      setSettings(nextSettings);
+      writeAdminSessionCache(ADMIN_CACHE_KEYS.settings, nextSettings);
+      hadCacheRef.current = true;
       logger.devLog('[ADMIN] Settings loaded:', data);
     } catch (err: unknown) {
       console.error('[ADMIN] Error fetching settings:', err);
-      setSettings({
-        defaultCurrency: 'AMD',
-        currencyRates: DEFAULT_CURRENCY_RATES,
-      });
+      if (!hadCacheRef.current) {
+        setSettings({
+          defaultCurrency: 'AMD',
+          currencyRates: DEFAULT_CURRENCY_RATES,
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -169,7 +176,7 @@ export default function SettingsPage() {
     }
   };
 
-  if (isLoading || loading) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[radial-gradient(circle_at_top,#fff8d6_0%,#f8fafc_32%,#f8fafc_100%)]">
         <div className="text-center">
@@ -178,10 +185,6 @@ export default function SettingsPage() {
         </div>
       </div>
     );
-  }
-
-  if (!isLoggedIn || !isAdmin) {
-    return null;
   }
 
   const configuredCurrenciesCount = CURRENCY_FIELDS.filter(

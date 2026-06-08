@@ -51,7 +51,7 @@ export function StatsGrid({ stats, statsLoading }: StatsGridProps) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-marco-text/70">{t('admin.dashboard.totalUsers')}</p>
-              {statsLoading ? (
+              {statsLoading && !stats ? (
                 <div className="animate-pulse h-8 w-16 bg-gray-200 rounded mt-1"></div>
               ) : (
                 <p className="mt-1 text-2xl font-bold text-marco-black">
@@ -75,7 +75,7 @@ export function StatsGrid({ stats, statsLoading }: StatsGridProps) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-marco-text/70">{t('admin.dashboard.totalProducts')}</p>
-              {statsLoading ? (
+              {statsLoading && !stats ? (
                 <div className="animate-pulse h-8 w-16 bg-gray-200 rounded mt-1"></div>
               ) : (
                 <p className="mt-1 text-2xl font-bold text-marco-black">
@@ -99,7 +99,7 @@ export function StatsGrid({ stats, statsLoading }: StatsGridProps) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-marco-text/70">{t('admin.dashboard.totalOrders')}</p>
-              {statsLoading ? (
+              {statsLoading && !stats ? (
                 <div className="animate-pulse h-8 w-16 bg-gray-200 rounded mt-1"></div>
               ) : (
                 <p className="mt-1 text-2xl font-bold text-marco-black">
@@ -123,7 +123,7 @@ export function StatsGrid({ stats, statsLoading }: StatsGridProps) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-marco-text/70">{t('admin.dashboard.revenue')}</p>
-              {statsLoading ? (
+              {statsLoading && !stats ? (
                 <div className="animate-pulse h-8 w-24 bg-gray-200 rounded mt-1"></div>
               ) : (
                 <p className="mt-1 text-2xl font-bold text-marco-black">
@@ -143,7 +143,7 @@ export function StatsGrid({ stats, statsLoading }: StatsGridProps) {
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <Card className="overflow-hidden rounded-2xl border border-emerald-200/80 bg-gradient-to-br from-white to-emerald-50/60 p-6 shadow-sm">
           <p className="text-sm font-medium text-emerald-800">{t('admin.dashboard.todaySales')}</p>
-          {statsLoading ? (
+          {statsLoading && !stats ? (
             <div className="animate-pulse h-8 w-24 bg-gray-200 rounded mt-2"></div>
           ) : (
             <>
@@ -167,7 +167,7 @@ export function StatsGrid({ stats, statsLoading }: StatsGridProps) {
 
         <Card className="overflow-hidden rounded-2xl border border-cyan-200/80 bg-gradient-to-br from-white to-cyan-50/60 p-6 shadow-sm">
           <p className="text-sm font-medium text-cyan-800">{t('admin.dashboard.monthlySales')}</p>
-          {statsLoading ? (
+          {statsLoading && !stats ? (
             <div className="animate-pulse h-8 w-24 bg-gray-200 rounded mt-2"></div>
           ) : (
             <>
@@ -191,7 +191,7 @@ export function StatsGrid({ stats, statsLoading }: StatsGridProps) {
 
         <Card className="overflow-hidden rounded-2xl border border-indigo-200/80 bg-gradient-to-br from-white to-indigo-50/60 p-6 shadow-sm">
           <p className="text-sm font-medium text-indigo-800">{t('admin.dashboard.topProduct')}</p>
-          {statsLoading ? (
+          {statsLoading && !stats ? (
             <div className="animate-pulse h-8 w-40 bg-gray-200 rounded mt-2"></div>
           ) : stats?.salesWidgets.topProduct ? (
             <>

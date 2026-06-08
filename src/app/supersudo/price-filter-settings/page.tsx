@@ -2,12 +2,18 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { useAuth } from '../../../lib/auth/AuthContext';
 import { Card, Button, Input } from '@shop/ui';
 import { apiClient, getApiOrErrorMessage } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
 import { AdminPageLayout } from '../components/AdminPageLayout';
 import { logger } from "@/lib/utils/logger";
+import { ADMIN_CACHE_KEYS } from '@/lib/admin/admin-cache-keys';
+import { beginAdminDataFetch } from '@/lib/admin/admin-fetch-helpers';
+import {
+  ADMIN_SESSION_CACHE_TTL_MS,
+  readAdminSessionCache,
+  writeAdminSessionCache,
+} from '@/lib/admin/admin-session-cache';
 
 const currencyFields = [
   {
@@ -36,63 +42,87 @@ const currencyFields = [
   },
 ] as const;
 
+type PriceFilterSettingsResponse = {
+  minPrice?: number;
+  maxPrice?: number;
+  stepSize?: number;
+  stepSizePerCurrency?: {
+    USD?: number;
+    AMD?: number;
+    RUB?: number;
+    GEL?: number;
+  };
+};
+
+function mapPriceFilterResponse(response: PriceFilterSettingsResponse) {
+  const minPriceStr = response.minPrice?.toString() || '';
+  const maxPriceStr = response.maxPrice?.toString() || '';
+  const per = response.stepSizePerCurrency || {};
+  const fallbackStep = response.stepSize?.toString() || '';
+  return {
+    minPrice: minPriceStr,
+    maxPrice: maxPriceStr,
+    stepSizeUSD: per.USD !== undefined ? per.USD.toString() : fallbackStep,
+    stepSizeAMD: per.AMD !== undefined ? per.AMD.toString() : '',
+    stepSizeRUB: per.RUB !== undefined ? per.RUB.toString() : '',
+    stepSizeGEL: per.GEL !== undefined ? per.GEL.toString() : '',
+    prevStepSize: fallbackStep,
+  };
+}
+
 export default function PriceFilterSettingsPage() {
   const { t } = useTranslation();
-  const { isLoggedIn, isAdmin, isLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
-  const [minPrice, setMinPrice] = useState<string>('');
-  const [maxPrice, setMaxPrice] = useState<string>('');
-  const [stepSizeUSD, setStepSizeUSD] = useState<string>('');
-  const [stepSizeAMD, setStepSizeAMD] = useState<string>('');
-  const [stepSizeRUB, setStepSizeRUB] = useState<string>('');
-  const [stepSizeGEL, setStepSizeGEL] = useState<string>('');
+  const cachedPriceFilter = readAdminSessionCache<PriceFilterSettingsResponse>(
+    ADMIN_CACHE_KEYS.priceFilter,
+    ADMIN_SESSION_CACHE_TTL_MS,
+  );
+  const initialPriceFilter = cachedPriceFilter ? mapPriceFilterResponse(cachedPriceFilter) : null;
+  const hadCacheRef = useRef(Boolean(initialPriceFilter));
+  const [minPrice, setMinPrice] = useState<string>(initialPriceFilter?.minPrice ?? '');
+  const [maxPrice, setMaxPrice] = useState<string>(initialPriceFilter?.maxPrice ?? '');
+  const [stepSizeUSD, setStepSizeUSD] = useState<string>(initialPriceFilter?.stepSizeUSD ?? '');
+  const [stepSizeAMD, setStepSizeAMD] = useState<string>(initialPriceFilter?.stepSizeAMD ?? '');
+  const [stepSizeRUB, setStepSizeRUB] = useState<string>(initialPriceFilter?.stepSizeRUB ?? '');
+  const [stepSizeGEL, setStepSizeGEL] = useState<string>(initialPriceFilter?.stepSizeGEL ?? '');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   
   // Храним предыдущее значение stepSize для расчета разницы
-  const prevStepSizeRef = useRef<string>('');
+  const prevStepSizeRef = useRef<string>(initialPriceFilter?.prevStepSize ?? '');
   const isUpdatingRef = useRef<boolean>(false);
 
   const fetchSettings = useCallback(async () => {
     try {
       logger.devLog('⚙️ [PRICE FILTER SETTINGS] Fetching settings...');
-      setLoading(true);
-      const response = await apiClient.get<{
-        minPrice?: number;
-        maxPrice?: number;
-        stepSize?: number;
-        stepSizePerCurrency?: {
-          USD?: number;
-          AMD?: number;
-          RUB?: number;
-          GEL?: number;
-        };
-      }>('/api/v1/supersudo/settings/price-filter');
-      const minPriceStr = response.minPrice?.toString() || '';
-      const maxPriceStr = response.maxPrice?.toString() || '';
-      const per = response.stepSizePerCurrency || {};
-      const fallbackStep = response.stepSize?.toString() || '';
-      
-      setMinPrice(minPriceStr);
-      setMaxPrice(maxPriceStr);
-      setStepSizeUSD(per.USD !== undefined ? per.USD.toString() : fallbackStep);
-      setStepSizeAMD(per.AMD !== undefined ? per.AMD.toString() : '');
-      setStepSizeRUB(per.RUB !== undefined ? per.RUB.toString() : '');
-      setStepSizeGEL(per.GEL !== undefined ? per.GEL.toString() : '');
-      prevStepSizeRef.current = fallbackStep;
+      beginAdminDataFetch(hadCacheRef.current, setLoading);
+      const response = await apiClient.get<PriceFilterSettingsResponse>(
+        '/api/v1/supersudo/settings/price-filter',
+      );
+      const mapped = mapPriceFilterResponse(response);
+      setMinPrice(mapped.minPrice);
+      setMaxPrice(mapped.maxPrice);
+      setStepSizeUSD(mapped.stepSizeUSD);
+      setStepSizeAMD(mapped.stepSizeAMD);
+      setStepSizeRUB(mapped.stepSizeRUB);
+      setStepSizeGEL(mapped.stepSizeGEL);
+      prevStepSizeRef.current = mapped.prevStepSize;
+      writeAdminSessionCache(ADMIN_CACHE_KEYS.priceFilter, response);
+      hadCacheRef.current = true;
       
       logger.devLog('✅ [PRICE FILTER SETTINGS] Settings loaded:', response);
     } catch (err: unknown) {
       console.error('❌ [PRICE FILTER SETTINGS] Error fetching settings:', err);
-      // If settings don't exist, use empty values
-      setMinPrice('');
-      setMaxPrice('');
-      setStepSizeUSD('');
-      setStepSizeAMD('');
-      setStepSizeRUB('');
-      setStepSizeGEL('');
-      prevStepSizeRef.current = '';
+      if (!hadCacheRef.current) {
+        setMinPrice('');
+        setMaxPrice('');
+        setStepSizeUSD('');
+        setStepSizeAMD('');
+        setStepSizeRUB('');
+        setStepSizeGEL('');
+        prevStepSizeRef.current = '';
+      }
     } finally {
       setLoading(false);
     }
@@ -243,42 +273,10 @@ export default function PriceFilterSettingsPage() {
   };
 
   useEffect(() => {
-    if (!isLoading && isLoggedIn && isAdmin) {
-      fetchSettings();
-    }
-  }, [isLoading, isLoggedIn, isAdmin, fetchSettings]);
-
-  useEffect(() => {
-    if (!isLoading) {
-      if (!isLoggedIn) {
-        logger.devLog('❌ [PRICE FILTER SETTINGS] User not logged in, redirecting to login...');
-        router.push('/login');
-        return;
-      }
-      if (!isAdmin) {
-        logger.devLog('❌ [PRICE FILTER SETTINGS] User is not admin, redirecting to home...');
-        router.push('/');
-        return;
-      }
-    }
-  }, [isLoggedIn, isAdmin, isLoading, router]);
+    fetchSettings();
+  }, [fetchSettings]);
 
   const currentPath = pathname || '/supersudo/price-filter-settings';
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600">{t('admin.common.loading')}</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isLoggedIn || !isAdmin) {
-    return null; // Will redirect
-  }
 
   const stepValues: Record<(typeof currencyFields)[number]['key'], string> = {
     USD: stepSizeUSD,
