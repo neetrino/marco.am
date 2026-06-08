@@ -9,6 +9,7 @@
 
 import { readFileSync } from "node:fs";
 import { loadEnvConfig } from "@next/env";
+import { parseDescriptionHtmlToEntries } from "../lib/products/product-description";
 import { nanoid } from "nanoid";
 import { db } from "@white-shop/db";
 import { adminProductsCreateService } from "@/lib/services/admin/admin-products-create.service";
@@ -111,7 +112,7 @@ async function main(): Promise<void> {
         title: name,
         slug,
         subtitle: shortDesc || undefined,
-        descriptionHtml: desc || undefined,
+        description: desc ? parseDescriptionHtmlToEntries(desc) : undefined,
         brandId: brandId ?? undefined,
         primaryCategoryId,
         categoryIds,

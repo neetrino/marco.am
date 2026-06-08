@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  isPopulatedSpecificationValue,
   splitSpecificationFootnote,
   splitSpecificationValueParts,
 } from './product-specifications-value';
@@ -30,7 +31,7 @@ function SpecificationMainValue({ main }: { main: string }) {
 
 export function SpecificationValueDisplay({ value }: SpecificationValueDisplayProps) {
   const trimmed = value.trim();
-  if (!trimmed || trimmed === '-') {
+  if (!isPopulatedSpecificationValue(trimmed)) {
     return <span className="text-gray-400">—</span>;
   }
 

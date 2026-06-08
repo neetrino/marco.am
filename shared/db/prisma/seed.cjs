@@ -433,7 +433,7 @@ async function seedBrandDemoProducts(categoryIds) {
             title,
             slug: productSlug,
             subtitle: `Placeholder for ${brandName} — replace when importing real catalog.`,
-            descriptionHtml: `<p>Seed demo product for brand filter QA.</p>`,
+            description: [{ title: "", value: "Seed demo product for brand filter QA." }],
           },
         },
         variants: {
@@ -502,7 +502,7 @@ async function seedProducts(categoryIds, brandIds) {
             title,
             slug,
             subtitle: `Quality ${title.toLowerCase()}`,
-            descriptionHtml: `<p>Great product for everyday use. Item #${i + 1}.</p>`,
+            description: [{ title: "", value: `Great product for everyday use. Item #${i + 1}.` }],
           },
         },
         variants: {

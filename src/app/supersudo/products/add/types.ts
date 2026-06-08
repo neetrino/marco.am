@@ -1,4 +1,5 @@
 import type { ProductClass } from "@/lib/constants/product-class";
+import type { ProductDescriptionEntry } from "@/lib/products/product-description";
 
 export interface Brand {
   id: string;
@@ -88,7 +89,7 @@ export interface ProductData {
   title: string;
   slug: string;
   subtitle?: string;
-  descriptionHtml?: string;
+  description?: ProductDescriptionEntry[];
   brandId?: string | null;
   productClass?: ProductClass;
   primaryCategoryId?: string | null;

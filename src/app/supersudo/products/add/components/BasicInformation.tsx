@@ -3,17 +3,19 @@
 import type { ChangeEvent } from 'react';
 import { Input } from '@shop/ui';
 import { useTranslation } from '../../../../../lib/i18n-client';
+import type { ProductDescriptionEntry } from '../../../../../lib/products/product-description';
 import { FormSection } from './FormSection';
+import { ProductDescriptionFields } from './ProductDescriptionFields';
 
 interface BasicInformationProps {
   productType: 'simple' | 'variable';
   setProductType: (type: 'simple' | 'variable') => void;
   title: string;
   slug: string;
-  descriptionHtml: string;
+  description: ProductDescriptionEntry[];
   onTitleChange: (e: ChangeEvent<HTMLInputElement>) => void;
   onSlugChange: (e: ChangeEvent<HTMLInputElement>) => void;
-  onDescriptionChange: (e: ChangeEvent<HTMLTextAreaElement>) => void;
+  onDescriptionChange: (entries: ProductDescriptionEntry[]) => void;
 }
 
 export function BasicInformation({
@@ -21,7 +23,7 @@ export function BasicInformation({
   setProductType,
   title,
   slug,
-  descriptionHtml,
+  description,
   onTitleChange,
   onSlugChange,
   onDescriptionChange,
@@ -92,16 +94,10 @@ export function BasicInformation({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
             {t('admin.products.add.description')}
           </label>
-          <textarea
-            className="admin-field min-h-[8rem] w-full resize-y"
-            rows={6}
-            value={descriptionHtml}
-            onChange={onDescriptionChange}
-            placeholder={t('admin.products.add.productDescriptionPlaceholder')}
-          />
+          <ProductDescriptionFields entries={description} onChange={onDescriptionChange} />
         </div>
       </div>
     </FormSection>

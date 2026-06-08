@@ -6,8 +6,7 @@ import { ArrowUpRight, Heart } from 'lucide-react';
 import { formatCatalogPrice, type CurrencyCode } from '../../../lib/currency';
 import { t, getProductText } from '../../../lib/i18n';
 import type { LanguageCode } from '../../../lib/language';
-import { normalizeDescriptionHtmlForDisplay } from '../../../lib/utils/normalize-literal-newlines';
-import { sanitizeHtml } from '../../../lib/utils/sanitize';
+import { getProductDescriptionNotes } from '../../../lib/products/product-description';
 import { CompareIcon } from '../../../components/icons/CompareIcon';
 import { ProductWarrantyBadge } from '../../../components/ProductCard/ProductWarrantyBadge';
 import {
@@ -16,7 +15,6 @@ import {
 import {
   ProductAttributesSelector,
 } from './ProductAttributesSelector';
-import { stripDuplicateSpecificationDescriptionHtml } from './strip-duplicate-specification-description-html';
 import type { AttributeGroupValue, Product, ProductVariant, VariantOption } from './types';
 
 /** Buy CTA — taller row; trailing circle with light left nudge (−4px). */
@@ -101,20 +99,14 @@ export function ProductInfoAndActions({
   getOptionValue,
   getRequiredAttributesMessage,
 }: ProductInfoAndActionsProps) {
-  const rawDescription = getProductText(language, product.id, 'longDescription') || product.description || '';
+  const localizedEntries = product.i18n?.descriptions[language]?.entries ?? product.description ?? [];
+  const descriptionNotes = getProductDescriptionNotes(localizedEntries);
   const buyNowFullLabel = t(language, 'product.buyNow');
   const noPriceLabel = t(language, 'products.noPrice.label');
-  const descriptionWithoutDuplicateSpecs =
-    stripDuplicateSpecificationDescriptionHtml(rawDescription);
-  const normalizedDescription = normalizeDescriptionHtmlForDisplay(descriptionWithoutDuplicateSpecs);
-  const sanitizedDescription = sanitizeHtml(normalizedDescription);
   const hasMultiValueAttributeGroup = Array.from(attributeGroups.values()).some(
     (values) => values.length > 1,
   );
-  const hasDescription = sanitizedDescription
-    .replace(/<[^>]*>/g, '')
-    .replace(/&nbsp;/gi, ' ')
-    .trim().length > 0;
+  const hasDescription = descriptionNotes.length > 0;
   const displaySku = currentVariant?.sku || product.variants.find((variant) => Boolean(variant.sku))?.sku || null;
   const hasAttributeSelectors =
     hasMultiValueAttributeGroup ||
@@ -177,10 +169,11 @@ export function ProductInfoAndActions({
           </div>
         </div>
         {hasDescription && (
-          <div
-            className="text-gray-600 mb-8 prose prose-sm"
-            dangerouslySetInnerHTML={{ __html: sanitizedDescription }}
-          />
+          <div className="mb-8 space-y-2 text-sm text-gray-600">
+            {descriptionNotes.map((note, index) => (
+              <p key={`description-note-${index}`}>{note.value}</p>
+            ))}
+          </div>
         )}
 
         {/* Attributes Section */}

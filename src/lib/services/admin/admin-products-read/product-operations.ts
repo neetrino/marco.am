@@ -1,3 +1,4 @@
+import { parseProductDescriptionJson } from "@/lib/products/product-description";
 import { logger } from "../../../utils/logger";
 import { expandCategoryIdsWithDescendants } from "../../category-subtree.service";
 import type { ProductFilters } from "./types";
@@ -79,7 +80,7 @@ export async function getProductById(productId: string) {
 
   // Безопасное получение translation с проверкой на существование массива
   const productWithRelations = product as typeof product & {
-    translations?: Array<{ locale: string; title?: string; slug?: string; subtitle?: string | null; descriptionHtml?: string | null }>;
+    translations?: Array<{ locale: string; title?: string; slug?: string; subtitle?: string | null; description?: unknown }>;
     labels?: Array<{ id: string; type: string; value: string; position: string; color: string | null }>;
     variants?: Array<unknown>;
   };
@@ -113,7 +114,7 @@ export async function getProductById(productId: string) {
     title: translation?.title || "",
     slug: translation?.slug || "",
     subtitle: translation?.subtitle || null,
-    descriptionHtml: translation?.descriptionHtml || null,
+    description: parseProductDescriptionJson(translation?.description),
     brandId: product.brandId || null,
     productClass: product.productClass || "retail",
     primaryCategoryId: product.primaryCategoryId || null,

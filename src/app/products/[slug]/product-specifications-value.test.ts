@@ -1,8 +1,24 @@
 import { describe, expect, it } from 'vitest';
 import {
+  isPopulatedSpecificationValue,
   splitSpecificationFootnote,
   splitSpecificationValueParts,
 } from './product-specifications-value';
+
+describe('isPopulatedSpecificationValue', () => {
+  it('returns false for blank or placeholder values', () => {
+    expect(isPopulatedSpecificationValue('')).toBe(false);
+    expect(isPopulatedSpecificationValue('   ')).toBe(false);
+    expect(isPopulatedSpecificationValue('-')).toBe(false);
+    expect(isPopulatedSpecificationValue('—')).toBe(false);
+    expect(isPopulatedSpecificationValue('N/A')).toBe(false);
+  });
+
+  it('returns true for meaningful values', () => {
+    expect(isPopulatedSpecificationValue('Բելառուս')).toBe(true);
+    expect(isPopulatedSpecificationValue('1970 × 940 × 860 mm (մմ)')).toBe(true);
+  });
+});
 
 describe('splitSpecificationValueParts', () => {
   it('returns empty for blank or placeholder dash', () => {

@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import type { Brand, Category, Attribute, Variant, ProductLabel, GeneratedVariant } from '../types';
 import type { CurrencyCode } from '@/lib/currency';
 import type { ProductClass } from '@/lib/constants/product-class';
+import type { ProductDescriptionEntry } from '@/lib/products/product-description';
 
 export function useProductFormState() {
   const [loading, setLoading] = useState(false);
@@ -12,7 +13,7 @@ export function useProductFormState() {
   const [formData, setFormData] = useState({
     title: '',
     slug: '',
-    descriptionHtml: '',
+    description: [] as ProductDescriptionEntry[],
     productClass: 'retail' as ProductClass,
     brandIds: [] as string[],
     primaryCategoryId: '',

@@ -275,7 +275,8 @@ model ProductTranslation {
   title           String
   slug            String
   subtitle        String?
-  descriptionHtml String? @db.Text
+  /// Array of { title, value } specification rows (no HTML).
+  description     Json?
   seoTitle        String?
   seoDescription  String?
 

@@ -215,7 +215,7 @@ function AddProductPageContent() {
         variantImageInputRefs={formState.variantImageInputRefs}
         onTitleChange={handleTitleChange}
         onSlugChange={(e) => formState.setFormData((prev) => ({ ...prev, slug: e.target.value }))}
-        onDescriptionChange={(e) => formState.setFormData((prev) => ({ ...prev, descriptionHtml: e.target.value }))}
+        onDescriptionChange={(description) => formState.setFormData((prev) => ({ ...prev, description }))}
         onProductTypeChange={formState.setProductType}
         onUploadImages={handleUploadImages}
         onRemoveImage={removeImageUrl}

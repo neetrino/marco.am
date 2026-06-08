@@ -72,14 +72,15 @@ export interface AttributeGroupValue {
   colors?: string[] | null;
 }
 
+import type { ProductDescriptionEntry } from '@/lib/products/product-description';
+
 export interface Product {
   id: string;
   slug: string;
   title: string;
   subtitle?: string;
   shortDescription?: string | null;
-  description?: string;
-  fullDescription?: string | null;
+  description?: ProductDescriptionEntry[];
   i18n?: {
     requestedLocale: string;
     availableLocales: string[];
@@ -87,7 +88,7 @@ export interface Product {
       string,
       {
         shortDescription: string | null;
-        fullDescription: string | null;
+        entries: ProductDescriptionEntry[];
       }
     >;
   };

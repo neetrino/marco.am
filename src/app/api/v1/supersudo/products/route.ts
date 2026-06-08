@@ -239,7 +239,7 @@ export async function GET(req: NextRequest) {
  * - title: string (required)
  * - slug: string (required)
  * - subtitle?: string
- * - descriptionHtml?: string
+ * - description?: Array<{ title: string; value: string }>
  * - brandId?: string
  * - primaryCategoryId?: string
  * - categoryIds?: string[]
