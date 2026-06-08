@@ -6,7 +6,6 @@ import { Montserrat } from 'next/font/google';
 
 import { apiClient } from '../../lib/api-client';
 import { useTranslation } from '../../lib/i18n-client';
-import { ReelLikeButton } from '../reels/ReelLikeButton';
 import { ReelOverlay } from '../reels/ReelOverlay';
 import { ReelVideoPlayer } from '../reels/ReelVideoPlayer';
 import {
@@ -137,6 +136,15 @@ export function HomeReelPreviewDialog({
               onDoubleTapLike={(reelId) => {
                 toggleLike({ reelId, forceLiked: true, registerBurst: true });
               }}
+              likeControl={{
+                ariaLabel: t('home.reels_feed_like_aria'),
+                liked: item.likedByCurrentUser,
+                burstVersion: doubleTapBurstById[item.id] ?? 0,
+                disabled: pendingLikeById[item.id] === true,
+                onToggle: () => {
+                  toggleLike({ reelId: item.id });
+                },
+              }}
             />
             <button
               type="button"
@@ -147,15 +155,6 @@ export function HomeReelPreviewDialog({
               <X className="h-5 w-5" strokeWidth={2} aria-hidden />
             </button>
             <ReelOverlay title={item.title} />
-            <ReelLikeButton
-              ariaLabel={t('home.reels_feed_like_aria')}
-              liked={item.likedByCurrentUser}
-              burstVersion={doubleTapBurstById[item.id] ?? 0}
-              disabled={pendingLikeById[item.id] === true}
-              onToggle={() => {
-                toggleLike({ reelId: item.id });
-              }}
-            />
           </div>
         </article>
       );
