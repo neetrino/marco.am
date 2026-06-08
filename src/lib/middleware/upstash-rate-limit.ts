@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { getDeploymentTier } from "@/lib/config/deployment-env";
+import { logger } from "@/lib/utils/logger";
 
 type RateLimitWindow = `${number} s` | `${number} m` | `${number} h`;
 
@@ -13,6 +14,9 @@ export type UpstashRateLimitSpec = {
 };
 
 const limiterCache = new Map<string, Ratelimit>();
+/** Per-process sliding windows when Upstash is not configured (e.g. missing Vercel env vars). */
+const memoryBuckets = new Map<string, number[]>();
+let memoryFallbackWarned = false;
 
 function getClientIp(request: NextRequest): string {
   return (
@@ -45,18 +49,6 @@ function getLimiter(spec: UpstashRateLimitSpec): Ratelimit | null {
   return limiter;
 }
 
-export function rateLimitConfigError(detail: string): NextResponse {
-  return NextResponse.json(
-    {
-      type: "https://api.shop.am/problems/internal-error",
-      title: "Internal Server Error",
-      status: 503,
-      detail,
-    },
-    { status: 503 }
-  );
-}
-
 export function tooManyRequestsError(detail: string): NextResponse {
   return NextResponse.json(
     {
@@ -69,24 +61,67 @@ export function tooManyRequestsError(detail: string): NextResponse {
   );
 }
 
+function parseRateLimitWindowToMs(window: RateLimitWindow): number {
+  const match = window.match(/^(\d+)\s+(s|m|h)$/);
+  if (!match) {
+    throw new Error(`Invalid rate limit window: ${window}`);
+  }
+  const value = Number(match[1]);
+  const unit = match[2];
+  const multipliers: Record<string, number> = {
+    s: 1_000,
+    m: 60_000,
+    h: 3_600_000,
+  };
+  return value * multipliers[unit];
+}
+
+function warnMemoryFallbackOnce(requireInProduction: boolean): void {
+  if (memoryFallbackWarned) {
+    return;
+  }
+  memoryFallbackWarned = true;
+  const tier = getDeploymentTier();
+  if (requireInProduction && tier === "production") {
+    logger.warn(
+      "Rate limiting uses in-memory fallback — set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN on Vercel for distributed limits",
+      { tier }
+    );
+  }
+}
+
+function checkMemoryLimit(clientKey: string, spec: UpstashRateLimitSpec): boolean {
+  const now = Date.now();
+  const windowMs = parseRateLimitWindowToMs(spec.window);
+  const windowStart = now - windowMs;
+  const timestamps = memoryBuckets.get(clientKey) ?? [];
+  const recent = timestamps.filter((t) => t > windowStart);
+  if (recent.length >= spec.limit) {
+    memoryBuckets.set(clientKey, recent);
+    return false;
+  }
+  recent.push(now);
+  memoryBuckets.set(clientKey, recent);
+  return true;
+}
+
 /**
- * Enforces Upstash sliding-window rate limit by client IP.
- * Returns 503 in production when Redis is not configured and `requireInProduction` is true.
+ * Enforces sliding-window rate limit by client IP (Upstash Redis, or in-memory fallback).
  */
 export async function enforceUpstashRateLimit(
   request: NextRequest,
   spec: UpstashRateLimitSpec,
   requireInProduction: boolean
 ): Promise<NextResponse | null> {
+  const clientIp = getClientIp(request);
   const limiter = getLimiter(spec);
   if (!limiter) {
-    if (requireInProduction && getDeploymentTier() === "production") {
-      return rateLimitConfigError(`${spec.detail} (rate limiting is not configured)`);
-    }
-    return null;
+    warnMemoryFallbackOnce(requireInProduction);
+    const allowed = checkMemoryLimit(`${spec.prefix}:${clientIp}`, spec);
+    return allowed ? null : tooManyRequestsError(spec.detail);
   }
 
-  const { success } = await limiter.limit(getClientIp(request));
+  const { success } = await limiter.limit(clientIp);
   if (success) {
     return null;
   }

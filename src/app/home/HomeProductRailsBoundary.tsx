@@ -29,6 +29,7 @@ export async function HomeProductRailsBoundary() {
         initialNewProducts={rails.newProducts}
         initialHomeBrandPartners={rails.brandPartners}
         initialHomeBrandPartnersSectionTitle={rails.brandPartnersSectionTitle}
+        initialPromoStripBanners={rails.promoStripBanners}
       />
     </>
   );

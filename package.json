@@ -34,7 +34,9 @@
     "backfill:product-categories": "tsx src/scripts/backfill-product-category-links.ts",
     "backfill:product-brands": "tsx src/scripts/backfill-product-brands.ts",
     "export:marco-xlsx-brands": "python src/scripts/export-marco-xlsx-brands.py",
-    "db:migrate:deploy": "node src/scripts/run-migrations.js"
+    "db:migrate:deploy": "node src/scripts/run-migrations.js",
+    "check:perf-env": "node scripts/check-perf-env.mjs",
+    "warm:home-cache": "node scripts/warm-home-cache.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.995.0",

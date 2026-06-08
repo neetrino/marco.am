@@ -22,7 +22,7 @@ export async function getCachedJson<T>(
 ): Promise<T> {
   if (options?.requireSharedCache) {
     const backend = await cacheService.getBackend();
-    if (backend === "memory") {
+    if (backend === "memory" && process.env.NODE_ENV === "production") {
       return fetcher();
     }
   }

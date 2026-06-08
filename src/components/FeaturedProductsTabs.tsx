@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 
 import { montserratFeatured } from '../fonts/montserrat-home';
 import { apiClient, getErrorHttpStatus } from '../lib/api-client';
@@ -41,6 +41,7 @@ import {
   REELS_CAROUSEL_NAV_INSET_RIGHT_MOBILE_PX,
 } from './home/home-reels.constants';
 import type { HomeBrandPartnerPublicItem } from '@/lib/types/home-brand-partners-public';
+import type { PublicBannersPayload } from '@/lib/services/banner-management.service';
 import type { SpecialOfferProduct } from './home/special-offer-product.types';
 import { useIsMaxMd } from './home/use-is-max-md';
 import { HOME_PRODUCT_CHUNK_SIZE } from '../constants/homeProductChunks';
@@ -67,17 +68,9 @@ interface HomeBrandPartnersResponse {
   brands: HomeBrandPartnerPublicItem[];
 }
 
-type BannerSlotPayload = {
-  items: Array<{
-    id: string;
-    imageDesktopUrl: string | null;
-    imageMobileUrl: string | null;
-  }>;
-};
+type BannerSlotPayload = Pick<PublicBannersPayload, 'items'>;
 
 type FilterType = 'new' | 'featured' | 'bestseller';
-
-const TAB_ORDER: FilterType[] = ['new', 'bestseller', 'featured'];
 
 /** Section heading is always «Նորույթներ»; chevrons only change the product filter below. */
 const FEATURED_SECTION_TITLE_KEY = 'home.featured_products.tab_new';
@@ -130,6 +123,8 @@ export type FeaturedProductsTabsProps = {
    */
   readonly initialHomeBrandPartners?: readonly HomeBrandPartnerPublicItem[] | null;
   readonly initialHomeBrandPartnersSectionTitle?: string | null;
+  /** Server-rendered promo strip banners — avoids client `/api/v1/banners` on first paint. */
+  readonly initialPromoStripBanners?: PublicBannersPayload | null;
 };
 
 async function fetchFeaturedStrip(
@@ -236,9 +231,9 @@ export function FeaturedProductsTabs({
   initialNewProducts,
   initialHomeBrandPartners = null,
   initialHomeBrandPartnersSectionTitle = null,
+  initialPromoStripBanners = null,
 }: FeaturedProductsTabsProps = {}) {
   const isMaxMd = useIsMaxMd();
-  const queryClient = useQueryClient();
   const [language, setLanguage] = useState<LanguageCode>(() => serverLanguage ?? 'en');
   const activeTab: FilterType = 'new';
   const carouselArrowHandlersRef = useRef<{
@@ -302,12 +297,20 @@ export function FeaturedProductsTabs({
     staleTime: 300_000,
     initialData: initialHomeBrandPartnersPayload,
     placeholderData: (previous) => previous,
+    refetchOnMount: initialHomeBrandPartnersPayload === undefined,
   });
+
+  const initialPromoStripPayload =
+    language === serverLanguage && initialPromoStripBanners !== null
+      ? { items: [...initialPromoStripBanners.items] }
+      : undefined;
 
   const promoStripBannersQuery = useQuery({
     queryKey: queryKeys.bannersBySlot('home.promo.strip', language),
     queryFn: () => fetchPromoStripBanners(language),
     staleTime: 300_000,
+    initialData: initialPromoStripPayload,
+    refetchOnMount: initialPromoStripPayload === undefined,
   });
 
   const promoPrimaryImageUrl =
@@ -385,32 +388,6 @@ export function FeaturedProductsTabs({
       logger.error('[FeaturedProductsTabs] fetch failed', { error: featuredQuery.error });
     }
   }, [featuredQuery.isError, featuredQuery.error]);
-
-  useEffect(() => {
-    if (!featuredQuery.isSuccess) {
-      return;
-    }
-    const others = TAB_ORDER.filter((tab) => tab !== activeTab).map((tab) => FILTER_BY_TAB[tab]);
-    const prefetchOtherTabs = () => {
-      for (const f of others) {
-        void queryClient.prefetchQuery({
-          queryKey: queryKeys.featuredHomeStrip(f, language, FEATURED_PRODUCTS_VISIBLE_COUNT),
-          queryFn: () => fetchFeaturedStrip(f, language),
-          staleTime: 300_000,
-        });
-      }
-    };
-    const w = typeof window !== 'undefined' ? window : null;
-    if (!w) {
-      return;
-    }
-    if ('requestIdleCallback' in w) {
-      const id = w.requestIdleCallback(prefetchOtherTabs, { timeout: 5000 });
-      return () => w.cancelIdleCallback(id);
-    }
-    const t = window.setTimeout(prefetchOtherTabs, 1500);
-    return () => window.clearTimeout(t);
-  }, [featuredQuery.isSuccess, activeTab, language, queryClient]);
 
   const setCarouselArrowHandlers = useCallback(
     (

@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import { HeroCarousel } from '../components/HeroCarousel';
 import { buildHeroCarouselImageUrls } from '../lib/home-hero-carousel-urls';
+import { collectImageOrigins } from '../lib/utils/collect-image-origins';
 import {
   LANGUAGE_PREFERENCE_KEY,
   parseLanguageFromServer,
@@ -19,6 +20,14 @@ export async function HomeHeroBannerSection() {
     localeRaw: lang,
   });
   const heroImageUrls = buildHeroCarouselImageUrls(heroSlots.primary, heroSlots.secondary);
+  const preconnectOrigins = collectImageOrigins(Object.values(heroImageUrls));
 
-  return <HeroCarousel heroImageUrls={heroImageUrls} />;
+  return (
+    <>
+      {preconnectOrigins.map((origin) => (
+        <link key={origin} rel="preconnect" href={origin} crossOrigin="anonymous" />
+      ))}
+      <HeroCarousel heroImageUrls={heroImageUrls} />
+    </>
+  );
 }

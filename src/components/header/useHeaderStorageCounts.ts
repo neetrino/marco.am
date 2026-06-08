@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
+import { usePathname } from 'next/navigation';
 import { getCompareCount, getWishlistCount } from '../../lib/storageCounts';
 import { getStoredLanguage } from '@/lib/language';
 import {
@@ -13,6 +14,23 @@ import {
   fetchWishlistItemCount,
 } from '@/lib/wishlist/wishlist-client';
 
+const HOME_PATH = '/';
+/** Defer header count API sync on home so SSR + rails are not competing for the DB pool. */
+const HOME_STORAGE_SYNC_DEFER_MS = 10_000;
+
+function scheduleIdleSync(run: () => void, timeoutMs: number): () => void {
+  const w = typeof window !== 'undefined' ? window : null;
+  if (!w) {
+    return () => {};
+  }
+  if ('requestIdleCallback' in w) {
+    const id = w.requestIdleCallback(run, { timeout: timeoutMs });
+    return () => w.cancelIdleCallback(id);
+  }
+  const timerId = globalThis.setTimeout(run, Math.min(timeoutMs, 3000));
+  return () => globalThis.clearTimeout(timerId);
+}
+
 /**
  * Subscribes to wishlist/compare localStorage events and updates counts.
  */
@@ -21,11 +39,14 @@ export function useHeaderStorageCounts(
   setCompareCount: Dispatch<SetStateAction<number>>,
   onAuthChange: () => void
 ) {
+  const pathname = usePathname() ?? '';
+  const isHomeRoute = pathname === HOME_PATH;
   const wishlistSyncSeqRef = useRef(0);
   const compareSyncSeqRef = useRef(0);
 
   useEffect(() => {
     let isActive = true;
+    let cancelDeferredSync: (() => void) | undefined;
 
     const updateWishlistCount = () => {
       const requestSeq = ++wishlistSyncSeqRef.current;
@@ -67,8 +88,18 @@ export function useHeaderStorageCounts(
       }
     };
 
-    updateWishlistCount();
-    void updateCompareCount();
+    const syncCountsFromApi = () => {
+      updateWishlistCount();
+      void updateCompareCount();
+    };
+
+    if (isHomeRoute) {
+      setWishlistCount(getWishlistCount());
+      setCompareCount(getCompareCount());
+      cancelDeferredSync = scheduleIdleSync(syncCountsFromApi, HOME_STORAGE_SYNC_DEFER_MS);
+    } else {
+      syncCountsFromApi();
+    }
 
     const handleWishlistUpdate = () => updateWishlistCount();
     const handleCompareUpdate = () => {
@@ -106,6 +137,7 @@ export function useHeaderStorageCounts(
 
     return () => {
       isActive = false;
+      cancelDeferredSync?.();
       window.removeEventListener('wishlist-updated', handleWishlistUpdate);
       window.removeEventListener('compare-updated', handleCompareUpdate);
       window.removeEventListener('auth-updated', handleAuthUpdate);
@@ -113,5 +145,5 @@ export function useHeaderStorageCounts(
       window.removeEventListener('wishlist-optimistic-updated', handleWishlistOptimisticUpdate);
       window.removeEventListener('compare-optimistic-updated', handleCompareOptimisticUpdate);
     };
-  }, [setWishlistCount, setCompareCount, onAuthChange]);
+  }, [isHomeRoute, setWishlistCount, setCompareCount, onAuthChange]);
 }

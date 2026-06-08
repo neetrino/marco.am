@@ -1,6 +1,11 @@
 import { Prisma } from "@white-shop/db/prisma";
 import { buildWhereClause } from "./products-find-query/query-builder";
 import { executeProductListingQuery } from "./products-find-query/query-executor";
+import {
+  executeHomeStripListingQuery,
+  fetchHomeStripProductsByIds,
+} from "./products-find-query/home-strip-listing-query";
+import { fetchPromotionListingProductIds } from "./products-find-query/promotion-listing-ids";
 import { db } from "@white-shop/db";
 import type { ProductFilters, ProductWithRelations } from "./products-find-query/types";
 import { hasTechnicalSpecFilters } from "./products-technical-filters";
@@ -28,6 +33,31 @@ function resolveListingOrderBy(
     return [{ discountPercent: "desc" }, { createdAt: "desc" }];
   }
   return { createdAt: "desc" };
+}
+
+function usesHomeStripListingPath(filters: ProductFilters, needOverFetch: boolean): boolean {
+  return (
+    Boolean(filters.homeStripListing) &&
+    Boolean(filters.listingOmitProductAttributes) &&
+    Boolean(filters.skipExactTotalCount) &&
+    !needOverFetch &&
+    filters.cursor === undefined &&
+    !hasTechnicalSpecFilters(filters.technicalSpecs) &&
+    !filters.category &&
+    !filters.search &&
+    filters.minPrice === undefined &&
+    filters.maxPrice === undefined &&
+    !filters.colors &&
+    !filters.sizes &&
+    !filters.brand &&
+    !filters.productIds?.length
+  );
+}
+
+async function buildBaseWhereForHomeStrip(
+  filters: ProductFilters,
+): Promise<{ where: Prisma.ProductWhereInput | null; bestsellerProductIds: string[] }> {
+  return buildWhereClause({ ...filters, filter: undefined });
 }
 
 /**
@@ -71,11 +101,57 @@ class ProductsFindQueryService {
       orderBy: resolveListingOrderBy(filters),
     };
 
+    const homeStripPath = usesHomeStripListingPath(filters, needOverFetch);
+
     if (!needOverFetch) {
       const cursorOffset = filters.cursor ? decodeProductCursor(filters.cursor) : undefined;
       const skip = cursorOffset !== undefined ? cursorOffset : (page - 1) * limit;
       const canSkipCount =
         Boolean(filters.skipExactTotalCount) && filters.cursor === undefined;
+
+      if (homeStripPath && (filter === "promotion" || filter === "special_offer")) {
+        const { where: baseWhere, bestsellerProductIds: baseBestsellerIds } =
+          await buildBaseWhereForHomeStrip(filters);
+        if (baseWhere === null) {
+          return { products: [], bestsellerProductIds: baseBestsellerIds, total: 0 };
+        }
+        const ids = await fetchPromotionListingProductIds(baseWhere, limit, skip);
+        const products = await fetchHomeStripProductsByIds(ids, {
+          lang: queryOpts.lang,
+        });
+        const total =
+          products.length < limit ? skip + products.length : skip + limit + 1;
+        return {
+          products,
+          bestsellerProductIds,
+          total,
+        };
+      }
+
+      if (homeStripPath) {
+        const products = await executeHomeStripListingQuery(where, limit, skip, {
+          lang: queryOpts.lang,
+          orderBy: queryOpts.orderBy,
+        });
+        if (canSkipCount) {
+          const total =
+            products.length < limit ? skip + products.length : skip + limit + 1;
+          return {
+            products,
+            bestsellerProductIds,
+            total,
+          };
+        }
+        const [total, countedProducts] = await Promise.all([
+          db.product.count({ where }),
+          Promise.resolve(products),
+        ]);
+        return {
+          products: countedProducts,
+          bestsellerProductIds,
+          total,
+        };
+      }
 
       if (canSkipCount) {
         const products = await executeProductListingQuery(where, limit, skip, queryOpts);

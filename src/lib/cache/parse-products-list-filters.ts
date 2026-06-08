@@ -59,6 +59,10 @@ export function parseProductListFiltersFromSearchParams(
   const skipCountRaw = searchParams.get('skipExactTotalCount');
   const skipExactTotalCount =
     skipCountRaw === '1' || skipCountRaw?.toLowerCase() === 'true' ? true : undefined;
+
+  const homeStripRaw = searchParams.get('homeStripListing');
+  const homeStripListing =
+    homeStripRaw === '1' || homeStripRaw?.toLowerCase() === 'true' ? true : undefined;
   const rawPricePresence = searchParams.get('pricePresence');
   const pricePresence =
     rawPricePresence === 'with' || rawPricePresence === 'without' ? rawPricePresence : undefined;
@@ -83,5 +87,6 @@ export function parseProductListFiltersFromSearchParams(
     listingOmitProductAttributes,
     cardVisualOnly,
     skipExactTotalCount,
+    homeStripListing,
   };
 }
