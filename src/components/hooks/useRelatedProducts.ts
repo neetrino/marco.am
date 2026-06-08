@@ -11,6 +11,7 @@ import {
   type RelatedProductRow,
   type RelatedProductsApiResponse,
 } from '@/lib/product-pdp/fetch-related-products';
+import { RELATED_PRODUCTS_FETCH_LIMIT } from '@/lib/product-pdp/related-products.constants';
 import { PDP_RELATED_GC_TIME_MS, PDP_RELATED_STALE_TIME_MS } from '@/lib/product-pdp/pdp-query-cache';
 
 interface UseRelatedProductsProps {
@@ -20,7 +21,7 @@ interface UseRelatedProductsProps {
   initialRelatedProducts?: RelatedProductsApiResponse | null;
 }
 
-export const RELATED_PRODUCTS_LIMIT = 10;
+export const RELATED_PRODUCTS_LIMIT = RELATED_PRODUCTS_FETCH_LIMIT;
 
 /**
  * Related products for PDP — React Query cache + dedupe (shared key with hover prefetch).
@@ -32,16 +33,14 @@ export function useRelatedProducts({
 }: UseRelatedProductsProps) {
   const trimmed = productSlug.trim();
 
-  const initialData =
-    initialRelatedProducts != null && initialRelatedProducts.data.length > 0
-      ? initialRelatedProducts
-      : undefined;
+  const initialData = initialRelatedProducts ?? undefined;
 
   const query = useQuery({
     queryKey: queryKeys.relatedProducts(trimmed, language, RELATED_PRODUCTS_LIMIT),
     queryFn: () => fetchRelatedProducts(trimmed, language, RELATED_PRODUCTS_LIMIT),
     enabled: Boolean(trimmed),
     initialData,
+    refetchOnMount: initialRelatedProducts === undefined,
     staleTime: PDP_RELATED_STALE_TIME_MS,
     gcTime: PDP_RELATED_GC_TIME_MS,
     retry: 1,
@@ -55,7 +54,8 @@ export function useRelatedProducts({
     return dedupeCardProductsByTitle(rows).slice(0, RELATED_PRODUCTS_LIMIT);
   }, [query.data]);
 
-  const loading = query.isPending && products.length === 0;
+  const loading =
+    initialRelatedProducts === undefined && query.isPending && products.length === 0;
 
   return { products, loading };
 }

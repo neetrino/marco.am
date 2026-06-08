@@ -2,17 +2,30 @@
 
 import { useState, useEffect, useRef, type MouseEvent, type TouchEvent } from 'react';
 
+import {
+  getCarouselDotState,
+  getCarouselPageMaxIndex,
+  snapCarouselIndexToPage,
+} from '../RelatedProducts/carousel-dots.utils';
+
 interface UseCarouselProps {
   itemCount: number;
   visibleItems: number;
   /** Set to 0 to disable auto-rotation. Default: 5000ms. */
   autoRotateInterval?: number;
+  /** When true, prev/next and drag snap move by full pages (e.g. 4 cards). */
+  pageByVisibleCount?: boolean;
 }
 
 /**
  * Hook for managing carousel state and interactions
  */
-export function useCarousel({ itemCount, visibleItems, autoRotateInterval = 5000 }: UseCarouselProps) {
+export function useCarousel({
+  itemCount,
+  visibleItems,
+  autoRotateInterval = 5000,
+  pageByVisibleCount = false,
+}: UseCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
@@ -20,7 +33,18 @@ export function useCarousel({ itemCount, visibleItems, autoRotateInterval = 5000
   const [hasMoved, setHasMoved] = useState(false);
   const carouselRef = useRef<HTMLDivElement>(null);
 
-  const maxIndex = Math.max(0, itemCount - visibleItems);
+  const safeVisible = Math.max(1, visibleItems);
+  const { totalPages } = getCarouselDotState(itemCount, safeVisible);
+  const maxIndex = pageByVisibleCount
+    ? getCarouselPageMaxIndex(itemCount, safeVisible)
+    : Math.max(0, itemCount - safeVisible);
+
+  const clampIndex = (index: number): number => {
+    if (pageByVisibleCount) {
+      return snapCarouselIndexToPage(index, itemCount, safeVisible);
+    }
+    return Math.max(0, Math.min(maxIndex, index));
+  };
 
   // Auto-rotate carousel (skip when interval is 0 or fewer items than viewport)
   useEffect(() => {
@@ -38,6 +62,11 @@ export function useCarousel({ itemCount, visibleItems, autoRotateInterval = 5000
 
   const goToPrevious = () => {
     setCurrentIndex((prevIndex) => {
+      if (pageByVisibleCount) {
+        const currentPage = Math.floor(Math.min(prevIndex, maxIndex) / safeVisible);
+        const prevPage = currentPage <= 0 ? totalPages - 1 : currentPage - 1;
+        return prevPage * safeVisible;
+      }
       const clamped = Math.min(prevIndex, maxIndex);
       return clamped === 0 ? maxIndex : clamped - 1;
     });
@@ -45,13 +74,18 @@ export function useCarousel({ itemCount, visibleItems, autoRotateInterval = 5000
 
   const goToNext = () => {
     setCurrentIndex((prevIndex) => {
+      if (pageByVisibleCount) {
+        const currentPage = Math.floor(Math.min(prevIndex, maxIndex) / safeVisible);
+        const nextPage = currentPage >= totalPages - 1 ? 0 : currentPage + 1;
+        return nextPage * safeVisible;
+      }
       const clamped = Math.min(prevIndex, maxIndex);
       return clamped >= maxIndex ? 0 : clamped + 1;
     });
   };
 
   const goToIndex = (index: number) => {
-    setCurrentIndex(Math.max(0, Math.min(maxIndex, index)));
+    setCurrentIndex(clampIndex(index));
   };
 
   const handleMouseDown = (e: MouseEvent<HTMLDivElement>) => {
@@ -74,8 +108,7 @@ export function useCarousel({ itemCount, visibleItems, autoRotateInterval = 5000
       const walk = (x - startX) * 2; // Scroll speed multiplier
       const cardWidth = 100 / visibleItems;
       const newIndex = Math.round((scrollLeft - walk / (carouselRef.current.offsetWidth / 100)) / cardWidth);
-      const clampedIndex = Math.max(0, Math.min(maxIndex, newIndex));
-      setCurrentIndex(clampedIndex);
+      setCurrentIndex(clampIndex(newIndex));
     }
   };
 
@@ -83,6 +116,9 @@ export function useCarousel({ itemCount, visibleItems, autoRotateInterval = 5000
     const wasDragging = isDragging;
     const didMove = hasMoved;
     setIsDragging(false);
+    if (pageByVisibleCount && wasDragging) {
+      setCurrentIndex((prev) => clampIndex(prev));
+    }
     // Reset hasMoved after a short delay to allow click events to process
     if (wasDragging && didMove) {
       setTimeout(() => setHasMoved(false), 150);
@@ -110,8 +146,7 @@ export function useCarousel({ itemCount, visibleItems, autoRotateInterval = 5000
       const walk = (x - startX) * 2;
       const cardWidth = 100 / visibleItems;
       const newIndex = Math.round((scrollLeft - walk / (carouselRef.current.offsetWidth / 100)) / cardWidth);
-      const clampedIndex = Math.max(0, Math.min(maxIndex, newIndex));
-      setCurrentIndex(clampedIndex);
+      setCurrentIndex(clampIndex(newIndex));
     }
   };
 
@@ -119,6 +154,9 @@ export function useCarousel({ itemCount, visibleItems, autoRotateInterval = 5000
     const wasDragging = isDragging;
     const didMove = hasMoved;
     setIsDragging(false);
+    if (pageByVisibleCount && wasDragging) {
+      setCurrentIndex((prev) => clampIndex(prev));
+    }
     if (wasDragging && didMove) {
       setTimeout(() => setHasMoved(false), 150);
     } else {
