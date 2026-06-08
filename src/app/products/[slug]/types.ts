@@ -73,6 +73,7 @@ export interface AttributeGroupValue {
 }
 
 import type { ProductDescriptionEntry } from '@/lib/products/product-description';
+import type { ProductWarrantyYears } from '@/lib/constants/product-warranty';
 
 export interface Product {
   id: string;
@@ -127,6 +128,7 @@ export interface Product {
   inStock?: boolean;
   stockStatus?: 'in_stock' | 'out_of_stock';
   stockQuantity?: number;
+  warrantyYears?: ProductWarrantyYears | null;
 }
 
 // Reserved routes that should not be treated as product slugs

@@ -7,7 +7,6 @@ interface UseVariantConversionToFormDataProps {
   selectedAttributesForVariants: Set<string>;
   generatedVariants: GeneratedVariant[];
   attributes: Attribute[];
-  formDataSlug: string;
   setFormData: (updater: (prev: any) => any) => void;
 }
 
@@ -16,7 +15,6 @@ export function useVariantConversionToFormData({
   selectedAttributesForVariants,
   generatedVariants,
   attributes,
-  formDataSlug,
   setFormData,
 }: UseVariantConversionToFormDataProps) {
   const convertGeneratedVariantsToFormData = (): void => {
@@ -160,19 +158,17 @@ export function useVariantConversionToFormData({
           }
         }
         
-        let variantSku = variant.sku ? variant.sku.trim() : '';
-        if (!variantSku || variantSku === '') {
-          const baseSlug = formDataSlug || 'PROD';
-          variantSku = `${baseSlug.toUpperCase()}-${Date.now()}-${variantIndex + 1}`;
+        const variantSku = variant.sku ? variant.sku.trim() : '';
+        if (!variantSku) {
+          logger.devLog('⚠️ [ADMIN] Variant missing SKU during conversion:', variantIndex);
         }
-        
-        let finalSku = variantSku;
-        let skuCounter = 1;
-        while (skuSetForConversion.has(finalSku)) {
-          finalSku = `${variantSku}-${skuCounter}`;
-          skuCounter++;
+        if (variantSku && skuSetForConversion.has(variantSku)) {
+          logger.devLog('⚠️ [ADMIN] Duplicate SKU during conversion:', variantSku);
         }
-        skuSetForConversion.add(finalSku);
+        if (variantSku) {
+          skuSetForConversion.add(variantSku);
+        }
+        const finalSku = variantSku;
         
         allNewVariants.push({
           id: variant.id || `variant-${Date.now()}-${variantIndex}-${Math.random()}`,

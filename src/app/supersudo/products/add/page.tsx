@@ -19,7 +19,7 @@ import { useProductAttributeHelpers } from './hooks/useProductAttributeHelpers';
 import { useProductAttributeHandlers } from './hooks/useProductAttributeHandlers';
 import { useProductFormHandlers } from './hooks/useProductFormHandlers';
 import { useProductFormCallbacks } from './hooks/useProductFormCallbacks';
-import { isClothingCategory as checkIsClothingCategory, generateSlug } from './utils/productUtils';
+import { isClothingCategory as checkIsClothingCategory } from './utils/productUtils';
 
 function AddProductPageContent() {
   const { t } = useTranslation();
@@ -258,7 +258,6 @@ function AddProductPageContent() {
         onVariantsUpdate={(updater) => formState.setFormData((prev) => ({ ...prev, variants: updater(prev.variants) }))}
         onApplyToAllVariants={(field, value) => applyToAllVariants(field, value)}
         isClothingCategory={isClothingCategory}
-        generateSlug={generateSlug}
         handleSubmit={handleSubmit}
       />
 

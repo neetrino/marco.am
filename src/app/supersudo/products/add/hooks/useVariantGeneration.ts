@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react';
 import type { Attribute, GeneratedVariant } from '../types';
-import { generateSlug } from '../utils/productUtils';
 import { logger } from "@/lib/utils/logger";
 
 interface UseVariantGenerationProps {
@@ -64,36 +63,13 @@ export function useVariantGeneration({
       });
       allSelectedValueIds.sort();
 
-      const baseSlug = formDataSlug || generateSlug(formDataTitle) || 'PROD';
-      let sku = `${baseSlug}`;
-
-      if (allSelectedValueIds.length > 0) {
-        const valueParts: string[] = [];
-        selectedAttrs.forEach((attributeId) => {
-          const attribute = attributes.find((a) => a.id === attributeId);
-          if (!attribute) return;
-
-          const selectedIds = selectedAttributeValueIds[attributeId] || [];
-          selectedIds.forEach((valueId) => {
-            const value = attribute.values.find((v) => v.id === valueId);
-            if (value) {
-              valueParts.push(value.value.toUpperCase().replace(/\s+/g, '-'));
-            }
-          });
-        });
-
-        if (valueParts.length > 0) {
-          sku = `${baseSlug}-${valueParts.join('-')}`;
-        }
-      }
-
       const autoVariant: GeneratedVariant = {
         id: variantId,
         selectedValueIds: allSelectedValueIds,
         price: existingAutoVariant?.price || '',
         compareAtPrice: existingAutoVariant?.compareAtPrice || '',
         stock: existingAutoVariant?.stock || '',
-        sku: existingAutoVariant?.sku || sku,
+        sku: existingAutoVariant?.sku || '',
         image: existingAutoVariant?.image || null,
       };
 

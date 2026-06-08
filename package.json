@@ -34,6 +34,8 @@
     "backfill:product-categories": "tsx src/scripts/backfill-product-category-links.ts",
     "backfill:product-brands": "tsx src/scripts/backfill-product-brands.ts",
     "export:marco-xlsx-brands": "python src/scripts/export-marco-xlsx-brands.py",
+    "export:marco-xlsx-skus": "python src/scripts/export-marco-xlsx-skus.py",
+    "sync:product-skus-xlsx": "tsx src/scripts/sync-product-skus-from-xlsx.ts",
     "db:migrate:deploy": "node src/scripts/run-migrations.js",
     "check:perf-env": "node scripts/check-perf-env.mjs",
     "warm:home-cache": "node scripts/warm-home-cache.mjs"

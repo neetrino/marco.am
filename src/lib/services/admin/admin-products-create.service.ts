@@ -57,75 +57,35 @@ type VariantOptionPayload =
 
 class AdminProductsCreateService {
   /**
-   * Generate unique SKU for product variant
-   * Checks database to ensure uniqueness
+   * Validate and return SKU for product variant.
+   * SKU must be provided manually — no auto-generation.
    */
-  private async generateUniqueSku(
+  private async resolveVariantSku(
     tx: PrismaTransactionClient,
     baseSku: string | undefined,
-    productSlug: string,
     variantIndex: number,
     usedSkus: Set<string>
   ): Promise<string> {
-    // If base SKU is provided and unique, use it
-    if (baseSku && baseSku.trim() !== '') {
-      const trimmedSku = baseSku.trim();
-      
-      // Check if already used in this transaction
-      if (!usedSkus.has(trimmedSku)) {
-        // Check if exists in database
-        const existing = await tx.productVariant.findUnique({
-          where: { sku: trimmedSku },
-        });
-        
-        if (!existing) {
-          usedSkus.add(trimmedSku);
-          logger.devLog(`✅ [ADMIN PRODUCTS CREATE SERVICE] Using provided SKU: ${trimmedSku}`);
-          return trimmedSku;
-        } else {
-          logger.devLog(`⚠️ [ADMIN PRODUCTS CREATE SERVICE] SKU already exists in DB: ${trimmedSku}, generating new one`);
-        }
-      } else {
-        logger.devLog(`⚠️ [ADMIN PRODUCTS CREATE SERVICE] SKU already used in transaction: ${trimmedSku}, generating new one`);
-      }
+    const trimmedSku = baseSku?.trim() ?? '';
+    if (!trimmedSku) {
+      throw new Error(`Variant ${variantIndex + 1} is missing a SKU. Please enter a SKU for every variant.`);
     }
 
-    // Generate new unique SKU
-    const baseSlug = productSlug || 'PROD';
-    let attempt = 0;
-    let newSku: string;
-    
-    do {
-      const timestamp = Date.now();
-      const random = Math.random().toString(36).substring(2, 6).toUpperCase();
-      const suffix = attempt > 0 ? `-${attempt}` : '';
-      newSku = `${baseSlug.toUpperCase()}-${timestamp}-${variantIndex + 1}${suffix}-${random}`;
-      attempt++;
-      
-      // Check if already used in this transaction
-      if (usedSkus.has(newSku)) {
-        continue;
-      }
-      
-      // Check if exists in database
-      const existing = await tx.productVariant.findUnique({
-        where: { sku: newSku },
-      });
-      
-      if (!existing) {
-        usedSkus.add(newSku);
-        logger.devLog(`✅ [ADMIN PRODUCTS CREATE SERVICE] Generated unique SKU: ${newSku}`);
-        return newSku;
-      }
-      
-      logger.devLog(`⚠️ [ADMIN PRODUCTS CREATE SERVICE] Generated SKU exists in DB: ${newSku}, trying again...`);
-    } while (attempt < 100); // Safety limit
-    
-    // Fallback: use timestamp + random if all attempts failed
-    const finalSku = `${baseSlug.toUpperCase()}-${Date.now()}-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
-    usedSkus.add(finalSku);
-    logger.devLog(`✅ [ADMIN PRODUCTS CREATE SERVICE] Using fallback SKU: ${finalSku}`);
-    return finalSku;
+    if (usedSkus.has(trimmedSku)) {
+      throw new Error(`Duplicate SKU "${trimmedSku}" in this product. Each variant must have a unique SKU.`);
+    }
+
+    const existing = await tx.productVariant.findUnique({
+      where: { sku: trimmedSku },
+    });
+
+    if (existing) {
+      throw new Error(`SKU "${trimmedSku}" already exists. Please use a unique SKU.`);
+    }
+
+    usedSkus.add(trimmedSku);
+    logger.devLog(`✅ [ADMIN PRODUCTS CREATE SERVICE] Using SKU: ${trimmedSku}`);
+    return trimmedSku;
   }
 
   /**
@@ -282,10 +242,9 @@ class AdminProductsCreateService {
               : undefined;
 
             // Generate unique SKU for this variant
-            const uniqueSku = await this.generateUniqueSku(
+            const uniqueSku = await this.resolveVariantSku(
               tx,
               variant.sku,
-              data.slug,
               variantIndex,
               usedSkus
             );

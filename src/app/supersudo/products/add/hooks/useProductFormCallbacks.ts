@@ -82,7 +82,7 @@ export function useProductFormCallbacks({
       price: '0.00',
       compareAtPrice: '0.00',
       stock: '0',
-      sku: 'PROD',
+      sku: '',
       image: null,
     };
     setGeneratedVariants((prev) => {
