@@ -7,7 +7,7 @@
  */
 
 import { loadEnvConfig } from '@next/env';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@white-shop/db/prisma';
 import { db } from '@white-shop/db';
 import {
   parseDescriptionHtmlToEntries,
