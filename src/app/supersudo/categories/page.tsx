@@ -9,13 +9,12 @@ import { useCategories } from './hooks/useCategories';
 import { useCategoryActions } from './hooks/useCategoryActions';
 import { AdminPageLayout } from '../components/AdminPageLayout';
 import { CategoriesList } from './components/CategoriesList';
-import { CategoriesViewTabs } from './components/CategoriesViewTabs';
 import { BulkCategorySelectionControls } from './components/BulkCategorySelectionControls';
 import { AddCategoryModal, type AddCategoryModalMode } from './components/AddCategoryModal';
 import { EditCategoryModal } from './components/EditCategoryModal';
 import { ConvertCategoryTypeModal } from './components/ConvertCategoryTypeModal';
 import type { Category } from './types';
-import { filterCategoriesForAdminView, getDescendantIds, type AdminCategoryView } from './utils';
+import { getDescendantIds, type AdminCategoryView } from './utils';
 import { showToast } from '../../../components/Toast';
 import { notifyShopCategoryTreeUpdated } from '../../../lib/shop-category-tree-sync';
 
@@ -50,7 +49,7 @@ export default function CategoriesPage() {
   } = useCategoryActions();
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
   const [categorySearch, setCategorySearch] = useState('');
-  const [activeView, setActiveView] = useState<'roots' | 'subcategories'>('roots');
+  const [activeView] = useState<'roots' | 'subcategories'>('roots');
   const [addModalMode, setAddModalMode] = useState<AddCategoryModalMode>('root');
   const [movingCategoryId, setMovingCategoryId] = useState<string | null>(null);
   const [convertingCategoryId, setConvertingCategoryId] = useState<string | null>(null);
@@ -60,14 +59,6 @@ export default function CategoriesPage() {
   const [conversionSubcategoryIds, setConversionSubcategoryIds] = useState<string[]>([]);
   const [draggingCategoryId, setDraggingCategoryId] = useState<string | null>(null);
   const [dragOverCategoryId, setDragOverCategoryId] = useState<string | null>(null);
-  const rootCategoryCount = useMemo(
-    () => filterCategoriesForAdminView(categories, 'roots').length,
-    [categories],
-  );
-  const subcategoryCount = useMemo(
-    () => filterCategoriesForAdminView(categories, 'subcategories').length,
-    [categories],
-  );
   const filteredCategories = useMemo((): Category[] => {
     const raw = categorySearch.trim().toLowerCase();
     if (!raw) {
@@ -374,15 +365,6 @@ export default function CategoriesPage() {
             deletingBulk={deletingBulk}
             onBulkDelete={handleBulkDelete}
           />
-
-          <Card className="admin-card border-slate-200/80 bg-white p-4 shadow-[0_10px_24px_rgba(15,23,42,0.07)] sm:p-5">
-            <CategoriesViewTabs
-              activeView={activeView}
-              rootCount={rootCategoryCount}
-              subcategoryCount={subcategoryCount}
-              onViewChange={setActiveView}
-            />
-          </Card>
 
           <Card className="admin-card border-slate-200/80 bg-white shadow-[0_10px_24px_rgba(15,23,42,0.07)]">
             {loading ? (
