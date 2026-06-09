@@ -1,6 +1,7 @@
 import { db } from "@white-shop/db";
 import { toSlug } from "@/lib/utils/slug";
 import { logger } from "@/lib/utils/logger";
+import { revalidateProductCache } from "./admin-products-update/cache-revalidator";
 
 class AdminBrandsService {
   /**
@@ -226,34 +227,47 @@ class AdminBrandsService {
       };
     }
 
-    // Check if brand has products (using count for better performance)
-    const productsCount = await db.product.count({
+    const linkedProducts = await db.product.findMany({
       where: {
-        brandId: brandId,
+        brandId,
         deletedAt: null,
       },
-    });
-
-    if (productsCount > 0) {
-      throw {
-        status: 400,
-        type: "https://api.shop.am/problems/bad-request",
-        title: "Cannot delete brand",
-        detail: `This brand has ${productsCount} associated product${productsCount > 1 ? 's' : ''}. Please remove or change brand for these products first.`,
-        productsCount,
-      };
-    }
-
-    await db.brand.update({
-      where: { id: brandId },
-      data: {
-        deletedAt: new Date(),
-        published: false,
+      select: {
+        id: true,
+        translations: {
+          select: {
+            slug: true,
+          },
+          take: 1,
+        },
       },
     });
 
+    await db.$transaction(async (tx) => {
+      await tx.product.updateMany({
+        where: {
+          brandId,
+        },
+        data: {
+          brandId: null,
+        },
+      });
+
+      await tx.brand.update({
+        where: { id: brandId },
+        data: {
+          deletedAt: new Date(),
+          published: false,
+        },
+      });
+    });
+
+    await Promise.all(
+      linkedProducts.map((product) => revalidateProductCache(product.id, product.translations[0]?.slug))
+    );
+
     logger.devLog('✅ [ADMIN SERVICE] Brand deleted:', brandId);
-    return { success: true };
+    return { success: true, detachedProductsCount: linkedProducts.length };
   }
 }
 

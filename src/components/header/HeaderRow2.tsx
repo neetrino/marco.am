@@ -72,11 +72,22 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
       return;
     }
 
+    const html = document.documentElement;
+    const previousHtmlOverflow = html.style.overflow;
+    const previousHtmlOverscrollBehavior = html.style.overscrollBehavior;
     const previousOverflow = document.body.style.overflow;
+    const previousBodyOverscrollBehavior = document.body.style.overscrollBehavior;
+
+    html.style.overflow = 'hidden';
+    html.style.overscrollBehavior = 'none';
     document.body.style.overflow = 'hidden';
+    document.body.style.overscrollBehavior = 'none';
 
     return () => {
+      html.style.overflow = previousHtmlOverflow;
+      html.style.overscrollBehavior = previousHtmlOverscrollBehavior;
       document.body.style.overflow = previousOverflow;
+      document.body.style.overscrollBehavior = previousBodyOverscrollBehavior;
     };
   }, [showProductsMenu]);
 

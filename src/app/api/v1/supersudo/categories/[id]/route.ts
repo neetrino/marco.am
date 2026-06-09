@@ -27,7 +27,8 @@ export async function GET(
     }
 
     const { id } = await params;
-    const category = await adminService.getCategoryById(id);
+    const locale = req.nextUrl.searchParams.get("lang") ?? undefined;
+    const category = await adminService.getCategoryById(id, locale);
 
     if (!category) {
       return NextResponse.json(

@@ -2,9 +2,19 @@
 
 import { Input } from '@shop/ui';
 import { useTranslation } from '../../../../../lib/i18n-client';
+import { getStoredLanguage } from '../../../../../lib/language';
 import { FormSection } from './FormSection';
 import type { Category, Brand, Variant } from '../types';
 import { applyProductCategorySelectionChange } from '../utils/productCategorySelection';
+
+type CategoryLocale = 'hy' | 'en' | 'ru';
+
+function normalizeCategoryLocale(locale: string): CategoryLocale {
+  if (locale === 'hy' || locale === 'en' || locale === 'ru') {
+    return locale;
+  }
+  return 'en';
+}
 
 interface CategoriesBrandsProps {
   categories: Category[];
@@ -55,7 +65,16 @@ export function CategoriesBrands({
   isClothingCategory,
   onVariantsUpdate,
 }: CategoriesBrandsProps) {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
+  const normalizedLocale = normalizeCategoryLocale(lang ?? getStoredLanguage());
+
+  const getCategoryLabel = (category: Category): string => {
+    const localizedTitle = category.translations?.[normalizedLocale];
+    if (typeof localizedTitle === 'string' && localizedTitle.trim().length > 0) {
+      return localizedTitle.trim();
+    }
+    return category.title;
+  };
 
   // Build category tree structure
   type CategoryTreeNode = Category & { children: CategoryTreeNode[] };
@@ -237,7 +256,7 @@ export function CategoriesBrands({
                                   category.isSubcategory ? 'text-xs' : 'text-sm font-semibold'
                                 }`}
                               >
-                                {category.title}
+                                {getCategoryLabel(category)}
                                 {primaryCategoryId === category.id ? (
                                   <span className="ml-1 text-xs font-normal text-gray-500">
                                     ({t('admin.products.add.primaryCategory')})

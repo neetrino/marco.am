@@ -7,7 +7,11 @@ import { LanguagePreferenceContext } from '../../lib/language-context';
 import type { Category } from './category-nav-types';
 import { CategoryMegaSubcategoryPills } from './CategoryMegaSubcategoryPills';
 import { CategoryDropdownPromoBanner } from './CategoryDropdownPromoBanner';
-import { normalizeCategoryKey, prepareRootCategoriesForNav, prepareSubcategoriesForNav } from './categoryNavList';
+import {
+  normalizeCategoryKey,
+  prepareMegaMenuSubcategoryGroups,
+  prepareRootCategoriesForNav,
+} from './categoryNavList';
 import { resolveCategoryNavPresentation } from './categoryNavPresentation';
 import { headerCategoryNavFont } from './headerCategoryNavTypography';
 import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '../../lib/utils/image-utils';
@@ -47,8 +51,8 @@ export function CategoriesDropdownMega({
   }, [categoriesWithExtra]);
 
   const selected = categoriesWithExtra.find((c) => c.slug === selectedSlug) ?? categoriesWithExtra[0];
-  const subcategoryItems = useMemo(
-    () => (selected ? prepareSubcategoriesForNav(selected, lang) : []),
+  const subcategoryGroups = useMemo(
+    () => (selected ? prepareMegaMenuSubcategoryGroups(selected, lang) : []),
     [selected, lang],
   );
 
@@ -152,7 +156,7 @@ export function CategoriesDropdownMega({
           <CategoryMegaSubcategoryPills
             sectionHeadingId={`mega-menu-subcats-${selected.id}`}
             sectionTitle={preview.title.toUpperCase()}
-            items={subcategoryItems}
+            groups={subcategoryGroups}
             lang={lang}
             productsWord={t('common.navigation.categoriesMegaMenu.productsWord')}
             onNavigate={onClose}
