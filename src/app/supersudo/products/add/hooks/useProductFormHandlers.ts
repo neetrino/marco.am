@@ -11,6 +11,8 @@ import type { ProductClass } from '@/lib/constants/product-class';
 import { logger } from "@/lib/utils/logger";
 import { findAttributeBySemanticKey } from '@/lib/attribute-keys';
 import type { ProductDescriptionEntry } from '@/lib/products/product-description';
+import { t as translateByLocale } from '@/lib/i18n';
+import { getStoredLanguage } from '@/lib/language';
 
 interface UseProductFormHandlersProps {
   formData: {
@@ -74,6 +76,7 @@ export function useProductFormHandlers({
   productId,
   isClothingCategory,
 }: UseProductFormHandlersProps) {
+  const mt = (path: string): string => translateByLocale(getStoredLanguage(), path);
   const router = useRouter();
   
   const { createBrandAndCategory } = useBrandAndCategoryCreation({
@@ -138,7 +141,7 @@ export function useProductFormHandlers({
       if (productType === 'variable' && generatedVariants.length > 0) {
         for (const genVariant of generatedVariants) {
           if (!genVariant.sku?.trim()) {
-            alert('Բոլոր տարբերակների SKU-ն պարտադիր է');
+            alert(mt('admin.products.add.allVariantSkuRequired'));
             setLoading(false);
             return;
           }
@@ -210,12 +213,12 @@ export function useProductFormHandlers({
             if (attributeKeys.length === 0) {
               const finalSku = genVariant.sku?.trim() ?? '';
               if (!finalSku) {
-                alert('Բոլոր տարբերակների SKU-ն պարտադիր է');
+                alert(mt('admin.products.add.allVariantSkuRequired'));
                 setLoading(false);
                 return;
               }
               if (variantSkuSet.has(finalSku)) {
-                alert(`Կրկնվող SKU՝ «${finalSku}»`);
+                alert(mt('admin.products.add.duplicateSku').replace('{sku}', finalSku));
                 setLoading(false);
                 return;
               }
@@ -263,12 +266,12 @@ export function useProductFormHandlers({
                 
                 const finalSku = genVariant.sku?.trim() ?? '';
                 if (!finalSku) {
-                  alert('Բոլոր տարբերակների SKU-ն պարտադիր է');
+                  alert(mt('admin.products.add.allVariantSkuRequired'));
                   setLoading(false);
                   return;
                 }
                 if (variantSkuSet.has(finalSku)) {
-                  alert(`Կրկնվող SKU՝ «${finalSku}»`);
+                  alert(mt('admin.products.add.duplicateSku').replace('{sku}', finalSku));
                   setLoading(false);
                   return;
                 }
@@ -314,12 +317,12 @@ export function useProductFormHandlers({
                     const stockForVariant = colorSizeStocks[size] || colorData.stock || '0';
                     const finalSku = (colorData.sizeLabels?.[size] || variant.sku || '').trim();
                     if (!finalSku) {
-                      alert('Բոլոր տարբերակների SKU-ն պարտադիր է');
+                      alert(mt('admin.products.add.allVariantSkuRequired'));
                       setLoading(false);
                       return;
                     }
                     if (variantSkuSet.has(finalSku)) {
-                      alert(`Կրկնվող SKU՝ «${finalSku}»`);
+                      alert(mt('admin.products.add.duplicateSku').replace('{sku}', finalSku));
                       setLoading(false);
                       return;
                     }
@@ -374,12 +377,12 @@ export function useProductFormHandlers({
       for (const variant of variants) {
         const sku = variant.sku?.trim() ?? '';
         if (!sku) {
-          alert('Բոլոր տարբերակների SKU-ն պարտադիր է');
+          alert(mt('admin.products.add.allVariantSkuRequired'));
           setLoading(false);
           return;
         }
         if (finalSkuSet.has(sku)) {
-          alert(`Կրկնվող SKU՝ «${sku}»`);
+          alert(mt('admin.products.add.duplicateSku').replace('{sku}', sku));
           setLoading(false);
           return;
         }

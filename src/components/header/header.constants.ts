@@ -13,12 +13,12 @@ export const HEADER_COMPACT_PRIMARY_NAV_MAX_WIDTH_PX = 820;
 export const HEADER_REELS_EXTERNAL_HREF = '/reels';
 
 /**
- * Categories mega menu portal: scrim sits below `<header class="z-50">` so the header stays visible;
- * bridge/panel sit above the scrim (and above the header when they overlap the trigger strip).
+ * Categories mega menu portal is intentionally above header (`z-50`), so full-screen
+ * categories drawer visually covers the entire page including the header layer.
  */
-export const HEADER_CATEGORIES_OVERLAY_Z_INDEX = 40;
-export const HEADER_CATEGORIES_BRIDGE_Z_INDEX = 55;
-export const HEADER_CATEGORIES_PANEL_Z_INDEX = 56;
+export const HEADER_CATEGORIES_OVERLAY_Z_INDEX = 80;
+export const HEADER_CATEGORIES_BRIDGE_Z_INDEX = 85;
+export const HEADER_CATEGORIES_PANEL_Z_INDEX = 90;
 
 /**
  * Row-1 phone/address dropdowns — above row-2 search (`z-[480]`), below mobile search overlay (`z-[700]`).

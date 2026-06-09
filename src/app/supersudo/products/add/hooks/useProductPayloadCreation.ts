@@ -4,6 +4,8 @@ import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.
 import type { ProductLabel, Variant } from '../types';
 import type { ProductClass } from '@/lib/constants/product-class';
 import type { ProductDescriptionEntry } from '@/lib/products/product-description';
+import { t as translateByLocale } from '@/lib/i18n';
+import { getStoredLanguage } from '@/lib/language';
 import { logger } from "@/lib/utils/logger";
 
 interface CreateAndSubmitPayloadProps {
@@ -50,6 +52,7 @@ export async function createAndSubmitPayload({
   setLoading,
   router,
 }: CreateAndSubmitPayloadProps): Promise<void> {
+  const mt = (path: string): string => translateByLocale(getStoredLanguage(), path);
   const resolvedCategoryIds =
     finalCategoryIds.length > 0
       ? finalCategoryIds
@@ -97,13 +100,13 @@ export async function createAndSubmitPayload({
       if (isEditMode && productId) {
         const product = await apiClient.put(`/api/v1/supersudo/products/${productId}`, payload);
         logger.devLog('✅ [ADMIN] Product updated:', product);
-        const baseMessage = 'Ապրանքը հաջողությամբ թարմացվեց!';
+        const baseMessage = mt('admin.products.add.productUpdatedSuccess');
         const extra = creationMessages.length ? `\n\n${creationMessages.join('\n')}` : '';
         alert(`${baseMessage}${extra}`);
       } else {
         const product = await apiClient.post('/api/v1/supersudo/products', payload);
         logger.devLog('✅ [ADMIN] Product created:', product);
-        const baseMessage = 'Ապրանքը հաջողությամբ ստեղծվեց!';
+        const baseMessage = mt('admin.products.add.productCreatedSuccess');
         const extra = creationMessages.length ? `\n\n${creationMessages.join('\n')}` : '';
         alert(`${baseMessage}${extra}`);
       }
@@ -112,17 +115,19 @@ export async function createAndSubmitPayload({
     } catch (err: unknown) {
       console.error('❌ [ADMIN] Error saving product:', err);
 
-      let errorMessage = isEditMode ? 'Չհաջողվեց թարմացնել ապրանքը' : 'Չհաջողվեց ստեղծել ապրանքը';
+      let errorMessage = isEditMode
+        ? mt('admin.products.add.failedToUpdateProduct')
+        : mt('admin.products.add.failedToCreateProduct');
       const raw = getErrorMessage(err);
 
       if (raw.includes('<!DOCTYPE') || raw.includes('<html')) {
         const mongoErrorMatch = raw.match(/MongoServerError[^<]+/);
         if (mongoErrorMatch) {
-          errorMessage = `Տվյալների բազայի սխալ: ${mongoErrorMatch[0]}`;
+          errorMessage = `${mt('admin.products.add.databaseErrorPrefix')} ${mongoErrorMatch[0]}`;
         } else {
-          errorMessage = 'Տվյալների բազայի սխալ: SKU-ն արդեն օգտագործված է կամ այլ սխալ:';
+          errorMessage = mt('admin.products.add.databaseErrorSkuConflict');
         }
-      } else if (raw && raw !== 'Unknown error') {
+      } else if (raw && raw !== mt('admin.common.unknownErrorFallback')) {
         errorMessage = raw;
       }
 

@@ -3,7 +3,6 @@
 import type { DragEvent } from 'react';
 import { Button } from '@shop/ui';
 import { useTranslation } from '../../../../lib/i18n-client';
-import { translateAdminCategoryLabel } from '../admin-category-labels';
 import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '../../../../lib/utils/image-utils';
 import type { AdminCategoryView } from '../utils';
 import type { Category, CategoryWithLevel } from '../types';
@@ -15,14 +14,17 @@ interface CategoryItemProps {
   parentCategoryTitle: string;
   viewMode: AdminCategoryView;
   subcategoryCount?: number;
+  productCount?: number;
   selected: boolean;
   moving: boolean;
+  converting: boolean;
   dragging: boolean;
   dragOver: boolean;
   onToggleSelect: (categoryId: string, checked: boolean) => void;
   onEdit: (category: Category) => void;
   onDelete: (categoryId: string, categoryTitle: string) => void;
   onToggleHeaderVisibility: (category: Category, nextVisible: boolean) => void;
+  onToggleCategoryKind: (category: Category) => Promise<void>;
   onReorder: (categoryId: string, targetCategoryId: string, scope: AdminCategoryView) => Promise<void>;
   onDragStart: (categoryId: string) => void;
   onDragEnter: (categoryId: string | null) => void;
@@ -39,14 +41,17 @@ export function CategoryItem({
   parentCategoryTitle,
   viewMode,
   subcategoryCount = 0,
+  productCount = 0,
   selected,
   moving,
+  converting,
   dragging,
   dragOver,
   onToggleSelect,
   onEdit,
   onDelete,
   onToggleHeaderVisibility,
+  onToggleCategoryKind,
   onReorder,
   onDragStart,
   onDragEnter,
@@ -58,16 +63,8 @@ export function CategoryItem({
   const { t } = useTranslation();
   const safeCategoryImage = toSafeImgAttributeSrc(category.media?.[0] ?? null);
   const isRootView = viewMode === 'roots';
-  const rootBadge = translateAdminCategoryLabel(
-    t,
-    'admin.categories.badgeRoot',
-    t('admin.categories.title'),
-  );
-  const subBadge = translateAdminCategoryLabel(
-    t,
-    'admin.categories.badgeSubcategory',
-    t('admin.categories.subcategories'),
-  );
+  const rootBadge = t('admin.categories.badgeRoot');
+  const subBadge = t('admin.categories.badgeSubcategory');
 
   const handleDragStart = (event: DragEvent<HTMLTableRowElement>) => {
     event.dataTransfer.effectAllowed = 'move';
@@ -201,27 +198,79 @@ export function CategoryItem({
         <td className="px-3 py-3 text-sm font-medium tabular-nums text-slate-700">
           {subcategoryCount > 0
             ? subcategoryCount
-            : translateAdminCategoryLabel(t, 'admin.categories.noSubcategoriesShort', '0')}
+            : t('admin.categories.noSubcategoriesShort')}
         </td>
       ) : (
         <td className="px-3 py-3 text-sm text-slate-600">
           {parentCategoryTitle || t('admin.categories.noParent')}
         </td>
       )}
-      <td className="px-3 py-3">
-        <div className="flex justify-end gap-2">
+      <td className="px-3 py-3 text-sm font-medium tabular-nums text-slate-700">
+        {productCount}
+      </td>
+      <td className="px-2 py-3">
+        <div className="grid grid-cols-5 justify-items-center gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => void onToggleCategoryKind(category)}
+            disabled={moving || converting}
+            className={`h-10 w-10 border p-0 transition-colors ${
+              category.parentId
+                ? 'border-sky-200 bg-sky-50 text-sky-700 hover:border-sky-300 hover:bg-sky-100'
+                : 'border-violet-200 bg-violet-50 text-violet-700 hover:border-violet-300 hover:bg-violet-100'
+            }`}
+            aria-label={
+              category.parentId
+                ? t('admin.categories.convertToMainCategory')
+                : t('admin.categories.convertToSubcategory')
+            }
+            title={
+              category.parentId
+                ? t('admin.categories.convertToMainCategory')
+                : t('admin.categories.convertToSubcategory')
+            }
+          >
+            {converting ? (
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+            ) : (
+              <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
+                {category.parentId ? (
+                  <path
+                    fillRule="evenodd"
+                    d="M10 3a1 1 0 011 1v7.586l2.293-2.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L9 11.586V4a1 1 0 011-1z"
+                    clipRule="evenodd"
+                  />
+                ) : (
+                  <path
+                    fillRule="evenodd"
+                    d="M10 17a1 1 0 01-1-1V8.414L6.707 10.707a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 11-1.414 1.414L11 8.414V16a1 1 0 01-1 1z"
+                    clipRule="evenodd"
+                  />
+                )}
+              </svg>
+            )}
+          </Button>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => onToggleHeaderVisibility(category, !category.showInHeader)}
-            disabled={moving}
+            disabled={moving || converting}
             className={`h-10 w-10 border p-0 transition-colors ${
               category.showInHeader
                 ? 'border-amber-300 bg-amber-50 text-amber-600 hover:bg-amber-100'
                 : 'border-slate-200 bg-white text-slate-400 hover:border-slate-300 hover:text-slate-600'
             }`}
-            aria-label={category.showInHeader ? 'Hide from header sidebar' : 'Show in header sidebar'}
-            title={category.showInHeader ? 'Hide from header sidebar' : 'Show in header sidebar'}
+            aria-label={
+              category.showInHeader
+                ? t('admin.categories.hideFromHeaderSidebar')
+                : t('admin.categories.showInHeaderSidebar')
+            }
+            title={
+              category.showInHeader
+                ? t('admin.categories.hideFromHeaderSidebar')
+                : t('admin.categories.showInHeaderSidebar')
+            }
           >
             <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
               <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.044 3.214a1 1 0 00.95.69h3.38c.969 0 1.371 1.24.588 1.81l-2.736 1.988a1 1 0 00-.364 1.118l1.045 3.214c.3.921-.755 1.688-1.539 1.118l-2.737-1.988a1 1 0 00-1.175 0l-2.737 1.988c-.783.57-1.838-.197-1.539-1.118l1.045-3.214a1 1 0 00-.364-1.118L2.087 8.64c-.783-.57-.38-1.81.588-1.81h3.38a1 1 0 00.95-.69l1.044-3.214z" />
@@ -231,7 +280,7 @@ export function CategoryItem({
             variant="ghost"
             size="sm"
             onClick={() => onEdit(category)}
-            disabled={moving}
+            disabled={moving || converting}
             className="h-10 w-10 border border-slate-200 bg-white p-0 text-slate-700 hover:border-amber-300 hover:bg-amber-100 hover:text-amber-900"
             aria-label={t('admin.common.edit')}
             title={t('admin.common.edit')}
@@ -244,7 +293,7 @@ export function CategoryItem({
             variant="ghost"
             size="sm"
             onClick={() => onDelete(category.id, categoryTitle)}
-            disabled={moving}
+            disabled={moving || converting}
             className="h-10 w-10 border border-red-100 bg-red-50/70 p-0 text-red-600 hover:border-red-200 hover:bg-red-100 hover:text-red-700"
             aria-label={t('admin.common.delete')}
             title={t('admin.common.delete')}

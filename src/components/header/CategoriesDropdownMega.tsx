@@ -82,7 +82,7 @@ export function CategoriesDropdownMega({
                 key={category.id}
                 type="button"
                 onClick={() => setSelectedSlug(category.slug)}
-                className={`${headerCategoryNavFont.className} flex w-full min-w-0 shrink-0 items-center gap-3 rounded-[40px] px-2 py-0 text-left text-[15px] leading-[21px] tracking-[0.15px] transition-[opacity,background-color,color] duration-150 ${
+                className={`${headerCategoryNavFont.className} flex w-full min-w-0 shrink-0 items-center gap-3 rounded-[40px] px-2 py-0 text-left text-[13px] leading-[21px] tracking-[0.15px] transition-[opacity,background-color,color] duration-150 ${
                   isSelected
                     ? 'bg-marco-yellow font-bold !text-[#383838] dark:!text-[#383838]'
                     : 'font-normal !text-[#383838] dark:!text-[#383838] hover:bg-white/35'

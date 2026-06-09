@@ -1,13 +1,11 @@
 ﻿'use client';
 
 import type { LanguageCode } from '../../lib/language';
-import { Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import type { CSSProperties } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { SearchDropdown } from '../SearchDropdown';
 import { CategoriesDropdownMega } from './CategoriesDropdownMega';
 import {
-  HEADER_CATEGORIES_BRIDGE_Z_INDEX,
   HEADER_CATEGORIES_OVERLAY_Z_INDEX,
   HEADER_CATEGORIES_PANEL_Z_INDEX,
   HEADER_CONTAINER_CLASS,
@@ -62,87 +60,12 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
     getRootCategories,
   } = data;
 
-  const categoriesTriggerRef = useRef<HTMLButtonElement>(null);
-  /** Align categories dropdown right edge with the header *inner* content (same as search row), not the container border box. */
-  const headerRowContainerRef = useRef<HTMLDivElement>(null);
-  const [categoriesDropdownLayout, setCategoriesDropdownLayout] = useState<{
-    overlayTopPx: number;
-    bridge: CSSProperties;
-    panel: CSSProperties;
-  } | null>(null);
   const [mobileSearchPopupOpen, setMobileSearchPopupOpen] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
-  useLayoutEffect(() => {
-    if (!showProductsMenu) {
-      setCategoriesDropdownLayout(null);
-      return;
-    }
-
-    /** Keep dropdown close to the trigger without visual overlap. */
-    const gapPx = 2;
-    const raiseDropdownByPx = 50;
-
-    const updateLayout = () => {
-      const trigger = categoriesTriggerRef.current;
-      const container = headerRowContainerRef.current;
-      if (!trigger) {
-        return;
-      }
-      const r = trigger.getBoundingClientRect();
-      const cr = container?.getBoundingClientRect();
-      const paddingRight = container
-        ? parseFloat(getComputedStyle(container).paddingRight) || 0
-        : 0;
-      const rightEdge = cr ? cr.right - paddingRight : window.innerWidth - 16;
-      const panelWidth = Math.max(280, Math.min(rightEdge, window.innerWidth - 8) - r.left);
-      const headerEl = typeof document !== 'undefined' ? document.querySelector('header') : null;
-      const headerBottomPx = headerEl ? Math.ceil(headerEl.getBoundingClientRect().bottom) : 0;
-      const rawPanelTop = r.bottom + gapPx - raiseDropdownByPx;
-      const panelTop = Math.max(rawPanelTop, headerBottomPx + gapPx);
-      /** Cap height to viewport so inner columns scroll; uncapped height made the list taller than the screen without overflow. */
-      const bottomMargin = 8;
-      const viewportH =
-        typeof window !== 'undefined' && window.visualViewport?.height
-          ? window.visualViewport.height
-          : window.innerHeight;
-      const rawHeight = Math.floor(viewportH - panelTop - bottomMargin);
-      const maxHeightByViewport = Math.max(0, viewportH - headerBottomPx - bottomMargin);
-      const panelHeight = Math.max(240, Math.min(rawHeight, maxHeightByViewport, viewportH - 16));
-      setCategoriesDropdownLayout({
-        overlayTopPx: headerBottomPx,
-        bridge: {
-          position: 'fixed',
-          top: r.bottom,
-          left: r.left,
-          width: r.width,
-          height: gapPx,
-          zIndex: HEADER_CATEGORIES_BRIDGE_Z_INDEX,
-        },
-        panel: {
-          position: 'fixed',
-          top: panelTop,
-          left: r.left,
-          width: panelWidth,
-          height: panelHeight,
-          maxHeight: panelHeight,
-          zIndex: HEADER_CATEGORIES_PANEL_Z_INDEX,
-        },
-      });
-    };
-
-    updateLayout();
-    window.addEventListener('scroll', updateLayout, true);
-    window.addEventListener('resize', updateLayout);
-    const vv = window.visualViewport;
-    vv?.addEventListener('resize', updateLayout);
-    vv?.addEventListener('scroll', updateLayout);
-    return () => {
-      window.removeEventListener('scroll', updateLayout, true);
-      window.removeEventListener('resize', updateLayout);
-      vv?.removeEventListener('resize', updateLayout);
-      vv?.removeEventListener('scroll', updateLayout);
-    };
-  }, [showProductsMenu]);
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     if (!showProductsMenu || typeof document === 'undefined') {
@@ -156,6 +79,41 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
       document.body.style.overflow = previousOverflow;
     };
   }, [showProductsMenu]);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') {
+      return;
+    }
+
+    if (showProductsMenu) {
+      document.body.dataset.categoriesMenuOpen = 'true';
+      return () => {
+        delete document.body.dataset.categoriesMenuOpen;
+      };
+    }
+
+    delete document.body.dataset.categoriesMenuOpen;
+    return () => {
+      delete document.body.dataset.categoriesMenuOpen;
+    };
+  }, [showProductsMenu]);
+
+  useEffect(() => {
+    if (!showProductsMenu) {
+      return;
+    }
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setShowProductsMenu(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleEscape);
+    return () => {
+      window.removeEventListener('keydown', handleEscape);
+    };
+  }, [setShowProductsMenu, showProductsMenu]);
 
   useEffect(() => {
     if (!useMobileRow2 || !mobileSearchPopupOpen || typeof document === 'undefined') {
@@ -206,7 +164,7 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
     <div
       className={`w-full border-b border-marco-border bg-white max-md:border-b-0 ${useMobileRow2 ? 'border-b-0' : ''}`}
     >
-      <div ref={headerRowContainerRef} className={HEADER_CONTAINER_CLASS}>
+      <div className={HEADER_CONTAINER_CLASS}>
         <div
           className={
             useMobileRow2
@@ -230,7 +188,6 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
               }
             >
               <button
-                ref={categoriesTriggerRef}
                 type="button"
                 onClick={() => setShowProductsMenu((open) => !open)}
                 className={`flex w-full items-center !bg-[#383838] !text-white dark:!bg-white dark:!text-[#383838] dark:ring-1 dark:ring-black/10 ${getHeaderCategoryButtonClass(
@@ -238,7 +195,7 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
                   row2DesktopLike,
                 )} [&_svg]:!text-white dark:[&_svg]:!text-[#383838]`}
                 aria-expanded={showProductsMenu}
-                aria-haspopup="true"
+                aria-haspopup="dialog"
               >
                 <span
                   className={
@@ -261,50 +218,67 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
                   </span>
                 </span>
               </button>
-              {showProductsMenu &&
-                categoriesDropdownLayout &&
-                typeof document !== 'undefined' &&
+              {isClient &&
                 createPortal(
-                  <>
+                  <div
+                    data-marco-categories-overlay
+                    role="presentation"
+                    className={`fixed inset-0 transition-opacity duration-300 ease-out ${
+                      showProductsMenu ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
+                    }`}
+                    style={{ zIndex: HEADER_CATEGORIES_OVERLAY_Z_INDEX }}
+                    aria-hidden
+                    onClick={() => setShowProductsMenu(false)}
+                  >
                     <div
-                      data-marco-categories-overlay
-                      role="presentation"
-                      className="fixed bottom-0 left-0 right-0 cursor-default bg-white dark:bg-zinc-950"
-                      style={{
-                        top: categoriesDropdownLayout.overlayTopPx,
-                        zIndex: HEADER_CATEGORIES_OVERLAY_Z_INDEX,
-                      }}
-                      aria-hidden
-                      onClick={() => setShowProductsMenu(false)}
-                    />
-                    <div
-                      aria-hidden
-                      data-marco-categories-bridge
-                      className="pointer-events-auto"
-                      style={categoriesDropdownLayout.bridge}
+                      className={`absolute inset-0 bg-black/45 backdrop-blur-[2px] transition-opacity duration-300 ease-out ${
+                        showProductsMenu ? 'opacity-100' : 'opacity-0'
+                      }`}
                     />
                     <div
                       data-marco-categories-dropdown
                       data-theme-static="true"
-                      className="flex h-full max-h-full min-h-0 min-w-0 flex-col overflow-hidden"
-                      style={categoriesDropdownLayout.panel}
+                      className={`relative h-full w-full max-w-none transform-gpu overflow-hidden bg-white transition-transform duration-300 ease-out dark:bg-zinc-950 ${
+                        showProductsMenu ? 'translate-x-0' : '-translate-x-full'
+                      }`}
+                      style={{ zIndex: HEADER_CATEGORIES_PANEL_Z_INDEX }}
+                      onClick={(event) => event.stopPropagation()}
                     >
-                      {loadingCategories ? (
-                        <div className="h-full min-h-[200px] rounded-[13px] bg-white px-4 py-3 text-sm text-[#5d7285] shadow-2xl">
-                          {t('common.messages.loading')}
+                      <div className="mx-auto flex h-full w-full max-w-[1600px] flex-col px-3 py-3 sm:px-4 sm:py-4 md:px-6 md:py-6">
+                        <div className="mb-3 flex items-center justify-between sm:mb-4">
+                          <h2 className="text-base font-semibold text-marco-black dark:text-white sm:text-lg">
+                            {t('common.navigation.categories')}
+                          </h2>
+                          <button
+                            type="button"
+                            onClick={() => setShowProductsMenu(false)}
+                            className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-marco-yellow text-marco-black transition-[filter] duration-200 hover:brightness-95 active:brightness-90"
+                            aria-label={t('common.buttons.close')}
+                          >
+                            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                              <path strokeLinecap="round" d="M6 6l12 12M18 6L6 18" />
+                            </svg>
+                          </button>
                         </div>
-                      ) : (
-                        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-                          <Suspense fallback={null}>
-                            <CategoriesDropdownMega
-                              categories={getRootCategories(categories)}
-                              onClose={() => setShowProductsMenu(false)}
-                            />
-                          </Suspense>
+                        <div className="min-h-0 flex-1">
+                          {loadingCategories ? (
+                            <div className="h-full min-h-[200px] rounded-[13px] bg-white px-4 py-3 text-sm text-[#5d7285] shadow-2xl dark:bg-zinc-900 dark:text-zinc-300">
+                              {t('common.messages.loading')}
+                            </div>
+                          ) : (
+                            <div className="flex h-full min-h-0 flex-col overflow-hidden">
+                              <Suspense fallback={null}>
+                                <CategoriesDropdownMega
+                                  categories={getRootCategories(categories)}
+                                  onClose={() => setShowProductsMenu(false)}
+                                />
+                              </Suspense>
+                            </div>
+                          )}
                         </div>
-                      )}
+                      </div>
                     </div>
-                  </>,
+                  </div>,
                   document.body,
                 )}
             </div>
@@ -417,7 +391,7 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
               )}
               {useMobileRow2 &&
                 mobileSearchPopupOpen &&
-                typeof document !== 'undefined' &&
+                isClient &&
                 createPortal(
                   <div className="fixed inset-0 z-[700]">
                     <button

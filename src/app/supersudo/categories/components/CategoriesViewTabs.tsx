@@ -1,7 +1,6 @@
 'use client';
 
 import { useTranslation } from '../../../../lib/i18n-client';
-import { translateAdminCategoryLabel } from '../admin-category-labels';
 import type { AdminCategoryView } from '../utils';
 
 type CategoriesViewTabsProps = {
@@ -29,7 +28,7 @@ export function CategoriesViewTabs({
     <div
       className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
       role="tablist"
-      aria-label={translateAdminCategoryLabel(t, 'admin.categories.viewTabsLabel', 'Category type')}
+      aria-label={t('admin.categories.viewTabsLabel')}
     >
       <div className="flex flex-wrap gap-2">
         <button
@@ -41,7 +40,7 @@ export function CategoriesViewTabs({
           className={`inline-flex min-h-11 items-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 ${tabClass(activeView === 'roots')}`}
           onClick={() => onViewChange('roots')}
         >
-          {translateAdminCategoryLabel(t, 'admin.categories.tabRootCategories', t('admin.categories.title'))}
+          {t('admin.categories.tabRootCategories')}
           <span className="rounded-full bg-white/80 px-2 py-0.5 text-xs font-bold tabular-nums text-slate-700 ring-1 ring-slate-200/80">
             {rootCount}
           </span>
@@ -55,18 +54,14 @@ export function CategoriesViewTabs({
           className={`inline-flex min-h-11 items-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 ${tabClass(activeView === 'subcategories')}`}
           onClick={() => onViewChange('subcategories')}
         >
-          {translateAdminCategoryLabel(t, 'admin.categories.tabSubcategories', t('admin.categories.subcategories'))}
+          {t('admin.categories.tabSubcategories')}
           <span className="rounded-full bg-white/80 px-2 py-0.5 text-xs font-bold tabular-nums text-slate-700 ring-1 ring-slate-200/80">
             {subcategoryCount}
           </span>
         </button>
       </div>
       <p className="text-sm text-slate-500">
-        {translateAdminCategoryLabel(
-          t,
-          'admin.categories.viewTabsHint',
-          'Main and subcategories are shown in separate lists',
-        )}
+        {t('admin.categories.viewTabsHint')}
       </p>
     </div>
   );

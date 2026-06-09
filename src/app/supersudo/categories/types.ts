@@ -10,6 +10,7 @@ export interface Category {
   media?: string[];
   parentId: string | null;
   requiresSizes?: boolean;
+  productCount?: number;
   children?: Category[];
 }
 
