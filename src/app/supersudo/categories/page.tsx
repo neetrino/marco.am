@@ -13,9 +13,9 @@ import { CategoriesViewTabs } from './components/CategoriesViewTabs';
 import { BulkCategorySelectionControls } from './components/BulkCategorySelectionControls';
 import { AddCategoryModal, type AddCategoryModalMode } from './components/AddCategoryModal';
 import { EditCategoryModal } from './components/EditCategoryModal';
+import { ConvertCategoryTypeModal } from './components/ConvertCategoryTypeModal';
 import type { Category } from './types';
-import { filterCategoriesForAdminView, type AdminCategoryView } from './utils';
-import { translateAdminCategoryLabel } from './admin-category-labels';
+import { filterCategoriesForAdminView, getDescendantIds, type AdminCategoryView } from './utils';
 import { showToast } from '../../../components/Toast';
 import { notifyShopCategoryTreeUpdated } from '../../../lib/shop-category-tree-sync';
 
@@ -53,6 +53,11 @@ export default function CategoriesPage() {
   const [activeView, setActiveView] = useState<'roots' | 'subcategories'>('roots');
   const [addModalMode, setAddModalMode] = useState<AddCategoryModalMode>('root');
   const [movingCategoryId, setMovingCategoryId] = useState<string | null>(null);
+  const [convertingCategoryId, setConvertingCategoryId] = useState<string | null>(null);
+  const [showConvertModal, setShowConvertModal] = useState(false);
+  const [convertingCategory, setConvertingCategory] = useState<Category | null>(null);
+  const [conversionParentId, setConversionParentId] = useState('');
+  const [conversionSubcategoryIds, setConversionSubcategoryIds] = useState<string[]>([]);
   const [draggingCategoryId, setDraggingCategoryId] = useState<string | null>(null);
   const [dragOverCategoryId, setDragOverCategoryId] = useState<string | null>(null);
   const rootCategoryCount = useMemo(
@@ -190,6 +195,73 @@ export default function CategoriesPage() {
     }
   };
 
+  const handleToggleCategoryKind = async (category: Category) => {
+    setConvertingCategory(category);
+    const descendants = getDescendantIds(categories, category.id);
+    const defaultSubcategoryIds = categories
+      .filter((item) => item.parentId === category.id)
+      .map((item) => item.id);
+    setConversionSubcategoryIds(defaultSubcategoryIds);
+
+    const isSubcategory = Boolean(category.parentId);
+    if (isSubcategory) {
+      setConversionParentId('');
+      setShowConvertModal(true);
+      return;
+    }
+
+    const parentCandidates = categories.filter(
+      (item) => !item.parentId && item.id !== category.id && !descendants.has(item.id),
+    );
+    if (parentCandidates.length === 0) {
+      setConvertingCategory(null);
+      showToast(t('admin.categories.noAvailableParentForConversion'), 'warning');
+      return;
+    }
+    setConversionParentId(parentCandidates[0]?.id ?? '');
+    setShowConvertModal(true);
+  };
+
+  const resetConvertModalState = () => {
+    setShowConvertModal(false);
+    setConvertingCategory(null);
+    setConversionParentId('');
+    setConversionSubcategoryIds([]);
+  };
+
+  const handleSubmitCategoryConversion = async () => {
+    if (!convertingCategory) {
+      return;
+    }
+    const isSubcategory = Boolean(convertingCategory.parentId);
+    const payload = {
+      parentId: isSubcategory ? null : conversionParentId || null,
+      subcategoryIds: conversionSubcategoryIds,
+    };
+    if (!isSubcategory && !payload.parentId) {
+      showToast(t('admin.categories.parentRequired'), 'warning');
+      return;
+    }
+
+    try {
+      setConvertingCategoryId(convertingCategory.id);
+      await apiClient.put(`/api/v1/supersudo/categories/${convertingCategory.id}`, payload);
+      await fetchCategories();
+      notifyShopCategoryTreeUpdated();
+      showToast(
+        isSubcategory
+          ? t('admin.categories.convertToRootSuccess')
+          : t('admin.categories.convertToSubcategorySuccess'),
+        'success',
+      );
+      resetConvertModalState();
+    } catch (error: unknown) {
+      showToast(getApiOrErrorMessage(error, t('admin.common.unknownErrorFallback')), 'error');
+    } finally {
+      setConvertingCategoryId(null);
+    }
+  };
+
   const addCategoryHeaderActions = (
     <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
       <Button
@@ -205,7 +277,7 @@ export default function CategoriesPage() {
         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
         </svg>
-        {translateAdminCategoryLabel(t, 'admin.categories.addSubcategory', 'Add subcategory')}
+        {t('admin.categories.addSubcategory')}
       </Button>
       <Button
         variant="primary"
@@ -332,8 +404,10 @@ export default function CategoriesPage() {
                   handleDeleteCategory(categoryId, categoryTitle, fetchCategories, categories)
                 }
                 onToggleHeaderVisibility={handleToggleCategoryHeaderVisibility}
+                onToggleCategoryKind={handleToggleCategoryKind}
                 onReorder={handleReorderCategory}
                 movingCategoryId={movingCategoryId}
+                convertingCategoryId={convertingCategoryId}
                 draggingCategoryId={draggingCategoryId}
                 dragOverCategoryId={dragOverCategoryId}
                 onDragStart={handleStartDrag}
@@ -358,14 +432,7 @@ export default function CategoriesPage() {
         onFormDataChange={setFormData}
         onSubmit={async () => {
           if (addModalMode === 'subcategory' && !formData.parentId.trim()) {
-            showToast(
-              translateAdminCategoryLabel(
-                t,
-                'admin.categories.parentRequired',
-                'Please select a main category',
-              ),
-              'warning',
-            );
+            showToast(t('admin.categories.parentRequired'), 'warning');
             return;
           }
           await handleAddCategory(fetchCategories);
@@ -384,6 +451,19 @@ export default function CategoriesPage() {
         }}
         onFormDataChange={setFormData}
         onSubmit={() => handleUpdateCategory(fetchCategories)}
+      />
+
+      <ConvertCategoryTypeModal
+        isOpen={showConvertModal}
+        category={convertingCategory}
+        categories={categories}
+        targetParentId={conversionParentId}
+        targetSubcategoryIds={conversionSubcategoryIds}
+        saving={convertingCategoryId !== null}
+        onClose={resetConvertModalState}
+        onTargetParentIdChange={setConversionParentId}
+        onTargetSubcategoryIdsChange={setConversionSubcategoryIds}
+        onSubmit={handleSubmitCategoryConversion}
       />
     </>
   );

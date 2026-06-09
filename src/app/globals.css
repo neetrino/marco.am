@@ -43,30 +43,13 @@
     @apply bg-[var(--app-bg)] text-[var(--app-text)];
   }
   
-  /* Prevent text selection and caret on all text elements */
-  p, span, div, h1, h2, h3, h4, h5, h6, 
-  li, td, th, label, strong, em, b, i, 
-  small, blockquote, pre, code, 
-  article, section, aside, header, footer, nav, main {
-    user-select: none !important;
-    -webkit-user-select: none !important;
-    -moz-user-select: none !important;
-    -ms-user-select: none !important;
-    caret-color: transparent !important;
-  }
-  
-  /* Allow selection in input and textarea fields */
-  input, textarea {
-    user-select: text !important;
-    -webkit-user-select: text !important;
-    -moz-user-select: text !important;
-    -ms-user-select: text !important;
-    caret-color: currentColor !important;
-  }
-  
-  /* Ensure caret is visible and blinking in focused inputs */
-  input:focus, textarea:focus {
-    caret-color: currentColor !important;
+  /* Global text selection is enabled to allow copy across the app. */
+  html,
+  body {
+    user-select: text;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
   }
 
   /* Hide native search clear icon; app renders a custom clear button */
@@ -83,14 +66,6 @@
     height: 0;
   }
   
-  /* Links should be selectable but no caret */
-  a {
-    user-select: none !important;
-    -webkit-user-select: none !important;
-    -moz-user-select: none !important;
-    -ms-user-select: none !important;
-  }
-
   .dark body {
     color-scheme: dark;
   }
@@ -902,14 +877,19 @@
 
 body[data-mobile-menu-open='true'] #tidio,
 body[data-cart-drawer-open='true'] #tidio,
+body[data-categories-menu-open='true'] #tidio,
 body[data-mobile-menu-open='true'] #tidio-chat,
 body[data-cart-drawer-open='true'] #tidio-chat,
+body[data-categories-menu-open='true'] #tidio-chat,
 body[data-mobile-menu-open='true'] #tidio-chat-iframe,
 body[data-cart-drawer-open='true'] #tidio-chat-iframe,
+body[data-categories-menu-open='true'] #tidio-chat-iframe,
 body[data-mobile-menu-open='true'] iframe[src*='tidio.co'],
 body[data-cart-drawer-open='true'] iframe[src*='tidio.co'],
+body[data-categories-menu-open='true'] iframe[src*='tidio.co'],
 body[data-mobile-menu-open='true'] [id^='tidio-'],
-body[data-cart-drawer-open='true'] [id^='tidio-'] {
+body[data-cart-drawer-open='true'] [id^='tidio-'],
+body[data-categories-menu-open='true'] [id^='tidio-'] {
   display: none !important;
   visibility: hidden !important;
   opacity: 0 !important;

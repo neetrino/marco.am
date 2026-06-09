@@ -1,4 +1,6 @@
 import type { Variant } from '../types';
+import { t as translateByLocale } from '@/lib/i18n';
+import { getStoredLanguage } from '@/lib/language';
 
 interface UseVariantValidationProps {
   productType: 'simple' | 'variable';
@@ -19,11 +21,12 @@ export function useVariantValidation({
   isClothingCategory,
   setLoading,
 }: UseVariantValidationProps) {
+  const mt = (path: string): string => translateByLocale(getStoredLanguage(), path);
   const validateVariants = (): string | null => {
     // Skip variant validation for Simple products - they create variants later in the process
     if (productType === 'variable' && variants.length === 0) {
       setLoading(false);
-      return 'Ընտրեք ատրիբուտներ և լրացրեք տարբերակները';
+      return mt('admin.products.add.selectAttributesAndFillVariants');
     }
 
     // Validate all variants (skip for simple products - validation is done in variant creation)
@@ -33,12 +36,12 @@ export function useVariantValidation({
         const variantSku = variant.sku ? variant.sku.trim() : '';
         if (!variantSku || variantSku === '') {
           setLoading(false);
-          return 'Բոլոր տարբերակների SKU-ն պարտադիր է';
+          return mt('admin.products.add.allVariantSkuRequired');
         }
         
         if (skuSet.has(variantSku)) {
           setLoading(false);
-          return `Կրկնվող SKU՝ «${variantSku}»`;
+          return mt('admin.products.add.duplicateSku').replace('{sku}', variantSku);
         }
         skuSet.add(variantSku);
         
@@ -95,7 +98,7 @@ export function useVariantValidation({
       }
       if (!simpleProductData.sku || simpleProductData.sku.trim() === '') {
         setLoading(false);
-        return 'SKU-ն պարտադիր է';
+        return mt('admin.products.add.skuRequired');
       }
       if (!simpleProductData.quantity || simpleProductData.quantity.trim() === '') {
         setLoading(false);

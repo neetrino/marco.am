@@ -33,6 +33,7 @@ type CategoryResponseItem = {
   parentId: string | null;
   showInHeader: boolean;
   requiresSizes: boolean;
+  productCount: number;
   translations: Partial<Record<SupportedCategoryLocale, string>>;
 };
 
@@ -112,7 +113,11 @@ class AdminCategoriesService {
     return result;
   }
 
-  private mapCategory(category: CategoryNode, locale: string): CategoryResponseItem {
+  private mapCategory(
+    category: CategoryNode,
+    locale: string,
+    productCountByCategoryId?: Map<string, number>,
+  ): CategoryResponseItem {
     const translation = this.resolveTranslation(category.translations, locale);
     return {
       id: category.id,
@@ -125,6 +130,7 @@ class AdminCategoriesService {
       parentId: category.parentId,
       showInHeader: category.showInHeader,
       requiresSizes: category.requiresSizes,
+      productCount: productCountByCategoryId?.get(category.id) ?? 0,
       translations: this.mapTranslationsByLocale(category.translations),
     };
   }
@@ -428,6 +434,69 @@ class AdminCategoriesService {
         position: "asc",
       },
     });
+    const categoryIds = categories.map((category) => category.id);
+    const categoryIdSet = new Set(categoryIds);
+    const products = await db.product.findMany({
+      where: {
+        deletedAt: null,
+      },
+      select: {
+        primaryCategoryId: true,
+        categoryIds: true,
+      },
+    });
+    const directProductCountByCategoryId = new Map<string, number>(
+      categoryIds.map((categoryId) => [categoryId, 0]),
+    );
+
+    for (const product of products) {
+      const referencedCategoryIds = new Set<string>();
+      if (product.primaryCategoryId && categoryIdSet.has(product.primaryCategoryId)) {
+        referencedCategoryIds.add(product.primaryCategoryId);
+      }
+      if (Array.isArray(product.categoryIds)) {
+        for (const categoryId of product.categoryIds) {
+          if (typeof categoryId === "string" && categoryIdSet.has(categoryId)) {
+            referencedCategoryIds.add(categoryId);
+          }
+        }
+      }
+      referencedCategoryIds.forEach((categoryId) => {
+        directProductCountByCategoryId.set(
+          categoryId,
+          (directProductCountByCategoryId.get(categoryId) ?? 0) + 1,
+        );
+      });
+    }
+
+    const childrenByParentId = new Map<string, string[]>();
+    for (const category of categories) {
+      if (!category.parentId || !categoryIdSet.has(category.parentId)) {
+        continue;
+      }
+      const children = childrenByParentId.get(category.parentId) ?? [];
+      children.push(category.id);
+      childrenByParentId.set(category.parentId, children);
+    }
+    const totalProductCountByCategoryId = new Map<string, number>();
+    const countProductsInSubtree = (categoryId: string): number => {
+      const cached = totalProductCountByCategoryId.get(categoryId);
+      if (cached !== undefined) {
+        return cached;
+      }
+
+      const directCount = directProductCountByCategoryId.get(categoryId) ?? 0;
+      const childIds = childrenByParentId.get(categoryId) ?? [];
+      const totalCount = childIds.reduce(
+        (sum, childCategoryId) => sum + countProductsInSubtree(childCategoryId),
+        directCount,
+      );
+      totalProductCountByCategoryId.set(categoryId, totalCount);
+      return totalCount;
+    };
+    categoryIds.forEach((categoryId) => {
+      countProductsInSubtree(categoryId);
+    });
 
     return {
       data: categories.map((category) =>
@@ -441,6 +510,7 @@ class AdminCategoriesService {
             translations: category.translations,
           },
           this.defaultLocale,
+          totalProductCountByCategoryId,
         ),
       ),
     };

@@ -4,7 +4,6 @@ import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from '../../../../lib/i18n-client';
 import { getStoredLanguage } from '../../../../lib/language';
 import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '../../../../lib/utils/image-utils';
-import { translateAdminCategoryLabel } from '../admin-category-labels';
 import {
   countDirectSubcategories,
   filterCategoriesForAdminView,
@@ -29,8 +28,10 @@ interface CategoriesListProps {
   onEdit: (category: Category) => void;
   onDelete: (categoryId: string, categoryTitle: string) => void;
   onToggleHeaderVisibility: (category: Category, nextVisible: boolean) => void;
+  onToggleCategoryKind: (category: Category) => Promise<void>;
   onReorder: (categoryId: string, targetCategoryId: string, scope: AdminCategoryView) => Promise<void>;
   movingCategoryId: string | null;
+  convertingCategoryId: string | null;
   draggingCategoryId: string | null;
   dragOverCategoryId: string | null;
   onDragStart: (categoryId: string) => void;
@@ -51,8 +52,10 @@ export function CategoriesList({
   onEdit,
   onDelete,
   onToggleHeaderVisibility,
+  onToggleCategoryKind,
   onReorder,
   movingCategoryId,
+  convertingCategoryId,
   draggingCategoryId,
   dragOverCategoryId,
   onDragStart,
@@ -212,10 +215,60 @@ export function CategoriesList({
                   >
                     {nestedSubcategoryCount > 0
                       ? nestedSubcategoryCount
-                      : translateAdminCategoryLabel(t, 'admin.categories.noSubcategoriesShort', '0')}
+                      : t('admin.categories.noSubcategoriesShort')}
                   </span>
                 </div>
-                <div className="flex shrink-0 items-center gap-2">
+                <div className="flex shrink-0 items-center justify-center px-2">
+                  <span
+                    className="inline-flex min-w-10 items-center justify-center rounded-md border border-slate-200 bg-white px-2 py-0.5 text-xs font-semibold tabular-nums text-slate-700"
+                    title={t('admin.categories.tableProductCount')}
+                  >
+                    {child.productCount ?? 0}
+                  </span>
+                </div>
+                <div className="grid shrink-0 grid-cols-5 justify-items-center gap-1">
+                  <button
+                    type="button"
+                    className={`inline-flex h-10 w-10 items-center justify-center rounded-md border transition-colors ${
+                      child.parentId
+                        ? 'border-sky-200 bg-sky-50 text-sky-700 hover:border-sky-300 hover:bg-sky-100'
+                        : 'border-violet-200 bg-violet-50 text-violet-700 hover:border-violet-300 hover:bg-violet-100'
+                    } ${
+                      convertingCategoryId === child.id ? 'cursor-not-allowed opacity-60' : ''
+                    }`}
+                    onClick={() => void onToggleCategoryKind(child)}
+                    disabled={convertingCategoryId === child.id}
+                    aria-label={
+                      child.parentId
+                        ? t('admin.categories.convertToMainCategory')
+                        : t('admin.categories.convertToSubcategory')
+                    }
+                    title={
+                      child.parentId
+                        ? t('admin.categories.convertToMainCategory')
+                        : t('admin.categories.convertToSubcategory')
+                    }
+                  >
+                    {convertingCategoryId === child.id ? (
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                    ) : (
+                      <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
+                        {child.parentId ? (
+                          <path
+                            fillRule="evenodd"
+                            d="M10 3a1 1 0 011 1v7.586l2.293-2.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L9 11.586V4a1 1 0 011-1z"
+                            clipRule="evenodd"
+                          />
+                        ) : (
+                          <path
+                            fillRule="evenodd"
+                            d="M10 17a1 1 0 01-1-1V8.414L6.707 10.707a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 11-1.414 1.414L11 8.414V16a1 1 0 01-1 1z"
+                            clipRule="evenodd"
+                          />
+                        )}
+                      </svg>
+                    )}
+                  </button>
                   <button
                     type="button"
                     className={`inline-flex h-10 w-10 items-center justify-center rounded-md border transition-colors ${
@@ -224,8 +277,16 @@ export function CategoriesList({
                         : 'border-slate-200 bg-white text-slate-400 hover:border-slate-300 hover:text-slate-600'
                     }`}
                     onClick={() => onToggleHeaderVisibility(child, !child.showInHeader)}
-                    aria-label={child.showInHeader ? 'Hide from header sidebar' : 'Show in header sidebar'}
-                    title={child.showInHeader ? 'Hide from header sidebar' : 'Show in header sidebar'}
+                    aria-label={
+                      child.showInHeader
+                        ? t('admin.categories.hideFromHeaderSidebar')
+                        : t('admin.categories.showInHeaderSidebar')
+                    }
+                    title={
+                      child.showInHeader
+                        ? t('admin.categories.hideFromHeaderSidebar')
+                        : t('admin.categories.showInHeaderSidebar')
+                    }
                   >
                     <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
                       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.044 3.214a1 1 0 00.95.69h3.38c.969 0 1.371 1.24.588 1.81l-2.736 1.988a1 1 0 00-.364 1.118l1.045 3.214c.3.921-.755 1.688-1.539 1.118l-2.737-1.988a1 1 0 00-1.175 0l-2.737 1.988c-.783.57-1.838-.197-1.539-1.118l1.045-3.214a1 1 0 00-.364-1.118L2.087 8.64c-.783-.57-.38-1.81.588-1.81h3.38a1 1 0 00.95-.69l1.044-3.214z" />
@@ -276,16 +337,8 @@ export function CategoriesList({
       searchQuery.trim().length > 0
         ? t('admin.categories.noSearchResults')
         : isRootView
-          ? translateAdminCategoryLabel(
-              t,
-              'admin.categories.noRootCategories',
-              t('admin.categories.noCategories'),
-            )
-          : translateAdminCategoryLabel(
-              t,
-              'admin.categories.noSubcategories',
-              t('admin.categories.noCategories'),
-            );
+          ? t('admin.categories.noRootCategories')
+          : t('admin.categories.noSubcategories');
     return (
       <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50/70 px-4 py-8 text-center">
         <p className="text-sm font-medium text-slate-600">{emptyMessage}</p>
@@ -302,20 +355,21 @@ export function CategoriesList({
         className="overflow-hidden rounded-xl border border-slate-200"
       >
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[760px] table-fixed divide-y divide-slate-200 bg-white">
+          <table className="w-full table-fixed divide-y divide-slate-200 bg-white">
             <colgroup>
-              <col className="w-12" />
-              <col className="w-12" />
-              <col className="w-[88px]" />
-              <col className="w-[36%]" />
-              <col className="w-[20%]" />
+              <col className="w-[4%]" />
+              <col className="w-[4%]" />
+              <col className="w-[6%]" />
+              <col className="w-[28%]" />
               <col className="w-[16%]" />
+              <col className="w-[13%]" />
+              <col className="w-[9%]" />
               <col className="w-[20%]" />
             </colgroup>
             <thead className="bg-slate-50/90">
               <tr>
-                <th className="px-2 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500" />
-                <th className="px-3 py-2 text-left">
+                <th className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500" />
+                <th className="px-3 py-3 text-left">
                   <input
                     type="checkbox"
                     checked={allOnPageSelected}
@@ -329,25 +383,22 @@ export function CategoriesList({
                     aria-label={t('admin.categories.selectPage')}
                   />
                 </th>
-                <th className="px-2 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  {t('admin.categories.imageLabel')}
+                <th className="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wide whitespace-nowrap text-slate-500">
+                  {t('admin.categories.tableImage')}
                 </th>
-                <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide whitespace-nowrap text-slate-500">
                   {t('admin.categories.tableTitle')}
                 </th>
-                <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide whitespace-nowrap text-slate-500">
                   {t('admin.categories.tableSlug')}
                 </th>
-                <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  {isRootView
-                    ? translateAdminCategoryLabel(
-                        t,
-                        'admin.categories.tableSubcategoryCount',
-                        t('admin.categories.subcategories'),
-                      )
-                    : t('admin.categories.tableParent')}
+                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide whitespace-nowrap text-slate-500">
+                  {isRootView ? t('admin.categories.tableSubcategoryCount') : t('admin.categories.tableParent')}
                 </th>
-                <th className="px-3 py-2 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide whitespace-nowrap text-slate-500">
+                  {t('admin.categories.tableProductCount')}
+                </th>
+                <th className="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wide whitespace-nowrap text-slate-500">
                   {t('admin.categories.tableActions')}
                 </th>
               </tr>
@@ -372,10 +423,13 @@ export function CategoriesList({
                     onEdit={onEdit}
                     onDelete={onDelete}
                     onToggleHeaderVisibility={onToggleHeaderVisibility}
+                    onToggleCategoryKind={onToggleCategoryKind}
                     categoryTitle={getLocalizedCategoryTitle(category, activeLocale)}
                     parentCategoryTitle={getLocalizedCategoryTitle(parentCategory, activeLocale)}
+                    productCount={category.productCount ?? 0}
                     onReorder={onReorder}
                     moving={movingCategoryId === category.id}
+                    converting={convertingCategoryId === category.id}
                     dragging={draggingCategoryId === category.id}
                     dragOver={dragOverCategoryId === category.id}
                     onDragStart={onDragStart}
@@ -390,7 +444,7 @@ export function CategoriesList({
                 if (isRootView && isExpanded && childCategories.length > 0) {
                   rows.push(
                     <tr key={`${category.id}-children`} id={`category-subtree-${category.id}`}>
-                      <td colSpan={7} className="bg-gradient-to-r from-amber-50/70 to-slate-50 px-4 py-3">
+                      <td colSpan={8} className="bg-gradient-to-r from-amber-50/70 to-slate-50 px-4 py-3">
                         <div className="rounded-xl border border-amber-200/70 bg-white/90 p-3 shadow-sm">
                           <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-amber-800">
                             {t('admin.categories.subcategories')}
