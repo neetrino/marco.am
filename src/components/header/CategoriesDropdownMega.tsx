@@ -155,7 +155,6 @@ export function CategoriesDropdownMega({
             items={subcategoryItems}
             lang={lang}
             productsWord={t('common.navigation.categoriesMegaMenu.productsWord')}
-            emptyMessage={t('common.navigation.categoriesMegaMenu.emptySubcategories')}
             onNavigate={onClose}
           />
         </div>

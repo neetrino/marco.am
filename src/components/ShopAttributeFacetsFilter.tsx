@@ -6,7 +6,6 @@ import { useShopProductsListingSearchParams } from '@/lib/use-shop-products-list
 import { pushShopProductsListingUrl } from '@/lib/push-shop-products-listing-url';
 import {
   normalizeTechnicalFilterToken,
-  type TechnicalSpecFacet,
 } from '@/lib/services/products-technical-filters';
 import { useProductsFilters, useShopFiltersTranslation } from './ProductsFiltersProvider';
 import {
@@ -39,26 +38,13 @@ export function ShopAttributeFacetsFilter() {
   const mobileDraft = useMobileFiltersDraft();
   const filtersContext = useProductsFilters();
   const { t } = useShopFiltersTranslation();
-  const [facets, setFacets] = useState<TechnicalSpecFacet[]>([]);
-  const [loading, setLoading] = useState(true);
+  const facets = filtersContext?.data?.attributeFacets ?? [];
+  const loading = filtersContext ? filtersContext.loading && facets.length === 0 : true;
   const [optimisticByKey, setOptimisticByKey] = useState<Record<string, string[] | null> | null>(
     null,
   );
 
   const activeSearchParams = mobileDraft?.enabled ? mobileDraft.searchParams : searchParams;
-
-  useEffect(() => {
-    if (filtersContext?.data != null) {
-      setFacets(filtersContext.data.attributeFacets ?? []);
-      setLoading(false);
-      return;
-    }
-    if (filtersContext === null) {
-      setLoading(true);
-    } else {
-      setLoading(filtersContext.loading);
-    }
-  }, [filtersContext?.data, filtersContext?.loading, filtersContext === null]);
 
   useEffect(() => {
     setOptimisticByKey(null);

@@ -110,7 +110,6 @@ export function CategoryMegaSubcategoryPills({
   items,
   lang,
   productsWord,
-  emptyMessage,
   onNavigate,
 }: {
   /** Stable `id` for the section heading — used by `aria-labelledby` on the scrollable subcategory list. */
@@ -119,37 +118,23 @@ export function CategoryMegaSubcategoryPills({
   items: Category[];
   lang: LanguageCode;
   productsWord: string;
-  emptyMessage: string;
   onNavigate: () => void;
 }) {
-  const headerBlock = (
-    <div className="shrink-0 px-2.5 pt-2.5">
-      <h2
-        id={sectionHeadingId}
-        className={`${headerCategoryNavFont.className} text-[22px] font-bold uppercase leading-tight tracking-[-0.02em] !text-[#383838] md:text-[28px] md:leading-[1.1] lg:text-[34px] lg:leading-[39px] dark:!text-[#383838]`}
-      >
-        {sectionTitle}
-      </h2>
-      <div className="mt-2 h-[5px] w-[104px] shrink-0 bg-marco-yellow" aria-hidden />
-    </div>
-  );
-
   if (items.length === 0) {
-    return (
-      <div className="mt-2 flex min-h-0 min-w-0 shrink-0 flex-col gap-4 overflow-hidden">
-        {headerBlock}
-        <p
-          className={`${headerCategoryNavFont.className} px-2.5 text-sm leading-relaxed !text-[#383838] md:text-base dark:!text-[#383838]`}
-        >
-          {emptyMessage}
-        </p>
-      </div>
-    );
+    return null;
   }
 
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-6 overflow-hidden md:gap-10">
-      {headerBlock}
+      <div className="shrink-0 px-2.5 pt-2.5">
+        <h2
+          id={sectionHeadingId}
+          className={`${headerCategoryNavFont.className} text-[22px] font-bold uppercase leading-tight tracking-[-0.02em] !text-[#383838] md:text-[28px] md:leading-[1.1] lg:text-[34px] lg:leading-[39px] dark:!text-[#383838]`}
+        >
+          {sectionTitle}
+        </h2>
+        <div className="mt-2 h-[5px] w-[104px] shrink-0 bg-marco-yellow" aria-hidden />
+      </div>
 
       <ul
         aria-labelledby={sectionHeadingId}

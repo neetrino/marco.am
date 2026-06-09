@@ -6,7 +6,9 @@ import {
   parseLanguageFromServer,
   type LanguageCode,
 } from '@/lib/language';
-import { getCachedPdpVisual } from '@/lib/product-pdp/pdp-server-cache';
+import { RELATED_PRODUCTS_FETCH_LIMIT } from '@/lib/product-pdp/related-products.constants';
+import { getCachedPdpRelated, getCachedPdpVisual } from '@/lib/product-pdp/pdp-server-cache';
+import type { RelatedProductsApiResponse } from '@/lib/product-pdp/fetch-related-products';
 
 import { ProductPageClient } from './ProductPageClient';
 import { ProductPdpDetailStream } from './ProductPdpDetailStream';
@@ -21,7 +23,7 @@ function baseSlugFromParam(slugParam: string): string {
 }
 
 /**
- * PDP — visual SSR for instant gallery; detail streams in a second chunk; related loads client-side.
+ * PDP — visual + related SSR for first paint; detail streams in a second chunk.
  */
 export default async function ProductPage({ params }: PageProps) {
   const { slug: slugParam } = await params;
@@ -31,12 +33,14 @@ export default async function ProductPage({ params }: PageProps) {
 
   const baseSlug = baseSlugFromParam(slugParam);
 
-  let initialVisual = null;
-  try {
-    initialVisual = await getCachedPdpVisual(baseSlug, serverLanguage);
-  } catch {
-    initialVisual = null;
-  }
+  const [visualOutcome, relatedOutcome] = await Promise.allSettled([
+    getCachedPdpVisual(baseSlug, serverLanguage),
+    getCachedPdpRelated(baseSlug, serverLanguage, RELATED_PRODUCTS_FETCH_LIMIT),
+  ]);
+
+  const initialVisual = visualOutcome.status === 'fulfilled' ? visualOutcome.value : null;
+  const initialRelatedProducts: RelatedProductsApiResponse | null =
+    relatedOutcome.status === 'fulfilled' ? relatedOutcome.value : null;
 
   return (
     <>
@@ -45,6 +49,7 @@ export default async function ProductPage({ params }: PageProps) {
         serverLanguage={serverLanguage}
         initialVisual={initialVisual}
         initialProduct={null}
+        initialRelatedProducts={initialRelatedProducts}
       />
       <Suspense fallback={null}>
         <ProductPdpDetailStream baseSlug={baseSlug} serverLanguage={serverLanguage} />

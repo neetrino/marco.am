@@ -7,7 +7,7 @@ import type { LanguageCode } from '../lib/language';
 import type { RelatedProductsApiResponse } from '@/lib/product-pdp/fetch-related-products';
 import { useRelatedProducts } from './hooks/useRelatedProducts';
 import { useCarousel } from './hooks/useCarousel';
-import { useVisibleCards } from './hooks/useVisibleCards';
+import { useRelatedProductsVisibleCards } from './hooks/useRelatedProductsVisibleCards';
 import { CarouselDots } from './RelatedProducts/CarouselDots';
 import { RelatedProductsCardItem } from './RelatedProducts/RelatedProductsCardItem';
 import { useIsMaxMd } from './home/use-is-max-md';
@@ -82,7 +82,7 @@ export function RelatedProducts({
   initialRelatedProducts = null,
 }: RelatedProductsProps) {
   const isMaxMd = useIsMaxMd();
-  const visibleCards = useVisibleCards();
+  const visibleCards = useRelatedProductsVisibleCards();
   const { products, loading } = useRelatedProducts({
     productSlug: currentProductSlug,
     language,
@@ -110,6 +110,7 @@ export function RelatedProducts({
     itemCount: products.length,
     visibleItems: visibleCards,
     autoRotateInterval: 0,
+    pageByVisibleCount: true,
   });
 
   return (
@@ -119,7 +120,7 @@ export function RelatedProducts({
           <h2 className="text-3xl font-bold text-gray-900">
             {t(language, 'product.related_products_title')}
           </h2>
-          {products.length > visibleCards && (
+          {products.length > visibleCards && !loading && (
             <div className="flex shrink-0 gap-2">
               <button
                 type="button"
@@ -223,7 +224,7 @@ export function RelatedProducts({
               </div>
             </div>
 
-            {products.length > visibleCards && (
+            {products.length > visibleCards && !loading && (
               <CarouselDots
                 totalItems={products.length}
                 visibleItems={visibleCards}

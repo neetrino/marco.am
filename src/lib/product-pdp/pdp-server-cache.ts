@@ -4,9 +4,10 @@ import type { LanguageCode } from '@/lib/language';
 import { productsRelatedService } from '@/lib/services/products-related.service';
 import { productsService } from '@/lib/services/products.service';
 
+import { RELATED_PRODUCTS_FETCH_LIMIT } from './related-products.constants';
 import { PDP_NEXT_CACHE_REVALIDATE_SECONDS } from './pdp-query-cache';
 
-export const PDP_RELATED_SSR_LIMIT = 10;
+export const PDP_RELATED_SSR_LIMIT = RELATED_PRODUCTS_FETCH_LIMIT;
 
 /**
  * Cached Prisma read for PDP first paint (shared with pre-App Router path).

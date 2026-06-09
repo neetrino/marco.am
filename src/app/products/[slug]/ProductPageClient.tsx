@@ -8,6 +8,7 @@ import { useAuth } from '@/lib/auth/AuthContext';
 import { apiClient } from '@/lib/api-client';
 import { runGuestCartMutation, upsertGuestCartItem } from '@/app/cart/guest-cart-local';
 import { t } from '@/lib/i18n';
+import type { RelatedProductsApiResponse } from '@/lib/product-pdp/fetch-related-products';
 import type { PdpVisualPayload } from '@/lib/services/products-slug/product-transformer';
 import type { LanguageCode } from '@/lib/language';
 
@@ -27,6 +28,8 @@ export type ProductPageClientProps = {
   initialVisual: PdpVisualPayload | null;
   /** SSR full product when available; otherwise detail streams or client fetch. */
   initialProduct: Product | null;
+  /** SSR related carousel — instant «Նմանատիպ ապրանքներ» on first paint. */
+  initialRelatedProducts?: RelatedProductsApiResponse | null;
 };
 
 export function ProductPageClient({
@@ -34,6 +37,7 @@ export function ProductPageClient({
   serverLanguage,
   initialVisual,
   initialProduct,
+  initialRelatedProducts = null,
 }: ProductPageClientProps) {
   const { isLoggedIn } = useAuth();
 
@@ -228,7 +232,11 @@ export function ProductPageClient({
       ) : null}
 
       <div className={product ? 'mt-16' : 'mt-24'}>
-        <RelatedProducts currentProductSlug={slug} language={language} />
+        <RelatedProducts
+          currentProductSlug={slug}
+          language={language}
+          initialRelatedProducts={initialRelatedProducts}
+        />
       </div>
     </div>
   );

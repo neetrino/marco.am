@@ -68,6 +68,19 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const FALLBACK_AUTH_CONTEXT: AuthContextType = {
+  user: null,
+  token: null,
+  isLoggedIn: false,
+  isLoading: false,
+  isAdmin: false,
+  roles: [],
+  login: async () => ({ status: 'needs_verification' }),
+  register: async () => ({ status: 'needs_verification' }),
+  completeVerification: async () => {},
+  resendVerificationCode: async () => {},
+  logout: () => {},
+};
 
 function isPendingVerification(
   x: unknown
@@ -434,8 +447,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+  if (context !== undefined) {
+    return context;
   }
-  return context;
+  return FALLBACK_AUTH_CONTEXT;
 }

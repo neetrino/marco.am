@@ -17,9 +17,8 @@ import { apiClient } from '../lib/api-client';
 import { t as translate } from '../lib/i18n';
 import type { LanguageCode } from '../lib/language';
 import { LanguagePreferenceContext } from '../lib/language-context';
-import { buildTechnicalFilterQuerySignature } from '@/lib/services/products-technical-filters';
+import { buildProductsFiltersScopeKeyFromSearchParams } from '@/lib/products-filters-client-key';
 import type { TechnicalSpecFacet } from '@/lib/services/products-technical-filters';
-import { buildProductsFiltersClientKey } from '@/lib/products-filters-client-key';
 import {
   readShopFiltersCache,
   writeShopFiltersCache,
@@ -93,7 +92,7 @@ const DEFAULT_FILTERS: ProductsFiltersData = {
   priceRange: { min: 0, max: 0, stepSize: null, stepSizePerCurrency: null },
 };
 
-const FACET_REFETCH_DELAY_MS = 400;
+const FACET_REFETCH_DELAY_MS = 200;
 
 function mergeFilterPayload(payload: ProductsFiltersData): ProductsFiltersData {
   return {
@@ -116,11 +115,6 @@ function readBrowserQueryString(): string {
 }
 
 function resolveInitialFiltersFromCache(args: {
-  category?: string;
-  search?: string;
-  filter?: string;
-  minPrice?: string;
-  maxPrice?: string;
   language: LanguageCode;
   initialFiltersData: ProductsFiltersData | null;
   initialFiltersKey: string | null;
@@ -130,16 +124,7 @@ function resolveInitialFiltersFromCache(args: {
   syncedKey: string | null;
   hasData: boolean;
 } {
-  const {
-    category,
-    search,
-    filter,
-    minPrice,
-    maxPrice,
-    language,
-    initialFiltersData,
-    initialFiltersKey,
-  } = args;
+  const { language, initialFiltersData, initialFiltersKey } = args;
 
   if (initialFiltersData && initialFiltersKey) {
     return {
@@ -155,20 +140,7 @@ function resolveInitialFiltersFromCache(args: {
   }
 
   const urlParams = new URLSearchParams(readBrowserQueryString());
-  const categoryParam = urlParams.get('category') ?? category;
-  const searchParam = urlParams.get('search') ?? search;
-  const minPriceParam = urlParams.get('minPrice') ?? minPrice;
-  const maxPriceParam = urlParams.get('maxPrice') ?? maxPrice;
-  const filterParam = urlParams.get('filter') ?? filter;
-  const key = buildProductsFiltersClientKey({
-    category: categoryParam ?? undefined,
-    search: searchParam ?? undefined,
-    minPrice: minPriceParam ?? undefined,
-    maxPrice: maxPriceParam ?? undefined,
-    filter: filterParam ?? undefined,
-    language,
-    technicalFilterSignature: buildTechnicalFilterQuerySignature(urlParams),
-  });
+  const key = buildProductsFiltersScopeKeyFromSearchParams(urlParams, language);
   const cached = readShopFiltersCache(key);
   if (!cached) {
     return { data: null, loading: true, syncedKey: null, hasData: false };
@@ -183,12 +155,7 @@ function resolveInitialFiltersFromCache(args: {
 }
 
 function buildFacetRefetchScopeKey(searchParams: URLSearchParams, lang: string): string {
-  const params = new URLSearchParams(searchParams.toString());
-  params.delete('page');
-  params.delete('sort');
-  params.delete('limit');
-  params.set('lang', lang);
-  return params.toString();
+  return buildProductsFiltersScopeKeyFromSearchParams(searchParams, lang as LanguageCode);
 }
 
 interface ProductsFiltersProviderProps {
@@ -227,11 +194,6 @@ export function ProductsFiltersProvider({
   );
   if (mountFiltersStateRef.current === null) {
     mountFiltersStateRef.current = resolveInitialFiltersFromCache({
-      category,
-      search,
-      filter,
-      minPrice,
-      maxPrice,
       language: resolvedLanguage,
       initialFiltersData,
       initialFiltersKey,
@@ -246,23 +208,10 @@ export function ProductsFiltersProvider({
   const lastFacetScopeRef = useRef<string | null>(null);
   const facetRefetchTimerRef = useRef<number | null>(null);
 
-  const technicalSignatureFromUrl = useMemo(
-    () => buildTechnicalFilterQuerySignature(searchParams),
-    [searchParams],
+  const filtersClientKey = useMemo(
+    () => buildProductsFiltersScopeKeyFromSearchParams(searchParams, resolvedLanguage),
+    [searchParams, resolvedLanguage],
   );
-
-  const filtersClientKey = useMemo(() => {
-    const lang = resolvedLanguage;
-    return buildProductsFiltersClientKey({
-      category,
-      search,
-      minPrice,
-      maxPrice,
-      filter,
-      language: lang,
-      technicalFilterSignature: technicalSignatureFromUrl,
-    });
-  }, [category, search, minPrice, maxPrice, resolvedLanguage, technicalSignatureFromUrl, filter]);
 
   const applyFiltersPayload = useCallback(
     (payload: ProductsFiltersData, key: string) => {
@@ -303,31 +252,26 @@ export function ProductsFiltersProvider({
       const res = await apiClient.get<ProductsFiltersData>('/api/v1/products/filters', {
         params: { ...params, includeCategories: '1' },
       });
-      setData({
-        colors: res.colors ?? [],
-        sizes: res.sizes ?? [],
-        brands: res.brands ?? [],
-        categories: res.categories ?? [],
-        attributeFacets: res.attributeFacets ?? [],
-        priceRange: res.priceRange ?? DEFAULT_FILTERS.priceRange,
-      });
-      hasFiltersDataRef.current = true;
-      writeShopFiltersCache(filtersClientKey, {
-        colors: res.colors ?? [],
-        sizes: res.sizes ?? [],
-        brands: res.brands ?? [],
-        categories: res.categories ?? [],
-        attributeFacets: res.attributeFacets ?? [],
-        priceRange: res.priceRange ?? DEFAULT_FILTERS.priceRange,
-      });
+      applyFiltersPayload(
+        {
+          colors: res.colors ?? [],
+          sizes: res.sizes ?? [],
+          brands: res.brands ?? [],
+          categories: res.categories ?? [],
+          attributeFacets: res.attributeFacets ?? [],
+          priceRange: res.priceRange ?? DEFAULT_FILTERS.priceRange,
+        },
+        filtersClientKey,
+      );
     } catch {
       setError(true);
       setData(DEFAULT_FILTERS);
       hasFiltersDataRef.current = true;
+      syncedFiltersKeyRef.current = filtersClientKey;
     } finally {
       setLoading(false);
     }
-  }, [category, search, filter, minPrice, maxPrice, resolvedLanguage, searchParams, filtersClientKey]);
+  }, [applyFiltersPayload, category, search, filter, minPrice, maxPrice, resolvedLanguage, searchParams, filtersClientKey]);
 
   const fetchFiltersRef = useRef(fetchFilters);
   fetchFiltersRef.current = fetchFilters;
