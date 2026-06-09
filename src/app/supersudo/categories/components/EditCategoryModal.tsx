@@ -6,7 +6,9 @@ import { useTranslation } from '../../../../lib/i18n-client';
 import { processImageFile, toDomSafeImgSrcString, toSafeImgAttributeSrc } from '../../../../lib/utils/image-utils';
 import { showToast } from '../../../../components/Toast';
 import { logger } from '../../../../lib/utils/logger';
+import { getStoredLanguage } from '../../../../lib/language';
 import { buildCategoryTree, getAncestorIds, getDescendantIds } from '../utils';
+import { getLocalizedCategoryTitle } from '../utils';
 import type { Category, CategoryFormData } from '../types';
 
 interface EditCategoryModalProps {
@@ -30,7 +32,8 @@ export function EditCategoryModal({
   onFormDataChange,
   onSubmit,
 }: EditCategoryModalProps) {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
+  const activeLocale = lang ?? getStoredLanguage();
   const [imageUploading, setImageUploading] = useState(false);
   const safeImagePreviewUrl = useMemo(
     () => toSafeImgAttributeSrc(formData.imageUrl.trim()),
@@ -138,7 +141,7 @@ export function EditCategoryModal({
               <option value="">{t('admin.categories.rootCategory')}</option>
               {parentCandidates.map((category) => (
                 <option key={category.id} value={category.id}>
-                  {`${'— '.repeat(category.level)}${category.title}`}
+                  {`${'— '.repeat(category.level)}${getLocalizedCategoryTitle(category, activeLocale)}`}
                 </option>
               ))}
             </select>
@@ -230,7 +233,7 @@ export function EditCategoryModal({
                         className="h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-500"
                       />
                       <span className="text-sm text-gray-700">
-                        {`${'— '.repeat(category.level)}${category.title}`}
+                        {`${'— '.repeat(category.level)}${getLocalizedCategoryTitle(category, activeLocale)}`}
                       </span>
                     </label>
                   );

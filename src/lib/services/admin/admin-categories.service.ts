@@ -16,6 +16,7 @@ type CategoryTranslation = {
 type CategoryNode = {
   id: string;
   parentId: string | null;
+  showInHeader: boolean;
   requiresSizes: boolean;
   media: string[];
   translations: CategoryTranslation[];
@@ -30,6 +31,7 @@ type CategoryResponseItem = {
   seoDescription: string | null;
   media: string[];
   parentId: string | null;
+  showInHeader: boolean;
   requiresSizes: boolean;
   translations: Partial<Record<SupportedCategoryLocale, string>>;
 };
@@ -46,6 +48,7 @@ type CategoryInput = {
   locale?: string;
   translations?: Partial<Record<SupportedCategoryLocale, string>>;
   parentId?: string;
+  showInHeader?: boolean;
   requiresSizes?: boolean;
   media?: unknown;
   seoTitle?: string;
@@ -57,6 +60,7 @@ type CategoryUpdateInput = {
   locale?: string;
   translations?: Partial<Record<SupportedCategoryLocale, string>>;
   parentId?: string | null;
+  showInHeader?: boolean;
   requiresSizes?: boolean;
   media?: unknown;
   subcategoryIds?: string[];
@@ -65,6 +69,8 @@ type CategoryUpdateInput = {
 };
 
 type SupportedCategoryLocale = "hy" | "en" | "ru";
+type CategoryMoveDirection = "up" | "down";
+type CategoryMoveScope = "roots" | "subcategories";
 
 class AdminCategoriesService {
   private readonly defaultLocale = "en";
@@ -117,6 +123,7 @@ class AdminCategoriesService {
       seoDescription: translation?.seoDescription ?? null,
       media: category.media,
       parentId: category.parentId,
+      showInHeader: category.showInHeader,
       requiresSizes: category.requiresSizes,
       translations: this.mapTranslationsByLocale(category.translations),
     };
@@ -142,12 +149,14 @@ class AdminCategoriesService {
       id: category.id,
       parentId: category.parentId,
       requiresSizes: category.requiresSizes,
+      showInHeader: category.showInHeader,
       media: Array.isArray(category.media) ? category.media.filter((item): item is string => typeof item === "string") : [],
       translations: category.translations,
       children: category.children.map((child) => ({
         id: child.id,
         parentId: child.parentId,
         requiresSizes: child.requiresSizes,
+        showInHeader: child.showInHeader,
         media: Array.isArray(child.media) ? child.media.filter((item): item is string => typeof item === "string") : [],
         translations: child.translations,
       })),
@@ -427,6 +436,7 @@ class AdminCategoriesService {
             id: category.id,
             parentId: category.parentId,
             requiresSizes: category.requiresSizes,
+            showInHeader: category.showInHeader,
             media: Array.isArray(category.media) ? category.media.filter((item): item is string => typeof item === "string") : [],
             translations: category.translations,
           },
@@ -469,6 +479,7 @@ class AdminCategoriesService {
       data: {
         parentId: data.parentId || undefined,
         requiresSizes: data.requiresSizes ?? false,
+        showInHeader: data.showInHeader ?? true,
         media: normalizedMedia,
         published: true,
         translations: {
@@ -554,6 +565,7 @@ class AdminCategoriesService {
           id: reloaded.id,
           parentId: reloaded.parentId,
           requiresSizes: reloaded.requiresSizes,
+          showInHeader: reloaded.showInHeader,
           media: Array.isArray(reloaded.media) ? reloaded.media.filter((item): item is string => typeof item === "string") : [],
           translations: reloaded.translations,
         },
@@ -578,6 +590,7 @@ class AdminCategoriesService {
           id: category.id,
           parentId: category.parentId,
           requiresSizes: category.requiresSizes,
+          showInHeader: category.showInHeader,
           media: Array.isArray(category.media) ? category.media.filter((item): item is string => typeof item === "string") : [],
           translations: category.translations,
         },
@@ -589,6 +602,7 @@ class AdminCategoriesService {
             id: child.id,
             parentId: child.parentId,
             requiresSizes: child.requiresSizes,
+            showInHeader: child.showInHeader,
             media: Array.isArray(child.media) ? child.media.filter((item): item is string => typeof item === "string") : [],
             translations: child.translations,
           },
@@ -682,14 +696,34 @@ class AdminCategoriesService {
         : [];
 
     await db.$transaction(async (transaction) => {
-      if (data.parentId !== undefined || data.requiresSizes !== undefined || normalizedMedia !== undefined) {
+      if (
+        data.parentId !== undefined ||
+        data.showInHeader !== undefined ||
+        data.requiresSizes !== undefined ||
+        normalizedMedia !== undefined
+      ) {
+        const categoryUpdateData: {
+          parentId?: string | null;
+          showInHeader?: boolean;
+          requiresSizes?: boolean;
+          media?: string[];
+        } = {};
+        if (data.parentId !== undefined) {
+          categoryUpdateData.parentId = data.parentId || null;
+        }
+        if (data.showInHeader !== undefined) {
+          categoryUpdateData.showInHeader = data.showInHeader;
+        }
+        if (data.requiresSizes !== undefined) {
+          categoryUpdateData.requiresSizes = data.requiresSizes;
+        }
+        if (normalizedMedia !== undefined) {
+          categoryUpdateData.media = normalizedMedia;
+        }
+
         await transaction.category.update({
           where: { id: categoryId },
-          data: {
-            parentId: data.parentId !== undefined ? data.parentId || null : undefined,
-            requiresSizes: data.requiresSizes,
-            media: normalizedMedia,
-          },
+          data: categoryUpdateData,
         });
       }
 
@@ -718,17 +752,26 @@ class AdminCategoriesService {
           }
 
           if (existingTranslation) {
+            const translationUpdateData: {
+              title?: string;
+              slug?: string;
+              seoTitle?: string | null;
+              seoDescription?: string | null;
+            } = {};
+            if (nextTitle !== undefined) {
+              translationUpdateData.title = nextTitle;
+              translationUpdateData.slug = this.slugFromTitleOrCategoryId(nextTitle, categoryId);
+            }
+            if (data.seoTitle !== undefined) {
+              translationUpdateData.seoTitle = normalizedSeoTitle;
+            }
+            if (data.seoDescription !== undefined) {
+              translationUpdateData.seoDescription = normalizedSeoDescription;
+            }
+
             await transaction.categoryTranslation.update({
               where: { id: existingTranslation.id },
-              data: {
-                title: nextTitle,
-                slug:
-                  nextTitle !== undefined
-                    ? this.slugFromTitleOrCategoryId(nextTitle, categoryId)
-                    : undefined,
-                seoTitle: data.seoTitle !== undefined ? normalizedSeoTitle : undefined,
-                seoDescription: data.seoDescription !== undefined ? normalizedSeoDescription : undefined,
-              },
+              data: translationUpdateData,
             });
             continue;
           }
@@ -804,6 +847,7 @@ class AdminCategoriesService {
           id: updatedCategory.id,
           parentId: updatedCategory.parentId,
           requiresSizes: updatedCategory.requiresSizes,
+          showInHeader: updatedCategory.showInHeader,
           media: Array.isArray(updatedCategory.media) ? updatedCategory.media.filter((item): item is string => typeof item === "string") : [],
           translations: updatedCategory.translations,
         },
@@ -879,6 +923,107 @@ class AdminCategoriesService {
         ],
       },
     });
+  }
+
+  /**
+   * Delete category (soft delete)
+   */
+  private async loadScopedCategoryOrder(scope: CategoryMoveScope): Promise<string[]> {
+    const whereScope =
+      scope === "roots" ? { parentId: null } : { parentId: { not: null } };
+    const scopedCategories = await db.category.findMany({
+      where: {
+        deletedAt: null,
+        ...whereScope,
+      },
+      select: {
+        id: true,
+      },
+      orderBy: [{ position: "asc" }, { id: "asc" }],
+    });
+    return scopedCategories.map((item) => item.id);
+  }
+
+  private async persistScopedCategoryOrder(orderedIds: string[]): Promise<void> {
+    await db.$transaction(
+      orderedIds.map((id, index) =>
+        db.category.update({
+          where: { id },
+          data: { position: index },
+        }),
+      ),
+    );
+  }
+
+  async moveCategory(data: {
+    categoryId: string;
+    direction: CategoryMoveDirection;
+    scope: CategoryMoveScope;
+  }) {
+    const categoryId = data.categoryId.trim();
+    if (!categoryId) {
+      throw this.buildProblemError(400, "Invalid category id", "Category id is required");
+    }
+
+    const orderedIds = await this.loadScopedCategoryOrder(data.scope);
+    const currentIndex = orderedIds.findIndex((id) => id === categoryId);
+    if (currentIndex < 0) {
+      throw this.buildProblemError(
+        404,
+        "Category not found",
+        `Category with id '${categoryId}' does not exist in ${data.scope}`,
+      );
+    }
+
+    const delta = data.direction === "up" ? -1 : 1;
+    const targetIndex = currentIndex + delta;
+    if (targetIndex < 0 || targetIndex >= orderedIds.length) {
+      return { success: true, moved: false };
+    }
+
+    const [movingId] = orderedIds.splice(currentIndex, 1);
+    orderedIds.splice(targetIndex, 0, movingId);
+
+    await this.persistScopedCategoryOrder(orderedIds);
+    await invalidateCategoryPublicCaches();
+    return { success: true, moved: true };
+  }
+
+  async reorderCategory(data: {
+    categoryId: string;
+    targetCategoryId: string;
+    scope: CategoryMoveScope;
+  }) {
+    const categoryId = data.categoryId.trim();
+    const targetCategoryId = data.targetCategoryId.trim();
+    if (!categoryId || !targetCategoryId) {
+      throw this.buildProblemError(
+        400,
+        "Invalid category reorder request",
+        "categoryId and targetCategoryId are required",
+      );
+    }
+
+    const orderedIds = await this.loadScopedCategoryOrder(data.scope);
+    const sourceIndex = orderedIds.findIndex((id) => id === categoryId);
+    const targetIndex = orderedIds.findIndex((id) => id === targetCategoryId);
+    if (sourceIndex < 0 || targetIndex < 0) {
+      throw this.buildProblemError(
+        404,
+        "Category not found",
+        "Category or target category does not exist in current scope",
+      );
+    }
+
+    if (sourceIndex === targetIndex) {
+      return { success: true, moved: false };
+    }
+
+    const [movingId] = orderedIds.splice(sourceIndex, 1);
+    orderedIds.splice(targetIndex, 0, movingId);
+    await this.persistScopedCategoryOrder(orderedIds);
+    await invalidateCategoryPublicCaches();
+    return { success: true, moved: true };
   }
 
   /**

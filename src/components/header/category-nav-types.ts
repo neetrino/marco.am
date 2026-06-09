@@ -2,6 +2,7 @@ export interface Category {
   id: string;
   slug: string;
   title: string;
+  showInHeader?: boolean;
   fullPath: string;
   media?: string[];
   /** Published products with this category as primary (from `/api/v1/categories/tree`). */

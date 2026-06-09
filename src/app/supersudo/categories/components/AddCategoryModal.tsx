@@ -6,7 +6,9 @@ import { useTranslation } from '../../../../lib/i18n-client';
 import { processImageFile, toDomSafeImgSrcString, toSafeImgAttributeSrc } from '../../../../lib/utils/image-utils';
 import { showToast } from '../../../../components/Toast';
 import { logger } from '../../../../lib/utils/logger';
+import { getStoredLanguage } from '../../../../lib/language';
 import { translateAdminCategoryLabel } from '../admin-category-labels';
+import { getLocalizedCategoryTitle } from '../utils';
 import type { Category, CategoryFormData } from '../types';
 
 export type AddCategoryModalMode = 'root' | 'subcategory';
@@ -32,7 +34,8 @@ export function AddCategoryModal({
   onFormDataChange,
   onSubmit,
 }: AddCategoryModalProps) {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
+  const activeLocale = lang ?? getStoredLanguage();
   const rootCategories = categories.filter((category) => !category.parentId);
   const isSubcategoryMode = mode === 'subcategory';
   const [imageUploading, setImageUploading] = useState(false);
@@ -137,7 +140,7 @@ export function AddCategoryModal({
                 <option value="">{translateAdminCategoryLabel(t, 'admin.categories.selectParentCategory', t('admin.categories.parentCategory'))}</option>
                 {rootCategories.map((category) => (
                   <option key={category.id} value={category.id}>
-                    {category.title}
+                    {getLocalizedCategoryTitle(category, activeLocale)}
                   </option>
                 ))}
               </select>

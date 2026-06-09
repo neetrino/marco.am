@@ -18,6 +18,38 @@ interface MobileBottomNavShopSheetProps {
   onSelectCategory: (slug: string | null) => void;
 }
 
+function normalizeCategorySlug(slug: string): string {
+  return slug.trim().toLocaleLowerCase();
+}
+
+function parsePrimaryCategorySlug(rawValue: string | null): string | null {
+  if (!rawValue) {
+    return null;
+  }
+  const firstSlug = rawValue
+    .split(',')
+    .map((part) => part.trim())
+    .find((part) => part.length > 0);
+  return firstSlug ? normalizeCategorySlug(firstSlug) : null;
+}
+
+function isSameCategorySlug(selectedSlug: string | null, categorySlug: string): boolean {
+  if (!selectedSlug) {
+    return false;
+  }
+  return normalizeCategorySlug(categorySlug) === selectedSlug;
+}
+
+function categoryContainsSlug(category: Category, selectedSlug: string | null): boolean {
+  if (!selectedSlug) {
+    return false;
+  }
+  if (isSameCategorySlug(selectedSlug, category.slug)) {
+    return true;
+  }
+  return category.children.some((child) => categoryContainsSlug(child, selectedSlug));
+}
+
 function getCategoryButtonClass(isActive: boolean): string {
   if (isActive) {
     return 'border-transparent bg-marco-yellow text-marco-black shadow-[0_8px_18px_rgba(250,204,21,0.32)]';
@@ -50,18 +82,40 @@ export function MobileBottomNavShopSheet({
   const { t, lang } = useTranslation();
   const { categories, searchIndex, loading } = useMobileShopCategories(open);
   const [searchQuery, setSearchQuery] = useState('');
+  const normalizedActiveCategorySlug = useMemo(
+    () => parsePrimaryCategorySlug(activeCategorySlug),
+    [activeCategorySlug],
+  );
   const normalizedSearchQuery = normalizeSearchValue(searchQuery);
   const searching = normalizedSearchQuery.length > 0;
 
   const visibleRootCategories = useMemo(() => {
-    if (!searching) {
-      return categories.slice(0, ROOT_CATEGORY_LIMIT);
+    if (searching) {
+      return flattenCategoryTree(categories).filter((category) => {
+        const values = searchIndex[category.id] ?? [category.title];
+        return values.some((value) => normalizeSearchValue(value).includes(normalizedSearchQuery));
+      });
     }
-    return flattenCategoryTree(categories).filter((category) => {
-      const values = searchIndex[category.id] ?? [category.title];
-      return values.some((value) => normalizeSearchValue(value).includes(normalizedSearchQuery));
-    });
-  }, [categories, normalizedSearchQuery, searching, searchIndex]);
+
+    const limitedRoots = categories.slice(0, ROOT_CATEGORY_LIMIT);
+    if (!normalizedActiveCategorySlug) {
+      return limitedRoots;
+    }
+
+    const selectedRoot = categories.find((category) =>
+      categoryContainsSlug(category, normalizedActiveCategorySlug),
+    );
+    if (!selectedRoot) {
+      return limitedRoots;
+    }
+    if (limitedRoots.some((category) => category.id === selectedRoot.id)) {
+      return limitedRoots;
+    }
+    if (limitedRoots.length < ROOT_CATEGORY_LIMIT) {
+      return [...limitedRoots, selectedRoot];
+    }
+    return [...limitedRoots.slice(0, ROOT_CATEGORY_LIMIT - 1), selectedRoot];
+  }, [categories, normalizedActiveCategorySlug, normalizedSearchQuery, searching, searchIndex]);
 
   const hasVisibleChildren = useMemo(
     () => !searching && visibleRootCategories.some((category) => category.children.length > 0),
@@ -158,7 +212,7 @@ export function MobileBottomNavShopSheet({
                 <button
                   type="button"
                   onClick={() => onSelectCategory(null)}
-                  className={`min-h-[96px] rounded-2xl border px-3 py-3 text-sm font-semibold transition-colors ${getCategoryButtonClass(activeCategorySlug === null)}`}
+                  className={`min-h-[96px] rounded-2xl border px-3 py-3 text-sm font-semibold transition-colors ${getCategoryButtonClass(normalizedActiveCategorySlug === null)}`}
                 >
                   <span className="flex h-full flex-col items-center gap-2 text-center">
                     <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/80 text-[11px] font-bold text-marco-black dark:bg-zinc-800 dark:text-zinc-200">
@@ -169,7 +223,7 @@ export function MobileBottomNavShopSheet({
                 </button>
               ) : null}
               {visibleRootCategories.map((category) => {
-                const isCategoryActive = activeCategorySlug === category.slug;
+                const isCategoryActive = isSameCategorySlug(normalizedActiveCategorySlug, category.slug);
                 const categoryImage = getCategoryImage(category);
                 return (
                   <button
@@ -216,7 +270,10 @@ export function MobileBottomNavShopSheet({
                       </p>
                       <div className="grid grid-cols-2 gap-2">
                         {prepareSubcategoriesForNav(category, lang).map((child) => {
-                          const isChildActive = activeCategorySlug === child.slug;
+                          const isChildActive = isSameCategorySlug(
+                            normalizedActiveCategorySlug,
+                            child.slug,
+                          );
                           const childImage = getCategoryImage(child);
                           return (
                             <button

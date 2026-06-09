@@ -2,6 +2,7 @@ export interface Category {
   id: string;
   slug: string;
   title: string;
+  showInHeader?: boolean;
   translations?: Partial<Record<'hy' | 'en' | 'ru', string>>;
   fullPath?: string;
   seoTitle?: string | null;

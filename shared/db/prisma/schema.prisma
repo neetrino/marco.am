@@ -90,6 +90,7 @@ model Category {
   parentId      String?
   position      Int                   @default(0)
   published     Boolean               @default(false)
+  showInHeader  Boolean               @default(true)
   requiresSizes Boolean               @default(false)
   media         Json[]                @default([])
   translations  CategoryTranslation[]

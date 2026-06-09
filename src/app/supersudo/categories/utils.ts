@@ -1,4 +1,5 @@
 import type { Category, CategoryWithLevel } from './types';
+import type { LanguageCode } from '../../../lib/language';
 
 export type AdminCategoryView = 'roots' | 'subcategories';
 
@@ -19,16 +20,44 @@ export function countDirectSubcategories(categories: Category[], parentId: strin
 export function sortSubcategoriesForAdmin(
   categories: Category[],
   lookup: Category[],
+  locale: LanguageCode = 'en',
 ): Category[] {
   return [...categories].sort((a, b) => {
-    const parentA = lookup.find((item) => item.id === a.parentId)?.title ?? '';
-    const parentB = lookup.find((item) => item.id === b.parentId)?.title ?? '';
+    const parentA = getLocalizedCategoryTitle(
+      lookup.find((item) => item.id === a.parentId) ?? null,
+      locale,
+    );
+    const parentB = getLocalizedCategoryTitle(
+      lookup.find((item) => item.id === b.parentId) ?? null,
+      locale,
+    );
     const byParent = parentA.localeCompare(parentB, undefined, { sensitivity: 'base' });
     if (byParent !== 0) {
       return byParent;
     }
-    return a.title.localeCompare(b.title, undefined, { sensitivity: 'base' });
+    return getLocalizedCategoryTitle(a, locale).localeCompare(
+      getLocalizedCategoryTitle(b, locale),
+      undefined,
+      { sensitivity: 'base' },
+    );
   });
+}
+
+export function getLocalizedCategoryTitle(
+  category: Category | null | undefined,
+  locale: LanguageCode,
+): string {
+  if (!category) {
+    return '';
+  }
+
+  const normalizedLocale = locale === 'ka' ? 'en' : locale;
+  const translation = category.translations?.[normalizedLocale];
+  if (typeof translation === 'string' && translation.trim().length > 0) {
+    return translation.trim();
+  }
+
+  return category.title;
 }
 
 /**

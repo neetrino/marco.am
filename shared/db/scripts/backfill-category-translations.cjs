@@ -6,7 +6,6 @@ const fs = require('fs');
 const path = require('path');
 
 const IMPORT_SUFFIX = ' (import)';
-const ARMENIAN_REGEX = /[\u0531-\u058F]/;
 
 const ROOT_ENV_PATH = path.resolve(__dirname, '../../../.env');
 const TITLE_MAP_PATH = path.resolve(__dirname, './category-title-translations.json');
@@ -56,8 +55,26 @@ function normalizeTitle(rawTitle) {
   return trimmed;
 }
 
-function isArmenianText(value) {
-  return typeof value === 'string' && ARMENIAN_REGEX.test(value);
+function createTitleLookup(titleMap) {
+  const lookup = new Map();
+  Object.entries(titleMap).forEach(([sourceTitle, localized]) => {
+    const normalizedSource = normalizeTitle(sourceTitle);
+    if (normalizedSource) {
+      lookup.set(normalizedSource.toLowerCase(), localized);
+    }
+
+    ['hy', 'en', 'ru'].forEach((locale) => {
+      const localizedTitle = normalizeTitle(localized?.[locale]);
+      if (!localizedTitle) {
+        return;
+      }
+      const key = localizedTitle.toLowerCase();
+      if (!lookup.has(key)) {
+        lookup.set(key, localized);
+      }
+    });
+  });
+  return lookup;
 }
 
 function safeJsonRead(filePath) {
@@ -70,6 +87,7 @@ loadEnv(ROOT_ENV_PATH);
 const { PrismaClient } = require(path.resolve(__dirname, '../generated/prisma-client'));
 const prisma = new PrismaClient();
 const TITLE_MAP = safeJsonRead(TITLE_MAP_PATH);
+const TITLE_LOOKUP = createTitleLookup(TITLE_MAP);
 
 async function upsertTranslation(categoryId, locale, titleValue, referenceRow) {
   const existing = await prisma.categoryTranslation.findUnique({
@@ -150,12 +168,15 @@ async function runBackfill() {
 
     const hyCandidate = hyRow?.title ?? '';
     const enCandidate = enRow?.title ?? '';
+    const ruCandidate = ruRow?.title ?? '';
 
     let sourceTitle = '';
     if (hyCandidate) {
       sourceTitle = hyCandidate;
-    } else if (isArmenianText(enCandidate)) {
+    } else if (enCandidate) {
       sourceTitle = enCandidate;
+    } else if (ruCandidate) {
+      sourceTitle = ruCandidate;
     }
 
     const normalizedSource = normalizeTitle(sourceTitle);
@@ -164,7 +185,7 @@ async function runBackfill() {
       continue;
     }
 
-    const localized = TITLE_MAP[normalizedSource];
+    const localized = TITLE_LOOKUP.get(normalizedSource.toLowerCase());
     if (!localized) {
       categoriesSkipped += 1;
       continue;

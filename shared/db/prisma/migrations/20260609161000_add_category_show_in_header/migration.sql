@@ -1,0 +1,2 @@
+ALTER TABLE "categories"
+ADD COLUMN IF NOT EXISTS "showInHeader" BOOLEAN NOT NULL DEFAULT true;

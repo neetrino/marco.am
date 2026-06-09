@@ -25,6 +25,7 @@ class CategoriesService {
       where: {
         published: true,
         deletedAt: null,
+        showInHeader: true,
       },
       include: {
         translations: true,
@@ -47,6 +48,7 @@ class CategoriesService {
     categories.forEach((category: {
       id: string;
       parentId: string | null;
+      showInHeader: boolean;
       media: unknown[];
       translations: Array<{ locale: string; slug: string; title: string; fullPath: string }>;
     }) => {
@@ -57,6 +59,7 @@ class CategoriesService {
         id: category.id,
         slug: translation.slug,
         title: translation.title,
+        showInHeader: category.showInHeader,
         fullPath: translation.fullPath,
         media: Array.isArray(category.media)
           ? category.media.filter((item): item is string => typeof item === 'string')

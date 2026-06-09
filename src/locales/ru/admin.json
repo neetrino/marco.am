@@ -296,7 +296,10 @@
     "tableSubcategoryCount": "Подкатегории",
     "noSubcategoriesShort": "0",
     "noRootCategories": "Основные категории не найдены",
-    "noSubcategories": "Подкатегории не найдены"
+    "noSubcategories": "Подкатегории не найдены",
+    "moveUp": "Переместить вверх",
+    "moveDown": "Переместить вниз",
+    "dragToReorder": "Перетащите, чтобы изменить порядок категории"
   },
   "delivery": {
     "title": "Доставка",
@@ -958,6 +961,7 @@
   "common": {
     "loading": "Загрузка...",
     "error": "Ошибка",
+    "unknownErrorFallback": "Неизвестная ошибка",
     "success": "Успех",
     "cancel": "Отмена",
     "close": "Закрыть",
