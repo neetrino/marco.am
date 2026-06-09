@@ -12,6 +12,14 @@ export function normalizeCategoryKey(value: string): string {
     .replace(/\s+/g, ' ');
 }
 
+function isCategoryAllowedByExclusion(category: Category, lang: LanguageCode): boolean {
+  const presentation = resolveCategoryNavPresentation(category.slug, category.title, lang);
+  return (
+    !isExcludedHeaderNavCategory(category.slug, category.title) &&
+    !isExcludedHeaderNavCategory(category.slug, presentation.title)
+  );
+}
+
 /** Pre-order walk: every descendant of `nodes`, including intermediate parents. */
 export function flattenCategorySubtree(nodes: readonly Category[]): Category[] {
   const result: Category[] = [];
@@ -26,13 +34,7 @@ export function flattenCategorySubtree(nodes: readonly Category[]): Category[] {
 
 /** Drop legacy/duplicate nav rows only — keep every distinct DB category. */
 export function filterCategoriesForNav(categories: Category[], lang: LanguageCode): Category[] {
-  return categories.filter((category) => {
-    const presentation = resolveCategoryNavPresentation(category.slug, category.title, lang);
-    return (
-      !isExcludedHeaderNavCategory(category.slug, category.title) &&
-      !isExcludedHeaderNavCategory(category.slug, presentation.title)
-    );
-  });
+  return categories.filter((category) => isCategoryAllowedByExclusion(category, lang) && hasRenderableBranch(category, lang));
 }
 
 function childrenCount(category: Category): number {
@@ -42,6 +44,21 @@ function childrenCount(category: Category): number {
 function subtreeProductCount(category: Category): number {
   const own = category.productCount ?? 0;
   return category.children.reduce((sum, child) => sum + subtreeProductCount(child), own);
+}
+
+function hasRenderableBranch(category: Category, lang: LanguageCode): boolean {
+  if (subtreeProductCount(category) > 0) {
+    return true;
+  }
+  return category.children.some(
+    (child) => isCategoryAllowedByExclusion(child, lang) && hasRenderableBranch(child, lang),
+  );
+}
+
+function hasRenderableChildForSidebar(category: Category, lang: LanguageCode): boolean {
+  return category.children.some(
+    (child) => isCategoryAllowedByExclusion(child, lang) && hasRenderableBranch(child, lang),
+  );
 }
 
 function hasCategoryMedia(category: Category): boolean {
@@ -82,13 +99,10 @@ export function dedupeCategories(categories: Category[], lang: LanguageCode): Ca
   const result: Category[] = [];
 
   for (const category of categories) {
-    const presentation = resolveCategoryNavPresentation(category.slug, category.title, lang);
-    if (
-      isExcludedHeaderNavCategory(category.slug, category.title) ||
-      isExcludedHeaderNavCategory(category.slug, presentation.title)
-    ) {
+    if (!isCategoryAllowedByExclusion(category, lang) || !hasRenderableChildForSidebar(category, lang)) {
       continue;
     }
+    const presentation = resolveCategoryNavPresentation(category.slug, category.title, lang);
     const key = normalizeCategoryKey(presentation.title);
 
     const existingIndex = keyToIndex.get(key);
@@ -109,7 +123,7 @@ export function dedupeCategories(categories: Category[], lang: LanguageCode): Ca
 
 /** Root list for header nav — all published storefront roots from the API. */
 export function prepareRootCategoriesForNav(categories: Category[], lang: LanguageCode): Category[] {
-  return filterCategoriesForNav(categories, lang);
+  return dedupeCategories(categories, lang);
 }
 
 /** Full descendant list for mega menu / drawer (not only direct children). */
