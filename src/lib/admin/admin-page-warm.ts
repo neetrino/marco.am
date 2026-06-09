@@ -7,6 +7,7 @@ import {
   readAdminSessionCache,
   writeAdminSessionCache,
 } from '@/lib/admin/admin-session-cache';
+import { getStoredLanguage } from '@/lib/language';
 
 const warmAllInFlight = { current: false };
 
@@ -116,6 +117,7 @@ export function warmAdminPageCacheForPath(path: string): void {
     return;
   }
 
+  const language = getStoredLanguage();
   switch (path) {
     case '/supersudo':
       warmAdminDashboardCache();
@@ -125,7 +127,7 @@ export function warmAdminPageCacheForPath(path: string): void {
       return;
     case '/supersudo/products':
       warmProductsCache();
-      warmAdminReferenceDataCaches();
+      warmAdminReferenceDataCaches(language);
       return;
     case '/supersudo/users':
       warmUsersCache();
@@ -139,7 +141,7 @@ export function warmAdminPageCacheForPath(path: string): void {
     case '/supersudo/settings':
     case '/supersudo/quick-settings':
       warmSettingsCache();
-      warmAdminReferenceDataCaches();
+      warmAdminReferenceDataCaches(language);
       return;
     case '/supersudo/delivery':
       warmDeliveryCache();
@@ -161,7 +163,7 @@ export function warmAdminPageCacheForPath(path: string): void {
       return;
     case '/supersudo/categories':
     case '/supersudo/brands':
-      warmAdminReferenceDataCaches();
+      warmAdminReferenceDataCaches(language);
       return;
     default:
       return;
@@ -175,8 +177,9 @@ export function warmAdminPageCaches(): void {
   }
   warmAllInFlight.current = true;
 
+  const language = getStoredLanguage();
   warmAdminDashboardCache();
-  warmAdminReferenceDataCaches();
+  warmAdminReferenceDataCaches(language);
   warmOrdersCache();
   warmProductsCache();
   warmUsersCache();

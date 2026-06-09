@@ -139,16 +139,7 @@ export function SizeFilter({ category, search, minPrice, maxPrice }: SizeFilterP
   }
 
   if (sizes.length === 0) {
-    return (
-      <section className="mb-0 border-b border-solid border-[#e2e8f0] pb-4 max-lg:pb-5 last:border-b-0">
-        <h3
-          className={`${productsFiltersSectionFont.className} mb-4 text-base font-semibold leading-6 tracking-[-0.31px] text-[#1d293d]`}
-        >
-          {t('products.filters.size.title')}
-        </h3>
-        <p className="text-sm text-[#62748e]">{t('products.filters.size.noSizes')}</p>
-      </section>
-    );
+    return null;
   }
 
   return (

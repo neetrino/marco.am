@@ -14,22 +14,24 @@ import { AddCategoryModal, type AddCategoryModalMode } from './components/AddCat
 import { EditCategoryModal } from './components/EditCategoryModal';
 import { ConvertCategoryTypeModal } from './components/ConvertCategoryTypeModal';
 import type { Category } from './types';
-import { getDescendantIds, type AdminCategoryView } from './utils';
+import { getDescendantIds, getLocalizedCategoryTitle, type AdminCategoryView } from './utils';
 import { showToast } from '../../../components/Toast';
 import { notifyShopCategoryTreeUpdated } from '../../../lib/shop-category-tree-sync';
+import { getStoredLanguage } from '../../../lib/language';
 
 export default function CategoriesPage() {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const router = useRouter();
   const pathname = usePathname();
   const currentPath = pathname || '/supersudo/categories';
+  const activeLocale = lang ?? getStoredLanguage();
   const {
     categories,
     loading,
     fetchCategories,
     reorderCategoriesOptimistically,
     setCategoryHeaderVisibilityOptimistically,
-  } = useCategories();
+  } = useCategories(activeLocale);
   const {
     showAddModal,
     showEditModal,
@@ -66,14 +68,14 @@ export default function CategoriesPage() {
     }
     const tokens = raw.split(/\s+/).filter(Boolean);
     return categories.filter((c) => {
-      const title = c.title.toLowerCase();
+      const title = getLocalizedCategoryTitle(c, activeLocale).toLowerCase();
       const slug = c.slug.toLowerCase();
       const parent = c.parentId ? categories.find((p) => p.id === c.parentId) : null;
-      const parentTitle = (parent?.title ?? '').toLowerCase();
+      const parentTitle = getLocalizedCategoryTitle(parent, activeLocale).toLowerCase();
       const haystack = `${title} ${slug} ${parentTitle}`;
       return tokens.every((token) => haystack.includes(token));
     });
-  }, [categories, categorySearch]);
+  }, [activeLocale, categories, categorySearch]);
   const selectedCategories = useMemo(
     () => categories.filter((category) => selectedCategoryIds.includes(category.id)),
     [categories, selectedCategoryIds]
@@ -118,7 +120,7 @@ export default function CategoriesPage() {
   const handleBulkDelete = async () => {
     const deleted = await handleDeleteCategories(
       selectedCategories.map((category) => category.id),
-      selectedCategories.map((category) => category.title),
+      selectedCategories.map((category) => getLocalizedCategoryTitle(category, activeLocale)),
       fetchCategories
     );
 

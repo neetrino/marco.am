@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { apiClient } from '@/lib/api-client';
 import { CURRENCIES, type CurrencyCode } from '@/lib/currency';
+import { getStoredLanguage } from '@/lib/language';
 import type { Brand, Category, Attribute } from '../types';
 import { logger } from "@/lib/utils/logger";
 import { findAttributeBySemanticKey } from '@/lib/attribute-keys';
@@ -73,9 +74,12 @@ export function useProductDataLoading({
     const fetchData = async () => {
       try {
         logger.devLog('📥 [ADMIN] Fetching brands, categories, and attributes...');
+        const activeLocale = getStoredLanguage();
         const [brandsRes, categoriesRes, attributesRes] = await Promise.all([
           apiClient.get<{ data: Brand[] }>('/api/v1/supersudo/brands'),
-          apiClient.get<{ data: Category[] }>('/api/v1/supersudo/categories'),
+          apiClient.get<{ data: Category[] }>('/api/v1/supersudo/categories', {
+            params: { lang: activeLocale },
+          }),
           apiClient.get<{ data: Attribute[] }>('/api/v1/supersudo/attributes'),
         ]);
         setBrands(brandsRes.data || []);

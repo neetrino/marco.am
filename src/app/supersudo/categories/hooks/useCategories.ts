@@ -6,6 +6,7 @@ import {
   readAdminCategoriesCache,
   writeAdminCategoriesCache,
 } from '@/lib/admin/admin-reference-data-cache';
+import type { LanguageCode } from '@/lib/language';
 import type { Category } from '../types';
 import type { AdminCategoryView } from '../utils';
 
@@ -25,8 +26,8 @@ interface UseCategoriesReturn {
 /**
  * Hook for fetching and managing categories
  */
-export function useCategories(): UseCategoriesReturn {
-  const cachedCategories = readAdminCategoriesCache<Category>();
+export function useCategories(language: LanguageCode): UseCategoriesReturn {
+  const cachedCategories = readAdminCategoriesCache<Category>(language);
   const hadCacheRef = useRef(Boolean(cachedCategories?.length));
   const [categories, setCategories] = useState<Category[]>(cachedCategories ?? []);
   const [loading, setLoading] = useState(!hadCacheRef.current);
@@ -37,10 +38,12 @@ export function useCategories(): UseCategoriesReturn {
       beginAdminDataFetch(hadCacheRef.current, setLoading);
       setError(null);
       logger.debug('Fetching categories');
-      const response = await apiClient.get<{ data: Category[] }>('/api/v1/supersudo/categories');
+      const response = await apiClient.get<{ data: Category[] }>('/api/v1/supersudo/categories', {
+        params: { lang: language },
+      });
       const nextCategories = response.data || [];
       setCategories(nextCategories);
-      writeAdminCategoriesCache(nextCategories);
+      writeAdminCategoriesCache(language, nextCategories);
       hadCacheRef.current = true;
       logger.info('Categories loaded', { count: nextCategories.length });
     } catch (err: unknown) {
@@ -52,7 +55,7 @@ export function useCategories(): UseCategoriesReturn {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [language]);
 
   const reorderCategoriesOptimistically = useCallback(
     (categoryId: string, targetCategoryId: string, scope: AdminCategoryView) => {
@@ -81,10 +84,10 @@ export function useCategories(): UseCategoriesReturn {
       });
 
       if (nextSnapshot) {
-        writeAdminCategoriesCache(nextSnapshot);
+        writeAdminCategoriesCache(language, nextSnapshot);
       }
     },
-    [],
+    [language],
   );
 
   const setCategoryHeaderVisibilityOptimistically = useCallback(
@@ -99,10 +102,10 @@ export function useCategories(): UseCategoriesReturn {
       });
 
       if (nextSnapshot) {
-        writeAdminCategoriesCache(nextSnapshot);
+        writeAdminCategoriesCache(language, nextSnapshot);
       }
     },
-    [],
+    [language],
   );
 
   useEffect(() => {

@@ -14,6 +14,8 @@ function categoryWriteLocale(lang: LanguageCode): LanguageCode {
   return lang === 'ka' ? 'en' : lang;
 }
 
+type CategoryLocale = 'hy' | 'en' | 'ru';
+
 interface UseCategoryActionsReturn {
   showAddModal: boolean;
   showEditModal: boolean;
@@ -84,15 +86,17 @@ export function useCategoryActions(): UseCategoryActionsReturn {
 
     setSaving(true);
     try {
+      const writeLocale = categoryWriteLocale(getStoredLanguage()) as CategoryLocale;
+      const localizedTitle = titles[writeLocale] || titles.en;
       await apiClient.post('/api/v1/supersudo/categories', {
-        title: titles.en,
+        title: localizedTitle,
         translations: titles,
         seoTitle: formData.seoTitle.trim() || undefined,
         seoDescription: formData.seoDescription.trim() || undefined,
         media: formData.imageUrl.trim() ? [formData.imageUrl.trim()] : undefined,
         parentId: formData.parentId || undefined,
         requiresSizes: formData.requiresSizes,
-        locale: categoryWriteLocale(getStoredLanguage()),
+        locale: writeLocale,
       });
       setShowAddModal(false);
       resetForm();
@@ -116,7 +120,9 @@ export function useCategoryActions(): UseCategoryActionsReturn {
     setEditingCategory(category);
     
     try {
-      const response = await apiClient.get<{ data: Category }>(`/api/v1/supersudo/categories/${category.id}`);
+      const response = await apiClient.get<{ data: Category }>(`/api/v1/supersudo/categories/${category.id}`, {
+        params: { lang: getStoredLanguage() },
+      });
       const categoryWithChildren = response.data;
       
       setFormData({
@@ -165,8 +171,10 @@ export function useCategoryActions(): UseCategoryActionsReturn {
 
     setSaving(true);
     try {
+      const writeLocale = categoryWriteLocale(getStoredLanguage()) as CategoryLocale;
+      const localizedTitle = titles[writeLocale] || titles.en;
       await apiClient.put(`/api/v1/supersudo/categories/${editingCategory.id}`, {
-        title: titles.en,
+        title: localizedTitle,
         translations: titles,
         seoTitle: formData.seoTitle.trim() || null,
         seoDescription: formData.seoDescription.trim() || null,
@@ -174,7 +182,7 @@ export function useCategoryActions(): UseCategoryActionsReturn {
         parentId: formData.parentId || null,
         requiresSizes: formData.requiresSizes,
         subcategoryIds: formData.subcategoryIds,
-        locale: categoryWriteLocale(getStoredLanguage()),
+        locale: writeLocale,
       });
       setShowEditModal(false);
       setEditingCategory(null);

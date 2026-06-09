@@ -422,7 +422,8 @@ class AdminCategoriesService {
   /**
    * Get categories for admin
    */
-  async getCategories() {
+  async getCategories(localeInput?: string) {
+    const locale = this.normalizeLocale(localeInput);
     const categories = await db.category.findMany({
       where: {
         deletedAt: null,
@@ -441,8 +442,11 @@ class AdminCategoriesService {
         deletedAt: null,
       },
       select: {
-        primaryCategoryId: true,
-        categoryIds: true,
+        categories: {
+          select: {
+            id: true,
+          },
+        },
       },
     });
     const directProductCountByCategoryId = new Map<string, number>(
@@ -450,17 +454,11 @@ class AdminCategoriesService {
     );
 
     for (const product of products) {
-      const referencedCategoryIds = new Set<string>();
-      if (product.primaryCategoryId && categoryIdSet.has(product.primaryCategoryId)) {
-        referencedCategoryIds.add(product.primaryCategoryId);
-      }
-      if (Array.isArray(product.categoryIds)) {
-        for (const categoryId of product.categoryIds) {
-          if (typeof categoryId === "string" && categoryIdSet.has(categoryId)) {
-            referencedCategoryIds.add(categoryId);
-          }
-        }
-      }
+      const referencedCategoryIds = new Set(
+        product.categories
+          .map((category) => category.id)
+          .filter((categoryId) => categoryIdSet.has(categoryId)),
+      );
       referencedCategoryIds.forEach((categoryId) => {
         directProductCountByCategoryId.set(
           categoryId,
@@ -468,35 +466,6 @@ class AdminCategoriesService {
         );
       });
     }
-
-    const childrenByParentId = new Map<string, string[]>();
-    for (const category of categories) {
-      if (!category.parentId || !categoryIdSet.has(category.parentId)) {
-        continue;
-      }
-      const children = childrenByParentId.get(category.parentId) ?? [];
-      children.push(category.id);
-      childrenByParentId.set(category.parentId, children);
-    }
-    const totalProductCountByCategoryId = new Map<string, number>();
-    const countProductsInSubtree = (categoryId: string): number => {
-      const cached = totalProductCountByCategoryId.get(categoryId);
-      if (cached !== undefined) {
-        return cached;
-      }
-
-      const directCount = directProductCountByCategoryId.get(categoryId) ?? 0;
-      const childIds = childrenByParentId.get(categoryId) ?? [];
-      const totalCount = childIds.reduce(
-        (sum, childCategoryId) => sum + countProductsInSubtree(childCategoryId),
-        directCount,
-      );
-      totalProductCountByCategoryId.set(categoryId, totalCount);
-      return totalCount;
-    };
-    categoryIds.forEach((categoryId) => {
-      countProductsInSubtree(categoryId);
-    });
 
     return {
       data: categories.map((category) =>
@@ -509,8 +478,8 @@ class AdminCategoriesService {
             media: Array.isArray(category.media) ? category.media.filter((item): item is string => typeof item === "string") : [],
             translations: category.translations,
           },
-          this.defaultLocale,
-          totalProductCountByCategoryId,
+          locale,
+          directProductCountByCategoryId,
         ),
       ),
     };
@@ -647,7 +616,8 @@ class AdminCategoriesService {
   /**
    * Get category by ID with children
    */
-  async getCategoryById(categoryId: string) {
+  async getCategoryById(categoryId: string, localeInput?: string) {
+    const locale = this.normalizeLocale(localeInput);
     const category = await this.loadCategoryWithChildren(categoryId);
 
     if (!category) {
@@ -664,7 +634,7 @@ class AdminCategoriesService {
           media: Array.isArray(category.media) ? category.media.filter((item): item is string => typeof item === "string") : [],
           translations: category.translations,
         },
-        this.defaultLocale,
+        locale,
       ),
       children: category.children.map((child) =>
         this.mapCategory(
@@ -676,7 +646,7 @@ class AdminCategoriesService {
             media: Array.isArray(child.media) ? child.media.filter((item): item is string => typeof item === "string") : [],
             translations: child.translations,
           },
-          this.defaultLocale,
+          locale,
         ),
       ),
     };

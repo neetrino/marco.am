@@ -21,6 +21,7 @@ const INTERACTION_PREFETCH_MAX_SEGMENTS = 2;
 /** Home SSR already loads product rails + brand partners — defer API warm to avoid DB spikes. */
 const HOME_API_WARM_DEFER_MS = 12_000;
 const HOME_PATH = '/';
+const INTERACTION_PRODUCTS_WARM_TIMEOUT_MS = 8_000;
 type IdleCapableWindow = Window &
   typeof globalThis & {
     requestIdleCallback?: (
@@ -45,8 +46,15 @@ function shouldSkipIdlePrefetch(): boolean {
   return Boolean(connection.saveData) || connection.effectiveType === 'slow-2g';
 }
 
-function warmProductsApi(language: LanguageCode): void {
-  warmShopProductsClientCaches(language);
+function warmProductsApi(
+  language: LanguageCode,
+  options?: {
+    timeoutMs?: number;
+    includeCategories?: boolean;
+    suppressTimeoutLogging?: boolean;
+  },
+): void {
+  warmShopProductsClientCaches(language, '', options);
 }
 
 function warmBrandPartnersApi(
@@ -130,7 +138,10 @@ export function GlobalRoutePrefetch() {
       warmedRef.current.add(route);
       void router.prefetch(route);
       if (route === PRODUCTS_SHOP_PATH) {
-        warmProductsApi(getStoredLanguage());
+        warmProductsApi(getStoredLanguage(), {
+          timeoutMs: INTERACTION_PRODUCTS_WARM_TIMEOUT_MS,
+          suppressTimeoutLogging: true,
+        });
       }
       if (route === BRANDS_PATH) {
         warmBrandsPageClientCache(queryClient, getStoredLanguage());
@@ -196,7 +207,11 @@ export function GlobalRoutePrefetch() {
       void router.prefetch(route.pathname);
       const language = getStoredLanguage();
       if (route.pathname === PRODUCTS_SHOP_PATH) {
-        warmShopProductsClientCaches(language, route.queryString);
+        warmShopProductsClientCaches(language, route.queryString, {
+          timeoutMs: INTERACTION_PRODUCTS_WARM_TIMEOUT_MS,
+          includeCategories: false,
+          suppressTimeoutLogging: true,
+        });
       }
       if (route.pathname === BRANDS_PATH) {
         warmBrandsPageClientCache(queryClient, language);
@@ -206,23 +221,13 @@ export function GlobalRoutePrefetch() {
       }
     };
 
-    const onPointerOver = (event: PointerEvent) => {
-      prefetchFromElement(event.target);
-    };
-    const onFocusIn = (event: FocusEvent) => {
-      prefetchFromElement(event.target);
-    };
     const onPointerDown = (event: PointerEvent) => {
       prefetchFromElement(event.target);
     };
 
-    document.addEventListener('pointerover', onPointerOver, { passive: true });
-    document.addEventListener('focusin', onFocusIn, { passive: true });
     document.addEventListener('pointerdown', onPointerDown, { passive: true });
 
     return () => {
-      document.removeEventListener('pointerover', onPointerOver);
-      document.removeEventListener('focusin', onFocusIn);
       document.removeEventListener('pointerdown', onPointerDown);
     };
   }, [queryClient, router]);

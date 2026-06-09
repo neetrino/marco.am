@@ -147,3 +147,24 @@ export function prepareRootCategoriesForNav(categories: Category[], lang: Langua
 export function prepareSubcategoriesForNav(root: Category, lang: LanguageCode): Category[] {
   return filterCategoriesForNav(flattenCategorySubtree(root.children), lang);
 }
+
+export type MegaMenuSubcategoryGroup = {
+  parent: Category;
+  descendants: Category[];
+};
+
+/**
+ * Group root descendants by direct child for mega-menu:
+ * - `parent`: direct child of selected root
+ * - `descendants`: flattened subtree under that child (excludes the parent itself)
+ */
+export function prepareMegaMenuSubcategoryGroups(
+  root: Category,
+  lang: LanguageCode,
+): MegaMenuSubcategoryGroup[] {
+  const directChildren = filterCategoriesForNav(root.children, lang);
+  return directChildren.map((child) => ({
+    parent: child,
+    descendants: filterCategoriesForNav(flattenCategorySubtree(child.children), lang),
+  }));
+}

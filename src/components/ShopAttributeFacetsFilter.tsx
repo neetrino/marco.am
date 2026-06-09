@@ -39,6 +39,14 @@ export function ShopAttributeFacetsFilter() {
   const filtersContext = useProductsFilters();
   const { t } = useShopFiltersTranslation();
   const facets = filtersContext?.data?.attributeFacets ?? [];
+  const visibleFacets = facets.filter((facet) =>
+    facet.values.some(
+      (option) =>
+        option.label.trim().length > 0 &&
+        normalizeTechnicalFilterToken(option.value).length > 0 &&
+        option.count > 0,
+    ),
+  );
   const loading = filtersContext ? filtersContext.loading && facets.length === 0 : true;
   const [optimisticByKey, setOptimisticByKey] = useState<Record<string, string[] | null> | null>(
     null,
@@ -124,7 +132,7 @@ export function ShopAttributeFacetsFilter() {
     );
   }
 
-  if (facets.length === 0) {
+  if (visibleFacets.length === 0) {
     return null;
   }
 
@@ -137,7 +145,7 @@ export function ShopAttributeFacetsFilter() {
       </h3>
 
       <div className="flex flex-col">
-        {facets.map((facet, index) => {
+        {visibleFacets.map((facet, index) => {
           const selected = selectedForFacet(facet.key);
           const hasSelection = selected.length > 0;
 

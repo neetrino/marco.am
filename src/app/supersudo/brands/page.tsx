@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { Card, Button } from '@shop/ui';
-import { apiClient, getApiOrErrorMessage } from '../../../lib/api-client';
+import { apiClient, getApiOrErrorMessage, getErrorHttpStatus } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
 import { AdminPageLayout } from '../components/AdminPageLayout';
 import { AdminTablePagination } from '../components/AdminTablePagination';
@@ -193,7 +193,12 @@ export default function BrandsPage() {
       await fetchBrands();
       showToast(t('admin.brands.deletedSuccess'), 'success');
     } catch (err: unknown) {
-      logger.error('Error deleting brand', { error: err });
+      const status = getErrorHttpStatus(err);
+      if (status === 422) {
+        logger.warn('Cannot delete brand due to associated products', { brandId, brandName, error: err });
+      } else {
+        logger.error('Error deleting brand', { error: err });
+      }
       const errorMessage = getApiOrErrorMessage(err, 'Unknown error occurred');
       showToast(t('admin.brands.errorDeleting') + `: ${errorMessage}`, 'error');
     }

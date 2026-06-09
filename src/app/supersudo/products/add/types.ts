@@ -11,6 +11,7 @@ export interface Category {
   id: string;
   title: string;
   slug: string;
+  translations?: Partial<Record<'hy' | 'en' | 'ru', string>>;
   parentId: string | null;
   requiresSizes?: boolean;
 }

@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { apiClient, getApiOrErrorMessage } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
 import { getStoredCurrency, initializeCurrencyRates, type CurrencyCode } from '../../../lib/currency';
+import { getStoredLanguage } from '../../../lib/language';
 import { AdminPageLayout } from '../components/AdminPageLayout';
 import { ProductFilters } from './components/ProductFilters';
 import { BulkSelectionControls } from './components/BulkSelectionControls';
@@ -30,14 +31,15 @@ type AdminProductsCachePayload = {
 };
 
 export default function ProductsPage() {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
+  const activeLocale = lang ?? getStoredLanguage();
   const router = useRouter();
   const pathname = usePathname();
   const defaultProductsCache = readAdminSessionCache<AdminProductsCachePayload>(
     ADMIN_CACHE_KEYS.productsDefault,
     ADMIN_SESSION_CACHE_TTL_MS,
   );
-  const cachedCategories = readAdminCategoriesCache<Category>();
+  const cachedCategories = readAdminCategoriesCache<Category>(activeLocale);
   const hadProductsCacheRef = useRef(Boolean(defaultProductsCache));
   const hadCategoriesCacheRef = useRef(Boolean(cachedCategories?.length));
   const [products, setProducts] = useState<Product[]>(defaultProductsCache?.data ?? []);
@@ -92,10 +94,10 @@ export default function ProductsPage() {
     }
   }, []);
 
-  // Fetch categories on mount
+  // Fetch categories for active locale
   useEffect(() => {
-    fetchCategories();
-  }, []);
+    void fetchCategories();
+  }, [activeLocale]);
 
   // Close category dropdown when clicking outside
   useEffect(() => {
@@ -118,10 +120,12 @@ export default function ProductsPage() {
     try {
       beginAdminDataFetch(hadCategoriesCacheRef.current, setCategoriesLoading);
       logger.devLog('📂 [ADMIN] Fetching categories...');
-      const response = await apiClient.get<{ data: Category[] }>('/api/v1/supersudo/categories');
+      const response = await apiClient.get<{ data: Category[] }>('/api/v1/supersudo/categories', {
+        params: { lang: activeLocale },
+      });
       const nextCategories = response.data || [];
       setCategories(nextCategories);
-      writeAdminCategoriesCache(nextCategories);
+      writeAdminCategoriesCache(activeLocale, nextCategories);
       hadCategoriesCacheRef.current = true;
       logger.devLog('✅ [ADMIN] Categories loaded:', nextCategories.length);
     } catch (err: unknown) {

@@ -39,6 +39,12 @@ function buildListingApiParams(queryString: string, language: LanguageCode): Rec
 
 type ProductsListingApiResponse = ShopListingCachePayload;
 
+type WarmShopProductsClientCachesOptions = {
+  timeoutMs?: number;
+  includeCategories?: boolean;
+  suppressTimeoutLogging?: boolean;
+};
+
 /**
  * Fetches default PLP listing + facet payloads and stores them in session caches
  * so `/products` can paint instantly on client navigation.
@@ -46,6 +52,7 @@ type ProductsListingApiResponse = ShopListingCachePayload;
 export function warmShopProductsClientCaches(
   language: LanguageCode,
   queryString: string = buildDefaultShopListingQueryString(),
+  options?: WarmShopProductsClientCachesOptions,
 ): void {
   if (typeof window === 'undefined') {
     return;
@@ -62,7 +69,7 @@ export function warmShopProductsClientCaches(
 
   const filtersParams: Record<string, string> = {
     lang: language,
-    includeCategories: '1',
+    includeCategories: options?.includeCategories === false ? '0' : '1',
   };
   const category = urlParams.get('category');
   const search = urlParams.get('search');
@@ -93,9 +100,13 @@ export function warmShopProductsClientCaches(
   void Promise.all([
     apiClient.get<ProductsFiltersData>('/api/v1/products/filters', {
       params: filtersParams,
+      timeoutMs: options?.timeoutMs,
+      suppressNetworkErrorLogging: options?.suppressTimeoutLogging,
     }),
     apiClient.get<ProductsListingApiResponse>('/api/v1/products', {
       params: buildListingApiParams(queryString, language),
+      timeoutMs: options?.timeoutMs,
+      suppressNetworkErrorLogging: options?.suppressTimeoutLogging,
     }),
   ])
     .then(([filters, listing]) => {

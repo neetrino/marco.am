@@ -5,6 +5,7 @@ import { ArrowUpRight } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { LanguageCode } from '../../lib/language';
 import type { Category } from './category-nav-types';
+import type { MegaMenuSubcategoryGroup } from './categoryNavList';
 import type { CategoryNavIcon } from './categoryNavPresentation';
 import { resolveCategoryNavPresentation } from './categoryNavPresentation';
 import { headerCategoryNavFont } from './headerCategoryNavTypography';
@@ -107,7 +108,7 @@ function SubcategoryIcon({ icon, imageSrc }: { icon: CategoryNavIcon; imageSrc: 
 export function CategoryMegaSubcategoryPills({
   sectionHeadingId,
   sectionTitle,
-  items,
+  groups,
   lang,
   productsWord,
   onNavigate,
@@ -115,12 +116,12 @@ export function CategoryMegaSubcategoryPills({
   /** Stable `id` for the section heading — used by `aria-labelledby` on the scrollable subcategory list. */
   sectionHeadingId: string;
   sectionTitle: string;
-  items: Category[];
+  groups: MegaMenuSubcategoryGroup[];
   lang: LanguageCode;
   productsWord: string;
   onNavigate: () => void;
 }) {
-  if (items.length === 0) {
+  if (groups.length === 0) {
     return null;
   }
 
@@ -140,14 +141,35 @@ export function CategoryMegaSubcategoryPills({
         aria-labelledby={sectionHeadingId}
         className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overflow-x-hidden overscroll-y-contain [-webkit-overflow-scrolling:touch] pr-1 [scrollbar-gutter:auto] touch-pan-y md:gap-2.5"
       >
-        {items.map((child) => (
-          <li key={child.id} className="shrink-0">
+        {groups.map(({ parent, descendants }) => (
+          <li key={parent.id} className="shrink-0 rounded-[16px] border border-marco-border bg-white/80 px-2 py-2">
             <SubcategoryPillRow
-              child={child}
+              child={parent}
               lang={lang}
               productsWord={productsWord}
               onNavigate={onNavigate}
             />
+            {descendants.length > 0 ? (
+              <div className="mt-2 grid grid-cols-1 gap-1.5 pl-3 md:grid-cols-2">
+                {descendants.map((descendant: Category) => {
+                  const row = resolveCategoryNavPresentation(descendant.slug, descendant.title, lang);
+                  const descendantCount = descendant.productCount ?? 0;
+                  return (
+                    <Link
+                      key={descendant.id}
+                      href={`/products?category=${descendant.slug}`}
+                      onClick={onNavigate}
+                      className={`${headerCategoryNavFont.className} inline-flex min-h-[34px] items-center justify-between gap-2 rounded-[12px] border border-marco-border/80 bg-white px-2 py-1 text-xs leading-4 !text-[#383838] transition-[filter] hover:brightness-[0.98] dark:!text-[#383838]`}
+                    >
+                      <span className="min-w-0 truncate">{row.title}</span>
+                      <span className="shrink-0 rounded-full bg-black/8 px-1.5 py-0.5 text-[10px] font-semibold">
+                        {descendantCount}
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+            ) : null}
           </li>
         ))}
       </ul>

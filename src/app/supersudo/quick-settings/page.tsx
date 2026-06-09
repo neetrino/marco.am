@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { apiClient, getApiOrErrorMessage } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
+import { getStoredLanguage } from '../../../lib/language';
 import { QuickSettingsContent } from './QuickSettingsContent';
 import { logger } from "@/lib/utils/logger";
 
@@ -26,7 +27,8 @@ interface AdminBrand {
 }
 
 export default function QuickSettingsPage() {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
+  const activeLocale = lang ?? getStoredLanguage();
   const router = useRouter();
   const pathname = usePathname();
   const [globalDiscount, setGlobalDiscount] = useState<number>(0);
@@ -133,7 +135,9 @@ export default function QuickSettingsPage() {
     try {
       logger.devLog('📂 [QUICK SETTINGS] Fetching categories...');
       setCategoriesLoading(true);
-      const response = await apiClient.get<{ data: AdminCategory[] }>('/api/v1/supersudo/categories');
+      const response = await apiClient.get<{ data: AdminCategory[] }>('/api/v1/supersudo/categories', {
+        params: { lang: activeLocale },
+      });
       if (response?.data && Array.isArray(response.data)) {
         setCategories(response.data);
         logger.devLog('✅ [QUICK SETTINGS] Categories loaded:', response.data.length);
@@ -146,7 +150,7 @@ export default function QuickSettingsPage() {
     } finally {
       setCategoriesLoading(false);
     }
-  }, []);
+  }, [activeLocale]);
 
   const fetchBrands = useCallback(async () => {
     try {
