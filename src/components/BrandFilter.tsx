@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useShopProductsListingSearchParams } from '@/lib/use-shop-products-listing-search-params';
 import { pushShopProductsListingUrl } from '../lib/push-shop-products-listing-url';
@@ -28,25 +28,18 @@ export function BrandFilter({ category, search, minPrice, maxPrice }: BrandFilte
   const mobileDraft = useMobileFiltersDraft();
   const filtersContext = useProductsFilters();
   const { t } = useShopFiltersTranslation();
-  const [brands, setBrands] = useState<BrandOption[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [fallbackBrands, setFallbackBrands] = useState<BrandOption[]>([]);
+  const [fallbackLoading, setFallbackLoading] = useState(true);
   const [optimisticBrandSlugs, setOptimisticBrandSlugs] = useState<string[] | null>(null);
-  useEffect(() => {
-    if (filtersContext?.data?.brands) {
-      setBrands(filtersContext.data.brands);
-      setLoading(false);
-      return;
-    }
-    if (filtersContext === null) {
-      fetchBrands();
-    } else {
-      setLoading(filtersContext.loading);
-    }
-  }, [category, search, minPrice, maxPrice, filtersContext?.data?.brands, filtersContext?.loading, filtersContext === null]);
 
-  const fetchBrands = async () => {
+  const brands = filtersContext?.data?.brands ?? fallbackBrands;
+  const loading = filtersContext
+    ? filtersContext.loading && brands.length === 0
+    : fallbackLoading;
+
+  const fetchBrands = useCallback(async () => {
     try {
-      setLoading(true);
+      setFallbackLoading(true);
       const language = getStoredLanguage();
       const params: Record<string, string> = { lang: language };
       if (category) params.category = category;
@@ -56,14 +49,20 @@ export function BrandFilter({ category, search, minPrice, maxPrice }: BrandFilte
       const filterParam = searchParams.get('filter');
       if (filterParam) params.filter = filterParam;
       const response = await apiClient.get<{ brands: BrandOption[] }>('/api/v1/products/filters', { params });
-      const list = response.brands ?? [];
-      setBrands(list);
+      setFallbackBrands(response.brands ?? []);
     } catch (_err) {
-      setBrands([]);
+      setFallbackBrands([]);
     } finally {
-      setLoading(false);
+      setFallbackLoading(false);
     }
-  };
+  }, [category, maxPrice, minPrice, search, searchParams]);
+
+  useEffect(() => {
+    if (filtersContext !== null) {
+      return;
+    }
+    void fetchBrands();
+  }, [fetchBrands, filtersContext]);
 
   const activeSearchParams = mobileDraft?.enabled ? mobileDraft.searchParams : searchParams;
   const brandQs = activeSearchParams.get('brand');

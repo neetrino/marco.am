@@ -1,9 +1,8 @@
 import type { ProductsFiltersData } from '@/components/ProductsFiltersProvider';
 import { apiClient } from '@/lib/api-client';
 import { SHOP_PLP_DEFAULT_PAGE_SIZE } from '@/lib/constants/shop-plp-pagination';
-import { buildProductsFiltersClientKey } from '@/lib/products-filters-client-key';
+import { buildProductsFiltersScopeKeyFromSearchParams } from '@/lib/products-filters-client-key';
 import type { LanguageCode } from '@/lib/language';
-import { buildTechnicalFilterQuerySignature } from '@/lib/services/products-technical-filters';
 import { writeShopFiltersCache } from '@/lib/shop-products-filters-client-cache';
 import {
   writeShopListingCache,
@@ -18,15 +17,7 @@ function buildDefaultShopListingQueryString(): string {
 
 /** Stable facet key for the default PLP (no active filters in the URL). */
 export function buildDefaultShopFiltersClientKey(language: LanguageCode): string {
-  return buildProductsFiltersClientKey({
-    category: undefined,
-    search: undefined,
-    minPrice: undefined,
-    maxPrice: undefined,
-    filter: undefined,
-    language,
-    technicalFilterSignature: '',
-  });
+  return buildProductsFiltersScopeKeyFromSearchParams(new URLSearchParams(), language);
 }
 
 function buildListingApiParams(queryString: string, language: LanguageCode): Record<string, string> {
@@ -67,25 +58,17 @@ export function warmShopProductsClientCaches(
   warmInFlight.add(dedupeKey);
 
   const urlParams = new URLSearchParams(queryString);
-  const category = urlParams.get('category') ?? undefined;
-  const search = urlParams.get('search') ?? undefined;
-  const minPrice = urlParams.get('minPrice') ?? undefined;
-  const maxPrice = urlParams.get('maxPrice') ?? undefined;
-  const filter = urlParams.get('filter') ?? undefined;
-  const scopedFiltersKey = buildProductsFiltersClientKey({
-    category,
-    search,
-    minPrice,
-    maxPrice,
-    filter,
-    language,
-    technicalFilterSignature: buildTechnicalFilterQuerySignature(urlParams),
-  });
+  const scopedFiltersKey = buildProductsFiltersScopeKeyFromSearchParams(urlParams, language);
 
   const filtersParams: Record<string, string> = {
     lang: language,
     includeCategories: '1',
   };
+  const category = urlParams.get('category');
+  const search = urlParams.get('search');
+  const filter = urlParams.get('filter');
+  const minPrice = urlParams.get('minPrice');
+  const maxPrice = urlParams.get('maxPrice');
   if (category) {
     filtersParams.category = category;
   }

@@ -1,4 +1,4 @@
-﻿import { db } from "@white-shop/db";
+import { db } from "@white-shop/db";
 import { Prisma } from "@white-shop/db/prisma";
 import { unstable_cache } from "next/cache";
 import { adminService } from "./admin.service";
@@ -291,6 +291,8 @@ class ProductsFiltersService {
         category: filters.category?.trim(),
         search: filters.search?.trim(),
         filter: filters.filter?.trim(),
+        minPrice: filters.minPrice,
+        maxPrice: filters.maxPrice,
         lang: filters.lang || "en",
       });
       if (listingWhere === null) {
@@ -431,9 +433,7 @@ class ProductsFiltersService {
         };
       }
 
-      const needsInMemoryPostFilter =
-        Boolean(filters.minPrice || filters.maxPrice) ||
-        hasTechnicalSpecFilters(filters.technicalSpecs);
+      const needsInMemoryPostFilter = hasTechnicalSpecFilters(filters.technicalSpecs);
 
       if (!needsInMemoryPostFilter) {
         return buildShopFiltersViaSqlAggregation({

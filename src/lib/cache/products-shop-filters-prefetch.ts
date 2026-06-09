@@ -4,28 +4,18 @@ import {
   searchParamsRecordToUrlSearchParams,
 } from '@/lib/cache/products-filters-redis';
 import type { ProductsShopListingServerContext } from '@/lib/products-shop-listing-server-context';
-import { buildProductsFiltersClientKey } from '@/lib/products-filters-client-key';
-import { buildTechnicalFilterQuerySignature } from '@/lib/services/products-technical-filters';
+import { buildProductsFiltersScopeKeyFromSearchParams } from '@/lib/products-filters-client-key';
 import type { ProductsPageSearchParams } from '@/app/products/products-page-search-params';
 
-/** Stable key aligned with `ProductsFiltersProvider.filtersClientKey` (server language). */
+/** Stable key aligned with `ProductsFiltersProvider` facet scope (server language). */
 export function buildProductsShopFiltersInitialKey(
   raw: ProductsPageSearchParams,
   ctx: ProductsShopListingServerContext,
 ): string {
-  const technicalFilterSignature = buildTechnicalFilterQuerySignature(
+  return buildProductsFiltersScopeKeyFromSearchParams(
     searchParamsRecordToUrlSearchParams(raw),
+    ctx.language,
   );
-  const { params, language } = ctx;
-  return buildProductsFiltersClientKey({
-    category: params.category,
-    search: params.search,
-    minPrice: params.minPrice,
-    maxPrice: params.maxPrice,
-    filter: params.filter,
-    language,
-    technicalFilterSignature,
-  });
 }
 
 /** Deduped per-request PLP facet prefetch (Redis read-through). */

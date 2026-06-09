@@ -155,38 +155,26 @@ export function CategoryFilter({
   const mobileDraft = useMobileFiltersDraft();
   const filtersContext = useProductsFilters();
   const { t } = useShopFiltersTranslation();
-  const [categories, setCategories] = useState<CategoryFilterOption[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [fallbackCategories, setFallbackCategories] = useState<CategoryFilterOption[]>([]);
+  const [fallbackLoading, setFallbackLoading] = useState(true);
   /** Instant UI while URL / RSC catch up after navigation */
   const [optimisticSlugs, setOptimisticSlugs] = useState<string[] | null>(null);
   const [expandedKeys, setExpandedKeys] = useState<ReadonlySet<string>>(() => new Set());
 
-  useEffect(() => {
+  const categories = useMemo(() => {
     if (filtersContext?.data?.categories?.length) {
-      setCategories(filtersContext.data.categories.map(normalizeCategoryChildren));
-      setLoading(false);
-      return;
+      return filtersContext.data.categories.map(normalizeCategoryChildren);
     }
-    if (filtersContext === null) {
-      fetchCategories();
-    } else if (filtersContext.loading) {
-      setLoading(true);
-    }
-  }, [
-    category,
-    search,
-    minPrice,
-    maxPrice,
-    filtersContext?.data?.categories,
-    filtersContext?.loading,
-    filtersContext?.categoriesLoading,
-    filtersContext?.language,
-    filtersContext === null,
-  ]);
+    return fallbackCategories;
+  }, [filtersContext?.data?.categories, fallbackCategories]);
 
-  const fetchCategories = async () => {
+  const loading = filtersContext
+    ? filtersContext.categoriesLoading && categories.length === 0
+    : fallbackLoading;
+
+  const fetchCategories = useCallback(async () => {
     try {
-      setLoading(true);
+      setFallbackLoading(true);
       const language = getStoredLanguage();
       const params: Record<string, string> = {
         lang: language,
@@ -201,13 +189,20 @@ export function CategoryFilter({
       if (filterParam) params.filter = filterParam;
       const response = await apiClient.get<{ categories: CategoryFilterOption[] }>('/api/v1/products/filters', { params });
       const raw = response.categories ?? [];
-      setCategories(raw.map(normalizeCategoryChildren));
+      setFallbackCategories(raw.map(normalizeCategoryChildren));
     } catch (_err) {
-      setCategories([]);
+      setFallbackCategories([]);
     } finally {
-      setLoading(false);
+      setFallbackLoading(false);
     }
-  };
+  }, [category, maxPrice, minPrice, search, searchParams]);
+
+  useEffect(() => {
+    if (filtersContext !== null) {
+      return;
+    }
+    void fetchCategories();
+  }, [fetchCategories, filtersContext]);
 
   /** URL is source of truth (avoids stale server props); slugs compared case-insensitively */
   const activeSearchParams = mobileDraft?.enabled ? mobileDraft.searchParams : searchParams;

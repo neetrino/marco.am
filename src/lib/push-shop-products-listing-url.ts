@@ -4,6 +4,8 @@ import {
 import { notifyShopProductsListingFetch } from '@/lib/shop-products-listing-client-cache';
 import { syncShopProductsListingQueryString } from '@/lib/use-shop-products-listing-search-params';
 
+import { startTransition } from 'react';
+
 type ShopListingRouter = {
   push: (href: string, options?: { scroll?: boolean }) => void | Promise<void>;
   refresh: () => void;
@@ -40,7 +42,9 @@ export function pushShopProductsListingUrl(router: ShopListingRouter, href: stri
     : targetUrl.search;
 
   notifyShopProductsListingFetch(queryString);
-  dispatchShopProductsListingParams(href);
   syncShopProductsListingQueryString(queryString);
+  startTransition(() => {
+    dispatchShopProductsListingParams(href);
+  });
   window.history.pushState(null, '', href);
 }
