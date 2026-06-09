@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Card, Button } from '@shop/ui';
 import { useTranslation } from '../../../lib/i18n-client';
+import { apiClient, getApiOrErrorMessage } from '../../../lib/api-client';
 import { useCategories } from './hooks/useCategories';
 import { useCategoryActions } from './hooks/useCategoryActions';
 import { AdminPageLayout } from '../components/AdminPageLayout';
@@ -13,16 +14,23 @@ import { BulkCategorySelectionControls } from './components/BulkCategorySelectio
 import { AddCategoryModal, type AddCategoryModalMode } from './components/AddCategoryModal';
 import { EditCategoryModal } from './components/EditCategoryModal';
 import type { Category } from './types';
-import { filterCategoriesForAdminView } from './utils';
+import { filterCategoriesForAdminView, type AdminCategoryView } from './utils';
 import { translateAdminCategoryLabel } from './admin-category-labels';
 import { showToast } from '../../../components/Toast';
+import { notifyShopCategoryTreeUpdated } from '../../../lib/shop-category-tree-sync';
 
 export default function CategoriesPage() {
   const { t } = useTranslation();
   const router = useRouter();
   const pathname = usePathname();
   const currentPath = pathname || '/supersudo/categories';
-  const { categories, loading, fetchCategories } = useCategories();
+  const {
+    categories,
+    loading,
+    fetchCategories,
+    reorderCategoriesOptimistically,
+    setCategoryHeaderVisibilityOptimistically,
+  } = useCategories();
   const {
     showAddModal,
     showEditModal,
@@ -44,6 +52,9 @@ export default function CategoriesPage() {
   const [categorySearch, setCategorySearch] = useState('');
   const [activeView, setActiveView] = useState<'roots' | 'subcategories'>('roots');
   const [addModalMode, setAddModalMode] = useState<AddCategoryModalMode>('root');
+  const [movingCategoryId, setMovingCategoryId] = useState<string | null>(null);
+  const [draggingCategoryId, setDraggingCategoryId] = useState<string | null>(null);
+  const [dragOverCategoryId, setDragOverCategoryId] = useState<string | null>(null);
   const rootCategoryCount = useMemo(
     () => filterCategoriesForAdminView(categories, 'roots').length,
     [categories],
@@ -117,6 +128,65 @@ export default function CategoriesPage() {
 
     if (deleted) {
       setSelectedCategoryIds([]);
+    }
+  };
+
+  const handleStartDrag = (categoryId: string) => {
+    setDraggingCategoryId(categoryId);
+  };
+
+  const handleDragEnter = (categoryId: string | null) => {
+    setDragOverCategoryId(categoryId);
+  };
+
+  const handleEndDrag = () => {
+    setDraggingCategoryId(null);
+    setDragOverCategoryId(null);
+  };
+
+  const handleReorderCategory = async (
+    categoryId: string,
+    targetCategoryId: string,
+    scope: AdminCategoryView,
+  ) => {
+    if (categoryId === targetCategoryId) {
+      handleEndDrag();
+      return;
+    }
+
+    try {
+      setMovingCategoryId(categoryId);
+      reorderCategoriesOptimistically(categoryId, targetCategoryId, scope);
+      await apiClient.post('/api/v1/supersudo/categories/reorder', {
+        categoryId,
+        targetCategoryId,
+        scope,
+      });
+      notifyShopCategoryTreeUpdated();
+    } catch (error: unknown) {
+      const message = getApiOrErrorMessage(error, t('admin.common.unknownErrorFallback'));
+      showToast(message, 'error');
+      await fetchCategories();
+    } finally {
+      setMovingCategoryId(null);
+      handleEndDrag();
+    }
+  };
+
+  const handleToggleCategoryHeaderVisibility = async (
+    category: Category,
+    nextVisible: boolean,
+  ) => {
+    setCategoryHeaderVisibilityOptimistically(category.id, nextVisible);
+    try {
+      await apiClient.put(`/api/v1/supersudo/categories/${category.id}`, {
+        showInHeader: nextVisible,
+      });
+      notifyShopCategoryTreeUpdated();
+    } catch (error: unknown) {
+      setCategoryHeaderVisibilityOptimistically(category.id, Boolean(category.showInHeader));
+      const message = getApiOrErrorMessage(error, t('admin.common.unknownErrorFallback'));
+      showToast(message, 'error');
     }
   };
 
@@ -261,6 +331,14 @@ export default function CategoriesPage() {
                 onDelete={(categoryId, categoryTitle) =>
                   handleDeleteCategory(categoryId, categoryTitle, fetchCategories, categories)
                 }
+                onToggleHeaderVisibility={handleToggleCategoryHeaderVisibility}
+                onReorder={handleReorderCategory}
+                movingCategoryId={movingCategoryId}
+                draggingCategoryId={draggingCategoryId}
+                dragOverCategoryId={dragOverCategoryId}
+                onDragStart={handleStartDrag}
+                onDragEnter={handleDragEnter}
+                onDragEnd={handleEndDrag}
               />
             )}
           </Card>

@@ -19,13 +19,39 @@ const generatedIndex = path.join(
   "prisma-client",
   "index.js",
 );
+const sourceSchema = path.join(repoRoot, "shared", "db", "prisma", "schema.prisma");
+const generatedSchema = path.join(
+  repoRoot,
+  "shared",
+  "db",
+  "generated",
+  "prisma-client",
+  "schema.prisma",
+);
 
-if (fs.existsSync(generatedIndex)) {
+function fileMtimeMs(filePath) {
+  return fs.existsSync(filePath) ? fs.statSync(filePath).mtimeMs : 0;
+}
+
+function shouldGeneratePrismaClient() {
+  if (!fs.existsSync(generatedIndex) || !fs.existsSync(generatedSchema)) {
+    return true;
+  }
+
+  const sourceSchemaMtimeMs = fileMtimeMs(sourceSchema);
+  const generatedSchemaMtimeMs = fileMtimeMs(generatedSchema);
+  const generatedIndexMtimeMs = fileMtimeMs(generatedIndex);
+
+  // Regenerate when schema changed after the generated client artifacts.
+  return sourceSchemaMtimeMs > Math.min(generatedSchemaMtimeMs, generatedIndexMtimeMs);
+}
+
+if (!shouldGeneratePrismaClient()) {
   process.exit(0);
 }
 
 console.log(
-  "[ensure-prisma] Prisma client missing at shared/db/generated/prisma-client; running pnpm db:generate…",
+  "[ensure-prisma] Prisma client missing or stale; running pnpm db:generate…",
 );
 
 const result = spawnSync("pnpm", ["run", "db:generate"], {

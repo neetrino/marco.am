@@ -13,6 +13,9 @@ export function normalizeCategoryKey(value: string): string {
 }
 
 function isCategoryAllowedByExclusion(category: Category, lang: LanguageCode): boolean {
+  if (category.showInHeader) {
+    return true;
+  }
   const presentation = resolveCategoryNavPresentation(category.slug, category.title, lang);
   return (
     !isExcludedHeaderNavCategory(category.slug, category.title) &&
@@ -47,6 +50,9 @@ function subtreeProductCount(category: Category): number {
 }
 
 function hasRenderableBranch(category: Category, lang: LanguageCode): boolean {
+  if (category.showInHeader) {
+    return true;
+  }
   if (subtreeProductCount(category) > 0) {
     return true;
   }
@@ -56,9 +62,10 @@ function hasRenderableBranch(category: Category, lang: LanguageCode): boolean {
 }
 
 function hasRenderableChildForSidebar(category: Category, lang: LanguageCode): boolean {
-  return category.children.some(
-    (child) => isCategoryAllowedByExclusion(child, lang) && hasRenderableBranch(child, lang),
-  );
+  if (category.showInHeader) {
+    return true;
+  }
+  return category.children.some((child) => isCategoryAllowedByExclusion(child, lang) && hasRenderableBranch(child, lang));
 }
 
 function hasCategoryMedia(category: Category): boolean {
@@ -97,11 +104,21 @@ function mergeCategoryMedia(preferred: Category, fallback: Category): Category {
 export function dedupeCategories(categories: Category[], lang: LanguageCode): Category[] {
   const keyToIndex = new Map<string, number>();
   const result: Category[] = [];
+  const pinnedCategoryIds = new Set<string>();
 
   for (const category of categories) {
     if (!isCategoryAllowedByExclusion(category, lang) || !hasRenderableChildForSidebar(category, lang)) {
       continue;
     }
+
+    if (category.showInHeader) {
+      if (!pinnedCategoryIds.has(category.id)) {
+        result.push(category);
+        pinnedCategoryIds.add(category.id);
+      }
+      continue;
+    }
+
     const presentation = resolveCategoryNavPresentation(category.slug, category.title, lang);
     const key = normalizeCategoryKey(presentation.title);
 

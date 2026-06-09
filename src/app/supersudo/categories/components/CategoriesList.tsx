@@ -2,11 +2,14 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from '../../../../lib/i18n-client';
+import { getStoredLanguage } from '../../../../lib/language';
+import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '../../../../lib/utils/image-utils';
 import { translateAdminCategoryLabel } from '../admin-category-labels';
 import {
   countDirectSubcategories,
   filterCategoriesForAdminView,
   sortSubcategoriesForAdmin,
+  getLocalizedCategoryTitle,
   type AdminCategoryView,
 } from '../utils';
 import { CategoryItem } from './CategoryItem';
@@ -25,6 +28,14 @@ interface CategoriesListProps {
   onTogglePageSelection: (categoryIds: string[], checked: boolean) => void;
   onEdit: (category: Category) => void;
   onDelete: (categoryId: string, categoryTitle: string) => void;
+  onToggleHeaderVisibility: (category: Category, nextVisible: boolean) => void;
+  onReorder: (categoryId: string, targetCategoryId: string, scope: AdminCategoryView) => Promise<void>;
+  movingCategoryId: string | null;
+  draggingCategoryId: string | null;
+  dragOverCategoryId: string | null;
+  onDragStart: (categoryId: string) => void;
+  onDragEnter: (categoryId: string | null) => void;
+  onDragEnd: () => void;
 }
 
 const ITEMS_PER_PAGE = 20;
@@ -39,17 +50,27 @@ export function CategoriesList({
   onTogglePageSelection,
   onEdit,
   onDelete,
+  onToggleHeaderVisibility,
+  onReorder,
+  movingCategoryId,
+  draggingCategoryId,
+  dragOverCategoryId,
+  onDragStart,
+  onDragEnter,
+  onDragEnd,
 }: CategoriesListProps) {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const [currentPage, setCurrentPage] = useState(1);
+  const [expandedCategoryIds, setExpandedCategoryIds] = useState<string[]>([]);
   const lookup = categoryLookupList ?? categories;
+  const activeLocale = lang ?? getStoredLanguage();
 
   const viewCategories = useMemo((): CategoryWithLevel[] => {
     const scoped = filterCategoriesForAdminView(categories, viewMode);
     const sorted =
-      viewMode === 'subcategories' ? sortSubcategoriesForAdmin(scoped, lookup) : scoped;
+      viewMode === 'subcategories' ? sortSubcategoriesForAdmin(scoped, lookup, activeLocale) : scoped;
     return sorted.map((category) => ({ ...category, level: viewMode === 'roots' ? 0 : 1 }));
-  }, [categories, lookup, viewMode]);
+  }, [activeLocale, categories, lookup, viewMode]);
 
   const totalPages = Math.ceil(viewCategories.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -60,10 +81,195 @@ export function CategoriesList({
   ).length;
   const allOnPageSelected = paginatedCategories.length > 0 && selectedOnPage === paginatedCategories.length;
   const isRootView = viewMode === 'roots';
+  const childrenByParentId = useMemo(() => {
+    const map = new Map<string, Category[]>();
+    lookup.forEach((category) => {
+      if (!category.parentId) {
+        return;
+      }
+      const existing = map.get(category.parentId) ?? [];
+      existing.push(category);
+      map.set(category.parentId, existing);
+    });
+
+    map.forEach((items, key) => {
+      map.set(
+        key,
+        [...items].sort((a, b) =>
+          getLocalizedCategoryTitle(a, activeLocale).localeCompare(
+            getLocalizedCategoryTitle(b, activeLocale),
+            undefined,
+            { sensitivity: 'base' },
+          ),
+        ),
+      );
+    });
+
+    return map;
+  }, [activeLocale, lookup]);
 
   useEffect(() => {
     setCurrentPage(1);
   }, [categories.length, searchQuery, viewMode]);
+
+  useEffect(() => {
+    setExpandedCategoryIds([]);
+  }, [searchQuery, viewMode]);
+
+  const toggleExpandedCategory = (categoryId: string) => {
+    setExpandedCategoryIds((prev) =>
+      prev.includes(categoryId) ? prev.filter((id) => id !== categoryId) : [...prev, categoryId],
+    );
+  };
+
+  const renderSubcategoryImage = (category: Category) => {
+    const safeImageSrc = toSafeImgAttributeSrc(category.media?.[0] ?? null);
+    if (safeImageSrc) {
+      return (
+        <img
+          src={toDomSafeImgSrcString(safeImageSrc)}
+          alt=""
+          className="h-10 w-10 rounded-md border border-slate-200 bg-white object-cover"
+        />
+      );
+    }
+
+    return (
+      <div
+        className="flex h-10 w-10 items-center justify-center rounded-md border border-dashed border-slate-200 bg-slate-50 text-[10px] font-medium uppercase tracking-wide text-slate-400"
+        aria-hidden
+      >
+        —
+      </div>
+    );
+  };
+
+  const renderNestedChildren = (
+    parentId: string,
+    level: number,
+    visited: Set<string>,
+  ): JSX.Element | null => {
+    const childCategories = childrenByParentId.get(parentId) ?? [];
+    if (childCategories.length === 0) {
+      return null;
+    }
+
+    return (
+      <div className={level > 0 ? 'mt-2 ml-4 border-l border-amber-200 pl-3' : 'space-y-2'}>
+        {childCategories.map((child) => {
+          if (visited.has(child.id)) {
+            return null;
+          }
+          const nextVisited = new Set(visited);
+          nextVisited.add(child.id);
+          const nestedChildren = childrenByParentId.get(child.id) ?? [];
+          const nestedSubcategoryCount = nestedChildren.length;
+          const childExpanded = expandedCategoryIds.includes(child.id);
+
+          return (
+            <div
+              key={child.id}
+              className="rounded-lg border border-slate-200 bg-slate-50/70 px-3 py-2"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex min-w-0 items-center gap-2.5">
+                  <div className="shrink-0">{renderSubcategoryImage(child)}</div>
+                  <div className="min-w-0">
+                    {nestedChildren.length > 0 ? (
+                      <button
+                        type="button"
+                        className="inline-flex items-center gap-1.5 text-left text-sm font-semibold text-slate-900 transition-colors hover:text-amber-900"
+                        onClick={() => toggleExpandedCategory(child.id)}
+                        aria-expanded={childExpanded}
+                        aria-controls={`nested-category-${child.id}`}
+                      >
+                        <svg
+                          className={`h-3.5 w-3.5 text-slate-500 transition-transform ${childExpanded ? 'rotate-90' : ''}`}
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                          aria-hidden
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M7.22 4.47a.75.75 0 011.06 0l4.25 4.25a.75.75 0 010 1.06l-4.25 4.25a.75.75 0 11-1.06-1.06L10.94 9.5 7.22 5.78a.75.75 0 010-1.06z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        {getLocalizedCategoryTitle(child, activeLocale)}
+                      </button>
+                    ) : (
+                      <p className="truncate text-sm font-semibold text-slate-900">
+                        {getLocalizedCategoryTitle(child, activeLocale)}
+                      </p>
+                    )}
+                    <p className="mt-1 truncate text-xs text-slate-500">{child.slug}</p>
+                  </div>
+                </div>
+                <div className="flex shrink-0 items-center justify-center px-2">
+                  <span
+                    className="inline-flex min-w-8 items-center justify-center rounded-md border border-amber-200 bg-amber-100 px-2 py-0.5 text-xs font-semibold tabular-nums text-amber-900"
+                    title={t('admin.categories.tableSubcategoryCount')}
+                  >
+                    {nestedSubcategoryCount > 0
+                      ? nestedSubcategoryCount
+                      : translateAdminCategoryLabel(t, 'admin.categories.noSubcategoriesShort', '0')}
+                  </span>
+                </div>
+                <div className="flex shrink-0 items-center gap-2">
+                  <button
+                    type="button"
+                    className={`inline-flex h-10 w-10 items-center justify-center rounded-md border transition-colors ${
+                      child.showInHeader
+                        ? 'border-amber-300 bg-amber-50 text-amber-600 hover:bg-amber-100'
+                        : 'border-slate-200 bg-white text-slate-400 hover:border-slate-300 hover:text-slate-600'
+                    }`}
+                    onClick={() => onToggleHeaderVisibility(child, !child.showInHeader)}
+                    aria-label={child.showInHeader ? 'Hide from header sidebar' : 'Show in header sidebar'}
+                    title={child.showInHeader ? 'Hide from header sidebar' : 'Show in header sidebar'}
+                  >
+                    <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.044 3.214a1 1 0 00.95.69h3.38c.969 0 1.371 1.24.588 1.81l-2.736 1.988a1 1 0 00-.364 1.118l1.045 3.214c.3.921-.755 1.688-1.539 1.118l-2.737-1.988a1 1 0 00-1.175 0l-2.737 1.988c-.783.57-1.838-.197-1.539-1.118l1.045-3.214a1 1 0 00-.364-1.118L2.087 8.64c-.783-.57-.38-1.81.588-1.81h3.38a1 1 0 00.95-.69l1.044-3.214z" />
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-700 transition-colors hover:border-amber-300 hover:bg-amber-50 hover:text-amber-900"
+                    onClick={() => onEdit(child)}
+                    aria-label={t('admin.common.edit')}
+                    title={t('admin.common.edit')}
+                  >
+                    <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
+                      <path d="M13.586 3.586a2 2 0 112.828 2.828l-8.9 8.9a1 1 0 01-.42.26l-3 1a1 1 0 01-1.265-1.265l1-3a1 1 0 01.26-.42l8.9-8.9zM12.172 5 5 12.172V14h1.828L14 6.828 12.172 5z" />
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-red-100 bg-red-50 text-red-600 transition-colors hover:border-red-200 hover:bg-red-100 hover:text-red-700"
+                    onClick={() => onDelete(child.id, getLocalizedCategoryTitle(child, activeLocale))}
+                    aria-label={t('admin.common.delete')}
+                    title={t('admin.common.delete')}
+                  >
+                    <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
+                      <path
+                        fillRule="evenodd"
+                        d="M8.5 2a1 1 0 00-1 1V4H5a1 1 0 000 2h.293l.853 9.386A2 2 0 008.138 17h3.724a2 2 0 001.992-1.614L14.707 6H15a1 1 0 100-2h-2.5V3a1 1 0 00-1-1h-3zm2 2V4h-1V4h1zm-2.36 3a1 1 0 10-1.992.18l.5 5.5a1 1 0 101.992-.18l-.5-5.5zm5.212.18a1 1 0 10-1.992-.18l-.5 5.5a1 1 0 101.992.18l.5-5.5z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              {childExpanded ? (
+                <div id={`nested-category-${child.id}`} className="mt-2">
+                  {renderNestedChildren(child.id, level + 1, nextVisited)}
+                </div>
+              ) : null}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
 
   if (viewCategories.length === 0) {
     const emptyMessage =
@@ -99,6 +305,7 @@ export function CategoriesList({
           <table className="w-full min-w-[760px] table-fixed divide-y divide-slate-200 bg-white">
             <colgroup>
               <col className="w-12" />
+              <col className="w-12" />
               <col className="w-[88px]" />
               <col className="w-[36%]" />
               <col className="w-[20%]" />
@@ -107,6 +314,7 @@ export function CategoriesList({
             </colgroup>
             <thead className="bg-slate-50/90">
               <tr>
+                <th className="px-2 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500" />
                 <th className="px-3 py-2 text-left">
                   <input
                     type="checkbox"
@@ -145,12 +353,14 @@ export function CategoriesList({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {paginatedCategories.map((category) => {
+              {paginatedCategories.flatMap((category) => {
                 const parentCategory = category.parentId
                   ? lookup.find((item) => item.id === category.parentId)
                   : null;
+                const childCategories = isRootView ? childrenByParentId.get(category.id) ?? [] : [];
+                const isExpanded = isRootView && expandedCategoryIds.includes(category.id);
 
-                return (
+                const rows = [
                   <CategoryItem
                     key={category.id}
                     category={category}
@@ -161,8 +371,38 @@ export function CategoriesList({
                     onToggleSelect={onToggleSelect}
                     onEdit={onEdit}
                     onDelete={onDelete}
-                  />
-                );
+                    onToggleHeaderVisibility={onToggleHeaderVisibility}
+                    categoryTitle={getLocalizedCategoryTitle(category, activeLocale)}
+                    parentCategoryTitle={getLocalizedCategoryTitle(parentCategory, activeLocale)}
+                    onReorder={onReorder}
+                    moving={movingCategoryId === category.id}
+                    dragging={draggingCategoryId === category.id}
+                    dragOver={dragOverCategoryId === category.id}
+                    onDragStart={onDragStart}
+                    onDragEnter={onDragEnter}
+                    onDragEnd={onDragEnd}
+                    hasExpandableChildren={isRootView && childCategories.length > 0}
+                    expanded={isExpanded}
+                    onToggleExpand={toggleExpandedCategory}
+                  />,
+                ];
+
+                if (isRootView && isExpanded && childCategories.length > 0) {
+                  rows.push(
+                    <tr key={`${category.id}-children`} id={`category-subtree-${category.id}`}>
+                      <td colSpan={7} className="bg-gradient-to-r from-amber-50/70 to-slate-50 px-4 py-3">
+                        <div className="rounded-xl border border-amber-200/70 bg-white/90 p-3 shadow-sm">
+                          <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-amber-800">
+                            {t('admin.categories.subcategories')}
+                          </div>
+                          {renderNestedChildren(category.id, 0, new Set([category.id]))}
+                        </div>
+                      </td>
+                    </tr>,
+                  );
+                }
+
+                return rows;
               })}
             </tbody>
           </table>

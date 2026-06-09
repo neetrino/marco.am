@@ -296,7 +296,10 @@
     "tableSubcategoryCount": "Ենթակատեգորիաներ",
     "noSubcategoriesShort": "0",
     "noRootCategories": "Հիմնական կատեգորիաներ չեն գտնվել",
-    "noSubcategories": "Ենթակատեգորիաներ չեն գտնվել"
+    "noSubcategories": "Ենթակատեգորիաներ չեն գտնվել",
+    "moveUp": "Տեղափոխել վերև",
+    "moveDown": "Տեղափոխել ներքև",
+    "dragToReorder": "Քաշեք՝ կատեգորիայի հերթականությունը փոխելու համար"
   },
   "delivery": {
     "title": "Առաքում",
@@ -958,6 +961,7 @@
   "common": {
     "loading": "Բեռնվում է...",
     "error": "Սխալ",
+    "unknownErrorFallback": "Անհայտ սխալ",
     "success": "Հաջողություն",
     "cancel": "Չեղարկել",
     "close": "Փակել",

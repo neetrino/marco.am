@@ -14,7 +14,7 @@ const MARCO_LOGO_INTRINSIC_HEIGHT = 1350;
  * if `Sizes` matches only the ~36–40px header slot, production serves too few pixels and the glyph looks soft.
  * Hint a larger width so the visible crop stays sharp (dev uses `images.unoptimized` and bypasses this).
  */
-const MARCO_LOGO_SIZES = '(min-width: 768px) 384px, 320px';
+const MARCO_LOGO_SIZES = '(min-width: 768px) 768px, 640px';
 
 type MarcoLogoProps = {
   readonly ariaLabel?: string;

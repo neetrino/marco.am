@@ -64,6 +64,8 @@ class AdminService {
   createCategory = adminCategoriesService.createCategory.bind(adminCategoriesService);
   getCategoryById = adminCategoriesService.getCategoryById.bind(adminCategoriesService);
   updateCategory = adminCategoriesService.updateCategory.bind(adminCategoriesService);
+  moveCategory = adminCategoriesService.moveCategory.bind(adminCategoriesService);
+  reorderCategory = adminCategoriesService.reorderCategory.bind(adminCategoriesService);
   deleteCategory = adminCategoriesService.deleteCategory.bind(adminCategoriesService);
 
   // Products methods

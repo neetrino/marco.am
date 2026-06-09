@@ -90,12 +90,13 @@ export function isExcludedShopCategory(slug: string, title: string): boolean {
 type ShopCategoryTreeNode = {
   slug: string;
   title: string;
+  showInHeader?: boolean;
   children: ShopCategoryTreeNode[];
 };
 
 export function filterHeaderNavCategoryTree<T extends ShopCategoryTreeNode>(nodes: T[]): T[] {
   return nodes
-    .filter((node) => !isExcludedHeaderNavCategory(node.slug, node.title))
+    .filter((node) => node.showInHeader || !isExcludedHeaderNavCategory(node.slug, node.title))
     .map((node) => ({
       ...node,
       children: filterHeaderNavCategoryTree(node.children),

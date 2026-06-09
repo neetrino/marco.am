@@ -296,7 +296,10 @@
     "tableSubcategoryCount": "Subcategories",
     "noSubcategoriesShort": "0",
     "noRootCategories": "No main categories found",
-    "noSubcategories": "No subcategories found"
+    "noSubcategories": "No subcategories found",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "dragToReorder": "Drag to reorder category"
   },
   "delivery": {
     "title": "Delivery",
@@ -958,6 +961,7 @@
   "common": {
     "loading": "Loading...",
     "error": "Error",
+    "unknownErrorFallback": "Unknown error",
     "success": "Success",
     "cancel": "Cancel",
     "close": "Close",
