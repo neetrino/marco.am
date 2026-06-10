@@ -688,6 +688,41 @@ class AdminCategoriesService {
     );
 
     await db.$transaction(async (tx: PrismaTransactionClient) => {
+      const buildUniqueCategorySlugInTransaction = async (
+        baseSlug: string,
+        locale: string,
+        excludeCategoryId?: string,
+      ): Promise<string> => {
+        const existingTranslations = await tx.categoryTranslation.findMany({
+          where: {
+            locale,
+            slug: {
+              startsWith: baseSlug,
+            },
+            ...(excludeCategoryId
+              ? {
+                  categoryId: {
+                    not: excludeCategoryId,
+                  },
+                }
+              : {}),
+          },
+          select: {
+            slug: true,
+          },
+        });
+        const existingSlugs = new Set(existingTranslations.map((item) => item.slug));
+        if (!existingSlugs.has(baseSlug)) {
+          return baseSlug;
+        }
+
+        let suffix = 2;
+        while (existingSlugs.has(`${baseSlug}-${suffix}`)) {
+          suffix += 1;
+        }
+        return `${baseSlug}-${suffix}`;
+      };
+
       const categoryPatch = buildCategoryUpdatePatch(
         data,
         prepared.normalizedMedia,
@@ -709,7 +744,7 @@ class AdminCategoriesService {
           category,
           supportedLocales: this.supportedLocales,
           buildProblemError: this.buildProblemError.bind(this),
-          buildUniqueCategorySlug: this.buildUniqueCategorySlug.bind(this),
+          buildUniqueCategorySlug: buildUniqueCategorySlugInTransaction,
         });
       }
 
