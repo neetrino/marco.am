@@ -124,8 +124,29 @@ async function addProductToWishlist(wishlistId: string, productId: string): Prom
 
 export async function buildWishlistPayload(
   wishlistId: string,
-  locale: string
+  locale: string,
+  fields: "full" | "ids" = "full"
 ): Promise<WishlistApiPayload> {
+  if (fields === "ids") {
+    const idRows = await db.wishlistItem.findMany({
+      where: { wishlistId },
+      orderBy: [{ position: "asc" }, { createdAt: "asc" }],
+      select: { productId: true },
+    });
+    return {
+      wishlist: {
+        id: wishlistId,
+        items: idRows.map((row) => ({
+          productId: row.productId,
+          title: "",
+          slug: "",
+          image: null,
+          addedAt: "",
+        })),
+      },
+    };
+  }
+
   const rows = await db.wishlistItem.findMany({
     where: { wishlistId },
     orderBy: [{ position: "asc" }, { createdAt: "asc" }],
@@ -159,10 +180,11 @@ export async function buildWishlistPayload(
 
 export async function getWishlistForUser(
   userId: string,
-  locale: string
+  locale: string,
+  fields: "full" | "ids" = "full"
 ): Promise<WishlistApiPayload> {
   const wishlistId = await getOrCreateUserWishlist(userId);
-  return buildWishlistPayload(wishlistId, locale);
+  return buildWishlistPayload(wishlistId, locale, fields);
 }
 
 export async function addWishlistItemForUser(
@@ -189,14 +211,15 @@ export async function removeWishlistItemForUser(
 
 export async function getWishlistForGuest(
   sessionToken: string | undefined,
-  locale: string
+  locale: string,
+  fields: "full" | "ids" = "full"
 ): Promise<{
   payload: WishlistApiPayload;
   sessionToken: string;
   sessionCreated: boolean;
 }> {
   const { wishlistId, sessionToken: token, created } = await ensureGuestWishlist(sessionToken);
-  const payload = await buildWishlistPayload(wishlistId, locale);
+  const payload = await buildWishlistPayload(wishlistId, locale, fields);
   return { payload, sessionToken: token, sessionCreated: created };
 }
 

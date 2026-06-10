@@ -4,6 +4,7 @@ import Image from 'next/image';
 
 import { useTranslation } from '../../lib/i18n-client';
 import { ProductPdpPrefetchLink } from '../ProductPdpPrefetchLink';
+import type { ProductPdpNavigationSeed } from '@/lib/product-pdp/pdp-navigation-seed';
 import { shouldBypassNextImageOptimizer } from '../../lib/utils/should-bypass-next-image-optimizer';
 
 import {
@@ -30,6 +31,7 @@ interface SpecialOfferImageSliderProps {
   layout?: 'default' | 'mobileGrid' | 'homeGrid';
   imagePriority?: boolean;
   navigationDisabled?: boolean;
+  navigationSeed?: ProductPdpNavigationSeed;
 }
 
 function galleryDotAriaLabel(raw: string, n: number, total: number): string {
@@ -113,6 +115,7 @@ export function SpecialOfferImageSlider({
   layout = 'default',
   imagePriority = false,
   navigationDisabled = false,
+  navigationSeed,
 }: SpecialOfferImageSliderProps) {
   const { t } = useTranslation();
   const { scrollerRef, activeIndex, goToIndex } = useSpecialOfferImageGallery(
@@ -177,6 +180,7 @@ export function SpecialOfferImageSlider({
                   <ProductPdpPrefetchLink
                     href={`/products/${slug}`}
                     productSlug={slug}
+                    navigationSeed={navigationSeed}
                     className={slideClass}
                     aria-label={slideAria}
                   >

@@ -10,6 +10,7 @@ import {
   fetchProductDetail,
   fetchProductVisual,
 } from '@/lib/product-pdp/product-pdp-fetchers';
+import { consumeProductPdpNavigationSeed } from '@/lib/product-pdp/pdp-navigation-seed';
 import { PDP_QUERY_GC_TIME_MS, PDP_QUERY_STALE_TIME_MS } from '@/lib/product-pdp/pdp-query-cache';
 import { queryKeys } from '@/lib/query-keys';
 
@@ -36,6 +37,13 @@ export function useProductFetch({
   const router = useRouter();
   const queryClient = useQueryClient();
   const [lang, setLang] = useState<LanguageCode>(() => serverLanguage);
+  const [navigationSeedProduct, setNavigationSeedProduct] = useState<Product | null>(
+    () => consumeProductPdpNavigationSeed(slug, serverLanguage),
+  );
+
+  useEffect(() => {
+    setNavigationSeedProduct(consumeProductPdpNavigationSeed(slug, lang));
+  }, [slug, lang]);
 
   useEffect(() => {
     setLang(getStoredLanguage());
@@ -62,11 +70,29 @@ export function useProductFetch({
     initialProduct.slug === slug &&
     lang === serverLanguage
       ? initialProduct
+      : navigationSeedProduct != null && navigationSeedProduct.slug === slug
+        ? navigationSeedProduct
       : undefined;
 
   const visualInitialData =
     initialVisual != null && initialVisual.slug === slug && lang === serverLanguage
       ? initialVisual
+      : navigationSeedProduct != null && navigationSeedProduct.slug === slug
+        ? {
+            id: navigationSeedProduct.id,
+            slug: navigationSeedProduct.slug,
+            title: navigationSeedProduct.title,
+            images: Array.isArray(navigationSeedProduct.media)
+              ? navigationSeedProduct.media
+                  .filter((item): item is string => typeof item === 'string')
+              : [],
+            gallery: [],
+            labels: [],
+            discountPercent:
+              navigationSeedProduct.discountBadge?.type === 'percentage'
+                ? navigationSeedProduct.discountBadge.value
+                : null,
+          }
       : undefined;
 
   const visualQuery = useQuery({

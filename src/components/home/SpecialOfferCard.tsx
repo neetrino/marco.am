@@ -4,6 +4,8 @@ import { useCallback, type MouseEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { ProductPdpPrefetchLink } from '@/components/ProductPdpPrefetchLink';
+import { getStoredLanguage } from '@/lib/language';
+import { setProductPdpNavigationSeed } from '@/lib/product-pdp/pdp-navigation-seed';
 
 import {
   getSpecialOfferBrandTextClass,
@@ -100,6 +102,31 @@ export function SpecialOfferCard({
   } = useSpecialOfferCard(product);
 
   const brandClass = getSpecialOfferBrandTextClass(product.brand?.name);
+  const navigationSeed = {
+    id: product.id,
+    slug: product.slug,
+    title: product.title,
+    image: product.image,
+    brand: product.brand
+      ? {
+          id: product.brand.id,
+          name: product.brand.name,
+          logo: product.brand.logoUrl ?? null,
+        }
+      : null,
+    price: product.price,
+    oldPrice: oldPrice ?? null,
+    discountBadge:
+      product.isSpecialPrice
+        ? { type: 'special_price' as const, value: 0, label: 'special_price' }
+        : product.discountPercent && product.discountPercent > 0
+          ? {
+              type: 'percentage' as const,
+              value: product.discountPercent,
+              label: `-${product.discountPercent}%`,
+            }
+          : null,
+  };
 
   const galleryImages = duplicateSingleImageForDevGalleryTest(
     product.images && product.images.length > 0
@@ -148,8 +175,13 @@ export function SpecialOfferCard({
     }
     event.preventDefault();
     event.stopPropagation();
+    setProductPdpNavigationSeed(
+      product.slug,
+      getStoredLanguage(),
+      navigationSeed,
+    );
     router.push(`/products/${encodeURIComponent(product.slug.trim())}`);
-  }, [detailsPending, hasDisplayPrice, product.slug, router]);
+  }, [detailsPending, hasDisplayPrice, navigationSeed, product.slug, router]);
 
   return (
     <div
@@ -178,6 +210,7 @@ export function SpecialOfferCard({
           <ProductPdpPrefetchLink
             href={`/products/${product.slug}`}
             productSlug={product.slug}
+            navigationSeed={navigationSeed}
             className="absolute inset-0 z-[1] focus:outline-none focus-visible:ring-2 focus-visible:ring-marco-yellow focus-visible:ring-offset-2"
             style={{ borderRadius: SPECIAL_OFFERS_CARD_SHELL_RADIUS_PX }}
             aria-label={product.title}
@@ -230,6 +263,7 @@ export function SpecialOfferCard({
             onImageError={onImageError}
             imagePriority={imagePriority}
             navigationDisabled={Boolean(product.shellPlaceholder)}
+            navigationSeed={navigationSeed}
           />
 
           <div
@@ -240,6 +274,7 @@ export function SpecialOfferCard({
               product={product}
               brandClass={brandClass}
               detailsPending={detailsPending}
+              navigationSeed={navigationSeed}
             />
 
             {hasDisplayPrice ? (

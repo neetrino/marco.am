@@ -206,12 +206,12 @@ export function CategoryItem({
           <button
             type="button"
             onClick={() => void onToggleCategoryKind(category)}
-            disabled={moving || converting}
+            disabled={moving}
             className={`inline-flex h-10 w-10 items-center justify-center rounded-md border transition-colors ${
               category.parentId
                 ? 'border-sky-200 bg-sky-50 text-sky-700 hover:border-sky-300 hover:bg-sky-100'
                 : 'border-violet-200 bg-violet-50 text-violet-700 hover:border-violet-300 hover:bg-violet-100'
-            } ${converting ? 'cursor-not-allowed opacity-60' : ''}`}
+            }`}
             aria-label={
               category.parentId
                 ? t('admin.categories.convertToMainCategory')
@@ -223,25 +223,21 @@ export function CategoryItem({
                 : t('admin.categories.convertToSubcategory')
             }
           >
-            {converting ? (
-              <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-            ) : (
-              <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
-                {category.parentId ? (
-                  <path
-                    fillRule="evenodd"
-                    d="M10 3a1 1 0 011 1v7.586l2.293-2.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L9 11.586V4a1 1 0 011-1z"
-                    clipRule="evenodd"
-                  />
-                ) : (
-                  <path
-                    fillRule="evenodd"
-                    d="M10 17a1 1 0 01-1-1V8.414L6.707 10.707a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 11-1.414 1.414L11 8.414V16a1 1 0 01-1 1z"
-                    clipRule="evenodd"
-                  />
-                )}
-              </svg>
-            )}
+            <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
+              {category.parentId ? (
+                <path
+                  fillRule="evenodd"
+                  d="M10 3a1 1 0 011 1v7.586l2.293-2.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L9 11.586V4a1 1 0 011-1z"
+                  clipRule="evenodd"
+                />
+              ) : (
+                <path
+                  fillRule="evenodd"
+                  d="M10 17a1 1 0 01-1-1V8.414L6.707 10.707a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 11-1.414 1.414L11 8.414V16a1 1 0 01-1 1z"
+                  clipRule="evenodd"
+                />
+              )}
+            </svg>
           </button>
           <button
             type="button"

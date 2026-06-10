@@ -1,10 +1,12 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../auth/AuthContext';
 import { apiClient } from '../api-client';
 import { coerceCurrencyCode, type CurrencyCode } from '../currency';
 import { loadGuestCartTotals } from './guest-cart-totals';
+import { queryKeys } from '../query-keys';
 import { logger } from '../utils/logger';
 
 export type CartSummaryState = {
@@ -16,58 +18,69 @@ export type CartSummaryState = {
 
 export function useCartSummaryState(): CartSummaryState {
   const { isLoggedIn, isLoading: authLoading } = useAuth();
+  const queryClient = useQueryClient();
 
   const [cartCount, setCartCount] = useState(0);
   const [cartTotal, setCartTotal] = useState(0);
   const [cartTotalCurrency, setCartTotalCurrency] = useState<CurrencyCode>('AMD');
 
-  const fetchCart = useCallback(async () => {
+  const fetchCartTotals = useCallback(async (): Promise<{
+    cart: {
+      itemsCount: number;
+      totals: { total: number; currency?: string };
+    };
+  }> => {
     if (authLoading) {
-      return;
+      return {
+        cart: {
+          itemsCount: 0,
+          totals: { total: 0, currency: 'AMD' },
+        },
+      };
     }
     if (!isLoggedIn) {
-      if (typeof window === 'undefined') {
-        setCartCount(0);
-        setCartTotal(0);
-        setCartTotalCurrency('AMD');
-        return;
-      }
+      const { itemsCount, total } = await loadGuestCartTotals();
+      return {
+        cart: {
+          itemsCount,
+          totals: { total, currency: 'AMD' },
+        },
+      };
+    }
 
-      try {
-        const { itemsCount, total } = await loadGuestCartTotals();
-        setCartCount(itemsCount);
-        setCartTotal(total);
-        setCartTotalCurrency('AMD');
-      } catch (error) {
-        logger.error('Error loading guest cart', { error });
-        setCartCount(0);
-        setCartTotal(0);
-        setCartTotalCurrency('AMD');
-      }
+    return apiClient.get<{
+      cart: {
+        itemsCount: number;
+        totals: { total: number; currency?: string };
+      };
+    }>('/api/v1/cart');
+  }, [authLoading, isLoggedIn]);
+
+  const cartQuery = useQuery({
+    queryKey: queryKeys.cartByAuth(isLoggedIn),
+    queryFn: fetchCartTotals,
+    enabled: !authLoading,
+    staleTime: 30_000,
+    retry: 1,
+  });
+
+  useEffect(() => {
+    const payload = cartQuery.data?.cart;
+    if (!payload) {
       return;
     }
+    setCartCount(payload.itemsCount || 0);
+    setCartTotal(payload.totals?.total || 0);
+    setCartTotalCurrency(coerceCurrencyCode(payload.totals?.currency, 'AMD'));
+  }, [cartQuery.data]);
 
+  const fetchCart = useCallback(async () => {
     try {
-      const response = await apiClient.get<{
-        cart: {
-          itemsCount: number;
-          totals: { total: number; currency?: string };
-        };
-      }>('/api/v1/cart');
-
-      setCartCount(response.cart?.itemsCount || 0);
-      setCartTotal(response.cart?.totals?.total || 0);
-      setCartTotalCurrency(coerceCurrencyCode(response.cart?.totals?.currency, 'AMD'));
+      await queryClient.invalidateQueries({ queryKey: queryKeys.cartByAuth(isLoggedIn) });
     } catch (error: unknown) {
-      const err = error as { status?: number; statusCode?: number };
-      if (err?.status !== 401 && err?.statusCode !== 401) {
-        logger.error('Error fetching cart', { error });
-      }
-      setCartCount(0);
-      setCartTotal(0);
-      setCartTotalCurrency('AMD');
+      logger.error('Error invalidating cart query', { error });
     }
-  }, [authLoading, isLoggedIn]);
+  }, [isLoggedIn, queryClient]);
 
   useEffect(() => {
     const handleCartUpdate = (e: Event) => {
@@ -86,7 +99,7 @@ export function useCartSummaryState(): CartSummaryState {
         setCartTotalCurrency(coerceCurrencyCode(detail.currency, 'AMD'));
         return;
       }
-      void fetchCart();
+      void queryClient.invalidateQueries({ queryKey: queryKeys.cartByAuth(isLoggedIn) });
     };
 
     window.addEventListener('cart-updated', handleCartUpdate);
@@ -94,17 +107,16 @@ export function useCartSummaryState(): CartSummaryState {
     return () => {
       window.removeEventListener('cart-updated', handleCartUpdate);
     };
-  }, [authLoading, fetchCart]);
+  }, [authLoading, isLoggedIn, queryClient]);
 
   useEffect(() => {
-    if (authLoading) {
-      setCartCount(0);
-      setCartTotal(0);
-      setCartTotalCurrency('AMD');
+    if (!authLoading) {
       return;
     }
-    void fetchCart();
-  }, [authLoading, isLoggedIn, fetchCart]);
+    setCartCount(0);
+    setCartTotal(0);
+    setCartTotalCurrency('AMD');
+  }, [authLoading]);
 
   return { cartCount, cartTotal, cartTotalCurrency, fetchCart };
 }

@@ -34,6 +34,10 @@ function shouldSuppressNetworkLogging(
   );
 }
 
+function shouldUseNoStoreCache(endpoint: string): boolean {
+  return endpoint.startsWith('/api/v1/supersudo/');
+}
+
 /**
  * Handle network errors
  */
@@ -181,7 +185,7 @@ export async function getRequest<T>(
       response = await fetch(url, {
         method: 'GET',
         headers: getHeaders(fetchOptions),
-        cache: 'no-store', // Disable caching for server components
+        cache: shouldUseNoStoreCache(endpoint) ? 'no-store' : 'default',
         ...fetchOptions,
         signal: requestController.signal,
       });

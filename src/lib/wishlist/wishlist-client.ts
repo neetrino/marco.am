@@ -71,7 +71,7 @@ export async function fetchWishlistProductIds(lang: string): Promise<string[]> {
   if (!inflight) {
     inflight = (async () => {
       const res = await apiClient.get<WishlistClientResponse>('/api/v1/wishlist', {
-        params: { lang },
+        params: { lang, fields: "ids" },
         credentials: 'include',
       });
       const ids = res.wishlist.items.map((i) => i.productId);
@@ -145,6 +145,9 @@ export async function mergeGuestWishlistAfterAuth(): Promise<void> {
     );
     invalidateWishlistCache();
     dispatchWishlistUpdated();
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('auth-updated'));
+    }
   } catch (error: unknown) {
     logger.devLog('[Wishlist] merge after auth skipped or failed', { error });
   }

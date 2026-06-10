@@ -31,17 +31,19 @@ function resolveCompareLocale(
 export async function GET(req: NextRequest) {
   try {
     const user = await authenticateToken(req);
+    const fields = req.nextUrl.searchParams.get("fields") === "ids" ? "ids" : "full";
     const locale = resolveCompareLocale(req, user?.locale);
 
     if (user) {
-      const payload = await getCompareForUser(user.id, locale);
+      const payload = await getCompareForUser(user.id, locale, fields);
       return NextResponse.json(payload);
     }
 
     const sessionToken = readCompareSessionToken(req);
     const { payload, sessionToken: token } = await getCompareForGuest(
       sessionToken,
-      locale
+      locale,
+      fields
     );
     const res = NextResponse.json(payload);
     applyCompareSessionCookie(res, token);

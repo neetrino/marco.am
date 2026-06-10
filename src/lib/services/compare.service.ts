@@ -147,10 +147,11 @@ async function addProductToCompareList(
 
 export async function getCompareForUser(
   userId: string,
-  locale: ApiLocale
+  locale: ApiLocale,
+  fields: "full" | "ids" = "full"
 ): Promise<CompareApiPayload> {
   const compareListId = await getOrCreateUserCompareList(userId);
-  return buildComparePayload(compareListId, locale);
+  return buildComparePayload(compareListId, locale, fields);
 }
 
 export async function addCompareItemForUser(
@@ -177,7 +178,8 @@ export async function removeCompareItemForUser(
 
 export async function getCompareForGuest(
   sessionToken: string | undefined,
-  locale: ApiLocale
+  locale: ApiLocale,
+  fields: "full" | "ids" = "full"
 ): Promise<{
   payload: CompareApiPayload;
   sessionToken: string;
@@ -185,7 +187,7 @@ export async function getCompareForGuest(
 }> {
   const { compareListId, sessionToken: token, created } =
     await ensureGuestCompareList(sessionToken);
-  const payload = await buildComparePayload(compareListId, locale);
+  const payload = await buildComparePayload(compareListId, locale, fields);
   return { payload, sessionToken: token, sessionCreated: created };
 }
 

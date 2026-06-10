@@ -29,6 +29,8 @@ export default function CategoriesPage() {
     categories,
     loading,
     fetchCategories,
+    syncCategoriesCache,
+    applyOptimisticCategories,
     reorderCategoriesOptimistically,
     setCategoryHeaderVisibilityOptimistically,
   } = useCategories(activeLocale);
@@ -227,19 +229,57 @@ export default function CategoriesPage() {
       return;
     }
     const isSubcategory = Boolean(convertingCategory.parentId);
-    const payload = {
-      parentId: isSubcategory ? null : conversionParentId || null,
-      subcategoryIds: conversionSubcategoryIds,
+    const nextParentId = isSubcategory ? null : conversionParentId || null;
+    const normalizedSubcategoryIds = Array.from(new Set(conversionSubcategoryIds)).sort();
+    const currentSubcategoryIds = categories
+      .filter((item) => item.parentId === convertingCategory.id)
+      .map((item) => item.id)
+      .sort();
+    const subcategorySelectionChanged =
+      normalizedSubcategoryIds.length !== currentSubcategoryIds.length ||
+      normalizedSubcategoryIds.some((id, index) => id !== currentSubcategoryIds[index]);
+    const payload: { parentId: string | null; subcategoryIds?: string[] } = {
+      parentId: nextParentId,
     };
+    if (subcategorySelectionChanged) {
+      payload.subcategoryIds = normalizedSubcategoryIds;
+    }
     if (!isSubcategory && !payload.parentId) {
       showToast(t('admin.categories.parentRequired'), 'warning');
       return;
     }
 
+    let rollback: (() => void) | null = null;
+    const convertingCategoryId = convertingCategory.id;
     try {
-      setConvertingCategoryId(convertingCategory.id);
-      await apiClient.put(`/api/v1/supersudo/categories/${convertingCategory.id}`, payload);
-      await fetchCategories();
+      setConvertingCategoryId(convertingCategoryId);
+      rollback = applyOptimisticCategories((previous) => {
+        if (isSubcategory) {
+          return previous.map((item) => {
+            if (item.id === convertingCategoryId) {
+              return { ...item, parentId: null };
+            }
+            if (normalizedSubcategoryIds.includes(item.id)) {
+              return { ...item, parentId: convertingCategoryId };
+            }
+            return item;
+          });
+        }
+
+        const nextParentId = conversionParentId || null;
+        return previous.map((item) => {
+          if (item.id === convertingCategoryId) {
+            return { ...item, parentId: nextParentId };
+          }
+          if (normalizedSubcategoryIds.includes(item.id)) {
+            return { ...item, parentId: convertingCategoryId };
+          }
+          return item;
+        });
+      });
+      resetConvertModalState();
+      setConvertingCategoryId(null);
+      await apiClient.put(`/api/v1/supersudo/categories/${convertingCategoryId}`, payload);
       notifyShopCategoryTreeUpdated();
       showToast(
         isSubcategory
@@ -247,8 +287,8 @@ export default function CategoriesPage() {
           : t('admin.categories.convertToSubcategorySuccess'),
         'success',
       );
-      resetConvertModalState();
     } catch (error: unknown) {
+      rollback?.();
       showToast(getApiOrErrorMessage(error, t('admin.common.unknownErrorFallback')), 'error');
     } finally {
       setConvertingCategoryId(null);
@@ -434,7 +474,7 @@ export default function CategoriesPage() {
           resetForm();
         }}
         onFormDataChange={setFormData}
-        onSubmit={() => handleUpdateCategory(fetchCategories)}
+        onSubmit={() => handleUpdateCategory(syncCategoriesCache, applyOptimisticCategories)}
       />
 
       <ConvertCategoryTypeModal

@@ -162,16 +162,12 @@ export function EditCategoryModal({
         type="button"
         aria-label={mt('admin.common.close')}
         className="absolute inset-0 bg-black/45 backdrop-blur-[1px]"
-        onClick={() => {
-          if (!saving) {
-            onClose();
-          }
-        }}
+        onClick={onClose}
       />
       <div
         className="absolute inset-y-0 right-0 flex w-full justify-end"
         onClick={(event) => {
-          if (event.target === event.currentTarget && !saving) {
+          if (event.target === event.currentTarget) {
             onClose();
           }
         }}
@@ -182,7 +178,7 @@ export function EditCategoryModal({
         >
           <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4 sm:px-6">
             <h3 className="text-lg font-semibold text-gray-900">{mt('admin.categories.editCategory')}</h3>
-            <Button variant="ghost" size="sm" disabled={saving} onClick={onClose}>
+            <Button variant="ghost" size="sm" onClick={onClose}>
               {mt('admin.common.close')}
             </Button>
           </div>
@@ -256,7 +252,7 @@ export function EditCategoryModal({
                   type="file"
                   accept="image/*"
                   className="sr-only"
-                  disabled={imageUploading || saving}
+                  disabled={imageUploading}
                   onChange={handleImageFile}
                 />
                 {imageUploading
@@ -328,9 +324,12 @@ export function EditCategoryModal({
           <div className="flex gap-3 border-t border-gray-200 px-5 py-4 sm:px-6">
             <Button
               variant="primary"
-              onClick={onSubmit}
+              onClick={() => {
+                if (!saving) {
+                  void onSubmit();
+                }
+              }}
               disabled={
-                saving ||
                 imageUploading ||
                 !formData.titles.hy.trim() ||
                 !formData.titles.en.trim() ||
@@ -338,12 +337,11 @@ export function EditCategoryModal({
               }
               className="flex-1"
             >
-              {saving ? mt('admin.categories.updating') : mt('admin.categories.updateCategory')}
+              {mt('admin.categories.updateCategory')}
             </Button>
             <Button
               variant="ghost"
               onClick={onClose}
-              disabled={saving}
             >
               {mt('admin.common.cancel')}
             </Button>

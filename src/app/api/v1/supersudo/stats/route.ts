@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { toApiErrorResponse } from "@/lib/api/next-route-error";
 import { authenticateToken, requireAdmin } from "@/lib/middleware/auth";
+import { withApiRouteMetrics } from "@/lib/observability/api-route-metrics";
 import { adminService } from "@/lib/services/admin.service";
 import { logger } from "@/lib/utils/logger";
 
@@ -14,48 +16,39 @@ export const dynamic = "force-dynamic";
  * Get admin statistics (users count, etc.)
  */
 export async function GET(req: NextRequest) {
-  try {
-    logger.devLog("📊 [ADMIN STATS] Request received:", { url: req.url });
-    const user = await authenticateToken(req);
-    
-    if (!user || !requireAdmin(user)) {
-      logger.devLog("❌ [ADMIN STATS] Unauthorized or not admin");
-      return NextResponse.json(
-        {
-          type: "https://api.shop.am/problems/forbidden",
-          title: "Forbidden",
-          status: 403,
-          detail: "Admin access required",
-          instance: req.url,
-        },
-        { status: 403 }
-      );
-    }
+  return withApiRouteMetrics(
+    "/api/v1/supersudo/stats",
+    "GET",
+    async () => {
+      try {
+        logger.devLog("📊 [ADMIN STATS] Request received:", { url: req.url });
+        const user = await authenticateToken(req);
 
-    logger.devLog(`✅ [ADMIN STATS] User authenticated: ${user.id}`);
-    const result = await adminService.getStats();
-    logger.devLog("✅ [ADMIN STATS] Stats data retrieved successfully");
-    
-    return NextResponse.json(result);
-  } catch (error: any) {
-    console.error("❌ [ADMIN STATS] Error:", {
-      message: error.message,
-      stack: error.stack,
-      type: error.type,
-      status: error.status,
-      detail: error.detail,
-      url: req.url,
-    });
-    return NextResponse.json(
-      {
-        type: error.type || "https://api.shop.am/problems/internal-error",
-        title: error.title || "Internal Server Error",
-        status: error.status || 500,
-        detail: error.detail || error.message || "An error occurred",
-        instance: req.url,
-      },
-      { status: error.status || 500 }
-    );
-  }
+        if (!user || !requireAdmin(user)) {
+          logger.devLog("❌ [ADMIN STATS] Unauthorized or not admin");
+          return NextResponse.json(
+            {
+              type: "https://api.shop.am/problems/forbidden",
+              title: "Forbidden",
+              status: 403,
+              detail: "Admin access required",
+              instance: req.url,
+            },
+            { status: 403 }
+          );
+        }
+
+        logger.devLog(`✅ [ADMIN STATS] User authenticated: ${user.id}`);
+        const result = await adminService.getStats();
+        logger.devLog("✅ [ADMIN STATS] Stats data retrieved successfully");
+
+        return NextResponse.json(result);
+      } catch (error: unknown) {
+        logger.error("Admin stats GET error", { error, url: req.url });
+        return toApiErrorResponse(error, req.url);
+      }
+    },
+    (res) => res.status,
+  );
 }
 

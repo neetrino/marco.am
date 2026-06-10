@@ -65,37 +65,29 @@ function calculateTopCategories(orders: Array<{
     .slice(0, 10);
 }
 
-/**
- * Calculate orders by day
- */
-function calculateOrdersByDay(orders: Array<{
-  createdAt: Date;
-  paymentStatus: string;
-  total: number;
-}>): Array<{
-  _id: string;
-  count: number;
-  revenue: number;
-}> {
-  const ordersByDayMap = new Map<string, { count: number; revenue: number }>();
+type OrdersByDayRow = {
+  day: Date;
+  count: bigint;
+  revenue: number | null;
+};
 
-  orders.forEach((order) => {
-    const dateKey = order.createdAt.toISOString().split('T')[0];
-    const existing = ordersByDayMap.get(dateKey) || { count: 0, revenue: 0 };
-    existing.count += 1;
-    if (order.paymentStatus === 'paid') {
-      existing.revenue += order.total;
-    }
-    ordersByDayMap.set(dateKey, existing);
-  });
+async function getOrdersByDay(start: Date, end: Date): Promise<Array<{ _id: string; count: number; revenue: number }>> {
+  const rows = await db.$queryRaw<OrdersByDayRow[]>`
+    SELECT
+      date_trunc('day', "createdAt") AS day,
+      COUNT(*)::bigint AS count,
+      COALESCE(SUM(CASE WHEN "paymentStatus" = 'paid' THEN "total" ELSE 0 END), 0) AS revenue
+    FROM "orders"
+    WHERE "createdAt" >= ${start} AND "createdAt" <= ${end}
+    GROUP BY 1
+    ORDER BY 1 ASC
+  `;
 
-  return Array.from(ordersByDayMap.entries())
-    .map(([date, data]) => ({
-      _id: date,
-      count: data.count,
-      revenue: data.revenue,
-    }))
-    .sort((a, b) => a._id.localeCompare(b._id));
+  return rows.map((row) => ({
+    _id: row.day.toISOString().split("T")[0],
+    count: Number(row.count),
+    revenue: Number(row.revenue ?? 0),
+  }));
 }
 
 /**
@@ -104,7 +96,7 @@ function calculateOrdersByDay(orders: Array<{
 export async function getAnalytics(period: string = 'week', startDate?: string, endDate?: string) {
   const { start, end } = calculateDateRange(period, startDate, endDate);
 
-  const [orders, customerAnalytics] = await Promise.all([
+  const [orders, customerAnalytics, ordersByDay] = await Promise.all([
     db.order.findMany({
       where: {
         createdAt: {
@@ -140,6 +132,7 @@ export async function getAnalytics(period: string = 'week', startDate?: string, 
       },
     }),
     getCustomerAnalytics(start, end),
+    getOrdersByDay(start, end),
   ]);
 
   // Calculate order statistics
@@ -161,9 +154,6 @@ export async function getAnalytics(period: string = 'week', startDate?: string, 
 
   // Calculate top categories
   const topCategories = calculateTopCategories(orders as Parameters<typeof calculateTopCategories>[0]);
-
-  // Calculate orders by day
-  const ordersByDay = calculateOrdersByDay(orders);
 
   return {
     period,

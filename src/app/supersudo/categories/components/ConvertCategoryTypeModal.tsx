@@ -73,16 +73,12 @@ export function ConvertCategoryTypeModal({
         type="button"
         aria-label={t('admin.common.close')}
         className="absolute inset-0 bg-black/45 backdrop-blur-[1px]"
-        onClick={() => {
-          if (!saving) {
-            onClose();
-          }
-        }}
+        onClick={onClose}
       />
       <div
         className="absolute inset-y-0 right-0 flex w-full justify-end"
         onClick={(event) => {
-          if (event.target === event.currentTarget && !saving) {
+          if (event.target === event.currentTarget) {
             onClose();
           }
         }}
@@ -100,7 +96,7 @@ export function ConvertCategoryTypeModal({
               </h3>
               <p className="mt-1 text-sm text-gray-600">{conversionContext.title}</p>
             </div>
-            <Button variant="ghost" size="sm" disabled={saving} onClick={onClose}>
+            <Button variant="ghost" size="sm" onClick={onClose}>
               {t('admin.common.close')}
             </Button>
           </div>
@@ -165,10 +161,18 @@ export function ConvertCategoryTypeModal({
           </div>
 
           <div className="flex gap-3 border-t border-gray-200 px-5 py-4 sm:px-6">
-            <Button variant="primary" className="flex-1" disabled={saving} onClick={() => void onSubmit()}>
-              {saving ? t('admin.categories.updating') : t('admin.categories.updateCategory')}
+            <Button
+              variant="primary"
+              className="flex-1"
+              onClick={() => {
+                if (!saving) {
+                  void onSubmit();
+                }
+              }}
+            >
+              {t('admin.categories.updateCategory')}
             </Button>
-            <Button variant="ghost" disabled={saving} onClick={onClose}>
+            <Button variant="ghost" onClick={onClose}>
               {t('admin.common.cancel')}
             </Button>
           </div>

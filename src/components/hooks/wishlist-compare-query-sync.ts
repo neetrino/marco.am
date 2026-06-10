@@ -3,6 +3,8 @@
 import type { QueryClient } from '@tanstack/react-query';
 
 import { queryKeys } from '@/lib/query-keys';
+import { invalidateCompareCache } from '@/lib/compare/compare-client';
+import { invalidateWishlistCache } from '@/lib/wishlist/wishlist-client';
 
 let registered = false;
 
@@ -13,17 +15,25 @@ export function registerWishlistCompareQuerySync(queryClient: QueryClient): void
   }
   registered = true;
 
-  const invalidateWishlist = () => {
+  const invalidateWishlist = (forceRefetch: boolean) => {
+    invalidateWishlistCache();
+    if (!forceRefetch) {
+      return;
+    }
     void queryClient.invalidateQueries({ queryKey: queryKeys.wishlistProductIdsRoot() });
   };
-  const invalidateCompare = () => {
+  const invalidateCompare = (forceRefetch: boolean) => {
+    invalidateCompareCache();
+    if (!forceRefetch) {
+      return;
+    }
     void queryClient.invalidateQueries({ queryKey: queryKeys.compareProductIdsRoot() });
   };
 
-  window.addEventListener('wishlist-updated', invalidateWishlist);
-  window.addEventListener('compare-updated', invalidateCompare);
+  window.addEventListener('wishlist-updated', () => invalidateWishlist(false));
+  window.addEventListener('compare-updated', () => invalidateCompare(false));
   window.addEventListener('auth-updated', () => {
-    invalidateWishlist();
-    invalidateCompare();
+    invalidateWishlist(true);
+    invalidateCompare(true);
   });
 }

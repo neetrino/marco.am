@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import * as jose from "jose";
-import { readAuthSessionToken } from "@/lib/auth/auth-session-cookie";
 import { getCorsAllowedOrigins } from "@/lib/config/deployment-env";
 import {
   AUTH_RESEND_RATE_LIMIT_MAX,
@@ -13,6 +11,7 @@ import {
 import {
   enforceUpstashRateLimit,
 } from "@/lib/middleware/upstash-rate-limit";
+import { getAuthContext } from "@/lib/middleware/auth";
 
 function isUnsafeMethod(method: string): boolean {
   return method !== "GET" && method !== "HEAD" && method !== "OPTIONS";
@@ -56,52 +55,66 @@ function checkSameOriginRequest(request: NextRequest): NextResponse | null {
   );
 }
 
-/** Protect /api/v1/supersudo/* — require valid JWT (signature + expiry). DB check (blocked/deleted) remains in route. */
-async function requireAdminAuth(request: NextRequest): Promise<NextResponse | null> {
-  const authHeader = request.headers.get("authorization");
-  const bearerToken = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
-  const token = bearerToken ?? readAuthSessionToken(request);
+async function requireAdminAuth(request: NextRequest): Promise<{
+  response: NextResponse | null;
+  userId: string | null;
+  roles: string[];
+}> {
+  const { token, decoded } = getAuthContext(request);
 
   if (!token) {
-    return NextResponse.json(
-      {
-        type: "https://api.shop.am/problems/unauthorized",
-        title: "Unauthorized",
-        status: 401,
-        detail: "Missing or invalid Authorization header",
-      },
-      { status: 401 }
-    );
+    return {
+      response: NextResponse.json(
+        {
+          type: "https://api.shop.am/problems/unauthorized",
+          title: "Unauthorized",
+          status: 401,
+          detail: "Missing or invalid Authorization header",
+        },
+        { status: 401 }
+      ),
+      userId: null,
+      roles: [],
+    };
   }
 
-  const secret = process.env.JWT_SECRET;
-  if (!secret) {
-    return NextResponse.json(
-      {
-        type: "https://api.shop.am/problems/internal-error",
-        title: "Internal Server Error",
-        status: 500,
-        detail: "Server configuration error",
-      },
-      { status: 500 }
-    );
+  if (!decoded) {
+    return {
+      response: NextResponse.json(
+        {
+          type: "https://api.shop.am/problems/unauthorized",
+          title: "Unauthorized",
+          status: 401,
+          detail: "Invalid or expired token",
+        },
+        { status: 401 }
+      ),
+      userId: null,
+      roles: [],
+    };
   }
 
-  try {
-    const key = new TextEncoder().encode(secret);
-    await jose.jwtVerify(token, key);
-    return null;
-  } catch {
-    return NextResponse.json(
-      {
-        type: "https://api.shop.am/problems/unauthorized",
-        title: "Unauthorized",
-        status: 401,
-        detail: "Invalid or expired token",
-      },
-      { status: 401 }
-    );
+  if (!Array.isArray(decoded.roles) || !decoded.roles.includes("admin")) {
+    return {
+      response: NextResponse.json(
+        {
+          type: "https://api.shop.am/problems/forbidden",
+          title: "Forbidden",
+          status: 403,
+          detail: "Admin access required",
+        },
+        { status: 403 }
+      ),
+      userId: null,
+      roles: [],
+    };
   }
+
+  return {
+    response: null,
+    userId: decoded.userId,
+    roles: decoded.roles,
+  };
 }
 
 /** Rate limit for auth endpoints (login/register) by IP */
@@ -157,6 +170,19 @@ async function checkAdminUploadRateLimit(request: NextRequest): Promise<NextResp
   );
 }
 
+async function checkCheckoutRateLimit(request: NextRequest): Promise<NextResponse | null> {
+  return enforceUpstashRateLimit(
+    request,
+    {
+      prefix: "ratelimit:checkout",
+      limit: 10,
+      window: "60 s",
+      detail: "Too many checkout attempts. Try again later.",
+    },
+    true
+  );
+}
+
 /** CORS: exact allowlist from env/app URL. For /api/* add CORS headers and handle preflight. */
 function getCorsHeaders(request: NextRequest): Record<string, string> {
   const requestOrigin = request.headers.get("origin");
@@ -187,6 +213,9 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   if (pathname.startsWith("/api/")) {
+    const sanitizedHeaders = new Headers(request.headers);
+    sanitizedHeaders.delete("x-auth-user-id");
+    sanitizedHeaders.delete("x-auth-roles");
     const corsHeaders = getCorsHeaders(request);
     if (request.method === "OPTIONS") {
       return new NextResponse(null, { status: 204, headers: corsHeaders });
@@ -195,14 +224,21 @@ export async function middleware(request: NextRequest) {
     if (sameOriginResponse) {
       return applyCorsHeaders(sameOriginResponse, corsHeaders);
     }
-    const response = NextResponse.next();
-    applyCorsHeaders(response, corsHeaders);
+    let forwardedHeaders = sanitizedHeaders;
 
     if (pathname.startsWith("/api/v1/supersudo/")) {
-      const authRes = await requireAdminAuth(request);
-      if (authRes) {
-        return applyCorsHeaders(authRes, corsHeaders);
+      const authResult = await requireAdminAuth(request);
+      if (authResult.response) {
+        return applyCorsHeaders(authResult.response, corsHeaders);
       }
+      const nextHeaders = new Headers(sanitizedHeaders);
+      if (authResult.userId) {
+        nextHeaders.set("x-auth-user-id", authResult.userId);
+      }
+      if (authResult.roles.length > 0) {
+        nextHeaders.set("x-auth-roles", authResult.roles.join(","));
+      }
+      forwardedHeaders = nextHeaders;
       if (pathname.includes("/upload-") && request.method === "POST") {
         const uploadRateLimitResponse = await checkAdminUploadRateLimit(request);
         if (uploadRateLimitResponse) {
@@ -230,7 +266,18 @@ export async function middleware(request: NextRequest) {
       if (rateLimitResponse) {
         return applyCorsHeaders(rateLimitResponse, corsHeaders);
       }
+    } else if (pathname === "/api/v1/orders/checkout" && request.method === "POST") {
+      const checkoutRateLimitResponse = await checkCheckoutRateLimit(request);
+      if (checkoutRateLimitResponse) {
+        return applyCorsHeaders(checkoutRateLimitResponse, corsHeaders);
+      }
     }
+    const response = NextResponse.next({
+      request: {
+        headers: forwardedHeaders,
+      },
+    });
+    applyCorsHeaders(response, corsHeaders);
     return response;
   }
 

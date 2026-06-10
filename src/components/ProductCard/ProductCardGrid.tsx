@@ -84,6 +84,34 @@ export function ProductCardGrid({
         href={`/products/${product.slug}`}
         productSlug={product.slug}
         prefetchData={false}
+        navigationSeed={{
+          id: product.id,
+          slug: product.slug,
+          title: product.title,
+          image: product.image,
+          brand: product.brand
+            ? {
+                id: product.brand.id,
+                name: product.brand.name,
+                logo: product.brand.logoUrl ?? null,
+              }
+            : null,
+          price: product.price,
+          oldPrice:
+            product.originalPrice && product.originalPrice > product.price
+              ? product.originalPrice
+              : product.compareAtPrice ?? null,
+          discountBadge:
+            product.isSpecialPrice
+              ? { type: 'special_price', value: 0, label: 'special_price' }
+              : product.discountPercent && product.discountPercent > 0
+                ? {
+                    type: 'percentage',
+                    value: product.discountPercent,
+                    label: `-${product.discountPercent}%`,
+                  }
+                : null,
+        }}
         className="block cursor-pointer rounded-t-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-marco-yellow focus-visible:ring-offset-2"
         aria-label={product.title}
       >

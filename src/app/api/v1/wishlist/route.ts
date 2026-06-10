@@ -24,15 +24,16 @@ function resolveCatalogLocale(req: NextRequest): string {
 export async function GET(req: NextRequest) {
   try {
     const user = await authenticateToken(req);
+    const fields = req.nextUrl.searchParams.get("fields") === "ids" ? "ids" : "full";
     const locale = user?.locale ?? resolveCatalogLocale(req);
 
     if (user) {
-      const payload = await getWishlistForUser(user.id, locale);
+      const payload = await getWishlistForUser(user.id, locale, fields);
       return NextResponse.json(payload);
     }
 
     const sessionToken = readWishlistSessionToken(req);
-    const { payload, sessionToken: token } = await getWishlistForGuest(sessionToken, locale);
+    const { payload, sessionToken: token } = await getWishlistForGuest(sessionToken, locale, fields);
     const res = NextResponse.json(payload);
     applyWishlistSessionCookie(res, token);
     return res;

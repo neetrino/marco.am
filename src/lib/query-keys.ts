@@ -27,4 +27,6 @@ export const queryKeys = {
   compareProductIdsRoot: () => ["api", "v1", "compare", "ids"] as const,
   compareProductIds: (lang: LanguageCode) =>
     ["api", "v1", "compare", "ids", lang] as const,
+  cartRoot: () => ["api", "v1", "cart"] as const,
+  cartByAuth: (isLoggedIn: boolean) => ["api", "v1", "cart", isLoggedIn ? "user" : "guest"] as const,
 };

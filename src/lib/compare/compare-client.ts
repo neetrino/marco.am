@@ -106,7 +106,7 @@ export async function fetchCompareProductIds(lang: string): Promise<string[]> {
   if (!inflight) {
     inflight = (async () => {
       const res = await apiClient.get<CompareClientResponse>('/api/v1/compare', {
-        params: { lang },
+        params: { lang, fields: "ids" },
         credentials: 'include',
       });
       const ids = res.compare.items.map((i) => i.productId);
@@ -163,6 +163,9 @@ export async function mergeGuestCompareAfterAuth(): Promise<void> {
     );
     invalidateCompareCache();
     dispatchCompareUpdated();
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('auth-updated'));
+    }
   } catch (error: unknown) {
     logger.devLog('[Compare] merge after auth skipped or failed', { error });
   }

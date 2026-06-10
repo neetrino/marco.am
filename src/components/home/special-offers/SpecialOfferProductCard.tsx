@@ -85,15 +85,44 @@ function SpecialOfferProductCardView({
     <article
       className={`${montserratArm.className} special-offer-card-cutout relative mx-auto flex h-full w-full max-w-[306px] min-h-[420px] flex-col overflow-visible rounded-[32px] bg-[#f6f6f6] shadow-[0_2px_12px_rgba(0,0,0,0.06)] dark:bg-[var(--app-bg)] dark:shadow-[0_6px_24px_rgba(0,0,0,0.3)] md:mx-0 md:w-[306px] md:max-w-none md:min-h-[486px] md:shrink-0`}
     >
-      {/* Full-card PDP target; action buttons stay outside this link */}
       <ProductPdpPrefetchLink
         href={`/products/${product.slug}`}
         productSlug={product.slug}
+        navigationSeed={{
+          id: product.id,
+          slug: product.slug,
+          title: product.title,
+          image: product.image,
+          brand: product.brand
+            ? {
+                id: product.brand.id,
+                name: product.brand.name,
+                logo: product.brand.logoUrl ?? null,
+              }
+            : null,
+          categories: product.categories,
+          price: product.price,
+          oldPrice:
+            product.originalPrice && product.originalPrice > product.price
+              ? product.originalPrice
+              : product.compareAtPrice ?? null,
+          discountBadge:
+            product.isSpecialPrice
+              ? { type: 'special_price', value: 0, label: 'special_price' }
+              : product.discountPercent && product.discountPercent > 0
+                ? {
+                    type: 'percentage',
+                    value: product.discountPercent,
+                    label: `-${product.discountPercent}%`,
+                  }
+                : null,
+        }}
         className="absolute inset-0 z-[1] rounded-[32px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#ffca03] focus-visible:ring-offset-2"
         aria-label={product.title}
       >
         <span className="sr-only">{product.title}</span>
       </ProductPdpPrefetchLink>
+      {/* Full-card PDP target; action buttons stay outside this link */}
       {showWarrantyBadge && warrantyYears ? (
         <SpecialOfferWarrantyBadge years={warrantyYears} />
       ) : null}

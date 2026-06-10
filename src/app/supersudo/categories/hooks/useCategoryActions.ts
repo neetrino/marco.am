@@ -28,7 +28,10 @@ interface UseCategoryActionsReturn {
   setFormData: (data: CategoryFormData) => void;
   handleAddCategory: (fetchCategories: () => Promise<void>) => Promise<void>;
   handleEditCategory: (category: Category) => Promise<void>;
-  handleUpdateCategory: (fetchCategories: () => Promise<void>) => Promise<void>;
+  handleUpdateCategory: (
+    fetchCategories: () => Promise<void>,
+    applyOptimisticCategories?: (updater: (previous: Category[]) => Category[]) => () => void,
+  ) => Promise<void>;
   handleDeleteCategory: (
     categoryId: string,
     categoryTitle: string,
@@ -126,7 +129,7 @@ export function useCategoryActions(): UseCategoryActionsReturn {
       });
       setShowAddModal(false);
       resetForm();
-      await fetchCategories();
+      void fetchCategories();
       notifyShopCategoryTreeUpdated();
       showToast(t('admin.categories.createdSuccess'), 'success');
     } catch (err: unknown) {
@@ -194,7 +197,10 @@ export function useCategoryActions(): UseCategoryActionsReturn {
     setShowEditModal(true);
   };
 
-  const handleUpdateCategory = async (fetchCategories: () => Promise<void>) => {
+  const handleUpdateCategory = async (
+    fetchCategories: () => Promise<void>,
+    applyOptimisticCategories?: (updater: (previous: Category[]) => Category[]) => () => void,
+  ) => {
     const titles = {
       hy: formData.titles.hy.trim(),
       en: formData.titles.en.trim(),
@@ -205,7 +211,9 @@ export function useCategoryActions(): UseCategoryActionsReturn {
       return;
     }
 
+    const editingCategoryId = editingCategory.id;
     setSaving(true);
+    let rollback: (() => void) | null = null;
     try {
       const writeLocale = categoryWriteLocale(getStoredLanguage()) as CategoryLocale;
       const localizedTitle = titles[writeLocale] || titles.en;
@@ -234,14 +242,55 @@ export function useCategoryActions(): UseCategoryActionsReturn {
         payload.subcategoryIds = nextSubcategoryIds;
       }
 
-      await apiClient.put(`/api/v1/supersudo/categories/${editingCategory.id}`, payload);
+      if (applyOptimisticCategories) {
+        const initialSubcategoryIds = new Set(initialTreeSelection.subcategoryIds);
+        const nextSubcategoryIdSet = new Set(nextSubcategoryIds);
+        rollback = applyOptimisticCategories((previous) =>
+          previous.map((category) => {
+            if (category.id === editingCategoryId) {
+              return {
+                ...category,
+                title: localizedTitle,
+                translations: titles,
+                seoTitle: formData.seoTitle.trim() || null,
+                seoDescription: formData.seoDescription.trim() || null,
+                media: formData.imageUrl.trim() ? [formData.imageUrl.trim()] : [],
+                requiresSizes: formData.requiresSizes,
+                parentId: nextParentId,
+              };
+            }
+            if (!subcategoriesChanged) {
+              return category;
+            }
+            if (nextSubcategoryIdSet.has(category.id)) {
+              return {
+                ...category,
+                parentId: editingCategoryId,
+              };
+            }
+            if (
+              initialSubcategoryIds.has(category.id) &&
+              !nextSubcategoryIdSet.has(category.id) &&
+              category.parentId === editingCategory.id
+            ) {
+              return {
+                ...category,
+                parentId: null,
+              };
+            }
+            return category;
+          }),
+        );
+      }
+
       setShowEditModal(false);
       setEditingCategory(null);
       resetForm();
-      await fetchCategories();
+      await apiClient.put(`/api/v1/supersudo/categories/${editingCategoryId}`, payload);
       notifyShopCategoryTreeUpdated();
       showToast(t('admin.categories.updatedSuccess'), 'success');
     } catch (err: unknown) {
+      rollback?.();
       logger.error('Error updating category', { error: err });
       const errorMessage = err && typeof err === 'object' && 'data' in err
         ? (err as { data?: { detail?: string } }).data?.detail
