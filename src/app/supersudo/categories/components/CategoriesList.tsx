@@ -84,6 +84,13 @@ export function CategoriesList({
   ).length;
   const allOnPageSelected = paginatedCategories.length > 0 && selectedOnPage === paginatedCategories.length;
   const isRootView = viewMode === 'roots';
+  const categoryOrderById = useMemo(() => {
+    const order = new Map<string, number>();
+    lookup.forEach((category, index) => {
+      order.set(category.id, index);
+    });
+    return order;
+  }, [lookup]);
   const childrenByParentId = useMemo(() => {
     const map = new Map<string, Category[]>();
     lookup.forEach((category) => {
@@ -98,18 +105,14 @@ export function CategoriesList({
     map.forEach((items, key) => {
       map.set(
         key,
-        [...items].sort((a, b) =>
-          getLocalizedCategoryTitle(a, activeLocale).localeCompare(
-            getLocalizedCategoryTitle(b, activeLocale),
-            undefined,
-            { sensitivity: 'base' },
-          ),
+        [...items].sort(
+          (a, b) => (categoryOrderById.get(a.id) ?? 0) - (categoryOrderById.get(b.id) ?? 0),
         ),
       );
     });
 
     return map;
-  }, [activeLocale, lookup]);
+  }, [categoryOrderById, lookup]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -168,14 +171,59 @@ export function CategoriesList({
           const nestedChildren = childrenByParentId.get(child.id) ?? [];
           const nestedSubcategoryCount = nestedChildren.length;
           const childExpanded = expandedCategoryIds.includes(child.id);
+          const isNestedDragging = draggingCategoryId === child.id;
+          const isNestedDragOver = dragOverCategoryId === child.id;
 
           return (
             <div
               key={child.id}
-              className="rounded-lg border border-slate-200 bg-slate-50/70 px-3 py-2"
+              draggable
+              onDragStart={(event) => {
+                event.dataTransfer.effectAllowed = 'move';
+                event.dataTransfer.setData('text/plain', child.id);
+                onDragStart(child.id);
+              }}
+              onDragOver={(event) => {
+                event.preventDefault();
+                event.dataTransfer.dropEffect = 'move';
+              }}
+              onDragEnter={() => onDragEnter(child.id)}
+              onDragLeave={() => {
+                if (isNestedDragOver) {
+                  onDragEnter(null);
+                }
+              }}
+              onDrop={async (event) => {
+                event.preventDefault();
+                const sourceId = event.dataTransfer.getData('text/plain');
+                if (!sourceId || sourceId === child.id) {
+                  onDragEnd();
+                  return;
+                }
+                await onReorder(sourceId, child.id, 'subcategories');
+              }}
+              onDragEnd={onDragEnd}
+              className={`rounded-lg border border-slate-200 bg-slate-50/70 px-3 py-2 transition-colors ${
+                isNestedDragOver ? 'bg-amber-100/70' : ''
+              } ${isNestedDragging ? 'opacity-60' : ''}`}
             >
               <div className="flex items-center justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-2.5">
+                  <button
+                    type="button"
+                    className="inline-flex h-8 w-8 cursor-grab items-center justify-center rounded-md border border-slate-200 text-slate-400 hover:border-amber-300 hover:text-amber-700 active:cursor-grabbing"
+                    title={t('admin.categories.dragToReorder')}
+                    aria-label={t('admin.categories.dragToReorder')}
+                  >
+                    <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+                      <circle cx="6" cy="5" r="1.4" />
+                      <circle cx="6" cy="10" r="1.4" />
+                      <circle cx="6" cy="15" r="1.4" />
+                      <circle cx="12" cy="5" r="1.4" />
+                      <circle cx="12" cy="10" r="1.4" />
+                      <circle cx="12" cy="15" r="1.4" />
+                    </svg>
+                  </button>
                   <div className="shrink-0">{renderSubcategoryImage(child)}</div>
                   <div className="min-w-0">
                     {nestedChildren.length > 0 ? (
@@ -360,10 +408,9 @@ export function CategoriesList({
               <col className="w-[4%]" />
               <col className="w-[4%]" />
               <col className="w-[6%]" />
-              <col className="w-[28%]" />
-              <col className="w-[16%]" />
-              <col className="w-[13%]" />
-              <col className="w-[9%]" />
+              <col className="w-[42%]" />
+              <col className="w-[14%]" />
+              <col className="w-[10%]" />
               <col className="w-[20%]" />
             </colgroup>
             <thead className="bg-slate-50/90">
@@ -388,9 +435,6 @@ export function CategoriesList({
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide whitespace-nowrap text-slate-500">
                   {t('admin.categories.tableTitle')}
-                </th>
-                <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide whitespace-nowrap text-slate-500">
-                  {t('admin.categories.tableSlug')}
                 </th>
                 <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide whitespace-nowrap text-slate-500">
                   {isRootView ? t('admin.categories.tableSubcategoryCount') : t('admin.categories.tableParent')}
@@ -444,7 +488,7 @@ export function CategoriesList({
                 if (isRootView && isExpanded && childCategories.length > 0) {
                   rows.push(
                     <tr key={`${category.id}-children`} id={`category-subtree-${category.id}`}>
-                      <td colSpan={8} className="bg-gradient-to-r from-amber-50/70 to-slate-50 px-4 py-3">
+                      <td colSpan={7} className="bg-gradient-to-r from-amber-50/70 to-slate-50 px-4 py-3">
                         <div className="rounded-xl border border-amber-200/70 bg-white/90 p-3 shadow-sm">
                           <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-amber-800">
                             {t('admin.categories.subcategories')}

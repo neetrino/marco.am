@@ -40,7 +40,7 @@ function SubcategoryPillRow({
     >
       <span className="flex min-w-0 flex-1 items-center gap-2 md:gap-3">
         <SubcategoryIcon icon={row.icon} imageSrc={imageSrc} />
-        <span className="min-w-0 truncate text-left text-sm font-normal leading-[18px] tracking-[0.14px] !text-[#383838] dark:!text-[#383838]">
+        <span className="min-w-0 truncate text-left text-sm font-bold leading-[18px] tracking-[0.14px] !text-[#383838] dark:!text-[#383838]">
           {row.title}
         </span>
       </span>
@@ -130,7 +130,7 @@ export function CategoryMegaSubcategoryPills({
       <div className="shrink-0 px-2.5 pt-2.5">
         <h2
           id={sectionHeadingId}
-          className={`${headerCategoryNavFont.className} text-[22px] font-bold uppercase leading-tight tracking-[-0.02em] !text-[#383838] md:text-[28px] md:leading-[1.1] lg:text-[34px] lg:leading-[39px] dark:!text-[#383838]`}
+          className={`${headerCategoryNavFont.className} text-[20px] font-bold uppercase leading-tight tracking-[-0.02em] !text-[#383838] md:text-[26px] md:leading-[1.1] lg:text-[32px] lg:leading-[37px] dark:!text-[#383838]`}
         >
           {sectionTitle}
         </h2>
@@ -159,10 +159,10 @@ export function CategoryMegaSubcategoryPills({
                       key={descendant.id}
                       href={`/products?category=${descendant.slug}`}
                       onClick={onNavigate}
-                      className={`${headerCategoryNavFont.className} inline-flex min-h-[34px] items-center justify-between gap-2 rounded-[12px] border border-marco-border/80 bg-white px-2 py-1 text-xs leading-4 !text-[#383838] transition-[filter] hover:brightness-[0.98] dark:!text-[#383838]`}
+                      className={`${headerCategoryNavFont.className} inline-flex min-h-[34px] items-center justify-between gap-2 rounded-[12px] border border-marco-border/80 bg-white px-2 py-1 text-sm leading-5 !text-[#383838] transition-[filter] hover:brightness-[0.98] dark:!text-[#383838]`}
                     >
                       <span className="min-w-0 truncate">{row.title}</span>
-                      <span className="shrink-0 rounded-full bg-black/8 px-1.5 py-0.5 text-[10px] font-semibold">
+                      <span className="shrink-0 rounded-full bg-black/8 px-1.5 py-0.5 text-xs font-semibold">
                         {descendantCount}
                       </span>
                     </Link>

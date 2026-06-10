@@ -1,12 +1,9 @@
 'use client';
 
-import { useMemo, useState, type ChangeEvent } from 'react';
+import { useMemo, useState } from 'react';
 import { Button, Input } from '@shop/ui';
 import { useTranslation } from '../../../../lib/i18n-client';
 import { t as translateByLocale } from '../../../../lib/i18n';
-import { processImageFile, toDomSafeImgSrcString, toSafeImgAttributeSrc } from '../../../../lib/utils/image-utils';
-import { showToast } from '../../../../components/Toast';
-import { logger } from '../../../../lib/utils/logger';
 import { getStoredLanguage } from '../../../../lib/language';
 import { getLocalizedCategoryTitle } from '../utils';
 import type { Category, CategoryFormData } from '../types';
@@ -46,43 +43,22 @@ export function AddCategoryModal({
   const { lang } = useTranslation();
   const initialLocaleTab = normalizeCategoryLocale(lang ?? getStoredLanguage());
   const [activeTitleLocaleTab, setActiveTitleLocaleTab] = useState<CategoryLocale>(initialLocaleTab);
+  const [parentCategorySearch, setParentCategorySearch] = useState('');
   const mt = (path: string) => translateByLocale(activeTitleLocaleTab, path);
   const rootCategories = categories.filter((category) => !category.parentId);
   const isSubcategoryMode = mode === 'subcategory';
-  const [imageUploading, setImageUploading] = useState(false);
-  const safeImagePreviewUrl = useMemo(
-    () => toSafeImgAttributeSrc(formData.imageUrl.trim()),
-    [formData.imageUrl],
-  );
-
-  const handleImageFile = async (event: ChangeEvent<HTMLInputElement>) => {
-    const imageFile = event.target.files?.[0];
-    if (!imageFile) {
-      return;
+  const filteredRootCategories = useMemo(() => {
+    const query = parentCategorySearch.trim().toLowerCase();
+    if (!query) {
+      return rootCategories;
     }
 
-    try {
-      setImageUploading(true);
-      const preferredType =
-        imageFile.type === 'image/png' || imageFile.type === 'image/webp'
-          ? imageFile.type
-          : 'image/jpeg';
-      const base64 = await processImageFile(imageFile, {
-        maxSizeMB: 1.5,
-        maxWidthOrHeight: 800,
-        useWebWorker: true,
-        fileType: preferredType,
-        initialQuality: 0.85,
-      });
-      onFormDataChange({ ...formData, imageUrl: base64 });
-    } catch (err: unknown) {
-      logger.error('Category image upload failed', { error: err });
-      showToast(mt('admin.categories.imageUploadFailed'), 'error');
-    } finally {
-      setImageUploading(false);
-      event.target.value = '';
-    }
-  };
+    return rootCategories.filter((category) => {
+      const title = getLocalizedCategoryTitle(category, activeTitleLocaleTab).toLowerCase();
+      const slug = category.slug.toLowerCase();
+      return title.includes(query) || slug.includes(query);
+    });
+  }, [activeTitleLocaleTab, parentCategorySearch, rootCategories]);
 
   if (!isOpen) return null;
 
@@ -175,6 +151,14 @@ export function AddCategoryModal({
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   {mt('admin.categories.parentCategory')} *
                 </label>
+                <input
+                  type="search"
+                  value={parentCategorySearch}
+                  onChange={(event) => setParentCategorySearch(event.target.value)}
+                  placeholder={mt('admin.categories.searchPlaceholder')}
+                  className="admin-field mb-2"
+                  aria-label={mt('admin.categories.searchLabel')}
+                />
                 <select
                   value={formData.parentId}
                   onChange={(e) => onFormDataChange({ ...formData, parentId: e.target.value })}
@@ -184,7 +168,7 @@ export function AddCategoryModal({
                   <option value="">
                     {mt('admin.categories.selectParentCategory')}
                   </option>
-                  {rootCategories.map((category) => (
+                  {filteredRootCategories.map((category) => (
                     <option key={category.id} value={category.id}>
                       {getLocalizedCategoryTitle(category, activeTitleLocaleTab)}
                     </option>
@@ -192,45 +176,6 @@ export function AddCategoryModal({
                 </select>
               </div>
             ) : null}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {mt('admin.categories.imageLabel')}
-              </label>
-              <div className="flex flex-wrap items-center gap-2">
-                <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="sr-only"
-                    disabled={imageUploading || saving}
-                    onChange={handleImageFile}
-                  />
-                  {imageUploading
-                    ? mt('admin.categories.imageUploading')
-                    : mt('admin.categories.imageUploadButton')}
-                </label>
-              </div>
-              {safeImagePreviewUrl ? (
-                <div className="mt-3 flex justify-center rounded-lg border border-slate-200 bg-slate-50 p-3">
-                  <img
-                    src={toDomSafeImgSrcString(safeImagePreviewUrl)}
-                    alt=""
-                    className="max-h-28 max-w-full object-contain"
-                  />
-                </div>
-              ) : null}
-            </div>
-            <div>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={formData.requiresSizes}
-                  onChange={(e) => onFormDataChange({ ...formData, requiresSizes: e.target.checked })}
-                  className="h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-500"
-                />
-                <span className="text-sm text-gray-700">{mt('admin.categories.requiresSizes')}</span>
-              </label>
-            </div>
           </div>
 
           <div className="flex gap-3 border-t border-gray-200 px-5 py-4 sm:px-6">
@@ -239,7 +184,6 @@ export function AddCategoryModal({
               onClick={onSubmit}
               disabled={
                 saving ||
-                imageUploading ||
                 !formData.titles.hy.trim() ||
                 !formData.titles.en.trim() ||
                 !formData.titles.ru.trim()

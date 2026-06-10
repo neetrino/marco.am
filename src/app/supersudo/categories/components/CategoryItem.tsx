@@ -1,7 +1,6 @@
 'use client';
 
 import type { DragEvent } from 'react';
-import { Button } from '@shop/ui';
 import { useTranslation } from '../../../../lib/i18n-client';
 import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '../../../../lib/utils/image-utils';
 import type { AdminCategoryView } from '../utils';
@@ -63,8 +62,6 @@ export function CategoryItem({
   const { t } = useTranslation();
   const safeCategoryImage = toSafeImgAttributeSrc(category.media?.[0] ?? null);
   const isRootView = viewMode === 'roots';
-  const rootBadge = t('admin.categories.badgeRoot');
-  const subBadge = t('admin.categories.badgeSubcategory');
 
   const handleDragStart = (event: DragEvent<HTMLTableRowElement>) => {
     event.dataTransfer.effectAllowed = 'move';
@@ -145,7 +142,7 @@ export function CategoryItem({
         )}
       </td>
       <td className="px-3 py-3">
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="min-w-0">
           {hasExpandableChildren && onToggleExpand ? (
             <button
               type="button"
@@ -173,53 +170,48 @@ export function CategoryItem({
               {categoryTitle}
             </button>
           ) : (
-            <span className="text-sm font-semibold text-slate-900 group-hover:text-amber-900">
+            <span className="block text-sm font-semibold text-slate-900 group-hover:text-amber-900">
               {categoryTitle}
             </span>
           )}
-          <span
-            className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
-              isRootView
-                ? 'border border-amber-200 bg-amber-100 text-amber-900'
-                : 'border border-sky-200 bg-sky-50 text-sky-900'
-            }`}
-          >
-            {isRootView ? rootBadge : subBadge}
-          </span>
-          {category.requiresSizes && (
-            <span className="rounded-full border border-slate-300 bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">
-              {t('admin.categories.sizesBadge')}
-            </span>
-          )}
+          <p className="mt-1 truncate text-xs text-slate-500">{category.slug}</p>
         </div>
       </td>
-      <td className="px-3 py-3 text-sm text-slate-600">{category.slug}</td>
       {isRootView ? (
-        <td className="px-3 py-3 text-sm font-medium tabular-nums text-slate-700">
-          {subcategoryCount > 0
-            ? subcategoryCount
-            : t('admin.categories.noSubcategoriesShort')}
+        <td className="px-3 py-3">
+          <span
+            className="inline-flex min-w-8 items-center justify-center rounded-md border border-amber-200 bg-amber-100 px-2 py-0.5 text-xs font-semibold tabular-nums text-amber-900"
+            title={t('admin.categories.tableSubcategoryCount')}
+          >
+            {subcategoryCount > 0
+              ? subcategoryCount
+              : t('admin.categories.noSubcategoriesShort')}
+          </span>
         </td>
       ) : (
         <td className="px-3 py-3 text-sm text-slate-600">
           {parentCategoryTitle || t('admin.categories.noParent')}
         </td>
       )}
-      <td className="px-3 py-3 text-sm font-medium tabular-nums text-slate-700">
-        {productCount}
+      <td className="px-3 py-3">
+        <span
+          className="inline-flex min-w-10 items-center justify-center rounded-md border border-slate-200 bg-white px-2 py-0.5 text-xs font-semibold tabular-nums text-slate-700"
+          title={t('admin.categories.tableProductCount')}
+        >
+          {productCount}
+        </span>
       </td>
       <td className="px-2 py-3">
         <div className="grid grid-cols-5 justify-items-center gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
+          <button
+            type="button"
             onClick={() => void onToggleCategoryKind(category)}
             disabled={moving || converting}
-            className={`h-10 w-10 border p-0 transition-colors ${
+            className={`inline-flex h-10 w-10 items-center justify-center rounded-md border transition-colors ${
               category.parentId
                 ? 'border-sky-200 bg-sky-50 text-sky-700 hover:border-sky-300 hover:bg-sky-100'
                 : 'border-violet-200 bg-violet-50 text-violet-700 hover:border-violet-300 hover:bg-violet-100'
-            }`}
+            } ${converting ? 'cursor-not-allowed opacity-60' : ''}`}
             aria-label={
               category.parentId
                 ? t('admin.categories.convertToMainCategory')
@@ -250,13 +242,12 @@ export function CategoryItem({
                 )}
               </svg>
             )}
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
+          </button>
+          <button
+            type="button"
             onClick={() => onToggleHeaderVisibility(category, !category.showInHeader)}
             disabled={moving || converting}
-            className={`h-10 w-10 border p-0 transition-colors ${
+            className={`inline-flex h-10 w-10 items-center justify-center rounded-md border transition-colors ${
               category.showInHeader
                 ? 'border-amber-300 bg-amber-50 text-amber-600 hover:bg-amber-100'
                 : 'border-slate-200 bg-white text-slate-400 hover:border-slate-300 hover:text-slate-600'
@@ -275,26 +266,24 @@ export function CategoryItem({
             <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
               <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.044 3.214a1 1 0 00.95.69h3.38c.969 0 1.371 1.24.588 1.81l-2.736 1.988a1 1 0 00-.364 1.118l1.045 3.214c.3.921-.755 1.688-1.539 1.118l-2.737-1.988a1 1 0 00-1.175 0l-2.737 1.988c-.783.57-1.838-.197-1.539-1.118l1.045-3.214a1 1 0 00-.364-1.118L2.087 8.64c-.783-.57-.38-1.81.588-1.81h3.38a1 1 0 00.95-.69l1.044-3.214z" />
             </svg>
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
+          </button>
+          <button
+            type="button"
             onClick={() => onEdit(category)}
             disabled={moving || converting}
-            className="h-10 w-10 border border-slate-200 bg-white p-0 text-slate-700 hover:border-amber-300 hover:bg-amber-100 hover:text-amber-900"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-700 transition-colors hover:border-amber-300 hover:bg-amber-50 hover:text-amber-900"
             aria-label={t('admin.common.edit')}
             title={t('admin.common.edit')}
           >
             <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
               <path d="M13.586 3.586a2 2 0 112.828 2.828l-8.9 8.9a1 1 0 01-.42.26l-3 1a1 1 0 01-1.265-1.265l1-3a1 1 0 01.26-.42l8.9-8.9zM12.172 5 5 12.172V14h1.828L14 6.828 12.172 5z" />
             </svg>
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
+          </button>
+          <button
+            type="button"
             onClick={() => onDelete(category.id, categoryTitle)}
             disabled={moving || converting}
-            className="h-10 w-10 border border-red-100 bg-red-50/70 p-0 text-red-600 hover:border-red-200 hover:bg-red-100 hover:text-red-700"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-red-100 bg-red-50 text-red-600 transition-colors hover:border-red-200 hover:bg-red-100 hover:text-red-700"
             aria-label={t('admin.common.delete')}
             title={t('admin.common.delete')}
           >
@@ -305,7 +294,7 @@ export function CategoryItem({
                 clipRule="evenodd"
               />
             </svg>
-          </Button>
+          </button>
         </div>
       </td>
     </tr>

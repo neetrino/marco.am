@@ -43,6 +43,11 @@ interface UseCategoryActionsReturn {
   resetForm: () => void;
 }
 
+type CategoryTreeSelectionSnapshot = {
+  parentId: string | null;
+  subcategoryIds: string[];
+};
+
 const initialFormData: CategoryFormData = {
   titles: {
     hy: '',
@@ -57,6 +62,23 @@ const initialFormData: CategoryFormData = {
   subcategoryIds: [],
 };
 
+const EMPTY_TREE_SELECTION_SNAPSHOT: CategoryTreeSelectionSnapshot = {
+  parentId: null,
+  subcategoryIds: [],
+};
+
+function toSortedUniqueIds(ids: string[]): string[] {
+  return [...new Set(ids)].sort();
+}
+
+function sameSortedIds(left: string[], right: string[]): boolean {
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  return left.every((id, index) => id === right[index]);
+}
+
 /**
  * Hook for category CRUD operations
  */
@@ -68,9 +90,13 @@ export function useCategoryActions(): UseCategoryActionsReturn {
   const [formData, setFormData] = useState<CategoryFormData>(initialFormData);
   const [saving, setSaving] = useState(false);
   const [deletingBulk, setDeletingBulk] = useState(false);
+  const [initialTreeSelection, setInitialTreeSelection] = useState<CategoryTreeSelectionSnapshot>(
+    EMPTY_TREE_SELECTION_SNAPSHOT,
+  );
 
   const resetForm = () => {
     setFormData(initialFormData);
+    setInitialTreeSelection(EMPTY_TREE_SELECTION_SNAPSHOT);
   };
 
   const handleAddCategory = async (fetchCategories: () => Promise<void>) => {
@@ -138,6 +164,12 @@ export function useCategoryActions(): UseCategoryActionsReturn {
         requiresSizes: category.requiresSizes || false,
         subcategoryIds: categoryWithChildren.children?.map(child => child.id) || [],
       });
+      setInitialTreeSelection({
+        parentId: categoryWithChildren.parentId ?? category.parentId ?? null,
+        subcategoryIds: toSortedUniqueIds(
+          categoryWithChildren.children?.map((child) => child.id) || [],
+        ),
+      });
     } catch (err: unknown) {
       logger.error('Error fetching category children', { error: err });
       setFormData({
@@ -151,6 +183,10 @@ export function useCategoryActions(): UseCategoryActionsReturn {
         imageUrl: category.media?.[0] || '',
         parentId: category.parentId || '',
         requiresSizes: category.requiresSizes || false,
+        subcategoryIds: [],
+      });
+      setInitialTreeSelection({
+        parentId: category.parentId ?? null,
         subcategoryIds: [],
       });
     }
@@ -173,17 +209,32 @@ export function useCategoryActions(): UseCategoryActionsReturn {
     try {
       const writeLocale = categoryWriteLocale(getStoredLanguage()) as CategoryLocale;
       const localizedTitle = titles[writeLocale] || titles.en;
-      await apiClient.put(`/api/v1/supersudo/categories/${editingCategory.id}`, {
+      const nextParentId = formData.parentId || null;
+      const nextSubcategoryIds = toSortedUniqueIds(formData.subcategoryIds);
+      const parentChanged = nextParentId !== initialTreeSelection.parentId;
+      const subcategoriesChanged = !sameSortedIds(
+        nextSubcategoryIds,
+        initialTreeSelection.subcategoryIds,
+      );
+
+      const payload: Record<string, unknown> = {
         title: localizedTitle,
         translations: titles,
         seoTitle: formData.seoTitle.trim() || null,
         seoDescription: formData.seoDescription.trim() || null,
         media: formData.imageUrl.trim() ? [formData.imageUrl.trim()] : [],
-        parentId: formData.parentId || null,
         requiresSizes: formData.requiresSizes,
-        subcategoryIds: formData.subcategoryIds,
         locale: writeLocale,
-      });
+      };
+
+      if (parentChanged) {
+        payload.parentId = nextParentId;
+      }
+      if (subcategoriesChanged) {
+        payload.subcategoryIds = nextSubcategoryIds;
+      }
+
+      await apiClient.put(`/api/v1/supersudo/categories/${editingCategory.id}`, payload);
       setShowEditModal(false);
       setEditingCategory(null);
       resetForm();

@@ -1,6 +1,11 @@
 import { db } from "@white-shop/db";
 import { invalidateCategoryPublicCaches } from "@/lib/services/read-through-json-cache";
-import { toSlug } from "@/lib/utils/slug";
+import {
+  normalizeProductCategoryLinks,
+  toProductCategoriesSet,
+  type CategoryGraph,
+} from "@/lib/services/product-category-links.service";
+import { buildBaseCategorySlug, collectDescendantIds } from "@/lib/services/admin/admin-categories.helpers";
 import { logger } from "@/lib/utils/logger";
 
 type CategoryTranslation = {
@@ -72,10 +77,24 @@ type CategoryUpdateInput = {
 type SupportedCategoryLocale = "hy" | "en" | "ru";
 type CategoryMoveDirection = "up" | "down";
 type CategoryMoveScope = "roots" | "subcategories";
+const MAX_CATEGORY_TREE_DEPTH = 64;
+const LEGACY_AUTO_SLUG_PATTERN = /^cat-[a-z0-9]+$/;
+
+function toSortedUniqueIds(ids: string[]): string[] {
+  return [...new Set(ids)].sort();
+}
+
+function sameSortedIds(left: string[], right: string[]): boolean {
+  if (left.length !== right.length) {
+    return false;
+  }
+  return left.every((id, index) => id === right[index]);
+}
 
 class AdminCategoriesService {
   private readonly defaultLocale = "en";
   private readonly supportedLocales: SupportedCategoryLocale[] = ["hy", "en", "ru"];
+  private didRepairLegacyCategorySlugs = false;
 
   private buildProblemError(status: number, title: string, detail: string): ProblemError {
     const typeByStatus = {
@@ -170,7 +189,13 @@ class AdminCategoriesService {
   }
 
   private normalizeLocale(locale?: string): string {
-    return (locale ?? this.defaultLocale).trim().toLowerCase();
+    const normalized = (locale ?? this.defaultLocale).trim().toLowerCase();
+    if (normalized === "ka") {
+      return "en";
+    }
+    return this.supportedLocales.includes(normalized as SupportedCategoryLocale)
+      ? normalized
+      : this.defaultLocale;
   }
 
   private normalizeTitle(title: string): string {
@@ -246,35 +271,92 @@ class AdminCategoriesService {
     return normalized;
   }
 
-  /**
-   * `toSlug` only keeps [a-z0-9]; Armenian-only titles become "" and break URLs / fullPath.
-   */
-  private stableSlugFromCategoryId(categoryId: string): string {
-    const tail = categoryId.replace(/[^a-z0-9]/gi, "").toLowerCase();
-    return tail.length > 0 ? `cat-${tail}` : "cat-category";
-  }
-
-  private slugFromTitleOrCategoryId(title: string, categoryId: string): string {
-    const fromTitle = toSlug(title);
-    return fromTitle.length > 0 ? fromTitle : this.stableSlugFromCategoryId(categoryId);
-  }
-
-  private collectDescendantIds(rootCategoryId: string, childMap: Map<string, string[]>): string[] {
-    const queue = [rootCategoryId];
-    const descendants: string[] = [];
-
-    while (queue.length > 0) {
-      const currentId = queue.shift();
-      if (!currentId) {
-        continue;
-      }
-
-      descendants.push(currentId);
-      const children = childMap.get(currentId) ?? [];
-      queue.push(...children);
+  private async buildUniqueCategorySlug(
+    baseSlug: string,
+    locale: string,
+    excludeCategoryId?: string,
+  ): Promise<string> {
+    const existingTranslations = await db.categoryTranslation.findMany({
+      where: {
+        locale,
+        slug: {
+          startsWith: baseSlug,
+        },
+        ...(excludeCategoryId
+          ? {
+              categoryId: {
+                not: excludeCategoryId,
+              },
+            }
+          : {}),
+      },
+      select: {
+        slug: true,
+      },
+    });
+    const existingSlugs = new Set(existingTranslations.map((item) => item.slug));
+    if (!existingSlugs.has(baseSlug)) {
+      return baseSlug;
     }
 
-    return descendants;
+    let suffix = 2;
+    while (existingSlugs.has(`${baseSlug}-${suffix}`)) {
+      suffix += 1;
+    }
+    return `${baseSlug}-${suffix}`;
+  }
+
+  private async ensureLegacyCategorySlugsRepaired(): Promise<void> {
+    if (this.didRepairLegacyCategorySlugs) {
+      return;
+    }
+    this.didRepairLegacyCategorySlugs = true;
+
+    const legacyTranslations = await db.categoryTranslation.findMany({
+      where: {
+        slug: {
+          startsWith: "cat-",
+        },
+      },
+      select: {
+        id: true,
+        categoryId: true,
+        locale: true,
+        title: true,
+        slug: true,
+      },
+    });
+    const candidates = legacyTranslations.filter((translation) =>
+      LEGACY_AUTO_SLUG_PATTERN.test(translation.slug),
+    );
+    if (candidates.length === 0) {
+      return;
+    }
+
+    const touchedCategoryIds = new Set<string>();
+    for (const translation of candidates) {
+      const nextSlug = await this.buildUniqueCategorySlug(
+        buildBaseCategorySlug(translation.title),
+        translation.locale,
+        translation.categoryId,
+      );
+      if (nextSlug === translation.slug) {
+        continue;
+      }
+      await db.categoryTranslation.update({
+        where: { id: translation.id },
+        data: { slug: nextSlug },
+      });
+      touchedCategoryIds.add(translation.categoryId);
+    }
+
+    if (touchedCategoryIds.size === 0) {
+      return;
+    }
+    for (const categoryId of touchedCategoryIds) {
+      await this.rebuildFullPathForSubtree(categoryId);
+    }
+    await invalidateCategoryPublicCaches();
   }
 
   private async rebuildFullPathForSubtree(rootCategoryId: string): Promise<void> {
@@ -308,7 +390,7 @@ class AdminCategoriesService {
       childMap.set(category.parentId, children);
     });
 
-    const subtreeIds = this.collectDescendantIds(rootCategoryId, childMap);
+    const subtreeIds = collectDescendantIds(rootCategoryId, childMap);
     if (subtreeIds.length === 0) {
       return;
     }
@@ -419,10 +501,138 @@ class AdminCategoriesService {
     }
   }
 
+  private isAncestorInGraph(
+    ancestorId: string,
+    descendantId: string,
+    categoryGraph: CategoryGraph,
+  ): boolean {
+    let currentId: string | null = descendantId;
+    let guard = 0;
+    while (currentId && guard < MAX_CATEGORY_TREE_DEPTH) {
+      guard += 1;
+      const category = categoryGraph.get(currentId);
+      if (!category?.parentId) {
+        return false;
+      }
+      if (category.parentId === ancestorId) {
+        return true;
+      }
+      currentId = category.parentId;
+    }
+    return false;
+  }
+
+  private deriveExplicitCategoryIds(
+    categoryIds: string[],
+    categoryGraph: CategoryGraph,
+  ): string[] {
+    const uniqueValidIds = [...new Set(categoryIds)].filter((id) => categoryGraph.has(id));
+    return uniqueValidIds.filter(
+      (id) =>
+        !uniqueValidIds.some(
+          (otherId) => otherId !== id && this.isAncestorInGraph(id, otherId, categoryGraph),
+        ),
+    );
+  }
+
+  private async reindexProductCategoryLinksForCategoryTreeChange(
+    changedCategoryIdsInput: string[],
+  ): Promise<void> {
+    const changedCategoryIds = [...new Set(changedCategoryIdsInput.filter(Boolean))];
+    if (changedCategoryIds.length === 0) {
+      return;
+    }
+
+    const affectedProducts = await db.product.findMany({
+      where: {
+        deletedAt: null,
+        OR: [
+          { primaryCategoryId: { in: changedCategoryIds } },
+          { categoryIds: { hasSome: changedCategoryIds } },
+        ],
+      },
+      select: {
+        id: true,
+        primaryCategoryId: true,
+        categoryIds: true,
+      },
+    });
+    if (affectedProducts.length === 0) {
+      return;
+    }
+
+    const categories = await db.category.findMany({
+      where: { deletedAt: null },
+      select: { id: true, parentId: true },
+    });
+    const categoryGraph: CategoryGraph = new Map(
+      categories.map((category) => [
+        category.id,
+        {
+          id: category.id,
+          parentId: category.parentId,
+        },
+      ]),
+    );
+
+    const updates: Array<{
+      id: string;
+      primaryCategoryId: string | null;
+      categoryIds: string[];
+    }> = [];
+
+    for (const product of affectedProducts) {
+      const explicitCategoryIds = this.deriveExplicitCategoryIds(product.categoryIds, categoryGraph);
+      const normalizedLinks = await normalizeProductCategoryLinks(
+        {
+          primaryCategoryId: product.primaryCategoryId,
+          categoryIds: explicitCategoryIds,
+        },
+        undefined,
+        categoryGraph,
+      );
+      const primaryChanged = normalizedLinks.primaryCategoryId !== product.primaryCategoryId;
+      const categoryIdsChanged =
+        normalizedLinks.categoryIds.length !== product.categoryIds.length ||
+        normalizedLinks.categoryIds.some((id, index) => id !== product.categoryIds[index]);
+
+      if (!primaryChanged && !categoryIdsChanged) {
+        continue;
+      }
+      updates.push({
+        id: product.id,
+        primaryCategoryId: normalizedLinks.primaryCategoryId,
+        categoryIds: normalizedLinks.categoryIds,
+      });
+    }
+
+    if (updates.length === 0) {
+      return;
+    }
+
+    const chunkSize = 50;
+    for (let index = 0; index < updates.length; index += chunkSize) {
+      const chunk = updates.slice(index, index + chunkSize);
+      await db.$transaction(
+        chunk.map((update) =>
+          db.product.update({
+            where: { id: update.id },
+            data: {
+              primaryCategoryId: update.primaryCategoryId,
+              categoryIds: update.categoryIds,
+              categories: toProductCategoriesSet(update.categoryIds),
+            },
+          }),
+        ),
+      );
+    }
+  }
+
   /**
    * Get categories for admin
    */
   async getCategories(localeInput?: string) {
+    await this.ensureLegacyCategorySlugsRepaired();
     const locale = this.normalizeLocale(localeInput);
     const categories = await db.category.findMany({
       where: {
@@ -442,11 +652,8 @@ class AdminCategoriesService {
         deletedAt: null,
       },
       select: {
-        categories: {
-          select: {
-            id: true,
-          },
-        },
+        primaryCategoryId: true,
+        categoryIds: true,
       },
     });
     const directProductCountByCategoryId = new Map<string, number>(
@@ -455,9 +662,10 @@ class AdminCategoriesService {
 
     for (const product of products) {
       const referencedCategoryIds = new Set(
-        product.categories
-          .map((category) => category.id)
-          .filter((categoryId) => categoryIdSet.has(categoryId)),
+        [product.primaryCategoryId, ...product.categoryIds].filter(
+          (categoryId): categoryId is string =>
+            typeof categoryId === "string" && categoryIdSet.has(categoryId),
+        ),
       );
       referencedCategoryIds.forEach((categoryId) => {
         directProductCountByCategoryId.set(
@@ -496,7 +704,6 @@ class AdminCategoriesService {
       translations: data.translations,
     });
     const entries = Object.entries(translationTitles) as Array<[SupportedCategoryLocale, string]>;
-    const primaryLocale = entries[0]?.[0] ?? (locale as SupportedCategoryLocale);
     const primaryTitle = entries[0]?.[1] ?? this.normalizeTitle(data.title);
 
     if (!primaryTitle) {
@@ -508,10 +715,10 @@ class AdminCategoriesService {
     }
     const normalizedMedia = this.normalizeCategoryMedia(data.media);
 
-    const slugFromTitle = toSlug(primaryTitle);
+    const basePrimarySlug = buildBaseCategorySlug(primaryTitle);
     const provisionalSlug =
-      slugFromTitle.length > 0
-        ? slugFromTitle
+      basePrimarySlug.length > 0
+        ? basePrimarySlug
         : `tmp-${crypto.randomUUID().replace(/-/g, "").slice(0, 24)}`;
 
     const category = await db.category.create({
@@ -534,19 +741,6 @@ class AdminCategoriesService {
       },
     });
 
-    if (slugFromTitle.length === 0) {
-      const fallback = this.stableSlugFromCategoryId(category.id);
-      const createdTr = await db.categoryTranslation.findFirst({
-        where: { categoryId: category.id, locale: primaryLocale },
-      });
-      if (createdTr) {
-        await db.categoryTranslation.update({
-          where: { id: createdTr.id },
-          data: { slug: fallback, fullPath: fallback },
-        });
-      }
-    }
-
     const titleForMissing = primaryTitle;
     const allTitles: Record<SupportedCategoryLocale, string> = {
       hy: translationTitles.hy ?? titleForMissing,
@@ -566,16 +760,25 @@ class AdminCategoriesService {
           return;
         }
         if (existing) {
+          const uniqueSlug = await this.buildUniqueCategorySlug(
+            buildBaseCategorySlug(nextTitle),
+            supportedLocale,
+            category.id,
+          );
           await db.categoryTranslation.update({
             where: { id: existing.id },
             data: {
               title: nextTitle,
-              slug: this.slugFromTitleOrCategoryId(nextTitle, category.id),
+              slug: uniqueSlug,
             },
           });
           return;
         }
-        const slug = this.slugFromTitleOrCategoryId(nextTitle, category.id);
+        const slug = await this.buildUniqueCategorySlug(
+          buildBaseCategorySlug(nextTitle),
+          supportedLocale,
+          category.id,
+        );
         await db.categoryTranslation.create({
           data: {
             categoryId: category.id,
@@ -730,6 +933,14 @@ class AdminCategoriesService {
     }
 
     const currentChildIds = new Set(category.children.map((child) => child.id));
+    const currentChildIdsSorted = toSortedUniqueIds([...currentChildIds]);
+    const nextSubcategoryIdsSorted =
+      normalizedSubcategoryIds !== undefined ? toSortedUniqueIds(normalizedSubcategoryIds) : undefined;
+    const parentChanged =
+      data.parentId !== undefined && (data.parentId || null) !== category.parentId;
+    const subcategoriesChanged =
+      nextSubcategoryIdsSorted !== undefined &&
+      !sameSortedIds(nextSubcategoryIdsSorted, currentChildIdsSorted);
     const removedChildIds =
       normalizedSubcategoryIds !== undefined
         ? [...currentChildIds].filter((childId) => !normalizedSubcategoryIds.includes(childId))
@@ -794,13 +1005,11 @@ class AdminCategoriesService {
           if (existingTranslation) {
             const translationUpdateData: {
               title?: string;
-              slug?: string;
               seoTitle?: string | null;
               seoDescription?: string | null;
             } = {};
             if (nextTitle !== undefined) {
               translationUpdateData.title = nextTitle;
-              translationUpdateData.slug = this.slugFromTitleOrCategoryId(nextTitle, categoryId);
             }
             if (data.seoTitle !== undefined) {
               translationUpdateData.seoTitle = normalizedSeoTitle;
@@ -824,7 +1033,11 @@ class AdminCategoriesService {
             );
           }
 
-          const slug = this.slugFromTitleOrCategoryId(nextTitle, categoryId);
+          const slug = await this.buildUniqueCategorySlug(
+            buildBaseCategorySlug(nextTitle),
+            targetLocale,
+            categoryId,
+          );
           await transaction.categoryTranslation.create({
             data: {
               categoryId,
@@ -855,15 +1068,25 @@ class AdminCategoriesService {
     });
 
     const shouldRebuildCurrentSubtree =
-      data.parentId !== undefined ||
+      parentChanged ||
       normalizedTitle !== undefined ||
-      normalizedSubcategoryIds !== undefined;
+      subcategoriesChanged;
 
     if (shouldRebuildCurrentSubtree) {
       await this.rebuildFullPathForSubtree(categoryId);
       for (const removedChildId of removedChildIds) {
         await this.rebuildFullPathForSubtree(removedChildId);
       }
+    }
+
+    const shouldReindexProductCategoryLinks =
+      parentChanged || subcategoriesChanged;
+    if (shouldReindexProductCategoryLinks) {
+      await this.reindexProductCategoryLinksForCategoryTreeChange([
+        categoryId,
+        ...(normalizedSubcategoryIds ?? []),
+        ...removedChildIds,
+      ]);
     }
 
     const updatedCategory = await db.category.findUnique({
@@ -946,7 +1169,7 @@ class AdminCategoriesService {
       childMap.set(category.parentId, siblings);
     });
 
-    return this.collectDescendantIds(rootCategoryId, childMap);
+    return collectDescendantIds(rootCategoryId, childMap);
   }
 
   private async countActiveProductsInCategories(categoryIds: string[]): Promise<number> {
