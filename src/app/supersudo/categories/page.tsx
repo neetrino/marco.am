@@ -29,6 +29,8 @@ export default function CategoriesPage() {
     categories,
     loading,
     fetchCategories,
+    syncCategoriesCache,
+    applyOptimisticCategories,
     reorderCategoriesOptimistically,
     setCategoryHeaderVisibilityOptimistically,
   } = useCategories(activeLocale);
@@ -227,19 +229,57 @@ export default function CategoriesPage() {
       return;
     }
     const isSubcategory = Boolean(convertingCategory.parentId);
-    const payload = {
-      parentId: isSubcategory ? null : conversionParentId || null,
-      subcategoryIds: conversionSubcategoryIds,
+    const nextParentId = isSubcategory ? null : conversionParentId || null;
+    const normalizedSubcategoryIds = Array.from(new Set(conversionSubcategoryIds)).sort();
+    const currentSubcategoryIds = categories
+      .filter((item) => item.parentId === convertingCategory.id)
+      .map((item) => item.id)
+      .sort();
+    const subcategorySelectionChanged =
+      normalizedSubcategoryIds.length !== currentSubcategoryIds.length ||
+      normalizedSubcategoryIds.some((id, index) => id !== currentSubcategoryIds[index]);
+    const payload: { parentId: string | null; subcategoryIds?: string[] } = {
+      parentId: nextParentId,
     };
+    if (subcategorySelectionChanged) {
+      payload.subcategoryIds = normalizedSubcategoryIds;
+    }
     if (!isSubcategory && !payload.parentId) {
       showToast(t('admin.categories.parentRequired'), 'warning');
       return;
     }
 
+    let rollback: (() => void) | null = null;
+    const convertingCategoryId = convertingCategory.id;
     try {
-      setConvertingCategoryId(convertingCategory.id);
-      await apiClient.put(`/api/v1/supersudo/categories/${convertingCategory.id}`, payload);
-      await fetchCategories();
+      setConvertingCategoryId(convertingCategoryId);
+      rollback = applyOptimisticCategories((previous) => {
+        if (isSubcategory) {
+          return previous.map((item) => {
+            if (item.id === convertingCategoryId) {
+              return { ...item, parentId: null };
+            }
+            if (normalizedSubcategoryIds.includes(item.id)) {
+              return { ...item, parentId: convertingCategoryId };
+            }
+            return item;
+          });
+        }
+
+        const nextParentId = conversionParentId || null;
+        return previous.map((item) => {
+          if (item.id === convertingCategoryId) {
+            return { ...item, parentId: nextParentId };
+          }
+          if (normalizedSubcategoryIds.includes(item.id)) {
+            return { ...item, parentId: convertingCategoryId };
+          }
+          return item;
+        });
+      });
+      resetConvertModalState();
+      setConvertingCategoryId(null);
+      await apiClient.put(`/api/v1/supersudo/categories/${convertingCategoryId}`, payload);
       notifyShopCategoryTreeUpdated();
       showToast(
         isSubcategory
@@ -247,8 +287,8 @@ export default function CategoriesPage() {
           : t('admin.categories.convertToSubcategorySuccess'),
         'success',
       );
-      resetConvertModalState();
     } catch (error: unknown) {
+      rollback?.();
       showToast(getApiOrErrorMessage(error, t('admin.common.unknownErrorFallback')), 'error');
     } finally {
       setConvertingCategoryId(null);
@@ -303,27 +343,27 @@ export default function CategoriesPage() {
       >
         <div className="space-y-5">
           <Card className="admin-card border-amber-300/70 bg-gradient-to-b from-amber-50/90 via-white to-white shadow-[0_12px_40px_rgba(217,119,6,0.12)] ring-1 ring-amber-200/50">
-            <div className="p-4 sm:p-5">
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+            <div className="p-3 sm:p-4">
+              <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                 <div className="min-w-0">
                   <label
                     htmlFor="category-admin-search"
-                    className="block text-lg font-semibold tracking-tight text-slate-900"
+                    className="block text-sm font-semibold tracking-tight text-slate-900"
                   >
                     {t('admin.categories.searchLabel')}
                   </label>
                 </div>
                 {categorySearch.trim() !== '' && (
-                  <p className="shrink-0 rounded-lg bg-amber-100/90 px-3 py-1.5 text-sm font-semibold tabular-nums text-amber-950 ring-1 ring-amber-200/80">
+                  <p className="shrink-0 rounded-md bg-amber-100/90 px-2.5 py-1 text-xs font-semibold tabular-nums text-amber-950 ring-1 ring-amber-200/80">
                     {t('admin.categories.searchMatchCount')
                       .replace('{matched}', String(filteredCategories.length))
                       .replace('{total}', String(categories.length))}
                   </p>
                 )}
               </div>
-              <div className="relative mt-4">
+              <div className="relative mt-2.5">
                 <svg
-                  className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"
+                  className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -343,17 +383,17 @@ export default function CategoriesPage() {
                   onChange={(e) => setCategorySearch(e.target.value)}
                   placeholder={t('admin.categories.searchPlaceholder')}
                   autoComplete="off"
-                  className={`admin-field h-12 w-full rounded-xl border-2 border-slate-200 bg-white pl-12 text-base shadow-sm transition-[border-color,box-shadow] duration-200 placeholder:text-slate-400 focus:border-amber-500 focus:shadow-[0_0_0_4px_rgba(245,158,11,0.2)] sm:h-14 sm:pl-14 sm:text-lg ${categorySearch.length > 0 ? 'pr-12 sm:pr-14' : 'pr-4'}`}
+                  className={`admin-field h-10 w-full rounded-lg border border-slate-200 bg-white !pl-10 text-sm shadow-sm transition-[border-color,box-shadow] duration-200 placeholder:text-slate-400 focus:border-amber-500 focus:shadow-[0_0_0_3px_rgba(245,158,11,0.18)] ${categorySearch.length > 0 ? '!pr-10' : '!pr-3'}`}
                   aria-label={t('admin.categories.searchLabel')}
                 />
                 {categorySearch.length > 0 ? (
                   <button
                     type="button"
-                    className="absolute right-2 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 sm:right-3"
+                    className="absolute right-1.5 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
                     onClick={() => setCategorySearch('')}
                     aria-label={t('admin.categories.clearSearch')}
                   >
-                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </button>
@@ -434,7 +474,7 @@ export default function CategoriesPage() {
           resetForm();
         }}
         onFormDataChange={setFormData}
-        onSubmit={() => handleUpdateCategory(fetchCategories)}
+        onSubmit={() => handleUpdateCategory(syncCategoriesCache, applyOptimisticCategories)}
       />
 
       <ConvertCategoryTypeModal

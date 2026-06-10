@@ -112,25 +112,33 @@ export function ProductInfoAndActions({
     hasMultiValueAttributeGroup ||
     colorGroups.length > 1 ||
     (!product?.productAttributes && sizeGroups.length > 1);
+  const primaryCategory = product.categories?.[0] ?? null;
   const hasDisplayPrice = Number.isFinite(price) && price > 0;
 
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1">
-        {product.brand && (
-          <div className="mb-5 flex flex-wrap items-center gap-4 md:gap-5">
-            {product.brand.logo ? (
-              <Image
-                src={product.brand.logo}
-                alt={product.brand.name}
-                width={140}
-                height={42}
-                className="h-7 w-auto max-w-[min(100%,140px)] shrink-0 object-contain object-left md:h-8 md:max-w-[min(100%,160px)]"
-                sizes="(max-width: 768px) 140px, 160px"
-              />
-            ) : (
-              <p className="text-sm text-gray-500">{product.brand.name}</p>
-            )}
+        {(product.brand || primaryCategory) && (
+          <div className="mb-5 flex flex-wrap items-center gap-3 md:gap-4">
+            {product.brand ? (
+              product.brand.logo ? (
+                <Image
+                  src={product.brand.logo}
+                  alt={product.brand.name}
+                  width={140}
+                  height={42}
+                  className="h-7 w-auto max-w-[min(100%,140px)] shrink-0 object-contain object-left md:h-8 md:max-w-[min(100%,160px)]"
+                  sizes="(max-width: 768px) 140px, 160px"
+                />
+              ) : (
+                <p className="text-sm text-gray-500">{product.brand.name}</p>
+              )
+            ) : null}
+            {primaryCategory ? (
+              <span className="inline-flex rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">
+                {primaryCategory.title}
+              </span>
+            ) : null}
           </div>
         )}
         <div className="mb-5 flex items-start justify-between gap-4">

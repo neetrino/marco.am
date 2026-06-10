@@ -15,6 +15,8 @@ interface UseCategoriesReturn {
   loading: boolean;
   error: string | null;
   fetchCategories: () => Promise<void>;
+  syncCategoriesCache: () => Promise<void>;
+  applyOptimisticCategories: (updater: (previous: Category[]) => Category[]) => () => void;
   reorderCategoriesOptimistically: (
     categoryId: string,
     targetCategoryId: string,
@@ -56,6 +58,37 @@ export function useCategories(language: LanguageCode): UseCategoriesReturn {
       setLoading(false);
     }
   }, [language]);
+
+  const syncCategoriesCache = useCallback(async () => {
+    try {
+      const response = await apiClient.get<{ data: Category[] }>('/api/v1/supersudo/categories', {
+        params: { lang: language },
+      });
+      const nextCategories = response.data || [];
+      writeAdminCategoriesCache(language, nextCategories);
+      hadCacheRef.current = true;
+    } catch (err: unknown) {
+      logger.warn('Category cache sync failed', { error: err });
+    }
+  }, [language]);
+
+  const applyOptimisticCategories = useCallback(
+    (updater: (previous: Category[]) => Category[]) => {
+      let previousSnapshot: Category[] = [];
+      setCategories((previous) => {
+        previousSnapshot = previous;
+        const next = updater(previous);
+        writeAdminCategoriesCache(language, next);
+        return next;
+      });
+
+      return () => {
+        setCategories(previousSnapshot);
+        writeAdminCategoriesCache(language, previousSnapshot);
+      };
+    },
+    [language],
+  );
 
   const reorderCategoriesOptimistically = useCallback(
     (categoryId: string, targetCategoryId: string, scope: AdminCategoryView) => {
@@ -117,6 +150,8 @@ export function useCategories(language: LanguageCode): UseCategoriesReturn {
     loading,
     error,
     fetchCategories,
+    syncCategoriesCache,
+    applyOptimisticCategories,
     reorderCategoriesOptimistically,
     setCategoryHeaderVisibilityOptimistically,
   };

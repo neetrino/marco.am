@@ -1,38 +1,62 @@
-import { unstable_cache } from 'next/cache';
+import { createHash } from 'node:crypto';
 
 import type { LanguageCode } from '@/lib/language';
+import { getCachedJson } from '@/lib/services/read-through-json-cache';
 import { productsRelatedService } from '@/lib/services/products-related.service';
 import { productsService } from '@/lib/services/products.service';
 
 import { RELATED_PRODUCTS_FETCH_LIMIT } from './related-products.constants';
-import { PDP_NEXT_CACHE_REVALIDATE_SECONDS } from './pdp-query-cache';
 
 export const PDP_RELATED_SSR_LIMIT = RELATED_PRODUCTS_FETCH_LIMIT;
+const PDP_VISUAL_CACHE_TTL_SEC = 180;
+const PDP_DETAIL_CACHE_TTL_SEC = 180;
+const PDP_RELATED_CACHE_TTL_SEC = 300;
 
 /**
- * Cached Prisma read for PDP first paint (shared with pre-App Router path).
+ * Shared Redis-backed cache for PDP first-paint visual payload.
  */
-export const getCachedPdpVisual = unstable_cache(
-  async (slug: string, lang: LanguageCode) => productsService.findBySlugVisual(slug, lang),
-  ['pdp-ssr-visual-v1'],
-  { revalidate: PDP_NEXT_CACHE_REVALIDATE_SECONDS },
-);
+export async function getCachedPdpVisual(slug: string, lang: LanguageCode) {
+  const key = createHash('sha256')
+    .update(`pdp:ssr:visual:v2\0${slug}\0${lang}`)
+    .digest('hex');
+  return getCachedJson(
+    `cache:products:pdp:ssr:visual:v2:${key}`,
+    PDP_VISUAL_CACHE_TTL_SEC,
+    () => productsService.findBySlugVisual(slug, lang),
+    { requireSharedCache: true },
+  );
+}
 
 /**
- * Full PDP product payload for SSR → hydrates React Query without a client round-trip on refresh.
+ * Shared Redis-backed cache for full PDP SSR detail payload.
  */
-export const getCachedPdpDetail = unstable_cache(
-  async (slug: string, lang: LanguageCode) => productsService.findBySlug(slug, lang),
-  ['pdp-ssr-detail-v1'],
-  { revalidate: PDP_NEXT_CACHE_REVALIDATE_SECONDS },
-);
+export async function getCachedPdpDetail(slug: string, lang: LanguageCode) {
+  const key = createHash('sha256')
+    .update(`pdp:ssr:detail:v2\0${slug}\0${lang}`)
+    .digest('hex');
+  return getCachedJson(
+    `cache:products:pdp:ssr:detail:v2:${key}`,
+    PDP_DETAIL_CACHE_TTL_SEC,
+    () => productsService.findBySlug(slug, lang),
+    { requireSharedCache: true },
+  );
+}
 
 /**
- * Related carousel rows for SSR — hydrates React Query so the PDP section paints without a client round-trip.
+ * Shared Redis-backed cache for PDP related products SSR payload.
  */
-export const getCachedPdpRelated = unstable_cache(
-  async (slug: string, lang: LanguageCode, limit: number) =>
-    productsRelatedService.findBySlug(slug, lang, limit),
-  ['pdp-ssr-related-v1'],
-  { revalidate: PDP_NEXT_CACHE_REVALIDATE_SECONDS },
-);
+export async function getCachedPdpRelated(
+  slug: string,
+  lang: LanguageCode,
+  limit: number,
+) {
+  const key = createHash('sha256')
+    .update(`pdp:ssr:related:v2\0${slug}\0${lang}\0${limit}`)
+    .digest('hex');
+  return getCachedJson(
+    `cache:products:pdp:ssr:related:v2:${key}`,
+    PDP_RELATED_CACHE_TTL_SEC,
+    () => productsRelatedService.findBySlug(slug, lang, limit),
+    { requireSharedCache: true },
+  );
+}

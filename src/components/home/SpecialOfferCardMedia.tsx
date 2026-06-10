@@ -3,6 +3,7 @@
 import Image from 'next/image';
 
 import { ProductPdpPrefetchLink } from '../ProductPdpPrefetchLink';
+import type { ProductPdpNavigationSeed } from '@/lib/product-pdp/pdp-navigation-seed';
 import { ProductImagePlaceholder } from '../ProductImagePlaceholder';
 
 import { shouldBypassNextImageOptimizer } from '../../lib/utils/should-bypass-next-image-optimizer';
@@ -22,6 +23,7 @@ interface SpecialOfferCardMediaProps {
   imagePriority?: boolean;
   /** No product URL yet — keep image well layout without navigation. */
   navigationDisabled?: boolean;
+  navigationSeed?: ProductPdpNavigationSeed;
 }
 
 export function SpecialOfferCardMedia({
@@ -33,6 +35,7 @@ export function SpecialOfferCardMedia({
   layout = 'default',
   imagePriority = false,
   navigationDisabled = false,
+  navigationSeed,
 }: SpecialOfferCardMediaProps) {
   const translateY = 0;
   const nudgeLeftPx = 0;
@@ -70,6 +73,7 @@ export function SpecialOfferCardMedia({
         onImageError={onImageError}
         imagePriority={imagePriority}
         navigationDisabled={navigationDisabled}
+        navigationSeed={navigationSeed}
       />
     );
   }
@@ -110,6 +114,7 @@ export function SpecialOfferCardMedia({
     <ProductPdpPrefetchLink
       href={`/products/${slug}`}
       productSlug={slug}
+      navigationSeed={navigationSeed}
       className={singleImageWellClass}
       style={singleImageWellStyle}
     >

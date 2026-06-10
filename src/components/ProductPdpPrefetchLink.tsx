@@ -11,6 +11,7 @@ import {
 } from 'react';
 
 import { getStoredLanguage } from '@/lib/language';
+import { setProductPdpNavigationSeed, type ProductPdpNavigationSeed } from '@/lib/product-pdp/pdp-navigation-seed';
 import { prefetchProductPdp } from '@/lib/product-pdp/prefetch-product-pdp';
 
 type LinkProps = Omit<ComponentProps<typeof Link>, 'href' | 'prefetch'>;
@@ -24,6 +25,8 @@ export type ProductPdpPrefetchLinkProps = LinkProps & {
   prefetchRoute?: boolean;
   /** Disable data prefetch when route churn is high (e.g. PLP filtering). */
   prefetchData?: boolean;
+  /** Optional card payload to render PDP instantly before detail arrives. */
+  navigationSeed?: ProductPdpNavigationSeed;
 };
 
 /**
@@ -36,10 +39,12 @@ export function ProductPdpPrefetchLink({
   children,
   prefetchRoute = true,
   prefetchData = true,
+  navigationSeed,
   onMouseEnter,
   onFocus,
   onPointerDown,
   onTouchStart,
+  onClick,
   ...rest
 }: ProductPdpPrefetchLinkProps) {
   const router = useRouter();
@@ -58,6 +63,13 @@ export function ProductPdpPrefetchLink({
       void router.prefetch(href);
     }
   }, [queryClient, productSlug, href, prefetchRoute, prefetchData, router]);
+
+  const persistSeed = useCallback(() => {
+    if (!navigationSeed) {
+      return;
+    }
+    setProductPdpNavigationSeed(productSlug, getStoredLanguage(), navigationSeed);
+  }, [navigationSeed, productSlug]);
 
   return (
     <Link
@@ -78,6 +90,10 @@ export function ProductPdpPrefetchLink({
       onTouchStart={(e) => {
         warm();
         onTouchStart?.(e);
+      }}
+      onClick={(e) => {
+        persistSeed();
+        onClick?.(e);
       }}
       {...rest}
     >

@@ -224,11 +224,21 @@ export function GlobalRoutePrefetch() {
     const onPointerDown = (event: PointerEvent) => {
       prefetchFromElement(event.target);
     };
+    const onPointerOver = (event: PointerEvent) => {
+      prefetchFromElement(event.target);
+    };
+    const onFocusIn = (event: FocusEvent) => {
+      prefetchFromElement(event.target);
+    };
 
     document.addEventListener('pointerdown', onPointerDown, { passive: true });
+    document.addEventListener('pointerover', onPointerOver, { passive: true });
+    document.addEventListener('focusin', onFocusIn, { passive: true });
 
     return () => {
       document.removeEventListener('pointerdown', onPointerDown);
+      document.removeEventListener('pointerover', onPointerOver);
+      document.removeEventListener('focusin', onFocusIn);
     };
   }, [queryClient, router]);
 

@@ -19,9 +19,15 @@ export function useProductCalculations({
   selectedAttributeValues,
 }: UseProductCalculationsProps) {
   const variantCurrentPrice = currentVariant?.currentPrice ?? currentVariant?.price ?? 0;
-  const price = variantCurrentPrice;
-  const originalPrice = currentVariant?.oldPrice ?? currentVariant?.originalPrice;
-  const compareAtPrice = currentVariant?.compareAtPrice;
+  const fallbackCurrentPrice =
+    product?.currentPrice ?? product?.pricing?.currentPrice ?? 0;
+  const price = variantCurrentPrice > 0 ? variantCurrentPrice : fallbackCurrentPrice;
+  const originalPrice =
+    currentVariant?.oldPrice ??
+    currentVariant?.originalPrice ??
+    product?.oldPrice ??
+    product?.pricing?.oldPrice;
+  const compareAtPrice = currentVariant?.compareAtPrice ?? null;
   const fallbackOldPrice =
     originalPrice ??
     (typeof compareAtPrice === 'number' && compareAtPrice > variantCurrentPrice ? compareAtPrice : null);
@@ -44,7 +50,7 @@ export function useProductCalculations({
         : currentVariant?.productDiscount ??
           product?.productDiscount ??
           inferredDiscountPercent;
-  const isOutOfStock = !currentVariant || currentVariant.stock <= 0;
+  const isOutOfStock = currentVariant ? currentVariant.stock <= 0 : true;
 
   const colorGroups = useMemo(() => {
     const groups: Array<{ color: string; stock: number; variants: ProductVariant[] }> = [];

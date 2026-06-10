@@ -3,6 +3,7 @@
 import { ProductCardBrandMark } from '../ProductCard/ProductCardBrandMark';
 import { ProductColors } from '../ProductCard/ProductColors';
 import { ProductPdpPrefetchLink } from '../ProductPdpPrefetchLink';
+import type { ProductPdpNavigationSeed } from '@/lib/product-pdp/pdp-navigation-seed';
 
 import {
   SPECIAL_OFFERS_COLOR_SWATCH_GAP_PX,
@@ -16,6 +17,7 @@ interface SpecialOfferCardInfoProps {
   brandClass: string;
   /** Reserved layout while listing details load — no fake title text. */
   detailsPending?: boolean;
+  navigationSeed?: ProductPdpNavigationSeed;
 }
 
 const skeletonBar = 'rounded-md bg-gray-200/90 dark:bg-white/10';
@@ -24,6 +26,7 @@ export function SpecialOfferCardInfo({
   product,
   brandClass,
   detailsPending = false,
+  navigationSeed,
 }: SpecialOfferCardInfoProps) {
   if (detailsPending) {
     return (
@@ -63,6 +66,7 @@ export function SpecialOfferCardInfo({
         <ProductPdpPrefetchLink
           href={`/products/${product.slug}`}
           productSlug={product.slug}
+          navigationSeed={navigationSeed}
           className="mt-1 block"
         >
           <h3 className="line-clamp-2 text-left text-[14px] font-bold leading-5 text-[#181111]">

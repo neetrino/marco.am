@@ -124,26 +124,37 @@ class CategoriesService {
         return subtree;
       };
 
-      const products = await db.product.findMany({
-        where: {
-          published: true,
-          deletedAt: null,
-          OR: [
-            { primaryCategoryId: { in: allIds } },
-            { categoryIds: { hasSome: allIds } },
-          ],
-        },
-        select: { primaryCategoryId: true, categoryIds: true },
-      });
+      const relationCounts = await db.$queryRaw<Array<{ categoryId: string; count: bigint }>>`
+        SELECT category_id as "categoryId", COUNT(DISTINCT product_id)::bigint as "count"
+        FROM (
+          SELECT p."id" as product_id, p."primaryCategoryId" as category_id
+          FROM "products" p
+          WHERE p."published" = true
+            AND p."deletedAt" IS NULL
+            AND p."primaryCategoryId" IS NOT NULL
+            AND p."primaryCategoryId" = ANY(${allIds}::text[])
+          UNION ALL
+          SELECT p."id" as product_id, pc."A" as category_id
+          FROM "_ProductCategories" pc
+          INNER JOIN "products" p ON p."id" = pc."B"
+          WHERE p."published" = true
+            AND p."deletedAt" IS NULL
+            AND pc."A" = ANY(${allIds}::text[])
+        ) category_product
+        GROUP BY category_id
+      `;
+
+      const directCounts = new Map<string, number>(allIds.map((id) => [id, 0]));
+      for (const row of relationCounts) {
+        directCounts.set(row.categoryId, Number(row.count));
+      }
 
       for (const id of allIds) {
         const subtree = collectSubtreeIds(id);
-        const count = products.filter(
-          (product) =>
-            (product.primaryCategoryId !== null && subtree.has(product.primaryCategoryId)) ||
-            product.categoryIds.some((categoryId) => subtree.has(categoryId)),
-        ).length;
-
+        let count = 0;
+        subtree.forEach((subtreeId) => {
+          count += directCounts.get(subtreeId) ?? 0;
+        });
         const node = categoryMap.get(id) as { productCount: number } | undefined;
         if (node) {
           node.productCount = count;

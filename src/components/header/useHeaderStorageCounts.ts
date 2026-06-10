@@ -5,13 +5,13 @@ import type { Dispatch, SetStateAction } from 'react';
 import { usePathname } from 'next/navigation';
 import { getCompareCount, getWishlistCount } from '../../lib/storageCounts';
 import { getStoredLanguage } from '@/lib/language';
+import { useCompareProductIds } from '@/components/hooks/useCompareProductIds';
+import { useWishlistProductIds } from '@/components/hooks/useWishlistProductIds';
 import {
   ensureLegacyCompareMigratedForGuest,
-  fetchCompareItemCount,
 } from '@/lib/compare/compare-client';
 import {
   ensureLegacyWishlistMigratedForGuest,
-  fetchWishlistItemCount,
 } from '@/lib/wishlist/wishlist-client';
 
 const HOME_PATH = '/';
@@ -39,10 +39,20 @@ export function useHeaderStorageCounts(
   setCompareCount: Dispatch<SetStateAction<number>>,
   onAuthChange: () => void
 ) {
+  const { ids: wishlistIds } = useWishlistProductIds();
+  const { ids: compareIds } = useCompareProductIds();
   const pathname = usePathname() ?? '';
   const isHomeRoute = pathname === HOME_PATH;
   const wishlistSyncSeqRef = useRef(0);
   const compareSyncSeqRef = useRef(0);
+
+  useEffect(() => {
+    setWishlistCount(wishlistIds.length);
+  }, [wishlistIds, setWishlistCount]);
+
+  useEffect(() => {
+    setCompareCount(compareIds.length);
+  }, [compareIds, setCompareCount]);
 
   useEffect(() => {
     let isActive = true;
@@ -54,11 +64,10 @@ export function useHeaderStorageCounts(
         try {
           const lang = getStoredLanguage();
           await ensureLegacyWishlistMigratedForGuest(lang);
-          const count = await fetchWishlistItemCount(lang);
           if (!isActive || requestSeq !== wishlistSyncSeqRef.current) {
             return;
           }
-          setWishlistCount(count);
+          setWishlistCount(wishlistIds.length);
         } catch {
           if (!isActive || requestSeq !== wishlistSyncSeqRef.current) {
             return;
@@ -74,11 +83,10 @@ export function useHeaderStorageCounts(
       try {
         const lang = getStoredLanguage();
         await ensureLegacyCompareMigratedForGuest(lang);
-        const count = await fetchCompareItemCount(lang);
         if (!isActive || requestSeq !== compareSyncSeqRef.current) {
           return;
         }
-        setCompareCount(count);
+        setCompareCount(compareIds.length);
       } catch {
         if (!isActive || requestSeq !== compareSyncSeqRef.current) {
           return;
@@ -145,5 +153,5 @@ export function useHeaderStorageCounts(
       window.removeEventListener('wishlist-optimistic-updated', handleWishlistOptimisticUpdate);
       window.removeEventListener('compare-optimistic-updated', handleCompareOptimisticUpdate);
     };
-  }, [isHomeRoute, setWishlistCount, setCompareCount, onAuthChange]);
+  }, [isHomeRoute, onAuthChange, setCompareCount, setWishlistCount]);
 }

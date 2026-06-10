@@ -173,9 +173,9 @@ export function ProductPageClient({
           mainImageHighPriority={Boolean(productVisual && !product)}
         />
 
-        {product ? (
+        {displayProduct ? (
           <ProductInfoAndActions
-            product={product}
+            product={displayProduct}
             price={price}
             originalPrice={originalPrice}
             compareAtPrice={compareAtPrice}
@@ -194,7 +194,7 @@ export function ProductPageClient({
             isInCompare={isInCompare}
             showMessage={showMessage}
             isLoggedIn={isLoggedIn}
-            currentVariant={currentVariant}
+            currentVariant={product ? currentVariant : null}
             attributeGroups={attributeGroups}
             selectedColor={selectedColor}
             selectedSize={selectedSize}
@@ -202,7 +202,7 @@ export function ProductPageClient({
             colorGroups={colorGroups}
             sizeGroups={sizeGroups}
             onQuantityAdjust={adjustQuantity}
-            onAddToCart={handleAddToCart}
+            onAddToCart={product ? handleAddToCart : async () => {}}
             onAddToWishlist={handleAddToWishlist}
             onCompareToggle={handleCompareToggle}
             onColorSelect={handleColorSelect}
@@ -211,9 +211,7 @@ export function ProductPageClient({
             getOptionValue={getOptionValue}
             getRequiredAttributesMessage={getRequiredAttributesMessage}
           />
-        ) : (
-          <ProductInfoPrimarySkeleton />
-        )}
+        ) : null}
       </div>
 
       {product ? (

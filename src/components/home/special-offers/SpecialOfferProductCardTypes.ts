@@ -11,6 +11,7 @@ export interface SpecialOfferProduct {
   image: string | null;
   inStock: boolean;
   brand: ProductListingBrand | null;
+  categories?: Array<{ id: string; slug: string; title: string }>;
   colors?: Array<{ value: string; imageUrl?: string | null; colors?: string[] | null }>;
   originalPrice?: number | null;
   discountPercent?: number | null;

@@ -323,7 +323,8 @@ async function fetchCompareProducts(productIds: string[]) {
 
 export async function buildComparePayload(
   compareListId: string,
-  locale: ApiLocale
+  locale: ApiLocale,
+  fields: "full" | "ids" = "full"
 ): Promise<CompareApiPayload> {
   const rows = await db.compareItem.findMany({
     where: { compareListId },
@@ -342,6 +343,37 @@ export async function buildComparePayload(
         maxItemsPerCategory: COMPARE_MAX_PER_CATEGORY,
         maxListItems: COMPARE_MAX_LIST_ITEMS,
         items: [],
+        sections: [],
+      },
+      specRows: [],
+    };
+  }
+
+  if (fields === "ids") {
+    return {
+      compare: {
+        id: compareListId,
+        maxItems: COMPARE_MAX_PER_CATEGORY,
+        maxItemsPerCategory: COMPARE_MAX_PER_CATEGORY,
+        maxListItems: COMPARE_MAX_LIST_ITEMS,
+        items: rows.map((row) => ({
+          productId: row.productId,
+          title: "",
+          slug: "",
+          image: null,
+          brand: null,
+          price: 0,
+          originalPrice: null,
+          compareAtPrice: null,
+          discountPercent: null,
+          inStock: false,
+          addedAt: row.createdAt.toISOString(),
+          specifications: [],
+          category: {
+            id: "",
+            name: "",
+          },
+        })),
         sections: [],
       },
       specRows: [],

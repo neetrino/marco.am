@@ -125,10 +125,16 @@ export function useCartData(options?: { enabled?: boolean }) {
       setCurrency(getStoredCurrency());
     };
 
-    const handleCartUpdate = () => {
+    const handleCartUpdate = (event: Event) => {
       if (!enabled) {
         return;
       }
+      const detail = (event as CustomEvent<{
+        optimisticAdd?: { quantity?: number; price?: number };
+        itemsCount?: number;
+        total?: number;
+        currency?: string;
+      }>).detail;
 
       if (!isLoggedIn) {
         const snapshot = syncGuestCartFromStorage();
@@ -144,6 +150,15 @@ export function useCartData(options?: { enabled?: boolean }) {
 
       if (isLocalUpdateRef.current) {
         isLocalUpdateRef.current = false;
+        return;
+      }
+      if (
+        detail &&
+        (
+          detail.optimisticAdd ||
+          (detail.itemsCount !== undefined && detail.total !== undefined)
+        )
+      ) {
         return;
       }
       void loadCart();

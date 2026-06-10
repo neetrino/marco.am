@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import * as jwt from "jsonwebtoken";
 import { db } from "@white-shop/db";
 import { readAuthSessionToken } from "@/lib/auth/auth-session-cookie";
+import { logger } from "@/lib/utils/logger";
 
 export interface AuthUser {
   id: string;
@@ -11,6 +12,58 @@ export interface AuthUser {
   roles: string[];
 }
 
+type JwtPayload = {
+  userId: string;
+  roles?: string[];
+};
+
+function readJwtSecret(): string | null {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    logger.error("JWT_SECRET is not set");
+    return null;
+  }
+  return secret;
+}
+
+function readTokenFromRequest(request: NextRequest): string | null {
+  const authHeader = request.headers.get("authorization");
+  const bearerToken = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
+  return bearerToken ?? readAuthSessionToken(request);
+}
+
+function verifyToken(token: string): JwtPayload | null {
+  const secret = readJwtSecret();
+  if (!secret) {
+    return null;
+  }
+  try {
+    return jwt.verify(token, secret) as JwtPayload;
+  } catch (error) {
+    if (
+      error instanceof jwt.JsonWebTokenError ||
+      error instanceof jwt.TokenExpiredError
+    ) {
+      return null;
+    }
+    throw error;
+  }
+}
+
+function rolesFromDecodedToken(decoded: JwtPayload): string[] {
+  return Array.isArray(decoded.roles) ? decoded.roles : [];
+}
+
+export function getAuthContext(
+  request: NextRequest
+): { token: string | null; decoded: JwtPayload | null } {
+  const token = readTokenFromRequest(request);
+  if (!token) {
+    return { token: null, decoded: null };
+  }
+  return { token, decoded: verifyToken(token) };
+}
+
 /**
  * Authenticate JWT token from request headers
  */
@@ -18,22 +71,10 @@ export async function authenticateToken(
   request: NextRequest
 ): Promise<AuthUser | null> {
   try {
-    const authHeader = request.headers.get("authorization");
-    const bearerToken = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
-    const token = bearerToken ?? readAuthSessionToken(request);
-
-    if (!token) {
+    const { decoded } = getAuthContext(request);
+    if (!decoded) {
       return null;
     }
-
-    if (!process.env.JWT_SECRET) {
-      console.error("❌ [AUTH] JWT_SECRET is not set!");
-      return null;
-    }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET) as {
-      userId: string;
-    };
 
     const user = await db.user.findUnique({
       where: { id: decoded.userId },
@@ -57,15 +98,9 @@ export async function authenticateToken(
       email: user.email,
       phone: user.phone,
       locale: user.locale,
-      roles: user.roles,
+      roles: user.roles.length > 0 ? user.roles : rolesFromDecodedToken(decoded),
     };
   } catch (error) {
-    if (
-      error instanceof jwt.JsonWebTokenError ||
-      error instanceof jwt.TokenExpiredError
-    ) {
-      return null;
-    }
     throw error;
   }
 }

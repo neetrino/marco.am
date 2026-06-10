@@ -25,24 +25,37 @@ function getStartOfMonth(now: Date): Date {
 }
 
 async function getSalesWindow(start: Date, end: Date): Promise<SalesWindow> {
-  const paidOrders = await db.order.findMany({
-    where: {
-      paymentStatus: "paid",
-      createdAt: {
-        gte: start,
-        lte: end,
+  const [paidOrdersCount, aggregate] = await Promise.all([
+    db.order.count({
+      where: {
+        paymentStatus: "paid",
+        createdAt: {
+          gte: start,
+          lte: end,
+        },
       },
-    },
-    select: {
-      total: true,
-      currency: true,
-    },
-  });
+    }),
+    db.order.aggregate({
+      where: {
+        paymentStatus: "paid",
+        createdAt: {
+          gte: start,
+          lte: end,
+        },
+      },
+      _sum: {
+        total: true,
+      },
+      _max: {
+        currency: true,
+      },
+    }),
+  ]);
 
   return {
-    revenue: paidOrders.reduce((sum, order) => sum + order.total, 0),
-    paidOrders: paidOrders.length,
-    currency: paidOrders[0]?.currency ?? "AMD",
+    revenue: aggregate._sum.total ?? 0,
+    paidOrders: paidOrdersCount,
+    currency: aggregate._max.currency ?? "AMD",
   };
 }
 
@@ -154,26 +167,22 @@ export async function getStats() {
     where: { status: "pending" },
   });
 
-  // Calculate total revenue from completed/paid orders
-  const completedOrPaidOrders = await db.order.findMany({
+  const revenueAgg = await db.order.aggregate({
     where: {
       OR: [
         { status: "completed" },
         { paymentStatus: "paid" },
       ],
     },
-    select: {
+    _sum: {
       total: true,
+    },
+    _max: {
       currency: true,
     },
   });
-
-  const totalRevenue = completedOrPaidOrders.reduce(
-    (sum: number, order: { total: number; currency: string | null }) =>
-      sum + order.total,
-    0
-  );
-  const currency = completedOrPaidOrders[0]?.currency || "AMD";
+  const totalRevenue = revenueAgg._sum.total ?? 0;
+  const currency = revenueAgg._max.currency ?? "AMD";
 
   const [todaySales, monthlySales, topProduct] = await Promise.all([
     getSalesWindow(startOfToday, now),

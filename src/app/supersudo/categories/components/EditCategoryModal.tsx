@@ -46,6 +46,8 @@ export function EditCategoryModal({
   const initialLocaleTab = normalizeCategoryLocale(lang ?? getStoredLanguage());
   const [activeTitleLocaleTab, setActiveTitleLocaleTab] = useState<CategoryLocale>(initialLocaleTab);
   const [imageUploading, setImageUploading] = useState(false);
+  const [parentCategorySearch, setParentCategorySearch] = useState('');
+  const [subcategorySearch, setSubcategorySearch] = useState('');
   const mt = (path: string) => translateByLocale(activeTitleLocaleTab, path);
   const safeImagePreviewUrl = useMemo(
     () => toSafeImgAttributeSrc(formData.imageUrl.trim()),
@@ -81,18 +83,59 @@ export function EditCategoryModal({
     }
   };
 
-  if (!isOpen || !editingCategory) return null;
+  const categoryTree = useMemo(() => buildCategoryTree(categories), [categories]);
+  const descendantIds = useMemo(
+    () => (editingCategory ? getDescendantIds(categories, editingCategory.id) : new Set<string>()),
+    [categories, editingCategory],
+  );
+  const ancestorIds = useMemo(
+    () => (editingCategory ? getAncestorIds(categories, editingCategory.id) : new Set<string>()),
+    [categories, editingCategory],
+  );
+  const parentCandidates = useMemo(() => {
+    if (!editingCategory) {
+      return [];
+    }
 
-  const descendantIds = getDescendantIds(categories, editingCategory.id);
-  const ancestorIds = getAncestorIds(categories, editingCategory.id);
-  const parentCandidates = buildCategoryTree(categories).filter(
-    (category) =>
-      category.id !== editingCategory.id && !descendantIds.has(category.id),
-  );
-  const subcategoryCandidates = buildCategoryTree(categories).filter(
-    (category) =>
-      category.id !== editingCategory.id && !ancestorIds.has(category.id),
-  );
+    return categoryTree.filter(
+      (category) =>
+        category.id !== editingCategory.id && !descendantIds.has(category.id),
+    );
+  }, [categoryTree, descendantIds, editingCategory]);
+  const filteredParentCandidates = useMemo(() => {
+    const query = parentCategorySearch.trim().toLowerCase();
+    if (!query) {
+      return parentCandidates;
+    }
+
+    return parentCandidates.filter((category) => {
+      const title = getLocalizedCategoryTitle(category, activeTitleLocaleTab).toLowerCase();
+      const slug = category.slug.toLowerCase();
+      return title.includes(query) || slug.includes(query);
+    });
+  }, [activeTitleLocaleTab, parentCandidates, parentCategorySearch]);
+  const subcategoryCandidates = useMemo(() => {
+    if (!editingCategory) {
+      return [];
+    }
+
+    return categoryTree.filter(
+      (category) =>
+        category.id !== editingCategory.id && !ancestorIds.has(category.id),
+    );
+  }, [ancestorIds, categoryTree, editingCategory]);
+  const filteredSubcategoryCandidates = useMemo(() => {
+    const query = subcategorySearch.trim().toLowerCase();
+    if (!query) {
+      return subcategoryCandidates;
+    }
+
+    return subcategoryCandidates.filter((category) => {
+      const title = getLocalizedCategoryTitle(category, activeTitleLocaleTab).toLowerCase();
+      const slug = category.slug.toLowerCase();
+      return title.includes(query) || slug.includes(query);
+    });
+  }, [activeTitleLocaleTab, subcategoryCandidates, subcategorySearch]);
   const titleLocaleTabs: Array<{ code: CategoryLocale; label: string }> = [
     { code: 'hy', label: 'HY' },
     { code: 'en', label: 'EN' },
@@ -109,22 +152,22 @@ export function EditCategoryModal({
     ru: mt('admin.categories.categoryTitlePlaceholderRu'),
   };
 
+  if (!isOpen || !editingCategory) {
+    return null;
+  }
+
   return (
     <div className="fixed inset-0 z-50">
       <button
         type="button"
         aria-label={mt('admin.common.close')}
         className="absolute inset-0 bg-black/45 backdrop-blur-[1px]"
-        onClick={() => {
-          if (!saving) {
-            onClose();
-          }
-        }}
+        onClick={onClose}
       />
       <div
         className="absolute inset-y-0 right-0 flex w-full justify-end"
         onClick={(event) => {
-          if (event.target === event.currentTarget && !saving) {
+          if (event.target === event.currentTarget) {
             onClose();
           }
         }}
@@ -135,7 +178,7 @@ export function EditCategoryModal({
         >
           <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4 sm:px-6">
             <h3 className="text-lg font-semibold text-gray-900">{mt('admin.categories.editCategory')}</h3>
-            <Button variant="ghost" size="sm" disabled={saving} onClick={onClose}>
+            <Button variant="ghost" size="sm" onClick={onClose}>
               {mt('admin.common.close')}
             </Button>
           </div>
@@ -181,13 +224,21 @@ export function EditCategoryModal({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               {mt('admin.categories.parentCategory')}
             </label>
+            <input
+              type="search"
+              value={parentCategorySearch}
+              onChange={(event) => setParentCategorySearch(event.target.value)}
+              placeholder={mt('admin.categories.searchPlaceholder')}
+              className="admin-field mb-2"
+              aria-label={mt('admin.categories.searchLabel')}
+            />
             <select
               value={formData.parentId}
               onChange={(e) => onFormDataChange({ ...formData, parentId: e.target.value })}
               className="admin-field"
             >
               <option value="">{mt('admin.categories.rootCategory')}</option>
-              {parentCandidates.map((category) => (
+              {filteredParentCandidates.map((category) => (
                 <option key={category.id} value={category.id}>
                   {`${'— '.repeat(category.level)}${getLocalizedCategoryTitle(category, activeTitleLocaleTab)}`}
                 </option>
@@ -195,16 +246,13 @@ export function EditCategoryModal({
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {mt('admin.categories.imageLabel')}
-            </label>
             <div className="flex flex-wrap items-center gap-2">
               <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">
                 <input
                   type="file"
                   accept="image/*"
                   className="sr-only"
-                  disabled={imageUploading || saving}
+                  disabled={imageUploading}
                   onChange={handleImageFile}
                 />
                 {imageUploading
@@ -226,8 +274,16 @@ export function EditCategoryModal({
             <label className="block text-sm font-medium text-gray-700 mb-2">
               {mt('admin.categories.subcategories')}
             </label>
+            <input
+              type="search"
+              value={subcategorySearch}
+              onChange={(event) => setSubcategorySearch(event.target.value)}
+              placeholder={mt('admin.categories.searchPlaceholder')}
+              className="admin-field mb-2"
+              aria-label={mt('admin.categories.searchLabel')}
+            />
             <div className="max-h-44 space-y-2 overflow-y-auto rounded-md border border-gray-300 p-3">
-              {subcategoryCandidates.map((category) => {
+              {filteredSubcategoryCandidates.map((category) => {
                   const isChecked = formData.subcategoryIds.includes(category.id);
                   return (
                     <label key={category.id} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
@@ -255,9 +311,11 @@ export function EditCategoryModal({
                     </label>
                   );
                 })}
-              {subcategoryCandidates.length === 0 && (
+              {filteredSubcategoryCandidates.length === 0 && (
                 <p className="text-sm text-gray-500">
-                  {mt('admin.categories.noSubcategoryCandidates')}
+                  {subcategorySearch.trim().length > 0
+                    ? mt('admin.categories.noSearchResults')
+                    : mt('admin.categories.noSubcategoryCandidates')}
                 </p>
               )}
             </div>
@@ -266,9 +324,12 @@ export function EditCategoryModal({
           <div className="flex gap-3 border-t border-gray-200 px-5 py-4 sm:px-6">
             <Button
               variant="primary"
-              onClick={onSubmit}
+              onClick={() => {
+                if (!saving) {
+                  void onSubmit();
+                }
+              }}
               disabled={
-                saving ||
                 imageUploading ||
                 !formData.titles.hy.trim() ||
                 !formData.titles.en.trim() ||
@@ -276,12 +337,11 @@ export function EditCategoryModal({
               }
               className="flex-1"
             >
-              {saving ? mt('admin.categories.updating') : mt('admin.categories.updateCategory')}
+              {mt('admin.categories.updateCategory')}
             </Button>
             <Button
               variant="ghost"
               onClick={onClose}
-              disabled={saving}
             >
               {mt('admin.common.cancel')}
             </Button>
