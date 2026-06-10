@@ -11,7 +11,7 @@ import {
 import {
   enforceUpstashRateLimit,
 } from "@/lib/middleware/upstash-rate-limit";
-import { getAuthContext } from "@/lib/middleware/auth";
+import { getAuthContext } from "@/lib/middleware/auth-edge";
 
 function isUnsafeMethod(method: string): boolean {
   return method !== "GET" && method !== "HEAD" && method !== "OPTIONS";
@@ -60,7 +60,7 @@ async function requireAdminAuth(request: NextRequest): Promise<{
   userId: string | null;
   roles: string[];
 }> {
-  const { token, decoded } = getAuthContext(request);
+  const { token, decoded } = await getAuthContext(request);
 
   if (!token) {
     return {
