@@ -94,26 +94,10 @@ async function requireAdminAuth(request: NextRequest): Promise<{
     };
   }
 
-  if (!Array.isArray(decoded.roles) || !decoded.roles.includes("admin")) {
-    return {
-      response: NextResponse.json(
-        {
-          type: "https://api.shop.am/problems/forbidden",
-          title: "Forbidden",
-          status: 403,
-          detail: "Admin access required",
-        },
-        { status: 403 }
-      ),
-      userId: null,
-      roles: [],
-    };
-  }
-
   return {
     response: null,
     userId: decoded.userId,
-    roles: decoded.roles,
+    roles: Array.isArray(decoded.roles) ? decoded.roles : [],
   };
 }
 
