@@ -258,20 +258,20 @@ export type BrandDisplayLogoCellResolved =
   | { readonly mode: 'wordmark' };
 
 /**
- * Logo for brand cells: bundled artwork first, then remote `logoUrl`; otherwise use a text wordmark.
+ * Logo for brand cells: prefer explicit `logoUrl` (typically R2), then bundled artwork; otherwise wordmark.
  */
 export function resolveBrandDisplayLogoForCell(
   logoUrl: string | null | undefined,
   slug: string,
   name: string,
 ): BrandDisplayLogoCellResolved {
-  const bundled = resolveBrandStaticLogoForDisplay(slug, name);
-  if (bundled) {
-    return { mode: 'local', asset: bundled };
-  }
   const remote = logoUrl?.trim();
   if (remote) {
     return { mode: 'remote', src: remote };
+  }
+  const bundled = resolveBrandStaticLogoForDisplay(slug, name);
+  if (bundled) {
+    return { mode: 'local', asset: bundled };
   }
   return { mode: 'wordmark' };
 }
