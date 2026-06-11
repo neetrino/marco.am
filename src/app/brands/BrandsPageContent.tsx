@@ -62,9 +62,6 @@ function BrandDirectoryLogo({
   const [failedSrcSet, setFailedSrcSet] = useState<Set<string>>(new Set());
 
   const cell = brandDirectoryLogoCellStyle(partner.slug, partner.name);
-  const sizesWidth = isBrandLogoCellOversizedSlug(partner.slug, partner.name)
-    ? BRANDS_DIRECTORY_LOGO_OVERSIZED_CELL_MAX_WIDTH_PX
-    : BRANDS_DIRECTORY_LOGO_CELL_MAX_WIDTH_PX;
   const candidateRemoteSrc = useMemo(() => {
     const out: string[] = [];
     if (resolved.mode === 'remote') {
