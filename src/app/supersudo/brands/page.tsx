@@ -24,6 +24,13 @@ interface Brand {
   logoUrl: string | null;
 }
 
+interface R2LogoItem {
+  key: string;
+  url: string;
+  size: number;
+  lastModified: string | null;
+}
+
 const ITEMS_PER_PAGE = 20;
 
 export default function BrandsPage() {
@@ -46,6 +53,9 @@ export default function BrandsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [brandSearch, setBrandSearch] = useState('');
   const [logoUploading, setLogoUploading] = useState(false);
+  const [r2Logos, setR2Logos] = useState<R2LogoItem[]>([]);
+  const [r2Loading, setR2Loading] = useState(false);
+  const [r2Error, setR2Error] = useState<string | null>(null);
 
   const filteredBrands = useMemo((): Brand[] => {
     const raw = brandSearch.trim().toLowerCase();
@@ -117,6 +127,25 @@ export default function BrandsPage() {
     () => toSafeImgAttributeSrc(formData.logoUrl.trim()),
     [formData.logoUrl],
   );
+
+  const fetchR2Logos = useCallback(async () => {
+    setR2Loading(true);
+    setR2Error(null);
+    try {
+      const response = await apiClient.get<{ data: R2LogoItem[] }>('/api/v1/supersudo/brands/r2-logos');
+      setR2Logos(Array.isArray(response.data) ? response.data : []);
+    } catch (err: unknown) {
+      logger.error('Error fetching R2 logos', { error: err });
+      setR2Logos([]);
+      setR2Error(getApiOrErrorMessage(err, 'Failed to load logos from R2'));
+    } finally {
+      setR2Loading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchR2Logos();
+  }, [fetchR2Logos]);
 
   const resetForm = () => {
     setFormData({ name: '', logoUrl: '' });
@@ -538,6 +567,67 @@ export default function BrandsPage() {
               )}
             </>
           )}
+        </Card>
+
+        <Card className="admin-card border-slate-200/80 bg-white shadow-[0_10px_24px_rgba(15,23,42,0.07)]">
+          <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 sm:px-5">
+            <div>
+              <h3 className="text-base font-semibold text-slate-900">R2 Brand Logos</h3>
+              <p className="text-xs text-slate-500">Source: brands/logos/</p>
+            </div>
+            <Button variant="outline" size="sm" onClick={fetchR2Logos} disabled={r2Loading}>
+              {r2Loading ? t('admin.common.loading') : 'Refresh'}
+            </Button>
+          </div>
+
+          <div className="p-4 sm:p-5">
+            {r2Loading && r2Logos.length === 0 ? (
+              <div className="rounded-xl border border-slate-200 bg-slate-50/70 py-10 text-center">
+                <div className="mx-auto mb-3 h-7 w-7 animate-spin rounded-full border-b-2 border-slate-800" />
+                <p className="text-sm font-medium text-slate-600">{t('admin.common.loading')}</p>
+              </div>
+            ) : r2Error ? (
+              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-6 text-sm text-red-700">
+                {r2Error}
+              </div>
+            ) : r2Logos.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50/70 px-4 py-8 text-center">
+                <p className="text-sm font-medium text-slate-600">No files found in R2 path.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 2xl:grid-cols-6">
+                {r2Logos.map((logo) => {
+                  const safeLogoUrl = toSafeImgAttributeSrc(logo.url);
+                  return (
+                    <a
+                      key={logo.key}
+                      href={logo.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="group rounded-xl border border-slate-200 bg-white p-3 transition-colors hover:border-amber-300 hover:bg-amber-50/50"
+                      title={logo.key}
+                    >
+                      <div className="mb-2 flex h-20 items-center justify-center rounded-lg border border-slate-100 bg-slate-50 p-2">
+                        {safeLogoUrl ? (
+                          <img
+                            src={toDomSafeImgSrcString(safeLogoUrl)}
+                            alt={logo.key}
+                            className="h-full w-full object-contain"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <span className="text-xs text-slate-400">invalid url</span>
+                        )}
+                      </div>
+                      <p className="line-clamp-2 text-[11px] text-slate-600">
+                        {logo.key.replace('brands/logos/', '')}
+                      </p>
+                    </a>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </Card>
       </div>
 

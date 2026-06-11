@@ -1,0 +1,189 @@
+{
+  "generatedAt": "2026-06-11T07:55:51.339Z",
+  "mode": "upload_and_delete_local",
+  "bucket": "marco",
+  "keyPrefix": "static-site",
+  "publicBaseUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev",
+  "totalFound": 29,
+  "uploaded": [
+    {
+      "local": "assets/payments/ameria.svg",
+      "key": "static-site/assets/payments/ameria.svg",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/assets/payments/ameria.svg"
+    },
+    {
+      "local": "assets/payments/armenian-express.svg",
+      "key": "static-site/assets/payments/armenian-express.svg",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/assets/payments/armenian-express.svg"
+    },
+    {
+      "local": "assets/profile/settings-sidebar-icon-v2.png",
+      "key": "static-site/assets/profile/settings-sidebar-icon-v2.png",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/assets/profile/settings-sidebar-icon-v2.png"
+    },
+    {
+      "local": "icons/footer-social/contact-mail.svg",
+      "key": "static-site/icons/footer-social/contact-mail.svg",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/icons/footer-social/contact-mail.svg"
+    },
+    {
+      "local": "icons/footer-social/contact-phone.svg",
+      "key": "static-site/icons/footer-social/contact-phone.svg",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/icons/footer-social/contact-phone.svg"
+    },
+    {
+      "local": "icons/footer-social/facebook.svg",
+      "key": "static-site/icons/footer-social/facebook.svg",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/icons/footer-social/facebook.svg"
+    },
+    {
+      "local": "icons/footer-social/instagram.svg",
+      "key": "static-site/icons/footer-social/instagram.svg",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/icons/footer-social/instagram.svg"
+    },
+    {
+      "local": "icons/footer-social/telegram.svg",
+      "key": "static-site/icons/footer-social/telegram.svg",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/icons/footer-social/telegram.svg"
+    },
+    {
+      "local": "icons/footer-social/viber-glyph.svg",
+      "key": "static-site/icons/footer-social/viber-glyph.svg",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/icons/footer-social/viber-glyph.svg"
+    },
+    {
+      "local": "icons/footer-social/whatsapp.svg",
+      "key": "static-site/icons/footer-social/whatsapp.svg",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/icons/footer-social/whatsapp.svg"
+    },
+    {
+      "local": "images/home/mobile-message-cta-icon.svg",
+      "key": "static-site/images/home/mobile-message-cta-icon.svg",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/images/home/mobile-message-cta-icon.svg"
+    }
+  ],
+  "skipped": [
+    {
+      "local": "assets/brand/marco-group-logo.webp",
+      "key": "static-site/assets/brand/marco-group-logo.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/assets/brand/marco-group-logo.webp"
+    },
+    {
+      "local": "assets/home/app-download-banner.webp",
+      "key": "static-site/assets/home/app-download-banner.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/assets/home/app-download-banner.webp"
+    },
+    {
+      "local": "assets/home/features/feature-best-quality.webp",
+      "key": "static-site/assets/home/features/feature-best-quality.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/assets/home/features/feature-best-quality.webp"
+    },
+    {
+      "local": "assets/home/features/feature-fast-delivery.webp",
+      "key": "static-site/assets/home/features/feature-fast-delivery.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/assets/home/features/feature-fast-delivery.webp"
+    },
+    {
+      "local": "assets/home/features/feature-free-return.webp",
+      "key": "static-site/assets/home/features/feature-free-return.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/assets/home/features/feature-free-return.webp"
+    },
+    {
+      "local": "assets/home/home-gradient-banner-bg.webp",
+      "key": "static-site/assets/home/home-gradient-banner-bg.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/assets/home/home-gradient-banner-bg.webp"
+    },
+    {
+      "local": "assets/payments/footer-payment-methods.webp",
+      "key": "static-site/assets/payments/footer-payment-methods.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/assets/payments/footer-payment-methods.webp"
+    },
+    {
+      "local": "assets/profile/user-profile.png",
+      "key": "static-site/assets/profile/user-profile.png",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/assets/profile/user-profile.png"
+    },
+    {
+      "local": "images/category-nav/accessories.svg",
+      "key": "static-site/images/category-nav/accessories.svg",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/images/category-nav/accessories.svg"
+    },
+    {
+      "local": "images/category-nav/books.svg",
+      "key": "static-site/images/category-nav/books.svg",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/images/category-nav/books.svg"
+    },
+    {
+      "local": "images/category-nav/climate-extra.svg",
+      "key": "static-site/images/category-nav/climate-extra.svg",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/images/category-nav/climate-extra.svg"
+    },
+    {
+      "local": "images/category-nav/furniture-hardware.svg",
+      "key": "static-site/images/category-nav/furniture-hardware.svg",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/images/category-nav/furniture-hardware.svg"
+    },
+    {
+      "local": "images/category-nav/furniture.svg",
+      "key": "static-site/images/category-nav/furniture.svg",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/images/category-nav/furniture.svg"
+    },
+    {
+      "local": "images/category-nav/home-and-garden.svg",
+      "key": "static-site/images/category-nav/home-and-garden.svg",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/images/category-nav/home-and-garden.svg"
+    },
+    {
+      "local": "images/category-nav/kitchen-appliances.svg",
+      "key": "static-site/images/category-nav/kitchen-appliances.svg",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/images/category-nav/kitchen-appliances.svg"
+    },
+    {
+      "local": "images/category-nav/sports.svg",
+      "key": "static-site/images/category-nav/sports.svg",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/images/category-nav/sports.svg"
+    },
+    {
+      "local": "images/home/reels/reel-1.webp",
+      "key": "static-site/images/home/reels/reel-1.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/images/home/reels/reel-1.webp"
+    },
+    {
+      "local": "images/home/special-offers-unified-nature.webp",
+      "key": "static-site/images/home/special-offers-unified-nature.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/images/home/special-offers-unified-nature.webp"
+    }
+  ],
+  "deletedLocal": [
+    "assets/brand/marco-group-logo.webp",
+    "assets/home/app-download-banner.webp",
+    "assets/home/features/feature-best-quality.webp",
+    "assets/home/features/feature-fast-delivery.webp",
+    "assets/home/features/feature-free-return.webp",
+    "assets/home/home-gradient-banner-bg.webp",
+    "assets/payments/ameria.svg",
+    "assets/payments/armenian-express.svg",
+    "assets/payments/footer-payment-methods.webp",
+    "assets/profile/settings-sidebar-icon-v2.png",
+    "assets/profile/user-profile.png",
+    "icons/footer-social/contact-mail.svg",
+    "icons/footer-social/contact-phone.svg",
+    "icons/footer-social/facebook.svg",
+    "icons/footer-social/instagram.svg",
+    "icons/footer-social/telegram.svg",
+    "icons/footer-social/viber-glyph.svg",
+    "icons/footer-social/whatsapp.svg",
+    "images/category-nav/accessories.svg",
+    "images/category-nav/books.svg",
+    "images/category-nav/climate-extra.svg",
+    "images/category-nav/furniture-hardware.svg",
+    "images/category-nav/furniture.svg",
+    "images/category-nav/home-and-garden.svg",
+    "images/category-nav/kitchen-appliances.svg",
+    "images/category-nav/sports.svg",
+    "images/home/mobile-message-cta-icon.svg",
+    "images/home/reels/reel-1.webp",
+    "images/home/special-offers-unified-nature.webp"
+  ],
+  "failed": []
+}

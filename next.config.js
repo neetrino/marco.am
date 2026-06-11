@@ -47,6 +47,9 @@ function getAllowedDevOrigins() {
 }
 
 const r2Origin = getPublicR2Origin();
+const r2PublicBase = process.env.R2_PUBLIC_URL
+  ? process.env.R2_PUBLIC_URL.replace(/\/$/, '')
+  : null;
 const mediaSources = ["'self'", 'blob:', 'https:'];
 if (r2Origin) {
   mediaSources.push(r2Origin);
@@ -205,6 +208,25 @@ const nextConfig = {
             ].join('; '),
           },
         ],
+      },
+    ];
+  },
+  async rewrites() {
+    if (!r2PublicBase) {
+      return [];
+    }
+    return [
+      {
+        source: '/assets/:path*',
+        destination: `${r2PublicBase}/static-site/assets/:path*`,
+      },
+      {
+        source: '/images/:path*',
+        destination: `${r2PublicBase}/static-site/images/:path*`,
+      },
+      {
+        source: '/icons/:path*',
+        destination: `${r2PublicBase}/static-site/icons/:path*`,
       },
     ];
   },

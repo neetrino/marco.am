@@ -139,6 +139,61 @@ export async function updateAttributeTranslation(
   return formatAttribute(updatedAttribute, locale);
 }
 
+/**
+ * Reorder attributes within the global attributes list.
+ */
+export async function reorderAttributes(data: {
+  attributeId: string;
+  targetAttributeId: string;
+}) {
+  const attributeId = data.attributeId.trim();
+  const targetAttributeId = data.targetAttributeId.trim();
+  if (!attributeId || !targetAttributeId) {
+    throw {
+      status: 400,
+      type: "https://api.shop.am/problems/bad-request",
+      title: "Invalid reorder request",
+      detail: "attributeId and targetAttributeId are required",
+    };
+  }
+
+  const orderedIds = (
+    await db.attribute.findMany({
+      select: { id: true },
+      orderBy: [{ position: "asc" }, { id: "asc" }],
+    })
+  ).map((item) => item.id);
+
+  const sourceIndex = orderedIds.findIndex((id) => id === attributeId);
+  const targetIndex = orderedIds.findIndex((id) => id === targetAttributeId);
+  if (sourceIndex < 0 || targetIndex < 0) {
+    throw {
+      status: 404,
+      type: "https://api.shop.am/problems/not-found",
+      title: "Attribute not found",
+      detail: "Attribute or target attribute does not exist",
+    };
+  }
+
+  if (sourceIndex === targetIndex) {
+    return { success: true, moved: false };
+  }
+
+  const [movingId] = orderedIds.splice(sourceIndex, 1);
+  orderedIds.splice(targetIndex, 0, movingId);
+
+  await db.$transaction(
+    orderedIds.map((id, index) =>
+      db.attribute.update({
+        where: { id },
+        data: { position: index },
+      }),
+    ),
+  );
+
+  return { success: true, moved: true };
+}
+
 
 
 

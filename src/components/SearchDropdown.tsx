@@ -101,14 +101,16 @@ export function SearchDropdown({
                     {result.category && (
                       <p className="text-xs text-gray-500 mt-0.5">{result.category}</p>
                     )}
-                    <p className="text-sm font-semibold text-gray-700 mt-0.5">
-                      {formatCatalogPrice(result.price, currency)}
-                      {result.compareAtPrice != null && result.compareAtPrice > result.price && (
-                        <span className="ml-2 text-xs text-gray-500 line-through">
-                          {formatCatalogPrice(result.compareAtPrice, currency)}
-                        </span>
-                      )}
-                    </p>
+                    {result.price > 0 ? (
+                      <p className="text-sm font-semibold text-gray-700 mt-0.5">
+                        {formatCatalogPrice(result.price, currency)}
+                        {result.compareAtPrice != null && result.compareAtPrice > result.price && (
+                          <span className="ml-2 text-xs text-gray-500 line-through">
+                            {formatCatalogPrice(result.compareAtPrice, currency)}
+                          </span>
+                        )}
+                      </p>
+                    ) : null}
                   </div>
                 </button>
               </li>

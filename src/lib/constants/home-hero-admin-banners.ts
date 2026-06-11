@@ -17,7 +17,7 @@ export const HOME_HERO_PRIMARY_TOP_DEFAULT_IMAGE_URL =
 export const HOME_HERO_PRIMARY_BOTTOM_DEFAULT_IMAGE_URL =
   "/assets/home/home-gradient-banner-bg.webp" as const;
 export const HOME_HERO_SECONDARY_DEFAULT_IMAGE_URL =
-  "/assets/brands/panasonic.png" as const;
+  "/assets/home/home-gradient-banner-bg.webp" as const;
 export const HOME_PROMO_PRIMARY_DEFAULT_IMAGE_URL =
   "/assets/home/home-gradient-banner-bg.webp" as const;
 export const HOME_PROMO_PRIMARY_MOBILE_DEFAULT_IMAGE_URL =

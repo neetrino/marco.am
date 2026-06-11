@@ -66,6 +66,12 @@ export function useAttributes() {
   const [editingImageUrl, setEditingImageUrl] = useState<string | null>(null);
   const [savingValue, setSavingValue] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
+  const [movingAttributeId, setMovingAttributeId] = useState<string | null>(null);
+  const [draggingAttributeId, setDraggingAttributeId] = useState<string | null>(null);
+  const [dragOverAttributeId, setDragOverAttributeId] = useState<string | null>(null);
+  const [movingValueId, setMovingValueId] = useState<string | null>(null);
+  const [draggingValueId, setDraggingValueId] = useState<string | null>(null);
+  const [dragOverValueId, setDragOverValueId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchAttributes = useCallback(async () => {
@@ -412,6 +418,96 @@ export function useAttributes() {
     });
   };
 
+  const reorderAttributesOptimistically = (attributeId: string, targetAttributeId: string) => {
+    setAttributes((prev) => {
+      const sourceIndex = prev.findIndex((attribute) => attribute.id === attributeId);
+      const targetIndex = prev.findIndex((attribute) => attribute.id === targetAttributeId);
+      if (sourceIndex < 0 || targetIndex < 0 || sourceIndex === targetIndex) {
+        return prev;
+      }
+      const next = [...prev];
+      const [moving] = next.splice(sourceIndex, 1);
+      next.splice(targetIndex, 0, moving);
+      return next;
+    });
+  };
+
+  const reorderValuesOptimistically = (
+    attributeId: string,
+    valueId: string,
+    targetValueId: string,
+  ) => {
+    setAttributes((prev) =>
+      prev.map((attribute) => {
+        if (attribute.id !== attributeId) {
+          return attribute;
+        }
+        const sourceIndex = attribute.values.findIndex((value) => value.id === valueId);
+        const targetIndex = attribute.values.findIndex((value) => value.id === targetValueId);
+        if (sourceIndex < 0 || targetIndex < 0 || sourceIndex === targetIndex) {
+          return attribute;
+        }
+        const nextValues = [...attribute.values];
+        const [moving] = nextValues.splice(sourceIndex, 1);
+        nextValues.splice(targetIndex, 0, moving);
+        return {
+          ...attribute,
+          values: nextValues,
+        };
+      }),
+    );
+  };
+
+  const handleReorderAttribute = async (attributeId: string, targetAttributeId: string) => {
+    if (!attributeId || !targetAttributeId || attributeId === targetAttributeId) {
+      return;
+    }
+    const previous = attributes;
+    setMovingAttributeId(attributeId);
+    reorderAttributesOptimistically(attributeId, targetAttributeId);
+    try {
+      await apiClient.post('/api/v1/supersudo/attributes/reorder', {
+        attributeId,
+        targetAttributeId,
+      });
+    } catch (error: unknown) {
+      setAttributes(previous);
+      const message = getApiOrErrorMessage(error, t('admin.common.unknownErrorFallback'));
+      showToast(message, 'error');
+    } finally {
+      setMovingAttributeId(null);
+      setDraggingAttributeId(null);
+      setDragOverAttributeId(null);
+    }
+  };
+
+  const handleReorderValue = async (
+    attributeId: string,
+    valueId: string,
+    targetValueId: string,
+  ) => {
+    if (!attributeId || !valueId || !targetValueId || valueId === targetValueId) {
+      return;
+    }
+    const previous = attributes;
+    setMovingValueId(valueId);
+    reorderValuesOptimistically(attributeId, valueId, targetValueId);
+    try {
+      await apiClient.post(`/api/v1/supersudo/attributes/${attributeId}/values/reorder`, {
+        valueId,
+        targetValueId,
+      });
+    } catch (error: unknown) {
+      setAttributes(previous);
+      const message = getApiOrErrorMessage(error, t('admin.common.unknownErrorFallback'));
+      showToast(message, 'error');
+    } finally {
+      setMovingValueId(null);
+      setDraggingValueId(null);
+      setDragOverValueId(null);
+    }
+  };
+
   return {
     // State
     attributes,
@@ -433,6 +529,12 @@ export function useAttributes() {
     editingImageUrl,
     savingValue,
     imageUploading,
+    movingAttributeId,
+    draggingAttributeId,
+    dragOverAttributeId,
+    movingValueId,
+    draggingValueId,
+    dragOverValueId,
     fileInputRef,
     // Actions
     setShowAddForm,
@@ -443,6 +545,10 @@ export function useAttributes() {
     setEditingColors,
     setEditingImageUrl,
     setValueError,
+    setDraggingAttributeId,
+    setDragOverAttributeId,
+    setDraggingValueId,
+    setDragOverValueId,
     handleCreateAttribute,
     handleDeleteAttribute,
     handleUpdateAttributeName,
@@ -454,6 +560,8 @@ export function useAttributes() {
     handleRemoveImage,
     handleSaveInlineValue,
     toggleExpand,
+    handleReorderAttribute,
+    handleReorderValue,
   };
 }
 

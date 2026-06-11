@@ -25,7 +25,7 @@ export function formatProductForList(product: {
     compareAtPrice: number | null;
   }>;
   media?: unknown[];
-}) {
+}, locale: string = "en") {
   // Безопасное получение translation с проверкой на существование массива
   const translation = Array.isArray(product.translations) && product.translations.length > 0
     ? product.translations[0]
@@ -45,7 +45,7 @@ export function formatProductForList(product: {
   const categories = sortedCategories
     .map((cat) => {
       const trs = Array.isArray(cat.translations) ? cat.translations : [];
-      const tr = trs.find((t) => t.locale === "en") ?? trs[0];
+      const tr = trs.find((t) => t.locale === locale) ?? trs[0];
       const title = tr?.title?.trim() ?? "";
       return { id: cat.id, title };
     })

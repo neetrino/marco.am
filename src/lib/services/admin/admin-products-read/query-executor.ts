@@ -6,15 +6,15 @@ import { logger } from "../../../utils/logger";
 /**
  * Base include configuration for product list queries
  */
-const getProductListInclude = () => ({
+const getProductListInclude = (locale: string) => ({
   translations: {
-    where: { locale: "en" },
+    where: { locale },
     take: 1,
   },
   categories: {
     include: {
       translations: {
-        where: { locale: "en" },
+        where: { locale },
         take: 1,
       },
     },
@@ -100,7 +100,8 @@ export async function executeProductListQuery(
   where: Prisma.ProductWhereInput,
   orderBy: Prisma.ProductOrderByWithRelationInput,
   skip: number,
-  take: number
+  take: number,
+  locale: string,
 ) {
   const queryStartTime = Date.now();
   
@@ -117,7 +118,7 @@ export async function executeProductListQuery(
       skip,
       take,
       orderBy,
-      include: getProductListInclude(),
+        include: getProductListInclude(locale),
     });
     
     const productsTime = Date.now() - queryStartTime;
@@ -160,7 +161,7 @@ export async function executeProductListQuery(
           skip,
           take,
           orderBy,
-          include: getProductListInclude(),
+          include: getProductListInclude(locale),
         });
         
         const productsTime = Date.now() - queryStartTime;

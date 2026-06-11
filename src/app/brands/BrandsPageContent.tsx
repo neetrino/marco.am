@@ -1,9 +1,8 @@
 'use client';
 
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import Image from 'next/image';
 import Link from 'next/link';
-import type { CSSProperties } from 'react';
+import { useMemo, useState, type CSSProperties } from 'react';
 
 import { StaticPageLoadingSkeleton } from '@/components/navigation/StaticPageLoadingSkeleton';
 import {
@@ -49,20 +48,30 @@ function brandDirectoryLogoCellStyle(slug: string, displayName: string): CSSProp
 function BrandDirectoryLogo({
   partner,
   imagePriority,
+  r2FallbackUrl,
 }: {
   partner: HomeBrandPartnerPublicItem;
   imagePriority: boolean;
+  r2FallbackUrl?: string;
 }) {
   const resolved = resolveBrandDisplayLogoForCell(
     partner.logoUrl,
     partner.slug,
     partner.name,
   );
+  const [failedSrcSet, setFailedSrcSet] = useState<Set<string>>(new Set());
 
   const cell = brandDirectoryLogoCellStyle(partner.slug, partner.name);
-  const sizesWidth = isBrandLogoCellOversizedSlug(partner.slug, partner.name)
-    ? BRANDS_DIRECTORY_LOGO_OVERSIZED_CELL_MAX_WIDTH_PX
-    : BRANDS_DIRECTORY_LOGO_CELL_MAX_WIDTH_PX;
+  const candidateRemoteSrc = useMemo(() => {
+    const out: string[] = [];
+    if (resolved.mode === 'remote') {
+      out.push(resolved.src);
+    }
+    if (r2FallbackUrl) {
+      out.push(r2FallbackUrl);
+    }
+    return out.filter((src, index, arr) => arr.indexOf(src) === index && !failedSrcSet.has(src));
+  }, [resolved, r2FallbackUrl, failedSrcSet]);
 
   if (resolved.mode === 'wordmark') {
     return (
@@ -80,17 +89,42 @@ function BrandDirectoryLogo({
   if (resolved.mode === 'local') {
     return (
       <div
-        className="relative mx-auto w-full shrink-0 overflow-hidden"
+        className="relative mx-auto flex w-full shrink-0 items-center justify-center overflow-hidden"
         style={cell}
       >
-        <Image
+        <img
           src={resolved.asset.src}
           alt={partner.name}
-          fill
           className={BRANDS_DIRECTORY_LOGO_IMAGE_CLASS}
-          sizes={`${sizesWidth}px`}
-          priority={imagePriority}
-          loading={imagePriority ? undefined : 'lazy'}
+          loading={imagePriority ? 'eager' : 'lazy'}
+          decoding="async"
+          fetchPriority={imagePriority ? 'high' : 'auto'}
+        />
+      </div>
+    );
+  }
+
+  if (candidateRemoteSrc.length > 0) {
+    return (
+      <div
+        className="relative mx-auto flex w-full shrink-0 items-center justify-center overflow-hidden"
+        style={cell}
+      >
+        <img
+          src={candidateRemoteSrc[0]}
+          alt={partner.name}
+          className={BRANDS_DIRECTORY_LOGO_IMAGE_CLASS}
+          loading={imagePriority ? 'eager' : 'lazy'}
+          decoding="async"
+          fetchPriority={imagePriority ? 'high' : 'auto'}
+          onError={() => {
+            const failed = candidateRemoteSrc[0];
+            setFailedSrcSet((prev) => {
+              const next = new Set(prev);
+              next.add(failed);
+              return next;
+            });
+          }}
         />
       </div>
     );
@@ -98,22 +132,49 @@ function BrandDirectoryLogo({
 
   return (
     <div
-      className="relative mx-auto flex w-full shrink-0 items-center justify-center overflow-hidden"
+      className="mx-auto flex w-full shrink-0 items-center justify-center overflow-hidden px-1"
       style={cell}
     >
-      <img
-        src={resolved.src}
-        alt={partner.name}
-        className={BRANDS_DIRECTORY_LOGO_IMAGE_CLASS}
-        loading={imagePriority ? 'eager' : 'lazy'}
-        decoding="async"
-        fetchPriority={imagePriority ? 'high' : 'auto'}
-      />
+      <span className="line-clamp-2 max-h-full max-w-full text-center text-base font-semibold uppercase leading-tight tracking-[0.14em] text-[#383838] dark:text-[#383838] md:text-lg">
+        {partner.name.trim() || partner.slug}
+      </span>
     </div>
   );
 }
 
 function BrandsDirectoryGrid({ brands }: { brands: readonly HomeBrandPartnerPublicItem[] }) {
+  const r2LogosQuery = useQuery({
+    queryKey: ['home-brand-r2-logos'],
+    queryFn: async () => {
+      const response = await fetch('/api/v1/home/brand-r2-logos', { cache: 'no-store' });
+      if (!response.ok) {
+        return [] as string[];
+      }
+      const payload = (await response.json()) as { data?: string[] };
+      return Array.isArray(payload.data) ? payload.data : [];
+    },
+    staleTime: HOME_BRAND_PARTNERS_QUERY_STALE_MS,
+  });
+  const r2ByName = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const url of r2LogosQuery.data ?? []) {
+      const lower = url.toLowerCase();
+      for (const partner of brands) {
+        const nameToken = partner.name.toLowerCase().replace(/[^a-z0-9]+/g, '');
+        const slugToken = partner.slug.toLowerCase().replace(/[^a-z0-9]+/g, '');
+        if (
+          (nameToken.length > 2 && lower.includes(nameToken)) ||
+          (slugToken.length > 2 && lower.includes(slugToken))
+        ) {
+          if (!map.has(partner.id)) {
+            map.set(partner.id, url);
+          }
+        }
+      }
+    }
+    return map;
+  }, [brands, r2LogosQuery.data]);
+
   return (
     <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
       {brands.map((partner, index) => (
@@ -133,6 +194,7 @@ function BrandsDirectoryGrid({ brands }: { brands: readonly HomeBrandPartnerPubl
           <BrandDirectoryLogo
             partner={partner}
             imagePriority={index < BRANDS_DIRECTORY_LCP_IMAGE_PRIORITY_COUNT}
+            r2FallbackUrl={r2ByName.get(partner.id)}
           />
         </Link>
       ))}

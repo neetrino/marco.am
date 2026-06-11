@@ -21,6 +21,7 @@ interface UseCategoriesReturn {
     categoryId: string,
     targetCategoryId: string,
     scope: AdminCategoryView,
+    parentId?: string | null,
   ) => void;
   setCategoryHeaderVisibilityOptimistically: (categoryId: string, showInHeader: boolean) => void;
 }
@@ -31,9 +32,27 @@ interface UseCategoriesReturn {
 export function useCategories(language: LanguageCode): UseCategoriesReturn {
   const cachedCategories = readAdminCategoriesCache<Category>(language);
   const hadCacheRef = useRef(Boolean(cachedCategories?.length));
+  const cacheWriteTimeoutRef = useRef<number | null>(null);
   const [categories, setCategories] = useState<Category[]>(cachedCategories ?? []);
   const [loading, setLoading] = useState(!hadCacheRef.current);
   const [error, setError] = useState<string | null>(null);
+
+  const writeCategoriesCacheDeferred = useCallback(
+    (nextCategories: Category[]) => {
+      if (typeof window === 'undefined') {
+        writeAdminCategoriesCache(language, nextCategories);
+        return;
+      }
+      if (cacheWriteTimeoutRef.current !== null) {
+        window.clearTimeout(cacheWriteTimeoutRef.current);
+      }
+      cacheWriteTimeoutRef.current = window.setTimeout(() => {
+        writeAdminCategoriesCache(language, nextCategories);
+        cacheWriteTimeoutRef.current = null;
+      }, 0);
+    },
+    [language],
+  );
 
   const fetchCategories = useCallback(async () => {
     try {
@@ -45,7 +64,7 @@ export function useCategories(language: LanguageCode): UseCategoriesReturn {
       });
       const nextCategories = response.data || [];
       setCategories(nextCategories);
-      writeAdminCategoriesCache(language, nextCategories);
+      writeCategoriesCacheDeferred(nextCategories);
       hadCacheRef.current = true;
       logger.info('Categories loaded', { count: nextCategories.length });
     } catch (err: unknown) {
@@ -57,7 +76,7 @@ export function useCategories(language: LanguageCode): UseCategoriesReturn {
     } finally {
       setLoading(false);
     }
-  }, [language]);
+  }, [language, writeCategoriesCacheDeferred]);
 
   const syncCategoriesCache = useCallback(async () => {
     try {
@@ -65,12 +84,12 @@ export function useCategories(language: LanguageCode): UseCategoriesReturn {
         params: { lang: language },
       });
       const nextCategories = response.data || [];
-      writeAdminCategoriesCache(language, nextCategories);
+      writeCategoriesCacheDeferred(nextCategories);
       hadCacheRef.current = true;
     } catch (err: unknown) {
       logger.warn('Category cache sync failed', { error: err });
     }
-  }, [language]);
+  }, [language, writeCategoriesCacheDeferred]);
 
   const applyOptimisticCategories = useCallback(
     (updater: (previous: Category[]) => Category[]) => {
@@ -78,68 +97,99 @@ export function useCategories(language: LanguageCode): UseCategoriesReturn {
       setCategories((previous) => {
         previousSnapshot = previous;
         const next = updater(previous);
-        writeAdminCategoriesCache(language, next);
+        writeCategoriesCacheDeferred(next);
         return next;
       });
 
       return () => {
         setCategories(previousSnapshot);
-        writeAdminCategoriesCache(language, previousSnapshot);
+        writeCategoriesCacheDeferred(previousSnapshot);
       };
     },
-    [language],
+    [writeCategoriesCacheDeferred],
   );
 
   const reorderCategoriesOptimistically = useCallback(
-    (categoryId: string, targetCategoryId: string, scope: AdminCategoryView) => {
-      const isInScope = (category: Category): boolean =>
-        scope === 'roots' ? !category.parentId : Boolean(category.parentId);
-
+    (
+      categoryId: string,
+      targetCategoryId: string,
+      scope: AdminCategoryView,
+      parentId: string | null = null,
+    ) => {
       let nextSnapshot: Category[] | null = null;
       setCategories((prev) => {
-        const scoped = prev.filter(isInScope);
-        const sourceIndex = scoped.findIndex((category) => category.id === categoryId);
-        const targetIndex = scoped.findIndex((category) => category.id === targetCategoryId);
-        if (sourceIndex < 0 || targetIndex < 0 || sourceIndex === targetIndex) {
+        const reorderWithin = (predicate: (category: Category) => boolean): Category[] | null => {
+          const scoped = prev.filter(predicate);
+          const sourceIndex = scoped.findIndex((category) => category.id === categoryId);
+          const targetIndex = scoped.findIndex((category) => category.id === targetCategoryId);
+          if (sourceIndex < 0 || targetIndex < 0 || sourceIndex === targetIndex) {
+            return null;
+          }
+
+          const reorderedScoped = [...scoped];
+          const [movingCategory] = reorderedScoped.splice(sourceIndex, 1);
+          reorderedScoped.splice(targetIndex, 0, movingCategory);
+
+          let scopedCursor = 0;
+          return prev.map((category) =>
+            predicate(category) ? reorderedScoped[scopedCursor++] : category,
+          );
+        };
+
+        const rootPredicate = (category: Category) => !category.parentId;
+        const siblingPredicate = (category: Category) => category.parentId === parentId;
+        const next =
+          scope === 'roots'
+            ? reorderWithin(rootPredicate)
+            : reorderWithin(siblingPredicate);
+        if (!next) {
           return prev;
         }
-
-        const reorderedScoped = [...scoped];
-        const [movingCategory] = reorderedScoped.splice(sourceIndex, 1);
-        reorderedScoped.splice(targetIndex, 0, movingCategory);
-
-        let scopedCursor = 0;
-        const next = prev.map((category) =>
-          isInScope(category) ? reorderedScoped[scopedCursor++] : category,
-        );
         nextSnapshot = next;
         return next;
       });
 
       if (nextSnapshot) {
-        writeAdminCategoriesCache(language, nextSnapshot);
+        writeCategoriesCacheDeferred(nextSnapshot);
       }
     },
-    [language],
+    [writeCategoriesCacheDeferred],
   );
 
   const setCategoryHeaderVisibilityOptimistically = useCallback(
     (categoryId: string, showInHeader: boolean) => {
       let nextSnapshot: Category[] | null = null;
       setCategories((prev) => {
-        const next = prev.map((category) =>
-          category.id === categoryId ? { ...category, showInHeader } : category,
-        );
+        const categoryIndex = prev.findIndex((category) => category.id === categoryId);
+        if (categoryIndex < 0) {
+          return prev;
+        }
+        if (Boolean(prev[categoryIndex]?.showInHeader) === showInHeader) {
+          return prev;
+        }
+        const next = [...prev];
+        next[categoryIndex] = {
+          ...next[categoryIndex],
+          showInHeader,
+        };
         nextSnapshot = next;
         return next;
       });
 
       if (nextSnapshot) {
-        writeAdminCategoriesCache(language, nextSnapshot);
+        writeCategoriesCacheDeferred(nextSnapshot);
       }
     },
-    [language],
+    [writeCategoriesCacheDeferred],
   );
+
+  useEffect(() => {
+    return () => {
+      if (cacheWriteTimeoutRef.current !== null && typeof window !== 'undefined') {
+        window.clearTimeout(cacheWriteTimeoutRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     void fetchCategories();

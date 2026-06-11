@@ -7,7 +7,6 @@ import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '../../../../lib/ut
 import {
   countDirectSubcategories,
   filterCategoriesForAdminView,
-  sortSubcategoriesForAdmin,
   getLocalizedCategoryTitle,
   type AdminCategoryView,
 } from '../utils';
@@ -29,7 +28,12 @@ interface CategoriesListProps {
   onDelete: (categoryId: string, categoryTitle: string) => void;
   onToggleHeaderVisibility: (category: Category, nextVisible: boolean) => void;
   onToggleCategoryKind: (category: Category) => Promise<void>;
-  onReorder: (categoryId: string, targetCategoryId: string, scope: AdminCategoryView) => Promise<void>;
+  onReorder: (
+    categoryId: string,
+    targetCategoryId: string,
+    scope: AdminCategoryView,
+    parentId?: string | null,
+  ) => Promise<void>;
   movingCategoryId: string | null;
   convertingCategoryId: string | null;
   draggingCategoryId: string | null;
@@ -70,10 +74,8 @@ export function CategoriesList({
 
   const viewCategories = useMemo((): CategoryWithLevel[] => {
     const scoped = filterCategoriesForAdminView(categories, viewMode);
-    const sorted =
-      viewMode === 'subcategories' ? sortSubcategoriesForAdmin(scoped, lookup, activeLocale) : scoped;
-    return sorted.map((category) => ({ ...category, level: viewMode === 'roots' ? 0 : 1 }));
-  }, [activeLocale, categories, lookup, viewMode]);
+    return scoped.map((category) => ({ ...category, level: viewMode === 'roots' ? 0 : 1 }));
+  }, [categories, viewMode]);
 
   const totalPages = Math.ceil(viewCategories.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -179,30 +181,51 @@ export function CategoriesList({
               key={child.id}
               draggable
               onDragStart={(event) => {
+                event.stopPropagation();
                 event.dataTransfer.effectAllowed = 'move';
                 event.dataTransfer.setData('text/plain', child.id);
                 onDragStart(child.id);
               }}
               onDragOver={(event) => {
                 event.preventDefault();
+                event.stopPropagation();
                 event.dataTransfer.dropEffect = 'move';
               }}
-              onDragEnter={() => onDragEnter(child.id)}
-              onDragLeave={() => {
+              onDragEnter={(event) => {
+                event.stopPropagation();
+                onDragEnter(child.id);
+              }}
+              onDragLeave={(event) => {
+                event.stopPropagation();
                 if (isNestedDragOver) {
                   onDragEnter(null);
                 }
               }}
               onDrop={async (event) => {
                 event.preventDefault();
+                event.stopPropagation();
                 const sourceId = event.dataTransfer.getData('text/plain');
                 if (!sourceId || sourceId === child.id) {
                   onDragEnd();
                   return;
                 }
-                await onReorder(sourceId, child.id, 'subcategories');
+                const sourceCategory = lookup.find((category) => category.id === sourceId);
+                if (!sourceCategory) {
+                  onDragEnd();
+                  return;
+                }
+                const sourceParentId = sourceCategory.parentId ?? null;
+                const targetParentId = child.parentId ?? null;
+                if (!sourceParentId || sourceParentId !== targetParentId) {
+                  onDragEnd();
+                  return;
+                }
+                await onReorder(sourceId, child.id, 'subcategories', child.parentId ?? null);
               }}
-              onDragEnd={onDragEnd}
+              onDragEnd={(event) => {
+                event.stopPropagation();
+                onDragEnd();
+              }}
               className={`rounded-lg border border-slate-200 bg-slate-50/70 px-3 py-2 transition-colors ${
                 isNestedDragOver ? 'bg-amber-100/70' : ''
               } ${isNestedDragging ? 'opacity-60' : ''}`}

@@ -237,6 +237,64 @@ export async function updateAttributeValue(
   return formatAttribute(updatedAttribute, locale);
 }
 
+/**
+ * Reorder values within one attribute.
+ */
+export async function reorderAttributeValues(data: {
+  attributeId: string;
+  valueId: string;
+  targetValueId: string;
+}) {
+  const attributeId = data.attributeId.trim();
+  const valueId = data.valueId.trim();
+  const targetValueId = data.targetValueId.trim();
+  if (!attributeId || !valueId || !targetValueId) {
+    throw {
+      status: 400,
+      type: "https://api.shop.am/problems/bad-request",
+      title: "Invalid reorder request",
+      detail: "attributeId, valueId and targetValueId are required",
+    };
+  }
+
+  const orderedIds = (
+    await db.attributeValue.findMany({
+      where: { attributeId },
+      select: { id: true },
+      orderBy: [{ position: "asc" }, { id: "asc" }],
+    })
+  ).map((item) => item.id);
+
+  const sourceIndex = orderedIds.findIndex((id) => id === valueId);
+  const targetIndex = orderedIds.findIndex((id) => id === targetValueId);
+  if (sourceIndex < 0 || targetIndex < 0) {
+    throw {
+      status: 404,
+      type: "https://api.shop.am/problems/not-found",
+      title: "Attribute value not found",
+      detail: "Value or target value does not exist in this attribute",
+    };
+  }
+
+  if (sourceIndex === targetIndex) {
+    return { success: true, moved: false };
+  }
+
+  const [movingId] = orderedIds.splice(sourceIndex, 1);
+  orderedIds.splice(targetIndex, 0, movingId);
+
+  await db.$transaction(
+    orderedIds.map((id, index) =>
+      db.attributeValue.update({
+        where: { id },
+        data: { position: index },
+      }),
+    ),
+  );
+
+  return { success: true, moved: true };
+}
+
 
 
 

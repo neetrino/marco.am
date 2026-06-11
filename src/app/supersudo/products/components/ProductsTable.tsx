@@ -27,6 +27,7 @@ interface ProductsTableProps {
   totalCount: number | null;
   page: number;
   setPage: (page: number | ((prev: number) => number)) => void;
+  categoryTitleById: Map<string, string>;
 }
 
 /**
@@ -62,6 +63,7 @@ export function ProductsTable({
   totalCount,
   page,
   setPage,
+  categoryTitleById,
 }: ProductsTableProps) {
   const { t } = useTranslation();
   const router = useRouter();
@@ -296,9 +298,9 @@ export function ProductsTable({
                             <span
                               key={cat.id}
                               className="inline-block max-w-full truncate rounded-full border border-amber-200/80 bg-amber-50/90 px-2 py-0.5 text-xs font-medium text-amber-950"
-                              title={cat.title}
+                              title={categoryTitleById.get(cat.id) || cat.title}
                             >
-                              {cat.title}
+                              {categoryTitleById.get(cat.id) || cat.title}
                             </span>
                           ))}
                         </div>

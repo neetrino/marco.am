@@ -27,6 +27,12 @@ export function AttributesPageContent({
   editingImageUrl,
   savingValue,
   imageUploading,
+  movingAttributeId: _movingAttributeId,
+  draggingAttributeId,
+  dragOverAttributeId,
+  movingValueId,
+  draggingValueId,
+  dragOverValueId,
   fileInputRef,
   setShowAddForm,
   setFormData,
@@ -36,6 +42,10 @@ export function AttributesPageContent({
   setEditingColors,
   setEditingImageUrl: _setEditingImageUrl,
   setValueError,
+  setDraggingAttributeId,
+  setDragOverAttributeId,
+  setDraggingValueId,
+  setDragOverValueId,
   handleCreateAttribute,
   handleDeleteAttribute,
   handleUpdateAttributeName,
@@ -47,6 +57,8 @@ export function AttributesPageContent({
   handleRemoveImage,
   handleSaveInlineValue,
   toggleExpand,
+  handleReorderAttribute,
+  handleReorderValue,
 }: UseAttributesReturn) {
   const { t } = useTranslation();
   const [attributeSearch, setAttributeSearch] = useState('');
@@ -208,11 +220,60 @@ export function AttributesPageContent({
               return (
                 <div
                   key={attribute.id}
+                  draggable
+                  onDragStart={(event) => {
+                    event.dataTransfer.effectAllowed = 'move';
+                    event.dataTransfer.setData('text/plain', attribute.id);
+                    setDraggingAttributeId(attribute.id);
+                  }}
+                  onDragOver={(event) => {
+                    event.preventDefault();
+                    event.dataTransfer.dropEffect = 'move';
+                  }}
+                  onDragEnter={() => setDragOverAttributeId(attribute.id)}
+                  onDragLeave={() => {
+                    if (dragOverAttributeId === attribute.id) {
+                      setDragOverAttributeId(null);
+                    }
+                  }}
+                  onDrop={async (event) => {
+                    event.preventDefault();
+                    const sourceId = event.dataTransfer.getData('text/plain');
+                    if (!sourceId || sourceId === attribute.id) {
+                      setDraggingAttributeId(null);
+                      setDragOverAttributeId(null);
+                      return;
+                    }
+                    await handleReorderAttribute(sourceId, attribute.id);
+                  }}
+                  onDragEnd={() => {
+                    setDraggingAttributeId(null);
+                    setDragOverAttributeId(null);
+                  }}
                   className="overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-[0_10px_30px_-22px_rgba(17,24,39,0.45)] transition-shadow hover:shadow-[0_16px_34px_-20px_rgba(17,24,39,0.4)]"
+                  style={{
+                    opacity: draggingAttributeId === attribute.id ? 0.6 : 1,
+                    backgroundColor: dragOverAttributeId === attribute.id ? '#fef3c7' : undefined,
+                  }}
                 >
                   {/* Attribute Header */}
                   <div className="flex items-center justify-between p-4 transition-colors hover:bg-gray-50/70">
                     <div className="flex flex-1 items-center gap-4">
+                      <button
+                        type="button"
+                        className="rounded-lg border border-gray-200 px-2 py-1 text-gray-400 transition-colors hover:border-amber-300 hover:text-amber-700"
+                        title={t('admin.categories.dragToReorder')}
+                        aria-label={t('admin.categories.dragToReorder')}
+                      >
+                        <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+                          <circle cx="6" cy="5" r="1.4" />
+                          <circle cx="6" cy="10" r="1.4" />
+                          <circle cx="6" cy="15" r="1.4" />
+                          <circle cx="12" cy="5" r="1.4" />
+                          <circle cx="12" cy="10" r="1.4" />
+                          <circle cx="12" cy="15" r="1.4" />
+                        </svg>
+                      </button>
                       <button
                         onClick={() => toggleExpand(attribute.id)}
                         className="rounded-lg p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
@@ -387,11 +448,68 @@ export function AttributesPageContent({
                             return (
                               <div
                                 key={value.id}
+                                draggable
+                                onDragStart={(event) => {
+                                  event.stopPropagation();
+                                  event.dataTransfer.effectAllowed = 'move';
+                                  event.dataTransfer.setData('text/plain', value.id);
+                                  setDraggingValueId(value.id);
+                                }}
+                                onDragOver={(event) => {
+                                  event.preventDefault();
+                                  event.stopPropagation();
+                                  event.dataTransfer.dropEffect = 'move';
+                                }}
+                                onDragEnter={(event) => {
+                                  event.stopPropagation();
+                                  setDragOverValueId(value.id);
+                                }}
+                                onDragLeave={(event) => {
+                                  event.stopPropagation();
+                                  if (dragOverValueId === value.id) {
+                                    setDragOverValueId(null);
+                                  }
+                                }}
+                                onDrop={async (event) => {
+                                  event.preventDefault();
+                                  event.stopPropagation();
+                                  const sourceId = event.dataTransfer.getData('text/plain');
+                                  if (!sourceId || sourceId === value.id) {
+                                    setDraggingValueId(null);
+                                    setDragOverValueId(null);
+                                    return;
+                                  }
+                                  await handleReorderValue(attribute.id, sourceId, value.id);
+                                }}
+                                onDragEnd={(event) => {
+                                  event.stopPropagation();
+                                  setDraggingValueId(null);
+                                  setDragOverValueId(null);
+                                }}
                                 className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-[0_8px_24px_-18px_rgba(17,24,39,0.35)]"
+                                style={{
+                                  opacity: draggingValueId === value.id ? 0.6 : 1,
+                                  backgroundColor: dragOverValueId === value.id ? '#fef3c7' : undefined,
+                                }}
                               >
                                 {/* Value Card */}
                                 <div className="flex items-center justify-between p-3 transition-colors hover:bg-gray-50">
                                   <div className="flex flex-1 items-center gap-2">
+                                    <button
+                                      type="button"
+                                      className="rounded-md border border-gray-200 px-1.5 py-1 text-gray-400 transition-colors hover:border-amber-300 hover:text-amber-700"
+                                      title={t('admin.categories.dragToReorder')}
+                                      aria-label={t('admin.categories.dragToReorder')}
+                                    >
+                                      <svg viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
+                                        <circle cx="6" cy="5" r="1.2" />
+                                        <circle cx="6" cy="10" r="1.2" />
+                                        <circle cx="6" cy="15" r="1.2" />
+                                        <circle cx="12" cy="5" r="1.2" />
+                                        <circle cx="12" cy="10" r="1.2" />
+                                        <circle cx="12" cy="15" r="1.2" />
+                                      </svg>
+                                    </button>
                                     {/* Color swatch or image */}
                                     {value.colors && value.colors.length > 0 ? (
                                       <span
@@ -425,7 +543,7 @@ export function AttributesPageContent({
                                     </button>
                                     <button
                                       onClick={() => handleDeleteValue(attribute.id, value.id, value.label)}
-                                      disabled={deletingValue === value.id}
+                                      disabled={deletingValue === value.id || movingValueId === value.id}
                                       className="rounded-lg p-1 text-red-600 transition-colors hover:bg-red-50 hover:text-red-800 disabled:opacity-50"
                                       title={t('admin.attributes.deleteValue')}
                                     >

@@ -34,12 +34,15 @@ export function ProductCardBrandMark({
   textClassName,
   logoBoxClassName,
 }: ProductCardBrandMarkProps) {
+  const safeName = typeof name === 'string' ? name : '';
+  const displayName = safeName.trim();
+
   const sizing = PRODUCT_CARD_BRAND_LOGO_SIZES[size];
   const rowClassName = logoBoxClassName ?? sizing.rowClassName;
 
   const candidates = useMemo(
-    () => buildBrandLogoCandidateSrcs(logoUrl, slug, name),
-    [logoUrl, slug, name],
+    () => buildBrandLogoCandidateSrcs(logoUrl, slug, safeName),
+    [logoUrl, slug, safeName],
   );
 
   const [candidateIndex, setCandidateIndex] = useState(0);
@@ -54,14 +57,14 @@ export function ProductCardBrandMark({
 
   if (candidates.length === 0 || candidateIndex >= candidates.length) {
     return (
-      <div className={rowClassName} aria-label={name.trim() || 'Brand'}>
-        <span className={wordmarkClassName}>{name.trim() ? name : '—'}</span>
+      <div className={rowClassName} aria-label={displayName || 'Brand'}>
+        <span className={wordmarkClassName}>{displayName || '—'}</span>
       </div>
     );
   }
 
   const src = candidates[candidateIndex]!;
-  const uiScale = resolveProductCardBrandLogoUiScale(slug, name, src);
+  const uiScale = resolveProductCardBrandLogoUiScale(slug, safeName, src);
   const needsScaleBoost = uiScale !== 1;
 
   return (
@@ -70,7 +73,7 @@ export function ProductCardBrandMark({
     >
       <img
         src={src}
-        alt={name.trim() || 'Brand'}
+        alt={displayName || 'Brand'}
         className={sizing.imageClassName}
         style={
           needsScaleBoost

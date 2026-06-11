@@ -82,6 +82,8 @@ class AdminService {
   updateAttributeTranslation = adminAttributesService.updateAttributeTranslation.bind(adminAttributesService);
   addAttributeValue = adminAttributesService.addAttributeValue.bind(adminAttributesService);
   updateAttributeValue = adminAttributesService.updateAttributeValue.bind(adminAttributesService);
+  reorderAttributes = adminAttributesService.reorderAttributes.bind(adminAttributesService);
+  reorderAttributeValues = adminAttributesService.reorderAttributeValues.bind(adminAttributesService);
   deleteAttribute = adminAttributesService.deleteAttribute.bind(adminAttributesService);
   deleteAttributeValue = adminAttributesService.deleteAttributeValue.bind(adminAttributesService);
 }

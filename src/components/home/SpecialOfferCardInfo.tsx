@@ -59,9 +59,7 @@ export function SpecialOfferCardInfo({
               size="specialOffer"
               textClassName={`text-[12px] font-black uppercase tracking-[0.6px] ${brandClass}`}
             />
-          ) : (
-            <p className={`text-[12px] font-black uppercase tracking-[0.6px] ${brandClass}`}>—</p>
-          )}
+          ) : null}
         </div>
         <ProductPdpPrefetchLink
           href={`/products/${product.slug}`}
