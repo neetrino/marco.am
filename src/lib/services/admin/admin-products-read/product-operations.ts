@@ -37,6 +37,7 @@ export async function getProducts(filters: ProductFilters) {
   
   const page = filters.page || 1;
   const limit = filters.limit || 20;
+  const locale = filters.lang?.trim().toLowerCase() || "en";
   const skip = (page - 1) * limit;
 
   const resolvedFilters = await withExpandedCategoryFilters(filters);
@@ -45,9 +46,9 @@ export async function getProducts(filters: ProductFilters) {
 
   logger.debug('Executing database queries...', { where: JSON.stringify(where, null, 2) });
 
-  const { products, total } = await executeProductListQuery(where, orderBy, skip, limit);
+  const { products, total } = await executeProductListQuery(where, orderBy, skip, limit, locale);
 
-  const data = products.map(formatProductForList);
+  const data = products.map((product) => formatProductForList(product, locale));
 
   const totalTime = Date.now() - startTime;
   logger.info(`getProducts completed in ${totalTime}ms. Returning ${data.length} products`);

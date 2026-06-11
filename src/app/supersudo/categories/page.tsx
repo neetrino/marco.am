@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Card, Button } from '@shop/ui';
 import { useTranslation } from '../../../lib/i18n-client';
@@ -63,6 +63,7 @@ export default function CategoriesPage() {
   const [conversionSubcategoryIds, setConversionSubcategoryIds] = useState<string[]>([]);
   const [draggingCategoryId, setDraggingCategoryId] = useState<string | null>(null);
   const [dragOverCategoryId, setDragOverCategoryId] = useState<string | null>(null);
+  const reorderInFlightRef = useRef(false);
   const filteredCategories = useMemo((): Category[] => {
     const raw = categorySearch.trim().toLowerCase();
     if (!raw) {
@@ -148,19 +149,54 @@ export default function CategoriesPage() {
     categoryId: string,
     targetCategoryId: string,
     scope: AdminCategoryView,
+    parentId?: string | null,
   ) => {
+    if (reorderInFlightRef.current) {
+      handleEndDrag();
+      return;
+    }
+
     if (categoryId === targetCategoryId) {
       handleEndDrag();
       return;
     }
 
+    const sourceCategory = categories.find((category) => category.id === categoryId);
+    const targetCategory = categories.find((category) => category.id === targetCategoryId);
+    if (!sourceCategory || !targetCategory) {
+      handleEndDrag();
+      return;
+    }
+
+    if (scope === 'roots') {
+      const bothRoots = !sourceCategory.parentId && !targetCategory.parentId;
+      if (!bothRoots) {
+        handleEndDrag();
+        return;
+      }
+    } else {
+      const sourceParentId = sourceCategory.parentId ?? null;
+      const targetParentId = targetCategory.parentId ?? null;
+      const requestedParentId = parentId ?? targetParentId;
+      const sameSiblingScope =
+        Boolean(sourceParentId) &&
+        sourceParentId === targetParentId &&
+        sourceParentId === requestedParentId;
+      if (!sameSiblingScope) {
+        handleEndDrag();
+        return;
+      }
+    }
+
     try {
+      reorderInFlightRef.current = true;
       setMovingCategoryId(categoryId);
-      reorderCategoriesOptimistically(categoryId, targetCategoryId, scope);
+      reorderCategoriesOptimistically(categoryId, targetCategoryId, scope, parentId ?? null);
       await apiClient.post('/api/v1/supersudo/categories/reorder', {
         categoryId,
         targetCategoryId,
         scope,
+        parentId: parentId ?? null,
       });
       notifyShopCategoryTreeUpdated();
     } catch (error: unknown) {
@@ -168,6 +204,7 @@ export default function CategoriesPage() {
       showToast(message, 'error');
       await fetchCategories();
     } finally {
+      reorderInFlightRef.current = false;
       setMovingCategoryId(null);
       handleEndDrag();
     }

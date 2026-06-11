@@ -4,6 +4,7 @@
 export interface ProductFilters {
   page?: number;
   limit?: number;
+  lang?: string;
   search?: string;
   category?: string;
   categories?: string[];

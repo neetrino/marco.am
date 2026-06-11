@@ -897,6 +897,20 @@ class AdminCategoriesService {
     return scopedCategories.map((item) => item.id);
   }
 
+  private async loadSiblingCategoryOrder(parentId: string | null): Promise<string[]> {
+    const scopedCategories = await db.category.findMany({
+      where: {
+        deletedAt: null,
+        parentId,
+      },
+      select: {
+        id: true,
+      },
+      orderBy: [{ position: "asc" }, { id: "asc" }],
+    });
+    return scopedCategories.map((item) => item.id);
+  }
+
   private async persistScopedCategoryOrder(orderedIds: string[]): Promise<void> {
     await db.$transaction(
       orderedIds.map((id, index) =>
@@ -946,6 +960,7 @@ class AdminCategoriesService {
     categoryId: string;
     targetCategoryId: string;
     scope: CategoryMoveScope;
+    parentId?: string | null;
   }) {
     const categoryId = data.categoryId.trim();
     const targetCategoryId = data.targetCategoryId.trim();
@@ -957,10 +972,55 @@ class AdminCategoriesService {
       );
     }
 
-    const orderedIds = await this.loadScopedCategoryOrder(data.scope);
-    const sourceIndex = orderedIds.findIndex((id) => id === categoryId);
-    const targetIndex = orderedIds.findIndex((id) => id === targetCategoryId);
-    if (sourceIndex < 0 || targetIndex < 0) {
+    if (data.scope === "subcategories") {
+      const [sourceCategory, targetCategory] = await Promise.all([
+        db.category.findFirst({
+          where: {
+            id: categoryId,
+            deletedAt: null,
+          },
+          select: {
+            parentId: true,
+          },
+        }),
+        db.category.findFirst({
+          where: {
+            id: targetCategoryId,
+            deletedAt: null,
+          },
+          select: {
+            parentId: true,
+          },
+        }),
+      ]);
+
+      if (!sourceCategory || !targetCategory) {
+        throw this.buildProblemError(
+          404,
+          "Category not found",
+          "Category or target category does not exist",
+        );
+      }
+
+      const sourceParentId = sourceCategory.parentId ?? null;
+      const targetParentId = targetCategory.parentId ?? null;
+      const requestedParentId = data.parentId ?? targetParentId;
+      if (sourceParentId !== targetParentId || sourceParentId !== requestedParentId) {
+        throw this.buildProblemError(
+          400,
+          "Invalid reorder scope",
+          "Subcategory reorder is allowed only between siblings with the same parent",
+        );
+      }
+    }
+
+    const effectiveOrderedIds =
+      data.scope === "subcategories"
+        ? await this.loadSiblingCategoryOrder(data.parentId ?? null)
+        : await this.loadScopedCategoryOrder(data.scope);
+    const effectiveSourceIndex = effectiveOrderedIds.findIndex((id) => id === categoryId);
+    const effectiveTargetIndex = effectiveOrderedIds.findIndex((id) => id === targetCategoryId);
+    if (effectiveSourceIndex < 0 || effectiveTargetIndex < 0) {
       throw this.buildProblemError(
         404,
         "Category not found",
@@ -968,13 +1028,13 @@ class AdminCategoriesService {
       );
     }
 
-    if (sourceIndex === targetIndex) {
+    if (effectiveSourceIndex === effectiveTargetIndex) {
       return { success: true, moved: false };
     }
 
-    const [movingId] = orderedIds.splice(sourceIndex, 1);
-    orderedIds.splice(targetIndex, 0, movingId);
-    await this.persistScopedCategoryOrder(orderedIds);
+    const [movingId] = effectiveOrderedIds.splice(effectiveSourceIndex, 1);
+    effectiveOrderedIds.splice(effectiveTargetIndex, 0, movingId);
+    await this.persistScopedCategoryOrder(effectiveOrderedIds);
     await invalidateCategoryPublicCaches();
     return { success: true, moved: true };
   }

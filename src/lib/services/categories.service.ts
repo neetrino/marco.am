@@ -25,16 +25,9 @@ class CategoriesService {
       where: {
         published: true,
         deletedAt: null,
-        showInHeader: true,
       },
       include: {
         translations: true,
-        children: {
-          include: {
-            translations: true,
-          },
-          orderBy: { position: "asc" },
-        },
       },
       orderBy: {
         position: "asc",

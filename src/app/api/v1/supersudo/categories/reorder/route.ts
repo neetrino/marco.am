@@ -34,6 +34,11 @@ export async function POST(req: NextRequest) {
     const targetCategoryId =
       typeof body?.targetCategoryId === 'string' ? body.targetCategoryId.trim() : '';
     const scope = body?.scope;
+    const parentId = body?.parentId === null
+      ? null
+      : typeof body?.parentId === 'string'
+      ? body.parentId.trim() || null
+      : undefined;
 
     if (!categoryId || !targetCategoryId || !isValidScope(scope)) {
       return NextResponse.json(
@@ -52,12 +57,14 @@ export async function POST(req: NextRequest) {
       categoryId,
       targetCategoryId,
       scope,
+      parentId,
     });
 
     const result = await adminService.reorderCategory({
       categoryId,
       targetCategoryId,
       scope,
+      parentId,
     });
 
     return NextResponse.json(result);

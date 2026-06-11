@@ -291,18 +291,7 @@ export function SpecialOfferCard({
                   detailsPending={detailsPending}
                 />
               </div>
-            ) : (
-              <div
-                className="mt-auto w-full min-w-0 max-md:pr-0 md:[padding-right:var(--special-offers-price-pad-end)]"
-                style={{
-                  marginBottom: SPECIAL_OFFERS_PRICE_BLOCK_LIFT_FROM_BOTTOM_PX,
-                }}
-              >
-                <p className="text-sm font-semibold leading-snug text-[#383838]">
-                  {t('products.noPrice.label')}
-                </p>
-              </div>
-            )}
+            ) : null}
           </div>
         </div>
       </article>

@@ -8,6 +8,10 @@ export type BrandStaticLogoDimensions = {
   readonly height: number;
 };
 
+function normalizeBrandLookupKey(value: string | null | undefined): string {
+  return value?.trim().toLowerCase() ?? "";
+}
+
 /** `geepas.webp` has wide transparent margins — scale artwork inside the logo cell for clearer mark. */
 export const GEEPAS_BUNDLED_LOGO_UI_SCALE = 1.42;
 
@@ -141,7 +145,7 @@ function latinTokenKeysFromBrandName(name: string): readonly string[] {
 }
 
 function matchBundledLogoFromName(name: string): BrandStaticLogoDimensions | null {
-  const nameKey = name.trim().toLowerCase();
+  const nameKey = normalizeBrandLookupKey(name);
   if (nameKey.length === 0) {
     return null;
   }
@@ -162,7 +166,10 @@ function matchBundledLogoFromName(name: string): BrandStaticLogoDimensions | nul
  * Returns a bundled logo asset when the slug matches a known file; otherwise null.
  */
 export function resolveBrandStaticLogo(slug: string): BrandStaticLogoDimensions | null {
-  const key = slug.trim().toLowerCase();
+  const key = normalizeBrandLookupKey(slug);
+  if (key.length === 0) {
+    return null;
+  }
   const mapped = SLUG_ALIASES[key];
   if (mapped) {
     return SLUG_TO_LOGO[mapped] ?? null;
@@ -180,8 +187,8 @@ export function resolveProductCardBrandLogoUiScale(
   name: string,
   src: string,
 ): number {
-  const slugKey = slug.trim().toLowerCase();
-  const nameKey = name.trim().toLowerCase();
+  const slugKey = normalizeBrandLookupKey(slug);
+  const nameKey = normalizeBrandLookupKey(name);
 
   if (
     isGeepasBundledLogoAsset({ src, width: 0, height: 0 }) ||

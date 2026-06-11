@@ -5,7 +5,6 @@ import Image from 'next/image';
 import type { MouseEvent } from 'react';
 import type { ProductListingBrand } from '@/lib/types/product-listing-brand';
 import { formatCatalogPrice, type CurrencyCode } from '../../lib/currency';
-import { useTranslation } from '../../lib/i18n-client';
 import { ProductCardBrandMark } from './ProductCardBrandMark';
 import { ProductColors } from './ProductColors';
 import { ProductCardActions } from './ProductCardActions';
@@ -57,7 +56,6 @@ export function ProductCardList({
   onAddToCart,
   wishlistPage = false,
 }: ProductCardListProps) {
-  const { t } = useTranslation();
   const hasDisplayPrice = product.price > 0;
   const listSurfaceClass = wishlistPage
     ? 'border border-gray-200 shadow-sm dark:border-white/30'
@@ -136,11 +134,7 @@ export function ProductCardList({
                   logoUrl={product.brand.logoUrl}
                   size="list"
                 />
-              ) : (
-                <p className="text-lg text-gray-500 dark:text-[#383838] sm:text-xl">
-                  {t('common.defaults.category')}
-                </p>
-              )}
+              ) : null}
             </div>
             {/* Available Colors */}
             {product.colors && product.colors.length > 0 && (
@@ -174,13 +168,7 @@ export function ProductCardList({
                 </span>
               ) : null}
             </div>
-          ) : (
-            <div className="flex w-full flex-shrink-0 items-center sm:w-auto">
-              <span className="rounded-full bg-[#f4f4f4] px-3 py-1 text-xs font-semibold text-[#383838]">
-                {t('products.noPrice.label')}
-              </span>
-            </div>
-          )}
+          ) : null}
         </ProductPdpPrefetchLink>
 
         {/* Action Buttons: outside PDP link to avoid anchor nesting with buttons */}

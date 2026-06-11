@@ -24,7 +24,12 @@ interface CategoryItemProps {
   onDelete: (categoryId: string, categoryTitle: string) => void;
   onToggleHeaderVisibility: (category: Category, nextVisible: boolean) => void;
   onToggleCategoryKind: (category: Category) => Promise<void>;
-  onReorder: (categoryId: string, targetCategoryId: string, scope: AdminCategoryView) => Promise<void>;
+  onReorder: (
+    categoryId: string,
+    targetCategoryId: string,
+    scope: AdminCategoryView,
+    parentId?: string | null,
+  ) => Promise<void>;
   onDragStart: (categoryId: string) => void;
   onDragEnter: (categoryId: string | null) => void;
   onDragEnd: () => void;
@@ -76,7 +81,7 @@ export function CategoryItem({
       onDragEnd();
       return;
     }
-    await onReorder(sourceId, category.id, viewMode);
+    await onReorder(sourceId, category.id, viewMode, category.parentId ?? null);
   };
 
   return (

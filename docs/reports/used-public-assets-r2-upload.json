@@ -1,0 +1,195 @@
+{
+  "generatedAt": "2026-06-11T07:52:05.275Z",
+  "bucket": "marco",
+  "publicBaseUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev",
+  "keyPrefix": "static-site",
+  "uploaded": [
+    {
+      "local": "assets/brand/marco-group-logo.webp",
+      "key": "static-site/assets/brand/marco-group-logo.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/assets/brand/marco-group-logo.webp"
+    },
+    {
+      "local": "assets/home/app-download-banner.webp",
+      "key": "static-site/assets/home/app-download-banner.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/assets/home/app-download-banner.webp"
+    },
+    {
+      "local": "assets/home/features/feature-best-quality.webp",
+      "key": "static-site/assets/home/features/feature-best-quality.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/assets/home/features/feature-best-quality.webp"
+    },
+    {
+      "local": "assets/home/features/feature-fast-delivery.webp",
+      "key": "static-site/assets/home/features/feature-fast-delivery.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/assets/home/features/feature-fast-delivery.webp"
+    },
+    {
+      "local": "assets/home/features/feature-free-return.webp",
+      "key": "static-site/assets/home/features/feature-free-return.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/assets/home/features/feature-free-return.webp"
+    },
+    {
+      "local": "assets/home/home-gradient-banner-bg.webp",
+      "key": "static-site/assets/home/home-gradient-banner-bg.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/assets/home/home-gradient-banner-bg.webp"
+    },
+    {
+      "local": "assets/payments/footer-payment-methods.webp",
+      "key": "static-site/assets/payments/footer-payment-methods.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/assets/payments/footer-payment-methods.webp"
+    },
+    {
+      "local": "assets/profile/user-profile.png",
+      "key": "static-site/assets/profile/user-profile.png",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/assets/profile/user-profile.png"
+    },
+    {
+      "local": "images/category-nav/accessories.svg",
+      "key": "static-site/images/category-nav/accessories.svg",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/images/category-nav/accessories.svg"
+    },
+    {
+      "local": "images/category-nav/books.svg",
+      "key": "static-site/images/category-nav/books.svg",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/images/category-nav/books.svg"
+    },
+    {
+      "local": "images/category-nav/climate-extra.svg",
+      "key": "static-site/images/category-nav/climate-extra.svg",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/images/category-nav/climate-extra.svg"
+    },
+    {
+      "local": "images/category-nav/furniture-hardware.svg",
+      "key": "static-site/images/category-nav/furniture-hardware.svg",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/images/category-nav/furniture-hardware.svg"
+    },
+    {
+      "local": "images/category-nav/furniture.svg",
+      "key": "static-site/images/category-nav/furniture.svg",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/images/category-nav/furniture.svg"
+    },
+    {
+      "local": "images/category-nav/home-and-garden.svg",
+      "key": "static-site/images/category-nav/home-and-garden.svg",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/images/category-nav/home-and-garden.svg"
+    },
+    {
+      "local": "images/category-nav/kitchen-appliances.svg",
+      "key": "static-site/images/category-nav/kitchen-appliances.svg",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/images/category-nav/kitchen-appliances.svg"
+    },
+    {
+      "local": "images/category-nav/sports.svg",
+      "key": "static-site/images/category-nav/sports.svg",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/images/category-nav/sports.svg"
+    },
+    {
+      "local": "images/home/reels/reel-1.webp",
+      "key": "static-site/images/home/reels/reel-1.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/images/home/reels/reel-1.webp"
+    },
+    {
+      "local": "images/home/special-offers-unified-nature.webp",
+      "key": "static-site/images/home/special-offers-unified-nature.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/static-site/images/home/special-offers-unified-nature.webp"
+    }
+  ],
+  "skipped": [],
+  "missingLocally": [
+    "assets/brands/adler-europe.png",
+    "assets/brands/aeg.png",
+    "assets/brands/agt.png",
+    "assets/brands/atias.png",
+    "assets/brands/aux-air-conditioner.png",
+    "assets/brands/baki-sedef-kulp.png",
+    "assets/brands/berg.png",
+    "assets/brands/blum.png",
+    "assets/brands/bosch.png",
+    "assets/brands/boyut-plastic.png",
+    "assets/brands/braun.png",
+    "assets/brands/by-span.png",
+    "assets/brands/candy.png",
+    "assets/brands/carino.png",
+    "assets/brands/centek.png",
+    "assets/brands/delonghi.png",
+    "assets/brands/disa-kulp.png",
+    "assets/brands/divaki-japan.png",
+    "assets/brands/egger.png",
+    "assets/brands/egida.png",
+    "assets/brands/electrolux.png",
+    "assets/brands/eurostek.png",
+    "assets/brands/evo-gloss.png",
+    "assets/brands/fds-group.png",
+    "assets/brands/fgv-formenti-giovenzana.png",
+    "assets/brands/franko.png",
+    "assets/brands/galanz.png",
+    "assets/brands/geepas.png",
+    "assets/brands/gentas.png",
+    "assets/brands/gorenje.png",
+    "assets/brands/hausberg.png",
+    "assets/brands/hennson.png",
+    "assets/brands/hisense.png",
+    "assets/brands/hitachi.png",
+    "assets/brands/kastamonu.png",
+    "assets/brands/kelon.png",
+    "assets/brands/kenwood.png",
+    "assets/brands/kronospan.png",
+    "assets/brands/kumtel.png",
+    "assets/brands/lemark.png",
+    "assets/brands/lex-life-expert.png",
+    "assets/brands/lg.png",
+    "assets/brands/luxell.png",
+    "assets/brands/makss.png",
+    "assets/brands/marrbaxx.png",
+    "assets/brands/metali.png",
+    "assets/brands/mf-furniture-hardware.png",
+    "assets/brands/midea.png",
+    "assets/brands/misline.png",
+    "assets/brands/nobel.png",
+    "assets/brands/ozdemir.png",
+    "assets/brands/panasonic.png",
+    "assets/brands/philips.png",
+    "assets/brands/pinskdrev.png",
+    "assets/brands/puricelli.png",
+    "assets/brands/royax-furniture-accessories.png",
+    "assets/brands/samsung.png",
+    "assets/brands/simfer.png",
+    "assets/brands/skyworth.png",
+    "assets/brands/sony.png",
+    "assets/brands/starax.png",
+    "assets/brands/tefal.png",
+    "assets/brands/toshiba.png",
+    "assets/brands/tragen-your-kitchen.png",
+    "assets/brands/ultradecor.png",
+    "assets/brands/unihopper.png",
+    "assets/brands/uz.png",
+    "assets/brands/vestel.png",
+    "assets/brands/wellux.png",
+    "assets/brands/xiaomi.png",
+    "assets/flags/lang-en.webp",
+    "assets/flags/lang-hy.webp",
+    "assets/flags/lang-ru.webp",
+    "assets/hero/hero-brick-wall-vertical.webp",
+    "assets/hero/hero-free-delivery-banner-428x589.webp",
+    "assets/hero/hero-mobile-brick-wall-314-2380.webp",
+    "assets/hero/hero-mobile-home-banner-1114-3373.webp",
+    "assets/hero/hero-promo-chair-101-4023.webp",
+    "assets/hero/hero-promo-chair-shadow-101-4025.svg",
+    "assets/hero/hero-promo-slider-handle-101-4026.svg",
+    "assets/hero/hero-promo-smartphones-banner-305-2154.webp",
+    "assets/hero/hero-yellow-brick-wall.webp",
+    "assets/hero/promo-side-card-free-delivery.webp",
+    "assets/stock/pexels-1043471-team.webp",
+    "assets/stock/pexels-1350789-armchair.webp",
+    "assets/stock/pexels-1571460-interior.webp",
+    "assets/stock/pexels-2182970-team.webp",
+    "assets/stock/pexels-2379004-team.webp",
+    "assets/stock/pexels-3184357-about-hero.webp",
+    "assets/stock/pexels-3184398-team.webp",
+    "assets/stock/pexels-3184405-team.webp",
+    "images/home-banner-101-4070.svg",
+    "images/home-banner-banner2-link-icon.svg",
+    "images/home-banner-banner3-link-icon.svg"
+  ]
+}

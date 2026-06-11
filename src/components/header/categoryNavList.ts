@@ -140,7 +140,10 @@ export function dedupeCategories(categories: Category[], lang: LanguageCode): Ca
 
 /** Root list for header nav — all published storefront roots from the API. */
 export function prepareRootCategoriesForNav(categories: Category[], lang: LanguageCode): Category[] {
-  return dedupeCategories(categories, lang);
+  return dedupeCategories(
+    categories.filter((category) => Boolean(category.showInHeader)),
+    lang,
+  );
 }
 
 /** Full descendant list for mega menu / drawer (not only direct children). */

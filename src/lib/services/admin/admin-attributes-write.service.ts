@@ -1,5 +1,13 @@
-import { createAttribute, updateAttributeTranslation } from "./admin-attributes-write/attribute-operations";
-import { addAttributeValue, updateAttributeValue } from "./admin-attributes-write/value-operations";
+import {
+  createAttribute,
+  reorderAttributes,
+  updateAttributeTranslation,
+} from "./admin-attributes-write/attribute-operations";
+import {
+  addAttributeValue,
+  reorderAttributeValues,
+  updateAttributeValue,
+} from "./admin-attributes-write/value-operations";
 
 /**
  * Service for admin attribute write operations
@@ -55,6 +63,18 @@ class AdminAttributesWriteService {
     }
   ) {
     return updateAttributeValue(attributeId, valueId, data);
+  }
+
+  async reorderAttributes(data: { attributeId: string; targetAttributeId: string }) {
+    return reorderAttributes(data);
+  }
+
+  async reorderAttributeValues(data: {
+    attributeId: string;
+    valueId: string;
+    targetValueId: string;
+  }) {
+    return reorderAttributeValues(data);
   }
 }
 

@@ -141,7 +141,7 @@ export default function ProductsPage() {
   useEffect(() => {
     fetchProducts();
      
-  }, [page, search, selectedCategories, skuSearch, stockFilter, sortBy, minPrice, maxPrice]);
+  }, [page, search, selectedCategories, skuSearch, stockFilter, sortBy, minPrice, maxPrice, activeLocale]);
 
   const fetchProducts = async () => {
     const cacheKey = buildAdminListCacheKey('products', {
@@ -165,6 +165,7 @@ export default function ProductsPage() {
       const params: Record<string, string> = {
         page: page.toString(),
         limit: '20',
+        lang: activeLocale,
       };
       
       if (search.trim()) {
@@ -277,6 +278,14 @@ export default function ProductsPage() {
 
     return cloned;
   }, [products, sortBy]);
+
+  const categoryTitleById = useMemo(() => {
+    const map = new Map<string, string>();
+    categories.forEach((category) => {
+      map.set(category.id, category.title);
+    });
+    return map;
+  }, [categories]);
 
   const handleHeaderSort = (field: 'price' | 'createdAt' | 'title' | 'stock') => {
     setPage(1);
@@ -430,6 +439,7 @@ export default function ProductsPage() {
         totalCount={loading ? null : (meta?.total ?? 0)}
         page={page}
         setPage={setPage}
+        categoryTitleById={categoryTitleById}
       />
     </AdminPageLayout>
   );

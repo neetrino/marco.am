@@ -4,7 +4,6 @@ import type { ProductListingBrand } from '@/lib/types/product-listing-brand';
 import { ProductPdpPrefetchLink } from '../ProductPdpPrefetchLink';
 import { montserratArm } from '../../fonts/montserrat-arm';
 import { formatCatalogPrice, type CurrencyCode } from '../../lib/currency';
-import { useTranslation } from '../../lib/i18n-client';
 import { ProductCardBrandMark } from './ProductCardBrandMark';
 import { ProductColors } from './ProductColors';
 import { ProductPricePromoBadge } from './ProductPricePromoBadge';
@@ -44,26 +43,18 @@ export function ProductCardInfo({
   isCompact = false,
   omitPdpLink = false,
 }: ProductCardInfoProps) {
-  const { t } = useTranslation();
   const hasDisplayPrice = price > 0;
 
-  const brandRow =
-    brand != null ? (
-      <div className={isCompact ? 'mb-1' : 'mb-2'}>
-        <ProductCardBrandMark
-          name={brand.name}
-          slug={brand.slug}
-          logoUrl={brand.logoUrl}
-          size={isCompact ? 'gridCompact' : 'grid'}
-        />
-      </div>
-    ) : (
-      <p
-        className={`${isCompact ? 'text-sm' : 'text-lg'} text-gray-500 dark:text-[#383838] ${isCompact ? 'mb-1' : 'mb-2'}`}
-      >
-        {t('common.defaults.category')}
-      </p>
-    );
+  const brandRow = brand != null ? (
+    <div className={isCompact ? 'mb-1' : 'mb-2'}>
+      <ProductCardBrandMark
+        name={brand.name}
+        slug={brand.slug}
+        logoUrl={brand.logoUrl}
+        size={isCompact ? 'gridCompact' : 'grid'}
+      />
+    </div>
+  ) : null;
 
   const titleBlock = (
     <>
@@ -119,13 +110,7 @@ export function ProductCardInfo({
             ) : null}
           </div>
         </div>
-      ) : (
-        <div className="mt-2">
-          <span className="inline-flex rounded-full bg-[#f4f4f4] px-3 py-1 text-xs font-semibold text-[#383838]">
-            {t('products.noPrice.label')}
-          </span>
-        </div>
-      )}
+      ) : null}
     </div>
   );
 }

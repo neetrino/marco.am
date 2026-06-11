@@ -21,6 +21,7 @@ function validateAndNormalizeFilters(searchParams: URLSearchParams): {
     minPrice?: number;
     maxPrice?: number;
     sort?: string;
+      lang?: string;
   };
   error?: {
     type: string;
@@ -120,6 +121,7 @@ function validateAndNormalizeFilters(searchParams: URLSearchParams): {
       minPrice,
       maxPrice,
       sort: searchParams.get("sort")?.trim() || undefined,
+      lang: searchParams.get("lang")?.trim() || undefined,
     },
   };
 }
