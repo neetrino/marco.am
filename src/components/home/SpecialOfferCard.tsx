@@ -4,8 +4,9 @@ import { useCallback, type MouseEvent } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { ProductPdpPrefetchLink } from '@/components/ProductPdpPrefetchLink';
+import { useQueryClient } from '@tanstack/react-query';
 import { getStoredLanguage } from '@/lib/language';
-import { setProductPdpNavigationSeed } from '@/lib/product-pdp/pdp-navigation-seed';
+import { seedProductPdpCache } from '@/lib/product-pdp/pdp-navigation-seed-cache';
 
 import {
   getSpecialOfferBrandTextClass,
@@ -167,6 +168,7 @@ export function SpecialOfferCard({
         : 'mx-auto';
 
   const router = useRouter();
+  const queryClient = useQueryClient();
   const cardPdpEnabled = Boolean(product.slug) && !product.shellPlaceholder;
   const warrantyYears = product.warrantyYears ?? product.warrantyBadge?.years ?? null;
   const shouldShowCartCutouts = true;
@@ -176,13 +178,14 @@ export function SpecialOfferCard({
     }
     event.preventDefault();
     event.stopPropagation();
-    setProductPdpNavigationSeed(
-      product.slug,
-      getStoredLanguage(),
+    seedProductPdpCache({
+      queryClient,
+      slug: product.slug,
+      language: getStoredLanguage(),
       navigationSeed,
-    );
+    });
     router.push(`/products/${encodeURIComponent(product.slug.trim())}`);
-  }, [detailsPending, hasDisplayPrice, navigationSeed, product.slug, router]);
+  }, [detailsPending, hasDisplayPrice, navigationSeed, product.slug, queryClient, router]);
 
   return (
     <div

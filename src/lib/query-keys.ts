@@ -1,6 +1,8 @@
 import type { LanguageCode } from "@/lib/language";
 
 export const queryKeys = {
+  productSummary: (slug: string, lang: LanguageCode) =>
+    ["api", "v1", "products", "summary", slug, lang] as const,
   productDetail: (slug: string, lang: LanguageCode) =>
     ["api", "v1", "products", "detail", slug, lang] as const,
   productVisual: (slug: string, lang: LanguageCode) =>

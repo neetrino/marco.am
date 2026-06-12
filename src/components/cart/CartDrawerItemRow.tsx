@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { ProductPdpPrefetchLink } from '../ProductPdpPrefetchLink';
+import type { ProductPdpNavigationSeed } from '@/lib/product-pdp/pdp-navigation-seed';
 import { ProductImagePlaceholder } from '../ProductImagePlaceholder';
 import { shouldShowCartSku } from '../../lib/cart/format-cart-variant-options';
 import { formatMoneyInCurrency, type CurrencyCode } from '../../lib/currency';
@@ -29,6 +30,19 @@ export function CartDrawerItemRow({
   onNavigate,
   t,
 }: CartDrawerItemRowProps) {
+  const productNavigationSeed: ProductPdpNavigationSeed = {
+    id: item.variant.product.id,
+    slug: item.variant.product.slug,
+    title: item.variant.product.title,
+    image: item.variant.product.image ?? null,
+    inStock: (item.variant.stock ?? 0) > 0,
+    brand: null,
+    categories: [],
+    price: item.price,
+    oldPrice: null,
+    discountBadge: null,
+  };
+
   const showSku = shouldShowCartSku(
     item.variant.sku,
     item.variant.product.title,
@@ -49,6 +63,7 @@ export function CartDrawerItemRow({
         <ProductPdpPrefetchLink
           href={`/products/${item.variant.product.slug}`}
           productSlug={item.variant.product.slug}
+          navigationSeed={productNavigationSeed}
           onClick={onNavigate}
           className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-marco-gray"
         >
@@ -74,6 +89,7 @@ export function CartDrawerItemRow({
           <ProductPdpPrefetchLink
             href={`/products/${item.variant.product.slug}`}
             productSlug={item.variant.product.slug}
+            navigationSeed={productNavigationSeed}
             onClick={onNavigate}
             className="line-clamp-2 text-sm font-semibold text-marco-black hover:text-marco-text dark:text-white"
           >

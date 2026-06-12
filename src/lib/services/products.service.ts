@@ -7,6 +7,7 @@ import { productsFindService } from "./products-find.service";
 import { productsFiltersService } from "./products-filters.service";
 import { findBySlugVisual as findBySlugVisualImpl } from "./products-pdp-visual.service";
 import { productsSlugService } from "./products-slug.service";
+import { findBySlugSummary as findBySlugSummaryImpl } from "./products-slug/product-summary.service";
 
 // Re-export types for backward compatibility
 export type { ProductFilters, ProductWithRelations } from "./products-find-query.service";
@@ -23,6 +24,7 @@ class ProductsService {
 
   // Slug methods
   findBySlug = productsSlugService.findBySlug.bind(productsSlugService);
+  findBySlugSummary = findBySlugSummaryImpl;
 
   findBySlugVisual = findBySlugVisualImpl;
 }

@@ -266,12 +266,19 @@ class ProductsRelatedService {
     const primaryCategorySlug = baseProduct.categories?.[0]?.slug;
     const brandId = baseProduct.brand?.id;
 
-    if (primaryCategorySlug && needsMoreCandidates()) {
-      const categoryBatch = await fetchCandidateBatch({ category: primaryCategorySlug });
+    const categoryPromise = primaryCategorySlug
+      ? fetchCandidateBatch({ category: primaryCategorySlug })
+      : Promise.resolve<RelatedProduct[]>([]);
+    const brandPromise = brandId
+      ? fetchCandidateBatch({ brand: brandId })
+      : Promise.resolve<RelatedProduct[]>([]);
+
+    const [categoryBatch, brandBatch] = await Promise.all([categoryPromise, brandPromise]);
+
+    if (categoryBatch.length > 0 && needsMoreCandidates()) {
       tryAppendProducts(categoryBatch, "category");
     }
-    if (brandId && needsMoreCandidates()) {
-      const brandBatch = await fetchCandidateBatch({ brand: brandId });
+    if (brandBatch.length > 0 && needsMoreCandidates()) {
       tryAppendProducts(brandBatch, "brand");
     }
     if (needsMoreCandidates()) {

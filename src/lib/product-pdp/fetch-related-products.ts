@@ -36,10 +36,6 @@ export type RelatedProductRow = {
 };
 
 const RELATED_PRODUCTS_TIMEOUT_MS = 12_000;
-const EMPTY_RELATED_PRODUCTS_RESPONSE: RelatedProductsApiResponse = {
-  data: [],
-  meta: { total: 0, limit: 0 },
-};
 
 function encodeProductSlugForPath(productSlug: string): string {
   const trimmed = productSlug.trim();
@@ -76,13 +72,12 @@ export async function fetchRelatedProducts(
     });
   } catch (error: unknown) {
     if (isRequestTimeoutError(error)) {
-      logger.devWarn('⏱️ [RELATED PRODUCTS] Request timed out, falling back to empty state', {
+      logger.devWarn('⏱️ [RELATED PRODUCTS] Request timed out', {
         productSlug,
         limit,
         lang,
         timeoutMs: RELATED_PRODUCTS_TIMEOUT_MS,
       });
-      return EMPTY_RELATED_PRODUCTS_RESPONSE;
     }
 
     throw error;

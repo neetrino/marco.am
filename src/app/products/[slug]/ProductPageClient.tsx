@@ -3,7 +3,6 @@
 import dynamic from 'next/dynamic';
 import { Suspense } from 'react';
 
-import { RelatedProducts } from '@/components/RelatedProducts';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { apiClient } from '@/lib/api-client';
 import { runGuestCartMutation, upsertGuestCartItem } from '@/app/cart/guest-cart-local';
@@ -20,6 +19,10 @@ import { useProductPage } from './useProductPage';
 
 const ProductSpecifications = dynamic(() =>
   import('./ProductSpecifications').then((m) => ({ default: m.ProductSpecifications })),
+);
+
+const RelatedProducts = dynamic(() =>
+  import('@/components/RelatedProducts').then((m) => ({ default: m.RelatedProducts })),
 );
 
 export type ProductPageClientProps = {

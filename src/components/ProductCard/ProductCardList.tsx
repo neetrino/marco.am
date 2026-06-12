@@ -70,7 +70,6 @@ export function ProductCardList({
         <ProductPdpPrefetchLink
           href={`/products/${product.slug}`}
           productSlug={product.slug}
-          prefetchData={false}
           navigationSeed={{
             id: product.id,
             slug: product.slug,

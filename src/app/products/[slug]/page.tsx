@@ -7,9 +7,7 @@ import {
   parseLanguageFromServer,
   type LanguageCode,
 } from '@/lib/language';
-import { RELATED_PRODUCTS_FETCH_LIMIT } from '@/lib/product-pdp/related-products.constants';
-import { getCachedPdpRelated, getCachedPdpVisual } from '@/lib/product-pdp/pdp-server-cache';
-import type { RelatedProductsApiResponse } from '@/lib/product-pdp/fetch-related-products';
+import { getCachedPdpVisual } from '@/lib/product-pdp/pdp-server-cache';
 
 import { ProductPageClient } from './ProductPageClient';
 import { ProductPdpDetailStream } from './ProductPdpDetailStream';
@@ -18,13 +16,33 @@ type PageProps = {
   params: Promise<{ slug: string }>;
 };
 
+const PDP_VISUAL_SERVER_TIMEOUT_MS = 600;
+
 function baseSlugFromParam(slugParam: string): string {
   const slugParts = slugParam.includes(':') ? slugParam.split(':') : [slugParam];
   return slugParts[0] ?? slugParam;
 }
 
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T | null> {
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  try {
+    return await Promise.race<T | null>([
+      promise,
+      new Promise<null>((resolve) => {
+        timer = setTimeout(() => resolve(null), timeoutMs);
+      }),
+    ]);
+  } finally {
+    if (timer) {
+      clearTimeout(timer);
+    }
+  }
+}
+
 /**
- * PDP — visual + related SSR for first paint; detail streams in a second chunk.
+ * PDP — visual first paint; heavy detail streams in a second chunk.
+ * Related products are intentionally deferred to client/background to avoid
+ * blocking the critical route render path.
  */
 export default async function ProductPage({ params }: PageProps) {
   const { slug: slugParam } = await params;
@@ -37,16 +55,12 @@ export default async function ProductPage({ params }: PageProps) {
   const baseSlug = baseSlugFromParam(slugParam);
 
   let initialVisual = null;
-  let initialRelatedProducts: RelatedProductsApiResponse | null = null;
 
   if (!isRscNavigationRequest) {
-    const [visualOutcome, relatedOutcome] = await Promise.allSettled([
+    initialVisual = await withTimeout(
       getCachedPdpVisual(baseSlug, serverLanguage),
-      getCachedPdpRelated(baseSlug, serverLanguage, RELATED_PRODUCTS_FETCH_LIMIT),
-    ]);
-    initialVisual = visualOutcome.status === 'fulfilled' ? visualOutcome.value : null;
-    initialRelatedProducts =
-      relatedOutcome.status === 'fulfilled' ? relatedOutcome.value : null;
+      PDP_VISUAL_SERVER_TIMEOUT_MS,
+    );
   }
 
   return (
@@ -56,7 +70,7 @@ export default async function ProductPage({ params }: PageProps) {
         serverLanguage={serverLanguage}
         initialVisual={initialVisual}
         initialProduct={null}
-        initialRelatedProducts={initialRelatedProducts}
+        initialRelatedProducts={null}
       />
       {!isRscNavigationRequest ? (
         <Suspense fallback={null}>

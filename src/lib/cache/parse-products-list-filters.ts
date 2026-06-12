@@ -1,5 +1,6 @@
 import type { ProductFilters } from '@/lib/services/products-find-query/types';
 import { parseTechnicalSpecFiltersFromSearchParams } from '@/lib/services/products-technical-filters';
+import { resolveShopPlpPricePresence } from '@/lib/constants/shop-plp-price-presence';
 import {
   SHOP_PLP_DEFAULT_PAGE_SIZE,
   SHOP_PLP_MAX_PAGE_SIZE,
@@ -63,9 +64,7 @@ export function parseProductListFiltersFromSearchParams(
   const homeStripRaw = searchParams.get('homeStripListing');
   const homeStripListing =
     homeStripRaw === '1' || homeStripRaw?.toLowerCase() === 'true' ? true : undefined;
-  const rawPricePresence = searchParams.get('pricePresence');
-  const pricePresence =
-    rawPricePresence === 'with' || rawPricePresence === 'without' ? rawPricePresence : undefined;
+  const pricePresence = resolveShopPlpPricePresence(searchParams.get('pricePresence'));
 
   return {
     category: searchParams.get('category') || undefined,

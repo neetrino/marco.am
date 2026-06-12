@@ -314,9 +314,8 @@ export default function CategoriesPage() {
           return item;
         });
       });
-      resetConvertModalState();
-      setConvertingCategoryId(null);
       await apiClient.put(`/api/v1/supersudo/categories/${convertingCategoryId}`, payload);
+      resetConvertModalState();
       notifyShopCategoryTreeUpdated();
       showToast(
         isSubcategory

@@ -11,12 +11,10 @@ import {
 } from 'react';
 
 import { getStoredLanguage } from '@/lib/language';
-import { queryKeys } from '@/lib/query-keys';
 import {
-  buildProductFromPdpNavigationSeed,
-  setProductPdpNavigationSeed,
   type ProductPdpNavigationSeed,
 } from '@/lib/product-pdp/pdp-navigation-seed';
+import { seedProductPdpCache } from '@/lib/product-pdp/pdp-navigation-seed-cache';
 import { prefetchProductPdp } from '@/lib/product-pdp/prefetch-product-pdp';
 
 type LinkProps = Omit<ComponentProps<typeof Link>, 'href' | 'prefetch'>;
@@ -74,22 +72,11 @@ export function ProductPdpPrefetchLink({
       return;
     }
     const language = getStoredLanguage();
-    const seedProduct = buildProductFromPdpNavigationSeed(navigationSeed);
-    setProductPdpNavigationSeed(productSlug, language, navigationSeed);
-    queryClient.setQueryData(queryKeys.productDetail(productSlug, language), seedProduct);
-    queryClient.setQueryData(queryKeys.productVisual(productSlug, language), {
-      id: seedProduct.id,
-      slug: seedProduct.slug,
-      title: seedProduct.title,
-      images: Array.isArray(seedProduct.media)
-        ? seedProduct.media.filter((item): item is string => typeof item === 'string')
-        : [],
-      gallery: [],
-      labels: seedProduct.labels ?? [],
-      discountPercent:
-        seedProduct.discountBadge?.type === 'percentage'
-          ? seedProduct.discountBadge.value
-          : null,
+    seedProductPdpCache({
+      queryClient,
+      slug: productSlug,
+      language,
+      navigationSeed,
     });
   }, [navigationSeed, productSlug, queryClient]);
 

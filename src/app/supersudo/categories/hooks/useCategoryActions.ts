@@ -283,10 +283,10 @@ export function useCategoryActions(): UseCategoryActionsReturn {
         );
       }
 
+      await apiClient.put(`/api/v1/supersudo/categories/${editingCategoryId}`, payload);
       setShowEditModal(false);
       setEditingCategory(null);
       resetForm();
-      await apiClient.put(`/api/v1/supersudo/categories/${editingCategoryId}`, payload);
       notifyShopCategoryTreeUpdated();
       showToast(t('admin.categories.updatedSuccess'), 'success');
     } catch (err: unknown) {

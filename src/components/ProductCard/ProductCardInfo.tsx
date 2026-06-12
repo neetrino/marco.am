@@ -9,10 +9,16 @@ import { ProductColors } from './ProductColors';
 import { ProductPricePromoBadge } from './ProductPricePromoBadge';
 
 interface ProductCardInfoProps {
+  id?: string;
   slug: string;
   title: string;
   brand: ProductListingBrand | null;
   price: number;
+  inStock?: boolean;
+  labels?: Array<{ id: string; type: 'text' | 'percentage'; value: string; position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'; color: string | null }>;
+  warrantyYears?: import('@/lib/constants/product-warranty').ProductWarrantyYears | null;
+  categories?: Array<{ id: string; slug: string; title: string }>;
+  image?: string | null;
   originalPrice?: number | null;
   compareAtPrice?: number | null;
   discountPercent?: number | null;
@@ -30,10 +36,16 @@ interface ProductCardInfoProps {
  * Component for displaying product information (title, brand, price, colors)
  */
 export function ProductCardInfo({
+  id,
   slug,
   title,
   brand,
   price,
+  inStock,
+  labels,
+  warrantyYears,
+  categories,
+  image,
   originalPrice,
   compareAtPrice,
   discountPercent,
@@ -72,7 +84,47 @@ export function ProductCardInfo({
       {omitPdpLink ? (
         titleBlock
       ) : (
-        <ProductPdpPrefetchLink href={`/products/${slug}`} productSlug={slug} className="block">
+        <ProductPdpPrefetchLink
+          href={`/products/${slug}`}
+          productSlug={slug}
+          navigationSeed={
+            id
+              ? {
+                  id,
+                  slug,
+                  title,
+                  image: image ?? null,
+                  labels,
+                  warrantyYears: warrantyYears ?? null,
+                  inStock,
+                  brand: brand
+                    ? {
+                        id: brand.id,
+                        name: brand.name,
+                        logo: brand.logoUrl ?? null,
+                      }
+                    : null,
+                  categories: categories ?? [],
+                  price,
+                  oldPrice:
+                    originalPrice && originalPrice > price
+                      ? originalPrice
+                      : compareAtPrice ?? null,
+                  discountBadge:
+                    isSpecialPrice
+                      ? { type: 'special_price', value: 0, label: 'special_price' }
+                      : discountPercent && discountPercent > 0
+                        ? {
+                            type: 'percentage',
+                            value: discountPercent,
+                            label: `-${discountPercent}%`,
+                          }
+                        : null,
+                }
+              : undefined
+          }
+          className="block"
+        >
           {titleBlock}
         </ProductPdpPrefetchLink>
       )}

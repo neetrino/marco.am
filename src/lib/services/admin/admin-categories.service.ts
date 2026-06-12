@@ -31,6 +31,7 @@ import {
 } from "@/lib/services/admin/admin-categories-update.helpers";
 import type { PrismaTransactionClient } from "@/lib/types/prisma";
 import { logger } from "@/lib/utils/logger";
+import { runWithDeadlockRetry } from "@/lib/utils/prisma-deadlock-retry";
 
 const MAX_CATEGORY_TREE_DEPTH = 64;
 
@@ -217,7 +218,7 @@ class AdminCategoriesService {
     });
 
     if (updates.length > 0) {
-      await db.$transaction(updates);
+      await runWithDeadlockRetry(() => db.$transaction(updates));
     }
   }
 
@@ -401,19 +402,22 @@ class AdminCategoriesService {
       return;
     }
 
+    const sortedUpdates = [...updates].sort((left, right) => left.id.localeCompare(right.id));
     const chunkSize = 50;
-    for (let index = 0; index < updates.length; index += chunkSize) {
-      const chunk = updates.slice(index, index + chunkSize);
-      await db.$transaction(
-        chunk.map((update) =>
-          db.product.update({
-            where: { id: update.id },
-            data: {
-              primaryCategoryId: update.primaryCategoryId,
-              categoryIds: update.categoryIds,
-              categories: toProductCategoriesSet(update.categoryIds),
-            },
-          }),
+    for (let index = 0; index < sortedUpdates.length; index += chunkSize) {
+      const chunk = sortedUpdates.slice(index, index + chunkSize);
+      await runWithDeadlockRetry(() =>
+        db.$transaction(
+          chunk.map((update) =>
+            db.product.update({
+              where: { id: update.id },
+              data: {
+                primaryCategoryId: update.primaryCategoryId,
+                categoryIds: update.categoryIds,
+                categories: toProductCategoriesSet(update.categoryIds),
+              },
+            }),
+          ),
         ),
       );
     }
