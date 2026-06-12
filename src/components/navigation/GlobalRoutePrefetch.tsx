@@ -185,6 +185,9 @@ export function GlobalRoutePrefetch() {
 
   useEffect(() => {
     const prefetchFromElement = (target: EventTarget | null) => {
+      if (shouldSkipIdlePrefetch()) {
+        return;
+      }
       if (!(target instanceof Element)) {
         return;
       }

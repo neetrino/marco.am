@@ -5,6 +5,7 @@ import {
   parseLanguageFromServer,
   type LanguageCode,
 } from '@/lib/language';
+import { resolveShopPlpPricePresence } from '@/lib/constants/shop-plp-price-presence';
 import {
   SHOP_PLP_DEFAULT_PAGE_SIZE,
   SHOP_PLP_MAX_PAGE_SIZE,
@@ -17,12 +18,6 @@ function firstParam(value: string | string[] | undefined): string | undefined {
     return undefined;
   }
   return Array.isArray(value) ? value[0] : value;
-}
-
-function parsePricePresence(
-  value: string | undefined,
-): ProductsShopListingServerContext['pricePresence'] {
-  return value === 'with' || value === 'without' ? value : undefined;
 }
 
 function parseUrlPriceBounds(minPrice?: string, maxPrice?: string) {
@@ -52,7 +47,7 @@ export type ProductsShopListingServerContext = {
     sort?: string;
     pricePresence?: string;
   };
-  pricePresence?: 'with' | 'without';
+  pricePresence: 'with' | 'without';
   page: number;
   perPage: number;
   filtersMinPrice: number | undefined;
@@ -85,7 +80,7 @@ export const resolveProductsShopListingServerContext = cache(
       pricePresence: firstParam(raw.pricePresence),
     };
 
-    const pricePresence = parsePricePresence(params.pricePresence);
+    const pricePresence = resolveShopPlpPricePresence(params.pricePresence);
 
     const page = parseInt(params.page || '1', 10);
     const limitParam = params.limit?.trim();

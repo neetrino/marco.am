@@ -14,6 +14,7 @@ export interface SpecialOfferProduct {
   images?: string[];
   inStock: boolean;
   brand: ProductListingBrand | null;
+  categories?: Array<{ id: string; slug: string; title: string }>;
   defaultVariantId?: string | null;
   discountPercent?: number | null;
   isSpecialPrice?: boolean;

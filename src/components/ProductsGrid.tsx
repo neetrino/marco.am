@@ -23,6 +23,7 @@ interface Product {
   image: string | null;
   inStock: boolean;
   brand: ProductListingBrand | null;
+  categories?: Array<{ id: string; slug: string; title: string }>;
   defaultVariantId?: string | null;
   labels?: ProductLabel[];
   warrantyYears?: import('@/lib/constants/product-warranty').ProductWarrantyYears | null;
@@ -44,6 +45,7 @@ function toSpecialOfferProduct(p: Product): SpecialOfferProduct {
     images: p.image ? [p.image] : undefined,
     inStock: p.inStock,
     brand: p.brand,
+    categories: p.categories,
     defaultVariantId: p.defaultVariantId ?? undefined,
     discountPercent: p.discountPercent ?? null,
     isSpecialPrice: p.isSpecialPrice ?? false,

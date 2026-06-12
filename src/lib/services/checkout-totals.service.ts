@@ -3,7 +3,6 @@ import { logger } from "../utils/logger";
 import type { CheckoutTotalsResponse } from "../types/checkout-totals";
 import { adminDeliveryService } from "./admin/admin-delivery.service";
 import { cartService } from "./cart.service";
-import { db } from "@white-shop/db";
 import {
   resolveGuestCheckoutItems,
   type GuestCheckoutItemInput,
@@ -11,6 +10,14 @@ import {
 import { shouldChargeCourierShipping } from "./checkout-delivery-rules.service";
 import { resolveProductClass } from "../constants/product-class";
 import { promoCodesService } from "./promo-codes.service";
+
+type AuthenticatedCartItem = {
+  productClass: string;
+};
+
+function extractCartItemProductClasses(items: AuthenticatedCartItem[]): string[] {
+  return items.map((item) => resolveProductClass(item.productClass));
+}
 
 export type ComputeCheckoutTotalsInput = {
   userId?: string;
@@ -56,23 +63,13 @@ class CheckoutTotalsService {
         };
       }
       subtotal = cart.totals.subtotal;
-      const rawCart = await db.cart.findFirst({
-        where: { id: cart.id, userId: input.userId },
-        select: {
-          couponCode: true,
-          items: {
-            select: {
-              variant: { select: { productClass: true } },
-              product: { select: { productClass: true } },
-            },
-          },
-        },
-      });
-      productClasses = (rawCart?.items ?? []).map((item) =>
-        resolveProductClass(item.variant?.productClass ?? item.product?.productClass)
+      productClasses = extractCartItemProductClasses(
+        cart.items.map((item) => ({
+          productClass: item.productClass,
+        })),
       );
       if (!appliedCouponCode) {
-        appliedCouponCode = rawCart?.couponCode ?? undefined;
+        appliedCouponCode = cart.couponCode ?? undefined;
       }
     } else if (input.guestItems && input.guestItems.length > 0) {
       const guestItems = await resolveGuestCheckoutItems(input.guestItems, input.locale);

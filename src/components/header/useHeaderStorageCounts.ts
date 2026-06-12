@@ -37,8 +37,12 @@ function scheduleIdleSync(run: () => void, timeoutMs: number): () => void {
 export function useHeaderStorageCounts(
   setWishlistCount: Dispatch<SetStateAction<number>>,
   setCompareCount: Dispatch<SetStateAction<number>>,
-  onAuthChange: () => void
+  onAuthChange: () => void,
+  options?: {
+    enabled?: boolean;
+  },
 ) {
+  const enabled = options?.enabled ?? true;
   const { ids: wishlistIds } = useWishlistProductIds();
   const { ids: compareIds } = useCompareProductIds();
   const pathname = usePathname() ?? '';
@@ -47,14 +51,23 @@ export function useHeaderStorageCounts(
   const compareSyncSeqRef = useRef(0);
 
   useEffect(() => {
+    if (!enabled) {
+      return;
+    }
     setWishlistCount(wishlistIds.length);
-  }, [wishlistIds, setWishlistCount]);
+  }, [enabled, wishlistIds, setWishlistCount]);
 
   useEffect(() => {
+    if (!enabled) {
+      return;
+    }
     setCompareCount(compareIds.length);
-  }, [compareIds, setCompareCount]);
+  }, [compareIds, enabled, setCompareCount]);
 
   useEffect(() => {
+    if (!enabled) {
+      return;
+    }
     let isActive = true;
     let cancelDeferredSync: (() => void) | undefined;
 
@@ -153,5 +166,5 @@ export function useHeaderStorageCounts(
       window.removeEventListener('wishlist-optimistic-updated', handleWishlistOptimisticUpdate);
       window.removeEventListener('compare-optimistic-updated', handleCompareOptimisticUpdate);
     };
-  }, [isHomeRoute, onAuthChange, setCompareCount, setWishlistCount]);
+  }, [enabled, isHomeRoute, onAuthChange, setCompareCount, setWishlistCount, compareIds.length, wishlistIds.length]);
 }

@@ -3,7 +3,7 @@ import { productsService } from "./products.service";
 
 const DEFAULT_RELATED_LIMIT = 10;
 const MAX_RELATED_LIMIT = 24;
-const QUERY_BATCH_MULTIPLIER = 4;
+const QUERY_BATCH_MULTIPLIER = 2;
 
 type RelatedRule = "category" | "brand" | "other";
 
@@ -255,26 +255,36 @@ class ProductsRelatedService {
         lang,
         limit: batchLimit,
         page: 1,
+        listingOmitProductAttributes: true,
+        skipExactTotalCount: true,
       })) as ProductListResponse;
       return response.data;
     };
 
+    const needsMoreCandidates = () => selectedProducts.length < limit;
+
     const primaryCategorySlug = baseProduct.categories?.[0]?.slug;
     const brandId = baseProduct.brand?.id;
 
-    const [categoryBatch, brandBatch, otherBatch] = await Promise.all([
-      primaryCategorySlug
-        ? fetchCandidateBatch({ category: primaryCategorySlug, sort: "popular" })
-        : Promise.resolve([] as RelatedProduct[]),
-      brandId
-        ? fetchCandidateBatch({ brand: brandId, sort: "popular" })
-        : Promise.resolve([] as RelatedProduct[]),
-      fetchCandidateBatch({ sort: "popular" }),
-    ]);
+    const categoryPromise = primaryCategorySlug
+      ? fetchCandidateBatch({ category: primaryCategorySlug })
+      : Promise.resolve<RelatedProduct[]>([]);
+    const brandPromise = brandId
+      ? fetchCandidateBatch({ brand: brandId })
+      : Promise.resolve<RelatedProduct[]>([]);
 
-    tryAppendProducts(categoryBatch, "category");
-    tryAppendProducts(brandBatch, "brand");
-    tryAppendProducts(otherBatch, "other");
+    const [categoryBatch, brandBatch] = await Promise.all([categoryPromise, brandPromise]);
+
+    if (categoryBatch.length > 0 && needsMoreCandidates()) {
+      tryAppendProducts(categoryBatch, "category");
+    }
+    if (brandBatch.length > 0 && needsMoreCandidates()) {
+      tryAppendProducts(brandBatch, "brand");
+    }
+    if (needsMoreCandidates()) {
+      const otherBatch = await fetchCandidateBatch({});
+      tryAppendProducts(otherBatch, "other");
+    }
 
     const data = selectedProducts.slice(0, limit);
     const rules = data.reduce(

@@ -9,6 +9,19 @@ import {
 } from "../cart/format-cart-variant-options";
 
 class CartService {
+  async getCartSummary(userId: string, locale: string = "en") {
+    const { cart } = await this.getCart(userId, locale);
+    return {
+      cart: {
+        itemsCount: cart.itemsCount,
+        totals: {
+          total: cart.totals.total,
+          currency: cart.totals.currency,
+        },
+      },
+    };
+  }
+
   /**
    * Get or create user's cart
    */

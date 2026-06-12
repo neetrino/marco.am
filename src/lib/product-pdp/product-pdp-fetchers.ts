@@ -28,6 +28,23 @@ export async function fetchProductVisual(
 
 export type ProductDetailPayload = Awaited<ReturnType<typeof fetchProductDetail>>;
 
+export async function fetchProductSummary(slug: string, lang: LanguageCode): Promise<Product> {
+  try {
+    return await apiClient.get<Product>(`/api/v1/products/${slug}/summary`, {
+      params: { lang },
+    });
+  } catch (error: unknown) {
+    const errorStatus =
+      error && typeof error === 'object' && 'status' in error ? Number(error.status) : undefined;
+    if (errorStatus === 404 && lang !== 'en') {
+      return apiClient.get<Product>(`/api/v1/products/${slug}/summary`, {
+        params: { lang: 'en' },
+      });
+    }
+    throw error;
+  }
+}
+
 export async function fetchProductDetail(slug: string, lang: LanguageCode): Promise<Product> {
   try {
     return await apiClient.get<Product>(`/api/v1/products/${slug}`, {

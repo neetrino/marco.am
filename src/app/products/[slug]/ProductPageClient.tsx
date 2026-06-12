@@ -3,7 +3,6 @@
 import dynamic from 'next/dynamic';
 import { Suspense } from 'react';
 
-import { RelatedProducts } from '@/components/RelatedProducts';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { apiClient } from '@/lib/api-client';
 import { runGuestCartMutation, upsertGuestCartItem } from '@/app/cart/guest-cart-local';
@@ -20,6 +19,10 @@ import { useProductPage } from './useProductPage';
 
 const ProductSpecifications = dynamic(() =>
   import('./ProductSpecifications').then((m) => ({ default: m.ProductSpecifications })),
+);
+
+const RelatedProducts = dynamic(() =>
+  import('@/components/RelatedProducts').then((m) => ({ default: m.RelatedProducts })),
 );
 
 export type ProductPageClientProps = {
@@ -156,6 +159,7 @@ export function ProductPageClient({
   const galleryDiscount =
     product != null ? discountPercent : (productVisual?.discountPercent ?? null);
   const galleryIsSpecialPrice = product != null ? isSpecialPrice : false;
+  const relatedEnabled = Boolean(product);
 
   return (
     <div className="marco-header-container py-12">
@@ -233,7 +237,8 @@ export function ProductPageClient({
         <RelatedProducts
           currentProductSlug={slug}
           language={language}
-          initialRelatedProducts={initialRelatedProducts}
+          initialRelatedProducts={relatedEnabled ? initialRelatedProducts : null}
+          enabled={relatedEnabled}
         />
       </div>
     </div>

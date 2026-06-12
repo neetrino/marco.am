@@ -330,6 +330,7 @@ export function EditCategoryModal({
                 }
               }}
               disabled={
+                saving ||
                 imageUploading ||
                 !formData.titles.hy.trim() ||
                 !formData.titles.en.trim() ||
@@ -337,7 +338,7 @@ export function EditCategoryModal({
               }
               className="flex-1"
             >
-              {mt('admin.categories.updateCategory')}
+              {saving ? mt('admin.common.saving') : mt('admin.categories.updateCategory')}
             </Button>
             <Button
               variant="ghost"

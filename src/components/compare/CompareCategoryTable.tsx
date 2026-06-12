@@ -1,9 +1,10 @@
-﻿'use client';
+'use client';
 
 import type { MouseEvent } from 'react';
 import Image from 'next/image';
 
 import { ProductPdpPrefetchLink } from '@/components/ProductPdpPrefetchLink';
+import type { ProductPdpNavigationSeed } from '@/lib/product-pdp/pdp-navigation-seed';
 import type { CompareClientItem } from '@/lib/compare/compare-client';
 import { formatCatalogPrice, type CurrencyCode } from '@/lib/currency';
 import { ProductImagePlaceholder } from '@/components/ProductImagePlaceholder';
@@ -56,6 +57,35 @@ export function CompareCategoryTable({
   handleRemove,
   handleAddToCart,
 }: CompareCategoryTableProps) {
+  const toNavigationSeed = (product: CompareTableProduct): ProductPdpNavigationSeed => ({
+    id: product.id,
+    slug: product.slug,
+    title: product.title,
+    image: product.image,
+    inStock: product.inStock,
+    brand: product.brand
+      ? {
+          id: product.brand.id,
+          name: product.brand.name,
+          logo: null,
+        }
+      : null,
+    categories: [],
+    price: product.price,
+    oldPrice:
+      product.originalPrice && product.originalPrice > product.price
+        ? product.originalPrice
+        : product.compareAtPrice ?? null,
+    discountBadge:
+      product.discountPercent && product.discountPercent > 0
+        ? {
+            type: 'percentage',
+            value: product.discountPercent,
+            label: `-${product.discountPercent}%`,
+          }
+        : null,
+  });
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full border-collapse">
@@ -104,6 +134,7 @@ export function CompareCategoryTable({
                 <ProductPdpPrefetchLink
                   href={`/products/${product.slug}`}
                   productSlug={product.slug}
+                  navigationSeed={toNavigationSeed(product)}
                   className="inline-block"
                 >
                   <div className="relative mx-auto h-32 w-32 overflow-hidden rounded-lg !bg-gray-100 dark:!bg-gray-100">
@@ -136,6 +167,7 @@ export function CompareCategoryTable({
                 <ProductPdpPrefetchLink
                   href={`/products/${product.slug}`}
                   productSlug={product.slug}
+                  navigationSeed={toNavigationSeed(product)}
                   className="block text-center text-base font-semibold text-gray-900 transition-colors hover:text-blue-600 dark:text-white/90 dark:hover:text-marco-yellow"
                 >
                   {product.title}
@@ -212,6 +244,7 @@ export function CompareCategoryTable({
                   <ProductPdpPrefetchLink
                     href={`/products/${product.slug}`}
                     productSlug={product.slug}
+                    navigationSeed={toNavigationSeed(product)}
                     className="text-sm font-medium text-marco-black transition-opacity hover:opacity-80 dark:text-white/85 dark:hover:text-marco-yellow"
                   >
                     {t('common.compare.viewDetails')}

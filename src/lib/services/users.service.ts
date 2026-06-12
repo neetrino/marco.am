@@ -7,6 +7,75 @@ import { applyUserProfileUpdate } from "@/lib/services/user-profile-update";
 import { logger } from "@/lib/utils/logger";
 
 class UsersService {
+  private async getOrdersByStatus(userId: string): Promise<Record<string, number>> {
+    const grouped = await db.order.groupBy({
+      by: ["status"],
+      where: { userId },
+      _count: { _all: true },
+    });
+
+    const out: Record<string, number> = {};
+    grouped.forEach((row) => {
+      out[row.status] = row._count._all;
+    });
+    return out;
+  }
+
+  private async getTotalSpentForDashboard(userId: string): Promise<number> {
+    const paidCompleted = await db.order.aggregate({
+      where: {
+        userId,
+        OR: [{ status: "completed" }, { paymentStatus: "paid" }],
+      },
+      _sum: { total: true },
+    });
+    return paidCompleted._sum.total ?? 0;
+  }
+
+  private async getRecentOrdersWithItemCounts(userId: string) {
+    const recentOrders = await db.order.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+      select: {
+        id: true,
+        number: true,
+        status: true,
+        paymentStatus: true,
+        fulfillmentStatus: true,
+        total: true,
+        subtotal: true,
+        discountAmount: true,
+        shippingAmount: true,
+        taxAmount: true,
+        currency: true,
+        createdAt: true,
+        _count: {
+          select: {
+            items: true,
+          },
+        },
+      },
+    });
+
+    return recentOrders.map((order) => ({
+      id: order.id,
+      number: order.number,
+      status: order.status,
+      paymentStatus: order.paymentStatus,
+      fulfillmentStatus: order.fulfillmentStatus,
+      total: order.total,
+      subtotal: order.subtotal,
+      discountAmount: order.discountAmount,
+      shippingAmount: order.shippingAmount,
+      taxAmount: order.taxAmount,
+      currency: order.currency,
+      itemsCount: order._count.items,
+      createdAt: order.createdAt.toISOString(),
+      links: buildCustomerOrderLinks(order.number),
+    }));
+  }
+
   /**
    * Get user profile
    */
@@ -161,51 +230,17 @@ class UsersService {
    * Get user dashboard statistics
    */
   async getDashboard(userId: string) {
-    // Get all orders for the user
-    const orders = await db.order.findMany({
-      where: { userId },
-      include: {
-        items: true,
-      },
-      orderBy: { createdAt: "desc" },
-    });
+    const [totalOrders, ordersByStatus, totalSpent, addressesCount, recentOrders] =
+      await Promise.all([
+        db.order.count({ where: { userId } }),
+        this.getOrdersByStatus(userId),
+        this.getTotalSpentForDashboard(userId),
+        db.address.count({ where: { userId } }),
+        this.getRecentOrdersWithItemCounts(userId),
+      ]);
 
-    // Calculate statistics
-    const totalOrders = orders.length;
-    const pendingOrders = orders.filter((o: { status: string }) => o.status === "pending").length;
-    const completedOrders = orders.filter((o: { status: string }) => o.status === "completed").length;
-    const totalSpent = orders
-      .filter((o: { status: string; paymentStatus: string }) => o.status === "completed" || o.paymentStatus === "paid")
-      .reduce((sum: number, o: { total: number }) => sum + o.total, 0);
-
-    // Count addresses
-    const addressesCount = await db.address.count({
-      where: { userId },
-    });
-
-    // Count orders by status
-    const ordersByStatus: Record<string, number> = {};
-    orders.forEach((order: { status: string }) => {
-      ordersByStatus[order.status] = (ordersByStatus[order.status] || 0) + 1;
-    });
-
-    // Get recent orders (last 5)
-    const recentOrders = orders.slice(0, 5).map((order: { id: string; number: string; status: string; paymentStatus: string; fulfillmentStatus: string; total: number; subtotal: number; discountAmount: number; shippingAmount: number; taxAmount: number; currency: string | null; createdAt: Date; items: Array<unknown> }) => ({
-      id: order.id,
-      number: order.number,
-      status: order.status,
-      paymentStatus: order.paymentStatus,
-      fulfillmentStatus: order.fulfillmentStatus,
-      total: order.total,
-      subtotal: order.subtotal,
-      discountAmount: order.discountAmount,
-      shippingAmount: order.shippingAmount,
-      taxAmount: order.taxAmount,
-      currency: order.currency,
-      itemsCount: order.items.length,
-      createdAt: order.createdAt.toISOString(),
-      links: buildCustomerOrderLinks(order.number),
-    }));
+    const pendingOrders = ordersByStatus.pending ?? 0;
+    const completedOrders = ordersByStatus.completed ?? 0;
 
     return {
       stats: {

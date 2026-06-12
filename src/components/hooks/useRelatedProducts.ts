@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
 import { dedupeCardProductsByTitle } from '../../lib/dedupeCardProductsByTitle';
@@ -13,15 +13,27 @@ import {
 } from '@/lib/product-pdp/fetch-related-products';
 import { RELATED_PRODUCTS_FETCH_LIMIT } from '@/lib/product-pdp/related-products.constants';
 import { PDP_RELATED_GC_TIME_MS, PDP_RELATED_STALE_TIME_MS } from '@/lib/product-pdp/pdp-query-cache';
+import {
+  getPersistedPdpRelated,
+  setPersistedPdpRelated,
+} from '@/lib/product-pdp/pdp-client-persist-cache';
 
 interface UseRelatedProductsProps {
   productSlug: string;
   language: LanguageCode;
   /** SSR payload — instant carousel on first paint when slug/lang match. */
   initialRelatedProducts?: RelatedProductsApiResponse | null;
+  /** Gate fetch for staged PDP rendering. */
+  enabled?: boolean;
 }
 
 export const RELATED_PRODUCTS_LIMIT = RELATED_PRODUCTS_FETCH_LIMIT;
+
+function hasUsableRelatedPayload(
+  payload: RelatedProductsApiResponse | null | undefined,
+): payload is RelatedProductsApiResponse {
+  return Boolean(payload?.data?.length);
+}
 
 /**
  * Related products for PDP — React Query cache + dedupe (shared key with hover prefetch).
@@ -30,17 +42,24 @@ export function useRelatedProducts({
   productSlug,
   language,
   initialRelatedProducts = null,
+  enabled = true,
 }: UseRelatedProductsProps) {
   const trimmed = productSlug.trim();
+  const hasSsrPayload = hasUsableRelatedPayload(initialRelatedProducts);
 
-  const initialData = initialRelatedProducts ?? undefined;
+  const persistedInitialData = getPersistedPdpRelated(trimmed, language, RELATED_PRODUCTS_LIMIT);
+  const initialData = hasSsrPayload
+    ? initialRelatedProducts
+    : hasUsableRelatedPayload(persistedInitialData)
+      ? persistedInitialData
+      : undefined;
 
   const query = useQuery({
     queryKey: queryKeys.relatedProducts(trimmed, language, RELATED_PRODUCTS_LIMIT),
     queryFn: () => fetchRelatedProducts(trimmed, language, RELATED_PRODUCTS_LIMIT),
-    enabled: Boolean(trimmed),
+    enabled: enabled && Boolean(trimmed),
     initialData,
-    refetchOnMount: initialRelatedProducts === undefined,
+    refetchOnMount: !hasSsrPayload,
     staleTime: PDP_RELATED_STALE_TIME_MS,
     gcTime: PDP_RELATED_GC_TIME_MS,
     retry: 1,
@@ -55,7 +74,16 @@ export function useRelatedProducts({
   }, [query.data]);
 
   const loading =
-    initialRelatedProducts === undefined && query.isPending && products.length === 0;
+    !hasSsrPayload &&
+    products.length === 0 &&
+    (query.isPending || query.isFetching);
+
+  useEffect(() => {
+    if (!trimmed || !hasUsableRelatedPayload(query.data)) {
+      return;
+    }
+    setPersistedPdpRelated(trimmed, language, RELATED_PRODUCTS_LIMIT, query.data);
+  }, [language, query.data, trimmed]);
 
   return { products, loading };
 }

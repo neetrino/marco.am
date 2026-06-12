@@ -93,6 +93,9 @@ function SpecialOfferProductCardView({
           slug: product.slug,
           title: product.title,
           image: product.image,
+          labels: product.labels,
+          warrantyYears: product.warrantyYears ?? product.warrantyBadge?.years ?? null,
+          inStock: product.inStock,
           brand: product.brand
             ? {
                 id: product.brand.id,

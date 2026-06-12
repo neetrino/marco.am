@@ -36,8 +36,6 @@ export function AppChrome({ children, initialLanguage }: AppChromeProps) {
     showMobileBottomNav && !isProfileRoute ? 'pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] lg:pb-0' : '';
   const mainBackgroundClass =
     stablePathname.startsWith(REELS_WATCH_PATH) ? 'bg-black' : '';
-
-  const headerNode = <Header initialLanguage={initialLanguage} />;
   const footerNode = (
     <div className="hidden lg:block">
       <Footer />
@@ -46,7 +44,13 @@ export function AppChrome({ children, initialLanguage }: AppChromeProps) {
 
   return (
     <>
-      {hideMobileHeaderFooterForProfile ? <div className="hidden lg:block">{headerNode}</div> : headerNode}
+      {hideMobileHeaderFooterForProfile ? (
+        <div className="hidden lg:block">
+          <Header initialLanguage={initialLanguage} />
+        </div>
+      ) : (
+        <Header initialLanguage={initialLanguage} />
+      )}
       <main className={`${mainPaddingClass} ${mainBackgroundClass}`.trim()}>
         {children}
       </main>

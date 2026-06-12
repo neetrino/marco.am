@@ -20,6 +20,9 @@ export type ProductPdpNavigationSeed = {
   image: string | null;
   brand: ProductBrandSeed | null;
   categories?: ProductCategorySeed[];
+  labels?: Product["labels"];
+  warrantyYears?: Product["warrantyYears"];
+  inStock?: boolean;
   price: number;
   oldPrice?: number | null;
   discountBadge?: Product["discountBadge"];
@@ -34,6 +37,31 @@ const seedStore = new Map<
 
 function keyFor(slug: string, language: LanguageCode): string {
   return `${language}:${slug}`;
+}
+
+function toSeedProduct(value: ProductPdpNavigationSeed): Product {
+  return {
+    id: value.id,
+    slug: value.slug,
+    title: value.title,
+    media: value.image ? [value.image] : [],
+    variants: [],
+    brand: value.brand ?? undefined,
+    categories: value.categories,
+    labels: value.labels ?? [],
+    currentPrice: value.price,
+    oldPrice: value.oldPrice ?? null,
+    inStock: value.inStock,
+    stockStatus:
+      value.inStock == null ? undefined : value.inStock ? 'in_stock' : 'out_of_stock',
+    warrantyYears: value.warrantyYears ?? null,
+    pricing: {
+      currentPrice: value.price,
+      oldPrice: value.oldPrice ?? null,
+      discountBadge: value.discountBadge ?? null,
+    },
+    discountBadge: value.discountBadge ?? null,
+  };
 }
 
 export function setProductPdpNavigationSeed(
@@ -57,22 +85,35 @@ export function consumeProductPdpNavigationSeed(
   if (Date.now() - item.createdAt > NAVIGATION_SEED_TTL_MS) {
     return null;
   }
+  return toSeedProduct(item.value);
+}
 
-  return {
-    id: item.value.id,
-    slug: item.value.slug,
-    title: item.value.title,
-    media: item.value.image ? [item.value.image] : [],
-    variants: [],
-    brand: item.value.brand ?? undefined,
-    categories: item.value.categories,
-    currentPrice: item.value.price,
-    oldPrice: item.value.oldPrice ?? null,
-    pricing: {
-      currentPrice: item.value.price,
-      oldPrice: item.value.oldPrice ?? null,
-      discountBadge: item.value.discountBadge ?? null,
-    },
-    discountBadge: item.value.discountBadge ?? null,
-  };
+export function consumeProductPdpNavigationSeedAnyLanguage(
+  slug: string,
+  preferredLanguage: LanguageCode,
+): Product | null {
+  const preferred = consumeProductPdpNavigationSeed(slug, preferredLanguage);
+  if (preferred) {
+    return preferred;
+  }
+
+  const suffix = `:${slug}`;
+  for (const [key, item] of seedStore.entries()) {
+    if (!key.endsWith(suffix)) {
+      continue;
+    }
+    seedStore.delete(key);
+    if (Date.now() - item.createdAt > NAVIGATION_SEED_TTL_MS) {
+      return null;
+    }
+    return toSeedProduct(item.value);
+  }
+
+  return null;
+}
+
+export function buildProductFromPdpNavigationSeed(
+  value: ProductPdpNavigationSeed,
+): Product {
+  return toSeedProduct(value);
 }

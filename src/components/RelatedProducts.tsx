@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { t } from '../lib/i18n';
 import type { LanguageCode } from '../lib/language';
@@ -32,6 +32,8 @@ interface RelatedProductsProps {
   language: LanguageCode;
   /** SSR related rows — avoids client round-trip on first paint. */
   initialRelatedProducts?: RelatedProductsApiResponse | null;
+  /** When false, defer related fetch/render until PDP detail phase is ready. */
+  enabled?: boolean;
 }
 
 const HOME_STYLE_NAV_BUTTON_CLASS =
@@ -39,6 +41,7 @@ const HOME_STYLE_NAV_BUTTON_CLASS =
 const REELS_STYLE_NAV_ICON_CLASS = 'h-3 w-3 shrink-0 text-current max-md:h-5 max-md:w-5';
 
 const RELATED_SKELETON_COUNT = 4;
+const RELATED_PREFETCH_IDLE_DELAY_MS = 1_200;
 
 function RelatedProductsSkeleton({ count }: { count: number }) {
   return (
@@ -80,13 +83,58 @@ export function RelatedProducts({
   currentProductSlug,
   language,
   initialRelatedProducts = null,
+  enabled = true,
 }: RelatedProductsProps) {
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const [isDeferredFetchReady, setIsDeferredFetchReady] = useState(false);
   const isMaxMd = useIsMaxMd();
   const visibleCards = useRelatedProductsVisibleCards();
+  const queryEnabled = enabled && isDeferredFetchReady;
+
+  useEffect(() => {
+    if (!enabled) {
+      return;
+    }
+    const idleTimer = window.setTimeout(() => {
+      setIsDeferredFetchReady(true);
+    }, RELATED_PREFETCH_IDLE_DELAY_MS);
+    return () => {
+      window.clearTimeout(idleTimer);
+    };
+  }, [enabled]);
+
+  useEffect(() => {
+    if (!enabled || isDeferredFetchReady) {
+      return;
+    }
+    if (typeof window === 'undefined' || typeof IntersectionObserver === 'undefined') {
+      setIsDeferredFetchReady(true);
+      return;
+    }
+    const node = sectionRef.current;
+    if (!node) {
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setIsDeferredFetchReady(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '320px 0px' },
+    );
+    observer.observe(node);
+    return () => {
+      observer.disconnect();
+    };
+  }, [enabled, isDeferredFetchReady]);
+
   const { products, loading } = useRelatedProducts({
     productSlug: currentProductSlug,
     language,
-    initialRelatedProducts,
+    initialRelatedProducts: queryEnabled ? initialRelatedProducts : undefined,
+    enabled: queryEnabled,
   });
 
   const cardWidth = useMemo(() => `${100 / visibleCards}%`, [visibleCards]);
@@ -114,7 +162,7 @@ export function RelatedProducts({
   });
 
   return (
-    <section className="mt-20 border-t border-gray-200 pt-12 pb-1 md:py-12">
+    <section ref={sectionRef} className="mt-20 border-t border-gray-200 pt-12 pb-1 md:py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-10 flex items-center justify-between gap-4">
           <h2 className="text-3xl font-bold text-gray-900">
@@ -174,7 +222,9 @@ export function RelatedProducts({
           )}
         </div>
 
-        {loading ? (
+        {!enabled ? null : !queryEnabled ? (
+          <RelatedProductsSkeleton count={skeletonCount} />
+        ) : loading ? (
           <RelatedProductsSkeleton count={skeletonCount} />
         ) : products.length === 0 ? (
           <div className="py-12 text-center">

@@ -1,13 +1,14 @@
 'use client';
 
 import { Search, X } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { type SyntheticEvent, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from '../lib/i18n-client';
-import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '../lib/utils/image-utils';
 import type { Category } from './header/category-nav-types';
 import { prepareSubcategoriesForNav } from './header/categoryNavList';
+import { resolveCategoryNavPresentation } from './header/categoryNavPresentation';
 import { MOBILE_NAV_LAYOUT_PADDING_BOTTOM } from './mobile-bottom-nav.constants';
 import { flattenCategoryTree, normalizeSearchValue, useMobileShopCategories } from './mobile-bottom-nav-shop-sheet-data';
+import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '../lib/utils/image-utils';
 
 const ROOT_CATEGORY_LIMIT = 10;
 
@@ -57,10 +58,6 @@ function getCategoryButtonClass(isActive: boolean): string {
   return 'border-marco-border bg-white text-marco-text hover:border-marco-yellow/55 hover:bg-[#fff9dc] dark:border-white/15 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:border-marco-yellow/50 dark:hover:bg-zinc-800';
 }
 
-function getCategoryImage(category: Category): string | null {
-  return toSafeImgAttributeSrc(category.media?.[0] ?? null);
-}
-
 function renderCountBadge(count: number | undefined) {
   if (typeof count !== 'number' || !Number.isFinite(count)) {
     return null;
@@ -71,6 +68,60 @@ function renderCountBadge(count: number | undefined) {
       {count}
     </span>
   );
+}
+
+function hideBrokenCategoryIcon(event: SyntheticEvent<HTMLImageElement>) {
+  const wrapper = event.currentTarget.parentElement;
+  if (wrapper instanceof HTMLElement) {
+    wrapper.style.display = 'none';
+    return;
+  }
+  event.currentTarget.style.display = 'none';
+}
+
+function renderCategoryIcon(
+  category: Category,
+  title: string,
+  lang: Parameters<typeof resolveCategoryNavPresentation>[2],
+) {
+  const categoryImage = toSafeImgAttributeSrc(category.media?.[0] ?? null);
+  const presentation = resolveCategoryNavPresentation(category.slug, title, lang);
+  const CategoryIcon =
+    presentation.icon.kind === 'lucide' ? presentation.icon.Icon : null;
+
+  if (categoryImage) {
+    return (
+      <img
+        src={toDomSafeImgSrcString(categoryImage)}
+        alt=""
+        width={28}
+        height={28}
+        className="h-7 w-7 object-contain"
+        draggable={false}
+        onError={hideBrokenCategoryIcon}
+      />
+    );
+  }
+
+  if (presentation.icon.kind === 'figma') {
+    return (
+      <img
+        src={presentation.icon.src}
+        alt=""
+        width={28}
+        height={28}
+        className="h-7 w-7 object-contain dark:brightness-0 dark:invert"
+        draggable={false}
+        onError={hideBrokenCategoryIcon}
+      />
+    );
+  }
+
+  if (!CategoryIcon) {
+    return null;
+  }
+
+  return <CategoryIcon size={24} strokeWidth={1.7} className="text-marco-black dark:text-white" aria-hidden />;
 }
 
 export function MobileBottomNavShopSheet({
@@ -214,17 +265,14 @@ export function MobileBottomNavShopSheet({
                   onClick={() => onSelectCategory(null)}
                   className={`min-h-[96px] rounded-2xl border px-3 py-3 text-sm font-semibold transition-colors ${getCategoryButtonClass(normalizedActiveCategorySlug === null)}`}
                 >
-                  <span className="flex h-full flex-col items-center gap-2 text-center">
-                    <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/80 text-[11px] font-bold text-marco-black dark:bg-zinc-800 dark:text-zinc-200">
-                      {t('products.categoryNavigation.labels.all')}
-                    </span>
+                  <span className="flex h-full flex-col items-center text-center">
                     <span className="line-clamp-2 min-w-0">{t('products.categoryNavigation.shopAll')}</span>
                   </span>
                 </button>
               ) : null}
               {visibleRootCategories.map((category) => {
                 const isCategoryActive = isSameCategorySlug(normalizedActiveCategorySlug, category.slug);
-                const categoryImage = getCategoryImage(category);
+                const title = resolveCategoryNavPresentation(category.slug, category.title, lang).title;
                 return (
                   <button
                     key={category.id}
@@ -232,21 +280,9 @@ export function MobileBottomNavShopSheet({
                     onClick={() => onSelectCategory(category.slug)}
                     className={`min-h-[96px] rounded-2xl border px-3 py-3 text-sm font-semibold transition-colors ${getCategoryButtonClass(isCategoryActive)}`}
                   >
-                    <span className="flex h-full flex-col items-center gap-2 text-center">
-                      <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/80 dark:bg-zinc-800">
-                        {categoryImage ? (
-                          <img
-                            src={toDomSafeImgSrcString(categoryImage)}
-                            alt=""
-                            width={34}
-                            height={34}
-                            className="h-[34px] w-[34px] object-contain"
-                          />
-                        ) : (
-                          <span className="text-[9px] font-bold text-marco-text/80 dark:text-zinc-300">
-                            {t('products.categoryNavigation.categoryFallbackBadge')}
-                          </span>
-                        )}
+                    <span className="flex h-full flex-col items-center text-center">
+                      <span className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-marco-gray dark:bg-zinc-800">
+                        {renderCategoryIcon(category, title, lang)}
                       </span>
                       <span className="line-clamp-2 min-w-0">{category.title}</span>
                       <span className="mt-auto">{renderCountBadge(category.productCount)}</span>
@@ -274,7 +310,7 @@ export function MobileBottomNavShopSheet({
                             normalizedActiveCategorySlug,
                             child.slug,
                           );
-                          const childImage = getCategoryImage(child);
+                          const childTitle = resolveCategoryNavPresentation(child.slug, child.title, lang).title;
                           return (
                             <button
                               key={child.id}
@@ -282,21 +318,9 @@ export function MobileBottomNavShopSheet({
                               onClick={() => onSelectCategory(child.slug)}
                               className={`min-h-[82px] rounded-xl border px-2.5 py-2 text-xs font-semibold transition-colors ${getCategoryButtonClass(isChildActive)}`}
                             >
-                              <span className="flex h-full flex-col items-center gap-1.5 text-center">
-                                <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/80 dark:bg-zinc-800">
-                                  {childImage ? (
-                                    <img
-                                      src={toDomSafeImgSrcString(childImage)}
-                                      alt=""
-                                      width={24}
-                                      height={24}
-                                      className="h-6 w-6 object-contain"
-                                    />
-                                  ) : (
-                                    <span className="text-[8px] font-bold text-marco-text/80 dark:text-zinc-300">
-                                      C
-                                    </span>
-                                  )}
+                              <span className="flex h-full flex-col items-center text-center">
+                                <span className="mb-2 flex h-9 w-9 items-center justify-center rounded-full bg-marco-gray dark:bg-zinc-800">
+                                  {renderCategoryIcon(child, childTitle, lang)}
                                 </span>
                                 <span className="line-clamp-2 min-w-0">{child.title}</span>
                                 <span className="mt-auto">{renderCountBadge(child.productCount)}</span>

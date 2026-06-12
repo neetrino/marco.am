@@ -14,8 +14,11 @@ import {
 } from '../lib/language';
 import { LanguagePreferenceProvider } from '../lib/language-context';
 import { t } from '../lib/i18n';
+import { APP_VIEWPORT } from '../constants/viewport';
 
 const inter = Inter({ subsets: ['latin'], display: 'swap', adjustFontFallback: true });
+
+export const viewport = APP_VIEWPORT;
 
 export async function generateMetadata(): Promise<Metadata> {
   const cookieStore = await cookies();

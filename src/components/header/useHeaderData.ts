@@ -4,6 +4,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { pushShopProductsListingUrl } from '../../lib/push-shop-products-listing-url';
 import type { FormEvent } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { setStoredCurrency, type CurrencyCode, formatPrice } from '../../lib/currency';
 import { getStoredLanguage } from '../../lib/language';
 import { useInstantSearch } from '../hooks/useInstantSearch';
@@ -16,6 +17,7 @@ import { useTranslation } from '../../lib/i18n-client';
 import { subscribeShopCategoryTreeUpdated } from '../../lib/shop-category-tree-sync';
 import type { Category, CategoriesResponse } from './category-nav-types';
 import { prepareRootCategoriesForNav } from './categoryNavList';
+import { queryKeys } from '../../lib/query-keys';
 
 const PRODUCTS_PATH_PREFIX = '/products';
 
@@ -23,6 +25,7 @@ export function useHeaderData() {
   const router = useRouter();
   const pathname = usePathname() ?? '';
   const { isLoggedIn, logout, isAdmin } = useAuth();
+  const queryClient = useQueryClient();
   const { t } = useTranslation();
 
   const [compareCount, setCompareCount] = useState(0);
@@ -33,11 +36,15 @@ export function useHeaderData() {
   const [showProductsMenu, setShowProductsMenu] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedCurrency, setSelectedCurrency] = useState<CurrencyCode>('AMD');
+  const [categoryLanguage, setCategoryLanguage] = useState(() => getStoredLanguage());
   const [categories, setCategories] = useState<Category[]>([]);
   const [, setSelectedCategory] = useState<Category | null>(null);
   const [loadingCategories, setLoadingCategories] = useState(false);
   const categoriesLoadedRef = useRef(false);
   const currentYear = new Date().getFullYear();
+  const isProfileRoute = pathname === '/profile';
+  const shouldRunBackgroundSync = !isProfileRoute;
+  const shouldEagerLoadCategories = pathname.startsWith(PRODUCTS_PATH_PREFIX);
 
   const userMenuRef = useRef<HTMLDivElement>(null);
   const productsMenuRef = useRef<HTMLDivElement>(null);
@@ -66,27 +73,48 @@ export function useHeaderData() {
     void fetchCart();
   }, [fetchCart]);
 
-  useHeaderStorageCounts(setWishlistCount, setCompareCount, refreshCartOnAuth);
+  useHeaderStorageCounts(setWishlistCount, setCompareCount, refreshCartOnAuth, {
+    enabled: shouldRunBackgroundSync,
+  });
 
-  useHeaderCurrency(setSelectedCurrency);
+  useHeaderCurrency(setSelectedCurrency, { enabled: shouldRunBackgroundSync });
 
   const fetchCategories = useCallback(async () => {
-    try {
-      setLoadingCategories(true);
-      const response = await apiClient.get<CategoriesResponse>('/api/v1/categories/tree', {
-        params: { lang: getStoredLanguage() },
-      });
-      setCategories(response.data || []);
-      categoriesLoadedRef.current = true;
-    } catch (err: unknown) {
-      console.error('Error fetching categories:', err);
-      setCategories([]);
-    } finally {
-      setLoadingCategories(false);
-    }
-  }, []);
+    await queryClient.fetchQuery({
+      queryKey: queryKeys.categoriesTree(categoryLanguage),
+      queryFn: async () => {
+        const response = await apiClient.get<CategoriesResponse>('/api/v1/categories/tree', {
+          params: { lang: categoryLanguage },
+        });
+        return response.data ?? [];
+      },
+      staleTime: 300_000,
+    });
+  }, [categoryLanguage, queryClient]);
 
-  const shouldEagerLoadCategories = pathname.startsWith(PRODUCTS_PATH_PREFIX);
+  const categoriesQuery = useQuery({
+    queryKey: queryKeys.categoriesTree(categoryLanguage),
+    queryFn: async () => {
+      const response = await apiClient.get<CategoriesResponse>('/api/v1/categories/tree', {
+        params: { lang: categoryLanguage },
+      });
+      return response.data ?? [];
+    },
+    staleTime: 300_000,
+    enabled: shouldEagerLoadCategories || showProductsMenu,
+  });
+
+  useEffect(() => {
+    if (!categoriesQuery.data) {
+      return;
+    }
+    setCategories(categoriesQuery.data);
+    categoriesLoadedRef.current = categoriesQuery.data.length > 0;
+  }, [categoriesQuery.data]);
+
+  useEffect(() => {
+    setLoadingCategories(categoriesQuery.isFetching);
+  }, [categoriesQuery.isFetching]);
 
   useEffect(() => {
     if (shouldEagerLoadCategories) {
@@ -103,19 +131,24 @@ export function useHeaderData() {
 
   useEffect(() => {
     return subscribeShopCategoryTreeUpdated(() => {
-      void fetchCategories();
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.categoriesTreeRoot(),
+      });
     });
-  }, [fetchCategories]);
+  }, [queryClient]);
 
   useEffect(() => {
     const onLanguage = () => {
+      setCategoryLanguage(getStoredLanguage());
       if (categoriesLoadedRef.current || shouldEagerLoadCategories || showProductsMenu) {
-        void fetchCategories();
+        void queryClient.invalidateQueries({
+          queryKey: queryKeys.categoriesTreeRoot(),
+        });
       }
     };
     window.addEventListener('language-updated', onLanguage);
     return () => window.removeEventListener('language-updated', onLanguage);
-  }, [fetchCategories, shouldEagerLoadCategories, showProductsMenu]);
+  }, [queryClient, shouldEagerLoadCategories, showProductsMenu]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

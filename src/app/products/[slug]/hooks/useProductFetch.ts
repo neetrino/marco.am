@@ -7,10 +7,14 @@ import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-quer
 import type { PdpVisualPayload } from '@/lib/services/products-slug/product-transformer';
 import { getStoredLanguage, type LanguageCode } from '@/lib/language';
 import {
+  fetchProductSummary,
   fetchProductDetail,
   fetchProductVisual,
 } from '@/lib/product-pdp/product-pdp-fetchers';
-import { consumeProductPdpNavigationSeed } from '@/lib/product-pdp/pdp-navigation-seed';
+import { getPersistedPdpDetail, setPersistedPdpDetail } from '@/lib/product-pdp/pdp-client-persist-cache';
+import {
+  consumeProductPdpNavigationSeedAnyLanguage,
+} from '@/lib/product-pdp/pdp-navigation-seed';
 import { PDP_QUERY_GC_TIME_MS, PDP_QUERY_STALE_TIME_MS } from '@/lib/product-pdp/pdp-query-cache';
 import { queryKeys } from '@/lib/query-keys';
 
@@ -38,11 +42,16 @@ export function useProductFetch({
   const queryClient = useQueryClient();
   const [lang, setLang] = useState<LanguageCode>(() => serverLanguage);
   const [navigationSeedProduct, setNavigationSeedProduct] = useState<Product | null>(
-    () => consumeProductPdpNavigationSeed(slug, serverLanguage),
+    () => consumeProductPdpNavigationSeedAnyLanguage(slug, serverLanguage),
   );
 
   useEffect(() => {
-    setNavigationSeedProduct(consumeProductPdpNavigationSeed(slug, lang));
+    setNavigationSeedProduct((current) => {
+      if (current && current.slug === slug) {
+        return current;
+      }
+      return consumeProductPdpNavigationSeedAnyLanguage(slug, lang);
+    });
   }, [slug, lang]);
 
   useEffect(() => {
@@ -72,7 +81,13 @@ export function useProductFetch({
       ? initialProduct
       : navigationSeedProduct != null && navigationSeedProduct.slug === slug
         ? navigationSeedProduct
+      : getPersistedPdpDetail(slug, lang)
+        ? getPersistedPdpDetail(slug, lang) ?? undefined
       : undefined;
+  const hasNavigationSeedInitialData =
+    navigationSeedProduct != null &&
+    navigationSeedProduct.slug === slug &&
+    detailInitialData === navigationSeedProduct;
 
   const visualInitialData =
     initialVisual != null && initialVisual.slug === slug && lang === serverLanguage
@@ -115,12 +130,25 @@ export function useProductFetch({
 
   const detailQuery = useQuery({
     queryKey: queryKeys.productDetail(slug, lang),
-    queryFn: () => fetchProductDetail(slug, lang),
+    queryFn: async () => {
+      const summary = await fetchProductSummary(slug, lang);
+      const hasSeed = navigationSeedProduct != null && navigationSeedProduct.slug === slug;
+      const hasVariants = Array.isArray(summary.variants) && summary.variants.length > 0;
+      if (hasSeed || hasVariants) {
+        return summary;
+      }
+      return fetchProductDetail(slug, lang);
+    },
     enabled,
     initialData: detailInitialData,
-    placeholderData: keepPreviousData,
+    placeholderData:
+      hasNavigationSeedInitialData || detailInitialData === initialProduct
+        ? undefined
+        : keepPreviousData,
     staleTime: PDP_QUERY_STALE_TIME_MS,
     gcTime: PDP_QUERY_GC_TIME_MS,
+    initialDataUpdatedAt: hasNavigationSeedInitialData ? 0 : undefined,
+    refetchOnMount: hasNavigationSeedInitialData ? 'always' : true,
     retry: (failureCount, error) => {
       const status =
         error && typeof error === 'object' && 'status' in error ? Number(error.status) : undefined;
@@ -130,6 +158,60 @@ export function useProductFetch({
       return failureCount < 1;
     },
   });
+
+  useEffect(() => {
+    if (!enabled || !slug) {
+      return;
+    }
+    const current = detailQuery.data;
+    const hasFullDetails =
+      current != null &&
+      ((Array.isArray(current.variants) && current.variants.length > 0) ||
+        (Array.isArray(current.description) && current.description.length > 0) ||
+        (Array.isArray(current.productAttributes) && current.productAttributes.length > 0));
+    if (hasFullDetails) {
+      return;
+    }
+    let cancelled = false;
+    void fetchProductDetail(slug, lang)
+      .then((full) => {
+        if (cancelled) {
+          return;
+        }
+        queryClient.setQueryData(queryKeys.productDetail(slug, lang), full);
+        setPersistedPdpDetail(slug, lang, full);
+      })
+      .catch(() => {
+        // Keep summary render when full detail fails; query retries handle hard failures.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [detailQuery.data, enabled, lang, queryClient, slug]);
+
+  useEffect(() => {
+    if (!slug || !detailQuery.data) {
+      return;
+    }
+    const data = detailQuery.data;
+    const isFull =
+      (Array.isArray(data.variants) && data.variants.length > 0) ||
+      (Array.isArray(data.description) && data.description.length > 0) ||
+      (Array.isArray(data.productAttributes) && data.productAttributes.length > 0);
+    if (!isFull) {
+      return;
+    }
+    setPersistedPdpDetail(slug, lang, data);
+  }, [detailQuery.data, lang, slug]);
+
+  useEffect(() => {
+    if (!navigationSeedProduct) {
+      return;
+    }
+    if (detailQuery.data && detailQuery.data !== navigationSeedProduct) {
+      setNavigationSeedProduct(null);
+    }
+  }, [detailQuery.data, navigationSeedProduct]);
 
   const fetchProduct = () => {
     void queryClient.invalidateQueries({ queryKey: queryKeys.productDetail(slug, lang) });

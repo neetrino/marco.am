@@ -11,7 +11,10 @@ import {
 } from 'react';
 
 import { getStoredLanguage } from '@/lib/language';
-import { setProductPdpNavigationSeed, type ProductPdpNavigationSeed } from '@/lib/product-pdp/pdp-navigation-seed';
+import {
+  type ProductPdpNavigationSeed,
+} from '@/lib/product-pdp/pdp-navigation-seed';
+import { seedProductPdpCache } from '@/lib/product-pdp/pdp-navigation-seed-cache';
 import { prefetchProductPdp } from '@/lib/product-pdp/prefetch-product-pdp';
 
 type LinkProps = Omit<ComponentProps<typeof Link>, 'href' | 'prefetch'>;
@@ -68,8 +71,14 @@ export function ProductPdpPrefetchLink({
     if (!navigationSeed) {
       return;
     }
-    setProductPdpNavigationSeed(productSlug, getStoredLanguage(), navigationSeed);
-  }, [navigationSeed, productSlug]);
+    const language = getStoredLanguage();
+    seedProductPdpCache({
+      queryClient,
+      slug: productSlug,
+      language,
+      navigationSeed,
+    });
+  }, [navigationSeed, productSlug, queryClient]);
 
   return (
     <Link

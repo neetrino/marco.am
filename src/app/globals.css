@@ -37,6 +37,17 @@
     scrollbar-gutter: stable;
     background: var(--app-bg);
     color: var(--app-text);
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  /* iOS Safari auto-zooms inputs below 16px even with a fixed viewport scale. */
+  @media (max-width: 767px) {
+    input,
+    select,
+    textarea {
+      font-size: 16px;
+    }
   }
 
   body {

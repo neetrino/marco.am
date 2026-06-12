@@ -2,7 +2,10 @@
 
 import type { MouseEvent } from 'react';
 import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { ProductPdpPrefetchLink } from '../ProductPdpPrefetchLink';
+import { getStoredLanguage } from '@/lib/language';
+import { seedProductPdpCache } from '@/lib/product-pdp/pdp-navigation-seed-cache';
 import { ProductCardImage } from './ProductCardImage';
 import { ProductCardInfo } from './ProductCardInfo';
 import { ProductCardActions } from './ProductCardActions';
@@ -30,6 +33,7 @@ interface ProductCardGridProps {
     discountPercent?: number | null;
     isSpecialPrice?: boolean;
     colors?: Array<{ value: string; imageUrl?: string | null; colors?: string[] | null }>;
+    categories?: Array<{ id: string; slug: string; title: string }>;
   };
   currency: CurrencyCode;
   isInWishlist: boolean;
@@ -63,12 +67,51 @@ export function ProductCardGrid({
   wishlistPage = false,
 }: ProductCardGridProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { t } = useTranslation();
   const hasDisplayPrice = product.price > 0;
+  const navigationSeed = {
+    id: product.id,
+    slug: product.slug,
+    title: product.title,
+    image: product.image,
+    labels: product.labels,
+    warrantyYears: product.warrantyYears ?? product.warrantyBadge?.years ?? null,
+    inStock: product.inStock,
+    brand: product.brand
+      ? {
+          id: product.brand.id,
+          name: product.brand.name,
+          logo: product.brand.logoUrl ?? null,
+        }
+      : null,
+    categories: product.categories ?? [],
+    price: product.price,
+    oldPrice:
+      product.originalPrice && product.originalPrice > product.price
+        ? product.originalPrice
+        : product.compareAtPrice ?? null,
+    discountBadge:
+      product.isSpecialPrice
+        ? { type: 'special_price' as const, value: 0, label: 'special_price' }
+        : product.discountPercent && product.discountPercent > 0
+          ? {
+              type: 'percentage' as const,
+              value: product.discountPercent,
+              label: `-${product.discountPercent}%`,
+            }
+          : null,
+  };
 
   const handleNoPriceNavigate = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     event.stopPropagation();
+    seedProductPdpCache({
+      queryClient,
+      slug: product.slug,
+      language: getStoredLanguage(),
+      navigationSeed,
+    });
     router.push(`/products/${encodeURIComponent(product.slug.trim())}`);
   };
 
@@ -83,45 +126,26 @@ export function ProductCardGrid({
       <ProductPdpPrefetchLink
         href={`/products/${product.slug}`}
         productSlug={product.slug}
-        prefetchData={false}
-        navigationSeed={{
-          id: product.id,
-          slug: product.slug,
-          title: product.title,
-          image: product.image,
-          brand: product.brand
-            ? {
-                id: product.brand.id,
-                name: product.brand.name,
-                logo: product.brand.logoUrl ?? null,
-              }
-            : null,
-          price: product.price,
-          oldPrice:
-            product.originalPrice && product.originalPrice > product.price
-              ? product.originalPrice
-              : product.compareAtPrice ?? null,
-          discountBadge:
-            product.isSpecialPrice
-              ? { type: 'special_price', value: 0, label: 'special_price' }
-              : product.discountPercent && product.discountPercent > 0
-                ? {
-                    type: 'percentage',
-                    value: product.discountPercent,
-                    label: `-${product.discountPercent}%`,
-                  }
-                : null,
-        }}
+        navigationSeed={navigationSeed}
         className="block cursor-pointer rounded-t-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-marco-yellow focus-visible:ring-offset-2"
         aria-label={product.title}
       >
         {/* Product Image */}
         <div className="aspect-square bg-gray-100 relative overflow-hidden">
           <ProductCardImage
+            id={product.id}
             slug={product.slug}
             image={product.image}
             title={product.title}
             labels={product.labels}
+            inStock={product.inStock}
+            brand={product.brand}
+            categories={product.categories}
+            price={product.price}
+            originalPrice={product.originalPrice}
+            compareAtPrice={product.compareAtPrice}
+            discountPercent={product.discountPercent}
+            isSpecialPrice={product.isSpecialPrice}
             warrantyYears={product.warrantyYears ?? product.warrantyBadge?.years ?? null}
             imageError={imageError}
             onImageError={onImageError}
@@ -132,10 +156,16 @@ export function ProductCardGrid({
 
         {/* Product Info */}
         <ProductCardInfo
+          id={product.id}
           slug={product.slug}
           title={product.title}
           brand={product.brand}
           price={product.price}
+          inStock={product.inStock}
+          labels={product.labels}
+          warrantyYears={product.warrantyYears ?? product.warrantyBadge?.years ?? null}
+          categories={product.categories}
+          image={product.image}
           originalPrice={product.originalPrice}
           compareAtPrice={product.compareAtPrice}
           discountPercent={product.discountPercent}
