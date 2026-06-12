@@ -4,8 +4,16 @@ import { useEffect } from 'react';
 import type { CurrencyCode } from '../../lib/currency';
 import { getStoredCurrency, initializeCurrencyRates, clearCurrencyRatesCache } from '../../lib/currency';
 
-export function useHeaderCurrency(setSelectedCurrency: (c: CurrencyCode) => void) {
+export function useHeaderCurrency(
+  setSelectedCurrency: (c: CurrencyCode) => void,
+  options?: { enabled?: boolean },
+) {
+  const enabled = options?.enabled ?? true;
+
   useEffect(() => {
+    if (!enabled) {
+      return;
+    }
     setSelectedCurrency(getStoredCurrency());
 
     const handleCurrencyUpdate = () => {
@@ -17,9 +25,12 @@ export function useHeaderCurrency(setSelectedCurrency: (c: CurrencyCode) => void
     return () => {
       window.removeEventListener('currency-updated', handleCurrencyUpdate);
     };
-  }, [setSelectedCurrency]);
+  }, [enabled, setSelectedCurrency]);
 
   useEffect(() => {
+    if (!enabled) {
+      return;
+    }
     initializeCurrencyRates().catch(console.error);
 
     const handleCurrencyRatesUpdate = () => {
@@ -33,5 +44,5 @@ export function useHeaderCurrency(setSelectedCurrency: (c: CurrencyCode) => void
     return () => {
       window.removeEventListener('currency-rates-updated', handleCurrencyRatesUpdate);
     };
-  }, []);
+  }, [enabled]);
 }

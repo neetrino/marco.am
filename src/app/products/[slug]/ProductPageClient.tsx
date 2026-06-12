@@ -156,6 +156,7 @@ export function ProductPageClient({
   const galleryDiscount =
     product != null ? discountPercent : (productVisual?.discountPercent ?? null);
   const galleryIsSpecialPrice = product != null ? isSpecialPrice : false;
+  const relatedEnabled = Boolean(product);
 
   return (
     <div className="marco-header-container py-12">
@@ -233,7 +234,8 @@ export function ProductPageClient({
         <RelatedProducts
           currentProductSlug={slug}
           language={language}
-          initialRelatedProducts={initialRelatedProducts}
+          initialRelatedProducts={relatedEnabled ? initialRelatedProducts : null}
+          enabled={relatedEnabled}
         />
       </div>
     </div>

@@ -19,6 +19,8 @@ interface UseRelatedProductsProps {
   language: LanguageCode;
   /** SSR payload — instant carousel on first paint when slug/lang match. */
   initialRelatedProducts?: RelatedProductsApiResponse | null;
+  /** Gate fetch for staged PDP rendering. */
+  enabled?: boolean;
 }
 
 export const RELATED_PRODUCTS_LIMIT = RELATED_PRODUCTS_FETCH_LIMIT;
@@ -30,6 +32,7 @@ export function useRelatedProducts({
   productSlug,
   language,
   initialRelatedProducts = null,
+  enabled = true,
 }: UseRelatedProductsProps) {
   const trimmed = productSlug.trim();
 
@@ -38,7 +41,7 @@ export function useRelatedProducts({
   const query = useQuery({
     queryKey: queryKeys.relatedProducts(trimmed, language, RELATED_PRODUCTS_LIMIT),
     queryFn: () => fetchRelatedProducts(trimmed, language, RELATED_PRODUCTS_LIMIT),
-    enabled: Boolean(trimmed),
+    enabled: enabled && Boolean(trimmed),
     initialData,
     refetchOnMount: initialRelatedProducts === undefined,
     staleTime: PDP_RELATED_STALE_TIME_MS,

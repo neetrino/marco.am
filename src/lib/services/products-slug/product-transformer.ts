@@ -1,6 +1,5 @@
 import { normalizeProductWarrantyYears } from "@/lib/constants/product-warranty";
 import { pickVariantForListingPrice } from "@/lib/product-variant-listing-pick";
-import { db } from "@white-shop/db";
 import {
   processImageUrl,
   smartSplitUrls,
@@ -19,6 +18,7 @@ import {
   parseProductDescriptionJson,
   type ProductDescriptionEntry,
 } from "@/lib/products/product-description";
+import { getListingDiscountSettings } from "../listing-discount-settings";
 
 type ProductTranslationShape = {
   locale: string;
@@ -28,6 +28,31 @@ type ProductTranslationShape = {
   description?: unknown;
   seoTitle?: string | null;
   seoDescription?: string | null;
+};
+
+type ProductAttributeValueTranslationShape = {
+  locale: string;
+  label: string;
+};
+
+type ProductAttributeValueShape = {
+  id: string;
+  value: string;
+  imageUrl: string | null;
+  colors: string | null;
+  translations?: ProductAttributeValueTranslationShape[];
+};
+
+type ProductAttributeShape = {
+  id: string;
+  key: string;
+  translations?: Array<{ locale: string; name: string }>;
+  values?: ProductAttributeValueShape[];
+};
+
+type ProductAttributeLinkShape = {
+  id: string;
+  attribute: ProductAttributeShape;
 };
 
 type ProductDescriptionI18nMap = Record<
@@ -116,24 +141,7 @@ function parseMediaObjectMetadata(raw: RawProductMediaItem) {
  * Get discount settings from database
  */
 async function getDiscountSettings() {
-  const discountSettings = await db.settings.findMany({
-    where: {
-      key: {
-        in: ["globalDiscount", "categoryDiscounts", "brandDiscounts"],
-      },
-    },
-  });
-
-  const globalDiscountSetting = discountSettings.find((s: { key: string; value: unknown }) => s.key === "globalDiscount");
-  const globalDiscount = Number(globalDiscountSetting?.value) || 0;
-  
-  const categoryDiscountsSetting = discountSettings.find((s: { key: string; value: unknown }) => s.key === "categoryDiscounts");
-  const categoryDiscounts = categoryDiscountsSetting ? (categoryDiscountsSetting.value as Record<string, number>) || {} : {};
-  
-  const brandDiscountsSetting = discountSettings.find((s: { key: string; value: unknown }) => s.key === "brandDiscounts");
-  const brandDiscounts = brandDiscountsSetting ? (brandDiscountsSetting.value as Record<string, number>) || {} : {};
-
-  return { globalDiscount, categoryDiscounts, brandDiscounts };
+  return getListingDiscountSettings();
 }
 
 /**
@@ -510,36 +518,64 @@ function transformVariants(
 /**
  * Transform productAttributes
  */
+function collectAttributeValueOptions(
+  variants: ProductVariantWithOptions[],
+  lang: string,
+): Record<string, ProductAttributeValueShape[]> {
+  const valuesByAttributeId = new Map<string, Map<string, ProductAttributeValueShape>>();
+
+  for (const variant of variants) {
+    for (const option of variant.options ?? []) {
+      const attributeValue = option.attributeValue;
+      const attribute = attributeValue?.attribute;
+      if (!attributeValue || !attribute?.id) {
+        continue;
+      }
+      const translation =
+        attributeValue.translations?.find((entry) => entry.locale === lang) ??
+        attributeValue.translations?.[0];
+      const valueEntry: ProductAttributeValueShape = {
+        id: attributeValue.id,
+        value: attributeValue.value,
+        imageUrl: attributeValue.imageUrl ?? null,
+        colors: typeof attributeValue.colors === "string" ? attributeValue.colors : null,
+        translations: translation
+          ? [{ locale: translation.locale, label: translation.label }]
+          : [],
+      };
+
+      const valuesForAttribute = valuesByAttributeId.get(attribute.id) ?? new Map();
+      valuesForAttribute.set(attributeValue.id, valueEntry);
+      valuesByAttributeId.set(attribute.id, valuesForAttribute);
+    }
+  }
+
+  return Object.fromEntries(
+    Array.from(valuesByAttributeId.entries()).map(([attributeId, valuesMap]) => [
+      attributeId,
+      Array.from(valuesMap.values()),
+    ]),
+  );
+}
+
 function transformProductAttributes(
   product: ProductWithFullRelations,
   lang: string
 ) {
-  const productAttrs = (product as { productAttributes?: unknown[] }).productAttributes;
+  const productAttrs = (product as unknown as { productAttributes?: ProductAttributeLinkShape[] })
+    .productAttributes;
   logger.debug('Raw productAttributes from DB', {
     isArray: Array.isArray(productAttrs),
     length: productAttrs?.length || 0,
   });
   
   if (Array.isArray(productAttrs) && productAttrs.length > 0) {
-    type ProductAttribute = {
-      id: string;
-      attribute: {
-        id: string;
-        key: string;
-        translations?: Array<{ locale: string; name: string }>;
-        values: Array<{
-          id: string;
-          value: string;
-          translations?: Array<{ locale: string; label: string }>;
-          imageUrl: string | null;
-          colors: string | null;
-        }>;
-      };
-    };
-    
-    const mapped = (productAttrs as ProductAttribute[]).map((pa) => {
+    const variants = Array.isArray(product.variants) ? product.variants : [];
+    const valuesByAttributeId = collectAttributeValueOptions(variants, lang);
+    const mapped = productAttrs.map((pa) => {
       const attr = pa.attribute;
       const attrTranslation = attr.translations?.find((t: { locale: string }) => t.locale === lang) || attr.translations?.[0];
+      const values = valuesByAttributeId[attr.id] ?? [];
       
       return {
         id: pa.id,
@@ -547,13 +583,7 @@ function transformProductAttributes(
           id: attr.id,
           key: attr.key,
           name: attrTranslation?.name || attr.key,
-          values: Array.isArray(attr.values) ? attr.values.map((val: {
-            id: string;
-            value: string;
-            translations?: Array<{ locale: string; label: string }>;
-            imageUrl: string | null;
-            colors: string | null;
-          }) => {
+          values: values.map((val) => {
             const valTranslation = val.translations?.find((t: { locale: string }) => t.locale === lang) || val.translations?.[0];
             return {
               id: val.id,
@@ -562,7 +592,7 @@ function transformProductAttributes(
               imageUrl: val.imageUrl || null,
               colors: val.colors || null,
             };
-          }) : [],
+          }),
         },
       };
     });

@@ -11,7 +11,12 @@ import {
 } from 'react';
 
 import { getStoredLanguage } from '@/lib/language';
-import { setProductPdpNavigationSeed, type ProductPdpNavigationSeed } from '@/lib/product-pdp/pdp-navigation-seed';
+import { queryKeys } from '@/lib/query-keys';
+import {
+  buildProductFromPdpNavigationSeed,
+  setProductPdpNavigationSeed,
+  type ProductPdpNavigationSeed,
+} from '@/lib/product-pdp/pdp-navigation-seed';
 import { prefetchProductPdp } from '@/lib/product-pdp/prefetch-product-pdp';
 
 type LinkProps = Omit<ComponentProps<typeof Link>, 'href' | 'prefetch'>;
@@ -68,8 +73,25 @@ export function ProductPdpPrefetchLink({
     if (!navigationSeed) {
       return;
     }
-    setProductPdpNavigationSeed(productSlug, getStoredLanguage(), navigationSeed);
-  }, [navigationSeed, productSlug]);
+    const language = getStoredLanguage();
+    const seedProduct = buildProductFromPdpNavigationSeed(navigationSeed);
+    setProductPdpNavigationSeed(productSlug, language, navigationSeed);
+    queryClient.setQueryData(queryKeys.productDetail(productSlug, language), seedProduct);
+    queryClient.setQueryData(queryKeys.productVisual(productSlug, language), {
+      id: seedProduct.id,
+      slug: seedProduct.slug,
+      title: seedProduct.title,
+      images: Array.isArray(seedProduct.media)
+        ? seedProduct.media.filter((item): item is string => typeof item === 'string')
+        : [],
+      gallery: [],
+      labels: seedProduct.labels ?? [],
+      discountPercent:
+        seedProduct.discountBadge?.type === 'percentage'
+          ? seedProduct.discountBadge.value
+          : null,
+    });
+  }, [navigationSeed, productSlug, queryClient]);
 
   return (
     <Link

@@ -87,6 +87,7 @@ class ProductsFindTransformService {
       const brandTranslation = brandTranslations.length > 0
         ? brandTranslations.find((t: { locale: string }) => t.locale === lang) || brandTranslations[0]
         : null;
+      const productCategories = Array.isArray(product.categories) ? product.categories : [];
       
       // Listing / card price: same variant logic as PDP default (not raw min price — avoids 0-priced placeholder SKUs).
       const variants = Array.isArray(product.variants) ? product.variants : [];
@@ -299,6 +300,30 @@ class ProductsFindTransformService {
               logoUrl: processImageUrl(product.brand.logoUrl),
             }
           : null,
+        categories: productCategories
+          .map((category) => {
+            const categoryTranslations = Array.isArray(category.translations)
+              ? category.translations
+              : [];
+            const categoryTranslation =
+              categoryTranslations.find((t: { locale: string }) => t.locale === lang) ??
+              categoryTranslations[0] ??
+              null;
+            if (!categoryTranslation?.slug || !categoryTranslation?.title) {
+              return null;
+            }
+            return {
+              id: category.id,
+              slug: categoryTranslation.slug,
+              title: categoryTranslation.title,
+            };
+          })
+          .filter(
+            (
+              category,
+            ): category is { id: string; slug: string; title: string } =>
+              category !== null,
+          ),
         price: pricing.currentPrice,
         originalPrice: pricing.oldPrice,
         compareAtPrice: pricing.compareAtPrice,

@@ -114,6 +114,7 @@ export function SpecialOfferCard({
           logo: product.brand.logoUrl ?? null,
         }
       : null,
+    categories: product.categories ?? [],
     price: product.price,
     oldPrice: oldPrice ?? null,
     discountBadge:

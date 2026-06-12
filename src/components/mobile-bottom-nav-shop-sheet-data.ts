@@ -6,8 +6,6 @@ import { getStoredLanguage } from '../lib/language';
 import { subscribeShopCategoryTreeUpdated } from '../lib/shop-category-tree-sync';
 import type { CategoriesResponse, Category } from './header/category-nav-types';
 
-const CATEGORY_SEARCH_LANGUAGES = ['en', 'hy', 'ru'] as const;
-
 export type CategorySearchIndex = Record<string, string[]>;
 
 export function normalizeSearchValue(value: string): string {
@@ -55,30 +53,14 @@ export function useMobileShopCategories(open: boolean) {
     setLoading(true);
     try {
       const preferredLanguage = getStoredLanguage();
-      const languages = [
-        preferredLanguage,
-        ...CATEGORY_SEARCH_LANGUAGES.filter((language) => language !== preferredLanguage),
-      ];
-
-      const categoryResponses = await Promise.allSettled(
-        languages.map(async (lang) => {
-          const response = await apiClient.get<CategoriesResponse>('/api/v1/categories/tree', {
-            params: { lang },
-          });
-          return response.data ?? [];
-        }),
-      );
-
-      const fulfilledTrees = categoryResponses.flatMap((result) =>
-        result.status === 'fulfilled' ? [result.value] : [],
-      );
-      const preferredResult = categoryResponses[0];
-      const preferredTree =
-        preferredResult?.status === 'fulfilled' ? preferredResult.value : (fulfilledTrees[0] ?? []);
+      const response = await apiClient.get<CategoriesResponse>('/api/v1/categories/tree', {
+        params: { lang: preferredLanguage },
+      });
+      const preferredTree = response.data ?? [];
 
       setCategories(preferredTree);
-      setSearchIndex(buildCategorySearchIndex(fulfilledTrees));
-      setHasLoaded(fulfilledTrees.length > 0);
+      setSearchIndex(buildCategorySearchIndex([preferredTree]));
+      setHasLoaded(preferredTree.length > 0);
     } catch {
       setCategories([]);
       setSearchIndex({});

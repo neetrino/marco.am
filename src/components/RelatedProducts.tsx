@@ -32,6 +32,8 @@ interface RelatedProductsProps {
   language: LanguageCode;
   /** SSR related rows — avoids client round-trip on first paint. */
   initialRelatedProducts?: RelatedProductsApiResponse | null;
+  /** When false, defer related fetch/render until PDP detail phase is ready. */
+  enabled?: boolean;
 }
 
 const HOME_STYLE_NAV_BUTTON_CLASS =
@@ -80,13 +82,15 @@ export function RelatedProducts({
   currentProductSlug,
   language,
   initialRelatedProducts = null,
+  enabled = true,
 }: RelatedProductsProps) {
   const isMaxMd = useIsMaxMd();
   const visibleCards = useRelatedProductsVisibleCards();
   const { products, loading } = useRelatedProducts({
     productSlug: currentProductSlug,
     language,
-    initialRelatedProducts,
+    initialRelatedProducts: enabled ? initialRelatedProducts : undefined,
+    enabled,
   });
 
   const cardWidth = useMemo(() => `${100 / visibleCards}%`, [visibleCards]);
@@ -174,7 +178,7 @@ export function RelatedProducts({
           )}
         </div>
 
-        {loading ? (
+        {!enabled ? null : loading ? (
           <RelatedProductsSkeleton count={skeletonCount} />
         ) : products.length === 0 ? (
           <div className="py-12 text-center">

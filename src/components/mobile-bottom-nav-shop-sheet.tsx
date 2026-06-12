@@ -3,7 +3,6 @@
 import { Search, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from '../lib/i18n-client';
-import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '../lib/utils/image-utils';
 import type { Category } from './header/category-nav-types';
 import { prepareSubcategoriesForNav } from './header/categoryNavList';
 import { MOBILE_NAV_LAYOUT_PADDING_BOTTOM } from './mobile-bottom-nav.constants';
@@ -55,10 +54,6 @@ function getCategoryButtonClass(isActive: boolean): string {
     return 'border-transparent bg-marco-yellow text-marco-black shadow-[0_8px_18px_rgba(250,204,21,0.32)]';
   }
   return 'border-marco-border bg-white text-marco-text hover:border-marco-yellow/55 hover:bg-[#fff9dc] dark:border-white/15 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:border-marco-yellow/50 dark:hover:bg-zinc-800';
-}
-
-function getCategoryImage(category: Category): string | null {
-  return toSafeImgAttributeSrc(category.media?.[0] ?? null);
 }
 
 function renderCountBadge(count: number | undefined) {
@@ -214,17 +209,13 @@ export function MobileBottomNavShopSheet({
                   onClick={() => onSelectCategory(null)}
                   className={`min-h-[96px] rounded-2xl border px-3 py-3 text-sm font-semibold transition-colors ${getCategoryButtonClass(normalizedActiveCategorySlug === null)}`}
                 >
-                  <span className="flex h-full flex-col items-center gap-2 text-center">
-                    <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/80 text-[11px] font-bold text-marco-black dark:bg-zinc-800 dark:text-zinc-200">
-                      {t('products.categoryNavigation.labels.all')}
-                    </span>
+                  <span className="flex h-full flex-col items-center text-center">
                     <span className="line-clamp-2 min-w-0">{t('products.categoryNavigation.shopAll')}</span>
                   </span>
                 </button>
               ) : null}
               {visibleRootCategories.map((category) => {
                 const isCategoryActive = isSameCategorySlug(normalizedActiveCategorySlug, category.slug);
-                const categoryImage = getCategoryImage(category);
                 return (
                   <button
                     key={category.id}
@@ -232,22 +223,7 @@ export function MobileBottomNavShopSheet({
                     onClick={() => onSelectCategory(category.slug)}
                     className={`min-h-[96px] rounded-2xl border px-3 py-3 text-sm font-semibold transition-colors ${getCategoryButtonClass(isCategoryActive)}`}
                   >
-                    <span className="flex h-full flex-col items-center gap-2 text-center">
-                      <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/80 dark:bg-zinc-800">
-                        {categoryImage ? (
-                          <img
-                            src={toDomSafeImgSrcString(categoryImage)}
-                            alt=""
-                            width={34}
-                            height={34}
-                            className="h-[34px] w-[34px] object-contain"
-                          />
-                        ) : (
-                          <span className="text-[9px] font-bold text-marco-text/80 dark:text-zinc-300">
-                            {t('products.categoryNavigation.categoryFallbackBadge')}
-                          </span>
-                        )}
-                      </span>
+                    <span className="flex h-full flex-col items-center text-center">
                       <span className="line-clamp-2 min-w-0">{category.title}</span>
                       <span className="mt-auto">{renderCountBadge(category.productCount)}</span>
                     </span>
@@ -274,7 +250,6 @@ export function MobileBottomNavShopSheet({
                             normalizedActiveCategorySlug,
                             child.slug,
                           );
-                          const childImage = getCategoryImage(child);
                           return (
                             <button
                               key={child.id}
@@ -282,22 +257,7 @@ export function MobileBottomNavShopSheet({
                               onClick={() => onSelectCategory(child.slug)}
                               className={`min-h-[82px] rounded-xl border px-2.5 py-2 text-xs font-semibold transition-colors ${getCategoryButtonClass(isChildActive)}`}
                             >
-                              <span className="flex h-full flex-col items-center gap-1.5 text-center">
-                                <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/80 dark:bg-zinc-800">
-                                  {childImage ? (
-                                    <img
-                                      src={toDomSafeImgSrcString(childImage)}
-                                      alt=""
-                                      width={24}
-                                      height={24}
-                                      className="h-6 w-6 object-contain"
-                                    />
-                                  ) : (
-                                    <span className="text-[8px] font-bold text-marco-text/80 dark:text-zinc-300">
-                                      C
-                                    </span>
-                                  )}
-                                </span>
+                              <span className="flex h-full flex-col items-center text-center">
                                 <span className="line-clamp-2 min-w-0">{child.title}</span>
                                 <span className="mt-auto">{renderCountBadge(child.productCount)}</span>
                               </span>

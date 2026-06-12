@@ -29,6 +29,7 @@ interface Product {
   isSpecialPrice?: boolean;
   colors?: Array<{ value: string; imageUrl?: string | null; colors?: string[] | null }>;
   requiresAttributeSelection?: boolean | null;
+  categories?: Array<{ id: string; slug: string; title: string }>;
 }
 
 type ViewMode = 'list' | 'grid-2' | 'grid-3';

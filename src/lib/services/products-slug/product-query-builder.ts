@@ -27,8 +27,19 @@ const getBaseInclude = () => ({
         include: {
           attributeValue: {
             include: {
-              attribute: true,
-              translations: true,
+              attribute: {
+                select: {
+                  id: true,
+                  key: true,
+                  translations: true,
+                },
+              },
+              translations: {
+                select: {
+                  locale: true,
+                  label: true,
+                },
+              },
             },
           },
         },
@@ -61,10 +72,10 @@ const getProductAttributesInclude = () => ({
     include: {
       attribute: {
         include: {
-          translations: true,
-          values: {
-            include: {
-              translations: true,
+          translations: {
+            select: {
+              locale: true,
+              name: true,
             },
           },
         },

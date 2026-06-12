@@ -10,11 +10,15 @@ import {
   fetchProductDetail,
   fetchProductVisual,
 } from '@/lib/product-pdp/product-pdp-fetchers';
-import { consumeProductPdpNavigationSeed } from '@/lib/product-pdp/pdp-navigation-seed';
+import {
+  consumeProductPdpNavigationSeedAnyLanguage,
+} from '@/lib/product-pdp/pdp-navigation-seed';
 import { PDP_QUERY_GC_TIME_MS, PDP_QUERY_STALE_TIME_MS } from '@/lib/product-pdp/pdp-query-cache';
 import { queryKeys } from '@/lib/query-keys';
 
 import { RESERVED_ROUTES, type Product } from '../types';
+
+const SEEDED_DETAIL_FETCH_DELAY_MS = 1_000;
 
 interface UseProductFetchProps {
   slug: string;
@@ -38,11 +42,11 @@ export function useProductFetch({
   const queryClient = useQueryClient();
   const [lang, setLang] = useState<LanguageCode>(() => serverLanguage);
   const [navigationSeedProduct, setNavigationSeedProduct] = useState<Product | null>(
-    () => consumeProductPdpNavigationSeed(slug, serverLanguage),
+    () => consumeProductPdpNavigationSeedAnyLanguage(slug, serverLanguage),
   );
 
   useEffect(() => {
-    setNavigationSeedProduct(consumeProductPdpNavigationSeed(slug, lang));
+    setNavigationSeedProduct(consumeProductPdpNavigationSeedAnyLanguage(slug, lang));
   }, [slug, lang]);
 
   useEffect(() => {
@@ -73,6 +77,31 @@ export function useProductFetch({
       : navigationSeedProduct != null && navigationSeedProduct.slug === slug
         ? navigationSeedProduct
       : undefined;
+  const hasNavigationSeedInitialData =
+    navigationSeedProduct != null &&
+    navigationSeedProduct.slug === slug &&
+    detailInitialData === navigationSeedProduct;
+  const [seededDelayElapsed, setSeededDelayElapsed] = useState(
+    () => !hasNavigationSeedInitialData,
+  );
+
+  useEffect(() => {
+    if (!enabled) {
+      setSeededDelayElapsed(false);
+      return;
+    }
+    if (!hasNavigationSeedInitialData) {
+      setSeededDelayElapsed(true);
+      return;
+    }
+    setSeededDelayElapsed(false);
+    const timerId = window.setTimeout(() => {
+      setSeededDelayElapsed(true);
+    }, SEEDED_DETAIL_FETCH_DELAY_MS);
+    return () => {
+      window.clearTimeout(timerId);
+    };
+  }, [enabled, hasNavigationSeedInitialData, slug, lang]);
 
   const visualInitialData =
     initialVisual != null && initialVisual.slug === slug && lang === serverLanguage
@@ -116,11 +145,16 @@ export function useProductFetch({
   const detailQuery = useQuery({
     queryKey: queryKeys.productDetail(slug, lang),
     queryFn: () => fetchProductDetail(slug, lang),
-    enabled,
+    enabled: enabled && seededDelayElapsed,
     initialData: detailInitialData,
-    placeholderData: keepPreviousData,
+    placeholderData:
+      hasNavigationSeedInitialData || detailInitialData === initialProduct
+        ? undefined
+        : keepPreviousData,
     staleTime: PDP_QUERY_STALE_TIME_MS,
     gcTime: PDP_QUERY_GC_TIME_MS,
+    initialDataUpdatedAt: hasNavigationSeedInitialData ? 0 : undefined,
+    refetchOnMount: hasNavigationSeedInitialData ? 'always' : true,
     retry: (failureCount, error) => {
       const status =
         error && typeof error === 'object' && 'status' in error ? Number(error.status) : undefined;

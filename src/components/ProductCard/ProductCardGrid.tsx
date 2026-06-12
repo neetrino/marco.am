@@ -30,6 +30,7 @@ interface ProductCardGridProps {
     discountPercent?: number | null;
     isSpecialPrice?: boolean;
     colors?: Array<{ value: string; imageUrl?: string | null; colors?: string[] | null }>;
+    categories?: Array<{ id: string; slug: string; title: string }>;
   };
   currency: CurrencyCode;
   isInWishlist: boolean;
@@ -89,6 +90,9 @@ export function ProductCardGrid({
           slug: product.slug,
           title: product.title,
           image: product.image,
+          labels: product.labels,
+          warrantyYears: product.warrantyYears ?? product.warrantyBadge?.years ?? null,
+          inStock: product.inStock,
           brand: product.brand
             ? {
                 id: product.brand.id,
@@ -96,6 +100,7 @@ export function ProductCardGrid({
                 logo: product.brand.logoUrl ?? null,
               }
             : null,
+          categories: product.categories ?? [],
           price: product.price,
           oldPrice:
             product.originalPrice && product.originalPrice > product.price

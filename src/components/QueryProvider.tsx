@@ -10,6 +10,7 @@ function makeQueryClient(): QueryClient {
         staleTime: 60_000,
         gcTime: 1_800_000,
         refetchOnWindowFocus: false,
+        refetchOnReconnect: false,
         retry: 1,
       },
     },

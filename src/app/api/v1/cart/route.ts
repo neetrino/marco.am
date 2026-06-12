@@ -3,6 +3,11 @@ import { toApiErrorResponse } from "@/lib/api/next-route-error";
 import { authenticateToken } from "@/lib/middleware/auth";
 import { cartService } from "@/lib/services/cart.service";
 
+function isCartSummaryView(request: NextRequest): boolean {
+  const view = new URL(request.url).searchParams.get("view");
+  return view === "summary";
+}
+
 export async function GET(req: NextRequest) {
   try {
     const user = await authenticateToken(req);
@@ -17,6 +22,11 @@ export async function GET(req: NextRequest) {
         },
         { status: 401 }
       );
+    }
+
+    if (isCartSummaryView(req)) {
+      const summary = await cartService.getCartSummary(user.id, user.locale);
+      return NextResponse.json(summary);
     }
 
     const result = await cartService.getCart(user.id, user.locale);

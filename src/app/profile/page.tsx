@@ -86,7 +86,7 @@ function ProfilePageContent() {
     handleTabChange('orders');
   }, [activeTab, handleTabChange, isMobileViewport]);
 
-  if (authLoading || loading) {
+  if (authLoading) {
     return (
       <div className="marco-header-container py-12">
         <div className="text-center">
@@ -170,7 +170,7 @@ function ProfilePageContent() {
           {activeTab === 'dashboard' && !isMobileViewport && (
             <ProfileDashboard
               dashboardData={dashboardData}
-              dashboardLoading={dashboardLoading}
+              dashboardLoading={dashboardLoading || loading}
               currency={currency}
               onTabChange={handleTabChange}
               onOrderClick={handleOrderClick}
@@ -182,7 +182,7 @@ function ProfilePageContent() {
             <ProfilePersonalInfo
               personalInfo={personalInfo}
               setPersonalInfo={setPersonalInfo}
-              savingPersonal={savingPersonal}
+              savingPersonal={savingPersonal || loading}
               onSave={handleSavePersonalInfo}
               profile={profile}
               t={t}
@@ -197,7 +197,7 @@ function ProfilePageContent() {
               editingAddress={editingAddress}
               addressForm={addressForm}
               setAddressForm={setAddressForm}
-              savingAddress={savingAddress}
+              savingAddress={savingAddress || loading}
               onSave={handleSaveAddress}
               onDelete={handleDeleteAddress}
               onSetDefault={handleSetDefaultAddress}
@@ -210,7 +210,7 @@ function ProfilePageContent() {
           {activeTab === 'orders' && (
             <ProfileOrders
               orders={orders}
-              ordersLoading={ordersLoading}
+              ordersLoading={ordersLoading || loading}
               ordersPage={ordersPage}
               setOrdersPage={setOrdersPage}
               ordersMeta={ordersMeta}
@@ -226,7 +226,7 @@ function ProfilePageContent() {
             <ProfilePassword
               passwordForm={passwordForm}
               setPasswordForm={setPasswordForm}
-              savingPassword={savingPassword}
+              savingPassword={savingPassword || loading}
               onSave={handleChangePassword}
               t={t}
             />

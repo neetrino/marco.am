@@ -14,6 +14,7 @@ export type ShopGridProduct = {
   colors: Array<{ value: string; imageUrl?: string | null; colors?: string[] | null }>;
   requiresAttributeSelection?: boolean | null;
   labels: ProductLabel[];
+  categories?: Array<{ id: string; slug: string; title: string }>;
 };
 
 export function normalizeShopGridProduct(p: unknown): ShopGridProduct {
@@ -31,6 +32,7 @@ export function normalizeShopGridProduct(p: unknown): ShopGridProduct {
     colors?: ShopGridProduct['colors'];
     requiresAttributeSelection?: boolean | null;
     labels?: ProductLabel[];
+    categories?: ShopGridProduct['categories'];
   };
   return {
     id: row.id,
@@ -45,5 +47,6 @@ export function normalizeShopGridProduct(p: unknown): ShopGridProduct {
     colors: row.colors ?? [],
     requiresAttributeSelection: row.requiresAttributeSelection ?? null,
     labels: row.labels ?? [],
+    categories: row.categories ?? [],
   };
 }

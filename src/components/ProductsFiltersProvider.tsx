@@ -306,6 +306,9 @@ export function ProductsFiltersProvider({
     const scheduleFacetRefetch = () => {
       const lang = resolvedLanguage;
       const scopeKey = buildFacetRefetchScopeKey(searchParams, lang);
+      if (scopeKey === syncedFiltersKeyRef.current) {
+        return;
+      }
       if (scopeKey === lastFacetScopeRef.current) {
         return;
       }
@@ -315,6 +318,9 @@ export function ProductsFiltersProvider({
       }
       facetRefetchTimerRef.current = window.setTimeout(() => {
         facetRefetchTimerRef.current = null;
+        if (scopeKey === syncedFiltersKeyRef.current) {
+          return;
+        }
         void fetchFiltersRef.current();
       }, FACET_REFETCH_DELAY_MS);
     };

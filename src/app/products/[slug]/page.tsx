@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import { cookies } from 'next/headers';
+import { headers } from 'next/headers';
 
 import {
   LANGUAGE_PREFERENCE_KEY,
@@ -28,19 +29,25 @@ function baseSlugFromParam(slugParam: string): string {
 export default async function ProductPage({ params }: PageProps) {
   const { slug: slugParam } = await params;
   const cookieStore = await cookies();
+  const requestHeaders = await headers();
   const serverLanguage: LanguageCode =
     parseLanguageFromServer(cookieStore.get(LANGUAGE_PREFERENCE_KEY)?.value) ?? 'en';
+  const isRscNavigationRequest = requestHeaders.get('rsc') === '1';
 
   const baseSlug = baseSlugFromParam(slugParam);
 
-  const [visualOutcome, relatedOutcome] = await Promise.allSettled([
-    getCachedPdpVisual(baseSlug, serverLanguage),
-    getCachedPdpRelated(baseSlug, serverLanguage, RELATED_PRODUCTS_FETCH_LIMIT),
-  ]);
+  let initialVisual = null;
+  let initialRelatedProducts: RelatedProductsApiResponse | null = null;
 
-  const initialVisual = visualOutcome.status === 'fulfilled' ? visualOutcome.value : null;
-  const initialRelatedProducts: RelatedProductsApiResponse | null =
-    relatedOutcome.status === 'fulfilled' ? relatedOutcome.value : null;
+  if (!isRscNavigationRequest) {
+    const [visualOutcome, relatedOutcome] = await Promise.allSettled([
+      getCachedPdpVisual(baseSlug, serverLanguage),
+      getCachedPdpRelated(baseSlug, serverLanguage, RELATED_PRODUCTS_FETCH_LIMIT),
+    ]);
+    initialVisual = visualOutcome.status === 'fulfilled' ? visualOutcome.value : null;
+    initialRelatedProducts =
+      relatedOutcome.status === 'fulfilled' ? relatedOutcome.value : null;
+  }
 
   return (
     <>
@@ -51,9 +58,11 @@ export default async function ProductPage({ params }: PageProps) {
         initialProduct={null}
         initialRelatedProducts={initialRelatedProducts}
       />
-      <Suspense fallback={null}>
-        <ProductPdpDetailStream baseSlug={baseSlug} serverLanguage={serverLanguage} />
-      </Suspense>
+      {!isRscNavigationRequest ? (
+        <Suspense fallback={null}>
+          <ProductPdpDetailStream baseSlug={baseSlug} serverLanguage={serverLanguage} />
+        </Suspense>
+      ) : null}
     </>
   );
 }

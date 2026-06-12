@@ -53,7 +53,9 @@ export function useCartSummaryState(): CartSummaryState {
         itemsCount: number;
         totals: { total: number; currency?: string };
       };
-    }>('/api/v1/cart');
+    }>('/api/v1/cart', {
+      params: { view: 'summary' },
+    });
   }, [authLoading, isLoggedIn]);
 
   const cartQuery = useQuery({

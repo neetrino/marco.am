@@ -3,7 +3,7 @@ import { productsService } from "./products.service";
 
 const DEFAULT_RELATED_LIMIT = 10;
 const MAX_RELATED_LIMIT = 24;
-const QUERY_BATCH_MULTIPLIER = 4;
+const QUERY_BATCH_MULTIPLIER = 2;
 
 type RelatedRule = "category" | "brand" | "other";
 
@@ -255,26 +255,29 @@ class ProductsRelatedService {
         lang,
         limit: batchLimit,
         page: 1,
+        listingOmitProductAttributes: true,
+        skipExactTotalCount: true,
       })) as ProductListResponse;
       return response.data;
     };
 
+    const needsMoreCandidates = () => selectedProducts.length < limit;
+
     const primaryCategorySlug = baseProduct.categories?.[0]?.slug;
     const brandId = baseProduct.brand?.id;
 
-    const [categoryBatch, brandBatch, otherBatch] = await Promise.all([
-      primaryCategorySlug
-        ? fetchCandidateBatch({ category: primaryCategorySlug, sort: "popular" })
-        : Promise.resolve([] as RelatedProduct[]),
-      brandId
-        ? fetchCandidateBatch({ brand: brandId, sort: "popular" })
-        : Promise.resolve([] as RelatedProduct[]),
-      fetchCandidateBatch({ sort: "popular" }),
-    ]);
-
-    tryAppendProducts(categoryBatch, "category");
-    tryAppendProducts(brandBatch, "brand");
-    tryAppendProducts(otherBatch, "other");
+    if (primaryCategorySlug && needsMoreCandidates()) {
+      const categoryBatch = await fetchCandidateBatch({ category: primaryCategorySlug });
+      tryAppendProducts(categoryBatch, "category");
+    }
+    if (brandId && needsMoreCandidates()) {
+      const brandBatch = await fetchCandidateBatch({ brand: brandId });
+      tryAppendProducts(brandBatch, "brand");
+    }
+    if (needsMoreCandidates()) {
+      const otherBatch = await fetchCandidateBatch({});
+      tryAppendProducts(otherBatch, "other");
+    }
 
     const data = selectedProducts.slice(0, limit);
     const rules = data.reduce(
