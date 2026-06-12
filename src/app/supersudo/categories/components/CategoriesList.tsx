@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from '../../../../lib/i18n-client';
-import { getStoredLanguage } from '../../../../lib/language';
+import { getStoredLanguage, type LanguageCode } from '../../../../lib/language';
 import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '../../../../lib/utils/image-utils';
+import { resolveCategoryNavPresentation } from '../../../../components/header/categoryNavPresentation';
 import {
   countDirectSubcategories,
   filterCategoriesForAdminView,
@@ -71,6 +72,10 @@ export function CategoriesList({
   const [expandedCategoryIds, setExpandedCategoryIds] = useState<string[]>([]);
   const lookup = categoryLookupList ?? categories;
   const activeLocale = lang ?? getStoredLanguage();
+  const iconLanguage: LanguageCode =
+    activeLocale === 'hy' || activeLocale === 'ru' || activeLocale === 'en' || activeLocale === 'ka'
+      ? activeLocale
+      : 'en';
 
   const viewCategories = useMemo((): CategoryWithLevel[] => {
     const scoped = filterCategoriesForAdminView(categories, viewMode);
@@ -132,6 +137,14 @@ export function CategoriesList({
 
   const renderSubcategoryImage = (category: Category) => {
     const safeImageSrc = toSafeImgAttributeSrc(category.media?.[0] ?? null);
+    const localizedTitle = getLocalizedCategoryTitle(category, activeLocale);
+    const categoryPresentation = resolveCategoryNavPresentation(
+      category.slug,
+      localizedTitle,
+      iconLanguage,
+    );
+    const CategoryIcon =
+      categoryPresentation.icon.kind === 'lucide' ? categoryPresentation.icon.Icon : null;
     if (safeImageSrc) {
       return (
         <img
@@ -139,6 +152,29 @@ export function CategoriesList({
           alt=""
           className="h-10 w-10 rounded-md border border-slate-200 bg-white object-cover"
         />
+      );
+    }
+
+    if (categoryPresentation.icon.kind === 'figma') {
+      return (
+        <div className="flex h-10 w-10 items-center justify-center rounded-md border border-slate-200 bg-white">
+          <img
+            src={categoryPresentation.icon.src}
+            alt=""
+            width={24}
+            height={24}
+            className="h-6 w-6 object-contain"
+            draggable={false}
+          />
+        </div>
+      );
+    }
+
+    if (CategoryIcon) {
+      return (
+        <div className="flex h-10 w-10 items-center justify-center rounded-md border border-slate-200 bg-white">
+          <CategoryIcon size={20} strokeWidth={1.7} className="text-slate-700" aria-hidden />
+        </div>
       );
     }
 

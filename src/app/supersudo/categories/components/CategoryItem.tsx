@@ -2,7 +2,9 @@
 
 import type { DragEvent } from 'react';
 import { useTranslation } from '../../../../lib/i18n-client';
+import { getStoredLanguage, type LanguageCode } from '../../../../lib/language';
 import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '../../../../lib/utils/image-utils';
+import { resolveCategoryNavPresentation } from '../../../../components/header/categoryNavPresentation';
 import type { AdminCategoryView } from '../utils';
 import type { Category, CategoryWithLevel } from '../types';
 
@@ -66,6 +68,18 @@ export function CategoryItem({
 }: CategoryItemProps) {
   const { t } = useTranslation();
   const safeCategoryImage = toSafeImgAttributeSrc(category.media?.[0] ?? null);
+  const activeLanguage = getStoredLanguage();
+  const normalizedLanguage: LanguageCode =
+    activeLanguage === 'hy' || activeLanguage === 'ru' || activeLanguage === 'en' || activeLanguage === 'ka'
+      ? activeLanguage
+      : 'en';
+  const categoryPresentation = resolveCategoryNavPresentation(
+    category.slug,
+    categoryTitle,
+    normalizedLanguage,
+  );
+  const CategoryIcon =
+    categoryPresentation.icon.kind === 'lucide' ? categoryPresentation.icon.Icon : null;
   const isRootView = viewMode === 'roots';
 
   const handleDragStart = (event: DragEvent<HTMLTableRowElement>) => {
@@ -137,6 +151,21 @@ export function CategoryItem({
             alt=""
             className="h-12 w-12 rounded-lg border border-slate-200 bg-white object-cover"
           />
+        ) : categoryPresentation.icon.kind === 'figma' ? (
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-slate-200 bg-white">
+            <img
+              src={categoryPresentation.icon.src}
+              alt=""
+              width={32}
+              height={32}
+              className="h-8 w-8 object-contain"
+              draggable={false}
+            />
+          </div>
+        ) : CategoryIcon ? (
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-slate-200 bg-white">
+            <CategoryIcon size={28} strokeWidth={1.7} className="text-slate-700" aria-hidden />
+          </div>
         ) : (
           <div
             className="flex h-12 w-12 items-center justify-center rounded-lg border border-dashed border-slate-200 bg-slate-50 text-[10px] font-medium uppercase tracking-wide text-slate-400"

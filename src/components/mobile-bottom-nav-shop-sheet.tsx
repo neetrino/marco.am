@@ -1,12 +1,14 @@
 'use client';
 
 import { Search, X } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { type SyntheticEvent, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from '../lib/i18n-client';
 import type { Category } from './header/category-nav-types';
 import { prepareSubcategoriesForNav } from './header/categoryNavList';
+import { resolveCategoryNavPresentation } from './header/categoryNavPresentation';
 import { MOBILE_NAV_LAYOUT_PADDING_BOTTOM } from './mobile-bottom-nav.constants';
 import { flattenCategoryTree, normalizeSearchValue, useMobileShopCategories } from './mobile-bottom-nav-shop-sheet-data';
+import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '../lib/utils/image-utils';
 
 const ROOT_CATEGORY_LIMIT = 10;
 
@@ -66,6 +68,60 @@ function renderCountBadge(count: number | undefined) {
       {count}
     </span>
   );
+}
+
+function hideBrokenCategoryIcon(event: SyntheticEvent<HTMLImageElement>) {
+  const wrapper = event.currentTarget.parentElement;
+  if (wrapper instanceof HTMLElement) {
+    wrapper.style.display = 'none';
+    return;
+  }
+  event.currentTarget.style.display = 'none';
+}
+
+function renderCategoryIcon(
+  category: Category,
+  title: string,
+  lang: Parameters<typeof resolveCategoryNavPresentation>[2],
+) {
+  const categoryImage = toSafeImgAttributeSrc(category.media?.[0] ?? null);
+  const presentation = resolveCategoryNavPresentation(category.slug, title, lang);
+  const CategoryIcon =
+    presentation.icon.kind === 'lucide' ? presentation.icon.Icon : null;
+
+  if (categoryImage) {
+    return (
+      <img
+        src={toDomSafeImgSrcString(categoryImage)}
+        alt=""
+        width={28}
+        height={28}
+        className="h-7 w-7 object-contain"
+        draggable={false}
+        onError={hideBrokenCategoryIcon}
+      />
+    );
+  }
+
+  if (presentation.icon.kind === 'figma') {
+    return (
+      <img
+        src={presentation.icon.src}
+        alt=""
+        width={28}
+        height={28}
+        className="h-7 w-7 object-contain dark:brightness-0 dark:invert"
+        draggable={false}
+        onError={hideBrokenCategoryIcon}
+      />
+    );
+  }
+
+  if (!CategoryIcon) {
+    return null;
+  }
+
+  return <CategoryIcon size={24} strokeWidth={1.7} className="text-marco-black dark:text-white" aria-hidden />;
 }
 
 export function MobileBottomNavShopSheet({
@@ -216,6 +272,7 @@ export function MobileBottomNavShopSheet({
               ) : null}
               {visibleRootCategories.map((category) => {
                 const isCategoryActive = isSameCategorySlug(normalizedActiveCategorySlug, category.slug);
+                const title = resolveCategoryNavPresentation(category.slug, category.title, lang).title;
                 return (
                   <button
                     key={category.id}
@@ -224,6 +281,9 @@ export function MobileBottomNavShopSheet({
                     className={`min-h-[96px] rounded-2xl border px-3 py-3 text-sm font-semibold transition-colors ${getCategoryButtonClass(isCategoryActive)}`}
                   >
                     <span className="flex h-full flex-col items-center text-center">
+                      <span className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-marco-gray dark:bg-zinc-800">
+                        {renderCategoryIcon(category, title, lang)}
+                      </span>
                       <span className="line-clamp-2 min-w-0">{category.title}</span>
                       <span className="mt-auto">{renderCountBadge(category.productCount)}</span>
                     </span>
@@ -250,6 +310,7 @@ export function MobileBottomNavShopSheet({
                             normalizedActiveCategorySlug,
                             child.slug,
                           );
+                          const childTitle = resolveCategoryNavPresentation(child.slug, child.title, lang).title;
                           return (
                             <button
                               key={child.id}
@@ -258,6 +319,9 @@ export function MobileBottomNavShopSheet({
                               className={`min-h-[82px] rounded-xl border px-2.5 py-2 text-xs font-semibold transition-colors ${getCategoryButtonClass(isChildActive)}`}
                             >
                               <span className="flex h-full flex-col items-center text-center">
+                                <span className="mb-2 flex h-9 w-9 items-center justify-center rounded-full bg-marco-gray dark:bg-zinc-800">
+                                  {renderCategoryIcon(child, childTitle, lang)}
+                                </span>
                                 <span className="line-clamp-2 min-w-0">{child.title}</span>
                                 <span className="mt-auto">{renderCountBadge(child.productCount)}</span>
                               </span>
