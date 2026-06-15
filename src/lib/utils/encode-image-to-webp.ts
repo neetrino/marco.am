@@ -1,5 +1,8 @@
 import { logger } from "@/lib/utils/logger";
 
+/** Node-only image pipeline — must not be imported from client/edge bundles. */
+const loadSharp = () => import("sharp");
+
 const WEBP_QUALITY = 82;
 
 /**
@@ -9,7 +12,7 @@ const WEBP_QUALITY = 82;
  */
 export async function encodeImageBufferToWebp(buffer: Buffer): Promise<Buffer | null> {
   try {
-    const sharp = (await import("sharp")).default;
+    const sharp = (await loadSharp()).default;
     return await sharp(buffer).rotate().webp({ quality: WEBP_QUALITY, effort: 4 }).toBuffer();
   } catch (error: unknown) {
     logger.warn("[encodeImageBufferToWebp] sharp encode failed, keeping original", {

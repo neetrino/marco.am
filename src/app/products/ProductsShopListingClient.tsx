@@ -12,6 +12,8 @@ import { SHOP_PLP_DEFAULT_PAGE_SIZE } from '@/lib/constants/shop-plp-pagination'
 import { getStoredLanguage } from '@/lib/language';
 import { PRODUCTS_PLP_TOTAL_EVENT } from '@/lib/products-plp-total-event';
 import { pushShopProductsListingUrl } from '@/lib/push-shop-products-listing-url';
+import { getQueryClient } from '@/lib/query/get-query-client';
+import { syncShopListingProductsToPdpCache } from '@/lib/shop-products-plp-pdp-sync';
 import {
   isShopListingCacheFresh,
   readShopListingCache,
@@ -138,6 +140,20 @@ export function ProductsShopListingClient({
   const productsRef = useRef(initialProducts);
   const fetchGenerationRef = useRef(0);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const initialPdpCacheSyncedRef = useRef(false);
+
+  if (!initialPdpCacheSyncedRef.current) {
+    initialPdpCacheSyncedRef.current = true;
+    writeShopListingCache(initialQueryString, {
+      data: initialProducts,
+      meta: initialMeta,
+    });
+    syncShopListingProductsToPdpCache(
+      getQueryClient(),
+      initialProducts,
+      getStoredLanguage(),
+    );
+  }
 
   useEffect(() => {
     productsRef.current = products;
@@ -152,7 +168,19 @@ export function ProductsShopListingClient({
       data: initialProducts,
       meta: initialMeta,
     });
+    syncShopListingProductsToPdpCache(
+      getQueryClient(),
+      initialProducts,
+      getStoredLanguage(),
+    );
   }, [initialMeta, initialProducts, initialQueryString]);
+
+  useEffect(() => {
+    if (!isHydrated) {
+      return;
+    }
+    syncShopListingProductsToPdpCache(getQueryClient(), products, getStoredLanguage());
+  }, [isHydrated, products]);
 
   const reportTotal = useCallback((total: number) => {
     window.dispatchEvent(new CustomEvent<number>(PRODUCTS_PLP_TOTAL_EVENT, { detail: total }));
@@ -168,6 +196,11 @@ export function ProductsShopListingClient({
       setShowGridSkeleton(false);
       setHasOptimisticListing(false);
       writeShopListingCache(nextQueryString, normalizedPayload);
+      syncShopListingProductsToPdpCache(
+        getQueryClient(),
+        normalized,
+        getStoredLanguage(),
+      );
       reportTotal(normalizedPayload.meta.total);
     },
     [reportTotal],

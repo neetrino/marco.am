@@ -81,6 +81,10 @@ export function ProductPdpPrefetchLink({
       language,
       navigationSeed,
     });
+    if (navigationSeed.image) {
+      const img = new window.Image();
+      img.src = navigationSeed.image;
+    }
   }, [navigationSeed, productSlug, queryClient]);
 
   return (
@@ -96,10 +100,12 @@ export function ProductPdpPrefetchLink({
         onFocus?.(e);
       }}
       onPointerDown={(e) => {
+        persistSeed();
         warm();
         onPointerDown?.(e);
       }}
       onTouchStart={(e) => {
+        persistSeed();
         warm();
         onTouchStart?.(e);
       }}

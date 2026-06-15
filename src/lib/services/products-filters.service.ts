@@ -1,7 +1,7 @@
 import { db } from "@white-shop/db";
 import { Prisma } from "@white-shop/db/prisma";
 import { unstable_cache } from "next/cache";
-import { adminService } from "./admin.service";
+import { adminSettingsService } from "./admin/admin-settings.service";
 import { buildWhereClause } from "./products-find-query/query-builder";
 import { ProductWithRelations } from "./products-find-query.service";
 import type { TechnicalSpecFilters } from "./products-find-query/types";
@@ -34,7 +34,7 @@ function buildPreferredLocales(lang: string): string[] {
 }
 
 const getPriceFilterSettingsCached = unstable_cache(
-  async () => adminService.getPriceFilterSettings(),
+  async () => adminSettingsService.getPriceFilterSettings(),
   ["products-filters-price-settings-v1"],
   { revalidate: 300, tags: ["price-filter-settings"] },
 );

@@ -1,7 +1,8 @@
 import type { QueryClient } from '@tanstack/react-query';
 
 import type { Product } from '@/app/products/[slug]/types';
-import type { LanguageCode } from '@/lib/language';
+import { readLanguageCookie, type LanguageCode } from '@/lib/language';
+import { normalizePdpSlug } from '@/lib/product-pdp/pdp-slug';
 import { queryKeys } from '@/lib/query-keys';
 import type { PdpVisualPayload } from '@/lib/services/products-slug/product-transformer';
 
@@ -133,21 +134,19 @@ function mergeSeedIntoExistingVisual(
   };
 }
 
-/**
- * Stores PLP card summary into in-memory handoff + React Query cache for instant PDP paint.
- */
-export function seedProductPdpCache({
+/** Writes PLP card summary into React Query PDP keys (no navigation handoff map). */
+export function writeProductPdpQueryCache({
   queryClient,
   slug,
   language,
   navigationSeed,
 }: SeedProductPdpCacheInput): void {
+  const cacheSlug = normalizePdpSlug(slug);
   const seedProduct = buildProductFromPdpNavigationSeed(navigationSeed);
   const seedVisual = buildSeedVisualPayload(seedProduct);
-  setProductPdpNavigationSeed(slug, language, navigationSeed);
 
   queryClient.setQueryData(
-    queryKeys.productDetail(slug, language),
+    queryKeys.productDetail(cacheSlug, language),
     (existing: Product | undefined) => {
       if (!existing) {
         return seedProduct;
@@ -160,7 +159,7 @@ export function seedProductPdpCache({
   );
 
   queryClient.setQueryData(
-    queryKeys.productVisual(slug, language),
+    queryKeys.productVisual(cacheSlug, language),
     (existing: PdpVisualPayload | undefined) => {
       if (!existing) {
         return seedVisual;
@@ -171,4 +170,28 @@ export function seedProductPdpCache({
       return mergeSeedIntoExistingVisual(existing, seedVisual);
     },
   );
+}
+
+/**
+ * Stores PLP card summary into in-memory handoff + React Query cache for instant PDP paint.
+ */
+export function seedProductPdpCache({
+  queryClient,
+  slug,
+  language,
+  navigationSeed,
+}: SeedProductPdpCacheInput): void {
+  setProductPdpNavigationSeed(slug, language, navigationSeed);
+  writeProductPdpQueryCache({ queryClient, slug, language, navigationSeed });
+
+  const cookieLanguage = readLanguageCookie();
+  if (cookieLanguage && cookieLanguage !== language) {
+    setProductPdpNavigationSeed(slug, cookieLanguage, navigationSeed);
+    writeProductPdpQueryCache({
+      queryClient,
+      slug,
+      language: cookieLanguage,
+      navigationSeed,
+    });
+  }
 }

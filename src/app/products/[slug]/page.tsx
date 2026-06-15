@@ -57,20 +57,28 @@ export default async function ProductPage({ params }: PageProps) {
     parseLanguageFromServer(cookieStore.get(LANGUAGE_PREFERENCE_KEY)?.value) ?? 'en';
   const isRscNavigationRequest = requestHeaders.get('rsc') === '1';
 
+  if (isRscNavigationRequest) {
+    return (
+      <ProductPageClient
+        slugParam={slugParam}
+        serverLanguage={serverLanguage}
+        initialVisual={null}
+        initialProduct={null}
+        initialRelatedProducts={null}
+      />
+    );
+  }
+
   const baseSlug = baseSlugFromParam(slugParam);
   const exists = await getCachedPdpExists(baseSlug);
   if (!exists) {
     notFound();
   }
 
-  let initialVisual = null;
-
-  if (!isRscNavigationRequest) {
-    initialVisual = await withTimeout(
-      getCachedPdpVisual(baseSlug, serverLanguage),
-      PDP_VISUAL_SERVER_TIMEOUT_MS,
-    );
-  }
+  const initialVisual = await withTimeout(
+    getCachedPdpVisual(baseSlug, serverLanguage),
+    PDP_VISUAL_SERVER_TIMEOUT_MS,
+  );
 
   return (
     <>
@@ -81,11 +89,9 @@ export default async function ProductPage({ params }: PageProps) {
         initialProduct={null}
         initialRelatedProducts={null}
       />
-      {!isRscNavigationRequest ? (
-        <Suspense fallback={null}>
-          <ProductPdpDetailStream baseSlug={baseSlug} serverLanguage={serverLanguage} />
-        </Suspense>
-      ) : null}
+      <Suspense fallback={null}>
+        <ProductPdpDetailStream baseSlug={baseSlug} serverLanguage={serverLanguage} />
+      </Suspense>
     </>
   );
 }

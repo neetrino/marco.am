@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { getStoredCurrency } from '../../../lib/currency';
 import { getStoredLanguage, type LanguageCode } from '../../../lib/language';
+import { normalizePdpSlug } from '@/lib/product-pdp/pdp-slug';
 import type { PdpVisualPayload } from '@/lib/services/products-slug/product-transformer';
 import type { CurrencyCode } from '../../../lib/currency';
 import { t } from '../../../lib/i18n';
@@ -39,9 +40,17 @@ export function useProductPage({
   const [showMessage, setShowMessage] = useState<string | null>(null);
   const [thumbnailStartIndex, setThumbnailStartIndex] = useState(0);
 
-  const slugParts = slugParam.includes(':') ? slugParam.split(':') : [slugParam];
-  const slug = slugParts[0] ?? '';
-  const variantIdFromUrl = slugParts.length > 1 ? slugParts[1] : null;
+  let decodedSlugParam = slugParam;
+  try {
+    decodedSlugParam = decodeURIComponent(slugParam);
+  } catch {
+    decodedSlugParam = slugParam;
+  }
+  const slugParts = decodedSlugParam.includes(':')
+    ? decodedSlugParam.split(':')
+    : [decodedSlugParam];
+  const slug = normalizePdpSlug(slugParts[0] ?? decodedSlugParam);
+  const variantIdFromUrl = slugParts.length > 1 ? slugParts[1] ?? null : null;
 
   const {
     product,
@@ -49,6 +58,8 @@ export function useProductPage({
     blockingEmpty,
     detailsPending,
     loading,
+    instantShell,
+    isInstantShellPaint,
   } = useProductFetch({
     slug,
     variantIdFromUrl,
@@ -201,6 +212,8 @@ export function useProductPage({
     blockingEmpty,
     detailsPending,
     loading,
+    instantShell,
+    isInstantShellPaint,
     images,
     currentImageIndex,
     setCurrentImageIndex,

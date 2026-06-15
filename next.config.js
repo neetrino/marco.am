@@ -213,7 +213,7 @@ const prismaTraceGlobs = [prismaGeneratedTraceGlob, prismaCwdFallbackTraceGlob];
 const nextConfig = {
   reactStrictMode: true,
   // Keep workspace DB + generated Prisma client as Node externals so query engine `.node` paths resolve at runtime (bundling breaks `__dirname` for native engines).
-  serverExternalPackages: ['@white-shop/db', '@prisma/client', 'sharp'],
+  serverExternalPackages: ['@white-shop/db', '@prisma/client', 'sharp', 'ioredis'],
   outputFileTracingIncludes: {
     // Picomatch: `/*` matches one segment only; `/` is the App Router root; deep routes need `/**/*` and `/api/**/*`.
     '/': prismaTraceGlobs,
