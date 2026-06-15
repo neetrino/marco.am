@@ -1,3 +1,5 @@
+import { resolveListingCardSortPrice } from "@/lib/pricing/listing-card-sort-price";
+import { getListingDiscountSettings } from "./listing-discount-settings";
 import { ProductFilters } from "./products-find-query.service";
 import { productsFindQueryService } from "./products-find-query.service";
 import { productsFindFilterService } from "./products-find-filter.service";
@@ -93,24 +95,27 @@ class ProductsFindService {
         : filteredProducts.slice(start, start + limit);
 
     // Step 4: Transform products to response format
-    // Price sorting must use transformed final price (discount-aware) to match PLP output.
+    // Price sorting must match PLP card price — sort in memory, transform only the page slice.
     if (
       totalFromQuery === undefined &&
       (sort === "price-asc" || sort === "price-desc" || sort === "price")
     ) {
-      const transformedAll = (await productsFindTransformService.transformProducts(
-        filteredProducts,
-        lang
-      )) as Array<{ price: number }>;
-      transformedAll.sort((a: { price: number }, b: { price: number }) => {
+      const discountSettings = await getListingDiscountSettings();
+      const sorted = [...filteredProducts].sort((a, b) => {
+        const aPrice = resolveListingCardSortPrice(a, discountSettings);
+        const bPrice = resolveListingCardSortPrice(b, discountSettings);
         if (sort === "price-asc") {
-          return a.price - b.price;
+          return aPrice - bPrice;
         }
-        return b.price - a.price;
+        return bPrice - aPrice;
       });
-      const slice = transformedAll.slice(start, start + limit);
+      const slice = sorted.slice(start, start + limit);
+      const data = (await productsFindTransformService.transformProducts(
+        slice,
+        lang,
+      )) as HomeStripListingProduct[];
       return {
-        data: applyListingOutputShape(slice as HomeStripListingProduct[], filters),
+        data: applyListingOutputShape(data, filters),
         meta: buildProductsMeta(total, limit, normalizedPage, start),
       };
     }

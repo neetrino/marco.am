@@ -244,30 +244,6 @@ class ProductsFiltersService {
   }
 
   /**
-   * Get all child category IDs recursively
-   */
-  private async getAllChildCategoryIds(parentId: string): Promise<string[]> {
-    const children = await db.category.findMany({
-      where: {
-        parentId: parentId,
-        published: true,
-        deletedAt: null,
-      },
-      select: { id: true },
-    });
-    
-    let allChildIds = children.map((c: { id: string }) => c.id);
-    
-    // Recursively get children of children
-    for (const child of children) {
-      const grandChildren = await this.getAllChildCategoryIds(child.id);
-      allChildIds = [...allChildIds, ...grandChildren];
-    }
-    
-    return allChildIds;
-  }
-
-  /**
    * Get available filters (colors and sizes)
    */
   async getFilters(filters: {
@@ -890,46 +866,18 @@ class ProductsFiltersService {
    * Get price range
    */
   async getPriceRange(filters: { category?: string; lang?: string }) {
-    const where: Prisma.ProductWhereInput = {
-      published: true,
-      deletedAt: null,
-    };
+    const { where } = await buildWhereClause({
+      category: filters.category?.trim(),
+      lang: filters.lang || "en",
+    });
 
-    if (filters.category) {
-      const slugs = filters.category
-        .split(',')
-        .map((s) => s.trim())
-        .filter(Boolean);
-      const perSlugTrees: Prisma.ProductWhereInput[] = [];
-      for (const slug of slugs) {
-        const categoryDoc = await db.category.findFirst({
-          where: {
-            translations: {
-              some: {
-                slug,
-                locale: filters.lang || "en",
-              },
-            },
-            published: true,
-            deletedAt: null,
-          },
-        });
-        if (!categoryDoc) {
-          continue;
-        }
-        const childCategoryIds = await this.getAllChildCategoryIds(categoryDoc.id);
-        const allCategoryIds = [categoryDoc.id, ...childCategoryIds];
-        const categoryConditions = allCategoryIds.flatMap((catId: string) => [
-          { primaryCategoryId: catId },
-          { categoryIds: { has: catId } },
-        ]);
-        perSlugTrees.push({ OR: categoryConditions });
-      }
-      if (perSlugTrees.length === 1) {
-        where.OR = (perSlugTrees[0] as { OR: Prisma.ProductWhereInput[] }).OR;
-      } else if (perSlugTrees.length > 1) {
-        where.OR = perSlugTrees;
-      }
+    if (where === null) {
+      return {
+        min: 0,
+        max: 0,
+        stepSize: null,
+        stepSizePerCurrency: null,
+      };
     }
 
     const bounds = await getPublishedVariantPriceBounds(where);
@@ -978,7 +926,6 @@ class ProductsFiltersService {
 }
 
 export const productsFiltersService = new ProductsFiltersService();
-
 
 
 

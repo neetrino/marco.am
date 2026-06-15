@@ -10,6 +10,40 @@ import { logger } from './logger';
  */
 type ImageUrlInput = string | null | undefined | { url?: string; src?: string; value?: string };
 
+/** Windows/macOS absolute paths and R2 keys that still embed a local machine path. */
+const LOCAL_FS_PATH_MARKERS =
+  /c__users[_/]|[_/]appdata[_/]|[_/]roaming[_/]|workspacestorage/i;
+
+/**
+ * Detects image references that still point at a developer machine filesystem path.
+ * Covers `C:/Users/...`, `/Users/.../Downloads`, and R2 filenames such as
+ * `c__Users_ROG_AppData_Roaming_Cursor_...`.
+ */
+export function isLocalFilesystemImageReference(url: string): boolean {
+  const value = url.trim();
+  if (!value) {
+    return false;
+  }
+
+  if (value.toLowerCase().startsWith('file://')) {
+    return true;
+  }
+
+  const normalized = value.replace(/\\/g, '/').toLowerCase();
+
+  if (/^[a-z]:\//.test(normalized)) {
+    return true;
+  }
+  if (/^\/[a-z]:\//.test(normalized)) {
+    return true;
+  }
+  if (/^\/users\/[^/]+\/(library|downloads|desktop|documents)(\/|$)/.test(normalized)) {
+    return true;
+  }
+
+  return LOCAL_FS_PATH_MARKERS.test(normalized);
+}
+
 /**
  * Validates if a URL is a valid image URL
  */
@@ -18,6 +52,10 @@ export function isValidImageUrl(url: ImageUrlInput): boolean {
   
   const urlStr = typeof url === 'string' ? url.trim() : '';
   if (!urlStr) return false;
+
+  if (isLocalFilesystemImageReference(urlStr)) {
+    return false;
+  }
 
   // Protocol-relative URLs (//host/...) are not safe path-only references.
   if (urlStr.startsWith('//')) return false;

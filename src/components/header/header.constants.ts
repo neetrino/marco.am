@@ -5,9 +5,10 @@
 export const HEADER_TABLET_ROW2_MAX_WIDTH_PX = 1366;
 
 /**
- * Primary nav row switches to the compact (hamburger) top bar at or below this width — e.g. iPad mini portrait (~744px) and tight tablets before the bar overlaps.
+ * Primary nav row switches to the compact (hamburger) top bar before the full
+ * desktop contact/social cluster starts competing with product controls.
  */
-export const HEADER_COMPACT_PRIMARY_NAV_MAX_WIDTH_PX = 820;
+export const HEADER_COMPACT_PRIMARY_NAV_MAX_WIDTH_PX = 1180;
 
 /** Reels destination used by primary navigation. */
 export const HEADER_REELS_EXTERNAL_HREF = '/reels';
@@ -41,13 +42,13 @@ export const HEADER_FIGMA_PADDING_Y_CLASS = 'py-2';
 export const HEADER_FIGMA_CLUSTER_GAP_CLASS = 'gap-x-2';
 
 /** Space from MARCO logo to first primary nav link (row 1) */
-export const HEADER_LOGO_TO_NAV_GAP_CLASS = 'ml-[54px]';
+export const HEADER_LOGO_TO_NAV_GAP_CLASS = 'ml-8 min-[1367px]:ml-[54px]';
 
 /** Horizontal gap between primary nav links — fixed (45px) */
-export const HEADER_FIGMA_NAV_LINK_GAP_CLASS = 'gap-x-[45px]';
+export const HEADER_FIGMA_NAV_LINK_GAP_CLASS = 'gap-x-7 min-[1367px]:gap-x-[45px]';
 
 /** Space from last primary nav link (e.g. Reels) to social icons (row 1) */
-export const HEADER_NAV_TO_SOCIAL_GAP_CLASS = 'ml-[54px]';
+export const HEADER_NAV_TO_SOCIAL_GAP_CLASS = 'ml-8 min-[1367px]:ml-[54px]';
 
 /** Gap between phone block and addresses block (row 1) — Figma 214:1051 */
 export const HEADER_FIGMA_CONTACT_CLUSTER_GAP_CLASS = 'gap-x-[29px]';

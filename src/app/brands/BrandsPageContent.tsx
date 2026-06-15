@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useMemo, useState, type CSSProperties } from 'react';
@@ -19,6 +20,7 @@ import {
   isBrandLogoCellOversizedSlug,
 } from '@/lib/brand-logo-cell-oversize';
 import { resolveBrandDisplayLogoForCell } from '@/lib/brand-static-logo-assets';
+import { shouldBypassNextImageOptimizer } from '@/lib/utils/should-bypass-next-image-optimizer';
 import {
   fetchHomeBrandPartnersClient,
   HOME_BRAND_PARTNERS_QUERY_STALE_MS,
@@ -92,13 +94,16 @@ function BrandDirectoryLogo({
         className="relative mx-auto flex w-full shrink-0 items-center justify-center overflow-hidden"
         style={cell}
       >
-        <img
+        <Image
           src={resolved.asset.src}
           alt={partner.name}
+          fill
           className={BRANDS_DIRECTORY_LOGO_IMAGE_CLASS}
+          sizes={`${isBrandLogoCellOversizedSlug(partner.slug, partner.name) ? BRANDS_DIRECTORY_LOGO_OVERSIZED_CELL_MAX_WIDTH_PX : BRANDS_DIRECTORY_LOGO_CELL_MAX_WIDTH_PX}px`}
           loading={imagePriority ? 'eager' : 'lazy'}
-          decoding="async"
+          priority={imagePriority}
           fetchPriority={imagePriority ? 'high' : 'auto'}
+          unoptimized={shouldBypassNextImageOptimizer(resolved.asset.src)}
         />
       </div>
     );
@@ -110,13 +115,16 @@ function BrandDirectoryLogo({
         className="relative mx-auto flex w-full shrink-0 items-center justify-center overflow-hidden"
         style={cell}
       >
-        <img
+        <Image
           src={candidateRemoteSrc[0]}
           alt={partner.name}
+          fill
           className={BRANDS_DIRECTORY_LOGO_IMAGE_CLASS}
+          sizes={`${isBrandLogoCellOversizedSlug(partner.slug, partner.name) ? BRANDS_DIRECTORY_LOGO_OVERSIZED_CELL_MAX_WIDTH_PX : BRANDS_DIRECTORY_LOGO_CELL_MAX_WIDTH_PX}px`}
           loading={imagePriority ? 'eager' : 'lazy'}
-          decoding="async"
+          priority={imagePriority}
           fetchPriority={imagePriority ? 'high' : 'auto'}
+          unoptimized={shouldBypassNextImageOptimizer(candidateRemoteSrc[0])}
           onError={() => {
             const failed = candidateRemoteSrc[0];
             setFailedSrcSet((prev) => {

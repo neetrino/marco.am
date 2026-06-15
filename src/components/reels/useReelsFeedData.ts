@@ -23,6 +23,10 @@ type PublicReelsApiResponse = {
   }>;
 };
 
+type UseReelsFeedDataOptions = {
+  syncLikesOnIdle?: boolean;
+};
+
 function toInteractionItems(items: PublicReelItem[]): ReelInteractionState[] {
   return items.map((item) => ({
     ...item,
@@ -60,7 +64,11 @@ export type UseReelsFeedDataResult = {
   }) => void;
 };
 
-export function useReelsFeedData(items: PublicReelItem[]): UseReelsFeedDataResult {
+export function useReelsFeedData(
+  items: PublicReelItem[],
+  options: UseReelsFeedDataOptions = {},
+): UseReelsFeedDataResult {
+  const syncLikesOnIdle = options.syncLikesOnIdle ?? true;
   const requestTokenRef = useRef(0);
   const pendingLikeTokenRef = useRef<Record<string, number>>({});
   const reelsRef = useRef<ReelInteractionState[]>(toInteractionItems(items));
@@ -96,6 +104,10 @@ export function useReelsFeedData(items: PublicReelItem[]): UseReelsFeedDataResul
   }, [items]);
 
   useEffect(() => {
+    if (!syncLikesOnIdle) {
+      return undefined;
+    }
+
     const controller = new AbortController();
 
     const syncFeedLikes = async () => {
@@ -138,7 +150,7 @@ export function useReelsFeedData(items: PublicReelItem[]): UseReelsFeedDataResul
         clearTimeout(timeoutId);
       }
     };
-  }, []);
+  }, [syncLikesOnIdle]);
 
   const setReelLikeState = useCallback((reelId: string, next: ReelLikeMutationPayload) => {
     setReelItems((prev) =>

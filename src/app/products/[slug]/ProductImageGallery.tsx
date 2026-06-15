@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useEffect } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import { Maximize2 } from "lucide-react";
@@ -7,6 +8,7 @@ import { ProductLabels } from "../../../components/ProductLabels";
 import { ProductImagePlaceholder } from "../../../components/ProductImagePlaceholder";
 import { t } from "../../../lib/i18n";
 import type { LanguageCode } from "../../../lib/language";
+import { shouldBypassNextImageOptimizer } from "@/lib/utils/should-bypass-next-image-optimizer";
 import type { Product } from "./types";
 
 interface ProductImageGalleryProps {
@@ -120,10 +122,14 @@ export function ProductImageGallery({
                   {failedIndices.has(actualIndex) ? (
                     <ProductImagePlaceholder className="w-full h-full" aria-label="" />
                   ) : (
-                    <img
+                    <Image
                       src={image}
                       alt=""
-                      className="w-full h-full object-cover transition-transform duration-300"
+                      fill
+                      className="object-cover transition-transform duration-300"
+                      sizes="112px"
+                      loading="lazy"
+                      unoptimized={shouldBypassNextImageOptimizer(image)}
                       onError={() => markFailed(actualIndex)}
                     />
                   )}
@@ -137,12 +143,16 @@ export function ProductImageGallery({
         <div className="mx-auto w-full max-w-[420px] md:mx-0 md:max-w-none md:flex-1">
           <div className="relative aspect-square bg-white rounded-lg overflow-hidden group shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
           {currentSrc && !mainImageFailed ? (
-            <img
+            <Image
               src={currentSrc}
               alt={product.title}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              fill
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+              sizes="(max-width: 768px) 100vw, 420px"
+              priority={mainImageHighPriority}
+              loading={mainImageHighPriority ? 'eager' : 'lazy'}
               fetchPriority={mainImageHighPriority ? 'high' : 'auto'}
-              decoding="async"
+              unoptimized={shouldBypassNextImageOptimizer(currentSrc)}
               onError={() => markFailed(safeCurrentImageIndex)}
             />
           ) : (
@@ -228,10 +238,14 @@ export function ProductImageGallery({
                     {failedIndices.has(index) ? (
                       <ProductImagePlaceholder className="w-full h-full" aria-label="" />
                     ) : (
-                      <img
+                      <Image
                         src={image}
                         alt=""
-                        className="w-full h-full object-cover transition-transform duration-300"
+                        fill
+                        className="object-cover transition-transform duration-300"
+                        sizes="58px"
+                        loading="lazy"
+                        unoptimized={shouldBypassNextImageOptimizer(image)}
                         onError={() => markFailed(index)}
                       />
                     )}
@@ -246,7 +260,17 @@ export function ProductImageGallery({
       {/* Zoom Modal */}
       {showZoom && currentSrc && !failedIndices.has(safeCurrentImageIndex) && (
         <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4" onClick={() => setShowZoom(false)}>
-          <img src={currentSrc} alt="" className="max-w-full max-h-full object-contain" />
+          <div className="relative h-full w-full max-h-full max-w-full">
+            <Image
+              src={currentSrc}
+              alt=""
+              fill
+              className="object-contain"
+              sizes="100vw"
+              loading="lazy"
+              unoptimized={shouldBypassNextImageOptimizer(currentSrc)}
+            />
+          </div>
           <button 
             className="absolute top-4 right-4 text-white text-2xl"
             aria-label={t(language, 'common.buttons.close')}

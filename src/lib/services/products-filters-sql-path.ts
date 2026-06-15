@@ -73,7 +73,9 @@ export async function buildShopFiltersViaSqlAggregation(args: {
     aggregateBrandFacetsFromWhere(args.where, args.lang, args.preferredLocales),
     aggregateColorFacetsFromWhere(args.where, args.lang, scopeFilters),
     aggregateSizeFacetsFromWhere(args.where, args.lang, scopeFilters),
-    fetchCategoryFacetProductRows(args.where, scopeFilters),
+    args.includeCategories
+      ? fetchCategoryFacetProductRows(args.where, scopeFilters)
+      : Promise.resolve([]),
     fetchAttributeFacetSample(args.where, args.preferredLocales),
   ]);
 

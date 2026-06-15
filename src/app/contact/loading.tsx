@@ -1,6 +1,5 @@
-/**
- * Contact shells stream from RSC — avoid a route-level skeleton on navigation.
- */
+import { StaticPageLoadingSkeleton } from '@/components/navigation/StaticPageLoadingSkeleton';
+
 export default function ContactLoading() {
-  return null;
+  return <StaticPageLoadingSkeleton />;
 }

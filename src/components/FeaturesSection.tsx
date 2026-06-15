@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useTranslation } from '../lib/i18n-client';
 
@@ -33,11 +34,15 @@ export function FeaturesSection() {
             className="text-center group cursor-pointer transition-all duration-300 hover:scale-105"
           >
             <div className="flex justify-center mb-4">
-              <div className="w-20 h-20 flex items-center justify-center">
-                <img
+              <div className="relative h-20 w-20">
+                <Image
                   src="/assets/home/features/feature-fast-delivery.webp"
                   alt="Fast Delivery"
-                  className="w-full h-full object-contain"
+                  fill
+                  className="object-contain"
+                  sizes="80px"
+                  loading="lazy"
+                  unoptimized
                 />
               </div>
             </div>
@@ -55,11 +60,15 @@ export function FeaturesSection() {
             className="text-center group cursor-pointer transition-all duration-300 hover:scale-105"
           >
             <div className="flex justify-center mb-4">
-              <div className="w-20 h-20 flex items-center justify-center">
-                <img
+              <div className="relative h-20 w-20">
+                <Image
                   src="/assets/home/features/feature-best-quality.webp"
                   alt="Best Quality"
-                  className="w-full h-full object-contain"
+                  fill
+                  className="object-contain"
+                  sizes="80px"
+                  loading="lazy"
+                  unoptimized
                 />
               </div>
             </div>
@@ -77,11 +86,15 @@ export function FeaturesSection() {
             className="text-center group cursor-pointer transition-all duration-300 hover:scale-105"
           >
             <div className="flex justify-center mb-4">
-              <div className="w-20 h-20 flex items-center justify-center">
-                <img
+              <div className="relative h-20 w-20">
+                <Image
                   src="/assets/home/features/feature-free-return.webp"
                   alt="Free Return"
-                  className="w-full h-full object-contain"
+                  fill
+                  className="object-contain"
+                  sizes="80px"
+                  loading="lazy"
+                  unoptimized
                 />
               </div>
             </div>

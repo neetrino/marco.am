@@ -1,5 +1,9 @@
 'use client';
 
+import Image from 'next/image';
+
+import { shouldBypassNextImageOptimizer } from '@/lib/utils/should-bypass-next-image-optimizer';
+
 /**
  * UserAvatar Component
  * 
@@ -54,10 +58,14 @@ export function UserAvatar({
   return (
     <div className={`relative flex-shrink-0 ${sizeClasses[size]} ${className}`}>
       {avatarUrl ? (
-        <img
+        <Image
           src={avatarUrl}
           alt={`${firstName || ''} ${lastName || ''}`.trim() || 'User avatar'}
-          className="w-full h-full rounded-full object-cover border-2 border-gray-200"
+          fill
+          className="rounded-full border-2 border-gray-200 object-cover"
+          sizes="128px"
+          loading="lazy"
+          unoptimized={shouldBypassNextImageOptimizer(avatarUrl)}
         />
       ) : (
         <div className="w-full h-full rounded-full bg-gradient-to-br from-gray-400 to-gray-600 flex items-center justify-center text-white font-semibold border-2 border-gray-200 shadow-sm">

@@ -1,3 +1,5 @@
+import { isLocalFilesystemImageReference } from './utils/image-utils';
+
 /**
  * Local logos under `public/assets/brands/` keyed by published brand `slug`.
  * Used when `Brand.logoUrl` is empty so the home rail still shows real artwork.
@@ -22,6 +24,7 @@ const SLUG_ALIASES: Record<string, string> = {
   byspan: 'by-span',
   'disa-kulp': 'disa',
   'fgv-formenti-giovenzana': 'fgv',
+  'lg-official': 'lg',
   'lg-wordmark': 'lg',
   lex: 'lex-life-expert',
   'mf-furniture-hardware': 'mf',
@@ -227,6 +230,17 @@ export function resolveBrandStaticLogoFromNameOnly(
   return matchBundledLogoFromName(name);
 }
 
+/** Remote brand logos that 404 in storage — fall back to bundled artwork when available. */
+const KNOWN_BROKEN_REMOTE_BRAND_LOGO_SUFFIXES = ['lg-official.png'] as const;
+
+function isUnusableRemoteBrandLogoUrl(url: string): boolean {
+  if (isLocalFilesystemImageReference(url)) {
+    return true;
+  }
+  const path = url.split('?')[0]?.split('#')[0]?.toLowerCase() ?? '';
+  return KNOWN_BROKEN_REMOTE_BRAND_LOGO_SUFFIXES.some((suffix) => path.endsWith(suffix));
+}
+
 /**
  * Ordered image URLs for product cards: bundled first when matched by name only, else remote first.
  */
@@ -243,7 +257,7 @@ export function buildBrandLogoCandidateSrcs(
   if (nameOnlyBundled?.src) {
     out.push(nameOnlyBundled.src);
   }
-  if (remote && !out.includes(remote)) {
+  if (remote && !isUnusableRemoteBrandLogoUrl(remote) && !out.includes(remote)) {
     out.push(remote);
   }
   if (anyBundled?.src && !out.includes(anyBundled.src)) {
@@ -266,6 +280,12 @@ export function resolveBrandDisplayLogoForCell(
   name: string,
 ): BrandDisplayLogoCellResolved {
   const remote = logoUrl?.trim();
+  if (remote && isUnusableRemoteBrandLogoUrl(remote)) {
+    const bundled = resolveBrandStaticLogoForDisplay(slug, name);
+    if (bundled) {
+      return { mode: 'local', asset: bundled };
+    }
+  }
   if (remote) {
     return { mode: 'remote', src: remote };
   }

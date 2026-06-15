@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { Play } from 'lucide-react';
 import { useState } from 'react';
 
@@ -48,13 +49,16 @@ export function AboutHeroVideo({ videoId, title }: AboutHeroVideoProps) {
             />
           ) : (
             <>
-              <img
+              <Image
                 src={thumbnailUrl}
                 alt=""
-                className="absolute inset-0 h-full w-full object-cover"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 960px"
+                priority
                 loading="eager"
-                decoding="async"
                 fetchPriority="high"
+                unoptimized
                 onError={() => {
                   setThumbnailUrl(buildYouTubeThumbnailUrl(videoId, 'mq'));
                 }}

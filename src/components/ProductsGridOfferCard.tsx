@@ -23,7 +23,7 @@ function ProductsGridOfferCardInner({
     <SpecialOfferCard
       product={product}
       layout={layout}
-      align="end"
+      align={layout === 'mobileGrid' ? 'center' : 'end'}
       maxWidthPx={maxWidthPx}
       imagePriority={imagePriority}
     />

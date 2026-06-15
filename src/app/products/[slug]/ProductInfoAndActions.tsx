@@ -122,14 +122,15 @@ export function ProductInfoAndActions({
           <div className="mb-5 flex flex-wrap items-center gap-3 md:gap-4">
             {product.brand ? (
               product.brand.logo ? (
-                <Image
-                  src={product.brand.logo}
-                  alt={product.brand.name}
-                  width={140}
-                  height={42}
-                  className="h-7 w-auto max-w-[min(100%,140px)] shrink-0 object-contain object-left md:h-8 md:max-w-[min(100%,160px)]"
-                  sizes="(max-width: 768px) 140px, 160px"
-                />
+                <div className="relative h-7 w-full max-w-[min(100%,140px)] shrink-0 overflow-hidden md:h-8 md:max-w-[min(100%,160px)]">
+                  <Image
+                    src={product.brand.logo}
+                    alt={product.brand.name}
+                    fill
+                    className="object-contain object-left"
+                    sizes="(max-width: 768px) 140px, 160px"
+                  />
+                </div>
               ) : (
                 <p className="text-sm text-gray-500">{product.brand.name}</p>
               )

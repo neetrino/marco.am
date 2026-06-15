@@ -10,6 +10,7 @@ import { db } from "@white-shop/db";
 import type { ProductFilters, ProductWithRelations } from "./products-find-query/types";
 import { hasTechnicalSpecFilters } from "./products-technical-filters";
 import { decodeProductCursor } from "./products-pagination-cursor";
+import { PLP_IN_MEMORY_SORT_OVERFETCH_MAX } from "@/lib/constants/shop-plp-pagination";
 
 const PROMOTION_DB_SORT_KEYS = new Set([
   undefined,
@@ -178,7 +179,10 @@ class ProductsFindQueryService {
     // Over-fetch window for in-memory technical/spec sorting path.
     // Keep it tight to avoid slow PLP renders on every filter interaction.
     const requestedWindow = Math.max(1, page) * limit;
-    const fetchLimit = Math.min(Math.max(requestedWindow * 3, limit * 4), 120);
+    const fetchLimit = Math.min(
+      Math.max(requestedWindow * 3, limit * 4),
+      PLP_IN_MEMORY_SORT_OVERFETCH_MAX,
+    );
     const products = await executeProductListingQuery(where, fetchLimit, 0, queryOpts);
 
     return {

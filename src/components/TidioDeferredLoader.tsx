@@ -1,10 +1,14 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { MOBILE_NAV_OVERLAY_WIDGET_BOTTOM } from './mobile-bottom-nav.constants';
+import {
+  installTidioFontPreloadGuard,
+  loadTidioScript,
+  TIDIO_ACTIVATION_EVENTS,
+  TIDIO_IDLE_FALLBACK_MS,
+} from '@/lib/tidio/tidio-script-loader';
 
-const TIDIO_SRC = 'https://code.tidio.co/9ovkfmgncuyhg4kaemwvkdbvp5r7njec.js';
-const SCRIPT_ID = 'tidio-widget-js';
 const HOST_OFFSET_STYLE_ID = 'marco-tidio-mobile-offset';
 
 type TidioChatApi = {
@@ -44,17 +48,64 @@ function applyTidioMobileBottomOffset(): void {
   api.adjustStyles(tidioMobileBottomCss());
 }
 
+function useTidioActivation(): boolean {
+  const [shouldLoad, setShouldLoad] = useState(false);
+
+  useEffect(() => {
+    if (shouldLoad) {
+      return;
+    }
+
+    const activate = (): void => {
+      setShouldLoad(true);
+    };
+
+    const timer = window.setTimeout(activate, TIDIO_IDLE_FALLBACK_MS);
+    TIDIO_ACTIVATION_EVENTS.forEach((eventName) => {
+      window.addEventListener(eventName, activate, { once: true, passive: true });
+    });
+
+    return () => {
+      window.clearTimeout(timer);
+      TIDIO_ACTIVATION_EVENTS.forEach((eventName) => {
+        window.removeEventListener(eventName, activate);
+      });
+    };
+  }, [shouldLoad]);
+
+  return shouldLoad;
+}
+
 /**
- * Defers Tidio until idle (or cap) so initial main-thread and network stay focused on LCP / INP.
+ * Loads Tidio only after deliberate user input (not scroll) or a long idle fallback
+ * so Mulish (lazy chunk) does not extend initial Finish metrics.
  */
 export function TidioDeferredLoader() {
+  const shouldLoad = useTidioActivation();
+
   useEffect(() => {
+    const removeGuard = installTidioFontPreloadGuard();
+    return removeGuard;
+  }, []);
+
+  useEffect(() => {
+    if (!shouldLoad) {
+      return;
+    }
+
+    void import('@/fonts/mulish-font').then(({ applyMulishFontVariable }) => {
+      applyMulishFontVariable();
+    });
+
+    loadTidioScript();
+
     const onTidioReady = () => {
       applyTidioMobileBottomOffset();
       window.setTimeout(applyTidioMobileBottomOffset, 300);
       window.setTimeout(applyTidioMobileBottomOffset, 900);
       window.setTimeout(applyTidioMobileBottomOffset, 2500);
     };
+
     document.addEventListener('tidioChat-ready', onTidioReady);
     applyTidioMobileBottomOffset();
 
@@ -62,59 +113,7 @@ export function TidioDeferredLoader() {
       document.removeEventListener('tidioChat-ready', onTidioReady);
       document.getElementById(HOST_OFFSET_STYLE_ID)?.remove();
     };
-  }, []);
-
-  useEffect(() => {
-    if (document.getElementById(SCRIPT_ID)) {
-      return;
-    }
-
-    let cancelled = false;
-
-    const inject = () => {
-      if (cancelled || document.getElementById(SCRIPT_ID)) {
-        return;
-      }
-      const el = document.createElement('script');
-      el.id = SCRIPT_ID;
-      el.src = TIDIO_SRC;
-      el.async = true;
-      document.body.appendChild(el);
-    };
-
-    const win = window as Window & {
-      requestIdleCallback?: (cb: IdleRequestCallback, opts?: IdleRequestOptions) => number;
-      cancelIdleCallback?: (id: number) => void;
-    };
-
-    const fallbackTimer = window.setTimeout(inject, 12_000);
-
-    if (typeof win.requestIdleCallback === 'function') {
-      const idleId = win.requestIdleCallback(
-        () => {
-          window.clearTimeout(fallbackTimer);
-          inject();
-        },
-        { timeout: 10_000 },
-      );
-      return () => {
-        cancelled = true;
-        window.clearTimeout(fallbackTimer);
-        win.cancelIdleCallback?.(idleId);
-      };
-    }
-
-    const earlyTimer = window.setTimeout(() => {
-      window.clearTimeout(fallbackTimer);
-      inject();
-    }, 2800);
-
-    return () => {
-      cancelled = true;
-      window.clearTimeout(fallbackTimer);
-      window.clearTimeout(earlyTimer);
-    };
-  }, []);
+  }, [shouldLoad]);
 
   return null;
 }

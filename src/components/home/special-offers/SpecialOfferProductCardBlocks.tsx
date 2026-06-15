@@ -175,6 +175,7 @@ export function SpecialOfferMedia({
             fill
             className="object-contain mix-blend-multiply"
             sizes="(max-width: 768px) 45vw, 280px"
+            loading="lazy"
             unoptimized
             onError={onImageError}
           />

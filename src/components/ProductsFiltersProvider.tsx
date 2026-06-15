@@ -92,7 +92,7 @@ const DEFAULT_FILTERS: ProductsFiltersData = {
   priceRange: { min: 0, max: 0, stepSize: null, stepSizePerCurrency: null },
 };
 
-const FACET_REFETCH_DELAY_MS = 200;
+const FACET_REFETCH_DELAY_MS = 700;
 
 function mergeFilterPayload(payload: ProductsFiltersData): ProductsFiltersData {
   return {
@@ -182,10 +182,9 @@ export function ProductsFiltersProvider({
   language: languageProp,
   initialFiltersData = null,
   initialFiltersKey = null,
-  awaitServerHydration: _awaitServerHydration = false,
+  awaitServerHydration = false,
   children,
 }: ProductsFiltersProviderProps) {
-  void _awaitServerHydration;
   const preferenceLang = useContext(LanguagePreferenceContext);
   const resolvedLanguage = languageProp ?? preferenceLang;
   const searchParams = useShopProductsListingSearchParams();
@@ -298,9 +297,20 @@ export function ProductsFiltersProvider({
       return;
     }
 
+    if (awaitServerHydration && !hasFiltersDataRef.current) {
+      setLoading(true);
+      return;
+    }
+
     syncedFiltersKeyRef.current = filtersClientKey;
     void fetchFiltersRef.current();
-  }, [filtersClientKey, initialFiltersData, initialFiltersKey, applyFiltersPayload]);
+  }, [
+    awaitServerHydration,
+    filtersClientKey,
+    initialFiltersData,
+    initialFiltersKey,
+    applyFiltersPayload,
+  ]);
 
   useEffect(() => {
     const scheduleFacetRefetch = () => {

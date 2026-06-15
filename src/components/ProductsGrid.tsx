@@ -98,7 +98,11 @@ export function ProductsGrid({
   /** Same as home featured strip: `default` (fixed card width) on md+, `mobileGrid` on small screens */
   const specialOfferLayout = isMaxMd ? 'mobileGrid' : 'default';
   const [viewMode, setViewMode] = useState<ViewMode>('grid-2');
-  const [visibleCount, setVisibleCount] = useState(products.length);
+  const [visibleCount, setVisibleCount] = useState(() =>
+    !disableProgressiveRender && products.length > PRODUCTS_PROGRESSIVE_RENDER_THRESHOLD
+      ? Math.min(PRODUCTS_INITIAL_RENDER_BATCH_SIZE, products.length)
+      : products.length,
+  );
 
   // Load view mode from localStorage
   useEffect(() => {
@@ -179,7 +183,7 @@ export function ProductsGrid({
   }, [shouldUseProgressiveRender, visibleCount, sortedProducts.length]);
 
   /** Tighter on smallest phones; roomier gaps on mobile shop before `md` desktop columns */
-  const gridGapClass = 'gap-x-4 gap-y-12 md:gap-x-6 md:gap-y-12';
+  const gridGapClass = 'gap-x-3 gap-y-10 sm:gap-x-4 sm:gap-y-12 md:gap-x-6 md:gap-y-12';
 
   /**
    * Touch iPad / tablet (see `useForcedShopGridColumns`): fixed 2 or 3 columns, no list mode.
@@ -222,7 +226,7 @@ export function ProductsGrid({
           className={
             useListLayout
               ? 'min-w-0 w-full max-w-none'
-              : 'flex min-w-0 justify-end pr-2 sm:pr-3 md:pr-4'
+              : 'flex min-w-0 justify-center sm:justify-end sm:pr-3 md:pr-4'
           }
         >
           {useListLayout ? (
@@ -240,4 +244,3 @@ export function ProductsGrid({
     </div>
   );
 }
-

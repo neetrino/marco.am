@@ -1,11 +1,13 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import Image from 'next/image';
+import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 
 import {
   buildBrandLogoCandidateSrcs,
   resolveProductCardBrandLogoUiScale,
 } from '@/lib/brand-static-logo-assets';
+import { shouldBypassNextImageOptimizer } from '@/lib/utils/should-bypass-next-image-optimizer';
 
 import {
   PRODUCT_CARD_BRAND_LOGO_SIZES,
@@ -67,25 +69,31 @@ export function ProductCardBrandMark({
   const uiScale = resolveProductCardBrandLogoUiScale(slug, safeName, src);
   const needsScaleBoost = uiScale !== 1;
 
+  const imageStyle: CSSProperties | undefined = needsScaleBoost
+    ? { transform: `scale(${uiScale})`, transformOrigin: 'left center' }
+    : undefined;
+
+  const logoCellClassName = `${sizing.logoCellClassName}${
+    needsScaleBoost ? ' overflow-visible' : ' overflow-hidden'
+  }`;
+
   return (
-    <div
-      className={`${rowClassName}${needsScaleBoost ? '' : ' overflow-hidden'}`}
-    >
-      <img
-        src={src}
-        alt={displayName || 'Brand'}
-        className={sizing.imageClassName}
-        style={
-          needsScaleBoost
-            ? { transform: `scale(${uiScale})`, transformOrigin: 'left center' }
-            : undefined
-        }
-        loading="lazy"
-        decoding="async"
-        onError={() => {
-          setCandidateIndex((i) => i + 1);
-        }}
-      />
+    <div className={rowClassName} aria-label={displayName || 'Brand'}>
+      <div className={logoCellClassName}>
+        <Image
+          src={src}
+          alt={displayName || 'Brand'}
+          fill
+          className={sizing.imageClassName}
+          sizes={sizing.logoSizes}
+          style={imageStyle}
+          loading="lazy"
+          unoptimized={shouldBypassNextImageOptimizer(src)}
+          onError={() => {
+            setCandidateIndex((i) => i + 1);
+          }}
+        />
+      </div>
     </div>
   );
 }

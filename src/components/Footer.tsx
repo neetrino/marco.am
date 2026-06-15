@@ -60,6 +60,7 @@ function FooterNavColumn({
   items: readonly { href: string; labelKey: string }[];
 }) {
   const { t } = useTranslation();
+  const heavyPrefetchPaths = new Set(['/products', '/reels']);
 
   return (
     <div
@@ -73,7 +74,11 @@ function FooterNavColumn({
       <ul className={`flex flex-col ${FOOTER_NAV_COLUMN_LIST_ITEM_GAP_CLASS}`}>
         {items.map((item) => (
           <li key={`${item.href}-${item.labelKey}`}>
-            <Link href={item.href} className={FOOTER_NAV_COLUMN_LINK_CLASS}>
+            <Link
+              href={item.href}
+              prefetch={heavyPrefetchPaths.has(item.href) ? false : undefined}
+              className={FOOTER_NAV_COLUMN_LINK_CLASS}
+            >
               {t(item.labelKey)}
             </Link>
           </li>
@@ -108,13 +113,15 @@ function FooterContactsColumn() {
         </p>
       </div>
       <div className="flex items-start gap-2 md:max-[1023px]:justify-center min-[1024px]:max-[1366px]:justify-center">
-        <img
+        <Image
           src={FOOTER_CONTACT_PHONE_ICON_SRC}
           alt=""
           width={18}
           height={15}
           className={FOOTER_CONTACT_PHONE_ICON_CLASS}
           aria-hidden
+          loading="lazy"
+          unoptimized
         />
         <div className="flex flex-col gap-0.5">
           {FOOTER_PRIMARY_PHONES.map((phone) => (
@@ -129,13 +136,15 @@ function FooterContactsColumn() {
         </div>
       </div>
       <div className="flex items-start gap-2 md:max-[1023px]:justify-center min-[1024px]:max-[1366px]:justify-center">
-        <img
+        <Image
           src={FOOTER_CONTACT_MAIL_ICON_SRC}
           alt=""
           width={20}
           height={14}
           className={FOOTER_CONTACT_MAIL_ICON_CLASS}
           aria-hidden
+          loading="lazy"
+          unoptimized
         />
         <a
           href={`mailto:${t('contact.email')}`}
@@ -145,13 +154,15 @@ function FooterContactsColumn() {
         </a>
       </div>
       <div className="flex items-start gap-2 md:max-[1023px]:justify-center min-[1024px]:max-[1366px]:justify-center">
-        <img
+        <Image
           src={FOOTER_CONTACT_MAIL_ICON_SRC}
           alt=""
           width={20}
           height={14}
           className={FOOTER_CONTACT_MAIL_ICON_CLASS}
           aria-hidden
+          loading="lazy"
+          unoptimized
         />
         <a
           href={`mailto:${FOOTER_SECONDARY_EMAIL}`}
@@ -169,7 +180,10 @@ function FooterCopyright() {
   const year = new Date().getFullYear();
 
   return (
-    <p className="inline-block whitespace-nowrap text-center text-[10px] leading-tight text-gray-500 dark:text-[#c7c7c7] sm:text-[11px] md:text-xs lg:text-[13px]">
+    <p
+      className="inline-block whitespace-nowrap text-center text-[10px] leading-tight text-gray-500 dark:text-[#c7c7c7] sm:text-[11px] md:text-xs lg:text-[13px]"
+      suppressHydrationWarning
+    >
       <span>
         {t('common.footer.marco.copyrightBefore').replace('{year}', String(year))}
       </span>

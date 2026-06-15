@@ -14,6 +14,7 @@ import {
   isGeepasBundledLogoAsset,
   resolveBrandDisplayLogoForCell,
 } from '@/lib/brand-static-logo-assets';
+import { shouldBypassNextImageOptimizer } from '@/lib/utils/should-bypass-next-image-optimizer';
 
 import {
   HOME_BRANDS_RAIL_LOGO_CELL_HEIGHT_PX,
@@ -118,13 +119,16 @@ function PartnerLogo({
       className="relative mx-auto flex w-full shrink-0 items-center justify-center overflow-hidden"
       style={cellStyle}
     >
-      <img
+      <Image
         src={resolved.src}
         alt={partner.name}
+        fill
         className={HOME_BRANDS_RAIL_LOGO_IMAGE_CLASS}
+        sizes={`${sizesW}px`}
         loading={loadEager ? 'eager' : 'lazy'}
-        decoding="async"
+        priority={loadEager}
         fetchPriority={loadEager ? 'high' : 'auto'}
+        unoptimized={shouldBypassNextImageOptimizer(resolved.src)}
       />
     </div>
   );
@@ -147,7 +151,7 @@ export function HomeBrandsSlide({ partners }: HomeBrandsSlideProps) {
       <div className="flex w-full shrink-0 snap-x snap-mandatory gap-3">
         {partnerPages.map((page, pageIndex) => (
           <div key={`partners-page-${pageIndex}`} className="grid w-full shrink-0 snap-start grid-cols-2 md:grid-cols-4" style={gridStyle}>
-            {page.map((partner) => (
+            {page.map((partner, logoIndex) => (
               <Link
                 key={partner.id}
                 href={partner.href}
@@ -155,7 +159,7 @@ export function HomeBrandsSlide({ partners }: HomeBrandsSlideProps) {
                 style={brandCardShellStyle(partner.slug, partner.name)}
                 aria-label={partner.name}
               >
-                <PartnerLogo partner={partner} loadEager={pageIndex === 0} />
+                <PartnerLogo partner={partner} loadEager={pageIndex === 0 && logoIndex < 2} />
               </Link>
             ))}
           </div>
@@ -168,7 +172,7 @@ export function HomeBrandsSlide({ partners }: HomeBrandsSlideProps) {
     <div className="flex w-full shrink-0 snap-x snap-mandatory gap-3">
       {fallbackPages.map((page, pageIndex) => (
         <div key={`fallback-page-${pageIndex}`} className="grid w-full shrink-0 snap-start grid-cols-2 md:grid-cols-4" style={gridStyle}>
-          {page.map((entry) => (
+          {page.map((entry, logoIndex) => (
             <div
               key={entry.id}
               className={`flex w-full min-w-0 items-center justify-center overflow-hidden ${HOME_BRANDS_SLIDE_CARD_PADDING_CLASS}`}
@@ -184,8 +188,9 @@ export function HomeBrandsSlide({ partners }: HomeBrandsSlideProps) {
                   fill
                   className={HOME_BRANDS_RAIL_LOGO_IMAGE_CLASS}
                   sizes={`${HOME_BRANDS_RAIL_LOGO_CELL_MAX_WIDTH_PX}px`}
-                  priority={pageIndex === 0}
-                  fetchPriority={pageIndex === 0 ? 'high' : 'auto'}
+                  priority={pageIndex === 0 && logoIndex < 2}
+                  loading={pageIndex === 0 && logoIndex < 2 ? 'eager' : 'lazy'}
+                  fetchPriority={pageIndex === 0 && logoIndex < 2 ? 'high' : 'auto'}
                 />
               </div>
             </div>

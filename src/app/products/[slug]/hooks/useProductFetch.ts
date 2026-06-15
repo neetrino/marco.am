@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import type { PdpVisualPayload } from '@/lib/services/products-slug/product-transformer';
+import { getErrorHttpStatus } from '@/lib/api-client';
 import { getStoredLanguage, type LanguageCode } from '@/lib/language';
 import {
   fetchProductSummary,
@@ -119,9 +120,7 @@ export function useProductFetch({
     staleTime: PDP_QUERY_STALE_TIME_MS,
     gcTime: PDP_QUERY_GC_TIME_MS,
     retry: (failureCount, error) => {
-      const status =
-        error && typeof error === 'object' && 'status' in error ? Number(error.status) : undefined;
-      if (status === 404) {
+      if (getErrorHttpStatus(error) === 404) {
         return false;
       }
       return failureCount < 1;
@@ -150,9 +149,7 @@ export function useProductFetch({
     initialDataUpdatedAt: hasNavigationSeedInitialData ? 0 : undefined,
     refetchOnMount: hasNavigationSeedInitialData ? 'always' : true,
     retry: (failureCount, error) => {
-      const status =
-        error && typeof error === 'object' && 'status' in error ? Number(error.status) : undefined;
-      if (status === 404) {
+      if (getErrorHttpStatus(error) === 404) {
         return false;
       }
       return failureCount < 1;
@@ -164,6 +161,9 @@ export function useProductFetch({
       return;
     }
     const current = detailQuery.data;
+    if (!current || detailQuery.isError) {
+      return;
+    }
     const hasFullDetails =
       current != null &&
       ((Array.isArray(current.variants) && current.variants.length > 0) ||
@@ -181,13 +181,16 @@ export function useProductFetch({
         queryClient.setQueryData(queryKeys.productDetail(slug, lang), full);
         setPersistedPdpDetail(slug, lang, full);
       })
-      .catch(() => {
+      .catch((error: unknown) => {
+        if (getErrorHttpStatus(error) === 404) {
+          return;
+        }
         // Keep summary render when full detail fails; query retries handle hard failures.
       });
     return () => {
       cancelled = true;
     };
-  }, [detailQuery.data, enabled, lang, queryClient, slug]);
+  }, [detailQuery.data, detailQuery.isError, enabled, lang, queryClient, slug]);
 
   useEffect(() => {
     if (!slug || !detailQuery.data) {

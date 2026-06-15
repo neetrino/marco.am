@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCorsAllowedOrigins } from "@/lib/config/deployment-env";
+import { checkSameOriginRequest } from "@/lib/middleware/same-origin-csrf";
 import {
   AUTH_RESEND_RATE_LIMIT_MAX,
   AUTH_RESEND_RATE_LIMIT_WINDOW,
@@ -12,48 +13,6 @@ import {
   enforceUpstashRateLimit,
 } from "@/lib/middleware/upstash-rate-limit";
 import { getAuthContext } from "@/lib/middleware/auth-edge";
-
-function isUnsafeMethod(method: string): boolean {
-  return method !== "GET" && method !== "HEAD" && method !== "OPTIONS";
-}
-
-function isSameDocumentOrigin(request: NextRequest, origin: string): boolean {
-  try {
-    return new URL(origin).origin === request.nextUrl.origin;
-  } catch {
-    return false;
-  }
-}
-
-function checkSameOriginRequest(request: NextRequest): NextResponse | null {
-  if (!isUnsafeMethod(request.method)) {
-    return null;
-  }
-
-  const origin = request.headers.get("origin");
-  if (!origin) {
-    return null;
-  }
-
-  if (isSameDocumentOrigin(request, origin)) {
-    return null;
-  }
-
-  const allowedOrigins = getCorsAllowedOrigins();
-  if (allowedOrigins.includes(origin)) {
-    return null;
-  }
-
-  return NextResponse.json(
-    {
-      type: "https://api.shop.am/problems/forbidden",
-      title: "Forbidden",
-      status: 403,
-      detail: "Cross-origin state-changing requests are not allowed",
-    },
-    { status: 403 }
-  );
-}
 
 async function requireAdminAuth(request: NextRequest): Promise<{
   response: NextResponse | null;

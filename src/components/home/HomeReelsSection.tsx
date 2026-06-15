@@ -1,9 +1,11 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import Image from 'next/image';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Montserrat } from 'next/font/google';
+import { useCallback, useRef, useState } from 'react';
 
+import { shouldBypassNextImageOptimizer } from '@/lib/utils/should-bypass-next-image-optimizer';
 import { useTranslation } from '../../lib/i18n-client';
 import {
   REELS_MOBILE_CIRCLE_SIZE_PX,
@@ -49,6 +51,7 @@ const montserratReels = Montserrat({
   subsets: ['latin'],
   weight: ['400', '700'],
   display: 'swap',
+  preload: false,
 });
 
 /**
@@ -122,7 +125,7 @@ export function HomeReelsSection({ items }: HomeReelsSectionProps) {
   const [previewIndex, setPreviewIndex] = useState<number | null>(null);
   const preloadedVideoIdsRef = useRef<Set<string>>(new Set());
   const { reelItems, pendingLikeById, doubleTapBurstById, toggleLike } =
-    useReelsFeedData(items);
+    useReelsFeedData(items, { syncLikesOnIdle: false });
   const isMaxMd = useIsMaxMd();
   const reelsPageCount = isMaxMd
     ? REELS_PAGINATION_PAGE_COUNT_MOBILE
@@ -250,11 +253,14 @@ export function HomeReelsSection({ items }: HomeReelsSectionProps) {
                 <div
                   className="relative mx-auto shrink-0 overflow-hidden rounded-full border border-marco-border bg-marco-gray shadow-[0_6px_16px_rgba(0,0,0,0.08)] transition-shadow duration-200 group-hover:shadow-[0_12px_26px_rgba(0,0,0,0.18)] max-md:h-[var(--reels-mobile-circle)] max-md:w-[var(--reels-mobile-circle)] md:mx-0 md:h-32 md:w-32"
                 >
-                  <img
+                  <Image
                     src={item.posterUrl}
                     alt={label}
-                    className="h-full w-full object-cover object-center transition duration-300 group-hover:scale-105"
+                    fill
+                    className="object-cover object-center transition duration-300 group-hover:scale-105"
+                    sizes="(max-width: 768px) 128px, 128px"
                     loading="lazy"
+                    unoptimized={shouldBypassNextImageOptimizer(item.posterUrl)}
                   />
                 </div>
                 <span

@@ -1,13 +1,15 @@
 import { Suspense } from 'react';
 import { cookies } from 'next/headers';
 import { headers } from 'next/headers';
+import { notFound } from 'next/navigation';
 
 import {
   LANGUAGE_PREFERENCE_KEY,
   parseLanguageFromServer,
   type LanguageCode,
 } from '@/lib/language';
-import { getCachedPdpVisual } from '@/lib/product-pdp/pdp-server-cache';
+import { getErrorHttpStatus } from '@/lib/api-client';
+import { getCachedPdpExists, getCachedPdpVisual } from '@/lib/product-pdp/pdp-server-cache';
 
 import { ProductPageClient } from './ProductPageClient';
 import { ProductPdpDetailStream } from './ProductPdpDetailStream';
@@ -32,6 +34,11 @@ async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T
         timer = setTimeout(() => resolve(null), timeoutMs);
       }),
     ]);
+  } catch (error: unknown) {
+    if (getErrorHttpStatus(error) === 404) {
+      notFound();
+    }
+    throw error;
   } finally {
     if (timer) {
       clearTimeout(timer);
@@ -53,6 +60,10 @@ export default async function ProductPage({ params }: PageProps) {
   const isRscNavigationRequest = requestHeaders.get('rsc') === '1';
 
   const baseSlug = baseSlugFromParam(slugParam);
+  const exists = await getCachedPdpExists(baseSlug);
+  if (!exists) {
+    notFound();
+  }
 
   let initialVisual = null;
 

@@ -1,5 +1,6 @@
 ﻿'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -10,6 +11,7 @@ import type { CategoryNavIcon } from './categoryNavPresentation';
 import { resolveCategoryNavPresentation } from './categoryNavPresentation';
 import { headerCategoryNavFont } from './headerCategoryNavTypography';
 import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '../../lib/utils/image-utils';
+import { shouldBypassNextImageOptimizer } from '@/lib/utils/should-bypass-next-image-optimizer';
 
 /** Subcategory row icon — keep img `width`/`height` in sync with Tailwind `h-[…] w-[…]` on the image. */
 const SUBPILL_FIGMA_IMG_PX = 26;
@@ -66,13 +68,15 @@ function SubcategoryIcon({ icon, imageSrc }: { icon: CategoryNavIcon; imageSrc: 
   if (imageSrc) {
     return (
       <span className="flex size-[34px] shrink-0 items-center justify-center !text-[#383838] dark:!text-[#383838]">
-        <img
+        <Image
           src={toDomSafeImgSrcString(imageSrc)}
           alt=""
           width={SUBPILL_FIGMA_IMG_PX}
           height={SUBPILL_FIGMA_IMG_PX}
           className="h-[26px] w-[26px] shrink-0 object-contain"
           draggable={false}
+          loading="lazy"
+          unoptimized={shouldBypassNextImageOptimizer(imageSrc)}
         />
       </span>
     );
@@ -80,13 +84,15 @@ function SubcategoryIcon({ icon, imageSrc }: { icon: CategoryNavIcon; imageSrc: 
   if (icon.kind === 'figma') {
     return (
       <span className="flex size-[34px] shrink-0 items-center justify-center !text-[#383838] dark:!text-[#383838]">
-        <img
+        <Image
           src={icon.src}
           alt=""
           width={SUBPILL_FIGMA_IMG_PX}
           height={SUBPILL_FIGMA_IMG_PX}
           className="h-[26px] w-[26px] shrink-0 object-contain brightness-0"
           draggable={false}
+          loading="lazy"
+          unoptimized={shouldBypassNextImageOptimizer(icon.src)}
         />
       </span>
     );

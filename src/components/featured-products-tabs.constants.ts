@@ -50,9 +50,9 @@ export const FEATURED_NEW_ARRIVALS_MOBILE_RAIL_CARDS_PER_PAGE = 4;
 export const FEATURED_PRODUCTS_DESKTOP_PAGE_SIZE = 8;
 
 /**
- * «Նորույթներ» fetch cap — two desktop pages (2×4 × 2); mobile uses first 8 per slide set.
+ * «Նորույթներ» fetch cap — first screen + one carousel page; keeps home image load bounded.
  */
-export const FEATURED_PRODUCTS_VISIBLE_COUNT = 16;
+export const FEATURED_PRODUCTS_VISIBLE_COUNT = 12;
 
 /**
  * Vertical gap between card rows on `md+` only. On `max-md`, row gap matches

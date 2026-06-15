@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { type Dispatch, type SetStateAction, type SyntheticEvent } from 'react';
 import Link from 'next/link';
 import { ChevronDown, LayoutGrid } from 'lucide-react';
@@ -9,6 +10,7 @@ import { prepareSubcategoriesForNav } from './categoryNavList';
 import { resolveCategoryNavPresentation } from './categoryNavPresentation';
 import { mobileDrawerNavPillClass } from './header-mobile-drawer.classes';
 import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '../../lib/utils/image-utils';
+import { shouldBypassNextImageOptimizer } from '@/lib/utils/should-bypass-next-image-optimizer';
 
 function hideBrokenCategoryIcon(event: SyntheticEvent<HTMLImageElement>) {
   const wrapper = event.currentTarget.parentElement;
@@ -96,23 +98,27 @@ export function HeaderMobileDrawerCategories({
                       <span className="flex min-w-0 flex-1 items-center gap-3">
                         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-marco-gray dark:bg-zinc-800">
                           {categoryImage ? (
-                            <img
+                            <Image
                               src={toDomSafeImgSrcString(categoryImage)}
                               alt=""
                               width={24}
                               height={24}
                               className="h-6 w-6 object-contain"
                               draggable={false}
+                              loading="lazy"
+                              unoptimized={shouldBypassNextImageOptimizer(categoryImage)}
                               onError={hideBrokenCategoryIcon}
                             />
                           ) : categoryPresentation.icon.kind === 'figma' ? (
-                            <img
+                            <Image
                               src={categoryPresentation.icon.src}
                               alt=""
                               width={24}
                               height={24}
                               className="h-6 w-6 object-contain dark:brightness-0 dark:invert"
                               draggable={false}
+                              loading="lazy"
+                              unoptimized={shouldBypassNextImageOptimizer(categoryPresentation.icon.src)}
                               onError={hideBrokenCategoryIcon}
                             />
                           ) : (
@@ -144,23 +150,27 @@ export function HeaderMobileDrawerCategories({
                       >
                         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-marco-gray dark:bg-zinc-800">
                           {categoryImage ? (
-                            <img
+                            <Image
                               src={toDomSafeImgSrcString(categoryImage)}
                               alt=""
                               width={24}
                               height={24}
                               className="h-6 w-6 object-contain"
                               draggable={false}
+                              loading="lazy"
+                              unoptimized={shouldBypassNextImageOptimizer(categoryImage)}
                               onError={hideBrokenCategoryIcon}
                             />
                           ) : categoryPresentation.icon.kind === 'figma' ? (
-                            <img
+                            <Image
                               src={categoryPresentation.icon.src}
                               alt=""
                               width={24}
                               height={24}
                               className="h-6 w-6 object-contain dark:brightness-0 dark:invert"
                               draggable={false}
+                              loading="lazy"
+                              unoptimized={shouldBypassNextImageOptimizer(categoryPresentation.icon.src)}
                               onError={hideBrokenCategoryIcon}
                             />
                           ) : (
@@ -210,23 +220,27 @@ export function HeaderMobileDrawerCategories({
                           >
                             <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-marco-gray dark:bg-zinc-800">
                               {childImage ? (
-                                <img
+                                <Image
                                   src={toDomSafeImgSrcString(childImage)}
                                   alt=""
                                   width={18}
                                   height={18}
                                   className="h-[18px] w-[18px] object-contain"
                                   draggable={false}
+                                  loading="lazy"
+                                  unoptimized={shouldBypassNextImageOptimizer(childImage)}
                                   onError={hideBrokenCategoryIcon}
                                 />
                               ) : childPresentation.icon.kind === 'figma' ? (
-                                <img
+                                <Image
                                   src={childPresentation.icon.src}
                                   alt=""
                                   width={18}
                                   height={18}
                                   className="h-[18px] w-[18px] object-contain dark:brightness-0 dark:invert"
                                   draggable={false}
+                                  loading="lazy"
+                                  unoptimized={shouldBypassNextImageOptimizer(childPresentation.icon.src)}
                                   onError={hideBrokenCategoryIcon}
                                 />
                               ) : (

@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useShopProductsListingSearchParams } from '@/lib/use-shop-products-listing-search-params';
@@ -7,6 +8,7 @@ import { pushShopProductsListingUrl } from '../lib/push-shop-products-listing-ur
 import { apiClient } from '../lib/api-client';
 import { getStoredLanguage } from '../lib/language';
 import { getColorHex } from '../lib/colorMap';
+import { shouldBypassNextImageOptimizer } from '@/lib/utils/should-bypass-next-image-optimizer';
 import { useProductsFilters, useShopFiltersTranslation } from './ProductsFiltersProvider';
 import {
   PRODUCTS_FILTER_SECTION_SHELL_CLASS,
@@ -224,10 +226,14 @@ export function ColorFilter({ category, search, minPrice, maxPrice }: ColorFilte
                 style={hasImage ? undefined : { backgroundColor: colorHex }}
               >
                 {hasImage ? (
-                  <img
+                  <Image
                     src={color.imageUrl!}
                     alt=""
+                    width={32}
+                    height={32}
                     className="size-full object-cover"
+                    loading="lazy"
+                    unoptimized={shouldBypassNextImageOptimizer(color.imageUrl!)}
                     onError={(e) => {
                       const el = e.target as HTMLImageElement;
                       el.style.display = 'none';
