@@ -50,7 +50,9 @@ export function useProductCalculations({
         : currentVariant?.productDiscount ??
           product?.productDiscount ??
           inferredDiscountPercent;
-  const isOutOfStock = currentVariant ? currentVariant.stock <= 0 : true;
+  const isOutOfStock = currentVariant
+    ? currentVariant.stock <= 0
+    : product?.inStock === false;
 
   const colorGroups = useMemo(() => {
     const groups: Array<{ color: string; stock: number; variants: ProductVariant[] }> = [];

@@ -3,6 +3,9 @@
  * Tune here if prices/stock must appear fresher (lower values) or UX prefers fewer requests (higher).
  */
 
+/** PLP → PDP shell (title/image/price only): skip duplicate summary fetch while still fresh. */
+export const PLP_TO_PDP_SHELL_STALE_TIME_MS = 30_000;
+
 /** React Query: PDP visual/detail treated as fresh — avoids refetch when revisiting the same slug/lang. */
 export const PDP_QUERY_STALE_TIME_MS = 30 * 60 * 1000;
 

@@ -1,5 +1,6 @@
 import type { LanguageCode } from '@/lib/language';
 import type { Product } from '@/app/products/[slug]/types';
+import { normalizePdpSlug } from '@/lib/product-pdp/pdp-slug';
 
 type ProductCategorySeed = {
   id: string;
@@ -36,7 +37,7 @@ const seedStore = new Map<
 >();
 
 function keyFor(slug: string, language: LanguageCode): string {
-  return `${language}:${slug}`;
+  return `${language}:${normalizePdpSlug(slug)}`;
 }
 
 function toSeedProduct(value: ProductPdpNavigationSeed): Product {
@@ -72,20 +73,73 @@ export function setProductPdpNavigationSeed(
   seedStore.set(keyFor(slug, language), { value, createdAt: Date.now() });
 }
 
-export function consumeProductPdpNavigationSeed(
-  slug: string,
-  language: LanguageCode,
-): Product | null {
-  const key = keyFor(slug, language);
+function readNavigationSeedEntry(
+  key: string,
+  remove: boolean,
+): ProductPdpNavigationSeed | null {
   const item = seedStore.get(key);
   if (!item) {
     return null;
   }
-  seedStore.delete(key);
   if (Date.now() - item.createdAt > NAVIGATION_SEED_TTL_MS) {
+    if (remove) {
+      seedStore.delete(key);
+    }
     return null;
   }
-  return toSeedProduct(item.value);
+  if (remove) {
+    seedStore.delete(key);
+  }
+  return item.value;
+}
+
+function peekNavigationSeedAnyLanguage(
+  slug: string,
+  preferredLanguage: LanguageCode,
+): ProductPdpNavigationSeed | null {
+  const preferred = readNavigationSeedEntry(keyFor(slug, preferredLanguage), false);
+  if (preferred) {
+    return preferred;
+  }
+
+  const suffix = `:${normalizePdpSlug(slug)}`;
+  for (const [key, item] of seedStore.entries()) {
+    if (!key.endsWith(suffix)) {
+      continue;
+    }
+    if (Date.now() - item.createdAt > NAVIGATION_SEED_TTL_MS) {
+      continue;
+    }
+    return item.value;
+  }
+
+  return null;
+}
+
+/** Non-destructive read — safe under React Strict Mode double mount. */
+export function peekProductPdpNavigationSeedAnyLanguage(
+  slug: string,
+  preferredLanguage: LanguageCode,
+): Product | null {
+  const seed = peekNavigationSeedAnyLanguage(slug, preferredLanguage);
+  return seed ? toSeedProduct(seed) : null;
+}
+
+export function clearProductPdpNavigationSeedAnyLanguage(slug: string): void {
+  const suffix = `:${normalizePdpSlug(slug)}`;
+  for (const key of seedStore.keys()) {
+    if (key.endsWith(suffix)) {
+      seedStore.delete(key);
+    }
+  }
+}
+
+export function consumeProductPdpNavigationSeed(
+  slug: string,
+  language: LanguageCode,
+): Product | null {
+  const value = readNavigationSeedEntry(keyFor(slug, language), true);
+  return value ? toSeedProduct(value) : null;
 }
 
 export function consumeProductPdpNavigationSeedAnyLanguage(
@@ -97,16 +151,15 @@ export function consumeProductPdpNavigationSeedAnyLanguage(
     return preferred;
   }
 
-  const suffix = `:${slug}`;
-  for (const [key, item] of seedStore.entries()) {
+  const suffix = `:${normalizePdpSlug(slug)}`;
+  for (const [key] of seedStore.entries()) {
     if (!key.endsWith(suffix)) {
       continue;
     }
-    seedStore.delete(key);
-    if (Date.now() - item.createdAt > NAVIGATION_SEED_TTL_MS) {
-      return null;
+    const value = readNavigationSeedEntry(key, true);
+    if (value) {
+      return toSeedProduct(value);
     }
-    return toSeedProduct(item.value);
   }
 
   return null;

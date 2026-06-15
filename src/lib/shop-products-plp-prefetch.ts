@@ -1,9 +1,12 @@
 import type { ProductsFiltersData } from '@/components/ProductsFiltersProvider';
+import { normalizeShopGridProduct } from '@/app/products/shop-grid-product';
 import { apiClient } from '@/lib/api-client';
 import { SHOP_PLP_DEFAULT_PAGE_SIZE } from '@/lib/constants/shop-plp-pagination';
 import { buildProductsFiltersScopeKeyFromSearchParams } from '@/lib/products-filters-client-key';
 import type { LanguageCode } from '@/lib/language';
+import { getQueryClient } from '@/lib/query/get-query-client';
 import { writeShopFiltersCache } from '@/lib/shop-products-filters-client-cache';
+import { syncShopListingProductsToPdpCache } from '@/lib/shop-products-plp-pdp-sync';
 import {
   writeShopListingCache,
   type ShopListingCachePayload,
@@ -130,6 +133,8 @@ export function warmShopProductsClientCaches(
           totalPages: 0,
         },
       });
+      const normalized = (listing.data ?? listing.items ?? []).map(normalizeShopGridProduct);
+      syncShopListingProductsToPdpCache(getQueryClient(), normalized, language);
     })
     .catch(() => {
       /* Prefetch is best-effort — PLP will fetch on mount if this fails. */

@@ -14,9 +14,20 @@ import {
 } from '@/lib/product-pdp/product-pdp-fetchers';
 import { getPersistedPdpDetail, setPersistedPdpDetail } from '@/lib/product-pdp/pdp-client-persist-cache';
 import {
-  consumeProductPdpNavigationSeedAnyLanguage,
+  clearProductPdpNavigationSeedAnyLanguage,
+  peekProductPdpNavigationSeedAnyLanguage,
 } from '@/lib/product-pdp/pdp-navigation-seed';
-import { PDP_QUERY_GC_TIME_MS, PDP_QUERY_STALE_TIME_MS } from '@/lib/product-pdp/pdp-query-cache';
+import { normalizePdpSlug } from '@/lib/product-pdp/pdp-slug';
+import {
+  PLP_TO_PDP_SHELL_STALE_TIME_MS,
+  PDP_QUERY_GC_TIME_MS,
+  PDP_QUERY_STALE_TIME_MS,
+} from '@/lib/product-pdp/pdp-query-cache';
+import {
+  buildPdpVisualFromProductShell,
+  isPdpListingShell,
+  resolvePdpInstantShell,
+} from '@/lib/product-pdp/resolve-pdp-listing-shell';
 import { getQueryClient } from '@/lib/query/get-query-client';
 import { queryKeys } from '@/lib/query-keys';
 
@@ -45,7 +56,7 @@ export function useProductFetch({
 
   const [lang, setLang] = useState<LanguageCode>(() => serverLanguage);
   const [navigationSeedProduct, setNavigationSeedProduct] = useState<Product | null>(
-    () => consumeProductPdpNavigationSeedAnyLanguage(slug, serverLanguage),
+    () => peekProductPdpNavigationSeedAnyLanguage(slug, serverLanguage),
   );
 
   useEffect(() => {
@@ -53,7 +64,7 @@ export function useProductFetch({
       if (current && current.slug === slug) {
         return current;
       }
-      return consumeProductPdpNavigationSeedAnyLanguage(slug, lang);
+      return peekProductPdpNavigationSeedAnyLanguage(slug, lang);
     });
   }, [slug, lang]);
 
@@ -76,41 +87,35 @@ export function useProductFetch({
   }, [slug, router]);
 
   const enabled = Boolean(slug) && !RESERVED_ROUTES.includes(slug.toLowerCase());
+  const normalizedSlug = normalizePdpSlug(slug);
+
+  const instantShell = enabled && normalizedSlug
+    ? resolvePdpInstantShell(normalizedSlug, lang, queryClient)
+    : null;
 
   const detailInitialData =
     initialProduct != null &&
     initialProduct.slug === slug &&
     lang === serverLanguage
       ? initialProduct
-      : navigationSeedProduct != null && navigationSeedProduct.slug === slug
-        ? navigationSeedProduct
-      : getPersistedPdpDetail(slug, lang)
-        ? getPersistedPdpDetail(slug, lang) ?? undefined
-      : undefined;
-  const hasNavigationSeedInitialData =
-    navigationSeedProduct != null &&
-    navigationSeedProduct.slug === slug &&
-    detailInitialData === navigationSeedProduct;
+      : instantShell ??
+        getPersistedPdpDetail(slug, lang) ??
+        undefined;
+
+  const hasInstantShellInitialData =
+    instantShell != null && isPdpListingShell(instantShell);
+
+  const detailStaleTime = hasInstantShellInitialData
+    ? PLP_TO_PDP_SHELL_STALE_TIME_MS
+    : PDP_QUERY_STALE_TIME_MS;
+
+  const shellProductForVisual = instantShell?.slug ? instantShell : null;
 
   const visualInitialData =
     initialVisual != null && initialVisual.slug === slug && lang === serverLanguage
       ? initialVisual
-      : navigationSeedProduct != null && navigationSeedProduct.slug === slug
-        ? {
-            id: navigationSeedProduct.id,
-            slug: navigationSeedProduct.slug,
-            title: navigationSeedProduct.title,
-            images: Array.isArray(navigationSeedProduct.media)
-              ? navigationSeedProduct.media
-                  .filter((item): item is string => typeof item === 'string')
-              : [],
-            gallery: [],
-            labels: [],
-            discountPercent:
-              navigationSeedProduct.discountBadge?.type === 'percentage'
-                ? navigationSeedProduct.discountBadge.value
-                : null,
-          }
+      : shellProductForVisual
+        ? buildPdpVisualFromProductShell(shellProductForVisual)
       : undefined;
 
   const visualQuery = useQuery(
@@ -120,8 +125,9 @@ export function useProductFetch({
       enabled,
       initialData: visualInitialData,
       placeholderData: keepPreviousData,
-      staleTime: PDP_QUERY_STALE_TIME_MS,
+      staleTime: detailStaleTime,
       gcTime: PDP_QUERY_GC_TIME_MS,
+      refetchOnMount: hasInstantShellInitialData ? false : true,
       retry: (failureCount, error) => {
         if (getErrorHttpStatus(error) === 404) {
           return false;
@@ -147,13 +153,12 @@ export function useProductFetch({
       enabled,
       initialData: detailInitialData,
       placeholderData:
-        hasNavigationSeedInitialData || detailInitialData === initialProduct
+        hasInstantShellInitialData || detailInitialData === initialProduct
           ? undefined
           : keepPreviousData,
-      staleTime: PDP_QUERY_STALE_TIME_MS,
+      staleTime: detailStaleTime,
       gcTime: PDP_QUERY_GC_TIME_MS,
-      initialDataUpdatedAt: hasNavigationSeedInitialData ? 0 : undefined,
-      refetchOnMount: hasNavigationSeedInitialData ? 'always' : true,
+      refetchOnMount: hasInstantShellInitialData ? false : true,
       retry: (failureCount, error) => {
         if (getErrorHttpStatus(error) === 404) {
           return false;
@@ -221,22 +226,26 @@ export function useProductFetch({
     }
     if (detailQuery.data && detailQuery.data !== navigationSeedProduct) {
       setNavigationSeedProduct(null);
+      clearProductPdpNavigationSeedAnyLanguage(slug);
     }
-  }, [detailQuery.data, navigationSeedProduct]);
+  }, [detailQuery.data, navigationSeedProduct, slug]);
 
   const fetchProduct = () => {
     void queryClient.invalidateQueries({ queryKey: queryKeys.productDetail(slug, lang) });
     void queryClient.invalidateQueries({ queryKey: queryKeys.productVisual(slug, lang) });
   };
 
-  const product = detailQuery.data ?? null;
-  const productVisual = visualQuery.data ?? null;
+  const product = detailQuery.data ?? instantShell;
+  const productVisual =
+    visualQuery.data ??
+    (instantShell ? buildPdpVisualFromProductShell(instantShell) : null);
 
   const blockingEmpty =
     !product &&
     !productVisual &&
     visualQuery.isPending &&
-    !visualQuery.isError;
+    !visualQuery.isError &&
+    !instantShell;
 
   const awaitingDetailShell =
     !product &&
@@ -247,9 +256,13 @@ export function useProductFetch({
 
   const detailsPending = Boolean(productVisual && !product && detailQuery.isPending);
 
+  const isInstantShellPaint = instantShell != null && isPdpListingShell(instantShell);
+
   return {
     product,
     productVisual,
+    instantShell,
+    isInstantShellPaint,
     loading: blockingEmpty || awaitingDetailShell,
     /** Full-page skeleton only until gallery visual exists — detail may still stream. */
     blockingEmpty,

@@ -1,6 +1,6 @@
 import { Prisma } from "@white-shop/db/prisma";
 import { unstable_cache } from "next/cache";
-import { adminService } from "./admin.service";
+import { adminSettingsService } from "./admin/admin-settings.service";
 import { collectAttributeFacetsFromSampleProducts } from "./products-filters-attribute-facets";
 import { buildShopFilterCategoriesFromCountMap } from "./products-filters-category-tree";
 import {
@@ -14,7 +14,7 @@ import {
 } from "./products-filters-sql-facets";
 
 const getPriceFilterSettingsCached = unstable_cache(
-  async () => adminService.getPriceFilterSettings(),
+  async () => adminSettingsService.getPriceFilterSettings(),
   ["products-filters-price-settings-v1"],
   { revalidate: 300, tags: ["price-filter-settings"] },
 );

@@ -4,7 +4,6 @@
  */
 
 import { productsFindService } from "./products-find.service";
-import { productsFiltersService } from "./products-filters.service";
 import { findBySlugVisual as findBySlugVisualImpl } from "./products-pdp-visual.service";
 import { productsSlugService } from "./products-slug.service";
 import { findBySlugSummary as findBySlugSummaryImpl } from "./products-slug/product-summary.service";
@@ -12,15 +11,42 @@ import { findBySlugSummary as findBySlugSummaryImpl } from "./products-slug/prod
 // Re-export types for backward compatibility
 export type { ProductFilters, ProductWithRelations } from "./products-find-query.service";
 
+type ProductsFiltersServiceModule = typeof import("./products-filters.service");
+
+let productsFiltersServicePromise: Promise<ProductsFiltersServiceModule["productsFiltersService"]> | null =
+  null;
+
+function loadProductsFiltersService(): Promise<
+  ProductsFiltersServiceModule["productsFiltersService"]
+> {
+  if (!productsFiltersServicePromise) {
+    productsFiltersServicePromise = import("./products-filters.service").then(
+      (module) => module.productsFiltersService,
+    );
+  }
+  return productsFiltersServicePromise;
+}
+
 class ProductsService {
   // Delegate to specialized services
-  
+
   // Find methods
   findAll = productsFindService.findAll.bind(productsFindService);
 
-  // Filters methods
-  getFilters = productsFiltersService.getFilters.bind(productsFiltersService);
-  getPriceRange = productsFiltersService.getPriceRange.bind(productsFiltersService);
+  // Filters methods — lazy import avoids pulling admin/sharp into listing-only bundles
+  async getFilters(
+    ...args: Parameters<ProductsFiltersServiceModule["productsFiltersService"]["getFilters"]>
+  ) {
+    const service = await loadProductsFiltersService();
+    return service.getFilters(...args);
+  }
+
+  async getPriceRange(
+    ...args: Parameters<ProductsFiltersServiceModule["productsFiltersService"]["getPriceRange"]>
+  ) {
+    const service = await loadProductsFiltersService();
+    return service.getPriceRange(...args);
+  }
 
   // Slug methods
   findBySlug = productsSlugService.findBySlug.bind(productsSlugService);

@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import type { ProductFilters } from '@/lib/services/products-find-query/types';
-import { productsService } from '@/lib/services/products.service';
+import { productsFindService } from '@/lib/services/products-find.service';
 import { getCachedJson } from '@/lib/services/read-through-json-cache';
 import { stableStringifyForCacheKey } from '@/lib/cache/stable-stringify';
 
@@ -8,7 +8,7 @@ const PRODUCTS_LIST_CACHE_VERSION = 'v9';
 const PRODUCTS_CACHE_TTL = 120;
 const FEATURED_CACHE_TTL = 600;
 
-export type ProductsListingPayload = Awaited<ReturnType<typeof productsService.findAll>>;
+export type ProductsListingPayload = Awaited<ReturnType<typeof productsFindService.findAll>>;
 
 function normalizeSpecsForKey(specs: ProductFilters['technicalSpecs']): Record<string, string[]> {
   if (!specs || typeof specs !== 'object') {
@@ -75,7 +75,7 @@ export async function getProductsListingCached(
 ): Promise<ProductsListingPayload> {
   const key = buildProductsListingRedisKey(filters);
   const ttl = resolveProductsListingTtlSeconds(filters);
-  return getCachedJson<ProductsListingPayload>(key, ttl, () => productsService.findAll(filters), {
+  return getCachedJson<ProductsListingPayload>(key, ttl, () => productsFindService.findAll(filters), {
     requireSharedCache: true,
   });
 }
