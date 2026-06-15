@@ -26,6 +26,10 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: t(lang, 'common.meta.title'),
     description: t(lang, 'common.meta.description'),
+    icons: {
+      icon: '/assets/brand/marco-group-logo.webp',
+      shortcut: '/assets/brand/marco-group-logo.webp',
+    },
   };
 }
 

@@ -55,9 +55,30 @@ if (r2Origin) {
   mediaSources.push(r2Origin);
 }
 const isDevelopment = process.env.NODE_ENV === 'development';
+const isVercelPreview = process.env.VERCEL_ENV === 'preview';
 const scriptSources = ["'self'", "'unsafe-inline'", 'https://code.tidio.co'];
 if (isDevelopment) {
   scriptSources.push("'unsafe-eval'");
+}
+// Vercel Live toolbar (preview deployments only) — feedback.js from vercel.live
+if (isVercelPreview) {
+  scriptSources.push('https://vercel.live');
+}
+
+const frameSources = [
+  "'self'",
+  'https://www.google.com',
+  'https://google.com',
+  'https://maps.google.com',
+  'https://www.openstreetmap.org',
+  'https://openstreetmap.org',
+  'https://www.youtube.com',
+  'https://youtube.com',
+  'https://www.youtube-nocookie.com',
+  'https://youtube-nocookie.com',
+];
+if (isVercelPreview) {
+  frameSources.push('https://vercel.live');
 }
 
 /** Default storefront media host(s) — also set NEXT_IMAGE_REMOTE_HOSTS for extra CDNs. */
@@ -203,7 +224,7 @@ const nextConfig = {
               "form-action 'self'",
               "object-src 'none'",
               // Map embeds (Google Maps / OSM) + About page YouTube hero; default-src alone blocks embeds
-              "frame-src 'self' https://www.google.com https://google.com https://maps.google.com https://www.openstreetmap.org https://openstreetmap.org https://www.youtube.com https://youtube.com https://www.youtube-nocookie.com https://youtube-nocookie.com",
+              `frame-src ${frameSources.join(' ')}`,
               "frame-ancestors 'none'",
             ].join('; '),
           },
@@ -216,6 +237,10 @@ const nextConfig = {
       return [];
     }
     return [
+      {
+        source: '/favicon.ico',
+        destination: `${r2PublicBase}/static-site/assets/brand/marco-group-logo.webp`,
+      },
       {
         source: '/assets/:path*',
         destination: `${r2PublicBase}/static-site/assets/:path*`,
