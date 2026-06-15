@@ -1,5 +1,6 @@
 ﻿'use client';
 
+import Image from 'next/image';
 import { ChevronRight } from 'lucide-react';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from '../../lib/i18n-client';
@@ -15,6 +16,7 @@ import {
 import { resolveCategoryNavPresentation } from './categoryNavPresentation';
 import { headerCategoryNavFont } from './headerCategoryNavTypography';
 import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '../../lib/utils/image-utils';
+import { shouldBypassNextImageOptimizer } from '@/lib/utils/should-bypass-next-image-optimizer';
 
 function isTechAndElectronicsCategory(value: string): boolean {
   const normalized = normalizeCategoryKey(value);
@@ -94,22 +96,26 @@ export function CategoriesDropdownMega({
               >
                 <span className="flex size-[48px] shrink-0 items-center justify-center p-1.5 !text-[#383838] dark:!text-[#383838]">
                   {categoryImage ? (
-                    <img
+                    <Image
                       src={toDomSafeImgSrcString(categoryImage)}
                       alt=""
                       width={MEGA_ROOT_ICON_INNER_PX}
                       height={MEGA_ROOT_ICON_INNER_PX}
                       className="h-[34px] w-[34px] shrink-0 object-contain"
                       draggable={false}
+                      loading="lazy"
+                      unoptimized={shouldBypassNextImageOptimizer(categoryImage)}
                     />
                   ) : row.icon.kind === 'figma' ? (
-                    <img
+                    <Image
                       src={row.icon.src}
                       alt=""
                       width={MEGA_ROOT_ICON_INNER_PX}
                       height={MEGA_ROOT_ICON_INNER_PX}
                       className="h-[34px] w-[34px] shrink-0 object-contain brightness-0"
                       draggable={false}
+                      loading="lazy"
+                      unoptimized={shouldBypassNextImageOptimizer(row.icon.src)}
                     />
                   ) : (
                     RowLucide && (

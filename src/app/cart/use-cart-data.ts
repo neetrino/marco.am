@@ -5,10 +5,17 @@ import { getStoredCurrency } from '../../lib/currency';
 import { useTranslation } from '../../lib/i18n-client';
 import { useAuth } from '../../lib/auth/AuthContext';
 import type { Cart } from './types';
+import { readStoredGuestCart } from './guest-cart-local';
 import { buildGuestCartFromStorage, fetchCart } from './cart-fetcher';
 import { handleRemoveItem, handleUpdateQuantity } from './cart-handlers';
 import { isGenericCartTitle, mergeCartDisplayState } from './merge-cart-display';
 import { preloadNewCartImages } from './preload-cart-images';
+
+function guestCartHydrationFingerprint(): string {
+  return readStoredGuestCart()
+    .map((item) => `${item.productId}:${item.variantId}`)
+    .join('|');
+}
 
 export function useCartData(options?: { enabled?: boolean }) {
   const enabled = options?.enabled ?? true;
@@ -20,6 +27,8 @@ export function useCartData(options?: { enabled?: boolean }) {
   const [updatingItems, setUpdatingItems] = useState<Set<string>>(new Set());
   const isLocalUpdateRef = useRef(false);
   const cartFetchGenerationRef = useRef(0);
+  const guestHydrationInFlightRef = useRef(false);
+  const guestHydrationAttemptedRef = useRef<string | null>(null);
   const cartRef = useRef<Cart | null>(null);
   cartRef.current = cart;
 
@@ -43,6 +52,16 @@ export function useCartData(options?: { enabled?: boolean }) {
         return;
       }
 
+      const fingerprint = guestCartHydrationFingerprint();
+      if (
+        guestHydrationInFlightRef.current ||
+        (fingerprint.length > 0 && guestHydrationAttemptedRef.current === fingerprint)
+      ) {
+        return;
+      }
+
+      guestHydrationInFlightRef.current = true;
+      guestHydrationAttemptedRef.current = fingerprint;
       const generation = ++cartFetchGenerationRef.current;
       try {
         const cartData = await fetchCart(false, t);
@@ -65,6 +84,10 @@ export function useCartData(options?: { enabled?: boolean }) {
       } catch (_error: unknown) {
         if (generation === cartFetchGenerationRef.current) {
           syncGuestCartFromStorage();
+        }
+      } finally {
+        if (generation === cartFetchGenerationRef.current) {
+          guestHydrationInFlightRef.current = false;
         }
       }
     },
@@ -134,15 +157,20 @@ export function useCartData(options?: { enabled?: boolean }) {
         itemsCount?: number;
         total?: number;
         currency?: string;
+        hydrated?: boolean;
       }>).detail;
 
       if (!isLoggedIn) {
-        const snapshot = syncGuestCartFromStorage();
         if (isLocalUpdateRef.current) {
           isLocalUpdateRef.current = false;
           invalidateInFlightCartLoads();
           return;
         }
+        if (detail?.hydrated === true) {
+          return;
+        }
+        guestHydrationAttemptedRef.current = null;
+        const snapshot = syncGuestCartFromStorage();
         invalidateInFlightCartLoads();
         void hydrateGuestCartInBackground(snapshot);
         return;

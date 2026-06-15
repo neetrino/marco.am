@@ -1,8 +1,10 @@
 'use client';
 
+import Image from 'next/image';
 import { useTranslation } from '../../../../lib/i18n-client';
 import { formatPriceInCurrency, convertPrice } from '../../../../lib/currency';
 import { getColorValue } from '../utils/color-helpers';
+import { shouldBypassNextImageOptimizer } from '@/lib/utils/should-bypass-next-image-optimizer';
 import type { OrderItem as OrderItemType } from '../types';
 
 interface OrderItemProps {
@@ -50,11 +52,15 @@ export function OrderItem({ item, currency }: OrderItemProps) {
   return (
     <div className="flex gap-4 pb-4 border-b border-gray-200 last:border-0">
       {item.imageUrl && (
-        <div className="w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
-          <img 
-            src={item.imageUrl} 
+        <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg bg-gray-100">
+          <Image
+            src={item.imageUrl}
             alt={item.productTitle}
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
+            sizes="80px"
+            loading="lazy"
+            unoptimized={shouldBypassNextImageOptimizer(item.imageUrl)}
           />
         </div>
       )}
@@ -80,10 +86,14 @@ export function OrderItem({ item, currency }: OrderItemProps) {
                   </span>
                   <div className="flex items-center gap-2">
                     {hasImage ? (
-                      <img 
-                        src={opt.imageUrl!} 
+                      <Image
+                        src={opt.imageUrl!}
                         alt={displayLabel}
-                        className="w-6 h-6 rounded border border-gray-300 object-cover"
+                        width={24}
+                        height={24}
+                        className="h-6 w-6 rounded border border-gray-300 object-cover"
+                        loading="lazy"
+                        unoptimized={shouldBypassNextImageOptimizer(opt.imageUrl!)}
                         onError={(e) => {
                           (e.target as HTMLImageElement).style.display = 'none';
                         }}

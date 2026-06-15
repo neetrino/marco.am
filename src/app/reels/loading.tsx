@@ -1,6 +1,5 @@
-/**
- * Reels shells stream from RSC — avoid a route-level skeleton on navigation.
- */
+import { StaticPageLoadingSkeleton } from '@/components/navigation/StaticPageLoadingSkeleton';
+
 export default function ReelsLoading() {
-  return null;
+  return <StaticPageLoadingSkeleton variant="reels" />;
 }

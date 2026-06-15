@@ -1,6 +1,8 @@
 'use client';
 
+import Image from 'next/image';
 import { processImageUrl } from '../../../lib/utils/image-utils';
+import { shouldBypassNextImageOptimizer } from '@/lib/utils/should-bypass-next-image-optimizer';
 import { t, getAttributeLabel } from '../../../lib/i18n';
 import type { LanguageCode } from '../../../lib/language';
 import type { Product, ProductAttribute, ProductVariant, VariantOption } from './types';
@@ -169,10 +171,14 @@ export function ProductAttributesSelector({
                         aria-label={getAttributeLabel(language, attrKey, g.value)}
                       >
                         {hasImage && processedImageUrl ? (
-                          <img
+                          <Image
                             src={processedImageUrl}
                             alt=""
+                            width={40}
+                            height={40}
                             className="h-full w-full object-cover"
+                            loading="lazy"
+                            unoptimized={shouldBypassNextImageOptimizer(processedImageUrl)}
                             onError={(e) => {
                               logger.error(
                                 `[COLOR IMAGE] Failed to load image for color "${g.value}"`,
@@ -238,10 +244,14 @@ export function ProductAttributesSelector({
                         }`}
                       >
                         {hasImage && processedImageUrl && (
-                          <img 
-                            src={processedImageUrl} 
+                          <Image
+                            src={processedImageUrl}
                             alt={g.label}
-                            className={`${imageSizeClass} object-cover rounded border border-gray-300 flex-shrink-0`}
+                            width={totalValues > 6 ? 16 : 20}
+                            height={totalValues > 6 ? 16 : 20}
+                            className={`${imageSizeClass} flex-shrink-0 rounded border border-gray-300 object-cover`}
+                            loading="lazy"
+                            unoptimized={shouldBypassNextImageOptimizer(processedImageUrl)}
                             onError={(e) => {
                               logger.error(
                                 `[SIZE IMAGE] Failed to load image for size "${g.value}"`,
@@ -316,10 +326,14 @@ export function ProductAttributesSelector({
                           aria-label={label}
                         >
                           {hasImage && processedImageUrl ? (
-                            <img
+                            <Image
                               src={processedImageUrl}
                               alt=""
+                              width={40}
+                              height={40}
                               className="h-full w-full object-cover"
+                              loading="lazy"
+                              unoptimized={shouldBypassNextImageOptimizer(processedImageUrl)}
                               onError={(e) => {
                                 logger.error(
                                   `[ATTRIBUTE IMAGE] Failed to load image for attribute "${attrKey}" value "${g.value}"`,

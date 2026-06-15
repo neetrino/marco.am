@@ -252,6 +252,8 @@ export async function fetchGuestCart(
             itemsCount: cart.itemsCount,
             total: cart.totals.total,
             currency: cart.totals.currency,
+            /** Prevents useCartData from re-entering guest hydration (infinite fetch loop). */
+            hydrated: true,
           },
         }),
       );

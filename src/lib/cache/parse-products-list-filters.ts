@@ -49,7 +49,8 @@ export function parseProductListFiltersFromSearchParams(
   const cursor = searchParams.get('cursor') || undefined;
   const technicalSpecs = parseTechnicalSpecFiltersFromSearchParams(searchParams);
 
-  const omitAttr = searchParams.get('omitProductAttributes');
+  const omitAttr =
+    searchParams.get('omitProductAttributes') ?? searchParams.get('listingOmitProductAttributes');
   const listingOmitProductAttributes =
     omitAttr === '1' || omitAttr?.toLowerCase() === 'true' ? true : undefined;
 

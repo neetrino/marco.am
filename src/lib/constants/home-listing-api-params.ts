@@ -17,5 +17,10 @@ export function buildHomeStripListingApiParams(
   };
 }
 
-/** First N home rail cards use eager image loading (above-the-fold strips). */
-export const HOME_RAIL_LCP_IMAGE_PRIORITY_COUNT = 4;
+/** First N home rail cards use eager image loading (above-the-fold LCP only). */
+export const HOME_RAIL_LCP_IMAGE_PRIORITY_COUNT = 2;
+
+/** True when a home product tile should use `priority` / eager image loading. */
+export function isHomeRailAboveFoldImage(pageIndex: number, slotIndex: number): boolean {
+  return pageIndex === 0 && slotIndex < HOME_RAIL_LCP_IMAGE_PRIORITY_COUNT;
+}

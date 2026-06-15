@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { MapPin } from 'lucide-react';
 
 import {
@@ -57,13 +58,15 @@ export function ContactInfoColumn({
               </p>
             </div>
             <div className="flex items-start gap-2">
-              <img
+              <Image
                 src={FOOTER_CONTACT_PHONE_ICON_SRC}
                 alt=""
                 width={16}
                 height={13}
                 className={CONTACT_PAGE_PHONE_ICON_CLASS}
                 aria-hidden
+                loading="lazy"
+                unoptimized
               />
               <div className="flex flex-col gap-px">
                 {location.phones.map((phone) => (
@@ -86,13 +89,15 @@ export function ContactInfoColumn({
         <div className="space-y-2.5 pt-6">
           {CONTACT_EMAILS.map((email) => (
             <div key={email} className="flex items-start gap-2">
-              <img
+              <Image
                 src={FOOTER_CONTACT_MAIL_ICON_SRC}
                 alt=""
                 width={18}
                 height={14}
                 className={CONTACT_PAGE_MAIL_ICON_CLASS}
                 aria-hidden
+                loading="lazy"
+                unoptimized
               />
               <a
                 href={`mailto:${email}`}

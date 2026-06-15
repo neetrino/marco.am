@@ -10,9 +10,7 @@ import {
   PDP_QUERY_GC_TIME_MS,
   PDP_QUERY_STALE_TIME_MS,
 } from './pdp-query-cache';
-import { fetchProductDetail, fetchProductSummary, fetchProductVisual } from './product-pdp-fetchers';
-import { fetchRelatedProducts } from './fetch-related-products';
-import { RELATED_PRODUCTS_FETCH_LIMIT } from './related-products.constants';
+import { fetchProductSummary, fetchProductVisual } from './product-pdp-fetchers';
 
 function baseProductSlug(raw: string): string {
   const parts = raw.includes(':') ? raw.split(':') : [raw];
@@ -46,8 +44,11 @@ function hasRichVisualPayload(payload: PdpVisualPayload | undefined): boolean {
 }
 
 /**
- * Warms React Query cache before navigating to `/products/[slug]` so the PDP paints faster
- * (visual + full detail on user intent).
+ * Warms the light PDP payload before navigating to `/products/[slug]`.
+ *
+ * Keep hover/focus prefetch cheap: product grids can trigger many intent events while
+ * the pointer moves across cards. Full detail and related products load from the PDP
+ * flow after navigation, where the request is tied to a committed user action.
  */
 export function prefetchProductPdp(
   queryClient: QueryClient,
@@ -88,30 +89,5 @@ export function prefetchProductPdp(
         gcTime: PDP_QUERY_GC_TIME_MS,
       });
 
-  const fullDetailWarmup = hasFullProductDetails(existingDetail)
-    ? Promise.resolve()
-    : fetchProductDetail(slug, lang)
-        .then((fullProduct) => {
-          queryClient.setQueryData(queryKeys.productDetail(slug, lang), fullProduct);
-        })
-        .catch(() => undefined);
-
-  const existingRelated = queryClient.getQueryData(
-    queryKeys.relatedProducts(slug, lang, RELATED_PRODUCTS_FETCH_LIMIT),
-  );
-  const relatedPrefetch = existingRelated
-    ? Promise.resolve()
-    : queryClient.prefetchQuery({
-        queryKey: queryKeys.relatedProducts(slug, lang, RELATED_PRODUCTS_FETCH_LIMIT),
-        queryFn: () => fetchRelatedProducts(slug, lang, RELATED_PRODUCTS_FETCH_LIMIT),
-        staleTime: PDP_QUERY_STALE_TIME_MS,
-        gcTime: PDP_QUERY_GC_TIME_MS,
-      });
-
-  return Promise.all([
-    visualPrefetch,
-    detailPrefetch,
-    fullDetailWarmup,
-    relatedPrefetch,
-  ]).then(() => undefined);
+  return Promise.all([visualPrefetch, detailPrefetch]).then(() => undefined);
 }

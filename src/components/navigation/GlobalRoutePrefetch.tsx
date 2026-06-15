@@ -18,8 +18,6 @@ const PRODUCTS_SHOP_PATH = '/products';
 const BRANDS_PATH = '/brands';
 const REELS_PATH = '/reels';
 const INTERACTION_PREFETCH_MAX_SEGMENTS = 2;
-/** Home SSR already loads product rails + brand partners — defer API warm to avoid DB spikes. */
-const HOME_API_WARM_DEFER_MS = 12_000;
 const HOME_PATH = '/';
 const INTERACTION_PRODUCTS_WARM_TIMEOUT_MS = 8_000;
 type IdleCapableWindow = Window &
@@ -94,6 +92,9 @@ function shouldInteractionPrefetch(pathname: string): boolean {
   if (pathname === HOME_PATH) {
     return false;
   }
+  if (pathname.startsWith(`${PRODUCTS_SHOP_PATH}/`)) {
+    return false;
+  }
   const segments = pathname.split('/').filter(Boolean);
   return segments.length <= INTERACTION_PREFETCH_MAX_SEGMENTS;
 }
@@ -137,7 +138,7 @@ export function GlobalRoutePrefetch() {
       }
       warmedRef.current.add(route);
       void router.prefetch(route);
-      if (route === PRODUCTS_SHOP_PATH) {
+      if (route === PRODUCTS_SHOP_PATH && pathname !== HOME_PATH) {
         warmProductsApi(getStoredLanguage(), {
           timeoutMs: INTERACTION_PRODUCTS_WARM_TIMEOUT_MS,
           suppressTimeoutLogging: true,
@@ -166,6 +167,9 @@ export function GlobalRoutePrefetch() {
     }
 
     const warmApi = () => {
+      if (pathname === HOME_PATH) {
+        return;
+      }
       const language = getStoredLanguage();
       if (!warmProductsLangRef.current.has(language)) {
         warmProductsLangRef.current.add(language);
@@ -175,10 +179,7 @@ export function GlobalRoutePrefetch() {
       }
     };
 
-    const apiWarmCancel =
-      pathname === HOME_PATH
-        ? scheduleIdleWork(warmApi, HOME_API_WARM_DEFER_MS)
-        : scheduleIdleWork(warmApi, 2500);
+    const apiWarmCancel = scheduleIdleWork(warmApi, 2500);
 
     return apiWarmCancel;
   }, [queryClient, router, routesToPrefetch, pathname]);
@@ -227,20 +228,15 @@ export function GlobalRoutePrefetch() {
     const onPointerDown = (event: PointerEvent) => {
       prefetchFromElement(event.target);
     };
-    const onPointerOver = (event: PointerEvent) => {
-      prefetchFromElement(event.target);
-    };
     const onFocusIn = (event: FocusEvent) => {
       prefetchFromElement(event.target);
     };
 
     document.addEventListener('pointerdown', onPointerDown, { passive: true });
-    document.addEventListener('pointerover', onPointerOver, { passive: true });
     document.addEventListener('focusin', onFocusIn, { passive: true });
 
     return () => {
       document.removeEventListener('pointerdown', onPointerDown);
-      document.removeEventListener('pointerover', onPointerOver);
       document.removeEventListener('focusin', onFocusIn);
     };
   }, [queryClient, router]);

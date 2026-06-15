@@ -192,7 +192,7 @@ export function ProductCardGrid({
       />
 
       {/* Cart Button in Price Row */}
-      <div className={`px-4 pb-4 flex items-center justify-end ${isCompact ? 'gap-2' : 'gap-4'}`}>
+      <div className={`px-3 pb-5 sm:px-4 sm:pb-4 flex items-center justify-end ${isCompact ? 'gap-2' : 'gap-4'}`}>
         {hasDisplayPrice ? (
           <button
             type="button"

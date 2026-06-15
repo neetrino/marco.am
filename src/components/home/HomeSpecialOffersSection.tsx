@@ -64,6 +64,7 @@ import {
 import {
   buildHomeStripListingApiParams,
   HOME_RAIL_LCP_IMAGE_PRIORITY_COUNT,
+  isHomeRailAboveFoldImage,
 } from '@/lib/constants/home-listing-api-params';
 
 /** Same horizontal shell as «Նորույթներ» (`FeaturedProductsTabs`) for matching card width on mobile. */
@@ -417,8 +418,7 @@ export function HomeSpecialOffersSection({
                               layout="mobileGrid"
                               product={product}
                               imagePriority={
-                                pageIndex === 0 &&
-                                slotIndex < HOME_RAIL_LCP_IMAGE_PRIORITY_COUNT
+                                isHomeRailAboveFoldImage(pageIndex, slotIndex)
                               }
                             />
                           ) : (

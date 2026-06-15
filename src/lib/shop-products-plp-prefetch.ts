@@ -24,6 +24,7 @@ function buildListingApiParams(queryString: string, language: LanguageCode): Rec
   const params = new URLSearchParams(queryString);
   params.set('lang', language);
   params.set('listingOmitProductAttributes', '1');
+  params.set('compact', '1');
   if (!params.has('limit')) {
     params.set('limit', String(SHOP_PLP_DEFAULT_PAGE_SIZE));
   }
@@ -37,11 +38,15 @@ function buildListingApiParams(queryString: string, language: LanguageCode): Rec
   return out;
 }
 
-type ProductsListingApiResponse = ShopListingCachePayload;
+type ProductsListingApiResponse = ShopListingCachePayload & {
+  items?: ShopListingCachePayload['data'];
+  pagination?: ShopListingCachePayload['meta'];
+};
 
 type WarmShopProductsClientCachesOptions = {
   timeoutMs?: number;
   includeCategories?: boolean;
+  includeFilters?: boolean;
   suppressTimeoutLogging?: boolean;
 };
 
@@ -67,6 +72,7 @@ export function warmShopProductsClientCaches(
   const urlParams = new URLSearchParams(queryString);
   const scopedFiltersKey = buildProductsFiltersScopeKeyFromSearchParams(urlParams, language);
 
+  const includeFilters = options?.includeFilters !== false;
   const filtersParams: Record<string, string> = {
     lang: language,
     includeCategories: options?.includeCategories === false ? '0' : '1',
@@ -97,21 +103,33 @@ export function warmShopProductsClientCaches(
     }
   });
 
-  void Promise.all([
-    apiClient.get<ProductsFiltersData>('/api/v1/products/filters', {
-      params: filtersParams,
-      timeoutMs: options?.timeoutMs,
-      suppressNetworkErrorLogging: options?.suppressTimeoutLogging,
-    }),
-    apiClient.get<ProductsListingApiResponse>('/api/v1/products', {
+  const listingRequest = apiClient.get<ProductsListingApiResponse>('/api/v1/products', {
       params: buildListingApiParams(queryString, language),
       timeoutMs: options?.timeoutMs,
       suppressNetworkErrorLogging: options?.suppressTimeoutLogging,
-    }),
-  ])
+    });
+  const filtersRequest = includeFilters
+    ? apiClient.get<ProductsFiltersData>('/api/v1/products/filters', {
+        params: filtersParams,
+        timeoutMs: options?.timeoutMs,
+        suppressNetworkErrorLogging: options?.suppressTimeoutLogging,
+      })
+    : Promise.resolve(null);
+
+  void Promise.all([filtersRequest, listingRequest])
     .then(([filters, listing]) => {
-      writeShopFiltersCache(scopedFiltersKey, filters);
-      writeShopListingCache(queryString, listing);
+      if (filters) {
+        writeShopFiltersCache(scopedFiltersKey, filters);
+      }
+      writeShopListingCache(queryString, {
+        data: listing.data ?? listing.items ?? [],
+        meta: listing.meta ?? listing.pagination ?? {
+          total: 0,
+          page: 1,
+          limit: SHOP_PLP_DEFAULT_PAGE_SIZE,
+          totalPages: 0,
+        },
+      });
     })
     .catch(() => {
       /* Prefetch is best-effort — PLP will fetch on mount if this fails. */

@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { MapPin } from 'lucide-react';
 
@@ -26,6 +27,7 @@ import {
 
 const FOOTER_LINK_CLASS = `${FOOTER_MUTED_TEXT_CLASS} ${FOOTER_NAV_BODY_TEXT_CLASS} transition-colors hover:text-marco-black`;
 const FOOTER_NAV_COLUMN_LINK_CLASS = `${FOOTER_LINK_CLASS} ${FOOTER_NAV_COLUMN_LINK_WORD_SPACING_CLASS} ${FOOTER_NAV_COLUMN_LINK_LEADING_CLASS}`;
+const FOOTER_HEAVY_PREFETCH_PATHS = new Set(['/products', '/reels']);
 
 export type FooterNavItem = { readonly href: string; readonly label: string };
 
@@ -48,7 +50,11 @@ export function FooterNavColumn({
       <ul className={`flex flex-col ${FOOTER_NAV_COLUMN_LIST_ITEM_GAP_CLASS}`}>
         {items.map((item) => (
           <li key={`${item.href}-${item.label}`}>
-            <Link href={item.href} className={FOOTER_NAV_COLUMN_LINK_CLASS}>
+            <Link
+              href={item.href}
+              prefetch={FOOTER_HEAVY_PREFETCH_PATHS.has(item.href) ? false : undefined}
+              className={FOOTER_NAV_COLUMN_LINK_CLASS}
+            >
               {item.label}
             </Link>
           </li>
@@ -98,13 +104,15 @@ export function FooterContactsBlock({
         </p>
       </div>
       <div className="flex items-start gap-2">
-        <img
+        <Image
           src={FOOTER_CONTACT_PHONE_ICON_SRC}
           alt=""
           width={18}
           height={15}
           className={FOOTER_CONTACT_PHONE_ICON_CLASS}
           aria-hidden
+          loading="lazy"
+          unoptimized
         />
         <a
           href={telHref}
@@ -114,13 +122,15 @@ export function FooterContactsBlock({
         </a>
       </div>
       <div className="flex items-start gap-2">
-        <img
+        <Image
           src={FOOTER_CONTACT_MAIL_ICON_SRC}
           alt=""
           width={20}
           height={14}
           className={FOOTER_CONTACT_MAIL_ICON_CLASS}
           aria-hidden
+          loading="lazy"
+          unoptimized
         />
         <a
           href={`mailto:${email}`}
@@ -138,7 +148,10 @@ export function FooterCopyright() {
   const year = new Date().getFullYear();
 
   return (
-    <p className="inline-block whitespace-nowrap text-center text-[10px] leading-tight text-marco-black sm:text-[11px] md:text-xs lg:text-[13px]">
+    <p
+      className="inline-block whitespace-nowrap text-center text-[10px] leading-tight text-marco-black sm:text-[11px] md:text-xs lg:text-[13px]"
+      suppressHydrationWarning
+    >
       <span>
         {t('common.footer.marco.copyrightBefore').replace('{year}', String(year))}
       </span>

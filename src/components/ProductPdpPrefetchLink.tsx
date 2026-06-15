@@ -24,7 +24,7 @@ export type ProductPdpPrefetchLinkProps = LinkProps & {
   /** Base product slug (same segment as `/products/[slug]`). */
   productSlug: string;
   children: ReactNode;
-  /** Next.js route prefetch; keep true so the RSC payload is prepared. */
+  /** Manual route prefetch on user intent; Next's viewport auto-prefetch stays disabled. */
   prefetchRoute?: boolean;
   /** Disable data prefetch when route churn is high (e.g. PLP filtering). */
   prefetchData?: boolean;
@@ -83,7 +83,7 @@ export function ProductPdpPrefetchLink({
   return (
     <Link
       href={href}
-      prefetch={prefetchRoute ? true : false}
+      prefetch={false}
       onMouseEnter={(e) => {
         warm();
         onMouseEnter?.(e);

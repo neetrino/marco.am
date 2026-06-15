@@ -12,6 +12,7 @@ import { t } from '@/lib/i18n';
 import type { LanguageCode } from '@/lib/language';
 import { MOBILE_FILTERS_EVENT } from '@/lib/events';
 import type { ProductsFiltersData } from '@/components/ProductsFiltersProvider';
+import { ProductsDesktopFiltersMount } from './ProductsDesktopFiltersMount';
 
 export type ProductsShopFiltersColumnProps = {
   readonly language: LanguageCode;
@@ -56,49 +57,51 @@ export function ProductsShopFiltersColumn({
     >
       {children}
       <aside className="hidden w-[16rem] shrink-0 bg-white dark:bg-[var(--app-bg)] min-[744px]:sticky min-[744px]:top-4 min-[744px]:z-10 min-[744px]:self-start min-[744px]:block xl:w-[20rem]">
-        <div className="border-r border-solid border-[#e2e8f0] dark:border-white/20 pb-4 pt-4 min-[744px]:pl-0 min-[744px]:pr-3 xl:pb-6 xl:pt-6 xl:pr-6">
-          <div className="mb-4 flex flex-col gap-1 lg:mb-5 xl:mb-6">
-            <h2
-              className={`${productsFiltersSectionFont.className} text-sm font-semibold leading-5 tracking-[-0.31px] text-[#0f172b] dark:text-white lg:text-base lg:leading-6`}
-            >
-              {t(language, 'products.filters.panelTitle')}
-            </h2>
-            <p className="text-xs font-normal leading-snug tracking-[-0.15px] text-[#62748e] dark:text-white/72 lg:text-sm lg:leading-5">
-              {t(language, 'products.filters.panelSubtitle')}
-            </p>
+        <ProductsDesktopFiltersMount>
+          <div className="border-r border-solid border-[#e2e8f0] dark:border-white/20 pb-4 pt-4 min-[744px]:pl-0 min-[744px]:pr-3 xl:pb-6 xl:pt-6 xl:pr-6">
+            <div className="mb-4 flex flex-col gap-1 lg:mb-5 xl:mb-6">
+              <h2
+                className={`${productsFiltersSectionFont.className} text-sm font-semibold leading-5 tracking-[-0.31px] text-[#0f172b] dark:text-white lg:text-base lg:leading-6`}
+              >
+                {t(language, 'products.filters.panelTitle')}
+              </h2>
+              <p className="text-xs font-normal leading-snug tracking-[-0.15px] text-[#62748e] dark:text-white/72 lg:text-sm lg:leading-5">
+                {t(language, 'products.filters.panelSubtitle')}
+              </p>
+            </div>
+            <PriceFilter
+              currentMinPrice={params.minPrice}
+              currentMaxPrice={params.maxPrice}
+              category={params.category}
+              search={params.search}
+            />
+            <CategoryFilter
+              category={params.category}
+              search={params.search}
+              minPrice={params.minPrice}
+              maxPrice={params.maxPrice}
+            />
+            <BrandFilter
+              category={params.category}
+              search={params.search}
+              minPrice={params.minPrice}
+              maxPrice={params.maxPrice}
+            />
+            <ColorFilter
+              category={params.category}
+              search={params.search}
+              minPrice={params.minPrice}
+              maxPrice={params.maxPrice}
+            />
+            <SizeFilter
+              category={params.category}
+              search={params.search}
+              minPrice={params.minPrice}
+              maxPrice={params.maxPrice}
+            />
+            <ShopAttributeFacetsFilter />
           </div>
-          <PriceFilter
-            currentMinPrice={params.minPrice}
-            currentMaxPrice={params.maxPrice}
-            category={params.category}
-            search={params.search}
-          />
-          <CategoryFilter
-            category={params.category}
-            search={params.search}
-            minPrice={params.minPrice}
-            maxPrice={params.maxPrice}
-          />
-          <BrandFilter
-            category={params.category}
-            search={params.search}
-            minPrice={params.minPrice}
-            maxPrice={params.maxPrice}
-          />
-          <ColorFilter
-            category={params.category}
-            search={params.search}
-            minPrice={params.minPrice}
-            maxPrice={params.maxPrice}
-          />
-          <SizeFilter
-            category={params.category}
-            search={params.search}
-            minPrice={params.minPrice}
-            maxPrice={params.maxPrice}
-          />
-          <ShopAttributeFacetsFilter />
-        </div>
+        </ProductsDesktopFiltersMount>
       </aside>
 
       <MobileFiltersDrawer openEventName={MOBILE_FILTERS_EVENT}>

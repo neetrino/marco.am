@@ -1,6 +1,9 @@
 'use client';
 
+import Image from 'next/image';
+
 import { getColorHex } from '../../lib/colorMap';
+import { shouldBypassNextImageOptimizer } from '@/lib/utils/should-bypass-next-image-optimizer';
 
 interface ColorData {
   value: string;
@@ -85,14 +88,20 @@ export function ProductColors({
             aria-label={`Color: ${colorValue}`}
           >
             {imageUrl ? (
-              <img 
-                src={imageUrl} 
+              <Image
+                src={imageUrl}
                 alt={colorValue}
-                className="w-full h-full object-cover"
+                width={useFigmaSwatches ? swatchSizePx : isCompact ? 16 : 20}
+                height={useFigmaSwatches ? swatchSizePx : isCompact ? 16 : 20}
+                className="h-full w-full object-cover"
+                loading="lazy"
+                unoptimized={shouldBypassNextImageOptimizer(imageUrl)}
                 onError={(e) => {
-                  // Fallback to color hex if image fails to load
                   const fallbackColor = colorHex || '#CCCCCC';
-                  (e.target as HTMLImageElement).style.backgroundColor = fallbackColor;
+                  const parent = (e.target as HTMLImageElement).parentElement;
+                  if (parent) {
+                    parent.style.backgroundColor = fallbackColor;
+                  }
                   (e.target as HTMLImageElement).style.display = 'none';
                 }}
               />

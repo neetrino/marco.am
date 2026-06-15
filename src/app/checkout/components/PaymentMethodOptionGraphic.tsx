@@ -1,6 +1,8 @@
 'use client';
 
+import Image from 'next/image';
 import { CashPaymentIcon } from './CashPaymentIcon';
+import { shouldBypassNextImageOptimizer } from '@/lib/utils/should-bypass-next-image-optimizer';
 import type { PaymentMethod } from '../utils/payment-methods';
 
 interface PaymentMethodOptionGraphicProps {
@@ -43,11 +45,14 @@ export function PaymentMethodOptionGraphic({
   if (method.logos.length === 1) {
     return (
       <div className={logoCellClass}>
-        <img
+        <Image
           src={method.logos[0]}
           alt={method.name}
+          width={52}
+          height={40}
           className="max-h-10 max-w-[3.25rem] object-contain p-1"
           loading="lazy"
+          unoptimized={shouldBypassNextImageOptimizer(method.logos[0])}
           onError={onLogoError}
         />
       </div>
@@ -58,11 +63,14 @@ export function PaymentMethodOptionGraphic({
     <div className="flex flex-shrink-0 items-center gap-2">
       {method.logos.map((src) => (
         <div key={src} className={logoCellClass}>
-          <img
+          <Image
             src={src}
             alt=""
+            width={40}
+            height={36}
             className="max-h-9 max-w-[2.5rem] object-contain p-1"
             loading="lazy"
+            unoptimized={shouldBypassNextImageOptimizer(src)}
             onError={onLogoError}
           />
         </div>

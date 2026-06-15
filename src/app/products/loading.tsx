@@ -1,6 +1,5 @@
-/**
- * PLP shells inside `Suspense` — avoid a route-level full-page skeleton on navigation.
- */
+import { ProductsShopLoadingSkeleton } from './ProductsShopLoadingSkeleton';
+
 export default function ProductsLoading() {
-  return null;
+  return <ProductsShopLoadingSkeleton />;
 }

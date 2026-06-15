@@ -147,7 +147,7 @@ function NavItemVisual({ item, pathname, cartCount, onPress, variant = 'default'
   return (
     <Link
       href={href}
-      prefetch
+      prefetch={false}
       aria-current={isActive ? 'page' : undefined}
       className={contentClass}
     >
@@ -192,10 +192,6 @@ export function MobileBottomNav() {
   };
 
   useEffect(() => {
-    void router.prefetch('/products');
-  }, [router]);
-
-  useEffect(() => {
     if (previousPathnameRef.current === pathname) {
       return;
     }
@@ -222,14 +218,14 @@ export function MobileBottomNav() {
   return (
     <>
       <nav
-        className={`lg:hidden pointer-events-none fixed bottom-0 left-0 right-0 w-full ${
+        className={`min-[744px]:hidden pointer-events-none fixed bottom-0 left-0 right-0 w-full ${
           shopSheetOpen ? 'z-[999]' : 'z-50'
         }`}
         aria-label={t('common.ariaLabels.primaryNav')}
       >
-        <div className="pointer-events-auto mx-auto max-w-md">
+        <div className="pointer-events-none mx-auto max-w-md">
           <div
-            className="overflow-visible bg-white pb-[max(0.5rem,env(safe-area-inset-bottom,0px))] dark:bg-zinc-950"
+            className="pointer-events-auto overflow-visible bg-white pb-[max(0.5rem,env(safe-area-inset-bottom,0px))] dark:bg-zinc-950"
             style={{
               borderTopLeftRadius: MOBILE_NAV_TOP_CORNER_RADIUS_PX,
               borderTopRightRadius: MOBILE_NAV_TOP_CORNER_RADIUS_PX,

@@ -52,6 +52,7 @@
 
   body {
     @apply bg-[var(--app-bg)] text-[var(--app-text)];
+    font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
   }
   
   /* Global text selection is enabled to allow copy across the app. */
@@ -629,8 +630,8 @@
 
 @media (min-width: 1024px) {
   .marco-header-container {
-    padding-left: 135px;
-    padding-right: 135px;
+    padding-left: clamp(2rem, 7vw, 135px);
+    padding-right: clamp(2rem, 7vw, 135px);
   }
 }
 
@@ -884,6 +885,14 @@
 .dark [data-theme-static='true'].border-gray-100,
 .dark [data-theme-static='true'] .border-gray-100 {
   border-color: #e5e7eb !important;
+}
+
+/* Tidio chat — use self-hosted Mulish from next/font instead of code.tidio.co font files. */
+#tidio,
+#tidio-chat,
+#tidio-chat-iframe,
+[id^='tidio-'] {
+  font-family: var(--font-mulish), var(--font-inter), system-ui, sans-serif !important;
 }
 
 body[data-mobile-menu-open='true'] #tidio,

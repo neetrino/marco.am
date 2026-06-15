@@ -13,6 +13,7 @@ import { getStoredLanguage } from '@/lib/language';
 import { PRODUCTS_PLP_TOTAL_EVENT } from '@/lib/products-plp-total-event';
 import { pushShopProductsListingUrl } from '@/lib/push-shop-products-listing-url';
 import {
+  isShopListingCacheFresh,
   readShopListingCache,
   registerShopProductsListingFetchListener,
   writeShopListingCache,
@@ -34,8 +35,10 @@ type ListingMeta = {
 };
 
 type ProductsListingApiResponse = {
-  data: unknown[];
-  meta: ListingMeta;
+  data?: unknown[];
+  meta?: ListingMeta;
+  items?: unknown[];
+  pagination?: ListingMeta;
 };
 
 type ProductsShopListingClientProps = {
@@ -49,6 +52,7 @@ function buildListingApiParams(queryString: string): Record<string, string> {
   const params = new URLSearchParams(queryString);
   params.set('lang', getStoredLanguage());
   params.set('listingOmitProductAttributes', '1');
+  params.set('compact', '1');
   if (!params.has('limit')) {
     params.set('limit', String(SHOP_PLP_DEFAULT_PAGE_SIZE));
   }
@@ -87,6 +91,23 @@ function getPaginationPages(totalPages: number, current: number): (number | 'ell
 
 function readSortFromQuery(queryString: string): string {
   return new URLSearchParams(queryString).get('sort') ?? 'default';
+}
+
+function normalizeListingApiResponse(response: ProductsListingApiResponse): {
+  data: unknown[];
+  meta: ListingMeta;
+} {
+  return {
+    data: response.data ?? response.items ?? [],
+    meta:
+      response.meta ??
+      response.pagination ?? {
+        total: 0,
+        page: 1,
+        limit: SHOP_PLP_DEFAULT_PAGE_SIZE,
+        totalPages: 0,
+      },
+  };
 }
 
 /**
@@ -129,13 +150,14 @@ export function ProductsShopListingClient({
 
   const applyListingPayload = useCallback(
     (payload: ProductsListingApiResponse, nextQueryString: string) => {
-      const normalized = payload.data.map(normalizeShopGridProduct);
+      const normalizedPayload = normalizeListingApiResponse(payload);
+      const normalized = normalizedPayload.data.map(normalizeShopGridProduct);
       setProducts(normalized);
-      setMeta(payload.meta);
+      setMeta(normalizedPayload.meta);
       setSortBy(readSortFromQuery(nextQueryString));
       setShowGridSkeleton(false);
-      writeShopListingCache(nextQueryString, payload);
-      reportTotal(payload.meta.total);
+      writeShopListingCache(nextQueryString, normalizedPayload);
+      reportTotal(normalizedPayload.meta.total);
     },
     [reportTotal],
   );
@@ -199,7 +221,9 @@ export function ProductsShopListingClient({
       const cached = readShopListingCache(nextQueryString);
       if (cached) {
         applyListingPayload(cached, nextQueryString);
-        void fetchListing(nextQueryString, { silent: true });
+        if (!isShopListingCacheFresh(nextQueryString)) {
+          void fetchListing(nextQueryString, { silent: true });
+        }
         return;
       }
 

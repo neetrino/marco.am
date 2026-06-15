@@ -23,7 +23,7 @@ import {
 } from './home-special-offers.constants';
 import { FEATURED_NEW_ARRIVALS_MOBILE_RAIL_CARDS_PER_PAGE } from '../featured-products-tabs.constants';
 import { useHomeMobileProductRailScrollport } from './useHomeMobileProductRailScrollport';
-import { HOME_PRODUCT_CHUNK_SIZE } from '../../constants/homeProductChunks';
+import { isHomeRailAboveFoldImage } from '@/lib/constants/home-listing-api-params';
 import type { SpecialOfferProduct } from './special-offer-product.types';
 
 const FEATURED_PAGE_ARIA_KEYS = [
@@ -100,8 +100,7 @@ export function FeaturedNewArrivalsMobileRail({
                       product={product}
                       layout={cardLayout}
                       imagePriority={
-                        pageIndex === 0 &&
-                        slotIndex < HOME_PRODUCT_CHUNK_SIZE &&
+                        isHomeRailAboveFoldImage(pageIndex, slotIndex) &&
                         !product.shellPlaceholder &&
                         Boolean(
                           (product.images && product.images.length > 0) || product.image,

@@ -144,9 +144,13 @@ async function fetchWithProductAttributes(
         ...getProductAttributesInclude(),
       },
     });
-    logger.info('Successfully fetched product with productAttributes');
-    const productAttrs = product && 'productAttributes' in product && Array.isArray(product.productAttributes) ? product.productAttributes : [];
-    logger.debug('Product attributes count', { count: productAttrs.length });
+    if (product) {
+      const productAttrs =
+        'productAttributes' in product && Array.isArray(product.productAttributes)
+          ? product.productAttributes
+          : [];
+      logger.debug('Product attributes count', { count: productAttrs.length });
+    }
     return product as unknown as ProductWithFullRelations | null;
   } catch (error: unknown) {
     if (isProductAttributesError(error)) {
@@ -283,9 +287,8 @@ export async function buildProductQuery(
   lang: string = "en"
 ): Promise<ProductWithFullRelations | null> {
   const product = await fetchWithProductAttributes(slug, lang);
-  
-  // If product not found, log diagnostic information
-  if (!product) {
+
+  if (!product && process.env.PRODUCT_NOT_FOUND_DIAGNOSTICS === "1") {
     await logProductNotFoundDiagnostics(slug, lang);
   }
   

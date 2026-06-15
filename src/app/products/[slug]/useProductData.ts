@@ -97,20 +97,22 @@ export function useProductData({
 
     // Add main images first (preserve order)
     cleanedMain.forEach((img) => {
-      const processed = processImageUrl(img) || img;
+      const processed = processImageUrl(img);
+      if (!processed) return;
       const normalized = normalizeUrlForComparison(processed);
       if (!seenNormalized.has(normalized)) {
-        allImages.push(img);
+        allImages.push(processed);
         seenNormalized.add(normalized);
       }
     });
 
     // Add variant images that are not already in main images
     cleanedVariantImages.forEach((img) => {
-      const processed = processImageUrl(img) || img;
+      const processed = processImageUrl(img);
+      if (!processed) return;
       const normalized = normalizeUrlForComparison(processed);
       if (!seenNormalized.has(normalized)) {
-        allImages.push(img);
+        allImages.push(processed);
         seenNormalized.add(normalized);
       }
     });

@@ -159,15 +159,13 @@ interface CardVisualResponse {
 
 async function fetchFeaturedNewVisualChunk(language: LanguageCode): Promise<CardVisualRow[]> {
   const response = await apiClient.get<CardVisualResponse>('/api/v1/products', {
-    params: {
-      page: '1',
+    params: buildHomeStripListingApiParams({
       limit: String(HOME_PRODUCT_CHUNK_SIZE),
       lang: language,
       filter: 'new',
       sort: 'createdAt',
-      omitProductAttributes: '1',
       cardVisualOnly: '1',
-    },
+    }),
     suppressHttpErrorLogging: true,
   });
   return response.data ?? [];

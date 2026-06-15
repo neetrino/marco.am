@@ -1,12 +1,12 @@
 import React, { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
-import { Inter } from 'next/font/google';
 import Script from 'next/script';
 import './globals.css';
 import { TidioDynamicLoader } from '../components/TidioDynamicLoader';
 import { ClientProviders } from '../components/ClientProviders';
 import { AppChrome } from '../components/AppChrome';
+import { appBodyFontClassName, appHtmlFontClassName } from '@/fonts/app-fonts';
 import {
   LANGUAGE_PREFERENCE_KEY,
   parseLanguageFromServer,
@@ -15,8 +15,6 @@ import {
 import { LanguagePreferenceProvider } from '../lib/language-context';
 import { t } from '../lib/i18n';
 import { APP_VIEWPORT } from '../constants/viewport';
-
-const inter = Inter({ subsets: ['latin'], display: 'swap', adjustFontFallback: true });
 
 export const viewport = APP_VIEWPORT;
 
@@ -41,8 +39,8 @@ export default async function RootLayout({
     parseLanguageFromServer(cookieStore.get(LANGUAGE_PREFERENCE_KEY)?.value) ?? 'en';
 
   return (
-    <html lang={initialLanguage} className="h-full" suppressHydrationWarning>
-      <body className={`${inter.className} min-h-full bg-[var(--app-bg)] text-[var(--app-text)] antialiased transition-colors duration-200`}>
+    <html lang={initialLanguage} className={`h-full ${appHtmlFontClassName}`} suppressHydrationWarning>
+      <body className={`${appBodyFontClassName} min-h-full bg-[var(--app-bg)] text-[var(--app-text)] antialiased transition-colors duration-200`}>
         <Script id="theme-init" strategy="beforeInteractive">
           {`
             (() => {

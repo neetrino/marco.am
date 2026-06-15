@@ -11,6 +11,9 @@ export type ShopListingCachePayload = {
 };
 
 const LISTING_CACHE_TTL_MS = 120_000;
+/** Skip background revalidation when session cache is still fresh (matches API Cache-Control). */
+export const SHOP_LISTING_CACHE_REVALIDATE_AFTER_MS = 30_000;
+
 const listingCache = new Map<string, { payload: ShopListingCachePayload; storedAt: number }>();
 
 export function readShopListingCache(queryString: string): ShopListingCachePayload | null {
@@ -23,6 +26,17 @@ export function readShopListingCache(queryString: string): ShopListingCachePaylo
     return null;
   }
   return entry.payload;
+}
+
+export function isShopListingCacheFresh(
+  queryString: string,
+  maxAgeMs: number = SHOP_LISTING_CACHE_REVALIDATE_AFTER_MS,
+): boolean {
+  const entry = listingCache.get(queryString);
+  if (!entry) {
+    return false;
+  }
+  return Date.now() - entry.storedAt <= maxAgeMs;
 }
 
 export function writeShopListingCache(queryString: string, payload: ShopListingCachePayload): void {

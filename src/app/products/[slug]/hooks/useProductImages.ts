@@ -38,19 +38,21 @@ export function useProductImages(product: Product | null): string[] {
     const seenNormalized = new Set<string>();
     
     cleanedMain.forEach((img) => {
-      const processed = processImageUrl(img) || img;
+      const processed = processImageUrl(img);
+      if (!processed) return;
       const normalized = normalizeUrlForComparison(processed);
       if (!seenNormalized.has(normalized)) {
-        allImages.push(img);
+        allImages.push(processed);
         seenNormalized.add(normalized);
       }
     });
     
     cleanedVariantImages.forEach((img) => {
-      const processed = processImageUrl(img) || img;
+      const processed = processImageUrl(img);
+      if (!processed) return;
       const normalized = normalizeUrlForComparison(processed);
       if (!seenNormalized.has(normalized)) {
-        allImages.push(img);
+        allImages.push(processed);
         seenNormalized.add(normalized);
       }
     });

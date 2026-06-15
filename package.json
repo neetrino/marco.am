@@ -5,11 +5,11 @@
   "description": "WhiteShop.am — Next.js app at root, pnpm workspace",
   "scripts": {
     "predev": "node scripts/ensure-prisma-generated.cjs && node scripts/print-lan-url.cjs",
-    "dev": "next dev -H 0.0.0.0 -p 3000",
+    "dev": "next dev --webpack -H 0.0.0.0 -p 3000",
     "dev:turbo": "next dev -H 0.0.0.0 -p 3000",
     "dev:webpack": "next dev --webpack -H 0.0.0.0 -p 3000",
     "dev:clean": "node -e \"require('fs').rmSync('.next', {recursive: true, force: true})\" && next dev --webpack -H 0.0.0.0 -p 3000",
-    "dev:lan": "node scripts/print-lan-url.cjs && next dev -H 0.0.0.0 -p 3000",
+    "dev:lan": "node scripts/print-lan-url.cjs && next dev --webpack -H 0.0.0.0 -p 3000",
     "lan:url": "node scripts/print-lan-url.cjs",
     "prebuild": "node src/scripts/prisma-prebuild-fallback.cjs",
     "prebuild:migrate": "node src/scripts/run-migrations.js",

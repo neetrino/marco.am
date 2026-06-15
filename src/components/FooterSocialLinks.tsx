@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useTranslation } from '../lib/i18n-client';
 import {
   FOOTER_SOCIAL_TILE_PX,
@@ -41,24 +42,28 @@ function buildFooterSocialInner(spec: FooterSocialTileSpec, ctx: TileRenderCtx) 
   const { tileClass, fullSizePx, viberW, viberH, viberImgClass } = ctx;
   if (spec.kind === 'full') {
     return (
-      <img
+      <Image
         src={spec.src}
         alt=""
         width={fullSizePx}
         height={fullSizePx}
         className={`block ${tileClass} max-h-none max-w-none shrink-0`}
         aria-hidden
+        loading="lazy"
+        unoptimized
       />
     );
   }
   return (
-    <img
+    <Image
       src={spec.src}
       alt=""
       width={viberW}
       height={viberH}
       className={viberImgClass}
       aria-hidden
+      loading="lazy"
+      unoptimized
     />
   );
 }

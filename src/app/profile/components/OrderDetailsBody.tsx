@@ -1,8 +1,10 @@
 'use client';
 
+import Image from 'next/image';
 import { Card } from '@shop/ui';
 import { formatPriceInCurrency, convertPrice, type CurrencyCode } from '@/lib/currency';
 import { isCourierShipping } from '@/lib/constants/shipping-method';
+import { shouldBypassNextImageOptimizer } from '@/lib/utils/should-bypass-next-image-optimizer';
 import {
   getStatusColor,
   getPaymentStatusColor,
@@ -96,11 +98,15 @@ export function OrderDetailsBody({ order, currency, t }: OrderDetailsBodyProps) 
                   className="flex gap-4 border-b border-gray-200 pb-4 last:border-0"
                 >
                   {item.imageUrl ? (
-                    <div className="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-gray-100">
-                      <img
+                    <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-gray-100">
+                      <Image
                         src={item.imageUrl}
                         alt={item.productTitle}
-                        className="h-full w-full object-cover"
+                        fill
+                        className="object-cover"
+                        sizes="80px"
+                        loading="lazy"
+                        unoptimized={shouldBypassNextImageOptimizer(item.imageUrl)}
                       />
                     </div>
                   ) : null}
@@ -132,11 +138,15 @@ export function OrderDetailsBody({ order, currency, t }: OrderDetailsBodyProps) 
                                 {getAttributeLabel(opt.attributeKey, t)}:
                               </span>
                               <div className="flex items-center gap-2">
-                                {hasImage ? (
-                                  <img
+                                {hasImage && opt.imageUrl ? (
+                                  <Image
                                     src={opt.imageUrl}
                                     alt={displayLabel}
+                                    width={24}
+                                    height={24}
                                     className="h-6 w-6 rounded border border-gray-300 object-cover"
+                                    loading="lazy"
+                                    unoptimized={shouldBypassNextImageOptimizer(opt.imageUrl)}
                                     onError={(event) => {
                                       (event.target as HTMLImageElement).style.display = 'none';
                                     }}

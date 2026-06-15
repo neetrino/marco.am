@@ -30,6 +30,8 @@ interface ProductCardImageProps {
   imageError: boolean;
   onImageError: () => void;
   isCompact?: boolean;
+  /** Eager load for above-the-fold tiles only (default: lazy). */
+  imagePriority?: boolean;
   /**
    * When true, image is not wrapped in PDP link (parent provides navigation, e.g. full-card link).
    */
@@ -58,6 +60,7 @@ export function ProductCardImage({
   imageError,
   onImageError,
   isCompact: _isCompact = false,
+  imagePriority = false,
   omitPdpLink = false,
 }: ProductCardImageProps) {
   const showPlaceholder = imageError || !image;
@@ -74,6 +77,8 @@ export function ProductCardImage({
       fill
       className="object-cover object-center"
       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+      priority={imagePriority}
+      loading={imagePriority ? 'eager' : 'lazy'}
       unoptimized
       onError={onImageError}
     />

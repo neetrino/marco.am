@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { Search, X } from 'lucide-react';
 import { type SyntheticEvent, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from '../lib/i18n-client';
@@ -9,6 +10,7 @@ import { resolveCategoryNavPresentation } from './header/categoryNavPresentation
 import { MOBILE_NAV_LAYOUT_PADDING_BOTTOM } from './mobile-bottom-nav.constants';
 import { flattenCategoryTree, normalizeSearchValue, useMobileShopCategories } from './mobile-bottom-nav-shop-sheet-data';
 import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '../lib/utils/image-utils';
+import { shouldBypassNextImageOptimizer } from '@/lib/utils/should-bypass-next-image-optimizer';
 
 const ROOT_CATEGORY_LIMIT = 10;
 
@@ -91,13 +93,15 @@ function renderCategoryIcon(
 
   if (categoryImage) {
     return (
-      <img
+      <Image
         src={toDomSafeImgSrcString(categoryImage)}
         alt=""
         width={28}
         height={28}
         className="h-7 w-7 object-contain"
         draggable={false}
+        loading="lazy"
+        unoptimized={shouldBypassNextImageOptimizer(categoryImage)}
         onError={hideBrokenCategoryIcon}
       />
     );
@@ -105,13 +109,15 @@ function renderCategoryIcon(
 
   if (presentation.icon.kind === 'figma') {
     return (
-      <img
+      <Image
         src={presentation.icon.src}
         alt=""
         width={28}
         height={28}
         className="h-7 w-7 object-contain dark:brightness-0 dark:invert"
         draggable={false}
+        loading="lazy"
+        unoptimized={shouldBypassNextImageOptimizer(presentation.icon.src)}
         onError={hideBrokenCategoryIcon}
       />
     );

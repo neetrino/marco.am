@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { toApiErrorResponse } from "@/lib/api/next-route-error";
 import { productsService } from "@/lib/services/products.service";
 import { getCachedJson } from "@/lib/services/read-through-json-cache";
+import { toApiError } from "@/lib/types/errors";
 
 const PRODUCT_DETAIL_CACHE_TTL_SEC = 90;
 
@@ -26,7 +27,10 @@ export async function GET(
     );
     return NextResponse.json(result);
   } catch (error: unknown) {
-    console.error("❌ [PRODUCTS] Error:", error);
+    const apiError = toApiError(error, req.url);
+    if ((apiError.status ?? 500) >= 500) {
+      console.error("❌ [PRODUCTS] Error:", error);
+    }
     return toApiErrorResponse(error, req.url);
   }
 }

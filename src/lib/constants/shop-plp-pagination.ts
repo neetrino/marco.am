@@ -7,3 +7,6 @@ export const SHOP_PLP_MAX_PAGE_SIZE = 60;
 
 /** First N PLP cards use `priority` image loading for faster LCP. */
 export const SHOP_PLP_LCP_IMAGE_PRIORITY_COUNT = 6;
+
+/** Max products loaded for in-memory PLP sort/filter (price, specs, popular). */
+export const PLP_IN_MEMORY_SORT_OVERFETCH_MAX = 120;

@@ -1,5 +1,4 @@
-const TIDIO_SCRIPT_ID = 'tidio-widget-js';
-const TIDIO_SRC = 'https://code.tidio.co/9ovkfmgncuyhg4kaemwvkdbvp5r7njec.js';
+import { loadTidioScript, TIDIO_SCRIPT_ID } from './tidio-script-loader';
 
 type TidioWindow = Window & {
   tidioChatApi?: {
@@ -49,14 +48,18 @@ export function openTidioChat(): void {
     return;
   }
 
-  const script = document.createElement('script');
-  script.id = TIDIO_SCRIPT_ID;
-  script.src = TIDIO_SRC;
-  script.async = true;
-  script.onload = () => {
-    window.setTimeout(() => {
-      tryOpenTidio();
-    }, 250);
-  };
-  document.body.appendChild(script);
+  const script = loadTidioScript();
+  if (!script) {
+    return;
+  }
+
+  script.addEventListener(
+    'load',
+    () => {
+      window.setTimeout(() => {
+        tryOpenTidio();
+      }, 250);
+    },
+    { once: true },
+  );
 }
