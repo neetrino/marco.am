@@ -34,7 +34,7 @@ export function collectJwtSecretIssues(secret: string): string[] {
 }
 
 /**
- * Fails fast in staging/production when JWT_SECRET is missing or weak; warns in development.
+ * Fails fast in production when JWT_SECRET is missing or weak; logs on staging, warns in development.
  */
 export function assertJwtSecretConfigured(): void {
   const secret = process.env.JWT_SECRET?.trim() ?? "";
@@ -46,8 +46,13 @@ export function assertJwtSecretConfigured(): void {
   const tier = getDeploymentTier();
   const message = `JWT_SECRET is not production-safe: ${issues.join("; ")}`;
 
-  if (tier === "production" || tier === "staging") {
+  if (tier === "production") {
     throw new Error(message);
+  }
+
+  if (tier === "staging") {
+    logger.error(message, { tier });
+    return;
   }
 
   logger.warn(message, { tier });
