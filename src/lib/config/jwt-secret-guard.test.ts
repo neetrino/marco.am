@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   assertJwtSecretConfigured,
   collectJwtSecretIssues,
+  reportJwtSecretConfiguration,
 } from "@/lib/config/jwt-secret-guard";
 import { logger } from "@/lib/utils/logger";
 
@@ -54,6 +55,26 @@ describe("assertJwtSecretConfigured", () => {
     expect(errorSpy).toHaveBeenCalledWith(
       expect.stringContaining("JWT_SECRET is not production-safe"),
       { tier: "staging" },
+    );
+  });
+});
+
+describe("reportJwtSecretConfiguration", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.restoreAllMocks();
+  });
+
+  it("logs production issues without throwing", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("VERCEL_ENV", "production");
+    vi.stubEnv("JWT_SECRET", "");
+    const errorSpy = vi.spyOn(logger, "error").mockImplementation(() => {});
+
+    expect(() => reportJwtSecretConfiguration()).not.toThrow();
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.stringContaining("JWT_SECRET is not production-safe"),
+      { tier: "production" },
     );
   });
 });

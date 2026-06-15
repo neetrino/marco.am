@@ -7,8 +7,8 @@ export async function register(): Promise<void> {
     return;
   }
 
-  const { assertJwtSecretConfigured } = await import('./lib/config/jwt-secret-guard');
-  assertJwtSecretConfigured();
+  const { reportJwtSecretConfiguration } = await import('./lib/config/jwt-secret-guard');
+  reportJwtSecretConfiguration();
 
   if (process.env.NODE_ENV !== 'development') {
     return;
