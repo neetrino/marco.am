@@ -81,6 +81,18 @@ if (isVercelPreview) {
   frameSources.push('https://vercel.live');
 }
 
+const connectSources = ["'self'", 'https:', 'wss://socket.tidio.co'];
+const fontSources = [
+  "'self'",
+  'https://fonts.gstatic.com',
+  'https://code.tidio.co',
+  'data:',
+];
+if (isVercelPreview) {
+  connectSources.push('https://vercel.live', 'wss://ws-us3.pusher.com');
+  fontSources.push('https://vercel.live', 'https://assets.vercel.com');
+}
+
 /** Default storefront media host(s) — also set NEXT_IMAGE_REMOTE_HOSTS for extra CDNs. */
 const DEFAULT_STOREFRONT_IMAGE_HOSTS = ['marco.am', 'www.marco.am'];
 
@@ -216,10 +228,10 @@ const nextConfig = {
               "default-src 'self'",
               `script-src ${scriptSources.join(' ')}`,
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-              "font-src 'self' https://fonts.gstatic.com https://code.tidio.co data:",
+              `font-src ${fontSources.join(' ')}`,
               "img-src 'self' data: https: blob:",
               `media-src ${mediaSources.join(' ')}`,
-              "connect-src 'self' https: wss://socket.tidio.co",
+              `connect-src ${connectSources.join(' ')}`,
               "base-uri 'self'",
               "form-action 'self'",
               "object-src 'none'",
