@@ -1,5 +1,6 @@
 'use client';
 
+import { Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import { ProductPdpPrefetchLink } from '../ProductPdpPrefetchLink';
 import type { ProductPdpNavigationSeed } from '@/lib/product-pdp/pdp-navigation-seed';
@@ -54,12 +55,13 @@ export function CartDrawerItemRow({
       <button
         type="button"
         onClick={() => onRemove(item.id)}
-        className="absolute right-2 top-2 rounded-md border border-error/40 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-error transition-colors hover:bg-error/5"
+        className="absolute right-2 top-2 inline-flex h-8 w-8 items-center justify-center rounded-md border border-error/40 text-error transition-colors hover:bg-error/5"
+        aria-label={t('common.ariaLabels.removeItem')}
       >
-        {t('common.buttons.remove')}
+        <Trash2 className="h-4 w-4" aria-hidden />
       </button>
 
-      <div className="flex gap-3 pr-16">
+      <div className="flex gap-3 pr-11">
         <ProductPdpPrefetchLink
           href={`/products/${item.variant.product.slug}`}
           productSlug={item.variant.product.slug}
