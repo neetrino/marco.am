@@ -1,7 +1,7 @@
 import type { QueryClient } from '@tanstack/react-query';
 
-import type { Product } from '@/app/products/[slug]/types';
 import { RESERVED_ROUTES } from '@/app/products/[slug]/types';
+import type { Product } from '@/app/products/[slug]/types';
 import { type LanguageCode } from '@/lib/language';
 import { queryKeys } from '@/lib/query-keys';
 import type { PdpVisualPayload } from '@/lib/services/products-slug/product-transformer';
@@ -9,8 +9,13 @@ import type { PdpVisualPayload } from '@/lib/services/products-slug/product-tran
 import {
   PDP_QUERY_GC_TIME_MS,
   PDP_QUERY_STALE_TIME_MS,
+  PDP_RELATED_GC_TIME_MS,
+  PDP_RELATED_STALE_TIME_MS,
 } from './pdp-query-cache';
 import { fetchProductSummary, fetchProductVisual } from './product-pdp-fetchers';
+import { fetchRelatedProducts, hasUsableRelatedPayload } from './fetch-related-products';
+import type { RelatedProductsApiResponse } from './fetch-related-products';
+import { RELATED_PRODUCTS_FETCH_LIMIT } from './related-products.constants';
 
 function baseProductSlug(raw: string): string {
   const parts = raw.includes(':') ? raw.split(':') : [raw];
@@ -44,11 +49,7 @@ function hasRichVisualPayload(payload: PdpVisualPayload | undefined): boolean {
 }
 
 /**
- * Warms the light PDP payload before navigating to `/products/[slug]`.
- *
- * Keep hover/focus prefetch cheap: product grids can trigger many intent events while
- * the pointer moves across cards. Full detail and related products load from the PDP
- * flow after navigation, where the request is tied to a committed user action.
+ * Cheap hover/focus prefetch — visual payload only so PLP grids do not flood the backend.
  */
 export function prefetchProductPdp(
   queryClient: QueryClient,
@@ -63,18 +64,40 @@ export function prefetchProductPdp(
   const existingVisual = queryClient.getQueryData<PdpVisualPayload>(
     queryKeys.productVisual(slug, lang),
   );
+
+  if (hasRichVisualPayload(existingVisual)) {
+    return Promise.resolve();
+  }
+
+  return queryClient
+    .prefetchQuery({
+      queryKey: queryKeys.productVisual(slug, lang),
+      queryFn: () => fetchProductVisual(slug, lang),
+      staleTime: PDP_QUERY_STALE_TIME_MS,
+      gcTime: PDP_QUERY_GC_TIME_MS,
+    })
+    .then(() => undefined);
+}
+
+/**
+ * Heavier PDP payloads — run on click/navigation when the user commits to opening the product.
+ */
+export function prefetchProductPdpOnCommit(
+  queryClient: QueryClient,
+  rawSlug: string,
+  lang: LanguageCode,
+): Promise<void> {
+  const slug = baseProductSlug(rawSlug);
+  if (!slug || RESERVED_ROUTES.includes(slug.toLowerCase())) {
+    return Promise.resolve();
+  }
+
   const existingDetail = queryClient.getQueryData<Product>(
     queryKeys.productDetail(slug, lang),
   );
-
-  const visualPrefetch = hasRichVisualPayload(existingVisual)
-    ? Promise.resolve()
-    : queryClient.prefetchQuery({
-        queryKey: queryKeys.productVisual(slug, lang),
-        queryFn: () => fetchProductVisual(slug, lang),
-        staleTime: PDP_QUERY_STALE_TIME_MS,
-        gcTime: PDP_QUERY_GC_TIME_MS,
-      });
+  const existingRelated = queryClient.getQueryData<RelatedProductsApiResponse>(
+    queryKeys.relatedProducts(slug, lang, RELATED_PRODUCTS_FETCH_LIMIT),
+  );
 
   const detailPrefetch = hasFullProductDetails(existingDetail)
     ? Promise.resolve()
@@ -89,5 +112,14 @@ export function prefetchProductPdp(
         gcTime: PDP_QUERY_GC_TIME_MS,
       });
 
-  return Promise.all([visualPrefetch, detailPrefetch]).then(() => undefined);
+  const relatedPrefetch = hasUsableRelatedPayload(existingRelated)
+    ? Promise.resolve()
+    : queryClient.prefetchQuery({
+        queryKey: queryKeys.relatedProducts(slug, lang, RELATED_PRODUCTS_FETCH_LIMIT),
+        queryFn: () => fetchRelatedProducts(slug, lang, RELATED_PRODUCTS_FETCH_LIMIT),
+        staleTime: PDP_RELATED_STALE_TIME_MS,
+        gcTime: PDP_RELATED_GC_TIME_MS,
+      });
+
+  return Promise.all([detailPrefetch, relatedPrefetch]).then(() => undefined);
 }

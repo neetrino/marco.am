@@ -1,10 +1,10 @@
 'use client';
 
 import { useLayoutEffect } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 
 import type { LanguageCode } from '@/lib/language';
 import { queryKeys } from '@/lib/query-keys';
+import { getQueryClient } from '@/lib/query/get-query-client';
 
 import type { Product } from './types';
 
@@ -22,11 +22,9 @@ export function ProductPdpDetailCacheSeed({
   language,
   product,
 }: ProductPdpDetailCacheSeedProps) {
-  const queryClient = useQueryClient();
-
   useLayoutEffect(() => {
-    queryClient.setQueryData(queryKeys.productDetail(slug, language), product);
-  }, [queryClient, slug, language, product]);
+    getQueryClient().setQueryData(queryKeys.productDetail(slug, language), product);
+  }, [slug, language, product]);
 
   return null;
 }

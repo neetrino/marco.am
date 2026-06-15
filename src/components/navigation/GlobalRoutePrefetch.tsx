@@ -8,7 +8,6 @@ import { warmBrandsPageClientCache } from '@/lib/brands-page-prefetch';
 import { warmReelsPageClientCache } from '@/lib/reels-page-prefetch';
 import { getStoredLanguage } from '@/lib/language';
 import { warmShopProductsClientCaches } from '@/lib/shop-products-plp-prefetch';
-import type { LanguageCode } from '@/lib/language';
 
 const EXTRA_PREFETCH_ROUTES = ['/wishlist', '/profile', '/login'] as const;
 const PREFETCH_ROUTES = [...new Set([...primaryNavInternalHrefs, ...EXTRA_PREFETCH_ROUTES])];
@@ -20,14 +19,6 @@ const REELS_PATH = '/reels';
 const INTERACTION_PREFETCH_MAX_SEGMENTS = 2;
 const HOME_PATH = '/';
 const INTERACTION_PRODUCTS_WARM_TIMEOUT_MS = 8_000;
-type IdleCapableWindow = Window &
-  typeof globalThis & {
-    requestIdleCallback?: (
-      callback: IdleRequestCallback,
-      options?: IdleRequestOptions,
-    ) => number;
-    cancelIdleCallback?: (handle: number) => void;
-  };
 
 function shouldSkipIdlePrefetch(): boolean {
   if (typeof navigator === 'undefined') {
@@ -42,24 +33,6 @@ function shouldSkipIdlePrefetch(): boolean {
     return false;
   }
   return Boolean(connection.saveData) || connection.effectiveType === 'slow-2g';
-}
-
-function warmProductsApi(
-  language: LanguageCode,
-  options?: {
-    timeoutMs?: number;
-    includeCategories?: boolean;
-    suppressTimeoutLogging?: boolean;
-  },
-): void {
-  warmShopProductsClientCaches(language, '', options);
-}
-
-function warmBrandPartnersApi(
-  language: LanguageCode,
-  queryClient: ReturnType<typeof useQueryClient>,
-): void {
-  warmBrandsPageClientCache(queryClient, language);
 }
 
 type PrefetchableInternalRoute = {
@@ -99,22 +72,15 @@ function shouldInteractionPrefetch(pathname: string): boolean {
   return segments.length <= INTERACTION_PREFETCH_MAX_SEGMENTS;
 }
 
-function scheduleIdleWork(run: () => void, timeoutMs: number): () => void {
-  const idleWindow = window as IdleCapableWindow;
-  if (typeof idleWindow.requestIdleCallback === 'function') {
-    const id = idleWindow.requestIdleCallback(run, { timeout: timeoutMs });
-    return () => {
-      if (typeof idleWindow.cancelIdleCallback === 'function') {
-        idleWindow.cancelIdleCallback(id);
-      }
-    };
+function isBrandFilteredProductsRoute(queryString: string): boolean {
+  if (!queryString) {
+    return false;
   }
-  const timerId = globalThis.setTimeout(run, Math.min(timeoutMs, 3000));
-  return () => globalThis.clearTimeout(timerId);
+  return new URLSearchParams(queryString).has('brand');
 }
 
 /**
- * Prefetches high-traffic routes + public products payload during idle time.
+ * Prefetches high-traffic routes on idle; API payloads warm only on link interaction.
  */
 export function GlobalRoutePrefetch() {
   const pathname = usePathname();
@@ -122,7 +88,6 @@ export function GlobalRoutePrefetch() {
   const queryClient = useQueryClient();
   const warmedRef = useRef<Set<string>>(new Set());
   const interactionWarmedRef = useRef<Set<string>>(new Set());
-  const warmProductsLangRef = useRef<Set<string>>(new Set());
   const routesToPrefetch = useMemo(
     () => PREFETCH_ROUTES.filter((route) => route !== pathname),
     [pathname],
@@ -133,25 +98,16 @@ export function GlobalRoutePrefetch() {
       return;
     }
     for (const route of PRIORITY_PREFETCH_ROUTES) {
+      if (route === pathname) {
+        continue;
+      }
       if (warmedRef.current.has(route)) {
         continue;
       }
       warmedRef.current.add(route);
       void router.prefetch(route);
-      if (route === PRODUCTS_SHOP_PATH && pathname !== HOME_PATH) {
-        warmProductsApi(getStoredLanguage(), {
-          timeoutMs: INTERACTION_PRODUCTS_WARM_TIMEOUT_MS,
-          suppressTimeoutLogging: true,
-        });
-      }
-      if (route === BRANDS_PATH) {
-        warmBrandsPageClientCache(queryClient, getStoredLanguage());
-      }
-      if (route === REELS_PATH) {
-        warmReelsPageClientCache(getStoredLanguage());
-      }
     }
-  }, [queryClient, router]);
+  }, [pathname, router]);
 
   useEffect(() => {
     if (shouldSkipIdlePrefetch()) {
@@ -165,24 +121,7 @@ export function GlobalRoutePrefetch() {
       warmedRef.current.add(route);
       void router.prefetch(route);
     }
-
-    const warmApi = () => {
-      if (pathname === HOME_PATH) {
-        return;
-      }
-      const language = getStoredLanguage();
-      if (!warmProductsLangRef.current.has(language)) {
-        warmProductsLangRef.current.add(language);
-        warmProductsApi(language);
-        warmBrandPartnersApi(language, queryClient);
-        warmReelsPageClientCache(language);
-      }
-    };
-
-    const apiWarmCancel = scheduleIdleWork(warmApi, 2500);
-
-    return apiWarmCancel;
-  }, [queryClient, router, routesToPrefetch, pathname]);
+  }, [router, routesToPrefetch]);
 
   useEffect(() => {
     const prefetchFromElement = (target: EventTarget | null) => {
@@ -194,6 +133,9 @@ export function GlobalRoutePrefetch() {
       }
       const anchor = target.closest('a[href]');
       if (!(anchor instanceof HTMLAnchorElement)) {
+        return;
+      }
+      if (anchor.hasAttribute('data-brand-plp-link')) {
         return;
       }
       const href = anchor.getAttribute('href');
@@ -208,12 +150,20 @@ export function GlobalRoutePrefetch() {
         return;
       }
       interactionWarmedRef.current.add(route.prefetchKey);
-      void router.prefetch(route.pathname);
+      if (
+        route.pathname === PRODUCTS_SHOP_PATH &&
+        isBrandFilteredProductsRoute(route.queryString)
+      ) {
+        return;
+      }
+      void router.prefetch(
+        route.queryString ? `${route.pathname}?${route.queryString}` : route.pathname,
+      );
       const language = getStoredLanguage();
       if (route.pathname === PRODUCTS_SHOP_PATH) {
         warmShopProductsClientCaches(language, route.queryString, {
           timeoutMs: INTERACTION_PRODUCTS_WARM_TIMEOUT_MS,
-          includeCategories: false,
+          includeCategories: true,
           suppressTimeoutLogging: true,
         });
       }

@@ -11,6 +11,7 @@ import type { RelatedProductRow } from '@/lib/product-pdp/fetch-related-products
 interface RelatedProductsCardItemProps {
   product: RelatedProductRow;
   hasMoved: boolean;
+  imagePriority?: boolean;
 }
 
 function toSpecialOfferProduct(row: RelatedProductRow): SpecialOfferProduct {
@@ -36,6 +37,7 @@ function toSpecialOfferProduct(row: RelatedProductRow): SpecialOfferProduct {
 function RelatedProductsCardItemInner({
   product,
   hasMoved,
+  imagePriority = false,
 }: RelatedProductsCardItemProps) {
   const isMaxMd = useIsMaxMd();
   const specialOfferProduct = useMemo(
@@ -58,6 +60,7 @@ function RelatedProductsCardItemInner({
         layout={isMaxMd ? 'mobileGrid' : 'default'}
         align="center"
         maxWidthPx={SPECIAL_OFFERS_CARD_MAX_WIDTH_PX}
+        imagePriority={imagePriority}
       />
     </div>
   );

@@ -19,6 +19,11 @@ import {
 } from '../wishlist/wishlist-client';
 import { scheduleGuestDataSyncAfterAuth } from './sync-guest-data-after-auth';
 import { AUTH_USER_KEY, readStoredAuthUser } from './read-stored-auth-user';
+import {
+  clearAuthProfileValidatedAt,
+  markAuthProfileValidated,
+  shouldSkipAuthProfileValidation,
+} from './auth-profile-validation-cache';
 
 /** Session storage keys for OTP step (same-tab only). */
 export const AUTH_VERIFICATION_TOKEN_KEY = 'auth_verification_token';
@@ -114,6 +119,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const persistSession = (response: AuthResponse) => {
     localStorage.setItem(AUTH_USER_KEY, JSON.stringify(response.user));
+    markAuthProfileValidated();
     setToken('cookie-session');
     setUser(response.user);
     window.dispatchEvent(new Event('auth-updated'));
@@ -146,6 +152,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (storedUser) {
           logger.devLog('✅ [AUTH] Found stored auth data');
+          if (shouldSkipAuthProfileValidation()) {
+            logger.devLog('ℹ️ [AUTH] Skipping profile revalidation — validated recently');
+            return;
+          }
           try {
             const profileData = await apiClient.get<User>('/api/v1/users/profile');
             const refreshedUser = {
@@ -156,6 +166,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             localStorage.setItem(AUTH_USER_KEY, JSON.stringify(refreshedUser));
             setUser(refreshedUser);
+            markAuthProfileValidated();
           } catch (error) {
             logger.devLog('❌ [AUTH] Stored session invalid — clearing snapshot', { error });
             localStorage.removeItem(AUTH_USER_KEY);
@@ -382,6 +393,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     localStorage.removeItem(AUTH_USER_KEY);
+    clearAuthProfileValidatedAt();
     clearVerificationSession();
 
     setToken(null);

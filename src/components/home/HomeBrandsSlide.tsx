@@ -1,6 +1,7 @@
 import Image from 'next/image';
-import Link from 'next/link';
 import type { CSSProperties } from 'react';
+
+import { BrandPlpLink } from '@/components/BrandPlpLink';
 
 import type { HomeBrandPartnerPublicItem } from '@/lib/types/home-brand-partners-public';
 import {
@@ -152,7 +153,7 @@ export function HomeBrandsSlide({ partners }: HomeBrandsSlideProps) {
         {partnerPages.map((page, pageIndex) => (
           <div key={`partners-page-${pageIndex}`} className="grid w-full shrink-0 snap-start grid-cols-2 md:grid-cols-4" style={gridStyle}>
             {page.map((partner, logoIndex) => (
-              <Link
+              <BrandPlpLink
                 key={partner.id}
                 href={partner.href}
                 className={`flex w-full min-w-0 items-center justify-center overflow-hidden ${HOME_BRANDS_SLIDE_CARD_PADDING_CLASS}`}
@@ -160,7 +161,7 @@ export function HomeBrandsSlide({ partners }: HomeBrandsSlideProps) {
                 aria-label={partner.name}
               >
                 <PartnerLogo partner={partner} loadEager={pageIndex === 0 && logoIndex < 2} />
-              </Link>
+              </BrandPlpLink>
             ))}
           </div>
         ))}

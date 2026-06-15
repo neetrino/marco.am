@@ -18,6 +18,7 @@ import {
   registerShopProductsListingFetchListener,
   writeShopListingCache,
 } from '@/lib/shop-products-listing-client-cache';
+import { getShopCategoryFilterTree } from '@/lib/shop-category-filter-tree-store';
 import { applyOptimisticShopListingFilter } from '@/lib/shop-products-listing-optimistic-filter';
 import {
   SHOP_PRODUCTS_LISTING_PARAMS_EVENT,
@@ -110,6 +111,9 @@ function normalizeListingApiResponse(response: ProductsListingApiResponse): {
   };
 }
 
+const PLP_LISTING_ROOT_CLASS =
+  'min-w-0 flex-1 w-full overflow-x-hidden pt-4 pb-2 min-[744px]:w-auto min-[744px]:py-4';
+
 /**
  * Client-driven PLP grid — filter/pagination changes fetch `/api/v1/products` immediately
  * instead of waiting for a full RSC navigation round-trip.
@@ -128,6 +132,8 @@ export function ProductsShopListingClient({
   const [queryString, setQueryString] = useState(initialQueryString);
   const [isFetching, setIsFetching] = useState(false);
   const [showGridSkeleton, setShowGridSkeleton] = useState(false);
+  const [hasOptimisticListing, setHasOptimisticListing] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
   const queryRef = useRef(initialQueryString);
   const productsRef = useRef(initialProducts);
   const fetchGenerationRef = useRef(0);
@@ -136,6 +142,10 @@ export function ProductsShopListingClient({
   useEffect(() => {
     productsRef.current = products;
   }, [products]);
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   useEffect(() => {
     writeShopListingCache(initialQueryString, {
@@ -156,6 +166,7 @@ export function ProductsShopListingClient({
       setMeta(normalizedPayload.meta);
       setSortBy(readSortFromQuery(nextQueryString));
       setShowGridSkeleton(false);
+      setHasOptimisticListing(false);
       writeShopListingCache(nextQueryString, normalizedPayload);
       reportTotal(normalizedPayload.meta.total);
     },
@@ -195,6 +206,7 @@ export function ProductsShopListingClient({
           setProducts([]);
           setMeta({ total: 0, page: 1, limit: SHOP_PLP_DEFAULT_PAGE_SIZE, totalPages: 0 });
           setShowGridSkeleton(false);
+          setHasOptimisticListing(false);
           reportTotal(0);
         }
       } finally {
@@ -231,15 +243,19 @@ export function ProductsShopListingClient({
         productsRef.current,
         nextQueryString,
         previousQueryString,
+        getShopCategoryFilterTree(),
       );
       if (optimistic !== null) {
         setProducts(optimistic);
         setShowGridSkeleton(false);
+        setHasOptimisticListing(true);
       } else if (productsRef.current.length > 0) {
-        setShowGridSkeleton(false);
+        setShowGridSkeleton(true);
+        setHasOptimisticListing(false);
       } else {
         setProducts([]);
         setShowGridSkeleton(true);
+        setHasOptimisticListing(false);
       }
 
       void fetchListing(nextQueryString);
@@ -278,6 +294,7 @@ export function ProductsShopListingClient({
     setMeta(initialMeta);
     setSortBy(initialSort);
     setShowGridSkeleton(false);
+    setHasOptimisticListing(false);
     reportTotal(initialMeta.total);
   }, [initialMeta, initialProducts, initialQueryString, initialSort, reportTotal]);
 
@@ -285,9 +302,19 @@ export function ProductsShopListingClient({
     reportTotal(initialMeta.total);
   }, [initialMeta.total, reportTotal]);
 
-  const page = meta.page;
-  const paginationSlotItems: PaginationSlotItem[] = useMemo(() => {
-    return getPaginationPages(meta.totalPages, page).map((item) =>
+  const navigateToPage = (href: string) => {
+    pushShopProductsListingUrl(router, href);
+  };
+
+  const visibleProducts = isHydrated ? products : initialProducts;
+  const visibleMeta = isHydrated ? meta : initialMeta;
+  const visibleSort = isHydrated ? sortBy : initialSort;
+  const visiblePage = visibleMeta.page;
+  const showFetchingSkeleton = isHydrated && isFetching && !hasOptimisticListing;
+  const showSkeleton = isHydrated && showGridSkeleton;
+
+  const visiblePaginationSlotItems: PaginationSlotItem[] = useMemo(() => {
+    return getPaginationPages(visibleMeta.totalPages, visiblePage).map((item) =>
       item === 'ellipsis'
         ? { kind: 'ellipsis' }
         : {
@@ -296,33 +323,27 @@ export function ProductsShopListingClient({
             href: buildPaginationUrl(queryString, item),
           },
     );
-  }, [meta.totalPages, page, queryString]);
-
-  const navigateToPage = (href: string) => {
-    pushShopProductsListingUrl(router, href);
-  };
+  }, [visibleMeta.totalPages, visiblePage, queryString]);
 
   return (
     <div
-      className={`min-w-0 flex-1 w-full overflow-x-hidden pt-4 pb-2 min-[744px]:w-auto min-[744px]:py-4 transition-opacity duration-150 ${
-        isFetching ? 'opacity-70' : 'opacity-100'
-      }`}
-      aria-busy={isFetching}
+      className={PLP_LISTING_ROOT_CLASS}
+      {...(isHydrated && isFetching ? { 'aria-busy': true as const } : {})}
     >
-      {showGridSkeleton ? (
+      {showSkeleton || showFetchingSkeleton ? (
         <ProductsShopLoadingSkeleton variant="grid" />
-      ) : products.length > 0 ? (
+      ) : visibleProducts.length > 0 ? (
         <>
-          <ProductsGrid products={products} sortBy={sortBy} disableProgressiveRender />
-          {meta.totalPages > 1 ? (
+          <ProductsGrid products={visibleProducts} sortBy={visibleSort} disableProgressiveRender />
+          {visibleMeta.totalPages > 1 ? (
             <ProductsPagination
-              page={page}
-              totalPages={meta.totalPages}
+              page={visiblePage}
+              totalPages={visibleMeta.totalPages}
               hrefFirst={buildPaginationUrl(queryString, 1)}
-              hrefBack={buildPaginationUrl(queryString, Math.max(1, page - 1))}
-              hrefNext={buildPaginationUrl(queryString, Math.min(meta.totalPages, page + 1))}
-              hrefLast={buildPaginationUrl(queryString, meta.totalPages)}
-              slotItems={paginationSlotItems}
+              hrefBack={buildPaginationUrl(queryString, Math.max(1, visiblePage - 1))}
+              hrefNext={buildPaginationUrl(queryString, Math.min(visibleMeta.totalPages, visiblePage + 1))}
+              hrefLast={buildPaginationUrl(queryString, visibleMeta.totalPages)}
+              slotItems={visiblePaginationSlotItems}
               onNavigate={navigateToPage}
             />
           ) : null}

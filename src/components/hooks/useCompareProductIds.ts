@@ -11,8 +11,13 @@ import { registerWishlistCompareQuerySync } from './wishlist-compare-query-sync'
 
 const MEMBERSHIP_IDS_STALE_MS = 60_000;
 
+type UseCompareProductIdsOptions = {
+  /** When false, skips the network fetch until re-enabled (header defer path). */
+  queryEnabled?: boolean;
+};
+
 /** Shared compare product IDs — one network request for all product cards on a page. */
-export function useCompareProductIds() {
+export function useCompareProductIds(options?: UseCompareProductIdsOptions) {
   const queryClient = useQueryClient();
   const [language, setLanguage] = useState<LanguageCode>(() => getStoredLanguage());
 
@@ -31,6 +36,7 @@ export function useCompareProductIds() {
     queryKey,
     queryFn: () => fetchCompareProductIds(language),
     staleTime: MEMBERSHIP_IDS_STALE_MS,
+    enabled: options?.queryEnabled !== false,
   });
 
   return {

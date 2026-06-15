@@ -23,6 +23,7 @@ import {
   readShopFiltersCache,
   writeShopFiltersCache,
 } from '@/lib/shop-products-filters-client-cache';
+import { setShopCategoryFilterTree } from '@/lib/shop-category-filter-tree-store';
 
 export interface ColorOption {
   value: string;
@@ -92,7 +93,8 @@ const DEFAULT_FILTERS: ProductsFiltersData = {
   priceRange: { min: 0, max: 0, stepSize: null, stepSizePerCurrency: null },
 };
 
-const FACET_REFETCH_DELAY_MS = 700;
+/** Debounce facet count refresh while the user toggles several filters in a row. */
+const FACET_REFETCH_DELAY_MS = 280;
 
 function mergeFilterPayload(payload: ProductsFiltersData): ProductsFiltersData {
   return {
@@ -221,6 +223,7 @@ export function ProductsFiltersProvider({
       syncedFiltersKeyRef.current = key;
       hasFiltersDataRef.current = true;
       writeShopFiltersCache(key, merged);
+      setShopCategoryFilterTree(merged.categories);
     },
     [],
   );
@@ -299,6 +302,8 @@ export function ProductsFiltersProvider({
 
     if (awaitServerHydration && !hasFiltersDataRef.current) {
       setLoading(true);
+      syncedFiltersKeyRef.current = filtersClientKey;
+      void fetchFiltersRef.current();
       return;
     }
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo } from 'react';
 
 import { t } from '../lib/i18n';
 import type { LanguageCode } from '../lib/language';
@@ -41,7 +41,6 @@ const HOME_STYLE_NAV_BUTTON_CLASS =
 const REELS_STYLE_NAV_ICON_CLASS = 'h-3 w-3 shrink-0 text-current max-md:h-5 max-md:w-5';
 
 const RELATED_SKELETON_COUNT = 4;
-const RELATED_PREFETCH_IDLE_DELAY_MS = 1_200;
 
 function RelatedProductsSkeleton({ count }: { count: number }) {
   return (
@@ -85,56 +84,14 @@ export function RelatedProducts({
   initialRelatedProducts = null,
   enabled = true,
 }: RelatedProductsProps) {
-  const sectionRef = useRef<HTMLElement | null>(null);
-  const [isDeferredFetchReady, setIsDeferredFetchReady] = useState(false);
   const isMaxMd = useIsMaxMd();
   const visibleCards = useRelatedProductsVisibleCards();
-  const queryEnabled = enabled && isDeferredFetchReady;
-
-  useEffect(() => {
-    if (!enabled) {
-      return;
-    }
-    const idleTimer = window.setTimeout(() => {
-      setIsDeferredFetchReady(true);
-    }, RELATED_PREFETCH_IDLE_DELAY_MS);
-    return () => {
-      window.clearTimeout(idleTimer);
-    };
-  }, [enabled]);
-
-  useEffect(() => {
-    if (!enabled || isDeferredFetchReady) {
-      return;
-    }
-    if (typeof window === 'undefined' || typeof IntersectionObserver === 'undefined') {
-      setIsDeferredFetchReady(true);
-      return;
-    }
-    const node = sectionRef.current;
-    if (!node) {
-      return;
-    }
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) {
-          setIsDeferredFetchReady(true);
-          observer.disconnect();
-        }
-      },
-      { rootMargin: '320px 0px' },
-    );
-    observer.observe(node);
-    return () => {
-      observer.disconnect();
-    };
-  }, [enabled, isDeferredFetchReady]);
 
   const { products, loading } = useRelatedProducts({
     productSlug: currentProductSlug,
     language,
-    initialRelatedProducts: queryEnabled ? initialRelatedProducts : undefined,
-    enabled: queryEnabled,
+    initialRelatedProducts,
+    enabled,
   });
 
   const cardWidth = useMemo(() => `${100 / visibleCards}%`, [visibleCards]);
@@ -162,7 +119,7 @@ export function RelatedProducts({
   });
 
   return (
-    <section ref={sectionRef} className="mt-20 border-t border-gray-200 pt-12 pb-1 md:py-12">
+    <section className="mt-20 border-t border-gray-200 pt-12 pb-1 md:py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-10 flex items-center justify-between gap-4">
           <h2 className="text-3xl font-bold text-gray-900">
@@ -222,9 +179,7 @@ export function RelatedProducts({
           )}
         </div>
 
-        {!enabled ? null : !queryEnabled ? (
-          <RelatedProductsSkeleton count={skeletonCount} />
-        ) : loading ? (
+        {!enabled ? null : loading ? (
           <RelatedProductsSkeleton count={skeletonCount} />
         ) : products.length === 0 ? (
           <div className="py-12 text-center">
@@ -253,7 +208,7 @@ export function RelatedProducts({
                   transition: isDragging ? 'none' : 'transform 0.3s ease-out',
                 }}
               >
-                {products.map((product) => (
+                {products.map((product, index) => (
                   <div
                     key={product.id}
                     className="h-full flex-shrink-0 px-2 md:px-3"
@@ -268,6 +223,7 @@ export function RelatedProducts({
                     <RelatedProductsCardItem
                       product={product}
                       hasMoved={hasMoved}
+                      imagePriority={index < visibleCards}
                     />
                   </div>
                 ))}

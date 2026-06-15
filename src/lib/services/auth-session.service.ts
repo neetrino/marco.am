@@ -28,6 +28,7 @@ export async function buildAuthSuccessPayload(
       firstName: true,
       lastName: true,
       roles: true,
+      authEpoch: true,
     },
   });
 
@@ -52,7 +53,7 @@ export async function buildAuthSuccessPayload(
   }
 
   const token = jwt.sign(
-    { userId: user.id, roles: user.roles },
+    { userId: user.id, authEpoch: user.authEpoch },
     process.env.JWT_SECRET as string,
     { expiresIn: process.env.JWT_EXPIRES_IN || "7d" } as jwt.SignOptions
   );

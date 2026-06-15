@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, memo, useRef } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useShopProductsListingSearchParams } from '@/lib/use-shop-products-listing-search-params';
 import { pushShopProductsListingUrl } from '../lib/push-shop-products-listing-url';
 import { apiClient } from '../lib/api-client';
 import { getStoredLanguage } from '../lib/language';
+import { warmShopProductsClientCaches } from '@/lib/shop-products-plp-prefetch';
 import { useProductsFilters, useShopFiltersTranslation, type CategoryFilterOption } from './ProductsFiltersProvider';
 import {
   PRODUCTS_FILTER_SECTION_SHELL_CLASS,
@@ -38,18 +39,20 @@ interface CategoryFilterRowProps {
   onToggleExpand: (slug: string) => void;
   selectedSlugs: string[];
   onToggleCategory: (slug: string) => void;
+  onPrefetchCategory?: (slug: string) => void;
   expandAria: (title: string) => string;
   collapseAria: (title: string) => string;
   noSubcategoriesAria: (title: string) => string;
 }
 
-function CategoryFilterRow({
+const CategoryFilterRow = memo(function CategoryFilterRow({
   node,
   depth,
   expandedKeys,
   onToggleExpand,
   selectedSlugs,
   onToggleCategory,
+  onPrefetchCategory,
   expandAria,
   collapseAria,
   noSubcategoriesAria,
@@ -72,6 +75,7 @@ function CategoryFilterRow({
         <button
           type="button"
           onClick={() => onToggleCategory(node.slug)}
+          onPointerEnter={() => onPrefetchCategory?.(node.slug)}
           className="flex min-w-0 flex-1 items-center gap-3 text-left transition-[opacity,color] duration-200 ease-out hover:opacity-90"
         >
           <ProductsFilterCheckboxVisual checked={isSelected} variant="checkmark" />
@@ -133,6 +137,7 @@ function CategoryFilterRow({
               onToggleExpand={onToggleExpand}
               selectedSlugs={selectedSlugs}
               onToggleCategory={onToggleCategory}
+              onPrefetchCategory={onPrefetchCategory}
               expandAria={expandAria}
               collapseAria={collapseAria}
               noSubcategoriesAria={noSubcategoriesAria}
@@ -142,7 +147,7 @@ function CategoryFilterRow({
       ) : null}
     </div>
   );
-}
+});
 
 export function CategoryFilter({
   category,
@@ -160,6 +165,7 @@ export function CategoryFilter({
   /** Instant UI while URL / RSC catch up after navigation */
   const [optimisticSlugs, setOptimisticSlugs] = useState<string[] | null>(null);
   const [expandedKeys, setExpandedKeys] = useState<ReadonlySet<string>>(() => new Set());
+  const prefetchedListingKeysRef = useRef<Set<string>>(new Set());
 
   const categories = useMemo(() => {
     if (filtersContext?.data?.categories?.length) {
@@ -218,14 +224,57 @@ export function CategoryFilter({
     setOptimisticSlugs(null);
   }, [categoryQs]);
 
+  const buildNextCategorySlugs = useCallback(
+    (slug: string): string[] => {
+      const params = new URLSearchParams(activeSearchParams.toString());
+      const fromUrl =
+        optimisticSlugs ??
+        params.get('category')?.split(',').map((s) => s.trim()).filter(Boolean) ??
+        [];
+      const idx = fromUrl.findIndex((s) => s.toLowerCase() === slug.toLowerCase());
+      return idx >= 0 ? fromUrl.filter((_, i) => i !== idx) : [...fromUrl, slug];
+    },
+    [activeSearchParams, optimisticSlugs],
+  );
+
+  const handlePrefetchCategory = useCallback(
+    (slug: string) => {
+      if (mobileDraft?.enabled) {
+        return;
+      }
+      const fromUrl =
+        optimisticSlugs ??
+        activeSearchParams.get('category')?.split(',').map((s) => s.trim()).filter(Boolean) ??
+        [];
+      const isSelected = fromUrl.some((s) => s.toLowerCase() === slug.toLowerCase());
+      if (isSelected) {
+        return;
+      }
+
+      const nextSlugs = buildNextCategorySlugs(slug);
+      const params = new URLSearchParams(activeSearchParams.toString());
+      if (nextSlugs.length > 0) {
+        params.set('category', nextSlugs.join(','));
+      } else {
+        params.delete('category');
+      }
+      params.delete('page');
+      const queryString = params.toString();
+      if (prefetchedListingKeysRef.current.has(queryString)) {
+        return;
+      }
+      prefetchedListingKeysRef.current.add(queryString);
+      warmShopProductsClientCaches(getStoredLanguage(), queryString, {
+        includeCategories: true,
+        suppressTimeoutLogging: true,
+      });
+    },
+    [activeSearchParams, buildNextCategorySlugs, mobileDraft?.enabled, optimisticSlugs],
+  );
+
   const handleToggle = (slug: string) => {
     const params = new URLSearchParams(activeSearchParams.toString());
-    const fromUrl =
-      optimisticSlugs ??
-      params.get('category')?.split(',').map((s) => s.trim()).filter(Boolean) ??
-      [];
-    const idx = fromUrl.findIndex((s) => s.toLowerCase() === slug.toLowerCase());
-    const nextSlugs = idx >= 0 ? fromUrl.filter((_, i) => i !== idx) : [...fromUrl, slug];
+    const nextSlugs = buildNextCategorySlugs(slug);
     setOptimisticSlugs(nextSlugs);
     if (nextSlugs.length > 0) {
       params.set('category', nextSlugs.join(','));
@@ -340,6 +389,7 @@ export function CategoryFilter({
               onToggleExpand={handleToggleExpand}
               selectedSlugs={selectedSlugs}
               onToggleCategory={handleToggle}
+              onPrefetchCategory={handlePrefetchCategory}
               expandAria={expandAria}
               collapseAria={collapseAria}
               noSubcategoriesAria={noSubcategoriesAria}

@@ -17,7 +17,6 @@ import { getAuthContext } from "@/lib/middleware/auth-edge";
 async function requireAdminAuth(request: NextRequest): Promise<{
   response: NextResponse | null;
   userId: string | null;
-  roles: string[];
 }> {
   const { token, decoded } = await getAuthContext(request);
 
@@ -33,7 +32,6 @@ async function requireAdminAuth(request: NextRequest): Promise<{
         { status: 401 }
       ),
       userId: null,
-      roles: [],
     };
   }
 
@@ -49,14 +47,12 @@ async function requireAdminAuth(request: NextRequest): Promise<{
         { status: 401 }
       ),
       userId: null,
-      roles: [],
     };
   }
 
   return {
     response: null,
     userId: decoded.userId,
-    roles: Array.isArray(decoded.roles) ? decoded.roles : [],
   };
 }
 
@@ -177,9 +173,6 @@ export async function middleware(request: NextRequest) {
       const nextHeaders = new Headers(sanitizedHeaders);
       if (authResult.userId) {
         nextHeaders.set("x-auth-user-id", authResult.userId);
-      }
-      if (authResult.roles.length > 0) {
-        nextHeaders.set("x-auth-roles", authResult.roles.join(","));
       }
       forwardedHeaders = nextHeaders;
       if (pathname.includes("/upload-") && request.method === "POST") {

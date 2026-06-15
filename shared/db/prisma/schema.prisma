@@ -29,6 +29,7 @@ model User {
   locale               String    @default("en")
   blocked              Boolean   @default(false)
   roles                String[]  @default(["customer"])
+  authEpoch            Int       @default(0)
   addresses            Address[]
   deletedAt            DateTime?
   createdAt            DateTime  @default(now())

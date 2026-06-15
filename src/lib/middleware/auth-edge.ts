@@ -1,10 +1,11 @@
 import { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
+import { readTokenAuthEpoch } from "@/lib/auth/auth-epoch";
 import { AUTH_SESSION_COOKIE_NAME } from "@/lib/auth/auth-session-cookie";
 
 type JwtPayload = {
   userId: string;
-  roles: string[];
+  authEpoch: number;
 };
 
 function readTokenFromRequest(request: NextRequest): string | null {
@@ -25,12 +26,10 @@ function normalizePayload(payload: unknown): JwtPayload | null {
     return null;
   }
 
-  const roles =
-    Array.isArray(record.roles) && record.roles.every((role) => typeof role === "string")
-      ? (record.roles as string[])
-      : [];
-
-  return { userId, roles };
+  return {
+    userId,
+    authEpoch: readTokenAuthEpoch(record),
+  };
 }
 
 async function verifyToken(token: string): Promise<JwtPayload | null> {
