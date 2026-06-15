@@ -128,7 +128,8 @@ export function ProductImageGallery({
                       fill
                       className="object-cover transition-transform duration-300"
                       sizes="112px"
-                      loading="lazy"
+                      priority={mainImageHighPriority && actualIndex === safeCurrentImageIndex}
+                      loading={mainImageHighPriority && actualIndex === safeCurrentImageIndex ? 'eager' : 'lazy'}
                       unoptimized={shouldBypassNextImageOptimizer(image)}
                       onError={() => markFailed(actualIndex)}
                     />
@@ -244,7 +245,8 @@ export function ProductImageGallery({
                         fill
                         className="object-cover transition-transform duration-300"
                         sizes="58px"
-                        loading="lazy"
+                        priority={mainImageHighPriority && index === safeCurrentImageIndex}
+                        loading={mainImageHighPriority && index === safeCurrentImageIndex ? 'eager' : 'lazy'}
                         unoptimized={shouldBypassNextImageOptimizer(image)}
                         onError={() => markFailed(index)}
                       />

@@ -25,6 +25,7 @@ type RelatedProduct = {
   slug: string;
   title: string;
   price: number;
+  defaultVariantId?: string | null;
   originalPrice?: number | null;
   compareAtPrice: number | null;
   discountPercent?: number | null;

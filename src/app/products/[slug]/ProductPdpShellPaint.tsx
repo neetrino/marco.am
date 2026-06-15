@@ -1,15 +1,16 @@
 'use client';
 
+import { useState } from 'react';
 import Image from 'next/image';
 
-import { ProductImagePlaceholder } from '@/components/ProductImagePlaceholder';
 import { formatCatalogPrice, getStoredCurrency, type CurrencyCode } from '@/lib/currency';
 import { getProductText, t } from '@/lib/i18n';
 import { getStoredLanguage } from '@/lib/language';
-import { shouldBypassNextImageOptimizer } from '@/lib/utils/should-bypass-next-image-optimizer';
 
 import { useProductImages } from './hooks/useProductImages';
+import { ProductImageGallery } from './ProductImageGallery';
 import { ProductInfoPrimarySkeleton } from './ProductInfoPrimarySkeleton';
+import { ProductPdpShellActions } from './ProductPdpShellActions';
 import type { Product } from './types';
 
 type ProductPdpShellPaintProps = {
@@ -22,8 +23,9 @@ type ProductPdpShellPaintProps = {
 export function ProductPdpShellPaint({ shell }: ProductPdpShellPaintProps) {
   const language = getStoredLanguage();
   const currency = getStoredCurrency();
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [thumbnailStartIndex, setThumbnailStartIndex] = useState(0);
   const images = useProductImages(shell);
-  const heroImage = images[0] ?? null;
   const price = shell?.currentPrice ?? shell?.pricing?.currentPrice ?? 0;
   const oldPrice = shell?.oldPrice ?? shell?.pricing?.oldPrice ?? null;
   const hasDisplayPrice = Number.isFinite(price) && price > 0;
@@ -45,34 +47,27 @@ export function ProductPdpShellPaint({ shell }: ProductPdpShellPaintProps) {
   }
 
   const title = getProductText(language, shell.id, 'title') || shell.title;
+  const discountPercent =
+    shell.discountBadge?.type === 'percentage' ? shell.discountBadge.value : null;
+  const isSpecialPrice = shell.discountBadge?.type === 'special_price';
 
   return (
     <div className="marco-header-container py-12">
       <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-[minmax(0,11fr)_minmax(0,9fr)]">
-        <div className="mx-auto w-full max-w-[420px] md:mx-0 md:max-w-none md:flex-1">
-          <div className="relative aspect-square overflow-hidden rounded-lg bg-white shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
-            {heroImage ? (
-              <Image
-                src={heroImage}
-                alt={title}
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 420px"
-                priority
-                fetchPriority="high"
-                loading="eager"
-                unoptimized={shouldBypassNextImageOptimizer(heroImage)}
-              />
-            ) : (
-              <ProductImagePlaceholder
-                className="h-full w-full"
-                aria-label={t(language, 'common.messages.noImage')}
-              />
-            )}
-          </div>
-        </div>
+        <ProductImageGallery
+          images={images}
+          product={shell}
+          discountPercent={discountPercent}
+          isSpecialPrice={isSpecialPrice}
+          language={language}
+          currentImageIndex={currentImageIndex}
+          onImageIndexChange={setCurrentImageIndex}
+          thumbnailStartIndex={thumbnailStartIndex}
+          onThumbnailStartIndexChange={setThumbnailStartIndex}
+          mainImageHighPriority
+        />
 
-        <div className="min-w-0">
+        <div className="flex min-w-0 flex-col">
           {shell.brand ? (
             <div className="mb-5">
               {shell.brand.logo ? (
@@ -112,6 +107,8 @@ export function ProductPdpShellPaint({ shell }: ProductPdpShellPaintProps) {
               </span>
             )}
           </div>
+
+          <ProductPdpShellActions shell={shell} price={price} />
         </div>
       </div>
     </div>

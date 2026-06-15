@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { getOptionValue } from '../utils/variant-helpers';
 import { findVariantByColorAndSize, findVariantByAllAttributes } from '../utils/variant-finders';
 import { switchToVariantImage, handleColorSelect as handleColorSelectUtil } from '../utils/image-switching';
@@ -19,6 +19,8 @@ export function useVariantSelection({
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedAttributeValues, setSelectedAttributeValues] = useState<Map<string, string>>(new Map());
+  /** Skip gallery jump when PLP shell hydrates into full variant payload. */
+  const skipNextVariantImageSwitchRef = useRef(false);
 
   const getOptionValueFn = useCallback((options: VariantOption[] | undefined, key: string): string | null => {
     return getOptionValue(options, key);
@@ -50,6 +52,7 @@ export function useVariantSelection({
   // Initialize variant when product changes
   useEffect(() => {
     if (!product?.variants?.length) {
+      skipNextVariantImageSwitchRef.current = false;
       setSelectedVariant(null);
       setSelectedColor(null);
       setSelectedSize(null);
@@ -62,6 +65,7 @@ export function useVariantSelection({
     }
 
     const initialVariant = product.variants[0];
+    skipNextVariantImageSwitchRef.current = true;
     setSelectedVariant(initialVariant);
     setSelectedAttributeValues(new Map());
 
@@ -77,7 +81,11 @@ export function useVariantSelection({
       const newVariant = findVariantByAllAttributesFn(selectedColor, selectedSize, selectedAttributeValues);
       if (newVariant && newVariant.id !== selectedVariant?.id) {
         setSelectedVariant(newVariant);
-        switchToVariantImageFn(newVariant);
+        if (skipNextVariantImageSwitchRef.current) {
+          skipNextVariantImageSwitchRef.current = false;
+        } else {
+          switchToVariantImageFn(newVariant);
+        }
         const colorValue = getOptionValueFn(newVariant.options, 'color');
         const sizeValue = getOptionValueFn(newVariant.options, 'size');
         if (colorValue && colorValue !== selectedColor?.toLowerCase().trim()) {
@@ -86,8 +94,6 @@ export function useVariantSelection({
         if (sizeValue && sizeValue !== selectedSize?.toLowerCase().trim()) {
           setSelectedSize(sizeValue);
         }
-      } else if (newVariant && newVariant.imageUrl) {
-        switchToVariantImageFn(newVariant);
       }
     }
   }, [selectedColor, selectedSize, selectedAttributeValues, findVariantByAllAttributesFn, selectedVariant?.id, product, getOptionValueFn, switchToVariantImageFn, setSelectedVariant, setSelectedColor, setSelectedSize]);

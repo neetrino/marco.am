@@ -1,8 +1,6 @@
-import { ProductPdpNavigationFallback } from './ProductPdpNavigationFallback';
-
 /**
- * PLP → PDP: show card shell instantly while the RSC page stream completes.
+ * PDP UI is rendered from `layout.tsx` (instant shell). Page slot only streams cache seeds.
  */
 export default function ProductSlugLoading() {
-  return <ProductPdpNavigationFallback />;
+  return null;
 }
