@@ -8,6 +8,7 @@ import type { LanguageCode } from '../../lib/language';
 import { queryKeys } from '../../lib/query-keys';
 import {
   fetchRelatedProducts,
+  hasUsableRelatedPayload,
   type RelatedProductRow,
   type RelatedProductsApiResponse,
 } from '@/lib/product-pdp/fetch-related-products';
@@ -17,6 +18,7 @@ import {
   getPersistedPdpRelated,
   setPersistedPdpRelated,
 } from '@/lib/product-pdp/pdp-client-persist-cache';
+import { getQueryClient } from '@/lib/query/get-query-client';
 
 interface UseRelatedProductsProps {
   productSlug: string;
@@ -28,12 +30,6 @@ interface UseRelatedProductsProps {
 }
 
 export const RELATED_PRODUCTS_LIMIT = RELATED_PRODUCTS_FETCH_LIMIT;
-
-function hasUsableRelatedPayload(
-  payload: RelatedProductsApiResponse | null | undefined,
-): payload is RelatedProductsApiResponse {
-  return Boolean(payload?.data?.length);
-}
 
 /**
  * Related products for PDP — React Query cache + dedupe (shared key with hover prefetch).
@@ -48,22 +44,29 @@ export function useRelatedProducts({
   const hasSsrPayload = hasUsableRelatedPayload(initialRelatedProducts);
 
   const persistedInitialData = getPersistedPdpRelated(trimmed, language, RELATED_PRODUCTS_LIMIT);
+  const hasCachedPayload =
+    hasSsrPayload || hasUsableRelatedPayload(persistedInitialData);
   const initialData = hasSsrPayload
     ? initialRelatedProducts
     : hasUsableRelatedPayload(persistedInitialData)
       ? persistedInitialData
       : undefined;
 
-  const query = useQuery({
-    queryKey: queryKeys.relatedProducts(trimmed, language, RELATED_PRODUCTS_LIMIT),
-    queryFn: () => fetchRelatedProducts(trimmed, language, RELATED_PRODUCTS_LIMIT),
-    enabled: enabled && Boolean(trimmed),
-    initialData,
-    refetchOnMount: !hasSsrPayload,
-    staleTime: PDP_RELATED_STALE_TIME_MS,
-    gcTime: PDP_RELATED_GC_TIME_MS,
-    retry: 1,
-  });
+  const queryClient = getQueryClient();
+
+  const query = useQuery(
+    {
+      queryKey: queryKeys.relatedProducts(trimmed, language, RELATED_PRODUCTS_LIMIT),
+      queryFn: () => fetchRelatedProducts(trimmed, language, RELATED_PRODUCTS_LIMIT),
+      enabled: enabled && Boolean(trimmed),
+      initialData,
+      refetchOnMount: !hasSsrPayload,
+      staleTime: PDP_RELATED_STALE_TIME_MS,
+      gcTime: PDP_RELATED_GC_TIME_MS,
+      retry: 1,
+    },
+    queryClient,
+  );
 
   const products = useMemo((): RelatedProductRow[] => {
     const rows = query.data?.data;
@@ -74,7 +77,7 @@ export function useRelatedProducts({
   }, [query.data]);
 
   const loading =
-    !hasSsrPayload &&
+    !hasCachedPayload &&
     products.length === 0 &&
     (query.isPending || query.isFetching);
 

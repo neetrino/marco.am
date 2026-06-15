@@ -15,7 +15,10 @@ import {
   type ProductPdpNavigationSeed,
 } from '@/lib/product-pdp/pdp-navigation-seed';
 import { seedProductPdpCache } from '@/lib/product-pdp/pdp-navigation-seed-cache';
-import { prefetchProductPdp } from '@/lib/product-pdp/prefetch-product-pdp';
+import {
+  prefetchProductPdp,
+  prefetchProductPdpOnCommit,
+} from '@/lib/product-pdp/prefetch-product-pdp';
 
 type LinkProps = Omit<ComponentProps<typeof Link>, 'href' | 'prefetch'>;
 
@@ -102,6 +105,7 @@ export function ProductPdpPrefetchLink({
       }}
       onClick={(e) => {
         persistSeed();
+        void prefetchProductPdpOnCommit(queryClient, productSlug, getStoredLanguage());
         onClick?.(e);
       }}
       {...rest}

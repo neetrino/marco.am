@@ -35,6 +35,12 @@ export type RelatedProductRow = {
   warrantyBadge?: { years: ProductWarrantyYears } | null;
 };
 
+export function hasUsableRelatedPayload(
+  payload: RelatedProductsApiResponse | null | undefined,
+): payload is RelatedProductsApiResponse {
+  return Boolean(payload?.data?.length);
+}
+
 const RELATED_PRODUCTS_TIMEOUT_MS = 12_000;
 
 function encodeProductSlugForPath(productSlug: string): string {

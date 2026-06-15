@@ -1,7 +1,12 @@
-import { getCachedPdpDetail } from '@/lib/product-pdp/pdp-server-cache';
+import {
+  getCachedPdpDetail,
+  getCachedPdpRelated,
+  PDP_RELATED_SSR_LIMIT,
+} from '@/lib/product-pdp/pdp-server-cache';
 import type { LanguageCode } from '@/lib/language';
 
 import { ProductPdpDetailCacheSeed } from './ProductPdpDetailCacheSeed';
+import { ProductPdpRelatedCacheSeed } from './ProductPdpRelatedCacheSeed';
 import type { Product } from './types';
 
 type ProductPdpDetailStreamProps = {
@@ -14,20 +19,46 @@ export async function ProductPdpDetailStream({
   baseSlug,
   serverLanguage,
 }: ProductPdpDetailStreamProps) {
-  const detailSettled = await Promise.allSettled([
+  const [detailSettled, relatedSettled] = await Promise.allSettled([
     getCachedPdpDetail(baseSlug, serverLanguage),
+    getCachedPdpRelated(baseSlug, serverLanguage, PDP_RELATED_SSR_LIMIT),
   ]);
 
-  const result = detailSettled[0];
-  if (!result || result.status !== 'fulfilled' || result.value == null) {
+  const detailResult = detailSettled;
+  const relatedResult = relatedSettled;
+
+  const detailProduct =
+    detailResult.status === 'fulfilled' && detailResult.value != null
+      ? (detailResult.value as Product)
+      : null;
+  const relatedPayload =
+    relatedResult.status === 'fulfilled' &&
+    relatedResult.value != null &&
+    Array.isArray(relatedResult.value.data) &&
+    relatedResult.value.data.length > 0
+      ? relatedResult.value
+      : null;
+
+  if (!detailProduct && !relatedPayload) {
     return null;
   }
 
   return (
-    <ProductPdpDetailCacheSeed
-      slug={baseSlug}
-      language={serverLanguage}
-      product={result.value as Product}
-    />
+    <>
+      {detailProduct ? (
+        <ProductPdpDetailCacheSeed
+          slug={baseSlug}
+          language={serverLanguage}
+          product={detailProduct}
+        />
+      ) : null}
+      {relatedPayload ? (
+        <ProductPdpRelatedCacheSeed
+          slug={baseSlug}
+          language={serverLanguage}
+          related={relatedPayload}
+        />
+      ) : null}
+    </>
   );
 }

@@ -2,6 +2,10 @@
  * Error types for API error handling
  */
 
+import { getDeploymentTier } from "@/lib/config/deployment-env";
+
+const GENERIC_SERVER_ERROR_DETAIL = "An error occurred";
+
 export interface ApiError {
   type?: string;
   title?: string;
@@ -54,33 +58,45 @@ export function isApiError(error: unknown): error is ApiError {
   );
 }
 
+function shouldSanitizeClientDetail(status: number | undefined): boolean {
+  return getDeploymentTier() === "production" && (status ?? 500) >= 500;
+}
+
 /**
  * Convert unknown error to ApiError format
  */
 export function toApiError(error: unknown, instance?: string): ApiError {
   if (isAppError(error)) {
+    const status = error.status;
     return {
       type: error.type,
       title: error.title,
-      status: error.status,
-      detail: error.detail,
+      status,
+      detail: shouldSanitizeClientDetail(status)
+        ? GENERIC_SERVER_ERROR_DETAIL
+        : error.detail,
       instance: error.instance || instance,
     };
   }
 
   if (isApiError(error)) {
+    const status = error.status ?? 500;
     return {
       ...error,
+      detail: shouldSanitizeClientDetail(status)
+        ? GENERIC_SERVER_ERROR_DETAIL
+        : error.detail,
       instance: error.instance || instance,
     };
   }
 
   if (error instanceof Error) {
+    const isProd = getDeploymentTier() === "production";
     return {
       type: 'https://api.shop.am/problems/internal-error',
       title: 'Internal Server Error',
       status: 500,
-      detail: error.message || 'An error occurred',
+      detail: isProd ? GENERIC_SERVER_ERROR_DETAIL : (error.message || GENERIC_SERVER_ERROR_DETAIL),
       instance,
     };
   }

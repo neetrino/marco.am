@@ -47,9 +47,7 @@ async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T
 }
 
 /**
- * PDP — visual first paint; heavy detail streams in a second chunk.
- * Related products are intentionally deferred to client/background to avoid
- * blocking the critical route render path.
+ * PDP — visual first paint; heavy detail + related stream in a second chunk.
  */
 export default async function ProductPage({ params }: PageProps) {
   const { slug: slugParam } = await params;

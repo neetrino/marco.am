@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
 import type { PdpVisualPayload } from '@/lib/services/products-slug/product-transformer';
 import { getErrorHttpStatus } from '@/lib/api-client';
@@ -17,6 +17,7 @@ import {
   consumeProductPdpNavigationSeedAnyLanguage,
 } from '@/lib/product-pdp/pdp-navigation-seed';
 import { PDP_QUERY_GC_TIME_MS, PDP_QUERY_STALE_TIME_MS } from '@/lib/product-pdp/pdp-query-cache';
+import { getQueryClient } from '@/lib/query/get-query-client';
 import { queryKeys } from '@/lib/query-keys';
 
 import { RESERVED_ROUTES, type Product } from '../types';
@@ -40,7 +41,8 @@ export function useProductFetch({
   initialProduct,
 }: UseProductFetchProps) {
   const router = useRouter();
-  const queryClient = useQueryClient();
+  const queryClient = getQueryClient();
+
   const [lang, setLang] = useState<LanguageCode>(() => serverLanguage);
   const [navigationSeedProduct, setNavigationSeedProduct] = useState<Product | null>(
     () => consumeProductPdpNavigationSeedAnyLanguage(slug, serverLanguage),
@@ -111,50 +113,56 @@ export function useProductFetch({
           }
       : undefined;
 
-  const visualQuery = useQuery({
-    queryKey: queryKeys.productVisual(slug, lang),
-    queryFn: () => fetchProductVisual(slug, lang),
-    enabled,
-    initialData: visualInitialData,
-    placeholderData: keepPreviousData,
-    staleTime: PDP_QUERY_STALE_TIME_MS,
-    gcTime: PDP_QUERY_GC_TIME_MS,
-    retry: (failureCount, error) => {
-      if (getErrorHttpStatus(error) === 404) {
-        return false;
-      }
-      return failureCount < 1;
+  const visualQuery = useQuery(
+    {
+      queryKey: queryKeys.productVisual(slug, lang),
+      queryFn: () => fetchProductVisual(slug, lang),
+      enabled,
+      initialData: visualInitialData,
+      placeholderData: keepPreviousData,
+      staleTime: PDP_QUERY_STALE_TIME_MS,
+      gcTime: PDP_QUERY_GC_TIME_MS,
+      retry: (failureCount, error) => {
+        if (getErrorHttpStatus(error) === 404) {
+          return false;
+        }
+        return failureCount < 1;
+      },
     },
-  });
+    queryClient,
+  );
 
-  const detailQuery = useQuery({
-    queryKey: queryKeys.productDetail(slug, lang),
-    queryFn: async () => {
-      const summary = await fetchProductSummary(slug, lang);
-      const hasSeed = navigationSeedProduct != null && navigationSeedProduct.slug === slug;
-      const hasVariants = Array.isArray(summary.variants) && summary.variants.length > 0;
-      if (hasSeed || hasVariants) {
-        return summary;
-      }
-      return fetchProductDetail(slug, lang);
+  const detailQuery = useQuery(
+    {
+      queryKey: queryKeys.productDetail(slug, lang),
+      queryFn: async () => {
+        const summary = await fetchProductSummary(slug, lang);
+        const hasSeed = navigationSeedProduct != null && navigationSeedProduct.slug === slug;
+        const hasVariants = Array.isArray(summary.variants) && summary.variants.length > 0;
+        if (hasSeed || hasVariants) {
+          return summary;
+        }
+        return fetchProductDetail(slug, lang);
+      },
+      enabled,
+      initialData: detailInitialData,
+      placeholderData:
+        hasNavigationSeedInitialData || detailInitialData === initialProduct
+          ? undefined
+          : keepPreviousData,
+      staleTime: PDP_QUERY_STALE_TIME_MS,
+      gcTime: PDP_QUERY_GC_TIME_MS,
+      initialDataUpdatedAt: hasNavigationSeedInitialData ? 0 : undefined,
+      refetchOnMount: hasNavigationSeedInitialData ? 'always' : true,
+      retry: (failureCount, error) => {
+        if (getErrorHttpStatus(error) === 404) {
+          return false;
+        }
+        return failureCount < 1;
+      },
     },
-    enabled,
-    initialData: detailInitialData,
-    placeholderData:
-      hasNavigationSeedInitialData || detailInitialData === initialProduct
-        ? undefined
-        : keepPreviousData,
-    staleTime: PDP_QUERY_STALE_TIME_MS,
-    gcTime: PDP_QUERY_GC_TIME_MS,
-    initialDataUpdatedAt: hasNavigationSeedInitialData ? 0 : undefined,
-    refetchOnMount: hasNavigationSeedInitialData ? 'always' : true,
-    retry: (failureCount, error) => {
-      if (getErrorHttpStatus(error) === 404) {
-        return false;
-      }
-      return failureCount < 1;
-    },
-  });
+    queryClient,
+  );
 
   useEffect(() => {
     if (!enabled || !slug) {

@@ -80,7 +80,7 @@ export function CartDrawer() {
         aria-label={t('common.buttons.close')}
       />
       <aside
-        className={`${CART_DRAWER_PANEL_CLASS} animate-in slide-in-from-right duration-300 motion-reduce:animate-none`}
+        className={`${CART_DRAWER_PANEL_CLASS} animate-in slide-in-from-right duration-200 motion-reduce:animate-none`}
         role="dialog"
         aria-modal="true"
         aria-label={t('common.cart.myCart')}
@@ -105,7 +105,7 @@ export function CartDrawer() {
         </header>
 
         <div className="flex min-h-0 flex-1 flex-col">
-          {loading ? (
+          {loading && (!cart || cart.items.length === 0) ? (
             <div className="flex flex-1 items-center justify-center px-4 py-10">
               <p className="text-sm text-[var(--app-text-muted)]">{t('common.messages.loading')}</p>
             </div>

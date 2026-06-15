@@ -2,8 +2,9 @@
 
 import Image from 'next/image';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import Link from 'next/link';
 import { useMemo, useState, type CSSProperties } from 'react';
+
+import { BrandPlpLink } from '@/components/BrandPlpLink';
 
 import { StaticPageLoadingSkeleton } from '@/components/navigation/StaticPageLoadingSkeleton';
 import {
@@ -186,7 +187,7 @@ function BrandsDirectoryGrid({ brands }: { brands: readonly HomeBrandPartnerPubl
   return (
     <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
       {brands.map((partner, index) => (
-        <Link
+        <BrandPlpLink
           key={partner.id}
           href={partner.href}
           style={{
@@ -204,7 +205,7 @@ function BrandsDirectoryGrid({ brands }: { brands: readonly HomeBrandPartnerPubl
             imagePriority={index < BRANDS_DIRECTORY_LCP_IMAGE_PRIORITY_COUNT}
             r2FallbackUrl={r2ByName.get(partner.id)}
           />
-        </Link>
+        </BrandPlpLink>
       ))}
     </div>
   );

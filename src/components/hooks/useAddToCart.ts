@@ -151,21 +151,24 @@ export function useAddToCart({
 
         if (defaultVariantId) {
           variantId = defaultVariantId;
-          const catalogById = await fetchGuestCartCatalogProducts([productId]);
-          const catalogRow = catalogById.get(productId);
-          if (!variantPrice && catalogRow?.price) {
-            variantPrice = catalogRow.price;
-          }
-          snapshotTitle = snapshotTitle || catalogRow?.title?.trim();
-          snapshotImage = snapshotImage || catalogRow?.image || null;
-          if (!snapshotTitle || !snapshotImage) {
-            const catalogSnapshot = await resolveGuestCartSnapshot(
-              productId,
-              snapshotTitle,
-              snapshotImage,
-            );
-            snapshotTitle = catalogSnapshot.title ?? snapshotTitle;
-            snapshotImage = catalogSnapshot.image ?? snapshotImage;
+          const needsCatalogFetch = !variantPrice || !snapshotTitle || !snapshotImage;
+          if (needsCatalogFetch) {
+            const catalogById = await fetchGuestCartCatalogProducts([productId]);
+            const catalogRow = catalogById.get(productId);
+            if (!variantPrice && catalogRow?.price) {
+              variantPrice = catalogRow.price;
+            }
+            snapshotTitle = snapshotTitle || catalogRow?.title?.trim();
+            snapshotImage = snapshotImage || catalogRow?.image || null;
+            if (!snapshotTitle || !snapshotImage) {
+              const catalogSnapshot = await resolveGuestCartSnapshot(
+                productId,
+                snapshotTitle,
+                snapshotImage,
+              );
+              snapshotTitle = catalogSnapshot.title ?? snapshotTitle;
+              snapshotImage = catalogSnapshot.image ?? snapshotImage;
+            }
           }
         } else {
           const encodedSlug = encodeURIComponent(productSlug.trim());
@@ -250,9 +253,25 @@ export function useAddToCart({
     setIsAddingToCart(true);
 
     const unitPrice = propPrice ?? 0;
+    const canOptimisticItem = Boolean(defaultVariantId);
     window.dispatchEvent(new CustomEvent('cart-updated', {
-      detail: { optimisticAdd: { quantity: 1, price: unitPrice } },
+      detail: {
+        optimisticAdd: {
+          quantity: 1,
+          price: unitPrice,
+          ...(canOptimisticItem
+            ? {
+                productId,
+                variantId: defaultVariantId,
+                productSlug,
+                title: propTitle,
+                image: propImage,
+              }
+            : {}),
+        },
+      },
     }));
+    dispatchOpenCartDrawer();
 
     try {
       let variantId: string;
@@ -288,7 +307,6 @@ export function useAddToCart({
       window.dispatchEvent(new CustomEvent('cart-updated', {
         detail: response.cartSummary || null,
       }));
-      dispatchOpenCartDrawer();
     } catch (error: unknown) {
       console.error('❌ [PRODUCT CARD] Error adding to cart:', error);
 

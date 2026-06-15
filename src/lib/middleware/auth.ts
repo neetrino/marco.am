@@ -1,7 +1,13 @@
 import { NextRequest } from "next/server";
 import * as jwt from "jsonwebtoken";
 import { db } from "@white-shop/db";
+import {
+  bumpAuthEpoch,
+  isAuthEpochValid,
+  readTokenAuthEpoch,
+} from "@/lib/auth/auth-epoch";
 import { readAuthSessionToken } from "@/lib/auth/auth-session-cookie";
+import { normalizeUserRoles } from "@/lib/constants/user-roles";
 import { logger } from "@/lib/utils/logger";
 
 export interface AuthUser {
@@ -14,7 +20,7 @@ export interface AuthUser {
 
 type JwtPayload = {
   userId: string;
-  roles?: string[];
+  authEpoch?: number;
 };
 
 function readJwtSecret(): string | null {
@@ -50,10 +56,6 @@ function verifyToken(token: string): JwtPayload | null {
   }
 }
 
-function rolesFromDecodedToken(decoded: JwtPayload): string[] {
-  return Array.isArray(decoded.roles) ? decoded.roles : [];
-}
-
 export function getAuthContext(
   request: NextRequest
 ): { token: string | null; decoded: JwtPayload | null } {
@@ -70,39 +72,40 @@ export function getAuthContext(
 export async function authenticateToken(
   request: NextRequest
 ): Promise<AuthUser | null> {
-  try {
-    const { decoded } = getAuthContext(request);
-    if (!decoded) {
-      return null;
-    }
-
-    const user = await db.user.findUnique({
-      where: { id: decoded.userId },
-      select: {
-        id: true,
-        email: true,
-        phone: true,
-        locale: true,
-        roles: true,
-        blocked: true,
-        deletedAt: true,
-      },
-    });
-
-    if (!user || user.blocked || user.deletedAt) {
-      return null;
-    }
-
-    return {
-      id: user.id,
-      email: user.email,
-      phone: user.phone,
-      locale: user.locale,
-      roles: user.roles.length > 0 ? user.roles : rolesFromDecodedToken(decoded),
-    };
-  } catch (error) {
-    throw error;
+  const { decoded } = getAuthContext(request);
+  if (!decoded?.userId) {
+    return null;
   }
+
+  const user = await db.user.findUnique({
+    where: { id: decoded.userId },
+    select: {
+      id: true,
+      email: true,
+      phone: true,
+      locale: true,
+      roles: true,
+      authEpoch: true,
+      blocked: true,
+      deletedAt: true,
+    },
+  });
+
+  if (!user || user.blocked || user.deletedAt) {
+    return null;
+  }
+
+  if (!isAuthEpochValid(readTokenAuthEpoch(decoded), user.authEpoch)) {
+    return null;
+  }
+
+  return {
+    id: user.id,
+    email: user.email,
+    phone: user.phone,
+    locale: user.locale,
+    roles: normalizeUserRoles(user.roles),
+  };
 }
 
 /**
@@ -114,4 +117,3 @@ export function requireAdmin(user: AuthUser | null): boolean {
   }
   return user.roles.includes("admin");
 }
-

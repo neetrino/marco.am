@@ -8,6 +8,7 @@ import type { Cart } from './types';
 import { readStoredGuestCart } from './guest-cart-local';
 import { buildGuestCartFromStorage, fetchCart } from './cart-fetcher';
 import { handleRemoveItem, handleUpdateQuantity } from './cart-handlers';
+import { applyOptimisticCartAdd } from './apply-optimistic-cart-add';
 import { isGenericCartTitle, mergeCartDisplayState } from './merge-cart-display';
 import { preloadNewCartImages } from './preload-cart-images';
 
@@ -22,7 +23,7 @@ export function useCartData(options?: { enabled?: boolean }) {
   const { isLoggedIn, isLoading: authLoading } = useAuth();
   const { t } = useTranslation();
   const [cart, setCart] = useState<Cart | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [currency, setCurrency] = useState(getStoredCurrency());
   const [updatingItems, setUpdatingItems] = useState<Set<string>>(new Set());
   const isLocalUpdateRef = useRef(false);
@@ -180,13 +181,16 @@ export function useCartData(options?: { enabled?: boolean }) {
         isLocalUpdateRef.current = false;
         return;
       }
-      if (
-        detail &&
-        (
-          detail.optimisticAdd ||
-          (detail.itemsCount !== undefined && detail.total !== undefined)
-        )
-      ) {
+      if (detail?.optimisticAdd) {
+        const nextCart = applyOptimisticCartAdd(cartRef.current, detail.optimisticAdd, t);
+        if (nextCart) {
+          setCart(nextCart);
+          setLoading(false);
+        }
+        return;
+      }
+      if (detail?.itemsCount !== undefined && detail?.total !== undefined) {
+        void loadCart();
         return;
       }
       void loadCart();
@@ -221,6 +225,7 @@ export function useCartData(options?: { enabled?: boolean }) {
     isLoggedIn,
     loadCart,
     syncGuestCartFromStorage,
+    t,
   ]);
 
   const onRemoveItem = useCallback(

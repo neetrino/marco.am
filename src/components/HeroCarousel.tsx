@@ -62,7 +62,6 @@ export function HeroCarousel({ heroImageUrls }: HeroCarouselProps) {
               src={right}
               alt=""
               fill
-              priority
               unoptimized={shouldBypassNextImageOptimizer(right)}
               className="object-cover object-[center_58%]"
               sizes="(max-width: 1280px) 42vw, min(45vw, 560px)"

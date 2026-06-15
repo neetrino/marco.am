@@ -1,4 +1,8 @@
 import type { ShopGridProduct } from '@/app/products/shop-grid-product';
+import {
+  buildAllowedCategorySlugs,
+  type ShopCategoryFilterTreeNode,
+} from '@/lib/shop-category-filter-descendant-slugs';
 
 function parseCsvParam(params: URLSearchParams, key: string): string[] {
   const raw = params.get(key);
@@ -26,6 +30,7 @@ function parsePriceParam(params: URLSearchParams, key: string): number | undefin
 function hadClientSideListingFilters(queryString: string): boolean {
   const params = new URLSearchParams(queryString);
   return (
+    Boolean(params.get('category')) ||
     Boolean(params.get('brand')) ||
     Boolean(params.get('colors')) ||
     Boolean(params.get('sizes')) ||
@@ -34,19 +39,29 @@ function hadClientSideListingFilters(queryString: string): boolean {
   );
 }
 
+function productMatchesCategorySlugs(
+  product: ShopGridProduct,
+  allowedCategorySlugs: ReadonlySet<string>,
+): boolean {
+  const productCategorySlugs = (product.categories ?? []).map((category) =>
+    category.slug.toLowerCase(),
+  );
+  return productCategorySlugs.some((slug) => allowedCategorySlugs.has(slug));
+}
+
 /**
  * Narrows the current PLP page client-side while the listing API request is in flight.
- * Returns `null` when the query change cannot be approximated locally (category, search, sort, …).
+ * Returns `null` when the query change cannot be approximated locally (search, sort, …).
  */
 export function applyOptimisticShopListingFilter(
   products: readonly ShopGridProduct[],
   queryString: string,
   previousQueryString: string,
+  categoryTree?: readonly ShopCategoryFilterTreeNode[],
 ): ShopGridProduct[] | null {
   const params = new URLSearchParams(queryString);
 
   if (
-    params.get('category') ||
     params.get('search') ||
     params.get('filter') ||
     params.get('sort') ||
@@ -63,12 +78,14 @@ export function applyOptimisticShopListingFilter(
     }
   }
 
+  const categorySlugs = parseCsvParam(params, 'category');
   const brandSlugs = parseCsvParam(params, 'brand');
   const colorValues = parseCsvParam(params, 'colors').map((value) => value.toLowerCase());
   const minPrice = parsePriceParam(params, 'minPrice');
   const maxPrice = parsePriceParam(params, 'maxPrice');
 
   const hasClientSideFilter =
+    categorySlugs.length > 0 ||
     brandSlugs.length > 0 ||
     colorValues.length > 0 ||
     minPrice !== undefined ||
@@ -81,13 +98,20 @@ export function applyOptimisticShopListingFilter(
     return null;
   }
 
-  return products.filter((product) => {
+  const allowedCategorySlugs =
+    categorySlugs.length > 0 ? buildAllowedCategorySlugs(categoryTree, categorySlugs) : null;
+
+  const filtered = products.filter((product) => {
+    if (allowedCategorySlugs && allowedCategorySlugs.size > 0) {
+      if (!productMatchesCategorySlugs(product, allowedCategorySlugs)) {
+        return false;
+      }
+    }
+
     if (brandSlugs.length > 0) {
       const slug = product.brand?.slug ?? '';
       const id = product.brand?.id ?? '';
-      const matchesBrand = brandSlugs.some(
-        (brand) => brand === slug || brand === id,
-      );
+      const matchesBrand = brandSlugs.some((brand) => brand === slug || brand === id);
       if (!matchesBrand) {
         return false;
       }
@@ -111,4 +135,10 @@ export function applyOptimisticShopListingFilter(
 
     return true;
   });
+
+  if (categorySlugs.length > 0) {
+    return filtered;
+  }
+
+  return filtered;
 }

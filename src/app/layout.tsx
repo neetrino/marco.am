@@ -13,6 +13,8 @@ import {
   type LanguageCode,
 } from '../lib/language';
 import { LanguagePreferenceProvider } from '../lib/language-context';
+import '../lib/i18n/register-admin-server';
+import { serializeClientI18nSeed } from '../lib/i18n/server-storefront-language-payload';
 import { t } from '../lib/i18n';
 import { APP_VIEWPORT } from '../constants/viewport';
 
@@ -41,10 +43,14 @@ export default async function RootLayout({
   const cookieStore = await cookies();
   const initialLanguage: LanguageCode =
     parseLanguageFromServer(cookieStore.get(LANGUAGE_PREFERENCE_KEY)?.value) ?? 'en';
+  const i18nSeed = serializeClientI18nSeed(initialLanguage);
 
   return (
     <html lang={initialLanguage} className={`h-full ${appHtmlFontClassName}`} suppressHydrationWarning>
       <body className={`${appBodyFontClassName} min-h-full bg-[var(--app-bg)] text-[var(--app-text)] antialiased transition-colors duration-200`}>
+        <Script id="i18n-init" strategy="beforeInteractive">
+          {`window.__MARCO_I18N__=${i18nSeed};`}
+        </Script>
         <Script id="theme-init" strategy="beforeInteractive">
           {`
             (() => {

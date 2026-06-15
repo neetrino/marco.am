@@ -1,4 +1,6 @@
 import { db } from "@white-shop/db";
+import { bumpAuthEpoch } from "@/lib/auth/auth-epoch";
+import { sanitizeUserRoles } from "@/lib/constants/user-roles";
 
 class AdminUsersService {
   /**
@@ -47,11 +49,13 @@ class AdminUsersService {
    * Update user
    */
   async updateUser(userId: string, data: { blocked?: boolean; roles?: string[] }) {
-    return await db.user.update({
+    const roles = data.roles !== undefined ? sanitizeUserRoles(data.roles) : undefined;
+
+    const updated = await db.user.update({
       where: { id: userId },
       data: {
         blocked: data.blocked,
-        roles: data.roles,
+        roles,
       },
       select: {
         id: true,
@@ -65,6 +69,9 @@ class AdminUsersService {
         updatedAt: true,
       },
     });
+
+    await bumpAuthEpoch(userId);
+    return updated;
   }
 
   /**
@@ -94,11 +101,9 @@ class AdminUsersService {
       select: { id: true },
     });
 
+    await bumpAuthEpoch(userId);
     return { success: true };
   }
 }
 
 export const adminUsersService = new AdminUsersService();
-
-
-
