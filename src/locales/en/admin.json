@@ -310,6 +310,12 @@
     "convertToSubcategorySuccess": "Category converted to subcategory",
     "noAvailableParentForConversion": "No available main category to assign as parent",
     "chooseChildrenOptional": "Choose child categories (optional)",
+    "hierarchyChangeHint": "This change affects the category tree. Removed subcategories become root categories. You will be asked to confirm before saving.",
+    "hierarchyConfirmIntro": "This category structure change is risky and may flatten or reshuffle the tree:",
+    "hierarchyConfirmPromote": "• This category will become a root (main) category.",
+    "hierarchyConfirmClearAll": "• All {count} subcategories will be detached and become root categories.",
+    "hierarchyConfirmDetach": "• These subcategories will be detached to root: {names}.",
+    "hierarchyConfirmReassign": "• These categories will be moved from another parent: {names}.",
     "showInHeaderSidebar": "Show in header sidebar",
     "hideFromHeaderSidebar": "Hide from header sidebar"
   },

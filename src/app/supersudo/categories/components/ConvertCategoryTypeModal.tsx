@@ -5,6 +5,7 @@ import { Button } from '@shop/ui';
 import { useTranslation } from '../../../../lib/i18n-client';
 import { getStoredLanguage } from '../../../../lib/language';
 import { buildCategoryTree, getAncestorIds, getDescendantIds, getLocalizedCategoryTitle } from '../utils';
+import { assessCategoryHierarchyUpdateRisk } from '@/lib/services/admin/admin-categories-hierarchy-guard';
 import type { Category } from '../types';
 
 interface ConvertCategoryTypeModalProps {
@@ -60,8 +61,42 @@ export function ConvertCategoryTypeModal({
       parentOptions,
       childCandidates,
       title: getLocalizedCategoryTitle(category, activeLocale) || category.slug,
+      initialSubcategoryIds: categories
+        .filter((item) => item.parentId === category.id)
+        .map((item) => item.id)
+        .sort(),
     };
   }, [activeLocale, categories, category, targetParentId]);
+
+  const hierarchyRisk = useMemo(() => {
+    if (!category || !conversionContext) {
+      return null;
+    }
+    const nextParentId = conversionContext.isSubcategory ? null : targetParentId || null;
+    const nextSubcategoryIds = [...new Set(targetSubcategoryIds)].sort();
+    const parentChanged = conversionContext.isSubcategory
+      ? category.parentId !== null
+      : (category.parentId ?? null) !== nextParentId;
+    const subcategoriesChanged =
+      nextSubcategoryIds.length !== conversionContext.initialSubcategoryIds.length ||
+      nextSubcategoryIds.some(
+        (id, index) => id !== conversionContext.initialSubcategoryIds[index],
+      );
+
+    return assessCategoryHierarchyUpdateRisk({
+      categoryId: category.id,
+      currentParentId: category.parentId ?? null,
+      nextParentId,
+      initialSubcategoryIds: conversionContext.initialSubcategoryIds,
+      nextSubcategoryIds,
+      parentChanged,
+      subcategoriesChanged,
+      allCategories: categories.map((item) => ({
+        id: item.id,
+        parentId: item.parentId,
+      })),
+    });
+  }, [categories, category, conversionContext, targetParentId, targetSubcategoryIds]);
 
   if (!isOpen || !category || !conversionContext) {
     return null;
@@ -102,6 +137,11 @@ export function ConvertCategoryTypeModal({
           </div>
 
           <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-5 py-4 sm:px-6">
+            {hierarchyRisk?.requiresConfirmation ? (
+              <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                {t('admin.categories.hierarchyChangeHint')}
+              </p>
+            ) : null}
             {!conversionContext.isSubcategory ? (
               <div>
                 <label className="mb-1 block text-sm font-medium text-gray-700">

@@ -7,6 +7,7 @@ import {
 } from "@/lib/services/product-category-links.service";
 import { buildBaseCategorySlug, collectDescendantIds } from "@/lib/services/admin/admin-categories.helpers";
 import { buildDistinctSubtreeProductCountMap } from "@/lib/services/category-product-counts.service";
+import { assessCategoryHierarchyUpdateRisk } from "@/lib/services/admin/admin-categories-hierarchy-guard";
 import {
   buildCategoryTranslationsInput,
   deriveExplicitCategoryIds,
@@ -673,6 +674,7 @@ class AdminCategoriesService {
       data,
       prepared.normalizedSubcategoryIds,
     );
+    await this.assertHierarchyChangeConfirmed(categoryId, category, data, prepared);
 
     await db.$transaction(async (tx: PrismaTransactionClient) => {
       const buildUniqueCategorySlugInTransaction = async (
@@ -828,6 +830,44 @@ class AdminCategoriesService {
       currentId = category.parentId;
     }
     return false;
+  }
+
+  private async assertHierarchyChangeConfirmed(
+    categoryId: string,
+    category: LoadedCategoryForUpdate,
+    data: CategoryUpdateInput,
+    prepared: PreparedCategoryUpdate,
+  ): Promise<void> {
+    if (!prepared.parentChanged && !prepared.subcategoriesChanged) {
+      return;
+    }
+
+    const allCategories = await db.category.findMany({
+      where: { deletedAt: null },
+      select: { id: true, parentId: true },
+    });
+    const currentChildIds = category.children.map((child) => child.id);
+    const nextParentId =
+      data.parentId !== undefined ? (data.parentId || null) : category.parentId;
+    const nextSubcategoryIds = prepared.normalizedSubcategoryIds ?? currentChildIds;
+    const assessment = assessCategoryHierarchyUpdateRisk({
+      categoryId,
+      currentParentId: category.parentId,
+      nextParentId,
+      initialSubcategoryIds: currentChildIds,
+      nextSubcategoryIds,
+      parentChanged: prepared.parentChanged,
+      subcategoriesChanged: prepared.subcategoriesChanged,
+      allCategories,
+    });
+
+    if (assessment.requiresConfirmation && !data.confirmHierarchyChanges) {
+      throw this.buildProblemError(
+        422,
+        "Hierarchy change requires confirmation",
+        "This structure change can move categories to the root or re-parent them. Confirm in the admin UI and resubmit with confirmHierarchyChanges.",
+      );
+    }
   }
 
   private async loadSubtreeCategoryIds(rootCategoryId: string): Promise<string[]> {

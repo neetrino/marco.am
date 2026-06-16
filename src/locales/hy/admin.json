@@ -310,6 +310,12 @@
     "convertToSubcategorySuccess": "Կատեգորիան փոխարկվեց ենթա․",
     "noAvailableParentForConversion": "Հասանելի հիմնական կատեգորիա չկա՝ որպես ծնող նշանակելու համար",
     "chooseChildrenOptional": "Ընտրեք child կատեգորիաները (ըստ ցանկության)",
+    "hierarchyChangeHint": "Այս փոփոխությունը ազդում է կատեգորիաների ծառի վրա։ Հանված ենթակատեգորիաները կդառնան արմատային։ Պահպանելուց առաջ կհայցվի հաստատում։",
+    "hierarchyConfirmIntro": "Կատեգորիայի կառուցվածքի այս փոփոխությունը ռիսկային է և կարող է հարթեցնել կամ վերադասավորել ծառը.",
+    "hierarchyConfirmPromote": "• Կատեգորիան կդառնա արմատային (հիմնական)։",
+    "hierarchyConfirmClearAll": "• Բոլոր {count} ենթակատեգորիաները կկապակցվեն և կդառնան արմատային։",
+    "hierarchyConfirmDetach": "• Այս ենթակատեգորիաները կկապակցվեն արմատին՝ {names}։",
+    "hierarchyConfirmReassign": "• Այս կատեգորիաները կտեղափոխվեն այլ ծնողից՝ {names}։",
     "showInHeaderSidebar": "Ցույց տալ header sidebar-ում",
     "hideFromHeaderSidebar": "Թաքցնել header sidebar-ից"
   },

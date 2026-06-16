@@ -7,6 +7,7 @@ import { useTranslation } from '../../../../lib/i18n-client';
 import { getStoredLanguage, type LanguageCode } from '../../../../lib/language';
 import { notifyShopCategoryTreeUpdated } from '../../../../lib/shop-category-tree-sync';
 import { getDescendantIds } from '../utils';
+import { requestHierarchyChangeConfirmation } from '../utils/hierarchyConfirmMessage';
 import type { Category, CategoryFormData } from '../types';
 
 /** Category translations in DB use shop locales; Georgian UI maps to `en` like storefront. */
@@ -30,6 +31,7 @@ interface UseCategoryActionsReturn {
   handleEditCategory: (category: Category) => Promise<void>;
   handleUpdateCategory: (
     fetchCategories: () => Promise<void>,
+    allCategories: Category[],
     applyOptimisticCategories?: (updater: (previous: Category[]) => Category[]) => () => void,
   ) => Promise<void>;
   handleDeleteCategory: (
@@ -199,6 +201,7 @@ export function useCategoryActions(): UseCategoryActionsReturn {
 
   const handleUpdateCategory = async (
     fetchCategories: () => Promise<void>,
+    allCategories: Category[],
     applyOptimisticCategories?: (updater: (previous: Category[]) => Category[]) => () => void,
   ) => {
     const titles = {
@@ -240,6 +243,29 @@ export function useCategoryActions(): UseCategoryActionsReturn {
       }
       if (subcategoriesChanged) {
         payload.subcategoryIds = nextSubcategoryIds;
+      }
+
+      const hierarchyConfirmed = await requestHierarchyChangeConfirmation({
+        categoryId: editingCategoryId,
+        currentParentId: initialTreeSelection.parentId,
+        nextParentId,
+        initialSubcategoryIds: initialTreeSelection.subcategoryIds,
+        nextSubcategoryIds,
+        parentChanged,
+        subcategoriesChanged,
+        allCategories: allCategories.map((category) => ({
+          id: category.id,
+          parentId: category.parentId,
+        })),
+        categories: allCategories,
+        t,
+        locale: getStoredLanguage(),
+      });
+      if (!hierarchyConfirmed) {
+        return;
+      }
+      if (parentChanged || subcategoriesChanged) {
+        payload.confirmHierarchyChanges = true;
       }
 
       if (applyOptimisticCategories) {
