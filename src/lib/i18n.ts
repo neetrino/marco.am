@@ -4,7 +4,7 @@
  * For client-side React hooks, see i18n-client.ts
  *
  * Storefront strings only — admin JSON is registered on the server at module init
- * and lazily on `/supersudo` client routes via `registerAdminTranslations`.
+ * and synchronously when `/supersudo` client layout loads.
  */
 
 export {
