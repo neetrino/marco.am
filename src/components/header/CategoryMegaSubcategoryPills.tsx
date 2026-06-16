@@ -10,6 +10,7 @@ import type { MegaMenuSubcategoryGroup } from './categoryNavList';
 import type { CategoryNavIcon } from './categoryNavPresentation';
 import { resolveCategoryNavPresentation } from './categoryNavPresentation';
 import { headerCategoryNavFont } from './headerCategoryNavTypography';
+import { HEADER_MEGA_MENU_SUBCATEGORY_GRID_CLASS } from './header.constants';
 import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '../../lib/utils/image-utils';
 import { shouldBypassNextImageOptimizer } from '@/lib/utils/should-bypass-next-image-optimizer';
 
@@ -18,8 +19,7 @@ const SUBPILL_FIGMA_IMG_PX = 26;
 /** Lucide `size` prop — matches Figma asset scale inside `size-[34px]` wrap. */
 const SUBPILL_LUCIDE_STROKE_PX = 26;
 
-const MEGA_GROUP_GRID_CLASS =
-  'grid w-full min-w-0 grid-cols-1 gap-x-8 gap-y-8 sm:grid-cols-2 lg:grid-cols-3 min-[1400px]:grid-cols-4';
+const MEGA_GROUP_GRID_CLASS = HEADER_MEGA_MENU_SUBCATEGORY_GRID_CLASS;
 
 const MEGA_PARENT_LINK_CLASS =
   `${headerCategoryNavFont.className} group mb-3 flex w-full max-w-full items-center gap-2 rounded-xl px-1 py-1.5 !text-[#383838] transition-[background-color,color] duration-150 hover:bg-marco-gray/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/15 dark:!text-[#383838]`;
