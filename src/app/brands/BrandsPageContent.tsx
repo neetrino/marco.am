@@ -1,8 +1,8 @@
 'use client';
 
 import Image from 'next/image';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useMemo, useState, type CSSProperties } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useMemo, useState, type CSSProperties, type ReactNode } from 'react';
 
 import { BrandPlpLink } from '@/components/BrandPlpLink';
 
@@ -27,17 +27,26 @@ import {
   HOME_BRAND_PARTNERS_QUERY_STALE_MS,
 } from '@/lib/home-brand-partners-client';
 import { useTranslation } from '@/lib/i18n-client';
-import type { LanguageCode } from '@/lib/language';
 import { queryKeys } from '@/lib/query-keys';
 import type {
   HomeBrandPartnerPublicItem,
-  HomeBrandPartnersPublicPayload,
 } from '@/lib/types/home-brand-partners-public';
 
-type BrandsPageContentProps = {
-  readonly initialPayload?: HomeBrandPartnersPublicPayload;
-  readonly serverLanguage?: LanguageCode;
-};
+function BrandsPageShell({ children }: { readonly children: ReactNode }) {
+  const { t } = useTranslation();
+  return (
+    <div className="w-full pb-16 pt-10">
+      <div className="marco-header-container">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-[#383838] dark:text-white md:text-4xl">
+            {t('common.navigation.brands')}
+          </h1>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
 
 function brandDirectoryLogoCellStyle(slug: string, displayName: string): CSSProperties {
   const oversized = isBrandLogoCellOversizedSlug(slug, displayName);
@@ -211,58 +220,41 @@ function BrandsDirectoryGrid({ brands }: { brands: readonly HomeBrandPartnerPubl
   );
 }
 
-function resolveInitialBrandPartnersPayload(
-  lang: LanguageCode,
-  serverLanguage: LanguageCode | undefined,
-  initialPayload: HomeBrandPartnersPublicPayload | undefined,
-  cachedPayload: HomeBrandPartnersPublicPayload | undefined,
-): HomeBrandPartnersPublicPayload | undefined {
-  if (initialPayload && serverLanguage === lang) {
-    return initialPayload;
-  }
-  return cachedPayload;
-}
-
-/** Brand grid — SSR + React Query cache; idle/hover prefetch avoids loading flash on navigation. */
-export function BrandsPageContent({
-  initialPayload,
-  serverLanguage,
-}: BrandsPageContentProps) {
+/** Brand grid — client i18n + React Query cache for instant navigation. */
+export function BrandsPageContent() {
   const { t, lang } = useTranslation();
-  const queryClient = useQueryClient();
-  const cachedPayload = queryClient.getQueryData<HomeBrandPartnersPublicPayload>(
-    queryKeys.homeBrandPartners(lang),
-  );
-  const initialData = resolveInitialBrandPartnersPayload(
-    lang,
-    serverLanguage,
-    initialPayload,
-    cachedPayload,
-  );
 
   const brandPartnersQuery = useQuery({
     queryKey: queryKeys.homeBrandPartners(lang),
     queryFn: () => fetchHomeBrandPartnersClient(lang),
     staleTime: HOME_BRAND_PARTNERS_QUERY_STALE_MS,
-    initialData,
     placeholderData: (previous) => previous,
-    refetchOnMount: initialData === undefined,
     refetchOnWindowFocus: false,
   });
 
   const brands = brandPartnersQuery.data?.brands;
 
   if (brands === undefined && brandPartnersQuery.isPending) {
-    return <StaticPageLoadingSkeleton variant="grid-body" />;
+    return (
+      <BrandsPageShell>
+        <StaticPageLoadingSkeleton variant="grid-body" />
+      </BrandsPageShell>
+    );
   }
 
   if (!brands || brands.length === 0) {
     return (
-      <p className="text-center text-slate-600 dark:text-slate-400">
-        {t('common.brandsPage.empty')}
-      </p>
+      <BrandsPageShell>
+        <p className="text-center text-slate-600 dark:text-slate-400">
+          {t('common.brandsPage.empty')}
+        </p>
+      </BrandsPageShell>
     );
   }
 
-  return <BrandsDirectoryGrid brands={brands} />;
+  return (
+    <BrandsPageShell>
+      <BrandsDirectoryGrid brands={brands} />
+    </BrandsPageShell>
+  );
 }

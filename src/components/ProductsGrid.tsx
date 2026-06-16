@@ -9,7 +9,7 @@ import { ProductCard } from './ProductCard';
 import { ProductsGridOfferCard } from './ProductsGridOfferCard';
 import type { SpecialOfferProduct } from './home/special-offer-product.types';
 import { useIsMaxMd } from './home/use-is-max-md';
-import { SHOP_PLP_LCP_IMAGE_PRIORITY_COUNT } from '@/lib/constants/shop-plp-pagination';
+import { resolveShopPlpLcpImagePriorityCount } from '@/lib/constants/shop-plp-pagination';
 import { useForcedShopGridColumns } from './useForcedShopGridColumns';
 
 interface Product {
@@ -95,6 +95,7 @@ export function ProductsGrid({
   const { t } = useTranslation();
   const isMaxMd = useIsMaxMd();
   const forcedShopCols = useForcedShopGridColumns();
+  const lcpPriorityCount = resolveShopPlpLcpImagePriorityCount(isMaxMd);
   /** Same as home featured strip: `default` (fixed card width) on md+, `mobileGrid` on small screens */
   const specialOfferLayout = isMaxMd ? 'mobileGrid' : 'default';
   const [viewMode, setViewMode] = useState<ViewMode>('grid-2');
@@ -223,6 +224,7 @@ export function ProductsGrid({
       {sortedProducts.slice(0, visibleCount).map((product, index) => (
         <div
           key={product.id}
+          data-plp-slug={product.slug}
           className={
             useListLayout
               ? 'min-w-0 w-full max-w-none'
@@ -236,7 +238,7 @@ export function ProductsGrid({
               product={offerProducts[index]!}
               layout={specialOfferLayout}
               maxWidthPx={PRODUCTS_CARD_MAX_WIDTH_PX}
-              imagePriority={index < SHOP_PLP_LCP_IMAGE_PRIORITY_COUNT}
+              imagePriority={index < lcpPriorityCount}
             />
           )}
         </div>

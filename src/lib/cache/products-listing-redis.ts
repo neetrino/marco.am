@@ -1,74 +1,12 @@
-import { createHash } from 'node:crypto';
 import type { ProductFilters } from '@/lib/services/products-find-query/types';
 import { productsFindService } from '@/lib/services/products-find.service';
 import { getCachedJson } from '@/lib/services/read-through-json-cache';
-import { stableStringifyForCacheKey } from '@/lib/cache/stable-stringify';
-
-const PRODUCTS_LIST_CACHE_VERSION = 'v9';
-const PRODUCTS_CACHE_TTL = 120;
-const FEATURED_CACHE_TTL = 600;
+import { buildProductsListingRedisKey } from '@/lib/cache/products-listing-cache-keys';
+import { resolveProductsListingTtlSeconds } from '@/lib/cache/products-listing-count-ttl';
 
 export type ProductsListingPayload = Awaited<ReturnType<typeof productsFindService.findAll>>;
 
-function normalizeSpecsForKey(specs: ProductFilters['technicalSpecs']): Record<string, string[]> {
-  if (!specs || typeof specs !== 'object') {
-    return {};
-  }
-  const out: Record<string, string[]> = {};
-  for (const key of Object.keys(specs).sort()) {
-    const arr = specs[key];
-    if (!Array.isArray(arr)) {
-      continue;
-    }
-    out[key] = [...arr].map((s) => String(s)).sort();
-  }
-  return out;
-}
-
-/**
- * Deterministic Redis key: `cache:products:list:{version}:{sha256}`.
- */
-export function buildProductsListingRedisKey(filters: ProductFilters): string {
-  const productIds = filters.productIds?.length
-    ? [...filters.productIds].sort()
-    : undefined;
-  const fingerprint = {
-    category: filters.category ?? null,
-    search: filters.search ?? null,
-    filter: filters.filter ?? null,
-    pricePresence: filters.pricePresence ?? null,
-    minPrice: filters.minPrice ?? null,
-    maxPrice: filters.maxPrice ?? null,
-    colors: filters.colors ?? null,
-    sizes: filters.sizes ?? null,
-    brand: filters.brand ?? null,
-    sort: filters.sort ?? null,
-    page: filters.page ?? 1,
-    limit: filters.limit ?? 12,
-    cursor: filters.cursor ?? null,
-    lang: filters.lang ?? 'en',
-    technicalSpecs: normalizeSpecsForKey(filters.technicalSpecs),
-    productIds: productIds ?? null,
-    listingOmitProductAttributes: Boolean(filters.listingOmitProductAttributes),
-    cardVisualOnly: Boolean(filters.cardVisualOnly),
-    homeStripListing: Boolean(filters.homeStripListing),
-    ...(filters.skipExactTotalCount ? { skipExactTotalCount: true as const } : {}),
-  };
-  const hash = createHash('sha256')
-    .update(stableStringifyForCacheKey(fingerprint))
-    .digest('hex');
-  return `cache:products:list:${PRODUCTS_LIST_CACHE_VERSION}:${hash}`;
-}
-
-export function resolveProductsListingTtlSeconds(filters: ProductFilters): number {
-  const onlyFeatured =
-    Boolean(filters.filter) &&
-    ['new', 'bestseller', 'featured', 'promotion', 'special_offer'].includes(String(filters.filter)) &&
-    !filters.category &&
-    !filters.search &&
-    (filters.limit ?? 12) <= 24;
-  return onlyFeatured ? FEATURED_CACHE_TTL : PRODUCTS_CACHE_TTL;
-}
+export { buildProductsListingRedisKey, resolveProductsListingTtlSeconds };
 
 export async function getProductsListingCached(
   filters: ProductFilters,
