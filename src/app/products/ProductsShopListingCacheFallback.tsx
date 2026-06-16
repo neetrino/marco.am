@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { readShopListingCache } from '@/lib/shop-products-listing-client-cache';
 import { ProductsShopListingClient } from './ProductsShopListingClient';
@@ -14,17 +14,8 @@ import { normalizeShopGridProduct } from './shop-grid-product';
 export function ProductsShopListingCacheFallback() {
   const searchParams = useSearchParams();
   const queryString = searchParams.toString();
-  const [isHydrated, setIsHydrated] = useState(false);
-
-  useEffect(() => {
-    setIsHydrated(true);
-  }, []);
 
   const cached = useMemo(() => readShopListingCache(queryString), [queryString]);
-
-  if (!isHydrated) {
-    return <ProductsShopLoadingSkeleton variant="grid" />;
-  }
 
   if (!cached || cached.data.length === 0) {
     return <ProductsShopLoadingSkeleton variant="grid" />;
