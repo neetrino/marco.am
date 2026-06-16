@@ -34,7 +34,7 @@ export type PriceRangeOption = {
   stepSizePerCurrency?: Record<string, number> | null;
 };
 
-/** Categories, brands, and price — shown first in the PLP sidebar. */
+/** Categories, brands, and price — loaded in the core facet phase. */
 export type ProductsFiltersCoreData = {
   categories: CategoryFilterOption[];
   brands: BrandOption[];
@@ -47,8 +47,6 @@ export type ProductsFiltersExtendedData = {
   sizes: SizeOption[];
   attributeFacets: TechnicalSpecFacet[];
 };
-
-export type ProductsFiltersShellData = ProductsFiltersCoreData;
 
 export type ProductsFiltersData = ProductsFiltersCoreData & ProductsFiltersExtendedData;
 

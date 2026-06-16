@@ -1,6 +1,6 @@
 import { db } from '@white-shop/db';
 
-import { filterExcludedShopCategoryTree, filterHeaderNavCategoryTree } from '@/lib/constants/excluded-shop-category-slugs';
+import { filterHeaderNavCategoryTree } from '@/lib/constants/excluded-shop-category-slugs';
 import { resolveCategoryTranslation } from '@/lib/i18n/category-translation';
 import { getCachedJson } from '@/lib/services/read-through-json-cache';
 
@@ -222,12 +222,6 @@ class CategoriesMegaMenuService {
     return {
       data: cloneBranch(root),
     };
-  }
-
-  /** Full shop PLP category tree (shared all-roots cache with mega menu). */
-  async getShopFilterCategoryTree(lang: string = 'en'): Promise<MegaMenuCategoryNode[]> {
-    const allRoots = await getCachedCategoryAllRoots(lang);
-    return filterExcludedShopCategoryTree(allRoots);
   }
 
   /** Warms shared full-tree cache for all storefront locales. */

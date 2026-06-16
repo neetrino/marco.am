@@ -937,24 +937,6 @@ class ProductsFiltersService {
     };
   }
 
-  async getFiltersCore(filters: {
-    category?: string;
-    search?: string;
-    filter?: string;
-    minPrice?: number;
-    maxPrice?: number;
-    lang?: string;
-    technicalSpecs?: TechnicalSpecFilters;
-    includeCategories?: boolean;
-  }): Promise<ProductsFiltersCoreData> {
-    const full = await this.getFilters({ ...filters, categoriesOnly: false });
-    return {
-      categories: full.categories,
-      brands: full.brands,
-      priceRange: full.priceRange,
-    };
-  }
-
   async getFiltersExtended(filters: {
     category?: string;
     search?: string;
@@ -1025,7 +1007,12 @@ class ProductsFiltersService {
     }
 
     if (hasTechnicalSpecFilters(filters.technicalSpecs)) {
-      return this.getFiltersCore(filters);
+      const full = await this.getFilters({ ...filters, categoriesOnly: false });
+      return {
+        categories: full.categories,
+        brands: full.brands,
+        priceRange: full.priceRange,
+      };
     }
 
     return buildShopFiltersCoreViaSql({

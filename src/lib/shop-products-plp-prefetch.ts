@@ -94,10 +94,10 @@ export function warmShopProductsClientCaches(
   });
 
   const listingRequest = apiClient.get<ProductsListingApiResponse>('/api/v1/products', {
-      params: buildListingApiParams(queryString, language),
-      timeoutMs: options?.timeoutMs,
-      suppressNetworkErrorLogging: options?.suppressTimeoutLogging,
-    });
+    params: buildListingApiParams(queryString, language),
+    timeoutMs: options?.timeoutMs,
+    suppressNetworkErrorLogging: options?.suppressTimeoutLogging,
+  });
   const filtersRequest = includeFilters
     ? apiClient.get<ProductsFiltersData>('/api/v1/products/filters', {
         params: filtersParams,
@@ -105,25 +105,11 @@ export function warmShopProductsClientCaches(
         suppressNetworkErrorLogging: options?.suppressTimeoutLogging,
       })
     : Promise.resolve(null);
-  const shellRequest = includeFilters
-    ? apiClient.get<ProductsFiltersData>('/api/v1/products/filters/shell', {
-        params: { lang: language },
-        timeoutMs: options?.timeoutMs,
-        suppressNetworkErrorLogging: options?.suppressTimeoutLogging,
-      })
-    : Promise.resolve(null);
 
-  void Promise.all([filtersRequest, shellRequest, listingRequest])
-    .then(([filters, shell, listing]) => {
+  void Promise.all([filtersRequest, listingRequest])
+    .then(([filters, listing]) => {
       if (filters) {
         writeShopFiltersCache(scopedFiltersKey, filters);
-      } else if (shell) {
-        writeShopFiltersCache(scopedFiltersKey, {
-          ...shell,
-          colors: [],
-          sizes: [],
-          attributeFacets: [],
-        });
       }
       writeShopListingCache(queryString, {
         data: listing.data ?? listing.items ?? [],

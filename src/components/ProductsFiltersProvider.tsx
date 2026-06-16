@@ -32,7 +32,6 @@ import {
   type ProductsFiltersCoreData,
   type ProductsFiltersData,
   type ProductsFiltersExtendedData,
-  type ProductsFiltersShellData,
   type SizeOption,
 } from '@/lib/shop-products-filters-types';
 
@@ -44,7 +43,6 @@ export type {
   ProductsFiltersCoreData,
   ProductsFiltersData,
   ProductsFiltersExtendedData,
-  ProductsFiltersShellData,
   SizeOption,
 };
 
@@ -53,7 +51,6 @@ interface ProductsFiltersContextValue {
   loading: boolean;
   categoriesLoading: boolean;
   extendedLoading: boolean;
-  countsPending: boolean;
   error: boolean;
   refetch: () => void;
   language: LanguageCode;
@@ -61,9 +58,12 @@ interface ProductsFiltersContextValue {
 
 const ProductsFiltersContext = createContext<ProductsFiltersContextValue | null>(null);
 
-type ApplyFiltersPayload = (payload: ProductsFiltersData, key: string) => void;
+type HydrationContextValue = {
+  applyCategories: (categories: CategoryFilterOption[]) => void;
+  applyCore: (core: ProductsFiltersCoreData, key: string, includeScopedCategories: boolean) => void;
+};
 
-const ProductsFiltersHydrationContext = createContext<ApplyFiltersPayload | null>(null);
+const ProductsFiltersHydrationContext = createContext<HydrationContextValue | null>(null);
 
 const FACET_REFETCH_DELAY_MS = 280;
 
@@ -78,24 +78,6 @@ function mergeFilterPayload(payload: ProductsFiltersData): ProductsFiltersData {
   };
 }
 
-function mergeShellIntoData(
-  current: ProductsFiltersData | null,
-  shell: ProductsFiltersShellData,
-): ProductsFiltersData {
-  const base = current ?? EMPTY_PRODUCTS_FILTERS;
-  return {
-    ...base,
-    categories: shell.categories.length > 0 ? shell.categories : base.categories,
-    brands: shell.brands.length > 0 ? shell.brands : base.brands,
-    priceRange:
-      shell.priceRange.max > 0 ? shell.priceRange : base.priceRange,
-  };
-}
-
-function hasPendingBrandCounts(brands: BrandOption[]): boolean {
-  return brands.length > 0 && brands.every((brand) => brand.count === 0);
-}
-
 function readBrowserQueryString(): string {
   if (typeof window === 'undefined') {
     return '';
@@ -105,52 +87,20 @@ function readBrowserQueryString(): string {
     : window.location.search;
 }
 
-function resolveInitialFiltersFromCache(args: {
-  language: LanguageCode;
-  initialShellData: ProductsFiltersShellData | null;
-  initialFiltersData: ProductsFiltersData | null;
-  initialFiltersKey: string | null;
-}): {
+function resolveInitialFiltersFromCache(language: LanguageCode): {
   data: ProductsFiltersData | null;
   loading: boolean;
   syncedKey: string | null;
   hasData: boolean;
   extendedLoading: boolean;
-  countsPending: boolean;
 } {
-  const { language, initialShellData, initialFiltersData, initialFiltersKey } = args;
-
-  if (initialFiltersData && initialFiltersKey) {
-    return {
-      data: mergeFilterPayload(initialFiltersData),
-      loading: false,
-      syncedKey: initialFiltersKey,
-      hasData: true,
-      extendedLoading: false,
-      countsPending: false,
-    };
-  }
-
-  if (initialShellData) {
-    const shellData = mergeShellIntoData(null, initialShellData);
-    return {
-      data: shellData,
-      loading: false,
-      syncedKey: null,
-      hasData: true,
-      extendedLoading: true,
-      countsPending: hasPendingBrandCounts(shellData.brands),
-    };
-  }
-
   if (typeof window === 'undefined') {
     return {
       data: null,
-      loading: true,
+      loading: false,
       syncedKey: null,
       hasData: false,
       extendedLoading: true,
-      countsPending: false,
     };
   }
 
@@ -160,11 +110,10 @@ function resolveInitialFiltersFromCache(args: {
   if (!cached) {
     return {
       data: null,
-      loading: true,
+      loading: false,
       syncedKey: null,
       hasData: false,
       extendedLoading: true,
-      countsPending: false,
     };
   }
 
@@ -174,7 +123,6 @@ function resolveInitialFiltersFromCache(args: {
     syncedKey: key,
     hasData: true,
     extendedLoading: false,
-    countsPending: false,
   };
 }
 
@@ -189,9 +137,6 @@ interface ProductsFiltersProviderProps {
   minPrice?: string;
   maxPrice?: string;
   language?: LanguageCode;
-  initialShellData?: ProductsFiltersShellData | null;
-  initialFiltersData?: ProductsFiltersData | null;
-  initialFiltersKey?: string | null;
   children: ReactNode;
 }
 
@@ -202,9 +147,6 @@ export function ProductsFiltersProvider({
   minPrice,
   maxPrice,
   language: languageProp,
-  initialShellData = null,
-  initialFiltersData = null,
-  initialFiltersKey = null,
   children,
 }: ProductsFiltersProviderProps) {
   const preferenceLang = useContext(LanguagePreferenceContext);
@@ -214,22 +156,18 @@ export function ProductsFiltersProvider({
     null,
   );
   if (mountFiltersStateRef.current === null) {
-    mountFiltersStateRef.current = resolveInitialFiltersFromCache({
-      language: resolvedLanguage,
-      initialShellData,
-      initialFiltersData,
-      initialFiltersKey,
-    });
+    mountFiltersStateRef.current = resolveInitialFiltersFromCache(resolvedLanguage);
   }
   const mountFiltersState = mountFiltersStateRef.current;
   const [data, setData] = useState<ProductsFiltersData | null>(mountFiltersState.data);
   const [loading, setLoading] = useState(mountFiltersState.loading);
   const [extendedLoading, setExtendedLoading] = useState(mountFiltersState.extendedLoading);
-  const [countsPending, setCountsPending] = useState(mountFiltersState.countsPending);
   const [error, setError] = useState(false);
   const syncedFiltersKeyRef = useRef<string | null>(mountFiltersState.syncedKey);
   const hasFiltersDataRef = useRef(mountFiltersState.hasData);
-  const hasFullFiltersRef = useRef(Boolean(initialFiltersData && initialFiltersKey));
+  const hasExtendedDataRef = useRef(
+    Boolean(mountFiltersState.data?.colors?.length || mountFiltersState.data?.sizes?.length),
+  );
   const lastFacetScopeRef = useRef<string | null>(null);
   const facetRefetchTimerRef = useRef<number | null>(null);
 
@@ -259,170 +197,163 @@ export function ProductsFiltersProvider({
     return params;
   }, [category, filter, maxPrice, minPrice, resolvedLanguage, search, searchParams]);
 
-  const applyFiltersPayload = useCallback(
-    (payload: ProductsFiltersData, key: string) => {
-      const merged = mergeFilterPayload(payload);
-      setData(merged);
-      setLoading(false);
-      setExtendedLoading(false);
-      setCountsPending(false);
-      setError(false);
-      syncedFiltersKeyRef.current = key;
-      hasFiltersDataRef.current = true;
-      hasFullFiltersRef.current = true;
-      writeShopFiltersCache(key, merged);
+  const persistFilters = useCallback((merged: ProductsFiltersData, key: string) => {
+    syncedFiltersKeyRef.current = key;
+    hasFiltersDataRef.current = true;
+    writeShopFiltersCache(key, merged);
+    if (merged.categories.length > 0) {
       setShopCategoryFilterTree(merged.categories);
-    },
-    [],
-  );
+    }
+  }, []);
 
-  const applyPartialPayload = useCallback(
-    (partial: Partial<ProductsFiltersData>, key: string) => {
+  const applyCategories = useCallback(
+    (categories: CategoryFilterOption[]) => {
+      if (categories.length === 0) {
+        return;
+      }
       setData((prev) => {
         const merged = mergeFilterPayload({
           ...(prev ?? EMPTY_PRODUCTS_FILTERS),
-          ...partial,
+          categories,
         });
-        writeShopFiltersCache(key, merged);
-        setShopCategoryFilterTree(merged.categories);
+        persistFilters(merged, filtersClientKey);
         return merged;
       });
-      hasFiltersDataRef.current = true;
-      syncedFiltersKeyRef.current = key;
       setLoading(false);
-      setCountsPending(false);
       setError(false);
     },
-    [],
+    [filtersClientKey, persistFilters],
   );
 
-  const fetchCoreAndExtended = useCallback(async () => {
-    setError(false);
-    if (!hasFiltersDataRef.current) {
-      setLoading(true);
+  const applyCore = useCallback(
+    (core: ProductsFiltersCoreData, key: string, includeScopedCategories: boolean) => {
+      setData((prev) => {
+        const merged = mergeFilterPayload({
+          ...(prev ?? EMPTY_PRODUCTS_FILTERS),
+          brands: core.brands,
+          priceRange: core.priceRange,
+          ...(includeScopedCategories ? { categories: core.categories } : {}),
+        });
+        persistFilters(merged, key);
+        return merged;
+      });
+      setLoading(false);
+      setError(false);
+    },
+    [persistFilters],
+  );
+
+  const applyExtended = useCallback(
+    (extended: ProductsFiltersExtendedData, key: string) => {
+      setData((prev) => {
+        const merged = mergeFilterPayload({
+          ...(prev ?? EMPTY_PRODUCTS_FILTERS),
+          ...extended,
+        });
+        persistFilters(merged, key);
+        return merged;
+      });
+      hasExtendedDataRef.current = true;
+      setExtendedLoading(false);
+      setError(false);
+    },
+    [persistFilters],
+  );
+
+  const fetchExtended = useCallback(async () => {
+    if (hasExtendedDataRef.current) {
+      return;
     }
     setExtendedLoading(true);
-    const params = buildFilterApiParams();
     try {
-      const [core, extended] = await Promise.all([
-        apiClient.get<ProductsFiltersCoreData>('/api/v1/products/filters/core', { params }),
-        apiClient.get<ProductsFiltersExtendedData>('/api/v1/products/filters/extended', { params }),
-      ]);
-      applyPartialPayload({ ...core, ...extended }, filtersClientKey);
-      hasFullFiltersRef.current = true;
+      const extended = await apiClient.get<ProductsFiltersExtendedData>(
+        '/api/v1/products/filters/extended',
+        { params: buildFilterApiParams() },
+      );
+      applyExtended(extended, filtersClientKey);
     } catch {
       if (!hasFiltersDataRef.current) {
         setError(true);
-        setData(EMPTY_PRODUCTS_FILTERS);
       }
     } finally {
-      setLoading(false);
       setExtendedLoading(false);
-      setCountsPending(false);
     }
-  }, [applyPartialPayload, buildFilterApiParams, filtersClientKey]);
+  }, [applyExtended, buildFilterApiParams, filtersClientKey]);
+
+  const fetchCategoriesFallback = useCallback(async () => {
+    if ((data?.categories?.length ?? 0) > 0) {
+      return;
+    }
+    try {
+      const response = await apiClient.get<{ categories: CategoryFilterOption[] }>(
+        '/api/v1/products/filters/categories',
+        { params: { lang: resolvedLanguage } },
+      );
+      applyCategories(response.categories ?? []);
+    } catch {
+      /* Streamed SSR hydration or core fetch will supply categories. */
+    }
+  }, [applyCategories, data?.categories?.length, resolvedLanguage]);
 
   const fetchFilters = useCallback(async () => {
     setError(false);
     if (!hasFiltersDataRef.current) {
       setLoading(true);
     }
+    setExtendedLoading(true);
     try {
       const res = await apiClient.get<ProductsFiltersData>('/api/v1/products/filters', {
         params: buildFilterApiParams(),
       });
-      applyFiltersPayload(
-        {
-          colors: res.colors ?? [],
-          sizes: res.sizes ?? [],
-          brands: res.brands ?? [],
-          categories: res.categories ?? [],
-          attributeFacets: res.attributeFacets ?? [],
-          priceRange: res.priceRange ?? EMPTY_PRODUCTS_FILTERS.priceRange,
-        },
-        filtersClientKey,
-      );
+      const merged = mergeFilterPayload(res);
+      setData(merged);
+      persistFilters(merged, filtersClientKey);
+      hasExtendedDataRef.current = true;
     } catch {
       if (!hasFiltersDataRef.current) {
         setError(true);
         setData(EMPTY_PRODUCTS_FILTERS);
-        hasFiltersDataRef.current = true;
-        syncedFiltersKeyRef.current = filtersClientKey;
       }
     } finally {
       setLoading(false);
       setExtendedLoading(false);
-      setCountsPending(false);
     }
-  }, [applyFiltersPayload, buildFilterApiParams, filtersClientKey]);
+  }, [buildFilterApiParams, filtersClientKey, persistFilters]);
 
-  const fetchCoreAndExtendedRef = useRef(fetchCoreAndExtended);
-  fetchCoreAndExtendedRef.current = fetchCoreAndExtended;
+  const fetchExtendedRef = useRef(fetchExtended);
+  fetchExtendedRef.current = fetchExtended;
+  const fetchCategoriesFallbackRef = useRef(fetchCategoriesFallback);
+  fetchCategoriesFallbackRef.current = fetchCategoriesFallback;
   const fetchFiltersRef = useRef(fetchFilters);
   fetchFiltersRef.current = fetchFilters;
 
   useLayoutEffect(() => {
-    if (
-      initialFiltersData &&
-      initialFiltersKey &&
-      initialFiltersKey === filtersClientKey
-    ) {
-      if (syncedFiltersKeyRef.current !== filtersClientKey) {
-        applyFiltersPayload(initialFiltersData, filtersClientKey);
-      }
-      return;
-    }
-
-    if (syncedFiltersKeyRef.current === filtersClientKey && hasFullFiltersRef.current) {
+    if (syncedFiltersKeyRef.current === filtersClientKey && hasExtendedDataRef.current) {
       return;
     }
 
     const cached = readShopFiltersCache(filtersClientKey);
     if (cached) {
-      applyFiltersPayload(cached, filtersClientKey);
+      setData(mergeFilterPayload(cached));
+      syncedFiltersKeyRef.current = filtersClientKey;
+      hasFiltersDataRef.current = true;
+      hasExtendedDataRef.current = true;
+      setExtendedLoading(false);
+      setLoading(false);
+      setShopCategoryFilterTree(cached.categories);
       return;
     }
 
     syncedFiltersKeyRef.current = filtersClientKey;
-
-    if (initialShellData && !initialFiltersData) {
-      return;
-    }
-
-    void fetchCoreAndExtendedRef.current();
-  }, [
-    filtersClientKey,
-    initialFiltersData,
-    initialFiltersKey,
-    initialShellData,
-    applyFiltersPayload,
-  ]);
-
-  useEffect(() => {
-    if (!initialShellData || initialFiltersData) {
-      return;
-    }
-    if (hasFullFiltersRef.current) {
-      return;
-    }
-
-    const timer = window.setTimeout(() => {
-      if (hasFullFiltersRef.current) {
-        return;
-      }
-      void fetchCoreAndExtendedRef.current();
-    }, 2_500);
-
-    return () => {
-      window.clearTimeout(timer);
-    };
-  }, [filtersClientKey, initialFiltersData, initialShellData]);
+    hasExtendedDataRef.current = false;
+    void fetchCategoriesFallbackRef.current();
+    void fetchExtendedRef.current();
+  }, [filtersClientKey]);
 
   useEffect(() => {
     const scheduleFacetRefetch = () => {
-      const lang = resolvedLanguage;
-      const scopeKey = buildFacetRefetchScopeKey(searchParams, lang);
-      if (scopeKey === syncedFiltersKeyRef.current && hasFullFiltersRef.current) {
+      const scopeKey = buildFacetRefetchScopeKey(searchParams, resolvedLanguage);
+      if (scopeKey === syncedFiltersKeyRef.current && hasExtendedDataRef.current) {
         return;
       }
       if (scopeKey === lastFacetScopeRef.current) {
@@ -434,9 +365,7 @@ export function ProductsFiltersProvider({
       }
       facetRefetchTimerRef.current = window.setTimeout(() => {
         facetRefetchTimerRef.current = null;
-        if (scopeKey === syncedFiltersKeyRef.current && hasFullFiltersRef.current) {
-          return;
-        }
+        hasExtendedDataRef.current = false;
         void fetchFiltersRef.current();
       }, FACET_REFETCH_DELAY_MS);
     };
@@ -450,20 +379,12 @@ export function ProductsFiltersProvider({
     };
   }, [resolvedLanguage, searchParams]);
 
-  const applyServerHydration = useCallback(
-    (payload: ProductsFiltersData, key: string) => {
-      if (key !== filtersClientKey) {
-        return;
-      }
-      if (syncedFiltersKeyRef.current === key && hasFullFiltersRef.current) {
-        return;
-      }
-      applyFiltersPayload(payload, key);
-    },
-    [applyFiltersPayload, filtersClientKey],
+  const hydrationValue = useMemo<HydrationContextValue>(
+    () => ({ applyCategories, applyCore }),
+    [applyCategories, applyCore],
   );
 
-  const categoriesLoading = loading && !(data?.categories?.length ?? 0);
+  const categoriesLoading = !(data?.categories?.length ?? 0);
 
   const value = useMemo<ProductsFiltersContextValue>(
     () => ({
@@ -471,28 +392,16 @@ export function ProductsFiltersProvider({
       loading,
       categoriesLoading,
       extendedLoading,
-      countsPending,
       error,
       refetch: fetchFilters,
       language: resolvedLanguage,
     }),
-    [
-      data,
-      loading,
-      categoriesLoading,
-      extendedLoading,
-      countsPending,
-      error,
-      fetchFilters,
-      resolvedLanguage,
-    ],
+    [data, loading, categoriesLoading, extendedLoading, error, fetchFilters, resolvedLanguage],
   );
 
   return (
-    <ProductsFiltersHydrationContext.Provider value={applyServerHydration}>
-      <ProductsFiltersContext.Provider value={value}>
-        {children}
-      </ProductsFiltersContext.Provider>
+    <ProductsFiltersHydrationContext.Provider value={hydrationValue}>
+      <ProductsFiltersContext.Provider value={value}>{children}</ProductsFiltersContext.Provider>
     </ProductsFiltersHydrationContext.Provider>
   );
 }
@@ -511,20 +420,38 @@ export function useShopFiltersTranslation() {
   return useMemo(() => ({ t: tFn, lang }), [tFn, lang]);
 }
 
-type ProductsFiltersServerHydrationProps = {
-  readonly initialFiltersData: ProductsFiltersData;
-  readonly initialFiltersKey: string;
+type ProductsFiltersCategoryHydrationProps = {
+  readonly categories: CategoryFilterOption[];
 };
 
-export function ProductsFiltersServerHydration({
-  initialFiltersData,
-  initialFiltersKey,
-}: ProductsFiltersServerHydrationProps) {
+export function ProductsFiltersCategoryHydration({
+  categories,
+}: ProductsFiltersCategoryHydrationProps) {
   const hydrate = useContext(ProductsFiltersHydrationContext);
 
   useLayoutEffect(() => {
-    hydrate?.(initialFiltersData, initialFiltersKey);
-  }, [hydrate, initialFiltersData, initialFiltersKey]);
+    hydrate?.applyCategories(categories);
+  }, [categories, hydrate]);
+
+  return null;
+}
+
+type ProductsFiltersCoreHydrationProps = {
+  readonly core: ProductsFiltersCoreData;
+  readonly filtersKey: string;
+  readonly includeScopedCategories: boolean;
+};
+
+export function ProductsFiltersCoreHydration({
+  core,
+  filtersKey,
+  includeScopedCategories,
+}: ProductsFiltersCoreHydrationProps) {
+  const hydrate = useContext(ProductsFiltersHydrationContext);
+
+  useLayoutEffect(() => {
+    hydrate?.applyCore(core, filtersKey, includeScopedCategories);
+  }, [core, filtersKey, includeScopedCategories, hydrate]);
 
   return null;
 }

@@ -272,11 +272,11 @@ export async function warmProductsFiltersBaseCaches(
 
 export async function invalidateProductsFiltersPublicCaches(): Promise<void> {
   const { cacheService } = await import('@/lib/services/cache.service');
-  const { invalidateShopFilterBrandLabelsCache } = await import(
-    '@/lib/cache/shop-filter-brand-labels-cache'
+  const { invalidateShopCategoryFacetTreeCache } = await import(
+    '@/lib/cache/shop-category-facet-tree-cache'
   );
   await Promise.all([
     cacheService.deletePattern('cache:products:filters:*'),
-    invalidateShopFilterBrandLabelsCache(),
+    invalidateShopCategoryFacetTreeCache(),
   ]);
 }

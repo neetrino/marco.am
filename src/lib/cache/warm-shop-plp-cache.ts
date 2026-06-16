@@ -2,6 +2,7 @@ import type { LanguageCode } from '@/lib/language';
 import { SHOP_PLP_DEFAULT_PAGE_SIZE } from '@/lib/constants/shop-plp-pagination';
 import { getProductsListingCached } from '@/lib/cache/products-listing-redis';
 import { warmProductsFiltersBaseCaches } from '@/lib/cache/products-filters-redis';
+import { warmShopCategoryFacetTreeCaches } from '@/lib/cache/shop-category-facet-tree-cache';
 import { logger } from '@/lib/utils/logger';
 
 const WARM_LOCALES: LanguageCode[] = ['hy', 'en', 'ru'];
@@ -28,6 +29,7 @@ export async function warmShopPlpListingCache(): Promise<void> {
   const outcomes = await Promise.allSettled([
     ...tasks,
     warmProductsFiltersBaseCaches(WARM_LOCALES),
+    warmShopCategoryFacetTreeCaches(WARM_LOCALES),
   ]);
   const failed = outcomes.filter((outcome) => outcome.status === 'rejected').length;
   logger.info('[warmShopPlpListingCache] finished', {
