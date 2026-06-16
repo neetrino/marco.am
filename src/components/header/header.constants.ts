@@ -44,6 +44,9 @@ export const HEADER_MEGA_MENU_GRID_FOUR_COL_MIN_WIDTH_PX = 1680;
 export const HEADER_MEGA_MENU_SUBCATEGORY_GRID_CLASS =
   'grid w-full min-w-0 grid-cols-1 gap-x-8 gap-y-8 sm:grid-cols-2 md:grid-cols-3 min-[1680px]:grid-cols-4';
 
+/** Collapsed descendant list length before “see all”. */
+export const HEADER_MEGA_MENU_DESCENDANT_PREVIEW_COUNT = 10;
+
 /** Horizontal inset for mega-menu rail + right column (keep in sync). */
 export const HEADER_MEGA_MENU_RAIL_PADDING_CLASS = 'py-5 pl-5 md:py-6 md:pl-6';
 

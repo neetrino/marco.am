@@ -55,6 +55,7 @@
     "openInMaps": "На карте",
     "categoriesMegaMenu": {
       "viewProducts": "Смотреть все товары",
+      "seeAllSubcategories": "Посмотреть все",
       "subcategories": "Подкатегории",
       "productsWord": "товаров",
       "emptySubcategories": "Подкатегорий пока нет. Добавьте их в админке или выполните seed базы."

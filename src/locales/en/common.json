@@ -55,6 +55,7 @@
     "openInMaps": "View on map",
     "categoriesMegaMenu": {
       "viewProducts": "View all products",
+      "seeAllSubcategories": "See all",
       "subcategories": "Subcategories",
       "productsWord": "products",
       "emptySubcategories": "No subcategories yet. Add child categories in the admin or run the database seed."

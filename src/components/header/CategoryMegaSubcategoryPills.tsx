@@ -4,13 +4,18 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { useState } from 'react';
+import { useTranslation } from '../../lib/i18n-client';
 import type { LanguageCode } from '../../lib/language';
 import type { Category } from './category-nav-types';
 import type { MegaMenuSubcategoryGroup } from './categoryNavList';
 import type { CategoryNavIcon } from './categoryNavPresentation';
 import { resolveCategoryNavPresentation } from './categoryNavPresentation';
 import { headerCategoryNavFont } from './headerCategoryNavTypography';
-import { HEADER_MEGA_MENU_SUBCATEGORY_GRID_CLASS } from './header.constants';
+import {
+  HEADER_MEGA_MENU_DESCENDANT_PREVIEW_COUNT,
+  HEADER_MEGA_MENU_SUBCATEGORY_GRID_CLASS,
+} from './header.constants';
 import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '../../lib/utils/image-utils';
 import { shouldBypassNextImageOptimizer } from '@/lib/utils/should-bypass-next-image-optimizer';
 
@@ -26,6 +31,56 @@ const MEGA_PARENT_LINK_CLASS =
 
 const MEGA_DESCENDANT_LINK_CLASS =
   `${headerCategoryNavFont.className} block rounded-lg px-2 py-1.5 text-sm leading-5 !text-[#383838]/85 transition-[background-color,color] duration-150 hover:bg-marco-gray/60 hover:!text-[#383838] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/10 dark:!text-[#383838]/85 dark:hover:!text-[#383838]`;
+
+const MEGA_DESCENDANT_SEE_ALL_CLASS =
+  `${headerCategoryNavFont.className} mt-0.5 block w-full rounded-lg px-2 py-1.5 text-left text-sm font-semibold leading-5 !text-[#383838] underline decoration-[#383838]/30 underline-offset-2 transition-[background-color,color,decoration-color] duration-150 hover:bg-marco-gray/60 hover:decoration-[#383838] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/10 dark:!text-[#383838]`;
+
+function SubcategoryDescendantList({
+  descendants,
+  lang,
+  onNavigate,
+}: {
+  descendants: Category[];
+  lang: LanguageCode;
+  onNavigate: () => void;
+}) {
+  const { t } = useTranslation();
+  const [expanded, setExpanded] = useState(false);
+  const hasMore = descendants.length > HEADER_MEGA_MENU_DESCENDANT_PREVIEW_COUNT;
+  const visibleDescendants = expanded
+    ? descendants
+    : descendants.slice(0, HEADER_MEGA_MENU_DESCENDANT_PREVIEW_COUNT);
+
+  return (
+    <ul className="flex flex-col gap-0.5 pl-1">
+      {visibleDescendants.map((descendant: Category) => {
+        const row = resolveCategoryNavPresentation(descendant.slug, descendant.title, lang);
+        return (
+          <li key={descendant.id}>
+            <Link
+              href={`/products?category=${descendant.slug}`}
+              onClick={onNavigate}
+              className={MEGA_DESCENDANT_LINK_CLASS}
+            >
+              {row.title}
+            </Link>
+          </li>
+        );
+      })}
+      {hasMore && !expanded ? (
+        <li>
+          <button
+            type="button"
+            onClick={() => setExpanded(true)}
+            className={MEGA_DESCENDANT_SEE_ALL_CLASS}
+          >
+            {t('common.navigation.categoriesMegaMenu.seeAllSubcategories')}
+          </button>
+        </li>
+      ) : null}
+    </ul>
+  );
+}
 
 function SubcategoryGroupParent({
   parent,
@@ -177,22 +232,11 @@ export function CategoryMegaSubcategoryPills({
           <li key={parent.id} className="min-w-0 w-full">
             <SubcategoryGroupParent parent={parent} lang={lang} onNavigate={onNavigate} />
             {descendants.length > 0 ? (
-              <ul className="flex flex-col gap-0.5 pl-1">
-                {descendants.map((descendant: Category) => {
-                  const row = resolveCategoryNavPresentation(descendant.slug, descendant.title, lang);
-                  return (
-                    <li key={descendant.id}>
-                      <Link
-                        href={`/products?category=${descendant.slug}`}
-                        onClick={onNavigate}
-                        className={MEGA_DESCENDANT_LINK_CLASS}
-                      >
-                        {row.title}
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
+              <SubcategoryDescendantList
+                descendants={descendants}
+                lang={lang}
+                onNavigate={onNavigate}
+              />
             ) : null}
           </li>
         ))}
