@@ -23,12 +23,24 @@ const HY_LOCALE = "hy";
 const MAX_DEPTH = 64;
 const CHUNK = 50;
 
-/** Target file typo `Չորանոցներր` maps to the existing `Չորանոցներ`. */
-const TITLE_ALIASES: Record<string, string> = { "չորանոցներր": "չորանոցներ" };
-/** Extra category hy title -> target parent hy title (kept, just reparented). */
-const REPARENT_EXTRAS: Record<string, string> = { "պիցցա պատրաստող սարքեր": "խոհանոցային տեխնիկա" };
-/** Extra category hy title -> merge into this target leaf hy title. */
-const MERGE_INTO: Record<string, string> = { "փայտատաշեղային սալ օսպ": "օսբ" };
+/**
+ * Target-title -> existing-DB-title aliases (normalized).
+ * - `Չորանոցներր` (file typo) -> existing `Չորանոցներ`.
+ * - `Նրբատախտակ ՕՍԲ` (merged label) -> existing `Նրբատախտակ` (renamed on apply).
+ */
+const TITLE_ALIASES: Record<string, string> = {
+  "չորանոցներր": "չորանոցներ",
+  "նրբատախտակ օսբ": "նրբատախտակ",
+};
+/** Extra/kept category hy title -> target parent hy title (reparented, not merged). */
+const REPARENT_EXTRAS: Record<string, string> = {
+  "պիցցա պատրաստող սարքեր": "խոհանոցային տեխնիկա",
+  "փայտատաշեղային սալ օսպ": "լամինացված սալեր",
+};
+/** Source category hy title -> merge into this target hy title (source soft-deleted). */
+const MERGE_INTO: Record<string, string> = { "օսբ": "նրբատախտակ" };
+/** Rename: existing hy title (normalized) -> new hy title (verbatim). */
+const RENAMES: Record<string, string> = { "նրբատախտակ": "Նրբատախտակ ՕՍԲ" };
 /** Extra categories to soft-delete (no real products). */
 const DELETE_TITLES = new Set(["կահույք և ինտերիեր"]);
 
@@ -131,6 +143,12 @@ async function main(): Promise<void> {
     if (id) deleteIds.add(id);
   }
 
+  const renameMap = new Map<string, string>(); // categoryId -> new hy title
+  for (const [from, to] of Object.entries(RENAMES)) {
+    const id = idByTitle.get(normalizeTitle(from));
+    if (id) renameMap.set(id, to);
+  }
+
   // Effective parent map for ancestor computation: start from desired, fall
   // back to current parent for untouched categories; skip deleted/merged.
   const effectiveParent = new Map<string, string | null>();
@@ -183,7 +201,7 @@ async function main(): Promise<void> {
     `MODE: ${apply ? "APPLY" : "DRY-RUN"}`,
     `Categories: ${rows.length} | Products: ${products.length}`,
     `Parent moves (reparent to match target): ${parentMoves.length}`,
-    `Merge categories: ${mergeMap.size} | Soft-delete categories: ${deleteIds.size}`,
+    `Renames: ${renameMap.size} | Merge categories: ${mergeMap.size} | Soft-delete categories: ${deleteIds.size}`,
     `Missing target leaves (NOT created here): ${missingLeaves.length}`,
     `  ${missingLeaves.join(", ") || "—"}`,
     `Products with categoryIds/primary changes: ${relinkChanged}`,
@@ -197,6 +215,12 @@ async function main(): Promise<void> {
   }
 
   // ---- APPLY ----
+  for (const [categoryId, newTitle] of renameMap) {
+    await db.categoryTranslation.updateMany({
+      where: { categoryId, locale: HY_LOCALE },
+      data: { title: newTitle },
+    });
+  }
   for (const move of parentMoves) {
     await db.category.update({ where: { id: move.id }, data: { parentId: desiredParent.get(move.id) ?? null } });
   }
