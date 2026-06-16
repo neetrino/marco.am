@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { cookies } from "next/headers";
-import { notFound } from "next/navigation";
 import { formatProductDescriptionForSeo } from "@/lib/products/product-description";
 import { productsService } from "@/lib/services/products.service";
 import { t } from "@/lib/i18n";
@@ -9,10 +9,9 @@ import {
   parseLanguageFromServer,
   type LanguageCode,
 } from "@/lib/language";
-import { getCachedPdpExists } from "@/lib/product-pdp/pdp-server-cache";
-import { fetchPdpLayoutVisual } from "@/lib/product-pdp/pdp-layout-server";
 import { normalizePdpSlug } from "@/lib/product-pdp/pdp-slug";
 
+import { ProductPdpLayoutGate } from "./ProductPdpLayoutGate";
 import { ProductSlugLayoutClient } from "./ProductSlugLayoutClient";
 
 const DEFAULT_TITLE = "Product";
@@ -75,20 +74,20 @@ export default async function ProductSlugLayout({
     parseLanguageFromServer(cookieStore.get(LANGUAGE_PREFERENCE_KEY)?.value) ?? "en";
   const baseSlug = normalizePdpSlug(slugParam);
 
-  const exists = await getCachedPdpExists(baseSlug);
-  if (!exists) {
-    notFound();
-  }
-
-  const initialVisual = await fetchPdpLayoutVisual(slugParam, serverLanguage);
-
   return (
     <>
       <ProductSlugLayoutClient
         slugParam={slugParam}
         serverLanguage={serverLanguage}
-        initialVisual={initialVisual}
+        initialVisual={null}
       />
+      <Suspense fallback={null}>
+        <ProductPdpLayoutGate
+          slugParam={slugParam}
+          baseSlug={baseSlug}
+          serverLanguage={serverLanguage}
+        />
+      </Suspense>
       {children}
     </>
   );
