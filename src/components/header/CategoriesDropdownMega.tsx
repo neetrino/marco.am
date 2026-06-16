@@ -68,9 +68,9 @@ export function CategoriesDropdownMega({
   const showPromoBanner = !isTechAndElectronics;
 
   return (
-    <div className="flex h-full max-h-full min-h-0 w-full min-w-0 flex-1 flex-col divide-y divide-marco-border overflow-hidden rounded-[13px] bg-white ring-1 ring-black/15 shadow-2xl md:min-h-0 md:flex-row md:divide-y-0">
+    <div className="flex h-full max-h-full min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden bg-white md:min-h-0 md:flex-row">
       {/* Left rail: fixed width on md+; h-full + inner min-h-0 scroll region so category list always scrolls inside the panel (flex min-height:auto cannot steal height). */}
-      <div className="relative flex h-full min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden rounded-t-[13px] bg-marco-gray md:min-h-0 md:w-[400px] md:min-w-[400px] md:max-w-[400px] md:flex-none md:shrink-0 md:rounded-l-[13px] md:rounded-r-none md:rounded-t-none md:border-r-2 md:border-r-neutral-400">
+      <div className="relative flex h-full min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden bg-marco-gray md:min-h-0 md:w-[400px] md:min-w-[400px] md:max-w-[400px] md:flex-none md:shrink-0">
         <nav
           className="flex h-full min-h-0 flex-1 flex-col overflow-hidden py-6 pl-4 pr-0 md:py-[29px] md:pl-[25px] md:pr-0"
           aria-label={t('common.navigation.categories')}
@@ -145,7 +145,7 @@ export function CategoriesDropdownMega({
       </div>
 
       {/* Right column: promo (fixed height) + scrollable subcategory list inside flex min-h-0. */}
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col self-stretch overflow-hidden rounded-b-[13px] bg-white px-5 pb-5 pt-6 md:rounded-b-none md:rounded-r-[13px] md:border-r-2 md:border-r-neutral-400 md:pl-6 md:pr-5 md:pt-6">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col self-stretch overflow-hidden bg-white px-5 pb-5 pt-6 md:pl-6 md:pr-5 md:pt-6">
         {showPromoBanner ? (
           <div className="shrink-0">
             <CategoryDropdownPromoBanner

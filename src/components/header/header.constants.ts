@@ -21,6 +21,12 @@ export const HEADER_CATEGORIES_OVERLAY_Z_INDEX = 80;
 export const HEADER_CATEGORIES_BRIDGE_Z_INDEX = 85;
 export const HEADER_CATEGORIES_PANEL_Z_INDEX = 90;
 
+/** Categories drawer — 90% viewport width; right gap keeps overlay visible. */
+export const HEADER_CATEGORIES_PANEL_WIDTH_CLASS = 'w-[90%] max-w-[90vw]';
+
+/** Outer shell radius on the drawer’s open (right) edge. */
+export const HEADER_CATEGORIES_PANEL_RADIUS_CLASS = 'rounded-r-[32px]';
+
 /**
  * Row-1 phone/address dropdowns — above row-2 search (`z-[480]`), below mobile search overlay (`z-[700]`).
  */

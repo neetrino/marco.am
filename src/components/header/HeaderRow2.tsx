@@ -7,6 +7,8 @@ import { SearchDropdown } from '../SearchDropdown';
 import { CategoriesDropdownMega } from './CategoriesDropdownMega';
 import {
   HEADER_CATEGORIES_OVERLAY_Z_INDEX,
+  HEADER_CATEGORIES_PANEL_RADIUS_CLASS,
+  HEADER_CATEGORIES_PANEL_WIDTH_CLASS,
   HEADER_CATEGORIES_PANEL_Z_INDEX,
   HEADER_CONTAINER_CLASS,
   HEADER_SEARCH_BAR_HEIGHT_CLASS,
@@ -249,7 +251,7 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
                     <div
                       data-marco-categories-dropdown
                       data-theme-static="true"
-                      className={`relative h-full w-full max-w-none transform-gpu overflow-hidden bg-white transition-transform duration-300 ease-out dark:bg-zinc-950 ${
+                      className={`relative h-full transform-gpu overflow-hidden bg-white shadow-2xl transition-transform duration-300 ease-out dark:bg-zinc-950 ${HEADER_CATEGORIES_PANEL_WIDTH_CLASS} ${HEADER_CATEGORIES_PANEL_RADIUS_CLASS} ${
                         showProductsMenu ? 'translate-x-0' : '-translate-x-full'
                       }`}
                       style={{ zIndex: HEADER_CATEGORIES_PANEL_Z_INDEX }}
@@ -273,7 +275,7 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
                         </div>
                         <div className="min-h-0 flex-1">
                           {loadingCategories ? (
-                            <div className="h-full min-h-[200px] rounded-[13px] bg-white px-4 py-3 text-sm text-[#5d7285] shadow-2xl dark:bg-zinc-900 dark:text-zinc-300">
+                            <div className="h-full min-h-[200px] bg-white px-4 py-3 text-sm text-[#5d7285] dark:bg-zinc-900 dark:text-zinc-300">
                               {t('common.messages.loading')}
                             </div>
                           ) : (

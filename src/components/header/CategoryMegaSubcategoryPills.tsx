@@ -38,7 +38,7 @@ function SubcategoryPillRow({
     <Link
       href={`/products?category=${child.slug}`}
       onClick={onNavigate}
-      className={`${headerCategoryNavFont.className} flex min-h-[44px] w-full min-w-0 items-center justify-between gap-2 rounded-[22px] border border-marco-border bg-white py-1 pl-2 pr-1.5 !text-[#383838] transition-[filter] hover:brightness-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/15 dark:!text-[#383838] md:gap-3 md:pl-2.5 md:pr-2`}
+      className={`${headerCategoryNavFont.className} flex min-h-[44px] w-full min-w-0 items-center justify-between gap-2 rounded-full py-1 pl-2 pr-1.5 !text-[#383838] transition-[background-color,filter] hover:bg-marco-gray/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/15 dark:!text-[#383838] md:gap-3 md:pl-2.5 md:pr-2`}
     >
       <span className="flex min-w-0 flex-1 items-center gap-2 md:gap-3">
         <SubcategoryIcon icon={row.icon} imageSrc={imageSrc} />
@@ -148,7 +148,7 @@ export function CategoryMegaSubcategoryPills({
         className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overflow-x-hidden overscroll-y-contain [-webkit-overflow-scrolling:touch] pr-1 [scrollbar-gutter:auto] touch-pan-y md:gap-2.5"
       >
         {groups.map(({ parent, descendants }) => (
-          <li key={parent.id} className="shrink-0 rounded-[16px] border border-marco-border bg-white/80 px-2 py-2">
+          <li key={parent.id} className="shrink-0 px-1 py-0.5">
             <SubcategoryPillRow
               child={parent}
               lang={lang}
@@ -165,7 +165,7 @@ export function CategoryMegaSubcategoryPills({
                       key={descendant.id}
                       href={`/products?category=${descendant.slug}`}
                       onClick={onNavigate}
-                      className={`${headerCategoryNavFont.className} inline-flex min-h-[34px] items-center justify-between gap-2 rounded-[12px] border border-marco-border/80 bg-white px-2 py-1 text-sm leading-5 !text-[#383838] transition-[filter] hover:brightness-[0.98] dark:!text-[#383838]`}
+                      className={`${headerCategoryNavFont.className} inline-flex min-h-[34px] items-center justify-between gap-2 rounded-full px-3 py-1 text-sm leading-5 !text-[#383838] transition-[background-color,filter] hover:bg-marco-gray/60 dark:!text-[#383838]`}
                     >
                       <span className="min-w-0 truncate">{row.title}</span>
                       <span className="shrink-0 rounded-full bg-black/8 px-1.5 py-0.5 text-xs font-semibold">
