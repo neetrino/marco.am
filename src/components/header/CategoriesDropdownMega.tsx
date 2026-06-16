@@ -15,6 +15,11 @@ import {
 } from './categoryNavList';
 import { resolveCategoryNavPresentation } from './categoryNavPresentation';
 import { headerCategoryNavFont } from './headerCategoryNavTypography';
+import {
+  HEADER_MEGA_MENU_CONTENT_PADDING_CLASS,
+  HEADER_MEGA_MENU_RAIL_PADDING_CLASS,
+  HEADER_MEGA_MENU_RAIL_WIDTH_CLASS,
+} from './header.constants';
 import { useMegaMenuBranch, useMegaMenuRoots } from './useMegaMenuCategories';
 import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '../../lib/utils/image-utils';
 import { shouldBypassNextImageOptimizer } from '@/lib/utils/should-bypass-next-image-optimizer';
@@ -25,12 +30,12 @@ function isTechAndElectronicsCategory(value: string): boolean {
 }
 
 /** Left mega-rail root category row — keep img attrs in sync with `h-[…] w-[…]` on the image. */
-const MEGA_ROOT_ICON_INNER_PX = 34;
-/** Lucide `size` inside `size-[48px]` icon wrap. */
-const MEGA_ROOT_LUCIDE_PX = 34;
+const MEGA_ROOT_ICON_INNER_PX = 28;
+/** Lucide `size` inside `size-[40px]` icon wrap. */
+const MEGA_ROOT_LUCIDE_PX = 28;
 
 const MEGA_ROOT_ROW_CLASS =
-  `${headerCategoryNavFont.className} flex w-full min-w-0 shrink-0 cursor-pointer items-center gap-3 rounded-[40px] px-2 py-0 text-left text-[13px] leading-[21px] tracking-[0.15px] transition-[background-color,color,opacity] duration-150`;
+  `${headerCategoryNavFont.className} flex w-full min-w-0 shrink-0 cursor-pointer items-center gap-2 rounded-[40px] px-1.5 py-0 text-left text-[13px] leading-[21px] tracking-[0.15px] transition-[background-color,color,opacity] duration-150`;
 
 export function CategoriesDropdownMega({
   menuOpen,
@@ -92,13 +97,15 @@ export function CategoriesDropdownMega({
 
   return (
     <div className="flex h-full max-h-full min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden bg-white md:min-h-0 md:flex-row">
-      <div className="relative flex h-full min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden border-r border-black/[0.08] md:min-h-0 md:w-[400px] md:min-w-[400px] md:max-w-[400px] md:flex-none md:shrink-0 dark:border-white/10">
+      <div
+        className={`relative flex h-full min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden border-r border-black/[0.08] md:min-h-0 md:flex-none md:shrink-0 dark:border-white/10 ${HEADER_MEGA_MENU_RAIL_WIDTH_CLASS}`}
+      >
         <nav
-          className="flex h-full min-h-0 flex-1 flex-col overflow-hidden py-6 pl-5 pr-0 md:py-[29px] md:pl-8 md:pr-0"
+          className={`flex h-full min-h-0 flex-1 flex-col overflow-hidden pr-0 ${HEADER_MEGA_MENU_RAIL_PADDING_CLASS}`}
           aria-label={t('common.navigation.categories')}
         >
           <div className="flex min-h-0 flex-1 basis-0 flex-col overflow-y-auto overflow-x-hidden overscroll-y-contain [-webkit-overflow-scrolling:touch] [scrollbar-gutter:auto] touch-pan-y scroll-pb-header-mega-category-scroll-end pb-header-mega-category-scroll-end pr-0">
-            <div className="flex flex-col gap-[18px] pr-2 md:pr-2.5">
+            <div className="flex flex-col gap-3 pr-1.5">
               {categoriesWithExtra.map((category) => {
                 const isSelected = category.slug === selectedSlug;
                 const row = resolveCategoryNavPresentation(category.slug, category.title, lang);
@@ -116,14 +123,14 @@ export function CategoriesDropdownMega({
                         : 'font-normal !text-[#383838] hover:bg-marco-gray/70 dark:!text-[#383838]'
                     }`}
                   >
-                    <span className="flex size-[48px] shrink-0 items-center justify-center p-1.5 !text-[#383838] dark:!text-[#383838]">
+                    <span className="flex size-[40px] shrink-0 items-center justify-center p-1 !text-[#383838] dark:!text-[#383838]">
                       {categoryImage ? (
                         <Image
                           src={toDomSafeImgSrcString(categoryImage)}
                           alt=""
                           width={MEGA_ROOT_ICON_INNER_PX}
                           height={MEGA_ROOT_ICON_INNER_PX}
-                          className="h-[34px] w-[34px] shrink-0 object-contain"
+                          className="h-[28px] w-[28px] shrink-0 object-contain"
                           draggable={false}
                           loading="lazy"
                           unoptimized={shouldBypassNextImageOptimizer(categoryImage)}
@@ -134,7 +141,7 @@ export function CategoriesDropdownMega({
                           alt=""
                           width={MEGA_ROOT_ICON_INNER_PX}
                           height={MEGA_ROOT_ICON_INNER_PX}
-                          className="h-[34px] w-[34px] shrink-0 object-contain brightness-0"
+                          className="h-[28px] w-[28px] shrink-0 object-contain brightness-0"
                           draggable={false}
                           loading="lazy"
                           unoptimized={shouldBypassNextImageOptimizer(row.icon.src)}
@@ -168,7 +175,7 @@ export function CategoriesDropdownMega({
 
       <div
         ref={rightScrollRef}
-        className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto overflow-x-hidden overscroll-y-contain [-webkit-overflow-scrolling:touch] touch-pan-y bg-white px-5 pb-6 pt-4 md:px-8 md:pb-8 md:pt-5"
+        className={`flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto overflow-x-hidden overscroll-y-contain [-webkit-overflow-scrolling:touch] touch-pan-y bg-white pb-6 pt-4 md:pb-8 md:pt-5 ${HEADER_MEGA_MENU_CONTENT_PADDING_CLASS}`}
       >
         {showPromoBanner ? (
           <CategoryDropdownPromoBanner
