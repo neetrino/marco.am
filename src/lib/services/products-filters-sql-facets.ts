@@ -8,6 +8,10 @@ import {
   PRODUCT_FILTERS_SQL_OPTION_ROWS_CAP,
 } from "@/lib/constants/product-filters-query-limits";
 import { isColorAttributeKey, isSizeAttributeKey } from "@/lib/attribute-keys";
+import {
+  expandCategoryIdsWithAncestors,
+  type CategoryParentMap,
+} from "./category-ancestors.service";
 import type { ProductWithRelations } from "./products-find-query.service";
 
 const COLOR_OPTION_KEYS = ["color", "colour", "guyn", "colors"] as const;
@@ -296,16 +300,20 @@ export async function aggregateBrandFacetsFromWhere(
 
 export function buildCategoryCountMapFromRows(
   rows: readonly CategoryFacetProductRow[],
+  parentMap?: CategoryParentMap,
 ): Map<string, number> {
   const categoryCountMap = new Map<string, number>();
   for (const row of rows) {
-    const categoryIdsForProduct = new Set<string>();
+    const directIds = new Set<string>();
     if (row.primaryCategoryId) {
-      categoryIdsForProduct.add(row.primaryCategoryId);
+      directIds.add(row.primaryCategoryId);
     }
     for (const categoryId of row.categoryIds) {
-      categoryIdsForProduct.add(categoryId);
+      directIds.add(categoryId);
     }
+    const categoryIdsForProduct = parentMap
+      ? expandCategoryIdsWithAncestors(directIds, parentMap)
+      : directIds;
     for (const categoryId of categoryIdsForProduct) {
       categoryCountMap.set(categoryId, (categoryCountMap.get(categoryId) || 0) + 1);
     }

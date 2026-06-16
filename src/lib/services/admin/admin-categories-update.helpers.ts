@@ -239,6 +239,15 @@ export async function upsertCategoryTranslations(
   }
 }
 
+/**
+ * Reconciles a parent's child set using a precise diff.
+ *
+ * Only children that were attached to this category and are absent from the new
+ * set are detached; only genuinely new ids are attached. This avoids the
+ * previous "detach every child to root, then re-attach" behavior, which
+ * silently orphaned the whole subtree whenever a caller sent an incomplete or
+ * stale `subcategoryIds` list — the root cause of the flattened taxonomy.
+ */
 export async function applySubcategoryAssignments(
   tx: PrismaTransactionClient,
   categoryId: string,
@@ -247,13 +256,28 @@ export async function applySubcategoryAssignments(
   if (normalizedSubcategoryIds === undefined) {
     return;
   }
-  await tx.category.updateMany({
-    where: { parentId: categoryId },
-    data: { parentId: null },
+
+  const nextChildIds = new Set(normalizedSubcategoryIds);
+  const currentChildren = await tx.category.findMany({
+    where: { parentId: categoryId, deletedAt: null },
+    select: { id: true },
   });
-  if (normalizedSubcategoryIds.length > 0) {
+
+  const idsToDetach = currentChildren
+    .map((child) => child.id)
+    .filter((id) => !nextChildIds.has(id));
+  if (idsToDetach.length > 0) {
     await tx.category.updateMany({
-      where: { id: { in: normalizedSubcategoryIds } },
+      where: { id: { in: idsToDetach } },
+      data: { parentId: null },
+    });
+  }
+
+  const currentChildIds = new Set(currentChildren.map((child) => child.id));
+  const idsToAttach = normalizedSubcategoryIds.filter((id) => !currentChildIds.has(id));
+  if (idsToAttach.length > 0) {
+    await tx.category.updateMany({
+      where: { id: { in: idsToAttach } },
       data: { parentId: categoryId },
     });
   }

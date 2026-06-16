@@ -474,6 +474,26 @@ class AdminCategoriesService {
       }
     }
 
+    const childMap = new Map<string, string[]>();
+    for (const category of categories) {
+      if (!category.parentId) {
+        continue;
+      }
+      const siblings = childMap.get(category.parentId) ?? [];
+      siblings.push(category.id);
+      childMap.set(category.parentId, siblings);
+    }
+
+    const subtreeProductCountByCategoryId = new Map<string, number>();
+    for (const categoryId of categoryIds) {
+      const subtreeIds = collectDescendantIds(categoryId, childMap);
+      const total = subtreeIds.reduce(
+        (sum, id) => sum + (directProductCountByCategoryId.get(id) ?? 0),
+        0,
+      );
+      subtreeProductCountByCategoryId.set(categoryId, total);
+    }
+
     return {
       data: categories.map((category) =>
         mapCategory(
@@ -488,7 +508,7 @@ class AdminCategoriesService {
           locale,
           this.defaultLocale,
           this.supportedLocales,
-          directProductCountByCategoryId,
+          subtreeProductCountByCategoryId,
         ),
       ),
     };

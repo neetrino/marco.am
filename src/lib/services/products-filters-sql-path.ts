@@ -2,6 +2,7 @@ import { Prisma } from "@white-shop/db/prisma";
 import { unstable_cache } from "next/cache";
 import { adminSettingsService } from "./admin/admin-settings.service";
 import { collectAttributeFacetsFromSampleProducts } from "./products-filters-attribute-facets";
+import { loadCategoryParentMap } from "./category-ancestors.service";
 import { buildShopFilterCategoriesFromCountMap } from "./products-filters-category-tree";
 import {
   aggregateBrandFacetsFromWhere,
@@ -68,6 +69,7 @@ export async function buildShopFiltersViaSqlAggregation(args: {
     sizes,
     categoryRows,
     attributeSample,
+    categoryParentMap,
   ] = await Promise.all([
     getPublishedVariantPriceBounds(args.where),
     aggregateBrandFacetsFromWhere(args.where, args.lang, args.preferredLocales),
@@ -77,9 +79,10 @@ export async function buildShopFiltersViaSqlAggregation(args: {
       ? fetchCategoryFacetProductRows(args.where, scopeFilters)
       : Promise.resolve([]),
     fetchAttributeFacetSample(args.where, args.preferredLocales),
+    args.includeCategories ? loadCategoryParentMap() : Promise.resolve(undefined),
   ]);
 
-  const categoryCountMap = buildCategoryCountMapFromRows(categoryRows);
+  const categoryCountMap = buildCategoryCountMapFromRows(categoryRows, categoryParentMap);
   const categories = await buildShopFilterCategoriesFromCountMap(
     args.includeCategories ? categoryCountMap : null,
     args.lang,

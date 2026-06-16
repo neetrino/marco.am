@@ -23,6 +23,10 @@ import {
 } from "@/lib/constants/product-filters-query-limits";
 import { isShopFilterCategoryExcludedFromTranslations } from "@/lib/constants/shop-filter-excluded-categories";
 import { buildShopFilterCategoriesFromCountMap } from "./products-filters-category-tree";
+import {
+  expandCategoryIdsWithAncestors,
+  loadCategoryParentMap,
+} from "./category-ancestors.service";
 import { aggregateBrandFacetsFromWhere, getPublishedVariantPriceBounds } from "./products-filters-sql-facets";
 import { buildShopFiltersViaSqlAggregation } from "./products-filters-sql-path";
 import { getListingDiscountSettings, type ListingDiscountSettings } from "./listing-discount-settings";
@@ -542,6 +546,7 @@ class ProductsFiltersService {
     const extraAttributeFacetByKey = new Map<string, ExtraAttributeFacetAgg>();
     const brandMap = new Map<string, { id: string; slug: string; name: string; count: number }>();
     const categoryCountMap = includeCategories ? new Map<string, number>() : null;
+    const categoryParentMap = includeCategories ? await loadCategoryParentMap() : null;
     let rangeMin = Infinity;
     let rangeMax = 0;
 
@@ -554,13 +559,16 @@ class ProductsFiltersService {
         categoryIds?: string[];
       };
       if (includeCategories && categoryCountMap) {
-        const categoryIdsForProduct = new Set<string>();
+        const directIds = new Set<string>();
         if (catProduct.primaryCategoryId) {
-          categoryIdsForProduct.add(catProduct.primaryCategoryId);
+          directIds.add(catProduct.primaryCategoryId);
         }
         (catProduct.categoryIds || []).forEach((id) => {
-          categoryIdsForProduct.add(id);
+          directIds.add(id);
         });
+        const categoryIdsForProduct = categoryParentMap
+          ? expandCategoryIdsWithAncestors(directIds, categoryParentMap)
+          : directIds;
         categoryIdsForProduct.forEach((id) => {
           categoryCountMap.set(id, (categoryCountMap.get(id) || 0) + 1);
         });
