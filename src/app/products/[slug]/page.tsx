@@ -9,13 +9,15 @@ import {
 import { normalizePdpSlug } from '@/lib/product-pdp/pdp-slug';
 
 import { ProductPdpDetailStream } from './ProductPdpDetailStream';
+import { ProductSlugLayoutClient } from './ProductSlugLayoutClient';
 
 type PageProps = {
   params: Promise<{ slug: string }>;
 };
 
 /**
- * PDP page slot — streams heavy detail into React Query; UI lives in layout.tsx.
+ * PDP page slot — paints the interactive shell from the client seed (instant, taking over the
+ * `loading.tsx` fallback) and streams heavy detail into React Query.
  */
 export default async function ProductPage({ params }: PageProps) {
   const { slug: slugParam } = await params;
@@ -25,8 +27,15 @@ export default async function ProductPage({ params }: PageProps) {
   const baseSlug = normalizePdpSlug(slugParam);
 
   return (
-    <Suspense fallback={null}>
-      <ProductPdpDetailStream baseSlug={baseSlug} serverLanguage={serverLanguage} />
-    </Suspense>
+    <>
+      <ProductSlugLayoutClient
+        slugParam={slugParam}
+        serverLanguage={serverLanguage}
+        initialVisual={null}
+      />
+      <Suspense fallback={null}>
+        <ProductPdpDetailStream baseSlug={baseSlug} serverLanguage={serverLanguage} />
+      </Suspense>
+    </>
   );
 }

@@ -2,17 +2,16 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { cookies } from "next/headers";
 import { formatProductDescriptionForSeo } from "@/lib/products/product-description";
-import { productsService } from "@/lib/services/products.service";
 import { t } from "@/lib/i18n";
 import {
   LANGUAGE_PREFERENCE_KEY,
   parseLanguageFromServer,
   type LanguageCode,
 } from "@/lib/language";
+import { getCachedPdpDetail } from "@/lib/product-pdp/pdp-server-cache";
 import { normalizePdpSlug } from "@/lib/product-pdp/pdp-slug";
 
 import { ProductPdpLayoutGate } from "./ProductPdpLayoutGate";
-import { ProductSlugLayoutClient } from "./ProductSlugLayoutClient";
 
 const DEFAULT_TITLE = "Product";
 
@@ -29,7 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const browserTabTitle = t(lang, "common.meta.productTabTitle");
 
   try {
-    const product = await productsService.findBySlug(slug, lang);
+    const product = await getCachedPdpDetail(normalizePdpSlug(slug), lang);
     const title = product.seo?.title || product.title || DEFAULT_TITLE;
     const description =
       product.seo?.description || formatProductDescriptionForSeo(product.description ?? []) || null;
@@ -76,11 +75,6 @@ export default async function ProductSlugLayout({
 
   return (
     <>
-      <ProductSlugLayoutClient
-        slugParam={slugParam}
-        serverLanguage={serverLanguage}
-        initialVisual={null}
-      />
       <Suspense fallback={null}>
         <ProductPdpLayoutGate
           slugParam={slugParam}
