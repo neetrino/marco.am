@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 
 import { t } from '../lib/i18n';
 import type { LanguageCode } from '../lib/language';
@@ -11,6 +11,7 @@ import { useRelatedProductsVisibleCards } from './hooks/useRelatedProductsVisibl
 import { CarouselDots } from './RelatedProducts/CarouselDots';
 import { RelatedProductsCardItem } from './RelatedProducts/RelatedProductsCardItem';
 import { useIsMaxMd } from './home/use-is-max-md';
+import { getCarouselPageMaxIndex } from './RelatedProducts/carousel-dots.utils';
 import {
   SPECIAL_OFFERS_CARD_BG,
   SPECIAL_OFFERS_CARD_HEIGHT_PX,
@@ -87,7 +88,7 @@ export function RelatedProducts({
   const isMaxMd = useIsMaxMd();
   const visibleCards = useRelatedProductsVisibleCards();
 
-  const { products, loading } = useRelatedProducts({
+  const { products, loading, loadingMore, hasMore, loadMore } = useRelatedProducts({
     productSlug: currentProductSlug,
     language,
     initialRelatedProducts,
@@ -102,8 +103,8 @@ export function RelatedProducts({
     isDragging,
     hasMoved,
     carouselRef,
-    goToPrevious,
-    goToNext,
+    goToPrevious: carouselGoToPrevious,
+    goToNext: carouselGoToNext,
     goToIndex,
     handleMouseDown,
     handleMouseMove,
@@ -118,6 +119,32 @@ export function RelatedProducts({
     pageByVisibleCount: true,
   });
 
+  const ensureLoadedForIndex = useCallback(
+    (targetIndex: number) => {
+      const neededCount = targetIndex + visibleCards;
+      if (neededCount > products.length && hasMore && !loadingMore) {
+        loadMore();
+      }
+    },
+    [hasMore, loadMore, loadingMore, products.length, visibleCards],
+  );
+
+  useEffect(() => {
+    ensureLoadedForIndex(currentIndex);
+  }, [currentIndex, ensureLoadedForIndex]);
+
+  const goToNext = useCallback(() => {
+    const maxIndex = getCarouselPageMaxIndex(products.length, visibleCards);
+    if (currentIndex >= maxIndex && hasMore && !loadingMore) {
+      loadMore();
+    }
+    carouselGoToNext();
+  }, [carouselGoToNext, currentIndex, hasMore, loadMore, loadingMore, products.length, visibleCards]);
+
+  const goToPrevious = useCallback(() => {
+    carouselGoToPrevious();
+  }, [carouselGoToPrevious]);
+
   return (
     <section className="mt-20 border-t border-gray-200 pt-12 pb-1 md:py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -125,7 +152,7 @@ export function RelatedProducts({
           <h2 className="text-3xl font-bold text-gray-900">
             {t(language, 'product.related_products_title')}
           </h2>
-          {products.length > visibleCards && !loading && (
+          {products.length > visibleCards && !loading ? (
             <div className="flex shrink-0 gap-2">
               <button
                 type="button"
@@ -176,7 +203,7 @@ export function RelatedProducts({
                 </svg>
               </button>
             </div>
-          )}
+          ) : null}
         </div>
 
         {!enabled ? null : loading ? (
@@ -230,14 +257,14 @@ export function RelatedProducts({
               </div>
             </div>
 
-            {products.length > visibleCards && !loading && (
+            {products.length > visibleCards && !loading ? (
               <CarouselDots
                 totalItems={products.length}
                 visibleItems={visibleCards}
                 currentIndex={currentIndex}
                 onDotClick={goToIndex}
               />
-            )}
+            ) : null}
           </div>
         )}
       </div>

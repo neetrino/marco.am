@@ -67,7 +67,7 @@ export function ProductPdpShellPaint({ shell }: ProductPdpShellPaintProps) {
           mainImageHighPriority
         />
 
-        <div className="flex min-w-0 flex-col">
+        <div className="flex min-h-[420px] min-w-0 flex-col">
           {shell.brand ? (
             <div className="mb-5">
               {shell.brand.logo ? (
@@ -108,7 +108,9 @@ export function ProductPdpShellPaint({ shell }: ProductPdpShellPaintProps) {
             )}
           </div>
 
-          <ProductPdpShellActions shell={shell} price={price} />
+          <div className="mt-auto">
+            <ProductPdpShellActions shell={shell} price={price} />
+          </div>
         </div>
       </div>
     </div>

@@ -6,9 +6,9 @@ import { productsRelatedService } from '@/lib/services/products-related.service'
 import { productsService } from '@/lib/services/products.service';
 import { db } from '@white-shop/db';
 
-import { RELATED_PRODUCTS_FETCH_LIMIT } from './related-products.constants';
+import { RELATED_PRODUCTS_PAGE_SIZE } from './related-products.constants';
 
-export const PDP_RELATED_SSR_LIMIT = RELATED_PRODUCTS_FETCH_LIMIT;
+export const PDP_RELATED_SSR_LIMIT = RELATED_PRODUCTS_PAGE_SIZE;
 const PDP_EXISTS_CACHE_TTL_SEC = 180;
 const PDP_VISUAL_CACHE_TTL_SEC = 180;
 const PDP_DETAIL_CACHE_TTL_SEC = 180;

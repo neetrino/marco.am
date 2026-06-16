@@ -1,38 +1,30 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { dedupeCardProductsByTitle } from '../../lib/dedupeCardProductsByTitle';
 import type { LanguageCode } from '../../lib/language';
-import { queryKeys } from '../../lib/query-keys';
 import {
   fetchRelatedProducts,
   hasUsableRelatedPayload,
   type RelatedProductRow,
   type RelatedProductsApiResponse,
 } from '@/lib/product-pdp/fetch-related-products';
-import { RELATED_PRODUCTS_FETCH_LIMIT } from '@/lib/product-pdp/related-products.constants';
-import { PDP_RELATED_GC_TIME_MS, PDP_RELATED_STALE_TIME_MS } from '@/lib/product-pdp/pdp-query-cache';
-import {
-  getPersistedPdpRelated,
-  setPersistedPdpRelated,
-} from '@/lib/product-pdp/pdp-client-persist-cache';
-import { getQueryClient } from '@/lib/query/get-query-client';
+import { RELATED_PRODUCTS_PAGE_SIZE } from '@/lib/product-pdp/related-products.constants';
 
 interface UseRelatedProductsProps {
   productSlug: string;
   language: LanguageCode;
-  /** SSR payload — instant carousel on first paint when slug/lang match. */
+  /** SSR first page — instant carousel on first paint when slug/lang match. */
   initialRelatedProducts?: RelatedProductsApiResponse | null;
   /** Gate fetch for staged PDP rendering. */
   enabled?: boolean;
 }
 
-export const RELATED_PRODUCTS_LIMIT = RELATED_PRODUCTS_FETCH_LIMIT;
+export const RELATED_PRODUCTS_LIMIT = RELATED_PRODUCTS_PAGE_SIZE;
 
 /**
- * Related products for PDP — React Query cache + dedupe (shared key with hover prefetch).
+ * Related products for PDP — loads 4 at a time; appends on carousel pagination.
  */
 export function useRelatedProducts({
   productSlug,
@@ -43,50 +35,118 @@ export function useRelatedProducts({
   const trimmed = productSlug.trim();
   const hasSsrPayload = hasUsableRelatedPayload(initialRelatedProducts);
 
-  const persistedInitialData = getPersistedPdpRelated(trimmed, language, RELATED_PRODUCTS_LIMIT);
-  const hasCachedPayload =
-    hasSsrPayload || hasUsableRelatedPayload(persistedInitialData);
-  const initialData = hasSsrPayload
-    ? initialRelatedProducts
-    : hasUsableRelatedPayload(persistedInitialData)
-      ? persistedInitialData
-      : undefined;
-
-  const queryClient = getQueryClient();
-
-  const query = useQuery(
-    {
-      queryKey: queryKeys.relatedProducts(trimmed, language, RELATED_PRODUCTS_LIMIT),
-      queryFn: () => fetchRelatedProducts(trimmed, language, RELATED_PRODUCTS_LIMIT),
-      enabled: enabled && Boolean(trimmed),
-      initialData,
-      refetchOnMount: !hasSsrPayload,
-      staleTime: PDP_RELATED_STALE_TIME_MS,
-      gcTime: PDP_RELATED_GC_TIME_MS,
-      retry: 1,
-    },
-    queryClient,
-  );
-
-  const products = useMemo((): RelatedProductRow[] => {
-    const rows = query.data?.data;
-    if (!rows?.length) {
+  const initialRows = useMemo((): RelatedProductRow[] => {
+    if (!hasSsrPayload || !initialRelatedProducts) {
       return [];
     }
-    return dedupeCardProductsByTitle(rows).slice(0, RELATED_PRODUCTS_LIMIT);
-  }, [query.data]);
+    return dedupeCardProductsByTitle(initialRelatedProducts.data).slice(0, RELATED_PRODUCTS_PAGE_SIZE);
+  }, [hasSsrPayload, initialRelatedProducts]);
 
-  const loading =
-    !hasCachedPayload &&
-    products.length === 0 &&
-    (query.isPending || query.isFetching);
+  const [products, setProducts] = useState<RelatedProductRow[]>(initialRows);
+  const [hasMore, setHasMore] = useState(
+    hasSsrPayload ? (initialRelatedProducts?.meta?.hasMore ?? initialRows.length >= RELATED_PRODUCTS_PAGE_SIZE) : true,
+  );
+  const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const offsetRef = useRef(initialRows.length);
+  const fetchGenerationRef = useRef(0);
+  const initialFetchDoneRef = useRef(hasSsrPayload);
+
+  const mergeRows = useCallback((existing: RelatedProductRow[], incoming: RelatedProductRow[]) => {
+    const seen = new Set(existing.map((row) => row.id));
+    const merged = [...existing];
+    for (const row of incoming) {
+      if (seen.has(row.id)) {
+        continue;
+      }
+      seen.add(row.id);
+      merged.push(row);
+    }
+    return dedupeCardProductsByTitle(merged);
+  }, []);
+
+  const applyPageResponse = useCallback(
+    (response: RelatedProductsApiResponse, append: boolean) => {
+      const rows = dedupeCardProductsByTitle(response.data ?? []);
+      setProducts((prev) => (append ? mergeRows(prev, rows) : rows));
+      offsetRef.current = append ? offsetRef.current + rows.length : rows.length;
+      setHasMore(response.meta?.hasMore ?? rows.length >= RELATED_PRODUCTS_PAGE_SIZE);
+    },
+    [mergeRows],
+  );
+
+  const fetchPage = useCallback(
+    async (offset: number, append: boolean) => {
+      const generation = fetchGenerationRef.current + 1;
+      fetchGenerationRef.current = generation;
+      if (append) {
+        setLoadingMore(true);
+      } else {
+        setLoading(true);
+      }
+      try {
+        const response = await fetchRelatedProducts(
+          trimmed,
+          language,
+          RELATED_PRODUCTS_PAGE_SIZE,
+          offset,
+        );
+        if (generation !== fetchGenerationRef.current) {
+          return;
+        }
+        applyPageResponse(response, append);
+      } catch {
+        if (generation !== fetchGenerationRef.current) {
+          return;
+        }
+        if (!append) {
+          setProducts([]);
+        }
+        setHasMore(false);
+      } finally {
+        if (generation === fetchGenerationRef.current) {
+          setLoading(false);
+          setLoadingMore(false);
+        }
+      }
+    },
+    [applyPageResponse, language, trimmed],
+  );
 
   useEffect(() => {
-    if (!trimmed || !hasUsableRelatedPayload(query.data)) {
+    fetchGenerationRef.current += 1;
+    offsetRef.current = initialRows.length;
+    initialFetchDoneRef.current = hasSsrPayload;
+    setProducts(initialRows);
+    setHasMore(
+      hasSsrPayload
+        ? (initialRelatedProducts?.meta?.hasMore ?? initialRows.length >= RELATED_PRODUCTS_PAGE_SIZE)
+        : true,
+    );
+  }, [hasSsrPayload, initialRelatedProducts?.meta?.hasMore, initialRows, trimmed, language]);
+
+  useEffect(() => {
+    if (!enabled || !trimmed || initialFetchDoneRef.current) {
       return;
     }
-    setPersistedPdpRelated(trimmed, language, RELATED_PRODUCTS_LIMIT, query.data);
-  }, [language, query.data, trimmed]);
+    initialFetchDoneRef.current = true;
+    void fetchPage(0, false);
+  }, [enabled, fetchPage, trimmed]);
 
-  return { products, loading };
+  const loadMore = useCallback(() => {
+    if (!enabled || !trimmed || loading || loadingMore || !hasMore) {
+      return;
+    }
+    void fetchPage(offsetRef.current, true);
+  }, [enabled, fetchPage, hasMore, loading, loadingMore, trimmed]);
+
+  const showInitialLoading = enabled && products.length === 0 && loading;
+
+  return {
+    products,
+    loading: showInitialLoading,
+    loadingMore,
+    hasMore,
+    loadMore,
+  };
 }

@@ -49,6 +49,8 @@ interface ProductInfoAndActionsProps {
   onAttributeValueSelect: (attrKey: string, value: string) => void;
   getOptionValue: (options: VariantOption[] | undefined, key: string) => string | null;
   getRequiredAttributesMessage: () => string;
+  /** True while full PDP detail (description, variants) is still loading. */
+  detailsPending?: boolean;
 }
 
 export function ProductInfoAndActions({
@@ -87,14 +89,18 @@ export function ProductInfoAndActions({
   onAttributeValueSelect,
   getOptionValue,
   getRequiredAttributesMessage,
+  detailsPending = false,
 }: ProductInfoAndActionsProps) {
   const localizedEntries = product.i18n?.descriptions[language]?.entries ?? product.description ?? [];
-  const descriptionNotes = getProductDescriptionNotes(localizedEntries);
+  const descriptionNotes = getProductDescriptionNotes(localizedEntries).filter(
+    (note) => note.value.trim().length >= 24,
+  );
   const noPriceLabel = t(language, 'products.noPrice.label');
   const hasMultiValueAttributeGroup = Array.from(attributeGroups.values()).some(
     (values) => values.length > 1,
   );
   const hasDescription = descriptionNotes.length > 0;
+  const showDescriptionSkeleton = detailsPending && !hasDescription;
   const displaySku = currentVariant?.sku || product.variants.find((variant) => Boolean(variant.sku))?.sku || null;
   const hasAttributeSelectors =
     hasMultiValueAttributeGroup ||
@@ -104,7 +110,7 @@ export function ProductInfoAndActions({
   const hasDisplayPrice = Number.isFinite(price) && price > 0;
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex h-full min-h-[420px] flex-col">
       <div className="flex-1">
         {(product.brand || primaryCategory) && (
           <div className="mb-5 flex flex-wrap items-center gap-3 md:gap-4">
@@ -135,11 +141,13 @@ export function ProductInfoAndActions({
             <h1 className="text-2xl font-bold text-marco-black sm:text-3xl md:text-4xl">
               {getProductText(language, product.id, 'title') || product.title}
             </h1>
-            {displaySku && (
+            {displaySku ? (
               <p className="mt-2 text-sm text-gray-500">
                 {t(language, 'common.messages.sku')}: <span className="font-medium text-gray-700">{displaySku}</span>
               </p>
-            )}
+            ) : detailsPending ? (
+              <div className="mt-2 h-4 w-32 animate-pulse rounded bg-gray-200/80 dark:bg-white/10" aria-hidden />
+            ) : null}
           </div>
           {product.warrantyYears ? (
             <ProductWarrantyBadge years={product.warrantyYears} size="promo" className="shrink-0" />
@@ -167,16 +175,27 @@ export function ProductInfoAndActions({
             )}
           </div>
         </div>
-        {hasDescription && (
+        {showDescriptionSkeleton ? (
+          <div className="mb-8 space-y-2" aria-hidden>
+            <div className="h-4 w-full animate-pulse rounded bg-gray-200/80 dark:bg-white/10" />
+            <div className="h-4 w-[88%] animate-pulse rounded bg-gray-200/80 dark:bg-white/10" />
+          </div>
+        ) : hasDescription ? (
           <div className="mb-8 animate-fade-in space-y-2 text-sm text-gray-600">
             {descriptionNotes.map((note, index) => (
               <p key={`description-note-${index}`}>{note.value}</p>
             ))}
           </div>
-        )}
+        ) : null}
+
+        {detailsPending && !hasAttributeSelectors ? (
+          <div className="mb-8 space-y-3" aria-hidden>
+            <div className="h-10 w-full max-w-xs animate-pulse rounded-lg bg-gray-200/80 dark:bg-white/10" />
+          </div>
+        ) : null}
 
         {/* Attributes Section */}
-        {hasAttributeSelectors && (
+        {hasAttributeSelectors ? (
           <div className="mb-8 animate-fade-in">
             <ProductAttributesSelector
               product={product}
@@ -205,7 +224,7 @@ export function ProductInfoAndActions({
               getRequiredAttributesMessage={getRequiredAttributesMessage}
             />
           </div>
-        )}
+        ) : null}
 
       </div>
       

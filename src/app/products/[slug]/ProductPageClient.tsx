@@ -56,6 +56,7 @@ export function ProductPageClient({
     blockingEmpty,
     isInstantShellPaint,
     isListingShell,
+    detailsPending,
     images,
     currentImageIndex,
     setCurrentImageIndex,
@@ -261,6 +262,7 @@ export function ProductPageClient({
             onAttributeValueSelect={handleAttributeValueSelect}
             getOptionValue={getOptionValue}
             getRequiredAttributesMessage={getRequiredAttributesMessage}
+            detailsPending={detailsPending || isListingShell}
           />
         ) : null}
       </div>
@@ -285,7 +287,7 @@ export function ProductPageClient({
           currentProductSlug={slug}
           language={language}
           initialRelatedProducts={initialRelatedProducts}
-          enabled={relatedEnabled}
+          enabled={relatedEnabled && !isListingShell}
         />
       </div>
     </div>

@@ -15,7 +15,7 @@ import {
 import { fetchProductSummary, fetchProductVisual } from './product-pdp-fetchers';
 import { fetchRelatedProducts, hasUsableRelatedPayload } from './fetch-related-products';
 import type { RelatedProductsApiResponse } from './fetch-related-products';
-import { RELATED_PRODUCTS_FETCH_LIMIT } from './related-products.constants';
+import { RELATED_PRODUCTS_PAGE_SIZE } from './related-products.constants';
 
 function baseProductSlug(raw: string): string {
   const parts = raw.includes(':') ? raw.split(':') : [raw];
@@ -96,7 +96,7 @@ export function prefetchProductPdpOnCommit(
     queryKeys.productDetail(slug, lang),
   );
   const existingRelated = queryClient.getQueryData<RelatedProductsApiResponse>(
-    queryKeys.relatedProducts(slug, lang, RELATED_PRODUCTS_FETCH_LIMIT),
+    queryKeys.relatedProducts(slug, lang, RELATED_PRODUCTS_PAGE_SIZE),
   );
 
   const detailPrefetch = hasFullProductDetails(existingDetail)
@@ -115,8 +115,8 @@ export function prefetchProductPdpOnCommit(
   const relatedPrefetch = hasUsableRelatedPayload(existingRelated)
     ? Promise.resolve()
     : queryClient.prefetchQuery({
-        queryKey: queryKeys.relatedProducts(slug, lang, RELATED_PRODUCTS_FETCH_LIMIT),
-        queryFn: () => fetchRelatedProducts(slug, lang, RELATED_PRODUCTS_FETCH_LIMIT),
+        queryKey: queryKeys.relatedProducts(slug, lang, RELATED_PRODUCTS_PAGE_SIZE),
+        queryFn: () => fetchRelatedProducts(slug, lang, RELATED_PRODUCTS_PAGE_SIZE, 0),
         staleTime: PDP_RELATED_STALE_TIME_MS,
         gcTime: PDP_RELATED_GC_TIME_MS,
       });

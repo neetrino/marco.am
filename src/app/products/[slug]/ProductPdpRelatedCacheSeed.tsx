@@ -4,7 +4,7 @@ import { useLayoutEffect } from 'react';
 
 import type { LanguageCode } from '@/lib/language';
 import type { RelatedProductsApiResponse } from '@/lib/product-pdp/fetch-related-products';
-import { RELATED_PRODUCTS_FETCH_LIMIT } from '@/lib/product-pdp/related-products.constants';
+import { RELATED_PRODUCTS_PAGE_SIZE } from '@/lib/product-pdp/related-products.constants';
 import { queryKeys } from '@/lib/query-keys';
 import { getQueryClient } from '@/lib/query/get-query-client';
 
@@ -24,7 +24,7 @@ export function ProductPdpRelatedCacheSeed({
 }: ProductPdpRelatedCacheSeedProps) {
   useLayoutEffect(() => {
     getQueryClient().setQueryData(
-      queryKeys.relatedProducts(slug, language, RELATED_PRODUCTS_FETCH_LIMIT),
+      queryKeys.relatedProducts(slug, language, RELATED_PRODUCTS_PAGE_SIZE),
       related,
     );
   }, [slug, language, related]);
