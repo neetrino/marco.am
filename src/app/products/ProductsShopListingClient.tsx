@@ -31,6 +31,7 @@ import {
 } from '@/lib/shop-products-listing-params-event';
 import { useTranslation } from '@/lib/i18n-client';
 import { ProductsShopLoadingSkeleton } from './ProductsShopLoadingSkeleton';
+import { prefetchAdjacentShopListingPages } from '@/lib/shop-products-listing-adjacent-prefetch';
 import { normalizeShopGridProduct, type ShopGridProduct } from './shop-grid-product';
 
 type ListingMeta = {
@@ -161,6 +162,11 @@ export function ProductsShopListingClient({
     });
     const cancelIdleSync = scheduleIdleSync(() => {
       seedInitialPdpCacheBatch(initialProducts);
+      prefetchAdjacentShopListingPages(
+        initialQueryString,
+        initialMeta.page,
+        initialMeta.totalPages,
+      );
     }, PLP_PDP_CACHE_SYNC_IDLE_TIMEOUT_MS);
     return cancelIdleSync;
   }, [initialMeta, initialProducts, initialQueryString]);
@@ -184,6 +190,11 @@ export function ProductsShopListingClient({
       setHasOptimisticListing(false);
       writeShopListingCache(nextQueryString, normalizedPayload);
       reportTotal(normalizedPayload.meta.total);
+      prefetchAdjacentShopListingPages(
+        nextQueryString,
+        normalizedPayload.meta.page,
+        normalizedPayload.meta.totalPages,
+      );
     },
     [reportTotal],
   );
@@ -319,6 +330,9 @@ export function ProductsShopListingClient({
 
   const navigateToPage = (href: string) => {
     pushShopProductsListingUrl(router, href);
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   const visibleProducts = isHydrated ? products : initialProducts;

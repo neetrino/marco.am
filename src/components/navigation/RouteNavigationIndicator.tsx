@@ -2,8 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
+import { SHOP_PRODUCTS_LISTING_PARAMS_EVENT } from '@/lib/shop-products-listing-params-event';
 
-function isInternalNavEvent(event: MouseEvent, pathname: string): boolean {
+function isFullRouteNavigation(event: MouseEvent, pathname: string): boolean {
   if (event.defaultPrevented || event.button !== 0) {
     return false;
   }
@@ -30,15 +31,15 @@ function isInternalNavEvent(event: MouseEvent, pathname: string): boolean {
     if (url.origin !== window.location.origin) {
       return false;
     }
-    const currentSearch = typeof window !== 'undefined' ? window.location.search : '';
-    return url.pathname !== pathname || url.search !== currentSearch;
+    // Query-only changes (PLP pagination/filters via pushState) are not App Router transitions.
+    return url.pathname !== pathname;
   } catch {
     return false;
   }
 }
 
 /**
- * Thin top bar shown as soon as an in-app link is clicked, before the route finishes loading.
+ * Thin top bar shown during in-app pathname transitions (before the route finishes loading).
  */
 export function RouteNavigationIndicator() {
   const pathname = usePathname() ?? '';
@@ -47,7 +48,7 @@ export function RouteNavigationIndicator() {
 
   useEffect(() => {
     const markPending = (event: MouseEvent) => {
-      if (isInternalNavEvent(event, pathname)) {
+      if (isFullRouteNavigation(event, pathname)) {
         setPending(true);
       }
     };
@@ -66,6 +67,18 @@ export function RouteNavigationIndicator() {
       setPending(false);
     }
   }, [pathname]);
+
+  useEffect(() => {
+    const clearPending = () => {
+      setPending(false);
+    };
+    window.addEventListener(SHOP_PRODUCTS_LISTING_PARAMS_EVENT, clearPending);
+    window.addEventListener('popstate', clearPending);
+    return () => {
+      window.removeEventListener(SHOP_PRODUCTS_LISTING_PARAMS_EVENT, clearPending);
+      window.removeEventListener('popstate', clearPending);
+    };
+  }, []);
 
   if (!pending) {
     return null;
