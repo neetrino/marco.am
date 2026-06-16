@@ -19,7 +19,7 @@ const HOME_PATH = '/';
 const INTERACTION_PRODUCTS_WARM_TIMEOUT_MS = 8_000;
 const STAGGER_PREFETCH_DELAY_MS = 100;
 const IDLE_PREFETCH_TIMEOUT_MS = 4_000;
-const MARKETING_IDLE_WARM_DELAY_MS = 1_500;
+const MARKETING_IDLE_WARM_DELAY_MS = 800;
 
 function shouldSkipIdlePrefetch(): boolean {
   if (typeof navigator === 'undefined') {

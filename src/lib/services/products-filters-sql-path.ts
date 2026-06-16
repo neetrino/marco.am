@@ -11,6 +11,7 @@ import {
   buildCategoryCountMapFromRows,
   fetchAttributeFacetSample,
   fetchCategoryFacetProductRows,
+  fetchShopFacetProductIds,
   getPublishedVariantPriceBounds,
 } from "./products-filters-sql-facets";
 
@@ -62,6 +63,8 @@ export async function buildShopFiltersViaSqlAggregation(args: {
     filter: args.filters.filter,
   };
 
+  const facetProductIdsPromise = fetchShopFacetProductIds(args.where, scopeFilters);
+
   const [
     catalogPriceBounds,
     brands,
@@ -73,8 +76,12 @@ export async function buildShopFiltersViaSqlAggregation(args: {
   ] = await Promise.all([
     getPublishedVariantPriceBounds(args.where),
     aggregateBrandFacetsFromWhere(args.where, args.lang, args.preferredLocales),
-    aggregateColorFacetsFromWhere(args.where, args.lang, scopeFilters),
-    aggregateSizeFacetsFromWhere(args.where, args.lang, scopeFilters),
+    facetProductIdsPromise.then((productIds) =>
+      aggregateColorFacetsFromWhere(args.where, args.lang, scopeFilters, productIds),
+    ),
+    facetProductIdsPromise.then((productIds) =>
+      aggregateSizeFacetsFromWhere(args.where, args.lang, scopeFilters, productIds),
+    ),
     args.includeCategories
       ? fetchCategoryFacetProductRows(args.where, scopeFilters)
       : Promise.resolve([]),

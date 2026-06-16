@@ -14,8 +14,6 @@ import { t } from '@/lib/i18n';
 import type { LanguageCode } from '@/lib/language';
 import { MOBILE_FILTERS_EVENT } from '@/lib/events';
 import type { ProductsFiltersData } from '@/components/ProductsFiltersProvider';
-import { ProductsDesktopFiltersMount } from './ProductsDesktopFiltersMount';
-
 export type ProductsShopFiltersColumnProps = {
   readonly language: LanguageCode;
   readonly params: {
@@ -28,8 +26,6 @@ export type ProductsShopFiltersColumnProps = {
   };
   readonly initialFiltersData?: ProductsFiltersData | null;
   readonly initialFiltersKey?: string | null;
-  /** When true, facet fetch waits for streamed server hydration (PLP shell paints first). */
-  readonly awaitServerHydration?: boolean;
   readonly children?: ReactNode;
 };
 
@@ -42,7 +38,6 @@ export function ProductsShopFiltersColumn({
   params,
   initialFiltersData = null,
   initialFiltersKey = null,
-  awaitServerHydration = false,
   children,
 }: ProductsShopFiltersColumnProps) {
   return (
@@ -55,11 +50,9 @@ export function ProductsShopFiltersColumn({
       language={language}
       initialFiltersData={initialFiltersData}
       initialFiltersKey={initialFiltersKey}
-      awaitServerHydration={awaitServerHydration}
     >
       {children}
       <aside className="hidden w-[16rem] shrink-0 bg-white dark:bg-[var(--app-bg)] min-[744px]:sticky min-[744px]:top-4 min-[744px]:z-10 min-[744px]:self-start min-[744px]:block xl:w-[20rem]">
-        <ProductsDesktopFiltersMount>
           <div className="border-r border-solid border-[#e2e8f0] dark:border-white/20 pb-4 pt-4 min-[744px]:pl-0 min-[744px]:pr-3 xl:pb-6 xl:pt-6 xl:pr-6">
             <div className="mb-4 flex flex-col gap-1 lg:mb-5 xl:mb-6">
               <h2
@@ -103,7 +96,6 @@ export function ProductsShopFiltersColumn({
             />
             <ShopAttributeFacetsFilter />
           </div>
-        </ProductsDesktopFiltersMount>
       </aside>
 
       <MobileFiltersDrawer openEventName={MOBILE_FILTERS_EVENT}>
@@ -152,23 +144,5 @@ export function ProductsShopFiltersColumn({
         </div>
       </MobileFiltersDrawer>
     </ProductsFiltersProvider>
-  );
-}
-
-export function productsShopFiltersColumnSkeleton(language: LanguageCode = 'en') {
-  return (
-    <aside
-      className="hidden w-[16rem] shrink-0 min-[744px]:block xl:w-[20rem]"
-      aria-busy="true"
-      aria-label={t(language, 'common.ariaLabels.loadingFilters')}
-    >
-      <div className="space-y-3 border-r border-slate-200/90 pb-4 pt-4 dark:border-white/15 min-[744px]:pr-3 xl:space-y-4 xl:pb-6 xl:pt-6 xl:pr-6">
-        <div className="h-5 w-28 animate-pulse rounded-md bg-slate-200 dark:bg-slate-600" />
-        <div className="h-4 w-40 animate-pulse rounded-md bg-slate-200 dark:bg-slate-600" />
-        <div className="h-32 w-full animate-pulse rounded-lg bg-slate-200 dark:bg-slate-600" />
-        <div className="h-24 w-full animate-pulse rounded-lg bg-slate-200 dark:bg-slate-600" />
-        <div className="h-20 w-full animate-pulse rounded-lg bg-slate-200 dark:bg-slate-600" />
-      </div>
-    </aside>
   );
 }

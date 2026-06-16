@@ -170,8 +170,6 @@ interface ProductsFiltersProviderProps {
   language?: LanguageCode;
   initialFiltersData?: ProductsFiltersData | null;
   initialFiltersKey?: string | null;
-  /** PLP: skip client fetch until streamed RSC payload hydrates the provider. */
-  awaitServerHydration?: boolean;
   children: ReactNode;
 }
 
@@ -184,7 +182,6 @@ export function ProductsFiltersProvider({
   language: languageProp,
   initialFiltersData = null,
   initialFiltersKey = null,
-  awaitServerHydration = false,
   children,
 }: ProductsFiltersProviderProps) {
   const preferenceLang = useContext(LanguagePreferenceContext);
@@ -300,17 +297,9 @@ export function ProductsFiltersProvider({
       return;
     }
 
-    if (awaitServerHydration && !hasFiltersDataRef.current) {
-      setLoading(true);
-      syncedFiltersKeyRef.current = filtersClientKey;
-      void fetchFiltersRef.current();
-      return;
-    }
-
     syncedFiltersKeyRef.current = filtersClientKey;
     void fetchFiltersRef.current();
   }, [
-    awaitServerHydration,
     filtersClientKey,
     initialFiltersData,
     initialFiltersKey,

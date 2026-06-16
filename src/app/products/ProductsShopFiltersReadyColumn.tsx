@@ -4,22 +4,24 @@ import {
 } from '@/lib/cache/products-shop-filters-prefetch';
 import type { ProductsShopListingServerContext } from '@/lib/products-shop-listing-server-context';
 import type { ProductsPageSearchParams } from './products-page-search-params';
-import { ProductsFiltersServerHydration } from '@/components/ProductsFiltersProvider';
+import { ProductsShopFiltersColumn } from './ProductsShopFiltersColumn';
 
-type ProductsShopFiltersDataSectionProps = {
+type ProductsShopFiltersReadyColumnProps = {
   readonly raw: ProductsPageSearchParams;
   readonly ctx: ProductsShopListingServerContext;
 };
 
-/** Streams prefetched facet payload into the mounted filter provider (column shell paints first). */
-export async function ProductsShopFiltersDataSection({
+/** Prefetches facet payload on the server, then mounts the filter column with hydrated data. */
+export async function ProductsShopFiltersReadyColumn({
   raw,
   ctx,
-}: ProductsShopFiltersDataSectionProps) {
+}: ProductsShopFiltersReadyColumnProps) {
   const filtersPayload = await prefetchProductsShopFilters(raw, ctx);
 
   return (
-    <ProductsFiltersServerHydration
+    <ProductsShopFiltersColumn
+      language={ctx.language}
+      params={ctx.params}
       initialFiltersData={filtersPayload}
       initialFiltersKey={buildProductsShopFiltersInitialKey(raw, ctx)}
     />

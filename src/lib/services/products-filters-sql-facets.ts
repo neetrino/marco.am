@@ -104,11 +104,12 @@ async function fetchFacetProductIds(
   return rows.map((row) => row.id);
 }
 
-function buildColorOptionWhere(productIds: string[]): Prisma.ProductVariantOptionWhereInput {
+function buildColorOptionWhere(productIds: readonly string[]): Prisma.ProductVariantOptionWhereInput {
+  const ids = [...productIds];
   return {
     variant: {
       published: true,
-      productId: { in: productIds },
+      productId: { in: ids },
     },
     OR: [
       { attributeKey: { in: [...COLOR_OPTION_KEYS], mode: "insensitive" } },
@@ -123,11 +124,12 @@ function buildColorOptionWhere(productIds: string[]): Prisma.ProductVariantOptio
   };
 }
 
-function buildSizeOptionWhere(productIds: string[]): Prisma.ProductVariantOptionWhereInput {
+function buildSizeOptionWhere(productIds: readonly string[]): Prisma.ProductVariantOptionWhereInput {
+  const ids = [...productIds];
   return {
     variant: {
       published: true,
-      productId: { in: productIds },
+      productId: { in: ids },
     },
     OR: [
       { attributeKey: { in: [...SIZE_OPTION_KEYS], mode: "insensitive" } },
@@ -321,6 +323,13 @@ export function buildCategoryCountMapFromRows(
   return categoryCountMap;
 }
 
+export async function fetchShopFacetProductIds(
+  where: Prisma.ProductWhereInput,
+  scopeFilters: { category?: string; search?: string; filter?: string },
+): Promise<string[]> {
+  return fetchFacetProductIds(where, isScopedCatalogWhere(scopeFilters));
+}
+
 /**
  * Distinct-product color facets from `product_variant_options` — no full product sample.
  */
@@ -328,10 +337,12 @@ export async function aggregateColorFacetsFromWhere(
   where: Prisma.ProductWhereInput,
   lang: string,
   scopeFilters: { category?: string; search?: string; filter?: string },
+  preloadedProductIds?: readonly string[],
 ): Promise<ColorFacetRow[]> {
   const preferredLocales = buildPreferredLocales(lang);
-  const isScopedCatalog = isScopedCatalogWhere(scopeFilters);
-  const productIds = await fetchFacetProductIds(where, isScopedCatalog);
+  const productIds =
+    preloadedProductIds ??
+    (await fetchShopFacetProductIds(where, scopeFilters));
   if (productIds.length === 0) {
     return [];
   }
@@ -408,10 +419,12 @@ export async function aggregateSizeFacetsFromWhere(
   where: Prisma.ProductWhereInput,
   lang: string,
   scopeFilters: { category?: string; search?: string; filter?: string },
+  preloadedProductIds?: readonly string[],
 ): Promise<SizeFacetRow[]> {
   const preferredLocales = buildPreferredLocales(lang);
-  const isScopedCatalog = isScopedCatalogWhere(scopeFilters);
-  const productIds = await fetchFacetProductIds(where, isScopedCatalog);
+  const productIds =
+    preloadedProductIds ??
+    (await fetchShopFacetProductIds(where, scopeFilters));
   if (productIds.length === 0) {
     return [];
   }
