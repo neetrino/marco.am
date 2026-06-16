@@ -1,17 +1,20 @@
 import { getProductsListingCached } from '@/lib/cache/products-listing-redis';
 import { searchParamsRecordToUrlSearchParams } from '@/lib/cache/products-filters-redis';
+import type { ProductsShopListingServerContext } from '@/lib/products-shop-listing-server-context';
 import { parseTechnicalSpecFiltersFromSearchParams } from '@/lib/services/products-technical-filters';
-import { resolveProductsShopListingServerContext } from '@/lib/products-shop-listing-server-context';
 import type { ProductsPageSearchParams } from './products-page-search-params';
 import { ProductsShopListingClient } from './ProductsShopListingClient';
 import { normalizeShopGridProduct } from './shop-grid-product';
 
 type ProductsShopListingSectionProps = {
   readonly raw: ProductsPageSearchParams;
+  readonly ctx: ProductsShopListingServerContext;
 };
 
-async function fetchProductsListing(raw: ProductsPageSearchParams) {
-  const ctx = await resolveProductsShopListingServerContext(raw);
+async function fetchProductsListing(
+  raw: ProductsPageSearchParams,
+  ctx: ProductsShopListingServerContext,
+) {
   const technicalSpecs = parseTechnicalSpecFiltersFromSearchParams(
     searchParamsRecordToUrlSearchParams(raw),
   );
@@ -48,8 +51,8 @@ async function fetchProductsListing(raw: ProductsPageSearchParams) {
 }
 
 /** Streams the PLP product grid independently from sidebar facet queries. */
-export async function ProductsShopListingSection({ raw }: ProductsShopListingSectionProps) {
-  const { ctx, productsData } = await fetchProductsListing(raw);
+export async function ProductsShopListingSection({ raw, ctx }: ProductsShopListingSectionProps) {
+  const { productsData } = await fetchProductsListing(raw, ctx);
 
   return (
     <ProductsShopListingClient

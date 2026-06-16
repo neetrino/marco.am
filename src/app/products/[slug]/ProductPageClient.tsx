@@ -1,11 +1,16 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { Suspense } from 'react';
+import { Suspense, useRef } from 'react';
 
 import { useAuth } from '@/lib/auth/AuthContext';
 import { apiClient } from '@/lib/api-client';
-import { runGuestCartMutation, upsertGuestCartItem } from '@/app/cart/guest-cart-local';
+import {
+  readStoredGuestCart,
+  runGuestCartMutation,
+  upsertGuestCartItem,
+} from '@/app/cart/guest-cart-local';
+import { computeGuestCartTotalsFromStorage } from '@/lib/cart/guest-cart-totals';
 import { t } from '@/lib/i18n';
 import type { RelatedProductsApiResponse } from '@/lib/product-pdp/fetch-related-products';
 import type { PdpVisualPayload } from '@/lib/services/products-slug/product-transformer';
@@ -14,7 +19,7 @@ import type { LanguageCode } from '@/lib/language';
 import type { Product } from './types';
 import { ProductImageGallery } from './ProductImageGallery';
 import { ProductInfoAndActions } from './ProductInfoAndActions';
-import { ProductPdpShellPaint } from './ProductPdpShellPaint';
+import { ProductInfoPrimarySkeleton } from './ProductInfoPrimarySkeleton';
 import { useProductPage } from './useProductPage';
 
 const ProductSpecifications = dynamic(() =>
@@ -49,8 +54,8 @@ export function ProductPageClient({
     productVisual,
     displayProduct,
     blockingEmpty,
-    instantShell,
     isInstantShellPaint,
+    isListingShell,
     images,
     currentImageIndex,
     setCurrentImageIndex,
@@ -62,7 +67,6 @@ export function ProductPageClient({
     selectedSize,
     selectedAttributeValues,
     isAddingToCart,
-    setIsAddingToCart,
     showMessage,
     setShowMessage,
     isInWishlist,
@@ -94,16 +98,38 @@ export function ProductPageClient({
     getRequiredAttributesMessage,
   } = useProductPage({ slugParam, serverLanguage, initialVisual, initialProduct });
 
+  const addToCartInFlightRef = useRef(false);
+
   const handleAddToCart = async () => {
-    if (!canAddToCart || !product || !currentVariant) return;
+    if (!canAddToCart || !product || !currentVariant || addToCartInFlightRef.current) return;
     const unitPrice = Number(currentVariant.currentPrice ?? currentVariant.price) || 0;
     if (unitPrice <= 0) {
       return;
     }
-    setIsAddingToCart(true);
+
+    const snapshotImage = images[currentImageIndex] ?? images[0] ?? null;
+    addToCartInFlightRef.current = true;
+
+    window.dispatchEvent(
+      new CustomEvent('cart-updated', {
+        detail: {
+          optimisticAdd: {
+            quantity,
+            price: unitPrice,
+            productId: product.id,
+            variantId: currentVariant.id,
+            productSlug: product.slug,
+            title: product.title,
+            image: snapshotImage,
+          },
+        },
+      }),
+    );
+    setShowMessage(`${t(language, 'product.addedToCart')} ${quantity} ${t(language, 'product.pcs')}`);
+    const messageTimeout = window.setTimeout(() => setShowMessage(null), 2000);
+
     try {
       if (!isLoggedIn) {
-        const snapshotImage = images[currentImageIndex] ?? images[0] ?? null;
         await runGuestCartMutation(() => {
           upsertGuestCartItem({
             productId: product.id,
@@ -117,25 +143,56 @@ export function ProductPageClient({
             stock: currentVariant.stock,
           });
         });
+        const guestTotals = computeGuestCartTotalsFromStorage(readStoredGuestCart());
+        window.dispatchEvent(
+          new CustomEvent('cart-updated', {
+            detail: {
+              itemsCount: guestTotals.itemsCount,
+              total: guestTotals.total,
+              currency: 'AMD',
+            },
+          }),
+        );
       } else {
-        await apiClient.post('/api/v1/cart/items', {
+        const response = await apiClient.post<{
+          cartSummary?: { itemsCount: number; total: number };
+        }>('/api/v1/cart/items', {
           productId: product.id,
           variantId: currentVariant.id,
           quantity,
         });
+        if (response.cartSummary) {
+          window.dispatchEvent(
+            new CustomEvent('cart-updated', {
+              detail: response.cartSummary,
+            }),
+          );
+        }
       }
-      setShowMessage(`${t(language, 'product.addedToCart')} ${quantity} ${t(language, 'product.pcs')}`);
-      window.dispatchEvent(new Event('cart-updated'));
     } catch (_err) {
+      window.clearTimeout(messageTimeout);
       setShowMessage(t(language, 'product.errorAddingToCart'));
+      window.setTimeout(() => setShowMessage(null), 2000);
+      window.dispatchEvent(new Event('cart-updated'));
     } finally {
-      setIsAddingToCart(false);
-      setTimeout(() => setShowMessage(null), 2000);
+      addToCartInFlightRef.current = false;
     }
   };
 
   if (blockingEmpty) {
-    return <ProductPdpShellPaint shell={instantShell} />;
+    return (
+      <div className="marco-header-container py-12">
+        <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-[minmax(0,11fr)_minmax(0,9fr)]">
+          <div className="mx-auto w-full max-w-[420px] md:mx-0 md:max-w-none md:flex-1">
+            <div
+              className="relative aspect-square w-full animate-pulse rounded-lg bg-gray-100 dark:bg-white/[0.06]"
+              aria-hidden
+            />
+          </div>
+          <ProductInfoPrimarySkeleton />
+        </div>
+      </div>
+    );
   }
 
   if (!displayProduct) {
@@ -182,7 +239,7 @@ export function ProductPageClient({
             isVariationRequired={isVariationRequired}
             hasUnavailableAttributes={hasUnavailableAttributes}
             unavailableAttributes={unavailableAttributes}
-            canAddToCart={canAddToCart}
+            canAddToCart={canAddToCart && !isListingShell}
             isAddingToCart={isAddingToCart}
             isInWishlist={isInWishlist}
             isInCompare={isInCompare}
@@ -196,7 +253,7 @@ export function ProductPageClient({
             colorGroups={colorGroups}
             sizeGroups={sizeGroups}
             onQuantityAdjust={adjustQuantity}
-            onAddToCart={product ? handleAddToCart : async () => {}}
+            onAddToCart={product && !isListingShell ? handleAddToCart : async () => {}}
             onAddToWishlist={handleAddToWishlist}
             onCompareToggle={handleCompareToggle}
             onColorSelect={handleColorSelect}
@@ -208,8 +265,8 @@ export function ProductPageClient({
         ) : null}
       </div>
 
-      {product ? (
-        <div className="mt-24">
+      {product && !isListingShell ? (
+        <div className="mt-24 animate-fade-in">
           <Suspense
             fallback={
               <div
@@ -223,7 +280,7 @@ export function ProductPageClient({
         </div>
       ) : null}
 
-      <div className={product ? 'mt-16' : 'mt-24'}>
+      <div className="mt-16">
         <RelatedProducts
           currentProductSlug={slug}
           language={language}

@@ -11,6 +11,7 @@ import type { Product } from './types';
 import { useAttributeGroups } from './useAttributeGroups';
 import { useProductImages } from './hooks/useProductImages';
 import { buildGalleryStubProduct } from './buildGalleryStubProduct';
+import { enrichListingShellGallery } from './enrichListingShellGallery';
 import { useProductFetch } from './hooks/useProductFetch';
 import { useWishlistCompare } from './hooks/useWishlistCompare';
 import { useVariantSelection } from './hooks/useVariantSelection';
@@ -60,6 +61,7 @@ export function useProductPage({
     loading,
     instantShell,
     isInstantShellPaint,
+    isListingShell,
   } = useProductFetch({
     slug,
     variantIdFromUrl,
@@ -70,7 +72,7 @@ export function useProductPage({
 
   const displayProduct = useMemo(() => {
     if (product) {
-      return product;
+      return enrichListingShellGallery(product, productVisual);
     }
     if (productVisual) {
       return buildGalleryStubProduct(productVisual);
@@ -214,6 +216,7 @@ export function useProductPage({
     loading,
     instantShell,
     isInstantShellPaint,
+    isListingShell,
     images,
     currentImageIndex,
     setCurrentImageIndex,

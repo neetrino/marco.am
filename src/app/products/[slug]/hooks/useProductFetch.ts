@@ -152,10 +152,7 @@ export function useProductFetch({
       },
       enabled,
       initialData: detailInitialData,
-      placeholderData:
-        hasInstantShellInitialData || detailInitialData === initialProduct
-          ? undefined
-          : keepPreviousData,
+      placeholderData: keepPreviousData,
       staleTime: detailStaleTime,
       gcTime: PDP_QUERY_GC_TIME_MS,
       refetchOnMount: hasInstantShellInitialData ? false : true,
@@ -254,9 +251,13 @@ export function useProductFetch({
     detailQuery.isPending &&
     !detailQuery.isError;
 
-  const detailsPending = Boolean(productVisual && !product && detailQuery.isPending);
+  const hasFullProductDetails = product != null && !isPdpListingShell(product);
+  const detailsPending =
+    Boolean(product && isPdpListingShell(product)) ||
+    Boolean(productVisual && !product && detailQuery.isPending);
 
   const isInstantShellPaint = instantShell != null && isPdpListingShell(instantShell);
+  const isListingShell = product != null && isPdpListingShell(product);
 
   return {
     product,
@@ -269,6 +270,8 @@ export function useProductFetch({
     blockingVisualOnly: blockingEmpty,
     awaitingDetailShell,
     detailsPending,
+    isListingShell,
+    hasFullProductDetails,
     visualError: visualQuery.isError ? visualQuery.error : null,
     detailError: detailQuery.isError ? detailQuery.error : null,
     fetchProduct,

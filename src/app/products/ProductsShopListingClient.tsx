@@ -14,6 +14,7 @@ import { PRODUCTS_PLP_TOTAL_EVENT } from '@/lib/products-plp-total-event';
 import { pushShopProductsListingUrl } from '@/lib/push-shop-products-listing-url';
 import { getQueryClient } from '@/lib/query/get-query-client';
 import { syncShopListingProductsToPdpCache } from '@/lib/shop-products-plp-pdp-sync';
+import { scheduleIdleSync } from '@/lib/deferred-idle-sync';
 import {
   isShopListingCacheFresh,
   readShopListingCache,
@@ -116,6 +117,9 @@ function normalizeListingApiResponse(response: ProductsListingApiResponse): {
 const PLP_LISTING_ROOT_CLASS =
   'min-w-0 flex-1 w-full overflow-x-hidden pt-4 pb-2 min-[744px]:w-auto min-[744px]:py-4';
 
+/** Defer PDP seeding so the first paint is not blocked on 21 React Query writes. */
+const PLP_PDP_CACHE_SYNC_IDLE_TIMEOUT_MS = 2_000;
+
 /**
  * Client-driven PLP grid — filter/pagination changes fetch `/api/v1/products` immediately
  * instead of waiting for a full RSC navigation round-trip.
@@ -140,46 +144,38 @@ export function ProductsShopListingClient({
   const productsRef = useRef(initialProducts);
   const fetchGenerationRef = useRef(0);
   const abortControllerRef = useRef<AbortController | null>(null);
-  const initialPdpCacheSyncedRef = useRef(false);
-
-  if (!initialPdpCacheSyncedRef.current) {
-    initialPdpCacheSyncedRef.current = true;
-    writeShopListingCache(initialQueryString, {
-      data: initialProducts,
-      meta: initialMeta,
-    });
-    syncShopListingProductsToPdpCache(
-      getQueryClient(),
-      initialProducts,
-      getStoredLanguage(),
-    );
-  }
 
   useEffect(() => {
     productsRef.current = products;
   }, [products]);
 
   useEffect(() => {
-    setIsHydrated(true);
-  }, []);
-
-  useEffect(() => {
     writeShopListingCache(initialQueryString, {
       data: initialProducts,
       meta: initialMeta,
     });
-    syncShopListingProductsToPdpCache(
-      getQueryClient(),
-      initialProducts,
-      getStoredLanguage(),
-    );
+    const cancelIdleSync = scheduleIdleSync(() => {
+      syncShopListingProductsToPdpCache(
+        getQueryClient(),
+        initialProducts,
+        getStoredLanguage(),
+      );
+    }, PLP_PDP_CACHE_SYNC_IDLE_TIMEOUT_MS);
+    return cancelIdleSync;
   }, [initialMeta, initialProducts, initialQueryString]);
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   useEffect(() => {
     if (!isHydrated) {
       return;
     }
-    syncShopListingProductsToPdpCache(getQueryClient(), products, getStoredLanguage());
+    const cancelIdleSync = scheduleIdleSync(() => {
+      syncShopListingProductsToPdpCache(getQueryClient(), products, getStoredLanguage());
+    }, PLP_PDP_CACHE_SYNC_IDLE_TIMEOUT_MS);
+    return cancelIdleSync;
   }, [isHydrated, products]);
 
   const reportTotal = useCallback((total: number) => {
@@ -345,6 +341,7 @@ export function ProductsShopListingClient({
   const visiblePage = visibleMeta.page;
   const showFetchingSkeleton = isHydrated && isFetching && !hasOptimisticListing;
   const showSkeleton = isHydrated && showGridSkeleton;
+  const disableProgressiveRender = showSkeleton || showFetchingSkeleton || hasOptimisticListing;
 
   const visiblePaginationSlotItems: PaginationSlotItem[] = useMemo(() => {
     return getPaginationPages(visibleMeta.totalPages, visiblePage).map((item) =>
@@ -367,7 +364,11 @@ export function ProductsShopListingClient({
         <ProductsShopLoadingSkeleton variant="grid" />
       ) : visibleProducts.length > 0 ? (
         <>
-          <ProductsGrid products={visibleProducts} sortBy={visibleSort} disableProgressiveRender />
+          <ProductsGrid
+            products={visibleProducts}
+            sortBy={visibleSort}
+            disableProgressiveRender={disableProgressiveRender}
+          />
           {visibleMeta.totalPages > 1 ? (
             <ProductsPagination
               page={visiblePage}

@@ -21,6 +21,7 @@ function toSpecialOfferProduct(row: RelatedProductRow): SpecialOfferProduct {
     slug: row.slug,
     title: row.title,
     price: row.price,
+    defaultVariantId: row.defaultVariantId ?? null,
     compareAtPrice: compareAt ?? undefined,
     originalPrice: row.originalPrice ?? compareAt ?? undefined,
     image: row.image,
