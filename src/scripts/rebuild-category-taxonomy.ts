@@ -21,7 +21,7 @@ import { db } from "@white-shop/db";
 
 const HY_LOCALE = "hy";
 const MAX_DEPTH = 64;
-const CHUNK = 50;
+const CHUNK = 400;
 
 /**
  * Target-title -> existing-DB-title aliases (normalized).
@@ -214,7 +214,7 @@ async function main(): Promise<void> {
     return;
   }
 
-  // ---- APPLY ----
+  // ---- APPLY (bulk raw SQL: a few statements per batch, not per-row) ----
   for (const [categoryId, newTitle] of renameMap) {
     await db.categoryTranslation.updateMany({
       where: { categoryId, locale: HY_LOCALE },
@@ -224,29 +224,42 @@ async function main(): Promise<void> {
   for (const move of parentMoves) {
     await db.category.update({ where: { id: move.id }, data: { parentId: desiredParent.get(move.id) ?? null } });
   }
-  for (const [srcId] of mergeMap) {
-    await db.category.update({ where: { id: srcId }, data: { deletedAt: new Date(), published: false } });
-  }
-  for (const id of deleteIds) {
+  for (const id of [...mergeMap.keys(), ...deleteIds]) {
     await db.category.update({ where: { id }, data: { deletedAt: new Date(), published: false } });
   }
+
   const sorted = [...updates].sort((a, b) => a.id.localeCompare(b.id));
   for (let i = 0; i < sorted.length; i += CHUNK) {
     const chunk = sorted.slice(i, i + CHUNK);
-    await db.$transaction(
-      chunk.map((u) =>
-        db.product.update({
-          where: { id: u.id },
-          data: {
-            primaryCategoryId: u.primaryCategoryId,
-            categoryIds: u.categoryIds,
-            categories: { set: u.categoryIds.map((id) => ({ id })) },
-          },
-        }),
-      ),
+    const rowsJson = JSON.stringify(
+      chunk.map((u) => ({ id: u.id, primary: u.primaryCategoryId, cats: u.categoryIds })),
     );
+    const idsJson = JSON.stringify(chunk.map((u) => u.id));
+    const pairsJson = JSON.stringify(
+      chunk.flatMap((u) => u.categoryIds.map((a) => ({ a, b: u.id }))),
+    );
+    await db.$transaction([
+      db.$executeRaw`
+        UPDATE "products" p
+        SET "primaryCategoryId" = x.primary,
+            "categoryIds" = ARRAY(SELECT jsonb_array_elements_text(x.cats))
+        FROM (
+          SELECT e->>'id' AS id, e->>'primary' AS primary, e->'cats' AS cats
+          FROM jsonb_array_elements(${rowsJson}::jsonb) e
+        ) x
+        WHERE p.id = x.id`,
+      db.$executeRaw`
+        DELETE FROM "_ProductCategories"
+        WHERE "B" IN (SELECT jsonb_array_elements_text(${idsJson}::jsonb))`,
+      db.$executeRaw`
+        INSERT INTO "_ProductCategories" ("A", "B")
+        SELECT e->>'a', e->>'b' FROM jsonb_array_elements(${pairsJson}::jsonb) e
+        ON CONFLICT DO NOTHING`,
+    ]);
   }
-  process.stdout.write(`\nApplied: ${parentMoves.length} moves, ${updates.length} product relinks.\n`);
+  process.stdout.write(
+    `\nApplied: ${renameMap.size} renames, ${parentMoves.length} moves, ${mergeMap.size} merges, ${deleteIds.size} deletes, ${updates.length} product relinks.\n`,
+  );
 }
 
 main()
