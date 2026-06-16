@@ -4,19 +4,15 @@ import {
   ALL_NAMESPACES_SET,
   STOREFRONT_NAMESPACES,
   type Namespace,
-  type ProductField,
 } from './types';
 import {
-  getCachedAttributeLabel,
   getCachedTranslation,
-  setCachedAttributeLabel,
   setCachedTranslation,
   SKIP_I18N_RESULT_CACHE,
 } from './translation-cache';
 import {
   getNestedValue,
   loadTranslation,
-  registerAdminTranslations,
   registerStorefrontLanguage,
 } from './translation-store';
 import type { StorefrontNamespacesPayload } from './languages/en';

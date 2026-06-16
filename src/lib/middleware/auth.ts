@@ -2,7 +2,6 @@ import { NextRequest } from "next/server";
 import * as jwt from "jsonwebtoken";
 import { db } from "@white-shop/db";
 import {
-  bumpAuthEpoch,
   isAuthEpochValid,
   readTokenAuthEpoch,
 } from "@/lib/auth/auth-epoch";
