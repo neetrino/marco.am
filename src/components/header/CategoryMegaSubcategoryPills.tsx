@@ -19,10 +19,10 @@ const SUBPILL_FIGMA_IMG_PX = 26;
 const SUBPILL_LUCIDE_STROKE_PX = 26;
 
 const MEGA_GROUP_GRID_CLASS =
-  'grid grid-cols-1 gap-x-10 gap-y-8 sm:grid-cols-2 xl:grid-cols-3';
+  'grid w-full min-w-0 grid-cols-1 gap-x-8 gap-y-8 sm:grid-cols-2 lg:grid-cols-3 min-[1400px]:grid-cols-4';
 
 const MEGA_PARENT_LINK_CLASS =
-  `${headerCategoryNavFont.className} group mb-3 inline-flex max-w-full items-center gap-2 rounded-xl px-1 py-1.5 !text-[#383838] transition-[background-color,color] duration-150 hover:bg-marco-gray/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/15 dark:!text-[#383838]`;
+  `${headerCategoryNavFont.className} group mb-3 flex w-full max-w-full items-center gap-2 rounded-xl px-1 py-1.5 !text-[#383838] transition-[background-color,color] duration-150 hover:bg-marco-gray/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/15 dark:!text-[#383838]`;
 
 const MEGA_DESCENDANT_LINK_CLASS =
   `${headerCategoryNavFont.className} block rounded-lg px-2 py-1.5 text-sm leading-5 !text-[#383838]/85 transition-[background-color,color] duration-150 hover:bg-marco-gray/60 hover:!text-[#383838] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/10 dark:!text-[#383838]/85 dark:hover:!text-[#383838]`;
@@ -127,12 +127,12 @@ export function CategoryMegaSubcategoryPills({
 }) {
   if (loading) {
     return (
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-6 overflow-hidden md:gap-8">
-        <div className="shrink-0 px-1 pt-1">
+      <div className="flex w-full min-w-0 flex-col gap-6 md:gap-8">
+        <div className="shrink-0 pt-1">
           <div className="h-8 w-2/3 max-w-md animate-pulse rounded-lg bg-marco-gray/80" />
           <div className="mt-3 h-[5px] w-[104px] animate-pulse rounded-full bg-marco-gray/70" />
         </div>
-        <div className={`${MEGA_GROUP_GRID_CLASS} pr-1`}>
+        <div className={MEGA_GROUP_GRID_CLASS}>
           {Array.from({ length: 6 }).map((_, index) => (
             <div key={index} className="space-y-3">
               <div className="h-5 w-4/5 animate-pulse rounded-md bg-marco-gray/70" />
@@ -152,8 +152,8 @@ export function CategoryMegaSubcategoryPills({
   }
 
   return (
-    <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-6 overflow-hidden md:gap-8">
-      <div className="shrink-0 px-1 pt-1">
+    <div className="flex w-full min-w-0 flex-col gap-6 md:gap-8">
+      <div className="w-full shrink-0 pt-1">
         <div className="flex flex-wrap items-center gap-2.5 md:gap-3">
           <h2
             id={sectionHeadingId}
@@ -172,12 +172,9 @@ export function CategoryMegaSubcategoryPills({
         <div className="mt-2 h-[5px] w-[104px] shrink-0 bg-marco-yellow" aria-hidden />
       </div>
 
-      <ul
-        aria-labelledby={sectionHeadingId}
-        className={`min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain [-webkit-overflow-scrolling:touch] pr-1 [scrollbar-gutter:auto] touch-pan-y ${MEGA_GROUP_GRID_CLASS}`}
-      >
+      <ul aria-labelledby={sectionHeadingId} className={MEGA_GROUP_GRID_CLASS}>
         {groups.map(({ parent, descendants }) => (
-          <li key={parent.id} className="min-w-0">
+          <li key={parent.id} className="min-w-0 w-full">
             <SubcategoryGroupParent parent={parent} lang={lang} onNavigate={onNavigate} />
             {descendants.length > 0 ? (
               <ul className="flex flex-col gap-0.5 pl-1">

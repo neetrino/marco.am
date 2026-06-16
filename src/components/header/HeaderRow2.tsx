@@ -261,7 +261,7 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
                         style={{ zIndex: HEADER_CATEGORIES_PANEL_Z_INDEX }}
                         onClick={(event) => event.stopPropagation()}
                       >
-                        <div className="mx-auto flex h-full w-full max-w-[1600px] flex-col px-3 py-4 sm:px-4 sm:py-5 md:px-6 md:py-6">
+                        <div className="flex h-full w-full flex-col py-4 sm:py-5 md:py-6">
                           <div className="min-h-0 flex-1">
                             <div className="flex h-full min-h-0 flex-col overflow-hidden">
                               <Suspense fallback={null}>

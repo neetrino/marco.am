@@ -21,7 +21,7 @@ export function CategoryDropdownPromoBanner({
   onNavigate: () => void;
 }) {
   return (
-    <div className="relative mb-6 overflow-hidden rounded-[24px] bg-gradient-to-b from-[rgba(255,202,3,0.45)] to-[#fff9e5] p-5 pb-6 md:mb-5 md:p-6">
+    <div className="relative mb-6 w-full overflow-hidden rounded-[24px] bg-gradient-to-b from-[rgba(255,202,3,0.45)] to-[#fff9e5] p-5 pb-6 md:mb-5 md:p-6">
       <span
         className={`${headerCategoryNavFont.className} relative -top-1 mb-3 inline-flex rounded-full bg-[rgba(110,108,77,0.2)] px-3 py-1 text-xs font-bold leading-4 !text-[#383838] dark:!text-[#383838]`}
       >

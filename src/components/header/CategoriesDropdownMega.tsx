@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { ChevronRight } from 'lucide-react';
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from '../../lib/i18n-client';
 import { LanguagePreferenceContext } from '../../lib/language-context';
 import type { Category } from './category-nav-types';
@@ -47,6 +47,7 @@ export function CategoriesDropdownMega({
     [rootsQuery.data, lang],
   );
   const [selectedSlug, setSelectedSlug] = useState<string>('');
+  const rightScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (categoriesWithExtra.length === 0) {
@@ -56,6 +57,10 @@ export function CategoriesDropdownMega({
       prev && categoriesWithExtra.some((c) => c.slug === prev) ? prev : categoriesWithExtra[0].slug,
     );
   }, [categoriesWithExtra]);
+
+  useEffect(() => {
+    rightScrollRef.current?.scrollTo(0, 0);
+  }, [selectedSlug]);
 
   const branchQuery = useMegaMenuBranch(menuOpen, selectedSlug || null, lang);
   const selectedBranch = branchQuery.data;
@@ -89,7 +94,7 @@ export function CategoriesDropdownMega({
     <div className="flex h-full max-h-full min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden bg-white md:min-h-0 md:flex-row">
       <div className="relative flex h-full min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden border-r border-black/[0.08] md:min-h-0 md:w-[400px] md:min-w-[400px] md:max-w-[400px] md:flex-none md:shrink-0 dark:border-white/10">
         <nav
-          className="flex h-full min-h-0 flex-1 flex-col overflow-hidden py-6 pl-4 pr-0 md:py-[29px] md:pl-[25px] md:pr-0"
+          className="flex h-full min-h-0 flex-1 flex-col overflow-hidden py-6 pl-5 pr-0 md:py-[29px] md:pl-8 md:pr-0"
           aria-label={t('common.navigation.categories')}
         >
           <div className="flex min-h-0 flex-1 basis-0 flex-col overflow-y-auto overflow-x-hidden overscroll-y-contain [-webkit-overflow-scrolling:touch] [scrollbar-gutter:auto] touch-pan-y scroll-pb-header-mega-category-scroll-end pb-header-mega-category-scroll-end pr-0">
@@ -161,30 +166,29 @@ export function CategoriesDropdownMega({
         </nav>
       </div>
 
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col self-stretch overflow-hidden bg-white px-5 pb-5 pt-4 md:pl-6 md:pr-5 md:pt-5">
+      <div
+        ref={rightScrollRef}
+        className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto overflow-x-hidden overscroll-y-contain [-webkit-overflow-scrolling:touch] touch-pan-y bg-white px-5 pb-6 pt-4 md:px-8 md:pb-8 md:pt-5"
+      >
         {showPromoBanner ? (
-          <div className="shrink-0">
-            <CategoryDropdownPromoBanner
-              badge={preview.promo.badge}
-              headline={preview.promo.headline}
-              subline={preview.promo.subline}
-              href={`/products?category=${selected.slug}`}
-              onNavigate={onClose}
-              ctaLabel={t('common.buttons.shopNow')}
-            />
-          </div>
-        ) : null}
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-          <CategoryMegaSubcategoryPills
-            sectionHeadingId={`mega-menu-subcats-${selected.id}`}
-            sectionTitle={preview.title.toUpperCase()}
-            sectionProductCount={sectionProductCount}
-            groups={subcategoryGroups}
-            lang={lang}
+          <CategoryDropdownPromoBanner
+            badge={preview.promo.badge}
+            headline={preview.promo.headline}
+            subline={preview.promo.subline}
+            href={`/products?category=${selected.slug}`}
             onNavigate={onClose}
-            loading={branchQuery.isLoading && !selectedBranch}
+            ctaLabel={t('common.buttons.shopNow')}
           />
-        </div>
+        ) : null}
+        <CategoryMegaSubcategoryPills
+          sectionHeadingId={`mega-menu-subcats-${selected.id}`}
+          sectionTitle={preview.title.toUpperCase()}
+          sectionProductCount={sectionProductCount}
+          groups={subcategoryGroups}
+          lang={lang}
+          onNavigate={onClose}
+          loading={branchQuery.isLoading && !selectedBranch}
+        />
       </div>
     </div>
   );
