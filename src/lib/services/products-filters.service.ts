@@ -28,6 +28,11 @@ import {
   loadCategoryParentMap,
 } from "./category-ancestors.service";
 import { aggregateBrandFacetsFromWhere, getPublishedVariantPriceBounds } from "./products-filters-sql-facets";
+import { buildShopFiltersCoreViaSql, buildShopFiltersExtendedViaSql } from "./products-filters-sql-path";
+import type {
+  ProductsFiltersCoreData,
+  ProductsFiltersExtendedData,
+} from "@/lib/shop-products-filters-types";
 import { buildShopFiltersViaSqlAggregation } from "./products-filters-sql-path";
 import { getListingDiscountSettings, type ListingDiscountSettings } from "./listing-discount-settings";
 import { resolveCategoryTranslation } from "@/lib/i18n/category-translation";
@@ -930,6 +935,106 @@ class ProductsFiltersService {
       stepSize,
       stepSizePerCurrency,
     };
+  }
+
+  async getFiltersCore(filters: {
+    category?: string;
+    search?: string;
+    filter?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    lang?: string;
+    technicalSpecs?: TechnicalSpecFilters;
+    includeCategories?: boolean;
+  }): Promise<ProductsFiltersCoreData> {
+    const full = await this.getFilters({ ...filters, categoriesOnly: false });
+    return {
+      categories: full.categories,
+      brands: full.brands,
+      priceRange: full.priceRange,
+    };
+  }
+
+  async getFiltersExtended(filters: {
+    category?: string;
+    search?: string;
+    filter?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    lang?: string;
+    technicalSpecs?: TechnicalSpecFilters;
+  }): Promise<ProductsFiltersExtendedData> {
+    const preferredLocales = buildPreferredLocales(filters.lang || "en");
+    const lang = filters.lang || "en";
+    const { where: listingWhere } = await buildWhereClause({
+      category: filters.category?.trim(),
+      search: filters.search?.trim(),
+      filter: filters.filter?.trim(),
+      minPrice: filters.minPrice,
+      maxPrice: filters.maxPrice,
+      lang,
+    });
+    if (listingWhere === null) {
+      return { colors: [], sizes: [], attributeFacets: [] };
+    }
+
+    if (hasTechnicalSpecFilters(filters.technicalSpecs)) {
+      const full = await this.getFilters({ ...filters, categoriesOnly: false });
+      return {
+        colors: full.colors,
+        sizes: full.sizes,
+        attributeFacets: full.attributeFacets,
+      };
+    }
+
+    return buildShopFiltersExtendedViaSql({
+      where: listingWhere,
+      filters,
+      lang,
+      preferredLocales,
+    });
+  }
+
+  async getFiltersCoreFast(filters: {
+    category?: string;
+    search?: string;
+    filter?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    lang?: string;
+    technicalSpecs?: TechnicalSpecFilters;
+    includeCategories?: boolean;
+  }): Promise<ProductsFiltersCoreData> {
+    const preferredLocales = buildPreferredLocales(filters.lang || "en");
+    const lang = filters.lang || "en";
+    const includeCategories = filters.includeCategories !== false;
+    const { where: listingWhere } = await buildWhereClause({
+      category: filters.category?.trim(),
+      search: filters.search?.trim(),
+      filter: filters.filter?.trim(),
+      minPrice: filters.minPrice,
+      maxPrice: filters.maxPrice,
+      lang,
+    });
+    if (listingWhere === null) {
+      return {
+        categories: [],
+        brands: [],
+        priceRange: { min: 0, max: 0, stepSize: null, stepSizePerCurrency: null },
+      };
+    }
+
+    if (hasTechnicalSpecFilters(filters.technicalSpecs)) {
+      return this.getFiltersCore(filters);
+    }
+
+    return buildShopFiltersCoreViaSql({
+      where: listingWhere,
+      filters,
+      lang,
+      preferredLocales,
+      includeCategories,
+    });
   }
 }
 

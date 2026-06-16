@@ -1,4 +1,4 @@
-import type { ProductsFiltersData } from '@/components/ProductsFiltersProvider';
+import type { ProductsFiltersData } from '@/lib/shop-products-filters-types';
 import { normalizeShopGridProduct } from '@/app/products/shop-grid-product';
 import { apiClient } from '@/lib/api-client';
 import { SHOP_PLP_DEFAULT_PAGE_SIZE, PLP_PDP_CACHE_SYNC_BATCH_SIZE } from '@/lib/constants/shop-plp-pagination';
@@ -105,11 +105,25 @@ export function warmShopProductsClientCaches(
         suppressNetworkErrorLogging: options?.suppressTimeoutLogging,
       })
     : Promise.resolve(null);
+  const shellRequest = includeFilters
+    ? apiClient.get<ProductsFiltersData>('/api/v1/products/filters/shell', {
+        params: { lang: language },
+        timeoutMs: options?.timeoutMs,
+        suppressNetworkErrorLogging: options?.suppressTimeoutLogging,
+      })
+    : Promise.resolve(null);
 
-  void Promise.all([filtersRequest, listingRequest])
-    .then(([filters, listing]) => {
+  void Promise.all([filtersRequest, shellRequest, listingRequest])
+    .then(([filters, shell, listing]) => {
       if (filters) {
         writeShopFiltersCache(scopedFiltersKey, filters);
+      } else if (shell) {
+        writeShopFiltersCache(scopedFiltersKey, {
+          ...shell,
+          colors: [],
+          sizes: [],
+          attributeFacets: [],
+        });
       }
       writeShopListingCache(queryString, {
         data: listing.data ?? listing.items ?? [],

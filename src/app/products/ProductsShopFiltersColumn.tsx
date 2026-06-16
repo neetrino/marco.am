@@ -13,7 +13,7 @@ import { productsFiltersSectionFont } from '@/lib/products-filters-typography';
 import { t } from '@/lib/i18n';
 import type { LanguageCode } from '@/lib/language';
 import { MOBILE_FILTERS_EVENT } from '@/lib/events';
-import type { ProductsFiltersData } from '@/components/ProductsFiltersProvider';
+import type { ProductsFiltersData, ProductsFiltersShellData } from '@/lib/shop-products-filters-types';
 export type ProductsShopFiltersColumnProps = {
   readonly language: LanguageCode;
   readonly params: {
@@ -24,6 +24,7 @@ export type ProductsShopFiltersColumnProps = {
     maxPrice?: string;
     limit?: string;
   };
+  readonly initialShellData?: ProductsFiltersShellData | null;
   readonly initialFiltersData?: ProductsFiltersData | null;
   readonly initialFiltersKey?: string | null;
   readonly children?: ReactNode;
@@ -36,6 +37,7 @@ export type ProductsShopFiltersColumnProps = {
 export function ProductsShopFiltersColumn({
   language,
   params,
+  initialShellData = null,
   initialFiltersData = null,
   initialFiltersKey = null,
   children,
@@ -48,6 +50,7 @@ export function ProductsShopFiltersColumn({
       minPrice={params.minPrice}
       maxPrice={params.maxPrice}
       language={language}
+      initialShellData={initialShellData}
       initialFiltersData={initialFiltersData}
       initialFiltersKey={initialFiltersKey}
     >

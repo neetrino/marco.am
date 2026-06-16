@@ -2,6 +2,7 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { logger } from "../../../utils/logger";
 import { cacheService } from "../../cache.service";
 import { invalidateCategoryPublicCaches } from "../../read-through-json-cache";
+import { invalidateProductsFiltersPublicCaches } from "@/lib/cache/products-filters-redis";
 
 /**
  * Revalidate cache for product and related pages
@@ -25,6 +26,7 @@ export async function revalidateProductCache(
     await cacheService.deletePattern("products:*");
     await cacheService.deletePattern("cache:products:*");
     await invalidateCategoryPublicCaches();
+    await invalidateProductsFiltersPublicCaches();
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logger.warn('Revalidation failed (expected in some environments)', { error: errorMessage });

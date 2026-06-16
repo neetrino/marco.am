@@ -181,7 +181,7 @@ export function BrandFilter({ category, search, minPrice, maxPrice }: BrandFilte
                 {brand.name}
               </span>
               <span className="shrink-0 text-base leading-6 tracking-[-0.31px] text-[#90a1b9] dark:text-white/68">
-                ({brand.count})
+                {filtersContext?.countsPending && brand.count === 0 ? null : `(${brand.count})`}
               </span>
             </button>
           );

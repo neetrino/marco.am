@@ -1,6 +1,6 @@
 import { db } from '@white-shop/db';
 
-import { filterHeaderNavCategoryTree } from '@/lib/constants/excluded-shop-category-slugs';
+import { filterExcludedShopCategoryTree, filterHeaderNavCategoryTree } from '@/lib/constants/excluded-shop-category-slugs';
 import { resolveCategoryTranslation } from '@/lib/i18n/category-translation';
 import { getCachedJson } from '@/lib/services/read-through-json-cache';
 
@@ -184,15 +184,19 @@ function cloneBranch(node: MegaMenuCategoryNode): MegaMenuCategoryNode {
   };
 }
 
-async function getFullHeaderNavTree(lang: string): Promise<MegaMenuCategoryNode[]> {
-  const cacheKey = `categories:mega-menu:full-tree:v2:${lang}`;
+async function getCachedCategoryAllRoots(lang: string): Promise<MegaMenuCategoryNode[]> {
+  const cacheKey = `categories:mega-menu:all-roots:v3:${lang}`;
   return getCachedJson(cacheKey, MEGA_MENU_CACHE_TTL_SEC, async () => {
     const records = await fetchPublishedCategoryRecords();
     const graph = buildCategoryGraph(records, lang);
     await attachProductCounts(graph);
-    const headerRoots = filterHeaderNavCategoryTree(graph.rootCategories);
-    return headerRoots.map((root) => cloneBranch(root));
+    return graph.rootCategories.map((root) => cloneBranch(root));
   });
+}
+
+async function getFullHeaderNavTree(lang: string): Promise<MegaMenuCategoryNode[]> {
+  const allRoots = await getCachedCategoryAllRoots(lang);
+  return filterHeaderNavCategoryTree(allRoots);
 }
 
 class CategoriesMegaMenuService {
@@ -218,6 +222,12 @@ class CategoriesMegaMenuService {
     return {
       data: cloneBranch(root),
     };
+  }
+
+  /** Full shop PLP category tree (shared all-roots cache with mega menu). */
+  async getShopFilterCategoryTree(lang: string = 'en'): Promise<MegaMenuCategoryNode[]> {
+    const allRoots = await getCachedCategoryAllRoots(lang);
+    return filterExcludedShopCategoryTree(allRoots);
   }
 
   /** Warms shared full-tree cache for all storefront locales. */
