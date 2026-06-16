@@ -6,6 +6,7 @@ import {
   type CategoryGraph,
 } from "@/lib/services/product-category-links.service";
 import { buildBaseCategorySlug, collectDescendantIds } from "@/lib/services/admin/admin-categories.helpers";
+import { buildDistinctSubtreeProductCountMap } from "@/lib/services/category-product-counts.service";
 import {
   buildCategoryTranslationsInput,
   deriveExplicitCategoryIds,
@@ -443,56 +444,18 @@ class AdminCategoriesService {
         position: "asc",
       },
     });
-    const categoryIds = categories.map((category) => category.id);
-    const directProductCountByCategoryId = new Map<string, number>(
-      categoryIds.map((categoryId) => [categoryId, 0]),
+    const categoryRows = categories.map((category) => ({
+      id: category.id,
+      parentId: category.parentId,
+    }));
+    const products = await db.product.findMany({
+      where: { deletedAt: null },
+      select: { primaryCategoryId: true, categoryIds: true },
+    });
+    const subtreeProductCountByCategoryId = buildDistinctSubtreeProductCountMap(
+      categoryRows,
+      products,
     );
-    if (categoryIds.length > 0) {
-      const relationCounts = await db.$queryRaw<Array<{ categoryId: string; count: bigint }>>`
-        SELECT category_id as "categoryId", COUNT(DISTINCT product_id)::bigint as "count"
-        FROM (
-          SELECT p."id" as product_id, p."primaryCategoryId" as category_id
-          FROM "products" p
-          WHERE p."deletedAt" IS NULL
-            AND p."primaryCategoryId" IS NOT NULL
-            AND p."primaryCategoryId" = ANY(${categoryIds}::text[])
-          UNION ALL
-          SELECT p."id" as product_id, pc."A" as category_id
-          FROM "_ProductCategories" pc
-          INNER JOIN "products" p ON p."id" = pc."B"
-          WHERE p."deletedAt" IS NULL
-            AND pc."A" = ANY(${categoryIds}::text[])
-        ) category_product
-        GROUP BY category_id
-      `;
-
-      for (const row of relationCounts) {
-        directProductCountByCategoryId.set(
-          row.categoryId,
-          Number(row.count),
-        );
-      }
-    }
-
-    const childMap = new Map<string, string[]>();
-    for (const category of categories) {
-      if (!category.parentId) {
-        continue;
-      }
-      const siblings = childMap.get(category.parentId) ?? [];
-      siblings.push(category.id);
-      childMap.set(category.parentId, siblings);
-    }
-
-    const subtreeProductCountByCategoryId = new Map<string, number>();
-    for (const categoryId of categoryIds) {
-      const subtreeIds = collectDescendantIds(categoryId, childMap);
-      const total = subtreeIds.reduce(
-        (sum, id) => sum + (directProductCountByCategoryId.get(id) ?? 0),
-        0,
-      );
-      subtreeProductCountByCategoryId.set(categoryId, total);
-    }
 
     return {
       data: categories.map((category) =>
