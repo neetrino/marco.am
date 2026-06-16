@@ -2,11 +2,21 @@ import { Prisma } from "@white-shop/db/prisma";
 import { buildWhereClause } from "./products-find-query/query-builder";
 import { executeProductListingQuery } from "./products-find-query/query-executor";
 import {
+  executePlpLeanListingQuery,
+  fetchPlpLeanProductsByIds,
+} from "./products-find-query/plp-lean-listing-query";
+import {
   executeHomeStripListingQuery,
   fetchHomeStripProductsByIds,
 } from "./products-find-query/home-strip-listing-query";
 import { fetchPromotionListingProductIds } from "./products-find-query/promotion-listing-ids";
-import { db } from "@white-shop/db";
+import {
+  fetchPriceSortedListingProductIds,
+  isPriceListingSortKey,
+  resolvePriceListingSortDirection,
+  usesPriceDbSortPath,
+} from "./products-find-query/price-sorted-listing-ids";
+import { getProductsListingCountCached } from "@/lib/cache/products-listing-count-redis";
 import type { ProductFilters, ProductWithRelations } from "./products-find-query/types";
 import { hasTechnicalSpecFilters } from "./products-technical-filters";
 import { decodeProductCursor } from "./products-pagination-cursor";
@@ -61,6 +71,49 @@ async function buildBaseWhereForHomeStrip(
   return buildWhereClause({ ...filters, filter: undefined });
 }
 
+type ListingQueryOpts = {
+  omitProductAttributes: boolean;
+  lang: string;
+  orderBy: Prisma.ProductOrderByWithRelationInput | Prisma.ProductOrderByWithRelationInput[] | undefined;
+};
+
+function runListingQuery(
+  where: Prisma.ProductWhereInput,
+  limit: number,
+  skip: number,
+  filters: ProductFilters,
+  queryOpts: ListingQueryOpts,
+): Promise<ProductWithRelations[]> {
+  if (filters.plpLeanListing && filters.listingOmitProductAttributes) {
+    return executePlpLeanListingQuery(where, limit, skip, {
+      lang: queryOpts.lang,
+      orderBy: queryOpts.orderBy,
+    });
+  }
+  return executeProductListingQuery(where, limit, skip, queryOpts);
+}
+
+function deriveApproximateTotal(
+  skip: number,
+  limit: number,
+  pageLength: number,
+): number {
+  return pageLength < limit ? skip + pageLength : skip + limit + 1;
+}
+
+async function resolveListingTotal(
+  filters: ProductFilters,
+  canSkipCount: boolean,
+  skip: number,
+  limit: number,
+  pageLength: number,
+): Promise<number> {
+  if (canSkipCount) {
+    return deriveApproximateTotal(skip, limit, pageLength);
+  }
+  return getProductsListingCountCached(filters);
+}
+
 /**
  * Service for building and executing product find queries
  */
@@ -85,10 +138,10 @@ class ProductsFindQueryService {
       };
     }
 
+    const priceDbSort = usesPriceDbSortPath(filters);
+
     const requiresSortOverFetch =
-      sort === "price-asc" ||
-      sort === "price-desc" ||
-      sort === "price" ||
+      (isPriceListingSortKey(sort) && !priceDbSort) ||
       sort === "popular" ||
       sort === "bestseller" ||
       ((filter === "promotion" || filter === "special_offer") &&
@@ -120,8 +173,7 @@ class ProductsFindQueryService {
         const products = await fetchHomeStripProductsByIds(ids, {
           lang: queryOpts.lang,
         });
-        const total =
-          products.length < limit ? skip + products.length : skip + limit + 1;
+        const total = deriveApproximateTotal(skip, limit, products.length);
         return {
           products,
           bestsellerProductIds,
@@ -134,30 +186,34 @@ class ProductsFindQueryService {
           lang: queryOpts.lang,
           orderBy: queryOpts.orderBy,
         });
-        if (canSkipCount) {
-          const total =
-            products.length < limit ? skip + products.length : skip + limit + 1;
-          return {
-            products,
-            bestsellerProductIds,
-            total,
-          };
-        }
-        const [total, countedProducts] = await Promise.all([
-          db.product.count({ where }),
-          Promise.resolve(products),
-        ]);
+        const total = await resolveListingTotal(filters, canSkipCount, skip, limit, products.length);
         return {
-          products: countedProducts,
+          products,
+          bestsellerProductIds,
+          total,
+        };
+      }
+
+      if (priceDbSort && isPriceListingSortKey(sort)) {
+        const direction = resolvePriceListingSortDirection(sort);
+        const idsPromise = fetchPriceSortedListingProductIds(where, direction, limit, skip);
+        const totalPromise = canSkipCount
+          ? idsPromise.then((ids) => deriveApproximateTotal(skip, limit, ids.length))
+          : getProductsListingCountCached(filters);
+        const [ids, total] = await Promise.all([idsPromise, totalPromise]);
+        const products = await fetchPlpLeanProductsByIds(ids, {
+          lang: queryOpts.lang,
+        });
+        return {
+          products,
           bestsellerProductIds,
           total,
         };
       }
 
       if (canSkipCount) {
-        const products = await executeProductListingQuery(where, limit, skip, queryOpts);
-        const total =
-          products.length < limit ? skip + products.length : skip + limit + 1;
+        const products = await runListingQuery(where, limit, skip, filters, queryOpts);
+        const total = deriveApproximateTotal(skip, limit, products.length);
         return {
           products,
           bestsellerProductIds,
@@ -166,8 +222,8 @@ class ProductsFindQueryService {
       }
 
       const [total, products] = await Promise.all([
-        db.product.count({ where }),
-        executeProductListingQuery(where, limit, skip, queryOpts),
+        getProductsListingCountCached(filters),
+        runListingQuery(where, limit, skip, filters, queryOpts),
       ]);
       return {
         products,
@@ -176,14 +232,12 @@ class ProductsFindQueryService {
       };
     }
 
-    // Over-fetch window for in-memory technical/spec sorting path.
-    // Keep it tight to avoid slow PLP renders on every filter interaction.
     const requestedWindow = Math.max(1, page) * limit;
     const fetchLimit = Math.min(
       Math.max(requestedWindow * 3, limit * 4),
       PLP_IN_MEMORY_SORT_OVERFETCH_MAX,
     );
-    const products = await executeProductListingQuery(where, fetchLimit, 0, queryOpts);
+    const products = await runListingQuery(where, fetchLimit, 0, filters, queryOpts);
 
     return {
       products,

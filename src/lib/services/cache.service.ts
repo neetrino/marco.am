@@ -6,11 +6,28 @@
  * When Redis is not configured, uses in-memory cache (per process) for dev/local.
  */
 
-import type { Redis as IORedis } from "ioredis";
 import { logger } from "@/lib/utils/logger";
 
+/** Minimal ioredis surface used here — avoids static `ioredis` imports in the server bundle graph. */
+type IoRedisTcpClient = {
+  connect(): Promise<void>;
+  del(...keys: string[]): Promise<number>;
+  get(key: string): Promise<string | null>;
+  on(event: "connect" | "ready", handler: () => void): void;
+  on(event: "error", handler: (error: Error) => void): void;
+  scan(
+    cursor: string,
+    command: "MATCH",
+    pattern: string,
+    countCommand: "COUNT",
+    count: number,
+  ): Promise<[string, string[]]>;
+  set(key: string, value: string): Promise<unknown>;
+  setex(key: string, seconds: number, value: string): Promise<unknown>;
+};
+
 // Redis client will be initialized lazily
-let redisClient: IORedis | null = null;
+let redisClient: IoRedisTcpClient | null = null;
 /** Upstash REST client when UPSTASH_REDIS_REST_* env vars are set */
 let upstashClient: {
   get: (k: string) => Promise<string | null>;
@@ -248,7 +265,7 @@ export async function del(key: string): Promise<boolean> {
 }
 
 async function scanKeysMatchingPatternIoRedis(
-  client: IORedis,
+  client: IoRedisTcpClient,
   pattern: string,
 ): Promise<string[]> {
   const out: string[] = [];

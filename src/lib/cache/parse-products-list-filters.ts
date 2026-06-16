@@ -65,6 +65,11 @@ export function parseProductListFiltersFromSearchParams(
   const homeStripRaw = searchParams.get('homeStripListing');
   const homeStripListing =
     homeStripRaw === '1' || homeStripRaw?.toLowerCase() === 'true' ? true : undefined;
+
+  const plpLeanRaw = searchParams.get('plpLeanListing');
+  const plpLeanListing =
+    plpLeanRaw === '1' || plpLeanRaw?.toLowerCase() === 'true' ? true : undefined;
+
   const pricePresence = resolveShopPlpPricePresence(searchParams.get('pricePresence'));
 
   return {
@@ -88,5 +93,6 @@ export function parseProductListFiltersFromSearchParams(
     cardVisualOnly,
     skipExactTotalCount,
     homeStripListing,
+    plpLeanListing,
   };
 }

@@ -36,6 +36,7 @@ async function fetchProductsListing(
       pricePresence: ctx.pricePresence,
       technicalSpecs,
       listingOmitProductAttributes: true,
+      plpLeanListing: true,
     });
     return { ctx, productsData };
   } catch (error) {

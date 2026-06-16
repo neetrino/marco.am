@@ -8,13 +8,15 @@ import {
   type PaginationSlotItem,
 } from '@/components/products/ProductsPagination';
 import { apiClient } from '@/lib/api-client';
-import { SHOP_PLP_DEFAULT_PAGE_SIZE } from '@/lib/constants/shop-plp-pagination';
+import { SHOP_PLP_DEFAULT_PAGE_SIZE, PLP_PDP_CACHE_SYNC_BATCH_SIZE } from '@/lib/constants/shop-plp-pagination';
 import { getStoredLanguage } from '@/lib/language';
 import { PRODUCTS_PLP_TOTAL_EVENT } from '@/lib/products-plp-total-event';
 import { pushShopProductsListingUrl } from '@/lib/push-shop-products-listing-url';
 import { getQueryClient } from '@/lib/query/get-query-client';
 import { syncShopListingProductsToPdpCache } from '@/lib/shop-products-plp-pdp-sync';
 import { scheduleIdleSync } from '@/lib/deferred-idle-sync';
+import { buildShopListingApiParams } from '@/lib/shop-products-listing-api-params';
+import { usePlpViewportPdpSync } from '@/lib/use-plp-viewport-pdp-sync';
 import {
   isShopListingCacheFresh,
   readShopListingCache,
@@ -53,18 +55,18 @@ type ProductsShopListingClientProps = {
 };
 
 function buildListingApiParams(queryString: string): Record<string, string> {
-  const params = new URLSearchParams(queryString);
-  params.set('lang', getStoredLanguage());
-  params.set('listingOmitProductAttributes', '1');
-  params.set('compact', '1');
-  if (!params.has('limit')) {
-    params.set('limit', String(SHOP_PLP_DEFAULT_PAGE_SIZE));
+  return buildShopListingApiParams(queryString, getStoredLanguage());
+}
+
+function seedInitialPdpCacheBatch(products: ShopGridProduct[]): void {
+  if (products.length === 0) {
+    return;
   }
-  const out: Record<string, string> = {};
-  params.forEach((value, key) => {
-    out[key] = value;
-  });
-  return out;
+  syncShopListingProductsToPdpCache(
+    getQueryClient(),
+    products.slice(0, PLP_PDP_CACHE_SYNC_BATCH_SIZE),
+    getStoredLanguage(),
+  );
 }
 
 function buildPaginationUrl(queryString: string, page: number): string {
@@ -144,6 +146,9 @@ export function ProductsShopListingClient({
   const productsRef = useRef(initialProducts);
   const fetchGenerationRef = useRef(0);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const gridHostRef = useRef<HTMLDivElement>(null);
+
+  usePlpViewportPdpSync(gridHostRef, products, getStoredLanguage(), isHydrated);
 
   useEffect(() => {
     productsRef.current = products;
@@ -155,11 +160,7 @@ export function ProductsShopListingClient({
       meta: initialMeta,
     });
     const cancelIdleSync = scheduleIdleSync(() => {
-      syncShopListingProductsToPdpCache(
-        getQueryClient(),
-        initialProducts,
-        getStoredLanguage(),
-      );
+      seedInitialPdpCacheBatch(initialProducts);
     }, PLP_PDP_CACHE_SYNC_IDLE_TIMEOUT_MS);
     return cancelIdleSync;
   }, [initialMeta, initialProducts, initialQueryString]);
@@ -167,16 +168,6 @@ export function ProductsShopListingClient({
   useEffect(() => {
     setIsHydrated(true);
   }, []);
-
-  useEffect(() => {
-    if (!isHydrated) {
-      return;
-    }
-    const cancelIdleSync = scheduleIdleSync(() => {
-      syncShopListingProductsToPdpCache(getQueryClient(), products, getStoredLanguage());
-    }, PLP_PDP_CACHE_SYNC_IDLE_TIMEOUT_MS);
-    return cancelIdleSync;
-  }, [isHydrated, products]);
 
   const reportTotal = useCallback((total: number) => {
     window.dispatchEvent(new CustomEvent<number>(PRODUCTS_PLP_TOTAL_EVENT, { detail: total }));
@@ -192,11 +183,6 @@ export function ProductsShopListingClient({
       setShowGridSkeleton(false);
       setHasOptimisticListing(false);
       writeShopListingCache(nextQueryString, normalizedPayload);
-      syncShopListingProductsToPdpCache(
-        getQueryClient(),
-        normalized,
-        getStoredLanguage(),
-      );
       reportTotal(normalizedPayload.meta.total);
     },
     [reportTotal],
@@ -357,6 +343,7 @@ export function ProductsShopListingClient({
 
   return (
     <div
+      ref={gridHostRef}
       className={PLP_LISTING_ROOT_CLASS}
       {...(isHydrated && isFetching ? { 'aria-busy': true as const } : {})}
     >

@@ -1,18 +1,19 @@
+'use client';
+
+import { useMemo } from 'react';
+
 import { getContactLocations } from '@/lib/contact-locations';
-import type { LanguageCode } from '@/lib/language';
+import { useTranslation } from '@/lib/i18n-client';
 import { buildContactPageCopy } from './contact-page-copy';
 import { ContactFormCard } from './ContactFormCard';
 import { ContactInfoColumn } from './ContactInfoColumn';
 import { ContactMapSection } from './ContactMapSection';
 
-type ContactPageContentProps = {
-  readonly language: LanguageCode;
-};
-
-/** Contact page — server shell + client islands (form, map). */
-export function ContactPageContent({ language }: ContactPageContentProps) {
-  const copy = buildContactPageCopy(language);
-  const locations = getContactLocations(language);
+/** Contact page — client i18n for instant navigation; form/map hydrate as islands. */
+export function ContactPageContent() {
+  const { lang } = useTranslation();
+  const copy = useMemo(() => buildContactPageCopy(lang), [lang]);
+  const locations = useMemo(() => getContactLocations(lang), [lang]);
 
   return (
     <div className="bg-[var(--app-bg)] text-[var(--app-text)]">

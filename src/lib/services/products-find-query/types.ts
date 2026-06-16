@@ -37,6 +37,10 @@ export interface ProductFilters {
    * Home strips only: lean DB select + promotion ID resolver (no PLP category/options joins).
    */
   homeStripListing?: boolean;
+  /**
+   * PLP: lean variant select without attributeValue joins (faster grid; colors from options/JSONB).
+   */
+  plpLeanListing?: boolean;
 }
 
 export type TechnicalSpecFilters = Record<string, string[]>;

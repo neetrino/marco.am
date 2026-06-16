@@ -1,12 +1,13 @@
 import type { ProductsFiltersData } from '@/components/ProductsFiltersProvider';
 import { normalizeShopGridProduct } from '@/app/products/shop-grid-product';
 import { apiClient } from '@/lib/api-client';
-import { SHOP_PLP_DEFAULT_PAGE_SIZE } from '@/lib/constants/shop-plp-pagination';
+import { SHOP_PLP_DEFAULT_PAGE_SIZE, PLP_PDP_CACHE_SYNC_BATCH_SIZE } from '@/lib/constants/shop-plp-pagination';
 import { buildProductsFiltersScopeKeyFromSearchParams } from '@/lib/products-filters-client-key';
 import type { LanguageCode } from '@/lib/language';
 import { getQueryClient } from '@/lib/query/get-query-client';
 import { writeShopFiltersCache } from '@/lib/shop-products-filters-client-cache';
 import { syncShopListingProductsToPdpCache } from '@/lib/shop-products-plp-pdp-sync';
+import { buildShopListingApiParams } from '@/lib/shop-products-listing-api-params';
 import {
   writeShopListingCache,
   type ShopListingCachePayload,
@@ -24,21 +25,7 @@ export function buildDefaultShopFiltersClientKey(language: LanguageCode): string
 }
 
 function buildListingApiParams(queryString: string, language: LanguageCode): Record<string, string> {
-  const params = new URLSearchParams(queryString);
-  params.set('lang', language);
-  params.set('listingOmitProductAttributes', '1');
-  params.set('compact', '1');
-  if (!params.has('limit')) {
-    params.set('limit', String(SHOP_PLP_DEFAULT_PAGE_SIZE));
-  }
-  if (!params.has('page')) {
-    params.set('page', '1');
-  }
-  const out: Record<string, string> = {};
-  params.forEach((value, key) => {
-    out[key] = value;
-  });
-  return out;
+  return buildShopListingApiParams(queryString, language);
 }
 
 type ProductsListingApiResponse = ShopListingCachePayload & {
@@ -134,7 +121,11 @@ export function warmShopProductsClientCaches(
         },
       });
       const normalized = (listing.data ?? listing.items ?? []).map(normalizeShopGridProduct);
-      syncShopListingProductsToPdpCache(getQueryClient(), normalized, language);
+      syncShopListingProductsToPdpCache(
+        getQueryClient(),
+        normalized.slice(0, PLP_PDP_CACHE_SYNC_BATCH_SIZE),
+        language,
+      );
     })
     .catch(() => {
       /* Prefetch is best-effort — PLP will fetch on mount if this fails. */

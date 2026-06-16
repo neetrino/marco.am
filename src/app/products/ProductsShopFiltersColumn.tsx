@@ -1,3 +1,5 @@
+'use client';
+
 import type { ReactNode } from 'react';
 import { PriceFilter } from '@/components/PriceFilter';
 import { BrandFilter } from '@/components/BrandFilter';
