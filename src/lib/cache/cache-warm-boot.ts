@@ -1,4 +1,5 @@
 import { bannerManagementService } from '@/lib/services/banner-management.service';
+import { categoriesMegaMenuService } from '@/lib/services/categories-mega-menu.service';
 import { categoriesService } from '@/lib/services/categories.service';
 
 const WARM_LOCALES = ['en', 'hy', 'ru'] as const;
@@ -18,5 +19,6 @@ export async function warmPublicShopCaches(): Promise<void> {
       bannerManagementService.getPublicHomeHeroSlotsPayload({ localeRaw }),
     ),
     ...WARM_LOCALES.map((lang) => categoriesService.getTree(lang)),
+    categoriesMegaMenuService.warmCaches(WARM_LOCALES),
   ]);
 }

@@ -17,6 +17,7 @@ import { useTranslation } from '../../lib/i18n-client';
 import { subscribeShopCategoryTreeUpdated } from '../../lib/shop-category-tree-sync';
 import type { Category, CategoriesResponse } from './category-nav-types';
 import { prepareRootCategoriesForNav } from './categoryNavList';
+import { prefetchMegaMenuCategories } from './megaMenuQueries';
 import { queryKeys } from '../../lib/query-keys';
 
 const PRODUCTS_PATH_PREFIX = '/products';
@@ -123,6 +124,21 @@ export function useHeaderData() {
   }, [shouldEagerLoadCategories, fetchCategories]);
 
   useEffect(() => {
+    if (isProfileRoute) {
+      return;
+    }
+
+    const runPrefetch = () => prefetchMegaMenuCategories(queryClient, categoryLanguage);
+    if (typeof requestIdleCallback !== 'undefined') {
+      const idleId = requestIdleCallback(runPrefetch, { timeout: 2_000 });
+      return () => cancelIdleCallback(idleId);
+    }
+
+    const timeoutId = window.setTimeout(runPrefetch, 500);
+    return () => window.clearTimeout(timeoutId);
+  }, [categoryLanguage, isProfileRoute, queryClient]);
+
+  useEffect(() => {
     if (!mobileMenuOpen || categoriesLoadedRef.current) {
       return;
     }
@@ -145,7 +161,9 @@ export function useHeaderData() {
 
   useEffect(() => {
     const onLanguage = () => {
-      setCategoryLanguage(getStoredLanguage());
+      const nextLang = getStoredLanguage();
+      setCategoryLanguage(nextLang);
+      prefetchMegaMenuCategories(queryClient, nextLang);
       if (categoriesLoadedRef.current || shouldEagerLoadCategories || showProductsMenu) {
         void queryClient.invalidateQueries({
           queryKey: queryKeys.categoriesTreeRoot(),
@@ -288,5 +306,6 @@ export function useHeaderData() {
     handleCurrencyChange,
     getRootCategories,
     formatPrice,
+    prefetchMegaMenu: () => prefetchMegaMenuCategories(queryClient, categoryLanguage),
   };
 }

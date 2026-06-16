@@ -77,7 +77,7 @@ export function CategoriesDropdownMega({
     [selectedBranch, lang],
   );
 
-  if (rootsQuery.isLoading) {
+  if (rootsQuery.isLoading && !rootsQuery.data) {
     return (
       <div className="flex h-full min-h-[200px] items-center justify-center text-sm text-[#5d7285] dark:text-zinc-300">
         {t('common.messages.loading')}

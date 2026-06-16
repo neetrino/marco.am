@@ -184,46 +184,45 @@ function cloneBranch(node: MegaMenuCategoryNode): MegaMenuCategoryNode {
   };
 }
 
+async function getFullHeaderNavTree(lang: string): Promise<MegaMenuCategoryNode[]> {
+  const cacheKey = `categories:mega-menu:full-tree:v2:${lang}`;
+  return getCachedJson(cacheKey, MEGA_MENU_CACHE_TTL_SEC, async () => {
+    const records = await fetchPublishedCategoryRecords();
+    const graph = buildCategoryGraph(records, lang);
+    await attachProductCounts(graph);
+    const headerRoots = filterHeaderNavCategoryTree(graph.rootCategories);
+    return headerRoots.map((root) => cloneBranch(root));
+  });
+}
+
 class CategoriesMegaMenuService {
   async getRoots(lang: string = 'en') {
-    const cacheKey = `categories:mega-menu:roots:v1:${lang}`;
-    return getCachedJson(cacheKey, MEGA_MENU_CACHE_TTL_SEC, async () => {
-      const records = await fetchPublishedCategoryRecords();
-      const graph = buildCategoryGraph(records, lang);
-      await attachProductCounts(graph);
-
-      const headerRoots = filterHeaderNavCategoryTree(graph.rootCategories).filter(
-        (root) => root.showInHeader,
-      );
-
-      return {
-        data: headerRoots.map((root) => cloneNodeShallow(root)),
-      };
-    });
+    const headerRoots = await getFullHeaderNavTree(lang);
+    return {
+      data: headerRoots.filter((root) => root.showInHeader).map((root) => cloneNodeShallow(root)),
+    };
   }
 
   async getBranch(slug: string, lang: string = 'en') {
-    const cacheKey = `categories:mega-menu:branch:v1:${lang}:${slug}`;
-    return getCachedJson(cacheKey, MEGA_MENU_CACHE_TTL_SEC, async () => {
-      const records = await fetchPublishedCategoryRecords();
-      const graph = buildCategoryGraph(records, lang);
-      await attachProductCounts(graph);
-
-      const headerRoots = filterHeaderNavCategoryTree(graph.rootCategories);
-      const root = headerRoots.find((item) => item.slug === slug);
-      if (!root) {
-        throw {
-          status: 404,
-          type: 'https://api.shop.am/problems/not-found',
-          title: 'Category not found',
-          detail: `Mega menu branch for slug '${slug}' does not exist`,
-        };
-      }
-
-      return {
-        data: cloneBranch(root),
+    const headerRoots = await getFullHeaderNavTree(lang);
+    const root = headerRoots.find((item) => item.slug === slug);
+    if (!root) {
+      throw {
+        status: 404,
+        type: 'https://api.shop.am/problems/not-found',
+        title: 'Category not found',
+        detail: `Mega menu branch for slug '${slug}' does not exist`,
       };
-    });
+    }
+
+    return {
+      data: cloneBranch(root),
+    };
+  }
+
+  /** Warms shared full-tree cache for all storefront locales. */
+  async warmCaches(locales: readonly string[] = ['en', 'hy', 'ru']): Promise<void> {
+    await Promise.all(locales.map((lang) => getFullHeaderNavTree(lang)));
   }
 }
 
