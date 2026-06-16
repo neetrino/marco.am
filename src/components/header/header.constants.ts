@@ -27,6 +27,10 @@ export const HEADER_CATEGORIES_PANEL_WIDTH_CLASS = 'w-[90%] max-w-[90vw]';
 /** Outer shell radius on the drawer’s open (right) edge. */
 export const HEADER_CATEGORIES_PANEL_RADIUS_CLASS = 'rounded-r-[32px]';
 
+/** Close control — sits in the 10% overlay gap, outside the sheet edge. */
+export const HEADER_CATEGORIES_CLOSE_BUTTON_CLASS =
+  'absolute -right-14 top-5 z-[95] inline-flex h-10 w-10 items-center justify-center rounded-full bg-marco-yellow text-marco-black shadow-lg transition-[filter] duration-200 hover:brightness-95 active:brightness-90';
+
 /**
  * Row-1 phone/address dropdowns — above row-2 search (`z-[480]`), below mobile search overlay (`z-[700]`).
  */

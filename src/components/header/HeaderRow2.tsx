@@ -7,6 +7,7 @@ import { SearchDropdown } from '../SearchDropdown';
 import { CategoriesDropdownMega } from './CategoriesDropdownMega';
 import {
   HEADER_CATEGORIES_OVERLAY_Z_INDEX,
+  HEADER_CATEGORIES_CLOSE_BUTTON_CLASS,
   HEADER_CATEGORIES_PANEL_RADIUS_CLASS,
   HEADER_CATEGORIES_PANEL_WIDTH_CLASS,
   HEADER_CATEGORIES_PANEL_Z_INDEX,
@@ -43,8 +44,6 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
     router,
     showProductsMenu,
     setShowProductsMenu,
-    categories,
-    loadingCategories,
     productsMenuRef,
     headerSearchInputRef,
     inlineSearchRef,
@@ -59,7 +58,6 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
     searchHandleKeyDown,
     clearSearch,
     handleSearch,
-    getRootCategories,
   } = data;
 
   const [mobileSearchPopupOpen, setMobileSearchPopupOpen] = useState(false);
@@ -249,47 +247,43 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
                       }`}
                     />
                     <div
-                      data-marco-categories-dropdown
-                      data-theme-static="true"
-                      className={`relative h-full transform-gpu overflow-hidden bg-white shadow-2xl transition-transform duration-300 ease-out dark:bg-zinc-950 ${HEADER_CATEGORIES_PANEL_WIDTH_CLASS} ${HEADER_CATEGORIES_PANEL_RADIUS_CLASS} ${
+                      className={`relative h-full transform-gpu transition-transform duration-300 ease-out ${HEADER_CATEGORIES_PANEL_WIDTH_CLASS} ${
                         showProductsMenu ? 'translate-x-0' : '-translate-x-full'
                       }`}
-                      style={{ zIndex: HEADER_CATEGORIES_PANEL_Z_INDEX }}
-                      onClick={(event) => event.stopPropagation()}
                     >
-                      <div className="mx-auto flex h-full w-full max-w-[1600px] flex-col px-3 py-3 sm:px-4 sm:py-4 md:px-6 md:py-6">
-                        <div className="mb-3 flex items-center justify-between sm:mb-4">
-                          <h2 className="text-base font-semibold text-marco-black dark:text-white sm:text-lg">
-                            {t('common.navigation.categories')}
-                          </h2>
-                          <button
-                            type="button"
-                            onClick={() => setShowProductsMenu(false)}
-                            className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-marco-yellow text-marco-black transition-[filter] duration-200 hover:brightness-95 active:brightness-90"
-                            aria-label={t('common.buttons.close')}
-                          >
-                            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
-                              <path strokeLinecap="round" d="M6 6l12 12M18 6L6 18" />
-                            </svg>
-                          </button>
-                        </div>
-                        <div className="min-h-0 flex-1">
-                          {loadingCategories ? (
-                            <div className="h-full min-h-[200px] bg-white px-4 py-3 text-sm text-[#5d7285] dark:bg-zinc-900 dark:text-zinc-300">
-                              {t('common.messages.loading')}
-                            </div>
-                          ) : (
+                      <div
+                        data-marco-categories-dropdown
+                        data-theme-static="true"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label={t('common.navigation.categories')}
+                        className={`h-full overflow-hidden bg-white shadow-2xl dark:bg-zinc-950 ${HEADER_CATEGORIES_PANEL_RADIUS_CLASS}`}
+                        style={{ zIndex: HEADER_CATEGORIES_PANEL_Z_INDEX }}
+                        onClick={(event) => event.stopPropagation()}
+                      >
+                        <div className="mx-auto flex h-full w-full max-w-[1600px] flex-col px-3 py-4 sm:px-4 sm:py-5 md:px-6 md:py-6">
+                          <div className="min-h-0 flex-1">
                             <div className="flex h-full min-h-0 flex-col overflow-hidden">
                               <Suspense fallback={null}>
                                 <CategoriesDropdownMega
-                                  categories={getRootCategories(categories)}
+                                  menuOpen={showProductsMenu}
                                   onClose={() => setShowProductsMenu(false)}
                                 />
                               </Suspense>
                             </div>
-                          )}
+                          </div>
                         </div>
                       </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowProductsMenu(false)}
+                        className={HEADER_CATEGORIES_CLOSE_BUTTON_CLASS}
+                        aria-label={t('common.buttons.close')}
+                      >
+                        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                          <path strokeLinecap="round" d="M6 6l12 12M18 6L6 18" />
+                        </svg>
+                      </button>
                     </div>
                   </div>,
                   document.body,

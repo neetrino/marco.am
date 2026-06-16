@@ -26,6 +26,12 @@ export const queryKeys = {
   categoriesTreeRoot: () => ["api", "v1", "categories", "tree"] as const,
   categoriesTree: (lang: LanguageCode) =>
     ["api", "v1", "categories", "tree", lang] as const,
+  megaMenuRootsRoot: () => ["api", "v1", "categories", "mega-menu", "roots"] as const,
+  megaMenuRoots: (lang: LanguageCode) =>
+    ["api", "v1", "categories", "mega-menu", "roots", lang] as const,
+  megaMenuBranchRoot: () => ["api", "v1", "categories", "mega-menu", "branch"] as const,
+  megaMenuBranch: (slug: string, lang: LanguageCode) =>
+    ["api", "v1", "categories", "mega-menu", "branch", slug, lang] as const,
   wishlistProductIdsRoot: () => ["api", "v1", "wishlist", "ids"] as const,
   wishlistProductIds: (lang: LanguageCode) =>
     ["api", "v1", "wishlist", "ids", lang] as const,

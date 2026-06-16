@@ -101,7 +101,7 @@ export function useHeaderData() {
       return response.data ?? [];
     },
     staleTime: 300_000,
-    enabled: shouldEagerLoadCategories || showProductsMenu,
+    enabled: shouldEagerLoadCategories || mobileMenuOpen,
   });
 
   useEffect(() => {
@@ -123,16 +123,22 @@ export function useHeaderData() {
   }, [shouldEagerLoadCategories, fetchCategories]);
 
   useEffect(() => {
-    if (!showProductsMenu || categoriesLoadedRef.current) {
+    if (!mobileMenuOpen || categoriesLoadedRef.current) {
       return;
     }
     void fetchCategories();
-  }, [showProductsMenu, fetchCategories]);
+  }, [mobileMenuOpen, fetchCategories]);
 
   useEffect(() => {
     return subscribeShopCategoryTreeUpdated(() => {
       void queryClient.invalidateQueries({
         queryKey: queryKeys.categoriesTreeRoot(),
+      });
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.megaMenuRootsRoot(),
+      });
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.megaMenuBranchRoot(),
       });
     });
   }, [queryClient]);
