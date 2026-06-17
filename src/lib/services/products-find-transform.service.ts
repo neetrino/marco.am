@@ -7,6 +7,7 @@ import {
 } from '@/lib/constants/product-warranty';
 import { pickVariantForListingPrice } from '@/lib/product-variant-listing-pick';
 import { resolveProductPrice } from '@/lib/pricing/product-price';
+import { buildProductGalleryUrls } from '@/lib/products/product-gallery-urls';
 import { getListingDiscountSettings } from './listing-discount-settings';
 import { processImageUrl } from "../utils/image-utils";
 import { translations } from "../translations";
@@ -330,16 +331,7 @@ class ProductsFindTransformService {
         discountPercent: pricing.discountPercent,
         isSpecialPrice: pricing.isSpecialPrice,
         ...(() => {
-          if (!Array.isArray(product.media) || product.media.length === 0) {
-            return { image: null as string | null, images: [] as string[] };
-          }
-          const images = product.media
-            .map((m) =>
-              processImageUrl(
-                m as string | null | undefined | { url?: string; src?: string; value?: string },
-              ),
-            )
-            .filter((url): url is string => Boolean(url));
+          const images = buildProductGalleryUrls(product.media, variants);
           return {
             image: images[0] ?? null,
             images,

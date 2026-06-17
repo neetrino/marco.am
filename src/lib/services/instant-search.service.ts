@@ -5,7 +5,7 @@ import {
   resolveApiLocale,
   type ApiLocale,
 } from '@/lib/i18n/api-locale';
-import { extractMediaUrl } from '@/lib/utils/extractMediaUrl';
+import { resolveListingHeroImageUrl } from '@/lib/products/product-gallery-urls';
 import { processImageUrl } from '@/lib/utils/image-utils';
 import { resolveProductPrice } from '@/lib/pricing/product-price';
 
@@ -170,7 +170,7 @@ function mapProductResult(
     currentPrice: firstVariant?.price ?? 0,
     compareAtPrice: firstVariant?.compareAtPrice ?? null,
   });
-  let image = extractMediaUrl(product.media);
+  let image = resolveListingHeroImageUrl(product.media, product.variants);
   if (!image && firstVariant?.imageUrl) {
     image = processImageUrl(firstVariant.imageUrl);
   }
