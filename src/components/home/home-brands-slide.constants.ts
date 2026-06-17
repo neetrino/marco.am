@@ -12,18 +12,6 @@ export const HOME_BRANDS_SLIDE_CORNER_RADIUS_PX = 20;
 
 export const HOME_BRANDS_SLIDE_SURFACE_HEX = '#f6f6f6';
 
-/** Admin/API hint — rail UI uses a single uniform logo cell for all entries. */
-export type HomeBrandLogoScale = 'default' | 'large';
-
-export type HomeBrandSlideEntry = {
-  id: string;
-  src: string;
-  width: number;
-  height: number;
-  alt: string;
-  logoScale?: HomeBrandLogoScale;
-};
-
 /**
  * Every logo is scaled inside this fixed box so mixed SVG/raster assets read at similar visual weight.
  */
@@ -36,67 +24,3 @@ export const HOME_BRANDS_SLIDE_CARD_PADDING_CLASS =
 
 export const HOME_BRANDS_RAIL_LOGO_IMAGE_CLASS =
   'max-h-full max-w-full object-contain';
-
-/** Brand logo assets under `public/assets/brands/`. */
-export const HOME_BRAND_SLIDE_ENTRIES: readonly HomeBrandSlideEntry[] = [
-  {
-    id: 'hisense',
-    src: '/assets/brands/hisense.png',
-    width: 1024,
-    height: 1024,
-    alt: 'Hisense',
-  },
-  {
-    id: 'samsung',
-    src: '/assets/brands/samsung.png',
-    width: 1024,
-    height: 1024,
-    alt: 'Samsung',
-    logoScale: 'large',
-  },
-  {
-    id: 'lg',
-    src: '/assets/brands/lg.png',
-    width: 1024,
-    height: 1024,
-    alt: 'LG',
-    logoScale: 'large',
-  },
-  {
-    id: 'panasonic',
-    src: '/assets/brands/panasonic.png',
-    width: 1024,
-    height: 1024,
-    alt: 'Panasonic',
-  },
-  {
-    id: 'toshiba',
-    src: '/assets/brands/toshiba.png',
-    width: 1024,
-    height: 1024,
-    alt: 'TOSHIBA',
-  },
-  {
-    id: 'midea',
-    src: '/assets/brands/midea.png',
-    width: 1024,
-    height: 1024,
-    alt: 'MIDEA',
-    logoScale: 'large',
-  },
-  {
-    id: 'braun',
-    src: '/assets/brands/braun.png',
-    width: 1024,
-    height: 1024,
-    alt: 'BRAUN',
-    logoScale: 'large',
-  },
-  {
-    id: 'bosch',
-    src: '/assets/brands/bosch.svg',
-    width: 500,
-    height: 114,
-    alt: 'BOSCH',
-  },
-];

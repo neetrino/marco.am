@@ -23,7 +23,6 @@ import {
   HOME_BRANDS_RAIL_LOGO_CELL_HEIGHT_PX,
   HOME_BRANDS_RAIL_LOGO_CELL_MAX_WIDTH_PX,
   HOME_BRANDS_RAIL_LOGO_IMAGE_CLASS,
-  HOME_BRAND_SLIDE_ENTRIES,
   HOME_BRANDS_SLIDE_CARD_MIN_HEIGHT_PX,
   HOME_BRANDS_SLIDE_CARD_PADDING_CLASS,
   HOME_BRANDS_SLIDE_CORNER_RADIUS_PX,
@@ -53,7 +52,7 @@ function logoRailCellStyle(slug: string, displayName: string): CSSProperties {
 }
 
 type HomeBrandsSlideProps = {
-  /** From public API; when null or empty, static Figma placeholders are used. */
+  /** From public API; null or empty hides the rail. */
   partners: HomeBrandPartnerPublicItem[] | null;
 };
 
@@ -131,62 +130,26 @@ function PartnerLogo({
  * Brand logo cards — Figma 101:4108; responsive grid so four logos fit without horizontal scroll (md+).
  */
 export function HomeBrandsSlide({ partners }: HomeBrandsSlideProps) {
-  if (partners !== null && partners.length === 0) {
+  if (!partners || partners.length === 0) {
     return null;
   }
 
-  const hasPartners = partners !== null && partners.length > 0;
-  const partnerPages = hasPartners ? chunkIntoPages(partners, 4) : [];
-  const fallbackPages = chunkIntoPages(HOME_BRAND_SLIDE_ENTRIES, 4);
-
-  if (partners && partners.length > 0) {
-    return (
-      <div className="flex w-full shrink-0 snap-x snap-mandatory gap-3">
-        {partnerPages.map((page, pageIndex) => (
-          <div key={`partners-page-${pageIndex}`} className="grid w-full shrink-0 snap-start grid-cols-2 md:grid-cols-4" style={gridStyle}>
-            {page.map((partner, logoIndex) => (
-              <BrandPlpLink
-                key={partner.id}
-                href={partner.href}
-                className={`flex w-full min-w-0 items-center justify-center overflow-hidden ${HOME_BRANDS_SLIDE_CARD_PADDING_CLASS}`}
-                style={brandCardShellStyle(partner.slug, partner.name)}
-                aria-label={partner.name}
-              >
-                <PartnerLogo partner={partner} loadEager={pageIndex === 0 && logoIndex < 2} />
-              </BrandPlpLink>
-            ))}
-          </div>
-        ))}
-      </div>
-    );
-  }
+  const partnerPages = chunkIntoPages(partners, 4);
 
   return (
     <div className="flex w-full shrink-0 snap-x snap-mandatory gap-3">
-      {fallbackPages.map((page, pageIndex) => (
-        <div key={`fallback-page-${pageIndex}`} className="grid w-full shrink-0 snap-start grid-cols-2 md:grid-cols-4" style={gridStyle}>
-          {page.map((entry, logoIndex) => (
-            <div
-              key={entry.id}
+      {partnerPages.map((page, pageIndex) => (
+        <div key={`partners-page-${pageIndex}`} className="grid w-full shrink-0 snap-start grid-cols-2 md:grid-cols-4" style={gridStyle}>
+          {page.map((partner, logoIndex) => (
+            <BrandPlpLink
+              key={partner.id}
+              href={partner.href}
               className={`flex w-full min-w-0 items-center justify-center overflow-hidden ${HOME_BRANDS_SLIDE_CARD_PADDING_CLASS}`}
-              style={brandCardShellStyle(entry.id, entry.alt)}
+              style={brandCardShellStyle(partner.slug, partner.name)}
+              aria-label={partner.name}
             >
-              <div
-                className="relative mx-auto w-full shrink-0"
-                style={logoRailCellStyle(entry.id, entry.alt)}
-              >
-                <Image
-                  src={entry.src}
-                  alt={entry.alt}
-                  fill
-                  className={HOME_BRANDS_RAIL_LOGO_IMAGE_CLASS}
-                  sizes={`${HOME_BRANDS_RAIL_LOGO_CELL_MAX_WIDTH_PX}px`}
-                  priority={pageIndex === 0 && logoIndex < 2}
-                  loading={pageIndex === 0 && logoIndex < 2 ? 'eager' : 'lazy'}
-                  fetchPriority={pageIndex === 0 && logoIndex < 2 ? 'high' : 'auto'}
-                />
-              </div>
-            </div>
+              <PartnerLogo partner={partner} loadEager={pageIndex === 0 && logoIndex < 2} />
+            </BrandPlpLink>
           ))}
         </div>
       ))}
