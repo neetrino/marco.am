@@ -1,9 +1,7 @@
 'use client';
 
-import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, type MutableRefObject } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { warmBrandsPageClientCache } from '@/lib/brands-page-prefetch';
 import { warmReelsPageClientCache } from '@/lib/reels-page-prefetch';
 import { getStoredLanguage } from '@/lib/language';
 import { warmShopProductsClientCaches } from '@/lib/shop-products-plp-prefetch';
@@ -12,7 +10,6 @@ const EXTRA_PREFETCH_ROUTES = ['/wishlist', '/profile', '/login'] as const;
 /** Lightweight marketing routes — prefetch first so About/Contact/Reels open instantly. */
 const LIGHT_MARKETING_ROUTES = ['/', '/about', '/contact', '/reels', '/compare', '/brands', '/products'] as const;
 const PRODUCTS_SHOP_PATH = '/products';
-const BRANDS_PATH = '/brands';
 const REELS_PATH = '/reels';
 const INTERACTION_PREFETCH_MAX_SEGMENTS = 2;
 const HOME_PATH = '/';
@@ -138,7 +135,6 @@ function prefetchRoutesStaggered(
 export function GlobalRoutePrefetch() {
   const pathname = usePathname();
   const router = useRouter();
-  const queryClient = useQueryClient();
   const warmedRef = useRef<Set<string>>(new Set());
   const interactionWarmedRef = useRef<Set<string>>(new Set());
 
@@ -174,9 +170,6 @@ export function GlobalRoutePrefetch() {
       if (pathname !== REELS_PATH) {
         warmReelsPageClientCache(language);
       }
-      if (pathname !== BRANDS_PATH) {
-        warmBrandsPageClientCache(queryClient, language);
-      }
       if (pathname !== PRODUCTS_SHOP_PATH) {
         warmShopProductsClientCaches(language, '', {
           includeCategories: true,
@@ -185,7 +178,7 @@ export function GlobalRoutePrefetch() {
       }
     }, MARKETING_IDLE_WARM_DELAY_MS);
     return cancelWarm;
-  }, [pathname, queryClient]);
+  }, [pathname]);
 
   useEffect(() => {
     const prefetchFromElement = (target: EventTarget | null) => {
@@ -231,9 +224,6 @@ export function GlobalRoutePrefetch() {
           suppressTimeoutLogging: true,
         });
       }
-      if (route.pathname === BRANDS_PATH) {
-        warmBrandsPageClientCache(queryClient, language);
-      }
       if (route.pathname === REELS_PATH) {
         warmReelsPageClientCache(language);
       }
@@ -253,7 +243,7 @@ export function GlobalRoutePrefetch() {
       document.removeEventListener('pointerdown', onPointerDown);
       document.removeEventListener('focusin', onFocusIn);
     };
-  }, [queryClient, router]);
+  }, [router]);
 
   return null;
 }
