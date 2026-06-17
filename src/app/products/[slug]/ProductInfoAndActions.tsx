@@ -1,12 +1,12 @@
 'use client';
 
 import type { MouseEvent } from 'react';
-import Image from 'next/image';
 import { formatCatalogPrice, type CurrencyCode } from '../../../lib/currency';
 import { t, getProductText } from '../../../lib/i18n';
 import type { LanguageCode } from '../../../lib/language';
 import { getProductDescriptionNotes } from '../../../lib/products/product-description';
 import { ProductWarrantyBadge } from '../../../components/ProductCard/ProductWarrantyBadge';
+import { ProductCardBrandMark } from '../../../components/ProductCard/ProductCardBrandMark';
 import {
   ProductAttributesSelector,
 } from './ProductAttributesSelector';
@@ -115,19 +115,13 @@ export function ProductInfoAndActions({
         {(product.brand || primaryCategory) && (
           <div className="mb-5 flex flex-wrap items-center gap-3 md:gap-4">
             {product.brand ? (
-              product.brand.logo ? (
-                <div className="relative h-7 w-full max-w-[min(100%,140px)] shrink-0 overflow-hidden md:h-8 md:max-w-[min(100%,160px)]">
-                  <Image
-                    src={product.brand.logo}
-                    alt={product.brand.name}
-                    fill
-                    className="object-contain object-left"
-                    sizes="(max-width: 768px) 140px, 160px"
-                  />
-                </div>
-              ) : (
-                <p className="text-sm text-gray-500">{product.brand.name}</p>
-              )
+              <ProductCardBrandMark
+                name={product.brand.name}
+                slug={product.brand.name}
+                logoUrl={product.brand.logo}
+                size="list"
+                logoBoxClassName="flex w-full min-h-7 max-w-[min(100%,140px)] shrink-0 items-center overflow-visible md:min-h-8 md:max-w-[min(100%,160px)]"
+              />
             ) : null}
             {primaryCategory ? (
               <span className="inline-flex rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">
