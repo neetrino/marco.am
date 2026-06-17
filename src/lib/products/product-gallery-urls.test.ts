@@ -31,4 +31,15 @@ describe('product-gallery-urls', () => {
       'https://example.com/b.jpg',
     ]);
   });
+
+  it('prepends variant image when media has only one usable photo', () => {
+    const media = ['https://example.com/23429-2.jpg'];
+    const variants = [{ imageUrl: 'https://example.com/23429-1.jpg' }];
+
+    expect(buildProductGalleryUrls(media, variants)).toEqual([
+      'https://example.com/23429-1.jpg',
+      'https://example.com/23429-2.jpg',
+    ]);
+    expect(resolveListingHeroImageUrl(media, variants)).toBe('https://example.com/23429-1.jpg');
+  });
 });

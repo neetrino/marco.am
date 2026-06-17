@@ -46,6 +46,31 @@ function collectVariantImageSet(variants: readonly ProductGalleryVariantInput[])
   return variantImageSet;
 }
 
+function collectVariantImageUrls(variants: readonly ProductGalleryVariantInput[]): string[] {
+  const urls: string[] = [];
+  const seen = new Set<string>();
+
+  for (const variant of variants) {
+    if (!variant.imageUrl) {
+      continue;
+    }
+    for (const rawUrl of smartSplitUrls(variant.imageUrl)) {
+      const processedUrl = processImageUrl(rawUrl);
+      if (!processedUrl) {
+        continue;
+      }
+      const normalized = normalizeUrlForComparison(processedUrl);
+      if (seen.has(normalized)) {
+        continue;
+      }
+      seen.add(normalized);
+      urls.push(processedUrl);
+    }
+  }
+
+  return urls;
+}
+
 function readMediaSortOrder(rawItem: RawProductMediaItem): number {
   const positionCandidate = parseNumericMetadata(rawItem.position ?? rawItem.sortOrder);
   return positionCandidate ?? Number.MAX_SAFE_INTEGER;
@@ -81,7 +106,9 @@ function toGalleryUrlEntry(
 }
 
 /**
- * Canonical PDP/PLP gallery URLs — excludes variant-only duplicates and dedupes by URL.
+ * Canonical PDP/PLP gallery URLs.
+ * - Excludes variant duplicates from media when media has enough own photos.
+ * - Restores variant lead image when media is too thin (0-1 usable items).
  */
 export function buildProductGalleryUrls(
   media: unknown,
@@ -115,7 +142,29 @@ export function buildProductGalleryUrls(
     deduplicated.push(url);
   }
 
-  return deduplicated;
+  if (deduplicated.length > 1) {
+    return deduplicated;
+  }
+
+  const variantUrls = collectVariantImageUrls(variants);
+  if (variantUrls.length === 0) {
+    return deduplicated;
+  }
+
+  const merged = [...variantUrls, ...deduplicated];
+  const mergedDeduplicated: string[] = [];
+  const mergedSeen = new Set<string>();
+
+  for (const url of merged) {
+    const normalized = normalizeUrlForComparison(url);
+    if (mergedSeen.has(normalized)) {
+      continue;
+    }
+    mergedSeen.add(normalized);
+    mergedDeduplicated.push(url);
+  }
+
+  return mergedDeduplicated;
 }
 
 /** First card/listing hero — same as PDP gallery index 0. */
