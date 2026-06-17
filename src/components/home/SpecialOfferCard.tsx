@@ -7,6 +7,7 @@ import { ProductPdpPrefetchLink } from '@/components/ProductPdpPrefetchLink';
 import { useQueryClient } from '@tanstack/react-query';
 import { getStoredLanguage } from '@/lib/language';
 import { seedProductPdpCache } from '@/lib/product-pdp/pdp-navigation-seed-cache';
+import { resolveNavigationSeedImages } from '@/lib/product-pdp/pdp-navigation-seed';
 
 import {
   getSpecialOfferBrandTextClass,
@@ -41,7 +42,6 @@ import {
   SpecialOfferCartFloatingButton,
 } from './SpecialOfferCardPricing';
 import type { SpecialOfferProduct } from './special-offer-product.types';
-import { duplicateSingleImageForDevGalleryTest } from './special-offer-dev-gallery';
 import { useSpecialOfferCard } from './useSpecialOfferCard';
 
 export type { SpecialOfferProduct };
@@ -108,6 +108,7 @@ export function SpecialOfferCard({
     slug: product.slug,
     title: product.title,
     image: product.image,
+    images: resolveNavigationSeedImages(product.image, product.images),
     brand: product.brand
       ? {
           id: product.brand.id,
@@ -130,13 +131,12 @@ export function SpecialOfferCard({
           : null,
   };
 
-  const galleryImages = duplicateSingleImageForDevGalleryTest(
+  const galleryImages =
     product.images && product.images.length > 0
       ? product.images
       : product.image
         ? [product.image]
-        : [],
-  );
+        : [];
 
   const cornerTranslatePx = Math.round(
     (SPECIAL_OFFERS_CARD_CORNER_MASK_SIZE_PX * SPECIAL_OFFERS_CARD_CORNER_MASK_TRANSLATE_PERCENT) / 100,
