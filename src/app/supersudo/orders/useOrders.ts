@@ -304,6 +304,12 @@ export function useOrders() {
     setSelectedOrderId(orderId);
     setSelectedListOrder(listOrder);
     setOrderDetails(cachedDetails);
+
+    if (cachedDetails) {
+      setLoadingOrderDetails(false);
+      return;
+    }
+
     setLoadingOrderDetails(true);
 
     try {
@@ -471,9 +477,9 @@ export function useOrders() {
         )
       );
 
+      persistAdminOrderDetailCache(orderId, updated);
       if (selectedOrderId === orderId) {
         setOrderDetails(updated);
-        persistAdminOrderDetailCache(orderId, updated);
       }
 
       setUpdateMessage({ type: 'success', text: t('admin.orders.statusUpdated') });
@@ -519,9 +525,9 @@ export function useOrders() {
         )
       );
 
+      persistAdminOrderDetailCache(orderId, updated);
       if (selectedOrderId === orderId) {
         setOrderDetails(updated);
-        persistAdminOrderDetailCache(orderId, updated);
       }
 
       // Show success message

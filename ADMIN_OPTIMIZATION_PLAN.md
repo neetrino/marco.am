@@ -160,19 +160,21 @@
 
 ### P3 — отдельные маршруты
 
-#### 13. Order detail — `/supersudo/orders/[id]` (следующий)
+#### 13. Order detail — sheet + `/supersudo/orders/[id]` ✅
 
-- **Нет cache** (`useOrderDetail.ts`).
-- Каждый fetch: `setOrderDetails(null)` → мигание UI.
-- Бэкенд: глубокий `include` (items → variant → product → options → attributeValue → translations).
+**Было (план):** нет cache, тяжёлый бэкенд join, мигание UI.
 
-**План:**
+**Фактически уже было:** бэкенд на snapshot-полях (`order-operations.ts`); `useOrderDetail` — cache skip + dedup.
 
-- [ ] Session cache по `orderId` (короткий TTL или invalidate on PUT).
-- [ ] Не сбрасывать order при refetch если уже есть данные (`beginAdminDataFetch` pattern).
-- [ ] Бэкенд: сузить select; lazy-load audit trail если тяжёлый.
+**Дожато (2026-06-17):**
 
-**Файлы:** `orders/useOrderDetail.ts`, `admin-orders/order-operations.ts`.
+- [x] Sheet (`handleViewOrderDetails`): cache skip — повторное открытие < 2 мин без API
+- [x] Статус / оплата из таблицы: всегда обновляют detail cache (не только при открытом sheet)
+- [x] `hasLoadedOrderDetails`: заказы без line items тоже кэшируются
+
+**Не делали (осознанно):** warm detail по hover на строку — лишние запросы при скролле, выигрыш минимален.
+
+**Файлы:** `useOrders.ts`, `useOrderDetail.ts`, `order-detail-cache.ts`, `order-list-display.ts`.
 
 ---
 
@@ -217,7 +219,7 @@
 4. **Categories** — counts=false + cache skip.  
 5. ~~**Users / Messages**~~ ✅  
 6. ~~**Brands / Settings / Delivery / Hero / Price Filter**~~ ✅  
-7. **Order detail** — следующий (P3).
+7. ~~**Order detail**~~ ✅
 
 ---
 

@@ -40,7 +40,7 @@ export function formatAdminOrderListCustomerName(
 export function hasLoadedOrderDetails(
   details: { items?: unknown[] } | null | undefined,
 ): boolean {
-  return Array.isArray(details?.items) && details.items.length > 0;
+  return Array.isArray(details?.items);
 }
 
 /** Sheet still loading full detail API response. */
