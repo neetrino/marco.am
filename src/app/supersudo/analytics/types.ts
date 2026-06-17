@@ -4,6 +4,7 @@ export interface AnalyticsData {
     start: string;
     end: string;
   };
+  totalUsers: number;
   orders: {
     totalOrders: number;
     totalRevenue: number;
@@ -59,12 +60,6 @@ export interface AnalyticsData {
       orderCount: number;
       currency: string;
     }>;
-  };
-}
-
-export interface AdminStatsSummary {
-  users?: {
-    total?: number;
   };
 }
 

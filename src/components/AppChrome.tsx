@@ -23,6 +23,10 @@ const DesktopFooter = dynamic(
   { ssr: false },
 );
 
+function isSupersudoPath(pathname: string): boolean {
+  return pathname === SUPER_SUDO_PATH || pathname.startsWith(`${SUPER_SUDO_PATH}/`);
+}
+
 export function AppChrome({ children, initialLanguage }: AppChromeProps) {
   const pathname = usePathname() ?? '';
   const [isHydrated, setIsHydrated] = useState(false);
@@ -31,10 +35,10 @@ export function AppChrome({ children, initialLanguage }: AppChromeProps) {
     setIsHydrated(true);
   }, []);
 
+  const isSupersudoRoute = isSupersudoPath(pathname);
   const stablePathname = isHydrated ? pathname : '';
-  const isSupersudoRoute = stablePathname.startsWith(SUPER_SUDO_PATH);
   const isProfileRoute = stablePathname === PROFILE_PATH;
-  const hideMobileHeaderFooterForProfile = isProfileRoute && !isSupersudoRoute;
+  const hideMobileHeaderFooterForProfile = isProfileRoute;
   const showMobileBottomNav = !isSupersudoRoute;
   const mainPaddingClass =
     showMobileBottomNav && !isProfileRoute
@@ -47,6 +51,16 @@ export function AppChrome({ children, initialLanguage }: AppChromeProps) {
       <DesktopFooter />
     </div>
   );
+
+  if (isSupersudoRoute) {
+    return (
+      <>
+        <main>{children}</main>
+        <GlobalRoutePrefetch />
+        <RouteNavigationIndicator />
+      </>
+    );
+  }
 
   return (
     <>

@@ -6,7 +6,6 @@ import type { ProductDescriptionEntry } from '@/lib/products/product-description
 
 export function useProductFormState() {
   const [loading, setLoading] = useState(false);
-  const [loadingProduct, setLoadingProduct] = useState(false);
   const [brands, setBrands] = useState<Brand[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [attributes, setAttributes] = useState<Attribute[]>([]);
@@ -27,8 +26,6 @@ export function useProductFormState() {
     labels: [] as ProductLabel[],
     warrantyYears: null as number | null,
   });
-  const [categoriesExpanded, setCategoriesExpanded] = useState(false);
-  const [brandsExpanded, setBrandsExpanded] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const variantImageInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const attributesDropdownRef = useRef<HTMLDivElement | null>(null);
@@ -64,8 +61,6 @@ export function useProductFormState() {
     // Loading states
     loading,
     setLoading,
-    loadingProduct,
-    setLoadingProduct,
     // Data states
     brands,
     setBrands,
@@ -77,10 +72,6 @@ export function useProductFormState() {
     formData,
     setFormData,
     // UI states
-    categoriesExpanded,
-    setCategoriesExpanded,
-    brandsExpanded,
-    setBrandsExpanded,
     attributesDropdownOpen,
     setAttributesDropdownOpen,
     // Refs

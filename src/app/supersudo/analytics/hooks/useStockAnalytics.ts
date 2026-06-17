@@ -5,6 +5,7 @@ import { apiClient } from '../../../../lib/api-client';
 import { logger } from '../../../../lib/utils/logger';
 import { buildAdminListCacheKey } from '@/lib/admin/admin-cache-keys';
 import { beginAdminDataFetch } from '@/lib/admin/admin-fetch-helpers';
+import { dedupedAdminRequest } from '@/lib/admin/admin-request-dedup';
 import {
   ADMIN_SESSION_CACHE_TTL_MS,
   readAdminSessionCache,
@@ -40,9 +41,9 @@ export function useStockAnalytics({
     stockCacheKey,
     ADMIN_SESSION_CACHE_TTL_MS,
   );
-  const hadCacheRef = useRef(Boolean(cachedStock));
+  const hadCacheRef = useRef(cachedStock !== null);
   const [stockAnalytics, setStockAnalytics] = useState<StockAnalyticsData | null>(cachedStock);
-  const [loading, setLoading] = useState(!hadCacheRef.current);
+  const [loading, setLoading] = useState(cachedStock === null);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
@@ -50,16 +51,30 @@ export function useStockAnalytics({
       return;
     }
 
+    const cached = readAdminSessionCache<StockAnalyticsData>(
+      stockCacheKey,
+      ADMIN_SESSION_CACHE_TTL_MS,
+    );
+    if (cached !== null) {
+      setStockAnalytics(cached);
+      setLoading(false);
+      setFailed(false);
+      hadCacheRef.current = true;
+      return;
+    }
+
     const fetchStock = async () => {
       try {
         beginAdminDataFetch(hadCacheRef.current, setLoading);
         setFailed(false);
-        const result = await apiClient.get<StockAnalyticsData>('/api/v1/supersudo/analytics/stock', {
-          params: {
-            locale,
-            limit: String(STOCK_ANALYTICS_PAGE_LIMIT),
-          },
-        });
+        const result = await dedupedAdminRequest(stockCacheKey, () =>
+          apiClient.get<StockAnalyticsData>('/api/v1/supersudo/analytics/stock', {
+            params: {
+              locale,
+              limit: String(STOCK_ANALYTICS_PAGE_LIMIT),
+            },
+          }),
+        );
         setStockAnalytics(result);
         writeAdminSessionCache(stockCacheKey, result);
         hadCacheRef.current = true;

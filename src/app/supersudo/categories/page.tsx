@@ -203,7 +203,7 @@ export default function CategoriesPage() {
     } catch (error: unknown) {
       const message = getApiOrErrorMessage(error, t('admin.common.unknownErrorFallback'));
       showToast(message, 'error');
-      await fetchCategories();
+      await fetchCategories({ force: true });
     } finally {
       reorderInFlightRef.current = false;
       setMovingCategoryId(null);
@@ -404,8 +404,6 @@ export default function CategoriesPage() {
         router={router}
         t={t}
         title={t('admin.categories.title')}
-        backLabel={t('admin.categories.backToAdmin')}
-        onBack={() => router.push('/supersudo')}
         headerActions={addCategoryHeaderActions}
       >
         <div className="space-y-5">

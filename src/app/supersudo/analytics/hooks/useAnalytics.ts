@@ -2,14 +2,15 @@ import { useState, useEffect, useRef } from 'react';
 import { apiClient } from '../../../../lib/api-client';
 import { logger } from '../../../../lib/utils/logger';
 import { useTranslation } from '../../../../lib/i18n-client';
-import { ADMIN_CACHE_KEYS, buildAdminListCacheKey } from '@/lib/admin/admin-cache-keys';
+import { ADMIN_CACHE_KEYS, buildAnalyticsCacheKey, buildAnalyticsRequestParams } from '@/lib/admin/admin-cache-keys';
 import { beginAdminDataFetch } from '@/lib/admin/admin-fetch-helpers';
+import { dedupedAdminRequest } from '@/lib/admin/admin-request-dedup';
 import {
   ADMIN_SESSION_CACHE_TTL_MS,
   readAdminSessionCache,
   writeAdminSessionCache,
 } from '@/lib/admin/admin-session-cache';
-import type { AnalyticsData, AdminStatsSummary, OrderStatusBreakdownData } from '../types';
+import type { AnalyticsData, OrderStatusBreakdownData } from '../types';
 
 interface UseAnalyticsParams {
   period: string;
@@ -22,11 +23,17 @@ interface UseAnalyticsParams {
 interface UseAnalyticsReturn {
   analytics: AnalyticsData | null;
   orderStatusBreakdown: OrderStatusBreakdownData | null;
-  /** True when the main analytics call succeeded but order-status-breakdown failed. */
   orderStatusBreakdownFailed: boolean;
-  totalUsers: number | null;
   loading: boolean;
   error: string | null;
+}
+
+function buildAnalyticsCacheKeyForPeriod(
+  period: string,
+  startDate: string,
+  endDate: string,
+): string {
+  return buildAnalyticsCacheKey({ period, startDate, endDate });
 }
 
 /**
@@ -40,22 +47,28 @@ export function useAnalytics({
   isAdmin,
 }: UseAnalyticsParams): UseAnalyticsReturn {
   const { t } = useTranslation();
+  const tRef = useRef(t);
+  tRef.current = t;
+
+  const initialAnalyticsKey = buildAnalyticsCacheKeyForPeriod(period, startDate, endDate);
   const cachedAnalytics = readAdminSessionCache<AnalyticsData>(
-    ADMIN_CACHE_KEYS.analyticsWeek,
+    initialAnalyticsKey,
     ADMIN_SESSION_CACHE_TTL_MS,
   );
   const cachedBreakdown = readAdminSessionCache<OrderStatusBreakdownData>(
     ADMIN_CACHE_KEYS.analyticsOrderStatus,
     ADMIN_SESSION_CACHE_TTL_MS,
   );
-  const hadCacheRef = useRef(Boolean(cachedAnalytics));
+
+  const hadAnalyticsCacheRef = useRef(cachedAnalytics !== null);
+  const hadBreakdownCacheRef = useRef(cachedBreakdown !== null);
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(cachedAnalytics);
   const [orderStatusBreakdown, setOrderStatusBreakdown] =
     useState<OrderStatusBreakdownData | null>(cachedBreakdown);
-  const [orderStatusBreakdownFailed, setOrderStatusBreakdownFailed] =
-    useState(false);
-  const [totalUsers, setTotalUsers] = useState<number | null>(null);
-  const [loading, setLoading] = useState(!hadCacheRef.current);
+  const [orderStatusBreakdownFailed, setOrderStatusBreakdownFailed] = useState(false);
+  const [loading, setLoading] = useState(
+    cachedAnalytics === null || cachedBreakdown === null,
+  );
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -63,46 +76,60 @@ export function useAnalytics({
       return;
     }
 
+    const analyticsCacheKey = buildAnalyticsCacheKeyForPeriod(period, startDate, endDate);
+    const cachedForPeriod = readAdminSessionCache<AnalyticsData>(
+      analyticsCacheKey,
+      ADMIN_SESSION_CACHE_TTL_MS,
+    );
+    const cachedBreakdownForPeriod = readAdminSessionCache<OrderStatusBreakdownData>(
+      ADMIN_CACHE_KEYS.analyticsOrderStatus,
+      ADMIN_SESSION_CACHE_TTL_MS,
+    );
+
+    if (cachedForPeriod !== null && cachedBreakdownForPeriod !== null) {
+      setAnalytics(cachedForPeriod);
+      setOrderStatusBreakdown(cachedBreakdownForPeriod);
+      setOrderStatusBreakdownFailed(false);
+      setLoading(false);
+      setError(null);
+      hadAnalyticsCacheRef.current = true;
+      hadBreakdownCacheRef.current = true;
+      return;
+    }
+
     const fetchAnalytics = async () => {
-      const analyticsCacheKey = buildAdminListCacheKey('analytics', {
-        period,
-        startDate: period === 'custom' ? startDate : '',
-        endDate: period === 'custom' ? endDate : '',
-      });
-      const cachedForPeriod = readAdminSessionCache<AnalyticsData>(
-        analyticsCacheKey,
-        ADMIN_SESSION_CACHE_TTL_MS,
-      );
       try {
-        beginAdminDataFetch(Boolean(cachedForPeriod), setLoading);
+        beginAdminDataFetch(hadAnalyticsCacheRef.current, setLoading);
         if (cachedForPeriod) {
           setAnalytics(cachedForPeriod);
         }
+        if (cachedBreakdownForPeriod) {
+          setOrderStatusBreakdown(cachedBreakdownForPeriod);
+        }
         setError(null);
         setOrderStatusBreakdownFailed(false);
-        const params: Record<string, string> = {
-          period,
-        };
-        
-        if (period === 'custom' && startDate && endDate) {
-          params.startDate = startDate;
-          params.endDate = endDate;
-        }
 
+        const params = buildAnalyticsRequestParams({ period, startDate, endDate });
         const [analyticsResult, breakdownResult] = await Promise.allSettled([
-          apiClient.get<AnalyticsData>('/api/v1/supersudo/analytics', {
-            params,
-          }),
-          apiClient.get<OrderStatusBreakdownData>(
-            '/api/v1/supersudo/analytics/order-status-breakdown'
-          ),
+          cachedForPeriod
+            ? Promise.resolve(cachedForPeriod)
+            : dedupedAdminRequest(analyticsCacheKey, () =>
+                apiClient.get<AnalyticsData>('/api/v1/supersudo/analytics', { params }),
+              ),
+          cachedBreakdownForPeriod
+            ? Promise.resolve(cachedBreakdownForPeriod)
+            : dedupedAdminRequest(ADMIN_CACHE_KEYS.analyticsOrderStatus, () =>
+                apiClient.get<OrderStatusBreakdownData>(
+                  '/api/v1/supersudo/analytics/order-status-breakdown',
+                ),
+              ),
         ]);
 
         if (analyticsResult.status === 'fulfilled') {
           logger.info('Analytics data loaded', { period, hasData: !!analyticsResult.value });
           setAnalytics(analyticsResult.value);
           writeAdminSessionCache(analyticsCacheKey, analyticsResult.value);
-          hadCacheRef.current = true;
+          hadAnalyticsCacheRef.current = true;
         } else {
           throw analyticsResult.reason;
         }
@@ -111,24 +138,26 @@ export function useAnalytics({
           setOrderStatusBreakdown(breakdownResult.value);
           writeAdminSessionCache(ADMIN_CACHE_KEYS.analyticsOrderStatus, breakdownResult.value);
           setOrderStatusBreakdownFailed(false);
+          hadBreakdownCacheRef.current = true;
         } else {
           logger.error('Order status breakdown request failed', {
             error: breakdownResult.reason,
           });
-          setOrderStatusBreakdown(null);
+          if (!hadBreakdownCacheRef.current) {
+            setOrderStatusBreakdown(null);
+          }
           setOrderStatusBreakdownFailed(true);
         }
       } catch (err: unknown) {
         logger.error('Error fetching analytics', { error: err });
-        
-        // Extract meaningful error message
-        let errorMessage = t('admin.analytics.errorLoading');
-        
+
+        let errorMessage = tRef.current('admin.analytics.errorLoading');
+
         if (err instanceof Error) {
           if (err.message.includes('<!DOCTYPE') || err.message.includes('<html')) {
-            errorMessage = t('admin.analytics.apiNotFound');
+            errorMessage = tRef.current('admin.analytics.apiNotFound');
           } else if (err.message.includes('Expected JSON')) {
-            errorMessage = t('admin.analytics.invalidResponse');
+            errorMessage = tRef.current('admin.analytics.invalidResponse');
           } else {
             errorMessage = err.message;
           }
@@ -138,43 +167,26 @@ export function useAnalytics({
             errorMessage = errorData.data.detail;
           }
         }
-        
+
         setError(errorMessage);
-        setOrderStatusBreakdown(null);
+        if (!hadBreakdownCacheRef.current) {
+          setOrderStatusBreakdown(null);
+        }
         setOrderStatusBreakdownFailed(false);
-        alert(`${t('admin.common.error')}: ${errorMessage}`);
+        alert(`${tRef.current('admin.common.error')}: ${errorMessage}`);
       } finally {
         setLoading(false);
       }
     };
 
-    const fetchAdminStats = async () => {
-      try {
-        logger.debug('Fetching admin stats for Total Users card');
-        const stats = await apiClient.get<AdminStatsSummary>('/api/v1/supersudo/stats');
-        const usersCount = stats?.users?.total ?? null;
-        setTotalUsers(usersCount);
-        logger.info('Admin stats loaded for Total Users', { usersCount });
-      } catch (err: unknown) {
-        logger.error('Error fetching admin stats', { error: err });
-        setTotalUsers(null);
-      }
-    };
-
-    fetchAnalytics();
-    fetchAdminStats();
-  }, [isLoggedIn, isAdmin, period, startDate, endDate, t]);
+    void fetchAnalytics();
+  }, [isLoggedIn, isAdmin, period, startDate, endDate]);
 
   return {
     analytics,
     orderStatusBreakdown,
     orderStatusBreakdownFailed,
-    totalUsers,
     loading,
     error,
   };
 }
-
-
-
-

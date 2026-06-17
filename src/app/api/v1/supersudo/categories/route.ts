@@ -24,7 +24,8 @@ export async function GET(req: NextRequest) {
     }
 
     const locale = req.nextUrl.searchParams.get("lang") ?? undefined;
-    const result = await adminService.getCategories(locale);
+    const includeCounts = req.nextUrl.searchParams.get("counts") !== "false";
+    const result = await adminService.getCategories(locale, { includeCounts });
     return NextResponse.json(result);
   } catch (error: any) {
     console.error("❌ [ADMIN CATEGORIES] GET Error:", error);

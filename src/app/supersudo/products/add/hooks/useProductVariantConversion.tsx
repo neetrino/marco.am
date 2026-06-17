@@ -13,6 +13,7 @@ interface UseProductVariantConversionProps {
   setSelectedAttributeValueIds: (ids: Record<string, string[]>) => void;
   setGeneratedVariants: (variants: GeneratedVariant[]) => void;
   setHasVariantsToLoad: (has: boolean) => void;
+  enabled?: boolean;
 }
 
 export function useProductVariantConversion({
@@ -23,8 +24,13 @@ export function useProductVariantConversion({
   setSelectedAttributeValueIds,
   setGeneratedVariants,
   setHasVariantsToLoad,
+  enabled = true,
 }: UseProductVariantConversionProps) {
   useEffect(() => {
+    if (!enabled) {
+      return;
+    }
+
     if (productId && attributes.length > 0 && (window as any).__productVariantsToConvert) {
       const productVariants = (window as any).__productVariantsToConvert;
       logger.devLog('🔄 [ADMIN] Converting product variants to generatedVariants format:', {
@@ -344,6 +350,6 @@ export function useProductVariantConversion({
     } else if (productId && attributes.length > 0) {
       logger.devLog('ℹ️ [ADMIN] Waiting for variants to convert. Attributes loaded:', attributes.length);
     }
-  }, [productId, attributes, defaultCurrency, setSelectedAttributesForVariants, setSelectedAttributeValueIds, setGeneratedVariants, setHasVariantsToLoad]);
+  }, [productId, attributes, defaultCurrency, setSelectedAttributesForVariants, setSelectedAttributeValueIds, setGeneratedVariants, setHasVariantsToLoad, enabled]);
 }
 

@@ -32,21 +32,28 @@ export type CustomerAnalyticsBlock = {
 };
 
 function buildFirstOrderAtMap(): Promise<Map<string, Date>> {
-  return db.order
-    .findMany({
-      select: { userId: true, customerEmail: true, createdAt: true },
-      orderBy: { createdAt: "asc" },
-    })
+  return db
+    .$queryRaw<Array<{ identity_key: string; first_at: Date }>>`
+      SELECT identity_key, MIN("createdAt") AS first_at
+      FROM (
+        SELECT
+          CASE
+            WHEN "userId" IS NOT NULL AND btrim("userId") <> '' THEN 'user:' || "userId"
+            WHEN "customerEmail" IS NOT NULL AND btrim("customerEmail") <> ''
+              THEN 'email:' || lower(btrim("customerEmail"))
+          END AS identity_key,
+          "createdAt"
+        FROM orders
+        WHERE ("userId" IS NOT NULL AND btrim("userId") <> '')
+           OR ("customerEmail" IS NOT NULL AND btrim("customerEmail") <> '')
+      ) AS attributed
+      WHERE identity_key IS NOT NULL
+      GROUP BY identity_key
+    `
     .then((rows) => {
       const firstOrderAt = new Map<string, Date>();
       for (const row of rows) {
-        const key = buildCustomerIdentityKey(row.userId, row.customerEmail);
-        if (!key) {
-          continue;
-        }
-        if (!firstOrderAt.has(key)) {
-          firstOrderAt.set(key, row.createdAt);
-        }
+        firstOrderAt.set(row.identity_key, row.first_at);
       }
       return firstOrderAt;
     });

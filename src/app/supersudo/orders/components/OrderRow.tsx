@@ -1,7 +1,8 @@
 'use client';
 
 import { useTranslation } from '../../../../lib/i18n-client';
-import { convertPrice, CurrencyCode } from '../../../../lib/currency';
+import { formatAdminOrderListTotal } from '../utils/order-list-display';
+import { CurrencyCode } from '../../../../lib/currency';
 import { getStatusColor, getPaymentStatusColor } from '../utils/orderUtils';
 import { ADMIN_ORDER_STATUS_I18N_KEY } from '../utils/order-status-labels';
 import type { Order } from '../useOrders';
@@ -31,20 +32,7 @@ export function OrderRow({
 }: OrderRowProps) {
   const { t } = useTranslation();
 
-  const calculateTotalWithoutShipping = () => {
-    if (order.subtotal !== undefined && order.discountAmount !== undefined && order.taxAmount !== undefined) {
-      const subtotalAMD = convertPrice(order.subtotal, 'USD', 'AMD');
-      const discountAMD = convertPrice(order.discountAmount, 'USD', 'AMD');
-      const taxAMD = convertPrice(order.taxAmount, 'USD', 'AMD');
-      const totalWithoutShippingAMD = subtotalAMD - discountAMD + taxAMD;
-      return formatCurrency(totalWithoutShippingAMD, order.currency, 'AMD');
-    } else {
-      const totalAMD = convertPrice(order.total, 'USD', 'AMD');
-      const shippingAMD = order.shippingAmount || 0;
-      const totalWithoutShippingAMD = totalAMD - shippingAMD;
-      return formatCurrency(totalWithoutShippingAMD, order.currency, 'AMD');
-    }
-  };
+  const listTotalLabel = formatAdminOrderListTotal(order, formatCurrency);
 
   return (
     <tr className="group transition-colors hover:bg-amber-50/50">
@@ -80,7 +68,7 @@ export function OrderRow({
         </div>
       </td>
       <td className="whitespace-nowrap px-3 py-2.5 text-sm font-semibold text-slate-900">
-        {calculateTotalWithoutShipping()}
+        {listTotalLabel}
       </td>
       <td className="whitespace-nowrap px-3 py-2.5 text-sm text-slate-500">
         {order.itemsCount}

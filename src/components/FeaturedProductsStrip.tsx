@@ -25,7 +25,6 @@ import {
   SPECIAL_OFFERS_PAGINATION_TO_CTA_GAP_DESKTOP_PX,
 } from './home/home-special-offers.constants';
 import { HOME_BRANDS_DOTS_TO_CTA_GAP_MOBILE_PX } from './home/home-brands.constants';
-import { HOME_BRAND_SLIDE_ENTRIES } from './home/home-brands-slide.constants';
 import { FeaturedProductsStripBrandsRail } from './FeaturedProductsStripBrandsRail';
 import type { SpecialOfferProduct } from './home/special-offer-product.types';
 import { useSpecialOffersCarousel } from './home/useSpecialOffersCarousel';
@@ -53,8 +52,7 @@ type FeaturedProductsStripProps = {
   onRetryFetch: () => void;
   /**
    * Home brand partners rail.
-   * `null` = no SSR/API payload — static placeholders in `HomeBrandsSlide`.
-   * `[]` = payload loaded but no brands with logos — hide the brands block.
+   * `null` or `[]` — hide the brands block until API returns partners.
    */
   homeBrandPartners: HomeBrandPartnerPublicItem[] | null;
   /** When API returns a section title, show it on the brands heading. */
@@ -83,13 +81,9 @@ export function FeaturedProductsStrip({
   onCarouselArrowHandlersChange,
 }: FeaturedProductsStripProps) {
   const ctaHref = `/products?filter=${encodeURIComponent(FILTER_BY_TAB[activeTab])}`;
-  const brandsFallbackTotal = HOME_BRAND_SLIDE_ENTRIES.length;
   const showBrandsSection =
-    homeBrandPartners === null || homeBrandPartners.length > 0;
-  const brandsTotalItems =
-    homeBrandPartners !== null && homeBrandPartners.length > 0
-      ? homeBrandPartners.length
-      : brandsFallbackTotal;
+    homeBrandPartners !== null && homeBrandPartners.length > 0;
+  const brandsTotalItems = homeBrandPartners?.length ?? 0;
   const brandsPaginationPageCount = Math.max(
     1,
     Math.ceil(brandsTotalItems / SPECIAL_OFFERS_MOBILE_GRID_PAGE_SIZE)

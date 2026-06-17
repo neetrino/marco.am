@@ -6,7 +6,13 @@ import { apiClient, getApiOrErrorMessage } from '@/lib/api-client';
 import { getErrorHttpStatus } from '@/lib/api-client/types';
 import { useTranslation } from '@/lib/i18n-client';
 import { logger } from '@/lib/utils/logger';
+import { buildAdminOrderDetailCacheKey } from '@/lib/admin/admin-cache-keys';
+import { dedupedAdminRequest } from '@/lib/admin/admin-request-dedup';
 import { useAdminOrderCurrency } from './hooks/useAdminOrderCurrency';
+import {
+  persistAdminOrderDetailCache,
+  readAdminOrderDetailCache,
+} from './utils/order-detail-cache';
 import type { OrderDetails } from './useOrders';
 
 type UpdateMessage = { type: 'success' | 'error'; text: string } | null;
@@ -22,7 +28,7 @@ export function useOrderDetail(orderId: string | undefined) {
   const [savingAdminNotes, setSavingAdminNotes] = useState(false);
   const [updateMessage, setUpdateMessage] = useState<UpdateMessage>(null);
 
-  const fetchOrder = useCallback(async () => {
+  const fetchOrder = useCallback(async (options?: { force?: boolean }) => {
     if (!orderId) {
       setLoading(false);
       setNotFound(false);
@@ -30,20 +36,37 @@ export function useOrderDetail(orderId: string | undefined) {
       return;
     }
 
-    setLoading(true);
+    const cacheKey = buildAdminOrderDetailCacheKey(orderId);
+    const cachedDetails = readAdminOrderDetailCache(orderId);
+
+    if (!options?.force && cachedDetails) {
+      setOrderDetails(cachedDetails);
+      setLoading(false);
+      setNotFound(false);
+      return;
+    }
+
+    setLoading(!cachedDetails);
     setNotFound(false);
-    setOrderDetails(null);
+    if (!cachedDetails) {
+      setOrderDetails(null);
+    }
 
     try {
-      const response = await apiClient.get<OrderDetails>(`/api/v1/supersudo/orders/${orderId}`);
+      const response = await dedupedAdminRequest(cacheKey, () =>
+        apiClient.get<OrderDetails>(`/api/v1/supersudo/orders/${orderId}`),
+      );
       setOrderDetails(response);
+      persistAdminOrderDetailCache(orderId, response);
     } catch (err: unknown) {
       logger.error('Admin order detail fetch failed', { orderId, error: err });
       const message = getApiOrErrorMessage(err, t('admin.orders.orderDetails.failedToLoad'));
       if (getErrorHttpStatus(err) === 404 || message.toLowerCase().includes('not found')) {
         setNotFound(true);
       }
-      setOrderDetails(null);
+      if (!cachedDetails) {
+        setOrderDetails(null);
+      }
     } finally {
       setLoading(false);
     }
@@ -65,6 +88,7 @@ export function useOrderDetail(orderId: string | undefined) {
         adminNotes,
       });
       setOrderDetails(updated);
+      persistAdminOrderDetailCache(orderId, updated);
       setUpdateMessage({
         type: 'success',
         text: t('admin.orders.orderDetails.internalNotesSaved'),
@@ -92,6 +116,6 @@ export function useOrderDetail(orderId: string | undefined) {
     formatCurrency,
     handleAdminNotesSave,
     router,
-    refetch: fetchOrder,
+    refetch: () => fetchOrder({ force: true }),
   };
 }

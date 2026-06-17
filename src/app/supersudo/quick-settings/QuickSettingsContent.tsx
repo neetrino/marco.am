@@ -3,33 +3,17 @@
 import { Card } from '@shop/ui';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '../../../lib/i18n-client';
+import type {
+  QuickSettingsBrand,
+  QuickSettingsCategory,
+  QuickSettingsProductRow,
+} from './types';
 import { AdminPageLayout } from '../components/AdminPageLayout';
 import { GlobalDiscountCard } from './components/GlobalDiscountCard';
 import { QuickInfoCard } from './components/QuickInfoCard';
 import { CategoryDiscountsCard } from './components/CategoryDiscountsCard';
 import { BrandDiscountsCard } from './components/BrandDiscountsCard';
 import { ProductDiscountsCard } from './components/ProductDiscountsCard';
-
-interface AdminCategory {
-  id: string;
-  title: string;
-  parentId: string | null;
-}
-
-interface AdminBrand {
-  id: string;
-  name: string;
-  logoUrl?: string;
-}
-
-/** Matches admin product list rows used for per-product discounts. */
-interface QuickSettingsProductRow {
-  id: string;
-  title: string;
-  image?: string;
-  price?: number;
-  discountPercent?: number;
-}
 
 interface QuickSettingsContentProps {
   currentPath: string;
@@ -40,14 +24,14 @@ interface QuickSettingsContentProps {
   discountLoading: boolean;
   discountSaving: boolean;
   handleDiscountSave: () => void;
-  categories: AdminCategory[];
+  categories: QuickSettingsCategory[];
   categoriesLoading: boolean;
   categoryDiscounts: Record<string, number>;
   updateCategoryDiscountValue: (categoryId: string, value: string) => void;
   clearCategoryDiscount: (categoryId: string) => void;
   handleCategoryDiscountSave: () => void;
   categorySaving: boolean;
-  brands: AdminBrand[];
+  brands: QuickSettingsBrand[];
   brandsLoading: boolean;
   brandDiscounts: Record<string, number>;
   updateBrandDiscountValue: (brandId: string, value: string) => void;
@@ -99,8 +83,6 @@ export function QuickSettingsContent({
       t={t}
       title={t('admin.quickSettings.title')}
       subtitle={t('admin.quickSettings.subtitle')}
-      backLabel={t('admin.common.backToAdmin')}
-      onBack={() => router.push('/supersudo')}
     >
       <Card className="admin-card mb-6 overflow-hidden border-slate-200/80 bg-gradient-to-br from-white via-white to-slate-50 shadow-[0_14px_36px_rgba(15,23,42,0.08)]">
         <div className="mb-5 flex items-center justify-between">

@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState, useMemo, useRef } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { Suspense, useCallback, useEffect, useState, useMemo, useRef } from 'react';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { apiClient, getApiOrErrorMessage } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
 import { getStoredCurrency, initializeCurrencyRates, type CurrencyCode } from '../../../lib/currency';
@@ -14,16 +14,22 @@ import { useProductHandlers } from './hooks/useProductHandlers';
 import type { Product, ProductsResponse, Category } from './types';
 import { logger } from "@/lib/utils/logger";
 import {
+  fetchAdminCategoriesLite,
   readAdminCategoriesCache,
-  writeAdminCategoriesCache,
+  warmAdminReferenceDataCaches,
 } from '@/lib/admin/admin-reference-data-cache';
-import { ADMIN_CACHE_KEYS, buildAdminListCacheKey } from '@/lib/admin/admin-cache-keys';
+import {
+  buildAdminProductsListCacheKey,
+  buildProductsDefaultListCacheKey,
+} from '@/lib/admin/admin-cache-keys';
 import { beginAdminDataFetch } from '@/lib/admin/admin-fetch-helpers';
+import { dedupedAdminRequest } from '@/lib/admin/admin-request-dedup';
 import {
   ADMIN_SESSION_CACHE_TTL_MS,
   readAdminSessionCache,
   writeAdminSessionCache,
 } from '@/lib/admin/admin-session-cache';
+import { ProductEditorSheet } from './add/components/ProductEditorSheet';
 
 type AdminProductsCachePayload = {
   data: Product[];
@@ -31,15 +37,31 @@ type AdminProductsCachePayload = {
 };
 
 export default function ProductsPage() {
+  return (
+    <Suspense fallback={null}>
+      <ProductsPageContent />
+    </Suspense>
+  );
+}
+
+function ProductsPageContent() {
   const { t, lang } = useTranslation();
   const activeLocale = lang ?? getStoredLanguage();
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const editParam = searchParams.get('edit');
+  const createParam = searchParams.get('create');
+  const sheetOpen = Boolean(editParam || createParam);
+  const sheetProductId = editParam ?? null;
+  const defaultProductsCacheKey = buildProductsDefaultListCacheKey(activeLocale);
   const defaultProductsCache = readAdminSessionCache<AdminProductsCachePayload>(
-    ADMIN_CACHE_KEYS.productsDefault,
+    defaultProductsCacheKey,
     ADMIN_SESSION_CACHE_TTL_MS,
   );
-  const cachedCategories = readAdminCategoriesCache<Category>(activeLocale);
+  const cachedCategories = readAdminCategoriesCache<Category>(activeLocale, {
+    includeCounts: false,
+  });
   const hadProductsCacheRef = useRef(Boolean(defaultProductsCache));
   const hadCategoriesCacheRef = useRef(Boolean(cachedCategories?.length));
   const [products, setProducts] = useState<Product[]>(defaultProductsCache?.data ?? []);
@@ -65,6 +87,10 @@ export default function ProductsPage() {
   const [currency, setCurrency] = useState<CurrencyCode>('USD');
 
   // Initialize currency rates and listen for currency changes
+  useEffect(() => {
+    warmAdminReferenceDataCaches(activeLocale);
+  }, [activeLocale]);
+
   useEffect(() => {
     const updateCurrency = () => {
       const newCurrency = getStoredCurrency();
@@ -119,15 +145,9 @@ export default function ProductsPage() {
   const fetchCategories = async () => {
     try {
       beginAdminDataFetch(hadCategoriesCacheRef.current, setCategoriesLoading);
-      logger.devLog('📂 [ADMIN] Fetching categories...');
-      const response = await apiClient.get<{ data: Category[] }>('/api/v1/supersudo/categories', {
-        params: { lang: activeLocale },
-      });
-      const nextCategories = response.data || [];
-      setCategories(nextCategories);
-      writeAdminCategoriesCache(activeLocale, nextCategories);
+      const response = await fetchAdminCategoriesLite<Category>(activeLocale);
+      setCategories(response.data || []);
       hadCategoriesCacheRef.current = true;
-      logger.devLog('✅ [ADMIN] Categories loaded:', nextCategories.length);
     } catch (err: unknown) {
       console.error('❌ [ADMIN] Error fetching categories:', err);
       if (!hadCategoriesCacheRef.current) {
@@ -143,25 +163,29 @@ export default function ProductsPage() {
      
   }, [page, search, selectedCategories, skuSearch, stockFilter, sortBy, minPrice, maxPrice, activeLocale]);
 
-  const fetchProducts = async () => {
-    const cacheKey = buildAdminListCacheKey('products', {
-      page: page.toString(),
-      limit: '20',
-      search: search.trim(),
+  const fetchProducts = async (options?: { force?: boolean }) => {
+    const cacheKey = buildAdminProductsListCacheKey({
+      page,
+      lang: activeLocale,
+      search,
       category: selectedCategories.size > 0 ? Array.from(selectedCategories).join(',') : '',
-      sku: skuSearch.trim(),
-      minPrice: minPrice.trim(),
-      maxPrice: maxPrice.trim(),
-      sort: sortBy.startsWith('createdAt') ? sortBy : '',
+      sku: skuSearch,
+      minPrice,
+      maxPrice,
+      sort: sortBy,
       stockFilter,
     });
     const cached = readAdminSessionCache<AdminProductsCachePayload>(cacheKey, ADMIN_SESSION_CACHE_TTL_MS);
+    if (!options?.force && cached?.data?.length) {
+      setProducts(cached.data);
+      setMeta(cached.meta);
+      setLoading(false);
+      hadProductsCacheRef.current = true;
+      return;
+    }
+
     try {
       beginAdminDataFetch(Boolean(cached?.data?.length), setLoading);
-      if (cached) {
-        setProducts(cached.data);
-        setMeta(cached.meta);
-      }
       const params: Record<string, string> = {
         page: page.toString(),
         limit: '20',
@@ -192,9 +216,11 @@ export default function ProductsPage() {
         params.sort = sortBy;
       }
 
-      const response = await apiClient.get<ProductsResponse>('/api/v1/supersudo/products', {
-        params,
-      });
+      const response = await dedupedAdminRequest(cacheKey, () =>
+        apiClient.get<ProductsResponse>('/api/v1/supersudo/products', {
+          params,
+        }),
+      );
       
       let filteredProducts = response.data || [];
 
@@ -352,6 +378,31 @@ export default function ProductsPage() {
     setPage(1);
   };
 
+  const closeProductEditor = useCallback(() => {
+    router.replace('/supersudo/products', { scroll: false });
+  }, [router]);
+
+  const openCreateProduct = useCallback(() => {
+    router.replace('/supersudo/products?create=1', { scroll: false });
+  }, [router]);
+
+  const openEditProduct = useCallback(
+    (productId: string) => {
+      router.replace(`/supersudo/products?edit=${productId}`, { scroll: false });
+    },
+    [router],
+  );
+
+  const handleProductSaved = () => {
+    closeProductEditor();
+    void fetchProducts({ force: true });
+  };
+
+  const editingListProduct = useMemo(
+    () => (sheetProductId ? products.find((product) => product.id === sheetProductId) ?? null : null),
+    [sheetProductId, products],
+  );
+
   const currentPath = pathname || '/supersudo/products';
 
   return (
@@ -360,8 +411,6 @@ export default function ProductsPage() {
       router={router}
       t={t}
       title={t('admin.products.title')}
-      backLabel={t('admin.products.backToAdmin')}
-      onBack={() => router.push('/supersudo')}
       headerActions={
         <div className="flex flex-wrap items-center justify-end gap-2">
           {(search || selectedCategories.size > 0 || skuSearch || stockFilter !== 'all') ? (
@@ -375,7 +424,7 @@ export default function ProductsPage() {
           ) : null}
           <button
             type="button"
-            onClick={() => router.push('/supersudo/products/add')}
+            onClick={openCreateProduct}
             className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-marco-yellow px-4 text-sm font-semibold text-marco-black transition-all hover:-translate-y-0.5 hover:brightness-95"
           >
             <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
@@ -440,6 +489,15 @@ export default function ProductsPage() {
         page={page}
         setPage={setPage}
         categoryTitleById={categoryTitleById}
+        onEditProduct={openEditProduct}
+      />
+
+      <ProductEditorSheet
+        open={sheetOpen}
+        productId={sheetProductId}
+        listProduct={editingListProduct}
+        onClose={closeProductEditor}
+        onSaved={handleProductSaved}
       />
     </AdminPageLayout>
   );

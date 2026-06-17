@@ -429,7 +429,8 @@ class AdminCategoriesService {
   /**
    * Get categories for admin
    */
-  async getCategories(localeInput?: string) {
+  async getCategories(localeInput?: string, options?: { includeCounts?: boolean }) {
+    const includeCounts = options?.includeCounts !== false;
     const locale = normalizeCategoryLocale(
       localeInput,
       this.defaultLocale,
@@ -440,24 +441,28 @@ class AdminCategoriesService {
         deletedAt: null,
       },
       include: {
-        translations: true,
+        translations: includeCounts ? true : { where: { locale } },
       },
       orderBy: {
         position: "asc",
       },
     });
-    const categoryRows = categories.map((category) => ({
-      id: category.id,
-      parentId: category.parentId,
-    }));
-    const products = await db.product.findMany({
-      where: { deletedAt: null },
-      select: { primaryCategoryId: true, categoryIds: true },
-    });
-    const subtreeProductCountByCategoryId = buildDistinctSubtreeProductCountMap(
-      categoryRows,
-      products,
-    );
+
+    let subtreeProductCountByCategoryId: Map<string, number> | undefined;
+    if (includeCounts) {
+      const categoryRows = categories.map((category) => ({
+        id: category.id,
+        parentId: category.parentId,
+      }));
+      const products = await db.product.findMany({
+        where: { deletedAt: null },
+        select: { primaryCategoryId: true, categoryIds: true },
+      });
+      subtreeProductCountByCategoryId = buildDistinctSubtreeProductCountMap(
+        categoryRows,
+        products,
+      );
+    }
 
     return {
       data: categories.map((category) =>

@@ -1,6 +1,5 @@
 import { apiClient } from '@/lib/api-client';
 import { getErrorMessage } from '@/lib/types/errors';
-import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 import type { ProductLabel, Variant } from '../types';
 import type { ProductClass } from '@/lib/constants/product-class';
 import type { ProductDescriptionEntry } from '@/lib/products/product-description';
@@ -34,7 +33,7 @@ interface CreateAndSubmitPayloadProps {
   productId: string | null;
   creationMessages: string[];
   setLoading: (loading: boolean) => void;
-  router: AppRouterInstance;
+  onSuccess: () => void;
 }
 
 export async function createAndSubmitPayload({
@@ -50,7 +49,7 @@ export async function createAndSubmitPayload({
   productId,
   creationMessages,
   setLoading,
-  router,
+  onSuccess,
 }: CreateAndSubmitPayloadProps): Promise<void> {
   const mt = (path: string): string => translateByLocale(getStoredLanguage(), path);
   const resolvedCategoryIds =
@@ -111,7 +110,7 @@ export async function createAndSubmitPayload({
         alert(`${baseMessage}${extra}`);
       }
       
-      router.push('/supersudo/products');
+      onSuccess();
     } catch (err: unknown) {
       console.error('❌ [ADMIN] Error saving product:', err);
 

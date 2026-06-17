@@ -3,7 +3,6 @@ import { logger } from "../../../utils/logger";
 import type { OrderFilters } from "./types";
 import { buildOrderWhereClause, buildOrderByClause } from "./query-builder";
 import { formatOrderForList, formatOrderForDetail } from "./order-formatter";
-import { formatOrderAuditTrail } from "./order-audit-formatter";
 
 /**
  * Get orders with filters and pagination
@@ -26,7 +25,7 @@ export async function getOrders(filters: OrderFilters = {}) {
       take: limit,
       orderBy,
       include: {
-        items: true,
+        _count: { select: { items: true } },
         user: {
           select: {
             id: true,
@@ -56,10 +55,10 @@ export async function getOrders(filters: OrderFilters = {}) {
 }
 
 /**
- * Get single order by ID with full details for admin
+ * Get single order by ID with full details for admin.
+ * Uses OrderItem snapshot fields — no product/variant catalog joins.
  */
 export async function getOrderById(orderId: string) {
-  // Fetch order with related user and items/variants/products
   const order = await db.order.findUnique({
     where: { id: orderId },
     include: {
@@ -73,34 +72,30 @@ export async function getOrderById(orderId: string) {
         },
       },
       items: {
-        include: {
-          variant: {
-            include: {
-              product: {
-                include: {
-                  translations: {
-                    where: { locale: "en" },
-                    take: 1,
-                  },
-                },
-              },
-              options: {
-                include: {
-                  attributeValue: {
-                    include: {
-                      attribute: true,
-                      translations: true,
-                    },
-                  },
-                },
-              },
-            },
-          },
+        select: {
+          id: true,
+          variantId: true,
+          productTitle: true,
+          variantTitle: true,
+          sku: true,
+          quantity: true,
+          price: true,
+          total: true,
+          imageUrl: true,
         },
       },
-      payments: true,
-      events: {
-        orderBy: { createdAt: "desc" },
+      payments: {
+        select: {
+          id: true,
+          provider: true,
+          method: true,
+          amount: true,
+          currency: true,
+          status: true,
+          cardLast4: true,
+          cardBrand: true,
+        },
+        orderBy: { createdAt: "asc" },
       },
     },
   });
@@ -114,32 +109,7 @@ export async function getOrderById(orderId: string) {
     };
   }
 
-  const events = order.events ?? [];
-  const actorIds = [
-    ...new Set(
-      events
-        .map((e) => e.userId)
-        .filter((id): id is string => typeof id === "string" && id.length > 0)
-    ),
-  ];
-  const actors =
-    actorIds.length > 0
-      ? await db.user.findMany({
-          where: { id: { in: actorIds } },
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-          },
-        })
-      : [];
-  const actorsById = Object.fromEntries(actors.map((a) => [a.id, a]));
-
-  return {
-    ...formatOrderForDetail(order),
-    auditTrail: formatOrderAuditTrail(events, actorsById),
-  };
+  return formatOrderForDetail(order);
 }
 
 

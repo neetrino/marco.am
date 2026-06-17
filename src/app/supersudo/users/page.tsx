@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Card, Button, Input } from '@shop/ui';
 import { apiClient, getApiOrErrorMessage } from '../../../lib/api-client';
@@ -8,114 +8,39 @@ import { useTranslation } from '../../../lib/i18n-client';
 import { showPopupConfirm } from '@/components/popup-service';
 import { AdminPageLayout } from '../components/AdminPageLayout';
 import { AdminTablePagination } from '../components/AdminTablePagination';
-import { logger } from "@/lib/utils/logger";
-import { ADMIN_CACHE_KEYS, buildAdminListCacheKey } from '@/lib/admin/admin-cache-keys';
-import { beginAdminDataFetch } from '@/lib/admin/admin-fetch-helpers';
-import {
-  ADMIN_SESSION_CACHE_TTL_MS,
-  readAdminSessionCache,
-  writeAdminSessionCache,
-} from '@/lib/admin/admin-session-cache';
-
-interface User {
-  id: string;
-  email: string;
-  phone: string;
-  firstName: string;
-  lastName: string;
-  roles: string[];
-  blocked: boolean;
-  ordersCount?: number;
-  createdAt: string;
-}
-
-interface UsersResponse {
-  data: User[];
-  meta: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
-}
+import { logger } from '@/lib/utils/logger';
+import { useUsersAdmin } from './useUsersAdmin';
 
 export default function UsersPage() {
   const { t } = useTranslation();
   const router = useRouter();
   const pathname = usePathname();
   const currentPath = pathname || '/supersudo/users';
-  const [users, setUsers] = useState<User[]>(() => {
-    const cached = readAdminSessionCache<UsersResponse>(
-      ADMIN_CACHE_KEYS.usersDefault,
-      ADMIN_SESSION_CACHE_TTL_MS,
-    );
-    return cached?.data ?? [];
-  });
-  const [loading, setLoading] = useState(() => {
-    const cached = readAdminSessionCache<UsersResponse>(
-      ADMIN_CACHE_KEYS.usersDefault,
-      ADMIN_SESSION_CACHE_TTL_MS,
-    );
-    return !cached;
-  });
-  const [search, setSearch] = useState('');
-  const [page, setPage] = useState(1);
-  const [meta, setMeta] = useState<UsersResponse['meta'] | null>(null);
+  const {
+    users,
+    loading,
+    searchInput,
+    setSearchInput,
+    appliedSearch,
+    page,
+    setPage,
+    meta,
+    roleFilter,
+    setRoleFilter,
+    fetchUsers,
+    submitSearch,
+    clearFilters,
+  } = useUsersAdmin();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
-  const [roleFilter, setRoleFilter] = useState<'all' | 'admin' | 'customer'>('all');
-
-  const fetchUsers = useCallback(async () => {
-    const cacheKey = buildAdminListCacheKey('users', {
-      page: page.toString(),
-      limit: '20',
-      search: search || '',
-      role: roleFilter === 'all' ? '' : roleFilter,
-    });
-    const cached = readAdminSessionCache<UsersResponse>(cacheKey, ADMIN_SESSION_CACHE_TTL_MS);
-    try {
-      beginAdminDataFetch(Boolean(cached?.data?.length), setLoading);
-      if (cached) {
-        setUsers(cached.data);
-        setMeta(cached.meta ?? null);
-      }
-      logger.devLog('👥 [ADMIN] Fetching users...', { page, search, roleFilter });
-      
-      const response = await apiClient.get<UsersResponse>('/api/v1/supersudo/users', {
-        params: {
-          page: page.toString(),
-          limit: '20',
-          search: search || '',
-          role: roleFilter === 'all' ? '' : roleFilter,
-        },
-      });
-
-      logger.devLog('✅ [ADMIN] Users fetched:', response);
-      setUsers(response.data || []);
-      setMeta(response.meta || null);
-      writeAdminSessionCache(cacheKey, response);
-    } catch (err) {
-      console.error('❌ [ADMIN] Error fetching users:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [page, search, roleFilter]);
-
-  useEffect(() => {
-    fetchUsers();
-     
-  }, [fetchUsers]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    setPage(1);
-    fetchUsers();
+    submitSearch();
   };
 
   const handleClearFilters = () => {
-    setSearch('');
-    setRoleFilter('all');
-    setPage(1);
+    clearFilters();
   };
 
   const toggleSelect = (id: string) => {
@@ -127,20 +52,12 @@ export default function UsersPage() {
   };
 
   const toggleSelectAll = () => {
-    // Ընտրում ենք միայն այն օգտատերերին, որոնք տեսանելի են ընթացիկ ֆիլտրով
-    const visibleUsers =
-      roleFilter === 'all'
-        ? users
-        : users.filter((u) =>
-            roleFilter === 'admin'
-              ? u.roles?.includes('admin')
-              : u.roles?.includes('customer')
-          );
-
-    if (visibleUsers.length === 0) return;
+    if (users.length === 0) {
+      return;
+    }
 
     setSelectedIds((prev) => {
-      const allIds = visibleUsers.map((u) => u.id);
+      const allIds = users.map((user) => user.id);
       const hasAll = allIds.every((id) => prev.has(id));
       return hasAll ? new Set() : new Set(allIds);
     });
@@ -157,7 +74,7 @@ export default function UsersPage() {
       );
       const failed = results.filter(r => r.status === 'rejected');
       setSelectedIds(new Set());
-      await fetchUsers();
+      await fetchUsers({ force: true });
       alert(t('admin.users.bulkDeleteFinished').replace('{success}', (ids.length - failed.length).toString()).replace('{total}', ids.length.toString()));
     } catch (err) {
       console.error('❌ [ADMIN] Bulk delete users error:', err);
@@ -177,7 +94,7 @@ export default function UsersPage() {
       logger.devLog(`✅ [ADMIN] User ${newStatus ? 'blocked' : 'unblocked'} successfully`);
       
       // Refresh users list
-      fetchUsers();
+      void fetchUsers({ force: true });
       
       if (newStatus) {
         alert(t('admin.users.userBlocked').replace('{name}', userName));
@@ -190,15 +107,7 @@ export default function UsersPage() {
     }
   };
 
-  // Տեսանելի օգտատերերի filter Admin / Customer ֆիլտրով
-  const filteredUsers =
-    roleFilter === 'all'
-      ? users
-      : users.filter((user) =>
-          roleFilter === 'admin'
-            ? user.roles?.includes('admin')
-            : user.roles?.includes('customer')
-        );
+  // Տեսանելի օգտատերերը սերվերից են (փնտրում + role filter + pagination)
 
   return (
     <AdminPageLayout
@@ -206,10 +115,8 @@ export default function UsersPage() {
       router={router}
       t={t}
       title={t('admin.users.title')}
-      backLabel={t('admin.users.backToAdmin')}
-      onBack={() => router.push('/supersudo')}
       headerActions={
-        (search || roleFilter !== 'all') ? (
+        (appliedSearch || roleFilter !== 'all') ? (
           <button
             type="button"
             onClick={handleClearFilters}
@@ -229,8 +136,8 @@ export default function UsersPage() {
                     </label>
                   <Input
                     type="text"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
                     placeholder={t('admin.users.searchPlaceholder')}
                     className="admin-field border-slate-300/90 bg-slate-50/70 transition-all focus:border-slate-800"
                   />
@@ -248,11 +155,7 @@ export default function UsersPage() {
                   <div className="inline-flex rounded-full border border-slate-200 bg-slate-100/80 p-1 text-xs">
                     <button
                       type="button"
-                      onClick={() => {
-                        setRoleFilter('all');
-                        setPage(1);
-                        logger.devLog('👥 [ADMIN] Role filter changed to: all');
-                      }}
+                      onClick={() => setRoleFilter('all')}
                       className={`px-3 py-1 rounded-full transition-all ${
                         roleFilter === 'all'
                           ? 'bg-white text-slate-900 shadow-sm'
@@ -263,11 +166,7 @@ export default function UsersPage() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => {
-                        setRoleFilter('admin');
-                        setPage(1);
-                        logger.devLog('👥 [ADMIN] Role filter changed to: admin');
-                      }}
+                      onClick={() => setRoleFilter('admin')}
                       className={`px-3 py-1 rounded-full transition-all ${
                         roleFilter === 'admin'
                           ? 'bg-white text-slate-900 shadow-sm'
@@ -278,11 +177,7 @@ export default function UsersPage() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => {
-                        setRoleFilter('customer');
-                        setPage(1);
-                        logger.devLog('👥 [ADMIN] Role filter changed to: customer');
-                      }}
+                      onClick={() => setRoleFilter('customer')}
                       className={`px-3 py-1 rounded-full transition-all ${
                         roleFilter === 'customer'
                           ? 'bg-white text-slate-900 shadow-sm'
@@ -319,7 +214,7 @@ export default function UsersPage() {
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
                   <p className="text-slate-600">{t('admin.users.loadingUsers')}</p>
                 </div>
-              ) : filteredUsers.length === 0 ? (
+              ) : users.length === 0 ? (
                 <div className="p-8 text-center">
                   <p className="text-slate-600">{t('admin.users.noUsers')}</p>
                 </div>
@@ -359,12 +254,15 @@ export default function UsersPage() {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-200 bg-white">
-                        {filteredUsers.map((user) => (
+                        {users.map((user) => (
                           <tr key={user.id} className="group transition-colors hover:bg-amber-50/50">
                             <td className="px-4 py-4">
                               <input
                                 type="checkbox"
-                                aria-label={t('admin.users.selectUser').replace('{email}', user.email)}
+                                aria-label={t('admin.users.selectUser').replace(
+                                  '{email}',
+                                  user.email ?? user.phone ?? user.id,
+                                )}
                                 checked={selectedIds.has(user.id)}
                                 onChange={() => toggleSelect(user.id)}
                                 className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-500"
@@ -384,7 +282,9 @@ export default function UsersPage() {
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm font-medium text-slate-900">{user.email}</div>
+                              <div className="text-sm font-medium text-slate-900">
+                                {user.email ?? user.phone ?? '—'}
+                              </div>
                               {user.phone && (
                                 <div className="text-sm text-slate-500">{user.phone}</div>
                               )}

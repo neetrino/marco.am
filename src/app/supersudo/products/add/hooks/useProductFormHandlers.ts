@@ -1,5 +1,4 @@
 import type { FormEvent } from 'react';
-import { useRouter } from 'next/navigation';
 import { CATALOG_PRICE_CURRENCY, convertPrice, type CurrencyCode } from '@/lib/currency';
 import type { Attribute, Variant, GeneratedVariant } from '../types';
 import { useBrandAndCategoryCreation } from './useBrandAndCategoryCreation';
@@ -54,6 +53,7 @@ interface UseProductFormHandlersProps {
   isEditMode: boolean;
   productId: string | null;
   isClothingCategory: () => boolean;
+  onSuccess: () => void;
 }
 
 export function useProductFormHandlers({
@@ -75,10 +75,9 @@ export function useProductFormHandlers({
   isEditMode,
   productId,
   isClothingCategory,
+  onSuccess,
 }: UseProductFormHandlersProps) {
   const mt = (path: string): string => translateByLocale(getStoredLanguage(), path);
-  const router = useRouter();
-  
   const { createBrandAndCategory } = useBrandAndCategoryCreation({
     formData,
     useNewBrand,
@@ -418,7 +417,7 @@ export function useProductFormHandlers({
         productId,
         creationMessages,
         setLoading,
-        router,
+        onSuccess,
       });
     } catch (err: unknown) {
       console.error('❌ [ADMIN] Error saving product:', err);

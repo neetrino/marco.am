@@ -1,15 +1,30 @@
 import { apiClient } from '@/lib/api-client';
-import { ADMIN_CACHE_KEYS } from '@/lib/admin/admin-cache-keys';
+import {
+  ADMIN_CACHE_KEYS,
+  buildAdminListCacheKey,
+  buildAdminOrdersListApiParams,
+  buildAdminMessagesListApiParams,
+  buildAdminUsersListApiParams,
+  buildMessagesDefaultListCacheKey,
+  buildOrdersDefaultListCacheKey,
+  buildProductDiscountsCacheKey,
+  buildProductsDefaultListCacheKey,
+  buildUsersDefaultListCacheKey,
+} from '@/lib/admin/admin-cache-keys';
 import { warmAdminDashboardCache } from '@/lib/admin/admin-dashboard-client-cache';
-import { warmAdminReferenceDataCaches } from '@/lib/admin/admin-reference-data-cache';
+import {
+  warmAdminCategoriesCache,
+  warmAdminCategoriesWithCountsCache,
+  warmAdminReferenceDataCaches,
+} from '@/lib/admin/admin-reference-data-cache';
+import { dedupedAdminRequest } from '@/lib/admin/admin-request-dedup';
 import {
   ADMIN_SESSION_CACHE_TTL_MS,
   readAdminSessionCache,
   writeAdminSessionCache,
 } from '@/lib/admin/admin-session-cache';
+import { STOCK_ANALYTICS_PAGE_LIMIT } from '@/lib/constants/stock-analytics-ui';
 import { getStoredLanguage } from '@/lib/language';
-
-const warmAllInFlight = { current: false };
 
 function warmIfMissing<T>(key: string, fetcher: () => Promise<T>): void {
   if (readAdminSessionCache<T>(key, ADMIN_SESSION_CACHE_TTL_MS)) {
@@ -21,94 +36,152 @@ function warmIfMissing<T>(key: string, fetcher: () => Promise<T>): void {
 }
 
 function warmOrdersCache(): void {
-  warmIfMissing(ADMIN_CACHE_KEYS.ordersDefault, () =>
-    apiClient.get('/api/v1/supersudo/orders', {
-      params: {
-        page: '1',
-        limit: '20',
-        status: '',
-        paymentStatus: '',
-        search: '',
-        sortBy: 'createdAt',
-        sortOrder: 'desc',
-      },
-    }),
+  const cacheKey = buildOrdersDefaultListCacheKey();
+  warmIfMissing(cacheKey, () =>
+    dedupedAdminRequest(cacheKey, () =>
+      apiClient.get('/api/v1/supersudo/orders', {
+        params: buildAdminOrdersListApiParams({
+          page: 1,
+          sortBy: 'createdAt',
+          sortOrder: 'desc',
+        }),
+      }),
+    ),
   );
 }
 
-function warmProductsCache(): void {
-  warmIfMissing(ADMIN_CACHE_KEYS.productsDefault, () =>
-    apiClient.get('/api/v1/supersudo/products', {
-      params: { page: '1', limit: '20', sort: 'createdAt-desc' },
-    }),
+function warmProductsCache(language: string): void {
+  const cacheKey = buildProductsDefaultListCacheKey(language);
+  warmIfMissing(cacheKey, () =>
+    dedupedAdminRequest(cacheKey, () =>
+      apiClient.get('/api/v1/supersudo/products', {
+        params: { page: '1', limit: '20', lang: language, sort: 'createdAt-desc' },
+      }),
+    ),
   );
 }
 
 function warmUsersCache(): void {
-  warmIfMissing(ADMIN_CACHE_KEYS.usersDefault, () =>
-    apiClient.get('/api/v1/supersudo/users', {
-      params: { page: '1', limit: '20', search: '', role: '' },
-    }),
+  const cacheKey = buildUsersDefaultListCacheKey();
+  warmIfMissing(cacheKey, () =>
+    dedupedAdminRequest(cacheKey, () =>
+      apiClient.get('/api/v1/supersudo/users', {
+        params: buildAdminUsersListApiParams({ page: 1 }),
+      }),
+    ),
   );
 }
 
 function warmMessagesCache(): void {
-  warmIfMissing(ADMIN_CACHE_KEYS.messagesDefault, () =>
-    apiClient.get('/api/v1/supersudo/messages', {
-      params: { page: '1', limit: '20' },
-    }),
+  const cacheKey = buildMessagesDefaultListCacheKey();
+  warmIfMissing(cacheKey, () =>
+    dedupedAdminRequest(cacheKey, () =>
+      apiClient.get('/api/v1/supersudo/messages', {
+        params: buildAdminMessagesListApiParams({ page: 1 }),
+      }),
+    ),
   );
 }
 
 function warmAttributesCache(): void {
-  warmIfMissing(ADMIN_CACHE_KEYS.attributes, () => apiClient.get('/api/v1/supersudo/attributes'));
+  warmIfMissing(ADMIN_CACHE_KEYS.attributes, () =>
+    dedupedAdminRequest(ADMIN_CACHE_KEYS.attributes, () =>
+      apiClient.get('/api/v1/supersudo/attributes'),
+    ),
+  );
 }
 
 function warmSettingsCache(): void {
-  warmIfMissing(ADMIN_CACHE_KEYS.settings, () => apiClient.get('/api/v1/supersudo/settings'));
+  warmIfMissing(ADMIN_CACHE_KEYS.settings, () =>
+    dedupedAdminRequest(ADMIN_CACHE_KEYS.settings, () =>
+      apiClient.get('/api/v1/supersudo/settings'),
+    ),
+  );
+}
+
+function warmProductDiscountsCache(language: string): void {
+  const cacheKey = buildProductDiscountsCacheKey(language);
+  warmIfMissing(cacheKey, () =>
+    dedupedAdminRequest(cacheKey, () =>
+      apiClient.get('/api/v1/supersudo/products/discounts', {
+        params: { lang: language },
+      }),
+    ),
+  );
 }
 
 function warmDeliveryCache(): void {
-  warmIfMissing(ADMIN_CACHE_KEYS.delivery, () => apiClient.get('/api/v1/supersudo/delivery'));
+  warmIfMissing(ADMIN_CACHE_KEYS.delivery, () =>
+    dedupedAdminRequest(ADMIN_CACHE_KEYS.delivery, () =>
+      apiClient.get('/api/v1/supersudo/delivery'),
+    ),
+  );
 }
 
 function warmBannersCache(): void {
-  warmIfMissing(ADMIN_CACHE_KEYS.banners, () => apiClient.get('/api/v1/supersudo/banners'));
+  warmIfMissing(ADMIN_CACHE_KEYS.banners, () =>
+    dedupedAdminRequest(ADMIN_CACHE_KEYS.banners, () =>
+      apiClient.get('/api/v1/supersudo/banners'),
+    ),
+  );
 }
 
 function warmPromoCodesCache(): void {
   warmIfMissing(ADMIN_CACHE_KEYS.promoCodes, () =>
-    apiClient.get('/api/v1/supersudo/promo-codes'),
+    dedupedAdminRequest(ADMIN_CACHE_KEYS.promoCodes, () =>
+      apiClient.get('/api/v1/supersudo/promo-codes'),
+    ),
   );
 }
 
 function warmPriceFilterCache(): void {
   warmIfMissing(ADMIN_CACHE_KEYS.priceFilter, () =>
-    apiClient.get('/api/v1/supersudo/settings/price-filter'),
+    dedupedAdminRequest(ADMIN_CACHE_KEYS.priceFilter, () =>
+      apiClient.get('/api/v1/supersudo/settings/price-filter'),
+    ),
   );
 }
 
-function warmAnalyticsCache(): void {
+function warmAnalyticsCache(language: string): void {
   warmIfMissing(ADMIN_CACHE_KEYS.analyticsWeek, () =>
-    apiClient.get('/api/v1/supersudo/analytics', { params: { period: 'week' } }),
+    dedupedAdminRequest(ADMIN_CACHE_KEYS.analyticsWeek, () =>
+      apiClient.get('/api/v1/supersudo/analytics', { params: { period: 'week' } }),
+    ),
   );
   warmIfMissing(ADMIN_CACHE_KEYS.analyticsOrderStatus, () =>
-    apiClient.get('/api/v1/supersudo/analytics/order-status-breakdown'),
+    dedupedAdminRequest(ADMIN_CACHE_KEYS.analyticsOrderStatus, () =>
+      apiClient.get('/api/v1/supersudo/analytics/order-status-breakdown'),
+    ),
   );
-  warmIfMissing(ADMIN_CACHE_KEYS.stockAnalytics, () =>
-    apiClient.get('/api/v1/supersudo/analytics/stock'),
+  const stockCacheKey = buildAdminListCacheKey('analytics/stock', {
+    locale: language,
+    limit: String(STOCK_ANALYTICS_PAGE_LIMIT),
+  });
+  warmIfMissing(stockCacheKey, () =>
+    dedupedAdminRequest(stockCacheKey, () =>
+      apiClient.get('/api/v1/supersudo/analytics/stock', {
+        params: { locale: language, limit: String(STOCK_ANALYTICS_PAGE_LIMIT) },
+      }),
+    ),
   );
 }
 
 function warmReelsAdminCache(): void {
-  warmIfMissing(ADMIN_CACHE_KEYS.reelsAdmin, async () => {
-    const [reelsStorage, likes, views] = await Promise.all([
-      apiClient.get('/api/v1/supersudo/reels'),
-      apiClient.get('/api/v1/supersudo/reels/likes'),
-      apiClient.get('/api/v1/supersudo/reels/views'),
-    ]);
-    return { reelsStorage, likes, views };
-  });
+  const cacheKey = ADMIN_CACHE_KEYS.reelsAdmin;
+  warmIfMissing(cacheKey, () =>
+    dedupedAdminRequest(cacheKey, async () => {
+      const [reelsStorage, likes, views] = await Promise.all([
+        apiClient.get<{ version: number; items: unknown[] }>('/api/v1/supersudo/reels'),
+        apiClient.get<{ likesByReelId: Record<string, number> }>('/api/v1/supersudo/reels/likes'),
+        apiClient.get<{ viewsByReelId: Record<string, number> }>('/api/v1/supersudo/reels/views'),
+      ]);
+      return {
+        reelsStorage,
+        likesByReelId: likes.likesByReelId,
+        viewsByReelId: views.viewsByReelId,
+      };
+    }),
+  );
 }
 
 /** Warms API cache for a specific admin route (hover / pointer down). */
@@ -126,8 +199,8 @@ export function warmAdminPageCacheForPath(path: string): void {
       warmOrdersCache();
       return;
     case '/supersudo/products':
-      warmProductsCache();
-      warmAdminReferenceDataCaches(language);
+      warmProductsCache(language);
+      warmAdminCategoriesCache(language);
       return;
     case '/supersudo/users':
       warmUsersCache();
@@ -139,8 +212,11 @@ export function warmAdminPageCacheForPath(path: string): void {
       warmAttributesCache();
       return;
     case '/supersudo/settings':
+      warmSettingsCache();
+      return;
     case '/supersudo/quick-settings':
       warmSettingsCache();
+      warmProductDiscountsCache(language);
       warmAdminReferenceDataCaches(language);
       return;
     case '/supersudo/delivery':
@@ -156,44 +232,18 @@ export function warmAdminPageCacheForPath(path: string): void {
       warmPriceFilterCache();
       return;
     case '/supersudo/analytics':
-      warmAnalyticsCache();
+      warmAnalyticsCache(language);
       return;
     case '/supersudo/reels':
       warmReelsAdminCache();
       return;
     case '/supersudo/categories':
+      warmAdminCategoriesWithCountsCache(language);
+      return;
     case '/supersudo/brands':
       warmAdminReferenceDataCaches(language);
       return;
     default:
       return;
   }
-}
-
-/** Warms default admin list/settings payloads so pages paint instantly on first click. */
-export function warmAdminPageCaches(): void {
-  if (typeof window === 'undefined' || warmAllInFlight.current) {
-    return;
-  }
-  warmAllInFlight.current = true;
-
-  const language = getStoredLanguage();
-  warmAdminDashboardCache();
-  warmAdminReferenceDataCaches(language);
-  warmOrdersCache();
-  warmProductsCache();
-  warmUsersCache();
-  warmMessagesCache();
-  warmAttributesCache();
-  warmSettingsCache();
-  warmDeliveryCache();
-  warmBannersCache();
-  warmPromoCodesCache();
-  warmPriceFilterCache();
-  warmAnalyticsCache();
-  warmReelsAdminCache();
-
-  globalThis.setTimeout(() => {
-    warmAllInFlight.current = false;
-  }, 500);
 }

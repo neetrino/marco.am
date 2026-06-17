@@ -126,10 +126,6 @@ export function Header({ initialLanguage }: HeaderProps) {
     isRow2Blocked ? undefined : row2HeightPx > 0 ? `${row2MaxHeightPx}px` : undefined;
   const row2TranslateY = isRow2Blocked ? '0px' : `-${row2HiddenPx}px`;
 
-  if (stablePathname.startsWith('/supersudo')) {
-    return null;
-  }
-
   return (
     <header
       className={`sticky top-0 z-50 border-b shadow-sm backdrop-blur-sm ${

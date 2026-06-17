@@ -17,6 +17,8 @@ function categoryWriteLocale(lang: LanguageCode): LanguageCode {
 
 type CategoryLocale = 'hy' | 'en' | 'ru';
 
+type FetchCategoriesFn = (options?: { force?: boolean }) => Promise<void>;
+
 interface UseCategoryActionsReturn {
   showAddModal: boolean;
   showEditModal: boolean;
@@ -27,23 +29,23 @@ interface UseCategoryActionsReturn {
   setShowAddModal: (show: boolean) => void;
   setShowEditModal: (show: boolean) => void;
   setFormData: (data: CategoryFormData) => void;
-  handleAddCategory: (fetchCategories: () => Promise<void>) => Promise<void>;
+  handleAddCategory: (fetchCategories: FetchCategoriesFn) => Promise<void>;
   handleEditCategory: (category: Category) => Promise<void>;
   handleUpdateCategory: (
-    fetchCategories: () => Promise<void>,
+    fetchCategories: FetchCategoriesFn,
     allCategories: Category[],
     applyOptimisticCategories?: (updater: (previous: Category[]) => Category[]) => () => void,
   ) => Promise<void>;
   handleDeleteCategory: (
     categoryId: string,
     categoryTitle: string,
-    fetchCategories: () => Promise<void>,
+    fetchCategories: FetchCategoriesFn,
     allCategories: Category[],
   ) => Promise<void>;
   handleDeleteCategories: (
     categoryIds: string[],
     categoryTitles: string[],
-    fetchCategories: () => Promise<void>
+    fetchCategories: FetchCategoriesFn,
   ) => Promise<boolean>;
   resetForm: () => void;
 }
@@ -104,7 +106,7 @@ export function useCategoryActions(): UseCategoryActionsReturn {
     setInitialTreeSelection(EMPTY_TREE_SELECTION_SNAPSHOT);
   };
 
-  const handleAddCategory = async (fetchCategories: () => Promise<void>) => {
+  const handleAddCategory = async (fetchCategories: FetchCategoriesFn) => {
     const titles = {
       hy: formData.titles.hy.trim(),
       en: formData.titles.en.trim(),
@@ -131,7 +133,7 @@ export function useCategoryActions(): UseCategoryActionsReturn {
       });
       setShowAddModal(false);
       resetForm();
-      void fetchCategories();
+      void fetchCategories({ force: true });
       notifyShopCategoryTreeUpdated();
       showToast(t('admin.categories.createdSuccess'), 'success');
     } catch (err: unknown) {
@@ -200,7 +202,7 @@ export function useCategoryActions(): UseCategoryActionsReturn {
   };
 
   const handleUpdateCategory = async (
-    fetchCategories: () => Promise<void>,
+    fetchCategories: FetchCategoriesFn,
     allCategories: Category[],
     applyOptimisticCategories?: (updater: (previous: Category[]) => Category[]) => () => void,
   ) => {
@@ -332,7 +334,7 @@ export function useCategoryActions(): UseCategoryActionsReturn {
   const handleDeleteCategory = async (
     categoryId: string,
     categoryTitle: string,
-    fetchCategories: () => Promise<void>,
+    fetchCategories: FetchCategoriesFn,
     allCategories: Category[],
   ) => {
     const descendantCount = getDescendantIds(allCategories, categoryId).size;
@@ -353,7 +355,7 @@ export function useCategoryActions(): UseCategoryActionsReturn {
         descendantCount > 0 ? { params: { cascade: 'true' } as const } : undefined;
       await apiClient.delete(`/api/v1/supersudo/categories/${categoryId}`, deleteOptions);
       logger.info('Category deleted successfully');
-      await fetchCategories();
+      await fetchCategories({ force: true });
       notifyShopCategoryTreeUpdated();
       const successMessage =
         descendantCount > 0
@@ -373,7 +375,7 @@ export function useCategoryActions(): UseCategoryActionsReturn {
   const handleDeleteCategories = async (
     categoryIds: string[],
     categoryTitles: string[],
-    fetchCategories: () => Promise<void>
+    fetchCategories: FetchCategoriesFn,
   ): Promise<boolean> => {
     if (categoryIds.length === 0) {
       return false;
@@ -397,7 +399,7 @@ export function useCategoryActions(): UseCategoryActionsReturn {
         (result): result is PromiseRejectedResult => result.status === 'rejected',
       );
       const failedCount = failures.length;
-      await fetchCategories();
+      await fetchCategories({ force: true });
       if (failedCount < categoryIds.length) {
         notifyShopCategoryTreeUpdated();
       }

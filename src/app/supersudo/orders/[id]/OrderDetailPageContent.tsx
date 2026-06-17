@@ -23,7 +23,6 @@ export function OrderDetailPageContent({ orderId }: OrderDetailPageContentProps)
     updateMessage,
     formatCurrency,
     handleAdminNotesSave,
-    router,
   } = useOrderDetail(orderId);
 
   const title = orderDetails?.number
@@ -33,11 +32,8 @@ export function OrderDetailPageContent({ orderId }: OrderDetailPageContentProps)
   return (
     <AdminPageLayout
       currentPath={currentPath}
-      router={router}
       t={t}
       title={title}
-      backLabel={t('admin.orders.orderDetails.backToOrders')}
-      onBack={() => router.push('/supersudo/orders')}
     >
       {updateMessage ? (
         <div

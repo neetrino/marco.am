@@ -70,7 +70,9 @@ class AdminService {
 
   // Products methods
   getProducts = adminProductsService.getProducts.bind(adminProductsService);
+  getProductDiscountsList = adminProductsService.getProductDiscountsList.bind(adminProductsService);
   getProductById = adminProductsService.getProductById.bind(adminProductsService);
+  getProductEditorSection = adminProductsService.getProductEditorSection.bind(adminProductsService);
   createProduct = adminProductsService.createProduct.bind(adminProductsService);
   updateProduct = adminProductsService.updateProduct.bind(adminProductsService);
   deleteProduct = adminProductsService.deleteProduct.bind(adminProductsService);

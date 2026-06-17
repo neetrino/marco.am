@@ -10,6 +10,7 @@ import { AdminPageLayout } from '../components/AdminPageLayout';
 import { logger } from '@/lib/utils/logger';
 import { ADMIN_CACHE_KEYS } from '@/lib/admin/admin-cache-keys';
 import { beginAdminDataFetch } from '@/lib/admin/admin-fetch-helpers';
+import { dedupedAdminRequest } from '@/lib/admin/admin-request-dedup';
 import {
   ADMIN_SESSION_CACHE_TTL_MS,
   readAdminSessionCache,
@@ -57,9 +58,9 @@ export default function SettingsPage() {
     ADMIN_CACHE_KEYS.settings,
     ADMIN_SESSION_CACHE_TTL_MS,
   );
-  const hadCacheRef = useRef(Boolean(cachedSettings));
+  const hadCacheRef = useRef(cachedSettings !== null);
   const [saving, setSaving] = useState(false);
-  const [loading, setLoading] = useState(!hadCacheRef.current);
+  const [loading, setLoading] = useState(cachedSettings === null);
   const [settings, setSettings] = useState<Settings>(
     cachedSettings ?? {
       defaultCurrency: 'AMD',
@@ -71,11 +72,21 @@ export default function SettingsPage() {
     void fetchSettings();
   }, []);
 
-  const fetchSettings = async () => {
+  const fetchSettings = async (options?: { force?: boolean }) => {
+    const cached = readAdminSessionCache<Settings>(ADMIN_CACHE_KEYS.settings, ADMIN_SESSION_CACHE_TTL_MS);
+    if (!options?.force && cached !== null) {
+      setSettings(cached);
+      setLoading(false);
+      hadCacheRef.current = true;
+      return;
+    }
+
     try {
       beginAdminDataFetch(hadCacheRef.current, setLoading);
       logger.devLog('[ADMIN] Fetching settings...');
-      const data = await apiClient.get<Settings>('/api/v1/supersudo/settings');
+      const data = await dedupedAdminRequest(ADMIN_CACHE_KEYS.settings, () =>
+        apiClient.get<Settings>('/api/v1/supersudo/settings'),
+      );
       const nextSettings = {
         defaultCurrency: data.defaultCurrency || 'AMD',
         globalDiscount: data.globalDiscount,
@@ -198,8 +209,6 @@ export default function SettingsPage() {
       router={router}
       t={t}
       title={t('admin.settings.title')}
-      backLabel={t('admin.settings.backToAdmin')}
-      onBack={() => router.push('/supersudo')}
     >
       <section className="relative mb-6 overflow-hidden rounded-[28px] border border-marco-border/80 bg-gradient-to-br from-white via-[#fffdf5] to-marco-yellow/20 p-6 shadow-[0_18px_44px_rgba(16,16,16,0.08)]">
         <div className="pointer-events-none absolute -right-14 -top-14 h-40 w-40 rounded-full bg-marco-yellow/30 blur-3xl" />

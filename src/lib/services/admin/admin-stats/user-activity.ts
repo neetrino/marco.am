@@ -17,52 +17,25 @@ function formatUser(user: {
     phone: user.phone || undefined,
     name: [user.firstName, user.lastName].filter(Boolean).join(" ") || user.email || user.phone || "Unknown",
     registeredAt: user.createdAt.toISOString(),
-    lastLoginAt: undefined, // We don't track last login yet
+    lastLoginAt: undefined,
   };
 }
 
-/**
- * Format active user for activity response
- */
-function formatActiveUser(user: {
-  id: string;
+function formatUserName(user: {
   email: string | null;
   phone: string | null;
   firstName: string | null;
   lastName: string | null;
-  createdAt: Date;
-  orders: Array<{
-    id: string;
-    total: number;
-    createdAt: Date;
-  }>;
-}) {
-  const orders = Array.isArray(user.orders) ? user.orders : [];
-  const orderCount = orders.length;
-  const totalSpent = orders.reduce((sum: number, order: { total: number }) => sum + order.total, 0);
-  const lastOrder = orders[0] || null;
-
-  return {
-    id: user.id,
-    email: user.email || undefined,
-    phone: user.phone || undefined,
-    name: [user.firstName, user.lastName].filter(Boolean).join(" ") || user.email || user.phone || "Unknown",
-    orderCount,
-    totalSpent,
-    lastOrderDate: lastOrder ? lastOrder.createdAt.toISOString() : user.createdAt.toISOString(),
-    lastLoginAt: undefined, // We don't track last login yet
-  };
+}): string {
+  return [user.firstName, user.lastName].filter(Boolean).join(" ") || user.email || user.phone || "Unknown";
 }
 
 /**
  * Get user activity (recent registrations and active users)
  */
 export async function getUserActivity(limit: number = 10) {
-  // Get recent registrations
   const recentUsers = await db.user.findMany({
-    where: {
-      deletedAt: null,
-    },
+    where: { deletedAt: null },
     take: limit,
     orderBy: { createdAt: "desc" },
     select: {
@@ -77,13 +50,14 @@ export async function getUserActivity(limit: number = 10) {
 
   const recentRegistrations = recentUsers.map(formatUser);
 
-  // Get active users (users with orders)
-  const usersWithOrders = await db.user.findMany({
+  const topUsers = await db.user.findMany({
     where: {
       deletedAt: null,
-      orders: {
-        some: {},
-      },
+      orders: { some: {} },
+    },
+    take: limit,
+    orderBy: {
+      orders: { _count: "desc" },
     },
     select: {
       id: true,
@@ -92,26 +66,44 @@ export async function getUserActivity(limit: number = 10) {
       firstName: true,
       lastName: true,
       createdAt: true,
+      _count: { select: { orders: true } },
       orders: {
-        select: {
-          id: true,
-          total: true,
-          createdAt: true,
-        },
         orderBy: { createdAt: "desc" },
+        take: 1,
+        select: { createdAt: true },
       },
     },
-    take: limit,
   });
 
-  const activeUsers = usersWithOrders.map(formatActiveUser);
+  const userIds = topUsers.map((user) => user.id);
+  const spendByUserId = new Map<string, number>();
+
+  if (userIds.length > 0) {
+    const spendRows = await db.order.groupBy({
+      by: ["userId"],
+      where: { userId: { in: userIds } },
+      _sum: { total: true },
+    });
+    for (const row of spendRows) {
+      if (row.userId) {
+        spendByUserId.set(row.userId, row._sum?.total ?? 0);
+      }
+    }
+  }
+
+  const activeUsers = topUsers.map((user) => ({
+    id: user.id,
+    email: user.email || undefined,
+    phone: user.phone || undefined,
+    name: formatUserName(user),
+    orderCount: user._count.orders,
+    totalSpent: spendByUserId.get(user.id) ?? 0,
+    lastOrderDate: user.orders[0]?.createdAt.toISOString() ?? user.createdAt.toISOString(),
+    lastLoginAt: undefined,
+  }));
 
   return {
     recentRegistrations,
     activeUsers,
   };
 }
-
-
-
-

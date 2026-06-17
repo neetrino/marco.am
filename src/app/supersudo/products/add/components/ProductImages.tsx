@@ -3,7 +3,6 @@
 import type { ChangeEvent, RefObject } from 'react';
 import { Button } from '@shop/ui';
 import { useTranslation } from '../../../../../lib/i18n-client';
-import { FormSection } from './FormSection';
 
 interface ProductImagesProps {
   imageUrls: string[];
@@ -29,17 +28,9 @@ export function ProductImages({
   const { t } = useTranslation();
 
   return (
-    <FormSection
-      title={t('admin.products.add.mainProductImage')}
-      description={t('admin.products.add.uploadMultipleImages')}
-    >
-      <div className="space-y-4">
-        <div>
-          <span className="mb-2 block text-sm font-medium text-gray-700">
-            {t('admin.products.add.productImages')}
-          </span>
-
-          <div className="mb-4">
+    <div className="w-full min-w-0 space-y-4">
+      <div>
+        <div className="mb-4">
             <Button
               type="button"
               variant="outline"
@@ -64,7 +55,7 @@ export function ProductImages({
 
           {/* Images Grid */}
           {imageUrls.length > 0 && (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
               {imageUrls.map((imageUrl, index) => (
                 <div key={index} className="relative group">
                   <div
@@ -124,9 +115,8 @@ export function ProductImages({
               {imageUploadError}
             </div>
           )}
-        </div>
       </div>
-    </FormSection>
+    </div>
   );
 }
 

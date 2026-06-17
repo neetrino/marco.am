@@ -62,3 +62,46 @@ export function getOrderCustomerDisplay(order: OrderDetails): {
     userId: u?.id,
   };
 }
+
+export type OrderShippingDisplay = {
+  methodId: "courier" | "pickup" | "unknown";
+  addressLine?: string;
+  city?: string;
+  phone?: string;
+};
+
+export function getOrderShippingDisplay(order: OrderDetails): OrderShippingDisplay {
+  const ship = asRecord(order.shippingAddress);
+  const method = order.shippingMethod?.trim().toLowerCase();
+
+  let methodId: OrderShippingDisplay["methodId"] = "unknown";
+  if (method === "courier" || method === "delivery") {
+    methodId = "courier";
+  } else if (method === "pickup") {
+    methodId = "pickup";
+  }
+
+  const addressLine =
+    str(ship, "addressLine1") ??
+    str(ship, "address") ??
+    (methodId === "pickup" ? str(ship, "pickupBranchId") : undefined);
+
+  return {
+    methodId,
+    addressLine,
+    city: str(ship, "city"),
+    phone:
+      str(ship, "phone") ??
+      str(ship, "shippingPhone") ??
+      order.customerPhone?.trim() ??
+      undefined,
+  };
+}
+
+export function getPaymentMethodLabel(order: OrderDetails): string {
+  return order.payment?.method?.trim() || order.payment?.provider?.trim() || "cash";
+}
+
+export function isCashPaymentMethodLabel(method: string): boolean {
+  return method.toLowerCase() === "cash";
+}

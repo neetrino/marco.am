@@ -1,4 +1,5 @@
 import { db } from "@white-shop/db";
+import { assertPersistableBrandLogoUrl } from "@/lib/services/admin/brand-logo-storage";
 import { toSlug } from "@/lib/utils/slug";
 import { logger } from "@/lib/utils/logger";
 import { revalidateProductCache } from "./admin-products-update/cache-revalidator";
@@ -53,6 +54,7 @@ class AdminBrandsService {
     logoUrl?: string;
   }) {
     const locale = data.locale || "en";
+    assertPersistableBrandLogoUrl(data.logoUrl);
     
     // Generate base slug from name (ReDoS-safe)
     const baseSlug = toSlug(data.name);
@@ -143,6 +145,9 @@ class AdminBrandsService {
     }
 
     const locale = data.locale || "en";
+    if (data.logoUrl !== undefined) {
+      assertPersistableBrandLogoUrl(data.logoUrl || null);
+    }
     const updateData: { logoUrl?: string | null } = {};
 
     if (data.logoUrl !== undefined) {

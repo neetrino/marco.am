@@ -2,8 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslation } from '../../../../lib/i18n-client';
-import { Card } from '@shop/ui';
 import type { OrderDetails } from '../useOrders';
+import {
+  ORDER_DETAIL_LABEL_CLASS,
+  ORDER_DETAIL_SECTION_CLASS,
+} from './order-details-layout.constants';
 
 interface OrderDetailsNotesProps {
   orderDetails: OrderDetails;
@@ -17,9 +20,9 @@ export function OrderDetailsNotes({
   onSaveAdminNotes,
 }: OrderDetailsNotesProps) {
   const { t } = useTranslation();
-  const notes = orderDetails.notes?.trim();
+  const customerNotes = orderDetails.notes?.trim();
   const [internalNotesDraft, setInternalNotesDraft] = useState(
-    orderDetails.adminNotes ?? ''
+    orderDetails.adminNotes ?? '',
   );
 
   useEffect(() => {
@@ -27,35 +30,39 @@ export function OrderDetailsNotes({
   }, [orderDetails.id, orderDetails.adminNotes]);
 
   const trimmedServerValue = (orderDetails.adminNotes ?? '').trim();
-  const trimmedDraftValue = internalNotesDraft.trim();
-  const isDirty = trimmedDraftValue !== trimmedServerValue;
+  const isDirty = internalNotesDraft.trim() !== trimmedServerValue;
 
   const handleSaveClick = async () => {
     await onSaveAdminNotes(internalNotesDraft);
   };
 
   return (
-    <Card className="p-4 md:p-6">
-      <h3 className="text-sm font-semibold text-gray-900 mb-2">{t('admin.orders.orderDetails.notesSection')}</h3>
-      <div className="text-sm text-gray-700 space-y-3">
-        {notes ? (
+    <section className={ORDER_DETAIL_SECTION_CLASS}>
+      <h3 className={`${ORDER_DETAIL_LABEL_CLASS} mb-3`}>
+        {customerNotes
+          ? t('admin.orders.orderDetails.notesSection')
+          : t('admin.orders.orderDetails.internalNotes')}
+      </h3>
+      <div className="space-y-3 text-sm text-slate-800">
+        {customerNotes ? (
           <div>
-            <div className="font-medium text-gray-800">{t('admin.orders.orderDetails.customerNotes')}</div>
-            <p className="mt-1 whitespace-pre-wrap">{notes}</p>
+            <p className="mb-1 font-medium">{t('admin.orders.orderDetails.customerNotes')}</p>
+            <p className="whitespace-pre-wrap rounded-xl bg-slate-50 px-3 py-2 text-slate-700">
+              {customerNotes}
+            </p>
           </div>
         ) : null}
         <div>
-          <label
-            htmlFor="admin-internal-notes"
-            className="font-medium text-gray-800 block"
-          >
-            {t('admin.orders.orderDetails.internalNotes')}
-          </label>
+          {customerNotes ? (
+            <label htmlFor="admin-internal-notes" className="mb-1 block font-medium">
+              {t('admin.orders.orderDetails.internalNotes')}
+            </label>
+          ) : null}
           <textarea
             id="admin-internal-notes"
             value={internalNotesDraft}
             onChange={(event) => setInternalNotesDraft(event.target.value)}
-            className="mt-2 w-full min-h-28 rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-800 focus:border-gray-800"
+            className="min-h-20 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-800 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-300"
             placeholder={t('admin.orders.orderDetails.internalNotesPlaceholder')}
           />
           <div className="mt-2 flex justify-end">
@@ -63,7 +70,7 @@ export function OrderDetailsNotes({
               type="button"
               onClick={handleSaveClick}
               disabled={!isDirty || saving}
-              className="rounded-md bg-gray-900 px-3 py-1.5 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60 hover:bg-gray-700 transition-colors"
+              className="rounded-lg bg-slate-900 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {saving
                 ? t('admin.orders.orderDetails.savingInternalNotes')
@@ -72,6 +79,6 @@ export function OrderDetailsNotes({
           </div>
         </div>
       </div>
-    </Card>
+    </section>
   );
 }

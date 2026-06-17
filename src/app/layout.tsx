@@ -17,6 +17,7 @@ import '../lib/i18n/register-admin-server';
 import { serializeClientI18nSeed } from '../lib/i18n/server-storefront-language-payload';
 import { t } from '../lib/i18n';
 import { APP_VIEWPORT } from '../constants/viewport';
+import { SITE_LOGO_SRC } from '@/lib/constants/site-brand';
 
 export const viewport = APP_VIEWPORT;
 
@@ -29,8 +30,8 @@ export async function generateMetadata(): Promise<Metadata> {
     title: t(lang, 'common.meta.title'),
     description: t(lang, 'common.meta.description'),
     icons: {
-      icon: '/assets/brand/marco-group-logo.webp',
-      shortcut: '/assets/brand/marco-group-logo.webp',
+      icon: SITE_LOGO_SRC,
+      shortcut: SITE_LOGO_SRC,
     },
   };
 }

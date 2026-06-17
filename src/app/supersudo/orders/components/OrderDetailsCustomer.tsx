@@ -1,34 +1,68 @@
 'use client';
 
 import { useTranslation } from '../../../../lib/i18n-client';
-import { Card } from '@shop/ui';
 import { getOrderCustomerDisplay } from '../utils/order-details-display';
-import type { OrderDetails } from '../useOrders';
+import { formatAdminOrderListCustomerName } from '../utils/order-list-display';
+import type { Order, OrderDetails } from '../useOrders';
+import {
+  ORDER_DETAIL_LABEL_CLASS,
+  ORDER_DETAIL_SECTION_CLASS,
+} from './order-details-layout.constants';
 
 interface OrderDetailsCustomerProps {
-  orderDetails: OrderDetails;
+  orderDetails?: OrderDetails | null;
+  listOrder?: Order | null;
 }
 
-export function OrderDetailsCustomer({ orderDetails }: OrderDetailsCustomerProps) {
+export function OrderDetailsCustomer({
+  orderDetails = null,
+  listOrder = null,
+}: OrderDetailsCustomerProps) {
   const { t } = useTranslation();
-  const { displayName, email, phone, userId } = getOrderCustomerDisplay(orderDetails);
-  const nameLine = displayName.trim() || t('admin.orders.unknownCustomer');
+  const unknownLabel = t('admin.orders.unknownCustomer');
+  const useListSource = Boolean(listOrder && !orderDetails);
+
+  const nameLine = useListSource
+    ? formatAdminOrderListCustomerName(listOrder!, unknownLabel)
+    : orderDetails
+      ? getOrderCustomerDisplay(orderDetails).displayName.trim() || unknownLabel
+      : unknownLabel;
+
+  const phone = useListSource
+    ? listOrder!.customerPhone?.trim() || undefined
+    : orderDetails
+      ? getOrderCustomerDisplay(orderDetails).phone
+      : undefined;
+
+  const email = useListSource
+    ? listOrder!.customerEmail?.trim() || undefined
+    : orderDetails
+      ? getOrderCustomerDisplay(orderDetails).email
+      : undefined;
 
   return (
-    <Card className="p-4 md:p-6">
-      <h3 className="text-sm font-semibold text-gray-900 mb-2">{t('admin.orders.orderDetails.customer')}</h3>
-      <div className="text-sm text-gray-700 space-y-1">
-        <div>{nameLine}</div>
-        {email ? <div>{email}</div> : null}
-        {phone ? <div>{phone}</div> : null}
-        {userId ? (
-          <div className="text-xs text-gray-500 pt-1">
-            {t('admin.orders.orderDetails.accountUserId')}: {userId}
+    <section className={ORDER_DETAIL_SECTION_CLASS}>
+      <h3 className={`${ORDER_DETAIL_LABEL_CLASS} mb-3`}>
+        {t('admin.orders.orderDetails.customer')}
+      </h3>
+      <dl className="space-y-2 text-sm text-slate-800">
+        <div>
+          <dt className="sr-only">{t('admin.orders.orderDetails.customer')}</dt>
+          <dd className="font-medium">{nameLine}</dd>
+        </div>
+        {phone ? (
+          <div>
+            <dt className="sr-only">{t('admin.dashboard.phone')}</dt>
+            <dd>{phone}</dd>
           </div>
-        ) : (
-          <div className="text-xs text-gray-500 pt-1">{t('admin.orders.orderDetails.guestCheckout')}</div>
-        )}
-      </div>
-    </Card>
+        ) : null}
+        {email ? (
+          <div>
+            <dt className="sr-only">{t('admin.dashboard.email')}</dt>
+            <dd className="break-all text-slate-700">{email}</dd>
+          </div>
+        ) : null}
+      </dl>
+    </section>
   );
 }

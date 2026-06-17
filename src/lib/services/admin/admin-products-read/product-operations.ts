@@ -122,6 +122,7 @@ export async function getProductById(productId: string) {
     categoryIds: product.categoryIds || [],
     attributeIds: allAttributeIds, // All attribute IDs that this product has
     published: product.published,
+    featured: Boolean(product.featured),
     warrantyYears:
       product.warrantyYears === 1 || product.warrantyYears === 2 || product.warrantyYears === 3
         ? product.warrantyYears
@@ -137,7 +138,4 @@ export async function getProductById(productId: string) {
     variants: variants.map((v) => formatVariantForAdmin(v as Parameters<typeof formatVariantForAdmin>[0])),
   };
 }
-
-
-
 

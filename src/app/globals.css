@@ -202,22 +202,6 @@
     color: var(--app-text-muted);
   }
 
-  .admin-back-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.375rem;
-    margin-bottom: 0.375rem;
-    width: fit-content;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--app-text-muted);
-    transition: color 160ms ease;
-  }
-
-  .admin-back-link:hover {
-    color: var(--app-text);
-  }
-
   .admin-layout {
     display: flex;
     flex-direction: column;

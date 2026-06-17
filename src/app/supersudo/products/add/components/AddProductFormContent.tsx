@@ -1,7 +1,9 @@
 'use client';
 
 import type { ChangeEvent } from 'react';
-import { Card } from '@shop/ui';
+import { useMemo } from 'react';
+import { useTranslation } from '@/lib/i18n-client';
+import { AdminVerticalTabs } from '../../../components/AdminVerticalTabs';
 import type {
   Brand,
   Category,
@@ -12,20 +14,26 @@ import type {
 } from '../types';
 import type { CurrencyCode } from '@/lib/currency';
 import type { ProductClass } from '@/lib/constants/product-class';
-import { BasicInformation } from './BasicInformation';
-import { ProductImages } from './ProductImages';
-import { CategoriesBrands } from './CategoriesBrands';
-import { SimpleProductFields } from './SimpleProductFields';
-import { AttributesSelection } from './AttributesSelection';
-import { VariantBuilder } from './VariantBuilder';
-import { ProductLabels } from './ProductLabels';
-import { ProductWarrantyField } from './ProductWarrantyField';
-import { Publishing } from './Publishing';
 import type { ProductWarrantyYears } from '@/lib/constants/product-warranty';
 import type { ProductDescriptionEntry } from '@/lib/products/product-description';
-import { FormActions } from './FormActions';
+import {
+  PRODUCT_EDITOR_TAB_IDS,
+  type ProductEditorTabId,
+} from '../product-editor-tabs';
+import { ProductGeneralTab } from './ProductGeneralTab';
+import { ProductDescriptionTab } from './ProductDescriptionTab';
+import { ProductImages } from './ProductImages';
+import { ProductCatalogTab } from './ProductCatalogTab';
+import { PricingInventorySection } from './PricingInventorySection';
 
 interface AddProductFormContentProps {
+  formId: string;
+  scrollRef: React.RefObject<HTMLDivElement>;
+  onBodyScroll: () => void;
+  activeTab: ProductEditorTabId;
+  visitedTabs: Set<ProductEditorTabId>;
+  loadingTab: ProductEditorTabId | null;
+  onTabChange: (tabId: ProductEditorTabId) => void;
   formData: {
     title: string;
     slug: string;
@@ -53,11 +61,8 @@ interface AddProductFormContentProps {
   attributes: Attribute[];
   defaultCurrency: CurrencyCode;
   isEditMode: boolean;
-  loading: boolean;
   imageUploadLoading: boolean;
   imageUploadError: string | null;
-  categoriesExpanded: boolean;
-  brandsExpanded: boolean;
   useNewCategory: boolean;
   useNewBrand: boolean;
   newCategoryName: string;
@@ -70,15 +75,11 @@ interface AddProductFormContentProps {
   fileInputRef: React.RefObject<HTMLInputElement>;
   attributesDropdownRef: React.RefObject<HTMLDivElement>;
   variantImageInputRefs: React.MutableRefObject<Record<string, HTMLInputElement | null>>;
-  onTitleChange: (e: ChangeEvent<HTMLInputElement>) => void;
-  onSlugChange: (e: ChangeEvent<HTMLInputElement>) => void;
   onDescriptionChange: (entries: ProductDescriptionEntry[]) => void;
   onProductTypeChange: (type: 'simple' | 'variable') => void;
   onUploadImages: (event: ChangeEvent<HTMLInputElement>) => Promise<void>;
   onRemoveImage: (index: number) => void;
   onSetFeaturedImage: (index: number) => void;
-  onCategoriesExpandedChange: (expanded: boolean) => void;
-  onBrandsExpandedChange: (expanded: boolean) => void;
   onUseNewCategoryChange: (use: boolean) => void;
   onUseNewBrandChange: (use: boolean) => void;
   onNewCategoryNameChange: (name: string) => void;
@@ -103,7 +104,6 @@ interface AddProductFormContentProps {
   onRemoveLabel: (index: number) => void;
   onUpdateLabel: (index: number, field: keyof ProductLabel, value: ProductLabel[keyof ProductLabel]) => void;
   onWarrantyYearsChange: (years: ProductWarrantyYears | null) => void;
-  onFeaturedChange: (featured: boolean) => void;
   onProductClassChange: (productClass: ProductClass) => void;
   onVariantsUpdate: (updater: (prev: Variant[]) => Variant[]) => void;
   onApplyToAllVariants: (field: 'price' | 'compareAtPrice' | 'stock' | 'sku', value: string) => void;
@@ -111,7 +111,36 @@ interface AddProductFormContentProps {
   handleSubmit: (e: React.FormEvent) => void;
 }
 
+function TabPanel({
+  tabId,
+  activeTab,
+  visited,
+  children,
+}: {
+  tabId: ProductEditorTabId;
+  activeTab: ProductEditorTabId;
+  visited: boolean;
+  children: React.ReactNode;
+}) {
+  if (!visited) {
+    return null;
+  }
+
+  return (
+    <div role="tabpanel" hidden={activeTab !== tabId} className={`w-full min-w-0 ${activeTab === tabId ? '' : 'hidden'}`}>
+      {children}
+    </div>
+  );
+}
+
 export function AddProductFormContent({
+  formId,
+  scrollRef,
+  onBodyScroll,
+  activeTab,
+  visitedTabs,
+  loadingTab,
+  onTabChange,
   formData,
   productType,
   simpleProductData,
@@ -120,11 +149,8 @@ export function AddProductFormContent({
   attributes,
   defaultCurrency,
   isEditMode,
-  loading,
   imageUploadLoading,
   imageUploadError,
-  categoriesExpanded,
-  brandsExpanded,
   useNewCategory,
   useNewBrand,
   newCategoryName,
@@ -137,15 +163,11 @@ export function AddProductFormContent({
   fileInputRef,
   attributesDropdownRef,
   variantImageInputRefs,
-  onTitleChange,
-  onSlugChange,
   onDescriptionChange,
   onProductTypeChange,
   onUploadImages,
   onRemoveImage,
   onSetFeaturedImage,
-  onCategoriesExpandedChange,
-  onBrandsExpandedChange,
   onUseNewCategoryChange,
   onUseNewBrandChange,
   onNewCategoryNameChange,
@@ -170,143 +192,141 @@ export function AddProductFormContent({
   onRemoveLabel,
   onUpdateLabel,
   onWarrantyYearsChange,
-  onFeaturedChange,
   onProductClassChange,
   onVariantsUpdate,
   onApplyToAllVariants,
   isClothingCategory,
   handleSubmit,
 }: AddProductFormContentProps) {
+  const { t } = useTranslation();
+
+  const tabs = useMemo(
+    () =>
+      PRODUCT_EDITOR_TAB_IDS.map((id) => ({
+        id,
+        label: t(`admin.products.add.tabs.${id}`),
+      })),
+    [t],
+  );
+
+  const warrantyYears =
+    formData.warrantyYears === 1 ||
+    formData.warrantyYears === 2 ||
+    formData.warrantyYears === 3
+      ? formData.warrantyYears
+      : null;
+
   return (
-    <Card className="relative border-marco-border/80 bg-gradient-to-br from-white via-white to-marco-gray/10 p-0 shadow-[0_16px_40px_rgba(16,16,16,0.08)] sm:rounded-2xl">
-      <form
-        onSubmit={handleSubmit}
-        className="space-y-6 p-5 pb-28 sm:space-y-8 sm:p-8 sm:pb-32"
+    <div className="flex min-h-0 flex-1 flex-col md:flex-row">
+      <AdminVerticalTabs
+        tabs={tabs}
+        activeTab={activeTab}
+        onTabChange={onTabChange}
+        ariaLabel={t('admin.products.add.tabsLabel')}
+      />
+
+      <div
+        ref={scrollRef}
+        onScroll={onBodyScroll}
+        className="min-h-0 flex-1 overflow-y-auto px-5 py-4"
       >
-        <BasicInformation
-          productType={productType}
-          setProductType={onProductTypeChange}
-          title={formData.title}
-          slug={formData.slug}
-          description={formData.description}
-          onTitleChange={onTitleChange}
-          onSlugChange={onSlugChange}
-          onDescriptionChange={onDescriptionChange}
-        />
+        {loadingTab === activeTab ? (
+          <div className="flex items-center justify-center py-16">
+            <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-gray-900" />
+          </div>
+        ) : null}
 
-        <ProductImages
-          imageUrls={formData.imageUrls}
-          featuredImageIndex={formData.featuredImageIndex}
-          imageUploadLoading={imageUploadLoading}
-          imageUploadError={imageUploadError}
-          fileInputRef={fileInputRef}
-          onUploadImages={onUploadImages}
-          onRemoveImage={onRemoveImage}
-          onSetFeaturedImage={onSetFeaturedImage}
-        />
+        <form id={formId} onSubmit={handleSubmit} className={`w-full min-w-0 ${loadingTab === activeTab ? 'hidden' : ''}`}>
+          <TabPanel tabId="general" activeTab={activeTab} visited={visitedTabs.has('general')}>
+            <ProductGeneralTab
+              productClass={formData.productClass}
+              warrantyYears={warrantyYears}
+              labels={formData.labels}
+              onProductClassChange={onProductClassChange}
+              onWarrantyYearsChange={onWarrantyYearsChange}
+              onAddLabel={onAddLabel}
+              onRemoveLabel={onRemoveLabel}
+              onUpdateLabel={onUpdateLabel}
+            />
+          </TabPanel>
 
-        <CategoriesBrands
-          categories={categories}
-          brands={brands}
-          categoryIds={formData.categoryIds}
-          primaryCategoryId={formData.primaryCategoryId}
-          brandIds={formData.brandIds}
-          categoriesExpanded={categoriesExpanded}
-          brandsExpanded={brandsExpanded}
-          useNewCategory={useNewCategory}
-          useNewBrand={useNewBrand}
-          newCategoryName={newCategoryName}
-          newBrandName={newBrandName}
-          onCategoriesExpandedChange={onCategoriesExpandedChange}
-          onBrandsExpandedChange={onBrandsExpandedChange}
-          onUseNewCategoryChange={onUseNewCategoryChange}
-          onUseNewBrandChange={onUseNewBrandChange}
-          onNewCategoryNameChange={onNewCategoryNameChange}
-          onNewBrandNameChange={onNewBrandNameChange}
-          onCategoryIdsChange={onCategoryIdsChange}
-          onBrandIdsChange={onBrandIdsChange}
-          onPrimaryCategoryIdChange={onPrimaryCategoryIdChange}
-          isClothingCategory={isClothingCategory}
-          onVariantsUpdate={onVariantsUpdate}
-        />
+          <TabPanel tabId="description" activeTab={activeTab} visited={visitedTabs.has('description')}>
+            <ProductDescriptionTab
+              description={formData.description}
+              onDescriptionChange={onDescriptionChange}
+            />
+          </TabPanel>
 
-        {productType === 'simple' && (
-          <SimpleProductFields
-            price={simpleProductData.price}
-            compareAtPrice={simpleProductData.compareAtPrice}
-            sku={simpleProductData.sku}
-            quantity={simpleProductData.quantity}
-            defaultCurrency={defaultCurrency}
-            onPriceChange={onPriceChange}
-            onCompareAtPriceChange={onCompareAtPriceChange}
-            onSkuChange={onSkuChange}
-            onQuantityChange={onQuantityChange}
-          />
-        )}
+          <TabPanel tabId="media" activeTab={activeTab} visited={visitedTabs.has('media')}>
+            <ProductImages
+              imageUrls={formData.imageUrls}
+              featuredImageIndex={formData.featuredImageIndex}
+              imageUploadLoading={imageUploadLoading}
+              imageUploadError={imageUploadError}
+              fileInputRef={fileInputRef}
+              onUploadImages={onUploadImages}
+              onRemoveImage={onRemoveImage}
+              onSetFeaturedImage={onSetFeaturedImage}
+            />
+          </TabPanel>
 
-        {productType === 'variable' && (
-          <AttributesSelection
-            attributes={attributes}
-            selectedAttributesForVariants={selectedAttributesForVariants}
-            selectedAttributeValueIds={selectedAttributeValueIds}
-            attributesDropdownOpen={attributesDropdownOpen}
-            attributesDropdownRef={attributesDropdownRef}
-            onAttributesDropdownToggle={onAttributesDropdownToggle}
-            onAttributeToggle={onAttributeToggle}
-            onAttributeRemove={onAttributeRemove}
-            onAttributeValuesOpen={onAttributeValuesOpen}
-          />
-        )}
+          <TabPanel tabId="catalog" activeTab={activeTab} visited={visitedTabs.has('catalog')}>
+            <ProductCatalogTab
+              categories={categories}
+              brands={brands}
+              categoryIds={formData.categoryIds}
+              primaryCategoryId={formData.primaryCategoryId}
+              brandIds={formData.brandIds}
+              useNewCategory={useNewCategory}
+              useNewBrand={useNewBrand}
+              newCategoryName={newCategoryName}
+              newBrandName={newBrandName}
+              onUseNewCategoryChange={onUseNewCategoryChange}
+              onUseNewBrandChange={onUseNewBrandChange}
+              onNewCategoryNameChange={onNewCategoryNameChange}
+              onNewBrandNameChange={onNewBrandNameChange}
+              onCategoryIdsChange={onCategoryIdsChange}
+              onBrandIdsChange={onBrandIdsChange}
+              onPrimaryCategoryIdChange={onPrimaryCategoryIdChange}
+              isClothingCategory={isClothingCategory}
+              onVariantsUpdate={onVariantsUpdate}
+            />
+          </TabPanel>
 
-        {productType === 'variable' &&
-          ((isEditMode && (generatedVariants.length > 0 || hasVariantsToLoad)) ||
-            selectedAttributesForVariants.size > 0) && (
-            <VariantBuilder
-              generatedVariants={generatedVariants}
+          <TabPanel tabId="pricing" activeTab={activeTab} visited={visitedTabs.has('pricing')}>
+            <PricingInventorySection
+              productType={productType}
+              onProductTypeChange={onProductTypeChange}
+              simpleProductData={simpleProductData}
+              defaultCurrency={defaultCurrency}
+              onPriceChange={onPriceChange}
+              onCompareAtPriceChange={onCompareAtPriceChange}
+              onSkuChange={onSkuChange}
+              onQuantityChange={onQuantityChange}
               attributes={attributes}
               selectedAttributesForVariants={selectedAttributesForVariants}
+              selectedAttributeValueIds={selectedAttributeValueIds}
+              attributesDropdownOpen={attributesDropdownOpen}
+              attributesDropdownRef={attributesDropdownRef}
+              onAttributesDropdownToggle={onAttributesDropdownToggle}
+              onAttributeToggle={onAttributeToggle}
+              onAttributeRemove={onAttributeRemove}
+              onAttributeValuesOpen={onAttributeValuesOpen}
+              generatedVariants={generatedVariants}
               isEditMode={isEditMode}
               hasVariantsToLoad={hasVariantsToLoad}
-              defaultCurrency={defaultCurrency}
               imageUploadLoading={imageUploadLoading}
               variantImageInputRefs={variantImageInputRefs}
               onVariantUpdate={onVariantUpdate}
               onVariantDelete={onVariantDelete}
               onVariantAdd={onVariantAdd}
-              onApplyToAll={onApplyToAllVariants}
+              onApplyToAllVariants={onApplyToAllVariants}
               onVariantImageUpload={onVariantImageUpload}
               onOpenValueModal={onOpenValueModal}
             />
-          )}
-
-        <ProductWarrantyField
-          warrantyYears={
-            formData.warrantyYears === 1 ||
-            formData.warrantyYears === 2 ||
-            formData.warrantyYears === 3
-              ? formData.warrantyYears
-              : null
-          }
-          onChange={onWarrantyYearsChange}
-        />
-
-        <ProductLabels
-          labels={formData.labels}
-          onAddLabel={onAddLabel}
-          onRemoveLabel={onRemoveLabel}
-          onUpdateLabel={onUpdateLabel}
-        />
-
-        <Publishing
-          featured={formData.featured}
-          productClass={formData.productClass}
-          onFeaturedChange={onFeaturedChange}
-          onProductClassChange={onProductClassChange}
-        />
-
-        <FormActions loading={loading} isEditMode={isEditMode} />
-      </form>
-    </Card>
+          </TabPanel>
+        </form>
+      </div>
+    </div>
   );
 }
-

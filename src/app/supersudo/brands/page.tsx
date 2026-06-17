@@ -11,7 +11,7 @@ import { logger } from '@/lib/utils/logger';
 import { beginAdminDataFetch } from '@/lib/admin/admin-fetch-helpers';
 import {
   readAdminBrandsCache,
-  writeAdminBrandsCache,
+  fetchAdminBrands,
 } from '@/lib/admin/admin-reference-data-cache';
 import { processImageFile, toDomSafeImgSrcString, toSafeImgAttributeSrc } from '@/lib/utils/image-utils';
 import { showPopupConfirm } from '@/components/popup-service';
@@ -24,13 +24,6 @@ interface Brand {
   logoUrl: string | null;
 }
 
-interface R2LogoItem {
-  key: string;
-  url: string;
-  size: number;
-  lastModified: string | null;
-}
-
 const ITEMS_PER_PAGE = 20;
 
 export default function BrandsPage() {
@@ -40,9 +33,9 @@ export default function BrandsPage() {
   const currentPath = pathname || '/supersudo/brands';
 
   const cachedBrands = readAdminBrandsCache<Brand>();
-  const hadCacheRef = useRef(Boolean(cachedBrands?.length));
+  const hadCacheRef = useRef(cachedBrands !== null);
   const [brands, setBrands] = useState<Brand[]>(cachedBrands ?? []);
-  const [loading, setLoading] = useState(!hadCacheRef.current);
+  const [loading, setLoading] = useState(cachedBrands === null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingBrand, setEditingBrand] = useState<Brand | null>(null);
@@ -53,9 +46,6 @@ export default function BrandsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [brandSearch, setBrandSearch] = useState('');
   const [logoUploading, setLogoUploading] = useState(false);
-  const [r2Logos, setR2Logos] = useState<R2LogoItem[]>([]);
-  const [r2Loading, setR2Loading] = useState(false);
-  const [r2Error, setR2Error] = useState<string | null>(null);
 
   const filteredBrands = useMemo((): Brand[] => {
     const raw = brandSearch.trim().toLowerCase();
@@ -71,25 +61,28 @@ export default function BrandsPage() {
     });
   }, [brands, brandSearch]);
 
-  const fetchBrands = useCallback(async () => {
+  const fetchBrands = useCallback(async (options?: { force?: boolean }) => {
+    const cached = readAdminBrandsCache<Brand>();
+    if (!options?.force && cached !== null) {
+      setBrands(cached);
+      setLoading(false);
+      hadCacheRef.current = true;
+      return;
+    }
+
     try {
       beginAdminDataFetch(hadCacheRef.current, setLoading);
-      logger.devLog('[ADMIN] Fetching brands...');
-      const response = await apiClient.get<{ data: Array<Brand & { logoUrl?: string | null }> }>(
-        '/api/v1/supersudo/brands'
-      );
-      const rows = response.data || [];
+      const rows = await fetchAdminBrands<Brand & { logoUrl?: string | null }>(options);
       setBrands(
         rows.map((b) => ({
           id: b.id,
           name: b.name,
           slug: b.slug,
           logoUrl: b.logoUrl ?? null,
-        }))
+        })),
       );
-      writeAdminBrandsCache(rows);
       hadCacheRef.current = true;
-      logger.devLog('[ADMIN] Brands loaded:', response.data?.length || 0);
+      logger.devLog('[ADMIN] Brands loaded:', rows.length);
     } catch (err: unknown) {
       logger.error('Error fetching brands', { error: err });
       if (!hadCacheRef.current) {
@@ -99,7 +92,7 @@ export default function BrandsPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchBrands();
@@ -128,25 +121,6 @@ export default function BrandsPage() {
     [formData.logoUrl],
   );
 
-  const fetchR2Logos = useCallback(async () => {
-    setR2Loading(true);
-    setR2Error(null);
-    try {
-      const response = await apiClient.get<{ data: R2LogoItem[] }>('/api/v1/supersudo/brands/r2-logos');
-      setR2Logos(Array.isArray(response.data) ? response.data : []);
-    } catch (err: unknown) {
-      logger.error('Error fetching R2 logos', { error: err });
-      setR2Logos([]);
-      setR2Error(getApiOrErrorMessage(err, 'Failed to load logos from R2'));
-    } finally {
-      setR2Loading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchR2Logos();
-  }, [fetchR2Logos]);
-
   const resetForm = () => {
     setFormData({ name: '', logoUrl: '' });
   };
@@ -163,16 +137,32 @@ export default function BrandsPage() {
       }
       return;
     }
+
+    const brandName = formData.name.trim();
+    if (!brandName) {
+      showToast(t('admin.brands.nameRequired'), 'warning');
+      if (event.target) {
+        event.target.value = '';
+      }
+      return;
+    }
+
     try {
       setLogoUploading(true);
-      const base64 = await processImageFile(imageFile, {
+      const image = await processImageFile(imageFile, {
         maxSizeMB: 1.5,
         maxWidthOrHeight: 800,
         useWebWorker: true,
         fileType: 'image/jpeg',
         initialQuality: 0.85,
       });
-      setFormData((prev) => ({ ...prev, logoUrl: base64 }));
+      const result = await apiClient.post<{ url: string }>('/api/v1/supersudo/brands/upload-logo', {
+        image,
+        name: brandName,
+        slug: editingBrand?.slug,
+        brandId: editingBrand?.id,
+      });
+      setFormData((prev) => ({ ...prev, logoUrl: result.url }));
     } catch (err: unknown) {
       logger.error('Brand logo upload failed', { error: err });
       showToast(getApiOrErrorMessage(err, t('admin.brands.errorSaving')), 'error');
@@ -219,7 +209,7 @@ export default function BrandsPage() {
     try {
       logger.devLog(`[ADMIN] Deleting brand: ${brandName} (${brandId})`);
       await apiClient.delete(`/api/v1/supersudo/brands/${brandId}`);
-      await fetchBrands();
+      await fetchBrands({ force: true });
       showToast(t('admin.brands.deletedSuccess'), 'success');
     } catch (err: unknown) {
       const status = getErrorHttpStatus(err);
@@ -254,7 +244,7 @@ export default function BrandsPage() {
       );
       const failedCount = results.filter((result) => result.status === 'rejected').length;
 
-      await fetchBrands();
+      await fetchBrands({ force: true });
       if (failedCount === 0) {
         setSelectedBrandIds([]);
         showToast(t('admin.brands.deletedSuccess'), 'success');
@@ -302,7 +292,7 @@ export default function BrandsPage() {
         name: formData.name.trim(),
         ...(trimmedLogo ? { logoUrl: trimmedLogo } : {}),
       });
-      await fetchBrands();
+      await fetchBrands({ force: true });
       handleCloseAddModal();
       showToast(t('admin.brands.createdSuccess'), 'success');
     } catch (err: unknown) {
@@ -327,7 +317,7 @@ export default function BrandsPage() {
         name: formData.name.trim(),
         logoUrl: trimmedLogo.length > 0 ? trimmedLogo : null,
       });
-      await fetchBrands();
+      await fetchBrands({ force: true });
       handleCloseEditModal();
       showToast(t('admin.brands.updatedSuccess'), 'success');
     } catch (err: unknown) {
@@ -359,8 +349,6 @@ export default function BrandsPage() {
       router={router}
       t={t}
       title={t('admin.brands.title')}
-      backLabel={t('admin.common.backToAdmin')}
-      onBack={() => router.push('/supersudo')}
       headerActions={addBrandHeaderAction}
     >
       <div className="space-y-5">
@@ -567,67 +555,6 @@ export default function BrandsPage() {
               )}
             </>
           )}
-        </Card>
-
-        <Card className="admin-card border-slate-200/80 bg-white shadow-[0_10px_24px_rgba(15,23,42,0.07)]">
-          <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 sm:px-5">
-            <div>
-              <h3 className="text-base font-semibold text-slate-900">R2 Brand Logos</h3>
-              <p className="text-xs text-slate-500">Source: brands/logos/</p>
-            </div>
-            <Button variant="outline" size="sm" onClick={fetchR2Logos} disabled={r2Loading}>
-              {r2Loading ? t('admin.common.loading') : 'Refresh'}
-            </Button>
-          </div>
-
-          <div className="p-4 sm:p-5">
-            {r2Loading && r2Logos.length === 0 ? (
-              <div className="rounded-xl border border-slate-200 bg-slate-50/70 py-10 text-center">
-                <div className="mx-auto mb-3 h-7 w-7 animate-spin rounded-full border-b-2 border-slate-800" />
-                <p className="text-sm font-medium text-slate-600">{t('admin.common.loading')}</p>
-              </div>
-            ) : r2Error ? (
-              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-6 text-sm text-red-700">
-                {r2Error}
-              </div>
-            ) : r2Logos.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50/70 px-4 py-8 text-center">
-                <p className="text-sm font-medium text-slate-600">No files found in R2 path.</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 2xl:grid-cols-6">
-                {r2Logos.map((logo) => {
-                  const safeLogoUrl = toSafeImgAttributeSrc(logo.url);
-                  return (
-                    <a
-                      key={logo.key}
-                      href={logo.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="group rounded-xl border border-slate-200 bg-white p-3 transition-colors hover:border-amber-300 hover:bg-amber-50/50"
-                      title={logo.key}
-                    >
-                      <div className="mb-2 flex h-20 items-center justify-center rounded-lg border border-slate-100 bg-slate-50 p-2">
-                        {safeLogoUrl ? (
-                          <img
-                            src={toDomSafeImgSrcString(safeLogoUrl)}
-                            alt={logo.key}
-                            className="h-full w-full object-contain"
-                            loading="lazy"
-                          />
-                        ) : (
-                          <span className="text-xs text-slate-400">invalid url</span>
-                        )}
-                      </div>
-                      <p className="line-clamp-2 text-[11px] text-slate-600">
-                        {logo.key.replace('brands/logos/', '')}
-                      </p>
-                    </a>
-                  );
-                })}
-              </div>
-            )}
-          </div>
         </Card>
       </div>
 

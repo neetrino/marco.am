@@ -29,40 +29,17 @@ export async function GET(req: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "20", 10);
     const skip = (page - 1) * limit;
 
-    // Get total count
-    let total: number;
-    let messages: Array<{
-      id: string;
-      name: string;
-      email: string;
-      subject: string;
-      message: string;
-      createdAt: Date;
-      updatedAt: Date;
-    }>;
-    
-    try {
-      total = await db.contactMessage.count();
-    } catch (dbError: unknown) {
-      logger.error("Database count error", { error: dbError });
-      const errorMessage = dbError instanceof Error ? dbError.message : 'Unknown database error';
-      throw new Error(`Database query failed: ${errorMessage}. Make sure Prisma Client is generated and migrations are applied.`);
-    }
-
-    try {
-      // Get messages
-      messages = await db.contactMessage.findMany({
+    // Get total count and page in parallel
+    const [total, messages] = await Promise.all([
+      db.contactMessage.count(),
+      db.contactMessage.findMany({
         skip,
         take: limit,
         orderBy: {
           createdAt: 'desc',
         },
-      });
-    } catch (dbError: unknown) {
-      logger.error("Database findMany error", { error: dbError });
-      const errorMessage = dbError instanceof Error ? dbError.message : 'Unknown database error';
-      throw new Error(`Database query failed: ${errorMessage}. Make sure Prisma Client is generated and migrations are applied.`);
-    }
+      }),
+    ]);
 
     const totalPages = Math.ceil(total / limit);
 

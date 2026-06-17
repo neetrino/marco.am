@@ -32,13 +32,6 @@ export type AdminDashboardStats = {
   };
 };
 
-export type AdminDashboardActivityItem = {
-  type: string;
-  title: string;
-  description: string;
-  timestamp: string;
-};
-
 export type AdminDashboardRecentOrder = {
   id: string;
   number: string;
@@ -86,7 +79,6 @@ export type AdminDashboardUserActivity = {
 
 export type AdminDashboardCachePayload = {
   stats: AdminDashboardStats | null;
-  activity: AdminDashboardActivityItem[];
   recentOrders: AdminDashboardRecentOrder[];
   topProducts: AdminDashboardTopProduct[];
   userActivity: AdminDashboardUserActivity | null;
@@ -108,7 +100,7 @@ export function writeAdminDashboardCache(payload: AdminDashboardCachePayload): v
 function parseDashboardPayload(
   results: PromiseSettledResult<unknown>[],
 ): AdminDashboardCachePayload {
-  const [statsResult, activityResult, ordersResult, productsResult, usersResult] = results;
+  const [statsResult, ordersResult, productsResult, usersResult] = results;
 
   return {
     stats:
@@ -117,11 +109,6 @@ function parseDashboardPayload(
       typeof statsResult.value === 'object'
         ? (statsResult.value as AdminDashboardStats)
         : null,
-    activity:
-      activityResult.status === 'fulfilled' &&
-      Array.isArray((activityResult.value as { data?: unknown[] })?.data)
-        ? (activityResult.value as { data: AdminDashboardActivityItem[] }).data
-        : [],
     recentOrders:
       ordersResult.status === 'fulfilled' &&
       Array.isArray((ordersResult.value as { data?: unknown[] })?.data)
@@ -143,9 +130,6 @@ function parseDashboardPayload(
 function fetchDashboardPayload(): Promise<PromiseSettledResult<unknown>[]> {
   return Promise.allSettled([
     apiClient.get<AdminDashboardStats>('/api/v1/supersudo/stats'),
-    apiClient.get<{ data: AdminDashboardActivityItem[] }>('/api/v1/supersudo/activity', {
-      params: { limit: '10' },
-    }),
     apiClient.get<{ data: AdminDashboardRecentOrder[] }>(
       '/api/v1/supersudo/dashboard/recent-orders',
       { params: { limit: '5' } },
@@ -198,5 +182,3 @@ export function warmAdminDashboardCache(): void {
   }
   void loadAdminDashboardPayload();
 }
-
-export { fetchDashboardPayload, writeDashboardFromResults };

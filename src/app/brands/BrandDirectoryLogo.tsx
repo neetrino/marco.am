@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useMemo, useState, type CSSProperties } from 'react';
+import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 
 import {
   BRANDS_DIRECTORY_LOGO_IMAGE_CLASS,
@@ -13,7 +13,7 @@ import {
   BRANDS_DIRECTORY_LOGO_OVERSIZED_CELL_MAX_WIDTH_PX,
   isBrandLogoCellOversizedSlug,
 } from '@/lib/brand-logo-cell-oversize';
-import { resolveBrandDisplayLogoForCell } from '@/lib/brand-static-logo-assets';
+import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '@/lib/utils/image-utils';
 import { shouldBypassNextImageOptimizer } from '@/lib/utils/should-bypass-next-image-optimizer';
 import type { HomeBrandPartnerPublicItem } from '@/lib/types/home-brand-partners-public';
 
@@ -33,28 +33,21 @@ export function BrandDirectoryLogo({
   readonly partner: HomeBrandPartnerPublicItem;
   readonly imagePriority: boolean;
 }) {
-  const resolved = resolveBrandDisplayLogoForCell(
-    partner.logoUrl,
-    partner.slug,
-    partner.name,
+  const remoteSrc = useMemo(
+    () => toSafeImgAttributeSrc(partner.logoUrl),
+    [partner.logoUrl],
   );
-  const [failedRemoteSrc, setFailedRemoteSrc] = useState<string | null>(null);
+  const [showWordmark, setShowWordmark] = useState(remoteSrc === null);
+
+  useEffect(() => {
+    setShowWordmark(remoteSrc === null);
+  }, [remoteSrc, partner.id, partner.logoUrl]);
 
   const cell = brandDirectoryLogoCellStyle(partner.slug, partner.name);
   const oversized = isBrandLogoCellOversizedSlug(partner.slug, partner.name);
   const sizes = `${oversized ? BRANDS_DIRECTORY_LOGO_OVERSIZED_CELL_MAX_WIDTH_PX : BRANDS_DIRECTORY_LOGO_CELL_MAX_WIDTH_PX}px`;
 
-  const remoteSrc = useMemo(() => {
-    if (resolved.mode !== 'remote') {
-      return null;
-    }
-    if (failedRemoteSrc === resolved.src) {
-      return null;
-    }
-    return resolved.src;
-  }, [resolved, failedRemoteSrc]);
-
-  if (resolved.mode === 'wordmark' || (resolved.mode === 'remote' && !remoteSrc)) {
+  if (showWordmark || !remoteSrc) {
     return (
       <div
         className="mx-auto flex w-full shrink-0 items-center justify-center overflow-hidden px-1"
@@ -67,26 +60,7 @@ export function BrandDirectoryLogo({
     );
   }
 
-  if (resolved.mode === 'local') {
-    return (
-      <div
-        className="relative mx-auto flex w-full shrink-0 items-center justify-center overflow-hidden"
-        style={cell}
-      >
-        <Image
-          src={resolved.asset.src}
-          alt={partner.name}
-          fill
-          className={BRANDS_DIRECTORY_LOGO_IMAGE_CLASS}
-          sizes={sizes}
-          loading={imagePriority ? 'eager' : 'lazy'}
-          priority={imagePriority}
-          fetchPriority={imagePriority ? 'high' : 'auto'}
-          unoptimized={shouldBypassNextImageOptimizer(resolved.asset.src)}
-        />
-      </div>
-    );
-  }
+  const src = toDomSafeImgSrcString(remoteSrc);
 
   return (
     <div
@@ -94,7 +68,7 @@ export function BrandDirectoryLogo({
       style={cell}
     >
       <Image
-        src={remoteSrc!}
+        src={src}
         alt={partner.name}
         fill
         className={BRANDS_DIRECTORY_LOGO_IMAGE_CLASS}
@@ -102,9 +76,9 @@ export function BrandDirectoryLogo({
         loading={imagePriority ? 'eager' : 'lazy'}
         priority={imagePriority}
         fetchPriority={imagePriority ? 'high' : 'auto'}
-        unoptimized={shouldBypassNextImageOptimizer(remoteSrc!)}
+        unoptimized={shouldBypassNextImageOptimizer(src)}
         onError={() => {
-          setFailedRemoteSrc(remoteSrc);
+          setShowWordmark(true);
         }}
       />
     </div>

@@ -1,27 +1,28 @@
+'use client';
+
 import Image from 'next/image';
-import type { CSSProperties } from 'react';
+import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 
 import { BrandPlpLink } from '@/components/BrandPlpLink';
 
 import type { HomeBrandPartnerPublicItem } from '@/lib/types/home-brand-partners-public';
+import {
+  GEEPAS_BRAND_LOGO_UI_SCALE,
+  isGeepasBrandLogo,
+} from '@/lib/brand-logo-display';
 import {
   HOME_BRANDS_RAIL_LOGO_OVERSIZED_CELL_HEIGHT_PX,
   HOME_BRANDS_RAIL_LOGO_OVERSIZED_CELL_MAX_WIDTH_PX,
   HOME_BRANDS_SLIDE_CARD_OVERSIZED_MIN_HEIGHT_PX,
   isBrandLogoCellOversizedSlug,
 } from '@/lib/brand-logo-cell-oversize';
-import {
-  GEEPAS_BUNDLED_LOGO_UI_SCALE,
-  isGeepasBundledLogoAsset,
-  resolveBrandDisplayLogoForCell,
-} from '@/lib/brand-static-logo-assets';
+import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '@/lib/utils/image-utils';
 import { shouldBypassNextImageOptimizer } from '@/lib/utils/should-bypass-next-image-optimizer';
 
 import {
   HOME_BRANDS_RAIL_LOGO_CELL_HEIGHT_PX,
   HOME_BRANDS_RAIL_LOGO_CELL_MAX_WIDTH_PX,
   HOME_BRANDS_RAIL_LOGO_IMAGE_CLASS,
-  HOME_BRAND_SLIDE_ENTRIES,
   HOME_BRANDS_SLIDE_CARD_MIN_HEIGHT_PX,
   HOME_BRANDS_SLIDE_CARD_PADDING_CLASS,
   HOME_BRANDS_SLIDE_CORNER_RADIUS_PX,
@@ -51,7 +52,7 @@ function logoRailCellStyle(slug: string, displayName: string): CSSProperties {
 }
 
 type HomeBrandsSlideProps = {
-  /** From public API; when null or empty, static Figma placeholders are used. */
+  /** From public API; null or empty hides the rail. */
   partners: HomeBrandPartnerPublicItem[] | null;
 };
 
@@ -70,17 +71,22 @@ function PartnerLogo({
   partner: HomeBrandPartnerPublicItem;
   loadEager: boolean;
 }) {
-  const resolved = resolveBrandDisplayLogoForCell(
-    partner.logoUrl,
-    partner.slug,
-    partner.name,
+  const remoteSrc = useMemo(
+    () => toSafeImgAttributeSrc(partner.logoUrl),
+    [partner.logoUrl],
   );
+  const [showWordmark, setShowWordmark] = useState(remoteSrc === null);
+
+  useEffect(() => {
+    setShowWordmark(remoteSrc === null);
+  }, [remoteSrc, partner.id, partner.logoUrl]);
+
   const cellStyle = logoRailCellStyle(partner.slug, partner.name);
   const sizesW = isBrandLogoCellOversizedSlug(partner.slug, partner.name)
     ? HOME_BRANDS_RAIL_LOGO_OVERSIZED_CELL_MAX_WIDTH_PX
     : HOME_BRANDS_RAIL_LOGO_CELL_MAX_WIDTH_PX;
 
-  if (resolved.mode === 'wordmark') {
+  if (showWordmark || !remoteSrc) {
     return (
       <div
         className="relative mx-auto flex w-full shrink-0 items-center justify-center overflow-hidden"
@@ -93,43 +99,28 @@ function PartnerLogo({
     );
   }
 
-  if (resolved.mode === 'local') {
-    const geepasBoost = isGeepasBundledLogoAsset(resolved.asset);
-    return (
-      <div
-        className={`relative mx-auto w-full shrink-0${geepasBoost ? ' overflow-visible' : ''}`}
-        style={cellStyle}
-      >
-        <Image
-          src={resolved.asset.src}
-          alt={partner.name}
-          fill
-          className={`${HOME_BRANDS_RAIL_LOGO_IMAGE_CLASS}${geepasBoost ? ' origin-center' : ''}`}
-          style={geepasBoost ? { transform: `scale(${GEEPAS_BUNDLED_LOGO_UI_SCALE})` } : undefined}
-          sizes={`${sizesW}px`}
-          loading={loadEager ? 'eager' : 'lazy'}
-          priority={loadEager}
-          fetchPriority={loadEager ? 'high' : 'auto'}
-        />
-      </div>
-    );
-  }
+  const src = toDomSafeImgSrcString(remoteSrc);
+  const geepasBoost = isGeepasBrandLogo(partner.slug, partner.name);
 
   return (
     <div
-      className="relative mx-auto flex w-full shrink-0 items-center justify-center overflow-hidden"
+      className={`relative mx-auto flex w-full shrink-0 items-center justify-center${geepasBoost ? ' overflow-visible' : ' overflow-hidden'}`}
       style={cellStyle}
     >
       <Image
-        src={resolved.src}
+        src={src}
         alt={partner.name}
         fill
-        className={HOME_BRANDS_RAIL_LOGO_IMAGE_CLASS}
+        className={`${HOME_BRANDS_RAIL_LOGO_IMAGE_CLASS}${geepasBoost ? ' origin-center' : ''}`}
+        style={geepasBoost ? { transform: `scale(${GEEPAS_BRAND_LOGO_UI_SCALE})` } : undefined}
         sizes={`${sizesW}px`}
         loading={loadEager ? 'eager' : 'lazy'}
         priority={loadEager}
         fetchPriority={loadEager ? 'high' : 'auto'}
-        unoptimized={shouldBypassNextImageOptimizer(resolved.src)}
+        unoptimized={shouldBypassNextImageOptimizer(src)}
+        onError={() => {
+          setShowWordmark(true);
+        }}
       />
     </div>
   );
@@ -139,62 +130,26 @@ function PartnerLogo({
  * Brand logo cards — Figma 101:4108; responsive grid so four logos fit without horizontal scroll (md+).
  */
 export function HomeBrandsSlide({ partners }: HomeBrandsSlideProps) {
-  if (partners !== null && partners.length === 0) {
+  if (!partners || partners.length === 0) {
     return null;
   }
 
-  const hasPartners = partners !== null && partners.length > 0;
-  const partnerPages = hasPartners ? chunkIntoPages(partners, 4) : [];
-  const fallbackPages = chunkIntoPages(HOME_BRAND_SLIDE_ENTRIES, 4);
-
-  if (partners && partners.length > 0) {
-    return (
-      <div className="flex w-full shrink-0 snap-x snap-mandatory gap-3">
-        {partnerPages.map((page, pageIndex) => (
-          <div key={`partners-page-${pageIndex}`} className="grid w-full shrink-0 snap-start grid-cols-2 md:grid-cols-4" style={gridStyle}>
-            {page.map((partner, logoIndex) => (
-              <BrandPlpLink
-                key={partner.id}
-                href={partner.href}
-                className={`flex w-full min-w-0 items-center justify-center overflow-hidden ${HOME_BRANDS_SLIDE_CARD_PADDING_CLASS}`}
-                style={brandCardShellStyle(partner.slug, partner.name)}
-                aria-label={partner.name}
-              >
-                <PartnerLogo partner={partner} loadEager={pageIndex === 0 && logoIndex < 2} />
-              </BrandPlpLink>
-            ))}
-          </div>
-        ))}
-      </div>
-    );
-  }
+  const partnerPages = chunkIntoPages(partners, 4);
 
   return (
     <div className="flex w-full shrink-0 snap-x snap-mandatory gap-3">
-      {fallbackPages.map((page, pageIndex) => (
-        <div key={`fallback-page-${pageIndex}`} className="grid w-full shrink-0 snap-start grid-cols-2 md:grid-cols-4" style={gridStyle}>
-          {page.map((entry, logoIndex) => (
-            <div
-              key={entry.id}
+      {partnerPages.map((page, pageIndex) => (
+        <div key={`partners-page-${pageIndex}`} className="grid w-full shrink-0 snap-start grid-cols-2 md:grid-cols-4" style={gridStyle}>
+          {page.map((partner, logoIndex) => (
+            <BrandPlpLink
+              key={partner.id}
+              href={partner.href}
               className={`flex w-full min-w-0 items-center justify-center overflow-hidden ${HOME_BRANDS_SLIDE_CARD_PADDING_CLASS}`}
-              style={brandCardShellStyle(entry.id, entry.alt)}
+              style={brandCardShellStyle(partner.slug, partner.name)}
+              aria-label={partner.name}
             >
-              <div
-                className="relative mx-auto w-full shrink-0"
-                style={logoRailCellStyle(entry.id, entry.alt)}
-              >
-                <Image
-                  src={entry.src}
-                  alt={entry.alt}
-                  fill
-                  className={HOME_BRANDS_RAIL_LOGO_IMAGE_CLASS}
-                  sizes={`${HOME_BRANDS_RAIL_LOGO_CELL_MAX_WIDTH_PX}px`}
-                  priority={pageIndex === 0 && logoIndex < 2}
-                  loading={pageIndex === 0 && logoIndex < 2 ? 'eager' : 'lazy'}
-                  fetchPriority={pageIndex === 0 && logoIndex < 2 ? 'high' : 'auto'}
-                />
-              </div>
-            </div>
+              <PartnerLogo partner={partner} loadEager={pageIndex === 0 && logoIndex < 2} />
+            </BrandPlpLink>
           ))}
         </div>
       ))}

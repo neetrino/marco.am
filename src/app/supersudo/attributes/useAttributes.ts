@@ -8,6 +8,7 @@ import { showToast } from '../../../components/Toast';
 import { logger } from "@/lib/utils/logger";
 import { ADMIN_CACHE_KEYS } from '@/lib/admin/admin-cache-keys';
 import { beginAdminDataFetch } from '@/lib/admin/admin-fetch-helpers';
+import { dedupedAdminRequest } from '@/lib/admin/admin-request-dedup';
 import {
   ADMIN_SESSION_CACHE_TTL_MS,
   readAdminSessionCache,
@@ -39,9 +40,9 @@ export function useAttributes() {
     ADMIN_CACHE_KEYS.attributes,
     ADMIN_SESSION_CACHE_TTL_MS,
   );
-  const hadCacheRef = useRef(Boolean(cachedAttributes?.data?.length));
+  const hadCacheRef = useRef(cachedAttributes !== null);
   const [attributes, setAttributes] = useState<Attribute[]>(cachedAttributes?.data ?? []);
-  const [loading, setLoading] = useState(!hadCacheRef.current);
+  const [loading, setLoading] = useState(cachedAttributes === null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingAttribute, setEditingAttribute] = useState<string | null>(null);
   const [editingAttributeName, setEditingAttributeName] = useState('');
@@ -74,37 +75,29 @@ export function useAttributes() {
   const [dragOverValueId, setDragOverValueId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const fetchAttributes = useCallback(async () => {
+  const fetchAttributes = useCallback(async (options?: { force?: boolean }) => {
+    const cacheKey = ADMIN_CACHE_KEYS.attributes;
+    const cached = readAdminSessionCache<{ data: Attribute[] }>(
+      cacheKey,
+      ADMIN_SESSION_CACHE_TTL_MS,
+    );
+    if (!options?.force && cached !== null) {
+      setAttributes(cached.data ?? []);
+      setLoading(false);
+      hadCacheRef.current = true;
+      return;
+    }
+
     try {
       beginAdminDataFetch(hadCacheRef.current, setLoading);
-      logger.devLog('📋 [ADMIN] Fetching attributes...');
-      const response = await apiClient.get<{ data: Attribute[] }>('/api/v1/supersudo/attributes');
-      logger.devLog('📋 [ADMIN] Attributes response:', response.data);
-      // Log colors for each value to debug
-      if (response.data && Array.isArray(response.data)) {
-        response.data.forEach((attr) => {
-          if (attr.values && Array.isArray(attr.values)) {
-            attr.values.forEach((val) => {
-              logger.devLog('🎨 [ADMIN] Attribute value colors:', {
-                attributeId: attr.id,
-                attributeName: attr.name,
-                valueId: val.id,
-                valueLabel: val.label,
-                colors: val.colors,
-                colorsType: typeof val.colors,
-                colorsIsArray: Array.isArray(val.colors),
-                colorsLength: val.colors?.length
-              });
-            });
-          }
-        });
-      }
-      setAttributes(response.data || []);
-      writeAdminSessionCache(ADMIN_CACHE_KEYS.attributes, response);
+      const response = await dedupedAdminRequest(cacheKey, () =>
+        apiClient.get<{ data: Attribute[] }>('/api/v1/supersudo/attributes'),
+      );
+      setAttributes(response.data ?? []);
+      writeAdminSessionCache(cacheKey, response);
       hadCacheRef.current = true;
-      logger.devLog('✅ [ADMIN] Attributes loaded:', response.data?.length || 0);
     } catch (err) {
-      console.error('❌ [ADMIN] Error fetching attributes:', err);
+      logger.error('Admin attributes fetch failed', { error: err });
       if (!hadCacheRef.current) {
         setAttributes([]);
       }
@@ -141,7 +134,7 @@ export function useAttributes() {
       logger.devLog('✅ [ADMIN] Attribute created successfully');
       setShowAddForm(false);
       setFormData({ name: '' });
-      fetchAttributes();
+      fetchAttributes({ force: true });
       showToast(t('admin.attributes.createdSuccess'), 'success');
     } catch (err: unknown) {
       console.error('❌ [ADMIN] Error creating attribute:', err);
@@ -159,7 +152,7 @@ export function useAttributes() {
       logger.devLog(`🗑️ [ADMIN] Deleting attribute: ${attributeName} (${attributeId})`);
       await apiClient.delete(`/api/v1/supersudo/attributes/${attributeId}`);
       logger.devLog('✅ [ADMIN] Attribute deleted successfully');
-      fetchAttributes();
+      fetchAttributes({ force: true });
       showToast(t('admin.attributes.deletedSuccess'), 'success');
     } catch (err: unknown) {
       console.error('❌ [ADMIN] Error deleting attribute:', err);
@@ -186,7 +179,7 @@ export function useAttributes() {
       logger.devLog('✅ [ADMIN] Attribute name updated successfully');
       setEditingAttribute(null);
       setEditingAttributeName('');
-      fetchAttributes();
+      fetchAttributes({ force: true });
       showToast(t('admin.attributes.nameUpdatedSuccess'), 'success');
     } catch (err: unknown) {
       console.error('❌ [ADMIN] Error updating attribute name:', err);
@@ -255,7 +248,7 @@ export function useAttributes() {
       setValueError(null);
       setAddingValueTo(null);
       showToast(t('admin.attributes.valueAddedSuccess'), 'success');
-      fetchAttributes();
+      fetchAttributes({ force: true });
     } catch (err: unknown) {
       console.error('❌ [ADMIN] Error adding value:', err);
       const errorMessage = getApiOrErrorMessage(err, t('admin.attributes.failedToAddValue'));
@@ -283,7 +276,7 @@ export function useAttributes() {
       logger.devLog(`🗑️ [ADMIN] Deleting value: ${valueLabel} (${valueId})`);
       await apiClient.delete(`/api/v1/supersudo/attributes/${attributeId}/values/${valueId}`);
       logger.devLog('✅ [ADMIN] Value deleted successfully');
-      fetchAttributes();
+      fetchAttributes({ force: true });
       setDeletingValue(null);
       showToast(t('admin.attributes.valueDeletedSuccess'), 'success');
     } catch (err: unknown) {
@@ -315,7 +308,7 @@ export function useAttributes() {
         locale: 'en',
       });
       logger.devLog('✅ [ADMIN] Value updated successfully');
-      fetchAttributes();
+      fetchAttributes({ force: true });
       showToast(t('admin.attributes.valueUpdatedSuccess'), 'success');
     } catch (err: unknown) {
       console.error('❌ [ADMIN] Error updating value:', err);

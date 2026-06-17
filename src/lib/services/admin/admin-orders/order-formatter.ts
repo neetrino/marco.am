@@ -1,5 +1,51 @@
 import type { Prisma } from "@white-shop/db/prisma";
 
+type OrderItemVariantOption = {
+  attributeKey?: string;
+  value?: string;
+  label?: string;
+  imageUrl?: string;
+  colors?: unknown;
+};
+
+/** Parses checkout snapshot e.g. "color: Red, size: M" into display options. */
+export function parseVariantTitleOptions(
+  variantTitle: string | null | undefined,
+): OrderItemVariantOption[] {
+  if (!variantTitle?.trim()) {
+    return [];
+  }
+
+  const options: OrderItemVariantOption[] = [];
+
+  for (const part of variantTitle.split(",")) {
+    const trimmed = part.trim();
+    if (!trimmed) {
+      continue;
+    }
+
+    const colonIndex = trimmed.indexOf(":");
+    if (colonIndex === -1) {
+      options.push({ value: trimmed, label: trimmed });
+      continue;
+    }
+
+    const attributeKey = trimmed.slice(0, colonIndex).trim();
+    const value = trimmed.slice(colonIndex + 1).trim();
+    if (!attributeKey && !value) {
+      continue;
+    }
+
+    options.push({
+      attributeKey: attributeKey || undefined,
+      value: value || undefined,
+      label: value || attributeKey || undefined,
+    });
+  }
+
+  return options;
+}
+
 /**
  * Format order for list response
  */
@@ -18,7 +64,8 @@ export function formatOrderForList(order: {
   customerEmail: string | null;
   customerPhone: string | null;
   createdAt: Date;
-  items: Array<unknown>;
+  items?: Array<unknown>;
+  _count?: { items: number };
   user?: {
     id: string;
     firstName: string | null;
@@ -48,97 +95,25 @@ export function formatOrderForList(order: {
     customerFirstName: firstName,
     customerLastName: lastName,
     customerId: customer?.id || null,
-    itemsCount: order.items.length,
+    itemsCount: order._count?.items ?? order.items?.length ?? 0,
     createdAt: order.createdAt.toISOString(),
   };
 }
 
 /**
- * Format variant option for order item
- */
-function formatVariantOption(opt: {
-  attributeKey: string | null;
-  value: string | null;
-  valueId: string | null;
-  attributeValue: {
-    value: string;
-    imageUrl: string | null;
-    colors: unknown;
-    translations: Array<{
-      locale: string;
-      label: string;
-    }>;
-    attribute: {
-      key: string;
-    };
-  } | null;
-}) {
-  // New format: Use AttributeValue if available
-  if (opt.attributeValue) {
-    const translations = opt.attributeValue.translations || [];
-    const label = translations.length > 0 ? translations[0].label : opt.attributeValue.value;
-    
-    return {
-      attributeKey: opt.attributeValue.attribute.key || undefined,
-      value: opt.attributeValue.value || undefined,
-      label: label || undefined,
-      imageUrl: opt.attributeValue.imageUrl || undefined,
-      colors: opt.attributeValue.colors || undefined,
-    };
-  }
-  
-  // Old format: Use attributeKey and value directly
-  return {
-    attributeKey: opt.attributeKey || undefined,
-    value: opt.value || undefined,
-  };
-}
-
-/**
- * Format order item for detail response
+ * Format order item for detail response — uses OrderItem snapshot fields only.
  */
 export function formatOrderItem(item: {
   id: string;
   variantId: string | null;
   productTitle: string | null;
+  variantTitle?: string | null;
   sku: string | null;
   quantity: number | null;
   total: number | null;
   price: number | null;
   imageUrl?: string | null;
-  variant?: {
-    id: string;
-    sku: string | null;
-    options?: Array<{
-      attributeKey: string | null;
-      value: string | null;
-      valueId: string | null;
-      attributeValue: {
-        value: string;
-        imageUrl: string | null;
-        colors: unknown;
-        translations: Array<{
-          locale: string;
-          label: string;
-        }>;
-        attribute: {
-          key: string;
-        };
-      } | null;
-    }>;
-    product?: {
-      id: string;
-      translations?: Array<{
-        title: string;
-      }>;
-    } | null;
-  } | null;
 }) {
-  const variant = item.variant;
-  const product = variant?.product;
-  const translations = product && Array.isArray(product.translations) ? product.translations : [];
-  const translation = translations[0] || null;
-
   const quantity = item.quantity ?? 0;
   const total = item.total ?? 0;
   const unitPrice =
@@ -148,20 +123,17 @@ export function formatOrderItem(item: {
         ? Number((total / quantity).toFixed(2))
         : total;
 
-  // Extract variant options (color, size, etc.)
-  const variantOptions = variant?.options?.map(formatVariantOption) || [];
-
   return {
     id: item.id,
-    variantId: item.variantId || variant?.id || null,
-    productId: product?.id || null,
-    productTitle: translation?.title || item.productTitle || "Unknown Product",
-    sku: variant?.sku || item.sku || "N/A",
+    variantId: item.variantId || null,
+    productId: null,
+    productTitle: item.productTitle || "Unknown Product",
+    sku: item.sku || "N/A",
     quantity,
     total,
     unitPrice,
     imageUrl: item.imageUrl?.trim() || undefined,
-    variantOptions,
+    variantOptions: parseVariantTitleOptions(item.variantTitle),
   };
 }
 
@@ -204,38 +176,12 @@ export function formatOrderForDetail(order: {
     id: string;
     variantId: string | null;
     productTitle: string | null;
+    variantTitle?: string | null;
     sku: string | null;
     quantity: number | null;
     total: number | null;
     price: number | null;
     imageUrl?: string | null;
-    variant?: {
-      id: string;
-      sku: string | null;
-      options?: Array<{
-        attributeKey: string | null;
-        value: string | null;
-        valueId: string | null;
-        attributeValue: {
-          value: string;
-          imageUrl: string | null;
-          colors: unknown;
-          translations: Array<{
-            locale: string;
-            label: string;
-          }>;
-          attribute: {
-            key: string;
-          };
-        } | null;
-      }>;
-      product?: {
-        id: string;
-        translations?: Array<{
-          title: string;
-        }>;
-      } | null;
-    } | null;
   }>;
   payments: Array<{
     id: string;

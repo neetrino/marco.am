@@ -8,14 +8,24 @@ import { useTranslation } from '../../../lib/i18n-client';
 import { formatPriceInCurrency, convertPrice, getStoredCurrency, initializeCurrencyRates, CurrencyCode } from '../../../lib/currency';
 import { showPopupConfirm } from '@/components/popup-service';
 import { logger } from "@/lib/utils/logger";
-import { ADMIN_CACHE_KEYS, buildAdminListCacheKey } from '@/lib/admin/admin-cache-keys';
+import {
+  buildAdminOrdersListApiParams,
+  buildAdminOrdersListCacheKey,
+  buildAdminOrderDetailCacheKey,
+  buildOrdersDefaultListCacheKey,
+} from '@/lib/admin/admin-cache-keys';
 import { beginAdminDataFetch } from '@/lib/admin/admin-fetch-helpers';
+import { dedupedAdminRequest } from '@/lib/admin/admin-request-dedup';
 import {
   ADMIN_SESSION_CACHE_TTL_MS,
   readAdminSessionCache,
   writeAdminSessionCache,
 } from '@/lib/admin/admin-session-cache';
 import type { OrderAuditEntry } from "./types/order-audit";
+import {
+  persistAdminOrderDetailCache,
+  readAdminOrderDetailCache,
+} from './utils/order-detail-cache';
 
 export type { OrderAuditEntry };
 
@@ -119,17 +129,17 @@ export function useOrders() {
   const searchParams = useSearchParams();
   const [orders, setOrders] = useState<Order[]>(() => {
     const cached = readAdminSessionCache<OrdersResponse>(
-      ADMIN_CACHE_KEYS.ordersDefault,
+      buildOrdersDefaultListCacheKey(),
       ADMIN_SESSION_CACHE_TTL_MS,
     );
     return cached?.data ?? [];
   });
   const [loading, setLoading] = useState(() => {
     const cached = readAdminSessionCache<OrdersResponse>(
-      ADMIN_CACHE_KEYS.ordersDefault,
+      buildOrdersDefaultListCacheKey(),
       ADMIN_SESSION_CACHE_TTL_MS,
     );
-    return !cached;
+    return !cached?.data?.length;
   });
   const [currency, setCurrency] = useState<CurrencyCode>(getStoredCurrency());
   /** Sync initial filter state from URL so the first fetch matches shared links / refresh. */
@@ -143,7 +153,13 @@ export function useOrders() {
     () => searchParams.get('search') || ''
   );
   const [page, setPage] = useState(1);
-  const [meta, setMeta] = useState<OrdersResponse['meta'] | null>(null);
+  const [meta, setMeta] = useState<OrdersResponse['meta'] | null>(() => {
+    const cached = readAdminSessionCache<OrdersResponse>(
+      buildOrdersDefaultListCacheKey(),
+      ADMIN_SESSION_CACHE_TTL_MS,
+    );
+    return cached?.meta ?? null;
+  });
   const [sortBy, setSortBy] = useState<string>('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [updatingStatuses, setUpdatingStatuses] = useState<Set<string>>(new Set());
@@ -152,6 +168,7 @@ export function useOrders() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [selectedListOrder, setSelectedListOrder] = useState<Order | null>(null);
   const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
   const [loadingOrderDetails, setLoadingOrderDetails] = useState(false);
   const [savingAdminNotes, setSavingAdminNotes] = useState(false);
@@ -168,38 +185,38 @@ export function useOrders() {
     }
   }, [searchParams]);
 
-  const fetchOrders = useCallback(async () => {
-    const cacheKey = buildAdminListCacheKey('orders', {
-      page: page.toString(),
-      limit: '20',
-      status: statusFilter || '',
-      paymentStatus: paymentStatusFilter || '',
-      search: searchQuery || '',
-      sortBy: sortBy || '',
-      sortOrder: sortOrder || '',
+  const fetchOrders = useCallback(async (options?: { force?: boolean }) => {
+    const cacheKey = buildAdminOrdersListCacheKey({
+      page,
+      status: statusFilter,
+      paymentStatus: paymentStatusFilter,
+      search: searchQuery,
+      sortBy,
+      sortOrder,
     });
     const cached = readAdminSessionCache<OrdersResponse>(cacheKey, ADMIN_SESSION_CACHE_TTL_MS);
+    if (!options?.force && cached?.data?.length) {
+      setOrders(cached.data);
+      setMeta(cached.meta ?? null);
+      setLoading(false);
+      return;
+    }
+
     try {
       beginAdminDataFetch(Boolean(cached?.data?.length), setLoading);
-      if (cached) {
-        setOrders(cached.data);
-        setMeta(cached.meta ?? null);
-      }
-      logger.devLog('📦 [ADMIN] Fetching orders...', { page, statusFilter, paymentStatusFilter, searchQuery, sortBy, sortOrder });
-      
-      const response = await apiClient.get<OrdersResponse>('/api/v1/supersudo/orders', {
-        params: {
-          page: page.toString(),
-          limit: '20',
-          status: statusFilter || '',
-          paymentStatus: paymentStatusFilter || '',
-          search: searchQuery || '',
-          sortBy: sortBy || '',
-          sortOrder: sortOrder || '',
-        },
-      });
+      const response = await dedupedAdminRequest(cacheKey, () =>
+        apiClient.get<OrdersResponse>('/api/v1/supersudo/orders', {
+          params: buildAdminOrdersListApiParams({
+            page,
+            status: statusFilter,
+            paymentStatus: paymentStatusFilter,
+            search: searchQuery,
+            sortBy,
+            sortOrder,
+          }),
+        }),
+      );
 
-      logger.devLog('✅ [ADMIN] Orders fetched:', response);
       setOrders(response.data || []);
       setMeta(response.meta || null);
       writeAdminSessionCache(cacheKey, response);
@@ -280,16 +297,33 @@ export function useOrders() {
 
 
   const handleViewOrderDetails = async (orderId: string) => {
+    const listOrder = orders.find((order) => order.id === orderId) ?? null;
+    const cacheKey = buildAdminOrderDetailCacheKey(orderId);
+    const cachedDetails = readAdminOrderDetailCache(orderId);
+
     setSelectedOrderId(orderId);
-    setOrderDetails(null);
+    setSelectedListOrder(listOrder);
+    setOrderDetails(cachedDetails);
+
+    if (cachedDetails) {
+      setLoadingOrderDetails(false);
+      return;
+    }
+
     setLoadingOrderDetails(true);
+
     try {
-      const response = await apiClient.get<OrderDetails>(`/api/v1/supersudo/orders/${orderId}`);
+      const response = await dedupedAdminRequest(cacheKey, () =>
+        apiClient.get<OrderDetails>(`/api/v1/supersudo/orders/${orderId}`),
+      );
       setOrderDetails(response);
+      persistAdminOrderDetailCache(orderId, response);
     } catch (err: unknown) {
       logger.error('Admin order details fetch failed', { error: err });
       alert(getApiOrErrorMessage(err, t('admin.orders.orderDetails.failedToLoad')));
       setSelectedOrderId(null);
+      setSelectedListOrder(null);
+      setOrderDetails(null);
     } finally {
       setLoadingOrderDetails(false);
     }
@@ -297,6 +331,7 @@ export function useOrders() {
 
   const handleCloseModal = () => {
     setSelectedOrderId(null);
+    setSelectedListOrder(null);
     setOrderDetails(null);
   };
 
@@ -315,6 +350,7 @@ export function useOrders() {
         }
       );
       setOrderDetails(updated);
+      persistAdminOrderDetailCache(selectedOrderId, updated);
       setUpdateMessage({
         type: 'success',
         text: t('admin.orders.orderDetails.internalNotesSaved'),
@@ -398,7 +434,7 @@ export function useOrders() {
       });
       
       setSelectedIds(new Set());
-      await fetchOrders();
+      await fetchOrders({ force: true });
       
       if (failed.length > 0) {
         const failedIds = failed.map(r => 
@@ -424,7 +460,7 @@ export function useOrders() {
       setUpdatingStatuses((prev) => new Set(prev).add(orderId));
       setUpdateMessage(null);
 
-      // Update order status via API (response matches GET detail — includes auditTrail)
+      // Update order status via API (response matches GET detail)
       const updated = await apiClient.put<OrderDetails>(
         `/api/v1/supersudo/orders/${orderId}`,
         {
@@ -441,11 +477,11 @@ export function useOrders() {
         )
       );
 
+      persistAdminOrderDetailCache(orderId, updated);
       if (selectedOrderId === orderId) {
         setOrderDetails(updated);
       }
 
-      // Show success message
       setUpdateMessage({ type: 'success', text: t('admin.orders.statusUpdated') });
       setTimeout(() => setUpdateMessage(null), 3000);
     } catch (err: unknown) {
@@ -489,6 +525,7 @@ export function useOrders() {
         )
       );
 
+      persistAdminOrderDetailCache(orderId, updated);
       if (selectedOrderId === orderId) {
         setOrderDetails(updated);
       }
@@ -531,6 +568,7 @@ export function useOrders() {
     selectedIds,
     bulkDeleting,
     selectedOrderId,
+    selectedListOrder,
     orderDetails,
     loadingOrderDetails,
     savingAdminNotes,
