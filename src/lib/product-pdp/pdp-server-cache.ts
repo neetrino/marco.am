@@ -44,7 +44,7 @@ export async function getCachedPdpDetail(slug: string, lang: LanguageCode) {
 export async function getCachedPdpRelated(slug: string, lang: LanguageCode) {
   const key = createHash('sha256')
     .update(
-      `pdp:ssr:related:v2\x00${slug}\x00${lang}\x00${RELATED_PRODUCTS_PAGE_SIZE}\x000`,
+      `pdp:ssr:related:v2\u0000${slug}\u0000${lang}\u0000${RELATED_PRODUCTS_PAGE_SIZE}\u0000${0}`,
     )
     .digest('hex');
   return getCachedJson(
