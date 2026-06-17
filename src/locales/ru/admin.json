@@ -790,7 +790,7 @@
     "searchNoMatches": "Нет брендов, подходящих под запрос.",
     "logo": "Логотип",
     "logoUrlLabel": "URL логотипа или загрузка",
-    "logoUrlPlaceholder": "https://… или /assets/brands/…",
+    "logoUrlPlaceholder": "https://… (URL из R2 после загрузки)",
     "logoUpload": "Загрузить изображение",
     "logoRemove": "Удалить логотип",
     "logoUploading": "Обработка…",

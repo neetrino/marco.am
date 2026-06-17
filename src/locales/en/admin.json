@@ -790,7 +790,7 @@
     "searchNoMatches": "No brands match your search.",
     "logo": "Logo",
     "logoUrlLabel": "Logo URL or upload",
-    "logoUrlPlaceholder": "https://… or /assets/brands/…",
+    "logoUrlPlaceholder": "https://… (R2 URL after upload)",
     "logoUpload": "Upload image",
     "logoRemove": "Remove logo",
     "logoUploading": "Processing…",

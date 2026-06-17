@@ -790,7 +790,7 @@
     "searchNoMatches": "Ձեր որոնմանը համապատասխանող բրենդներ չկան։",
     "logo": "Լոգո",
     "logoUrlLabel": "Լոգոյի հղում կամ վերբեռնում",
-    "logoUrlPlaceholder": "https://… կամ /assets/brands/…",
+    "logoUrlPlaceholder": "https://… (R2 URL վերբեռնումից հետո)",
     "logoUpload": "Վերբեռնել նկար",
     "logoRemove": "Հեռացնել լոգոն",
     "logoUploading": "Մշակվում է…",

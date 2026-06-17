@@ -137,16 +137,32 @@ export default function BrandsPage() {
       }
       return;
     }
+
+    const brandName = formData.name.trim();
+    if (!brandName) {
+      showToast(t('admin.brands.nameRequired'), 'warning');
+      if (event.target) {
+        event.target.value = '';
+      }
+      return;
+    }
+
     try {
       setLogoUploading(true);
-      const base64 = await processImageFile(imageFile, {
+      const image = await processImageFile(imageFile, {
         maxSizeMB: 1.5,
         maxWidthOrHeight: 800,
         useWebWorker: true,
         fileType: 'image/jpeg',
         initialQuality: 0.85,
       });
-      setFormData((prev) => ({ ...prev, logoUrl: base64 }));
+      const result = await apiClient.post<{ url: string }>('/api/v1/supersudo/brands/upload-logo', {
+        image,
+        name: brandName,
+        slug: editingBrand?.slug,
+        brandId: editingBrand?.id,
+      });
+      setFormData((prev) => ({ ...prev, logoUrl: result.url }));
     } catch (err: unknown) {
       logger.error('Brand logo upload failed', { error: err });
       showToast(getApiOrErrorMessage(err, t('admin.brands.errorSaving')), 'error');
