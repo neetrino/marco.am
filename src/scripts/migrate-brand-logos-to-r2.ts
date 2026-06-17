@@ -22,7 +22,7 @@ import {
 } from '@aws-sdk/client-s3';
 
 import { db } from '@white-shop/db';
-import { resolveBrandStaticLogoForDisplay } from '@/lib/brand-static-logo-assets';
+import { resolveBrandStaticLogoForDisplay } from '@/scripts/brand-bundled-logo-sources';
 import {
   BRAND_LOGOS_R2_PREFIX,
   buildBrandLogoR2Key,

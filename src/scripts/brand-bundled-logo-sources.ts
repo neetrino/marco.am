@@ -1,8 +1,6 @@
-import { isLocalFilesystemImageReference } from './utils/image-utils';
-
 /**
- * Local logos under `public/assets/brands/` keyed by published brand `slug`.
- * Used when `Brand.logoUrl` is empty so the home rail still shows real artwork.
+ * Legacy bundled logo paths — used only by `migrate-brand-logos-to-r2.ts`.
+ * Storefront reads `brands.logoUrl` (R2) only.
  */
 export type BrandStaticLogoDimensions = {
   readonly src: string;
@@ -11,11 +9,8 @@ export type BrandStaticLogoDimensions = {
 };
 
 function normalizeBrandLookupKey(value: string | null | undefined): string {
-  return value?.trim().toLowerCase() ?? "";
+  return value?.trim().toLowerCase() ?? '';
 }
-
-/** `geepas.webp` has wide transparent margins — scale artwork inside the logo cell for clearer mark. */
-export const GEEPAS_BUNDLED_LOGO_UI_SCALE = 1.42;
 
 const SLUG_ALIASES: Record<string, string> = {
   'adler-europe': 'adler',
@@ -114,15 +109,12 @@ const SLUG_TO_LOGO: Record<string, BrandStaticLogoDimensions> = {
 function slugifyLatinToken(raw: string): string {
   return raw
     .toLowerCase()
-    .normalize("NFD")
-    .replace(/\p{M}/gu, "")
-    .replace(/[^a-z0-9]+/g, "")
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '')
+    .replace(/[^a-z0-9]+/g, '')
     .trim();
 }
 
-/**
- * Latin / numeric tokens from display names (e.g. `LG Electronics`, `Samsung Inc.` → lg, samsung).
- */
 function latinTokenKeysFromBrandName(name: string): readonly string[] {
   const matches = name.match(/[A-Za-z][A-Za-z0-9.&\s-]{0,40}[A-Za-z0-9]|[A-Za-z]{2,}/g);
   if (!matches) {
@@ -147,6 +139,18 @@ function latinTokenKeysFromBrandName(name: string): readonly string[] {
   return out;
 }
 
+function resolveBrandStaticLogo(slug: string): BrandStaticLogoDimensions | null {
+  const key = normalizeBrandLookupKey(slug);
+  if (key.length === 0) {
+    return null;
+  }
+  const mapped = SLUG_ALIASES[key];
+  if (mapped) {
+    return SLUG_TO_LOGO[mapped] ?? null;
+  }
+  return SLUG_TO_LOGO[key] ?? null;
+}
+
 function matchBundledLogoFromName(name: string): BrandStaticLogoDimensions | null {
   const nameKey = normalizeBrandLookupKey(name);
   if (nameKey.length === 0) {
@@ -165,133 +169,13 @@ function matchBundledLogoFromName(name: string): BrandStaticLogoDimensions | nul
   return null;
 }
 
-/**
- * Returns a bundled logo asset when the slug matches a known file; otherwise null.
- */
-export function resolveBrandStaticLogo(slug: string): BrandStaticLogoDimensions | null {
-  const key = normalizeBrandLookupKey(slug);
-  if (key.length === 0) {
-    return null;
-  }
-  const mapped = SLUG_ALIASES[key];
-  if (mapped) {
-    return SLUG_TO_LOGO[mapped] ?? null;
-  }
-  return SLUG_TO_LOGO[key] ?? null;
-}
-
-export function isGeepasBundledLogoAsset(asset: BrandStaticLogoDimensions): boolean {
-  return asset.src.toLowerCase().includes("geepas");
-}
-
-/** Per-brand UI scale so bundled artwork reads at similar visual weight on product cards. */
-export function resolveProductCardBrandLogoUiScale(
-  slug: string,
-  name: string,
-  src: string,
-): number {
-  const slugKey = normalizeBrandLookupKey(slug);
-  const nameKey = normalizeBrandLookupKey(name);
-
-  if (
-    isGeepasBundledLogoAsset({ src, width: 0, height: 0 }) ||
-    slugKey === "geepas" ||
-    nameKey === "geepas"
-  ) {
-    return GEEPAS_BUNDLED_LOGO_UI_SCALE;
-  }
-
-  return 1;
-}
-
-/**
- * Product cards: match `slug` first, then treat normalized `name` as a slug key
- * (e.g. import slug `import-abc12` + name `LG` → `/assets/brands/lg.png`).
- */
 export function resolveBrandStaticLogoForDisplay(
   slug: string,
   name: string,
 ): BrandStaticLogoDimensions | null {
   const fromSlug = resolveBrandStaticLogo(slug);
-  if (fromSlug) return fromSlug;
+  if (fromSlug) {
+    return fromSlug;
+  }
   return matchBundledLogoFromName(name);
-}
-
-/**
- * When the DB slug is not a known key (e.g. `import-*`) but the brand name maps to a
- * bundled asset (e.g. `LG` → `lg.svg`), prefer that asset over `logoUrl` so the card
- * does not show a placeholder or wrong remote image.
- */
-export function resolveBrandStaticLogoFromNameOnly(
-  slug: string,
-  name: string,
-): BrandStaticLogoDimensions | null {
-  if (resolveBrandStaticLogo(slug) !== null) return null;
-  return matchBundledLogoFromName(name);
-}
-
-/** Remote brand logos that 404 in storage — fall back to bundled artwork when available. */
-const KNOWN_BROKEN_REMOTE_BRAND_LOGO_SUFFIXES = ['lg-official.png'] as const;
-
-function isUnusableRemoteBrandLogoUrl(url: string): boolean {
-  if (isLocalFilesystemImageReference(url)) {
-    return true;
-  }
-  const path = url.split('?')[0]?.split('#')[0]?.toLowerCase() ?? '';
-  return KNOWN_BROKEN_REMOTE_BRAND_LOGO_SUFFIXES.some((suffix) => path.endsWith(suffix));
-}
-
-/**
- * Ordered image URLs for product cards: bundled first when matched by name only, else remote first.
- */
-export function buildBrandLogoCandidateSrcs(
-  logoUrl: string | null | undefined,
-  slug: string,
-  name: string,
-): string[] {
-  const remote = logoUrl?.trim();
-  const nameOnlyBundled = resolveBrandStaticLogoFromNameOnly(slug, name);
-  const anyBundled = resolveBrandStaticLogoForDisplay(slug, name);
-
-  const out: string[] = [];
-  if (nameOnlyBundled?.src) {
-    out.push(nameOnlyBundled.src);
-  }
-  if (remote && !isUnusableRemoteBrandLogoUrl(remote) && !out.includes(remote)) {
-    out.push(remote);
-  }
-  if (anyBundled?.src && !out.includes(anyBundled.src)) {
-    out.push(anyBundled.src);
-  }
-  return out;
-}
-
-export type BrandDisplayLogoCellResolved =
-  | { readonly mode: 'local'; readonly asset: BrandStaticLogoDimensions }
-  | { readonly mode: 'remote'; readonly src: string }
-  | { readonly mode: 'wordmark' };
-
-/**
- * Logo for brand cells: prefer explicit `logoUrl` (typically R2), then bundled artwork; otherwise wordmark.
- */
-export function resolveBrandDisplayLogoForCell(
-  logoUrl: string | null | undefined,
-  slug: string,
-  name: string,
-): BrandDisplayLogoCellResolved {
-  const remote = logoUrl?.trim();
-  if (remote && isUnusableRemoteBrandLogoUrl(remote)) {
-    const bundled = resolveBrandStaticLogoForDisplay(slug, name);
-    if (bundled) {
-      return { mode: 'local', asset: bundled };
-    }
-  }
-  if (remote) {
-    return { mode: 'remote', src: remote };
-  }
-  const bundled = resolveBrandStaticLogoForDisplay(slug, name);
-  if (bundled) {
-    return { mode: 'local', asset: bundled };
-  }
-  return { mode: 'wordmark' };
 }
