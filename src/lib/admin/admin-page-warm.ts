@@ -1,5 +1,10 @@
 import { apiClient } from '@/lib/api-client';
-import { ADMIN_CACHE_KEYS, buildProductsDefaultListCacheKey } from '@/lib/admin/admin-cache-keys';
+import {
+  ADMIN_CACHE_KEYS,
+  buildAdminOrdersListApiParams,
+  buildOrdersDefaultListCacheKey,
+  buildProductsDefaultListCacheKey,
+} from '@/lib/admin/admin-cache-keys';
 import { warmAdminDashboardCache } from '@/lib/admin/admin-dashboard-client-cache';
 import {
   warmAdminCategoriesCache,
@@ -23,18 +28,17 @@ function warmIfMissing<T>(key: string, fetcher: () => Promise<T>): void {
 }
 
 function warmOrdersCache(): void {
-  warmIfMissing(ADMIN_CACHE_KEYS.ordersDefault, () =>
-    apiClient.get('/api/v1/supersudo/orders', {
-      params: {
-        page: '1',
-        limit: '20',
-        status: '',
-        paymentStatus: '',
-        search: '',
-        sortBy: 'createdAt',
-        sortOrder: 'desc',
-      },
-    }),
+  const cacheKey = buildOrdersDefaultListCacheKey();
+  warmIfMissing(cacheKey, () =>
+    dedupedAdminRequest(cacheKey, () =>
+      apiClient.get('/api/v1/supersudo/orders', {
+        params: buildAdminOrdersListApiParams({
+          page: 1,
+          sortBy: 'createdAt',
+          sortOrder: 'desc',
+        }),
+      }),
+    ),
   );
 }
 

@@ -51,6 +51,54 @@ export function buildProductsDefaultListCacheKey(lang: string): string {
   });
 }
 
+type AdminOrdersListCacheInput = {
+  page: number;
+  limit?: number;
+  status?: string;
+  paymentStatus?: string;
+  search?: string;
+  sortBy?: string;
+  sortOrder?: string;
+};
+
+/** Query params for admin orders list (page + warm) — omits empty filters. */
+export function buildAdminOrdersListApiParams(
+  input: AdminOrdersListCacheInput,
+): Record<string, string> {
+  const params: Record<string, string> = {
+    page: String(input.page),
+    limit: String(input.limit ?? 20),
+    sortBy: input.sortBy || 'createdAt',
+    sortOrder: input.sortOrder || 'desc',
+  };
+  const status = input.status?.trim();
+  const paymentStatus = input.paymentStatus?.trim();
+  const search = input.search?.trim();
+  if (status) {
+    params.status = status;
+  }
+  if (paymentStatus) {
+    params.paymentStatus = paymentStatus;
+  }
+  if (search) {
+    params.search = search;
+  }
+  return params;
+}
+
+/** Single cache-key builder for admin orders list (page + warm). */
+export function buildAdminOrdersListCacheKey(input: AdminOrdersListCacheInput): string {
+  return buildAdminListCacheKey('orders', buildAdminOrdersListApiParams(input));
+}
+
+export function buildOrdersDefaultListCacheKey(): string {
+  return buildAdminOrdersListCacheKey({
+    page: 1,
+    sortBy: 'createdAt',
+    sortOrder: 'desc',
+  });
+}
+
 export const ADMIN_CACHE_KEYS = {
   dashboard: 'dashboard',
   categories: 'list/categories',
@@ -63,15 +111,6 @@ export const ADMIN_CACHE_KEYS = {
   priceFilter: 'settings/price-filter',
   reelsAdmin: 'reels-admin',
   stockAnalytics: 'analytics/stock',
-  ordersDefault: buildAdminListCacheKey('orders', {
-    page: '1',
-    limit: '20',
-    status: '',
-    paymentStatus: '',
-    search: '',
-    sortBy: 'createdAt',
-    sortOrder: 'desc',
-  }),
   usersDefault: buildAdminListCacheKey('users', {
     page: '1',
     limit: '20',

@@ -26,7 +26,7 @@ export async function getOrders(filters: OrderFilters = {}) {
       take: limit,
       orderBy,
       include: {
-        items: true,
+        _count: { select: { items: true } },
         user: {
           select: {
             id: true,
