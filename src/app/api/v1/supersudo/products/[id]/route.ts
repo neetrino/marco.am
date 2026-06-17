@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { authenticateToken, requireAdmin } from "@/lib/middleware/auth";
 import { adminService } from "@/lib/services/admin.service";
 import { normalizeProductClass } from "@/lib/constants/product-class";
+import {
+  isProductEditorSection,
+  pickProductEditorSection,
+} from "@/lib/admin/product-editor-section";
 import { logger } from "@/lib/utils/logger";
 
 function isValidAttributeIds(attributeIds: unknown): attributeIds is string[] {
@@ -63,7 +67,12 @@ export async function GET(
     }
 
     const { id } = await params;
+    const sectionParam = req.nextUrl.searchParams.get("section");
     const product = await adminService.getProductById(id);
+
+    if (isProductEditorSection(sectionParam)) {
+      return NextResponse.json(pickProductEditorSection(product, sectionParam));
+    }
 
     return NextResponse.json(product);
   } catch (error: any) {

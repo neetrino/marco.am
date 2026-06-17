@@ -1,6 +1,9 @@
 'use client';
 
 import type { ChangeEvent } from 'react';
+import { useMemo } from 'react';
+import { useTranslation } from '@/lib/i18n-client';
+import { AdminVerticalTabs } from '../../../components/AdminVerticalTabs';
 import type {
   Brand,
   Category,
@@ -11,16 +14,26 @@ import type {
 } from '../types';
 import type { CurrencyCode } from '@/lib/currency';
 import type { ProductClass } from '@/lib/constants/product-class';
-import { BasicInformation } from './BasicInformation';
+import type { ProductWarrantyYears } from '@/lib/constants/product-warranty';
+import type { ProductDescriptionEntry } from '@/lib/products/product-description';
+import {
+  PRODUCT_EDITOR_TAB_IDS,
+  type ProductEditorTabId,
+} from '../product-editor-tabs';
+import { ProductGeneralTab } from './ProductGeneralTab';
+import { ProductDescriptionTab } from './ProductDescriptionTab';
 import { ProductImages } from './ProductImages';
 import { CategoriesBrands } from './CategoriesBrands';
 import { PricingInventorySection } from './PricingInventorySection';
-import { ProductLabels } from './ProductLabels';
-import type { ProductWarrantyYears } from '@/lib/constants/product-warranty';
-import type { ProductDescriptionEntry } from '@/lib/products/product-description';
 
 interface AddProductFormContentProps {
   formId: string;
+  scrollRef: React.RefObject<HTMLDivElement>;
+  onBodyScroll: () => void;
+  activeTab: ProductEditorTabId;
+  visitedTabs: Set<ProductEditorTabId>;
+  loadingTab: ProductEditorTabId | null;
+  onTabChange: (tabId: ProductEditorTabId) => void;
   formData: {
     title: string;
     slug: string;
@@ -48,7 +61,6 @@ interface AddProductFormContentProps {
   attributes: Attribute[];
   defaultCurrency: CurrencyCode;
   isEditMode: boolean;
-  loading: boolean;
   imageUploadLoading: boolean;
   imageUploadError: string | null;
   categoriesExpanded: boolean;
@@ -103,8 +115,36 @@ interface AddProductFormContentProps {
   handleSubmit: (e: React.FormEvent) => void;
 }
 
+function TabPanel({
+  tabId,
+  activeTab,
+  visited,
+  children,
+}: {
+  tabId: ProductEditorTabId;
+  activeTab: ProductEditorTabId;
+  visited: boolean;
+  children: React.ReactNode;
+}) {
+  if (!visited) {
+    return null;
+  }
+
+  return (
+    <div role="tabpanel" hidden={activeTab !== tabId} className={activeTab === tabId ? '' : 'hidden'}>
+      {children}
+    </div>
+  );
+}
+
 export function AddProductFormContent({
   formId,
+  scrollRef,
+  onBodyScroll,
+  activeTab,
+  visitedTabs,
+  loadingTab,
+  onTabChange,
   formData,
   productType,
   simpleProductData,
@@ -113,7 +153,6 @@ export function AddProductFormContent({
   attributes,
   defaultCurrency,
   isEditMode,
-  loading,
   imageUploadLoading,
   imageUploadError,
   categoriesExpanded,
@@ -167,98 +206,139 @@ export function AddProductFormContent({
   isClothingCategory,
   handleSubmit,
 }: AddProductFormContentProps) {
+  const { t } = useTranslation();
+
+  const tabs = useMemo(
+    () =>
+      PRODUCT_EDITOR_TAB_IDS.map((id) => ({
+        id,
+        label: t(`admin.products.add.tabs.${id}`),
+      })),
+    [t],
+  );
+
+  const warrantyYears =
+    formData.warrantyYears === 1 ||
+    formData.warrantyYears === 2 ||
+    formData.warrantyYears === 3
+      ? formData.warrantyYears
+      : null;
+
   return (
-    <form id={formId} onSubmit={handleSubmit} className="space-y-6">
-        <BasicInformation
-          description={formData.description}
-          productClass={formData.productClass}
-          warrantyYears={
-            formData.warrantyYears === 1 ||
-            formData.warrantyYears === 2 ||
-            formData.warrantyYears === 3
-              ? formData.warrantyYears
-              : null
-          }
-          onDescriptionChange={onDescriptionChange}
-          onProductClassChange={onProductClassChange}
-          onWarrantyYearsChange={onWarrantyYearsChange}
-        />
+    <div className="flex min-h-0 flex-1 flex-col md:flex-row">
+      <AdminVerticalTabs
+        tabs={tabs}
+        activeTab={activeTab}
+        onTabChange={onTabChange}
+        ariaLabel={t('admin.products.add.tabsLabel')}
+      />
 
-        <ProductImages
-          imageUrls={formData.imageUrls}
-          featuredImageIndex={formData.featuredImageIndex}
-          imageUploadLoading={imageUploadLoading}
-          imageUploadError={imageUploadError}
-          fileInputRef={fileInputRef}
-          onUploadImages={onUploadImages}
-          onRemoveImage={onRemoveImage}
-          onSetFeaturedImage={onSetFeaturedImage}
-        />
+      <div
+        ref={scrollRef}
+        onScroll={onBodyScroll}
+        className="min-h-0 flex-1 overflow-y-auto px-5 py-4"
+      >
+        {loadingTab === activeTab ? (
+          <div className="flex items-center justify-center py-16">
+            <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-gray-900" />
+          </div>
+        ) : null}
 
-        <CategoriesBrands
-          categories={categories}
-          brands={brands}
-          categoryIds={formData.categoryIds}
-          primaryCategoryId={formData.primaryCategoryId}
-          brandIds={formData.brandIds}
-          categoriesExpanded={categoriesExpanded}
-          brandsExpanded={brandsExpanded}
-          useNewCategory={useNewCategory}
-          useNewBrand={useNewBrand}
-          newCategoryName={newCategoryName}
-          newBrandName={newBrandName}
-          onCategoriesExpandedChange={onCategoriesExpandedChange}
-          onBrandsExpandedChange={onBrandsExpandedChange}
-          onUseNewCategoryChange={onUseNewCategoryChange}
-          onUseNewBrandChange={onUseNewBrandChange}
-          onNewCategoryNameChange={onNewCategoryNameChange}
-          onNewBrandNameChange={onNewBrandNameChange}
-          onCategoryIdsChange={onCategoryIdsChange}
-          onBrandIdsChange={onBrandIdsChange}
-          onPrimaryCategoryIdChange={onPrimaryCategoryIdChange}
-          isClothingCategory={isClothingCategory}
-          onVariantsUpdate={onVariantsUpdate}
-        />
+        <form id={formId} onSubmit={handleSubmit} className={loadingTab === activeTab ? 'hidden' : ''}>
+          <TabPanel tabId="general" activeTab={activeTab} visited={visitedTabs.has('general')}>
+            <ProductGeneralTab
+              productClass={formData.productClass}
+              warrantyYears={warrantyYears}
+              labels={formData.labels}
+              onProductClassChange={onProductClassChange}
+              onWarrantyYearsChange={onWarrantyYearsChange}
+              onAddLabel={onAddLabel}
+              onRemoveLabel={onRemoveLabel}
+              onUpdateLabel={onUpdateLabel}
+            />
+          </TabPanel>
 
-        <PricingInventorySection
-          productType={productType}
-          onProductTypeChange={onProductTypeChange}
-          simpleProductData={simpleProductData}
-          defaultCurrency={defaultCurrency}
-          onPriceChange={onPriceChange}
-          onCompareAtPriceChange={onCompareAtPriceChange}
-          onSkuChange={onSkuChange}
-          onQuantityChange={onQuantityChange}
-          attributes={attributes}
-          selectedAttributesForVariants={selectedAttributesForVariants}
-          selectedAttributeValueIds={selectedAttributeValueIds}
-          attributesDropdownOpen={attributesDropdownOpen}
-          attributesDropdownRef={attributesDropdownRef}
-          onAttributesDropdownToggle={onAttributesDropdownToggle}
-          onAttributeToggle={onAttributeToggle}
-          onAttributeRemove={onAttributeRemove}
-          onAttributeValuesOpen={onAttributeValuesOpen}
-          generatedVariants={generatedVariants}
-          isEditMode={isEditMode}
-          hasVariantsToLoad={hasVariantsToLoad}
-          imageUploadLoading={imageUploadLoading}
-          variantImageInputRefs={variantImageInputRefs}
-          onVariantUpdate={onVariantUpdate}
-          onVariantDelete={onVariantDelete}
-          onVariantAdd={onVariantAdd}
-          onApplyToAllVariants={onApplyToAllVariants}
-          onVariantImageUpload={onVariantImageUpload}
-          onOpenValueModal={onOpenValueModal}
-        />
+          <TabPanel tabId="description" activeTab={activeTab} visited={visitedTabs.has('description')}>
+            <ProductDescriptionTab
+              description={formData.description}
+              onDescriptionChange={onDescriptionChange}
+            />
+          </TabPanel>
 
-        <ProductLabels
-          labels={formData.labels}
-          onAddLabel={onAddLabel}
-          onRemoveLabel={onRemoveLabel}
-          onUpdateLabel={onUpdateLabel}
-        />
+          <TabPanel tabId="media" activeTab={activeTab} visited={visitedTabs.has('media')}>
+            <ProductImages
+              imageUrls={formData.imageUrls}
+              featuredImageIndex={formData.featuredImageIndex}
+              imageUploadLoading={imageUploadLoading}
+              imageUploadError={imageUploadError}
+              fileInputRef={fileInputRef}
+              onUploadImages={onUploadImages}
+              onRemoveImage={onRemoveImage}
+              onSetFeaturedImage={onSetFeaturedImage}
+            />
+          </TabPanel>
 
-    </form>
+          <TabPanel tabId="catalog" activeTab={activeTab} visited={visitedTabs.has('catalog')}>
+            <CategoriesBrands
+              categories={categories}
+              brands={brands}
+              categoryIds={formData.categoryIds}
+              primaryCategoryId={formData.primaryCategoryId}
+              brandIds={formData.brandIds}
+              categoriesExpanded={categoriesExpanded}
+              brandsExpanded={brandsExpanded}
+              useNewCategory={useNewCategory}
+              useNewBrand={useNewBrand}
+              newCategoryName={newCategoryName}
+              newBrandName={newBrandName}
+              onCategoriesExpandedChange={onCategoriesExpandedChange}
+              onBrandsExpandedChange={onBrandsExpandedChange}
+              onUseNewCategoryChange={onUseNewCategoryChange}
+              onUseNewBrandChange={onUseNewBrandChange}
+              onNewCategoryNameChange={onNewCategoryNameChange}
+              onNewBrandNameChange={onNewBrandNameChange}
+              onCategoryIdsChange={onCategoryIdsChange}
+              onBrandIdsChange={onBrandIdsChange}
+              onPrimaryCategoryIdChange={onPrimaryCategoryIdChange}
+              isClothingCategory={isClothingCategory}
+              onVariantsUpdate={onVariantsUpdate}
+            />
+          </TabPanel>
+
+          <TabPanel tabId="pricing" activeTab={activeTab} visited={visitedTabs.has('pricing')}>
+            <PricingInventorySection
+              productType={productType}
+              onProductTypeChange={onProductTypeChange}
+              simpleProductData={simpleProductData}
+              defaultCurrency={defaultCurrency}
+              onPriceChange={onPriceChange}
+              onCompareAtPriceChange={onCompareAtPriceChange}
+              onSkuChange={onSkuChange}
+              onQuantityChange={onQuantityChange}
+              attributes={attributes}
+              selectedAttributesForVariants={selectedAttributesForVariants}
+              selectedAttributeValueIds={selectedAttributeValueIds}
+              attributesDropdownOpen={attributesDropdownOpen}
+              attributesDropdownRef={attributesDropdownRef}
+              onAttributesDropdownToggle={onAttributesDropdownToggle}
+              onAttributeToggle={onAttributeToggle}
+              onAttributeRemove={onAttributeRemove}
+              onAttributeValuesOpen={onAttributeValuesOpen}
+              generatedVariants={generatedVariants}
+              isEditMode={isEditMode}
+              hasVariantsToLoad={hasVariantsToLoad}
+              imageUploadLoading={imageUploadLoading}
+              variantImageInputRefs={variantImageInputRefs}
+              onVariantUpdate={onVariantUpdate}
+              onVariantDelete={onVariantDelete}
+              onVariantAdd={onVariantAdd}
+              onApplyToAllVariants={onApplyToAllVariants}
+              onVariantImageUpload={onVariantImageUpload}
+              onOpenValueModal={onOpenValueModal}
+            />
+          </TabPanel>
+        </form>
+      </div>
+    </div>
   );
 }
-

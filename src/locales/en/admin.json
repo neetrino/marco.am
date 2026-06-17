@@ -507,6 +507,14 @@
       "productClassLabel": "Product class",
       "productClassRetail": "Retail",
       "productClassWholesale": "Wholesale",
+      "tabsLabel": "Product sections",
+      "tabs": {
+        "general": "General",
+        "description": "Description",
+        "media": "Media",
+        "catalog": "Catalog",
+        "pricing": "Pricing"
+      },
       "basicInformation": "Basic Information",
       "productType": "Product Type",
       "productTypeDescription": "Select whether this is a simple product with a single price and stock, or a variable product with multiple variants (e.g., different sizes, colors)",

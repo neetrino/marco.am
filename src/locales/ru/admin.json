@@ -507,6 +507,14 @@
       "productClassLabel": "Класс товара",
       "productClassRetail": "Розница",
       "productClassWholesale": "Опт",
+      "tabsLabel": "Разделы товара",
+      "tabs": {
+        "general": "Основное",
+        "description": "Описание",
+        "media": "Медиа",
+        "catalog": "Каталог",
+        "pricing": "Цены"
+      },
       "basicInformation": "Основная информация",
       "productType": "Тип товара",
       "productTypeSimple": "Простой",

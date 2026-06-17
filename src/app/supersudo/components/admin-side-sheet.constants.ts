@@ -1,6 +1,6 @@
 /** Admin side panel — 90% viewport width, slides in from the right. */
 export const ADMIN_SIDE_SHEET_PANEL_CLASS =
-  'fixed inset-y-0 right-0 z-[260] flex w-[90vw] max-w-[90vw] flex-col bg-white shadow-[-8px_0_24px_rgba(16,16,16,0.12)] dark:bg-zinc-950';
+  'fixed inset-y-0 right-0 z-[260] flex w-[90vw] max-w-[90vw] flex-col overflow-hidden rounded-l-2xl bg-white shadow-[-8px_0_24px_rgba(16,16,16,0.12)] dark:bg-zinc-950';
 
 export const ADMIN_SIDE_SHEET_OVERLAY_CLASS =
   'fixed inset-0 z-[255] bg-black/40';

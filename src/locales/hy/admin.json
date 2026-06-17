@@ -511,6 +511,14 @@
       "productClassLabel": "Դաս (մանրածախ/մեծածախ)",
       "productClassRetail": "Մանրածախ",
       "productClassWholesale": "Մեծածախ",
+      "tabsLabel": "Ապրանքի բաժիններ",
+      "tabs": {
+        "general": "Հիմնական",
+        "description": "Նկարագրություն",
+        "media": "Մեդիա",
+        "catalog": "Կատալոգ",
+        "pricing": "Գին"
+      },
       "basicInformation": "Հիմնական տեղեկություն",
       "title": "Վերնագիր",
       "slug": "Slug",
