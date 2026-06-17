@@ -2,6 +2,7 @@ import Image from 'next/image';
 
 import { t } from '../../lib/i18n';
 import type { LanguageCode } from '../../lib/language';
+import { shouldBypassNextImageOptimizer } from '../../lib/utils/should-bypass-next-image-optimizer';
 import {
   HOME_APP_BANNER_IMAGE_HEIGHT,
   HOME_APP_BANNER_IMAGE_PATH,
@@ -11,12 +12,15 @@ import {
 
 type HomeAppBannerProps = {
   language: LanguageCode;
+  imageUrl?: string | null;
 };
 
 /**
  * Full-width promotional banner below «ԲՐԵՆԴՆԵՐ» — Figma 305:2155.
  */
-export function HomeAppBanner({ language }: HomeAppBannerProps) {
+export function HomeAppBanner({ language, imageUrl }: HomeAppBannerProps) {
+  const resolvedImageUrl = imageUrl?.trim() || HOME_APP_BANNER_IMAGE_PATH;
+
   return (
     <div
       role="region"
@@ -25,13 +29,14 @@ export function HomeAppBanner({ language }: HomeAppBannerProps) {
     >
       <div className={HOME_APP_BANNER_INNER_CLASS}>
         <Image
-          src={HOME_APP_BANNER_IMAGE_PATH}
+          src={resolvedImageUrl}
           alt={t(language, 'home.app_banner.image_alt')}
           width={HOME_APP_BANNER_IMAGE_WIDTH}
           height={HOME_APP_BANNER_IMAGE_HEIGHT}
           className="h-auto w-full max-w-full object-cover object-center"
           sizes="(max-width: 1280px) 100vw, 1216px"
           priority={false}
+          unoptimized={shouldBypassNextImageOptimizer(resolvedImageUrl)}
         />
       </div>
     </div>

@@ -10,12 +10,18 @@ import type { PublicBannersPayload } from '@/lib/services/banner-management.serv
 import { homeBrandPartnersService } from '@/lib/services/home-brand-partners.service';
 import type { HomeBrandPartnerPublicItem } from '@/lib/types/home-brand-partners-public';
 
+import {
+  HOME_APP_DOWNLOAD_BANNER_ID,
+  HOME_APP_DOWNLOAD_DEFAULT_IMAGE_URL,
+} from '@/lib/constants/home-hero-admin-banners';
+
 export type HomeProductRailsData = {
   promotionProducts: SpecialOfferProduct[];
   newProducts: SpecialOfferProduct[];
   brandPartners: readonly HomeBrandPartnerPublicItem[] | null;
   brandPartnersSectionTitle: string | null;
   promoStripBanners: PublicBannersPayload | null;
+  appDownloadBannerUrl: string | null;
 };
 
 /**
@@ -24,7 +30,7 @@ export type HomeProductRailsData = {
 async function fetchHomeProductRailsData(
   lang: LanguageCode,
 ): Promise<HomeProductRailsData> {
-  const [promotionOutcome, newOutcome, partnersOutcome, promoBannersOutcome] =
+  const [promotionOutcome, newOutcome, partnersOutcome, promoBannersOutcome, appBannerOutcome] =
     await Promise.allSettled([
     getProductsListingCached({
       page: 1,
@@ -51,6 +57,10 @@ async function fetchHomeProductRailsData(
       slot: 'home.promo.strip',
       localeRaw: lang,
     }),
+    bannerManagementService.getPublicSlotPayload({
+      slot: 'home.app.banner',
+      localeRaw: lang,
+    }),
   ]);
 
   let promotionProducts: SpecialOfferProduct[] = [];
@@ -58,6 +68,7 @@ async function fetchHomeProductRailsData(
   let brandPartners: readonly HomeBrandPartnerPublicItem[] | null = null;
   let brandPartnersSectionTitle: string | null = null;
   let promoStripBanners: PublicBannersPayload | null = null;
+  let appDownloadBannerUrl: string | null = null;
 
   if (promotionOutcome.status === 'fulfilled') {
     promotionProducts = dedupeCardProductsByTitle(
@@ -82,12 +93,19 @@ async function fetchHomeProductRailsData(
     promoStripBanners = promoBannersOutcome.value;
   }
 
+  if (appBannerOutcome.status === 'fulfilled') {
+    appDownloadBannerUrl =
+      appBannerOutcome.value.items.find((item) => item.id === HOME_APP_DOWNLOAD_BANNER_ID)
+        ?.imageDesktopUrl ?? HOME_APP_DOWNLOAD_DEFAULT_IMAGE_URL;
+  }
+
   return {
     promotionProducts,
     newProducts,
     brandPartners,
     brandPartnersSectionTitle,
     promoStripBanners,
+    appDownloadBannerUrl,
   };
 }
 

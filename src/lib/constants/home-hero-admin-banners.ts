@@ -1,7 +1,9 @@
 import type { BannerManagementStorage } from "@/lib/schemas/banner-management.schema";
 
 import { HERO_MOBILE_PRIMARY_IMAGE_SRC } from "@/components/hero.constants";
+import { HOME_APP_BANNER_IMAGE_PATH } from "@/components/home/home-app-banner.constants";
 
+export const HOME_APP_DOWNLOAD_BANNER_ID = "home-app-download-banner";
 export const HOME_HERO_PRIMARY_TOP_BANNER_ID = "home-hero-primary-top";
 export const HOME_HERO_PRIMARY_BOTTOM_BANNER_ID = "home-hero-primary-bottom";
 export const HOME_HERO_SECONDARY_BANNER_ID = "home-hero-secondary-main";
@@ -23,6 +25,7 @@ export const HOME_PROMO_PRIMARY_DEFAULT_IMAGE_URL =
 export const HOME_PROMO_PRIMARY_MOBILE_DEFAULT_IMAGE_URL =
   HOME_PROMO_PRIMARY_DEFAULT_IMAGE_URL;
 export const HOME_PROMO_SECONDARY_DEFAULT_IMAGE_URL = "" as const;
+export const HOME_APP_DOWNLOAD_DEFAULT_IMAGE_URL = HOME_APP_BANNER_IMAGE_PATH;
 
 export const HOME_HERO_DEFAULT_BANNER_ITEMS: BannerManagementStorage["banners"] = [
   {
@@ -97,6 +100,27 @@ export const HOME_HERO_DEFAULT_BANNER_ITEMS: BannerManagementStorage["banners"] 
       en: "Home promo primary banner",
     },
     imageDesktopUrl: HOME_PROMO_PRIMARY_DEFAULT_IMAGE_URL,
+    imageMobileUrl: null,
+    link: {
+      href: "/products",
+      openInNewTab: false,
+    },
+    schedule: {
+      startsAt: null,
+      endsAt: null,
+    },
+    active: true,
+    sortOrder: 0,
+  },
+  {
+    id: HOME_APP_DOWNLOAD_BANNER_ID,
+    slot: "home.app.banner",
+    title: {
+      hy: "Home app download banner",
+      ru: "Home app download banner",
+      en: "Home app download banner",
+    },
+    imageDesktopUrl: HOME_APP_DOWNLOAD_DEFAULT_IMAGE_URL,
     imageMobileUrl: null,
     link: {
       href: "/products",

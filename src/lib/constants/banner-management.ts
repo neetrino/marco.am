@@ -9,6 +9,7 @@ export const BANNER_SLOT_IDS = [
   "home.hero.primary",
   "home.hero.secondary",
   "home.promo.strip",
+  "home.app.banner",
   "catalog.top",
   "catalog.sidebar",
 ] as const;

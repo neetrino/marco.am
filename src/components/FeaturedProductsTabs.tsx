@@ -47,6 +47,8 @@ import type { SpecialOfferProduct } from './home/special-offer-product.types';
 import { useIsMaxMd } from './home/use-is-max-md';
 import { HOME_PRODUCT_CHUNK_SIZE } from '../constants/homeProductChunks';
 import {
+  HOME_APP_DOWNLOAD_BANNER_ID,
+  HOME_APP_DOWNLOAD_DEFAULT_IMAGE_URL,
   HOME_PROMO_PRIMARY_BANNER_ID,
   HOME_PROMO_PRIMARY_DEFAULT_IMAGE_URL,
   HOME_PROMO_PRIMARY_MOBILE_DEFAULT_IMAGE_URL,
@@ -126,6 +128,8 @@ export type FeaturedProductsTabsProps = {
   readonly initialHomeBrandPartnersSectionTitle?: string | null;
   /** Server-rendered promo strip banners — avoids client `/api/v1/banners` on first paint. */
   readonly initialPromoStripBanners?: PublicBannersPayload | null;
+  /** Server-rendered app download banner URL (desktop, below brands). */
+  readonly initialAppDownloadBannerUrl?: string | null;
 };
 
 async function fetchFeaturedStrip(
@@ -188,6 +192,15 @@ async function fetchPromoStripBanners(language: LanguageCode): Promise<BannerSlo
   });
 }
 
+async function fetchAppDownloadBanner(language: LanguageCode): Promise<BannerSlotPayload> {
+  return apiClient.get<BannerSlotPayload>('/api/v1/banners', {
+    params: {
+      slot: 'home.app.banner',
+      locale: language,
+    },
+  });
+}
+
 function cardVisualRowsToStubProducts(rows: CardVisualRow[]): SpecialOfferProduct[] {
   return rows.map((row) => ({
     id: row.id,
@@ -229,6 +242,7 @@ export function FeaturedProductsTabs({
   initialHomeBrandPartners = null,
   initialHomeBrandPartnersSectionTitle = null,
   initialPromoStripBanners = null,
+  initialAppDownloadBannerUrl = null,
 }: FeaturedProductsTabsProps = {}) {
   const isMaxMd = useIsMaxMd();
   const [language, setLanguage] = useState<LanguageCode>(() => serverLanguage ?? 'en');
@@ -311,6 +325,31 @@ export function FeaturedProductsTabs({
     refetchOnMount: initialPromoStripPayload === undefined,
   });
 
+  const initialAppDownloadPayload =
+    language === serverLanguage && initialAppDownloadBannerUrl !== null
+      ? {
+          items: [
+            {
+              id: HOME_APP_DOWNLOAD_BANNER_ID,
+              slot: 'home.app.banner' as const,
+              title: '',
+              imageDesktopUrl: initialAppDownloadBannerUrl,
+              imageMobileUrl: null,
+              link: { href: '/products', openInNewTab: false },
+              sortOrder: 0,
+            },
+          ],
+        }
+      : undefined;
+
+  const appDownloadBannerQuery = useQuery({
+    queryKey: queryKeys.bannersBySlot('home.app.banner', language),
+    queryFn: () => fetchAppDownloadBanner(language),
+    staleTime: 300_000,
+    initialData: initialAppDownloadPayload,
+    refetchOnMount: initialAppDownloadPayload === undefined,
+  });
+
   const promoPrimaryImageUrl =
     promoStripBannersQuery.data?.items.find((item) => item.id === HOME_PROMO_PRIMARY_BANNER_ID)
       ?.imageDesktopUrl ?? HOME_PROMO_PRIMARY_DEFAULT_IMAGE_URL;
@@ -320,6 +359,11 @@ export function FeaturedProductsTabs({
   const promoPrimaryMobileImageUrl =
     promoStripBannersQuery.data?.items.find((item) => item.id === HOME_PROMO_PRIMARY_BANNER_ID)
       ?.imageMobileUrl ?? HOME_PROMO_PRIMARY_MOBILE_DEFAULT_IMAGE_URL;
+  const appDownloadBannerUrl =
+    appDownloadBannerQuery.data?.items.find((item) => item.id === HOME_APP_DOWNLOAD_BANNER_ID)
+      ?.imageDesktopUrl ??
+    initialAppDownloadBannerUrl ??
+    HOME_APP_DOWNLOAD_DEFAULT_IMAGE_URL;
 
   const resolvedHomeBrandPartners =
     homeBrandPartnersQuery.data?.brands ?? initialHomeBrandPartners ?? null;
@@ -499,7 +543,7 @@ export function FeaturedProductsTabs({
 
       <div className={`w-full ${FEATURED_HOME_BANNERS_BLOCK_PADDING_Y_CLASS}`}>
         <div className="hidden md:block">
-          <HomeAppBanner language={language} />
+          <HomeAppBanner language={language} imageUrl={appDownloadBannerUrl} />
         </div>
         <div className="md:hidden">
           <HomeMobileBannerProductShowcase imageUrl={promoPrimaryMobileImageUrl} />

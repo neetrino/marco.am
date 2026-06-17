@@ -30,6 +30,7 @@ export async function HomeProductRailsBoundary() {
         initialHomeBrandPartners={rails.brandPartners}
         initialHomeBrandPartnersSectionTitle={rails.brandPartnersSectionTitle}
         initialPromoStripBanners={rails.promoStripBanners}
+        initialAppDownloadBannerUrl={rails.appDownloadBannerUrl}
       />
     </>
   );
