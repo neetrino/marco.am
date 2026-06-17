@@ -32,6 +32,7 @@ import {
   HOME_HERO_SECONDARY_DEFAULT_IMAGE_URL,
 } from '../../../lib/constants/home-hero-admin-banners';
 import { HERO_MOBILE_PRIMARY_IMAGE_SRC } from '../../../components/hero.constants';
+import { HOME_BANNERS_TWO_COL_GRID_CLASS } from '../../../components/home/home-secondary-banner.constants';
 
 type HeroBannerPlatformTab = 'desktop' | 'mobile';
 
@@ -41,8 +42,9 @@ const HERO_DESKTOP_LAYOUT_ASPECT_CLASS = 'aspect-[141/68]';
 const HERO_MOBILE_PREVIEW_CLASS = 'aspect-[399/288] w-full';
 /** Matches `HomeGradientBanner` — `56 / 34`. */
 const PROMO_DESKTOP_LEFT_PREVIEW_CLASS = 'aspect-[56/34] w-full';
-/** Matches `HomeSecondaryBanner` stacked ratio on narrow viewports. */
-const PROMO_DESKTOP_RIGHT_PREVIEW_CLASS = 'aspect-[820/328] w-full md:h-full md:min-h-0 md:aspect-auto';
+const PROMO_STRIP_GRID_CLASS = `grid w-full grid-cols-1 ${HOME_BANNERS_TWO_COL_GRID_CLASS} items-stretch gap-4`;
+/** Figma radii — both promo tiles use 16px on desktop (`HomeGradientBanner`, `HomeSecondaryBanner`). */
+const PROMO_TILE_RADIUS_CLASS = 'rounded-2xl';
 /** Matches `HomeMobileBannerProductShowcase` — Figma 522×372. */
 const MOBILE_FLOOR_PREVIEW_CLASS = 'aspect-[522/372] w-full';
 
@@ -349,6 +351,46 @@ function HeroBannerPlatformTabs({
         </svg>
         {t('admin.heroBanner.tabMobile')}
       </button>
+    </div>
+  );
+}
+
+function HeroBannerPromoStripRow({
+  form,
+  uploadingField,
+  onUpload,
+  t,
+}: {
+  form: HeroBannerFormState;
+  uploadingField: UploadingField;
+  onUpload: (fieldKey: keyof HeroBannerFormState, file: File) => Promise<void>;
+  t: (key: string) => string;
+}) {
+  return (
+    <div className={PROMO_STRIP_GRID_CLASS}>
+      <div className="min-w-0">
+        <ImageUploadField
+          label={t('admin.heroBanner.promoCardLeft')}
+          fieldKey="promoPrimaryDesktopUrl"
+          currentUrl={form.promoPrimaryDesktopUrl}
+          uploadingField={uploadingField}
+          onUpload={onUpload}
+          previewClassName={PROMO_DESKTOP_LEFT_PREVIEW_CLASS}
+          previewRadiusClassName={PROMO_TILE_RADIUS_CLASS}
+        />
+      </div>
+      <div className="relative min-h-0 min-w-0 max-md:aspect-[820/328] md:h-full">
+        <ImageUploadField
+          label={t('admin.heroBanner.promoCardRight')}
+          fieldKey="promoSecondaryDesktopUrl"
+          currentUrl={form.promoSecondaryDesktopUrl}
+          uploadingField={uploadingField}
+          onUpload={onUpload}
+          previewClassName="h-full w-full"
+          previewRadiusClassName={PROMO_TILE_RADIUS_CLASS}
+          fillCell
+        />
+      </div>
     </div>
   );
 }
@@ -707,28 +749,13 @@ export default function HeroBannerPage() {
                 previewClassName={APP_DOWNLOAD_PREVIEW_CLASS}
                 previewRadiusClassName="rounded-[32px]"
               />
-            </Card>
-
-            <Card className="admin-card border border-slate-100 bg-white/95 p-4 shadow-sm sm:p-6">
-              <HeroBannerSectionHeader title={t('admin.heroBanner.sectionPromoStrip')} />
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-[minmax(0,320px)_minmax(0,1fr)] md:items-stretch lg:grid-cols-[minmax(0,460px)_minmax(0,1fr)]">
-                <ImageUploadField
-                  label={t('admin.heroBanner.promoCardLeft')}
-                  fieldKey="promoPrimaryDesktopUrl"
-                  currentUrl={form.promoPrimaryDesktopUrl}
+              <div className="mt-4 border-t border-slate-100 pt-4">
+                <HeroBannerSectionHeader title={t('admin.heroBanner.sectionPromoStrip')} />
+                <HeroBannerPromoStripRow
+                  form={form}
                   uploadingField={uploadingField}
                   onUpload={handleUpload}
-                  previewClassName={PROMO_DESKTOP_LEFT_PREVIEW_CLASS}
-                  previewRadiusClassName="rounded-[36px]"
-                />
-                <ImageUploadField
-                  label={t('admin.heroBanner.promoCardRight')}
-                  fieldKey="promoSecondaryDesktopUrl"
-                  currentUrl={form.promoSecondaryDesktopUrl}
-                  uploadingField={uploadingField}
-                  onUpload={handleUpload}
-                  previewClassName={PROMO_DESKTOP_RIGHT_PREVIEW_CLASS}
-                  previewRadiusClassName="rounded-2xl"
+                  t={t}
                 />
               </div>
             </Card>

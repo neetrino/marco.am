@@ -268,6 +268,10 @@ const nextConfig = {
         destination: `${r2PublicBase}/static-site/logo.webp`,
       },
       {
+        source: '/logo.webp',
+        destination: `${r2PublicBase}/static-site/logo.webp`,
+      },
+      {
         source: '/assets/:path*',
         destination: `${r2PublicBase}/static-site/assets/:path*`,
       },
