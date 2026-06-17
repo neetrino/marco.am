@@ -127,7 +127,6 @@ async function main(): Promise<void> {
             stock: DEFAULT_STOCK,
             sku,
             color: color || undefined,
-            imageUrl: media[0],
             published: true,
           },
         ],
