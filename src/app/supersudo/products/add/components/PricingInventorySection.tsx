@@ -4,7 +4,6 @@ import type { RefObject } from 'react';
 import { useTranslation } from '@/lib/i18n-client';
 import type { CurrencyCode } from '@/lib/currency';
 import type { Attribute, GeneratedVariant } from '../types';
-import { FormSection } from './FormSection';
 import { ProductTypeTabs } from './ProductTypeTabs';
 import { SimpleProductFields } from './SimpleProductFields';
 import { AttributesSelection } from './AttributesSelection';
@@ -79,16 +78,13 @@ export function PricingInventorySection({
   const { t } = useTranslation();
 
   return (
-    <FormSection
-      title={t('admin.products.add.pricingAndInventory')}
-      headerRight={
-        <ProductTypeTabs
-          variant="section"
-          productType={productType}
-          onChange={onProductTypeChange}
-        />
-      }
-    >
+    <section className="border-b border-slate-200/70 pb-6 last:border-b-0">
+      <ProductTypeTabs productType={productType} onChange={onProductTypeChange} />
+
+      <h2 className="mt-5 mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">
+        {t('admin.products.add.pricingAndInventory')}
+      </h2>
+
       {productType === 'simple' ? (
         <SimpleProductFields
           embedded
@@ -137,6 +133,6 @@ export function PricingInventorySection({
           ) : null}
         </div>
       )}
-    </FormSection>
+    </section>
   );
 }

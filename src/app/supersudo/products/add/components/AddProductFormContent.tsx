@@ -98,7 +98,6 @@ interface AddProductFormContentProps {
   onRemoveLabel: (index: number) => void;
   onUpdateLabel: (index: number, field: keyof ProductLabel, value: ProductLabel[keyof ProductLabel]) => void;
   onWarrantyYearsChange: (years: ProductWarrantyYears | null) => void;
-  onFeaturedChange: (featured: boolean) => void;
   onProductClassChange: (productClass: ProductClass) => void;
   onVariantsUpdate: (updater: (prev: Variant[]) => Variant[]) => void;
   onApplyToAllVariants: (field: 'price' | 'compareAtPrice' | 'stock' | 'sku', value: string) => void;
@@ -164,7 +163,6 @@ export function AddProductFormContent({
   onRemoveLabel,
   onUpdateLabel,
   onWarrantyYearsChange,
-  onFeaturedChange,
   onProductClassChange,
   onVariantsUpdate,
   onApplyToAllVariants,
@@ -264,9 +262,7 @@ export function AddProductFormContent({
         />
 
         <Publishing
-          featured={formData.featured}
           productClass={formData.productClass}
-          onFeaturedChange={onFeaturedChange}
           onProductClassChange={onProductClassChange}
         />
 

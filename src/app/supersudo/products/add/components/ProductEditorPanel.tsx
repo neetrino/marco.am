@@ -10,6 +10,7 @@ import {
 import { ValueSelectionModal } from './ValueSelectionModal';
 import { AddProductFormContent } from './AddProductFormContent';
 import { InlineSheetField } from './InlineSheetField';
+import { FeaturedStarToggle } from './FeaturedStarToggle';
 import { useProductFormState } from '../hooks/useProductFormState';
 import { useProductDataLoading } from '../hooks/useProductDataLoading';
 import { useProductEditMode } from '../hooks/useProductEditMode';
@@ -175,22 +176,36 @@ export function ProductEditorPanel({ open, productId, onCancel, onSaved }: Produ
   const sheetHeader = (
     <div className="flex items-start justify-between gap-4">
       <div className="min-w-0 flex-1 pr-4">
-        <InlineSheetField
-          form={ADMIN_PRODUCT_EDITOR_FORM_ID}
-          value={formState.formData.title}
-          onChange={handleTitleChange}
-          placeholder={t('admin.products.add.productTitlePlaceholder')}
-          variant="title"
-          required
-        />
-        <InlineSheetField
-          form={ADMIN_PRODUCT_EDITOR_FORM_ID}
-          value={formState.formData.slug}
-          onChange={(e) => formState.setFormData((prev) => ({ ...prev, slug: e.target.value }))}
-          placeholder={t('admin.products.add.productSlugPlaceholder')}
-          variant="slug"
-          required
-        />
+        <div className="flex items-start gap-3">
+          <FeaturedStarToggle
+            featured={formState.formData.featured}
+            onToggle={() =>
+              formState.setFormData((prev) => ({ ...prev, featured: !prev.featured }))
+            }
+            markLabel={t('admin.products.clickToMarkFeatured')}
+            removeLabel={t('admin.products.clickToRemoveFeatured')}
+          />
+          <div className="min-w-0 flex-1">
+            <InlineSheetField
+              form={ADMIN_PRODUCT_EDITOR_FORM_ID}
+              value={formState.formData.title}
+              onChange={handleTitleChange}
+              placeholder={t('admin.products.add.productTitlePlaceholder')}
+              variant="title"
+              required
+            />
+          </div>
+        </div>
+        <div className="pl-[3.25rem]">
+          <InlineSheetField
+            form={ADMIN_PRODUCT_EDITOR_FORM_ID}
+            value={formState.formData.slug}
+            onChange={(e) => formState.setFormData((prev) => ({ ...prev, slug: e.target.value }))}
+            placeholder={t('admin.products.add.productSlugPlaceholder')}
+            variant="slug"
+            required
+          />
+        </div>
       </div>
       <div className="flex shrink-0 items-center gap-2 pt-1">
         <Button type="button" variant="outline" size="sm" onClick={onCancel}>
@@ -289,7 +304,6 @@ export function ProductEditorPanel({ open, productId, onCancel, onSaved }: Produ
         onWarrantyYearsChange={(warrantyYears) =>
           formState.setFormData((prev) => ({ ...prev, warrantyYears }))
         }
-        onFeaturedChange={(featured) => formState.setFormData((prev) => ({ ...prev, featured }))}
         onProductClassChange={(productClass) => formState.setFormData((prev) => ({ ...prev, productClass }))}
         onVariantsUpdate={(updater) => formState.setFormData((prev) => ({ ...prev, variants: updater(prev.variants) }))}
         onApplyToAllVariants={(field, value) => applyToAllVariants(field, value)}
