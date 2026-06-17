@@ -56,18 +56,30 @@ class PromoCodesService {
 
   async getAdminList() {
     const records = await this.getRecords();
-    const usageByCode = await Promise.all(
-      records.map(async (record) => {
-        const totalUses = await db.order.count({
-          where: { couponCode: record.code, status: { not: CANCELED_ORDER_STATUS } },
-        });
-        return [record.code, totalUses] as const;
-      })
-    );
-    const usageMap = new Map(usageByCode);
+    if (records.length === 0) {
+      return [];
+    }
+
+    const usageRows = await db.order.groupBy({
+      by: ["couponCode"],
+      where: {
+        couponCode: { not: null },
+        status: { not: CANCELED_ORDER_STATUS },
+      },
+      _count: { _all: true },
+    });
+
+    const usageMap = new Map<string, number>();
+    for (const row of usageRows) {
+      if (!row.couponCode) {
+        continue;
+      }
+      usageMap.set(normalizeCouponCode(row.couponCode), row._count?._all ?? 0);
+    }
+
     return records.map((record) => ({
       ...record,
-      usageCount: usageMap.get(record.code) ?? 0,
+      usageCount: usageMap.get(normalizeCouponCode(record.code)) ?? 0,
     }));
   }
 

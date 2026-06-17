@@ -1,22 +1,27 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { apiClient } from '@/lib/api-client';
 import { useTranslation } from '@/lib/i18n-client';
 import type { ProductEditorSection } from '@/lib/admin/product-editor-section';
 import type { CurrencyCode } from '@/lib/currency';
+import type { Product } from '../../types';
 import {
   PRODUCT_EDITOR_DEFAULT_TAB,
   type ProductEditorTabId,
 } from '../product-editor-tabs';
 import type { ProductData, Attribute } from '../types';
 import type { AddProductFormState } from '../utils/productFormDataBuilder';
-import { applyProductEditorSection } from '../utils/product-editor-section-apply';
+import {
+  applyGeneralSectionFromListProduct,
+  applyProductEditorSection,
+} from '../utils/product-editor-section-apply';
 import { logger } from '@/lib/utils/logger';
 
 interface UseProductEditorTabLoaderParams {
   open: boolean;
   productId: string | null;
+  listProduct: Product | null;
   isLoggedIn: boolean;
   isAdmin: boolean;
   activeTab: ProductEditorTabId;
@@ -38,9 +43,14 @@ interface UseProductEditorTabLoaderParams {
   onLoadError: () => void;
 }
 
+interface LoadSectionOptions {
+  silent?: boolean;
+}
+
 export function useProductEditorTabLoader({
   open,
   productId,
+  listProduct,
   isLoggedIn,
   isAdmin,
   activeTab,
@@ -63,14 +73,26 @@ export function useProductEditorTabLoader({
   );
   const [loadingTab, setLoadingTab] = useState<ProductEditorTabId | null>(null);
   const inFlightRef = useRef<Set<ProductEditorTabId>>(new Set());
+  const generalSeededRef = useRef(false);
+  const generalBackgroundStartedRef = useRef(false);
 
   const markTabLoaded = useCallback((tabId: ProductEditorTabId) => {
     setLoadedTabs((prev) => new Set(prev).add(tabId));
     setVisitedTabs((prev) => new Set(prev).add(tabId));
   }, []);
 
+  useLayoutEffect(() => {
+    if (!open || !productId || !listProduct || generalSeededRef.current) {
+      return;
+    }
+
+    generalSeededRef.current = true;
+    applyGeneralSectionFromListProduct(listProduct, setFormData);
+    markTabLoaded(PRODUCT_EDITOR_DEFAULT_TAB);
+  }, [open, productId, listProduct, setFormData, markTabLoaded]);
+
   const loadSection = useCallback(
-    async (section: ProductEditorSection) => {
+    async (section: ProductEditorSection, options?: LoadSectionOptions) => {
       if (!productId || !isLoggedIn || !isAdmin) {
         markTabLoaded(section);
         return;
@@ -81,10 +103,12 @@ export function useProductEditorTabLoader({
       }
 
       inFlightRef.current.add(section);
-      setLoadingTab(section);
+      if (!options?.silent) {
+        setLoadingTab(section);
+      }
 
       try {
-        logger.devLog('📥 [ADMIN] Loading product section:', { productId, section });
+        logger.devLog('📥 [ADMIN] Loading product section:', { productId, section, silent: options?.silent });
         const product = await apiClient.get<ProductData>(
           `/api/v1/supersudo/products/${productId}`,
           { params: { section } },
@@ -108,10 +132,14 @@ export function useProductEditorTabLoader({
         logger.devLog('✅ [ADMIN] Product section loaded:', section);
       } catch (err: unknown) {
         console.error('❌ [ADMIN] Error loading product section:', err);
-        onLoadError();
+        if (!options?.silent) {
+          onLoadError();
+        }
       } finally {
         inFlightRef.current.delete(section);
-        setLoadingTab((current) => (current === section ? null : current));
+        if (!options?.silent) {
+          setLoadingTab((current) => (current === section ? null : current));
+        }
       }
     },
     [
@@ -144,10 +172,18 @@ export function useProductEditorTabLoader({
       return;
     }
 
+    if (listProduct) {
+      if (!generalBackgroundStartedRef.current) {
+        generalBackgroundStartedRef.current = true;
+        void loadSection(PRODUCT_EDITOR_DEFAULT_TAB, { silent: true });
+      }
+      return;
+    }
+
     if (!loadedTabs.has(PRODUCT_EDITOR_DEFAULT_TAB)) {
       void loadSection(PRODUCT_EDITOR_DEFAULT_TAB);
     }
-  }, [open, productId, loadedTabs, loadSection, markTabLoaded]);
+  }, [open, productId, listProduct, loadedTabs, loadSection, markTabLoaded]);
 
   useEffect(() => {
     if (!open) {

@@ -1,6 +1,7 @@
 import { CATALOG_PRICE_CURRENCY, convertPrice, type CurrencyCode } from '@/lib/currency';
 import { cleanImageUrls, separateMainAndVariantImages } from '@/lib/utils/image-utils';
 import type { ProductEditorSection } from '@/lib/admin/product-editor-section';
+import type { Product } from '../../types';
 import type { ProductData, ColorData, Variant, Attribute, AdminProductVariantRow } from '../types';
 import type { AddProductFormState } from './productFormDataBuilder';
 import { extractColor, extractSize } from '../utils/variantAttributeExtraction';
@@ -40,6 +41,20 @@ export function applyGeneralSection({ product, setFormData }: ApplyGeneralParams
       position: label.position || 'top-left',
       color: label.color || null,
     })),
+  }));
+}
+
+/** Instant general-tab seed from products list row (no labels/warranty until API refresh). */
+export function applyGeneralSectionFromListProduct(
+  product: Product,
+  setFormData: ApplyGeneralParams['setFormData'],
+): void {
+  setFormData((prev) => ({
+    ...prev,
+    title: product.title || '',
+    slug: product.slug || '',
+    featured: product.featured ?? false,
+    productClass: product.productClass ?? 'retail',
   }));
 }
 

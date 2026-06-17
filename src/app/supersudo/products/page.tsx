@@ -396,6 +396,11 @@ function ProductsPageContent() {
     void fetchProducts({ force: true });
   };
 
+  const editingListProduct = useMemo(
+    () => (sheetProductId ? products.find((product) => product.id === sheetProductId) ?? null : null),
+    [sheetProductId, products],
+  );
+
   const currentPath = pathname || '/supersudo/products';
 
   return (
@@ -490,6 +495,7 @@ function ProductsPageContent() {
       <ProductEditorSheet
         open={sheetOpen}
         productId={sheetProductId}
+        listProduct={editingListProduct}
         onClose={closeProductEditor}
         onSaved={handleProductSaved}
       />

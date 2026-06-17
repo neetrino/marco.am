@@ -4,6 +4,7 @@ import { Plus, Trash2 } from 'lucide-react';
 import { Input } from '@shop/ui';
 import { useTranslation } from '../../../../../lib/i18n-client';
 import type { ProductLabel } from '../types';
+import { LabelColorField } from './LabelColorField';
 
 interface ProductLabelsProps {
   labels: ProductLabel[];
@@ -115,15 +116,16 @@ export function ProductLabels({ labels, onAddLabel, onRemoveLabel, onUpdateLabel
                   </div>
 
                   <div>
-                    <label className="mb-1.5 block text-xs font-medium text-slate-600">
+                    <label
+                      htmlFor={`product-label-color-${index}`}
+                      className="mb-1.5 block text-xs font-medium text-slate-600"
+                    >
                       {t('admin.products.add.colorOptional')}
                     </label>
-                    <Input
-                      type="text"
-                      value={label.color || ''}
-                      onChange={(event) => onUpdateLabel(index, 'color', event.target.value || null)}
-                      placeholder={t('admin.products.add.colorHexPlaceholder')}
-                      className={FIELD_CLASS}
+                    <LabelColorField
+                      id={`product-label-color-${index}`}
+                      value={label.color ?? null}
+                      onChange={(color) => onUpdateLabel(index, 'color', color)}
                     />
                   </div>
                 </div>

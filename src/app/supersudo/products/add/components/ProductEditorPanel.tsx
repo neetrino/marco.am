@@ -23,15 +23,23 @@ import { useProductFormHandlers } from '../hooks/useProductFormHandlers';
 import { useProductFormCallbacks } from '../hooks/useProductFormCallbacks';
 import { isClothingCategory as checkIsClothingCategory } from '../utils/productUtils';
 import { type ProductEditorTabId } from '../product-editor-tabs';
+import type { Product } from '../../types';
 
 interface ProductEditorPanelProps {
   open: boolean;
   productId: string | null;
+  listProduct?: Product | null;
   onCancel: () => void;
   onSaved: () => void;
 }
 
-export function ProductEditorPanel({ open, productId, onCancel, onSaved }: ProductEditorPanelProps) {
+export function ProductEditorPanel({
+  open,
+  productId,
+  listProduct = null,
+  onCancel,
+  onSaved,
+}: ProductEditorPanelProps) {
   const { t } = useTranslation();
   const { isLoggedIn, isAdmin } = useAuth();
   const isEditMode = Boolean(productId);
@@ -49,6 +57,7 @@ export function ProductEditorPanel({ open, productId, onCancel, onSaved }: Produ
   const { visitedTabs, loadingTab } = useProductEditorTabLoader({
     open,
     productId,
+    listProduct,
     isLoggedIn,
     isAdmin,
     activeTab,
@@ -238,7 +247,7 @@ export function ProductEditorPanel({ open, productId, onCancel, onSaved }: Produ
           form={ADMIN_PRODUCT_EDITOR_FORM_ID}
           variant="primary"
           size="sm"
-          disabled={formState.loading || loadingTab !== null}
+          disabled={formState.loading || loadingTab === activeTab}
         >
           {formState.loading
             ? isEditMode

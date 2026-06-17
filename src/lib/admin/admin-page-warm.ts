@@ -87,7 +87,9 @@ function warmBannersCache(): void {
 
 function warmPromoCodesCache(): void {
   warmIfMissing(ADMIN_CACHE_KEYS.promoCodes, () =>
-    apiClient.get('/api/v1/supersudo/promo-codes'),
+    dedupedAdminRequest(ADMIN_CACHE_KEYS.promoCodes, () =>
+      apiClient.get('/api/v1/supersudo/promo-codes'),
+    ),
   );
 }
 

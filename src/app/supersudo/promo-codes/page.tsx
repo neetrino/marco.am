@@ -51,14 +51,22 @@ export default function PromoCodesPage() {
     }
   };
 
-  if (loading) {
+  if (loading && records.length === 0) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-gray-900" />
-          <p className="text-gray-600">{t('admin.common.loading')}</p>
-        </div>
-      </div>
+      <AdminPageLayout
+        currentPath={currentPath}
+        router={router}
+        t={t}
+        title={t('admin.promoCodes.title')}
+        subtitle={t('admin.promoCodes.subtitle')}
+      >
+        <Card className="flex min-h-[200px] items-center justify-center p-8">
+          <div className="text-center">
+            <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-b-2 border-gray-900" />
+            <p className="text-sm text-gray-600">{t('admin.common.loading')}</p>
+          </div>
+        </Card>
+      </AdminPageLayout>
     );
   }
 
