@@ -509,6 +509,7 @@
       "productTypeVariable": "Փոփոխական",
       "pricingAndInventory": "Գինը և պաշարը",
       "productClassLabel": "Դաս (մանրածախ/մեծածախ)",
+      "productClassHint": "Ընտրեք՝ ապրանքը նախատեսված է մանրածախ, թե մեծածախ հաճախորդների համար։",
       "productClassRetail": "Մանրածախ",
       "productClassWholesale": "Մեծածախ",
       "tabsLabel": "Ապրանքի բաժիններ",

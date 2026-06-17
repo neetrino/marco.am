@@ -2,10 +2,12 @@
 
 import type { ProductClass } from '@/lib/constants/product-class';
 import type { ProductWarrantyYears } from '@/lib/constants/product-warranty';
+import { useTranslation } from '../../../../../lib/i18n-client';
 import type { ProductLabel } from '../types';
+import { GeneralSettingRow } from './GeneralSettingRow';
 import { ProductClassToggle } from './ProductClassToggle';
 import { ProductLabels } from './ProductLabels';
-import { ProductWarrantySelect } from './ProductWarrantySelect';
+import { ProductWarrantyToggle } from './ProductWarrantyToggle';
 
 interface ProductGeneralTabProps {
   productClass: ProductClass;
@@ -32,11 +34,24 @@ export function ProductGeneralTab({
   onRemoveLabel,
   onUpdateLabel,
 }: ProductGeneralTabProps) {
+  const { t } = useTranslation();
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <ProductWarrantySelect warrantyYears={warrantyYears} onChange={onWarrantyYearsChange} />
-        <ProductClassToggle productClass={productClass} onChange={onProductClassChange} />
+    <div className="mx-auto max-w-3xl space-y-6">
+      <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
+        <GeneralSettingRow
+          label={t('admin.products.add.productClassLabel')}
+          hint={t('admin.products.add.productClassHint')}
+        >
+          <ProductClassToggle productClass={productClass} onChange={onProductClassChange} />
+        </GeneralSettingRow>
+
+        <GeneralSettingRow
+          label={t('admin.products.add.productWarranty')}
+          hint={t('admin.products.add.productWarrantyHint')}
+        >
+          <ProductWarrantyToggle warrantyYears={warrantyYears} onChange={onWarrantyYearsChange} />
+        </GeneralSettingRow>
       </div>
 
       <ProductLabels

@@ -505,6 +505,7 @@
       "pageSubtitle": "Complete the details below to create or update a product in the catalog.",
       "pricingAndInventory": "Pricing & inventory",
       "productClassLabel": "Product class",
+      "productClassHint": "Choose whether this product is sold to retail or wholesale customers.",
       "productClassRetail": "Retail",
       "productClassWholesale": "Wholesale",
       "tabsLabel": "Product sections",

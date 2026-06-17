@@ -505,6 +505,7 @@
       "pageSubtitle": "Заполните поля ниже, чтобы создать или обновить товар в каталоге.",
       "pricingAndInventory": "Цена и наличие",
       "productClassLabel": "Класс товара",
+      "productClassHint": "Выберите, для розничных или оптовых покупателей предназначен этот товар.",
       "productClassRetail": "Розница",
       "productClassWholesale": "Опт",
       "tabsLabel": "Разделы товара",
