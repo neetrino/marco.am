@@ -38,7 +38,7 @@ export function guestCartNeedsCatalogPriceResolution(items: StoredGuestCartItem[
   return items.some((item) => !Number.isFinite(Number(item.price)) || Number(item.price) <= 0);
 }
 
-export async function resolveGuestCartTotalsFromCatalog(
+async function resolveGuestCartTotalsFromCatalog(
   items: StoredGuestCartItem[],
 ): Promise<GuestCartTotals> {
   if (items.length === 0) {

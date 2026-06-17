@@ -13,7 +13,6 @@ import {
 import { computeGuestCartTotalsFromStorage } from '@/lib/cart/guest-cart-totals';
 import { t } from '@/lib/i18n';
 import type { RelatedProductsApiResponse } from '@/lib/product-pdp/fetch-related-products';
-import type { PdpVisualPayload } from '@/lib/services/products-slug/product-transformer';
 import type { LanguageCode } from '@/lib/language';
 
 import type { Product } from './types';
@@ -33,8 +32,7 @@ const RelatedProducts = dynamic(() =>
 export type ProductPageClientProps = {
   slugParam: string;
   serverLanguage: LanguageCode;
-  initialVisual: PdpVisualPayload | null;
-  /** SSR full product when available; otherwise detail streams or client fetch. */
+  /** SSR full product when available; PLP shell or client fetch otherwise. */
   initialProduct: Product | null;
   /** SSR related carousel — instant «Նմանատիպ ապրանքներ» on first paint. */
   initialRelatedProducts?: RelatedProductsApiResponse | null;
@@ -43,7 +41,6 @@ export type ProductPageClientProps = {
 export function ProductPageClient({
   slugParam,
   serverLanguage,
-  initialVisual,
   initialProduct,
   initialRelatedProducts = null,
 }: ProductPageClientProps) {
@@ -51,7 +48,6 @@ export function ProductPageClient({
 
   const {
     product,
-    productVisual,
     displayProduct,
     blockingEmpty,
     isInstantShellPaint,
@@ -97,7 +93,7 @@ export function ProductPageClient({
     handleAddToWishlist,
     handleCompareToggle,
     getRequiredAttributesMessage,
-  } = useProductPage({ slugParam, serverLanguage, initialVisual, initialProduct });
+  } = useProductPage({ slugParam, serverLanguage, initialProduct });
 
   const addToCartInFlightRef = useRef(false);
 
@@ -204,9 +200,8 @@ export function ProductPageClient({
     );
   }
 
-  const galleryDiscount =
-    product != null ? discountPercent : (productVisual?.discountPercent ?? null);
-  const galleryIsSpecialPrice = product != null ? isSpecialPrice : false;
+  const galleryDiscount = discountPercent;
+  const galleryIsSpecialPrice = isSpecialPrice;
   const relatedEnabled = Boolean(slug.trim());
 
   return (
@@ -222,7 +217,7 @@ export function ProductPageClient({
           onImageIndexChange={setCurrentImageIndex}
           thumbnailStartIndex={thumbnailStartIndex}
           onThumbnailStartIndexChange={setThumbnailStartIndex}
-          mainImageHighPriority={isInstantShellPaint || Boolean(productVisual && !product)}
+          mainImageHighPriority={isInstantShellPaint || isListingShell}
         />
 
         {displayProduct ? (
@@ -262,7 +257,7 @@ export function ProductPageClient({
             onAttributeValueSelect={handleAttributeValueSelect}
             getOptionValue={getOptionValue}
             getRequiredAttributesMessage={getRequiredAttributesMessage}
-            detailsPending={detailsPending || isListingShell}
+            detailsPending={detailsPending}
           />
         ) : null}
       </div>

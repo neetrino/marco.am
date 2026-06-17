@@ -4,13 +4,13 @@ import type { Product } from '@/app/products/[slug]/types';
 import { readLanguageCookie, type LanguageCode } from '@/lib/language';
 import { normalizePdpSlug } from '@/lib/product-pdp/pdp-slug';
 import { queryKeys } from '@/lib/query-keys';
-import type { PdpVisualPayload } from '@/lib/services/products-slug/product-transformer';
 
 import {
   buildProductFromPdpNavigationSeed,
   setProductPdpNavigationSeed,
   type ProductPdpNavigationSeed,
 } from './pdp-navigation-seed';
+import { isPdpListingShell } from './resolve-pdp-listing-shell';
 
 type SeedProductPdpCacheInput = {
   queryClient: QueryClient;
@@ -18,22 +18,6 @@ type SeedProductPdpCacheInput = {
   language: LanguageCode;
   navigationSeed: ProductPdpNavigationSeed;
 };
-
-function hasFullProductDetails(product: Product | undefined): boolean {
-  if (!product) {
-    return false;
-  }
-  if (Array.isArray(product.variants) && product.variants.length > 0) {
-    return true;
-  }
-  if (Array.isArray(product.description) && product.description.length > 0) {
-    return true;
-  }
-  if (Array.isArray(product.productAttributes) && product.productAttributes.length > 0) {
-    return true;
-  }
-  return false;
-}
 
 function mergeSeedIntoExistingDetail(existing: Product, seed: Product): Product {
   return {
@@ -89,52 +73,7 @@ function mergeSeedIntoExistingDetail(existing: Product, seed: Product): Product 
   };
 }
 
-function hasRichVisualPayload(visual: PdpVisualPayload | undefined): boolean {
-  if (!visual) {
-    return false;
-  }
-  if (Array.isArray(visual.gallery) && visual.gallery.length > 0) {
-    return true;
-  }
-  return Array.isArray(visual.images) && visual.images.length > 1;
-}
-
-function buildSeedVisualPayload(seedProduct: Product): PdpVisualPayload {
-  return {
-    id: seedProduct.id,
-    slug: seedProduct.slug,
-    title: seedProduct.title,
-    images: Array.isArray(seedProduct.media)
-      ? seedProduct.media.filter((item): item is string => typeof item === 'string')
-      : [],
-    gallery: [],
-    labels: seedProduct.labels ?? [],
-    discountPercent:
-      seedProduct.discountBadge?.type === 'percentage'
-        ? seedProduct.discountBadge.value
-        : null,
-  };
-}
-
-function mergeSeedIntoExistingVisual(
-  existing: PdpVisualPayload,
-  seedVisual: PdpVisualPayload,
-): PdpVisualPayload {
-  return {
-    ...existing,
-    id: seedVisual.id,
-    slug: seedVisual.slug,
-    title: seedVisual.title || existing.title,
-    images: seedVisual.images.length > 0 ? seedVisual.images : existing.images,
-    labels: seedVisual.labels.length > 0 ? seedVisual.labels : existing.labels,
-    discountPercent:
-      seedVisual.discountPercent != null
-        ? seedVisual.discountPercent
-        : existing.discountPercent,
-  };
-}
-
-/** Writes PLP card summary into React Query PDP keys (no navigation handoff map). */
+/** Writes PLP card shell into React Query detail key for instant PDP paint. */
 export function writeProductPdpQueryCache({
   queryClient,
   slug,
@@ -143,7 +82,6 @@ export function writeProductPdpQueryCache({
 }: SeedProductPdpCacheInput): void {
   const cacheSlug = normalizePdpSlug(slug);
   const seedProduct = buildProductFromPdpNavigationSeed(navigationSeed);
-  const seedVisual = buildSeedVisualPayload(seedProduct);
 
   queryClient.setQueryData(
     queryKeys.productDetail(cacheSlug, language),
@@ -151,29 +89,16 @@ export function writeProductPdpQueryCache({
       if (!existing) {
         return seedProduct;
       }
-      if (hasFullProductDetails(existing)) {
+      if (!isPdpListingShell(existing)) {
         return existing;
       }
       return mergeSeedIntoExistingDetail(existing, seedProduct);
     },
   );
-
-  queryClient.setQueryData(
-    queryKeys.productVisual(cacheSlug, language),
-    (existing: PdpVisualPayload | undefined) => {
-      if (!existing) {
-        return seedVisual;
-      }
-      if (hasRichVisualPayload(existing)) {
-        return existing;
-      }
-      return mergeSeedIntoExistingVisual(existing, seedVisual);
-    },
-  );
 }
 
 /**
- * Stores PLP card summary into in-memory handoff + React Query cache for instant PDP paint.
+ * Stores PLP card shell into in-memory handoff + React Query cache for instant PDP paint.
  */
 export function seedProductPdpCache({
   queryClient,

@@ -6,7 +6,6 @@ import {
   buildProductFromPdpNavigationSeed,
   peekProductPdpNavigationSeedAnyLanguage,
 } from '@/lib/product-pdp/pdp-navigation-seed';
-import type { PdpVisualPayload } from '@/lib/services/products-slug/product-transformer';
 import { shopGridProductToPdpNavigationSeed } from '@/lib/shop-grid-product-pdp-seed';
 import { getShopProductBySlug } from '@/lib/shop-products-cache-store';
 import { queryKeys } from '@/lib/query-keys';
@@ -98,19 +97,4 @@ export function resolvePdpInstantShell(
   }
 
   return null;
-}
-
-export function buildPdpVisualFromProductShell(product: Product): PdpVisualPayload {
-  return {
-    id: product.id,
-    slug: product.slug,
-    title: product.title,
-    images: Array.isArray(product.media)
-      ? product.media.filter((item): item is string => typeof item === 'string')
-      : [],
-    gallery: [],
-    labels: product.labels ?? [],
-    discountPercent:
-      product.discountBadge?.type === 'percentage' ? product.discountBadge.value : null,
-  };
 }

@@ -1,4 +1,3 @@
-import { Suspense } from 'react';
 import { cookies } from 'next/headers';
 
 import {
@@ -7,17 +6,22 @@ import {
   type LanguageCode,
 } from '@/lib/language';
 import { normalizePdpSlug } from '@/lib/product-pdp/pdp-slug';
+import {
+  getCachedPdpDetail,
+  getCachedPdpRelated,
+  PDP_RELATED_SSR_LIMIT,
+} from '@/lib/product-pdp/pdp-server-cache';
+import type { RelatedProductsApiResponse } from '@/lib/product-pdp/fetch-related-products';
 
-import { ProductPdpDetailStream } from './ProductPdpDetailStream';
-import { ProductSlugLayoutClient } from './ProductSlugLayoutClient';
+import { ProductPageClient } from './ProductPageClient';
+import type { Product } from './types';
 
 type PageProps = {
   params: Promise<{ slug: string }>;
 };
 
 /**
- * PDP page slot — paints the interactive shell from the client seed (instant, taking over the
- * `loading.tsx` fallback) and streams heavy detail into React Query.
+ * PDP page — SSR full product + related for first paint; PLP navigation still uses card shell.
  */
 export default async function ProductPage({ params }: PageProps) {
   const { slug: slugParam } = await params;
@@ -26,16 +30,30 @@ export default async function ProductPage({ params }: PageProps) {
     parseLanguageFromServer(cookieStore.get(LANGUAGE_PREFERENCE_KEY)?.value) ?? 'en';
   const baseSlug = normalizePdpSlug(slugParam);
 
+  const [detailSettled, relatedSettled] = await Promise.allSettled([
+    getCachedPdpDetail(baseSlug, serverLanguage),
+    getCachedPdpRelated(baseSlug, serverLanguage, PDP_RELATED_SSR_LIMIT),
+  ]);
+
+  const initialProduct =
+    detailSettled.status === 'fulfilled' && detailSettled.value != null
+      ? (detailSettled.value as Product)
+      : null;
+
+  const initialRelatedProducts: RelatedProductsApiResponse | null =
+    relatedSettled.status === 'fulfilled' &&
+    relatedSettled.value != null &&
+    Array.isArray(relatedSettled.value.data) &&
+    relatedSettled.value.data.length > 0
+      ? relatedSettled.value
+      : null;
+
   return (
-    <>
-      <ProductSlugLayoutClient
-        slugParam={slugParam}
-        serverLanguage={serverLanguage}
-        initialVisual={null}
-      />
-      <Suspense fallback={null}>
-        <ProductPdpDetailStream baseSlug={baseSlug} serverLanguage={serverLanguage} />
-      </Suspense>
-    </>
+    <ProductPageClient
+      slugParam={slugParam}
+      serverLanguage={serverLanguage}
+      initialProduct={initialProduct}
+      initialRelatedProducts={initialRelatedProducts}
+    />
   );
 }

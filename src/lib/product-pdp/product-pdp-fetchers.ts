@@ -1,9 +1,6 @@
 import type { Product } from '@/app/products/[slug]/types';
 import { apiClient, getErrorHttpStatus } from '@/lib/api-client';
 import { type LanguageCode } from '@/lib/language';
-import type { PdpVisualPayload } from '@/lib/services/products-slug/product-transformer';
-
-export type { PdpVisualPayload };
 
 const PRODUCT_DETAIL_NOT_FOUND_TTL_MS = 60_000;
 
@@ -59,41 +56,7 @@ async function requestProductDetail(slug: string, lang: LanguageCode): Promise<P
   return request;
 }
 
-/** Client-side fetchers shared by `useProductFetch` and hover prefetch. */
-export async function fetchProductVisual(
-  slug: string,
-  lang: LanguageCode,
-): Promise<PdpVisualPayload> {
-  try {
-    return await apiClient.get<PdpVisualPayload>(`/api/v1/products/${slug}/visual`, {
-      params: { lang },
-    });
-  } catch (error: unknown) {
-    if (getErrorHttpStatus(error) === 404 && lang !== 'en') {
-      return apiClient.get<PdpVisualPayload>(`/api/v1/products/${slug}/visual`, {
-        params: { lang: 'en' },
-      });
-    }
-    throw error;
-  }
-}
-
 export type ProductDetailPayload = Awaited<ReturnType<typeof fetchProductDetail>>;
-
-export async function fetchProductSummary(slug: string, lang: LanguageCode): Promise<Product> {
-  try {
-    return await apiClient.get<Product>(`/api/v1/products/${slug}/summary`, {
-      params: { lang },
-    });
-  } catch (error: unknown) {
-    if (getErrorHttpStatus(error) === 404 && lang !== 'en') {
-      return apiClient.get<Product>(`/api/v1/products/${slug}/summary`, {
-        params: { lang: 'en' },
-      });
-    }
-    throw error;
-  }
-}
 
 export async function fetchProductDetail(slug: string, lang: LanguageCode): Promise<Product> {
   try {

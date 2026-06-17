@@ -1,12 +1,8 @@
 import type { LanguageCode } from "@/lib/language";
 
 export const queryKeys = {
-  productSummary: (slug: string, lang: LanguageCode) =>
-    ["api", "v1", "products", "summary", slug, lang] as const,
   productDetail: (slug: string, lang: LanguageCode) =>
     ["api", "v1", "products", "detail", slug, lang] as const,
-  productVisual: (slug: string, lang: LanguageCode) =>
-    ["api", "v1", "products", "visual", slug, lang] as const,
   relatedProducts: (slug: string, lang: LanguageCode, limit: number) =>
     ["api", "v1", "products", "related", slug, lang, String(limit)] as const,
   productsCardVisual: (filter: string, lang: LanguageCode, page: number, limit: number) =>
@@ -38,6 +34,4 @@ export const queryKeys = {
   compareProductIdsRoot: () => ["api", "v1", "compare", "ids"] as const,
   compareProductIds: (lang: LanguageCode) =>
     ["api", "v1", "compare", "ids", lang] as const,
-  cartRoot: () => ["api", "v1", "cart"] as const,
-  cartByAuth: (isLoggedIn: boolean) => ["api", "v1", "cart", isLoggedIn ? "user" : "guest"] as const,
 };
