@@ -4,6 +4,7 @@ import {
   HEADER_LOGO_DISPLAY_HEIGHT_DESKTOP_CLASS,
   HEADER_LOGO_DISPLAY_HEIGHT_MOBILE_CLASS,
 } from '@/constants/headerLogo';
+import { SITE_LOGO_SRC } from '@/lib/constants/site-brand';
 
 /** Figma 111:4321 — exported PNG intrinsic pixels */
 const MARCO_LOGO_INTRINSIC_WIDTH = 1080;
@@ -36,7 +37,7 @@ export function MarcoLogo({ ariaLabel = 'MARCO GROUP Home' }: MarcoLogoProps) {
     >
       <span className={`relative aspect-[83/73] w-auto shrink-0 overflow-hidden ${heightClass}`}>
         <Image
-          src="/assets/brand/marco-group-logo.webp"
+          src={SITE_LOGO_SRC}
           alt=""
           width={MARCO_LOGO_INTRINSIC_WIDTH}
           height={MARCO_LOGO_INTRINSIC_HEIGHT}

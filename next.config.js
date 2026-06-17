@@ -265,7 +265,7 @@ const nextConfig = {
     return [
       {
         source: '/favicon.ico',
-        destination: `${r2PublicBase}/static-site/assets/brand/marco-group-logo.webp`,
+        destination: `${r2PublicBase}/static-site/logo.webp`,
       },
       {
         source: '/assets/:path*',

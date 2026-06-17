@@ -45,6 +45,7 @@ import {
 } from './footer-social.constants';
 import { FooterPaymentLogos } from './FooterPaymentLogos';
 import { FooterSocialLinks } from './FooterSocialLinks';
+import { SITE_LOGO_SRC } from '@/lib/constants/site-brand';
 
 const FOOTER_LINK_CLASS = `${FOOTER_MUTED_TEXT_CLASS} ${FOOTER_NAV_BODY_TEXT_CLASS} transition-colors hover:text-marco-black dark:hover:text-white`;
 const FOOTER_SECONDARY_EMAIL = 'marcogrouparmenia@mail.ru';
@@ -220,7 +221,7 @@ export function Footer() {
           >
             <div className={`${FOOTER_BRAND_LOGO_BOX_CLASS} ${FOOTER_BRAND_LOGO_SHIFT_CLASS}`}>
               <Image
-                src="/assets/brand/marco-group-logo.webp"
+                src={SITE_LOGO_SRC}
                 alt="MARCO GROUP"
                 fill
                 className="object-contain object-left-top md:max-[1023px]:object-center min-[1024px]:max-[1366px]:object-center"
