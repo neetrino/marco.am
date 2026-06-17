@@ -16,10 +16,6 @@ interface UseProductDataLoadingProps {
   attributesDropdownOpen: boolean;
   setAttributesDropdownOpen: (open: boolean) => void;
   attributesDropdownRef: React.RefObject<HTMLDivElement>;
-  categoriesExpanded: boolean;
-  setCategoriesExpanded: (expanded: boolean) => void;
-  brandsExpanded: boolean;
-  setBrandsExpanded: (expanded: boolean) => void;
 }
 
 export function useProductDataLoading({
@@ -32,13 +28,10 @@ export function useProductDataLoading({
   attributesDropdownOpen,
   setAttributesDropdownOpen,
   attributesDropdownRef,
-  categoriesExpanded,
-  setCategoriesExpanded,
-  brandsExpanded,
-  setBrandsExpanded,
 }: UseProductDataLoadingProps) {
   const catalogLoadedRef = useRef(false);
   const pricingLoadedRef = useRef(false);
+  const attributesLoadedRef = useRef(false);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -107,8 +100,6 @@ export function useProductDataLoading({
     void fetchCatalogData();
   }, [loadCatalogReference, setBrands, setCategories]);
 
-  const attributesLoadedRef = useRef(false);
-
   useEffect(() => {
     if (!loadPricingReference || attributesLoadedRef.current) {
       return;
@@ -138,36 +129,4 @@ export function useProductDataLoading({
 
     void fetchAttributes();
   }, [loadPricingReference, setAttributes]);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (categoriesExpanded && !target.closest('[data-category-dropdown]')) {
-        setCategoriesExpanded(false);
-      }
-    };
-
-    if (categoriesExpanded) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
-      };
-    }
-  }, [categoriesExpanded, setCategoriesExpanded]);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (brandsExpanded && !target.closest('[data-brand-dropdown]')) {
-        setBrandsExpanded(false);
-      }
-    };
-
-    if (brandsExpanded) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
-      };
-    }
-  }, [brandsExpanded, setBrandsExpanded]);
 }

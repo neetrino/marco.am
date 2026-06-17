@@ -27,8 +27,6 @@ export function useProductFormState() {
     labels: [] as ProductLabel[],
     warrantyYears: null as number | null,
   });
-  const [categoriesExpanded, setCategoriesExpanded] = useState(false);
-  const [brandsExpanded, setBrandsExpanded] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const variantImageInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const attributesDropdownRef = useRef<HTMLDivElement | null>(null);
@@ -77,10 +75,6 @@ export function useProductFormState() {
     formData,
     setFormData,
     // UI states
-    categoriesExpanded,
-    setCategoriesExpanded,
-    brandsExpanded,
-    setBrandsExpanded,
     attributesDropdownOpen,
     setAttributesDropdownOpen,
     // Refs

@@ -87,10 +87,6 @@ export function ProductEditorPanel({
     attributesDropdownOpen: formState.attributesDropdownOpen,
     setAttributesDropdownOpen: formState.setAttributesDropdownOpen,
     attributesDropdownRef: formState.attributesDropdownRef,
-    categoriesExpanded: formState.categoriesExpanded,
-    setCategoriesExpanded: formState.setCategoriesExpanded,
-    brandsExpanded: formState.brandsExpanded,
-    setBrandsExpanded: formState.setBrandsExpanded,
   });
 
   useProductVariantConversion({
@@ -292,8 +288,6 @@ export function ProductEditorPanel({
           isEditMode={isEditMode}
           imageUploadLoading={formState.imageUploadLoading}
           imageUploadError={formState.imageUploadError}
-          categoriesExpanded={formState.categoriesExpanded}
-          brandsExpanded={formState.brandsExpanded}
           useNewCategory={formState.useNewCategory}
           useNewBrand={formState.useNewBrand}
           newCategoryName={formState.newCategoryName}
@@ -311,8 +305,6 @@ export function ProductEditorPanel({
           onUploadImages={handleUploadImages}
           onRemoveImage={removeImageUrl}
           onSetFeaturedImage={setFeaturedImage}
-          onCategoriesExpandedChange={formState.setCategoriesExpanded}
-          onBrandsExpandedChange={formState.setBrandsExpanded}
           onUseNewCategoryChange={formState.setUseNewCategory}
           onUseNewBrandChange={formState.setUseNewBrand}
           onNewCategoryNameChange={formState.setNewCategoryName}

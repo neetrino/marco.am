@@ -23,7 +23,7 @@ import {
 import { ProductGeneralTab } from './ProductGeneralTab';
 import { ProductDescriptionTab } from './ProductDescriptionTab';
 import { ProductImages } from './ProductImages';
-import { CategoriesBrands } from './CategoriesBrands';
+import { ProductCatalogTab } from './ProductCatalogTab';
 import { PricingInventorySection } from './PricingInventorySection';
 
 interface AddProductFormContentProps {
@@ -63,8 +63,6 @@ interface AddProductFormContentProps {
   isEditMode: boolean;
   imageUploadLoading: boolean;
   imageUploadError: string | null;
-  categoriesExpanded: boolean;
-  brandsExpanded: boolean;
   useNewCategory: boolean;
   useNewBrand: boolean;
   newCategoryName: string;
@@ -82,8 +80,6 @@ interface AddProductFormContentProps {
   onUploadImages: (event: ChangeEvent<HTMLInputElement>) => Promise<void>;
   onRemoveImage: (index: number) => void;
   onSetFeaturedImage: (index: number) => void;
-  onCategoriesExpandedChange: (expanded: boolean) => void;
-  onBrandsExpandedChange: (expanded: boolean) => void;
   onUseNewCategoryChange: (use: boolean) => void;
   onUseNewBrandChange: (use: boolean) => void;
   onNewCategoryNameChange: (name: string) => void;
@@ -155,8 +151,6 @@ export function AddProductFormContent({
   isEditMode,
   imageUploadLoading,
   imageUploadError,
-  categoriesExpanded,
-  brandsExpanded,
   useNewCategory,
   useNewBrand,
   newCategoryName,
@@ -174,8 +168,6 @@ export function AddProductFormContent({
   onUploadImages,
   onRemoveImage,
   onSetFeaturedImage,
-  onCategoriesExpandedChange,
-  onBrandsExpandedChange,
   onUseNewCategoryChange,
   onUseNewBrandChange,
   onNewCategoryNameChange,
@@ -279,20 +271,16 @@ export function AddProductFormContent({
           </TabPanel>
 
           <TabPanel tabId="catalog" activeTab={activeTab} visited={visitedTabs.has('catalog')}>
-            <CategoriesBrands
+            <ProductCatalogTab
               categories={categories}
               brands={brands}
               categoryIds={formData.categoryIds}
               primaryCategoryId={formData.primaryCategoryId}
               brandIds={formData.brandIds}
-              categoriesExpanded={categoriesExpanded}
-              brandsExpanded={brandsExpanded}
               useNewCategory={useNewCategory}
               useNewBrand={useNewBrand}
               newCategoryName={newCategoryName}
               newBrandName={newBrandName}
-              onCategoriesExpandedChange={onCategoriesExpandedChange}
-              onBrandsExpandedChange={onBrandsExpandedChange}
               onUseNewCategoryChange={onUseNewCategoryChange}
               onUseNewBrandChange={onUseNewBrandChange}
               onNewCategoryNameChange={onNewCategoryNameChange}
