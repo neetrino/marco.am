@@ -3,8 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import { useAuth } from '../auth/AuthContext';
 import { apiClient } from '../api-client';
-import type { CurrencyCode } from '../currency';
-import { normalizeCartSummaryPayload } from './cart-summary-coerce';
+import { coerceCurrencyCode, type CurrencyCode } from '../currency';
 import { loadGuestCartTotals, readGuestCartSummarySync } from './guest-cart-totals';
 import { logger } from '../utils/logger';
 
@@ -45,10 +44,11 @@ export function useCartSummaryState(): CartSummaryState {
 
   const applySummary = useCallback(
     (raw: { itemsCount?: unknown; totals?: { total?: unknown; currency?: unknown } }) => {
-      const summary = normalizeCartSummaryPayload(raw);
-      setCartCount(summary.itemsCount);
-      setCartTotal(summary.totals.total);
-      setCartTotalCurrency(summary.totals.currency);
+      const count = Number(raw.itemsCount);
+      const total = Number(raw.totals?.total);
+      setCartCount(Number.isFinite(count) ? count : 0);
+      setCartTotal(Number.isFinite(total) ? total : 0);
+      setCartTotalCurrency(coerceCurrencyCode(raw.totals?.currency, 'AMD'));
     },
     [],
   );
