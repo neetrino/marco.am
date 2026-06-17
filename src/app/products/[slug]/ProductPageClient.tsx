@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { Suspense, useRef } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 
 import { useAuth } from '@/lib/auth/AuthContext';
 import { apiClient } from '@/lib/api-client';
@@ -36,6 +36,7 @@ export function ProductPageClient({
   slugParam,
   serverLanguage,
 }: ProductPageClientProps) {
+  const [isHydrated, setIsHydrated] = useState(false);
   const { isLoggedIn } = useAuth();
 
   const {
@@ -87,6 +88,10 @@ export function ProductPageClient({
   } = useProductPage({ slugParam, serverLanguage });
 
   const addToCartInFlightRef = useRef(false);
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   const handleAddToCart = async () => {
     if (!canAddToCart || !product || !currentVariant || addToCartInFlightRef.current) return;
@@ -167,7 +172,7 @@ export function ProductPageClient({
     }
   };
 
-  if (blockingEmpty) {
+  if (!isHydrated || blockingEmpty) {
     return (
       <div className="marco-header-container py-12">
         <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-[minmax(0,11fr)_minmax(0,9fr)]">
