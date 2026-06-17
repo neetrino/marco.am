@@ -7,7 +7,7 @@ import { useOrders } from './useOrders';
 import { OrdersFilters } from './components/OrdersFilters';
 import { BulkSelectionControls } from './components/BulkSelectionControls';
 import { OrdersTable } from './components/OrdersTable';
-import { OrderDetailsModal } from './components/OrderDetailsModal';
+import { OrderDetailsSheet } from './components/OrderDetailsSheet';
 
 export function OrdersPageContent() {
   const { t } = useTranslation();
@@ -102,16 +102,15 @@ export function OrdersPageContent() {
           formatCurrency={formatCurrency}
         />
 
-        {selectedOrderId && (
-          <OrderDetailsModal
-            orderDetails={orderDetails}
-            loading={loadingOrderDetails}
-            savingAdminNotes={savingAdminNotes}
-            onSaveAdminNotes={handleAdminNotesSave}
-            onClose={handleCloseModal}
-            formatCurrency={formatCurrency}
-          />
-        )}
+        <OrderDetailsSheet
+          open={Boolean(selectedOrderId)}
+          orderDetails={orderDetails}
+          loading={loadingOrderDetails}
+          savingAdminNotes={savingAdminNotes}
+          onSaveAdminNotes={handleAdminNotesSave}
+          onClose={handleCloseModal}
+          formatCurrency={formatCurrency}
+        />
       </div>
     </AdminPageLayout>
   );
