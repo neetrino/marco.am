@@ -1,13 +1,12 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { getStoredCurrency } from '../../../lib/currency';
 import { getStoredLanguage, type LanguageCode } from '../../../lib/language';
 import { normalizePdpSlug } from '@/lib/product-pdp/pdp-slug';
 import { normalizeUrlForComparison } from '@/lib/utils/image-utils';
 import type { CurrencyCode } from '../../../lib/currency';
 import { t } from '../../../lib/i18n';
-import type { Product } from './types';
 import { useAttributeGroups } from './useAttributeGroups';
 import { useProductImages } from './hooks/useProductImages';
 import { useProductFetch } from './hooks/useProductFetch';

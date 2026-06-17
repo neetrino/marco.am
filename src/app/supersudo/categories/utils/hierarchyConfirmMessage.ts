@@ -4,6 +4,7 @@ import {
   type CategoryHierarchyRow,
 } from "@/lib/services/admin/admin-categories-hierarchy-guard";
 import { showPopupConfirm } from "@/components/popup-service";
+import type { LanguageCode } from "@/lib/language";
 import type { Category } from "../types";
 import { getLocalizedCategoryTitle } from "../utils";
 
@@ -19,7 +20,7 @@ export function buildHierarchyConfirmMessage(
     if (!row) {
       return id;
     }
-    return getLocalizedCategoryTitle(row, locale) || row.slug;
+    return getLocalizedCategoryTitle(row, locale as LanguageCode) || row.slug;
   };
 
   for (const reason of reasons) {

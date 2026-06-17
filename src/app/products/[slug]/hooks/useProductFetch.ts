@@ -129,6 +129,7 @@ export function useProductFetch({ slug, serverLanguage }: UseProductFetchProps) 
   return {
     product,
     blockingEmpty,
+    loading: blockingEmpty,
     detailsPending,
     isListingShell,
     detailError: detailQuery.isError ? detailQuery.error : null,

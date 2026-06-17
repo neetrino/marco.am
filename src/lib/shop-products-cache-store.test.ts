@@ -19,6 +19,10 @@ const sampleProduct: ShopGridProduct = {
   price: 1000,
   compareAtPrice: 1200,
   image: 'https://example.com/image.jpg',
+  images: [
+    'https://example.com/image.jpg',
+    'https://example.com/image-2.jpg',
+  ],
   inStock: true,
   brand: { id: 'brand-1', slug: 'brand', name: 'Brand', logoUrl: null },
   defaultVariantId: null,

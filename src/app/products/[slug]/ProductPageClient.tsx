@@ -14,7 +14,6 @@ import { computeGuestCartTotalsFromStorage } from '@/lib/cart/guest-cart-totals'
 import { t } from '@/lib/i18n';
 import type { LanguageCode } from '@/lib/language';
 
-import type { Product } from './types';
 import { ProductImageGallery } from './ProductImageGallery';
 import { ProductInfoAndActions } from './ProductInfoAndActions';
 import { ProductInfoPrimarySkeleton } from './ProductInfoPrimarySkeleton';

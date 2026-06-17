@@ -1,6 +1,5 @@
 import { notFound } from 'next/navigation';
 
-import type { LanguageCode } from '@/lib/language';
 import { getCachedPdpExists } from '@/lib/product-pdp/pdp-server-cache';
 
 type ProductPdpLayoutGateProps = {

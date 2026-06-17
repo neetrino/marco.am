@@ -30,6 +30,7 @@ import {
   prepareCategoryUpdateData,
   upsertCategoryTranslations,
   type LoadedCategoryForUpdate,
+  type PreparedCategoryUpdate,
 } from "@/lib/services/admin/admin-categories-update.helpers";
 import type { PrismaTransactionClient } from "@/lib/types/prisma";
 import { logger } from "@/lib/utils/logger";

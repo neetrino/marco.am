@@ -5,7 +5,6 @@ import { ChevronRight } from 'lucide-react';
 import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from '../../lib/i18n-client';
 import { LanguagePreferenceContext } from '../../lib/language-context';
-import type { Category } from './category-nav-types';
 import { CategoryMegaSubcategoryPills } from './CategoryMegaSubcategoryPills';
 import { CategoryDropdownPromoBanner } from './CategoryDropdownPromoBanner';
 import {
