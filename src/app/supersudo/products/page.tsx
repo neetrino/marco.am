@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState, useMemo, useRef } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { Suspense, useCallback, useEffect, useState, useMemo, useRef } from 'react';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { apiClient, getApiOrErrorMessage } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
 import { getStoredCurrency, initializeCurrencyRates, type CurrencyCode } from '../../../lib/currency';
@@ -16,6 +16,7 @@ import { logger } from "@/lib/utils/logger";
 import {
   fetchAdminCategoriesLite,
   readAdminCategoriesCache,
+  warmAdminReferenceDataCaches,
 } from '@/lib/admin/admin-reference-data-cache';
 import {
   buildAdminProductsListCacheKey,
@@ -28,6 +29,7 @@ import {
   readAdminSessionCache,
   writeAdminSessionCache,
 } from '@/lib/admin/admin-session-cache';
+import { ProductEditorSheet } from './add/components/ProductEditorSheet';
 
 type AdminProductsCachePayload = {
   data: Product[];
@@ -35,10 +37,23 @@ type AdminProductsCachePayload = {
 };
 
 export default function ProductsPage() {
+  return (
+    <Suspense fallback={null}>
+      <ProductsPageContent />
+    </Suspense>
+  );
+}
+
+function ProductsPageContent() {
   const { t, lang } = useTranslation();
   const activeLocale = lang ?? getStoredLanguage();
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const editParam = searchParams.get('edit');
+  const createParam = searchParams.get('create');
+  const sheetOpen = Boolean(editParam || createParam);
+  const sheetProductId = editParam ?? null;
   const defaultProductsCacheKey = buildProductsDefaultListCacheKey(activeLocale);
   const defaultProductsCache = readAdminSessionCache<AdminProductsCachePayload>(
     defaultProductsCacheKey,
@@ -70,6 +85,10 @@ export default function ProductsPage() {
   const [currency, setCurrency] = useState<CurrencyCode>('USD');
 
   // Initialize currency rates and listen for currency changes
+  useEffect(() => {
+    warmAdminReferenceDataCaches(activeLocale);
+  }, [activeLocale]);
+
   useEffect(() => {
     const updateCurrency = () => {
       const newCurrency = getStoredCurrency();
@@ -357,6 +376,26 @@ export default function ProductsPage() {
     setPage(1);
   };
 
+  const closeProductEditor = useCallback(() => {
+    router.replace('/supersudo/products', { scroll: false });
+  }, [router]);
+
+  const openCreateProduct = useCallback(() => {
+    router.replace('/supersudo/products?create=1', { scroll: false });
+  }, [router]);
+
+  const openEditProduct = useCallback(
+    (productId: string) => {
+      router.replace(`/supersudo/products?edit=${productId}`, { scroll: false });
+    },
+    [router],
+  );
+
+  const handleProductSaved = () => {
+    closeProductEditor();
+    void fetchProducts({ force: true });
+  };
+
   const currentPath = pathname || '/supersudo/products';
 
   return (
@@ -380,7 +419,7 @@ export default function ProductsPage() {
           ) : null}
           <button
             type="button"
-            onClick={() => router.push('/supersudo/products/add')}
+            onClick={openCreateProduct}
             className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-marco-yellow px-4 text-sm font-semibold text-marco-black transition-all hover:-translate-y-0.5 hover:brightness-95"
           >
             <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
@@ -445,6 +484,14 @@ export default function ProductsPage() {
         page={page}
         setPage={setPage}
         categoryTitleById={categoryTitleById}
+        onEditProduct={openEditProduct}
+      />
+
+      <ProductEditorSheet
+        open={sheetOpen}
+        productId={sheetProductId}
+        onClose={closeProductEditor}
+        onSaved={handleProductSaved}
       />
     </AdminPageLayout>
   );

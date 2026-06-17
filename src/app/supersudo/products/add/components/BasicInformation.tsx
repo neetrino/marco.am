@@ -16,6 +16,7 @@ interface BasicInformationProps {
   onTitleChange: (e: ChangeEvent<HTMLInputElement>) => void;
   onSlugChange: (e: ChangeEvent<HTMLInputElement>) => void;
   onDescriptionChange: (entries: ProductDescriptionEntry[]) => void;
+  hideProductTypeSelector?: boolean;
 }
 
 export function BasicInformation({
@@ -27,45 +28,47 @@ export function BasicInformation({
   onTitleChange,
   onSlugChange,
   onDescriptionChange,
+  hideProductTypeSelector,
 }: BasicInformationProps) {
   const { t } = useTranslation();
 
   return (
     <FormSection title={t('admin.products.add.basicInformation')}>
       <div className="space-y-4">
-        {/* Product Type Selector */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            {t('admin.products.add.productType')} *
-          </label>
-          <p className="text-xs text-gray-500 mb-3">
-            {t('admin.products.add.productTypeDescription')}
-          </p>
-          <div className="flex gap-4">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="radio"
-                name="productType"
-                value="simple"
-                checked={productType === 'simple'}
-                onChange={(e) => setProductType(e.target.value as 'simple' | 'variable')}
-                className="w-4 h-4 text-gray-900 border-gray-300 focus:ring-gray-500"
-              />
-              <span className="text-sm text-gray-700">{t('admin.products.add.productTypeSimple')}</span>
+        {!hideProductTypeSelector ? (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {t('admin.products.add.productType')} *
             </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="radio"
-                name="productType"
-                value="variable"
-                checked={productType === 'variable'}
-                onChange={(e) => setProductType(e.target.value as 'simple' | 'variable')}
-                className="w-4 h-4 text-gray-900 border-gray-300 focus:ring-gray-500"
-              />
-              <span className="text-sm text-gray-700">{t('admin.products.add.productTypeVariable')}</span>
-            </label>
+            <p className="text-xs text-gray-500 mb-3">
+              {t('admin.products.add.productTypeDescription')}
+            </p>
+            <div className="flex gap-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="productType"
+                  value="simple"
+                  checked={productType === 'simple'}
+                  onChange={(e) => setProductType(e.target.value as 'simple' | 'variable')}
+                  className="w-4 h-4 text-gray-900 border-gray-300 focus:ring-gray-500"
+                />
+                <span className="text-sm text-gray-700">{t('admin.products.add.productTypeSimple')}</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="productType"
+                  value="variable"
+                  checked={productType === 'variable'}
+                  onChange={(e) => setProductType(e.target.value as 'simple' | 'variable')}
+                  className="w-4 h-4 text-gray-900 border-gray-300 focus:ring-gray-500"
+                />
+                <span className="text-sm text-gray-700">{t('admin.products.add.productTypeVariable')}</span>
+              </label>
+            </div>
           </div>
-        </div>
+        ) : null}
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">

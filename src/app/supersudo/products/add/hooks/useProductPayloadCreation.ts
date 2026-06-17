@@ -35,6 +35,7 @@ interface CreateAndSubmitPayloadProps {
   creationMessages: string[];
   setLoading: (loading: boolean) => void;
   router: AppRouterInstance;
+  onSuccess?: () => void;
 }
 
 export async function createAndSubmitPayload({
@@ -51,6 +52,7 @@ export async function createAndSubmitPayload({
   creationMessages,
   setLoading,
   router,
+  onSuccess,
 }: CreateAndSubmitPayloadProps): Promise<void> {
   const mt = (path: string): string => translateByLocale(getStoredLanguage(), path);
   const resolvedCategoryIds =
@@ -111,7 +113,11 @@ export async function createAndSubmitPayload({
         alert(`${baseMessage}${extra}`);
       }
       
-      router.push('/supersudo/products');
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        router.push('/supersudo/products');
+      }
     } catch (err: unknown) {
       console.error('❌ [ADMIN] Error saving product:', err);
 

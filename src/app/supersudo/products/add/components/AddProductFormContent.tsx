@@ -109,6 +109,8 @@ interface AddProductFormContentProps {
   onApplyToAllVariants: (field: 'price' | 'compareAtPrice' | 'stock' | 'sku', value: string) => void;
   isClothingCategory: () => boolean;
   handleSubmit: (e: React.FormEvent) => void;
+  hideProductTypeSelector?: boolean;
+  onCancel?: () => void;
 }
 
 export function AddProductFormContent({
@@ -176,6 +178,8 @@ export function AddProductFormContent({
   onApplyToAllVariants,
   isClothingCategory,
   handleSubmit,
+  hideProductTypeSelector,
+  onCancel,
 }: AddProductFormContentProps) {
   return (
     <Card className="relative border-marco-border/80 bg-gradient-to-br from-white via-white to-marco-gray/10 p-0 shadow-[0_16px_40px_rgba(16,16,16,0.08)] sm:rounded-2xl">
@@ -192,6 +196,7 @@ export function AddProductFormContent({
           onTitleChange={onTitleChange}
           onSlugChange={onSlugChange}
           onDescriptionChange={onDescriptionChange}
+          hideProductTypeSelector={hideProductTypeSelector}
         />
 
         <ProductImages
@@ -304,7 +309,7 @@ export function AddProductFormContent({
           onProductClassChange={onProductClassChange}
         />
 
-        <FormActions loading={loading} isEditMode={isEditMode} />
+        <FormActions loading={loading} isEditMode={isEditMode} onCancel={onCancel} />
       </form>
     </Card>
   );

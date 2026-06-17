@@ -14,7 +14,7 @@ export function QuickActionsCard() {
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
         <Button
           variant="outline"
-          onClick={() => router.push('/supersudo/products/add')}
+          onClick={() => router.push('/supersudo/products?create=1')}
           className="group h-auto justify-start rounded-2xl border-marco-border bg-white/80 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:border-marco-yellow/60 hover:bg-marco-yellow/10"
         >
           <div className="flex items-center gap-3">

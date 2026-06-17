@@ -7,11 +7,20 @@ import { useRouter } from 'next/navigation';
 interface FormActionsProps {
   loading: boolean;
   isEditMode: boolean;
+  onCancel?: () => void;
 }
 
-export function FormActions({ loading, isEditMode }: FormActionsProps) {
+export function FormActions({ loading, isEditMode, onCancel }: FormActionsProps) {
   const { t } = useTranslation();
   const router = useRouter();
+
+  const handleCancel = () => {
+    if (onCancel) {
+      onCancel();
+      return;
+    }
+    router.push('/supersudo/products');
+  };
 
   return (
     <div className="sticky bottom-0 left-0 right-0 z-50 -mx-5 -mb-5 mt-6 border-t border-marco-border/60 bg-gradient-to-b from-white to-marco-gray/20 px-5 py-4 shadow-[0_-8px_30px_rgba(16,16,16,0.06)] backdrop-blur-sm sm:-mx-8 sm:-mb-5 sm:px-8 sm:mt-8">
@@ -33,7 +42,7 @@ export function FormActions({ loading, isEditMode }: FormActionsProps) {
         <Button
           type="button"
           variant="outline"
-          onClick={() => router.push('/supersudo/products')}
+          onClick={handleCancel}
           className="w-full sm:w-auto order-1 sm:order-2"
         >
           {t('admin.common.cancel')}

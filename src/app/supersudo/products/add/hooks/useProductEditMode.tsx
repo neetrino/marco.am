@@ -35,6 +35,7 @@ interface UseProductEditModeProps {
   setHasVariantsToLoad: (has: boolean) => void;
   setProductType: (type: 'simple' | 'variable') => void;
   setSimpleProductData: (data: any) => void;
+  onLoadError?: () => void;
 }
 
 export function useProductEditMode({
@@ -52,6 +53,7 @@ export function useProductEditMode({
   setHasVariantsToLoad,
   setProductType,
   setSimpleProductData,
+  onLoadError,
 }: UseProductEditModeProps) {
   const router = useRouter();
   const { t } = useTranslation();
@@ -290,7 +292,11 @@ export function useProductEditMode({
           // Allow retry after a failed load
           lastLoadedKeyRef.current = null;
           console.error('❌ [ADMIN] Error loading product:', err);
-          router.push('/supersudo/products');
+          if (onLoadError) {
+            onLoadError();
+          } else {
+            router.push('/supersudo/products');
+          }
         } finally {
           setLoadingProduct(false);
         }
@@ -314,6 +320,7 @@ export function useProductEditMode({
     setHasVariantsToLoad,
     setProductType,
     setSimpleProductData,
+    onLoadError,
     t,
   ]);
 }

@@ -54,6 +54,7 @@ interface UseProductFormHandlersProps {
   isEditMode: boolean;
   productId: string | null;
   isClothingCategory: () => boolean;
+  onSuccess?: () => void;
 }
 
 export function useProductFormHandlers({
@@ -75,6 +76,7 @@ export function useProductFormHandlers({
   isEditMode,
   productId,
   isClothingCategory,
+  onSuccess,
 }: UseProductFormHandlersProps) {
   const mt = (path: string): string => translateByLocale(getStoredLanguage(), path);
   const router = useRouter();
@@ -419,6 +421,7 @@ export function useProductFormHandlers({
         creationMessages,
         setLoading,
         router,
+        onSuccess,
       });
     } catch (err: unknown) {
       console.error('❌ [ADMIN] Error saving product:', err);

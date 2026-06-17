@@ -69,7 +69,7 @@ export function StockVariantTable({
                         />
                       ) : null}
                       <Link
-                        href={`/supersudo/products/add?id=${row.productId}`}
+                        href={`/supersudo/products?edit=${row.productId}`}
                         className="truncate font-medium text-marco-text/85 hover:text-marco-black hover:underline"
                       >
                         {row.productTitle}

@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { Card, Button } from '@shop/ui';
 import { useTranslation } from '../../../../lib/i18n-client';
 import { AdminTablePagination } from '../../components/AdminTablePagination';
@@ -28,6 +27,7 @@ interface ProductsTableProps {
   page: number;
   setPage: (page: number | ((prev: number) => number)) => void;
   categoryTitleById: Map<string, string>;
+  onEditProduct: (productId: string) => void;
 }
 
 /**
@@ -64,11 +64,11 @@ export function ProductsTable({
   page,
   setPage,
   categoryTitleById,
+  onEditProduct,
 }: ProductsTableProps) {
   const { t } = useTranslation();
-  const router = useRouter();
   const openProductEditor = (productId: string) => {
-    router.push(`/supersudo/products/add?id=${productId}`);
+    onEditProduct(productId);
   };
 
   return (
