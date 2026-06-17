@@ -8,7 +8,7 @@ import { logger } from "@/lib/utils/logger";
 interface UseProductHandlersProps {
   products: Product[];
   setProducts: (products: Product[] | ((prev: Product[]) => Product[])) => void;
-  fetchProducts: () => Promise<void>;
+  fetchProducts: (options?: { force?: boolean }) => Promise<void>;
   selectedIds: Set<string>;
   setSelectedIds: (ids: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
   setPage: (page: number | ((prev: number) => number)) => void;
@@ -68,7 +68,7 @@ export function useProductHandlers({
       );
       const failed = results.filter(r => r.status === 'rejected');
       setSelectedIds(new Set());
-      await fetchProducts();
+      await fetchProducts({ force: true });
       alert(t('admin.products.bulkDeleteFinished').replace('{success}', (ids.length - failed.length).toString()).replace('{total}', ids.length.toString()));
     } catch (err) {
       console.error('❌ [ADMIN] Bulk delete products error:', err);
@@ -194,7 +194,7 @@ export function useProductHandlers({
       logger.devLog(`✅ [ADMIN] Toggle all featured completed: ${successCount}/${products.length} successful`);
       
       // Refresh products list
-      await fetchProducts();
+      await fetchProducts({ force: true });
       
       if (failed.length > 0) {
         alert(t('admin.products.featuredToggleFinished').replace('{success}', successCount.toString()).replace('{total}', products.length.toString()));

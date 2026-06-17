@@ -1,7 +1,11 @@
 import { apiClient } from '@/lib/api-client';
-import { ADMIN_CACHE_KEYS } from '@/lib/admin/admin-cache-keys';
+import { ADMIN_CACHE_KEYS, buildProductsDefaultListCacheKey } from '@/lib/admin/admin-cache-keys';
 import { warmAdminDashboardCache } from '@/lib/admin/admin-dashboard-client-cache';
-import { warmAdminReferenceDataCaches } from '@/lib/admin/admin-reference-data-cache';
+import {
+  warmAdminCategoriesCache,
+  warmAdminReferenceDataCaches,
+} from '@/lib/admin/admin-reference-data-cache';
+import { dedupedAdminRequest } from '@/lib/admin/admin-request-dedup';
 import {
   ADMIN_SESSION_CACHE_TTL_MS,
   readAdminSessionCache,
@@ -36,11 +40,14 @@ function warmOrdersCache(): void {
   );
 }
 
-function warmProductsCache(): void {
-  warmIfMissing(ADMIN_CACHE_KEYS.productsDefault, () =>
-    apiClient.get('/api/v1/supersudo/products', {
-      params: { page: '1', limit: '20', sort: 'createdAt-desc' },
-    }),
+function warmProductsCache(language: string): void {
+  const cacheKey = buildProductsDefaultListCacheKey(language);
+  warmIfMissing(cacheKey, () =>
+    dedupedAdminRequest(cacheKey, () =>
+      apiClient.get('/api/v1/supersudo/products', {
+        params: { page: '1', limit: '20', lang: language, sort: 'createdAt-desc' },
+      }),
+    ),
   );
 }
 
@@ -126,8 +133,8 @@ export function warmAdminPageCacheForPath(path: string): void {
       warmOrdersCache();
       return;
     case '/supersudo/products':
-      warmProductsCache();
-      warmAdminReferenceDataCaches(language);
+      warmProductsCache(language);
+      warmAdminCategoriesCache(language);
       return;
     case '/supersudo/users':
       warmUsersCache();
@@ -181,7 +188,7 @@ export function warmAdminPageCaches(): void {
   warmAdminDashboardCache();
   warmAdminReferenceDataCaches(language);
   warmOrdersCache();
-  warmProductsCache();
+  warmProductsCache(language);
   warmUsersCache();
   warmMessagesCache();
   warmAttributesCache();

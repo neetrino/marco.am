@@ -4,10 +4,51 @@ export function buildAdminListCacheKey(
   params: Record<string, string> = {},
 ): string {
   const query = Object.entries(params)
+    .filter(([, value]) => value !== '')
     .sort(([left], [right]) => left.localeCompare(right))
     .map(([key, value]) => `${key}=${value}`)
     .join('&');
   return query ? `${endpoint}?${query}` : endpoint;
+}
+
+type AdminProductsListCacheInput = {
+  page: number;
+  limit?: number;
+  lang: string;
+  search?: string;
+  category?: string;
+  sku?: string;
+  minPrice?: string;
+  maxPrice?: string;
+  sort?: string;
+  stockFilter?: 'all' | 'inStock' | 'outOfStock';
+};
+
+/** Single cache-key builder for admin products list (page + warm). */
+export function buildAdminProductsListCacheKey(input: AdminProductsListCacheInput): string {
+  const params: Record<string, string> = {
+    page: String(input.page),
+    limit: String(input.limit ?? 20),
+    lang: input.lang,
+    search: input.search?.trim() ?? '',
+    category: input.category ?? '',
+    sku: input.sku?.trim() ?? '',
+    minPrice: input.minPrice?.trim() ?? '',
+    maxPrice: input.maxPrice?.trim() ?? '',
+    sort: input.sort?.startsWith('createdAt') ? input.sort : '',
+  };
+  if (input.stockFilter && input.stockFilter !== 'all') {
+    params.stockFilter = input.stockFilter;
+  }
+  return buildAdminListCacheKey('products', params);
+}
+
+export function buildProductsDefaultListCacheKey(lang: string): string {
+  return buildAdminProductsListCacheKey({
+    page: 1,
+    lang,
+    sort: 'createdAt-desc',
+  });
 }
 
 export const ADMIN_CACHE_KEYS = {
@@ -30,11 +71,6 @@ export const ADMIN_CACHE_KEYS = {
     search: '',
     sortBy: 'createdAt',
     sortOrder: 'desc',
-  }),
-  productsDefault: buildAdminListCacheKey('products', {
-    page: '1',
-    limit: '20',
-    sort: 'createdAt-desc',
   }),
   usersDefault: buildAdminListCacheKey('users', {
     page: '1',

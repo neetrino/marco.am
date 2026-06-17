@@ -15,17 +15,16 @@ export function formatProductForList(product: {
     slug: string;
     title: string;
   }>;
-  categories?: Array<{
-    id: string;
-    translations?: Array<{ locale: string; title: string }>;
-  }>;
   variants?: Array<{
     price: number;
     stock: number;
     compareAtPrice: number | null;
   }>;
   media?: unknown[];
+  categoryIds?: string[];
 }, locale: string = "en") {
+  // locale reserved for future list fields; category titles resolve on the client.
+  void locale;
   // Безопасное получение translation с проверкой на существование массива
   const translation = Array.isArray(product.translations) && product.translations.length > 0
     ? product.translations[0]
@@ -35,21 +34,14 @@ export function formatProductForList(product: {
   
   const image = extractImageFromMedia(product.media);
 
-  const rawCategories = product.categories ?? [];
+  const rawCategoryIds = product.categoryIds ?? [];
   const primaryId = product.primaryCategoryId ?? null;
-  const sortedCategories = [...rawCategories].sort((a, b) => {
-    if (a.id === primaryId) return -1;
-    if (b.id === primaryId) return 1;
+  const sortedCategoryIds = [...rawCategoryIds].sort((left, right) => {
+    if (left === primaryId) return -1;
+    if (right === primaryId) return 1;
     return 0;
   });
-  const categories = sortedCategories
-    .map((cat) => {
-      const trs = Array.isArray(cat.translations) ? cat.translations : [];
-      const tr = trs.find((t) => t.locale === locale) ?? trs[0];
-      const title = tr?.title?.trim() ?? "";
-      return { id: cat.id, title };
-    })
-    .filter((c) => c.title.length > 0);
+  const categories = sortedCategoryIds.map((id) => ({ id, title: '' }));
 
   return {
     id: product.id,

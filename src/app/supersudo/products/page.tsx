@@ -14,11 +14,15 @@ import { useProductHandlers } from './hooks/useProductHandlers';
 import type { Product, ProductsResponse, Category } from './types';
 import { logger } from "@/lib/utils/logger";
 import {
+  fetchAdminCategoriesLite,
   readAdminCategoriesCache,
-  writeAdminCategoriesCache,
 } from '@/lib/admin/admin-reference-data-cache';
-import { ADMIN_CACHE_KEYS, buildAdminListCacheKey } from '@/lib/admin/admin-cache-keys';
+import {
+  buildAdminProductsListCacheKey,
+  buildProductsDefaultListCacheKey,
+} from '@/lib/admin/admin-cache-keys';
 import { beginAdminDataFetch } from '@/lib/admin/admin-fetch-helpers';
+import { dedupedAdminRequest } from '@/lib/admin/admin-request-dedup';
 import {
   ADMIN_SESSION_CACHE_TTL_MS,
   readAdminSessionCache,
@@ -35,8 +39,9 @@ export default function ProductsPage() {
   const activeLocale = lang ?? getStoredLanguage();
   const router = useRouter();
   const pathname = usePathname();
+  const defaultProductsCacheKey = buildProductsDefaultListCacheKey(activeLocale);
   const defaultProductsCache = readAdminSessionCache<AdminProductsCachePayload>(
-    ADMIN_CACHE_KEYS.productsDefault,
+    defaultProductsCacheKey,
     ADMIN_SESSION_CACHE_TTL_MS,
   );
   const cachedCategories = readAdminCategoriesCache<Category>(activeLocale);
@@ -117,15 +122,20 @@ export default function ProductsPage() {
   }, [categoriesExpanded]);
 
   const fetchCategories = async () => {
+    const sessionCached = readAdminCategoriesCache<Category>(activeLocale);
+    if (sessionCached?.length) {
+      setCategories(sessionCached);
+      hadCategoriesCacheRef.current = true;
+      setCategoriesLoading(false);
+      return;
+    }
+
     try {
       beginAdminDataFetch(hadCategoriesCacheRef.current, setCategoriesLoading);
       logger.devLog('📂 [ADMIN] Fetching categories...');
-      const response = await apiClient.get<{ data: Category[] }>('/api/v1/supersudo/categories', {
-        params: { lang: activeLocale },
-      });
+      const response = await fetchAdminCategoriesLite<Category>(activeLocale);
       const nextCategories = response.data || [];
       setCategories(nextCategories);
-      writeAdminCategoriesCache(activeLocale, nextCategories);
       hadCategoriesCacheRef.current = true;
       logger.devLog('✅ [ADMIN] Categories loaded:', nextCategories.length);
     } catch (err: unknown) {
@@ -143,19 +153,27 @@ export default function ProductsPage() {
      
   }, [page, search, selectedCategories, skuSearch, stockFilter, sortBy, minPrice, maxPrice, activeLocale]);
 
-  const fetchProducts = async () => {
-    const cacheKey = buildAdminListCacheKey('products', {
-      page: page.toString(),
-      limit: '20',
-      search: search.trim(),
+  const fetchProducts = async (options?: { force?: boolean }) => {
+    const cacheKey = buildAdminProductsListCacheKey({
+      page,
+      lang: activeLocale,
+      search,
       category: selectedCategories.size > 0 ? Array.from(selectedCategories).join(',') : '',
-      sku: skuSearch.trim(),
-      minPrice: minPrice.trim(),
-      maxPrice: maxPrice.trim(),
-      sort: sortBy.startsWith('createdAt') ? sortBy : '',
+      sku: skuSearch,
+      minPrice,
+      maxPrice,
+      sort: sortBy,
       stockFilter,
     });
     const cached = readAdminSessionCache<AdminProductsCachePayload>(cacheKey, ADMIN_SESSION_CACHE_TTL_MS);
+    if (!options?.force && cached?.data?.length) {
+      setProducts(cached.data);
+      setMeta(cached.meta);
+      setLoading(false);
+      hadProductsCacheRef.current = true;
+      return;
+    }
+
     try {
       beginAdminDataFetch(Boolean(cached?.data?.length), setLoading);
       if (cached) {
@@ -192,9 +210,11 @@ export default function ProductsPage() {
         params.sort = sortBy;
       }
 
-      const response = await apiClient.get<ProductsResponse>('/api/v1/supersudo/products', {
-        params,
-      });
+      const response = await dedupedAdminRequest(cacheKey, () =>
+        apiClient.get<ProductsResponse>('/api/v1/supersudo/products', {
+          params,
+        }),
+      );
       
       let filteredProducts = response.data || [];
 
