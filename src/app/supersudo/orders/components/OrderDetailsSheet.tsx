@@ -3,6 +3,10 @@
 import { useTranslation } from '../../../../lib/i18n-client';
 import { CurrencyCode } from '../../../../lib/currency';
 import { AdminSideSheet } from '../../components/AdminSideSheet';
+import {
+  ADMIN_ORDER_SIDE_SHEET_CLOSE_OUTSIDE_CLASS,
+  ADMIN_ORDER_SIDE_SHEET_PANEL_CLASS,
+} from '../../components/admin-side-sheet.constants';
 import { OrderDetailsBody } from './OrderDetailsBody';
 import type { OrderDetails } from '../useOrders';
 
@@ -37,6 +41,8 @@ export function OrderDetailsSheet({
       onClose={onClose}
       ariaLabel={title}
       closeLabel={t('admin.common.close')}
+      panelClassName={ADMIN_ORDER_SIDE_SHEET_PANEL_CLASS}
+      closeOutsideClassName={ADMIN_ORDER_SIDE_SHEET_CLOSE_OUTSIDE_CLASS}
       header={
         <h2 className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h2>
       }

@@ -17,6 +17,8 @@ interface AdminSideSheetProps {
   closeLabel: string;
   header: ReactNode;
   children: ReactNode;
+  panelClassName?: string;
+  closeOutsideClassName?: string;
 }
 
 /**
@@ -30,6 +32,8 @@ export function AdminSideSheet({
   closeLabel,
   header,
   children,
+  panelClassName = ADMIN_SIDE_SHEET_PANEL_CLASS,
+  closeOutsideClassName = ADMIN_SIDE_SHEET_CLOSE_OUTSIDE_CLASS,
 }: AdminSideSheetProps) {
   const handleClose = useCallback(() => {
     onClose();
@@ -72,13 +76,13 @@ export function AdminSideSheet({
       <button
         type="button"
         onClick={handleClose}
-        className={ADMIN_SIDE_SHEET_CLOSE_OUTSIDE_CLASS}
+        className={closeOutsideClassName}
         aria-label={closeLabel}
       >
         <X className="h-5 w-5" aria-hidden />
       </button>
       <aside
-        className={`${ADMIN_SIDE_SHEET_PANEL_CLASS} animate-in slide-in-from-right duration-200 motion-reduce:animate-none`}
+        className={`${panelClassName} animate-in slide-in-from-right duration-200 motion-reduce:animate-none`}
         role="dialog"
         aria-modal="true"
         aria-label={ariaLabel}
