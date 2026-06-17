@@ -9,7 +9,7 @@ import { logger } from "@/lib/utils/logger";
 interface Product {
   id: string;
   title: string;
-  image?: string;
+  image?: string | null;
   price?: number;
   discountPercent?: number;
 }

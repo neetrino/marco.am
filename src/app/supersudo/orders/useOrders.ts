@@ -454,7 +454,7 @@ export function useOrders() {
       setUpdatingStatuses((prev) => new Set(prev).add(orderId));
       setUpdateMessage(null);
 
-      // Update order status via API (response matches GET detail — includes auditTrail)
+      // Update order status via API (response matches GET detail)
       const updated = await apiClient.put<OrderDetails>(
         `/api/v1/supersudo/orders/${orderId}`,
         {

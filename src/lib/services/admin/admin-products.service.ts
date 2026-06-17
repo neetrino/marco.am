@@ -13,6 +13,7 @@ class AdminProductsService {
   
   // Read methods
   getProducts = adminProductsReadService.getProducts.bind(adminProductsReadService);
+  getProductDiscountsList = adminProductsReadService.getProductDiscountsList.bind(adminProductsReadService);
   getProductById = adminProductsReadService.getProductById.bind(adminProductsReadService);
   getProductEditorSection = adminProductsReadService.getProductEditorSection.bind(adminProductsReadService);
 

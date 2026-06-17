@@ -3,6 +3,7 @@ import {
   ADMIN_CACHE_KEYS,
   buildAdminOrdersListApiParams,
   buildOrdersDefaultListCacheKey,
+  buildProductDiscountsCacheKey,
   buildProductsDefaultListCacheKey,
 } from '@/lib/admin/admin-cache-keys';
 import { warmAdminDashboardCache } from '@/lib/admin/admin-dashboard-client-cache';
@@ -74,7 +75,22 @@ function warmAttributesCache(): void {
 }
 
 function warmSettingsCache(): void {
-  warmIfMissing(ADMIN_CACHE_KEYS.settings, () => apiClient.get('/api/v1/supersudo/settings'));
+  warmIfMissing(ADMIN_CACHE_KEYS.settings, () =>
+    dedupedAdminRequest(ADMIN_CACHE_KEYS.settings, () =>
+      apiClient.get('/api/v1/supersudo/settings'),
+    ),
+  );
+}
+
+function warmProductDiscountsCache(language: string): void {
+  const cacheKey = buildProductDiscountsCacheKey(language);
+  warmIfMissing(cacheKey, () =>
+    dedupedAdminRequest(cacheKey, () =>
+      apiClient.get('/api/v1/supersudo/products/discounts', {
+        params: { lang: language },
+      }),
+    ),
+  );
 }
 
 function warmDeliveryCache(): void {
@@ -150,8 +166,11 @@ export function warmAdminPageCacheForPath(path: string): void {
       warmAttributesCache();
       return;
     case '/supersudo/settings':
+      warmSettingsCache();
+      return;
     case '/supersudo/quick-settings':
       warmSettingsCache();
+      warmProductDiscountsCache(language);
       warmAdminReferenceDataCaches(language);
       return;
     case '/supersudo/delivery':

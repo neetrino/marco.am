@@ -1,3 +1,4 @@
+import { getProductDiscountsList } from "./admin-products-read/product-discounts-list";
 import { getProducts, getProductById } from "./admin-products-read/product-operations";
 import { loadProductEditorSection } from "./admin-products-read/product-editor-section-loader";
 import type { ProductFilters } from "./admin-products-read/types";
@@ -12,6 +13,10 @@ class AdminProductsReadService {
    */
   async getProducts(filters: ProductFilters) {
     return getProducts(filters);
+  }
+
+  async getProductDiscountsList(locale?: string) {
+    return getProductDiscountsList(locale);
   }
 
   /**

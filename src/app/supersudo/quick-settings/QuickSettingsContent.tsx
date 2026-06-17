@@ -22,11 +22,10 @@ interface AdminBrand {
   logoUrl?: string;
 }
 
-/** Matches admin product list rows used for per-product discounts. */
 interface QuickSettingsProductRow {
   id: string;
   title: string;
-  image?: string;
+  image?: string | null;
   price?: number;
   discountPercent?: number;
 }

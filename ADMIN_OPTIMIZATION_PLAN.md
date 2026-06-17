@@ -49,26 +49,22 @@
 
 ### P0 — критично (много запросов / тяжёлый бэкенд)
 
-#### 1. Quick Settings — `/supersudo/quick-settings`
+#### 1. Quick Settings — `/supersudo/quick-settings` ✅
 
-**Симптомы (код):**
+**Было:** N× `GET /products` (полный list API, все страницы) + 3 тяжёлых запроса без cache skip.
 
-- Нет session cache вообще.
-- При mount: **4 независимых fetch** — settings, **все страницы products** (limit 100, цикл по `totalPages`), categories, brands (`quick-settings/page.tsx`).
-- При большом каталоге — десятки параллельных `GET /products` + медленные list-запросы.
+**Сделано:**
 
-**План:**
+- [x] `GET /api/v1/supersudo/products/discounts` — один лёгкий запрос (`id`, `title`, `image`, `price`, `discountPercent`)
+- [x] `useQuickSettings.ts` — cache skip, dedup, `counts=false` для categories
+- [x] Убран refetch всего каталога после save settings; optimistic update после save product discount
+- [x] Warm: settings + product discounts + reference data с dedup
 
-- [ ] **Frontend:** session cache для settings + categories + brands (переиспользовать `ADMIN_CACHE_KEYS` / `admin-reference-data-cache`).
-- [ ] **Frontend:** не грузить весь каталог — только поиск/пагинация или отдельный лёгкий endpoint `GET /products/discounts` (id + discountPercent).
-- [ ] **Frontend:** `dedupedAdminRequest`, cache skip, warm с теми же ключами что страница.
-- [ ] **Backend (если остаётся list):** endpoint только `{ id, title, discountPercent }` без тяжёлых include.
-
-**Файлы:** `src/app/supersudo/quick-settings/page.tsx`, `admin-page-warm.ts`, новый или существующий products read API.
+**Файлы:** `product-discounts-list.ts`, `products/discounts/route.ts`, `useQuickSettings.ts`, `admin-page-warm.ts`
 
 ---
 
-#### 2. Analytics — `/supersudo/analytics`
+#### 2. Analytics — `/supersudo/analytics` (следующий)
 
 **Симптомы (код):**
 
@@ -297,4 +293,4 @@
 
 ---
 
-*Обновлено: 2026-06-17 · Оптимизированы: dashboard, products, orders, promo-codes*
+*Обновлено: 2026-06-17 · Оптимизированы: dashboard, products, orders, promo-codes, **quick-settings***

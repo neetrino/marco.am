@@ -103,6 +103,10 @@ export function buildAdminOrderDetailCacheKey(orderId: string): string {
   return `orders/detail/${orderId}`;
 }
 
+export function buildProductDiscountsCacheKey(lang: string): string {
+  return buildAdminListCacheKey('products/discounts', { lang });
+}
+
 export const ADMIN_CACHE_KEYS = {
   dashboard: 'dashboard',
   categories: 'list/categories',

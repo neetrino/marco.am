@@ -46,6 +46,9 @@ export function OrderDetailsItems({
             <table className="min-w-full text-sm">
               <thead className="bg-slate-50 text-left">
                 <tr>
+                  <th className="w-14 px-3 py-2.5 font-semibold uppercase tracking-wide text-[11px] text-slate-500">
+                    {t('admin.orders.orderDetails.thumbnail')}
+                  </th>
                   <th className="px-3 py-2.5 font-semibold uppercase tracking-wide text-[11px] text-slate-500">
                     {t('admin.orders.orderDetails.product')}
                   </th>
@@ -69,6 +72,20 @@ export function OrderDetailsItems({
               <tbody className="divide-y divide-slate-100 bg-white">
                 {orderDetails.items.map((item) => (
                   <tr key={item.id} className="text-slate-800">
+                    <td className="px-3 py-3 align-top">
+                      {item.imageUrl ? (
+                        <img
+                          src={item.imageUrl}
+                          alt=""
+                          className="h-10 w-10 rounded-lg border border-slate-200 object-cover"
+                          onError={(event) => {
+                            event.currentTarget.classList.add('hidden');
+                          }}
+                        />
+                      ) : (
+                        <div className="h-10 w-10 rounded-lg border border-dashed border-slate-200 bg-slate-50" />
+                      )}
+                    </td>
                     <td className="px-3 py-3 font-medium">{item.productTitle}</td>
                     <td className="px-3 py-3 text-slate-600">{item.sku}</td>
                     <td className="px-3 py-3 text-slate-600 capitalize">
