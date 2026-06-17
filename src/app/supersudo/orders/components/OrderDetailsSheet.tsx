@@ -8,9 +8,10 @@ import {
   ADMIN_ORDER_SIDE_SHEET_PANEL_CLASS,
 } from '../../components/admin-side-sheet.constants';
 import { OrderDetailsBody } from './OrderDetailsBody';
-import { OrderDetailsMeta } from './OrderDetailsMeta';
+import { OrderDetailsSummaryBar } from './OrderDetailsSummaryBar';
 import { isOrderDetailsPreview } from '../utils/order-details-preview';
 import type { OrderDetails } from '../useOrders';
+import { ORDER_DETAIL_SECTION_CLASS } from './order-details-layout.constants';
 
 interface OrderDetailsSheetProps {
   open: boolean;
@@ -20,17 +21,20 @@ interface OrderDetailsSheetProps {
   onSaveAdminNotes: (adminNotes: string) => Promise<void>;
   onClose: () => void;
   formatCurrency: (amount: number, orderCurrency?: string, fromCurrency?: CurrencyCode) => string;
+  onStatusChange?: (status: string) => void;
+  onPaymentStatusChange?: (paymentStatus: string) => void;
+  updatingStatus?: boolean;
+  updatingPaymentStatus?: boolean;
 }
 
 function OrderDetailsPreviewSkeleton() {
   return (
-    <div className="mt-6 space-y-4 animate-pulse" aria-hidden>
-      <div className="h-28 rounded-2xl bg-slate-100 dark:bg-zinc-900" />
-      <div className="h-40 rounded-2xl bg-slate-100 dark:bg-zinc-900" />
+    <div className="mt-4 space-y-4 animate-pulse" aria-hidden>
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <div className="h-32 rounded-2xl bg-slate-100 dark:bg-zinc-900" />
-        <div className="h-32 rounded-2xl bg-slate-100 dark:bg-zinc-900" />
+        <div className={`${ORDER_DETAIL_SECTION_CLASS} h-36`} />
+        <div className={`${ORDER_DETAIL_SECTION_CLASS} h-36`} />
       </div>
+      <div className={`${ORDER_DETAIL_SECTION_CLASS} h-48`} />
     </div>
   );
 }
@@ -43,12 +47,20 @@ export function OrderDetailsSheet({
   onSaveAdminNotes,
   onClose,
   formatCurrency,
+  onStatusChange,
+  onPaymentStatusChange,
+  updatingStatus,
+  updatingPaymentStatus,
 }: OrderDetailsSheetProps) {
   const { t } = useTranslation();
 
   const title = orderDetails?.number
-    ? `${t('admin.orders.orderDetails.title')} #${orderDetails.number}`
+    ? `${t('admin.orders.orderDetails.title')} — ${orderDetails.number}`
     : t('admin.orders.orderDetails.title');
+
+  const createdLabel = orderDetails?.createdAt
+    ? `${t('admin.orders.orderDetails.createdAt')}: ${new Date(orderDetails.createdAt).toLocaleString()}`
+    : null;
 
   const isPreview = Boolean(orderDetails && loading && isOrderDetailsPreview(orderDetails));
 
@@ -61,10 +73,15 @@ export function OrderDetailsSheet({
       panelClassName={ADMIN_ORDER_SIDE_SHEET_PANEL_CLASS}
       closeOutsideClassName={ADMIN_ORDER_SIDE_SHEET_CLOSE_OUTSIDE_CLASS}
       header={
-        <h2 className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h2>
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+          <h2 className="text-base font-semibold text-slate-900 dark:text-white">{title}</h2>
+          {createdLabel ? (
+            <p className="shrink-0 text-xs text-slate-500 dark:text-zinc-400">{createdLabel}</p>
+          ) : null}
+        </div>
       }
     >
-      <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
+      <div className="min-h-0 flex-1 overflow-y-auto bg-slate-50/80 px-5 py-4 dark:bg-zinc-950/40">
         {loading && !orderDetails ? (
           <div className="py-8 text-center">
             <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-gray-900 dark:border-white" />
@@ -75,7 +92,14 @@ export function OrderDetailsSheet({
         ) : orderDetails ? (
           isPreview ? (
             <>
-              <OrderDetailsMeta orderDetails={orderDetails} formatCurrency={formatCurrency} />
+              <OrderDetailsSummaryBar
+                orderDetails={orderDetails}
+                formatCurrency={formatCurrency}
+                onStatusChange={onStatusChange}
+                onPaymentStatusChange={onPaymentStatusChange}
+                updatingStatus={updatingStatus}
+                updatingPaymentStatus={updatingPaymentStatus}
+              />
               <OrderDetailsPreviewSkeleton />
             </>
           ) : (
@@ -84,6 +108,10 @@ export function OrderDetailsSheet({
               savingAdminNotes={savingAdminNotes}
               onSaveAdminNotes={onSaveAdminNotes}
               formatCurrency={formatCurrency}
+              onStatusChange={onStatusChange}
+              onPaymentStatusChange={onPaymentStatusChange}
+              updatingStatus={updatingStatus}
+              updatingPaymentStatus={updatingPaymentStatus}
             />
           )
         ) : (

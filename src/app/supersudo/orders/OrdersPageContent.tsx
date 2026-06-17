@@ -110,6 +110,20 @@ export function OrdersPageContent() {
           onSaveAdminNotes={handleAdminNotesSave}
           onClose={handleCloseModal}
           formatCurrency={formatCurrency}
+          onStatusChange={(status) => {
+            if (selectedOrderId) {
+              void handleStatusChange(selectedOrderId, status);
+            }
+          }}
+          onPaymentStatusChange={(paymentStatus) => {
+            if (selectedOrderId) {
+              void handlePaymentStatusChange(selectedOrderId, paymentStatus);
+            }
+          }}
+          updatingStatus={selectedOrderId ? updatingStatuses.has(selectedOrderId) : false}
+          updatingPaymentStatus={
+            selectedOrderId ? updatingPaymentStatuses.has(selectedOrderId) : false
+          }
         />
       </div>
     </AdminPageLayout>
