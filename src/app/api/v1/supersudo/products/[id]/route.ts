@@ -4,7 +4,6 @@ import { adminService } from "@/lib/services/admin.service";
 import { normalizeProductClass } from "@/lib/constants/product-class";
 import {
   isProductEditorSection,
-  pickProductEditorSection,
 } from "@/lib/admin/product-editor-section";
 import { logger } from "@/lib/utils/logger";
 
@@ -68,12 +67,13 @@ export async function GET(
 
     const { id } = await params;
     const sectionParam = req.nextUrl.searchParams.get("section");
-    const product = await adminService.getProductById(id);
 
     if (isProductEditorSection(sectionParam)) {
-      return NextResponse.json(pickProductEditorSection(product, sectionParam));
+      const section = await adminService.getProductEditorSection(id, sectionParam);
+      return NextResponse.json(section);
     }
 
+    const product = await adminService.getProductById(id);
     return NextResponse.json(product);
   } catch (error: any) {
     console.error("❌ [ADMIN PRODUCTS] GET [id] Error:", error);

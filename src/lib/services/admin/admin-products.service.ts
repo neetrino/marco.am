@@ -14,6 +14,7 @@ class AdminProductsService {
   // Read methods
   getProducts = adminProductsReadService.getProducts.bind(adminProductsReadService);
   getProductById = adminProductsReadService.getProductById.bind(adminProductsReadService);
+  getProductEditorSection = adminProductsReadService.getProductEditorSection.bind(adminProductsReadService);
 
   // Create methods
   createProduct = adminProductsCreateService.createProduct.bind(adminProductsCreateService);

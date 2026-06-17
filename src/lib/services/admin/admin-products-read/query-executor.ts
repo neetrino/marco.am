@@ -78,7 +78,7 @@ function isVariantAttributesError(error: unknown): boolean {
 /**
  * Check if error is related to productAttributes table
  */
-function isProductAttributesError(error: unknown): boolean {
+export function isProductAttributesError(error: unknown): boolean {
   const errorObj = error as { code?: string; message?: string };
   const errorMessage = error instanceof Error ? error.message : String(error);
   return (errorObj && typeof errorObj === 'object' && 'code' in errorObj && errorObj.code === 'P2021') || 
