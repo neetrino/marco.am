@@ -6,7 +6,6 @@ import type { ProductDescriptionEntry } from '@/lib/products/product-description
 
 export function useProductFormState() {
   const [loading, setLoading] = useState(false);
-  const [loadingProduct, setLoadingProduct] = useState(false);
   const [brands, setBrands] = useState<Brand[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [attributes, setAttributes] = useState<Attribute[]>([]);
@@ -62,8 +61,6 @@ export function useProductFormState() {
     // Loading states
     loading,
     setLoading,
-    loadingProduct,
-    setLoadingProduct,
     // Data states
     brands,
     setBrands,

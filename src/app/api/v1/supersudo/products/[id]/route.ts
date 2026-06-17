@@ -4,7 +4,7 @@ import { adminService } from "@/lib/services/admin.service";
 import { normalizeProductClass } from "@/lib/constants/product-class";
 import {
   isProductEditorSection,
-} from "@/lib/admin/product-editor-section";
+} from "@/app/supersudo/products/add/product-editor-tabs";
 import { logger } from "@/lib/utils/logger";
 
 function isValidAttributeIds(attributeIds: unknown): attributeIds is string[] {

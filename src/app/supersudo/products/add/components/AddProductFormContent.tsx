@@ -127,7 +127,7 @@ function TabPanel({
   }
 
   return (
-    <div role="tabpanel" hidden={activeTab !== tabId} className={activeTab === tabId ? '' : 'hidden'}>
+    <div role="tabpanel" hidden={activeTab !== tabId} className={`w-full min-w-0 ${activeTab === tabId ? '' : 'hidden'}`}>
       {children}
     </div>
   );
@@ -236,7 +236,7 @@ export function AddProductFormContent({
           </div>
         ) : null}
 
-        <form id={formId} onSubmit={handleSubmit} className={loadingTab === activeTab ? 'hidden' : ''}>
+        <form id={formId} onSubmit={handleSubmit} className={`w-full min-w-0 ${loadingTab === activeTab ? 'hidden' : ''}`}>
           <TabPanel tabId="general" activeTab={activeTab} visited={visitedTabs.has('general')}>
             <ProductGeneralTab
               productClass={formData.productClass}

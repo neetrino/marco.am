@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { apiClient } from '@/lib/api-client';
 import { useTranslation } from '@/lib/i18n-client';
-import type { ProductEditorSection } from '@/lib/admin/product-editor-section';
+import type { ProductEditorSection } from '../product-editor-tabs';
 import type { CurrencyCode } from '@/lib/currency';
 import type { Product } from '../../types';
 import {
@@ -204,7 +204,6 @@ export function useProductEditorTabLoader({
   }, [activeTab, open, productId, loadedTabs, loadSection, markTabLoaded]);
 
   return {
-    loadedTabs,
     visitedTabs,
     loadingTab,
   };

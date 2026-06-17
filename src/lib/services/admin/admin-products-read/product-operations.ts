@@ -1,11 +1,9 @@
-import type { ProductEditorSection } from "@/lib/admin/product-editor-section";
 import { parseProductDescriptionJson } from "@/lib/products/product-description";
 import { logger } from "../../../utils/logger";
 import { expandCategoryIdsWithDescendants } from "../../category-subtree.service";
 import type { ProductFilters } from "./types";
 import { buildProductWhereClause, buildProductOrderByClause } from "./query-builder";
 import { executeProductListQuery, executeProductDetailQuery } from "./query-executor";
-import { loadProductEditorSection } from "./product-editor-section-loader";
 import { formatProductForList } from "./product-formatter";
 import { formatVariantForAdmin } from "./variant-formatter";
 
@@ -139,12 +137,5 @@ export async function getProductById(productId: string) {
     })),
     variants: variants.map((v) => formatVariantForAdmin(v as Parameters<typeof formatVariantForAdmin>[0])),
   };
-}
-
-/**
- * Get a single editor section payload without loading the full product graph.
- */
-export async function getProductEditorSection(productId: string, section: ProductEditorSection) {
-  return loadProductEditorSection(productId, section);
 }
 

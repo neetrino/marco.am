@@ -1,6 +1,7 @@
-import { getProducts, getProductById, getProductEditorSection } from "./admin-products-read/product-operations";
+import { getProducts, getProductById } from "./admin-products-read/product-operations";
+import { loadProductEditorSection } from "./admin-products-read/product-editor-section-loader";
 import type { ProductFilters } from "./admin-products-read/types";
-import type { ProductEditorSection } from "@/lib/admin/product-editor-section";
+import type { ProductEditorSection } from "@/app/supersudo/products/add/product-editor-tabs";
 
 /**
  * Service for admin product read operations
@@ -21,7 +22,7 @@ class AdminProductsReadService {
   }
 
   async getProductEditorSection(productId: string, section: ProductEditorSection) {
-    return getProductEditorSection(productId, section);
+    return loadProductEditorSection(productId, section);
   }
 }
 

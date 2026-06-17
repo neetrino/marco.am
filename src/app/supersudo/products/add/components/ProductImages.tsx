@@ -28,7 +28,7 @@ export function ProductImages({
   const { t } = useTranslation();
 
   return (
-    <div className="mx-auto max-w-3xl space-y-4">
+    <div className="w-full min-w-0 space-y-4">
       <div>
         <div className="mb-4">
             <Button
@@ -55,7 +55,7 @@ export function ProductImages({
 
           {/* Images Grid */}
           {imageUrls.length > 0 && (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
               {imageUrls.map((imageUrl, index) => (
                 <div key={index} className="relative group">
                   <div

@@ -37,7 +37,7 @@ export function ProductGeneralTab({
   const { t } = useTranslation();
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
+    <div className="w-full min-w-0 space-y-6">
       <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
         <GeneralSettingRow
           label={t('admin.products.add.productClassLabel')}

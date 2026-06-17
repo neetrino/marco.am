@@ -16,7 +16,7 @@ export function ProductDescriptionTab({
   const { t } = useTranslation();
 
   return (
-    <div>
+    <div className="w-full min-w-0">
       <label className="mb-2 block text-sm font-medium text-gray-700">
         {t('admin.products.add.description')}
       </label>

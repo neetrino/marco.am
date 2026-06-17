@@ -78,7 +78,7 @@ export function PricingInventorySection({
   const { t } = useTranslation();
 
   return (
-    <section className="border-b border-slate-200/70 pb-6 last:border-b-0">
+    <section className="w-full min-w-0 border-b border-slate-200/70 pb-6 last:border-b-0">
       <ProductTypeTabs productType={productType} onChange={onProductTypeChange} />
 
       <h2 className="mt-5 mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">

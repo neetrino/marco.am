@@ -614,7 +614,6 @@
       "updateProduct": "Update Product",
       "createProduct": "Create Product",
       "updating": "Updating...",
-      "loadingProduct": "Loading product...",
       "loading": "Loading...",
       "colorAttributeNotFound": "Color attribute not found",
       "colorNameRequired": "Color name is required",

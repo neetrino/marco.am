@@ -614,7 +614,6 @@
       "updateProduct": "Обновить товар",
       "createProduct": "Создать товар",
       "updating": "Обновление...",
-      "loadingProduct": "Загрузка товара...",
       "loading": "Загрузка...",
       "colorAttributeNotFound": "Атрибут цвета не найден",
       "colorNameRequired": "Название цвета обязательно",

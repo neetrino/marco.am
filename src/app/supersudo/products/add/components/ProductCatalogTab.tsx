@@ -27,7 +27,7 @@ interface ProductCatalogTabProps {
 
 export function ProductCatalogTab(props: ProductCatalogTabProps) {
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
+    <div className="w-full min-w-0 space-y-6">
       <CatalogCategorySection
         categories={props.categories}
         categoryIds={props.categoryIds}

@@ -1,5 +1,5 @@
 import { db } from "@white-shop/db";
-import type { ProductEditorSection } from "@/lib/admin/product-editor-section";
+import type { ProductEditorSection } from "@/app/supersudo/products/add/product-editor-tabs";
 import { parseProductDescriptionJson } from "@/lib/products/product-description";
 import { formatVariantForAdmin } from "./variant-formatter";
 import { isProductAttributesError } from "./query-executor";

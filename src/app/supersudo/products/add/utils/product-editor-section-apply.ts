@@ -1,6 +1,6 @@
 import { CATALOG_PRICE_CURRENCY, convertPrice, type CurrencyCode } from '@/lib/currency';
 import { cleanImageUrls, separateMainAndVariantImages } from '@/lib/utils/image-utils';
-import type { ProductEditorSection } from '@/lib/admin/product-editor-section';
+import type { ProductEditorSection } from '../product-editor-tabs';
 import type { Product } from '../../types';
 import type { ProductData, ColorData, Variant, Attribute, AdminProductVariantRow } from '../types';
 import type { AddProductFormState } from './productFormDataBuilder';
