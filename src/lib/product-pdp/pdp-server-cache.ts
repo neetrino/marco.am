@@ -4,42 +4,13 @@ import type { LanguageCode } from '@/lib/language';
 import { getCachedJson } from '@/lib/services/read-through-json-cache';
 import { productsRelatedService } from '@/lib/services/products-related.service';
 import { productsService } from '@/lib/services/products.service';
-import { db } from '@white-shop/db';
 
 import { RELATED_PRODUCTS_PAGE_SIZE } from './related-products.constants';
 
 export const PDP_RELATED_SSR_LIMIT = RELATED_PRODUCTS_PAGE_SIZE;
-const PDP_EXISTS_CACHE_TTL_SEC = 180;
 const PDP_VISUAL_CACHE_TTL_SEC = 180;
 const PDP_DETAIL_CACHE_TTL_SEC = 180;
 const PDP_RELATED_CACHE_TTL_SEC = 300;
-
-/**
- * Minimal published-product existence check for early PDP 404s.
- */
-export async function getCachedPdpExists(slug: string): Promise<boolean> {
-  const key = createHash('sha256')
-    .update(`pdp:ssr:exists:v1\0${slug}`)
-    .digest('hex');
-  return getCachedJson(
-    `cache:products:pdp:ssr:exists:v1:${key}`,
-    PDP_EXISTS_CACHE_TTL_SEC,
-    async () => {
-      const product = await db.product.findFirst({
-        where: {
-          translations: {
-            some: { slug },
-          },
-          published: true,
-          deletedAt: null,
-        },
-        select: { id: true },
-      });
-      return product !== null;
-    },
-    { requireSharedCache: true },
-  );
-}
 
 /**
  * Shared Redis-backed cache for PDP first-paint visual payload.

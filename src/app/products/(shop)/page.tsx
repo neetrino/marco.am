@@ -1,8 +1,8 @@
 import { Suspense } from 'react';
-import { ProductsShopClientShell } from './ProductsShopClientShell';
-import { ProductsShopLoadingSkeleton } from './ProductsShopLoadingSkeleton';
-import { ProductsShopStreamedSection } from './ProductsShopStreamedSection';
-import type { ProductsPageSearchParams } from './products-page-search-params';
+import { ProductsShopClientShell } from '../ProductsShopClientShell';
+import { ProductsShopLoadingSkeleton } from '../ProductsShopLoadingSkeleton';
+import { ProductsShopStreamedSection } from '../ProductsShopStreamedSection';
+import type { ProductsPageSearchParams } from '../products-page-search-params';
 
 interface ProductsPageProps {
   readonly searchParams: Promise<ProductsPageSearchParams>;

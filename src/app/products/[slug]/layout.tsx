@@ -77,7 +77,7 @@ export default async function ProductSlugLayout({
   return (
     <>
       <Suspense fallback={null}>
-        <ProductPdpLayoutGate baseSlug={baseSlug} />
+        <ProductPdpLayoutGate baseSlug={baseSlug} serverLanguage={serverLanguage} />
       </Suspense>
       <ProductSlugLayoutClient slugParam={slugParam} serverLanguage={serverLanguage} />
       {children}
