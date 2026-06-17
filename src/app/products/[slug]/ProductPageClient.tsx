@@ -18,13 +18,10 @@ import { ProductImageGallery } from './ProductImageGallery';
 import { ProductInfoAndActions } from './ProductInfoAndActions';
 import { ProductInfoPrimarySkeleton } from './ProductInfoPrimarySkeleton';
 import { useProductPage } from './useProductPage';
+import { RelatedProducts } from '@/components/RelatedProducts';
 
 const ProductSpecifications = dynamic(() =>
   import('./ProductSpecifications').then((m) => ({ default: m.ProductSpecifications })),
-);
-
-const RelatedProducts = dynamic(() =>
-  import('@/components/RelatedProducts').then((m) => ({ default: m.RelatedProducts })),
 );
 
 export type ProductPageClientProps = {
@@ -277,7 +274,6 @@ export function ProductPageClient({
         <RelatedProducts
           currentProductSlug={slug}
           language={language}
-          initialRelatedProducts={null}
           enabled={relatedEnabled}
         />
       </div>

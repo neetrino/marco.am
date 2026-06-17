@@ -1,156 +1,98 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo } from 'react';
+import { useInfiniteQuery } from '@tanstack/react-query';
 
 import { dedupeCardProductsByTitle } from '../../lib/dedupeCardProductsByTitle';
 import type { LanguageCode } from '../../lib/language';
+import { fetchRelatedProducts } from '@/lib/product-pdp/fetch-related-products';
 import {
-  fetchRelatedProducts,
-  hasUsableRelatedPayload,
-  type RelatedProductRow,
-  type RelatedProductsApiResponse,
-} from '@/lib/product-pdp/fetch-related-products';
+  PDP_RELATED_GC_TIME_MS,
+  PDP_RELATED_STALE_TIME_MS,
+} from '@/lib/product-pdp/pdp-query-cache';
+import {
+  persistRelatedProductsFirstPage,
+  readRelatedProductsQuerySeed,
+} from '@/lib/product-pdp/pdp-related-query-seed';
 import { RELATED_PRODUCTS_PAGE_SIZE } from '@/lib/product-pdp/related-products.constants';
+import { getQueryClient } from '@/lib/query/get-query-client';
+import { queryKeys } from '@/lib/query-keys';
 
 interface UseRelatedProductsProps {
   productSlug: string;
   language: LanguageCode;
-  /** SSR first page — instant carousel on first paint when slug/lang match. */
-  initialRelatedProducts?: RelatedProductsApiResponse | null;
-  /** Gate fetch for staged PDP rendering. */
   enabled?: boolean;
 }
 
 export const RELATED_PRODUCTS_LIMIT = RELATED_PRODUCTS_PAGE_SIZE;
 
+function getRelatedNextOffset(
+  lastPage: Awaited<ReturnType<typeof fetchRelatedProducts>>,
+  _allPages: Awaited<ReturnType<typeof fetchRelatedProducts>>[],
+  lastPageParam: number,
+): number | undefined {
+  const rows = lastPage.data?.length ?? 0;
+  const hasMore = lastPage.meta?.hasMore ?? rows >= RELATED_PRODUCTS_PAGE_SIZE;
+  if (!hasMore) {
+    return undefined;
+  }
+  return lastPageParam + rows;
+}
+
 /**
- * Related products for PDP — loads 4 at a time; appends on carousel pagination.
+ * Related products for PDP — React Query infinite page; SSR + sessionStorage seed.
  */
 export function useRelatedProducts({
   productSlug,
   language,
-  initialRelatedProducts = null,
   enabled = true,
 }: UseRelatedProductsProps) {
   const trimmed = productSlug.trim();
-  const hasSsrPayload = hasUsableRelatedPayload(initialRelatedProducts);
-
-  const initialRows = useMemo((): RelatedProductRow[] => {
-    if (!hasSsrPayload || !initialRelatedProducts) {
-      return [];
-    }
-    return dedupeCardProductsByTitle(initialRelatedProducts.data).slice(0, RELATED_PRODUCTS_PAGE_SIZE);
-  }, [hasSsrPayload, initialRelatedProducts]);
-
-  const [products, setProducts] = useState<RelatedProductRow[]>(initialRows);
-  const [hasMore, setHasMore] = useState(
-    hasSsrPayload ? (initialRelatedProducts?.meta?.hasMore ?? initialRows.length >= RELATED_PRODUCTS_PAGE_SIZE) : true,
-  );
-  const [loading, setLoading] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const offsetRef = useRef(initialRows.length);
-  const fetchGenerationRef = useRef(0);
-  const fetchedKeyRef = useRef<string | null>(hasSsrPayload ? `${trimmed}:${language}` : null);
-
-  const mergeRows = useCallback((existing: RelatedProductRow[], incoming: RelatedProductRow[]) => {
-    const seen = new Set(existing.map((row) => row.id));
-    const merged = [...existing];
-    for (const row of incoming) {
-      if (seen.has(row.id)) {
-        continue;
-      }
-      seen.add(row.id);
-      merged.push(row);
-    }
-    return dedupeCardProductsByTitle(merged);
-  }, []);
-
-  const applyPageResponse = useCallback(
-    (response: RelatedProductsApiResponse, append: boolean) => {
-      const rows = dedupeCardProductsByTitle(response.data ?? []);
-      setProducts((prev) => (append ? mergeRows(prev, rows) : rows));
-      offsetRef.current = append ? offsetRef.current + rows.length : rows.length;
-      setHasMore(response.meta?.hasMore ?? rows.length >= RELATED_PRODUCTS_PAGE_SIZE);
-    },
-    [mergeRows],
+  const queryClient = getQueryClient();
+  const queryKey = queryKeys.relatedProducts(
+    trimmed,
+    language,
+    RELATED_PRODUCTS_PAGE_SIZE,
   );
 
-  const fetchPage = useCallback(
-    async (offset: number, append: boolean) => {
-      const generation = fetchGenerationRef.current + 1;
-      fetchGenerationRef.current = generation;
-      if (append) {
-        setLoadingMore(true);
-      } else {
-        setLoading(true);
-      }
-      try {
-        const response = await fetchRelatedProducts(
-          trimmed,
-          language,
-          RELATED_PRODUCTS_PAGE_SIZE,
-          offset,
-        );
-        if (generation !== fetchGenerationRef.current) {
-          return;
-        }
-        applyPageResponse(response, append);
-      } catch {
-        if (generation !== fetchGenerationRef.current) {
-          return;
-        }
-        if (!append) {
-          setProducts([]);
-        }
-        setHasMore(false);
-      } finally {
-        if (generation === fetchGenerationRef.current) {
-          setLoading(false);
-          setLoadingMore(false);
-        }
-      }
+  const initialData = useMemo(
+    () => readRelatedProductsQuerySeed(queryClient, trimmed, language),
+    [queryClient, trimmed, language],
+  );
+
+  const query = useInfiniteQuery(
+    {
+      queryKey,
+      queryFn: ({ pageParam }) =>
+        fetchRelatedProducts(trimmed, language, RELATED_PRODUCTS_PAGE_SIZE, pageParam),
+      initialPageParam: 0,
+      getNextPageParam: getRelatedNextOffset,
+      enabled: enabled && Boolean(trimmed),
+      initialData,
+      staleTime: PDP_RELATED_STALE_TIME_MS,
+      gcTime: PDP_RELATED_GC_TIME_MS,
     },
-    [applyPageResponse, language, trimmed],
+    queryClient,
   );
 
   useEffect(() => {
-    fetchGenerationRef.current += 1;
-    offsetRef.current = initialRows.length;
-    fetchedKeyRef.current = hasSsrPayload ? `${trimmed}:${language}` : null;
-    setProducts(initialRows);
-    setHasMore(
-      hasSsrPayload
-        ? (initialRelatedProducts?.meta?.hasMore ?? initialRows.length >= RELATED_PRODUCTS_PAGE_SIZE)
-        : true,
-    );
-  }, [hasSsrPayload, initialRelatedProducts?.meta?.hasMore, initialRows, trimmed, language]);
+    persistRelatedProductsFirstPage(trimmed, language, query.data?.pages[0]);
+  }, [language, query.data?.pages, trimmed]);
 
-  useEffect(() => {
-    if (!enabled || !trimmed) {
-      return;
-    }
-    const fetchKey = `${trimmed}:${language}`;
-    if (fetchedKeyRef.current === fetchKey) {
-      return;
-    }
-    fetchedKeyRef.current = fetchKey;
-    void fetchPage(0, false);
-  }, [enabled, fetchPage, language, trimmed]);
+  const products = useMemo(() => {
+    const rows = query.data?.pages.flatMap((page) => page.data ?? []) ?? [];
+    return dedupeCardProductsByTitle(rows);
+  }, [query.data?.pages]);
 
-  const loadMore = useCallback(() => {
-    if (!enabled || !trimmed || loading || loadingMore || !hasMore) {
-      return;
-    }
-    void fetchPage(offsetRef.current, true);
-  }, [enabled, fetchPage, hasMore, loading, loadingMore, trimmed]);
-
-  const showInitialLoading = enabled && products.length === 0 && loading;
+  const showInitialLoading = enabled && products.length === 0 && query.isPending;
 
   return {
     products,
     loading: showInitialLoading,
-    loadingMore,
-    hasMore,
-    loadMore,
+    loadingMore: query.isFetchingNextPage,
+    hasMore: query.hasNextPage ?? false,
+    loadMore: () => {
+      void query.fetchNextPage();
+    },
   };
 }
