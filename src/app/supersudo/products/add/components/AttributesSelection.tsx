@@ -16,6 +16,7 @@ interface AttributesSelectionProps {
   onAttributeToggle: (attributeId: string, checked: boolean) => void;
   onAttributeRemove: (attributeId: string) => void;
   onAttributeValuesOpen: (attributeId: string) => void;
+  embedded?: boolean;
 }
 
 export function AttributesSelection({
@@ -28,12 +29,12 @@ export function AttributesSelection({
   onAttributeToggle,
   onAttributeRemove,
   onAttributeValuesOpen,
+  embedded,
 }: AttributesSelectionProps) {
   const { t } = useTranslation();
 
-  return (
-    <FormSection title={t('admin.products.add.selectAttributesForVariants')}>
-      <div className="rounded-xl border border-marco-border/50 bg-white/60 p-4 sm:p-5">
+  const content = (
+      <div className={embedded ? 'space-y-4' : 'rounded-xl border border-marco-border/50 bg-white/60 p-4 sm:p-5'}>
         <label className="block text-sm font-medium text-gray-700 mb-3">
           {t('admin.products.add.attributes')} <span className="text-gray-500 font-normal">{t('admin.products.add.selectMultiple')}</span>
         </label>
@@ -168,6 +169,22 @@ export function AttributesSelection({
           </div>
         )}
       </div>
+  );
+
+  if (embedded) {
+    return (
+      <div>
+        <p className="mb-3 text-sm font-medium text-gray-700">
+          {t('admin.products.add.selectAttributesForVariants')}
+        </p>
+        {content}
+      </div>
+    );
+  }
+
+  return (
+    <FormSection title={t('admin.products.add.selectAttributesForVariants')}>
+      {content}
     </FormSection>
   );
 }

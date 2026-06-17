@@ -12,23 +12,21 @@ interface FormSectionProps {
 
 export function FormSection({ title, description, headerRight, children, className = '' }: FormSectionProps) {
   return (
-    <section
-      className={`rounded-2xl border border-marco-border/70 bg-gradient-to-br from-white via-white to-marco-gray/15 p-5 shadow-sm sm:p-6 ${className}`.trim()}
-    >
+    <section className={`border-b border-slate-200/70 pb-6 last:border-b-0 ${className}`.trim()}>
       <div
         className={
           headerRight
-            ? 'mb-4 flex flex-col gap-3 sm:mb-5 sm:flex-row sm:items-start sm:justify-between sm:gap-4'
-            : 'mb-4 sm:mb-5'
+            ? 'mb-0 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between'
+            : 'mb-4'
         }
       >
         <div className="min-w-0">
-          <h2 className="text-lg font-semibold text-marco-black sm:text-xl">{title}</h2>
-          {description ? <p className="mt-1 text-sm leading-relaxed text-marco-text/70">{description}</p> : null}
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">{title}</h2>
+          {description ? <p className="mt-1 text-sm text-slate-600">{description}</p> : null}
         </div>
         {headerRight ? <div className="shrink-0">{headerRight}</div> : null}
       </div>
-      {children}
+      {headerRight ? <div className="pt-4">{children}</div> : children}
     </section>
   );
 }

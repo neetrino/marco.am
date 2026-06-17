@@ -15,6 +15,7 @@ interface SimpleProductFieldsProps {
   onCompareAtPriceChange: (value: string) => void;
   onSkuChange: (value: string) => void;
   onQuantityChange: (value: string) => void;
+  embedded?: boolean;
 }
 
 export function SimpleProductFields({
@@ -27,13 +28,13 @@ export function SimpleProductFields({
   onCompareAtPriceChange,
   onSkuChange,
   onQuantityChange,
+  embedded,
 }: SimpleProductFieldsProps) {
   const { t } = useTranslation();
 
-  return (
-    <FormSection title={t('admin.products.add.pricingAndInventory')}>
-      <div className="space-y-4">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+  const fields = (
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {/* Price */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -105,8 +106,13 @@ export function SimpleProductFields({
           </div>
         </div>
       </div>
-    </FormSection>
   );
+
+  if (embedded) {
+    return fields;
+  }
+
+  return <FormSection title={t('admin.products.add.pricingAndInventory')}>{fields}</FormSection>;
 }
 
 

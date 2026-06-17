@@ -1,7 +1,6 @@
 'use client';
 
 import type { ChangeEvent } from 'react';
-import { Card } from '@shop/ui';
 import type {
   Brand,
   Category,
@@ -15,17 +14,15 @@ import type { ProductClass } from '@/lib/constants/product-class';
 import { BasicInformation } from './BasicInformation';
 import { ProductImages } from './ProductImages';
 import { CategoriesBrands } from './CategoriesBrands';
-import { SimpleProductFields } from './SimpleProductFields';
-import { AttributesSelection } from './AttributesSelection';
-import { VariantBuilder } from './VariantBuilder';
+import { PricingInventorySection } from './PricingInventorySection';
 import { ProductLabels } from './ProductLabels';
 import { ProductWarrantyField } from './ProductWarrantyField';
 import { Publishing } from './Publishing';
 import type { ProductWarrantyYears } from '@/lib/constants/product-warranty';
 import type { ProductDescriptionEntry } from '@/lib/products/product-description';
-import { FormActions } from './FormActions';
 
 interface AddProductFormContentProps {
+  formId: string;
   formData: {
     title: string;
     slug: string;
@@ -70,9 +67,8 @@ interface AddProductFormContentProps {
   fileInputRef: React.RefObject<HTMLInputElement>;
   attributesDropdownRef: React.RefObject<HTMLDivElement>;
   variantImageInputRefs: React.MutableRefObject<Record<string, HTMLInputElement | null>>;
-  onTitleChange: (e: ChangeEvent<HTMLInputElement>) => void;
-  onSlugChange: (e: ChangeEvent<HTMLInputElement>) => void;
   onDescriptionChange: (entries: ProductDescriptionEntry[]) => void;
+  onProductTypeChange: (type: 'simple' | 'variable') => void;
   onUploadImages: (event: ChangeEvent<HTMLInputElement>) => Promise<void>;
   onRemoveImage: (index: number) => void;
   onSetFeaturedImage: (index: number) => void;
@@ -108,10 +104,10 @@ interface AddProductFormContentProps {
   onApplyToAllVariants: (field: 'price' | 'compareAtPrice' | 'stock' | 'sku', value: string) => void;
   isClothingCategory: () => boolean;
   handleSubmit: (e: React.FormEvent) => void;
-  onCancel: () => void;
 }
 
 export function AddProductFormContent({
+  formId,
   formData,
   productType,
   simpleProductData,
@@ -137,9 +133,8 @@ export function AddProductFormContent({
   fileInputRef,
   attributesDropdownRef,
   variantImageInputRefs,
-  onTitleChange,
-  onSlugChange,
   onDescriptionChange,
+  onProductTypeChange,
   onUploadImages,
   onRemoveImage,
   onSetFeaturedImage,
@@ -175,20 +170,11 @@ export function AddProductFormContent({
   onApplyToAllVariants,
   isClothingCategory,
   handleSubmit,
-  onCancel,
 }: AddProductFormContentProps) {
   return (
-    <Card className="relative border-marco-border/80 bg-gradient-to-br from-white via-white to-marco-gray/10 p-0 shadow-[0_16px_40px_rgba(16,16,16,0.08)] sm:rounded-2xl">
-      <form
-        onSubmit={handleSubmit}
-        className="space-y-6 p-5 pb-28 sm:space-y-8 sm:p-8 sm:pb-32"
-      >
+    <form id={formId} onSubmit={handleSubmit} className="space-y-6">
         <BasicInformation
-          title={formData.title}
-          slug={formData.slug}
           description={formData.description}
-          onTitleChange={onTitleChange}
-          onSlugChange={onSlugChange}
           onDescriptionChange={onDescriptionChange}
         />
 
@@ -228,54 +214,36 @@ export function AddProductFormContent({
           onVariantsUpdate={onVariantsUpdate}
         />
 
-        {productType === 'simple' && (
-          <SimpleProductFields
-            price={simpleProductData.price}
-            compareAtPrice={simpleProductData.compareAtPrice}
-            sku={simpleProductData.sku}
-            quantity={simpleProductData.quantity}
-            defaultCurrency={defaultCurrency}
-            onPriceChange={onPriceChange}
-            onCompareAtPriceChange={onCompareAtPriceChange}
-            onSkuChange={onSkuChange}
-            onQuantityChange={onQuantityChange}
-          />
-        )}
-
-        {productType === 'variable' && (
-          <AttributesSelection
-            attributes={attributes}
-            selectedAttributesForVariants={selectedAttributesForVariants}
-            selectedAttributeValueIds={selectedAttributeValueIds}
-            attributesDropdownOpen={attributesDropdownOpen}
-            attributesDropdownRef={attributesDropdownRef}
-            onAttributesDropdownToggle={onAttributesDropdownToggle}
-            onAttributeToggle={onAttributeToggle}
-            onAttributeRemove={onAttributeRemove}
-            onAttributeValuesOpen={onAttributeValuesOpen}
-          />
-        )}
-
-        {productType === 'variable' &&
-          ((isEditMode && (generatedVariants.length > 0 || hasVariantsToLoad)) ||
-            selectedAttributesForVariants.size > 0) && (
-            <VariantBuilder
-              generatedVariants={generatedVariants}
-              attributes={attributes}
-              selectedAttributesForVariants={selectedAttributesForVariants}
-              isEditMode={isEditMode}
-              hasVariantsToLoad={hasVariantsToLoad}
-              defaultCurrency={defaultCurrency}
-              imageUploadLoading={imageUploadLoading}
-              variantImageInputRefs={variantImageInputRefs}
-              onVariantUpdate={onVariantUpdate}
-              onVariantDelete={onVariantDelete}
-              onVariantAdd={onVariantAdd}
-              onApplyToAll={onApplyToAllVariants}
-              onVariantImageUpload={onVariantImageUpload}
-              onOpenValueModal={onOpenValueModal}
-            />
-          )}
+        <PricingInventorySection
+          productType={productType}
+          onProductTypeChange={onProductTypeChange}
+          simpleProductData={simpleProductData}
+          defaultCurrency={defaultCurrency}
+          onPriceChange={onPriceChange}
+          onCompareAtPriceChange={onCompareAtPriceChange}
+          onSkuChange={onSkuChange}
+          onQuantityChange={onQuantityChange}
+          attributes={attributes}
+          selectedAttributesForVariants={selectedAttributesForVariants}
+          selectedAttributeValueIds={selectedAttributeValueIds}
+          attributesDropdownOpen={attributesDropdownOpen}
+          attributesDropdownRef={attributesDropdownRef}
+          onAttributesDropdownToggle={onAttributesDropdownToggle}
+          onAttributeToggle={onAttributeToggle}
+          onAttributeRemove={onAttributeRemove}
+          onAttributeValuesOpen={onAttributeValuesOpen}
+          generatedVariants={generatedVariants}
+          isEditMode={isEditMode}
+          hasVariantsToLoad={hasVariantsToLoad}
+          imageUploadLoading={imageUploadLoading}
+          variantImageInputRefs={variantImageInputRefs}
+          onVariantUpdate={onVariantUpdate}
+          onVariantDelete={onVariantDelete}
+          onVariantAdd={onVariantAdd}
+          onApplyToAllVariants={onApplyToAllVariants}
+          onVariantImageUpload={onVariantImageUpload}
+          onOpenValueModal={onOpenValueModal}
+        />
 
         <ProductWarrantyField
           warrantyYears={
@@ -302,9 +270,7 @@ export function AddProductFormContent({
           onProductClassChange={onProductClassChange}
         />
 
-        <FormActions loading={loading} isEditMode={isEditMode} onCancel={onCancel} />
-      </form>
-    </Card>
+    </form>
   );
 }
 
