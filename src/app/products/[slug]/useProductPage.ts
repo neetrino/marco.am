@@ -20,13 +20,11 @@ import { useProductCalculations } from './hooks/useProductCalculations';
 export type UseProductPageInput = {
   slugParam: string;
   serverLanguage: LanguageCode;
-  initialProduct: Product | null;
 };
 
 export function useProductPage({
   slugParam,
   serverLanguage,
-  initialProduct,
 }: UseProductPageInput) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [currency, setCurrency] = useState<CurrencyCode>('AMD');
@@ -53,13 +51,10 @@ export function useProductPage({
     blockingEmpty,
     detailsPending,
     loading,
-    instantShell,
-    isInstantShellPaint,
     isListingShell,
   } = useProductFetch({
     slug,
     serverLanguage,
-    initialProduct,
   });
 
   const displayProduct = product;
@@ -220,8 +215,6 @@ export function useProductPage({
     blockingEmpty,
     detailsPending,
     loading,
-    instantShell,
-    isInstantShellPaint,
     isListingShell,
     images,
     currentImageIndex,

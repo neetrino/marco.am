@@ -81,9 +81,15 @@ export function ProductPdpPrefetchLink({
       language,
       navigationSeed,
     });
-    if (navigationSeed.image) {
+    const galleryUrls =
+      navigationSeed.images && navigationSeed.images.length > 0
+        ? navigationSeed.images
+        : navigationSeed.image
+          ? [navigationSeed.image]
+          : [];
+    for (const url of galleryUrls) {
       const img = new window.Image();
-      img.src = navigationSeed.image;
+      img.src = url;
     }
   }, [navigationSeed, productSlug, queryClient]);
 

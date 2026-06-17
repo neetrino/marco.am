@@ -1,6 +1,7 @@
 'use client';
 
 import { ProductPdpPrefetchLink } from '../ProductPdpPrefetchLink';
+import { resolveNavigationSeedImages } from '@/lib/product-pdp/pdp-navigation-seed';
 import Image from 'next/image';
 import type { MouseEvent } from 'react';
 import type { ProductListingBrand } from '@/lib/types/product-listing-brand';
@@ -19,6 +20,7 @@ interface ProductCardListProps {
     title: string;
     price: number;
     image: string | null;
+    images?: string[];
     inStock: boolean;
     brand: ProductListingBrand | null;
     labels?: ProductLabel[];
@@ -75,6 +77,7 @@ export function ProductCardList({
             slug: product.slug,
             title: product.title,
             image: product.image,
+            images: resolveNavigationSeedImages(product.image, product.images),
             labels: product.labels,
             inStock: product.inStock,
             brand: product.brand

@@ -12,6 +12,7 @@ import { getCachedPdpDetail } from "@/lib/product-pdp/pdp-server-cache";
 import { normalizePdpSlug } from "@/lib/product-pdp/pdp-slug";
 
 import { ProductPdpLayoutGate } from "./ProductPdpLayoutGate";
+import { ProductSlugLayoutClient } from "./ProductSlugLayoutClient";
 
 const DEFAULT_TITLE = "Product";
 
@@ -78,6 +79,7 @@ export default async function ProductSlugLayout({
       <Suspense fallback={null}>
         <ProductPdpLayoutGate baseSlug={baseSlug} />
       </Suspense>
+      <ProductSlugLayoutClient slugParam={slugParam} serverLanguage={serverLanguage} />
       {children}
     </>
   );

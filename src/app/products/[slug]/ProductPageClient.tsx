@@ -12,7 +12,6 @@ import {
 } from '@/app/cart/guest-cart-local';
 import { computeGuestCartTotalsFromStorage } from '@/lib/cart/guest-cart-totals';
 import { t } from '@/lib/i18n';
-import type { RelatedProductsApiResponse } from '@/lib/product-pdp/fetch-related-products';
 import type { LanguageCode } from '@/lib/language';
 
 import type { Product } from './types';
@@ -32,17 +31,11 @@ const RelatedProducts = dynamic(() =>
 export type ProductPageClientProps = {
   slugParam: string;
   serverLanguage: LanguageCode;
-  /** SSR full product when available; PLP shell or client fetch otherwise. */
-  initialProduct: Product | null;
-  /** SSR related carousel — instant «Նմանատիպ ապրանքներ» on first paint. */
-  initialRelatedProducts?: RelatedProductsApiResponse | null;
 };
 
 export function ProductPageClient({
   slugParam,
   serverLanguage,
-  initialProduct,
-  initialRelatedProducts = null,
 }: ProductPageClientProps) {
   const { isLoggedIn } = useAuth();
 
@@ -50,7 +43,6 @@ export function ProductPageClient({
     product,
     displayProduct,
     blockingEmpty,
-    isInstantShellPaint,
     isListingShell,
     detailsPending,
     images,
@@ -93,7 +85,7 @@ export function ProductPageClient({
     handleAddToWishlist,
     handleCompareToggle,
     getRequiredAttributesMessage,
-  } = useProductPage({ slugParam, serverLanguage, initialProduct });
+  } = useProductPage({ slugParam, serverLanguage });
 
   const addToCartInFlightRef = useRef(false);
 
@@ -217,7 +209,7 @@ export function ProductPageClient({
           onImageIndexChange={setCurrentImageIndex}
           thumbnailStartIndex={thumbnailStartIndex}
           onThumbnailStartIndexChange={setThumbnailStartIndex}
-          mainImageHighPriority={isInstantShellPaint || isListingShell}
+          mainImageHighPriority={isListingShell}
         />
 
         {displayProduct ? (
@@ -281,7 +273,7 @@ export function ProductPageClient({
         <RelatedProducts
           currentProductSlug={slug}
           language={language}
-          initialRelatedProducts={initialRelatedProducts}
+          initialRelatedProducts={null}
           enabled={relatedEnabled && !isListingShell}
         />
       </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
@@ -29,14 +29,9 @@ import { RESERVED_ROUTES, type Product } from '../types';
 interface UseProductFetchProps {
   slug: string;
   serverLanguage: LanguageCode;
-  initialProduct: Product | null;
 }
 
-export function useProductFetch({
-  slug,
-  serverLanguage,
-  initialProduct,
-}: UseProductFetchProps) {
+export function useProductFetch({ slug, serverLanguage }: UseProductFetchProps) {
   const router = useRouter();
   const queryClient = getQueryClient();
 
@@ -79,36 +74,15 @@ export function useProductFetch({
     : null;
 
   const detailInitialData = (() => {
-    if (
-      initialProduct != null &&
-      initialProduct.slug === slug &&
-      lang === serverLanguage &&
-      !isPdpListingShell(initialProduct)
-    ) {
-      return initialProduct;
-    }
-
     const cached = queryClient.getQueryData<Product>(queryKeys.productDetail(slug, lang));
     if (cached && !isPdpListingShell(cached)) {
       return cached;
     }
-
     return instantShell ?? getPersistedPdpDetail(slug, lang) ?? undefined;
   })();
 
   const isShellInitial = detailInitialData != null && isPdpListingShell(detailInitialData);
   const staleTime = isShellInitial ? 0 : PDP_QUERY_STALE_TIME_MS;
-
-  useLayoutEffect(() => {
-    if (
-      initialProduct == null ||
-      initialProduct.slug !== slug ||
-      isPdpListingShell(initialProduct)
-    ) {
-      return;
-    }
-    queryClient.setQueryData(queryKeys.productDetail(slug, serverLanguage), initialProduct);
-  }, [initialProduct, queryClient, serverLanguage, slug]);
 
   const detailQuery = useQuery(
     {
@@ -149,23 +123,17 @@ export function useProductFetch({
 
   const product = detailQuery.data ?? instantShell;
   const isListingShell = product != null && isPdpListingShell(product);
-  const isInstantShellPaint = instantShell != null && isListingShell && product === instantShell;
   const blockingEmpty = !product && detailQuery.isPending && !detailQuery.isError;
   const detailsPending = isListingShell;
 
-  const fetchProduct = () => {
-    void queryClient.invalidateQueries({ queryKey: queryKeys.productDetail(slug, lang) });
-  };
-
   return {
     product,
-    instantShell,
-    isInstantShellPaint,
-    loading: blockingEmpty,
     blockingEmpty,
     detailsPending,
     isListingShell,
     detailError: detailQuery.isError ? detailQuery.error : null,
-    fetchProduct,
+    fetchProduct: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.productDetail(slug, lang) });
+    },
   };
 }

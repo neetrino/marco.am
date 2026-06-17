@@ -16,6 +16,7 @@ interface Product {
   title: string;
   price: number;
   image: string | null;
+  images?: string[];
   inStock: boolean;
   brand: ProductListingBrand | null;
   defaultVariantId?: string | null;

@@ -6,6 +6,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { ProductPdpPrefetchLink } from '../ProductPdpPrefetchLink';
 import { getStoredLanguage } from '@/lib/language';
 import { seedProductPdpCache } from '@/lib/product-pdp/pdp-navigation-seed-cache';
+import { resolveNavigationSeedImages } from '@/lib/product-pdp/pdp-navigation-seed';
 import { ProductCardImage } from './ProductCardImage';
 import { ProductCardInfo } from './ProductCardInfo';
 import { ProductCardActions } from './ProductCardActions';
@@ -23,6 +24,7 @@ interface ProductCardGridProps {
     title: string;
     price: number;
     image: string | null;
+    images?: string[];
     inStock: boolean;
     brand: ProductListingBrand | null;
     labels?: ProductLabel[];
@@ -75,6 +77,7 @@ export function ProductCardGrid({
     slug: product.slug,
     title: product.title,
     image: product.image,
+    images: resolveNavigationSeedImages(product.image, product.images),
     labels: product.labels,
     warrantyYears: product.warrantyYears ?? product.warrantyBadge?.years ?? null,
     inStock: product.inStock,
