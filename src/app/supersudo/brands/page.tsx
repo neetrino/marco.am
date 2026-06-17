@@ -13,7 +13,9 @@ import {
   readAdminBrandsCache,
   fetchAdminBrands,
 } from '@/lib/admin/admin-reference-data-cache';
-import { processImageFile, toDomSafeImgSrcString, toSafeImgAttributeSrc } from '@/lib/utils/image-utils';
+import { ADMIN_IMAGE_ACCEPT } from '@/lib/constants/admin-image-upload';
+import { processAdminImageFile } from '@/lib/utils/process-admin-image-file';
+import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '@/lib/utils/image-utils';
 import { showPopupConfirm } from '@/components/popup-service';
 import { showToast } from '../../../components/Toast';
 
@@ -127,7 +129,7 @@ export default function BrandsPage() {
 
   const handleLogoFile = async (event: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
-    const imageFile = files.find((f) => f.type.startsWith('image/'));
+    const imageFile = files.find((f) => f.type === 'image/webp' || f.name.toLowerCase().endsWith('.webp'));
     if (!imageFile) {
       if (files.length > 0) {
         showToast(t('admin.brands.logoInvalidFile'), 'warning');
@@ -149,13 +151,7 @@ export default function BrandsPage() {
 
     try {
       setLogoUploading(true);
-      const image = await processImageFile(imageFile, {
-        maxSizeMB: 1.5,
-        maxWidthOrHeight: 800,
-        useWebWorker: true,
-        fileType: 'image/jpeg',
-        initialQuality: 0.85,
-      });
+      const image = await processAdminImageFile(imageFile, 'logo');
       const result = await apiClient.post<{ url: string }>('/api/v1/supersudo/brands/upload-logo', {
         image,
         name: brandName,
@@ -600,7 +596,7 @@ export default function BrandsPage() {
                   <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">
                     <input
                       type="file"
-                      accept="image/*"
+                      accept={ADMIN_IMAGE_ACCEPT}
                       className="sr-only"
                       disabled={logoUploading || saving}
                       onChange={handleLogoFile}
@@ -689,7 +685,7 @@ export default function BrandsPage() {
                   <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">
                     <input
                       type="file"
-                      accept="image/*"
+                      accept={ADMIN_IMAGE_ACCEPT}
                       className="sr-only"
                       disabled={logoUploading || saving}
                       onChange={handleLogoFile}

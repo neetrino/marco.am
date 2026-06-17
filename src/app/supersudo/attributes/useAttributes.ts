@@ -5,7 +5,8 @@ import { apiClient, getApiOrErrorMessage } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
 import { showPopupConfirm } from '@/components/popup-service';
 import { showToast } from '../../../components/Toast';
-import { logger } from "@/lib/utils/logger";
+import { logger } from '@/lib/utils/logger';
+import { processAdminImageFile } from '@/lib/utils/process-admin-image-file';
 import { ADMIN_CACHE_KEYS } from '@/lib/admin/admin-cache-keys';
 import { beginAdminDataFetch } from '@/lib/admin/admin-fetch-helpers';
 import { dedupedAdminRequest } from '@/lib/admin/admin-request-dedup';
@@ -336,30 +337,18 @@ export function useAttributes() {
     }
   };
 
-  const fileToBase64 = (file: File): Promise<string> =>
-    new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-
   const handleImageUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
     if (files.length === 0) return;
 
-    const imageFile = files.find((file) => file.type.startsWith('image/'));
+    const imageFile = files[0];
     if (!imageFile) {
-      showToast(t('admin.attributes.valueModal.selectImageFile'), 'warning');
-      if (event.target) {
-        event.target.value = '';
-      }
       return;
     }
 
     try {
       setImageUploading(true);
-      const base64 = await fileToBase64(imageFile);
+      const base64 = await processAdminImageFile(imageFile, 'catalog');
       setEditingImageUrl(base64);
     } catch (error: unknown) {
       console.error('❌ [ADMIN] Error uploading image:', error);

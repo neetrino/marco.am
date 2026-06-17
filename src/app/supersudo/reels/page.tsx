@@ -9,6 +9,11 @@ import { useTranslation } from '@/lib/i18n-client';
 import { showPopupConfirm } from '@/components/popup-service';
 import type { ReelsManagementStorage } from '@/lib/schemas/reels-management.schema';
 import { REELS_MANAGEMENT_STORAGE_VERSION } from '@/lib/constants/reels-management';
+import { ADMIN_IMAGE_ACCEPT } from '@/lib/constants/admin-image-upload';
+import {
+  adminWebpFileFromDataUrl,
+  processAdminImageFile,
+} from '@/lib/utils/process-admin-image-file';
 import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '@/lib/utils/image-utils';
 import { ADMIN_CACHE_KEYS } from '@/lib/admin/admin-cache-keys';
 import { beginAdminDataFetch } from '@/lib/admin/admin-fetch-helpers';
@@ -313,8 +318,10 @@ export default function ReelsPage() {
 
     setUploadingPoster(true);
     try {
+      const dataUrl = await processAdminImageFile(file, 'catalog');
+      const webpFile = await adminWebpFileFromDataUrl(dataUrl, 'poster.webp');
       const payload = new FormData();
-      payload.append('file', file);
+      payload.append('file', webpFile);
 
       const response = await fetch('/api/v1/supersudo/reels/upload-poster', {
         method: 'POST',
@@ -440,7 +447,7 @@ export default function ReelsPage() {
                 <input
                   ref={posterInputRef}
                   type="file"
-                  accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+                  accept={ADMIN_IMAGE_ACCEPT}
                   onChange={handlePosterUpload}
                   className="hidden"
                 />

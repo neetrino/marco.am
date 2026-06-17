@@ -1,6 +1,7 @@
 'use client';
 
 import type { ChangeEvent, RefObject } from 'react';
+import { ADMIN_IMAGE_ACCEPT } from '@/lib/constants/admin-image-upload';
 import { Button } from '@shop/ui';
 import { useTranslation } from '../../../../../lib/i18n-client';
 
@@ -46,7 +47,7 @@ export function ProductImages({
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*"
+              accept={ADMIN_IMAGE_ACCEPT}
               multiple
               onChange={onUploadImages}
               className="hidden"

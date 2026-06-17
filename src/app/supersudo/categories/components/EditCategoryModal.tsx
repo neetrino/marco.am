@@ -4,7 +4,9 @@ import { useMemo, useState, type ChangeEvent } from 'react';
 import { Button, Input } from '@shop/ui';
 import { useTranslation } from '../../../../lib/i18n-client';
 import { t as translateByLocale } from '../../../../lib/i18n';
-import { processImageFile, toDomSafeImgSrcString, toSafeImgAttributeSrc } from '../../../../lib/utils/image-utils';
+import { ADMIN_IMAGE_ACCEPT } from '@/lib/constants/admin-image-upload';
+import { processAdminImageFile } from '@/lib/utils/process-admin-image-file';
+import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '../../../../lib/utils/image-utils';
 import { showToast } from '../../../../components/Toast';
 import { logger } from '../../../../lib/utils/logger';
 import { getStoredLanguage } from '../../../../lib/language';
@@ -63,17 +65,7 @@ export function EditCategoryModal({
 
     try {
       setImageUploading(true);
-      const preferredType =
-        imageFile.type === 'image/png' || imageFile.type === 'image/webp'
-          ? imageFile.type
-          : 'image/jpeg';
-      const base64 = await processImageFile(imageFile, {
-        maxSizeMB: 1.5,
-        maxWidthOrHeight: 800,
-        useWebWorker: true,
-        fileType: preferredType,
-        initialQuality: 0.85,
-      });
+      const base64 = await processAdminImageFile(imageFile, 'catalog');
       onFormDataChange({ ...formData, imageUrl: base64 });
     } catch (err: unknown) {
       logger.error('Category image upload failed', { error: err });
@@ -291,7 +283,7 @@ export function EditCategoryModal({
               <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">
                 <input
                   type="file"
-                  accept="image/*"
+                  accept={ADMIN_IMAGE_ACCEPT}
                   className="sr-only"
                   disabled={imageUploading}
                   onChange={handleImageFile}

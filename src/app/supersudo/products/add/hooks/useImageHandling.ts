@@ -3,7 +3,11 @@
 import type { ChangeEvent } from 'react';
 import { useRef, useEffect } from 'react';
 import { getErrorMessage } from '@/lib/types/errors';
-import { processImageFile } from '../../../../../lib/utils/image-utils';
+import {
+  ADMIN_IMAGE_WEBP_ONLY_MESSAGE,
+  processAdminImageFile,
+  validateAdminWebpFile,
+} from '@/lib/utils/process-admin-image-file';
 import type { Variant } from '../types';
 import type { GeneratedVariant } from '../types';
 import { logger } from "@/lib/utils/logger";
@@ -136,21 +140,15 @@ export function useImageHandling({
 
       const filePromises = files.map(async (file, index) => {
         try {
-          if (!file.type.startsWith('image/')) {
-            const errorMsg = `"${file.name}" is not an image file`;
-            console.warn(`⚠️ [UPLOAD] Skipping non-image file ${index + 1}/${files.length}:`, file.name);
-            return { success: false, error: errorMsg, index };
+          const formatError = validateAdminWebpFile(file, 'catalog');
+          if (formatError) {
+            console.warn(`⚠️ [UPLOAD] Skipping invalid file ${index + 1}/${files.length}:`, file.name, formatError);
+            return { success: false, error: `"${file.name}": ${formatError}`, index };
           }
 
           logger.devLog(`📸 [UPLOAD] Processing file ${index + 1}/${files.length}:`, file.name, `(${Math.round(file.size / 1024)}KB)`);
 
-          const base64 = await processImageFile(file, {
-            maxSizeMB: 2,
-            maxWidthOrHeight: 1920,
-            useWebWorker: true,
-            fileType: 'image/webp',
-            initialQuality: 0.82,
-          });
+          const base64 = await processAdminImageFile(file, 'catalog');
 
           if (base64 && base64.trim()) {
             logger.devLog(`✅ [UPLOAD] Successfully processed file ${index + 1}/${files.length}:`, file.name);
@@ -222,8 +220,9 @@ export function useImageHandling({
     }
 
     const file = files[0];
-    if (!file.type.startsWith('image/')) {
-      setImageUploadError(`"${file.name}" is not an image file`);
+    const formatError = validateAdminWebpFile(file, 'catalog');
+    if (formatError) {
+      setImageUploadError(`"${file.name}": ${formatError}`);
       if (event.target) {
         event.target.value = '';
       }
@@ -239,13 +238,7 @@ export function useImageHandling({
         originalSize: `${Math.round(file.size / 1024)}KB`,
       });
 
-      const base64 = await processImageFile(file, {
-        maxSizeMB: 2,
-        maxWidthOrHeight: 1920,
-        useWebWorker: true,
-        fileType: 'image/webp',
-        initialQuality: 0.82,
-      });
+      const base64 = await processAdminImageFile(file, 'catalog');
 
       setGeneratedVariants((prev) => prev.map((v) => (v.id === variantId ? { ...v, image: base64 } : v)));
       logger.devLog('✅ [VARIANT BUILDER] Variant image uploaded and processed for variant:', variantId);
@@ -270,8 +263,9 @@ export function useImageHandling({
       return;
     }
 
-    const imageFiles = files.filter((file) => file.type.startsWith('image/'));
+    const imageFiles = files.filter((file) => validateAdminWebpFile(file, 'catalog') === null);
     if (imageFiles.length === 0) {
+      setImageUploadError(ADMIN_IMAGE_WEBP_ONLY_MESSAGE);
       if (event.target) {
         event.target.value = '';
       }
@@ -289,13 +283,7 @@ export function useImageHandling({
             originalSize: `${Math.round(file.size / 1024)}KB`,
           });
 
-          const base64 = await processImageFile(file, {
-            maxSizeMB: 2,
-            maxWidthOrHeight: 1920,
-            useWebWorker: true,
-            fileType: 'image/webp',
-            initialQuality: 0.82,
-          });
+          const base64 = await processAdminImageFile(file, 'catalog');
 
           logger.devLog(`✅ [COLOR IMAGE] Image ${index + 1}/${imageFiles.length} processed, base64 length:`, base64.length);
           return base64;

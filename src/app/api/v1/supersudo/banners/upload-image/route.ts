@@ -40,10 +40,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const parsed = parseAdminImageDataUrl(body.image);
+    const parsed = parseAdminImageDataUrl(body.image, "banner");
     if (!parsed) {
       return NextResponse.json(
-        { type: "https://api.shop.am/problems/validation-error", title: "Validation Error", status: 400, detail: "Invalid, unsupported, or oversized image", instance: req.url },
+        { type: "https://api.shop.am/problems/validation-error", title: "Validation Error", status: 400, detail: "Invalid, unsupported, or oversized WebP image", instance: req.url },
         { status: 400 },
       );
     }
