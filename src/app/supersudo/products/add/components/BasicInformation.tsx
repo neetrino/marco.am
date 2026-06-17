@@ -1,20 +1,33 @@
 'use client';
 
+import type { ProductClass } from '@/lib/constants/product-class';
 import { useTranslation } from '../../../../../lib/i18n-client';
 import type { ProductDescriptionEntry } from '../../../../../lib/products/product-description';
 import { FormSection } from './FormSection';
+import { ProductClassToggle } from './ProductClassToggle';
 import { ProductDescriptionFields } from './ProductDescriptionFields';
 
 interface BasicInformationProps {
   description: ProductDescriptionEntry[];
+  productClass: ProductClass;
   onDescriptionChange: (entries: ProductDescriptionEntry[]) => void;
+  onProductClassChange: (productClass: ProductClass) => void;
 }
 
-export function BasicInformation({ description, onDescriptionChange }: BasicInformationProps) {
+export function BasicInformation({
+  description,
+  productClass,
+  onDescriptionChange,
+  onProductClassChange,
+}: BasicInformationProps) {
   const { t } = useTranslation();
 
   return (
-    <FormSection title={t('admin.products.add.basicInformation')}>
+    <FormSection
+      header={
+        <ProductClassToggle productClass={productClass} onChange={onProductClassChange} />
+      }
+    >
       <div>
         <label className="mb-2 block text-sm font-medium text-gray-700">
           {t('admin.products.add.description')}

@@ -1,5 +1,6 @@
 'use client';
 
+import { useRef, useState, useCallback } from 'react';
 import { Button } from '@shop/ui';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { useTranslation } from '@/lib/i18n-client';
@@ -37,6 +38,13 @@ export function ProductEditorPanel({ open, productId, onCancel, onSaved }: Produ
   const isEditMode = Boolean(productId);
 
   const formState = useProductFormState();
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [slugCollapsed, setSlugCollapsed] = useState(false);
+
+  const handleBodyScroll = useCallback(() => {
+    const scrollTop = scrollRef.current?.scrollTop ?? 0;
+    setSlugCollapsed(scrollTop > 12);
+  }, []);
 
   useProductDataLoading({
     setBrands: formState.setBrands,
@@ -196,7 +204,11 @@ export function ProductEditorPanel({ open, productId, onCancel, onSaved }: Produ
             />
           </div>
         </div>
-        <div className="pl-[3.25rem]">
+        <div
+          className={`overflow-hidden pl-[3.25rem] transition-all duration-200 ease-out ${
+            slugCollapsed ? 'max-h-0 opacity-0' : 'max-h-5 opacity-100'
+          }`}
+        >
           <InlineSheetField
             form={ADMIN_PRODUCT_EDITOR_FORM_ID}
             value={formState.formData.slug}
@@ -238,7 +250,11 @@ export function ProductEditorPanel({ open, productId, onCancel, onSaved }: Produ
       </div>
     </div>
   ) : (
-    <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5">
+    <div
+      ref={scrollRef}
+      onScroll={handleBodyScroll}
+      className="min-h-0 flex-1 overflow-y-auto px-5 py-4"
+    >
       <AddProductFormContent
         formId={ADMIN_PRODUCT_EDITOR_FORM_ID}
         formData={formState.formData}

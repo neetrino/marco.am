@@ -17,7 +17,6 @@ import { CategoriesBrands } from './CategoriesBrands';
 import { PricingInventorySection } from './PricingInventorySection';
 import { ProductLabels } from './ProductLabels';
 import { ProductWarrantyField } from './ProductWarrantyField';
-import { Publishing } from './Publishing';
 import type { ProductWarrantyYears } from '@/lib/constants/product-warranty';
 import type { ProductDescriptionEntry } from '@/lib/products/product-description';
 
@@ -173,7 +172,9 @@ export function AddProductFormContent({
     <form id={formId} onSubmit={handleSubmit} className="space-y-6">
         <BasicInformation
           description={formData.description}
+          productClass={formData.productClass}
           onDescriptionChange={onDescriptionChange}
+          onProductClassChange={onProductClassChange}
         />
 
         <ProductImages
@@ -259,11 +260,6 @@ export function AddProductFormContent({
           onAddLabel={onAddLabel}
           onRemoveLabel={onRemoveLabel}
           onUpdateLabel={onUpdateLabel}
-        />
-
-        <Publishing
-          productClass={formData.productClass}
-          onProductClassChange={onProductClassChange}
         />
 
     </form>

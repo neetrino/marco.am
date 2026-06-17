@@ -17,7 +17,7 @@ const VARIANT_CLASS: Record<InlineSheetFieldVariant, string> = {
   title:
     'w-full bg-transparent border-0 border-b-2 border-transparent px-0 py-0.5 text-2xl font-bold leading-tight text-marco-black placeholder:text-slate-300 focus:border-marco-yellow focus:outline-none focus:ring-0 sm:text-3xl',
   slug:
-    'mt-1 w-full bg-transparent border-0 border-b border-transparent px-0 py-0.5 text-sm text-slate-500 placeholder:text-slate-300 focus:border-slate-300 focus:outline-none focus:ring-0 sm:text-base',
+    'w-full min-w-0 truncate bg-transparent border-0 border-b border-transparent px-0 py-0 text-xs leading-4 text-slate-400 placeholder:text-slate-300 focus:border-slate-300 focus:outline-none focus:ring-0',
 };
 
 export function InlineSheetField({

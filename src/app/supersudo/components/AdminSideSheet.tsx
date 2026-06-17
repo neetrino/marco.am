@@ -83,7 +83,7 @@ export function AdminSideSheet({
         aria-modal="true"
         aria-label={ariaLabel}
       >
-        <header className="shrink-0 border-b border-slate-200/80 px-5 py-4 dark:border-white/10">
+        <header className="shrink-0 border-b border-slate-200/80 px-5 py-3 dark:border-white/10">
           {header}
         </header>
         <div className="flex min-h-0 flex-1 flex-col">{children}</div>

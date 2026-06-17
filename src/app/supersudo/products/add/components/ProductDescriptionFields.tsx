@@ -33,8 +33,6 @@ export function ProductDescriptionFields({ entries, onChange }: ProductDescripti
 
   return (
     <div className="space-y-3">
-      <p className="text-xs text-gray-500">{t('admin.products.add.descriptionFieldsHint')}</p>
-
       {entries.length === 0 ? (
         <p className="text-sm text-gray-500">{t('admin.products.add.descriptionFieldsEmpty')}</p>
       ) : (
