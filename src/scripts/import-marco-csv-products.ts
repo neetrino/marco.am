@@ -105,7 +105,12 @@ async function main(): Promise<void> {
     const slug = productSlug(name, sku);
     const shortDesc = (row["Short description"] ?? "").trim();
     const desc = (row["Description"] ?? "").trim();
-    const color = (row["Color"] ?? "").trim();
+    // Color cell may hold several comma-separated colors; keep each as its own clean attribute option.
+    const colorOptions = (row["Color"] ?? "")
+      .split(",")
+      .map((value) => value.trim())
+      .filter((value) => value.length > 0)
+      .map((value) => ({ attributeKey: "color", value }));
 
     try {
       await adminProductsCreateService.createProduct({
@@ -126,7 +131,7 @@ async function main(): Promise<void> {
             compareAtPrice: compareAt,
             stock: DEFAULT_STOCK,
             sku,
-            color: color || undefined,
+            options: colorOptions.length > 0 ? colorOptions : undefined,
             published: true,
           },
         ],
