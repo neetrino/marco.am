@@ -1,17 +1,10 @@
-import { createHash } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { toApiErrorResponse } from "@/lib/api/next-route-error";
+import { buildPdpRelatedApiCacheKey } from "@/lib/product-pdp/pdp-cache-keys";
 import { productsRelatedService } from "@/lib/services/products-related.service";
 import { getCachedJson } from "@/lib/services/read-through-json-cache";
 
 const RELATED_LIST_CACHE_TTL_SEC = 300;
-
-function relatedListCacheKey(slug: string, lang: string, limit: number, offset: number): string {
-  const hash = createHash("sha256")
-    .update(`pdp:related:v2\0${slug}\0${lang}\0${limit}\0${offset}`)
-    .digest("hex");
-  return `cache:products:pdp:related:v2:${hash}`;
-}
 
 export async function GET(
   req: NextRequest,
@@ -29,7 +22,7 @@ export async function GET(
       ? requestedOffset
       : 0;
     const { slug } = await params;
-    const cacheKey = relatedListCacheKey(slug, lang, limit, offset);
+    const cacheKey = buildPdpRelatedApiCacheKey(slug, lang, limit, offset);
     const result = await getCachedJson(cacheKey, RELATED_LIST_CACHE_TTL_SEC, () =>
       productsRelatedService.findBySlug(slug, lang, limit, offset),
       { requireSharedCache: true },

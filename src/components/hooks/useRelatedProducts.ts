@@ -24,8 +24,6 @@ interface UseRelatedProductsProps {
   enabled?: boolean;
 }
 
-export const RELATED_PRODUCTS_LIMIT = RELATED_PRODUCTS_PAGE_SIZE;
-
 function getRelatedNextOffset(
   lastPage: Awaited<ReturnType<typeof fetchRelatedProducts>>,
   _allPages: Awaited<ReturnType<typeof fetchRelatedProducts>>[],
