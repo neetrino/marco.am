@@ -2,11 +2,10 @@
 
 import { useTranslation } from '@/lib/i18n-client';
 import { PRODUCT_WARRANTY_YEAR_OPTIONS, type ProductWarrantyYears } from '@/lib/constants/product-warranty';
-import { FormSection } from './FormSection';
 
 type WarrantySelection = ProductWarrantyYears | null;
 
-interface ProductWarrantyFieldProps {
+interface ProductWarrantySelectProps {
   warrantyYears: WarrantySelection;
   onChange: (years: WarrantySelection) => void;
 }
@@ -18,15 +17,19 @@ const OPTION_LABEL_KEYS: Record<'none' | ProductWarrantyYears, string> = {
   3: 'admin.products.add.productWarrantyThreeYears',
 };
 
-export function ProductWarrantyField({ warrantyYears, onChange }: ProductWarrantyFieldProps) {
+/** Compact warranty dropdown for the product editor header row. */
+export function ProductWarrantySelect({ warrantyYears, onChange }: ProductWarrantySelectProps) {
   const { t } = useTranslation();
   const selectedValue = warrantyYears === null ? 'none' : String(warrantyYears);
 
   return (
-    <FormSection
-      title={t('admin.products.add.productWarranty')}
-      description={t('admin.products.add.productWarrantyHint')}
-    >
+    <div className="flex min-w-0 items-center gap-2">
+      <label
+        htmlFor="product-warranty-years"
+        className="shrink-0 text-xs font-semibold uppercase tracking-wide text-slate-400"
+      >
+        {t('admin.products.add.productWarranty')}
+      </label>
       <select
         id="product-warranty-years"
         value={selectedValue}
@@ -41,7 +44,7 @@ export function ProductWarrantyField({ warrantyYears, onChange }: ProductWarrant
             onChange(parsed as ProductWarrantyYears);
           }
         }}
-        className="w-full max-w-md rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-marco-yellow focus:outline-none focus:ring-2 focus:ring-marco-yellow/30"
+        className="min-w-[8.5rem] max-w-full rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-marco-black focus:border-marco-yellow focus:outline-none focus:ring-2 focus:ring-marco-yellow/30"
       >
         <option value="none">{t(OPTION_LABEL_KEYS.none)}</option>
         {PRODUCT_WARRANTY_YEAR_OPTIONS.map((years) => (
@@ -50,6 +53,6 @@ export function ProductWarrantyField({ warrantyYears, onChange }: ProductWarrant
           </option>
         ))}
       </select>
-    </FormSection>
+    </div>
   );
 }

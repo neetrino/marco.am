@@ -16,7 +16,6 @@ import { ProductImages } from './ProductImages';
 import { CategoriesBrands } from './CategoriesBrands';
 import { PricingInventorySection } from './PricingInventorySection';
 import { ProductLabels } from './ProductLabels';
-import { ProductWarrantyField } from './ProductWarrantyField';
 import type { ProductWarrantyYears } from '@/lib/constants/product-warranty';
 import type { ProductDescriptionEntry } from '@/lib/products/product-description';
 
@@ -173,8 +172,16 @@ export function AddProductFormContent({
         <BasicInformation
           description={formData.description}
           productClass={formData.productClass}
+          warrantyYears={
+            formData.warrantyYears === 1 ||
+            formData.warrantyYears === 2 ||
+            formData.warrantyYears === 3
+              ? formData.warrantyYears
+              : null
+          }
           onDescriptionChange={onDescriptionChange}
           onProductClassChange={onProductClassChange}
+          onWarrantyYearsChange={onWarrantyYearsChange}
         />
 
         <ProductImages
@@ -242,17 +249,6 @@ export function AddProductFormContent({
           onApplyToAllVariants={onApplyToAllVariants}
           onVariantImageUpload={onVariantImageUpload}
           onOpenValueModal={onOpenValueModal}
-        />
-
-        <ProductWarrantyField
-          warrantyYears={
-            formData.warrantyYears === 1 ||
-            formData.warrantyYears === 2 ||
-            formData.warrantyYears === 3
-              ? formData.warrantyYears
-              : null
-          }
-          onChange={onWarrantyYearsChange}
         />
 
         <ProductLabels
