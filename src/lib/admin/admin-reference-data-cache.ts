@@ -40,7 +40,7 @@ export function writeAdminBrandsCache<T>(data: T[]): void {
 /** Lite categories for filters — shared by warm (hover) and page fetch. */
 export function fetchAdminCategoriesLite<T>(language: LanguageCode): Promise<{ data: T[] }> {
   const cached = readAdminCategoriesCache<T>(language);
-  if (cached?.length) {
+  if (cached !== null) {
     return Promise.resolve({ data: cached });
   }
 
@@ -58,7 +58,7 @@ export function fetchAdminCategoriesLite<T>(language: LanguageCode): Promise<{ d
 
 /** Warms categories only (e.g. products page filter). */
 export function warmAdminCategoriesCache(language: LanguageCode): void {
-  if (typeof window === 'undefined' || readAdminCategoriesCache(language)?.length) {
+  if (typeof window === 'undefined' || readAdminCategoriesCache(language) !== null) {
     return;
   }
   void fetchAdminCategoriesLite(language);

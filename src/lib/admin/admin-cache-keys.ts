@@ -118,7 +118,6 @@ export const ADMIN_CACHE_KEYS = {
   promoCodes: 'promo-codes',
   priceFilter: 'settings/price-filter',
   reelsAdmin: 'reels-admin',
-  stockAnalytics: 'analytics/stock',
   usersDefault: buildAdminListCacheKey('users', {
     page: '1',
     limit: '20',

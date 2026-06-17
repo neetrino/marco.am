@@ -73,7 +73,11 @@ function warmMessagesCache(): void {
 }
 
 function warmAttributesCache(): void {
-  warmIfMissing(ADMIN_CACHE_KEYS.attributes, () => apiClient.get('/api/v1/supersudo/attributes'));
+  warmIfMissing(ADMIN_CACHE_KEYS.attributes, () =>
+    dedupedAdminRequest(ADMIN_CACHE_KEYS.attributes, () =>
+      apiClient.get('/api/v1/supersudo/attributes'),
+    ),
+  );
 }
 
 function warmSettingsCache(): void {

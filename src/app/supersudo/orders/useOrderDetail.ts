@@ -28,7 +28,7 @@ export function useOrderDetail(orderId: string | undefined) {
   const [savingAdminNotes, setSavingAdminNotes] = useState(false);
   const [updateMessage, setUpdateMessage] = useState<UpdateMessage>(null);
 
-  const fetchOrder = useCallback(async () => {
+  const fetchOrder = useCallback(async (options?: { force?: boolean }) => {
     if (!orderId) {
       setLoading(false);
       setNotFound(false);
@@ -39,9 +39,18 @@ export function useOrderDetail(orderId: string | undefined) {
     const cacheKey = buildAdminOrderDetailCacheKey(orderId);
     const cachedDetails = readAdminOrderDetailCache(orderId);
 
+    if (!options?.force && cachedDetails) {
+      setOrderDetails(cachedDetails);
+      setLoading(false);
+      setNotFound(false);
+      return;
+    }
+
     setLoading(!cachedDetails);
     setNotFound(false);
-    setOrderDetails(cachedDetails);
+    if (!cachedDetails) {
+      setOrderDetails(null);
+    }
 
     try {
       const response = await dedupedAdminRequest(cacheKey, () =>
@@ -107,6 +116,6 @@ export function useOrderDetail(orderId: string | undefined) {
     formatCurrency,
     handleAdminNotesSave,
     router,
-    refetch: fetchOrder,
+    refetch: () => fetchOrder({ force: true }),
   };
 }

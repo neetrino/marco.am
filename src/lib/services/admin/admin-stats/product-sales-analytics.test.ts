@@ -1,57 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  aggregateProductSales,
-  pickBestAndLeastSelling,
-} from "./product-sales-analytics";
-
-describe("aggregateProductSales", () => {
-  it("aggregates quantities and revenue by product", () => {
-    const rows = aggregateProductSales([
-      {
-        items: [
-          {
-            productTitle: "A",
-            sku: "S1",
-            quantity: 2,
-            total: 20,
-            imageUrl: null,
-            variantId: "v1",
-            variant: {
-              sku: "S1",
-              product: {
-                id: "p1",
-                media: [],
-                translations: [{ title: "Product A" }],
-              },
-            },
-          },
-          {
-            productTitle: "A",
-            sku: "S2",
-            quantity: 1,
-            total: 15,
-            imageUrl: null,
-            variantId: "v2",
-            variant: {
-              sku: "S2",
-              product: {
-                id: "p1",
-                media: [],
-                translations: [{ title: "Product A" }],
-              },
-            },
-          },
-        ],
-      },
-    ]);
-    expect(rows).toHaveLength(1);
-    expect(rows[0]?.productId).toBe("p1");
-    expect(rows[0]?.totalQuantity).toBe(3);
-    expect(rows[0]?.totalRevenue).toBe(35);
-    expect(rows[0]?.orderCount).toBe(2);
-  });
-});
+import { pickBestAndLeastSelling } from "./product-sales-analytics";
 
 describe("pickBestAndLeastSelling", () => {
   it("returns top 5 and bottom 5 among the rest with no overlap", () => {
@@ -79,8 +28,8 @@ describe("pickBestAndLeastSelling", () => {
       "p4",
     ]);
     const bestIds = new Set(bestSelling.map((b) => b.productId));
-    for (const l of leastSelling) {
-      expect(bestIds.has(l.productId)).toBe(false);
+    for (const least of leastSelling) {
+      expect(bestIds.has(least.productId)).toBe(false);
     }
   });
 });

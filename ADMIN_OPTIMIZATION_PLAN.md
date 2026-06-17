@@ -78,30 +78,17 @@
 
 ---
 
-#### 3. Attributes — `/supersudo/attributes` (следующий)
+#### 3. Attributes — `/supersudo/attributes` ✅
 
-**Симптомы (код):**
+**Было:** runtime DDL + ~200 строк fallback; debug-логи per value; всегда refetch.
 
-- **`ensureColorsColumnsExist()`** на каждый `GET` — 2× `information_schema` + потенциальный `ALTER` (`admin-attributes-read.service.ts`).
-- Тяжёлый `findMany` с nested translations/values.
-- Нет cache skip — всегда refetch.
-- Warm без dedup.
-- Избыточный `logger.devLog` в цикле по каждому value.
-
-**План:**
-
-- [ ] **Backend:** миграцию columns вынести в Prisma migration / one-time flag; убрать runtime DDL из read path.
-- [ ] **Frontend:** cache skip + dedup в `useAttributes.ts`.
-- [ ] **Frontend:** `cached !== null` для пустого списка атрибутов.
-- [ ] **Warm:** dedup в `warmAttributesCache`.
-
-**Файлы:** `admin-attributes-read.service.ts`, `attributes/useAttributes.ts`, `admin-page-warm.ts`.
+**Сделано:** чистый `findMany`, cache skip + dedup, warm с dedup.
 
 ---
 
 ### P1 — высокий (дубли запросов + заметный бэкенд)
 
-#### 4. Categories — `/supersudo/categories`
+#### 4. Categories — `/supersudo/categories` (следующий)
 
 **Симптомы:**
 
@@ -286,4 +273,4 @@
 
 ---
 
-*Обновлено: 2026-06-17 · Оптимизированы: dashboard, products, orders, promo-codes, quick-settings, **analytics***
+*Обновлено: 2026-06-17 · Оптимизированы: dashboard, products, orders, promo-codes, quick-settings, analytics, **attributes***
