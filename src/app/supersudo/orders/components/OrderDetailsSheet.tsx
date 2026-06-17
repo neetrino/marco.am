@@ -8,6 +8,8 @@ import {
   ADMIN_ORDER_SIDE_SHEET_PANEL_CLASS,
 } from '../../components/admin-side-sheet.constants';
 import { OrderDetailsBody } from './OrderDetailsBody';
+import { OrderDetailsMeta } from './OrderDetailsMeta';
+import { isOrderDetailsPreview } from '../utils/order-details-preview';
 import type { OrderDetails } from '../useOrders';
 
 interface OrderDetailsSheetProps {
@@ -18,6 +20,19 @@ interface OrderDetailsSheetProps {
   onSaveAdminNotes: (adminNotes: string) => Promise<void>;
   onClose: () => void;
   formatCurrency: (amount: number, orderCurrency?: string, fromCurrency?: CurrencyCode) => string;
+}
+
+function OrderDetailsPreviewSkeleton() {
+  return (
+    <div className="mt-6 space-y-4 animate-pulse" aria-hidden>
+      <div className="h-28 rounded-2xl bg-slate-100 dark:bg-zinc-900" />
+      <div className="h-40 rounded-2xl bg-slate-100 dark:bg-zinc-900" />
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <div className="h-32 rounded-2xl bg-slate-100 dark:bg-zinc-900" />
+        <div className="h-32 rounded-2xl bg-slate-100 dark:bg-zinc-900" />
+      </div>
+    </div>
+  );
 }
 
 export function OrderDetailsSheet({
@@ -34,6 +49,8 @@ export function OrderDetailsSheet({
   const title = orderDetails?.number
     ? `${t('admin.orders.orderDetails.title')} #${orderDetails.number}`
     : t('admin.orders.orderDetails.title');
+
+  const isPreview = Boolean(orderDetails && loading && isOrderDetailsPreview(orderDetails));
 
   return (
     <AdminSideSheet
@@ -56,12 +73,19 @@ export function OrderDetailsSheet({
             </p>
           </div>
         ) : orderDetails ? (
-          <OrderDetailsBody
-            orderDetails={orderDetails}
-            savingAdminNotes={savingAdminNotes}
-            onSaveAdminNotes={onSaveAdminNotes}
-            formatCurrency={formatCurrency}
-          />
+          isPreview ? (
+            <>
+              <OrderDetailsMeta orderDetails={orderDetails} formatCurrency={formatCurrency} />
+              <OrderDetailsPreviewSkeleton />
+            </>
+          ) : (
+            <OrderDetailsBody
+              orderDetails={orderDetails}
+              savingAdminNotes={savingAdminNotes}
+              onSaveAdminNotes={onSaveAdminNotes}
+              formatCurrency={formatCurrency}
+            />
+          )
         ) : (
           <div className="py-6 text-sm text-gray-600 dark:text-zinc-400">
             {t('admin.orders.orderDetails.failedToLoad')}

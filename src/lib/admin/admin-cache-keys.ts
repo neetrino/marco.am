@@ -99,6 +99,10 @@ export function buildOrdersDefaultListCacheKey(): string {
   });
 }
 
+export function buildAdminOrderDetailCacheKey(orderId: string): string {
+  return `orders/detail/${orderId}`;
+}
+
 export const ADMIN_CACHE_KEYS = {
   dashboard: 'dashboard',
   categories: 'list/categories',

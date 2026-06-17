@@ -56,10 +56,10 @@ export async function getOrders(filters: OrderFilters = {}) {
 }
 
 /**
- * Get single order by ID with full details for admin
+ * Get single order by ID with full details for admin.
+ * Uses OrderItem snapshot fields — no product/variant catalog joins.
  */
 export async function getOrderById(orderId: string) {
-  // Fetch order with related user and items/variants/products
   const order = await db.order.findUnique({
     where: { id: orderId },
     include: {
@@ -73,33 +73,39 @@ export async function getOrderById(orderId: string) {
         },
       },
       items: {
-        include: {
-          variant: {
-            include: {
-              product: {
-                include: {
-                  translations: {
-                    where: { locale: "en" },
-                    take: 1,
-                  },
-                },
-              },
-              options: {
-                include: {
-                  attributeValue: {
-                    include: {
-                      attribute: true,
-                      translations: true,
-                    },
-                  },
-                },
-              },
-            },
-          },
+        select: {
+          id: true,
+          variantId: true,
+          productTitle: true,
+          variantTitle: true,
+          sku: true,
+          quantity: true,
+          price: true,
+          total: true,
+          imageUrl: true,
         },
       },
-      payments: true,
+      payments: {
+        select: {
+          id: true,
+          provider: true,
+          method: true,
+          amount: true,
+          currency: true,
+          status: true,
+          cardLast4: true,
+          cardBrand: true,
+        },
+        orderBy: { createdAt: "asc" },
+      },
       events: {
+        select: {
+          id: true,
+          type: true,
+          data: true,
+          userId: true,
+          createdAt: true,
+        },
         orderBy: { createdAt: "desc" },
       },
     },

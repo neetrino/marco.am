@@ -11,6 +11,7 @@ import { logger } from "@/lib/utils/logger";
 import {
   buildAdminOrdersListApiParams,
   buildAdminOrdersListCacheKey,
+  buildAdminOrderDetailCacheKey,
   buildOrdersDefaultListCacheKey,
 } from '@/lib/admin/admin-cache-keys';
 import { beginAdminDataFetch } from '@/lib/admin/admin-fetch-helpers';
@@ -21,8 +22,16 @@ import {
   writeAdminSessionCache,
 } from '@/lib/admin/admin-session-cache';
 import type { OrderAuditEntry } from "./types/order-audit";
+import {
+  buildOrderDetailsPreviewFromList,
+  isOrderDetailsPreview,
+} from './utils/order-details-preview';
 
 export type { OrderAuditEntry };
+
+function persistOrderDetailCache(orderId: string, details: OrderDetails): void {
+  writeAdminSessionCache(buildAdminOrderDetailCacheKey(orderId), details);
+}
 
 export interface Order {
   id: string;
@@ -291,16 +300,26 @@ export function useOrders() {
 
 
   const handleViewOrderDetails = async (orderId: string) => {
+    const cacheKey = buildAdminOrderDetailCacheKey(orderId);
+    const cached = readAdminSessionCache<OrderDetails>(cacheKey, ADMIN_SESSION_CACHE_TTL_MS);
+    const listOrder = orders.find((order) => order.id === orderId);
+    const initialDetails = cached ?? (listOrder ? buildOrderDetailsPreviewFromList(listOrder) : null);
+
     setSelectedOrderId(orderId);
-    setOrderDetails(null);
-    setLoadingOrderDetails(true);
+    setOrderDetails(initialDetails);
+    setLoadingOrderDetails(initialDetails == null || isOrderDetailsPreview(initialDetails));
+
     try {
-      const response = await apiClient.get<OrderDetails>(`/api/v1/supersudo/orders/${orderId}`);
+      const response = await dedupedAdminRequest(cacheKey, () =>
+        apiClient.get<OrderDetails>(`/api/v1/supersudo/orders/${orderId}`),
+      );
       setOrderDetails(response);
+      persistOrderDetailCache(orderId, response);
     } catch (err: unknown) {
       logger.error('Admin order details fetch failed', { error: err });
       alert(getApiOrErrorMessage(err, t('admin.orders.orderDetails.failedToLoad')));
       setSelectedOrderId(null);
+      setOrderDetails(null);
     } finally {
       setLoadingOrderDetails(false);
     }
@@ -326,6 +345,7 @@ export function useOrders() {
         }
       );
       setOrderDetails(updated);
+      persistOrderDetailCache(selectedOrderId, updated);
       setUpdateMessage({
         type: 'success',
         text: t('admin.orders.orderDetails.internalNotesSaved'),
@@ -454,9 +474,9 @@ export function useOrders() {
 
       if (selectedOrderId === orderId) {
         setOrderDetails(updated);
+        persistOrderDetailCache(orderId, updated);
       }
 
-      // Show success message
       setUpdateMessage({ type: 'success', text: t('admin.orders.statusUpdated') });
       setTimeout(() => setUpdateMessage(null), 3000);
     } catch (err: unknown) {
@@ -502,6 +522,7 @@ export function useOrders() {
 
       if (selectedOrderId === orderId) {
         setOrderDetails(updated);
+        persistOrderDetailCache(orderId, updated);
       }
 
       // Show success message
