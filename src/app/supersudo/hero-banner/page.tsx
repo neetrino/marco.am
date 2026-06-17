@@ -700,7 +700,7 @@ export default function HeroBannerPage() {
           >
             <Card className="admin-card border border-slate-100 bg-white/95 p-4 shadow-sm sm:p-6">
               <HeroBannerSectionHeader title={t('admin.heroBanner.sectionHeroCarousel')} />
-              <div className={`mx-auto w-full max-w-4xl ${HERO_DESKTOP_LAYOUT_ASPECT_CLASS}`}>
+              <div className={`w-full min-w-0 ${HERO_DESKTOP_LAYOUT_ASPECT_CLASS}`}>
                 <div className="grid h-full min-h-0 grid-cols-[minmax(0,1.24fr)_minmax(0,0.96fr)] gap-3 lg:gap-4">
                   <div className="grid min-h-0 grid-rows-2 gap-3 lg:gap-4">
                     <ImageUploadField
