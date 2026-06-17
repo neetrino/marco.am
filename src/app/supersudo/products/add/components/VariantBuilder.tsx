@@ -1,6 +1,7 @@
 'use client';
 
 import type { ChangeEvent, RefObject } from 'react';
+import { ADMIN_IMAGE_ACCEPT } from '@/lib/constants/admin-image-upload';
 import { Button, Input } from '@shop/ui';
 import { useTranslation } from '../../../../../lib/i18n-client';
 import { FormSection } from './FormSection';
@@ -343,7 +344,7 @@ export function VariantBuilder({
                                 }
                               }}
                               type="file"
-                              accept="image/*"
+                              accept={ADMIN_IMAGE_ACCEPT}
                               onChange={(e) => onVariantImageUpload(variant.id, e)}
                               className="hidden"
                             />

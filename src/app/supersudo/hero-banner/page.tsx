@@ -15,6 +15,8 @@ import {
   readAdminSessionCache,
   writeAdminSessionCache,
 } from '@/lib/admin/admin-session-cache';
+import { ADMIN_IMAGE_ACCEPT } from '@/lib/constants/admin-image-upload';
+import { processAdminImageFile } from '@/lib/utils/process-admin-image-file';
 import {
   HOME_APP_DOWNLOAD_BANNER_ID,
   HOME_APP_DOWNLOAD_DEFAULT_IMAGE_URL,
@@ -221,14 +223,6 @@ function buildNextHeroBannerStorageFromForm(
   };
 }
 
-function fileToDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
 
 function ImageLightbox({ url, label, onClose, onReplace }: { url: string; label: string; onClose: () => void; onReplace: () => void }) {
   const { t } = useTranslation();
@@ -521,7 +515,7 @@ function ImageUploadField({
           <input
             ref={inputRef}
             type="file"
-            accept="image/jpeg,image/png,image/webp,image/gif"
+            accept={ADMIN_IMAGE_ACCEPT}
             className="hidden"
             disabled={isDisabled}
             onChange={(e) => {
@@ -601,7 +595,7 @@ export default function HeroBannerPage() {
   async function handleUpload(fieldKey: keyof HeroBannerFormState, file: File) {
     try {
       setUploadingField(fieldKey);
-      const dataUrl = await fileToDataUrl(file);
+      const dataUrl = await processAdminImageFile(file, 'banner');
       const result = await apiClient.post<{ url: string }>(
         '/api/v1/supersudo/banners/upload-image',
         { image: dataUrl },

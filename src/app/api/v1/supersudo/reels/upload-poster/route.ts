@@ -3,18 +3,10 @@ import { nanoid } from "nanoid";
 
 import { authenticateToken, requireAdmin } from "@/lib/middleware/auth";
 import { isR2Configured, uploadToR2 } from "@/lib/r2";
+import { ADMIN_IMAGE_MIME } from "@/lib/constants/admin-image-upload";
 import { prepareRasterForR2Upload } from "@/lib/utils/prepare-raster-for-r2-upload";
 import { logger } from "@/lib/utils/logger";
-
-const ALLOWED_IMAGE_MIME_TYPES = new Set([
-  "image/jpeg",
-  "image/jpg",
-  "image/png",
-  "image/webp",
-  "image/gif",
-]);
-
-const MAX_IMAGE_SIZE_BYTES = 20 * 1024 * 1024;
+import { validateAdminWebpBuffer } from "@/lib/utils/validate-admin-image-upload";
 
 export async function POST(req: NextRequest) {
   try {
@@ -61,26 +53,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!ALLOWED_IMAGE_MIME_TYPES.has(file.type)) {
+    if (file.type.toLowerCase() !== ADMIN_IMAGE_MIME) {
       return NextResponse.json(
         {
           type: "https://api.shop.am/problems/validation-error",
           title: "Validation Error",
           status: 400,
-          detail: "Unsupported image format. Allowed: jpg, png, webp, gif",
-          instance: req.url,
-        },
-        { status: 400 },
-      );
-    }
-
-    if (file.size <= 0 || file.size > MAX_IMAGE_SIZE_BYTES) {
-      return NextResponse.json(
-        {
-          type: "https://api.shop.am/problems/validation-error",
-          title: "Validation Error",
-          status: 400,
-          detail: "Image size must be between 1 byte and 20MB",
+          detail: "Unsupported image format. Only WebP is allowed",
           instance: req.url,
         },
         { status: 400 },
@@ -89,7 +68,20 @@ export async function POST(req: NextRequest) {
 
     const arrayBuffer = await file.arrayBuffer();
     const fileBuffer = Buffer.from(arrayBuffer);
-    const prepared = await prepareRasterForR2Upload(fileBuffer, file.type);
+    if (!validateAdminWebpBuffer(fileBuffer, "catalog")) {
+      return NextResponse.json(
+        {
+          type: "https://api.shop.am/problems/validation-error",
+          title: "Validation Error",
+          status: 400,
+          detail: "Invalid, unsupported, or oversized WebP image",
+          instance: req.url,
+        },
+        { status: 400 },
+      );
+    }
+
+    const prepared = await prepareRasterForR2Upload(fileBuffer, ADMIN_IMAGE_MIME);
     const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
     const key = `reels/posters/${date}-${nanoid(10)}.${prepared.extension}`;
     const url = await uploadToR2(key, prepared.buffer, prepared.contentType);

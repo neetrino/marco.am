@@ -45,6 +45,10 @@ export function useProductPage({
   const slug = normalizePdpSlug(slugParts[0] ?? decodedSlugParam);
   const variantIdFromUrl = slugParts.length > 1 ? slugParts[1] ?? null : null;
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [slug]);
+
   const {
     product,
     blockingEmpty,

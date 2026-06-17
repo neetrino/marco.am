@@ -2,6 +2,8 @@
 
 import { useState, useRef, ChangeEvent, useEffect } from 'react';
 import { getErrorMessage } from '@/lib/types/errors';
+import { ADMIN_IMAGE_ACCEPT } from '@/lib/constants/admin-image-upload';
+import { processAdminImageFile } from '@/lib/utils/process-admin-image-file';
 import { useTranslation } from '../lib/i18n-client';
 import { ColorPaletteSelector } from './ColorPaletteSelector';
 import { logger } from "@/lib/utils/logger";
@@ -47,31 +49,18 @@ export function AttributeValueEditModal({
     }
   }, [value, isOpen]);
 
-  const fileToBase64 = (file: File): Promise<string> =>
-    new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-
-
   const handleImageUpload = async (event: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
     if (files.length === 0) return;
 
-    const imageFile = files.find((file) => file.type.startsWith('image/'));
+    const imageFile = files[0];
     if (!imageFile) {
-      alert(t('admin.attributes.valueModal.selectImageFile'));
-      if (event.target) {
-        event.target.value = '';
-      }
       return;
     }
 
     try {
       setImageUploading(true);
-      const base64 = await fileToBase64(imageFile);
+      const base64 = await processAdminImageFile(imageFile, 'catalog');
       setImageUrl(base64);
     } catch (error: unknown) {
       console.error('❌ [ADMIN] Error uploading image:', error);
@@ -228,7 +217,7 @@ export function AttributeValueEditModal({
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*"
+                accept={ADMIN_IMAGE_ACCEPT}
                 className="hidden"
                 onChange={handleImageUpload}
               />

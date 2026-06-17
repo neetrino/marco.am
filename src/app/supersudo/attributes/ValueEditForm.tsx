@@ -1,6 +1,7 @@
 'use client';
 
 import { useTranslation } from '../../../lib/i18n-client';
+import { ADMIN_IMAGE_ACCEPT } from '@/lib/constants/admin-image-upload';
 import { ColorPaletteSelector } from '../../../components/ColorPaletteSelector';
 import { type AttributeValue } from './useAttributes';
 
@@ -125,7 +126,7 @@ export function ValueEditForm({
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*"
+            accept={ADMIN_IMAGE_ACCEPT}
             className="hidden"
             onChange={onImageUpload}
           />

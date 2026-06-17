@@ -112,14 +112,14 @@ export async function POST(req: NextRequest) {
     const urls: string[] = [];
 
     for (let i = 0; i < validImages.length; i++) {
-      const parsed = parseAdminImageDataUrl(validImages[i]);
+      const parsed = parseAdminImageDataUrl(validImages[i], "catalog");
       if (!parsed) {
         return NextResponse.json(
           {
             type: "https://api.shop.am/problems/validation-error",
             title: "Validation Error",
             status: 400,
-            detail: `Invalid, unsupported, or oversized image at index ${i}`,
+            detail: `Invalid, unsupported, or oversized WebP image at index ${i}`,
             instance: req.url,
           },
           { status: 400 }

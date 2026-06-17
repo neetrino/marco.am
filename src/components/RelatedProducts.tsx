@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo } from 'react';
 
 import { t } from '../lib/i18n';
 import type { LanguageCode } from '../lib/language';
-import type { RelatedProductsApiResponse } from '@/lib/product-pdp/fetch-related-products';
 import { useRelatedProducts } from './hooks/useRelatedProducts';
 import { useCarousel } from './hooks/useCarousel';
 import { useRelatedProductsVisibleCards } from './hooks/useRelatedProductsVisibleCards';
@@ -31,9 +30,7 @@ interface RelatedProductsProps {
   currentProductSlug: string;
   /** Same language as PDP (avoids a wrong-lang fetch before hydration). */
   language: LanguageCode;
-  /** SSR related rows — avoids client round-trip on first paint. */
-  initialRelatedProducts?: RelatedProductsApiResponse | null;
-  /** When false, defer related fetch/render until PDP detail phase is ready. */
+  /** When false, defer related fetch/render until slug is ready. */
   enabled?: boolean;
 }
 
@@ -82,7 +79,6 @@ function RelatedProductsSkeleton({ count }: { count: number }) {
 export function RelatedProducts({
   currentProductSlug,
   language,
-  initialRelatedProducts = null,
   enabled = true,
 }: RelatedProductsProps) {
   const isMaxMd = useIsMaxMd();
@@ -91,7 +87,6 @@ export function RelatedProducts({
   const { products, loading, loadingMore, hasMore, loadMore } = useRelatedProducts({
     productSlug: currentProductSlug,
     language,
-    initialRelatedProducts,
     enabled,
   });
 
