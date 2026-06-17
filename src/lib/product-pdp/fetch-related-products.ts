@@ -9,6 +9,8 @@ export type RelatedProductsApiResponse = {
   meta: {
     total: number;
     limit?: number;
+    offset?: number;
+    hasMore?: boolean;
     rules?: { category: number; brand: number; other: number };
   };
 };
@@ -68,12 +70,13 @@ function isRequestTimeoutError(error: unknown): boolean {
 export async function fetchRelatedProducts(
   productSlug: string,
   lang: LanguageCode,
-  limit = 10,
+  limit = 4,
+  offset = 0,
 ): Promise<RelatedProductsApiResponse> {
   const encodedSlug = encodeProductSlugForPath(productSlug);
   try {
     return await apiClient.get<RelatedProductsApiResponse>(`/api/v1/products/${encodedSlug}/related`, {
-      params: { limit: String(limit), lang },
+      params: { limit: String(limit), offset: String(offset), lang },
       timeoutMs: RELATED_PRODUCTS_TIMEOUT_MS,
       suppressNetworkErrorLogging: true,
     });

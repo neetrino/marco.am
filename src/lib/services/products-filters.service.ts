@@ -23,7 +23,16 @@ import {
 } from "@/lib/constants/product-filters-query-limits";
 import { isShopFilterCategoryExcludedFromTranslations } from "@/lib/constants/shop-filter-excluded-categories";
 import { buildShopFilterCategoriesFromCountMap } from "./products-filters-category-tree";
+import {
+  expandCategoryIdsWithAncestors,
+  loadCategoryParentMap,
+} from "./category-ancestors.service";
 import { aggregateBrandFacetsFromWhere, getPublishedVariantPriceBounds } from "./products-filters-sql-facets";
+import { buildShopFiltersCoreViaSql, buildShopFiltersExtendedViaSql } from "./products-filters-sql-path";
+import type {
+  ProductsFiltersCoreData,
+  ProductsFiltersExtendedData,
+} from "@/lib/shop-products-filters-types";
 import { buildShopFiltersViaSqlAggregation } from "./products-filters-sql-path";
 import { getListingDiscountSettings, type ListingDiscountSettings } from "./listing-discount-settings";
 import { resolveCategoryTranslation } from "@/lib/i18n/category-translation";
@@ -542,6 +551,7 @@ class ProductsFiltersService {
     const extraAttributeFacetByKey = new Map<string, ExtraAttributeFacetAgg>();
     const brandMap = new Map<string, { id: string; slug: string; name: string; count: number }>();
     const categoryCountMap = includeCategories ? new Map<string, number>() : null;
+    const categoryParentMap = includeCategories ? await loadCategoryParentMap() : null;
     let rangeMin = Infinity;
     let rangeMax = 0;
 
@@ -554,13 +564,16 @@ class ProductsFiltersService {
         categoryIds?: string[];
       };
       if (includeCategories && categoryCountMap) {
-        const categoryIdsForProduct = new Set<string>();
+        const directIds = new Set<string>();
         if (catProduct.primaryCategoryId) {
-          categoryIdsForProduct.add(catProduct.primaryCategoryId);
+          directIds.add(catProduct.primaryCategoryId);
         }
         (catProduct.categoryIds || []).forEach((id) => {
-          categoryIdsForProduct.add(id);
+          directIds.add(id);
         });
+        const categoryIdsForProduct = categoryParentMap
+          ? expandCategoryIdsWithAncestors(directIds, categoryParentMap)
+          : directIds;
         categoryIdsForProduct.forEach((id) => {
           categoryCountMap.set(id, (categoryCountMap.get(id) || 0) + 1);
         });
@@ -922,6 +935,93 @@ class ProductsFiltersService {
       stepSize,
       stepSizePerCurrency,
     };
+  }
+
+  async getFiltersExtended(filters: {
+    category?: string;
+    search?: string;
+    filter?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    lang?: string;
+    technicalSpecs?: TechnicalSpecFilters;
+  }): Promise<ProductsFiltersExtendedData> {
+    const preferredLocales = buildPreferredLocales(filters.lang || "en");
+    const lang = filters.lang || "en";
+    const { where: listingWhere } = await buildWhereClause({
+      category: filters.category?.trim(),
+      search: filters.search?.trim(),
+      filter: filters.filter?.trim(),
+      minPrice: filters.minPrice,
+      maxPrice: filters.maxPrice,
+      lang,
+    });
+    if (listingWhere === null) {
+      return { colors: [], sizes: [], attributeFacets: [] };
+    }
+
+    if (hasTechnicalSpecFilters(filters.technicalSpecs)) {
+      const full = await this.getFilters({ ...filters, categoriesOnly: false });
+      return {
+        colors: full.colors,
+        sizes: full.sizes,
+        attributeFacets: full.attributeFacets,
+      };
+    }
+
+    return buildShopFiltersExtendedViaSql({
+      where: listingWhere,
+      filters,
+      lang,
+      preferredLocales,
+    });
+  }
+
+  async getFiltersCoreFast(filters: {
+    category?: string;
+    search?: string;
+    filter?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    lang?: string;
+    technicalSpecs?: TechnicalSpecFilters;
+    includeCategories?: boolean;
+  }): Promise<ProductsFiltersCoreData> {
+    const preferredLocales = buildPreferredLocales(filters.lang || "en");
+    const lang = filters.lang || "en";
+    const includeCategories = filters.includeCategories !== false;
+    const { where: listingWhere } = await buildWhereClause({
+      category: filters.category?.trim(),
+      search: filters.search?.trim(),
+      filter: filters.filter?.trim(),
+      minPrice: filters.minPrice,
+      maxPrice: filters.maxPrice,
+      lang,
+    });
+    if (listingWhere === null) {
+      return {
+        categories: [],
+        brands: [],
+        priceRange: { min: 0, max: 0, stepSize: null, stepSizePerCurrency: null },
+      };
+    }
+
+    if (hasTechnicalSpecFilters(filters.technicalSpecs)) {
+      const full = await this.getFilters({ ...filters, categoriesOnly: false });
+      return {
+        categories: full.categories,
+        brands: full.brands,
+        priceRange: full.priceRange,
+      };
+    }
+
+    return buildShopFiltersCoreViaSql({
+      where: listingWhere,
+      filters,
+      lang,
+      preferredLocales,
+      includeCategories,
+    });
   }
 }
 

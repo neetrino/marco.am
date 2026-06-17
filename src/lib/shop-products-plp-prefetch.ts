@@ -1,4 +1,4 @@
-import type { ProductsFiltersData } from '@/components/ProductsFiltersProvider';
+import type { ProductsFiltersData } from '@/lib/shop-products-filters-types';
 import { normalizeShopGridProduct } from '@/app/products/shop-grid-product';
 import { apiClient } from '@/lib/api-client';
 import { SHOP_PLP_DEFAULT_PAGE_SIZE, PLP_PDP_CACHE_SYNC_BATCH_SIZE } from '@/lib/constants/shop-plp-pagination';
@@ -94,10 +94,10 @@ export function warmShopProductsClientCaches(
   });
 
   const listingRequest = apiClient.get<ProductsListingApiResponse>('/api/v1/products', {
-      params: buildListingApiParams(queryString, language),
-      timeoutMs: options?.timeoutMs,
-      suppressNetworkErrorLogging: options?.suppressTimeoutLogging,
-    });
+    params: buildListingApiParams(queryString, language),
+    timeoutMs: options?.timeoutMs,
+    suppressNetworkErrorLogging: options?.suppressTimeoutLogging,
+  });
   const filtersRequest = includeFilters
     ? apiClient.get<ProductsFiltersData>('/api/v1/products/filters', {
         params: filtersParams,

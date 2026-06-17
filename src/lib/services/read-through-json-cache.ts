@@ -6,6 +6,7 @@ const inflightByKey = new Map<string, Promise<unknown>>();
 const BANNERS_PUBLIC_PATTERN = "banners:public:*";
 const REELS_PUBLIC_PATTERN = "reels:public:*";
 const CATEGORIES_TREE_PATTERN = "categories:tree:*";
+const CATEGORIES_MEGA_MENU_PATTERN = "categories:mega-menu:*";
 const CATEGORIES_TOP_PATTERN = "categories:top:*";
 const FOOTER_PUBLIC_PATTERN = "footer:public:*";
 const WHY_CHOOSE_PUBLIC_PATTERN = "why-choose:public:*";
@@ -72,7 +73,12 @@ export async function invalidateReelsPublicCache(): Promise<void> {
 
 export async function invalidateCategoryPublicCaches(): Promise<void> {
   await cacheService.deletePattern(CATEGORIES_TREE_PATTERN);
+  await cacheService.deletePattern(CATEGORIES_MEGA_MENU_PATTERN);
   await cacheService.deletePattern(CATEGORIES_TOP_PATTERN);
+  const { invalidateProductsFiltersPublicCaches } = await import(
+    '@/lib/cache/products-filters-redis'
+  );
+  await invalidateProductsFiltersPublicCaches();
 }
 
 export async function invalidateFooterPublicCache(): Promise<void> {

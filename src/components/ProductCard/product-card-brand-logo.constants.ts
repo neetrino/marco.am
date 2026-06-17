@@ -1,4 +1,4 @@
-export type ProductCardBrandLogoSize = 'grid' | 'gridCompact' | 'list' | 'specialOffer';
+export type ProductCardBrandLogoSize = 'grid' | 'gridCompact' | 'list' | 'specialOffer' | 'pdp';
 
 export type ProductCardBrandLogoSizeConfig = {
   rowClassName: string;
@@ -49,6 +49,15 @@ export const PRODUCT_CARD_BRAND_LOGO_SIZES: Record<
     imageClassName: 'object-contain object-left origin-left',
     wordmarkClassName:
       'truncate text-xs font-semibold uppercase leading-none tracking-wide text-gray-500 dark:text-[#383838] md:text-sm',
+  },
+  pdp: {
+    rowClassName: 'flex h-11 w-[132px] items-center overflow-visible sm:h-12 sm:w-[150px]',
+    logoCellClassName:
+      'relative h-11 w-[132px] shrink-0 sm:h-12 sm:w-[150px]',
+    logoSizes: '(max-width: 640px) 132px, 150px',
+    imageClassName: 'object-contain object-left origin-left',
+    wordmarkClassName:
+      'truncate text-base font-semibold uppercase leading-none tracking-wide text-gray-500 dark:text-[#383838] sm:text-lg',
   },
 };
 

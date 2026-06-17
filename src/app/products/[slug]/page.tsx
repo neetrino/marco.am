@@ -8,15 +8,13 @@ import {
 } from '@/lib/language';
 import { normalizePdpSlug } from '@/lib/product-pdp/pdp-slug';
 
-import { ProductPdpDetailStream } from './ProductPdpDetailStream';
+import { ProductPdpSSRSeed } from './ProductPdpSSRSeed';
 
 type PageProps = {
   params: Promise<{ slug: string }>;
 };
 
-/**
- * PDP page slot — streams heavy detail into React Query; UI lives in layout.tsx.
- */
+/** Page slot — SSR cache seed only; UI lives in layout `ProductSlugLayoutClient`. */
 export default async function ProductPage({ params }: PageProps) {
   const { slug: slugParam } = await params;
   const cookieStore = await cookies();
@@ -26,7 +24,7 @@ export default async function ProductPage({ params }: PageProps) {
 
   return (
     <Suspense fallback={null}>
-      <ProductPdpDetailStream baseSlug={baseSlug} serverLanguage={serverLanguage} />
+      <ProductPdpSSRSeed baseSlug={baseSlug} serverLanguage={serverLanguage} />
     </Suspense>
   );
 }

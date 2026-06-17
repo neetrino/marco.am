@@ -129,21 +129,23 @@ export function CartDrawer() {
               </button>
             </div>
           ) : (
-            <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
-              <div className="space-y-3">
-                {cart.items.map((item) => (
-                  <CartDrawerItemRow
-                    key={item.id}
-                    item={item}
-                    currency={currencyCode}
-                    amountCurrency={amountCurrency}
-                    updating={updatingItems.has(item.id)}
-                    onRemove={onRemoveItem}
-                    onUpdateQuantity={onUpdateQuantity}
-                    onNavigate={handleCheckoutNavigate}
-                    t={t}
-                  />
-                ))}
+            <>
+              <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
+                <div className="space-y-3">
+                  {cart.items.map((item) => (
+                    <CartDrawerItemRow
+                      key={item.id}
+                      item={item}
+                      currency={currencyCode}
+                      amountCurrency={amountCurrency}
+                      updating={updatingItems.has(item.id)}
+                      onRemove={onRemoveItem}
+                      onUpdateQuantity={onUpdateQuantity}
+                      onNavigate={handleCheckoutNavigate}
+                      t={t}
+                    />
+                  ))}
+                </div>
               </div>
               <CartDrawerSummary
                 cart={cart}
@@ -151,7 +153,7 @@ export function CartDrawer() {
                 onCheckout={handleProceedToCheckout}
                 t={t}
               />
-            </div>
+            </>
           )}
         </div>
       </aside>

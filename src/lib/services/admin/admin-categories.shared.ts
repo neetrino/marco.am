@@ -66,6 +66,8 @@ export type CategoryUpdateInput = {
   requiresSizes?: boolean;
   media?: unknown;
   subcategoryIds?: string[];
+  /** Required when a hierarchy edit would detach categories or promote to root. */
+  confirmHierarchyChanges?: boolean;
   seoTitle?: string | null;
   seoDescription?: string | null;
 };

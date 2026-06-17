@@ -47,7 +47,7 @@ export function ShopAttributeFacetsFilter() {
         option.count > 0,
     ),
   );
-  const loading = filtersContext ? filtersContext.loading && facets.length === 0 : true;
+  const loading = filtersContext ? filtersContext.extendedLoading && facets.length === 0 : true;
   const [optimisticByKey, setOptimisticByKey] = useState<Record<string, string[] | null> | null>(
     null,
   );

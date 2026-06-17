@@ -35,7 +35,7 @@ export function SizeFilter({ category, search, minPrice, maxPrice }: SizeFilterP
   const filtersContext = useProductsFilters();
   const { t } = useShopFiltersTranslation();
   const [sizes, setSizes] = useState<SizeOption[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [fallbackLoading, setFallbackLoading] = useState(true);
   const [optimisticSizes, setOptimisticSizes] = useState<string[] | null>(null);
 
   const activeSearchParams = mobileDraft?.enabled ? mobileDraft.searchParams : searchParams;
@@ -53,15 +53,16 @@ export function SizeFilter({ category, search, minPrice, maxPrice }: SizeFilterP
   useEffect(() => {
     if (filtersContext?.data?.sizes) {
       setSizes(filtersContext.data.sizes);
-      setLoading(false);
       return;
     }
     if (filtersContext === null) {
       fetchSizes();
-    } else {
-      setLoading(filtersContext.loading);
     }
-  }, [category, search, minPrice, maxPrice, filtersContext?.data?.sizes, filtersContext?.loading, filtersContext === null]);
+  }, [category, search, minPrice, maxPrice, filtersContext?.data?.sizes, filtersContext === null]);
+
+  const loading = filtersContext
+    ? filtersContext.extendedLoading && sizes.length === 0
+    : fallbackLoading;
 
   useEffect(() => {
     setOptimisticSizes(null);
@@ -69,7 +70,7 @@ export function SizeFilter({ category, search, minPrice, maxPrice }: SizeFilterP
 
   const fetchSizes = async () => {
     try {
-      setLoading(true);
+      setFallbackLoading(true);
       const language = getStoredLanguage();
       const params: Record<string, string> = {
         lang: language,
@@ -88,7 +89,7 @@ export function SizeFilter({ category, search, minPrice, maxPrice }: SizeFilterP
     } catch (_error) {
       setSizes([]);
     } finally {
-      setLoading(false);
+      setFallbackLoading(false);
     }
   };
 

@@ -1,4 +1,4 @@
-import type { ProductsFiltersData } from '@/components/ProductsFiltersProvider';
+import type { ProductsFiltersData } from '@/lib/shop-products-filters-types';
 
 const FILTERS_CACHE_TTL_MS = 120_000;
 

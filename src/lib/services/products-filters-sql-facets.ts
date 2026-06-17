@@ -8,6 +8,10 @@ import {
   PRODUCT_FILTERS_SQL_OPTION_ROWS_CAP,
 } from "@/lib/constants/product-filters-query-limits";
 import { isColorAttributeKey, isSizeAttributeKey } from "@/lib/attribute-keys";
+import {
+  expandCategoryIdsWithAncestors,
+  type CategoryParentMap,
+} from "./category-ancestors.service";
 import type { ProductWithRelations } from "./products-find-query.service";
 
 const COLOR_OPTION_KEYS = ["color", "colour", "guyn", "colors"] as const;
@@ -100,11 +104,12 @@ async function fetchFacetProductIds(
   return rows.map((row) => row.id);
 }
 
-function buildColorOptionWhere(productIds: string[]): Prisma.ProductVariantOptionWhereInput {
+function buildColorOptionWhere(productIds: readonly string[]): Prisma.ProductVariantOptionWhereInput {
+  const ids = [...productIds];
   return {
     variant: {
       published: true,
-      productId: { in: productIds },
+      productId: { in: ids },
     },
     OR: [
       { attributeKey: { in: [...COLOR_OPTION_KEYS], mode: "insensitive" } },
@@ -119,11 +124,12 @@ function buildColorOptionWhere(productIds: string[]): Prisma.ProductVariantOptio
   };
 }
 
-function buildSizeOptionWhere(productIds: string[]): Prisma.ProductVariantOptionWhereInput {
+function buildSizeOptionWhere(productIds: readonly string[]): Prisma.ProductVariantOptionWhereInput {
+  const ids = [...productIds];
   return {
     variant: {
       published: true,
-      productId: { in: productIds },
+      productId: { in: ids },
     },
     OR: [
       { attributeKey: { in: [...SIZE_OPTION_KEYS], mode: "insensitive" } },
@@ -296,21 +302,32 @@ export async function aggregateBrandFacetsFromWhere(
 
 export function buildCategoryCountMapFromRows(
   rows: readonly CategoryFacetProductRow[],
+  parentMap?: CategoryParentMap,
 ): Map<string, number> {
   const categoryCountMap = new Map<string, number>();
   for (const row of rows) {
-    const categoryIdsForProduct = new Set<string>();
+    const directIds = new Set<string>();
     if (row.primaryCategoryId) {
-      categoryIdsForProduct.add(row.primaryCategoryId);
+      directIds.add(row.primaryCategoryId);
     }
     for (const categoryId of row.categoryIds) {
-      categoryIdsForProduct.add(categoryId);
+      directIds.add(categoryId);
     }
+    const categoryIdsForProduct = parentMap
+      ? expandCategoryIdsWithAncestors(directIds, parentMap)
+      : directIds;
     for (const categoryId of categoryIdsForProduct) {
       categoryCountMap.set(categoryId, (categoryCountMap.get(categoryId) || 0) + 1);
     }
   }
   return categoryCountMap;
+}
+
+export async function fetchShopFacetProductIds(
+  where: Prisma.ProductWhereInput,
+  scopeFilters: { category?: string; search?: string; filter?: string },
+): Promise<string[]> {
+  return fetchFacetProductIds(where, isScopedCatalogWhere(scopeFilters));
 }
 
 /**
@@ -320,10 +337,12 @@ export async function aggregateColorFacetsFromWhere(
   where: Prisma.ProductWhereInput,
   lang: string,
   scopeFilters: { category?: string; search?: string; filter?: string },
+  preloadedProductIds?: readonly string[],
 ): Promise<ColorFacetRow[]> {
   const preferredLocales = buildPreferredLocales(lang);
-  const isScopedCatalog = isScopedCatalogWhere(scopeFilters);
-  const productIds = await fetchFacetProductIds(where, isScopedCatalog);
+  const productIds =
+    preloadedProductIds ??
+    (await fetchShopFacetProductIds(where, scopeFilters));
   if (productIds.length === 0) {
     return [];
   }
@@ -400,10 +419,12 @@ export async function aggregateSizeFacetsFromWhere(
   where: Prisma.ProductWhereInput,
   lang: string,
   scopeFilters: { category?: string; search?: string; filter?: string },
+  preloadedProductIds?: readonly string[],
 ): Promise<SizeFacetRow[]> {
   const preferredLocales = buildPreferredLocales(lang);
-  const isScopedCatalog = isScopedCatalogWhere(scopeFilters);
-  const productIds = await fetchFacetProductIds(where, isScopedCatalog);
+  const productIds =
+    preloadedProductIds ??
+    (await fetchShopFacetProductIds(where, scopeFilters));
   if (productIds.length === 0) {
     return [];
   }

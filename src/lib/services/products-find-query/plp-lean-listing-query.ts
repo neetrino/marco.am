@@ -67,6 +67,7 @@ export async function executePlpLeanListingQuery(
         take: PLP_LEAN_VARIANTS_PER_PRODUCT_LIMIT,
         select: {
           id: true,
+          imageUrl: true,
           price: true,
           compareAtPrice: true,
           stock: true,

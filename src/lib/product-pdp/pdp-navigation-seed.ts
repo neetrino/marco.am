@@ -19,6 +19,8 @@ export type ProductPdpNavigationSeed = {
   slug: string;
   title: string;
   image: string | null;
+  /** Full PLP gallery — same order as PDP canonical gallery. */
+  images?: string[];
   brand: ProductBrandSeed | null;
   categories?: ProductCategorySeed[];
   labels?: Product["labels"];
@@ -40,12 +42,27 @@ function keyFor(slug: string, language: LanguageCode): string {
   return `${language}:${normalizePdpSlug(slug)}`;
 }
 
+/** Canonical gallery URLs for PLP → PDP handoff. */
+export function resolveNavigationSeedImages(
+  image: string | null,
+  images?: string[],
+): string[] {
+  if (Array.isArray(images) && images.length > 0) {
+    return images.filter((item): item is string => typeof item === 'string' && item.length > 0);
+  }
+  return image ? [image] : [];
+}
+
+function seedMedia(value: ProductPdpNavigationSeed): string[] {
+  return resolveNavigationSeedImages(value.image, value.images);
+}
+
 function toSeedProduct(value: ProductPdpNavigationSeed): Product {
   return {
     id: value.id,
     slug: value.slug,
     title: value.title,
-    media: value.image ? [value.image] : [],
+    media: seedMedia(value),
     variants: [],
     brand: value.brand ?? undefined,
     categories: value.categories,

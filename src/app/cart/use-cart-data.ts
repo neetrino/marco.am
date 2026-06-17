@@ -9,6 +9,7 @@ import { readStoredGuestCart } from './guest-cart-local';
 import { buildGuestCartFromStorage, fetchCart } from './cart-fetcher';
 import { handleRemoveItem, handleUpdateQuantity } from './cart-handlers';
 import { applyOptimisticCartAdd } from './apply-optimistic-cart-add';
+import { guestCartNeedsCatalogPriceResolution } from '../../lib/cart/guest-cart-totals';
 import { isGenericCartTitle, mergeCartDisplayState } from './merge-cart-display';
 import { preloadNewCartImages } from './preload-cart-images';
 
@@ -46,9 +47,11 @@ export function useCartData(options?: { enabled?: boolean }) {
 
   const hydrateGuestCartInBackground = useCallback(
     async (snapshot: Cart | null) => {
-      const needsHydration = snapshot?.items.some(
+      const needsDisplayHydration = snapshot?.items.some(
         (row) => !row.variant.product.image || isGenericCartTitle(row.variant.product.title),
       );
+      const needsPriceHydration = guestCartNeedsCatalogPriceResolution(readStoredGuestCart());
+      const needsHydration = needsDisplayHydration || needsPriceHydration;
       if (!needsHydration) {
         return;
       }

@@ -1,17 +1,14 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { getStoredCurrency } from '../../../lib/currency';
 import { getStoredLanguage, type LanguageCode } from '../../../lib/language';
 import { normalizePdpSlug } from '@/lib/product-pdp/pdp-slug';
-import type { PdpVisualPayload } from '@/lib/services/products-slug/product-transformer';
+import { normalizeUrlForComparison } from '@/lib/utils/image-utils';
 import type { CurrencyCode } from '../../../lib/currency';
 import { t } from '../../../lib/i18n';
-import type { Product } from './types';
 import { useAttributeGroups } from './useAttributeGroups';
 import { useProductImages } from './hooks/useProductImages';
-import { buildGalleryStubProduct } from './buildGalleryStubProduct';
-import { enrichListingShellGallery } from './enrichListingShellGallery';
 import { useProductFetch } from './hooks/useProductFetch';
 import { useWishlistCompare } from './hooks/useWishlistCompare';
 import { useVariantSelection } from './hooks/useVariantSelection';
@@ -20,26 +17,21 @@ import { useProductQuantity } from './hooks/useProductQuantity';
 import { useProductCalculations } from './hooks/useProductCalculations';
 
 export type UseProductPageInput = {
-  /** Raw `[slug]` segment (may include `:variantId`). */
   slugParam: string;
   serverLanguage: LanguageCode;
-  initialVisual: PdpVisualPayload | null;
-  initialProduct: Product | null;
 };
 
 export function useProductPage({
   slugParam,
   serverLanguage,
-  initialVisual,
-  initialProduct,
 }: UseProductPageInput) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  // Keep first SSR and client render identical to prevent hydration mismatch.
   const [currency, setCurrency] = useState<CurrencyCode>('AMD');
   const [language, setLanguage] = useState<LanguageCode>(() => serverLanguage);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [showMessage, setShowMessage] = useState<string | null>(null);
   const [thumbnailStartIndex, setThumbnailStartIndex] = useState(0);
+  const lastGalleryUrlRef = useRef<string | null>(null);
 
   let decodedSlugParam = slugParam;
   try {
@@ -55,32 +47,47 @@ export function useProductPage({
 
   const {
     product,
-    productVisual,
     blockingEmpty,
     detailsPending,
     loading,
-    instantShell,
-    isInstantShellPaint,
     isListingShell,
   } = useProductFetch({
     slug,
-    variantIdFromUrl,
     serverLanguage,
-    initialVisual,
-    initialProduct,
   });
 
-  const displayProduct = useMemo(() => {
-    if (product) {
-      return enrichListingShellGallery(product, productVisual);
-    }
-    if (productVisual) {
-      return buildGalleryStubProduct(productVisual);
-    }
-    return null;
-  }, [product, productVisual]);
-
+  const displayProduct = product;
   const images = useProductImages(displayProduct);
+
+  useEffect(() => {
+    if (images.length === 0) {
+      setCurrentImageIndex(0);
+      lastGalleryUrlRef.current = null;
+      return;
+    }
+
+    const lastUrl = lastGalleryUrlRef.current;
+    if (lastUrl) {
+      const preservedIndex = images.findIndex(
+        (url) => normalizeUrlForComparison(url) === normalizeUrlForComparison(lastUrl),
+      );
+      if (preservedIndex >= 0) {
+        setCurrentImageIndex(preservedIndex);
+        lastGalleryUrlRef.current = images[preservedIndex] ?? null;
+        return;
+      }
+    }
+
+    setCurrentImageIndex((prev) => {
+      const next = Math.min(prev, images.length - 1);
+      lastGalleryUrlRef.current = images[next] ?? null;
+      return next;
+    });
+  }, [images]);
+
+  useEffect(() => {
+    lastGalleryUrlRef.current = images[currentImageIndex] ?? null;
+  }, [currentImageIndex, images]);
 
   const {
     selectedVariant,
@@ -174,12 +181,6 @@ export function useProductPage({
   }, []);
 
   useEffect(() => {
-    if (images.length > 0 && currentImageIndex >= images.length) {
-      setCurrentImageIndex(0);
-    }
-  }, [images.length, currentImageIndex]);
-
-  useEffect(() => {
     if (
       product &&
       product.variants &&
@@ -209,13 +210,10 @@ export function useProductPage({
 
   return {
     product,
-    productVisual,
     displayProduct,
     blockingEmpty,
     detailsPending,
     loading,
-    instantShell,
-    isInstantShellPaint,
     isListingShell,
     images,
     currentImageIndex,

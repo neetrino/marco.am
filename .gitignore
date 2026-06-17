@@ -29,6 +29,11 @@ tmp/
 temp/
 .cache/
 
+# Local eslint dumps (run eslint --format json > .cache/… if needed)
+eslint-report.json
+eslint-src.json
+eslint-*.json
+
 # IDE (optional, uncomment if needed)
 # .idea/
 # .vscode/

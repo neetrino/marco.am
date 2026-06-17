@@ -2,10 +2,9 @@
 
 import Image from 'next/image';
 import { ChevronRight } from 'lucide-react';
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from '../../lib/i18n-client';
 import { LanguagePreferenceContext } from '../../lib/language-context';
-import type { Category } from './category-nav-types';
 import { CategoryMegaSubcategoryPills } from './CategoryMegaSubcategoryPills';
 import { CategoryDropdownPromoBanner } from './CategoryDropdownPromoBanner';
 import {
@@ -15,6 +14,12 @@ import {
 } from './categoryNavList';
 import { resolveCategoryNavPresentation } from './categoryNavPresentation';
 import { headerCategoryNavFont } from './headerCategoryNavTypography';
+import {
+  HEADER_MEGA_MENU_CONTENT_PADDING_CLASS,
+  HEADER_MEGA_MENU_RAIL_PADDING_CLASS,
+  HEADER_MEGA_MENU_RAIL_WIDTH_CLASS,
+} from './header.constants';
+import { useMegaMenuBranch, useMegaMenuRoots } from './useMegaMenuCategories';
 import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '../../lib/utils/image-utils';
 import { shouldBypassNextImageOptimizer } from '@/lib/utils/should-bypass-next-image-optimizer';
 
@@ -24,39 +29,60 @@ function isTechAndElectronicsCategory(value: string): boolean {
 }
 
 /** Left mega-rail root category row — keep img attrs in sync with `h-[…] w-[…]` on the image. */
-const MEGA_ROOT_ICON_INNER_PX = 34;
-/** Lucide `size` inside `size-[48px]` icon wrap. */
-const MEGA_ROOT_LUCIDE_PX = 34;
+const MEGA_ROOT_ICON_INNER_PX = 28;
+/** Lucide `size` inside `size-[40px]` icon wrap. */
+const MEGA_ROOT_LUCIDE_PX = 28;
+
+const MEGA_ROOT_ROW_CLASS =
+  `${headerCategoryNavFont.className} flex w-full min-w-0 shrink-0 cursor-pointer items-center gap-2 rounded-[40px] px-1.5 py-0 text-left text-[13px] leading-[21px] tracking-[0.15px] transition-[background-color,color,opacity] duration-150`;
 
 export function CategoriesDropdownMega({
-  categories,
+  menuOpen,
   onClose,
 }: {
-  categories: Category[];
+  menuOpen: boolean;
   onClose: () => void;
 }) {
   const lang = useContext(LanguagePreferenceContext);
   const { t } = useTranslation();
+  const rootsQuery = useMegaMenuRoots(menuOpen, lang);
   const categoriesWithExtra = useMemo(
-    () => prepareRootCategoriesForNav(categories, lang),
-    [categories, lang],
+    () => prepareRootCategoriesForNav(rootsQuery.data ?? [], lang),
+    [rootsQuery.data, lang],
   );
-  const [selectedSlug, setSelectedSlug] = useState<string>(() => categoriesWithExtra[0]?.slug ?? '');
+  const [selectedSlug, setSelectedSlug] = useState<string>('');
+  const rightScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (categoriesWithExtra.length === 0) {
       return;
     }
     setSelectedSlug((prev) =>
-      prev && categoriesWithExtra.some((c) => c.slug === prev) ? prev : categoriesWithExtra[0].slug
+      prev && categoriesWithExtra.some((c) => c.slug === prev) ? prev : categoriesWithExtra[0].slug,
     );
   }, [categoriesWithExtra]);
 
-  const selected = categoriesWithExtra.find((c) => c.slug === selectedSlug) ?? categoriesWithExtra[0];
+  useEffect(() => {
+    rightScrollRef.current?.scrollTo(0, 0);
+  }, [selectedSlug]);
+
+  const branchQuery = useMegaMenuBranch(menuOpen, selectedSlug || null, lang);
+  const selectedBranch = branchQuery.data;
+  const selected =
+    categoriesWithExtra.find((category) => category.slug === selectedSlug) ?? categoriesWithExtra[0];
+
   const subcategoryGroups = useMemo(
-    () => (selected ? prepareMegaMenuSubcategoryGroups(selected, lang) : []),
-    [selected, lang],
+    () => (selectedBranch ? prepareMegaMenuSubcategoryGroups(selectedBranch, lang) : []),
+    [selectedBranch, lang],
   );
+
+  if (rootsQuery.isLoading && !rootsQuery.data) {
+    return (
+      <div className="flex h-full min-h-[200px] items-center justify-center text-sm text-[#5d7285] dark:text-zinc-300">
+        {t('common.messages.loading')}
+      </div>
+    );
+  }
 
   if (!selected) {
     return null;
@@ -66,108 +92,109 @@ export function CategoriesDropdownMega({
   const isTechAndElectronics =
     isTechAndElectronicsCategory(preview.title) || isTechAndElectronicsCategory(selected.title);
   const showPromoBanner = !isTechAndElectronics;
+  const sectionProductCount = selectedBranch?.productCount ?? selected.productCount;
 
   return (
-    <div className="flex h-full max-h-full min-h-0 w-full min-w-0 flex-1 flex-col divide-y divide-marco-border overflow-hidden rounded-[13px] bg-white ring-1 ring-black/15 shadow-2xl md:min-h-0 md:flex-row md:divide-y-0">
-      {/* Left rail: fixed width on md+; h-full + inner min-h-0 scroll region so category list always scrolls inside the panel (flex min-height:auto cannot steal height). */}
-      <div className="relative flex h-full min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden rounded-t-[13px] bg-marco-gray md:min-h-0 md:w-[400px] md:min-w-[400px] md:max-w-[400px] md:flex-none md:shrink-0 md:rounded-l-[13px] md:rounded-r-none md:rounded-t-none md:border-r-2 md:border-r-neutral-400">
+    <div className="flex h-full max-h-full min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden bg-white md:min-h-0 md:flex-row">
+      <div
+        className={`relative flex h-full min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden border-r border-black/[0.08] md:min-h-0 md:flex-none md:shrink-0 dark:border-white/10 ${HEADER_MEGA_MENU_RAIL_WIDTH_CLASS}`}
+      >
         <nav
-          className="flex h-full min-h-0 flex-1 flex-col overflow-hidden py-6 pl-4 pr-0 md:py-[29px] md:pl-[25px] md:pr-0"
+          className={`flex h-full min-h-0 flex-1 flex-col overflow-hidden pr-0 ${HEADER_MEGA_MENU_RAIL_PADDING_CLASS}`}
           aria-label={t('common.navigation.categories')}
         >
           <div className="flex min-h-0 flex-1 basis-0 flex-col overflow-y-auto overflow-x-hidden overscroll-y-contain [-webkit-overflow-scrolling:touch] [scrollbar-gutter:auto] touch-pan-y scroll-pb-header-mega-category-scroll-end pb-header-mega-category-scroll-end pr-0">
-          <div className="flex flex-col gap-[18px] pr-2 md:pr-2.5">
-          {categoriesWithExtra.map((category) => {
-            const isSelected = category.slug === selectedSlug;
-            const row = resolveCategoryNavPresentation(category.slug, category.title, lang);
-            const RowLucide = row.icon.kind === 'lucide' ? row.icon.Icon : null;
-            const categoryImage = toSafeImgAttributeSrc(category.media?.[0] ?? null);
+            <div className="flex flex-col gap-3 pr-1.5">
+              {categoriesWithExtra.map((category) => {
+                const isSelected = category.slug === selectedSlug;
+                const row = resolveCategoryNavPresentation(category.slug, category.title, lang);
+                const RowLucide = row.icon.kind === 'lucide' ? row.icon.Icon : null;
+                const categoryImage = toSafeImgAttributeSrc(category.media?.[0] ?? null);
 
-            return (
-              <button
-                key={category.id}
-                type="button"
-                onClick={() => setSelectedSlug(category.slug)}
-                className={`${headerCategoryNavFont.className} flex w-full min-w-0 shrink-0 items-center gap-3 rounded-[40px] px-2 py-0 text-left text-[13px] leading-[21px] tracking-[0.15px] transition-[opacity,background-color,color] duration-150 ${
-                  isSelected
-                    ? 'bg-marco-yellow font-bold !text-[#383838] dark:!text-[#383838]'
-                    : 'font-normal !text-[#383838] dark:!text-[#383838] hover:bg-white/35'
-                }`}
-              >
-                <span className="flex size-[48px] shrink-0 items-center justify-center p-1.5 !text-[#383838] dark:!text-[#383838]">
-                  {categoryImage ? (
-                    <Image
-                      src={toDomSafeImgSrcString(categoryImage)}
-                      alt=""
-                      width={MEGA_ROOT_ICON_INNER_PX}
-                      height={MEGA_ROOT_ICON_INNER_PX}
-                      className="h-[34px] w-[34px] shrink-0 object-contain"
-                      draggable={false}
-                      loading="lazy"
-                      unoptimized={shouldBypassNextImageOptimizer(categoryImage)}
+                return (
+                  <button
+                    key={category.id}
+                    type="button"
+                    onClick={() => setSelectedSlug(category.slug)}
+                    className={`${MEGA_ROOT_ROW_CLASS} ${
+                      isSelected
+                        ? 'bg-marco-yellow font-bold !text-[#383838] dark:!text-[#383838]'
+                        : 'font-normal !text-[#383838] hover:bg-marco-gray/70 dark:!text-[#383838]'
+                    }`}
+                  >
+                    <span className="flex size-[40px] shrink-0 items-center justify-center p-1 !text-[#383838] dark:!text-[#383838]">
+                      {categoryImage ? (
+                        <Image
+                          src={toDomSafeImgSrcString(categoryImage)}
+                          alt=""
+                          width={MEGA_ROOT_ICON_INNER_PX}
+                          height={MEGA_ROOT_ICON_INNER_PX}
+                          className="h-[28px] w-[28px] shrink-0 object-contain"
+                          draggable={false}
+                          loading="lazy"
+                          unoptimized={shouldBypassNextImageOptimizer(categoryImage)}
+                        />
+                      ) : row.icon.kind === 'figma' ? (
+                        <Image
+                          src={row.icon.src}
+                          alt=""
+                          width={MEGA_ROOT_ICON_INNER_PX}
+                          height={MEGA_ROOT_ICON_INNER_PX}
+                          className="h-[28px] w-[28px] shrink-0 object-contain brightness-0"
+                          draggable={false}
+                          loading="lazy"
+                          unoptimized={shouldBypassNextImageOptimizer(row.icon.src)}
+                        />
+                      ) : (
+                        RowLucide && (
+                          <RowLucide
+                            size={MEGA_ROOT_LUCIDE_PX}
+                            className="shrink-0 !text-[#383838] dark:!text-[#383838]"
+                            strokeWidth={1.35}
+                            aria-hidden
+                          />
+                        )
+                      )}
+                    </span>
+                    <span className="min-w-0 flex-1 hyphens-auto py-2 pr-1 text-left [overflow-wrap:anywhere] break-words whitespace-normal">
+                      {row.title}
+                    </span>
+                    <ChevronRight
+                      className="size-[18px] shrink-0 self-center text-[#383838]/55 dark:text-[#383838]/55 md:size-5"
+                      strokeWidth={2}
+                      aria-hidden
                     />
-                  ) : row.icon.kind === 'figma' ? (
-                    <Image
-                      src={row.icon.src}
-                      alt=""
-                      width={MEGA_ROOT_ICON_INNER_PX}
-                      height={MEGA_ROOT_ICON_INNER_PX}
-                      className="h-[34px] w-[34px] shrink-0 object-contain brightness-0"
-                      draggable={false}
-                      loading="lazy"
-                      unoptimized={shouldBypassNextImageOptimizer(row.icon.src)}
-                    />
-                  ) : (
-                    RowLucide && (
-                      <RowLucide
-                        size={MEGA_ROOT_LUCIDE_PX}
-                        className="shrink-0 !text-[#383838] dark:!text-[#383838]"
-                        strokeWidth={1.35}
-                        aria-hidden
-                      />
-                    )
-                  )}
-                </span>
-                <span className="min-w-0 flex-1 hyphens-auto py-2 pr-1 text-left [overflow-wrap:anywhere] break-words whitespace-normal">
-                  {row.title}
-                </span>
-                <ChevronRight
-                  className="size-[18px] shrink-0 self-center text-[#383838]/55 dark:text-[#383838]/55 md:size-5"
-                  strokeWidth={2}
-                  aria-hidden
-                />
-              </button>
-            );
-          })}
-          </div>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </nav>
       </div>
 
-      {/* Right column: promo (fixed height) + scrollable subcategory list inside flex min-h-0. */}
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col self-stretch overflow-hidden rounded-b-[13px] bg-white px-5 pb-5 pt-6 md:rounded-b-none md:rounded-r-[13px] md:border-r-2 md:border-r-neutral-400 md:pl-6 md:pr-5 md:pt-6">
+      <div
+        ref={rightScrollRef}
+        className={`flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto overflow-x-hidden overscroll-y-contain [-webkit-overflow-scrolling:touch] touch-pan-y bg-white pb-6 pt-4 md:pb-8 md:pt-5 ${HEADER_MEGA_MENU_CONTENT_PADDING_CLASS}`}
+      >
         {showPromoBanner ? (
-          <div className="shrink-0">
-            <CategoryDropdownPromoBanner
-              badge={preview.promo.badge}
-              headline={preview.promo.headline}
-              subline={preview.promo.subline}
-              href={`/products?category=${selected.slug}`}
-              onNavigate={onClose}
-              ctaLabel={t('common.buttons.shopNow')}
-            />
-          </div>
-        ) : null}
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-          <CategoryMegaSubcategoryPills
-            sectionHeadingId={`mega-menu-subcats-${selected.id}`}
-            sectionTitle={preview.title.toUpperCase()}
-            groups={subcategoryGroups}
-            lang={lang}
-            productsWord={t('common.navigation.categoriesMegaMenu.productsWord')}
+          <CategoryDropdownPromoBanner
+            badge={preview.promo.badge}
+            headline={preview.promo.headline}
+            subline={preview.promo.subline}
+            href={`/products?category=${selected.slug}`}
             onNavigate={onClose}
+            ctaLabel={t('common.buttons.shopNow')}
           />
-        </div>
+        ) : null}
+        <CategoryMegaSubcategoryPills
+          sectionHeadingId={`mega-menu-subcats-${selected.id}`}
+          sectionTitle={preview.title.toUpperCase()}
+          sectionProductCount={sectionProductCount}
+          groups={subcategoryGroups}
+          lang={lang}
+          onNavigate={onClose}
+          loading={branchQuery.isLoading && !selectedBranch}
+        />
       </div>
     </div>
   );

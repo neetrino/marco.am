@@ -1,5 +1,8 @@
 import type { ShopGridProduct } from '@/app/products/shop-grid-product';
-import type { ProductPdpNavigationSeed } from '@/lib/product-pdp/pdp-navigation-seed';
+import {
+  resolveNavigationSeedImages,
+  type ProductPdpNavigationSeed,
+} from '@/lib/product-pdp/pdp-navigation-seed';
 
 function deriveDiscountBadge(
   product: ShopGridProduct,
@@ -22,11 +25,14 @@ function deriveDiscountBadge(
 export function shopGridProductToPdpNavigationSeed(
   product: ShopGridProduct,
 ): ProductPdpNavigationSeed {
+  const images = resolveNavigationSeedImages(product.image, product.images);
+
   return {
     id: product.id,
     slug: product.slug,
     title: product.title,
     image: product.image,
+    images,
     labels: product.labels,
     inStock: product.inStock,
     brand: product.brand

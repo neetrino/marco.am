@@ -21,6 +21,37 @@ export const HEADER_CATEGORIES_OVERLAY_Z_INDEX = 80;
 export const HEADER_CATEGORIES_BRIDGE_Z_INDEX = 85;
 export const HEADER_CATEGORIES_PANEL_Z_INDEX = 90;
 
+/** Categories drawer — 90% viewport width; right gap keeps overlay visible. */
+export const HEADER_CATEGORIES_PANEL_WIDTH_CLASS = 'w-[90%] max-w-[90vw]';
+
+/** Outer shell radius on the drawer’s open (right) edge. */
+export const HEADER_CATEGORIES_PANEL_RADIUS_CLASS = 'rounded-r-[32px]';
+
+/** Close control — sits in the 10% overlay gap, outside the sheet edge. */
+export const HEADER_CATEGORIES_CLOSE_BUTTON_CLASS =
+  'absolute -right-14 top-5 z-[95] inline-flex h-10 w-10 items-center justify-center rounded-full bg-marco-yellow text-marco-black shadow-lg transition-[filter] duration-200 hover:brightness-95 active:brightness-90';
+
+/** Mega-menu left rail — compact width on `md+` (content column uses remaining sheet space). */
+export const HEADER_MEGA_MENU_RAIL_WIDTH_CLASS = 'md:w-[300px] md:min-w-[300px] md:max-w-[300px]';
+
+/**
+ * Subcategory grid — 4 columns only on large desktops ({@link HEADER_MEGA_MENU_GRID_FOUR_COL_MIN_WIDTH_PX}).
+ * 13″ laptops (~1280–1440px logical) stay at 3 columns (sheet is 90% width).
+ */
+export const HEADER_MEGA_MENU_GRID_FOUR_COL_MIN_WIDTH_PX = 1680;
+
+/** Tailwind JIT — keep `min-[1680px]` literal in sync with {@link HEADER_MEGA_MENU_GRID_FOUR_COL_MIN_WIDTH_PX}. */
+export const HEADER_MEGA_MENU_SUBCATEGORY_GRID_CLASS =
+  'grid w-full min-w-0 grid-cols-1 gap-x-8 gap-y-8 sm:grid-cols-2 md:grid-cols-3 min-[1680px]:grid-cols-4';
+
+/** Collapsed descendant list length before “see all”. */
+export const HEADER_MEGA_MENU_DESCENDANT_PREVIEW_COUNT = 10;
+
+/** Horizontal inset for mega-menu rail + right column (keep in sync). */
+export const HEADER_MEGA_MENU_RAIL_PADDING_CLASS = 'py-5 pl-5 md:py-6 md:pl-6';
+
+export const HEADER_MEGA_MENU_CONTENT_PADDING_CLASS = 'px-5 md:px-6';
+
 /**
  * Row-1 phone/address dropdowns — above row-2 search (`z-[480]`), below mobile search overlay (`z-[700]`).
  */

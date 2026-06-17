@@ -6,6 +6,8 @@ import {
   type CategoryGraph,
 } from "@/lib/services/product-category-links.service";
 import { buildBaseCategorySlug, collectDescendantIds } from "@/lib/services/admin/admin-categories.helpers";
+import { buildDistinctSubtreeProductCountMap } from "@/lib/services/category-product-counts.service";
+import { assessCategoryHierarchyUpdateRisk } from "@/lib/services/admin/admin-categories-hierarchy-guard";
 import {
   buildCategoryTranslationsInput,
   deriveExplicitCategoryIds,
@@ -28,6 +30,7 @@ import {
   prepareCategoryUpdateData,
   upsertCategoryTranslations,
   type LoadedCategoryForUpdate,
+  type PreparedCategoryUpdate,
 } from "@/lib/services/admin/admin-categories-update.helpers";
 import type { PrismaTransactionClient } from "@/lib/types/prisma";
 import { logger } from "@/lib/utils/logger";
@@ -443,36 +446,18 @@ class AdminCategoriesService {
         position: "asc",
       },
     });
-    const categoryIds = categories.map((category) => category.id);
-    const directProductCountByCategoryId = new Map<string, number>(
-      categoryIds.map((categoryId) => [categoryId, 0]),
+    const categoryRows = categories.map((category) => ({
+      id: category.id,
+      parentId: category.parentId,
+    }));
+    const products = await db.product.findMany({
+      where: { deletedAt: null },
+      select: { primaryCategoryId: true, categoryIds: true },
+    });
+    const subtreeProductCountByCategoryId = buildDistinctSubtreeProductCountMap(
+      categoryRows,
+      products,
     );
-    if (categoryIds.length > 0) {
-      const relationCounts = await db.$queryRaw<Array<{ categoryId: string; count: bigint }>>`
-        SELECT category_id as "categoryId", COUNT(DISTINCT product_id)::bigint as "count"
-        FROM (
-          SELECT p."id" as product_id, p."primaryCategoryId" as category_id
-          FROM "products" p
-          WHERE p."deletedAt" IS NULL
-            AND p."primaryCategoryId" IS NOT NULL
-            AND p."primaryCategoryId" = ANY(${categoryIds}::text[])
-          UNION ALL
-          SELECT p."id" as product_id, pc."A" as category_id
-          FROM "_ProductCategories" pc
-          INNER JOIN "products" p ON p."id" = pc."B"
-          WHERE p."deletedAt" IS NULL
-            AND pc."A" = ANY(${categoryIds}::text[])
-        ) category_product
-        GROUP BY category_id
-      `;
-
-      for (const row of relationCounts) {
-        directProductCountByCategoryId.set(
-          row.categoryId,
-          Number(row.count),
-        );
-      }
-    }
 
     return {
       data: categories.map((category) =>
@@ -488,7 +473,7 @@ class AdminCategoriesService {
           locale,
           this.defaultLocale,
           this.supportedLocales,
-          directProductCountByCategoryId,
+          subtreeProductCountByCategoryId,
         ),
       ),
     };
@@ -690,6 +675,7 @@ class AdminCategoriesService {
       data,
       prepared.normalizedSubcategoryIds,
     );
+    await this.assertHierarchyChangeConfirmed(categoryId, category, data, prepared);
 
     await db.$transaction(async (tx: PrismaTransactionClient) => {
       const buildUniqueCategorySlugInTransaction = async (
@@ -845,6 +831,44 @@ class AdminCategoriesService {
       currentId = category.parentId;
     }
     return false;
+  }
+
+  private async assertHierarchyChangeConfirmed(
+    categoryId: string,
+    category: LoadedCategoryForUpdate,
+    data: CategoryUpdateInput,
+    prepared: PreparedCategoryUpdate,
+  ): Promise<void> {
+    if (!prepared.parentChanged && !prepared.subcategoriesChanged) {
+      return;
+    }
+
+    const allCategories = await db.category.findMany({
+      where: { deletedAt: null },
+      select: { id: true, parentId: true },
+    });
+    const currentChildIds = category.children.map((child) => child.id);
+    const nextParentId =
+      data.parentId !== undefined ? (data.parentId || null) : category.parentId;
+    const nextSubcategoryIds = prepared.normalizedSubcategoryIds ?? currentChildIds;
+    const assessment = assessCategoryHierarchyUpdateRisk({
+      categoryId,
+      currentParentId: category.parentId,
+      nextParentId,
+      initialSubcategoryIds: currentChildIds,
+      nextSubcategoryIds,
+      parentChanged: prepared.parentChanged,
+      subcategoriesChanged: prepared.subcategoriesChanged,
+      allCategories,
+    });
+
+    if (assessment.requiresConfirmation && !data.confirmHierarchyChanges) {
+      throw this.buildProblemError(
+        422,
+        "Hierarchy change requires confirmation",
+        "This structure change can move categories to the root or re-parent them. Confirm in the admin UI and resubmit with confirmHierarchyChanges.",
+      );
+    }
   }
 
   private async loadSubtreeCategoryIds(rootCategoryId: string): Promise<string[]> {

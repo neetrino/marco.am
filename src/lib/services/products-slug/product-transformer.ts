@@ -3,7 +3,6 @@ import { pickVariantForListingPrice } from "@/lib/product-variant-listing-pick";
 import {
   processImageUrl,
   smartSplitUrls,
-  normalizeUrlForComparison,
 } from "../../utils/image-utils";
 import { logger } from "../../utils/logger";
 import { resolveProductPrice } from "@/lib/pricing/product-price";
@@ -18,6 +17,7 @@ import {
   parseProductDescriptionJson,
   type ProductDescriptionEntry,
 } from "@/lib/products/product-description";
+import { buildProductGalleryUrls } from "@/lib/products/product-gallery-urls";
 import { getListingDiscountSettings } from "../listing-discount-settings";
 
 type ProductTranslationShape = {
@@ -85,58 +85,6 @@ type ProductDiscountBadge = {
 
 type StockStatus = "in_stock" | "out_of_stock";
 
-type RawProductMediaItem = {
-  url?: string;
-  src?: string;
-  value?: string;
-  alt?: string;
-  title?: string;
-  mimeType?: string;
-  mime?: string;
-  width?: number | string;
-  height?: number | string;
-  type?: string;
-  isPrimary?: boolean;
-  primary?: boolean;
-  position?: number | string;
-  sortOrder?: number | string;
-  metadata?: unknown;
-};
-
-function parseNumericMetadata(value: number | string | undefined): number | null {
-  if (typeof value === "number" && Number.isFinite(value)) {
-    return value;
-  }
-
-  if (typeof value === "string") {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : null;
-  }
-
-  return null;
-}
-
-function parseMediaObjectMetadata(raw: RawProductMediaItem) {
-  const metadata =
-    raw.metadata && typeof raw.metadata === "object" && !Array.isArray(raw.metadata)
-      ? (raw.metadata as Record<string, unknown>)
-      : null;
-
-  const positionCandidate = parseNumericMetadata(raw.position ?? raw.sortOrder);
-  const sortOrder = positionCandidate ?? Number.MAX_SAFE_INTEGER;
-
-  return {
-    alt: typeof raw.alt === "string" ? raw.alt : null,
-    title: typeof raw.title === "string" ? raw.title : null,
-    mimeType: typeof raw.mimeType === "string" ? raw.mimeType : typeof raw.mime === "string" ? raw.mime : null,
-    width: parseNumericMetadata(raw.width),
-    height: parseNumericMetadata(raw.height),
-    isPrimary: raw.isPrimary === true || raw.primary === true,
-    sortOrder,
-    metadata,
-  };
-}
-
 /**
  * Get discount settings from database
  */
@@ -176,98 +124,6 @@ function calculateActualDiscount(
   return 0;
 }
 
-function collectVariantImageSet(variants: ProductVariantWithOptions[]): Set<string> {
-  const variantImageSet = new Set<string>();
-
-  for (const variant of variants) {
-    if (!variant.imageUrl) {
-      continue;
-    }
-
-    const urls = smartSplitUrls(variant.imageUrl);
-    for (const rawUrl of urls) {
-      const processedUrl = processImageUrl(rawUrl);
-      if (processedUrl) {
-        variantImageSet.add(normalizeUrlForComparison(processedUrl));
-      }
-    }
-  }
-
-  return variantImageSet;
-}
-
-function toGalleryItem(
-  mediaItem: unknown,
-  fallbackAlt: string | null,
-  variantImageSet: Set<string>
-): (ProductGalleryImage & { sortOrder: number }) | null {
-  let rawItem: RawProductMediaItem = {};
-  let sourceUrl: string | null = null;
-
-  if (typeof mediaItem === "string") {
-    sourceUrl = mediaItem;
-  } else if (mediaItem && typeof mediaItem === "object") {
-    rawItem = mediaItem as RawProductMediaItem;
-    sourceUrl = rawItem.url ?? rawItem.src ?? rawItem.value ?? null;
-  }
-
-  const processedUrl = processImageUrl(sourceUrl);
-  if (!processedUrl) {
-    return null;
-  }
-
-  const normalizedUrl = normalizeUrlForComparison(processedUrl);
-  if (variantImageSet.has(normalizedUrl)) {
-    return null;
-  }
-
-  const parsedMetadata = parseMediaObjectMetadata(rawItem);
-
-  return {
-    url: processedUrl,
-    type: "image",
-    alt: parsedMetadata.alt ?? fallbackAlt,
-    title: parsedMetadata.title,
-    mimeType: parsedMetadata.mimeType,
-    width: parsedMetadata.width,
-    height: parsedMetadata.height,
-    isPrimary: parsedMetadata.isPrimary,
-    position: 0,
-    source: "product_media",
-    metadata: parsedMetadata.metadata,
-    sortOrder: parsedMetadata.sortOrder,
-  };
-}
-
-function deduplicateGallery(
-  galleryWithOrder: Array<ProductGalleryImage & { sortOrder: number }>
-): ProductGalleryImage[] {
-  const deduplicatedGallery: ProductGalleryImage[] = [];
-  const seenUrls = new Set<string>();
-
-  for (const galleryItem of galleryWithOrder) {
-    const normalizedUrl = normalizeUrlForComparison(galleryItem.url);
-    if (seenUrls.has(normalizedUrl)) {
-      continue;
-    }
-
-    seenUrls.add(normalizedUrl);
-    deduplicatedGallery.push({
-      ...galleryItem,
-      position: deduplicatedGallery.length,
-    });
-  }
-
-  if (deduplicatedGallery.length > 0 && !deduplicatedGallery.some((image) => image.isPrimary)) {
-    deduplicatedGallery[0] = {
-      ...deduplicatedGallery[0],
-      isPrimary: true,
-    };
-  }
-
-  return deduplicatedGallery;
-}
-
 function transformGallery(
   product: ProductWithFullRelations,
   fallbackAlt: string | null
@@ -278,18 +134,21 @@ function transformGallery(
   }
 
   const variants = Array.isArray(product.variants) ? product.variants : [];
-  const variantImageSet = collectVariantImageSet(variants);
+  const urls = buildProductGalleryUrls(product.media, variants);
 
-  const galleryWithOrder: Array<ProductGalleryImage & { sortOrder: number }> = [];
-  for (const mediaItem of product.media) {
-    const galleryItem = toGalleryItem(mediaItem, fallbackAlt, variantImageSet);
-    if (galleryItem) {
-      galleryWithOrder.push(galleryItem);
-    }
-  }
-
-  galleryWithOrder.sort((left, right) => left.sortOrder - right.sortOrder);
-  return deduplicateGallery(galleryWithOrder);
+  return urls.map((url, position) => ({
+    url,
+    type: "image",
+    alt: fallbackAlt,
+    title: null,
+    mimeType: null,
+    width: null,
+    height: null,
+    isPrimary: position === 0,
+    position,
+    source: "product_media",
+    metadata: null,
+  }));
 }
 
 /**

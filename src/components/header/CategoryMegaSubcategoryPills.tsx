@@ -4,12 +4,18 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { useState } from 'react';
+import { useTranslation } from '../../lib/i18n-client';
 import type { LanguageCode } from '../../lib/language';
 import type { Category } from './category-nav-types';
 import type { MegaMenuSubcategoryGroup } from './categoryNavList';
 import type { CategoryNavIcon } from './categoryNavPresentation';
 import { resolveCategoryNavPresentation } from './categoryNavPresentation';
 import { headerCategoryNavFont } from './headerCategoryNavTypography';
+import {
+  HEADER_MEGA_MENU_DESCENDANT_PREVIEW_COUNT,
+  HEADER_MEGA_MENU_SUBCATEGORY_GRID_CLASS,
+} from './header.constants';
 import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '../../lib/utils/image-utils';
 import { shouldBypassNextImageOptimizer } from '@/lib/utils/should-bypass-next-image-optimizer';
 
@@ -18,47 +24,93 @@ const SUBPILL_FIGMA_IMG_PX = 26;
 /** Lucide `size` prop — matches Figma asset scale inside `size-[34px]` wrap. */
 const SUBPILL_LUCIDE_STROKE_PX = 26;
 
-function SubcategoryPillRow({
-  child,
+const MEGA_GROUP_GRID_CLASS = HEADER_MEGA_MENU_SUBCATEGORY_GRID_CLASS;
+
+const MEGA_PARENT_LINK_CLASS =
+  `${headerCategoryNavFont.className} group mb-3 flex w-full max-w-full items-center gap-2 rounded-xl px-1 py-1.5 !text-[#383838] transition-[background-color,color] duration-150 hover:bg-marco-gray/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/15 dark:!text-[#383838]`;
+
+const MEGA_DESCENDANT_LINK_CLASS =
+  `${headerCategoryNavFont.className} block rounded-lg px-2 py-1.5 text-sm leading-5 !text-[#383838]/85 transition-[background-color,color] duration-150 hover:bg-marco-gray/60 hover:!text-[#383838] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/10 dark:!text-[#383838]/85 dark:hover:!text-[#383838]`;
+
+const MEGA_DESCENDANT_SEE_ALL_CLASS =
+  `${headerCategoryNavFont.className} mt-0.5 block w-full rounded-lg px-2 py-1.5 text-left text-sm font-semibold leading-5 !text-[#383838] underline decoration-[#383838]/30 underline-offset-2 transition-[background-color,color,decoration-color] duration-150 hover:bg-marco-gray/60 hover:decoration-[#383838] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/10 dark:!text-[#383838]`;
+
+function SubcategoryDescendantList({
+  descendants,
   lang,
-  productsWord,
   onNavigate,
 }: {
-  child: Category;
+  descendants: Category[];
   lang: LanguageCode;
-  productsWord: string;
   onNavigate: () => void;
 }) {
-  const row = resolveCategoryNavPresentation(child.slug, child.title, lang);
-  const imageSrc = toSafeImgAttributeSrc(child.media?.[0] ?? null);
-  const count = child.productCount ?? 0;
-  const countLine = `(${count}) ${productsWord}`;
+  const { t } = useTranslation();
+  const [expanded, setExpanded] = useState(false);
+  const hasMore = descendants.length > HEADER_MEGA_MENU_DESCENDANT_PREVIEW_COUNT;
+  const visibleDescendants = expanded
+    ? descendants
+    : descendants.slice(0, HEADER_MEGA_MENU_DESCENDANT_PREVIEW_COUNT);
 
   return (
-    <Link
-      href={`/products?category=${child.slug}`}
-      onClick={onNavigate}
-      className={`${headerCategoryNavFont.className} flex min-h-[44px] w-full min-w-0 items-center justify-between gap-2 rounded-[22px] border border-marco-border bg-white py-1 pl-2 pr-1.5 !text-[#383838] transition-[filter] hover:brightness-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/15 dark:!text-[#383838] md:gap-3 md:pl-2.5 md:pr-2`}
-    >
-      <span className="flex min-w-0 flex-1 items-center gap-2 md:gap-3">
-        <SubcategoryIcon icon={row.icon} imageSrc={imageSrc} />
-        <span className="min-w-0 truncate text-left text-sm font-bold leading-[18px] tracking-[0.14px] !text-[#383838] dark:!text-[#383838]">
-          {row.title}
-        </span>
+    <ul className="flex flex-col gap-0.5 pl-1">
+      {visibleDescendants.map((descendant: Category) => {
+        const row = resolveCategoryNavPresentation(descendant.slug, descendant.title, lang);
+        return (
+          <li key={descendant.id}>
+            <Link
+              href={`/products?category=${descendant.slug}`}
+              onClick={onNavigate}
+              className={MEGA_DESCENDANT_LINK_CLASS}
+            >
+              {row.title}
+            </Link>
+          </li>
+        );
+      })}
+      {hasMore && !expanded ? (
+        <li>
+          <button
+            type="button"
+            onClick={() => setExpanded(true)}
+            className={MEGA_DESCENDANT_SEE_ALL_CLASS}
+          >
+            {t('common.navigation.categoriesMegaMenu.seeAllSubcategories')}
+          </button>
+        </li>
+      ) : null}
+    </ul>
+  );
+}
+
+function SubcategoryGroupParent({
+  parent,
+  lang,
+  onNavigate,
+}: {
+  parent: Category;
+  lang: LanguageCode;
+  onNavigate: () => void;
+}) {
+  const row = resolveCategoryNavPresentation(parent.slug, parent.title, lang);
+  const imageSrc = toSafeImgAttributeSrc(parent.media?.[0] ?? null);
+  const count = parent.productCount ?? 0;
+
+  return (
+    <Link href={`/products?category=${parent.slug}`} onClick={onNavigate} className={MEGA_PARENT_LINK_CLASS}>
+      <SubcategoryIcon icon={row.icon} imageSrc={imageSrc} />
+      <span className="min-w-0 text-left text-sm font-bold leading-[18px] tracking-[0.14px] !text-[#383838] dark:!text-[#383838]">
+        {row.title}
       </span>
-      <span className="flex shrink-0 items-center gap-2 md:gap-3">
-        <span className="whitespace-nowrap text-xs font-normal leading-[18px] tracking-[0.12px] !text-[#383838] dark:!text-[#383838] md:text-sm">
-          {countLine}
+      {count > 0 ? (
+        <span className="shrink-0 whitespace-nowrap text-sm font-normal tabular-nums !text-[#383838]/60 dark:!text-[#383838]/60">
+          ({count})
         </span>
-        <span
-          className="flex size-8 shrink-0 items-center justify-center rounded-full !bg-[#383838] text-white dark:!bg-[#383838]"
-          aria-hidden
-        >
-          <ArrowUpRight
-            className="size-3 shrink-0 !text-white dark:!text-white"
-            strokeWidth={2.25}
-          />
-        </span>
+      ) : null}
+      <span
+        className="ml-0.5 flex size-7 shrink-0 items-center justify-center rounded-full !bg-[#383838] text-white opacity-80 transition-opacity group-hover:opacity-100 dark:!bg-[#383838]"
+        aria-hidden
+      >
+        <ArrowUpRight className="size-3 shrink-0 !text-white dark:!text-white" strokeWidth={2.25} />
       </span>
     </Link>
   );
@@ -110,71 +162,81 @@ function SubcategoryIcon({ icon, imageSrc }: { icon: CategoryNavIcon; imageSrc: 
   );
 }
 
-/** Figma 242:1949 — section title + underline + pill rows (icon, title, count, arrow). */
+/** Section title + compact multi-column subcategory groups (counts on parent rows only). */
 export function CategoryMegaSubcategoryPills({
   sectionHeadingId,
   sectionTitle,
+  sectionProductCount,
   groups,
   lang,
-  productsWord,
   onNavigate,
+  loading = false,
 }: {
-  /** Stable `id` for the section heading — used by `aria-labelledby` on the scrollable subcategory list. */
   sectionHeadingId: string;
   sectionTitle: string;
+  sectionProductCount?: number;
   groups: MegaMenuSubcategoryGroup[];
   lang: LanguageCode;
-  productsWord: string;
   onNavigate: () => void;
+  loading?: boolean;
 }) {
+  if (loading) {
+    return (
+      <div className="flex w-full min-w-0 flex-col gap-6 md:gap-8">
+        <div className="shrink-0 pt-1">
+          <div className="h-8 w-2/3 max-w-md animate-pulse rounded-lg bg-marco-gray/80" />
+          <div className="mt-3 h-[5px] w-[104px] animate-pulse rounded-full bg-marco-gray/70" />
+        </div>
+        <div className={MEGA_GROUP_GRID_CLASS}>
+          {Array.from({ length: 6 }).map((_, index) => (
+            <div key={index} className="space-y-3">
+              <div className="h-5 w-4/5 animate-pulse rounded-md bg-marco-gray/70" />
+              <div className="space-y-2 pl-2">
+                <div className="h-4 w-full animate-pulse rounded-md bg-marco-gray/50" />
+                <div className="h-4 w-5/6 animate-pulse rounded-md bg-marco-gray/50" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   if (groups.length === 0) {
     return null;
   }
 
   return (
-    <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-6 overflow-hidden md:gap-10">
-      <div className="shrink-0 px-2.5 pt-2.5">
-        <h2
-          id={sectionHeadingId}
-          className={`${headerCategoryNavFont.className} text-[20px] font-bold uppercase leading-tight tracking-[-0.02em] !text-[#383838] md:text-[26px] md:leading-[1.1] lg:text-[32px] lg:leading-[37px] dark:!text-[#383838]`}
-        >
-          {sectionTitle}
-        </h2>
+    <div className="flex w-full min-w-0 flex-col gap-6 md:gap-8">
+      <div className="w-full shrink-0 pt-1">
+        <div className="flex flex-wrap items-center gap-2.5 md:gap-3">
+          <h2
+            id={sectionHeadingId}
+            className={`${headerCategoryNavFont.className} text-[20px] font-bold uppercase leading-tight tracking-[-0.02em] !text-[#383838] md:text-[26px] md:leading-[1.1] lg:text-[32px] lg:leading-[37px] dark:!text-[#383838]`}
+          >
+            {sectionTitle}
+          </h2>
+          {sectionProductCount && sectionProductCount > 0 ? (
+            <span
+              className={`${headerCategoryNavFont.className} inline-flex shrink-0 items-center rounded-full bg-marco-yellow px-2.5 py-0.5 text-sm font-bold tabular-nums !text-[#383838] dark:!text-[#383838]`}
+            >
+              {sectionProductCount}
+            </span>
+          ) : null}
+        </div>
         <div className="mt-2 h-[5px] w-[104px] shrink-0 bg-marco-yellow" aria-hidden />
       </div>
 
-      <ul
-        aria-labelledby={sectionHeadingId}
-        className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overflow-x-hidden overscroll-y-contain [-webkit-overflow-scrolling:touch] pr-1 [scrollbar-gutter:auto] touch-pan-y md:gap-2.5"
-      >
+      <ul aria-labelledby={sectionHeadingId} className={MEGA_GROUP_GRID_CLASS}>
         {groups.map(({ parent, descendants }) => (
-          <li key={parent.id} className="shrink-0 rounded-[16px] border border-marco-border bg-white/80 px-2 py-2">
-            <SubcategoryPillRow
-              child={parent}
-              lang={lang}
-              productsWord={productsWord}
-              onNavigate={onNavigate}
-            />
+          <li key={parent.id} className="min-w-0 w-full">
+            <SubcategoryGroupParent parent={parent} lang={lang} onNavigate={onNavigate} />
             {descendants.length > 0 ? (
-              <div className="mt-2 grid grid-cols-1 gap-1.5 pl-3 md:grid-cols-2">
-                {descendants.map((descendant: Category) => {
-                  const row = resolveCategoryNavPresentation(descendant.slug, descendant.title, lang);
-                  const descendantCount = descendant.productCount ?? 0;
-                  return (
-                    <Link
-                      key={descendant.id}
-                      href={`/products?category=${descendant.slug}`}
-                      onClick={onNavigate}
-                      className={`${headerCategoryNavFont.className} inline-flex min-h-[34px] items-center justify-between gap-2 rounded-[12px] border border-marco-border/80 bg-white px-2 py-1 text-sm leading-5 !text-[#383838] transition-[filter] hover:brightness-[0.98] dark:!text-[#383838]`}
-                    >
-                      <span className="min-w-0 truncate">{row.title}</span>
-                      <span className="shrink-0 rounded-full bg-black/8 px-1.5 py-0.5 text-xs font-semibold">
-                        {descendantCount}
-                      </span>
-                    </Link>
-                  );
-                })}
-              </div>
+              <SubcategoryDescendantList
+                descendants={descendants}
+                lang={lang}
+                onNavigate={onNavigate}
+              />
             ) : null}
           </li>
         ))}

@@ -41,6 +41,20 @@ class ProductsService {
     return service.getFilters(...args);
   }
 
+  async getFiltersCoreFast(
+    ...args: Parameters<ProductsFiltersServiceModule["productsFiltersService"]["getFiltersCoreFast"]>
+  ) {
+    const service = await loadProductsFiltersService();
+    return service.getFiltersCoreFast(...args);
+  }
+
+  async getFiltersExtended(
+    ...args: Parameters<ProductsFiltersServiceModule["productsFiltersService"]["getFiltersExtended"]>
+  ) {
+    const service = await loadProductsFiltersService();
+    return service.getFiltersExtended(...args);
+  }
+
   async getPriceRange(
     ...args: Parameters<ProductsFiltersServiceModule["productsFiltersService"]["getPriceRange"]>
   ) {

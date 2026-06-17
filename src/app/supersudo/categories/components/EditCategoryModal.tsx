@@ -10,6 +10,7 @@ import { logger } from '../../../../lib/utils/logger';
 import { getStoredLanguage } from '../../../../lib/language';
 import { buildCategoryTree, getAncestorIds, getDescendantIds } from '../utils';
 import { getLocalizedCategoryTitle } from '../utils';
+import { assessCategoryHierarchyUpdateRisk } from '@/lib/services/admin/admin-categories-hierarchy-guard';
 import type { Category, CategoryFormData } from '../types';
 
 type CategoryLocale = 'hy' | 'en' | 'ru';
@@ -136,6 +137,41 @@ export function EditCategoryModal({
       return title.includes(query) || slug.includes(query);
     });
   }, [activeTitleLocaleTab, subcategoryCandidates, subcategorySearch]);
+  const initialSubcategoryIds = useMemo(
+    () =>
+      editingCategory
+        ? categories
+            .filter((category) => category.parentId === editingCategory.id)
+            .map((category) => category.id)
+            .sort()
+        : [],
+    [categories, editingCategory],
+  );
+  const hierarchyRisk = useMemo(() => {
+    if (!editingCategory) {
+      return null;
+    }
+    const nextParentId = formData.parentId || null;
+    const nextSubcategoryIds = [...new Set(formData.subcategoryIds)].sort();
+    const parentChanged = nextParentId !== (editingCategory.parentId ?? null);
+    const subcategoriesChanged =
+      nextSubcategoryIds.length !== initialSubcategoryIds.length ||
+      nextSubcategoryIds.some((id, index) => id !== initialSubcategoryIds[index]);
+
+    return assessCategoryHierarchyUpdateRisk({
+      categoryId: editingCategory.id,
+      currentParentId: editingCategory.parentId ?? null,
+      nextParentId,
+      initialSubcategoryIds,
+      nextSubcategoryIds,
+      parentChanged,
+      subcategoriesChanged,
+      allCategories: categories.map((category) => ({
+        id: category.id,
+        parentId: category.parentId,
+      })),
+    });
+  }, [categories, editingCategory, formData.parentId, formData.subcategoryIds, initialSubcategoryIds]);
   const titleLocaleTabs: Array<{ code: CategoryLocale; label: string }> = [
     { code: 'hy', label: 'HY' },
     { code: 'en', label: 'EN' },
@@ -183,6 +219,11 @@ export function EditCategoryModal({
             </Button>
           </div>
           <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-5 py-4 pr-1 sm:px-6">
+            {hierarchyRisk?.requiresConfirmation ? (
+              <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                {mt('admin.categories.hierarchyChangeHint')}
+              </p>
+            ) : null}
             <div>
               <div className="mb-2 flex items-center gap-2">
                 {titleLocaleTabs.map((tab) => (

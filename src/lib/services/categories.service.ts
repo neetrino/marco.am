@@ -4,6 +4,7 @@ import {
   filterHeaderNavCategoryTree,
 } from "@/lib/constants/excluded-shop-category-slugs";
 import { getCachedJson } from "@/lib/services/read-through-json-cache";
+import { buildDistinctSubtreeProductCountMap } from "@/lib/services/category-product-counts.service";
 import { resolveCategoryTranslation } from "@/lib/i18n/category-translation";
 
 /** Categories change rarely; longer TTL improves Redis hit rate (invalidated on admin category writes). */
@@ -84,73 +85,23 @@ class CategoriesService {
 
     const allIds = Array.from(categoryMap.keys()) as string[];
     if (allIds.length > 0) {
-      const childrenByParent = new Map<string, string[]>();
-      for (const category of categories) {
-        if (!category.parentId) {
-          continue;
-        }
-        const siblings = childrenByParent.get(category.parentId) ?? [];
-        siblings.push(category.id);
-        childrenByParent.set(category.parentId, siblings);
-      }
-
-      const subtreeByCategoryId = new Map<string, Set<string>>();
-      const collectSubtreeIds = (categoryId: string): Set<string> => {
-        const cached = subtreeByCategoryId.get(categoryId);
-        if (cached) {
-          return cached;
-        }
-
-        const subtree = new Set<string>([categoryId]);
-        const stack = [categoryId];
-        while (stack.length > 0) {
-          const current = stack.pop()!;
-          for (const childId of childrenByParent.get(current) ?? []) {
-            if (!subtree.has(childId)) {
-              subtree.add(childId);
-              stack.push(childId);
-            }
-          }
-        }
-
-        subtreeByCategoryId.set(categoryId, subtree);
-        return subtree;
-      };
-
-      const relationCounts = await db.$queryRaw<Array<{ categoryId: string; count: bigint }>>`
-        SELECT category_id as "categoryId", COUNT(DISTINCT product_id)::bigint as "count"
-        FROM (
-          SELECT p."id" as product_id, p."primaryCategoryId" as category_id
-          FROM "products" p
-          WHERE p."published" = true
-            AND p."deletedAt" IS NULL
-            AND p."primaryCategoryId" IS NOT NULL
-            AND p."primaryCategoryId" = ANY(${allIds}::text[])
-          UNION ALL
-          SELECT p."id" as product_id, pc."A" as category_id
-          FROM "_ProductCategories" pc
-          INNER JOIN "products" p ON p."id" = pc."B"
-          WHERE p."published" = true
-            AND p."deletedAt" IS NULL
-            AND pc."A" = ANY(${allIds}::text[])
-        ) category_product
-        GROUP BY category_id
-      `;
-
-      const directCounts = new Map<string, number>(allIds.map((id) => [id, 0]));
-      for (const row of relationCounts) {
-        directCounts.set(row.categoryId, Number(row.count));
-      }
+      const categoryRows = categories.map((category) => ({
+        id: category.id,
+        parentId: category.parentId,
+      }));
+      const publishedProducts = await db.product.findMany({
+        where: { published: true, deletedAt: null },
+        select: { primaryCategoryId: true, categoryIds: true },
+      });
+      const productCountById = buildDistinctSubtreeProductCountMap(
+        categoryRows,
+        publishedProducts,
+      );
 
       for (const id of allIds) {
-        const subtree = collectSubtreeIds(id);
-        let count = 0;
-        subtree.forEach((subtreeId) => {
-          count += directCounts.get(subtreeId) ?? 0;
-        });
         const node = categoryMap.get(id) as { productCount: number } | undefined;
         if (node) {
-          node.productCount = count;
+          node.productCount = productCountById.get(id) ?? 0;
         }
       }
     }

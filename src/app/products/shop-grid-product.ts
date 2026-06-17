@@ -8,6 +8,7 @@ export type ShopGridProduct = {
   price: number;
   compareAtPrice: number | null;
   image: string | null;
+  images?: string[];
   inStock: boolean;
   brand: ProductListingBrand | null;
   defaultVariantId: string | null;
@@ -26,6 +27,7 @@ export function normalizeShopGridProduct(p: unknown): ShopGridProduct {
     compareAtPrice?: number | null;
     originalPrice?: number | null;
     image?: string | null;
+    images?: string[];
     inStock?: boolean;
     brand?: ProductListingBrand | null;
     defaultVariantId?: string | null;
@@ -41,6 +43,9 @@ export function normalizeShopGridProduct(p: unknown): ShopGridProduct {
     price: row.price,
     compareAtPrice: row.compareAtPrice ?? row.originalPrice ?? null,
     image: row.image ?? null,
+    images: Array.isArray(row.images)
+      ? row.images.filter((item): item is string => typeof item === 'string' && item.length > 0)
+      : undefined,
     inStock: row.inStock ?? true,
     brand: row.brand ?? null,
     defaultVariantId: row.defaultVariantId ?? null,

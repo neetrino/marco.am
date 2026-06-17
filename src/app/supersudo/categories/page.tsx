@@ -15,6 +15,7 @@ import { EditCategoryModal } from './components/EditCategoryModal';
 import { ConvertCategoryTypeModal } from './components/ConvertCategoryTypeModal';
 import type { Category } from './types';
 import { getDescendantIds, getLocalizedCategoryTitle, type AdminCategoryView } from './utils';
+import { requestHierarchyChangeConfirmation } from './utils/hierarchyConfirmMessage';
 import { showToast } from '../../../components/Toast';
 import { notifyShopCategoryTreeUpdated } from '../../../lib/shop-category-tree-sync';
 import { getStoredLanguage } from '../../../lib/language';
@@ -275,7 +276,11 @@ export default function CategoriesPage() {
     const subcategorySelectionChanged =
       normalizedSubcategoryIds.length !== currentSubcategoryIds.length ||
       normalizedSubcategoryIds.some((id, index) => id !== currentSubcategoryIds[index]);
-    const payload: { parentId: string | null; subcategoryIds?: string[] } = {
+    const payload: {
+      parentId: string | null;
+      subcategoryIds?: string[];
+      confirmHierarchyChanges?: boolean;
+    } = {
       parentId: nextParentId,
     };
     if (subcategorySelectionChanged) {
@@ -284,6 +289,32 @@ export default function CategoriesPage() {
     if (!isSubcategory && !payload.parentId) {
       showToast(t('admin.categories.parentRequired'), 'warning');
       return;
+    }
+
+    const parentChanged = isSubcategory
+      ? convertingCategory.parentId !== null
+      : (convertingCategory.parentId ?? null) !== nextParentId;
+    const hierarchyConfirmed = await requestHierarchyChangeConfirmation({
+      categoryId: convertingCategory.id,
+      currentParentId: convertingCategory.parentId ?? null,
+      nextParentId,
+      initialSubcategoryIds: currentSubcategoryIds,
+      nextSubcategoryIds: normalizedSubcategoryIds,
+      parentChanged,
+      subcategoriesChanged: subcategorySelectionChanged,
+      allCategories: categories.map((category) => ({
+        id: category.id,
+        parentId: category.parentId,
+      })),
+      categories,
+      t,
+      locale: activeLocale,
+    });
+    if (!hierarchyConfirmed) {
+      return;
+    }
+    if (parentChanged || subcategorySelectionChanged) {
+      payload.confirmHierarchyChanges = true;
     }
 
     let rollback: (() => void) | null = null;
@@ -510,7 +541,7 @@ export default function CategoriesPage() {
           resetForm();
         }}
         onFormDataChange={setFormData}
-        onSubmit={() => handleUpdateCategory(syncCategoriesCache, applyOptimisticCategories)}
+        onSubmit={() => handleUpdateCategory(syncCategoriesCache, categories, applyOptimisticCategories)}
       />
 
       <ConvertCategoryTypeModal

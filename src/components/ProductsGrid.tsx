@@ -21,6 +21,7 @@ interface Product {
   discountPercent?: number | null;
   isSpecialPrice?: boolean;
   image: string | null;
+  images?: string[];
   inStock: boolean;
   brand: ProductListingBrand | null;
   categories?: Array<{ id: string; slug: string; title: string }>;
@@ -42,7 +43,7 @@ function toSpecialOfferProduct(p: Product): SpecialOfferProduct {
     compareAtPrice: compareAt ?? undefined,
     originalPrice: compareAt ?? undefined,
     image: p.image,
-    images: p.image ? [p.image] : undefined,
+    images: p.images && p.images.length > 0 ? p.images : p.image ? [p.image] : undefined,
     inStock: p.inStock,
     brand: p.brand,
     categories: p.categories,

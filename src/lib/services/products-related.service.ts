@@ -67,6 +67,8 @@ type RelatedProductsResponse = {
   meta: {
     total: number;
     limit: number;
+    offset: number;
+    hasMore: boolean;
     rules: {
       category: number;
       brand: number;
@@ -74,6 +76,13 @@ type RelatedProductsResponse = {
     };
   };
 };
+
+function normalizeOffset(offset?: number): number {
+  if (!Number.isInteger(offset) || (offset ?? 0) < 0) {
+    return 0;
+  }
+  return offset ?? 0;
+}
 
 function normalizeLimit(limit?: number): number {
   if (!Number.isInteger(limit) || (limit ?? 0) <= 0) {
@@ -225,15 +234,22 @@ class ProductsRelatedService {
     };
   }
 
-  async findBySlug(slug: string, lang: string, requestedLimit?: number): Promise<RelatedProductsResponse> {
+  async findBySlug(
+    slug: string,
+    lang: string,
+    requestedLimit?: number,
+    requestedOffset?: number,
+  ): Promise<RelatedProductsResponse> {
     const limit = normalizeLimit(requestedLimit);
+    const offset = normalizeOffset(requestedOffset);
+    const targetCount = offset + limit;
     const baseProduct = await this.loadRelatedAnchor(slug, lang);
     const selectedProducts: RelatedProductWithRule[] = [];
     const seenProductIds = new Set<string>([baseProduct.id]);
 
     const tryAppendProducts = (products: RelatedProduct[], rule: RelatedRule): void => {
       for (const candidate of products) {
-        if (selectedProducts.length >= limit) {
+        if (selectedProducts.length >= targetCount) {
           return;
         }
         if (!candidate.id || seenProductIds.has(candidate.id)) {
@@ -250,7 +266,7 @@ class ProductsRelatedService {
     const fetchCandidateBatch = async (
       filters: Record<string, string | number | undefined>,
     ): Promise<RelatedProduct[]> => {
-      const batchLimit = Math.max(limit * QUERY_BATCH_MULTIPLIER, limit);
+      const batchLimit = Math.max(targetCount * QUERY_BATCH_MULTIPLIER, targetCount);
       const response = (await productsService.findAll({
         ...filters,
         lang,
@@ -262,7 +278,7 @@ class ProductsRelatedService {
       return response.data;
     };
 
-    const needsMoreCandidates = () => selectedProducts.length < limit;
+    const needsMoreCandidates = () => selectedProducts.length < targetCount;
 
     const primaryCategorySlug = baseProduct.categories?.[0]?.slug;
     const brandId = baseProduct.brand?.id;
@@ -287,7 +303,7 @@ class ProductsRelatedService {
       tryAppendProducts(otherBatch, "other");
     }
 
-    const data = selectedProducts.slice(0, limit);
+    const data = selectedProducts.slice(offset, offset + limit);
     const rules = data.reduce(
       (acc, item) => {
         acc[item.recommendationRule] += 1;
@@ -303,8 +319,10 @@ class ProductsRelatedService {
     return {
       data,
       meta: {
-        total: data.length,
+        total: selectedProducts.length,
         limit,
+        offset,
+        hasMore: selectedProducts.length >= targetCount,
         rules,
       },
     };

@@ -10,6 +10,11 @@ export type GuestCartTotals = {
   total: number;
 };
 
+/** Synchronous guest cart summary from localStorage (header paint on reload). */
+export function readGuestCartSummarySync(): GuestCartTotals {
+  return computeGuestCartTotalsFromStorage(readStoredGuestCart());
+}
+
 export function computeGuestCartTotalsFromStorage(items: StoredGuestCartItem[]): GuestCartTotals {
   const itemsCount = items.reduce((sum, item) => sum + Number(item.quantity), 0);
   const total = items.reduce(
@@ -33,7 +38,7 @@ export function guestCartNeedsCatalogPriceResolution(items: StoredGuestCartItem[
   return items.some((item) => !Number.isFinite(Number(item.price)) || Number(item.price) <= 0);
 }
 
-export async function resolveGuestCartTotalsFromCatalog(
+async function resolveGuestCartTotalsFromCatalog(
   items: StoredGuestCartItem[],
 ): Promise<GuestCartTotals> {
   if (items.length === 0) {

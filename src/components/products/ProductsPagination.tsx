@@ -29,7 +29,7 @@ function PaginationNavLink({
   return (
     <Link
       href={href}
-      prefetch
+      prefetch={false}
       className={className}
       aria-label={ariaLabel}
       onClick={(event) => {

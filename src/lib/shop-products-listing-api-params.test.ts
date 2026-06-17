@@ -11,7 +11,7 @@ describe('buildShopListingApiParams', () => {
       compact: '1',
       category: 'phones',
       page: '2',
-      limit: '21',
+      limit: '12',
     });
   });
 });

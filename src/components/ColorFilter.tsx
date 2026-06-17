@@ -52,20 +52,21 @@ export function ColorFilter({ category, search, minPrice, maxPrice }: ColorFilte
   const filtersContext = useProductsFilters();
   const { t } = useShopFiltersTranslation();
   const [colors, setColors] = useState<ColorOption[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [fallbackLoading, setFallbackLoading] = useState(true);
   const [optimisticValues, setOptimisticValues] = useState<string[] | null>(null);
   useEffect(() => {
     if (filtersContext?.data?.colors) {
       setColors(filtersContext.data.colors);
-      setLoading(false);
       return;
     }
     if (filtersContext === null) {
       fetchColors();
-    } else {
-      setLoading(filtersContext.loading);
     }
-  }, [category, search, minPrice, maxPrice, filtersContext?.data?.colors, filtersContext?.loading, filtersContext === null]);
+  }, [category, search, minPrice, maxPrice, filtersContext?.data?.colors, filtersContext === null]);
+
+  const loading = filtersContext
+    ? filtersContext.extendedLoading && colors.length === 0
+    : fallbackLoading;
 
   const activeSearchParams = mobileDraft?.enabled ? mobileDraft.searchParams : searchParams;
   const colorsQs = activeSearchParams.get('colors');
@@ -85,7 +86,7 @@ export function ColorFilter({ category, search, minPrice, maxPrice }: ColorFilte
 
   const fetchColors = async () => {
     try {
-      setLoading(true);
+      setFallbackLoading(true);
       const language = getStoredLanguage();
       const params: Record<string, string> = { lang: language };
       if (category) params.category = category;
@@ -99,7 +100,7 @@ export function ColorFilter({ category, search, minPrice, maxPrice }: ColorFilte
     } catch (_error) {
       setColors([]);
     } finally {
-      setLoading(false);
+      setFallbackLoading(false);
     }
   };
 

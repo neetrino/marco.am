@@ -1,12 +1,10 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import { useAuth } from '../auth/AuthContext';
 import { apiClient } from '../api-client';
 import { coerceCurrencyCode, type CurrencyCode } from '../currency';
-import { loadGuestCartTotals } from './guest-cart-totals';
-import { queryKeys } from '../query-keys';
+import { loadGuestCartTotals, readGuestCartSummarySync } from './guest-cart-totals';
 import { logger } from '../utils/logger';
 
 export type CartSummaryState = {
@@ -16,109 +14,125 @@ export type CartSummaryState = {
   fetchCart: () => Promise<void>;
 };
 
+type CartSummaryApiPayload = {
+  cart: {
+    itemsCount: number;
+    totals: { total: number; currency?: string };
+  };
+};
+
+type CartUpdateDetail = {
+  optimisticAdd?: { quantity?: number; price?: number };
+  itemsCount?: number;
+  total?: number;
+  currency?: string;
+};
+
+function guestSummaryPayload(totals: { itemsCount: number; total: number }) {
+  return {
+    itemsCount: totals.itemsCount,
+    totals: { total: totals.total, currency: 'AMD' as const },
+  };
+}
+
 export function useCartSummaryState(): CartSummaryState {
   const { isLoggedIn, isLoading: authLoading } = useAuth();
-  const queryClient = useQueryClient();
 
   const [cartCount, setCartCount] = useState(0);
   const [cartTotal, setCartTotal] = useState(0);
   const [cartTotalCurrency, setCartTotalCurrency] = useState<CurrencyCode>('AMD');
 
-  const fetchCartTotals = useCallback(async (): Promise<{
-    cart: {
-      itemsCount: number;
-      totals: { total: number; currency?: string };
-    };
-  }> => {
-    if (authLoading) {
-      return {
-        cart: {
-          itemsCount: 0,
-          totals: { total: 0, currency: 'AMD' },
-        },
-      };
-    }
-    if (!isLoggedIn) {
-      const { itemsCount, total } = await loadGuestCartTotals();
-      return {
-        cart: {
-          itemsCount,
-          totals: { total, currency: 'AMD' },
-        },
-      };
-    }
+  const applySummary = useCallback(
+    (raw: { itemsCount?: unknown; totals?: { total?: unknown; currency?: unknown } }) => {
+      const count = Number(raw.itemsCount);
+      const total = Number(raw.totals?.total);
+      setCartCount(Number.isFinite(count) ? count : 0);
+      setCartTotal(Number.isFinite(total) ? total : 0);
+      setCartTotalCurrency(coerceCurrencyCode(raw.totals?.currency, 'AMD'));
+    },
+    [],
+  );
 
-    return apiClient.get<{
-      cart: {
-        itemsCount: number;
-        totals: { total: number; currency?: string };
-      };
-    }>('/api/v1/cart', {
-      params: { view: 'summary' },
-    });
-  }, [authLoading, isLoggedIn]);
+  const applyGuestSummarySync = useCallback(() => {
+    applySummary(guestSummaryPayload(readGuestCartSummarySync()));
+  }, [applySummary]);
 
-  const cartQuery = useQuery({
-    queryKey: queryKeys.cartByAuth(isLoggedIn),
-    queryFn: fetchCartTotals,
-    enabled: !authLoading,
-    staleTime: 30_000,
-    retry: 1,
-  });
-
-  useEffect(() => {
-    const payload = cartQuery.data?.cart;
-    if (!payload) {
-      return;
+  const fetchLoggedInSummary = useCallback(async () => {
+    try {
+      const response = await apiClient.get<CartSummaryApiPayload>('/api/v1/cart', {
+        params: { view: 'summary' },
+      });
+      applySummary(response.cart);
+    } catch (error: unknown) {
+      logger.error('Error fetching cart summary', { error });
     }
-    setCartCount(payload.itemsCount || 0);
-    setCartTotal(payload.totals?.total || 0);
-    setCartTotalCurrency(coerceCurrencyCode(payload.totals?.currency, 'AMD'));
-  }, [cartQuery.data]);
+  }, [applySummary]);
 
   const fetchCart = useCallback(async () => {
-    try {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.cartByAuth(isLoggedIn) });
-    } catch (error: unknown) {
-      logger.error('Error invalidating cart query', { error });
+    if (authLoading) {
+      return;
     }
-  }, [isLoggedIn, queryClient]);
+    if (!isLoggedIn) {
+      const totals = await loadGuestCartTotals();
+      applySummary(guestSummaryPayload(totals));
+      return;
+    }
+    await fetchLoggedInSummary();
+  }, [applySummary, authLoading, fetchLoggedInSummary, isLoggedIn]);
+
+  useLayoutEffect(() => {
+    if (isLoggedIn) {
+      return;
+    }
+    applyGuestSummarySync();
+  }, [applyGuestSummarySync, isLoggedIn]);
 
   useEffect(() => {
-    const handleCartUpdate = (e: Event) => {
-      if (authLoading) {
-        return;
-      }
-      const detail = (e as CustomEvent)?.detail;
+    if (authLoading) {
+      return;
+    }
+    if (isLoggedIn) {
+      void fetchLoggedInSummary();
+      return;
+    }
+    applyGuestSummarySync();
+    void loadGuestCartTotals().then((totals) => {
+      applySummary(guestSummaryPayload(totals));
+    });
+  }, [applyGuestSummarySync, applySummary, authLoading, fetchLoggedInSummary, isLoggedIn]);
+
+  useEffect(() => {
+    const handleCartUpdate = (event: Event) => {
+      const detail = (event as CustomEvent<CartUpdateDetail>).detail;
+
       if (detail?.optimisticAdd) {
-        setCartCount((c) => c + (detail.optimisticAdd.quantity ?? 1));
-        setCartTotal((tot) => tot + (detail.optimisticAdd.price ?? 0) * (detail.optimisticAdd.quantity ?? 1));
+        const qty = detail.optimisticAdd.quantity ?? 1;
+        const price = detail.optimisticAdd.price ?? 0;
+        setCartCount((count) => count + qty);
+        setCartTotal((total) => total + price * qty);
         return;
       }
+
       if (detail?.itemsCount !== undefined && detail?.total !== undefined) {
-        setCartCount(detail.itemsCount);
-        setCartTotal(detail.total);
-        setCartTotalCurrency(coerceCurrencyCode(detail.currency, 'AMD'));
+        applySummary({
+          itemsCount: detail.itemsCount,
+          totals: { total: detail.total, currency: detail.currency },
+        });
         return;
       }
-      void queryClient.invalidateQueries({ queryKey: queryKeys.cartByAuth(isLoggedIn) });
+
+      if (!isLoggedIn) {
+        applyGuestSummarySync();
+        return;
+      }
+      if (!authLoading) {
+        void fetchLoggedInSummary();
+      }
     };
 
     window.addEventListener('cart-updated', handleCartUpdate);
-
-    return () => {
-      window.removeEventListener('cart-updated', handleCartUpdate);
-    };
-  }, [authLoading, isLoggedIn, queryClient]);
-
-  useEffect(() => {
-    if (!authLoading) {
-      return;
-    }
-    setCartCount(0);
-    setCartTotal(0);
-    setCartTotalCurrency('AMD');
-  }, [authLoading]);
+    return () => window.removeEventListener('cart-updated', handleCartUpdate);
+  }, [applyGuestSummarySync, applySummary, authLoading, fetchLoggedInSummary, isLoggedIn]);
 
   return { cartCount, cartTotal, cartTotalCurrency, fetchCart };
 }

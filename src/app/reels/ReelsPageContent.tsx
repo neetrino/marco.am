@@ -21,7 +21,6 @@ export async function ReelsPageContent() {
       items={feed.items}
       watchCtaLabel={watchCtaLabel}
       language={language}
-      disableProgressiveRender
     />
   );
 }

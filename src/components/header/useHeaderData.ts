@@ -15,8 +15,10 @@ import { useHeaderStorageCounts } from './useHeaderStorageCounts';
 import { useHeaderCurrency } from './useHeaderCurrency';
 import { useTranslation } from '../../lib/i18n-client';
 import { subscribeShopCategoryTreeUpdated } from '../../lib/shop-category-tree-sync';
+import { isLightMarketingRoute } from '../../lib/light-marketing-routes';
 import type { Category, CategoriesResponse } from './category-nav-types';
 import { prepareRootCategoriesForNav } from './categoryNavList';
+import { prefetchMegaMenuCategories } from './megaMenuQueries';
 import { queryKeys } from '../../lib/query-keys';
 
 const PRODUCTS_PATH_PREFIX = '/products';
@@ -101,7 +103,7 @@ export function useHeaderData() {
       return response.data ?? [];
     },
     staleTime: 300_000,
-    enabled: shouldEagerLoadCategories || showProductsMenu,
+    enabled: shouldEagerLoadCategories || mobileMenuOpen,
   });
 
   useEffect(() => {
@@ -123,23 +125,46 @@ export function useHeaderData() {
   }, [shouldEagerLoadCategories, fetchCategories]);
 
   useEffect(() => {
-    if (!showProductsMenu || categoriesLoadedRef.current) {
+    if (isProfileRoute || isLightMarketingRoute(pathname)) {
+      return;
+    }
+
+    const runPrefetch = () => prefetchMegaMenuCategories(queryClient, categoryLanguage);
+    if (typeof requestIdleCallback !== 'undefined') {
+      const idleId = requestIdleCallback(runPrefetch, { timeout: 2_000 });
+      return () => cancelIdleCallback(idleId);
+    }
+
+    const timeoutId = window.setTimeout(runPrefetch, 500);
+    return () => window.clearTimeout(timeoutId);
+  }, [categoryLanguage, isProfileRoute, pathname, queryClient]);
+
+  useEffect(() => {
+    if (!mobileMenuOpen || categoriesLoadedRef.current) {
       return;
     }
     void fetchCategories();
-  }, [showProductsMenu, fetchCategories]);
+  }, [mobileMenuOpen, fetchCategories]);
 
   useEffect(() => {
     return subscribeShopCategoryTreeUpdated(() => {
       void queryClient.invalidateQueries({
         queryKey: queryKeys.categoriesTreeRoot(),
       });
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.megaMenuRootsRoot(),
+      });
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.megaMenuBranchRoot(),
+      });
     });
   }, [queryClient]);
 
   useEffect(() => {
     const onLanguage = () => {
-      setCategoryLanguage(getStoredLanguage());
+      const nextLang = getStoredLanguage();
+      setCategoryLanguage(nextLang);
+      prefetchMegaMenuCategories(queryClient, nextLang);
       if (categoriesLoadedRef.current || shouldEagerLoadCategories || showProductsMenu) {
         void queryClient.invalidateQueries({
           queryKey: queryKeys.categoriesTreeRoot(),
@@ -282,5 +307,6 @@ export function useHeaderData() {
     handleCurrencyChange,
     getRootCategories,
     formatPrice,
+    prefetchMegaMenu: () => prefetchMegaMenuCategories(queryClient, categoryLanguage),
   };
 }
