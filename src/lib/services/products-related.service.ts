@@ -1,24 +1,15 @@
+import { Prisma } from "@white-shop/db/prisma";
 import { db } from "@white-shop/db";
-import { productsService } from "./products.service";
+import { getAllChildCategoryIds } from "./products-find-query/category-utils";
+import { executePlpLeanListingQuery } from "./products-find-query/plp-lean-listing-query";
+import { productsFindTransformService } from "./products-find-transform.service";
 
 const DEFAULT_RELATED_LIMIT = 10;
 const MAX_RELATED_LIMIT = 24;
-const QUERY_BATCH_MULTIPLIER = 2;
+/** Extra rows fetched so we can skip the current product and still fill the page. */
+const RELATED_FETCH_BUFFER = 1;
 
 type RelatedRule = "category" | "brand" | "other";
-
-type RelatedCategory = {
-  id: string;
-  slug: string;
-  title: string;
-};
-
-type RelatedBrand = {
-  id: string;
-  slug: string;
-  name: string;
-  logo: string | null;
-};
 
 type RelatedProduct = {
   id: string;
@@ -38,7 +29,7 @@ type RelatedProduct = {
     slug: string;
     logoUrl: string | null;
   } | null;
-  categories?: RelatedCategory[];
+  categories?: Array<{ id: string; slug: string; title: string }>;
   variants?: Array<{
     options?: Array<{
       key: string;
@@ -51,15 +42,10 @@ type RelatedProductWithRule = RelatedProduct & {
   recommendationRule: RelatedRule;
 };
 
-type ProductListResponse = {
-  data: RelatedProduct[];
-};
-
-type ProductDetailsResponse = {
+type RelatedAnchor = {
   id: string;
-  slug: string;
-  brand: RelatedBrand | null;
-  categories: RelatedCategory[];
+  primaryCategoryId: string | null;
+  brandId: string | null;
 };
 
 type RelatedProductsResponse = {
@@ -100,77 +86,18 @@ function productNotFoundError(slug: string) {
   };
 }
 
-function pickLocalizedString<T extends { locale: string }>(
-  rows: T[],
-  lang: string,
-  pick: (row: T) => string,
-): string {
-  const exact = rows.find((r) => r.locale === lang);
-  if (exact) return pick(exact);
-  const en = rows.find((r) => r.locale === "en");
-  if (en) return pick(en);
-  const first = rows[0];
-  return first ? pick(first) : "";
-}
-
-function mapCategoryFromTranslations(
-  categoryId: string,
-  translations: Array<{ locale: string; slug: string; title: string }>,
-  lang: string,
-): RelatedCategory | null {
-  if (translations.length === 0) {
-    return null;
-  }
-  const slug = pickLocalizedString(translations, lang, (t) => t.slug);
-  const title = pickLocalizedString(translations, lang, (t) => t.title);
-  return { id: categoryId, slug, title };
-}
-
-function resolvePrimaryCategoryForRelated(
-  primaryCategoryId: string | null,
-  linkedCategories: Array<{
-    id: string;
-    translations: Array<{ locale: string; slug: string; title: string }>;
-  }>,
-  lang: string,
-): RelatedCategory | null {
-  if (primaryCategoryId) {
-    const primary = linkedCategories.find((c) => c.id === primaryCategoryId);
-    if (primary) {
-      return mapCategoryFromTranslations(primary.id, primary.translations, lang);
-    }
-  }
-  for (const c of linkedCategories) {
-    const mapped = mapCategoryFromTranslations(c.id, c.translations, lang);
-    if (mapped) {
-      return mapped;
-    }
-  }
-  return null;
-}
-
-async function fetchCategoryAnchorIfMissing(
-  primaryCategoryId: string,
-  lang: string,
-): Promise<RelatedCategory | null> {
-  const cat = await db.category.findFirst({
-    where: { id: primaryCategoryId, deletedAt: null },
-    select: {
-      id: true,
-      translations: {
-        select: { locale: true, slug: true, title: true },
-        take: 24,
-      },
-    },
-  });
-  if (!cat) {
-    return null;
-  }
-  return mapCategoryFromTranslations(cat.id, cat.translations, lang);
+async function buildCategoryScopeWhere(categoryId: string): Promise<Prisma.ProductWhereInput> {
+  const childCategoryIds = await getAllChildCategoryIds(categoryId);
+  const allCategoryIds = [categoryId, ...childCategoryIds];
+  const categoryConditions = allCategoryIds.flatMap((catId) => [
+    { primaryCategoryId: catId },
+    { categoryIds: { has: catId } },
+  ]);
+  return { OR: categoryConditions };
 }
 
 class ProductsRelatedService {
-  private async loadRelatedAnchor(slug: string, lang: string): Promise<ProductDetailsResponse> {
+  private async loadRelatedAnchor(slug: string): Promise<RelatedAnchor> {
     const row = await db.product.findFirst({
       where: {
         published: true,
@@ -180,27 +107,7 @@ class ProductsRelatedService {
       select: {
         id: true,
         primaryCategoryId: true,
-        brand: {
-          select: {
-            id: true,
-            slug: true,
-            logoUrl: true,
-            translations: {
-              select: { locale: true, name: true },
-              take: 24,
-            },
-          },
-        },
-        categories: {
-          take: 16,
-          select: {
-            id: true,
-            translations: {
-              select: { locale: true, slug: true, title: true },
-              take: 24,
-            },
-          },
-        },
+        brandId: true,
       },
     });
 
@@ -208,30 +115,35 @@ class ProductsRelatedService {
       throw productNotFoundError(slug);
     }
 
-    let primaryCategory = resolvePrimaryCategoryForRelated(
-      row.primaryCategoryId,
-      row.categories,
-      lang,
-    );
-    if (!primaryCategory && row.primaryCategoryId) {
-      primaryCategory = await fetchCategoryAnchorIfMissing(row.primaryCategoryId, lang);
-    }
-
-    const brand: RelatedBrand | null = row.brand
-      ? {
-          id: row.brand.id,
-          slug: row.brand.slug,
-          name: pickLocalizedString(row.brand.translations, lang, (t) => t.name),
-          logo: row.brand.logoUrl,
-        }
-      : null;
-
     return {
       id: row.id,
-      slug: "",
-      brand,
-      categories: primaryCategory ? [primaryCategory] : [],
+      primaryCategoryId: row.primaryCategoryId,
+      brandId: row.brandId,
     };
+  }
+
+  private async fetchLeanCandidates(
+    lang: string,
+    limit: number,
+    excludeIds: Set<string>,
+    scopeWhere: Prisma.ProductWhereInput,
+  ): Promise<RelatedProduct[]> {
+    const products = await executePlpLeanListingQuery(
+      {
+        published: true,
+        deletedAt: null,
+        id: { notIn: Array.from(excludeIds) },
+        ...scopeWhere,
+      },
+      limit,
+      0,
+      { lang },
+    );
+    if (products.length === 0) {
+      return [];
+    }
+    const transformed = await productsFindTransformService.transformProducts(products, lang);
+    return transformed as RelatedProduct[];
   }
 
   async findBySlug(
@@ -243,7 +155,8 @@ class ProductsRelatedService {
     const limit = normalizeLimit(requestedLimit);
     const offset = normalizeOffset(requestedOffset);
     const targetCount = offset + limit;
-    const baseProduct = await this.loadRelatedAnchor(slug, lang);
+    const batchLimit = targetCount + RELATED_FETCH_BUFFER;
+    const baseProduct = await this.loadRelatedAnchor(slug);
     const selectedProducts: RelatedProductWithRule[] = [];
     const seenProductIds = new Set<string>([baseProduct.id]);
 
@@ -263,43 +176,31 @@ class ProductsRelatedService {
       }
     };
 
-    const fetchCandidateBatch = async (
-      filters: Record<string, string | number | undefined>,
-    ): Promise<RelatedProduct[]> => {
-      const batchLimit = Math.max(targetCount * QUERY_BATCH_MULTIPLIER, targetCount);
-      const response = (await productsService.findAll({
-        ...filters,
-        lang,
-        limit: batchLimit,
-        page: 1,
-        listingOmitProductAttributes: true,
-        skipExactTotalCount: true,
-      })) as ProductListResponse;
-      return response.data;
-    };
-
     const needsMoreCandidates = () => selectedProducts.length < targetCount;
 
-    const primaryCategorySlug = baseProduct.categories?.[0]?.slug;
-    const brandId = baseProduct.brand?.id;
-
-    const categoryPromise = primaryCategorySlug
-      ? fetchCandidateBatch({ category: primaryCategorySlug })
-      : Promise.resolve<RelatedProduct[]>([]);
-    const brandPromise = brandId
-      ? fetchCandidateBatch({ brand: brandId })
-      : Promise.resolve<RelatedProduct[]>([]);
-
-    const [categoryBatch, brandBatch] = await Promise.all([categoryPromise, brandPromise]);
-
-    if (categoryBatch.length > 0 && needsMoreCandidates()) {
+    if (baseProduct.primaryCategoryId && needsMoreCandidates()) {
+      const categoryWhere = await buildCategoryScopeWhere(baseProduct.primaryCategoryId);
+      const categoryBatch = await this.fetchLeanCandidates(
+        lang,
+        batchLimit,
+        seenProductIds,
+        categoryWhere,
+      );
       tryAppendProducts(categoryBatch, "category");
     }
-    if (brandBatch.length > 0 && needsMoreCandidates()) {
+
+    if (baseProduct.brandId && needsMoreCandidates()) {
+      const brandBatch = await this.fetchLeanCandidates(
+        lang,
+        batchLimit,
+        seenProductIds,
+        { brandId: baseProduct.brandId },
+      );
       tryAppendProducts(brandBatch, "brand");
     }
+
     if (needsMoreCandidates()) {
-      const otherBatch = await fetchCandidateBatch({});
+      const otherBatch = await this.fetchLeanCandidates(lang, batchLimit, seenProductIds, {});
       tryAppendProducts(otherBatch, "other");
     }
 
@@ -313,7 +214,7 @@ class ProductsRelatedService {
         category: 0,
         brand: 0,
         other: 0,
-      }
+      },
     );
 
     return {

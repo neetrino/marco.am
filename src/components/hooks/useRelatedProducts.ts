@@ -50,7 +50,7 @@ export function useRelatedProducts({
   const [loadingMore, setLoadingMore] = useState(false);
   const offsetRef = useRef(initialRows.length);
   const fetchGenerationRef = useRef(0);
-  const initialFetchDoneRef = useRef(hasSsrPayload);
+  const fetchedKeyRef = useRef<string | null>(hasSsrPayload ? `${trimmed}:${language}` : null);
 
   const mergeRows = useCallback((existing: RelatedProductRow[], incoming: RelatedProductRow[]) => {
     const seen = new Set(existing.map((row) => row.id));
@@ -116,7 +116,7 @@ export function useRelatedProducts({
   useEffect(() => {
     fetchGenerationRef.current += 1;
     offsetRef.current = initialRows.length;
-    initialFetchDoneRef.current = hasSsrPayload;
+    fetchedKeyRef.current = hasSsrPayload ? `${trimmed}:${language}` : null;
     setProducts(initialRows);
     setHasMore(
       hasSsrPayload
@@ -126,12 +126,16 @@ export function useRelatedProducts({
   }, [hasSsrPayload, initialRelatedProducts?.meta?.hasMore, initialRows, trimmed, language]);
 
   useEffect(() => {
-    if (!enabled || !trimmed || initialFetchDoneRef.current) {
+    if (!enabled || !trimmed) {
       return;
     }
-    initialFetchDoneRef.current = true;
+    const fetchKey = `${trimmed}:${language}`;
+    if (fetchedKeyRef.current === fetchKey) {
+      return;
+    }
+    fetchedKeyRef.current = fetchKey;
     void fetchPage(0, false);
-  }, [enabled, fetchPage, trimmed]);
+  }, [enabled, fetchPage, language, trimmed]);
 
   const loadMore = useCallback(() => {
     if (!enabled || !trimmed || loading || loadingMore || !hasMore) {

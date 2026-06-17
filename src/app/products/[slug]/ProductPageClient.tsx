@@ -278,7 +278,7 @@ export function ProductPageClient({
           currentProductSlug={slug}
           language={language}
           initialRelatedProducts={null}
-          enabled={relatedEnabled && !isListingShell}
+          enabled={relatedEnabled}
         />
       </div>
     </div>
