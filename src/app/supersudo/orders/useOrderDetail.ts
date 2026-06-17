@@ -8,12 +8,11 @@ import { useTranslation } from '@/lib/i18n-client';
 import { logger } from '@/lib/utils/logger';
 import { buildAdminOrderDetailCacheKey } from '@/lib/admin/admin-cache-keys';
 import { dedupedAdminRequest } from '@/lib/admin/admin-request-dedup';
-import {
-  ADMIN_SESSION_CACHE_TTL_MS,
-  readAdminSessionCache,
-  writeAdminSessionCache,
-} from '@/lib/admin/admin-session-cache';
 import { useAdminOrderCurrency } from './hooks/useAdminOrderCurrency';
+import {
+  persistAdminOrderDetailCache,
+  readAdminOrderDetailCache,
+} from './utils/order-detail-cache';
 import type { OrderDetails } from './useOrders';
 
 type UpdateMessage = { type: 'success' | 'error'; text: string } | null;
@@ -38,25 +37,25 @@ export function useOrderDetail(orderId: string | undefined) {
     }
 
     const cacheKey = buildAdminOrderDetailCacheKey(orderId);
-    const cached = readAdminSessionCache<OrderDetails>(cacheKey, ADMIN_SESSION_CACHE_TTL_MS);
+    const cachedDetails = readAdminOrderDetailCache(orderId);
 
-    setLoading(!cached);
+    setLoading(!cachedDetails);
     setNotFound(false);
-    setOrderDetails(cached);
+    setOrderDetails(cachedDetails);
 
     try {
       const response = await dedupedAdminRequest(cacheKey, () =>
         apiClient.get<OrderDetails>(`/api/v1/supersudo/orders/${orderId}`),
       );
       setOrderDetails(response);
-      writeAdminSessionCache(cacheKey, response);
+      persistAdminOrderDetailCache(orderId, response);
     } catch (err: unknown) {
       logger.error('Admin order detail fetch failed', { orderId, error: err });
       const message = getApiOrErrorMessage(err, t('admin.orders.orderDetails.failedToLoad'));
       if (getErrorHttpStatus(err) === 404 || message.toLowerCase().includes('not found')) {
         setNotFound(true);
       }
-      if (!cached) {
+      if (!cachedDetails) {
         setOrderDetails(null);
       }
     } finally {
@@ -80,7 +79,7 @@ export function useOrderDetail(orderId: string | undefined) {
         adminNotes,
       });
       setOrderDetails(updated);
-      writeAdminSessionCache(buildAdminOrderDetailCacheKey(orderId), updated);
+      persistAdminOrderDetailCache(orderId, updated);
       setUpdateMessage({
         type: 'success',
         text: t('admin.orders.orderDetails.internalNotesSaved'),

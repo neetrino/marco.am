@@ -22,13 +22,12 @@ import {
   writeAdminSessionCache,
 } from '@/lib/admin/admin-session-cache';
 import type { OrderAuditEntry } from "./types/order-audit";
-import { hasLoadedOrderDetails } from './utils/order-list-display';
+import {
+  persistAdminOrderDetailCache,
+  readAdminOrderDetailCache,
+} from './utils/order-detail-cache';
 
 export type { OrderAuditEntry };
-
-function persistOrderDetailCache(orderId: string, details: OrderDetails): void {
-  writeAdminSessionCache(buildAdminOrderDetailCacheKey(orderId), details);
-}
 
 export interface Order {
   id: string;
@@ -300,8 +299,7 @@ export function useOrders() {
   const handleViewOrderDetails = async (orderId: string) => {
     const listOrder = orders.find((order) => order.id === orderId) ?? null;
     const cacheKey = buildAdminOrderDetailCacheKey(orderId);
-    const cached = readAdminSessionCache<OrderDetails>(cacheKey, ADMIN_SESSION_CACHE_TTL_MS);
-    const cachedDetails = cached && hasLoadedOrderDetails(cached) ? cached : null;
+    const cachedDetails = readAdminOrderDetailCache(orderId);
 
     setSelectedOrderId(orderId);
     setSelectedListOrder(listOrder);
@@ -313,7 +311,7 @@ export function useOrders() {
         apiClient.get<OrderDetails>(`/api/v1/supersudo/orders/${orderId}`),
       );
       setOrderDetails(response);
-      persistOrderDetailCache(orderId, response);
+      persistAdminOrderDetailCache(orderId, response);
     } catch (err: unknown) {
       logger.error('Admin order details fetch failed', { error: err });
       alert(getApiOrErrorMessage(err, t('admin.orders.orderDetails.failedToLoad')));
@@ -346,7 +344,7 @@ export function useOrders() {
         }
       );
       setOrderDetails(updated);
-      persistOrderDetailCache(selectedOrderId, updated);
+      persistAdminOrderDetailCache(selectedOrderId, updated);
       setUpdateMessage({
         type: 'success',
         text: t('admin.orders.orderDetails.internalNotesSaved'),
@@ -475,7 +473,7 @@ export function useOrders() {
 
       if (selectedOrderId === orderId) {
         setOrderDetails(updated);
-        persistOrderDetailCache(orderId, updated);
+        persistAdminOrderDetailCache(orderId, updated);
       }
 
       setUpdateMessage({ type: 'success', text: t('admin.orders.statusUpdated') });
@@ -523,7 +521,7 @@ export function useOrders() {
 
       if (selectedOrderId === orderId) {
         setOrderDetails(updated);
-        persistOrderDetailCache(orderId, updated);
+        persistAdminOrderDetailCache(orderId, updated);
       }
 
       // Show success message

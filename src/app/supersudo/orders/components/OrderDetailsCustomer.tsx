@@ -12,39 +12,33 @@ import {
 interface OrderDetailsCustomerProps {
   orderDetails?: OrderDetails | null;
   listOrder?: Order | null;
-  isPreview?: boolean;
 }
 
 export function OrderDetailsCustomer({
   orderDetails = null,
   listOrder = null,
-  isPreview = false,
 }: OrderDetailsCustomerProps) {
   const { t } = useTranslation();
+  const unknownLabel = t('admin.orders.unknownCustomer');
+  const useListSource = Boolean(listOrder && !orderDetails);
 
-  const nameLine =
-    isPreview && listOrder
-      ? formatAdminOrderListCustomerName(listOrder, t('admin.orders.unknownCustomer'))
-      : orderDetails
-        ? getOrderCustomerDisplay(orderDetails).displayName.trim() ||
-          t('admin.orders.unknownCustomer')
-        : listOrder
-          ? formatAdminOrderListCustomerName(listOrder, t('admin.orders.unknownCustomer'))
-          : t('admin.orders.unknownCustomer');
+  const nameLine = useListSource
+    ? formatAdminOrderListCustomerName(listOrder!, unknownLabel)
+    : orderDetails
+      ? getOrderCustomerDisplay(orderDetails).displayName.trim() || unknownLabel
+      : unknownLabel;
 
-  const phone =
-    isPreview && listOrder
-      ? listOrder.customerPhone?.trim() || undefined
-      : orderDetails
-        ? getOrderCustomerDisplay(orderDetails).phone
-        : listOrder?.customerPhone?.trim() || undefined;
+  const phone = useListSource
+    ? listOrder!.customerPhone?.trim() || undefined
+    : orderDetails
+      ? getOrderCustomerDisplay(orderDetails).phone
+      : undefined;
 
-  const email =
-    isPreview && listOrder
-      ? listOrder.customerEmail?.trim() || undefined
-      : orderDetails
-        ? getOrderCustomerDisplay(orderDetails).email
-        : listOrder?.customerEmail?.trim() || undefined;
+  const email = useListSource
+    ? listOrder!.customerEmail?.trim() || undefined
+    : orderDetails
+      ? getOrderCustomerDisplay(orderDetails).email
+      : undefined;
 
   return (
     <section className={ORDER_DETAIL_SECTION_CLASS}>

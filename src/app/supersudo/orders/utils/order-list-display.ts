@@ -42,3 +42,11 @@ export function hasLoadedOrderDetails(
 ): boolean {
   return Array.isArray(details?.items) && details.items.length > 0;
 }
+
+/** Sheet still loading full detail API response. */
+export function isOrderSheetLoadingDetails(
+  loading: boolean,
+  orderDetails: { items?: unknown[] } | null | undefined,
+): boolean {
+  return loading && !hasLoadedOrderDetails(orderDetails);
+}

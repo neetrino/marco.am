@@ -11,7 +11,7 @@ import { OrderDetailsBody } from './OrderDetailsBody';
 import { OrderDetailsSummaryBar } from './OrderDetailsSummaryBar';
 import { OrderDetailsCustomer } from './OrderDetailsCustomer';
 import { hasLoadedOrderDetails } from '../utils/order-list-display';
-import { isOrderSheetLoadingDetails } from '../utils/order-details-preview';
+import { isOrderSheetLoadingDetails } from '../utils/order-list-display';
 import type { Order, OrderDetails } from '../useOrders';
 import { ORDER_DETAIL_SECTION_CLASS } from './order-details-layout.constants';
 
@@ -118,7 +118,7 @@ export function OrderDetailsSheet({
             />
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
               <DeliveryPreviewSkeleton />
-              <OrderDetailsCustomer listOrder={listOrder} isPreview />
+              <OrderDetailsCustomer listOrder={listOrder} />
             </div>
             <ItemsPreviewSkeleton />
           </div>
