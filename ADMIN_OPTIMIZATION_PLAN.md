@@ -94,59 +94,31 @@
 
 ---
 
-#### 5. Users — `/supersudo/users` (следующий)
+#### 5. Users — `/supersudo/users` ✅
 
-**Симптомы:**
+**Сделано:** backend pagination + search + role filter; `useUsersAdmin` — cache skip, dedup, `force` после мутаций; warm с dedup; убран client-side role filter.
 
-- Cache есть, но **всегда идёт API** после показа cache (`users/page.tsx` — нет early return).
-- Warm без dedup.
-- **Баг бэкенда:** route игнорирует query `page`, `search`, `role`; service `take: 100` фиксировано (`admin-users.service.ts`, `users/route.ts`). UI пагинация/фильтры могут работать только на клиенте.
-
-**План:**
-
-- [ ] **Frontend:** cache skip + dedup; `buildAdminListCacheKey` уже есть.
-- [ ] **Backend:** реальная пагинация + фильтры в Prisma; `_count.orders` уже ок.
-- [ ] **Warm:** dedup + те же params что default list.
-
-**Файлы:** `users/page.tsx`, `admin-users.service.ts`, `api/.../users/route.ts`.
+**Файлы:** `useUsersAdmin.ts`, `users/page.tsx`, `admin-users.service.ts`, `admin-cache-keys.ts`, `admin-page-warm.ts`.
 
 ---
 
-#### 6. Messages — `/supersudo/messages`
+#### 6. Messages — `/supersudo/messages` ✅
 
-**Симптомы:** как users — cache + unconditional refetch, warm без dedup.
+**Сделано:** `useMessagesAdmin` — cache skip + dedup; warm с dedup; backend `count` + `findMany` параллельно; `force` после bulk delete.
 
-**План:**
-
-- [ ] Cache skip + dedup.
-- [ ] Проверить messages service на тяжёлые поля (полный `message` body в list — ок для 20 строк).
-
-**Файлы:** `messages/page.tsx`, `admin-page-warm.ts`.
+**Файлы:** `useMessagesAdmin.ts`, `messages/page.tsx`, `admin-cache-keys.ts`, `admin-page-warm.ts`, `messages/route.ts`.
 
 ---
 
-#### 7. Reels — `/supersudo/reels`
+#### 7. Reels — `/supersudo/reels` ✅
 
-**Симптомы:**
-
-- 3 parallel API (`reels`, `likes`, `views`) — ок, но **без dedup** с warm.
-- `reload` зависит от `[t]` → лишний refetch.
-- `loading` initial `useState(false)` при наличии cache — неконсистентно.
-- Нет cache skip.
-
-**План:**
-
-- [ ] Cache skip + dedup (один составной ключ `reelsAdmin` уже есть).
-- [ ] `tRef`, исправить initial loading.
-- [ ] Warm: обернуть bundle в `dedupedAdminRequest`.
+**Сделано:** cache skip + dedup (bundle из 3 API); `tRef` вместо `[t]` в deps; initial `loading` из cache; warm с dedup + исправлена форма cache payload (`likesByReelId` / `viewsByReelId`).
 
 **Файлы:** `reels/page.tsx`, `admin-page-warm.ts`.
 
 ---
 
-### P2 — средний (простые страницы, типовые фиксы)
-
-#### 8. Brands — `/supersudo/brands`
+#### 8. Brands — `/supersudo/brands` (следующий)
 
 - Cache есть, нет skip/dedup.
 - **Дополнительно:** `fetchR2Logos()` на каждый mount — отдельный `GET /brands/r2-logos` (R2 list). Lazy: только при открытии секции R2 или по кнопке Refresh.

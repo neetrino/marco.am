@@ -99,6 +99,61 @@ export function buildOrdersDefaultListCacheKey(): string {
   });
 }
 
+type AdminUsersListCacheInput = {
+  page: number;
+  limit?: number;
+  search?: string;
+  role?: string;
+};
+
+export function buildAdminUsersListApiParams(
+  input: AdminUsersListCacheInput,
+): Record<string, string> {
+  const params: Record<string, string> = {
+    page: String(input.page),
+    limit: String(input.limit ?? 20),
+  };
+  const search = input.search?.trim();
+  const role = input.role?.trim();
+  if (search) {
+    params.search = search;
+  }
+  if (role) {
+    params.role = role;
+  }
+  return params;
+}
+
+export function buildAdminUsersListCacheKey(input: AdminUsersListCacheInput): string {
+  return buildAdminListCacheKey('users', buildAdminUsersListApiParams(input));
+}
+
+export function buildUsersDefaultListCacheKey(): string {
+  return buildAdminUsersListCacheKey({ page: 1 });
+}
+
+type AdminMessagesListCacheInput = {
+  page: number;
+  limit?: number;
+};
+
+export function buildAdminMessagesListApiParams(
+  input: AdminMessagesListCacheInput,
+): Record<string, string> {
+  return {
+    page: String(input.page),
+    limit: String(input.limit ?? 20),
+  };
+}
+
+export function buildAdminMessagesListCacheKey(input: AdminMessagesListCacheInput): string {
+  return buildAdminListCacheKey('messages', buildAdminMessagesListApiParams(input));
+}
+
+export function buildMessagesDefaultListCacheKey(): string {
+  return buildAdminMessagesListCacheKey({ page: 1 });
+}
+
 export function buildAdminOrderDetailCacheKey(orderId: string): string {
   return `orders/detail/${orderId}`;
 }
@@ -141,16 +196,8 @@ export const ADMIN_CACHE_KEYS = {
   promoCodes: 'promo-codes',
   priceFilter: 'settings/price-filter',
   reelsAdmin: 'reels-admin',
-  usersDefault: buildAdminListCacheKey('users', {
-    page: '1',
-    limit: '20',
-    search: '',
-    role: '',
-  }),
-  messagesDefault: buildAdminListCacheKey('messages', {
-    page: '1',
-    limit: '20',
-  }),
+  usersDefault: buildUsersDefaultListCacheKey(),
+  messagesDefault: buildMessagesDefaultListCacheKey(),
   analyticsWeek: buildAdminListCacheKey('analytics', { period: 'week' }),
   analyticsOrderStatus: 'analytics/order-status-breakdown',
 } as const;

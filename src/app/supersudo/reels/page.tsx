@@ -12,6 +12,7 @@ import { REELS_MANAGEMENT_STORAGE_VERSION } from '@/lib/constants/reels-manageme
 import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '@/lib/utils/image-utils';
 import { ADMIN_CACHE_KEYS } from '@/lib/admin/admin-cache-keys';
 import { beginAdminDataFetch } from '@/lib/admin/admin-fetch-helpers';
+import { dedupedAdminRequest } from '@/lib/admin/admin-request-dedup';
 import {
   ADMIN_SESSION_CACHE_TTL_MS,
   readAdminSessionCache,
@@ -92,8 +93,10 @@ export default function ReelsPage() {
     ADMIN_CACHE_KEYS.reelsAdmin,
     ADMIN_SESSION_CACHE_TTL_MS,
   );
-  const hadCacheRef = useRef(Boolean(cachedReels));
-  const [loading, setLoading] = useState(false);
+  const hadCacheRef = useRef(cachedReels !== null);
+  const tRef = useRef(t);
+  tRef.current = t;
+  const [loading, setLoading] = useState(cachedReels === null);
   const [saving, setSaving] = useState(false);
   const [storage, setStorage] = useState<ReelsManagementStorage>(
     cachedReels?.reelsStorage ?? EMPTY_REELS_STORAGE,
@@ -108,31 +111,46 @@ export default function ReelsPage() {
   const videoInputRef = useRef<HTMLInputElement | null>(null);
   const posterInputRef = useRef<HTMLInputElement | null>(null);
 
-  const reload = useCallback(async () => {
+  const reload = useCallback(async (options?: { force?: boolean }) => {
+    const cacheKey = ADMIN_CACHE_KEYS.reelsAdmin;
+    const cached = readAdminSessionCache<ReelsAdminCachePayload>(cacheKey, ADMIN_SESSION_CACHE_TTL_MS);
+
+    if (!options?.force && cached !== null) {
+      setStorage(cached.reelsStorage);
+      setLikesByReelId(cached.likesByReelId);
+      setViewsByReelId(cached.viewsByReelId);
+      setLoading(false);
+      hadCacheRef.current = true;
+      return;
+    }
+
     beginAdminDataFetch(hadCacheRef.current, setLoading);
     try {
-      const [reelsStorage, likes, views] = await Promise.all([
-        apiClient.get<ReelsManagementStorage>('/api/v1/supersudo/reels'),
-        apiClient.get<ReelsLikesResponse>('/api/v1/supersudo/reels/likes'),
-        apiClient.get<ReelsViewsResponse>('/api/v1/supersudo/reels/views'),
-      ]);
-      setStorage(reelsStorage);
-      setLikesByReelId(likes.likesByReelId);
-      setViewsByReelId(views.viewsByReelId);
-      writeAdminSessionCache(ADMIN_CACHE_KEYS.reelsAdmin, {
-        reelsStorage,
-        likesByReelId: likes.likesByReelId,
-        viewsByReelId: views.viewsByReelId,
+      const payload = await dedupedAdminRequest(cacheKey, async () => {
+        const [reelsStorage, likes, views] = await Promise.all([
+          apiClient.get<ReelsManagementStorage>('/api/v1/supersudo/reels'),
+          apiClient.get<ReelsLikesResponse>('/api/v1/supersudo/reels/likes'),
+          apiClient.get<ReelsViewsResponse>('/api/v1/supersudo/reels/views'),
+        ]);
+        return {
+          reelsStorage,
+          likesByReelId: likes.likesByReelId,
+          viewsByReelId: views.viewsByReelId,
+        };
       });
+      setStorage(payload.reelsStorage);
+      setLikesByReelId(payload.likesByReelId);
+      setViewsByReelId(payload.viewsByReelId);
+      writeAdminSessionCache(cacheKey, payload);
       hadCacheRef.current = true;
     } catch (error: unknown) {
       if (!hadCacheRef.current) {
-        alert(getApiOrErrorMessage(error, t('admin.reels.failedToLoad')));
+        alert(getApiOrErrorMessage(error, tRef.current('admin.reels.failedToLoad')));
       }
     } finally {
       setLoading(false);
     }
-  }, [t]);
+  }, []);
 
   useEffect(() => {
     void reload();

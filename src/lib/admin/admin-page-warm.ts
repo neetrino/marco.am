@@ -3,9 +3,13 @@ import {
   ADMIN_CACHE_KEYS,
   buildAdminListCacheKey,
   buildAdminOrdersListApiParams,
+  buildAdminMessagesListApiParams,
+  buildAdminUsersListApiParams,
+  buildMessagesDefaultListCacheKey,
   buildOrdersDefaultListCacheKey,
   buildProductDiscountsCacheKey,
   buildProductsDefaultListCacheKey,
+  buildUsersDefaultListCacheKey,
 } from '@/lib/admin/admin-cache-keys';
 import { warmAdminDashboardCache } from '@/lib/admin/admin-dashboard-client-cache';
 import {
@@ -58,18 +62,24 @@ function warmProductsCache(language: string): void {
 }
 
 function warmUsersCache(): void {
-  warmIfMissing(ADMIN_CACHE_KEYS.usersDefault, () =>
-    apiClient.get('/api/v1/supersudo/users', {
-      params: { page: '1', limit: '20', search: '', role: '' },
-    }),
+  const cacheKey = buildUsersDefaultListCacheKey();
+  warmIfMissing(cacheKey, () =>
+    dedupedAdminRequest(cacheKey, () =>
+      apiClient.get('/api/v1/supersudo/users', {
+        params: buildAdminUsersListApiParams({ page: 1 }),
+      }),
+    ),
   );
 }
 
 function warmMessagesCache(): void {
-  warmIfMissing(ADMIN_CACHE_KEYS.messagesDefault, () =>
-    apiClient.get('/api/v1/supersudo/messages', {
-      params: { page: '1', limit: '20' },
-    }),
+  const cacheKey = buildMessagesDefaultListCacheKey();
+  warmIfMissing(cacheKey, () =>
+    dedupedAdminRequest(cacheKey, () =>
+      apiClient.get('/api/v1/supersudo/messages', {
+        params: buildAdminMessagesListApiParams({ page: 1 }),
+      }),
+    ),
   );
 }
 
@@ -147,14 +157,21 @@ function warmAnalyticsCache(language: string): void {
 }
 
 function warmReelsAdminCache(): void {
-  warmIfMissing(ADMIN_CACHE_KEYS.reelsAdmin, async () => {
-    const [reelsStorage, likes, views] = await Promise.all([
-      apiClient.get('/api/v1/supersudo/reels'),
-      apiClient.get('/api/v1/supersudo/reels/likes'),
-      apiClient.get('/api/v1/supersudo/reels/views'),
-    ]);
-    return { reelsStorage, likes, views };
-  });
+  const cacheKey = ADMIN_CACHE_KEYS.reelsAdmin;
+  warmIfMissing(cacheKey, () =>
+    dedupedAdminRequest(cacheKey, async () => {
+      const [reelsStorage, likes, views] = await Promise.all([
+        apiClient.get<{ version: number; items: unknown[] }>('/api/v1/supersudo/reels'),
+        apiClient.get<{ likesByReelId: Record<string, number> }>('/api/v1/supersudo/reels/likes'),
+        apiClient.get<{ viewsByReelId: Record<string, number> }>('/api/v1/supersudo/reels/views'),
+      ]);
+      return {
+        reelsStorage,
+        likesByReelId: likes.likesByReelId,
+        viewsByReelId: views.viewsByReelId,
+      };
+    }),
+  );
 }
 
 /** Warms API cache for a specific admin route (hover / pointer down). */
