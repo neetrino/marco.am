@@ -162,6 +162,46 @@ function mapGuestItemToCartItem(
   };
 }
 
+export async function resolveGuestCartTotalsFromNetwork(
+  items: StoredGuestCartItem[],
+): Promise<{ itemsCount: number; total: number }> {
+  if (items.length === 0) {
+    return { itemsCount: 0, total: 0 };
+  }
+
+  const catalogById = await fetchGuestCartCatalogProducts(items.map((item) => item.productId));
+  const slugsForDetail = [
+    ...new Set(
+      items
+        .map(
+          (item) =>
+            normalizeProductSlug(catalogById.get(item.productId)?.slug) ??
+            normalizeProductSlug(item.productSlug),
+        )
+        .filter((slug): slug is string => Boolean(slug)),
+    ),
+  ];
+  const detailBySlug = await fetchProductDetailsBySlugs(slugsForDetail);
+
+  let itemsCount = 0;
+  let total = 0;
+  for (const item of items) {
+    const catalog = catalogById.get(item.productId);
+    const slug =
+      normalizeProductSlug(catalog?.slug) ?? normalizeProductSlug(item.productSlug);
+    const detail = slug ? detailBySlug.get(slug) : undefined;
+    const variant = detail ? findGuestCartVariant(detail, item.variantId) : undefined;
+    const unitPrice = resolveGuestUnitPrice(
+      Number(variant?.currentPrice ?? variant?.price ?? catalog?.price ?? item.price ?? 0),
+      item.price,
+    );
+    itemsCount += Number(item.quantity);
+    total += cartLineSubtotal(unitPrice, item.quantity);
+  }
+
+  return { itemsCount, total };
+}
+
 function buildCartFromResolvedItems(validItems: CartItem[]): Cart {
   const subtotal = validItems.reduce(
     (sum, item) => sum + cartLineSubtotal(item.price, item.quantity),

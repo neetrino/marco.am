@@ -1,9 +1,11 @@
-import { fetchGuestCartCatalogProducts } from '../../app/cart/guest-cart-catalog-fetch';
-import { cartLineSubtotal, resolveGuestUnitPrice } from '../../app/cart/line-subtotal';
+import { fetchGuestCart } from '../../app/cart/cart-fetcher';
+import { cartLineSubtotal } from '../../app/cart/line-subtotal';
 import {
   readStoredGuestCart,
   type StoredGuestCartItem,
 } from '../../app/cart/guest-cart-local';
+import { getStoredLanguage } from '../language';
+import { t as translate } from '../i18n';
 
 export type GuestCartTotals = {
   itemsCount: number;
@@ -33,25 +35,7 @@ export function guestCartNeedsCatalogPriceResolution(items: StoredGuestCartItem[
   return items.some((item) => !Number.isFinite(Number(item.price)) || Number(item.price) <= 0);
 }
 
-export async function resolveGuestCartTotalsFromCatalog(
-  items: StoredGuestCartItem[],
-): Promise<GuestCartTotals> {
-  if (items.length === 0) {
-    return { itemsCount: 0, total: 0 };
-  }
-
-  const catalogById = await fetchGuestCartCatalogProducts(items.map((item) => item.productId));
-  const itemsCount = items.reduce((sum, item) => sum + Number(item.quantity), 0);
-  const total = items.reduce((sum, item) => {
-    const catalog = catalogById.get(item.productId);
-    const unitPrice = resolveGuestUnitPrice(catalog?.price ?? 0, item.price);
-    return sum + cartLineSubtotal(unitPrice, item.quantity);
-  }, 0);
-
-  return { itemsCount, total };
-}
-
-/** Reads guest cart totals from localStorage, resolving catalog prices when stored prices are missing. */
+/** Reads guest cart totals from localStorage, resolving catalog + variant prices when stored prices are missing. */
 export async function loadGuestCartTotals(): Promise<GuestCartTotals> {
   const items = readStoredGuestCart();
   if (items.length === 0) {
@@ -64,7 +48,15 @@ export async function loadGuestCartTotals(): Promise<GuestCartTotals> {
   }
 
   try {
-    return await resolveGuestCartTotalsFromCatalog(items);
+    const lang = getStoredLanguage();
+    const cart = await fetchGuestCart((key) => translate(lang, key));
+    if (!cart) {
+      return storedTotals;
+    }
+    return {
+      itemsCount: cart.itemsCount,
+      total: Number(cart.totals.total) || 0,
+    };
   } catch {
     return storedTotals;
   }

@@ -6,6 +6,7 @@ import {
   removeGuestCartItem,
   updateGuestCartItemQuantity,
 } from './guest-cart-local';
+import { dispatchCartSummaryUpdate } from '../../lib/cart/cart-summary-events';
 import { cartLineSubtotal } from './line-subtotal';
 
 /**
@@ -66,7 +67,8 @@ export async function handleRemoveItem(
   }
 
   const updatedItems = cart.items.filter((item) => item.id !== itemId);
-  setCart(buildOptimisticCart(cart, updatedItems));
+  const optimisticCart = buildOptimisticCart(cart, updatedItems);
+  setCart(optimisticCart);
 
   try {
     if (!isLoggedIn) {
@@ -74,12 +76,12 @@ export async function handleRemoveItem(
         itemToRemove.variant.product.id,
         itemToRemove.variant.id,
       );
-      window.dispatchEvent(new Event('cart-updated'));
+      dispatchCartSummaryUpdate(optimisticCart);
       return;
     }
 
     await apiClient.delete(`/api/v1/cart/items/${itemId}`);
-    window.dispatchEvent(new Event('cart-updated'));
+    dispatchCartSummaryUpdate(optimisticCart);
   } catch (error: unknown) {
     logger.error('Error removing item', { error, itemId });
     await fetchCart();
@@ -116,13 +118,15 @@ export async function handleUpdateQuantity(
     return;
   }
 
+  let optimisticCart: Cart | null = null;
   if (cart) {
     const updatedItems = cart.items.map((item) =>
       item.id === itemId
         ? { ...item, quantity, total: cartLineSubtotal(item.price, quantity) }
         : item,
     );
-    setCart(buildOptimisticCart(cart, updatedItems));
+    optimisticCart = buildOptimisticCart(cart, updatedItems);
+    setCart(optimisticCart);
   }
 
   setUpdatingItems((prev) => new Set(prev).add(itemId));
@@ -138,12 +142,12 @@ export async function handleUpdateQuantity(
         cartItem.variant.id,
         quantity,
       );
-      window.dispatchEvent(new Event('cart-updated'));
+      dispatchCartSummaryUpdate(optimisticCart);
       return;
     }
 
     await apiClient.patch(`/api/v1/cart/items/${itemId}`, { quantity });
-    window.dispatchEvent(new Event('cart-updated'));
+    dispatchCartSummaryUpdate(optimisticCart);
   } catch (error: unknown) {
     const errorObj = error as { detail?: string; message?: string };
     logger.error('Error updating quantity', { error, itemId });
