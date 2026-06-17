@@ -8,10 +8,9 @@ import type { AnalyticsData } from '../types';
 
 interface StatsCardsProps {
   analytics: AnalyticsData;
-  totalUsers: number | null;
 }
 
-export function StatsCards({ analytics, totalUsers }: StatsCardsProps) {
+export function StatsCards({ analytics }: StatsCardsProps) {
   const { t } = useTranslation();
   const router = useRouter();
 
@@ -93,7 +92,7 @@ export function StatsCards({ analytics, totalUsers }: StatsCardsProps) {
         </div>
         <p className="mb-1 text-sm font-medium text-marco-text/70">{t('admin.analytics.totalUsers')}</p>
         <p className="text-3xl font-bold text-marco-black">
-          {totalUsers !== null ? totalUsers : '—'}
+          {analytics.totalUsers}
         </p>
       </Card>
     </div>

@@ -32,7 +32,6 @@ export default function AnalyticsPage() {
     analytics,
     orderStatusBreakdown,
     orderStatusBreakdownFailed,
-    totalUsers,
     loading,
   } = useAnalytics({
     period,
@@ -82,7 +81,7 @@ export default function AnalyticsPage() {
           <>
             {analytics ? (
               <>
-                <StatsCards analytics={analytics} totalUsers={totalUsers} />
+                <StatsCards analytics={analytics} />
 
                 {orderStatusBreakdownFailed ? (
                   <Card className="admin-card border-amber-200/80 bg-amber-50/80 p-4 shadow-sm">

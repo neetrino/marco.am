@@ -4,6 +4,7 @@ vi.mock("@white-shop/db", () => ({
   db: {
     order: { findMany: vi.fn() },
     user: { findMany: vi.fn() },
+    $queryRaw: vi.fn(),
   },
 }));
 
@@ -13,82 +14,71 @@ import { getCustomerAnalytics } from "./customer-analytics";
 
 const orderFindMany = db.order.findMany as unknown as ReturnType<typeof vi.fn>;
 const userFindMany = db.user.findMany as unknown as ReturnType<typeof vi.fn>;
+const queryRaw = db.$queryRaw as unknown as ReturnType<typeof vi.fn>;
 
 describe("getCustomerAnalytics", () => {
   beforeEach(() => {
     orderFindMany.mockReset();
     userFindMany.mockReset();
+    queryRaw.mockReset();
   });
 
   it("counts new vs repeat by first order date and ranks top spenders on paid orders only", async () => {
     const start = new Date("2025-01-10T00:00:00.000Z");
     const end = new Date("2025-01-17T23:59:59.999Z");
 
-    orderFindMany.mockImplementation((args: unknown) => {
-      const q = args as {
-        where?: { createdAt?: { gte?: Date; lte?: Date } };
-        select?: Record<string, boolean>;
-        orderBy?: { createdAt: string };
-      };
+    queryRaw.mockResolvedValue([
+      {
+        identity_key: "user:u-repeat",
+        first_at: new Date("2024-01-01T00:00:00.000Z"),
+      },
+      {
+        identity_key: "email:guest@example.com",
+        first_at: new Date("2025-01-11T10:00:00.000Z"),
+      },
+      {
+        identity_key: "user:u-new",
+        first_at: new Date("2025-01-12T12:00:00.000Z"),
+      },
+    ]);
 
-      if (q.orderBy?.createdAt === "asc") {
-        return Promise.resolve([
-          {
-            userId: "u-repeat",
-            customerEmail: "r@example.com",
-            createdAt: new Date("2024-01-01T00:00:00.000Z"),
-          },
-          {
-            userId: null,
-            customerEmail: "guest@example.com",
-            createdAt: new Date("2025-01-11T10:00:00.000Z"),
-          },
-          {
-            userId: "u-new",
-            customerEmail: null,
-            createdAt: new Date("2025-01-12T12:00:00.000Z"),
-          },
-        ]);
-      }
-
-      return Promise.resolve([
-        {
-          userId: "u-repeat",
-          customerEmail: "r@example.com",
-          total: 100,
-          paymentStatus: "paid",
-          currency: "AMD",
-        },
-        {
-          userId: "u-new",
-          customerEmail: null,
-          total: 50,
-          paymentStatus: "paid",
-          currency: "AMD",
-        },
-        {
-          userId: null,
-          customerEmail: "guest@example.com",
-          total: 200,
-          paymentStatus: "paid",
-          currency: "AMD",
-        },
-        {
-          userId: null,
-          customerEmail: null,
-          total: 999,
-          paymentStatus: "paid",
-          currency: "AMD",
-        },
-        {
-          userId: "u-new",
-          customerEmail: null,
-          total: 10,
-          paymentStatus: "pending",
-          currency: "AMD",
-        },
-      ]);
-    });
+    orderFindMany.mockResolvedValue([
+      {
+        userId: "u-repeat",
+        customerEmail: "r@example.com",
+        total: 100,
+        paymentStatus: "paid",
+        currency: "AMD",
+      },
+      {
+        userId: "u-new",
+        customerEmail: null,
+        total: 50,
+        paymentStatus: "paid",
+        currency: "AMD",
+      },
+      {
+        userId: null,
+        customerEmail: "guest@example.com",
+        total: 200,
+        paymentStatus: "paid",
+        currency: "AMD",
+      },
+      {
+        userId: null,
+        customerEmail: null,
+        total: 999,
+        paymentStatus: "paid",
+        currency: "AMD",
+      },
+      {
+        userId: "u-new",
+        customerEmail: null,
+        total: 10,
+        paymentStatus: "pending",
+        currency: "AMD",
+      },
+    ]);
 
     userFindMany.mockResolvedValue([
       {

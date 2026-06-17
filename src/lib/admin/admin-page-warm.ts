@@ -1,6 +1,7 @@
 import { apiClient } from '@/lib/api-client';
 import {
   ADMIN_CACHE_KEYS,
+  buildAdminListCacheKey,
   buildAdminOrdersListApiParams,
   buildOrdersDefaultListCacheKey,
   buildProductDiscountsCacheKey,
@@ -17,6 +18,7 @@ import {
   readAdminSessionCache,
   writeAdminSessionCache,
 } from '@/lib/admin/admin-session-cache';
+import { STOCK_ANALYTICS_PAGE_LIMIT } from '@/lib/constants/stock-analytics-ui';
 import { getStoredLanguage } from '@/lib/language';
 
 function warmIfMissing<T>(key: string, fetcher: () => Promise<T>): void {
@@ -115,15 +117,27 @@ function warmPriceFilterCache(): void {
   );
 }
 
-function warmAnalyticsCache(): void {
+function warmAnalyticsCache(language: string): void {
   warmIfMissing(ADMIN_CACHE_KEYS.analyticsWeek, () =>
-    apiClient.get('/api/v1/supersudo/analytics', { params: { period: 'week' } }),
+    dedupedAdminRequest(ADMIN_CACHE_KEYS.analyticsWeek, () =>
+      apiClient.get('/api/v1/supersudo/analytics', { params: { period: 'week' } }),
+    ),
   );
   warmIfMissing(ADMIN_CACHE_KEYS.analyticsOrderStatus, () =>
-    apiClient.get('/api/v1/supersudo/analytics/order-status-breakdown'),
+    dedupedAdminRequest(ADMIN_CACHE_KEYS.analyticsOrderStatus, () =>
+      apiClient.get('/api/v1/supersudo/analytics/order-status-breakdown'),
+    ),
   );
-  warmIfMissing(ADMIN_CACHE_KEYS.stockAnalytics, () =>
-    apiClient.get('/api/v1/supersudo/analytics/stock'),
+  const stockCacheKey = buildAdminListCacheKey('analytics/stock', {
+    locale: language,
+    limit: String(STOCK_ANALYTICS_PAGE_LIMIT),
+  });
+  warmIfMissing(stockCacheKey, () =>
+    dedupedAdminRequest(stockCacheKey, () =>
+      apiClient.get('/api/v1/supersudo/analytics/stock', {
+        params: { locale: language, limit: String(STOCK_ANALYTICS_PAGE_LIMIT) },
+      }),
+    ),
   );
 }
 
@@ -186,7 +200,7 @@ export function warmAdminPageCacheForPath(path: string): void {
       warmPriceFilterCache();
       return;
     case '/supersudo/analytics':
-      warmAnalyticsCache();
+      warmAnalyticsCache(language);
       return;
     case '/supersudo/reels':
       warmReelsAdminCache();

@@ -64,28 +64,21 @@
 
 ---
 
-#### 2. Analytics — `/supersudo/analytics` (следующий)
+#### 2. Analytics — `/supersudo/analytics` ✅
 
-**Симптомы (код):**
+**Было:** `getAnalytics` грузил все заказы с items/variants/products; `getCustomerAnalytics` — все заказы для first-order map; 5 API (analytics + breakdown + stats + stock + дубли).
 
-- До **4 API** на mount: `analytics`, `order-status-breakdown`, `stats` (только total users), `analytics/stock` (`useAnalytics.ts`, `useStockAnalytics.ts`).
-- Всегда бьёт в API даже при валидном cache (`beginAdminDataFetch` без early return).
-- Warm покрывает 3 endpoint, но **без dedup** → дубли с страницей.
-- **`getAnalytics`** (`admin-stats/analytics.ts`): `order.findMany` за период с полным `items → variant → product → categories` — O(все заказы × позиции). Аналогичная проблема была на dashboard до `groupBy`.
+**Сделано:**
 
-**План:**
-
-- [ ] **Frontend:** cache skip + dedup для всех 4 запросов; убрать лишний `GET /stats` — взять `users.total` из analytics или кэша dashboard.
-- [ ] **Frontend:** `t` убрать из deps эффекта в `useAnalytics`.
-- [ ] **Backend:** переписать `getAnalytics` на агрегаты: `groupBy` по продуктам/категориям, raw SQL для orders-by-day (уже есть), bounded `take` для top/least lists.
-- [ ] **Backend:** `getCustomerAnalytics` — проверить full-scan заказов.
-- [ ] **Warm:** `dedupedAdminRequest` для analytics week + breakdown + stock.
-
-**Файлы:** `analytics/hooks/*`, `admin-stats/analytics.ts`, `customer-analytics.ts`, `admin-page-warm.ts`.
+- [x] Backend: SQL aggregates — order stats, product sales, top categories, orders-by-day
+- [x] Backend: `buildFirstOrderAtMap` → один `GROUP BY` SQL вместо full scan
+- [x] `totalUsers` в ответе analytics — убран лишний `GET /stats`
+- [x] Frontend: cache skip + dedup в `useAnalytics` и `useStockAnalytics`
+- [x] Warm: dedup + правильный stock cache key (locale + limit)
 
 ---
 
-#### 3. Attributes — `/supersudo/attributes`
+#### 3. Attributes — `/supersudo/attributes` (следующий)
 
 **Симптомы (код):**
 
@@ -293,4 +286,4 @@
 
 ---
 
-*Обновлено: 2026-06-17 · Оптимизированы: dashboard, products, orders, promo-codes, **quick-settings***
+*Обновлено: 2026-06-17 · Оптимизированы: dashboard, products, orders, promo-codes, quick-settings, **analytics***
