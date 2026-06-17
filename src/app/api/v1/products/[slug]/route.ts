@@ -1,16 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createHash } from "node:crypto";
 import { toApiErrorResponse } from "@/lib/api/next-route-error";
+import { buildPdpDetailApiCacheKey } from "@/lib/product-pdp/pdp-cache-keys";
 import { productsService } from "@/lib/services/products.service";
 import { getCachedJson } from "@/lib/services/read-through-json-cache";
 import { toApiError } from "@/lib/types/errors";
 
 const PRODUCT_DETAIL_CACHE_TTL_SEC = 90;
-
-function productDetailCacheKey(slug: string, lang: string): string {
-  const hash = createHash("sha256").update(`${slug}\0${lang}`).digest("hex");
-  return `cache:products:detail:v1:${hash}`;
-}
 
 export async function GET(
   req: NextRequest,
@@ -20,7 +15,7 @@ export async function GET(
     const { searchParams } = new URL(req.url);
     const lang = searchParams.get("lang") || "en";
     const { slug } = await params;
-    const cacheKey = productDetailCacheKey(slug, lang);
+    const cacheKey = buildPdpDetailApiCacheKey(slug, lang);
     const result = await getCachedJson(cacheKey, PRODUCT_DETAIL_CACHE_TTL_SEC, () =>
       productsService.findBySlug(slug, lang),
       { requireSharedCache: true },

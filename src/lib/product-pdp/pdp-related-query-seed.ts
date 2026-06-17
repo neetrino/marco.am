@@ -12,7 +12,7 @@ import {
 import { RELATED_PRODUCTS_PAGE_SIZE } from '@/lib/product-pdp/related-products.constants';
 import { queryKeys } from '@/lib/query-keys';
 
-export type RelatedProductsInfiniteData = InfiniteData<
+type RelatedProductsInfiniteData = InfiniteData<
   RelatedProductsApiResponse,
   number
 >;
