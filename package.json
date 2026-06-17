@@ -32,7 +32,7 @@
     "db:seed:apple": "node shared/db/prisma/seed-apple-product.cjs",
     "import:products-csv": "tsx src/scripts/import-marco-csv-products.ts",
     "backfill:product-categories": "tsx src/scripts/backfill-product-category-links.ts",
-    "backfill:product-brands": "tsx src/scripts/backfill-product-brands.ts",
+    "migrate:brand-logos": "tsx src/scripts/migrate-brand-logos-to-r2.ts",
     "export:marco-xlsx-brands": "python src/scripts/export-marco-xlsx-brands.py",
     "export:marco-xlsx-skus": "python src/scripts/export-marco-xlsx-skus.py",
     "sync:product-skus-xlsx": "tsx src/scripts/sync-product-skus-from-xlsx.ts",
