@@ -58,8 +58,6 @@ export default function AnalyticsPage() {
       t={t}
       title={t('admin.analytics.title')}
       subtitle={t('admin.analytics.subtitle')}
-      backLabel={t('admin.analytics.backToAdmin')}
-      onBack={() => router.push('/supersudo')}
     >
       <div className="space-y-6 pb-8">
         <PeriodSelector

@@ -115,8 +115,6 @@ export default function UsersPage() {
       router={router}
       t={t}
       title={t('admin.users.title')}
-      backLabel={t('admin.users.backToAdmin')}
-      onBack={() => router.push('/supersudo')}
       headerActions={
         (appliedSearch || roleFilter !== 'all') ? (
           <button

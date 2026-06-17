@@ -349,8 +349,6 @@ export default function BrandsPage() {
       router={router}
       t={t}
       title={t('admin.brands.title')}
-      backLabel={t('admin.common.backToAdmin')}
-      onBack={() => router.push('/supersudo')}
       headerActions={addBrandHeaderAction}
     >
       <div className="space-y-5">

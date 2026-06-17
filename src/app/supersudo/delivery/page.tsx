@@ -134,8 +134,6 @@ export default function DeliveryPage() {
       router={router}
       t={t}
       title={t('admin.delivery.title')}
-      backLabel={t('admin.delivery.backToAdmin')}
-      onBack={() => router.push('/supersudo')}
     >
       <div className="space-y-6 pb-8">
           <Card className="admin-card overflow-hidden border-marco-border/70 bg-white/95 p-0 shadow-sm">

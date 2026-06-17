@@ -51,8 +51,6 @@ export default function AttributesPage() {
       t={t}
       title={t('admin.attributes.title')}
       subtitle={t('admin.attributes.subtitle')}
-      backLabel={t('admin.common.backToAdmin')}
-      onBack={() => router.push('/supersudo')}
       headerActions={headerStats}
     >
       <AttributesPageContent {...attributeState} />

@@ -404,8 +404,6 @@ export default function CategoriesPage() {
         router={router}
         t={t}
         title={t('admin.categories.title')}
-        backLabel={t('admin.categories.backToAdmin')}
-        onBack={() => router.push('/supersudo')}
         headerActions={addCategoryHeaderActions}
       >
         <div className="space-y-5">

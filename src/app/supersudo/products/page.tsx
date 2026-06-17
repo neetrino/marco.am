@@ -411,8 +411,6 @@ function ProductsPageContent() {
       router={router}
       t={t}
       title={t('admin.products.title')}
-      backLabel={t('admin.products.backToAdmin')}
-      onBack={() => router.push('/supersudo')}
       headerActions={
         <div className="flex flex-wrap items-center justify-end gap-2">
           {(search || selectedCategories.size > 0 || skuSearch || stockFilter !== 'all') ? (

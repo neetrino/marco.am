@@ -519,8 +519,6 @@ export default function HeroBannerPage() {
       t={t}
       title={t('admin.heroBanner.title')}
       subtitle={t('admin.heroBanner.subtitle')}
-      backLabel={t('admin.heroBanner.backToAdmin')}
-      onBack={() => router.push('/supersudo')}
     >
       <div className="space-y-5">
         <Card className="admin-card border border-slate-100 bg-white/95 shadow-sm">

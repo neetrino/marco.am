@@ -209,8 +209,6 @@ export default function SettingsPage() {
       router={router}
       t={t}
       title={t('admin.settings.title')}
-      backLabel={t('admin.settings.backToAdmin')}
-      onBack={() => router.push('/supersudo')}
     >
       <section className="relative mb-6 overflow-hidden rounded-[28px] border border-marco-border/80 bg-gradient-to-br from-white via-[#fffdf5] to-marco-yellow/20 p-6 shadow-[0_18px_44px_rgba(16,16,16,0.08)]">
         <div className="pointer-events-none absolute -right-14 -top-14 h-40 w-40 rounded-full bg-marco-yellow/30 blur-3xl" />

@@ -89,8 +89,6 @@ export default function MessagesPage() {
       router={router}
       t={t}
       title={t('admin.messages.title')}
-      backLabel={t('admin.messages.backToAdmin')}
-      onBack={() => router.push('/supersudo')}
       headerActions={
         selectedIds.size > 0 ? (
           <button

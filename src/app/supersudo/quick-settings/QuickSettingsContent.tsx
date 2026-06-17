@@ -83,8 +83,6 @@ export function QuickSettingsContent({
       t={t}
       title={t('admin.quickSettings.title')}
       subtitle={t('admin.quickSettings.subtitle')}
-      backLabel={t('admin.common.backToAdmin')}
-      onBack={() => router.push('/supersudo')}
     >
       <Card className="admin-card mb-6 overflow-hidden border-slate-200/80 bg-gradient-to-br from-white via-white to-slate-50 shadow-[0_14px_36px_rgba(15,23,42,0.08)]">
         <div className="mb-5 flex items-center justify-between">

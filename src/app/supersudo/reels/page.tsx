@@ -354,8 +354,6 @@ export default function ReelsPage() {
       router={router}
       t={t}
       title={t('admin.reels.title')}
-      backLabel={t('admin.reels.backToAdmin')}
-      onBack={() => router.push('/supersudo')}
       headerActions={addReelHeaderAction}
     >
       <div className="min-w-0 flex-1 space-y-4">

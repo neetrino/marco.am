@@ -57,8 +57,6 @@ export function OrdersPageContent() {
       router={router}
       t={t}
       title={t('admin.orders.title')}
-      backLabel={t('admin.orders.backToAdmin')}
-      onBack={() => router.push('/supersudo')}
     >
       <div className="space-y-5">
         <OrdersFilters
