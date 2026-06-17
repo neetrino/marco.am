@@ -5,16 +5,8 @@ import type { Product } from '@/app/products/[slug]/types';
 import { type LanguageCode } from '@/lib/language';
 import { queryKeys } from '@/lib/query-keys';
 
-import {
-  PDP_QUERY_GC_TIME_MS,
-  PDP_QUERY_STALE_TIME_MS,
-  PDP_RELATED_GC_TIME_MS,
-  PDP_RELATED_STALE_TIME_MS,
-} from './pdp-query-cache';
+import { PDP_QUERY_GC_TIME_MS, PDP_QUERY_STALE_TIME_MS } from './pdp-query-cache';
 import { fetchProductDetail } from './product-pdp-fetchers';
-import { fetchRelatedProducts, hasUsableRelatedPayload } from './fetch-related-products';
-import type { RelatedProductsApiResponse } from './fetch-related-products';
-import { RELATED_PRODUCTS_PAGE_SIZE } from './related-products.constants';
 import { isPdpListingShell } from './resolve-pdp-listing-shell';
 
 function baseProductSlug(raw: string): string {
@@ -57,41 +49,14 @@ export function prefetchProductPdp(
     .then(() => undefined);
 }
 
-/** Heavier related carousel — run on click when the user commits to opening the product. */
+/**
+ * Commit (click) prefetch — ensure full detail is cached before navigation.
+ * Related products load client-side on the PDP, so they are not prefetched here.
+ */
 export function prefetchProductPdpOnCommit(
   queryClient: QueryClient,
   rawSlug: string,
   lang: LanguageCode,
 ): Promise<void> {
-  const slug = baseProductSlug(rawSlug);
-  if (!slug || RESERVED_ROUTES.includes(slug.toLowerCase())) {
-    return Promise.resolve();
-  }
-
-  const existingDetail = queryClient.getQueryData<Product>(
-    queryKeys.productDetail(slug, lang),
-  );
-  const existingRelated = queryClient.getQueryData<RelatedProductsApiResponse>(
-    queryKeys.relatedProducts(slug, lang, RELATED_PRODUCTS_PAGE_SIZE),
-  );
-
-  const detailPrefetch = hasFullProductDetails(existingDetail)
-    ? Promise.resolve()
-    : queryClient.prefetchQuery({
-        queryKey: queryKeys.productDetail(slug, lang),
-        queryFn: () => fetchProductDetail(slug, lang),
-        staleTime: PDP_QUERY_STALE_TIME_MS,
-        gcTime: PDP_QUERY_GC_TIME_MS,
-      });
-
-  const relatedPrefetch = hasUsableRelatedPayload(existingRelated)
-    ? Promise.resolve()
-    : queryClient.prefetchQuery({
-        queryKey: queryKeys.relatedProducts(slug, lang, RELATED_PRODUCTS_PAGE_SIZE),
-        queryFn: () => fetchRelatedProducts(slug, lang, RELATED_PRODUCTS_PAGE_SIZE, 0),
-        staleTime: PDP_RELATED_STALE_TIME_MS,
-        gcTime: PDP_RELATED_GC_TIME_MS,
-      });
-
-  return Promise.all([detailPrefetch, relatedPrefetch]).then(() => undefined);
+  return prefetchProductPdp(queryClient, rawSlug, lang);
 }
