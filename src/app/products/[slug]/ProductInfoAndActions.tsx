@@ -119,8 +119,7 @@ export function ProductInfoAndActions({
                 name={product.brand.name}
                 slug={product.brand.name}
                 logoUrl={product.brand.logo}
-                size="list"
-                logoBoxClassName="flex w-full min-h-7 max-w-[min(100%,140px)] shrink-0 items-center overflow-visible md:min-h-8 md:max-w-[min(100%,160px)]"
+                size="pdp"
               />
             ) : null}
             {primaryCategory ? (
