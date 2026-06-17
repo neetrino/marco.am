@@ -2,20 +2,49 @@
 
 import { useTranslation } from '../../../../lib/i18n-client';
 import { getOrderCustomerDisplay } from '../utils/order-details-display';
-import type { OrderDetails } from '../useOrders';
+import { formatAdminOrderListCustomerName } from '../utils/order-list-display';
+import type { Order, OrderDetails } from '../useOrders';
 import {
   ORDER_DETAIL_LABEL_CLASS,
   ORDER_DETAIL_SECTION_CLASS,
 } from './order-details-layout.constants';
 
 interface OrderDetailsCustomerProps {
-  orderDetails: OrderDetails;
+  orderDetails?: OrderDetails | null;
+  listOrder?: Order | null;
+  isPreview?: boolean;
 }
 
-export function OrderDetailsCustomer({ orderDetails }: OrderDetailsCustomerProps) {
+export function OrderDetailsCustomer({
+  orderDetails = null,
+  listOrder = null,
+  isPreview = false,
+}: OrderDetailsCustomerProps) {
   const { t } = useTranslation();
-  const { displayName, email, phone } = getOrderCustomerDisplay(orderDetails);
-  const nameLine = displayName.trim() || t('admin.orders.unknownCustomer');
+
+  const nameLine =
+    isPreview && listOrder
+      ? formatAdminOrderListCustomerName(listOrder, t('admin.orders.unknownCustomer'))
+      : orderDetails
+        ? getOrderCustomerDisplay(orderDetails).displayName.trim() ||
+          t('admin.orders.unknownCustomer')
+        : listOrder
+          ? formatAdminOrderListCustomerName(listOrder, t('admin.orders.unknownCustomer'))
+          : t('admin.orders.unknownCustomer');
+
+  const phone =
+    isPreview && listOrder
+      ? listOrder.customerPhone?.trim() || undefined
+      : orderDetails
+        ? getOrderCustomerDisplay(orderDetails).phone
+        : listOrder?.customerPhone?.trim() || undefined;
+
+  const email =
+    isPreview && listOrder
+      ? listOrder.customerEmail?.trim() || undefined
+      : orderDetails
+        ? getOrderCustomerDisplay(orderDetails).email
+        : listOrder?.customerEmail?.trim() || undefined;
 
   return (
     <section className={ORDER_DETAIL_SECTION_CLASS}>

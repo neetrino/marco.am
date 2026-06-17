@@ -29,6 +29,7 @@ export function OrdersPageContent() {
     selectedIds,
     bulkDeleting,
     selectedOrderId,
+    selectedListOrder,
     orderDetails,
     loadingOrderDetails,
     savingAdminNotes,
@@ -104,6 +105,7 @@ export function OrdersPageContent() {
 
         <OrderDetailsSheet
           open={Boolean(selectedOrderId)}
+          listOrder={selectedListOrder}
           orderDetails={orderDetails}
           loading={loadingOrderDetails}
           savingAdminNotes={savingAdminNotes}

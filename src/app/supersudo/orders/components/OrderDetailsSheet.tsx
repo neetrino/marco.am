@@ -9,12 +9,15 @@ import {
 } from '../../components/admin-side-sheet.constants';
 import { OrderDetailsBody } from './OrderDetailsBody';
 import { OrderDetailsSummaryBar } from './OrderDetailsSummaryBar';
-import { isOrderDetailsPreview } from '../utils/order-details-preview';
-import type { OrderDetails } from '../useOrders';
+import { OrderDetailsCustomer } from './OrderDetailsCustomer';
+import { hasLoadedOrderDetails } from '../utils/order-list-display';
+import { isOrderSheetLoadingDetails } from '../utils/order-details-preview';
+import type { Order, OrderDetails } from '../useOrders';
 import { ORDER_DETAIL_SECTION_CLASS } from './order-details-layout.constants';
 
 interface OrderDetailsSheetProps {
   open: boolean;
+  listOrder: Order | null;
   orderDetails: OrderDetails | null;
   loading: boolean;
   savingAdminNotes: boolean;
@@ -27,20 +30,17 @@ interface OrderDetailsSheetProps {
   updatingPaymentStatus?: boolean;
 }
 
-function OrderDetailsPreviewSkeleton() {
-  return (
-    <div className="mt-4 space-y-4 animate-pulse" aria-hidden>
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <div className={`${ORDER_DETAIL_SECTION_CLASS} h-36`} />
-        <div className={`${ORDER_DETAIL_SECTION_CLASS} h-36`} />
-      </div>
-      <div className={`${ORDER_DETAIL_SECTION_CLASS} h-48`} />
-    </div>
-  );
+function DeliveryPreviewSkeleton() {
+  return <div className={`${ORDER_DETAIL_SECTION_CLASS} h-36 animate-pulse`} aria-hidden />;
+}
+
+function ItemsPreviewSkeleton() {
+  return <div className={`${ORDER_DETAIL_SECTION_CLASS} h-48 animate-pulse`} aria-hidden />;
 }
 
 export function OrderDetailsSheet({
   open,
+  listOrder,
   orderDetails,
   loading,
   savingAdminNotes,
@@ -54,15 +54,18 @@ export function OrderDetailsSheet({
 }: OrderDetailsSheetProps) {
   const { t } = useTranslation();
 
-  const title = orderDetails?.number
-    ? `${t('admin.orders.orderDetails.title')} — ${orderDetails.number}`
+  const orderNumber = orderDetails?.number ?? listOrder?.number;
+  const title = orderNumber
+    ? `${t('admin.orders.orderDetails.title')} — ${orderNumber}`
     : t('admin.orders.orderDetails.title');
 
-  const createdLabel = orderDetails?.createdAt
-    ? `${t('admin.orders.orderDetails.createdAt')}: ${new Date(orderDetails.createdAt).toLocaleString()}`
+  const createdAt = orderDetails?.createdAt ?? listOrder?.createdAt;
+  const createdLabel = createdAt
+    ? `${t('admin.orders.orderDetails.createdAt')}: ${new Date(createdAt).toLocaleString()}`
     : null;
 
-  const isPreview = Boolean(orderDetails && loading && isOrderDetailsPreview(orderDetails));
+  const hasFullDetails = hasLoadedOrderDetails(orderDetails);
+  const isPreview = isOrderSheetLoadingDetails(loading, orderDetails);
 
   return (
     <AdminSideSheet
@@ -82,38 +85,43 @@ export function OrderDetailsSheet({
       }
     >
       <div className="min-h-0 flex-1 overflow-y-auto bg-slate-50/80 px-5 py-4 dark:bg-zinc-950/40">
-        {loading && !orderDetails ? (
+        {!listOrder && !orderDetails && loading ? (
           <div className="py-8 text-center">
             <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-gray-900 dark:border-white" />
             <p className="text-gray-600 dark:text-zinc-400">
               {t('admin.orders.orderDetails.loadingOrderDetails')}
             </p>
           </div>
-        ) : orderDetails ? (
-          isPreview ? (
-            <>
-              <OrderDetailsSummaryBar
-                orderDetails={orderDetails}
-                formatCurrency={formatCurrency}
-                onStatusChange={onStatusChange}
-                onPaymentStatusChange={onPaymentStatusChange}
-                updatingStatus={updatingStatus}
-                updatingPaymentStatus={updatingPaymentStatus}
-              />
-              <OrderDetailsPreviewSkeleton />
-            </>
-          ) : (
-            <OrderDetailsBody
+        ) : hasFullDetails && orderDetails ? (
+          <OrderDetailsBody
+            orderDetails={orderDetails}
+            listOrder={listOrder}
+            savingAdminNotes={savingAdminNotes}
+            onSaveAdminNotes={onSaveAdminNotes}
+            formatCurrency={formatCurrency}
+            onStatusChange={onStatusChange}
+            onPaymentStatusChange={onPaymentStatusChange}
+            updatingStatus={updatingStatus}
+            updatingPaymentStatus={updatingPaymentStatus}
+          />
+        ) : listOrder ? (
+          <div className="space-y-4">
+            <OrderDetailsSummaryBar
               orderDetails={orderDetails}
-              savingAdminNotes={savingAdminNotes}
-              onSaveAdminNotes={onSaveAdminNotes}
+              listOrder={listOrder}
+              isPreview={isPreview}
               formatCurrency={formatCurrency}
               onStatusChange={onStatusChange}
               onPaymentStatusChange={onPaymentStatusChange}
               updatingStatus={updatingStatus}
               updatingPaymentStatus={updatingPaymentStatus}
             />
-          )
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+              <DeliveryPreviewSkeleton />
+              <OrderDetailsCustomer listOrder={listOrder} isPreview />
+            </div>
+            <ItemsPreviewSkeleton />
+          </div>
         ) : (
           <div className="py-6 text-sm text-gray-600 dark:text-zinc-400">
             {t('admin.orders.orderDetails.failedToLoad')}

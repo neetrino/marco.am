@@ -22,10 +22,7 @@ import {
   writeAdminSessionCache,
 } from '@/lib/admin/admin-session-cache';
 import type { OrderAuditEntry } from "./types/order-audit";
-import {
-  buildOrderDetailsPreviewFromList,
-  isOrderDetailsPreview,
-} from './utils/order-details-preview';
+import { hasLoadedOrderDetails } from './utils/order-list-display';
 
 export type { OrderAuditEntry };
 
@@ -172,6 +169,7 @@ export function useOrders() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [selectedListOrder, setSelectedListOrder] = useState<Order | null>(null);
   const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
   const [loadingOrderDetails, setLoadingOrderDetails] = useState(false);
   const [savingAdminNotes, setSavingAdminNotes] = useState(false);
@@ -300,14 +298,15 @@ export function useOrders() {
 
 
   const handleViewOrderDetails = async (orderId: string) => {
+    const listOrder = orders.find((order) => order.id === orderId) ?? null;
     const cacheKey = buildAdminOrderDetailCacheKey(orderId);
     const cached = readAdminSessionCache<OrderDetails>(cacheKey, ADMIN_SESSION_CACHE_TTL_MS);
-    const listOrder = orders.find((order) => order.id === orderId);
-    const initialDetails = cached ?? (listOrder ? buildOrderDetailsPreviewFromList(listOrder) : null);
+    const cachedDetails = cached && hasLoadedOrderDetails(cached) ? cached : null;
 
     setSelectedOrderId(orderId);
-    setOrderDetails(initialDetails);
-    setLoadingOrderDetails(initialDetails == null || isOrderDetailsPreview(initialDetails));
+    setSelectedListOrder(listOrder);
+    setOrderDetails(cachedDetails);
+    setLoadingOrderDetails(true);
 
     try {
       const response = await dedupedAdminRequest(cacheKey, () =>
@@ -319,6 +318,7 @@ export function useOrders() {
       logger.error('Admin order details fetch failed', { error: err });
       alert(getApiOrErrorMessage(err, t('admin.orders.orderDetails.failedToLoad')));
       setSelectedOrderId(null);
+      setSelectedListOrder(null);
       setOrderDetails(null);
     } finally {
       setLoadingOrderDetails(false);
@@ -327,6 +327,7 @@ export function useOrders() {
 
   const handleCloseModal = () => {
     setSelectedOrderId(null);
+    setSelectedListOrder(null);
     setOrderDetails(null);
   };
 
@@ -563,6 +564,7 @@ export function useOrders() {
     selectedIds,
     bulkDeleting,
     selectedOrderId,
+    selectedListOrder,
     orderDetails,
     loadingOrderDetails,
     savingAdminNotes,

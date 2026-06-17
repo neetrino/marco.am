@@ -7,15 +7,18 @@ import { useTranslation } from '../../../../lib/i18n-client';
 import type { CurrencyCode } from '../../../../lib/currency';
 import { ADMIN_ORDER_STATUS_I18N_KEY } from '../utils/order-status-labels';
 import { getPaymentMethodLabel, isCashPaymentMethodLabel } from '../utils/order-details-display';
+import { formatAdminOrderListTotal } from '../utils/order-list-display';
 import { getPaymentStatusColor, getStatusColor } from '../utils/orderUtils';
-import type { OrderDetails } from '../useOrders';
+import type { Order, OrderDetails } from '../useOrders';
 import {
   ORDER_DETAIL_LABEL_CLASS,
   ORDER_DETAIL_SECTION_CLASS,
 } from './order-details-layout.constants';
 
 interface OrderDetailsSummaryBarProps {
-  orderDetails: OrderDetails;
+  orderDetails: OrderDetails | null;
+  listOrder?: Order | null;
+  isPreview?: boolean;
   formatCurrency: (amount: number, orderCurrency?: string, fromCurrency?: CurrencyCode) => string;
   onStatusChange?: (status: string) => void;
   onPaymentStatusChange?: (paymentStatus: string) => void;
@@ -45,6 +48,8 @@ function SummaryCell({
 
 export function OrderDetailsSummaryBar({
   orderDetails,
+  listOrder = null,
+  isPreview = false,
   formatCurrency,
   onStatusChange,
   onPaymentStatusChange,
@@ -52,14 +57,24 @@ export function OrderDetailsSummaryBar({
   updatingPaymentStatus = false,
 }: OrderDetailsSummaryBarProps) {
   const { t } = useTranslation();
-  const oc = orderDetails.currency || 'AMD';
-  const orderTotal =
-    orderDetails.totals != null
-      ? formatCurrency(orderDetails.totals.total, oc, 'AMD')
-      : formatCurrency(orderDetails.total, oc, 'AMD');
-  const paymentMethod = getPaymentMethodLabel(orderDetails);
+
+  const status = isPreview && listOrder ? listOrder.status : orderDetails?.status ?? listOrder?.status ?? 'pending';
+  const paymentStatus =
+    isPreview && listOrder
+      ? listOrder.paymentStatus
+      : orderDetails?.paymentStatus ?? listOrder?.paymentStatus ?? 'pending';
+
+  const orderTotal = listOrder
+    ? formatAdminOrderListTotal(listOrder, formatCurrency)
+    : orderDetails
+      ? orderDetails.totals != null
+        ? formatCurrency(orderDetails.totals.total, orderDetails.currency || 'AMD', 'AMD')
+        : formatCurrency(orderDetails.total, orderDetails.currency || 'AMD', 'AMD')
+      : '—';
+
+  const paymentMethod = orderDetails ? getPaymentMethodLabel(orderDetails) : null;
   const paymentMethodLabel =
-    isCashPaymentMethodLabel(paymentMethod)
+    paymentMethod && isCashPaymentMethodLabel(paymentMethod)
       ? t('checkout.payment.cash')
       : paymentMethod;
 
@@ -79,9 +94,9 @@ export function OrderDetailsSummaryBar({
               </div>
             ) : (
               <select
-                value={orderDetails.status}
+                value={status}
                 onChange={(event) => onStatusChange(event.target.value)}
-                className={`h-9 w-full max-w-[12rem] cursor-pointer rounded-lg border-0 px-2.5 text-sm font-semibold shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-500 ${getStatusColor(orderDetails.status)}`}
+                className={`h-9 w-full max-w-[12rem] cursor-pointer rounded-lg border-0 px-2.5 text-sm font-semibold shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-500 ${getStatusColor(status)}`}
               >
                 <option value="pending">{t(ADMIN_ORDER_STATUS_I18N_KEY.pending)}</option>
                 <option value="processing">{t(ADMIN_ORDER_STATUS_I18N_KEY.processing)}</option>
@@ -91,21 +106,25 @@ export function OrderDetailsSummaryBar({
             )
           ) : (
             <span
-              className={`inline-flex rounded-lg px-2.5 py-1 text-sm font-semibold ${getStatusColor(orderDetails.status)}`}
+              className={`inline-flex rounded-lg px-2.5 py-1 text-sm font-semibold ${getStatusColor(status)}`}
             >
-              {readOrderStatusLabel(orderDetails.status, t)}
+              {readOrderStatusLabel(status, t)}
             </span>
           )}
         </SummaryCell>
 
         <SummaryCell label={t('admin.orders.orderDetails.summaryMethodLabel')}>
-          <div className="flex items-center gap-2">
-            {isCashPaymentMethodLabel(paymentMethod) ? (
-              <CashPaymentIcon className="h-5 w-5 shrink-0 text-emerald-600" />
-            ) : null}
-            <span className="text-sm font-medium capitalize text-slate-900">{paymentMethodLabel}</span>
-          </div>
-          {orderDetails.payment?.cardBrand && orderDetails.payment.cardLast4 ? (
+          {isPreview || !paymentMethodLabel ? (
+            <span className="text-sm text-slate-400">—</span>
+          ) : (
+            <div className="flex items-center gap-2">
+              {paymentMethod && isCashPaymentMethodLabel(paymentMethod) ? (
+                <CashPaymentIcon className="h-5 w-5 shrink-0 text-emerald-600" />
+              ) : null}
+              <span className="text-sm font-medium capitalize text-slate-900">{paymentMethodLabel}</span>
+            </div>
+          )}
+          {!isPreview && orderDetails?.payment?.cardBrand && orderDetails.payment.cardLast4 ? (
             <p className="mt-1 text-xs text-slate-500">
               {orderDetails.payment.cardBrand} ••••{orderDetails.payment.cardLast4}
             </p>
@@ -121,9 +140,9 @@ export function OrderDetailsSummaryBar({
               </div>
             ) : (
               <select
-                value={orderDetails.paymentStatus}
+                value={paymentStatus}
                 onChange={(event) => onPaymentStatusChange(event.target.value)}
-                className={`h-9 w-full max-w-[12rem] cursor-pointer rounded-lg border-0 px-2.5 text-sm font-semibold shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-500 ${getPaymentStatusColor(orderDetails.paymentStatus)}`}
+                className={`h-9 w-full max-w-[12rem] cursor-pointer rounded-lg border-0 px-2.5 text-sm font-semibold shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-500 ${getPaymentStatusColor(paymentStatus)}`}
               >
                 <option value="paid">{t('admin.orders.paid')}</option>
                 <option value="pending">{t('admin.orders.pendingPayment')}</option>
@@ -132,11 +151,11 @@ export function OrderDetailsSummaryBar({
             )
           ) : (
             <span
-              className={`inline-flex rounded-lg px-2.5 py-1 text-sm font-semibold ${getPaymentStatusColor(orderDetails.paymentStatus)}`}
+              className={`inline-flex rounded-lg px-2.5 py-1 text-sm font-semibold ${getPaymentStatusColor(paymentStatus)}`}
             >
-              {orderDetails.paymentStatus === 'paid'
+              {paymentStatus === 'paid'
                 ? t('admin.orders.paid')
-                : orderDetails.paymentStatus === 'failed'
+                : paymentStatus === 'failed'
                   ? t('admin.orders.failed')
                   : t('admin.orders.pendingPayment')}
             </span>

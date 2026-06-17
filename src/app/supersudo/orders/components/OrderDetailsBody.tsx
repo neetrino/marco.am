@@ -6,10 +6,11 @@ import { OrderDetailsDelivery } from './OrderDetailsDelivery';
 import { OrderDetailsCustomer } from './OrderDetailsCustomer';
 import { OrderDetailsItems } from './OrderDetailsItems';
 import { OrderDetailsNotes } from './OrderDetailsNotes';
-import type { OrderDetails } from '../useOrders';
+import type { Order, OrderDetails } from '../useOrders';
 
 interface OrderDetailsBodyProps {
   orderDetails: OrderDetails;
+  listOrder?: Order | null;
   savingAdminNotes: boolean;
   onSaveAdminNotes: (adminNotes: string) => Promise<void>;
   formatCurrency: (amount: number, orderCurrency?: string, fromCurrency?: CurrencyCode) => string;
@@ -21,6 +22,7 @@ interface OrderDetailsBodyProps {
 
 export function OrderDetailsBody({
   orderDetails,
+  listOrder = null,
   savingAdminNotes,
   onSaveAdminNotes,
   formatCurrency,
@@ -33,6 +35,7 @@ export function OrderDetailsBody({
     <div className="space-y-4">
       <OrderDetailsSummaryBar
         orderDetails={orderDetails}
+        listOrder={listOrder}
         formatCurrency={formatCurrency}
         onStatusChange={onStatusChange}
         onPaymentStatusChange={onPaymentStatusChange}
