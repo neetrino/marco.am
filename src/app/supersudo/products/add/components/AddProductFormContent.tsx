@@ -73,7 +73,6 @@ interface AddProductFormContentProps {
   onTitleChange: (e: ChangeEvent<HTMLInputElement>) => void;
   onSlugChange: (e: ChangeEvent<HTMLInputElement>) => void;
   onDescriptionChange: (entries: ProductDescriptionEntry[]) => void;
-  onProductTypeChange: (type: 'simple' | 'variable') => void;
   onUploadImages: (event: ChangeEvent<HTMLInputElement>) => Promise<void>;
   onRemoveImage: (index: number) => void;
   onSetFeaturedImage: (index: number) => void;
@@ -109,8 +108,7 @@ interface AddProductFormContentProps {
   onApplyToAllVariants: (field: 'price' | 'compareAtPrice' | 'stock' | 'sku', value: string) => void;
   isClothingCategory: () => boolean;
   handleSubmit: (e: React.FormEvent) => void;
-  hideProductTypeSelector?: boolean;
-  onCancel?: () => void;
+  onCancel: () => void;
 }
 
 export function AddProductFormContent({
@@ -142,7 +140,6 @@ export function AddProductFormContent({
   onTitleChange,
   onSlugChange,
   onDescriptionChange,
-  onProductTypeChange,
   onUploadImages,
   onRemoveImage,
   onSetFeaturedImage,
@@ -178,7 +175,6 @@ export function AddProductFormContent({
   onApplyToAllVariants,
   isClothingCategory,
   handleSubmit,
-  hideProductTypeSelector,
   onCancel,
 }: AddProductFormContentProps) {
   return (
@@ -188,15 +184,12 @@ export function AddProductFormContent({
         className="space-y-6 p-5 pb-28 sm:space-y-8 sm:p-8 sm:pb-32"
       >
         <BasicInformation
-          productType={productType}
-          setProductType={onProductTypeChange}
           title={formData.title}
           slug={formData.slug}
           description={formData.description}
           onTitleChange={onTitleChange}
           onSlugChange={onSlugChange}
           onDescriptionChange={onDescriptionChange}
-          hideProductTypeSelector={hideProductTypeSelector}
         />
 
         <ProductImages

@@ -1,29 +1,16 @@
-'use client';
+import { redirect } from 'next/navigation';
 
-import { Suspense, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { AddProductPageSuspenseFallback } from './components/AddProductPageSuspenseFallback';
-
-function AddProductRedirect() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const productId = searchParams.get('id');
-
-  useEffect(() => {
-    if (productId) {
-      router.replace(`/supersudo/products?edit=${productId}`);
-      return;
-    }
-    router.replace('/supersudo/products?create=1');
-  }, [productId, router]);
-
-  return null;
+interface AddProductRedirectPageProps {
+  searchParams: Promise<{ id?: string }>;
 }
 
-export default function AddProductPage() {
-  return (
-    <Suspense fallback={<AddProductPageSuspenseFallback />}>
-      <AddProductRedirect />
-    </Suspense>
-  );
+/** Legacy route — forwards to products sheet (?create=1 or ?edit=id). */
+export default async function AddProductRedirectPage({ searchParams }: AddProductRedirectPageProps) {
+  const { id } = await searchParams;
+
+  if (id) {
+    redirect(`/supersudo/products?edit=${encodeURIComponent(id)}`);
+  }
+
+  redirect('/supersudo/products?create=1');
 }

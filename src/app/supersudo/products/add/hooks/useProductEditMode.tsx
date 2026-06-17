@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api-client';
 import { CATALOG_PRICE_CURRENCY, convertPrice, type CurrencyCode } from '@/lib/currency';
 import { cleanImageUrls, separateMainAndVariantImages } from '@/lib/utils/image-utils';
@@ -35,7 +34,7 @@ interface UseProductEditModeProps {
   setHasVariantsToLoad: (has: boolean) => void;
   setProductType: (type: 'simple' | 'variable') => void;
   setSimpleProductData: (data: any) => void;
-  onLoadError?: () => void;
+  onLoadError: () => void;
 }
 
 export function useProductEditMode({
@@ -55,7 +54,6 @@ export function useProductEditMode({
   setSimpleProductData,
   onLoadError,
 }: UseProductEditModeProps) {
-  const router = useRouter();
   const { t } = useTranslation();
   const lastLoadedKeyRef = useRef<string | null>(null);
 
@@ -292,11 +290,7 @@ export function useProductEditMode({
           // Allow retry after a failed load
           lastLoadedKeyRef.current = null;
           console.error('❌ [ADMIN] Error loading product:', err);
-          if (onLoadError) {
-            onLoadError();
-          } else {
-            router.push('/supersudo/products');
-          }
+          onLoadError();
         } finally {
           setLoadingProduct(false);
         }
@@ -308,7 +302,6 @@ export function useProductEditMode({
     productId,
     isLoggedIn,
     isAdmin,
-    router,
     attributes,
     defaultCurrency,
     setLoadingProduct,

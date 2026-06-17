@@ -213,11 +213,9 @@ export function ProductEditorPanel({ productId, onCancel, onSaved }: ProductEdit
           fileInputRef={formState.fileInputRef}
           attributesDropdownRef={formState.attributesDropdownRef}
           variantImageInputRefs={formState.variantImageInputRefs}
-          hideProductTypeSelector
           onTitleChange={handleTitleChange}
           onSlugChange={(e) => formState.setFormData((prev) => ({ ...prev, slug: e.target.value }))}
           onDescriptionChange={(description) => formState.setFormData((prev) => ({ ...prev, description }))}
-          onProductTypeChange={formState.setProductType}
           onUploadImages={handleUploadImages}
           onRemoveImage={removeImageUrl}
           onSetFeaturedImage={setFeaturedImage}
