@@ -11,7 +11,7 @@ import { logger } from '@/lib/utils/logger';
 import { beginAdminDataFetch } from '@/lib/admin/admin-fetch-helpers';
 import {
   readAdminBrandsCache,
-  writeAdminBrandsCache,
+  fetchAdminBrands,
 } from '@/lib/admin/admin-reference-data-cache';
 import { processImageFile, toDomSafeImgSrcString, toSafeImgAttributeSrc } from '@/lib/utils/image-utils';
 import { showPopupConfirm } from '@/components/popup-service';
@@ -40,9 +40,9 @@ export default function BrandsPage() {
   const currentPath = pathname || '/supersudo/brands';
 
   const cachedBrands = readAdminBrandsCache<Brand>();
-  const hadCacheRef = useRef(Boolean(cachedBrands?.length));
+  const hadCacheRef = useRef(cachedBrands !== null);
   const [brands, setBrands] = useState<Brand[]>(cachedBrands ?? []);
-  const [loading, setLoading] = useState(!hadCacheRef.current);
+  const [loading, setLoading] = useState(cachedBrands === null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingBrand, setEditingBrand] = useState<Brand | null>(null);
@@ -56,6 +56,7 @@ export default function BrandsPage() {
   const [r2Logos, setR2Logos] = useState<R2LogoItem[]>([]);
   const [r2Loading, setR2Loading] = useState(false);
   const [r2Error, setR2Error] = useState<string | null>(null);
+  const [r2Fetched, setR2Fetched] = useState(false);
 
   const filteredBrands = useMemo((): Brand[] => {
     const raw = brandSearch.trim().toLowerCase();
@@ -71,25 +72,28 @@ export default function BrandsPage() {
     });
   }, [brands, brandSearch]);
 
-  const fetchBrands = useCallback(async () => {
+  const fetchBrands = useCallback(async (options?: { force?: boolean }) => {
+    const cached = readAdminBrandsCache<Brand>();
+    if (!options?.force && cached !== null) {
+      setBrands(cached);
+      setLoading(false);
+      hadCacheRef.current = true;
+      return;
+    }
+
     try {
       beginAdminDataFetch(hadCacheRef.current, setLoading);
-      logger.devLog('[ADMIN] Fetching brands...');
-      const response = await apiClient.get<{ data: Array<Brand & { logoUrl?: string | null }> }>(
-        '/api/v1/supersudo/brands'
-      );
-      const rows = response.data || [];
+      const rows = await fetchAdminBrands<Brand & { logoUrl?: string | null }>(options);
       setBrands(
         rows.map((b) => ({
           id: b.id,
           name: b.name,
           slug: b.slug,
           logoUrl: b.logoUrl ?? null,
-        }))
+        })),
       );
-      writeAdminBrandsCache(rows);
       hadCacheRef.current = true;
-      logger.devLog('[ADMIN] Brands loaded:', response.data?.length || 0);
+      logger.devLog('[ADMIN] Brands loaded:', rows.length);
     } catch (err: unknown) {
       logger.error('Error fetching brands', { error: err });
       if (!hadCacheRef.current) {
@@ -99,7 +103,7 @@ export default function BrandsPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchBrands();
@@ -128,9 +132,13 @@ export default function BrandsPage() {
     [formData.logoUrl],
   );
 
+  const r2SectionRef = useRef<HTMLDivElement | null>(null);
+  const r2RequestedRef = useRef(false);
+
   const fetchR2Logos = useCallback(async () => {
     setR2Loading(true);
     setR2Error(null);
+    setR2Fetched(true);
     try {
       const response = await apiClient.get<{ data: R2LogoItem[] }>('/api/v1/supersudo/brands/r2-logos');
       setR2Logos(Array.isArray(response.data) ? response.data : []);
@@ -144,7 +152,22 @@ export default function BrandsPage() {
   }, []);
 
   useEffect(() => {
-    fetchR2Logos();
+    const node = r2SectionRef.current;
+    if (!node) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting) && !r2RequestedRef.current) {
+          r2RequestedRef.current = true;
+          void fetchR2Logos();
+        }
+      },
+      { rootMargin: '120px' },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
   }, [fetchR2Logos]);
 
   const resetForm = () => {
@@ -219,7 +242,7 @@ export default function BrandsPage() {
     try {
       logger.devLog(`[ADMIN] Deleting brand: ${brandName} (${brandId})`);
       await apiClient.delete(`/api/v1/supersudo/brands/${brandId}`);
-      await fetchBrands();
+      await fetchBrands({ force: true });
       showToast(t('admin.brands.deletedSuccess'), 'success');
     } catch (err: unknown) {
       const status = getErrorHttpStatus(err);
@@ -254,7 +277,7 @@ export default function BrandsPage() {
       );
       const failedCount = results.filter((result) => result.status === 'rejected').length;
 
-      await fetchBrands();
+      await fetchBrands({ force: true });
       if (failedCount === 0) {
         setSelectedBrandIds([]);
         showToast(t('admin.brands.deletedSuccess'), 'success');
@@ -302,7 +325,7 @@ export default function BrandsPage() {
         name: formData.name.trim(),
         ...(trimmedLogo ? { logoUrl: trimmedLogo } : {}),
       });
-      await fetchBrands();
+      await fetchBrands({ force: true });
       handleCloseAddModal();
       showToast(t('admin.brands.createdSuccess'), 'success');
     } catch (err: unknown) {
@@ -327,7 +350,7 @@ export default function BrandsPage() {
         name: formData.name.trim(),
         logoUrl: trimmedLogo.length > 0 ? trimmedLogo : null,
       });
-      await fetchBrands();
+      await fetchBrands({ force: true });
       handleCloseEditModal();
       showToast(t('admin.brands.updatedSuccess'), 'success');
     } catch (err: unknown) {
@@ -569,6 +592,7 @@ export default function BrandsPage() {
           )}
         </Card>
 
+        <div ref={r2SectionRef}>
         <Card className="admin-card border-slate-200/80 bg-white shadow-[0_10px_24px_rgba(15,23,42,0.07)]">
           <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 sm:px-5">
             <div>
@@ -589,6 +613,12 @@ export default function BrandsPage() {
             ) : r2Error ? (
               <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-6 text-sm text-red-700">
                 {r2Error}
+              </div>
+            ) : !r2Fetched ? (
+              <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50/70 px-4 py-8 text-center">
+                <p className="text-sm font-medium text-slate-600">
+                  Scroll here or click Refresh to load logos from R2.
+                </p>
               </div>
             ) : r2Logos.length === 0 ? (
               <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50/70 px-4 py-8 text-center">
@@ -629,6 +659,7 @@ export default function BrandsPage() {
             )}
           </div>
         </Card>
+        </div>
       </div>
 
       {showAddModal && (

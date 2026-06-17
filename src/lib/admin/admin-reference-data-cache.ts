@@ -46,6 +46,24 @@ export function writeAdminBrandsCache<T>(data: T[]): void {
   writeAdminSessionCache(ADMIN_CACHE_KEYS.brands, data);
 }
 
+/** Brands list — shared by warm (hover) and brands page. */
+export function fetchAdminBrands<T>(
+  options?: { force?: boolean },
+): Promise<T[]> {
+  const cached = readAdminBrandsCache<T>();
+  if (!options?.force && cached !== null) {
+    return Promise.resolve(cached);
+  }
+
+  return dedupedAdminRequest(ADMIN_CACHE_KEYS.brands, () =>
+    apiClient.get<{ data: T[] }>('/api/v1/supersudo/brands'),
+  ).then((response) => {
+    const data = response.data ?? [];
+    writeAdminBrandsCache(data);
+    return data;
+  });
+}
+
 /** Lite categories for filters — shared by warm (hover) and page fetch. */
 export function fetchAdminCategoriesLite<T>(language: LanguageCode): Promise<{ data: T[] }> {
   const cached = readAdminCategoriesCache<T>(language, { includeCounts: false });
@@ -114,10 +132,6 @@ export function warmAdminReferenceDataCaches(language: LanguageCode): void {
   warmAdminCategoriesCache(language);
 
   if (readAdminBrandsCache() === null) {
-    void dedupedAdminRequest(ADMIN_CACHE_KEYS.brands, () =>
-      apiClient.get<{ data: unknown[] }>('/api/v1/supersudo/brands'),
-    ).then((response) => {
-      writeAdminBrandsCache(response.data ?? []);
-    });
+    void fetchAdminBrands();
   }
 }

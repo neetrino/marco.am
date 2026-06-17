@@ -9,6 +9,7 @@ import { AdminPageLayout } from '../components/AdminPageLayout';
 import { logger } from "@/lib/utils/logger";
 import { ADMIN_CACHE_KEYS } from '@/lib/admin/admin-cache-keys';
 import { beginAdminDataFetch } from '@/lib/admin/admin-fetch-helpers';
+import { dedupedAdminRequest } from '@/lib/admin/admin-request-dedup';
 import {
   ADMIN_SESSION_CACHE_TTL_MS,
   readAdminSessionCache,
@@ -79,26 +80,44 @@ export default function PriceFilterSettingsPage() {
     ADMIN_SESSION_CACHE_TTL_MS,
   );
   const initialPriceFilter = cachedPriceFilter ? mapPriceFilterResponse(cachedPriceFilter) : null;
-  const hadCacheRef = useRef(Boolean(initialPriceFilter));
+  const hadCacheRef = useRef(cachedPriceFilter !== null);
   const [minPrice, setMinPrice] = useState<string>(initialPriceFilter?.minPrice ?? '');
   const [maxPrice, setMaxPrice] = useState<string>(initialPriceFilter?.maxPrice ?? '');
   const [stepSizeUSD, setStepSizeUSD] = useState<string>(initialPriceFilter?.stepSizeUSD ?? '');
   const [stepSizeAMD, setStepSizeAMD] = useState<string>(initialPriceFilter?.stepSizeAMD ?? '');
   const [stepSizeRUB, setStepSizeRUB] = useState<string>(initialPriceFilter?.stepSizeRUB ?? '');
   const [stepSizeGEL, setStepSizeGEL] = useState<string>(initialPriceFilter?.stepSizeGEL ?? '');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(cachedPriceFilter === null);
   const [saving, setSaving] = useState(false);
   
   // Храним предыдущее значение stepSize для расчета разницы
   const prevStepSizeRef = useRef<string>(initialPriceFilter?.prevStepSize ?? '');
   const isUpdatingRef = useRef<boolean>(false);
 
-  const fetchSettings = useCallback(async () => {
+  const fetchSettings = useCallback(async (options?: { force?: boolean }) => {
+    const cached = readAdminSessionCache<PriceFilterSettingsResponse>(
+      ADMIN_CACHE_KEYS.priceFilter,
+      ADMIN_SESSION_CACHE_TTL_MS,
+    );
+    if (!options?.force && cached !== null) {
+      const mapped = mapPriceFilterResponse(cached);
+      setMinPrice(mapped.minPrice);
+      setMaxPrice(mapped.maxPrice);
+      setStepSizeUSD(mapped.stepSizeUSD);
+      setStepSizeAMD(mapped.stepSizeAMD);
+      setStepSizeRUB(mapped.stepSizeRUB);
+      setStepSizeGEL(mapped.stepSizeGEL);
+      prevStepSizeRef.current = mapped.prevStepSize;
+      setLoading(false);
+      hadCacheRef.current = true;
+      return;
+    }
+
     try {
       logger.devLog('⚙️ [PRICE FILTER SETTINGS] Fetching settings...');
       beginAdminDataFetch(hadCacheRef.current, setLoading);
-      const response = await apiClient.get<PriceFilterSettingsResponse>(
-        '/api/v1/supersudo/settings/price-filter',
+      const response = await dedupedAdminRequest(ADMIN_CACHE_KEYS.priceFilter, () =>
+        apiClient.get<PriceFilterSettingsResponse>('/api/v1/supersudo/settings/price-filter'),
       );
       const mapped = mapPriceFilterResponse(response);
       setMinPrice(mapped.minPrice);

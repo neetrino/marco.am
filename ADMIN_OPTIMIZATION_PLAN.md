@@ -118,51 +118,49 @@
 
 ---
 
-#### 8. Brands — `/supersudo/brands` (следующий)
+#### 8. Brands — `/supersudo/brands` ✅
 
-- Cache есть, нет skip/dedup.
-- **Дополнительно:** `fetchR2Logos()` на каждый mount — отдельный `GET /brands/r2-logos` (R2 list). Lazy: только при открытии секции R2 или по кнопке Refresh.
+**Сделано:** `fetchAdminBrands` (cache skip + dedup); страница без unconditional refetch; R2 logos — lazy через IntersectionObserver + Refresh; `force` после мутаций; empty list = valid cache.
 
-**Файлы:** `brands/page.tsx`, warm для brands list.
-
----
-
-#### 9. Settings — `/supersudo/settings`
-
-- Простой `GET /settings`, cache без skip.
-- Warm дублирует с quick-settings (тот же endpoint) — dedup по `ADMIN_CACHE_KEYS.settings`.
-
-**Файлы:** `settings/page.tsx`, `admin-page-warm.ts`.
+**Файлы:** `brands/page.tsx`, `admin-reference-data-cache.ts`.
 
 ---
 
-#### 10. Delivery — `/supersudo/delivery`
+#### 9. Settings — `/supersudo/settings` ✅
 
-- Аналогично settings: cache + always refetch.
+**Сделано:** cache skip + dedup на load.
 
-**Файлы:** `delivery/page.tsx`.
-
----
-
-#### 11. Hero Banner — `/supersudo/hero-banner`
-
-- Cache + always refetch; один endpoint, низкий риск.
-
-**Файлы:** `hero-banner/page.tsx`.
+**Файлы:** `settings/page.tsx`, `admin-page-warm.ts` (warm уже с dedup).
 
 ---
 
-#### 12. Price Filter Settings — `/supersudo/price-filter-settings`
+#### 10. Delivery — `/supersudo/delivery` ✅
 
-- Cache + always refetch; `loading` initial false при cache (как reels).
+**Сделано:** cache skip + dedup; `force` после save; warm с dedup.
 
-**Файлы:** `price-filter-settings/page.tsx`.
+**Файлы:** `delivery/page.tsx`, `admin-page-warm.ts`.
+
+---
+
+#### 11. Hero Banner — `/supersudo/hero-banner` ✅
+
+**Сделано:** cache skip + dedup; warm с dedup.
+
+**Файлы:** `hero-banner/page.tsx`, `admin-page-warm.ts`.
+
+---
+
+#### 12. Price Filter Settings — `/supersudo/price-filter-settings` ✅
+
+**Сделано:** cache skip + dedup; initial `loading` из cache; warm с dedup.
+
+**Файлы:** `price-filter-settings/page.tsx`, `admin-page-warm.ts`.
 
 ---
 
 ### P3 — отдельные маршруты
 
-#### 13. Order detail — `/supersudo/orders/[id]`
+#### 13. Order detail — `/supersudo/orders/[id]` (следующий)
 
 - **Нет cache** (`useOrderDetail.ts`).
 - Каждый fetch: `setOrderDetails(null)` → мигание UI.
@@ -217,9 +215,9 @@
 2. **Analytics** — самый тяжёлый бэкенд среди оставшихся.  
 3. **Attributes** — runtime migration на каждый read.  
 4. **Categories** — counts=false + cache skip.  
-5. **Users / Messages** — быстрые фронтовые фиксы + users backend pagination.  
-6. Остальные P2 по одному шаблону.  
-7. **Order detail** — когда трогаем orders глубже.
+5. ~~**Users / Messages**~~ ✅  
+6. ~~**Brands / Settings / Delivery / Hero / Price Filter**~~ ✅  
+7. **Order detail** — следующий (P3).
 
 ---
 

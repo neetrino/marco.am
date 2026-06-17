@@ -111,11 +111,19 @@ function warmProductDiscountsCache(language: string): void {
 }
 
 function warmDeliveryCache(): void {
-  warmIfMissing(ADMIN_CACHE_KEYS.delivery, () => apiClient.get('/api/v1/supersudo/delivery'));
+  warmIfMissing(ADMIN_CACHE_KEYS.delivery, () =>
+    dedupedAdminRequest(ADMIN_CACHE_KEYS.delivery, () =>
+      apiClient.get('/api/v1/supersudo/delivery'),
+    ),
+  );
 }
 
 function warmBannersCache(): void {
-  warmIfMissing(ADMIN_CACHE_KEYS.banners, () => apiClient.get('/api/v1/supersudo/banners'));
+  warmIfMissing(ADMIN_CACHE_KEYS.banners, () =>
+    dedupedAdminRequest(ADMIN_CACHE_KEYS.banners, () =>
+      apiClient.get('/api/v1/supersudo/banners'),
+    ),
+  );
 }
 
 function warmPromoCodesCache(): void {
@@ -128,7 +136,9 @@ function warmPromoCodesCache(): void {
 
 function warmPriceFilterCache(): void {
   warmIfMissing(ADMIN_CACHE_KEYS.priceFilter, () =>
-    apiClient.get('/api/v1/supersudo/settings/price-filter'),
+    dedupedAdminRequest(ADMIN_CACHE_KEYS.priceFilter, () =>
+      apiClient.get('/api/v1/supersudo/settings/price-filter'),
+    ),
   );
 }
 

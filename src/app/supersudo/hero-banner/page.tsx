@@ -9,6 +9,7 @@ import { AdminPageLayout } from '../components/AdminPageLayout';
 import type { BannerManagementStorage } from '../../../lib/schemas/banner-management.schema';
 import { ADMIN_CACHE_KEYS } from '@/lib/admin/admin-cache-keys';
 import { beginAdminDataFetch } from '@/lib/admin/admin-fetch-helpers';
+import { dedupedAdminRequest } from '@/lib/admin/admin-request-dedup';
 import {
   ADMIN_SESSION_CACHE_TTL_MS,
   readAdminSessionCache,
@@ -378,8 +379,8 @@ export default function HeroBannerPage() {
     ADMIN_CACHE_KEYS.banners,
     ADMIN_SESSION_CACHE_TTL_MS,
   );
-  const hadCacheRef = useRef(Boolean(cachedBanners));
-  const [loading, setLoading] = useState(!hadCacheRef.current);
+  const hadCacheRef = useRef(cachedBanners !== null);
+  const [loading, setLoading] = useState(cachedBanners === null);
   const [saving, setSaving] = useState(false);
   const [uploadingField, setUploadingField] = useState<UploadingField>(null);
   const [storage, setStorage] = useState<BannerManagementStorage | null>(
@@ -391,10 +392,24 @@ export default function HeroBannerPage() {
     void fetchHeroBanner();
   }, []);
 
-  async function fetchHeroBanner() {
+  async function fetchHeroBanner(options?: { force?: boolean }) {
+    const cached = readAdminSessionCache<BannerManagementStorage>(
+      ADMIN_CACHE_KEYS.banners,
+      ADMIN_SESSION_CACHE_TTL_MS,
+    );
+    if (!options?.force && cached !== null) {
+      setStorage(buildHeroBannerStorage(cached));
+      setForm(buildFormState(cached));
+      setLoading(false);
+      hadCacheRef.current = true;
+      return;
+    }
+
     try {
       beginAdminDataFetch(hadCacheRef.current, setLoading);
-      const data = await apiClient.get<BannerManagementStorage>('/api/v1/supersudo/banners');
+      const data = await dedupedAdminRequest(ADMIN_CACHE_KEYS.banners, () =>
+        apiClient.get<BannerManagementStorage>('/api/v1/supersudo/banners'),
+      );
       setStorage(buildHeroBannerStorage(data));
       setForm(buildFormState(data));
       writeAdminSessionCache(ADMIN_CACHE_KEYS.banners, data);

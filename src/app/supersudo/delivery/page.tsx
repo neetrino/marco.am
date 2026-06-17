@@ -10,6 +10,7 @@ import { AdminPageLayout } from '../components/AdminPageLayout';
 import { logger } from "@/lib/utils/logger";
 import { ADMIN_CACHE_KEYS } from '@/lib/admin/admin-cache-keys';
 import { beginAdminDataFetch } from '@/lib/admin/admin-fetch-helpers';
+import { dedupedAdminRequest } from '@/lib/admin/admin-request-dedup';
 import {
   ADMIN_SESSION_CACHE_TTL_MS,
   readAdminSessionCache,
@@ -34,9 +35,9 @@ export default function DeliveryPage() {
     ADMIN_CACHE_KEYS.delivery,
     ADMIN_SESSION_CACHE_TTL_MS,
   );
-  const hadCacheRef = useRef(Boolean(cachedDelivery));
+  const hadCacheRef = useRef(cachedDelivery !== null);
   const [saving, setSaving] = useState(false);
-  const [loading, setLoading] = useState(!hadCacheRef.current);
+  const [loading, setLoading] = useState(cachedDelivery === null);
   const [locations, setLocations] = useState<DeliveryLocation[]>(cachedDelivery?.locations ?? []);
   const [_editingId, setEditingId] = useState<string | null>(null);
 
@@ -44,11 +45,24 @@ export default function DeliveryPage() {
     fetchDeliverySettings();
   }, []);
 
-  const fetchDeliverySettings = async () => {
+  const fetchDeliverySettings = async (options?: { force?: boolean }) => {
+    const cached = readAdminSessionCache<DeliverySettings>(
+      ADMIN_CACHE_KEYS.delivery,
+      ADMIN_SESSION_CACHE_TTL_MS,
+    );
+    if (!options?.force && cached !== null) {
+      setLocations(cached.locations ?? []);
+      setLoading(false);
+      hadCacheRef.current = true;
+      return;
+    }
+
     try {
       beginAdminDataFetch(hadCacheRef.current, setLoading);
       logger.devLog('🚚 [ADMIN] Fetching delivery settings...');
-      const data = await apiClient.get<DeliverySettings>('/api/v1/supersudo/delivery');
+      const data = await dedupedAdminRequest(ADMIN_CACHE_KEYS.delivery, () =>
+        apiClient.get<DeliverySettings>('/api/v1/supersudo/delivery'),
+      );
       setLocations(data.locations || []);
       writeAdminSessionCache(ADMIN_CACHE_KEYS.delivery, data);
       hadCacheRef.current = true;
@@ -71,7 +85,7 @@ export default function DeliveryPage() {
       alert(t('admin.delivery.savedSuccess'));
       logger.devLog('✅ [ADMIN] Delivery settings saved');
       setEditingId(null);
-      await fetchDeliverySettings();
+      await fetchDeliverySettings({ force: true });
     } catch (err: unknown) {
       logger.error('Admin delivery settings save failed', { error: err });
       const errorMessage = getApiOrErrorMessage(err, 'Failed to save delivery settings');
