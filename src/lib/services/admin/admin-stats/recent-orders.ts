@@ -8,22 +8,11 @@ export async function getRecentOrders(limit: number = 5) {
     take: limit,
     orderBy: { createdAt: "desc" },
     include: {
-      items: true,
+      _count: { select: { items: true } },
     },
   });
 
-  return orders.map((order: { 
-    id: string; 
-    number: string; 
-    status: string; 
-    paymentStatus: string; 
-    total: number; 
-    currency: string | null; 
-    customerEmail: string | null; 
-    customerPhone: string | null; 
-    createdAt: Date; 
-    items: Array<unknown> 
-  }) => ({
+  return orders.map((order) => ({
     id: order.id,
     number: order.number,
     status: order.status,
@@ -32,11 +21,7 @@ export async function getRecentOrders(limit: number = 5) {
     currency: order.currency,
     customerEmail: order.customerEmail || undefined,
     customerPhone: order.customerPhone || undefined,
-    itemsCount: order.items.length,
+    itemsCount: order._count.items,
     createdAt: order.createdAt.toISOString(),
   }));
 }
-
-
-
-

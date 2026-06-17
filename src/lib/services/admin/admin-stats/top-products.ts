@@ -9,11 +9,11 @@ export function extractImageFromMedia(media: unknown[] | undefined): string | nu
   }
 
   const firstMedia = media[0];
-  
+
   if (typeof firstMedia === "string") {
     return firstMedia;
   }
-  
+
   if (firstMedia && typeof firstMedia === "object" && "url" in firstMedia) {
     const mediaObj = firstMedia as { url?: string };
     return mediaObj.url || null;
@@ -23,94 +23,60 @@ export function extractImageFromMedia(media: unknown[] | undefined): string | nu
 }
 
 /**
- * Get top products for dashboard
+ * Get top products for dashboard (aggregated in DB, not full table scan)
  */
 export async function getTopProducts(limit: number = 5) {
-  // Get all order items with their variants
-  const orderItems = await db.orderItem.findMany({
+  const variantGroups = await db.orderItem.groupBy({
+    by: ["variantId"],
+    where: { variantId: { not: null } },
+    _sum: { quantity: true, total: true },
+    _count: { _all: true },
+    orderBy: { _sum: { total: "desc" } },
+    take: limit,
+  });
+
+  const variantIds = variantGroups
+    .map((group) => group.variantId)
+    .filter((id): id is string => id !== null);
+
+  if (variantIds.length === 0) {
+    return [];
+  }
+
+  const variants = await db.productVariant.findMany({
+    where: { id: { in: variantIds } },
     include: {
-      variant: {
+      product: {
         include: {
-          product: {
-            include: {
-              translations: {
-                where: { locale: "en" },
-                take: 1,
-              },
-            },
-          },
+          translations: { where: { locale: "en" }, take: 1 },
         },
       },
     },
   });
 
-  // Group by variant and calculate stats
-  const productStats = new Map<
-    string,
-    {
-      variantId: string;
-      productId: string;
-      title: string;
-      sku: string;
-      totalQuantity: number;
-      totalRevenue: number;
-      orderCount: number;
-      image?: string | null;
-    }
-  >();
+  const variantById = new Map(variants.map((variant) => [variant.id, variant]));
 
-  orderItems.forEach((item: { 
-    variantId: string | null; 
-    quantity: number; 
-    total: number; 
-    variant?: { 
-      id: string; 
-      productId: string; 
-      sku: string | null; 
-      product?: { 
-        translations?: Array<{ title: string }>; 
-        media?: unknown[] 
-      } 
-    } | null
-  }) => {
-    if (!item.variant) return;
+  return variantGroups
+    .map((group) => {
+      if (!group.variantId) {
+        return null;
+      }
+      const variant = variantById.get(group.variantId);
+      const product = variant?.product;
+      const title = product?.translations[0]?.title ?? "Unknown Product";
 
-    const variantId = item.variantId || item.variant.id;
-    const productId = item.variant.productId;
-    const product = item.variant.product;
-    const translations = product?.translations || [];
-    const translation = translations[0];
-    const title = translation?.title || "Unknown Product";
-    const sku = item.variant.sku || "N/A";
-    const image = extractImageFromMedia(product?.media);
-
-    if (!productStats.has(variantId)) {
-      productStats.set(variantId, {
-        variantId,
-        productId,
+      return {
+        variantId: group.variantId,
+        productId: variant?.productId ?? "",
         title,
-        sku,
-        totalQuantity: 0,
-        totalRevenue: 0,
-        orderCount: 0,
-        image,
-      });
-    }
-
-    const stats = productStats.get(variantId)!;
-    stats.totalQuantity += item.quantity;
-    stats.totalRevenue += item.total;
-    stats.orderCount += 1;
-  });
-
-  // Convert to array and sort by revenue
-  const topProducts = Array.from(productStats.values())
-    .sort((a, b) => b.totalRevenue - a.totalRevenue)
-    .slice(0, limit);
-
-  return topProducts;
+        sku: variant?.sku ?? "N/A",
+        totalQuantity: group._sum.quantity ?? 0,
+        totalRevenue: group._sum.total ?? 0,
+        orderCount: group._count._all ?? 0,
+        image: extractImageFromMedia(
+          Array.isArray(product?.media) ? product.media : undefined,
+        ),
+      };
+    })
+    .filter((row): row is NonNullable<typeof row> => row !== null);
 }
-
-
-
-

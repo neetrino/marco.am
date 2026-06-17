@@ -16,6 +16,8 @@ interface DashboardTopProduct {
   currency: string;
 }
 
+const TOP_VARIANT_GROUPS_FOR_PRODUCT = 50;
+
 function getStartOfToday(now: Date): Date {
   return new Date(now.getFullYear(), now.getMonth(), now.getDate());
 }
@@ -61,65 +63,69 @@ async function getSalesWindow(start: Date, end: Date): Promise<SalesWindow> {
 
 async function getTopProductForMonth(
   start: Date,
-  end: Date
+  end: Date,
 ): Promise<DashboardTopProduct | null> {
-  const paidOrderItems = await db.orderItem.findMany({
+  const variantGroups = await db.orderItem.groupBy({
+    by: ["variantId"],
     where: {
+      variantId: { not: null },
       order: {
         paymentStatus: "paid",
-        createdAt: {
-          gte: start,
-          lte: end,
-        },
-      },
-      variantId: {
-        not: null,
+        createdAt: { gte: start, lte: end },
       },
     },
+    _sum: { quantity: true, total: true },
+    orderBy: { _sum: { total: "desc" } },
+    take: TOP_VARIANT_GROUPS_FOR_PRODUCT,
+  });
+
+  if (variantGroups.length === 0) {
+    return null;
+  }
+
+  const variantIds = variantGroups
+    .map((group) => group.variantId)
+    .filter((id): id is string => id !== null);
+
+  const variants = await db.productVariant.findMany({
+    where: { id: { in: variantIds } },
     include: {
-      order: {
-        select: {
-          currency: true,
-        },
-      },
-      variant: {
+      product: {
         include: {
-          product: {
-            include: {
-              translations: {
-                where: { locale: "en" },
-                take: 1,
-              },
-            },
-          },
+          translations: { where: { locale: "en" }, take: 1 },
         },
       },
     },
   });
 
+  const variantById = new Map(variants.map((variant) => [variant.id, variant]));
   const productTotals = new Map<string, DashboardTopProduct>();
-  paidOrderItems.forEach((item) => {
-    const variant = item.variant;
+
+  for (const group of variantGroups) {
+    if (!group.variantId) {
+      continue;
+    }
+    const variant = variantById.get(group.variantId);
     const product = variant?.product;
-    if (!variant || !product || product.deletedAt !== null) {
-      return;
+    if (!product || product.deletedAt !== null) {
+      continue;
     }
 
     const current = productTotals.get(product.id) ?? {
       productId: product.id,
-      title: product.translations[0]?.title ?? item.productTitle,
+      title: product.translations[0]?.title ?? "Unknown",
       totalQuantity: 0,
       totalRevenue: 0,
-      currency: item.order.currency ?? "AMD",
+      currency: "AMD",
     };
 
-    current.totalQuantity += item.quantity;
-    current.totalRevenue += item.total;
+    current.totalQuantity += group._sum.quantity ?? 0;
+    current.totalRevenue += group._sum.total ?? 0;
     productTotals.set(product.id, current);
-  });
+  }
 
   const sorted = Array.from(productTotals.values()).sort(
-    (a, b) => b.totalRevenue - a.totalRevenue
+    (left, right) => right.totalRevenue - left.totalRevenue,
   );
   return sorted[0] ?? null;
 }
@@ -131,60 +137,39 @@ export async function getStats() {
   const now = new Date();
   const startOfToday = getStartOfToday(now);
   const startOfMonth = getStartOfMonth(now);
-
-  // Count users
-  const totalUsers = await db.user.count({
-    where: { deletedAt: null },
-  });
-
-  // Count products
-  const totalProducts = await db.product.count({
-    where: { deletedAt: null },
-  });
-
-  // Count variants with low stock (stock < threshold), published only; includes out-of-stock (0)
-  const lowStockProducts = await db.productVariant.count({
-    where: {
-      stock: { lt: DEFAULT_LOW_STOCK_THRESHOLD },
-      published: true,
-    },
-  });
-
-  // Count orders
-  const totalOrders = await db.order.count();
-
-  // Count recent orders (last 7 days)
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-  const recentOrders = await db.order.count({
-    where: {
-      createdAt: { gte: sevenDaysAgo },
-    },
-  });
 
-  // Count pending orders
-  const pendingOrders = await db.order.count({
-    where: { status: "pending" },
-  });
-
-  const revenueAgg = await db.order.aggregate({
-    where: {
-      OR: [
-        { status: "completed" },
-        { paymentStatus: "paid" },
-      ],
-    },
-    _sum: {
-      total: true,
-    },
-    _max: {
-      currency: true,
-    },
-  });
-  const totalRevenue = revenueAgg._sum.total ?? 0;
-  const currency = revenueAgg._max.currency ?? "AMD";
-
-  const [todaySales, monthlySales, topProduct] = await Promise.all([
+  const [
+    totalUsers,
+    totalProducts,
+    lowStockProducts,
+    totalOrders,
+    recentOrders,
+    pendingOrders,
+    revenueAgg,
+    todaySales,
+    monthlySales,
+    topProduct,
+  ] = await Promise.all([
+    db.user.count({ where: { deletedAt: null } }),
+    db.product.count({ where: { deletedAt: null } }),
+    db.productVariant.count({
+      where: {
+        stock: { lt: DEFAULT_LOW_STOCK_THRESHOLD },
+        published: true,
+      },
+    }),
+    db.order.count(),
+    db.order.count({ where: { createdAt: { gte: sevenDaysAgo } } }),
+    db.order.count({ where: { status: "pending" } }),
+    db.order.aggregate({
+      where: {
+        OR: [{ status: "completed" }, { paymentStatus: "paid" }],
+      },
+      _sum: { total: true },
+      _max: { currency: true },
+    }),
     getSalesWindow(startOfToday, now),
     getSalesWindow(startOfMonth, now),
     getTopProductForMonth(startOfMonth, now),
@@ -204,8 +189,8 @@ export async function getStats() {
       pending: pendingOrders,
     },
     revenue: {
-      total: totalRevenue,
-      currency,
+      total: revenueAgg._sum.total ?? 0,
+      currency: revenueAgg._max.currency ?? "AMD",
     },
     salesWidgets: {
       todaySales,
@@ -214,7 +199,3 @@ export async function getStats() {
     },
   };
 }
-
-
-
-
