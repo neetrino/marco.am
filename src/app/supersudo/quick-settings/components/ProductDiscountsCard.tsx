@@ -4,18 +4,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { Card, Button, Input } from '@shop/ui';
 import { useTranslation } from '../../../../lib/i18n-client';
 import { AdminTablePagination } from '../../components/AdminTablePagination';
-import { logger } from "@/lib/utils/logger";
-
-interface Product {
-  id: string;
-  title: string;
-  image?: string | null;
-  price?: number;
-  discountPercent?: number;
-}
+import type { QuickSettingsProductRow } from '../types';
 
 interface ProductDiscountsCardProps {
-  products: Product[];
+  products: QuickSettingsProductRow[];
   productsLoading: boolean;
   productDiscounts: Record<string, number>;
   setProductDiscounts: React.Dispatch<React.SetStateAction<Record<string, number>>>;
@@ -170,15 +162,10 @@ export function ProductDiscountsCard({
                     onChange={(e) => {
                       const value = e.target.value;
                       const discountValue = value === '' ? 0 : parseFloat(value) || 0;
-                      logger.devLog(`🔄 [QUICK SETTINGS] Updating discount for product ${product.id}: ${discountValue}%`);
-                      setProductDiscounts((prev) => {
-                        const updated = {
-                          ...prev,
-                          [product.id]: discountValue,
-                        };
-                        logger.devLog(`✅ [QUICK SETTINGS] Updated productDiscounts:`, updated);
-                        return updated;
-                      });
+                      setProductDiscounts((prev) => ({
+                        ...prev,
+                        [product.id]: discountValue,
+                      }));
                     }}
                     className="w-20 border-slate-300 bg-white"
                     placeholder="0"

@@ -59,7 +59,9 @@ function ProductsPageContent() {
     defaultProductsCacheKey,
     ADMIN_SESSION_CACHE_TTL_MS,
   );
-  const cachedCategories = readAdminCategoriesCache<Category>(activeLocale);
+  const cachedCategories = readAdminCategoriesCache<Category>(activeLocale, {
+    includeCounts: false,
+  });
   const hadProductsCacheRef = useRef(Boolean(defaultProductsCache));
   const hadCategoriesCacheRef = useRef(Boolean(cachedCategories?.length));
   const [products, setProducts] = useState<Product[]>(defaultProductsCache?.data ?? []);

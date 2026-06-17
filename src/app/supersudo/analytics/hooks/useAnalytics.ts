@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { apiClient } from '../../../../lib/api-client';
 import { logger } from '../../../../lib/utils/logger';
 import { useTranslation } from '../../../../lib/i18n-client';
-import { ADMIN_CACHE_KEYS, buildAdminListCacheKey } from '@/lib/admin/admin-cache-keys';
+import { ADMIN_CACHE_KEYS, buildAnalyticsCacheKey, buildAnalyticsRequestParams } from '@/lib/admin/admin-cache-keys';
 import { beginAdminDataFetch } from '@/lib/admin/admin-fetch-helpers';
 import { dedupedAdminRequest } from '@/lib/admin/admin-request-dedup';
 import {
@@ -28,25 +28,12 @@ interface UseAnalyticsReturn {
   error: string | null;
 }
 
-function buildAnalyticsCacheKey(period: string, startDate: string, endDate: string): string {
-  return buildAdminListCacheKey('analytics', {
-    period,
-    startDate: period === 'custom' ? startDate : '',
-    endDate: period === 'custom' ? endDate : '',
-  });
-}
-
-function buildAnalyticsRequestParams(
+function buildAnalyticsCacheKeyForPeriod(
   period: string,
   startDate: string,
   endDate: string,
-): Record<string, string> {
-  const params: Record<string, string> = { period };
-  if (period === 'custom' && startDate && endDate) {
-    params.startDate = startDate;
-    params.endDate = endDate;
-  }
-  return params;
+): string {
+  return buildAnalyticsCacheKey({ period, startDate, endDate });
 }
 
 /**
@@ -63,7 +50,7 @@ export function useAnalytics({
   const tRef = useRef(t);
   tRef.current = t;
 
-  const initialAnalyticsKey = buildAnalyticsCacheKey(period, startDate, endDate);
+  const initialAnalyticsKey = buildAnalyticsCacheKeyForPeriod(period, startDate, endDate);
   const cachedAnalytics = readAdminSessionCache<AnalyticsData>(
     initialAnalyticsKey,
     ADMIN_SESSION_CACHE_TTL_MS,
@@ -79,7 +66,9 @@ export function useAnalytics({
   const [orderStatusBreakdown, setOrderStatusBreakdown] =
     useState<OrderStatusBreakdownData | null>(cachedBreakdown);
   const [orderStatusBreakdownFailed, setOrderStatusBreakdownFailed] = useState(false);
-  const [loading, setLoading] = useState(cachedAnalytics === null);
+  const [loading, setLoading] = useState(
+    cachedAnalytics === null || cachedBreakdown === null,
+  );
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -87,7 +76,7 @@ export function useAnalytics({
       return;
     }
 
-    const analyticsCacheKey = buildAnalyticsCacheKey(period, startDate, endDate);
+    const analyticsCacheKey = buildAnalyticsCacheKeyForPeriod(period, startDate, endDate);
     const cachedForPeriod = readAdminSessionCache<AnalyticsData>(
       analyticsCacheKey,
       ADMIN_SESSION_CACHE_TTL_MS,
@@ -120,7 +109,7 @@ export function useAnalytics({
         setError(null);
         setOrderStatusBreakdownFailed(false);
 
-        const params = buildAnalyticsRequestParams(period, startDate, endDate);
+        const params = buildAnalyticsRequestParams({ period, startDate, endDate });
         const [analyticsResult, breakdownResult] = await Promise.allSettled([
           cachedForPeriod
             ? Promise.resolve(cachedForPeriod)

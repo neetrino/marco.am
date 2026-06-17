@@ -203,7 +203,7 @@ export default function CategoriesPage() {
     } catch (error: unknown) {
       const message = getApiOrErrorMessage(error, t('admin.common.unknownErrorFallback'));
       showToast(message, 'error');
-      await fetchCategories();
+      await fetchCategories({ force: true });
     } finally {
       reorderInFlightRef.current = false;
       setMovingCategoryId(null);

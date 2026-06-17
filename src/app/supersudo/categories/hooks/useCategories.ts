@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { apiClient } from '../../../../lib/api-client';
 import { logger } from '../../../../lib/utils/logger';
+import { buildAdminCategoriesCacheKey } from '@/lib/admin/admin-cache-keys';
 import { beginAdminDataFetch } from '@/lib/admin/admin-fetch-helpers';
+import { dedupedAdminRequest } from '@/lib/admin/admin-request-dedup';
 import {
   readAdminCategoriesCache,
   writeAdminCategoriesCache,
@@ -14,7 +16,7 @@ interface UseCategoriesReturn {
   categories: Category[];
   loading: boolean;
   error: string | null;
-  fetchCategories: () => Promise<void>;
+  fetchCategories: (options?: { force?: boolean }) => Promise<void>;
   syncCategoriesCache: () => Promise<void>;
   applyOptimisticCategories: (updater: (previous: Category[]) => Category[]) => () => void;
   reorderCategoriesOptimistically: (
@@ -30,39 +32,52 @@ interface UseCategoriesReturn {
  * Hook for fetching and managing categories
  */
 export function useCategories(language: LanguageCode): UseCategoriesReturn {
-  const cachedCategories = readAdminCategoriesCache<Category>(language);
-  const hadCacheRef = useRef(Boolean(cachedCategories?.length));
+  const cachedCategories = readAdminCategoriesCache<Category>(language, { includeCounts: true });
+  const hadCacheRef = useRef(cachedCategories !== null);
   const cacheWriteTimeoutRef = useRef<number | null>(null);
   const [categories, setCategories] = useState<Category[]>(cachedCategories ?? []);
-  const [loading, setLoading] = useState(!hadCacheRef.current);
+  const [loading, setLoading] = useState(cachedCategories === null);
   const [error, setError] = useState<string | null>(null);
 
   const writeCategoriesCacheDeferred = useCallback(
     (nextCategories: Category[]) => {
+      const write = () => {
+        writeAdminCategoriesCache(language, nextCategories, { includeCounts: true });
+      };
       if (typeof window === 'undefined') {
-        writeAdminCategoriesCache(language, nextCategories);
+        write();
         return;
       }
       if (cacheWriteTimeoutRef.current !== null) {
         window.clearTimeout(cacheWriteTimeoutRef.current);
       }
       cacheWriteTimeoutRef.current = window.setTimeout(() => {
-        writeAdminCategoriesCache(language, nextCategories);
+        write();
         cacheWriteTimeoutRef.current = null;
       }, 0);
     },
     [language],
   );
 
-  const fetchCategories = useCallback(async () => {
+  const fetchCategories = useCallback(async (options?: { force?: boolean }) => {
+    const cacheKey = buildAdminCategoriesCacheKey(language, { includeCounts: true });
+    const cached = readAdminCategoriesCache<Category>(language, { includeCounts: true });
+    if (!options?.force && cached !== null) {
+      setCategories(cached);
+      setLoading(false);
+      hadCacheRef.current = true;
+      return;
+    }
+
     try {
       beginAdminDataFetch(hadCacheRef.current, setLoading);
       setError(null);
-      logger.debug('Fetching categories');
-      const response = await apiClient.get<{ data: Category[] }>('/api/v1/supersudo/categories', {
-        params: { lang: language },
-      });
-      const nextCategories = response.data || [];
+      const response = await dedupedAdminRequest(cacheKey, () =>
+        apiClient.get<{ data: Category[] }>('/api/v1/supersudo/categories', {
+          params: { lang: language },
+        }),
+      );
+      const nextCategories = response.data ?? [];
       setCategories(nextCategories);
       writeCategoriesCacheDeferred(nextCategories);
       hadCacheRef.current = true;
@@ -79,17 +94,8 @@ export function useCategories(language: LanguageCode): UseCategoriesReturn {
   }, [language, writeCategoriesCacheDeferred]);
 
   const syncCategoriesCache = useCallback(async () => {
-    try {
-      const response = await apiClient.get<{ data: Category[] }>('/api/v1/supersudo/categories', {
-        params: { lang: language },
-      });
-      const nextCategories = response.data || [];
-      writeCategoriesCacheDeferred(nextCategories);
-      hadCacheRef.current = true;
-    } catch (err: unknown) {
-      logger.warn('Category cache sync failed', { error: err });
-    }
-  }, [language, writeCategoriesCacheDeferred]);
+    await fetchCategories({ force: true });
+  }, [fetchCategories]);
 
   const applyOptimisticCategories = useCallback(
     (updater: (previous: Category[]) => Category[]) => {

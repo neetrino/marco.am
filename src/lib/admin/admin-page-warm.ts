@@ -10,6 +10,7 @@ import {
 import { warmAdminDashboardCache } from '@/lib/admin/admin-dashboard-client-cache';
 import {
   warmAdminCategoriesCache,
+  warmAdminCategoriesWithCountsCache,
   warmAdminReferenceDataCaches,
 } from '@/lib/admin/admin-reference-data-cache';
 import { dedupedAdminRequest } from '@/lib/admin/admin-request-dedup';
@@ -210,6 +211,8 @@ export function warmAdminPageCacheForPath(path: string): void {
       warmReelsAdminCache();
       return;
     case '/supersudo/categories':
+      warmAdminCategoriesWithCountsCache(language);
+      return;
     case '/supersudo/brands':
       warmAdminReferenceDataCaches(language);
       return;

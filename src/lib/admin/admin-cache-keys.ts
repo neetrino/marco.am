@@ -107,6 +107,29 @@ export function buildProductDiscountsCacheKey(lang: string): string {
   return buildAdminListCacheKey('products/discounts', { lang });
 }
 
+type AnalyticsCacheInput = {
+  period: string;
+  startDate?: string;
+  endDate?: string;
+};
+
+export function buildAnalyticsCacheKey(input: AnalyticsCacheInput): string {
+  return buildAdminListCacheKey('analytics', {
+    period: input.period,
+    startDate: input.period === 'custom' ? input.startDate ?? '' : '',
+    endDate: input.period === 'custom' ? input.endDate ?? '' : '',
+  });
+}
+
+export function buildAnalyticsRequestParams(input: AnalyticsCacheInput): Record<string, string> {
+  const params: Record<string, string> = { period: input.period };
+  if (input.period === 'custom' && input.startDate && input.endDate) {
+    params.startDate = input.startDate;
+    params.endDate = input.endDate;
+  }
+  return params;
+}
+
 export const ADMIN_CACHE_KEYS = {
   dashboard: 'dashboard',
   categories: 'list/categories',
@@ -131,3 +154,13 @@ export const ADMIN_CACHE_KEYS = {
   analyticsWeek: buildAdminListCacheKey('analytics', { period: 'week' }),
   analyticsOrderStatus: 'analytics/order-status-breakdown',
 } as const;
+
+export function buildAdminCategoriesCacheKey(
+  language: string,
+  options?: { includeCounts?: boolean },
+): string {
+  const includeCounts = options?.includeCounts !== false;
+  return includeCounts
+    ? `${ADMIN_CACHE_KEYS.categories}:${language}:counts`
+    : `${ADMIN_CACHE_KEYS.categories}:${language}:lite`;
+}

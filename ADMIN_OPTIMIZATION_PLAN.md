@@ -88,26 +88,13 @@
 
 ### P1 — высокий (дубли запросов + заметный бэкенд)
 
-#### 4. Categories — `/supersudo/categories` (следующий)
+#### 4. Categories — `/supersudo/categories` ✅
 
-**Симптомы:**
-
-- `GET /categories` по умолчанию `includeCounts: true` → **scan всех products** (`admin-categories.service.ts`).
-- Products page уже использует `counts=false`; categories page — **нет**.
-- Нет cache skip, нет dedup (`categories/hooks/useCategories.ts`).
-- Warm через `warmAdminCategoriesCache` — полный список с counts.
-
-**План:**
-
-- [ ] **Frontend:** `counts=false` если `productCount` не нужен в UI списка (или отдельный lazy load counts).
-- [ ] **Frontend:** cache skip + dedup; общий ключ с warm (`categories:${lang}`).
-- [ ] **Backend:** опционально кэш subtree counts или materialized count (если counts нужны на UI).
-
-**Файлы:** `useCategories.ts`, `admin-categories.service.ts`, `admin-reference-data-cache.ts`.
+**Сделано:** раздельные cache keys (`lite` / `counts`), cache skip + dedup, warm с counts для categories page.
 
 ---
 
-#### 5. Users — `/supersudo/users`
+#### 5. Users — `/supersudo/users` (следующий)
 
 **Симптомы:**
 
@@ -273,4 +260,4 @@
 
 ---
 
-*Обновлено: 2026-06-17 · Оптимизированы: dashboard, products, orders, promo-codes, quick-settings, analytics, **attributes***
+*Обновлено: 2026-06-17 · Оптимизированы: dashboard, products, orders, promo-codes, quick-settings, analytics, attributes, **categories***

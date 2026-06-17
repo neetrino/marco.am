@@ -19,25 +19,11 @@ import {
   writeAdminSessionCache,
 } from '@/lib/admin/admin-session-cache';
 
-export interface QuickSettingsCategory {
-  id: string;
-  title: string;
-  parentId: string | null;
-}
-
-export interface QuickSettingsBrand {
-  id: string;
-  name: string;
-  logoUrl?: string;
-}
-
-export interface QuickSettingsProductRow {
-  id: string;
-  title: string;
-  image?: string | null;
-  price?: number;
-  discountPercent?: number;
-}
+import type {
+  QuickSettingsBrand,
+  QuickSettingsCategory,
+  QuickSettingsProductRow,
+} from './types';
 
 type SettingsPayload = {
   globalDiscount?: number;
@@ -65,7 +51,9 @@ export function useQuickSettings({ activeLocale, t }: UseQuickSettingsParams) {
     productDiscountsCacheKey,
     ADMIN_SESSION_CACHE_TTL_MS,
   );
-  const cachedCategories = readAdminCategoriesCache<QuickSettingsCategory>(activeLocale);
+  const cachedCategories = readAdminCategoriesCache<QuickSettingsCategory>(activeLocale, {
+    includeCounts: false,
+  });
   const cachedBrands = readAdminBrandsCache<QuickSettingsBrand>();
 
   const hadSettingsCacheRef = useRef(cachedSettings !== null);
@@ -177,7 +165,9 @@ export function useQuickSettings({ activeLocale, t }: UseQuickSettingsParams) {
   }, [activeLocale, applyProductRows]);
 
   const fetchCategories = useCallback(async (options?: { force?: boolean }) => {
-    const cached = readAdminCategoriesCache<QuickSettingsCategory>(activeLocale);
+    const cached = readAdminCategoriesCache<QuickSettingsCategory>(activeLocale, {
+      includeCounts: false,
+    });
     if (!options?.force && cached !== null) {
       setCategories(cached);
       setCategoriesLoading(false);
@@ -195,7 +185,7 @@ export function useQuickSettings({ activeLocale, t }: UseQuickSettingsParams) {
       );
       const rows = response.data ?? [];
       setCategories(rows);
-      writeAdminCategoriesCache(activeLocale, rows);
+      writeAdminCategoriesCache(activeLocale, rows, { includeCounts: false });
       hadCategoriesCacheRef.current = true;
     } catch (err: unknown) {
       logger.error('Quick settings: categories fetch failed', { error: err });

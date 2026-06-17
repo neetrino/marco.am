@@ -3,32 +3,17 @@
 import { Card } from '@shop/ui';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '../../../lib/i18n-client';
+import type {
+  QuickSettingsBrand,
+  QuickSettingsCategory,
+  QuickSettingsProductRow,
+} from './types';
 import { AdminPageLayout } from '../components/AdminPageLayout';
 import { GlobalDiscountCard } from './components/GlobalDiscountCard';
 import { QuickInfoCard } from './components/QuickInfoCard';
 import { CategoryDiscountsCard } from './components/CategoryDiscountsCard';
 import { BrandDiscountsCard } from './components/BrandDiscountsCard';
 import { ProductDiscountsCard } from './components/ProductDiscountsCard';
-
-interface AdminCategory {
-  id: string;
-  title: string;
-  parentId: string | null;
-}
-
-interface AdminBrand {
-  id: string;
-  name: string;
-  logoUrl?: string;
-}
-
-interface QuickSettingsProductRow {
-  id: string;
-  title: string;
-  image?: string | null;
-  price?: number;
-  discountPercent?: number;
-}
 
 interface QuickSettingsContentProps {
   currentPath: string;
@@ -39,14 +24,14 @@ interface QuickSettingsContentProps {
   discountLoading: boolean;
   discountSaving: boolean;
   handleDiscountSave: () => void;
-  categories: AdminCategory[];
+  categories: QuickSettingsCategory[];
   categoriesLoading: boolean;
   categoryDiscounts: Record<string, number>;
   updateCategoryDiscountValue: (categoryId: string, value: string) => void;
   clearCategoryDiscount: (categoryId: string) => void;
   handleCategoryDiscountSave: () => void;
   categorySaving: boolean;
-  brands: AdminBrand[];
+  brands: QuickSettingsBrand[];
   brandsLoading: boolean;
   brandDiscounts: Record<string, number>;
   updateBrandDiscountValue: (brandId: string, value: string) => void;
