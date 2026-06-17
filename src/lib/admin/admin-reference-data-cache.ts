@@ -12,7 +12,7 @@ function categoriesKeyForLanguage(language: LanguageCode): string {
   return `${ADMIN_CACHE_KEYS.categories}:${language}`;
 }
 
-export function adminCategoriesLiteRequestKey(language: LanguageCode): string {
+function adminCategoriesLiteRequestKey(language: LanguageCode): string {
   return `categories:${language}:lite`;
 }
 

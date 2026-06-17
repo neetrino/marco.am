@@ -13,8 +13,6 @@ import {
 } from '@/lib/admin/admin-session-cache';
 import { getStoredLanguage } from '@/lib/language';
 
-const warmAllInFlight = { current: false };
-
 function warmIfMissing<T>(key: string, fetcher: () => Promise<T>): void {
   if (readAdminSessionCache<T>(key, ADMIN_SESSION_CACHE_TTL_MS)) {
     return;
@@ -175,32 +173,4 @@ export function warmAdminPageCacheForPath(path: string): void {
     default:
       return;
   }
-}
-
-/** Warms default admin list/settings payloads so pages paint instantly on first click. */
-export function warmAdminPageCaches(): void {
-  if (typeof window === 'undefined' || warmAllInFlight.current) {
-    return;
-  }
-  warmAllInFlight.current = true;
-
-  const language = getStoredLanguage();
-  warmAdminDashboardCache();
-  warmAdminReferenceDataCaches(language);
-  warmOrdersCache();
-  warmProductsCache(language);
-  warmUsersCache();
-  warmMessagesCache();
-  warmAttributesCache();
-  warmSettingsCache();
-  warmDeliveryCache();
-  warmBannersCache();
-  warmPromoCodesCache();
-  warmPriceFilterCache();
-  warmAnalyticsCache();
-  warmReelsAdminCache();
-
-  globalThis.setTimeout(() => {
-    warmAllInFlight.current = false;
-  }, 500);
 }

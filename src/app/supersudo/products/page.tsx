@@ -122,22 +122,11 @@ export default function ProductsPage() {
   }, [categoriesExpanded]);
 
   const fetchCategories = async () => {
-    const sessionCached = readAdminCategoriesCache<Category>(activeLocale);
-    if (sessionCached?.length) {
-      setCategories(sessionCached);
-      hadCategoriesCacheRef.current = true;
-      setCategoriesLoading(false);
-      return;
-    }
-
     try {
       beginAdminDataFetch(hadCategoriesCacheRef.current, setCategoriesLoading);
-      logger.devLog('📂 [ADMIN] Fetching categories...');
       const response = await fetchAdminCategoriesLite<Category>(activeLocale);
-      const nextCategories = response.data || [];
-      setCategories(nextCategories);
+      setCategories(response.data || []);
       hadCategoriesCacheRef.current = true;
-      logger.devLog('✅ [ADMIN] Categories loaded:', nextCategories.length);
     } catch (err: unknown) {
       console.error('❌ [ADMIN] Error fetching categories:', err);
       if (!hadCategoriesCacheRef.current) {
@@ -176,10 +165,6 @@ export default function ProductsPage() {
 
     try {
       beginAdminDataFetch(Boolean(cached?.data?.length), setLoading);
-      if (cached) {
-        setProducts(cached.data);
-        setMeta(cached.meta);
-      }
       const params: Record<string, string> = {
         page: page.toString(),
         limit: '20',
