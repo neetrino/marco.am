@@ -24,7 +24,6 @@ export function ReelsPageCacheFallback() {
       items={cached.items}
       watchCtaLabel={cached.watchCtaLabel}
       language={language}
-      disableProgressiveRender
     />
   );
 }

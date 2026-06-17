@@ -4,6 +4,7 @@ import { useEffect, useRef, type MutableRefObject } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { warmReelsPageClientCache } from '@/lib/reels-page-prefetch';
 import { getStoredLanguage } from '@/lib/language';
+import { isLightMarketingRoute } from '@/lib/light-marketing-routes';
 import { warmShopProductsClientCaches } from '@/lib/shop-products-plp-prefetch';
 
 const EXTRA_PREFETCH_ROUTES = ['/wishlist', '/profile', '/login'] as const;
@@ -162,7 +163,7 @@ export function GlobalRoutePrefetch() {
   }, [pathname, router]);
 
   useEffect(() => {
-    if (shouldSkipIdlePrefetch()) {
+    if (shouldSkipIdlePrefetch() || isLightMarketingRoute(pathname)) {
       return;
     }
     const language = getStoredLanguage();

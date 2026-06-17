@@ -15,6 +15,7 @@ import { useHeaderStorageCounts } from './useHeaderStorageCounts';
 import { useHeaderCurrency } from './useHeaderCurrency';
 import { useTranslation } from '../../lib/i18n-client';
 import { subscribeShopCategoryTreeUpdated } from '../../lib/shop-category-tree-sync';
+import { isLightMarketingRoute } from '../../lib/light-marketing-routes';
 import type { Category, CategoriesResponse } from './category-nav-types';
 import { prepareRootCategoriesForNav } from './categoryNavList';
 import { prefetchMegaMenuCategories } from './megaMenuQueries';
@@ -124,7 +125,7 @@ export function useHeaderData() {
   }, [shouldEagerLoadCategories, fetchCategories]);
 
   useEffect(() => {
-    if (isProfileRoute) {
+    if (isProfileRoute || isLightMarketingRoute(pathname)) {
       return;
     }
 
@@ -136,7 +137,7 @@ export function useHeaderData() {
 
     const timeoutId = window.setTimeout(runPrefetch, 500);
     return () => window.clearTimeout(timeoutId);
-  }, [categoryLanguage, isProfileRoute, queryClient]);
+  }, [categoryLanguage, isProfileRoute, pathname, queryClient]);
 
   useEffect(() => {
     if (!mobileMenuOpen || categoriesLoadedRef.current) {

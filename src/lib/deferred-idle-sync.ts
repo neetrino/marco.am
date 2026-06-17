@@ -1,15 +1,18 @@
+import { isLightMarketingRoute } from '@/lib/light-marketing-routes';
+
 const HOME_PATH = '/';
 
-/** Defer header membership API sync on home so SSR + rails are not competing for the DB pool. */
+/** Defer on home and static marketing routes so SSR is not competing for the DB pool. */
 export const HOME_HEADER_MEMBERSHIP_SYNC_DEFER_MS = 10_000;
 
 /** Default defer for wishlist/compare API sync on other storefront routes. */
 export const DEFAULT_HEADER_MEMBERSHIP_SYNC_DEFER_MS = 4_000;
 
 export function resolveHeaderMembershipSyncDeferMs(pathname: string): number {
-  return pathname === HOME_PATH
-    ? HOME_HEADER_MEMBERSHIP_SYNC_DEFER_MS
-    : DEFAULT_HEADER_MEMBERSHIP_SYNC_DEFER_MS;
+  if (pathname === HOME_PATH || isLightMarketingRoute(pathname)) {
+    return HOME_HEADER_MEMBERSHIP_SYNC_DEFER_MS;
+  }
+  return DEFAULT_HEADER_MEMBERSHIP_SYNC_DEFER_MS;
 }
 
 type IdleCapableWindow = Window &
