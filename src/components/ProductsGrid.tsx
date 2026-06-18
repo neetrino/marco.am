@@ -7,6 +7,7 @@ import type { ProductListingBrand } from '@/lib/types/product-listing-brand';
 import type { ProductLabel } from './ProductLabels';
 import { toSpecialOfferProduct } from '@/lib/product-listing/to-special-offer-product';
 import { ProductsGridOfferCard } from './ProductsGridOfferCard';
+import { ProductsGridListCard } from './ProductsGridListCard';
 import { useIsMaxMd } from './home/use-is-max-md';
 import { resolveShopPlpLcpImagePriorityCount } from '@/lib/constants/shop-plp-pagination';
 import { useForcedShopGridColumns } from './useForcedShopGridColumns';
@@ -192,7 +193,7 @@ export function ProductsGrid({
     );
   }
 
-  const isListLayout = forcedShopCols === null && viewMode === 'list';
+  const useListLayout = forcedShopCols === null && viewMode === 'list';
 
   return (
     <div className={getGridClasses()}>
@@ -201,17 +202,21 @@ export function ProductsGrid({
           key={product.id}
           data-plp-slug={product.slug}
           className={
-            isListLayout
-              ? 'flex min-w-0 justify-center'
+            useListLayout
+              ? 'min-w-0 w-full max-w-none'
               : 'flex min-w-0 justify-center sm:justify-end sm:pr-3 md:pr-4'
           }
         >
-          <ProductsGridOfferCard
-            product={offerProducts[index]!}
-            layout={specialOfferLayout}
-            maxWidthPx={PRODUCTS_CARD_MAX_WIDTH_PX}
-            imagePriority={index < lcpPriorityCount}
-          />
+          {useListLayout ? (
+            <ProductsGridListCard product={product} />
+          ) : (
+            <ProductsGridOfferCard
+              product={offerProducts[index]!}
+              layout={specialOfferLayout}
+              maxWidthPx={PRODUCTS_CARD_MAX_WIDTH_PX}
+              imagePriority={index < lcpPriorityCount}
+            />
+          )}
         </div>
       ))}
     </div>
