@@ -12,7 +12,7 @@ export const NEW_ARRIVALS_FETCH_LIMIT = 12;
 
 /**
  * Figma Frame 254 (`101:3471`) — desktop strip measurements (px).
- * Keep in sync with Tailwind in `HomeSpecialOffersSection` / `SpecialOfferProductCard`
+ * Keep in sync with Tailwind in `HomeSpecialOffersSection` / `SpecialOfferCard`
  * (`w-[306px]`, `gap-x-[106px]`).
  */
 export const SPECIAL_OFFER_CARD_WIDTH_PX = 306;

@@ -1,0 +1,1174 @@
+{
+  "generatedAt": "2026-06-18T07:29:59.972Z",
+  "brandsDir": "/Users/user/{} Development/1. Production/marco.am/BRANDS MARCO",
+  "localUniqueCount": 59,
+  "mappedCount": 56,
+  "mapped": [
+    {
+      "slug": "adler",
+      "brandId": "cmoblemx0009sde3xqrqv5555",
+      "name": "Adler",
+      "file": "IMAGE 2026-06-09 20:33:45 1.webp",
+      "distance": 0,
+      "source": "auto",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/adler.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "aeg",
+      "brandId": "cmoblepl100a4de3xkdf6x0tq",
+      "name": "AEG",
+      "file": "IMAGE 2026-06-09 20:33:38 1.webp",
+      "distance": 1,
+      "source": "auto",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/aeg.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "agt",
+      "brandId": "cmobjkcd6001qv5cr2m9w5guu",
+      "name": "AGT",
+      "file": "IMAGE 2026-06-09 20:41:53 1.webp",
+      "distance": 3,
+      "source": "auto",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/agt.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "atias",
+      "brandId": "cmobkysad0029765lgqc578gv",
+      "name": "ATIAS",
+      "file": "IMAGE 2026-06-09 20:40:53 1.webp",
+      "distance": 1,
+      "source": "auto",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/atias.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "berg",
+      "brandId": "cmobldysc0062de3xvpouypy8",
+      "name": "Berg",
+      "file": "IMAGE 2026-06-09 20:33:33 1.webp",
+      "distance": 2,
+      "source": "auto",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/berg.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "blum",
+      "brandId": "cmoble5sm0076de3x3jjrao1s",
+      "name": "BLUM",
+      "file": "IMAGE 2026-06-09 20:33:42 1.webp",
+      "distance": 4,
+      "source": "auto",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/blum.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "braun",
+      "brandId": "cmobjkelx001uv5crz0ik8nhv",
+      "name": "BRAUN",
+      "file": "IMAGE 2026-06-09 20:41:34 1.webp",
+      "distance": 0,
+      "source": "auto",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/braun.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "by-span",
+      "brandId": "cmobjkfns001wv5crp2zd7p7c",
+      "name": "By Span",
+      "file": "IMAGE 2026-06-09 20:41:49 1.webp",
+      "distance": 3,
+      "source": "auto",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/by-span.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "candy",
+      "brandId": "cmoble9s9007sde3xatmmc8p4",
+      "name": "CANDY",
+      "file": "IMAGE 2026-06-09 20:33:51 1.webp",
+      "distance": 2,
+      "source": "auto",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/candy.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "carino",
+      "brandId": "cmobjkgqg001yv5cr06eadk1p",
+      "name": "Carino",
+      "file": "IMAGE 2026-06-09 20:41:22 1.webp",
+      "distance": 0,
+      "source": "manual",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/carino.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "centek",
+      "brandId": "cmobjkhu50020v5crohtyq7pn",
+      "name": "Centek",
+      "file": "IMAGE 2026-06-09 20:42:13 1.webp",
+      "distance": 5,
+      "source": "auto",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/centek.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "delonghi",
+      "brandId": "cmobjkixs0022v5cr6ffqe186",
+      "name": "DeLonghi",
+      "file": "IMAGE 2026-06-09 20:33:36 1.webp",
+      "distance": 4,
+      "source": "auto",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/delonghi.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "divaki",
+      "brandId": "cmobldwc6005ode3xtaebnxos",
+      "name": "DIVAKI",
+      "file": "IMAGE 2026-06-09 20:33:49 1.webp",
+      "distance": 4,
+      "source": "auto",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/divaki.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "egida",
+      "brandId": "cmobjkk1a0024v5cruytvwetj",
+      "name": "EGIDA",
+      "file": "IMAGE 2026-06-09 20:41:55 1.webp",
+      "distance": 2,
+      "source": "auto",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/egida.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "electrolux",
+      "brandId": "cmobjkl5g0026v5cryb6e7cno",
+      "name": "Electrolux",
+      "file": "IMAGE 2026-06-09 20:42:18 1.webp",
+      "distance": 3,
+      "source": "auto",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/electrolux.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "eurostek",
+      "brandId": "cmobl3x5s00zx765l4mzsn360",
+      "name": "EUROSTEK",
+      "file": "IMAGE 2026-06-09 20:34:00 1.webp",
+      "distance": 5,
+      "source": "auto",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/eurostek.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "evo-gloss",
+      "brandId": "cmobjkm7c0028v5cryvvukpdv",
+      "name": "Evo Gloss",
+      "file": "IMAGE 2026-06-09 20:41:39 1.webp",
+      "distance": 0,
+      "source": "manual",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/evo-gloss.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "fds",
+      "brandId": "cmoblecrd0088de3xxbm63d4v",
+      "name": "FDS",
+      "file": "IMAGE 2026-06-09 20:34:13 1.webp",
+      "distance": 0,
+      "source": "manual",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/fds.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "franko",
+      "brandId": "cmobjntsd000k11wookrb9xtm",
+      "name": "Franko",
+      "file": "IMAGE 2026-06-09 20:41:27 1.webp",
+      "distance": 0,
+      "source": "auto",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/franko.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "galanz",
+      "brandId": "cmobleopi00a0de3xc51bbj3o",
+      "name": "Galanz",
+      "file": "IMAGE 2026-06-09 20:34:15 1.webp",
+      "distance": 5,
+      "source": "auto",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/galanz.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "geepas",
+      "brandId": "cmobjkn9w002av5crld0q8efp",
+      "name": "GEEPAS",
+      "file": "IMAGE 2026-06-09 20:42:04 1.webp",
+      "distance": 1,
+      "source": "auto",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/geepas.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "hausberg",
+      "brandId": "cmobjkocd002cv5cr1oefu4iw",
+      "name": "Hausberg",
+      "file": "IMAGE 2026-06-09 20:42:07 1.webp",
+      "distance": 4,
+      "source": "auto",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/hausberg.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "hennson",
+      "brandId": "cmobjnxge000q11wos4ey3dr9",
+      "name": "Hennson",
+      "file": "IMAGE 2026-06-09 20:41:05 1.webp",
+      "distance": 0,
+      "source": "manual",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/hennson.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "hisense",
+      "brandId": "cmobjkphf002ev5cr7li8kaqd",
+      "name": "HISENSE",
+      "file": "IMAGE 2026-06-09 20:42:02 1.webp",
+      "distance": 5,
+      "source": "auto",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/hisense.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "hitachi",
+      "brandId": "cmoble6id007ade3xby4d4ylt",
+      "name": "HITACHI",
+      "file": "IMAGE 2026-06-09 20:34:35 1.webp",
+      "distance": 0,
+      "source": "auto",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/hitachi.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "import-334-GAFHezBJ",
+      "brandId": "cmq29pq05000uqd0ovpugeii5",
+      "name": "UZ",
+      "file": "IMAGE 2026-06-09 20:41:02 1.webp",
+      "distance": 8,
+      "source": "auto",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/uz.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "kastamonu",
+      "brandId": "cmobjkqsn002gv5cr9rh4gy05",
+      "name": "Kastamonu",
+      "file": "IMAGE 2026-06-09 20:41:40 1.webp",
+      "distance": 2,
+      "source": "auto",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/kastamonu.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "kelon",
+      "brandId": "cmoble5380072de3xk0ztpnvq",
+      "name": "KELON",
+      "file": "IMAGE 2026-06-09 20:34:37 1.webp",
+      "distance": 1,
+      "source": "auto",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/kelon.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "kenwood",
+      "brandId": "cmobjks1z002iv5cre3508sjo",
+      "name": "KENWOOD",
+      "file": "IMAGE 2026-06-09 20:41:17 1.webp",
+      "distance": 4,
+      "source": "auto",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/kenwood.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "lex",
+      "brandId": "cmobkzm46007z765lqj68m97a",
+      "name": "LEX",
+      "file": "IMAGE 2026-06-09 20:42:12 1.webp",
+      "distance": 4,
+      "source": "auto",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/lex.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "lg",
+      "brandId": "cmobjkvdi002ov5crqaef0q7z",
+      "name": "LG",
+      "file": "IMAGE 2026-06-09 20:34:29 1.webp",
+      "distance": 0,
+      "source": "manual",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/lg-official.png",
+      "hasAlpha": true
+    },
+    {
+      "slug": "makss",
+      "brandId": "cmobleez4008kde3xxmptla2d",
+      "name": "MAKSS",
+      "file": "IMAGE 2026-06-09 20:34:32 1.webp",
+      "distance": 3,
+      "source": "auto",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/makss.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "marrbaxx",
+      "brandId": "cmobjkxm4002sv5crrkuoac8s",
+      "name": "MARRBAXX",
+      "file": "IMAGE 2026-06-09 20:41:31 1.webp",
+      "distance": 3,
+      "source": "auto",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/marrbaxx.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "metali-accessories",
+      "brandId": "cmobleipi0094de3xb8kujw50",
+      "name": "Metali Accessories",
+      "file": "IMAGE 2026-06-09 20:41:13 1.webp",
+      "distance": 7,
+      "source": "auto",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/metali-accessories.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "mf",
+      "brandId": "cmoblegf9008sde3x9zzsxtje",
+      "name": "MF",
+      "file": "IMAGE 2026-06-09 20:34:24 1.webp",
+      "distance": 1,
+      "source": "auto",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/mf.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "midea",
+      "brandId": "cmobjkysv002uv5crblhn2xjc",
+      "name": "Midea",
+      "file": "IMAGE 2026-06-09 20:42:16 1.webp",
+      "distance": 3,
+      "source": "auto",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/midea.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "misline",
+      "brandId": "cmoblek52009cde3xb1zjmowt",
+      "name": "MISLINE",
+      "file": "IMAGE 2026-06-09 20:41:20 1.webp",
+      "distance": 0,
+      "source": "manual",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/misline.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "nnobel",
+      "brandId": "cmobjkzvm002wv5crs6c6l5el",
+      "name": "Nnobel",
+      "file": "IMAGE 2026-06-09 20:42:09 1.webp",
+      "distance": 3,
+      "source": "auto",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/nnobel.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "panasonic",
+      "brandId": "cmobjl0zv002yv5crr9kmgaig",
+      "name": "Panasonic",
+      "file": "IMAGE 2026-06-09 20:41:30 1.webp",
+      "distance": 5,
+      "source": "auto",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/panasonic.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "philips",
+      "brandId": "cmobjl24g0030v5crh3tm0p3f",
+      "name": "Philips",
+      "file": "IMAGE 2026-06-09 20:41:58 1.webp",
+      "distance": 0,
+      "source": "manual",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/philips.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "puricelli",
+      "brandId": "cmoblem83009ode3xm4spbpdu",
+      "name": "Puricelli",
+      "file": "IMAGE 2026-06-09 20:33:57 1.webp",
+      "distance": 4,
+      "source": "auto",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/puricelli.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "royax",
+      "brandId": "cmobledhu008cde3xaxfbbz1r",
+      "name": "Royax",
+      "file": "IMAGE 2026-06-09 20:41:15 1.webp",
+      "distance": 0,
+      "source": "manual",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/royax.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "samsung",
+      "brandId": "cmobjl38q0032v5crm7775zou",
+      "name": "Samsung",
+      "file": "IMAGE 2026-06-09 20:33:40 1.webp",
+      "distance": 0,
+      "source": "auto",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/samsung.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "sedef",
+      "brandId": "cmoblee8e008gde3x5xz69uwq",
+      "name": "SEDEF",
+      "file": "IMAGE 2026-06-09 20:34:39 1.webp",
+      "distance": 3,
+      "source": "auto",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/sedef.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "simfer",
+      "brandId": "cmoblenxz009wde3xta9swgc7",
+      "name": "Simfer",
+      "file": "IMAGE 2026-06-09 20:34:41 1.webp",
+      "distance": 1,
+      "source": "auto",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/simfer.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "skyworth",
+      "brandId": "cmoblelj1009kde3xv34rnles",
+      "name": "Skyworth",
+      "file": "IMAGE 2026-06-09 20:33:47 1.webp",
+      "distance": 3,
+      "source": "auto",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/skyworth.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "sony",
+      "brandId": "cmoblby9c02ik765l36dd8qu6",
+      "name": "Sony",
+      "file": "IMAGE 2026-06-09 20:40:52 1.webp",
+      "distance": 2,
+      "source": "auto",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/sony.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "tefal",
+      "brandId": "cmobl27eu00pd765l86754qyc",
+      "name": "Tefal",
+      "file": "IMAGE 2026-06-09 20:34:47 1.webp",
+      "distance": 2,
+      "source": "auto",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/tefal.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "toshiba",
+      "brandId": "cmobjl5gk0036v5cr6nbkrgif",
+      "name": "TOSHIBA",
+      "file": "IMAGE 2026-06-09 20:42:00 1.webp",
+      "distance": 6,
+      "source": "auto",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/toshiba.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "tragen",
+      "brandId": "cmoble0kn006cde3xi8ri5dwb",
+      "name": "Tragen",
+      "file": "IMAGE 2026-06-09 20:41:36 1.webp",
+      "distance": 0,
+      "source": "manual",
+      "previousLogoUrl": null,
+      "hasAlpha": true
+    },
+    {
+      "slug": "ultradecor",
+      "brandId": "cmobldof302v6765lfwow7fp3",
+      "name": "Ultradecor",
+      "file": "IMAGE 2026-06-09 20:40:57 1.webp",
+      "distance": 3,
+      "source": "auto",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/ultradecor.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "unhopper",
+      "brandId": "cmobleh5w008wde3xb97lwbl0",
+      "name": "Unhopper",
+      "file": "IMAGE 2026-06-09 20:40:55 1.webp",
+      "distance": 0,
+      "source": "manual",
+      "previousLogoUrl": null,
+      "hasAlpha": true
+    },
+    {
+      "slug": "vestel",
+      "brandId": "cmobjl6iz0038v5crdpq6nsho",
+      "name": "Vestel",
+      "file": "IMAGE 2026-06-09 20:41:47 1.webp",
+      "distance": 1,
+      "source": "auto",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/vestel.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "welux",
+      "brandId": "cmobkyj2c000l765lh3o4t1uq",
+      "name": "Welux",
+      "file": "IMAGE 2026-06-09 20:41:00 1.webp",
+      "distance": 0,
+      "source": "manual",
+      "previousLogoUrl": null,
+      "hasAlpha": true
+    },
+    {
+      "slug": "xiaomi",
+      "brandId": "cmoble1b7006gde3x5buki6sa",
+      "name": "XIAOMI",
+      "file": "IMAGE 2026-06-09 20:40:47 1.webp",
+      "distance": 6,
+      "source": "auto",
+      "previousLogoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/xiaomi.webp",
+      "hasAlpha": true
+    },
+    {
+      "slug": "zdemir-malzeme",
+      "brandId": "cmoblejg90098de3xp21xtcqr",
+      "name": "Özdemir Malzeme",
+      "file": "IMAGE 2026-06-09 20:41:25 1.webp",
+      "distance": 0,
+      "source": "manual",
+      "previousLogoUrl": null,
+      "hasAlpha": true
+    }
+  ],
+  "unusedLocal": [
+    "IMAGE 2026-06-09 20:33:32 1.webp",
+    "IMAGE 2026-06-09 20:34:22 1.webp",
+    "IMAGE 2026-06-09 20:41:11 1.webp"
+  ],
+  "missingBrands": [
+    {
+      "slug": "acme",
+      "name": "Acme",
+      "hadLogo": false,
+      "logoUrl": null
+    },
+    {
+      "slug": "bosch",
+      "name": "BOSCH",
+      "hadLogo": true,
+      "logoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/bosch.webp"
+    },
+    {
+      "slug": "brand-85ebe26ae2",
+      "name": "ПИНСКДРЕВ",
+      "hadLogo": false,
+      "logoUrl": null
+    },
+    {
+      "slug": "brand-x",
+      "name": "Brand X",
+      "hadLogo": false,
+      "logoUrl": null
+    },
+    {
+      "slug": "chudesnica",
+      "name": "Chudesnica",
+      "hadLogo": false,
+      "logoUrl": null
+    },
+    {
+      "slug": "disakulp",
+      "name": "DISAKULP",
+      "hadLogo": false,
+      "logoUrl": null
+    },
+    {
+      "slug": "egger",
+      "name": "Egger",
+      "hadLogo": true,
+      "logoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/egger.webp"
+    },
+    {
+      "slug": "endever",
+      "name": "ENDEVER",
+      "hadLogo": false,
+      "logoUrl": null
+    },
+    {
+      "slug": "fgv",
+      "name": "FGV",
+      "hadLogo": true,
+      "logoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/fgv.webp"
+    },
+    {
+      "slug": "fisher",
+      "name": "Fisher",
+      "hadLogo": false,
+      "logoUrl": null
+    },
+    {
+      "slug": "gentas",
+      "name": "GENTAS",
+      "hadLogo": true,
+      "logoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/gentas.webp"
+    },
+    {
+      "slug": "gorenje",
+      "name": "GORENJE",
+      "hadLogo": true,
+      "logoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/gorenje.webp"
+    },
+    {
+      "slug": "hao-cheng",
+      "name": "HAO CHENG",
+      "hadLogo": false,
+      "logoUrl": null
+    },
+    {
+      "slug": "hoffman",
+      "name": "Hoffman",
+      "hadLogo": false,
+      "logoUrl": null
+    },
+    {
+      "slug": "import-H07MRm_96HWN",
+      "name": "DEO",
+      "hadLogo": false,
+      "logoUrl": null
+    },
+    {
+      "slug": "import-JrWTKlyPcuf6",
+      "name": "LARA",
+      "hadLogo": false,
+      "logoUrl": null
+    },
+    {
+      "slug": "import-PW7hCJWbm6kw",
+      "name": "Weston",
+      "hadLogo": false,
+      "logoUrl": null
+    },
+    {
+      "slug": "import-ZMS8F6n10X6-",
+      "name": "Uz8787",
+      "hadLogo": false,
+      "logoUrl": null
+    },
+    {
+      "slug": "import-cY6CT5AKx94n",
+      "name": "Ugur",
+      "hadLogo": false,
+      "logoUrl": null
+    },
+    {
+      "slug": "import-kRk17eEuzval",
+      "name": "Aventos",
+      "hadLogo": false,
+      "logoUrl": null
+    },
+    {
+      "slug": "import-l4OHBQAJALR_",
+      "name": "Simmer",
+      "hadLogo": false,
+      "logoUrl": null
+    },
+    {
+      "slug": "import-lh1lW3IXH7Qg",
+      "name": "SUS",
+      "hadLogo": false,
+      "logoUrl": null
+    },
+    {
+      "slug": "import-xju55LZtsvji",
+      "name": "Vikas",
+      "hadLogo": false,
+      "logoUrl": null
+    },
+    {
+      "slug": "kronospan",
+      "name": "Kronospan",
+      "hadLogo": true,
+      "logoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/kronospan.webp"
+    },
+    {
+      "slug": "kumitel",
+      "name": "Kumitel",
+      "hadLogo": true,
+      "logoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/kumitel.webp"
+    },
+    {
+      "slug": "kumtel",
+      "name": "Kumtel",
+      "hadLogo": true,
+      "logoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/kumtel.webp"
+    },
+    {
+      "slug": "lex-life-expert",
+      "name": "Lex Life Expert",
+      "hadLogo": true,
+      "logoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/lex-life-expert.webp"
+    },
+    {
+      "slug": "luxell",
+      "name": "Luxell",
+      "hadLogo": true,
+      "logoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/luxell.webp"
+    },
+    {
+      "slug": "nobel",
+      "name": "Nobel",
+      "hadLogo": true,
+      "logoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/nobel.webp"
+    },
+    {
+      "slug": "pacific",
+      "name": "Pacific",
+      "hadLogo": false,
+      "logoUrl": null
+    },
+    {
+      "slug": "prime",
+      "name": "Prime",
+      "hadLogo": false,
+      "logoUrl": null
+    },
+    {
+      "slug": "starax",
+      "name": "Starax",
+      "hadLogo": true,
+      "logoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/starax.webp"
+    },
+    {
+      "slug": "targen-your-kitchen",
+      "name": "Targen Your Kitchen",
+      "hadLogo": true,
+      "logoUrl": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/targen-your-kitchen.webp"
+    },
+    {
+      "slug": "zeus",
+      "name": "Zeus",
+      "hadLogo": false,
+      "logoUrl": null
+    }
+  ],
+  "uploadedAt": "2026-06-18T07:30:46.382Z",
+  "uploaded": [
+    {
+      "slug": "adler",
+      "key": "brands/logos/adler.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/adler.webp",
+      "source": "auto",
+      "file": "IMAGE 2026-06-09 20:33:45 1.webp"
+    },
+    {
+      "slug": "aeg",
+      "key": "brands/logos/aeg.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/aeg.webp",
+      "source": "auto",
+      "file": "IMAGE 2026-06-09 20:33:38 1.webp"
+    },
+    {
+      "slug": "agt",
+      "key": "brands/logos/agt.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/agt.webp",
+      "source": "auto",
+      "file": "IMAGE 2026-06-09 20:41:53 1.webp"
+    },
+    {
+      "slug": "atias",
+      "key": "brands/logos/atias.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/atias.webp",
+      "source": "auto",
+      "file": "IMAGE 2026-06-09 20:40:53 1.webp"
+    },
+    {
+      "slug": "berg",
+      "key": "brands/logos/berg.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/berg.webp",
+      "source": "auto",
+      "file": "IMAGE 2026-06-09 20:33:33 1.webp"
+    },
+    {
+      "slug": "blum",
+      "key": "brands/logos/blum.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/blum.webp",
+      "source": "auto",
+      "file": "IMAGE 2026-06-09 20:33:42 1.webp"
+    },
+    {
+      "slug": "braun",
+      "key": "brands/logos/braun.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/braun.webp",
+      "source": "auto",
+      "file": "IMAGE 2026-06-09 20:41:34 1.webp"
+    },
+    {
+      "slug": "by-span",
+      "key": "brands/logos/by-span.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/by-span.webp",
+      "source": "auto",
+      "file": "IMAGE 2026-06-09 20:41:49 1.webp"
+    },
+    {
+      "slug": "candy",
+      "key": "brands/logos/candy.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/candy.webp",
+      "source": "auto",
+      "file": "IMAGE 2026-06-09 20:33:51 1.webp"
+    },
+    {
+      "slug": "carino",
+      "key": "brands/logos/carino.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/carino.webp",
+      "source": "manual",
+      "file": "IMAGE 2026-06-09 20:41:22 1.webp"
+    },
+    {
+      "slug": "centek",
+      "key": "brands/logos/centek.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/centek.webp",
+      "source": "auto",
+      "file": "IMAGE 2026-06-09 20:42:13 1.webp"
+    },
+    {
+      "slug": "delonghi",
+      "key": "brands/logos/delonghi.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/delonghi.webp",
+      "source": "auto",
+      "file": "IMAGE 2026-06-09 20:33:36 1.webp"
+    },
+    {
+      "slug": "divaki",
+      "key": "brands/logos/divaki.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/divaki.webp",
+      "source": "auto",
+      "file": "IMAGE 2026-06-09 20:33:49 1.webp"
+    },
+    {
+      "slug": "egida",
+      "key": "brands/logos/egida.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/egida.webp",
+      "source": "auto",
+      "file": "IMAGE 2026-06-09 20:41:55 1.webp"
+    },
+    {
+      "slug": "electrolux",
+      "key": "brands/logos/electrolux.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/electrolux.webp",
+      "source": "auto",
+      "file": "IMAGE 2026-06-09 20:42:18 1.webp"
+    },
+    {
+      "slug": "eurostek",
+      "key": "brands/logos/eurostek.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/eurostek.webp",
+      "source": "auto",
+      "file": "IMAGE 2026-06-09 20:34:00 1.webp"
+    },
+    {
+      "slug": "evo-gloss",
+      "key": "brands/logos/evo-gloss.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/evo-gloss.webp",
+      "source": "manual",
+      "file": "IMAGE 2026-06-09 20:41:39 1.webp"
+    },
+    {
+      "slug": "fds",
+      "key": "brands/logos/fds.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/fds.webp",
+      "source": "manual",
+      "file": "IMAGE 2026-06-09 20:34:13 1.webp"
+    },
+    {
+      "slug": "franko",
+      "key": "brands/logos/franko.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/franko.webp",
+      "source": "auto",
+      "file": "IMAGE 2026-06-09 20:41:27 1.webp"
+    },
+    {
+      "slug": "galanz",
+      "key": "brands/logos/galanz.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/galanz.webp",
+      "source": "auto",
+      "file": "IMAGE 2026-06-09 20:34:15 1.webp"
+    },
+    {
+      "slug": "geepas",
+      "key": "brands/logos/geepas.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/geepas.webp",
+      "source": "auto",
+      "file": "IMAGE 2026-06-09 20:42:04 1.webp"
+    },
+    {
+      "slug": "hausberg",
+      "key": "brands/logos/hausberg.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/hausberg.webp",
+      "source": "auto",
+      "file": "IMAGE 2026-06-09 20:42:07 1.webp"
+    },
+    {
+      "slug": "hennson",
+      "key": "brands/logos/hennson.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/hennson.webp",
+      "source": "manual",
+      "file": "IMAGE 2026-06-09 20:41:05 1.webp"
+    },
+    {
+      "slug": "hisense",
+      "key": "brands/logos/hisense.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/hisense.webp",
+      "source": "auto",
+      "file": "IMAGE 2026-06-09 20:42:02 1.webp"
+    },
+    {
+      "slug": "hitachi",
+      "key": "brands/logos/hitachi.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/hitachi.webp",
+      "source": "auto",
+      "file": "IMAGE 2026-06-09 20:34:35 1.webp"
+    },
+    {
+      "slug": "import-334-GAFHezBJ",
+      "key": "brands/logos/import-334-GAFHezBJ.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/import-334-GAFHezBJ.webp",
+      "source": "auto",
+      "file": "IMAGE 2026-06-09 20:41:02 1.webp"
+    },
+    {
+      "slug": "kastamonu",
+      "key": "brands/logos/kastamonu.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/kastamonu.webp",
+      "source": "auto",
+      "file": "IMAGE 2026-06-09 20:41:40 1.webp"
+    },
+    {
+      "slug": "kelon",
+      "key": "brands/logos/kelon.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/kelon.webp",
+      "source": "auto",
+      "file": "IMAGE 2026-06-09 20:34:37 1.webp"
+    },
+    {
+      "slug": "kenwood",
+      "key": "brands/logos/kenwood.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/kenwood.webp",
+      "source": "auto",
+      "file": "IMAGE 2026-06-09 20:41:17 1.webp"
+    },
+    {
+      "slug": "lex",
+      "key": "brands/logos/lex.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/lex.webp",
+      "source": "auto",
+      "file": "IMAGE 2026-06-09 20:42:12 1.webp"
+    },
+    {
+      "slug": "lg",
+      "key": "brands/logos/lg.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/lg.webp",
+      "source": "manual",
+      "file": "IMAGE 2026-06-09 20:34:29 1.webp"
+    },
+    {
+      "slug": "makss",
+      "key": "brands/logos/makss.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/makss.webp",
+      "source": "auto",
+      "file": "IMAGE 2026-06-09 20:34:32 1.webp"
+    },
+    {
+      "slug": "marrbaxx",
+      "key": "brands/logos/marrbaxx.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/marrbaxx.webp",
+      "source": "auto",
+      "file": "IMAGE 2026-06-09 20:41:31 1.webp"
+    },
+    {
+      "slug": "metali-accessories",
+      "key": "brands/logos/metali-accessories.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/metali-accessories.webp",
+      "source": "auto",
+      "file": "IMAGE 2026-06-09 20:41:13 1.webp"
+    },
+    {
+      "slug": "mf",
+      "key": "brands/logos/mf.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/mf.webp",
+      "source": "auto",
+      "file": "IMAGE 2026-06-09 20:34:24 1.webp"
+    },
+    {
+      "slug": "midea",
+      "key": "brands/logos/midea.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/midea.webp",
+      "source": "auto",
+      "file": "IMAGE 2026-06-09 20:42:16 1.webp"
+    },
+    {
+      "slug": "misline",
+      "key": "brands/logos/misline.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/misline.webp",
+      "source": "manual",
+      "file": "IMAGE 2026-06-09 20:41:20 1.webp"
+    },
+    {
+      "slug": "nnobel",
+      "key": "brands/logos/nnobel.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/nnobel.webp",
+      "source": "auto",
+      "file": "IMAGE 2026-06-09 20:42:09 1.webp"
+    },
+    {
+      "slug": "panasonic",
+      "key": "brands/logos/panasonic.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/panasonic.webp",
+      "source": "auto",
+      "file": "IMAGE 2026-06-09 20:41:30 1.webp"
+    },
+    {
+      "slug": "philips",
+      "key": "brands/logos/philips.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/philips.webp",
+      "source": "manual",
+      "file": "IMAGE 2026-06-09 20:41:58 1.webp"
+    },
+    {
+      "slug": "puricelli",
+      "key": "brands/logos/puricelli.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/puricelli.webp",
+      "source": "auto",
+      "file": "IMAGE 2026-06-09 20:33:57 1.webp"
+    },
+    {
+      "slug": "royax",
+      "key": "brands/logos/royax.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/royax.webp",
+      "source": "manual",
+      "file": "IMAGE 2026-06-09 20:41:15 1.webp"
+    },
+    {
+      "slug": "samsung",
+      "key": "brands/logos/samsung.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/samsung.webp",
+      "source": "auto",
+      "file": "IMAGE 2026-06-09 20:33:40 1.webp"
+    },
+    {
+      "slug": "sedef",
+      "key": "brands/logos/sedef.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/sedef.webp",
+      "source": "auto",
+      "file": "IMAGE 2026-06-09 20:34:39 1.webp"
+    },
+    {
+      "slug": "simfer",
+      "key": "brands/logos/simfer.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/simfer.webp",
+      "source": "auto",
+      "file": "IMAGE 2026-06-09 20:34:41 1.webp"
+    },
+    {
+      "slug": "skyworth",
+      "key": "brands/logos/skyworth.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/skyworth.webp",
+      "source": "auto",
+      "file": "IMAGE 2026-06-09 20:33:47 1.webp"
+    },
+    {
+      "slug": "sony",
+      "key": "brands/logos/sony.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/sony.webp",
+      "source": "auto",
+      "file": "IMAGE 2026-06-09 20:40:52 1.webp"
+    },
+    {
+      "slug": "tefal",
+      "key": "brands/logos/tefal.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/tefal.webp",
+      "source": "auto",
+      "file": "IMAGE 2026-06-09 20:34:47 1.webp"
+    },
+    {
+      "slug": "toshiba",
+      "key": "brands/logos/toshiba.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/toshiba.webp",
+      "source": "auto",
+      "file": "IMAGE 2026-06-09 20:42:00 1.webp"
+    },
+    {
+      "slug": "tragen",
+      "key": "brands/logos/tragen.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/tragen.webp",
+      "source": "manual",
+      "file": "IMAGE 2026-06-09 20:41:36 1.webp"
+    },
+    {
+      "slug": "ultradecor",
+      "key": "brands/logos/ultradecor.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/ultradecor.webp",
+      "source": "auto",
+      "file": "IMAGE 2026-06-09 20:40:57 1.webp"
+    },
+    {
+      "slug": "unhopper",
+      "key": "brands/logos/unhopper.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/unhopper.webp",
+      "source": "manual",
+      "file": "IMAGE 2026-06-09 20:40:55 1.webp"
+    },
+    {
+      "slug": "vestel",
+      "key": "brands/logos/vestel.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/vestel.webp",
+      "source": "auto",
+      "file": "IMAGE 2026-06-09 20:41:47 1.webp"
+    },
+    {
+      "slug": "welux",
+      "key": "brands/logos/welux.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/welux.webp",
+      "source": "manual",
+      "file": "IMAGE 2026-06-09 20:41:00 1.webp"
+    },
+    {
+      "slug": "xiaomi",
+      "key": "brands/logos/xiaomi.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/xiaomi.webp",
+      "source": "auto",
+      "file": "IMAGE 2026-06-09 20:40:47 1.webp"
+    },
+    {
+      "slug": "zdemir-malzeme",
+      "key": "brands/logos/zdemir-malzeme.webp",
+      "url": "https://pub-7dc0e2d65da946cbb53e8d3891e27f2b.r2.dev/brands/logos/zdemir-malzeme.webp",
+      "source": "manual",
+      "file": "IMAGE 2026-06-09 20:41:25 1.webp"
+    }
+  ]
+}

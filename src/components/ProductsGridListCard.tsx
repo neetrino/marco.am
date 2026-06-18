@@ -1,57 +1,39 @@
 'use client';
 
-import { memo, useCallback, useState } from 'react';
-import type { MouseEvent } from 'react';
+import { memo, useCallback, useState, type MouseEvent } from 'react';
+
+import type { ProductListingBrand } from '@/lib/types/product-listing-brand';
 import { useWishlist } from './hooks/useWishlist';
 import { useCompare } from './hooks/useCompare';
 import { useAddToCart } from './hooks/useAddToCart';
 import { useCurrency } from './hooks/useCurrency';
-import type { ProductListingBrand } from '@/lib/types/product-listing-brand';
+import type { ProductLabel } from './ProductLabels';
 import { ProductCardList } from './ProductCard/ProductCardList';
-import { ProductCardGrid } from './ProductCard/ProductCardGrid';
 
-interface Product {
+type ProductsGridListCardProduct = {
   id: string;
   slug: string;
   title: string;
   price: number;
+  compareAtPrice: number | null;
+  discountPercent?: number | null;
+  isSpecialPrice?: boolean;
   image: string | null;
   images?: string[];
   inStock: boolean;
   brand: ProductListingBrand | null;
+  categories?: Array<{ id: string; slug: string; title: string }>;
   defaultVariantId?: string | null;
-  labels?: import('./ProductLabels').ProductLabel[];
-  warrantyYears?: import('@/lib/constants/product-warranty').ProductWarrantyYears | null;
-  warrantyBadge?: { years: import('@/lib/constants/product-warranty').ProductWarrantyYears } | null;
-  compareAtPrice?: number | null;
-  originalPrice?: number | null;
-  globalDiscount?: number | null;
-  discountPercent?: number | null;
-  isSpecialPrice?: boolean;
+  labels?: ProductLabel[];
   colors?: Array<{ value: string; imageUrl?: string | null; colors?: string[] | null }>;
   requiresAttributeSelection?: boolean | null;
-  categories?: Array<{ id: string; slug: string; title: string }>;
+};
+
+interface ProductsGridListCardProps {
+  readonly product: ProductsGridListCardProduct;
 }
 
-type ViewMode = 'list' | 'grid-2' | 'grid-3';
-
-interface ProductCardProps {
-  product: Product;
-  viewMode?: ViewMode;
-  /** Only for `/wishlist`: bordered card + X to remove instead of heart. */
-  wishlistPage?: boolean;
-}
-
-/**
- * Product card component with Compare, Wishlist and Cart icons
- * Displays product image, title, category, price and action buttons
- */
-export const ProductCard = memo(function ProductCard({
-  product,
-  viewMode = 'grid-3',
-  wishlistPage = false,
-}: ProductCardProps) {
-  const isCompact = viewMode === 'grid-3';
+function ProductsGridListCardInner({ product }: ProductsGridListCardProps) {
   const currency = useCurrency();
   const { isInWishlist, toggleWishlist } = useWishlist(product.id);
   const { isInCompare, toggleCompare } = useCompare(product.id);
@@ -86,43 +68,24 @@ export const ProductCard = memo(function ProductCard({
     void addToCart();
   }, [addToCart]);
 
-  // List view layout
-  if (viewMode === 'list') {
-    return (
-      <ProductCardList
-        product={product}
-        currency={currency}
-        isInWishlist={isInWishlist}
-        isInCompare={isInCompare}
-        isAddingToCart={isAddingToCart}
-        imageError={imageError}
-        onImageError={() => setImageError(true)}
-        onWishlistToggle={handleWishlistToggle}
-        onCompareToggle={handleCompareToggle}
-        onAddToCart={handleAddToCart}
-        wishlistPage={wishlistPage}
-      />
-    );
-  }
-
-  // Grid view layout
   return (
-    <ProductCardGrid
-      product={product}
+    <ProductCardList
+      product={{
+        ...product,
+        compareAtPrice: product.compareAtPrice,
+        originalPrice: product.compareAtPrice,
+      }}
       currency={currency}
       isInWishlist={isInWishlist}
       isInCompare={isInCompare}
       isAddingToCart={isAddingToCart}
       imageError={imageError}
-      isCompact={isCompact}
       onImageError={() => setImageError(true)}
       onWishlistToggle={handleWishlistToggle}
       onCompareToggle={handleCompareToggle}
       onAddToCart={handleAddToCart}
-      wishlistPage={wishlistPage}
     />
   );
-});
+}
 
-ProductCard.displayName = 'ProductCard';
-
+export const ProductsGridListCard = memo(ProductsGridListCardInner);

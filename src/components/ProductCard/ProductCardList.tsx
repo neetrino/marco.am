@@ -43,9 +43,7 @@ interface ProductCardListProps {
   wishlistPage?: boolean;
 }
 
-/**
- * List view layout for ProductCard
- */
+/** Horizontal list row for shop PLP. */
 export function ProductCardList({
   product,
   currency,
@@ -107,7 +105,6 @@ export function ProductCardList({
           className="flex min-w-0 flex-1 flex-col gap-4 sm:flex-row sm:items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-marco-yellow focus-visible:ring-offset-2 rounded-lg"
           aria-label={product.title}
         >
-          {/* Product Image */}
           <div className="relative h-36 w-36 flex-shrink-0 self-start overflow-hidden rounded-xl border-2 border-gray-300 bg-gray-100 sm:self-center">
             {!imageError && product.image ? (
               <Image
@@ -127,7 +124,6 @@ export function ProductCardList({
             )}
           </div>
 
-          {/* Product Info */}
           <div className="w-full min-w-0 flex-1 sm:w-auto">
             <h3 className="line-clamp-2 text-xl font-medium text-gray-900 transition-colors sm:text-2xl">
               {product.title}
@@ -142,12 +138,11 @@ export function ProductCardList({
                 />
               ) : null}
             </div>
-            {/* Available Colors */}
-            {product.colors && product.colors.length > 0 && (
+            {product.colors && product.colors.length > 0 ? (
               <div className="mt-2 flex flex-wrap items-center gap-1.5">
                 <ProductColors colors={product.colors} maxVisible={6} />
               </div>
-            )}
+            ) : null}
           </div>
 
           {hasDisplayPrice ? (
@@ -169,7 +164,7 @@ export function ProductCardList({
                     product.originalPrice && product.originalPrice > product.price
                       ? product.originalPrice
                       : (product.compareAtPrice || 0),
-                    currency
+                    currency,
                   )}
                 </span>
               ) : null}
@@ -177,7 +172,6 @@ export function ProductCardList({
           ) : null}
         </ProductPdpPrefetchLink>
 
-        {/* Action Buttons: outside PDP link to avoid anchor nesting with buttons */}
         <div className="self-start sm:self-center">
           <ProductCardActions
             isInWishlist={isInWishlist}

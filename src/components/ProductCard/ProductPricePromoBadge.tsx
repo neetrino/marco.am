@@ -9,9 +9,7 @@ interface ProductPricePromoBadgeProps {
   className?: string;
 }
 
-/**
- * Catalog / card promo label: «հատուկ գին» or «-N%».
- */
+/** Catalog / card promo label: «հատուկ գին» or «-N%». */
 export function ProductPricePromoBadge({
   discountPercent,
   isSpecialPrice = false,

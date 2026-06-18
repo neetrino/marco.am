@@ -31,6 +31,7 @@ import {
   SPECIAL_OFFERS_PRICE_BLOCK_LIFT_FROM_BOTTOM_PX,
   SPECIAL_OFFERS_PRICE_ROW_END_PADDING_PX,
 } from './home-special-offers.constants';
+import { ProductCardBrandMark } from '../ProductCard/ProductCardBrandMark';
 import {
   SpecialOfferActionsStack,
   SpecialOfferWarrantyBadge,
@@ -276,26 +277,38 @@ export function SpecialOfferCard({
           >
             <SpecialOfferCardInfo
               product={product}
-              brandClass={brandClass}
               detailsPending={detailsPending}
               navigationSeed={navigationSeed}
             />
 
-            {hasDisplayPrice ? (
-              <div
-                className="mt-auto w-full min-w-0"
-                style={{
-                  marginBottom: SPECIAL_OFFERS_PRICE_BLOCK_LIFT_FROM_BOTTOM_PX,
-                }}
-              >
-                <SpecialOfferCardPricing
-                  price={product.price}
-                  oldPrice={oldPrice}
-                  currency={currency}
-                  detailsPending={detailsPending}
-                />
-              </div>
-            ) : null}
+            <div className="mt-auto w-full min-w-0">
+              {hasDisplayPrice ? (
+                <div
+                  style={{
+                    marginBottom: SPECIAL_OFFERS_PRICE_BLOCK_LIFT_FROM_BOTTOM_PX,
+                  }}
+                >
+                  <SpecialOfferCardPricing
+                    price={product.price}
+                    oldPrice={oldPrice}
+                    currency={currency}
+                    detailsPending={detailsPending}
+                  />
+                </div>
+              ) : null}
+
+              {product.brand ? (
+                <div className="min-h-[1.25rem]">
+                  <ProductCardBrandMark
+                    name={product.brand.name}
+                    slug={product.brand.slug}
+                    logoUrl={product.brand.logoUrl}
+                    size="specialOffer"
+                    textClassName={`text-[12px] font-black uppercase tracking-[0.6px] ${brandClass}`}
+                  />
+                </div>
+              ) : null}
+            </div>
           </div>
         </div>
       </article>

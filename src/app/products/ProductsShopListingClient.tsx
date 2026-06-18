@@ -33,6 +33,7 @@ import { useTranslation } from '@/lib/i18n-client';
 import { ProductsShopLoadingSkeleton } from './ProductsShopLoadingSkeleton';
 import { prefetchAdjacentShopListingPages } from '@/lib/shop-products-listing-adjacent-prefetch';
 import { normalizeShopGridProduct, type ShopGridProduct } from './shop-grid-product';
+import { ProductsListingToolbar } from '@/components/ProductsListingToolbar';
 
 type ListingMeta = {
   total: number;
@@ -118,7 +119,7 @@ function normalizeListingApiResponse(response: ProductsListingApiResponse): {
 }
 
 const PLP_LISTING_ROOT_CLASS =
-  'min-w-0 flex-1 w-full overflow-x-hidden pt-4 pb-2 min-[744px]:w-auto min-[744px]:py-4';
+  'min-w-0 flex-1 w-full overflow-x-hidden pb-2 min-[744px]:w-auto min-[744px]:py-0';
 
 /** Defer PDP seeding so the first paint is not blocked on 21 React Query writes. */
 const PLP_PDP_CACHE_SYNC_IDLE_TIMEOUT_MS = 2_000;
@@ -356,11 +357,13 @@ export function ProductsShopListingClient({
   }, [visibleMeta.totalPages, visiblePage, queryString]);
 
   return (
-    <div
-      ref={gridHostRef}
-      className={PLP_LISTING_ROOT_CLASS}
-      {...(isHydrated && isFetching ? { 'aria-busy': true as const } : {})}
-    >
+    <div className="min-w-0 flex-1 w-full min-[744px]:w-auto">
+      <ProductsListingToolbar />
+      <div
+        ref={gridHostRef}
+        className={PLP_LISTING_ROOT_CLASS}
+        {...(isHydrated && isFetching ? { 'aria-busy': true as const } : {})}
+      >
       {showSkeleton || showFetchingSkeleton ? (
         <ProductsShopLoadingSkeleton variant="grid" />
       ) : visibleProducts.length > 0 ? (
@@ -390,6 +393,7 @@ export function ProductsShopListingClient({
           </p>
         </div>
       )}
+      </div>
     </div>
   );
 }

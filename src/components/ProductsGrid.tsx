@@ -5,9 +5,9 @@ import { useTranslation } from '../lib/i18n-client';
 import { dedupeCardProductsByTitle } from '../lib/dedupeCardProductsByTitle';
 import type { ProductListingBrand } from '@/lib/types/product-listing-brand';
 import type { ProductLabel } from './ProductLabels';
-import { ProductCard } from './ProductCard';
+import { toSpecialOfferProduct } from '@/lib/product-listing/to-special-offer-product';
 import { ProductsGridOfferCard } from './ProductsGridOfferCard';
-import type { SpecialOfferProduct } from './home/special-offer-product.types';
+import { ProductsGridListCard } from './ProductsGridListCard';
 import { useIsMaxMd } from './home/use-is-max-md';
 import { resolveShopPlpLcpImagePriorityCount } from '@/lib/constants/shop-plp-pagination';
 import { useForcedShopGridColumns } from './useForcedShopGridColumns';
@@ -31,31 +31,6 @@ interface Product {
   warrantyBadge?: { years: import('@/lib/constants/product-warranty').ProductWarrantyYears } | null;
   colors?: Array<{ value: string; imageUrl?: string | null; colors?: string[] | null }>;
   requiresAttributeSelection?: boolean | null;
-}
-
-function toSpecialOfferProduct(p: Product): SpecialOfferProduct {
-  const compareAt = p.compareAtPrice ?? null;
-  return {
-    id: p.id,
-    slug: p.slug,
-    title: p.title,
-    price: p.price,
-    compareAtPrice: compareAt ?? undefined,
-    originalPrice: compareAt ?? undefined,
-    image: p.image,
-    images: p.images && p.images.length > 0 ? p.images : p.image ? [p.image] : undefined,
-    inStock: p.inStock,
-    brand: p.brand,
-    categories: p.categories,
-    defaultVariantId: p.defaultVariantId ?? undefined,
-    discountPercent: p.discountPercent ?? null,
-    isSpecialPrice: p.isSpecialPrice ?? false,
-    labels: p.labels,
-    warrantyYears: p.warrantyYears ?? p.warrantyBadge?.years ?? null,
-    warrantyBadge: p.warrantyBadge,
-    colors: p.colors,
-    requiresAttributeSelection: p.requiresAttributeSelection,
-  };
 }
 
 type ViewMode = 'list' | 'grid-2' | 'grid-3';
@@ -233,7 +208,7 @@ export function ProductsGrid({
           }
         >
           {useListLayout ? (
-            <ProductCard product={product} viewMode="list" />
+            <ProductsGridListCard product={product} />
           ) : (
             <ProductsGridOfferCard
               product={offerProducts[index]!}

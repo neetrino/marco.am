@@ -1,9 +1,8 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
-import { resolveProductCardBrandLogoUiScale } from '@/lib/brand-logo-display';
 import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '@/lib/utils/image-utils';
 import { shouldBypassNextImageOptimizer } from '@/lib/utils/should-bypass-next-image-optimizer';
 
@@ -59,27 +58,16 @@ export function ProductCardBrandMark({
   }
 
   const src = toDomSafeImgSrcString(remoteSrc);
-  const uiScale = resolveProductCardBrandLogoUiScale(slug, safeName);
-  const needsScaleBoost = uiScale !== 1;
-
-  const imageStyle: CSSProperties | undefined = needsScaleBoost
-    ? { transform: `scale(${uiScale})`, transformOrigin: 'left center' }
-    : undefined;
-
-  const logoCellClassName = `${sizing.logoCellClassName}${
-    needsScaleBoost ? ' overflow-visible' : ' overflow-hidden'
-  }`;
 
   return (
     <div className={rowClassName} aria-label={displayName || 'Brand'}>
-      <div className={logoCellClassName}>
+      <div className={sizing.logoCellClassName}>
         <Image
           src={src}
           alt={displayName || 'Brand'}
           fill
           className={sizing.imageClassName}
           sizes={sizing.logoSizes}
-          style={imageStyle}
           loading="lazy"
           unoptimized={shouldBypassNextImageOptimizer(src)}
           onError={() => {
