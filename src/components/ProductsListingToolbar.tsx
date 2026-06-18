@@ -73,10 +73,10 @@ function ProductsViewGridDenseDotsIcon({ className }: { readonly className?: str
 }
 
 const SORT_TRIGGER_CLASS =
-  'flex h-10 min-w-[160px] items-center justify-between gap-2 rounded-full border border-solid border-[#dedede] bg-white px-4 text-sm font-normal leading-normal text-marco-black transition-colors hover:bg-marco-gray/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/20 active:bg-marco-gray/50';
+  'flex h-10 w-auto shrink-0 items-center gap-1.5 rounded-full border border-solid border-[#dedede] bg-white px-3 text-sm font-normal leading-normal text-marco-black transition-colors hover:bg-marco-gray/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/20 active:bg-marco-gray/50';
 
 const SORT_DROPDOWN_PANEL_CLASS =
-  'absolute top-full right-0 z-50 mt-2 w-full min-w-0 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg';
+  'absolute top-full right-0 z-[100] mt-2 w-max min-w-full overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg';
 
 const SORT_DROPDOWN_ITEM_CLASS =
   'flex h-10 min-h-10 w-full shrink-0 items-center px-4 text-left text-sm font-normal leading-normal transition-colors';
@@ -223,9 +223,9 @@ function ProductsListingToolbarContent() {
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('click', handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('click', handleClickOutside);
     };
   }, []);
 
@@ -278,22 +278,30 @@ function ProductsListingToolbarContent() {
     withoutPrice: t('products.header.pricePresence.withoutPrice'),
   };
 
-  const sortLabel =
-    sortOptions.find((opt) => opt.value === sortBy)?.label || t('products.header.sort.default');
+  const sortButtonLabel =
+    sortBy === 'default'
+      ? t('products.header.sort.button')
+      : (sortOptions.find((opt) => opt.value === sortBy)?.label ?? t('products.header.sort.button'));
+
+  const toggleSortDropdown = () => {
+    setShowSortDropdown((open) => !open);
+  };
 
   const sortDropdown = (
     <>
       <button
         type="button"
-        onClick={() => setShowSortDropdown(!showSortDropdown)}
+        onClick={(event) => {
+          event.stopPropagation();
+          toggleSortDropdown();
+        }}
         className={SORT_TRIGGER_CLASS}
         data-theme-static="true"
         aria-expanded={showSortDropdown}
+        aria-haspopup="listbox"
       >
-        <span className="flex min-w-0 flex-1 items-center gap-2">
-          <ProductsSortSlidersIcon className="shrink-0" />
-          <span className="truncate">{sortLabel}</span>
-        </span>
+        <ProductsSortSlidersIcon className="shrink-0" />
+        <span className="whitespace-nowrap">{sortButtonLabel}</span>
         <svg
           width="14"
           height="14"
@@ -308,7 +316,13 @@ function ProductsListingToolbarContent() {
       </button>
 
       {showSortDropdown ? (
-        <div data-theme-static="true" className={SORT_DROPDOWN_PANEL_CLASS}>
+        <div
+          data-theme-static="true"
+          className={SORT_DROPDOWN_PANEL_CLASS}
+          role="listbox"
+          aria-label={t('products.header.sortProducts')}
+          onClick={(event) => event.stopPropagation()}
+        >
           {sortOptions.map((option) => (
             <button
               key={option.value}
@@ -331,7 +345,7 @@ function ProductsListingToolbarContent() {
   return (
     <>
       {/* Desktop: price toggle left, view + sort right — scoped to products column */}
-      <div className="hidden min-[744px]:flex min-[744px]:items-center min-[744px]:justify-between min-[744px]:gap-4 min-[744px]:pb-4">
+      <div className="relative z-30 hidden min-[744px]:flex min-[744px]:items-center min-[744px]:justify-between min-[744px]:gap-4 min-[744px]:pb-4">
         <ProductsPricePresenceSwitch
           pricePresence={pricePresence}
           switchAria={pricePresenceLabels.switchAria}
@@ -373,14 +387,14 @@ function ProductsListingToolbarContent() {
             </div>
           ) : null}
 
-          <div className="relative w-max min-w-0" ref={sortDropdownRef}>
+          <div className="relative z-30 w-max min-w-0" ref={sortDropdownRef}>
             {sortDropdown}
           </div>
         </div>
       </div>
 
       {/* Mobile: filters + sort, then price toggle */}
-      <div className="flex flex-col gap-4 pb-4 min-[744px]:hidden">
+      <div className="relative z-30 flex flex-col gap-4 pb-4 min-[744px]:hidden">
         <div className="flex items-center justify-between gap-2">
           <button
             type="button"
@@ -402,19 +416,21 @@ function ProductsListingToolbarContent() {
             <span>{t('products.header.filters')}</span>
           </button>
 
-          <div className="flex min-w-0 flex-1 items-center justify-end" ref={mobileSortDropdownRef}>
+          <div className="relative z-30 flex min-w-0 flex-1 items-center justify-end" ref={mobileSortDropdownRef}>
             <div className="relative w-max max-w-full min-w-0">
               <button
                 type="button"
-                onClick={() => setShowSortDropdown(!showSortDropdown)}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  toggleSortDropdown();
+                }}
                 className={`${SORT_TRIGGER_CLASS} max-w-full`}
                 data-theme-static="true"
                 aria-expanded={showSortDropdown}
+                aria-haspopup="listbox"
               >
-                <span className="flex min-w-0 flex-1 items-center gap-2">
-                  <ProductsSortSlidersIcon className="shrink-0" />
-                  <span className="truncate">{sortLabel}</span>
-                </span>
+                <ProductsSortSlidersIcon className="shrink-0" />
+                <span className="whitespace-nowrap">{sortButtonLabel}</span>
                 <svg
                   width="14"
                   height="14"
@@ -429,7 +445,13 @@ function ProductsListingToolbarContent() {
               </button>
 
               {showSortDropdown ? (
-                <div data-theme-static="true" className={SORT_DROPDOWN_PANEL_CLASS}>
+                <div
+                  data-theme-static="true"
+                  className={SORT_DROPDOWN_PANEL_CLASS}
+                  role="listbox"
+                  aria-label={t('products.header.sortProducts')}
+                  onClick={(event) => event.stopPropagation()}
+                >
                   {sortOptions.map((option) => (
                     <button
                       key={option.value}
@@ -469,7 +491,7 @@ export function ProductsListingToolbar() {
     <Suspense
       fallback={
         <div className="hidden min-[744px]:flex min-[744px]:justify-end min-[744px]:pb-4">
-          <div className="h-10 min-w-[160px] animate-pulse rounded-full border border-[#dedede] bg-marco-gray/30" aria-hidden />
+          <div className="h-10 w-20 animate-pulse rounded-full border border-[#dedede] bg-marco-gray/30" aria-hidden />
         </div>
       }
     >

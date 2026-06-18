@@ -69,6 +69,7 @@
     "show": "Show",
     "all": "All",
     "sort": {
+      "button": "Sort",
       "default": "Default Sort",
       "bestsellers": "Bestsellers",
       "curatedList": "Curated List",
