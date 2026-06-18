@@ -73,7 +73,7 @@ function ProductsViewGridDenseDotsIcon({ className }: { readonly className?: str
 }
 
 const SORT_TRIGGER_CLASS =
-  'flex h-10 min-w-[160px] items-center justify-between gap-2 rounded-full bg-marco-black px-4 text-sm font-normal leading-normal text-white transition-[filter] hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/25 active:brightness-90';
+  'flex h-10 min-w-[160px] items-center justify-between gap-2 rounded-full border border-solid border-[#dedede] bg-white px-4 text-sm font-normal leading-normal text-marco-black transition-colors hover:bg-marco-gray/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/20 active:bg-marco-gray/50';
 
 const SORT_DROPDOWN_PANEL_CLASS =
   'absolute top-full right-0 z-50 mt-2 w-full min-w-0 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg';
@@ -95,8 +95,8 @@ const PRICE_PRESENCE_SEGMENT_BASE =
 
 function viewToggleSegmentClass(isActive: boolean): string {
   return isActive
-    ? `${VIEW_TOGGLE_SEGMENT_BASE} bg-[#ffffff] text-[#383838] dark:bg-[#ffffff] dark:text-[#383838]`
-    : `${VIEW_TOGGLE_SEGMENT_BASE} text-marco-black dark:text-white hover:bg-[#fafafa] dark:hover:bg-white/10`;
+    ? `${VIEW_TOGGLE_SEGMENT_BASE} bg-marco-yellow text-marco-black`
+    : `${VIEW_TOGGLE_SEGMENT_BASE} bg-white text-marco-black/70 hover:bg-marco-gray/50`;
 }
 
 const PRICE_PRESENCE_SEGMENT_MOBILE_BASE =
@@ -291,7 +291,7 @@ function ProductsListingToolbarContent() {
         aria-expanded={showSortDropdown}
       >
         <span className="flex min-w-0 flex-1 items-center gap-2">
-          <ProductsSortSlidersIcon className="shrink-0 text-white" />
+          <ProductsSortSlidersIcon className="shrink-0" />
           <span className="truncate">{sortLabel}</span>
         </span>
         <svg
@@ -300,7 +300,7 @@ function ProductsListingToolbarContent() {
           viewBox="0 0 12 12"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          className={`shrink-0 text-white transition-transform ${showSortDropdown ? 'rotate-180' : ''}`}
+          className={`shrink-0 transition-transform ${showSortDropdown ? 'rotate-180' : ''}`}
           aria-hidden
         >
           <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -412,7 +412,7 @@ function ProductsListingToolbarContent() {
                 aria-expanded={showSortDropdown}
               >
                 <span className="flex min-w-0 flex-1 items-center gap-2">
-                  <ProductsSortSlidersIcon className="shrink-0 text-white" />
+                  <ProductsSortSlidersIcon className="shrink-0" />
                   <span className="truncate">{sortLabel}</span>
                 </span>
                 <svg
@@ -421,7 +421,7 @@ function ProductsListingToolbarContent() {
                   viewBox="0 0 12 12"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
-                  className={`shrink-0 text-white transition-transform ${showSortDropdown ? 'rotate-180' : ''}`}
+                  className={`shrink-0 transition-transform ${showSortDropdown ? 'rotate-180' : ''}`}
                   aria-hidden
                 >
                   <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -469,7 +469,7 @@ export function ProductsListingToolbar() {
     <Suspense
       fallback={
         <div className="hidden min-[744px]:flex min-[744px]:justify-end min-[744px]:pb-4">
-          <div className="h-10 min-w-[160px] animate-pulse rounded-full bg-marco-black/20" aria-hidden />
+          <div className="h-10 min-w-[160px] animate-pulse rounded-full border border-[#dedede] bg-marco-gray/30" aria-hidden />
         </div>
       }
     >
