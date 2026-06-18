@@ -81,6 +81,12 @@ const SORT_DROPDOWN_PANEL_CLASS =
 const SORT_DROPDOWN_ITEM_CLASS =
   'flex h-10 min-h-10 w-full shrink-0 items-center px-4 text-left text-sm font-normal leading-normal transition-colors';
 
+function sortDropdownItemClass(isActive: boolean): string {
+  return `${SORT_DROPDOWN_ITEM_CLASS} ${
+    isActive ? 'bg-gray-100 font-semibold text-gray-900' : 'text-gray-700 hover:bg-gray-50'
+  }`;
+}
+
 const VIEW_TOGGLE_GROUP_CLASS =
   'flex h-10 min-h-10 shrink-0 items-stretch overflow-hidden rounded-full border border-solid border-[#dedede] bg-white';
 
@@ -235,26 +241,32 @@ function ProductsListingToolbarContent() {
     window.dispatchEvent(new CustomEvent('view-mode-changed', { detail: mode }));
   };
 
-  const handleSortChange = (option: SortMenuOption) => {
+  const handleSortChange = (option: SortOption) => {
     setSortBy(option);
     setShowSortDropdown(false);
 
     const params = new URLSearchParams(searchParams.toString());
-    const selected = sortOptions.find((entry) => entry.value === option);
 
-    if (!selected) {
+    if (option === 'default') {
       params.delete('sort');
-      params.delete('filter');
-    } else if (selected.mode === 'sort') {
-      params.set('sort', selected.value as SortParamOption);
       params.delete('filter');
     } else {
-      params.delete('sort');
-      const filterValue: Record<FilterParamOption, 'bestseller' | 'featured'> = {
-        bestsellers: 'bestseller',
-        curated: 'featured',
-      };
-      params.set('filter', filterValue[selected.value as FilterParamOption]);
+      const selected = sortOptions.find((entry) => entry.value === option);
+
+      if (!selected) {
+        params.delete('sort');
+        params.delete('filter');
+      } else if (selected.mode === 'sort') {
+        params.set('sort', selected.value as SortParamOption);
+        params.delete('filter');
+      } else {
+        params.delete('sort');
+        const filterValue: Record<FilterParamOption, 'bestseller' | 'featured'> = {
+          bestsellers: 'bestseller',
+          curated: 'featured',
+        };
+        params.set('filter', filterValue[selected.value as FilterParamOption]);
+      }
     }
     params.delete('page');
 
@@ -287,6 +299,34 @@ function ProductsListingToolbarContent() {
     setShowSortDropdown((open) => !open);
   };
 
+  const sortDropdownPanel = (
+    <div
+      data-theme-static="true"
+      className={SORT_DROPDOWN_PANEL_CLASS}
+      role="listbox"
+      aria-label={t('products.header.sortProducts')}
+      onClick={(event) => event.stopPropagation()}
+    >
+      <button
+        type="button"
+        onClick={() => handleSortChange('default')}
+        className={sortDropdownItemClass(sortBy === 'default')}
+      >
+        {t('products.header.sort.default')}
+      </button>
+      {sortOptions.map((option) => (
+        <button
+          key={option.value}
+          type="button"
+          onClick={() => handleSortChange(option.value)}
+          className={sortDropdownItemClass(sortBy === option.value)}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
+  );
+
   const sortDropdown = (
     <>
       <button
@@ -315,30 +355,7 @@ function ProductsListingToolbarContent() {
         </svg>
       </button>
 
-      {showSortDropdown ? (
-        <div
-          data-theme-static="true"
-          className={SORT_DROPDOWN_PANEL_CLASS}
-          role="listbox"
-          aria-label={t('products.header.sortProducts')}
-          onClick={(event) => event.stopPropagation()}
-        >
-          {sortOptions.map((option) => (
-            <button
-              key={option.value}
-              type="button"
-              onClick={() => handleSortChange(option.value)}
-              className={`${SORT_DROPDOWN_ITEM_CLASS} ${
-                sortBy === option.value
-                  ? 'bg-gray-100 font-semibold text-gray-900'
-                  : 'text-gray-700 hover:bg-gray-50'
-              }`}
-            >
-              {option.label}
-            </button>
-          ))}
-        </div>
-      ) : null}
+      {showSortDropdown ? sortDropdownPanel : null}
     </>
   );
 
@@ -444,30 +461,7 @@ function ProductsListingToolbarContent() {
                 </svg>
               </button>
 
-              {showSortDropdown ? (
-                <div
-                  data-theme-static="true"
-                  className={SORT_DROPDOWN_PANEL_CLASS}
-                  role="listbox"
-                  aria-label={t('products.header.sortProducts')}
-                  onClick={(event) => event.stopPropagation()}
-                >
-                  {sortOptions.map((option) => (
-                    <button
-                      key={option.value}
-                      type="button"
-                      onClick={() => handleSortChange(option.value)}
-                      className={`${SORT_DROPDOWN_ITEM_CLASS} ${
-                        sortBy === option.value
-                          ? 'bg-gray-100 font-semibold text-gray-900'
-                          : 'text-gray-700 hover:bg-gray-50'
-                      }`}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                </div>
-              ) : null}
+              {showSortDropdown ? sortDropdownPanel : null}
             </div>
           </div>
         </div>
