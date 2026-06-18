@@ -47,8 +47,7 @@ export const PRODUCT_CARD_BRAND_LOGO_SIZES: Record<
   },
   gridFooter: {
     rowClassName: 'flex shrink-0 items-center',
-    logoCellClassName:
-      'relative h-10 w-[88px] shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-white p-1',
+    logoCellClassName: 'relative h-10 w-[88px] shrink-0',
     logoSizes: `${PRODUCT_CARD_GRID_FOOTER_LOGO_WIDTH_PX}px`,
     imageClassName: 'object-contain object-center',
     wordmarkClassName:
@@ -56,8 +55,7 @@ export const PRODUCT_CARD_BRAND_LOGO_SIZES: Record<
   },
   gridFooterCompact: {
     rowClassName: 'flex shrink-0 items-center',
-    logoCellClassName:
-      'relative h-9 w-[76px] shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-white p-1',
+    logoCellClassName: 'relative h-9 w-[76px] shrink-0',
     logoSizes: `${PRODUCT_CARD_GRID_FOOTER_LOGO_COMPACT_WIDTH_PX}px`,
     imageClassName: 'object-contain object-center',
     wordmarkClassName:

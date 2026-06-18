@@ -10,7 +10,9 @@ import { useTranslation } from '../../lib/i18n-client';
 import { useAuth } from '../../lib/auth/AuthContext';
 import { logger } from "@/lib/utils/logger";
 import type { ProductListingBrand } from '@/lib/types/product-listing-brand';
-import { ProductCard } from '@/components/ProductCard';
+import { ProductsGridOfferCard } from '@/components/ProductsGridOfferCard';
+import { useIsMaxMd } from '@/components/home/use-is-max-md';
+import { toSpecialOfferProduct } from '@/lib/product-listing/to-special-offer-product';
 import {
   ensureLegacyWishlistMigratedForGuest,
   fetchWishlistPayload,
@@ -18,6 +20,8 @@ import {
 
 const WISHLIST_PRODUCT_GRID_CLASS =
   'grid grid-cols-2 gap-4 sm:gap-5 md:grid-cols-3 lg:grid-cols-4 md:gap-6';
+
+const WISHLIST_CARD_MAX_WIDTH_PX = 286;
 
 interface Product {
   id: string;
@@ -73,6 +77,8 @@ type FetchWishlistOptions = {
 export default function WishlistPage() {
   const { t } = useTranslation();
   const router = useRouter();
+  const isMaxMd = useIsMaxMd();
+  const specialOfferLayout = isMaxMd ? 'mobileGrid' : 'default';
   const { isLoggedIn, isLoading: authLoading } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -202,8 +208,15 @@ export default function WishlistPage() {
 
           <div className={WISHLIST_PRODUCT_GRID_CLASS}>
             {products.map((product) => (
-              <div key={product.id} className="min-w-0">
-                <ProductCard product={product} viewMode="grid-2" wishlistPage />
+              <div
+                key={product.id}
+                className="flex min-w-0 justify-center sm:justify-end sm:pr-3 md:pr-4"
+              >
+                <ProductsGridOfferCard
+                  product={toSpecialOfferProduct(product)}
+                  layout={specialOfferLayout}
+                  maxWidthPx={WISHLIST_CARD_MAX_WIDTH_PX}
+                />
               </div>
             ))}
           </div>

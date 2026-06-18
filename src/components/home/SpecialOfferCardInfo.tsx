@@ -1,6 +1,5 @@
 'use client';
 
-import { ProductCardBrandMark } from '../ProductCard/ProductCardBrandMark';
 import { ProductColors } from '../ProductCard/ProductColors';
 import { ProductPdpPrefetchLink } from '../ProductPdpPrefetchLink';
 import type { ProductPdpNavigationSeed } from '@/lib/product-pdp/pdp-navigation-seed';
@@ -14,7 +13,6 @@ import type { SpecialOfferProduct } from './special-offer-product.types';
 
 interface SpecialOfferCardInfoProps {
   product: SpecialOfferProduct;
-  brandClass: string;
   /** Reserved layout while listing details load — no fake title text. */
   detailsPending?: boolean;
   navigationSeed?: ProductPdpNavigationSeed;
@@ -24,7 +22,6 @@ const skeletonBar = 'rounded-md bg-gray-200/90 dark:bg-white/10';
 
 export function SpecialOfferCardInfo({
   product,
-  brandClass,
   detailsPending = false,
   navigationSeed,
 }: SpecialOfferCardInfoProps) {
@@ -50,17 +47,6 @@ export function SpecialOfferCardInfo({
       style={{ marginTop: `${SPECIAL_OFFERS_IMAGE_TO_TEXT_GAP_PX}px` }}
     >
       <div className="min-w-0 flex-1">
-        <div className={`min-h-[1rem] ${brandClass}`}>
-          {product.brand ? (
-            <ProductCardBrandMark
-              name={product.brand.name}
-              slug={product.brand.slug}
-              logoUrl={product.brand.logoUrl}
-              size="specialOffer"
-              textClassName={`text-[12px] font-black uppercase tracking-[0.6px] ${brandClass}`}
-            />
-          ) : null}
-        </div>
         <ProductPdpPrefetchLink
           href={`/products/${product.slug}`}
           productSlug={product.slug}
