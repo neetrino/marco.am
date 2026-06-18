@@ -6,6 +6,7 @@ import { readShopListingCache } from '@/lib/shop-products-listing-client-cache';
 import { ProductsShopListingClient } from './ProductsShopListingClient';
 import { ProductsShopLoadingSkeleton } from './ProductsShopLoadingSkeleton';
 import { normalizeShopGridProduct } from './shop-grid-product';
+import { ProductsListingToolbar } from '@/components/ProductsListingToolbar';
 
 /**
  * Suspense fallback for the PLP grid — shows a warmed session cache instantly
@@ -18,7 +19,12 @@ export function ProductsShopListingCacheFallback() {
   const cached = useMemo(() => readShopListingCache(queryString), [queryString]);
 
   if (!cached || cached.data.length === 0) {
-    return <ProductsShopLoadingSkeleton variant="grid" />;
+    return (
+      <div className="min-w-0 flex-1 w-full min-[744px]:w-auto">
+        <ProductsListingToolbar />
+        <ProductsShopLoadingSkeleton variant="grid" />
+      </div>
+    );
   }
 
   return (
