@@ -10,6 +10,7 @@ import { resolveNavigationSeedImages } from '@/lib/product-pdp/pdp-navigation-se
 import { ProductCardImage } from './ProductCardImage';
 import { ProductCardInfo } from './ProductCardInfo';
 import { ProductCardActions } from './ProductCardActions';
+import { ProductCardBrandMark } from './ProductCardBrandMark';
 import { HeaderNavbarCartIcon } from '../icons/HeaderNavbarCartIcon';
 import { NoPriceArrowIcon } from '../icons/NoPriceArrowIcon';
 import { useTranslation } from '../../lib/i18n-client';
@@ -194,14 +195,27 @@ export function ProductCardGrid({
         showOnHover
       />
 
-      {/* Cart Button in Price Row */}
-      <div className={`px-3 pb-5 sm:px-4 sm:pb-4 flex items-center justify-end ${isCompact ? 'gap-2' : 'gap-4'}`}>
+      {/* Brand + cart — bottom row */}
+      <div
+        className={`flex items-end justify-between gap-3 px-3 pb-4 sm:px-4 ${isCompact ? 'pt-1' : 'pt-2'}`}
+      >
+        {product.brand ? (
+          <ProductCardBrandMark
+            name={product.brand.name}
+            slug={product.brand.slug}
+            logoUrl={product.brand.logoUrl}
+            size={isCompact ? 'gridFooterCompact' : 'gridFooter'}
+          />
+        ) : (
+          <span aria-hidden="true" className="shrink-0" />
+        )}
+
         {hasDisplayPrice ? (
           <button
             type="button"
             onClick={onAddToCart}
             disabled={!product.inStock || isAddingToCart}
-            className={`${isCompact ? 'w-10 h-10' : 'w-12 h-12'} rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
+            className={`${isCompact ? 'w-10 h-10' : 'w-12 h-12'} shrink-0 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
               product.inStock && !isAddingToCart
                 ? 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50'
                 : 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
@@ -222,7 +236,7 @@ export function ProductCardGrid({
           <button
             type="button"
             onClick={handleNoPriceNavigate}
-            className={`${isCompact ? 'h-[26px] w-[26px]' : 'h-8 w-8'} inline-flex items-center justify-center transition-transform hover:scale-105 active:scale-95`}
+            className={`${isCompact ? 'h-[26px] w-[26px]' : 'h-8 w-8'} inline-flex shrink-0 items-center justify-center transition-transform hover:scale-105 active:scale-95`}
             aria-label={product.title}
           >
             <NoPriceArrowIcon className="h-full w-full" />

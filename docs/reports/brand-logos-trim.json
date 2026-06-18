@@ -1,0 +1,1078 @@
+{
+  "generatedAt": "2026-06-18T09:45:17.225Z",
+  "paddingPx": 8,
+  "trimThreshold": 10,
+  "summary": {
+    "total": 71,
+    "willTrim": 60,
+    "unchanged": 11,
+    "missing": 0
+  },
+  "items": [
+    {
+      "slug": "adler",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1263,
+        "h": 513
+      },
+      "savedPct": 71,
+      "bytes": 71290
+    },
+    {
+      "slug": "aeg",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1443,
+        "h": 560
+      },
+      "savedPct": 64,
+      "bytes": 47862
+    },
+    {
+      "slug": "agt",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1406,
+        "h": 377
+      },
+      "savedPct": 76,
+      "bytes": 36552
+    },
+    {
+      "slug": "atias",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1246,
+        "h": 790
+      },
+      "savedPct": 56,
+      "bytes": 68094
+    },
+    {
+      "slug": "aux",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1366,
+        "h": 536
+      },
+      "savedPct": 67,
+      "bytes": 86780
+    },
+    {
+      "slug": "berg",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1293,
+        "h": 586
+      },
+      "savedPct": 66,
+      "bytes": 44366
+    },
+    {
+      "slug": "blum",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1455,
+        "h": 399
+      },
+      "savedPct": 74,
+      "bytes": 74754
+    },
+    {
+      "slug": "bosch",
+      "status": "unchanged",
+      "source": "local",
+      "before": {
+        "w": 434,
+        "h": 108
+      },
+      "after": {
+        "w": 450,
+        "h": 124
+      },
+      "savedPct": -19,
+      "bytes": 16676
+    },
+    {
+      "slug": "boyut-plastic",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1483,
+        "h": 412
+      },
+      "savedPct": 73,
+      "bytes": 70766
+    },
+    {
+      "slug": "braun",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1481,
+        "h": 638
+      },
+      "savedPct": 58,
+      "bytes": 43908
+    },
+    {
+      "slug": "by-span",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1483,
+        "h": 382
+      },
+      "savedPct": 75,
+      "bytes": 59524
+    },
+    {
+      "slug": "candy",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1488,
+        "h": 338
+      },
+      "savedPct": 78,
+      "bytes": 51516
+    },
+    {
+      "slug": "carino",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 846,
+        "h": 319
+      },
+      "savedPct": 88,
+      "bytes": 28418
+    },
+    {
+      "slug": "centek",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1457,
+        "h": 259
+      },
+      "savedPct": 83,
+      "bytes": 30184
+    },
+    {
+      "slug": "delonghi",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1462,
+        "h": 476
+      },
+      "savedPct": 69,
+      "bytes": 65714
+    },
+    {
+      "slug": "divaki",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1431,
+        "h": 434
+      },
+      "savedPct": 72,
+      "bytes": 55502
+    },
+    {
+      "slug": "egger",
+      "status": "unchanged",
+      "source": "local",
+      "before": {
+        "w": 487,
+        "h": 114
+      },
+      "after": {
+        "w": 503,
+        "h": 130
+      },
+      "savedPct": -18,
+      "bytes": 8396
+    },
+    {
+      "slug": "egida",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1179,
+        "h": 452
+      },
+      "savedPct": 76,
+      "bytes": 50834
+    },
+    {
+      "slug": "electrolux",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1492,
+        "h": 354
+      },
+      "savedPct": 77,
+      "bytes": 47290
+    },
+    {
+      "slug": "eurostek",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1491,
+        "h": 497
+      },
+      "savedPct": 67,
+      "bytes": 59478
+    },
+    {
+      "slug": "evo-gloss",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1265,
+        "h": 436
+      },
+      "savedPct": 75,
+      "bytes": 66300
+    },
+    {
+      "slug": "fds",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1288,
+        "h": 498
+      },
+      "savedPct": 71,
+      "bytes": 62766
+    },
+    {
+      "slug": "fgv",
+      "status": "unchanged",
+      "source": "local",
+      "before": {
+        "w": 500,
+        "h": 245
+      },
+      "after": {
+        "w": 516,
+        "h": 261
+      },
+      "savedPct": -10,
+      "bytes": 11952
+    },
+    {
+      "slug": "franko",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1407,
+        "h": 379
+      },
+      "savedPct": 76,
+      "bytes": 45708
+    },
+    {
+      "slug": "galanz",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1485,
+        "h": 363
+      },
+      "savedPct": 76,
+      "bytes": 53086
+    },
+    {
+      "slug": "geepas",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1502,
+        "h": 327
+      },
+      "savedPct": 78,
+      "bytes": 27960
+    },
+    {
+      "slug": "gentas",
+      "status": "unchanged",
+      "source": "local",
+      "before": {
+        "w": 467,
+        "h": 86
+      },
+      "after": {
+        "w": 483,
+        "h": 102
+      },
+      "savedPct": -23,
+      "bytes": 10672
+    },
+    {
+      "slug": "gorenje",
+      "status": "unchanged",
+      "source": "local",
+      "before": {
+        "w": 476,
+        "h": 135
+      },
+      "after": {
+        "w": 492,
+        "h": 151
+      },
+      "savedPct": -16,
+      "bytes": 14156
+    },
+    {
+      "slug": "hausberg",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1464,
+        "h": 190
+      },
+      "savedPct": 88,
+      "bytes": 33400
+    },
+    {
+      "slug": "hennson",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1458,
+        "h": 214
+      },
+      "savedPct": 86,
+      "bytes": 67118
+    },
+    {
+      "slug": "hisense",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1497,
+        "h": 256
+      },
+      "savedPct": 83,
+      "bytes": 54788
+    },
+    {
+      "slug": "hitachi",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1437,
+        "h": 249
+      },
+      "savedPct": 84,
+      "bytes": 28694
+    },
+    {
+      "slug": "kastamonu",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1498,
+        "h": 339
+      },
+      "savedPct": 77,
+      "bytes": 54686
+    },
+    {
+      "slug": "kelon",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1492,
+        "h": 346
+      },
+      "savedPct": 77,
+      "bytes": 41892
+    },
+    {
+      "slug": "kenwood",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1293,
+        "h": 214
+      },
+      "savedPct": 88,
+      "bytes": 45072
+    },
+    {
+      "slug": "kronospan",
+      "status": "unchanged",
+      "source": "local",
+      "before": {
+        "w": 484,
+        "h": 97
+      },
+      "after": {
+        "w": 499,
+        "h": 113
+      },
+      "savedPct": -20,
+      "bytes": 12902
+    },
+    {
+      "slug": "kumtel",
+      "status": "unchanged",
+      "source": "local",
+      "before": {
+        "w": 452,
+        "h": 69
+      },
+      "after": {
+        "w": 468,
+        "h": 85
+      },
+      "savedPct": -28,
+      "bytes": 9306
+    },
+    {
+      "slug": "lemark",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 747,
+        "h": 953
+      },
+      "savedPct": 68,
+      "bytes": 91870
+    },
+    {
+      "slug": "lex",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1458,
+        "h": 499
+      },
+      "savedPct": 68,
+      "bytes": 50706
+    },
+    {
+      "slug": "lex-life-expert",
+      "status": "unchanged",
+      "source": "local",
+      "before": {
+        "w": 481,
+        "h": 162
+      },
+      "after": {
+        "w": 497,
+        "h": 178
+      },
+      "savedPct": -14,
+      "bytes": 12832
+    },
+    {
+      "slug": "lg",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1468,
+        "h": 657
+      },
+      "savedPct": 57,
+      "bytes": 62302
+    },
+    {
+      "slug": "luxell",
+      "status": "unchanged",
+      "source": "local",
+      "before": {
+        "w": 451,
+        "h": 59
+      },
+      "after": {
+        "w": 467,
+        "h": 75
+      },
+      "savedPct": -32,
+      "bytes": 8802
+    },
+    {
+      "slug": "makss",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1353,
+        "h": 390
+      },
+      "savedPct": 77,
+      "bytes": 92164
+    },
+    {
+      "slug": "marrbaxx",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1424,
+        "h": 650
+      },
+      "savedPct": 59,
+      "bytes": 149698
+    },
+    {
+      "slug": "metali-accessories",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1461,
+        "h": 397
+      },
+      "savedPct": 74,
+      "bytes": 75472
+    },
+    {
+      "slug": "mf",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1350,
+        "h": 507
+      },
+      "savedPct": 70,
+      "bytes": 85236
+    },
+    {
+      "slug": "midea",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1472,
+        "h": 603
+      },
+      "savedPct": 61,
+      "bytes": 73818
+    },
+    {
+      "slug": "misline",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1516,
+        "h": 585
+      },
+      "savedPct": 61,
+      "bytes": 132764
+    },
+    {
+      "slug": "nnobel",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1250,
+        "h": 273
+      },
+      "savedPct": 85,
+      "bytes": 53912
+    },
+    {
+      "slug": "nobel",
+      "status": "unchanged",
+      "source": "local",
+      "before": {
+        "w": 411,
+        "h": 86
+      },
+      "after": {
+        "w": 427,
+        "h": 102
+      },
+      "savedPct": -23,
+      "bytes": 12480
+    },
+    {
+      "slug": "panasonic",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1507,
+        "h": 246
+      },
+      "savedPct": 84,
+      "bytes": 51536
+    },
+    {
+      "slug": "philips",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1460,
+        "h": 282
+      },
+      "savedPct": 82,
+      "bytes": 33106
+    },
+    {
+      "slug": "puricelli",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1479,
+        "h": 424
+      },
+      "savedPct": 72,
+      "bytes": 91298
+    },
+    {
+      "slug": "royax",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1479,
+        "h": 347
+      },
+      "savedPct": 77,
+      "bytes": 70382
+    },
+    {
+      "slug": "samsung",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1405,
+        "h": 229
+      },
+      "savedPct": 86,
+      "bytes": 38922
+    },
+    {
+      "slug": "sedef",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1237,
+        "h": 405
+      },
+      "savedPct": 78,
+      "bytes": 74284
+    },
+    {
+      "slug": "simfer",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1415,
+        "h": 378
+      },
+      "savedPct": 76,
+      "bytes": 47518
+    },
+    {
+      "slug": "skyworth",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1516,
+        "h": 583
+      },
+      "savedPct": 61,
+      "bytes": 28090
+    },
+    {
+      "slug": "sony",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1401,
+        "h": 264
+      },
+      "savedPct": 84,
+      "bytes": 39906
+    },
+    {
+      "slug": "starax",
+      "status": "unchanged",
+      "source": "local",
+      "before": {
+        "w": 493,
+        "h": 130
+      },
+      "after": {
+        "w": 509,
+        "h": 146
+      },
+      "savedPct": -16,
+      "bytes": 19012
+    },
+    {
+      "slug": "targen-your-kitchen",
+      "status": "will-trim",
+      "source": "r2",
+      "before": {
+        "w": 1000,
+        "h": 1000
+      },
+      "after": {
+        "w": 939,
+        "h": 362
+      },
+      "savedPct": 66,
+      "bytes": 7954
+    },
+    {
+      "slug": "tefal",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1460,
+        "h": 311
+      },
+      "savedPct": 80,
+      "bytes": 34606
+    },
+    {
+      "slug": "toshiba",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1473,
+        "h": 240
+      },
+      "savedPct": 84,
+      "bytes": 37932
+    },
+    {
+      "slug": "tragen",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1399,
+        "h": 534
+      },
+      "savedPct": 67,
+      "bytes": 81752
+    },
+    {
+      "slug": "ultradecor",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1372,
+        "h": 231
+      },
+      "savedPct": 86,
+      "bytes": 53242
+    },
+    {
+      "slug": "unhopper",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1476,
+        "h": 314
+      },
+      "savedPct": 79,
+      "bytes": 51808
+    },
+    {
+      "slug": "uz",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1146,
+        "h": 525
+      },
+      "savedPct": 73,
+      "bytes": 59288
+    },
+    {
+      "slug": "vestel",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1491,
+        "h": 337
+      },
+      "savedPct": 78,
+      "bytes": 33780
+    },
+    {
+      "slug": "welux",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1120,
+        "h": 488
+      },
+      "savedPct": 76,
+      "bytes": 58606
+    },
+    {
+      "slug": "xiaomi",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1422,
+        "h": 443
+      },
+      "savedPct": 72,
+      "bytes": 42460
+    },
+    {
+      "slug": "zdemir-malzeme",
+      "status": "will-trim",
+      "source": "local",
+      "before": {
+        "w": 1500,
+        "h": 1500
+      },
+      "after": {
+        "w": 1492,
+        "h": 726
+      },
+      "savedPct": 52,
+      "bytes": 61072
+    }
+  ]
+}

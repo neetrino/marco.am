@@ -4,7 +4,6 @@ import type { ProductListingBrand } from '@/lib/types/product-listing-brand';
 import { ProductPdpPrefetchLink } from '../ProductPdpPrefetchLink';
 import { montserratArm } from '../../fonts/montserrat-arm';
 import { formatCatalogPrice, type CurrencyCode } from '../../lib/currency';
-import { ProductCardBrandMark } from './ProductCardBrandMark';
 import { ProductColors } from './ProductColors';
 import { ProductPricePromoBadge } from './ProductPricePromoBadge';
 
@@ -57,26 +56,12 @@ export function ProductCardInfo({
 }: ProductCardInfoProps) {
   const hasDisplayPrice = price > 0;
 
-  const brandRow = brand != null ? (
-    <div className={isCompact ? 'mb-1' : 'mb-2'}>
-      <ProductCardBrandMark
-        name={brand.name}
-        slug={brand.slug}
-        logoUrl={brand.logoUrl}
-        size={isCompact ? 'gridCompact' : 'grid'}
-      />
-    </div>
-  ) : null;
-
   const titleBlock = (
-    <>
-      <h3
-        className={`${isCompact ? 'text-base' : 'text-xl'} font-medium text-gray-900 ${isCompact ? 'mb-0.5' : 'mb-1'} line-clamp-2`}
-      >
-        {title}
-      </h3>
-      {brandRow}
-    </>
+    <h3
+      className={`${isCompact ? 'text-base' : 'text-xl'} font-medium text-gray-900 ${isCompact ? 'mb-0.5' : 'mb-1'} line-clamp-2`}
+    >
+      {title}
+    </h3>
   );
 
   return (

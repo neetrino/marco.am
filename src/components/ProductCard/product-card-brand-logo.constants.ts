@@ -1,4 +1,17 @@
-export type ProductCardBrandLogoSize = 'grid' | 'gridCompact' | 'list' | 'specialOffer' | 'pdp';
+/** Fixed footer tile on catalog grid cards (bottom-left). */
+export const PRODUCT_CARD_GRID_FOOTER_LOGO_HEIGHT_PX = 40;
+export const PRODUCT_CARD_GRID_FOOTER_LOGO_WIDTH_PX = 88;
+export const PRODUCT_CARD_GRID_FOOTER_LOGO_COMPACT_HEIGHT_PX = 36;
+export const PRODUCT_CARD_GRID_FOOTER_LOGO_COMPACT_WIDTH_PX = 76;
+
+export type ProductCardBrandLogoSize =
+  | 'grid'
+  | 'gridCompact'
+  | 'gridFooter'
+  | 'gridFooterCompact'
+  | 'list'
+  | 'specialOffer'
+  | 'pdp';
 
 export type ProductCardBrandLogoSizeConfig = {
   rowClassName: string;
@@ -31,6 +44,24 @@ export const PRODUCT_CARD_BRAND_LOGO_SIZES: Record<
     imageClassName: 'object-contain object-left origin-left',
     wordmarkClassName:
       'truncate text-xs font-semibold uppercase leading-none tracking-wide text-gray-500 dark:text-[#383838]',
+  },
+  gridFooter: {
+    rowClassName: 'flex shrink-0 items-center',
+    logoCellClassName:
+      'relative h-10 w-[88px] shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-white p-1',
+    logoSizes: `${PRODUCT_CARD_GRID_FOOTER_LOGO_WIDTH_PX}px`,
+    imageClassName: 'object-contain object-center',
+    wordmarkClassName:
+      'truncate text-[10px] font-semibold uppercase leading-none tracking-wide text-gray-500',
+  },
+  gridFooterCompact: {
+    rowClassName: 'flex shrink-0 items-center',
+    logoCellClassName:
+      'relative h-9 w-[76px] shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-white p-1',
+    logoSizes: `${PRODUCT_CARD_GRID_FOOTER_LOGO_COMPACT_WIDTH_PX}px`,
+    imageClassName: 'object-contain object-center',
+    wordmarkClassName:
+      'truncate text-[9px] font-semibold uppercase leading-none tracking-wide text-gray-500',
   },
   list: {
     rowClassName: 'flex min-h-7 max-w-[120px] items-center overflow-visible sm:min-h-8 sm:max-w-[132px]',
