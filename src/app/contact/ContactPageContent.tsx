@@ -1,15 +1,17 @@
+'use client';
+
 import { getContactLocations } from '@/lib/contact-locations';
-import { getServerLanguage } from '@/lib/language-server';
+import { useTranslation } from '@/lib/i18n-client';
 import { buildContactPageCopy } from './contact-page-copy';
 import { ContactFormCard } from './ContactFormCard';
 import { ContactInfoColumn } from './ContactInfoColumn';
 import { ContactMapSection } from './ContactMapSection';
 
-/** Contact page — server i18n + static shell; form/map hydrate as client islands. */
-export async function ContactPageContent() {
-  const language = await getServerLanguage();
-  const copy = buildContactPageCopy(language);
-  const locations = getContactLocations(language);
+/** Contact page — static shell prerendered in the default language; localized client-side. */
+export function ContactPageContent() {
+  const { lang } = useTranslation();
+  const copy = buildContactPageCopy(lang);
+  const locations = getContactLocations(lang);
 
   return (
     <div className="bg-[var(--app-bg)] text-[var(--app-text)]">

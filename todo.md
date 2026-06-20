@@ -57,7 +57,11 @@
 - [x] Результат: текстовые страницы (contact, terms, faq, privacy, cookies, shipping, returns, about, support, stores…) больше не держатся динамикой layout → статика.
 - [x] `stores` — клиентская страница без серверных данных → стала статикой автоматически (от снятия cookies в layout).
 - [x] `brands` — переведена на статическую оболочку + клиентскую загрузку из кешированного `GET /api/v1/home/brand-partners` (локализуется под пользователя; сетка уже окно 20 + скролл). Удалены лишние серверные файлы (`BrandsPageContent`, `BrandsPagePrefetch`, `BrandsDirectoryGrid`, `brands-page-server-data`).
-- [ ] Проверить статус рендера сборкой: `pnpm build` (увидеть `○ Static` против `ƒ Dynamic`).
+- [x] Проверить статус рендера сборкой: `pnpm build`.
+- [x] CMS-контентные страницы переведены в клиентские (как `/stores`): убран `cookies()`; статический prerender в `hy` (SEO) + клиентская подмена языка. Контент берётся из локальных i18n-файлов, БД на билде не нужна.
+      Удалён `lib/server-page-language.ts`, добавлен клиентобезопасный `lib/legal-page-date.ts`.
+      Результат сборки (○ Static): `/about`, `/contact`, `/cookies`, `/privacy`, `/terms`, `/brands`, `/stores`.
+      Остались ƒ Dynamic (ожидаемо): `/`, `/products`, `/products/[slug]`, `/reels`, заказы/часть supersudo.
 
 ## Шаг 5 (исходные заметки)
 Цель: снять `cookies()` с серверного критического пути → сайт отдаётся статикой/из CDN, мгновенный первый кадр.
