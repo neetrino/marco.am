@@ -4,6 +4,7 @@ import { toApiErrorResponse } from "@/lib/api/next-route-error";
 import { authenticateToken, requireAdmin } from "@/lib/middleware/auth";
 import { bannerManagementStorageSchema } from "@/lib/schemas/banner-management.schema";
 import { bannerManagementService } from "@/lib/services/banner-management.service";
+import { revalidateStorefrontHome } from "@/lib/revalidate-storefront";
 import { logger } from "@/lib/utils/logger";
 
 /**
@@ -67,6 +68,7 @@ export async function PUT(req: NextRequest) {
     }
 
     const saved = await bannerManagementService.updateAdminStorage(parsed.data);
+    revalidateStorefrontHome();
     return NextResponse.json(saved);
   } catch (error: unknown) {
     logger.error("PUT /api/v1/supersudo/banners failed", { error });
