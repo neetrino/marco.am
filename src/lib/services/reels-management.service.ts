@@ -19,6 +19,7 @@ import {
   getCachedJson,
   invalidateReelsPublicCache,
 } from "@/lib/services/read-through-json-cache";
+import { isRecoverableDbReadError } from "@/lib/utils/recoverable-db-read-error";
 import { logger } from "@/lib/utils/logger";
 
 const REELS_PUBLIC_CACHE_TTL_SEC = 120;
@@ -48,13 +49,6 @@ function parseStored(raw: unknown): ReelsManagementStorage | null {
   return parsed.data;
 }
 
-function isPrismaPoolTimeoutError(error: unknown): boolean {
-  if (!(error instanceof Error)) {
-    return false;
-  }
-  return error.message.includes("Timed out fetching a new connection from the connection pool");
-}
-
 async function loadStorage(): Promise<ReelsManagementStorage> {
   try {
     const row = await db.settings.findUnique({
@@ -65,11 +59,11 @@ async function loadStorage(): Promise<ReelsManagementStorage> {
     }
     return parseStored(row.value) ?? DEFAULT_STORAGE;
   } catch (error) {
-    if (!isPrismaPoolTimeoutError(error)) {
+    if (!isRecoverableDbReadError(error)) {
       throw error;
     }
     logger.error(
-      "[reelsManagement] Prisma pool timeout while loading settings. Falling back to default reels payload.",
+      "[reelsManagement] DB unavailable while loading settings. Falling back to default reels payload.",
       error,
     );
     return DEFAULT_STORAGE;
