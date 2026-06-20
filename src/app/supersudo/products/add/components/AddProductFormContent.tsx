@@ -131,7 +131,7 @@ function TabPanel({
   );
 }
 
-const FULL_HEIGHT_TABS: ProductEditorTabId[] = ['general', 'catalog'];
+const FULL_HEIGHT_TABS: ProductEditorTabId[] = ['general', 'description', 'catalog'];
 
 function isFullHeightTab(tab: ProductEditorTabId): boolean {
   return FULL_HEIGHT_TABS.includes(tab);
@@ -254,7 +254,7 @@ export function AddProductFormContent({
             />
           </TabPanel>
 
-          <TabPanel tabId="description" activeTab={activeTab} visited={visitedTabs.has('description')}>
+          <TabPanel tabId="description" activeTab={activeTab} visited={visitedTabs.has('description')} fillHeight>
             <ProductDescriptionTab
               description={formData.description}
               onDescriptionChange={onDescriptionChange}
