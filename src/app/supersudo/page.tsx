@@ -9,7 +9,6 @@ import { StatsGrid } from './components/StatsGrid';
 import { RecentOrdersCard } from './components/RecentOrdersCard';
 import { TopProductsCard } from './components/TopProductsCard';
 import { UserActivityCard } from './components/UserActivityCard';
-import { QuickActionsCard } from './components/QuickActionsCard';
 import { useAdminDashboard } from './hooks/useAdminDashboard';
 
 export default function AdminPanel() {
@@ -57,7 +56,6 @@ export default function AdminPanel() {
         </div>
 
         <UserActivityCard userActivity={userActivity} userActivityLoading={userActivityLoading} />
-        <QuickActionsCard />
       </div>
     </AdminPageLayout>
   );
