@@ -35,11 +35,12 @@ export async function fetchGuestCartCatalogProducts(
     chunks.map((chunk) =>
       apiClient.get<{
         data: GuestCartCatalogProduct[];
-      }>('/api/v1/products', {
+      }>('/api/v1/products/plp', {
         params: {
           lang,
           ids: chunk.join(','),
           limit: String(chunk.length),
+          includeFilters: '0',
         },
       }),
     ),

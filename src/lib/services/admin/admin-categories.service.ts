@@ -1,4 +1,8 @@
 import { db } from "@white-shop/db";
+import {
+  rebuildProductFacetCountsFromReadModel,
+  syncProductsReadModelByCategoryIdsAndFacetCounts,
+} from "@/lib/read-model/product-read-model-sync";
 import { invalidateCategoryPublicCaches } from "@/lib/services/read-through-json-cache";
 import {
   normalizeProductCategoryLinks,
@@ -785,6 +789,18 @@ class AdminCategoriesService {
       );
     }
 
+    const affectedCategoryIds = new Set<string>([
+      categoryId,
+      ...(prepared.normalizedSubcategoryIds ?? []),
+      ...prepared.removedChildIds,
+    ]);
+    for (const subtreeRootId of [categoryId, ...prepared.removedChildIds]) {
+      for (const id of await this.loadSubtreeCategoryIds(subtreeRootId)) {
+        affectedCategoryIds.add(id);
+      }
+    }
+
+    await syncProductsReadModelByCategoryIdsAndFacetCounts([...affectedCategoryIds]);
     await invalidateCategoryPublicCaches();
 
     return {
@@ -985,6 +1001,7 @@ class AdminCategoriesService {
     orderedIds.splice(targetIndex, 0, movingId);
 
     await this.persistScopedCategoryOrder(orderedIds);
+    await rebuildProductFacetCountsFromReadModel();
     await invalidateCategoryPublicCaches();
     return { success: true, moved: true };
   }
@@ -1068,6 +1085,7 @@ class AdminCategoriesService {
     const [movingId] = effectiveOrderedIds.splice(effectiveSourceIndex, 1);
     effectiveOrderedIds.splice(effectiveTargetIndex, 0, movingId);
     await this.persistScopedCategoryOrder(effectiveOrderedIds);
+    await rebuildProductFacetCountsFromReadModel();
     await invalidateCategoryPublicCaches();
     return { success: true, moved: true };
   }
@@ -1130,6 +1148,7 @@ class AdminCategoriesService {
         categoryId,
         deletedCount: subtreeIds.length,
       });
+      await rebuildProductFacetCountsFromReadModel();
       await invalidateCategoryPublicCaches();
       return { success: true, deletedCount: subtreeIds.length };
     }
@@ -1153,12 +1172,10 @@ class AdminCategoriesService {
     });
 
     logger.devLog('✅ [ADMIN SERVICE] Category deleted:', categoryId);
+    await rebuildProductFacetCountsFromReadModel();
     await invalidateCategoryPublicCaches();
     return { success: true };
   }
 }
 
 export const adminCategoriesService = new AdminCategoriesService();
-
-
-

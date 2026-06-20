@@ -1,8 +1,7 @@
 import { Suspense } from 'react';
 import { resolveProductsShopListingServerContext } from '@/lib/products-shop-listing-server-context';
 import { ProductsShopFiltersColumn } from './ProductsShopFiltersColumn';
-import { ProductsShopCategoryTreeSection } from './ProductsShopCategoryTreeSection';
-import { ProductsShopFiltersCoreSection } from './ProductsShopFiltersCoreSection';
+import { ProductsShopFiltersReadModelSection } from './ProductsShopFiltersReadModelSection';
 import type { ProductsPageSearchParams } from './products-page-search-params';
 import { ProductsShopListingCacheFallback } from './ProductsShopListingCacheFallback';
 import { ProductsShopListingSection } from './ProductsShopListingSection';
@@ -21,10 +20,7 @@ export async function ProductsShopStreamedSection({ raw }: ProductsShopStreamedS
     <div className="marco-header-container flex flex-col min-[744px]:flex-row min-[744px]:gap-5 xl:gap-8">
       <ProductsShopFiltersColumn language={ctx.language} params={ctx.params}>
         <Suspense fallback={null}>
-          <ProductsShopCategoryTreeSection language={ctx.language} />
-        </Suspense>
-        <Suspense fallback={null}>
-          <ProductsShopFiltersCoreSection raw={raw} ctx={ctx} />
+          <ProductsShopFiltersReadModelSection raw={raw} ctx={ctx} />
         </Suspense>
       </ProductsShopFiltersColumn>
 

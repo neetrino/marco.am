@@ -12,7 +12,6 @@ import {
   updateColorData,
 } from '../utils/colorDataBuilder';
 import {
-  collectVariantImagesFromColors,
   collectVariantImagesFromProductVariants,
 } from '../utils/variantImageCollector';
 import { hasVariantsWithAttributes } from '../utils/productTypeDetector';

@@ -124,6 +124,18 @@ async function buildPlan() {
   }
 }
 
+function toReportItem(item) {
+  return {
+    slug: item.slug,
+    status: item.status,
+    ...(item.source ? { source: item.source } : {}),
+    ...(item.before ? { before: item.before } : {}),
+    ...(item.after ? { after: item.after } : {}),
+    ...(typeof item.savedPct === 'number' ? { savedPct: item.savedPct } : {}),
+    ...(typeof item.bytes === 'number' ? { bytes: item.bytes } : {}),
+  };
+}
+
 async function main() {
   const audit = process.argv.includes('--audit');
   const apply = process.argv.includes('--apply');
@@ -157,7 +169,7 @@ async function main() {
           paddingPx: PADDING_PX,
           trimThreshold: TRIM_THRESHOLD,
           summary: { total: items.length, willTrim: toTrim.length, unchanged: unchanged.length, missing: missing.length },
-          items: items.map(({ trimmed, ...rest }) => rest),
+          items: items.map(toReportItem),
         },
         null,
         2,

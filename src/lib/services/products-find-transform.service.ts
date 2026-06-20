@@ -11,7 +11,7 @@ import { buildProductGalleryUrls } from '@/lib/products/product-gallery-urls';
 import { getListingDiscountSettings } from './listing-discount-settings';
 import { processImageUrl } from "../utils/image-utils";
 import { translations } from "../translations";
-import { ProductWithRelations } from "./products-find-query.service";
+import type { ProductWithRelations } from "./products-find-query/types";
 
 const WARRANTY_LABEL_PATTERN = /(warranty|guarantee|երաշխ|гарант|garanti)/i;
 
@@ -71,7 +71,8 @@ class ProductsFindTransformService {
    */
   async transformProducts(
     products: ProductWithRelations[],
-    lang: string = "en"
+    lang: string = "en",
+    options: { imageLimit?: number } = {},
   ): Promise<unknown[]> {
     const { globalDiscount, categoryDiscounts, brandDiscounts } = await getListingDiscountSettings();
 
@@ -332,9 +333,13 @@ class ProductsFindTransformService {
         isSpecialPrice: pricing.isSpecialPrice,
         ...(() => {
           const images = buildProductGalleryUrls(product.media, variants);
+          const listingImages =
+            options.imageLimit && options.imageLimit > 0
+              ? images.slice(0, options.imageLimit)
+              : images;
           return {
             image: images[0] ?? null,
-            images,
+            images: listingImages,
           };
         })(),
         inStock: (variant?.stock || 0) > 0,

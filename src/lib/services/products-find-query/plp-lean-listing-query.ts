@@ -1,7 +1,6 @@
 import { Prisma } from "@white-shop/db/prisma";
 import { db } from "@white-shop/db";
 import { PLP_LEAN_VARIANTS_PER_PRODUCT_LIMIT } from "@/lib/constants/product-listing-query-limits";
-import { orderProductsByIds } from "./home-strip-listing-query";
 import type { ProductWithRelations } from "./types";
 
 export type PlpLeanListingQueryOptions = {
@@ -95,6 +94,22 @@ export async function executePlpLeanListingQuery(
   });
 
   return products as unknown as ProductWithRelations[];
+}
+
+/** Preserve ID order after a single `IN (...)` lean fetch. */
+function orderProductsByIds(
+  products: ProductWithRelations[],
+  ids: readonly string[],
+): ProductWithRelations[] {
+  const byId = new Map(products.map((product) => [product.id, product]));
+  const ordered: ProductWithRelations[] = [];
+  for (const id of ids) {
+    const row = byId.get(id);
+    if (row) {
+      ordered.push(row);
+    }
+  }
+  return ordered;
 }
 
 /** Preserve price-sorted ID order after a single `IN (...)` lean fetch. */

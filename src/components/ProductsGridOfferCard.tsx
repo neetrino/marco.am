@@ -26,6 +26,7 @@ function ProductsGridOfferCardInner({
       align={layout === 'mobileGrid' ? 'center' : 'end'}
       maxWidthPx={maxWidthPx}
       imagePriority={imagePriority}
+      preferSingleImage
     />
   );
 }

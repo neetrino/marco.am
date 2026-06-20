@@ -59,6 +59,10 @@ export function normalizeTechnicalFilterToken(token: string): string {
   return normalizeToken(token);
 }
 
+export function buildTechnicalSpecFilterToken(attributeKey: string, value: string): string {
+  return `${normalizeTechnicalFilterToken(attributeKey)}=${normalizeTechnicalFilterToken(value)}`;
+}
+
 const splitFilterValue = (value: string): string[] =>
   value
     .split(",")

@@ -3,6 +3,9 @@ type ListingMeta = {
   page: number;
   limit: number;
   totalPages: number;
+  hasNextPage?: boolean;
+  nextCursor?: string | null;
+  totalIsExact?: boolean;
 };
 
 export type ShopListingCachePayload = {

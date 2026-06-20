@@ -8,10 +8,21 @@ describe('buildShopListingApiParams', () => {
       lang: 'hy',
       listingOmitProductAttributes: '1',
       plpLeanListing: '1',
+      listingImageLimit: '1',
       compact: '1',
+      includeFilters: '0',
+      skipExactTotalCount: '1',
       category: 'phones',
       page: '2',
       limit: '12',
     });
+  });
+
+  it('can opt out of approximate totals when exact pagination is required', () => {
+    const params = buildShopListingApiParams('page=2', 'en', {
+      skipExactTotalCount: false,
+    });
+
+    expect(params.skipExactTotalCount).toBeUndefined();
   });
 });

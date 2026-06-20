@@ -372,6 +372,90 @@ model ProductAttribute {
 }
 
 // ============================================
+// STOREFRONT READ MODELS
+// ============================================
+model ProductListingRow {
+  id                         String   @id @default(cuid())
+  productId                  String
+  locale                     String
+  slug                       String
+  title                      String
+  subtitle                   String?
+  brandId                    String?
+  brandSlug                  String?
+  brandName                  String?
+  brandLogoUrl               String?
+  primaryCategoryId          String?
+  categoryIds                String[] @default([])
+  categorySlugs              String[] @default([])
+  price                      Float    @default(0)
+  compareAtPrice             Float?
+  originalPrice              Float?
+  priceSort                  Float    @default(0)
+  discountPercent            Int      @default(0)
+  isSpecialPrice             Boolean  @default(false)
+  defaultVariantId           String?
+  stock                      Int      @default(0)
+  inStock                    Boolean  @default(false)
+  image                      String?
+  images                     String[] @default([])
+  labels                     Json     @default("[]")
+  colors                     Json     @default("[]")
+  colorTokens                String[] @default([])
+  sizeTokens                 String[] @default([])
+  technicalSpecTokens        String[] @default([])
+  technicalSpecs             Json     @default("[]")
+  warrantyYears              Int?
+  requiresAttributeSelection Boolean  @default(false)
+  searchText                 String   @default("")
+  publishedAt                DateTime?
+  productCreatedAt           DateTime
+  productUpdatedAt           DateTime
+  isPublished                Boolean  @default(true)
+  deletedAt                  DateTime?
+  rebuiltAt                  DateTime @default(now())
+  createdAt                  DateTime @default(now())
+  updatedAt                  DateTime @updatedAt
+
+  @@unique([productId, locale])
+  @@unique([locale, slug])
+  @@index([locale, isPublished, deletedAt, productCreatedAt(sort: Desc)])
+  @@index([locale, brandId])
+  @@index([locale, brandSlug])
+  @@index([locale, priceSort])
+  @@index([locale, discountPercent(sort: Desc), productCreatedAt(sort: Desc)])
+  @@index([categoryIds], type: Gin)
+  @@index([categorySlugs], type: Gin)
+  @@index([colorTokens], type: Gin)
+  @@index([sizeTokens], type: Gin)
+  @@index([technicalSpecTokens], type: Gin)
+  @@map("product_listing_rows")
+}
+
+model ProductFacetCount {
+  id        String   @id @default(cuid())
+  locale    String
+  scopeType String
+  scopeKey  String
+  facetType String
+  facetKey  String
+  value     String
+  label     String
+  count     Int      @default(0)
+  position  Int      @default(0)
+  meta      Json     @default("{}")
+  rebuiltAt DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([locale, scopeType, scopeKey, facetType, facetKey, value])
+  @@index([locale, scopeType, scopeKey])
+  @@index([locale, scopeType, scopeKey, facetType])
+  @@index([locale, facetType, value])
+  @@map("product_facet_counts")
+}
+
+// ============================================
 // CART MODEL
 // ============================================
 model Cart {

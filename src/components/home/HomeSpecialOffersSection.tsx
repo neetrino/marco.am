@@ -122,7 +122,7 @@ export function HomeSpecialOffersSection({
   const specialOffersQuery = useQuery({
     queryKey: queryKeys.specialOffersPromotion(language, SPECIAL_OFFERS_PRODUCTS_LIMIT),
     queryFn: async () => {
-      const response = await apiClient.get<ProductsResponse>('/api/v1/products', {
+      const response = await apiClient.get<ProductsResponse>('/api/v1/products/plp', {
         params: buildHomeStripListingApiParams({
           limit: String(SPECIAL_OFFERS_PRODUCTS_LIMIT),
           lang: language,

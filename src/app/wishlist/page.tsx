@@ -54,11 +54,12 @@ async function fetchProductsForWishlistIds(ids: string[], lang: string): Promise
       apiClient.get<{
         data: Product[];
         meta: { total: number; page: number; limit: number; totalPages: number };
-      }>('/api/v1/products', {
+      }>('/api/v1/products/plp', {
         params: {
           lang,
           ids: chunk.join(','),
           limit: String(chunk.length),
+          includeFilters: '0',
         },
       })
     )

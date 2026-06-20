@@ -142,7 +142,7 @@ async function fetchFeaturedStrip(
     filter,
     sort: 'createdAt',
   });
-  const response = await apiClient.get<ProductsResponse>('/api/v1/products', {
+  const response = await apiClient.get<ProductsResponse>('/api/v1/products/plp', {
     params,
     suppressHttpErrorLogging: true,
   });
@@ -162,13 +162,14 @@ interface CardVisualResponse {
 }
 
 async function fetchFeaturedNewVisualChunk(language: LanguageCode): Promise<CardVisualRow[]> {
-  const response = await apiClient.get<CardVisualResponse>('/api/v1/products', {
+  const response = await apiClient.get<CardVisualResponse>('/api/v1/products/plp', {
     params: buildHomeStripListingApiParams({
       limit: String(HOME_PRODUCT_CHUNK_SIZE),
       lang: language,
       filter: 'new',
       sort: 'createdAt',
       cardVisualOnly: '1',
+      includeFilters: '0',
     }),
     suppressHttpErrorLogging: true,
   });

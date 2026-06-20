@@ -41,6 +41,10 @@ export interface ProductFilters {
    * PLP: lean variant select without attributeValue joins (faster grid; colors from options/JSONB).
    */
   plpLeanListing?: boolean;
+  /**
+   * Listing payload image cap. PLP only needs the hero image for first paint; PDP loads full gallery.
+   */
+  listingImageLimit?: number;
 }
 
 export type TechnicalSpecFilters = Record<string, string[]>;
@@ -92,7 +96,6 @@ export type ProductWithRelations = Prisma.ProductGetPayload<{
     };
   };
 }>;
-
 
 
 

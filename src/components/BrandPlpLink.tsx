@@ -26,7 +26,7 @@ function queryStringFromPlpHref(href: string): string {
 
 /**
  * Brand logo card link — disables Next viewport prefetch and warms PLP listing
- * only on explicit click so home/brands grids do not flood `/api/v1/products?brand=…`.
+ * only on explicit click so home/brands grids do not flood `/api/v1/products/plp?brand=…`.
  */
 export function BrandPlpLink({
   href,

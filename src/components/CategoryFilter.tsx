@@ -9,6 +9,7 @@ import { apiClient } from '../lib/api-client';
 import { getStoredLanguage } from '../lib/language';
 import { warmShopProductsClientCaches } from '@/lib/shop-products-plp-prefetch';
 import { useProductsFilters, useShopFiltersTranslation, type CategoryFilterOption } from './ProductsFiltersProvider';
+import type { ProductsFiltersData } from '@/lib/shop-products-filters-types';
 import {
   PRODUCTS_FILTER_SECTION_SHELL_CLASS,
   productsFiltersSectionFont,
@@ -193,8 +194,15 @@ export function CategoryFilter({
       if (maxPrice) params.maxPrice = maxPrice;
       const filterParam = searchParams.get('filter');
       if (filterParam) params.filter = filterParam;
-      const response = await apiClient.get<{ categories: CategoryFilterOption[] }>('/api/v1/products/filters', { params });
-      const raw = response.categories ?? [];
+      const response = await apiClient.get<ProductsFiltersData | { filters?: ProductsFiltersData }>('/api/v1/products/plp', {
+        params: {
+          ...params,
+          includeItems: '0',
+          includeFilters: '1',
+        },
+      });
+      const filters = 'filters' in response && response.filters ? response.filters : response as ProductsFiltersData;
+      const raw = filters.categories ?? [];
       setFallbackCategories(raw.map(normalizeCategoryChildren));
     } catch (_err) {
       setFallbackCategories([]);

@@ -18,6 +18,9 @@ type ListingMeta = {
   page: number;
   limit: number;
   totalPages: number;
+  hasNextPage?: boolean;
+  nextCursor?: string | null;
+  totalIsExact?: boolean;
 };
 
 type ProductsListingApiResponse = {
@@ -40,6 +43,9 @@ function normalizeListingApiResponse(response: ProductsListingApiResponse): {
         page: 1,
         limit: SHOP_PLP_DEFAULT_PAGE_SIZE,
         totalPages: 0,
+        hasNextPage: false,
+        nextCursor: null,
+        totalIsExact: true,
       },
   };
 }
@@ -64,7 +70,7 @@ export function ProductsShopClientListing() {
     setBootstrapped(null);
 
     void apiClient
-      .get<ProductsListingApiResponse>('/api/v1/products', {
+      .get<ProductsListingApiResponse>('/api/v1/products/plp', {
         params: buildShopListingApiParams(queryString, getStoredLanguage()),
       })
       .then((response) => {
@@ -79,7 +85,15 @@ export function ProductsShopClientListing() {
         }
         setBootstrapped({
           data: [],
-          meta: { total: 0, page: 1, limit: SHOP_PLP_DEFAULT_PAGE_SIZE, totalPages: 0 },
+          meta: {
+            total: 0,
+            page: 1,
+            limit: SHOP_PLP_DEFAULT_PAGE_SIZE,
+            totalPages: 0,
+            hasNextPage: false,
+            nextCursor: null,
+            totalIsExact: true,
+          },
         });
       });
 
