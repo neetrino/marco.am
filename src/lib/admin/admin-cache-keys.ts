@@ -18,8 +18,6 @@ type AdminProductsListCacheInput = {
   search?: string;
   category?: string;
   published?: string;
-  minPrice?: string;
-  maxPrice?: string;
   sort?: string;
   stockFilter?: 'all' | 'inStock' | 'outOfStock';
 };
@@ -33,8 +31,6 @@ export function buildAdminProductsListCacheKey(input: AdminProductsListCacheInpu
     search: input.search?.trim() ?? '',
     category: input.category ?? '',
     published: input.published ?? '',
-    minPrice: input.minPrice?.trim() ?? '',
-    maxPrice: input.maxPrice?.trim() ?? '',
     sort: input.sort?.startsWith('createdAt') ? input.sort : '',
   };
   if (input.stockFilter && input.stockFilter !== 'all') {

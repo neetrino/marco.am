@@ -337,7 +337,6 @@ function ProductsPageContent() {
     fetchProducts,
     selectedIds,
     setSelectedIds,
-    setPage,
     setBulkDeleting,
     setTogglingAllFeatured,
     setDeletingIds,
@@ -352,12 +351,6 @@ function ProductsPageContent() {
     setPublishedFilter('all');
     setPage(1);
   };
-
-  const hasActiveFilters =
-    search.length > 0 ||
-    selectedCategories.size > 0 ||
-    stockFilter !== 'all' ||
-    publishedFilter !== 'all';
 
   const closeProductEditor = useCallback(() => {
     router.replace('/supersudo/products', { scroll: false });
@@ -394,15 +387,6 @@ function ProductsPageContent() {
       title={t('admin.products.title')}
       headerActions={
         <div className="flex flex-wrap items-center justify-end gap-2">
-          {hasActiveFilters ? (
-            <button
-              type="button"
-              onClick={handleClearFilters}
-              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 transition-colors hover:border-slate-300 hover:text-slate-900"
-            >
-              {t('admin.products.clearAll')}
-            </button>
-          ) : null}
           <button
             type="button"
             onClick={openCreateProduct}

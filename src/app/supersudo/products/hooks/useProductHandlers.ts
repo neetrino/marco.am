@@ -1,4 +1,3 @@
-import type { FormEvent } from 'react';
 import { apiClient, getApiOrErrorMessage } from '../../../../lib/api-client';
 import { useTranslation } from '../../../../lib/i18n-client';
 import { showPopupConfirm } from '@/components/popup-service';
@@ -11,7 +10,6 @@ interface UseProductHandlersProps {
   fetchProducts: (options?: { force?: boolean }) => Promise<void>;
   selectedIds: Set<string>;
   setSelectedIds: (ids: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
-  setPage: (page: number | ((prev: number) => number)) => void;
   setBulkDeleting: (deleting: boolean) => void;
   setTogglingAllFeatured: (toggling: boolean) => void;
   setDeletingIds: (ids: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
@@ -25,7 +23,6 @@ export function useProductHandlers({
   fetchProducts,
   selectedIds,
   setSelectedIds,
-  setPage,
   setBulkDeleting,
   setTogglingAllFeatured,
   setDeletingIds,
@@ -33,12 +30,6 @@ export function useProductHandlers({
   setUpdatingFeaturedIds,
 }: UseProductHandlersProps) {
   const { t } = useTranslation();
-
-  const handleSearch = (e: FormEvent) => {
-    e.preventDefault();
-    setPage(1);
-    fetchProducts();
-  };
 
   const toggleSelect = (id: string) => {
     setSelectedIds(prev => {
@@ -208,7 +199,6 @@ export function useProductHandlers({
   };
 
   return {
-    handleSearch,
     toggleSelect,
     toggleSelectAll,
     handleBulkDelete,
