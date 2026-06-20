@@ -131,6 +131,12 @@ function TabPanel({
   );
 }
 
+const FULL_HEIGHT_TABS: ProductEditorTabId[] = ['general', 'catalog'];
+
+function isFullHeightTab(tab: ProductEditorTabId): boolean {
+  return FULL_HEIGHT_TABS.includes(tab);
+}
+
 export function AddProductFormContent({
   formId,
   scrollRef,
@@ -206,6 +212,8 @@ export function AddProductFormContent({
       ? formData.warrantyYears
       : null;
 
+  const fullHeightActive = isFullHeightTab(activeTab);
+
   return (
     <div className="flex min-h-0 flex-1 flex-col md:flex-row">
       <AdminVerticalTabs
@@ -217,9 +225,9 @@ export function AddProductFormContent({
 
       <div
         ref={scrollRef}
-        onScroll={activeTab === 'catalog' ? undefined : onBodyScroll}
+        onScroll={fullHeightActive ? undefined : onBodyScroll}
         className={`min-h-0 flex-1 px-5 py-4 ${
-          activeTab === 'catalog' ? 'flex flex-col overflow-hidden' : 'overflow-y-auto'
+          fullHeightActive ? 'flex flex-col overflow-hidden' : 'overflow-y-auto'
         }`}
       >
         {loadingTab === activeTab ? (
@@ -231,9 +239,9 @@ export function AddProductFormContent({
         <form
           id={formId}
           onSubmit={handleSubmit}
-          className={`w-full min-w-0 ${activeTab === 'catalog' ? 'flex min-h-0 flex-1 flex-col' : ''} ${loadingTab === activeTab ? 'hidden' : ''}`}
+          className={`w-full min-w-0 ${fullHeightActive ? 'flex min-h-0 flex-1 flex-col' : ''} ${loadingTab === activeTab ? 'hidden' : ''}`}
         >
-          <TabPanel tabId="general" activeTab={activeTab} visited={visitedTabs.has('general')}>
+          <TabPanel tabId="general" activeTab={activeTab} visited={visitedTabs.has('general')} fillHeight>
             <ProductGeneralTab
               productClass={formData.productClass}
               warrantyYears={warrantyYears}

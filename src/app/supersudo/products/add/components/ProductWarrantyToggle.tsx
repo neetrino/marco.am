@@ -47,6 +47,7 @@ export function ProductWarrantyToggle({ warrantyYears, onChange }: ProductWarran
       }}
       ariaLabel={t('admin.products.add.productWarranty')}
       columnsClass="grid-cols-2 sm:grid-cols-4"
+      size="compact"
     />
   );
 }
