@@ -63,10 +63,6 @@ interface AddProductFormContentProps {
   isEditMode: boolean;
   imageUploadLoading: boolean;
   imageUploadError: string | null;
-  useNewCategory: boolean;
-  useNewBrand: boolean;
-  newCategoryName: string;
-  newBrandName: string;
   selectedAttributesForVariants: Set<string>;
   selectedAttributeValueIds: Record<string, string[]>;
   attributesDropdownOpen: boolean;
@@ -80,10 +76,6 @@ interface AddProductFormContentProps {
   onUploadImages: (event: ChangeEvent<HTMLInputElement>) => Promise<void>;
   onRemoveImage: (index: number) => void;
   onSetFeaturedImage: (index: number) => void;
-  onUseNewCategoryChange: (use: boolean) => void;
-  onUseNewBrandChange: (use: boolean) => void;
-  onNewCategoryNameChange: (name: string) => void;
-  onNewBrandNameChange: (name: string) => void;
   onCategoryIdsChange: (ids: string[]) => void;
   onBrandIdsChange: (ids: string[]) => void;
   onPrimaryCategoryIdChange: (id: string) => void;
@@ -151,10 +143,6 @@ export function AddProductFormContent({
   isEditMode,
   imageUploadLoading,
   imageUploadError,
-  useNewCategory,
-  useNewBrand,
-  newCategoryName,
-  newBrandName,
   selectedAttributesForVariants,
   selectedAttributeValueIds,
   attributesDropdownOpen,
@@ -168,10 +156,6 @@ export function AddProductFormContent({
   onUploadImages,
   onRemoveImage,
   onSetFeaturedImage,
-  onUseNewCategoryChange,
-  onUseNewBrandChange,
-  onNewCategoryNameChange,
-  onNewBrandNameChange,
   onCategoryIdsChange,
   onBrandIdsChange,
   onPrimaryCategoryIdChange,
@@ -277,14 +261,6 @@ export function AddProductFormContent({
               categoryIds={formData.categoryIds}
               primaryCategoryId={formData.primaryCategoryId}
               brandIds={formData.brandIds}
-              useNewCategory={useNewCategory}
-              useNewBrand={useNewBrand}
-              newCategoryName={newCategoryName}
-              newBrandName={newBrandName}
-              onUseNewCategoryChange={onUseNewCategoryChange}
-              onUseNewBrandChange={onUseNewBrandChange}
-              onNewCategoryNameChange={onNewCategoryNameChange}
-              onNewBrandNameChange={onNewBrandNameChange}
               onCategoryIdsChange={onCategoryIdsChange}
               onBrandIdsChange={onBrandIdsChange}
               onPrimaryCategoryIdChange={onPrimaryCategoryIdChange}

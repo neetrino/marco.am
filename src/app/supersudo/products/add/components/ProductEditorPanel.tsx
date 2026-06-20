@@ -64,10 +64,6 @@ export function ProductEditorPanel({
     defaultCurrency: formState.defaultCurrency,
     attributes: formState.attributes,
     setFormData: formState.setFormData,
-    setUseNewBrand: formState.setUseNewBrand,
-    setUseNewCategory: formState.setUseNewCategory,
-    setNewBrandName: formState.setNewBrandName,
-    setNewCategoryName: formState.setNewCategoryName,
     setHasVariantsToLoad: formState.setHasVariantsToLoad,
     setProductType: formState.setProductType,
     setSimpleProductData: formState.setSimpleProductData,
@@ -173,18 +169,12 @@ export function ProductEditorPanel({
     formData: formState.formData,
     setFormData: formState.setFormData,
     setLoading: formState.setLoading,
-    setBrands: formState.setBrands,
-    setCategories: formState.setCategories,
     productType: formState.productType,
     simpleProductData: formState.simpleProductData,
     selectedAttributesForVariants: formState.selectedAttributesForVariants,
     generatedVariants: formState.generatedVariants,
     attributes: formState.attributes,
     defaultCurrency: formState.defaultCurrency,
-    useNewBrand: formState.useNewBrand,
-    newBrandName: formState.newBrandName,
-    useNewCategory: formState.useNewCategory,
-    newCategoryName: formState.newCategoryName,
     isEditMode,
     productId,
     isClothingCategory,
@@ -287,10 +277,6 @@ export function ProductEditorPanel({
           isEditMode={isEditMode}
           imageUploadLoading={formState.imageUploadLoading}
           imageUploadError={formState.imageUploadError}
-          useNewCategory={formState.useNewCategory}
-          useNewBrand={formState.useNewBrand}
-          newCategoryName={formState.newCategoryName}
-          newBrandName={formState.newBrandName}
           selectedAttributesForVariants={formState.selectedAttributesForVariants}
           selectedAttributeValueIds={formState.selectedAttributeValueIds}
           attributesDropdownOpen={formState.attributesDropdownOpen}
@@ -304,10 +290,6 @@ export function ProductEditorPanel({
           onUploadImages={handleUploadImages}
           onRemoveImage={removeImageUrl}
           onSetFeaturedImage={setFeaturedImage}
-          onUseNewCategoryChange={formState.setUseNewCategory}
-          onUseNewBrandChange={formState.setUseNewBrand}
-          onNewCategoryNameChange={formState.setNewCategoryName}
-          onNewBrandNameChange={formState.setNewBrandName}
           onCategoryIdsChange={(ids) => formState.setFormData((prev) => ({ ...prev, categoryIds: ids }))}
           onBrandIdsChange={(ids) => formState.setFormData((prev) => ({ ...prev, brandIds: ids }))}
           onPrimaryCategoryIdChange={(id) => formState.setFormData((prev) => ({ ...prev, primaryCategoryId: id }))}

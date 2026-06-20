@@ -1,7 +1,6 @@
 import type { FormEvent } from 'react';
 import { CATALOG_PRICE_CURRENCY, convertPrice, type CurrencyCode } from '@/lib/currency';
 import type { Attribute, Variant, GeneratedVariant } from '../types';
-import { useBrandAndCategoryCreation } from './useBrandAndCategoryCreation';
 import { useVariantConversionToFormData } from './useVariantConversionToFormData';
 import { useVariantValidation } from './useVariantValidation';
 import { processImagesForSubmit } from './useImageProcessingForSubmit';
@@ -33,8 +32,6 @@ interface UseProductFormHandlersProps {
   };
   setFormData: (updater: (prev: any) => any) => void;
   setLoading: (loading: boolean) => void;
-  setBrands: (updater: (prev: any[]) => any[]) => void;
-  setCategories: (updater: (prev: any[]) => any[]) => void;
   productType: 'simple' | 'variable';
   simpleProductData: {
     price: string;
@@ -46,10 +43,6 @@ interface UseProductFormHandlersProps {
   generatedVariants: GeneratedVariant[];
   attributes: Attribute[];
   defaultCurrency: CurrencyCode;
-  useNewBrand: boolean;
-  newBrandName: string;
-  useNewCategory: boolean;
-  newCategoryName: string;
   isEditMode: boolean;
   productId: string | null;
   isClothingCategory: () => boolean;
@@ -60,35 +53,18 @@ export function useProductFormHandlers({
   formData,
   setFormData,
   setLoading,
-  setBrands,
-  setCategories,
   productType,
   simpleProductData,
   selectedAttributesForVariants,
   generatedVariants,
   attributes,
   defaultCurrency,
-  useNewBrand,
-  newBrandName,
-  useNewCategory,
-  newCategoryName,
   isEditMode,
   productId,
   isClothingCategory,
   onSuccess,
 }: UseProductFormHandlersProps) {
   const mt = (path: string): string => translateByLocale(getStoredLanguage(), path);
-  const { createBrandAndCategory } = useBrandAndCategoryCreation({
-    formData,
-    useNewBrand,
-    newBrandName,
-    useNewCategory,
-    newCategoryName,
-    setBrands,
-    setCategories,
-    setLoading,
-  });
-
   const { convertGeneratedVariantsToFormData } = useVariantConversionToFormData({
     productType,
     selectedAttributesForVariants,
@@ -113,12 +89,9 @@ export function useProductFormHandlers({
     try {
       logger.devLog('📝 [ADMIN] Submitting product form:', formData);
 
-      // Create brand and category if needed
-      const brandCategoryResult = await createBrandAndCategory();
-      if (brandCategoryResult.error) {
-        return;
-      }
-      const { finalBrandIds, finalPrimaryCategoryId, finalCategoryIds, creationMessages } = brandCategoryResult;
+      const finalBrandIds = [...formData.brandIds];
+      const finalPrimaryCategoryId = formData.primaryCategoryId;
+      const finalCategoryIds = [...formData.categoryIds];
 
       // Convert generated variants to formData format
       convertGeneratedVariantsToFormData();
@@ -415,7 +388,7 @@ export function useProductFormHandlers({
         mainImage,
         isEditMode,
         productId,
-        creationMessages,
+        creationMessages: [],
         setLoading,
         onSuccess,
       });

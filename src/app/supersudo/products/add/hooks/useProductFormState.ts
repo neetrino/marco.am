@@ -33,10 +33,6 @@ export function useProductFormState() {
   const [colorImageTarget, setColorImageTarget] = useState<{ variantId: string; colorValue: string } | null>(null);
   const [imageUploadLoading, setImageUploadLoading] = useState(false);
   const [imageUploadError, setImageUploadError] = useState<string | null>(null);
-  const [newBrandName, setNewBrandName] = useState('');
-  const [newCategoryName, setNewCategoryName] = useState('');
-  const [useNewBrand, setUseNewBrand] = useState(false);
-  const [useNewCategory, setUseNewCategory] = useState(false);
   const [newColorName, setNewColorName] = useState('');
   const [newSizeName, setNewSizeName] = useState('');
   const [addingColor, setAddingColor] = useState(false);
@@ -85,15 +81,6 @@ export function useProductFormState() {
     setImageUploadLoading,
     imageUploadError,
     setImageUploadError,
-    // New entity states
-    newBrandName,
-    setNewBrandName,
-    newCategoryName,
-    setNewCategoryName,
-    useNewBrand,
-    setUseNewBrand,
-    useNewCategory,
-    setUseNewCategory,
     // Color/Size management
     newColorName,
     setNewColorName,

@@ -28,10 +28,6 @@ interface UseProductEditorTabLoaderParams {
   defaultCurrency: CurrencyCode;
   attributes: Attribute[];
   setFormData: (updater: (prev: AddProductFormState) => AddProductFormState) => void;
-  setUseNewBrand: (use: boolean) => void;
-  setUseNewCategory: (use: boolean) => void;
-  setNewBrandName: (name: string) => void;
-  setNewCategoryName: (name: string) => void;
   setHasVariantsToLoad: (has: boolean) => void;
   setProductType: (type: 'simple' | 'variable') => void;
   setSimpleProductData: (data: {
@@ -57,10 +53,6 @@ export function useProductEditorTabLoader({
   defaultCurrency,
   attributes,
   setFormData,
-  setUseNewBrand,
-  setUseNewCategory,
-  setNewBrandName,
-  setNewCategoryName,
   setHasVariantsToLoad,
   setProductType,
   setSimpleProductData,
@@ -137,10 +129,6 @@ export function useProductEditorTabLoader({
 
         applyProductEditorSection(section, product, {
           setFormData,
-          setUseNewBrand,
-          setUseNewCategory,
-          setNewBrandName,
-          setNewCategoryName,
           setHasVariantsToLoad,
           setProductType,
           setSimpleProductData,
@@ -168,10 +156,6 @@ export function useProductEditorTabLoader({
       isLoggedIn,
       isAdmin,
       setFormData,
-      setUseNewBrand,
-      setUseNewCategory,
-      setNewBrandName,
-      setNewCategoryName,
       setHasVariantsToLoad,
       setProductType,
       setSimpleProductData,
