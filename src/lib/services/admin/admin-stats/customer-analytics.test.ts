@@ -2,7 +2,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@white-shop/db", () => ({
   db: {
-    order: { findMany: vi.fn() },
     user: { findMany: vi.fn() },
     $queryRaw: vi.fn(),
   },
@@ -12,13 +11,11 @@ import { db } from "@white-shop/db";
 
 import { getCustomerAnalytics } from "./customer-analytics";
 
-const orderFindMany = db.order.findMany as unknown as ReturnType<typeof vi.fn>;
 const userFindMany = db.user.findMany as unknown as ReturnType<typeof vi.fn>;
 const queryRaw = db.$queryRaw as unknown as ReturnType<typeof vi.fn>;
 
 describe("getCustomerAnalytics", () => {
   beforeEach(() => {
-    orderFindMany.mockReset();
     userFindMany.mockReset();
     queryRaw.mockReset();
   });
@@ -27,58 +24,36 @@ describe("getCustomerAnalytics", () => {
     const start = new Date("2025-01-10T00:00:00.000Z");
     const end = new Date("2025-01-17T23:59:59.999Z");
 
-    queryRaw.mockResolvedValue([
-      {
-        identity_key: "user:u-repeat",
-        first_at: new Date("2024-01-01T00:00:00.000Z"),
-      },
-      {
-        identity_key: "email:guest@example.com",
-        first_at: new Date("2025-01-11T10:00:00.000Z"),
-      },
-      {
-        identity_key: "user:u-new",
-        first_at: new Date("2025-01-12T12:00:00.000Z"),
-      },
-    ]);
-
-    orderFindMany.mockResolvedValue([
-      {
-        userId: "u-repeat",
-        customerEmail: "r@example.com",
-        total: 100,
-        paymentStatus: "paid",
-        currency: "AMD",
-      },
-      {
-        userId: "u-new",
-        customerEmail: null,
-        total: 50,
-        paymentStatus: "paid",
-        currency: "AMD",
-      },
-      {
-        userId: null,
-        customerEmail: "guest@example.com",
-        total: 200,
-        paymentStatus: "paid",
-        currency: "AMD",
-      },
-      {
-        userId: null,
-        customerEmail: null,
-        total: 999,
-        paymentStatus: "paid",
-        currency: "AMD",
-      },
-      {
-        userId: "u-new",
-        customerEmail: null,
-        total: 10,
-        paymentStatus: "pending",
-        currency: "AMD",
-      },
-    ]);
+    queryRaw
+      .mockResolvedValueOnce([
+        {
+          new_customers: 2,
+          repeat_customers: 1,
+          orders_from_new: 3,
+          orders_from_repeat: 1,
+          orders_unattributed: 1,
+        },
+      ])
+      .mockResolvedValueOnce([
+        {
+          identity_key: "email:guest@example.com",
+          total_spend: 200,
+          order_count: 1,
+          currency: "AMD",
+        },
+        {
+          identity_key: "user:u-repeat",
+          total_spend: 100,
+          order_count: 1,
+          currency: "AMD",
+        },
+        {
+          identity_key: "user:u-new",
+          total_spend: 50,
+          order_count: 1,
+          currency: "AMD",
+        },
+      ]);
 
     userFindMany.mockResolvedValue([
       {

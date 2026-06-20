@@ -2,17 +2,11 @@ import { db } from "@white-shop/db";
 
 import { TOP_CUSTOMERS_BY_SPEND_LIMIT } from "@/lib/constants/customer-analytics";
 
-import { buildCustomerIdentityKey } from "./customer-identity";
-
 type NewVsRepeatAnalytics = {
-  /** Distinct customers (user or guest email) whose first order ever falls in the period. */
   newCustomers: number;
-  /** Distinct customers who ordered in the period and had an order before the period start. */
   repeatCustomers: number;
-  /** Orders in period from new customers (same customer may contribute multiple). */
   ordersFromNewCustomers: number;
   ordersFromRepeatCustomers: number;
-  /** Orders in period with no userId and no email — excluded from new/repeat split. */
   ordersUnattributed: number;
 };
 
@@ -31,9 +25,24 @@ type CustomerAnalyticsBlock = {
   topCustomersBySpend: TopCustomerBySpendRow[];
 };
 
-function buildFirstOrderAtMap(): Promise<Map<string, Date>> {
-  return db
-    .$queryRaw<Array<{ identity_key: string; first_at: Date }>>`
+type PeriodStatsRow = {
+  new_customers: number;
+  repeat_customers: number;
+  orders_from_new: number;
+  orders_from_repeat: number;
+  orders_unattributed: number;
+};
+
+type TopSpenderRow = {
+  identity_key: string;
+  total_spend: number;
+  order_count: number;
+  currency: string;
+};
+
+async function queryPeriodCustomerStats(start: Date, end: Date): Promise<NewVsRepeatAnalytics> {
+  const rows = await db.$queryRaw<PeriodStatsRow[]>`
+    WITH first_orders AS (
       SELECT identity_key, MIN("createdAt") AS first_at
       FROM (
         SELECT
@@ -49,14 +58,85 @@ function buildFirstOrderAtMap(): Promise<Map<string, Date>> {
       ) AS attributed
       WHERE identity_key IS NOT NULL
       GROUP BY identity_key
-    `
-    .then((rows) => {
-      const firstOrderAt = new Map<string, Date>();
-      for (const row of rows) {
-        firstOrderAt.set(row.identity_key, row.first_at);
-      }
-      return firstOrderAt;
-    });
+    ),
+    period_orders AS (
+      SELECT
+        CASE
+          WHEN "userId" IS NOT NULL AND btrim("userId") <> '' THEN 'user:' || "userId"
+          WHEN "customerEmail" IS NOT NULL AND btrim("customerEmail") <> ''
+            THEN 'email:' || lower(btrim("customerEmail"))
+        END AS identity_key
+      FROM orders
+      WHERE "createdAt" >= ${start} AND "createdAt" <= ${end}
+    ),
+    classified AS (
+      SELECT
+        po.identity_key,
+        fo.first_at
+      FROM period_orders po
+      LEFT JOIN first_orders fo ON fo.identity_key = po.identity_key
+    )
+    SELECT
+      COUNT(DISTINCT identity_key) FILTER (
+        WHERE identity_key IS NOT NULL AND first_at >= ${start} AND first_at <= ${end}
+      )::int AS new_customers,
+      COUNT(DISTINCT identity_key) FILTER (
+        WHERE identity_key IS NOT NULL AND first_at IS NOT NULL AND first_at < ${start}
+      )::int AS repeat_customers,
+      COUNT(*) FILTER (
+        WHERE identity_key IS NOT NULL AND first_at >= ${start} AND first_at <= ${end}
+      )::int AS orders_from_new,
+      COUNT(*) FILTER (
+        WHERE identity_key IS NOT NULL AND first_at IS NOT NULL AND first_at < ${start}
+      )::int AS orders_from_repeat,
+      COUNT(*) FILTER (WHERE identity_key IS NULL OR first_at IS NULL)::int AS orders_unattributed
+    FROM classified
+  `;
+
+  const row = rows[0];
+  return {
+    newCustomers: row?.new_customers ?? 0,
+    repeatCustomers: row?.repeat_customers ?? 0,
+    ordersFromNewCustomers: row?.orders_from_new ?? 0,
+    ordersFromRepeatCustomers: row?.orders_from_repeat ?? 0,
+    ordersUnattributed: row?.orders_unattributed ?? 0,
+  };
+}
+
+async function queryTopCustomersBySpend(
+  start: Date,
+  end: Date,
+  limit: number,
+): Promise<TopSpenderRow[]> {
+  return db.$queryRaw<TopSpenderRow[]>`
+    SELECT
+      identity_key,
+      SUM(total)::float AS total_spend,
+      COUNT(*)::int AS order_count,
+      MAX(currency) AS currency
+    FROM (
+      SELECT
+        CASE
+          WHEN "userId" IS NOT NULL AND btrim("userId") <> '' THEN 'user:' || "userId"
+          WHEN "customerEmail" IS NOT NULL AND btrim("customerEmail") <> ''
+            THEN 'email:' || lower(btrim("customerEmail"))
+        END AS identity_key,
+        total,
+        currency
+      FROM orders
+      WHERE "createdAt" >= ${start}
+        AND "createdAt" <= ${end}
+        AND "paymentStatus" = 'paid'
+        AND (
+          ("userId" IS NOT NULL AND btrim("userId") <> '')
+          OR ("customerEmail" IS NOT NULL AND btrim("customerEmail") <> '')
+        )
+    ) AS paid_orders
+    WHERE identity_key IS NOT NULL
+    GROUP BY identity_key
+    ORDER BY total_spend DESC
+    LIMIT ${limit}
+  `;
 }
 
 /**
@@ -65,84 +145,16 @@ function buildFirstOrderAtMap(): Promise<Map<string, Date>> {
  */
 export async function getCustomerAnalytics(
   start: Date,
-  end: Date
+  end: Date,
 ): Promise<CustomerAnalyticsBlock> {
-  const [firstOrderAt, periodOrders] = await Promise.all([
-    buildFirstOrderAtMap(),
-    db.order.findMany({
-      where: {
-        createdAt: {
-          gte: start,
-          lte: end,
-        },
-      },
-      select: {
-        userId: true,
-        customerEmail: true,
-        total: true,
-        paymentStatus: true,
-        currency: true,
-      },
-    }),
+  const [newVsRepeat, topSpenderRows] = await Promise.all([
+    queryPeriodCustomerStats(start, end),
+    queryTopCustomersBySpend(start, end, TOP_CUSTOMERS_BY_SPEND_LIMIT),
   ]);
 
-  const newCustomerKeys = new Set<string>();
-  const repeatCustomerKeys = new Set<string>();
-  let ordersFromNewCustomers = 0;
-  let ordersFromRepeatCustomers = 0;
-  let ordersUnattributed = 0;
-
-  const spendByKey = new Map<
-    string,
-    { totalSpend: number; orderCount: number; currency: string }
-  >();
-
-  for (const order of periodOrders) {
-    const key = buildCustomerIdentityKey(order.userId, order.customerEmail);
-    if (!key) {
-      ordersUnattributed += 1;
-      continue;
-    }
-
-    const firstAt = firstOrderAt.get(key);
-    if (!firstAt) {
-      ordersUnattributed += 1;
-      continue;
-    }
-
-    const isNewInPeriod = firstAt >= start && firstAt <= end;
-    if (isNewInPeriod) {
-      newCustomerKeys.add(key);
-      ordersFromNewCustomers += 1;
-    } else {
-      repeatCustomerKeys.add(key);
-      ordersFromRepeatCustomers += 1;
-    }
-
-    if (order.paymentStatus === "paid") {
-      const existing = spendByKey.get(key);
-      const currency = order.currency || "AMD";
-      if (existing) {
-        existing.totalSpend += order.total;
-        existing.orderCount += 1;
-        existing.currency = currency;
-      } else {
-        spendByKey.set(key, {
-          totalSpend: order.total,
-          orderCount: 1,
-          currency,
-        });
-      }
-    }
-  }
-
-  const sortedSpendKeys = Array.from(spendByKey.entries())
-    .sort((a, b) => b[1].totalSpend - a[1].totalSpend)
-    .slice(0, TOP_CUSTOMERS_BY_SPEND_LIMIT);
-
-  const userIds = sortedSpendKeys
-    .filter(([k]) => k.startsWith("user:"))
-    .map(([k]) => k.slice("user:".length));
+  const userIds = topSpenderRows
+    .filter((row) => row.identity_key.startsWith("user:"))
+    .map((row) => row.identity_key.slice("user:".length));
 
   const users =
     userIds.length > 0
@@ -157,48 +169,39 @@ export async function getCustomerAnalytics(
         })
       : [];
 
-  const userById = new Map(users.map((u) => [u.id, u]));
+  const userById = new Map(users.map((user) => [user.id, user]));
 
-  const topCustomersBySpend: TopCustomerBySpendRow[] = sortedSpendKeys.map(
-    ([key, agg]) => {
-      if (key.startsWith("user:")) {
-        const id = key.slice("user:".length);
-        const u = userById.get(id);
-        const namePart = [u?.firstName, u?.lastName].filter(Boolean).join(" ").trim();
-        const displayName =
-          namePart.length > 0 ? namePart : u?.email ?? id;
-        return {
-          identityType: "user" as const,
-          userId: id,
-          email: u?.email ?? null,
-          displayName,
-          totalSpend: agg.totalSpend,
-          orderCount: agg.orderCount,
-          currency: agg.currency,
-        };
-      }
-
-      const emailAddr = key.slice("email:".length);
+  const topCustomersBySpend: TopCustomerBySpendRow[] = topSpenderRows.map((row) => {
+    if (row.identity_key.startsWith("user:")) {
+      const id = row.identity_key.slice("user:".length);
+      const user = userById.get(id);
+      const namePart = [user?.firstName, user?.lastName].filter(Boolean).join(" ").trim();
+      const displayName = namePart.length > 0 ? namePart : user?.email ?? id;
       return {
-        identityType: "email" as const,
-        userId: null,
-        email: emailAddr,
-        displayName: emailAddr,
-        totalSpend: agg.totalSpend,
-        orderCount: agg.orderCount,
-        currency: agg.currency,
+        identityType: "user" as const,
+        userId: id,
+        email: user?.email ?? null,
+        displayName,
+        totalSpend: row.total_spend,
+        orderCount: row.order_count,
+        currency: row.currency || "AMD",
       };
     }
-  );
+
+    const emailAddr = row.identity_key.slice("email:".length);
+    return {
+      identityType: "email" as const,
+      userId: null,
+      email: emailAddr,
+      displayName: emailAddr,
+      totalSpend: row.total_spend,
+      orderCount: row.order_count,
+      currency: row.currency || "AMD",
+    };
+  });
 
   return {
-    newVsRepeat: {
-      newCustomers: newCustomerKeys.size,
-      repeatCustomers: repeatCustomerKeys.size,
-      ordersFromNewCustomers,
-      ordersFromRepeatCustomers,
-      ordersUnattributed,
-    },
+    newVsRepeat,
     topCustomersBySpend,
   };
 }

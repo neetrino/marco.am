@@ -17,6 +17,7 @@ import { resolveGuestCheckoutItems } from "./checkout-guest-items.service";
 import { shouldChargeCourierShipping } from "./checkout-delivery-rules.service";
 import { resolveProductClass, type ProductClass } from "../constants/product-class";
 import { promoCodesService } from "./promo-codes.service";
+import { invalidateAdminAnalyticsCache } from "@/lib/services/admin/admin-stats/admin-analytics-cache";
 
 const orderNumberId = customAlphabet("0123456789ABCDEFGHJKLMNPQRSTUVWXYZ", 10);
 
@@ -441,6 +442,8 @@ class OrdersService {
         customerEmail: order.order.customerEmail ?? undefined,
         customerPhone: order.order.customerPhone ?? undefined,
       });
+
+      void invalidateAdminAnalyticsCache();
 
       // Return order and payment info
       return {

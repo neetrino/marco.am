@@ -1,4 +1,5 @@
 import { db } from "@white-shop/db";
+import { invalidateAdminAnalyticsCache } from "@/lib/services/admin/admin-stats/admin-analytics-cache";
 import { logger } from "../../../utils/logger";
 import type { UpdateOrderContext, UpdateOrderData } from "./types";
 import { getOrderById } from "./order-operations";
@@ -124,6 +125,8 @@ async function persistOrderUpdate(
       },
     });
   });
+
+  void invalidateAdminAnalyticsCache();
 
   return getOrderById(orderId);
 }

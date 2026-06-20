@@ -1,4 +1,4 @@
-import { apiClient } from '@/lib/api-client';
+import { fetchAdminDashboardBootstrap } from '@/lib/admin/admin-bootstrap-client';
 import { ADMIN_CACHE_KEYS } from '@/lib/admin/admin-cache-keys';
 import {
   ADMIN_SESSION_CACHE_TTL_MS,
@@ -84,6 +84,8 @@ type AdminDashboardCachePayload = {
   userActivity: AdminDashboardUserActivity | null;
 };
 
+export type { AdminDashboardCachePayload };
+
 let dashboardLoadPromise: Promise<AdminDashboardCachePayload> | null = null;
 
 export function readAdminDashboardCache(): AdminDashboardCachePayload | null {
@@ -93,64 +95,12 @@ export function readAdminDashboardCache(): AdminDashboardCachePayload | null {
   );
 }
 
-function writeAdminDashboardCache(payload: AdminDashboardCachePayload): void {
+export function writeAdminDashboardCache(payload: AdminDashboardCachePayload): void {
   writeAdminSessionCache(ADMIN_CACHE_KEYS.dashboard, payload);
 }
 
-function parseDashboardPayload(
-  results: PromiseSettledResult<unknown>[],
-): AdminDashboardCachePayload {
-  const [statsResult, ordersResult, productsResult, usersResult] = results;
-
-  return {
-    stats:
-      statsResult.status === 'fulfilled' &&
-      statsResult.value &&
-      typeof statsResult.value === 'object'
-        ? (statsResult.value as AdminDashboardStats)
-        : null,
-    recentOrders:
-      ordersResult.status === 'fulfilled' &&
-      Array.isArray((ordersResult.value as { data?: unknown[] })?.data)
-        ? (ordersResult.value as { data: AdminDashboardRecentOrder[] }).data
-        : [],
-    topProducts:
-      productsResult.status === 'fulfilled' &&
-      Array.isArray((productsResult.value as { data?: unknown[] })?.data)
-        ? (productsResult.value as { data: AdminDashboardTopProduct[] }).data
-        : [],
-    userActivity:
-      usersResult.status === 'fulfilled' &&
-      (usersResult.value as { data?: AdminDashboardUserActivity })?.data
-        ? (usersResult.value as { data: AdminDashboardUserActivity }).data
-        : null,
-  };
-}
-
-function fetchDashboardPayload(): Promise<PromiseSettledResult<unknown>[]> {
-  return Promise.allSettled([
-    apiClient.get<AdminDashboardStats>('/api/v1/supersudo/stats'),
-    apiClient.get<{ data: AdminDashboardRecentOrder[] }>(
-      '/api/v1/supersudo/dashboard/recent-orders',
-      { params: { limit: '5' } },
-    ),
-    apiClient.get<{ data: AdminDashboardTopProduct[] }>(
-      '/api/v1/supersudo/dashboard/top-products',
-      { params: { limit: '5' } },
-    ),
-    apiClient.get<{ data: AdminDashboardUserActivity }>(
-      '/api/v1/supersudo/dashboard/user-activity',
-      { params: { limit: '10' } },
-    ),
-  ]);
-}
-
-function writeDashboardFromResults(
-  results: PromiseSettledResult<unknown>[],
-): AdminDashboardCachePayload {
-  const payload = parseDashboardPayload(results);
-  writeAdminDashboardCache(payload);
-  return payload;
+function fetchDashboardPayload(): Promise<AdminDashboardCachePayload> {
+  return fetchAdminDashboardBootstrap();
 }
 
 /** Single deduped dashboard fetch shared by warm + dashboard page. */
@@ -163,9 +113,7 @@ export function loadAdminDashboardPayload(): Promise<AdminDashboardCachePayload>
     return dashboardLoadPromise;
   }
 
-  dashboardLoadPromise = fetchDashboardPayload()
-    .then(writeDashboardFromResults)
-    .finally(() => {
+  dashboardLoadPromise = fetchDashboardPayload().finally(() => {
       dashboardLoadPromise = null;
     });
 

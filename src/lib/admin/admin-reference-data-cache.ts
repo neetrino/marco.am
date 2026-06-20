@@ -135,3 +135,44 @@ export function warmAdminReferenceDataCaches(language: LanguageCode): void {
     void fetchAdminBrands();
   }
 }
+
+type AdminAttributesPayload<T> = { data: T[] };
+
+export function readAdminAttributesCache<T = unknown>(): T[] | null {
+  const cached = readAdminSessionCache<AdminAttributesPayload<T>>(
+    ADMIN_CACHE_KEYS.attributes,
+    ADMIN_SESSION_CACHE_TTL_MS,
+  );
+  return cached?.data ?? null;
+}
+
+/** Attributes list — shared by warm, attributes page, and product editor. */
+export function fetchAdminAttributes<T>(options?: { force?: boolean }): Promise<T[]> {
+  const cached = readAdminAttributesCache<T>();
+  if (!options?.force && cached !== null) {
+    return Promise.resolve(cached);
+  }
+
+  return dedupedAdminRequest(ADMIN_CACHE_KEYS.attributes, () =>
+    apiClient.get<AdminAttributesPayload<T>>('/api/v1/supersudo/attributes'),
+  ).then((response) => {
+    const data = response.data ?? [];
+    writeAdminSessionCache(ADMIN_CACHE_KEYS.attributes, { data });
+    return data;
+  });
+}
+
+/** Settings document — shared by warm, settings page, and product editor pricing. */
+export function fetchAdminSettings<T>(options?: { force?: boolean }): Promise<T> {
+  const cached = readAdminSessionCache<T>(ADMIN_CACHE_KEYS.settings, ADMIN_SESSION_CACHE_TTL_MS);
+  if (!options?.force && cached !== null) {
+    return Promise.resolve(cached);
+  }
+
+  return dedupedAdminRequest(ADMIN_CACHE_KEYS.settings, () =>
+    apiClient.get<T>('/api/v1/supersudo/settings'),
+  ).then((settings) => {
+    writeAdminSessionCache(ADMIN_CACHE_KEYS.settings, settings);
+    return settings;
+  });
+}

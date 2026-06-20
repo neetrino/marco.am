@@ -6,6 +6,7 @@ import { Button, Card } from '@shop/ui';
 import { apiClient, getApiOrErrorMessage } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
 import { AdminPageLayout } from '../components/AdminPageLayout';
+import { HeroBannerPageSkeleton } from '../components/AdminPageSkeletons';
 import type { BannerManagementStorage } from '../../../lib/schemas/banner-management.schema';
 import { ADMIN_CACHE_KEYS } from '@/lib/admin/admin-cache-keys';
 import { beginAdminDataFetch } from '@/lib/admin/admin-fetch-helpers';
@@ -665,12 +666,15 @@ export default function HeroBannerPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600">{t('admin.common.loading')}</p>
-        </div>
-      </div>
+      <AdminPageLayout
+        currentPath={currentPath}
+        router={router}
+        t={t}
+        title={t('admin.heroBanner.title')}
+        subtitle={t('admin.heroBanner.subtitle')}
+      >
+        <HeroBannerPageSkeleton />
+      </AdminPageLayout>
     );
   }
 

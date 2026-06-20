@@ -11,6 +11,7 @@ import {
   buildProductsDefaultListCacheKey,
   buildUsersDefaultListCacheKey,
 } from '@/lib/admin/admin-cache-keys';
+import { fetchAdminQuickSettingsBootstrap } from '@/lib/admin/admin-bootstrap-client';
 import { warmAdminDashboardCache } from '@/lib/admin/admin-dashboard-client-cache';
 import {
   warmAdminCategoriesCache,
@@ -99,15 +100,34 @@ function warmSettingsCache(): void {
   );
 }
 
-function warmProductDiscountsCache(language: string): void {
-  const cacheKey = buildProductDiscountsCacheKey(language);
-  warmIfMissing(cacheKey, () =>
-    dedupedAdminRequest(cacheKey, () =>
-      apiClient.get('/api/v1/supersudo/products/discounts', {
-        params: { lang: language },
-      }),
-    ),
+function warmQuickSettingsCache(language: string): void {
+  const settingsCached = readAdminSessionCache<unknown>(
+    ADMIN_CACHE_KEYS.settings,
+    ADMIN_SESSION_CACHE_TTL_MS,
   );
+  const productsCached = readAdminSessionCache<unknown>(
+    buildProductDiscountsCacheKey(language),
+    ADMIN_SESSION_CACHE_TTL_MS,
+  );
+  const categoriesCached = readAdminSessionCache<unknown[]>(
+    `${ADMIN_CACHE_KEYS.categories}:${language}:lite`,
+    ADMIN_SESSION_CACHE_TTL_MS,
+  );
+  const brandsCached = readAdminSessionCache<unknown[]>(
+    ADMIN_CACHE_KEYS.brands,
+    ADMIN_SESSION_CACHE_TTL_MS,
+  );
+
+  if (
+    settingsCached !== null &&
+    productsCached !== null &&
+    categoriesCached !== null &&
+    brandsCached !== null
+  ) {
+    return;
+  }
+
+  void fetchAdminQuickSettingsBootstrap(language as 'en' | 'hy' | 'ru');
 }
 
 function warmDeliveryCache(): void {
@@ -146,6 +166,11 @@ function warmAnalyticsCache(language: string): void {
   warmIfMissing(ADMIN_CACHE_KEYS.analyticsWeek, () =>
     dedupedAdminRequest(ADMIN_CACHE_KEYS.analyticsWeek, () =>
       apiClient.get('/api/v1/supersudo/analytics', { params: { period: 'week' } }),
+    ),
+  );
+  warmIfMissing(ADMIN_CACHE_KEYS.analyticsMonth, () =>
+    dedupedAdminRequest(ADMIN_CACHE_KEYS.analyticsMonth, () =>
+      apiClient.get('/api/v1/supersudo/analytics', { params: { period: 'month' } }),
     ),
   );
   warmIfMissing(ADMIN_CACHE_KEYS.analyticsOrderStatus, () =>
@@ -215,9 +240,7 @@ export function warmAdminPageCacheForPath(path: string): void {
       warmSettingsCache();
       return;
     case '/supersudo/quick-settings':
-      warmSettingsCache();
-      warmProductDiscountsCache(language);
-      warmAdminReferenceDataCaches(language);
+      warmQuickSettingsCache(language);
       return;
     case '/supersudo/delivery':
       warmDeliveryCache();

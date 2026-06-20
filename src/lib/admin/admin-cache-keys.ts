@@ -162,6 +162,16 @@ export function buildProductDiscountsCacheKey(lang: string): string {
   return buildAdminListCacheKey('products/discounts', { lang });
 }
 
+export function buildAdminBootstrapCacheKey(
+  paths: readonly string[],
+  lang: string,
+): string {
+  return buildAdminListCacheKey('bootstrap', {
+    paths: [...paths].sort().join(','),
+    lang,
+  });
+}
+
 type AnalyticsCacheInput = {
   period: string;
   startDate?: string;
@@ -199,6 +209,7 @@ export const ADMIN_CACHE_KEYS = {
   usersDefault: buildUsersDefaultListCacheKey(),
   messagesDefault: buildMessagesDefaultListCacheKey(),
   analyticsWeek: buildAdminListCacheKey('analytics', { period: 'week' }),
+  analyticsMonth: buildAdminListCacheKey('analytics', { period: 'month' }),
   analyticsOrderStatus: 'analytics/order-status-breakdown',
 } as const;
 

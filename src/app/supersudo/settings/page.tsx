@@ -7,6 +7,7 @@ import { apiClient, getApiOrErrorMessage } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
 import { clearCurrencyRatesCache } from '../../../lib/currency';
 import { AdminPageLayout } from '../components/AdminPageLayout';
+import { SettingsPageSkeleton } from '../components/AdminPageSkeletons';
 import { logger } from '@/lib/utils/logger';
 import { ADMIN_CACHE_KEYS } from '@/lib/admin/admin-cache-keys';
 import { beginAdminDataFetch } from '@/lib/admin/admin-fetch-helpers';
@@ -189,12 +190,14 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[radial-gradient(circle_at_top,#fff8d6_0%,#f8fafc_32%,#f8fafc_100%)]">
-        <div className="text-center">
-          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-marco-black" />
-          <p className="text-sm font-medium text-marco-text">{t('admin.common.loading')}</p>
-        </div>
-      </div>
+      <AdminPageLayout
+        currentPath={currentPath}
+        router={router}
+        t={t}
+        title={t('admin.settings.title')}
+      >
+        <SettingsPageSkeleton />
+      </AdminPageLayout>
     );
   }
 

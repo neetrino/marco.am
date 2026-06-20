@@ -49,17 +49,17 @@
 
 > Оценка: ~1 день.
 
-- [ ] **Product editor sheet — reuse admin cache**  
+- [x] **Product editor sheet — reuse admin cache**  
   `?create=1` / `?edit=`: settings, brands, categories, attributes через `fetchAdminBrands` / session cache, не raw `apiClient.get`.  
   Файлы: `useProductDataLoading.ts`, `admin-reference-data-cache.ts`
 
-- [ ] **Analytics — customer block**  
-  Убедиться, что period orders не full scan; при необходимости SQL aggregate.  
+- [x] **Analytics — customer block**  
+  SQL aggregates вместо `findMany` по всем заказам периода.  
   Файлы: `src/lib/services/admin/admin-stats/customer-analytics.ts`
 
-- [ ] **Analytics — warm для частых period**  
-  Расширить warm: `month` или prefetch при hover (сейчас только `week`).  
-  Файлы: `admin-page-warm.ts`, `useAnalytics.ts`
+- [x] **Analytics — warm для частых period**  
+  Warm `week` + `month` при hover Analytics.  
+  Файлы: `admin-page-warm.ts`, `admin-cache-keys.ts`
 
 **DoD фазы 2:** открытие create/edit product без 4 cold API; custom analytics period быстрее cold.
 
@@ -69,8 +69,8 @@
 
 > Оценка: ~0.5 дня. API count не меняется.
 
-- [ ] **Skeleton вместо fullscreen loader**  
-  Hero banner, Delivery, Settings — паттерн как promo-codes (`AdminPageLayout` + skeleton).  
+- [x] **Skeleton вместо fullscreen loader**  
+  Hero banner, Delivery, Settings — `AdminPageLayout` + pulse skeleton (`AdminPageSkeletons.tsx`).  
   Файлы: `hero-banner/page.tsx`, `delivery/page.tsx`, `settings/page.tsx`
 
 **DoD фазы 3:** нет fullscreen block на этих трёх страницах.
@@ -81,14 +81,15 @@
 
 > Делать после фаз 0–2, если нужен следующий уровень.
 
-- [ ] **`GET /api/v1/supersudo/bootstrap?paths=...`**  
-  Схлопнуть round-trips: Dashboard (4) + Quick Settings (4) → 1 запрос.
+- [x] **`GET /api/v1/supersudo/bootstrap?paths=...`**  
+  Dashboard + Quick Settings cold load → 1 HTTP (`admin-bootstrap.service.ts`, `admin-bootstrap-client.ts`).
 
-- [ ] **Redis server cache для analytics/stats**  
-  Снять нагрузку с Postgres на тяжёлых отчётах (TTL + invalidation on order).
+- [x] **Redis server cache для analytics/stats**  
+  Read-through cache 5 min + `invalidateAdminAnalyticsCache()` on checkout/order update.  
+  Файлы: `admin-analytics-cache.ts`, `admin-stats.service.ts`
 
-- [ ] **Order detail warm по hover**  
-  Осознанно не делали (лишние запросы при скролле). Пересмотреть только если есть жалобы.
+- [x] **Order detail warm по hover**  
+  Оставлено без изменений (by design — лишние запросы при скролле).
 
 ---
 
