@@ -4,7 +4,7 @@ import { toApiErrorResponse } from "@/lib/api/next-route-error";
 import { authenticateToken, requireAdmin } from "@/lib/middleware/auth";
 import { homeBrandPartnersStorageSchema } from "@/lib/schemas/home-brand-partners.schema";
 import { homeBrandPartnersService } from "@/lib/services/home-brand-partners.service";
-import { revalidateStorefrontHome } from "@/lib/revalidate-storefront";
+import { revalidateStorefrontBrands, revalidateStorefrontHome } from "@/lib/revalidate-storefront";
 import { logger } from "@/lib/utils/logger";
 
 /**
@@ -69,6 +69,7 @@ export async function PUT(req: NextRequest) {
 
     const saved = await homeBrandPartnersService.updateAdminStorage(parsed.data);
     revalidateStorefrontHome();
+    revalidateStorefrontBrands();
     return NextResponse.json(saved);
   } catch (error: unknown) {
     logger.error("PUT /api/v1/supersudo/home-brand-partners failed", { error });

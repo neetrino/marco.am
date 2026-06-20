@@ -1,4 +1,4 @@
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 
 import { logger } from '@/lib/utils/logger';
 
@@ -15,5 +15,18 @@ export function revalidateStorefrontHome(): void {
     revalidatePath('/');
   } catch (error: unknown) {
     logger.warn('[revalidate] storefront home revalidation skipped', { error });
+  }
+}
+
+/**
+ * Forces the ISR-cached brands page (`/brands`) to regenerate immediately.
+ * Call after admin changes brand partner list or brand partner settings.
+ */
+export function revalidateStorefrontBrands(): void {
+  try {
+    revalidateTag('brands-page', 'max');
+    revalidatePath('/brands', 'page');
+  } catch (error: unknown) {
+    logger.warn('[revalidate] storefront brands revalidation skipped', { error });
   }
 }
