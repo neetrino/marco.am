@@ -16,8 +16,11 @@ import {
 } from "@/lib/services/read-through-json-cache";
 import { logger } from "@/lib/utils/logger";
 
-/** Align with home listing strips — fewer DB round-trips on repeat visits. */
-const BRAND_PARTNERS_PUBLIC_CACHE_TTL_SEC = 600;
+/**
+ * Long TTL — freshness is handled by explicit invalidation (admin brand edits and
+ * product projection changes), so reads stay warm instead of expiring every 10 min.
+ */
+const BRAND_PARTNERS_PUBLIC_CACHE_TTL_SEC = 60 * 60 * 24;
 
 type HomeLocale = "en" | "hy" | "ru";
 
@@ -110,25 +113,38 @@ async function loadStorage(): Promise<HomeBrandPartnersStorage> {
   return valid ?? DEFAULT_STORAGE;
 }
 
-/** Shop-visible products: same baseline as PLP (`buildWhereClause`). */
-const LISTED_PRODUCT_RELATION = {
-  some: {
-    published: true,
-    deletedAt: null,
-  },
-} as const;
+/**
+ * Brand ids that currently have at least one shop-visible product, read from the
+ * listing projection (`ProductListingRow`) instead of a correlated `EXISTS` per brand.
+ * The projection already encodes "published, non-deleted, browsable" products, so the
+ * result set matches the PLP and resolves via a single indexed `GROUP BY`.
+ */
+async function fetchListedBrandIds(): Promise<Set<string>> {
+  const grouped = await db.productListingRow.groupBy({
+    by: ["brandId"],
+    where: { isPublished: true, deletedAt: null, brandId: { not: null } },
+  });
+
+  const ids = new Set<string>();
+  for (const row of grouped) {
+    if (row.brandId) {
+      ids.add(row.brandId);
+    }
+  }
+  return ids;
+}
 
 async function fetchBrandsWithListedProducts(ids?: string[]): Promise<BrandRow[]> {
-  const base = {
-    published: true,
-    deletedAt: null,
-    products: LISTED_PRODUCT_RELATION,
-  };
-  const where =
-    ids !== undefined ? { ...base, id: { in: ids } } : base;
+  const listedBrandIds = await fetchListedBrandIds();
+  const allowedIds =
+    ids !== undefined ? ids.filter((id) => listedBrandIds.has(id)) : [...listedBrandIds];
+
+  if (allowedIds.length === 0) {
+    return [];
+  }
 
   return db.brand.findMany({
-    where,
+    where: { published: true, deletedAt: null, id: { in: allowedIds } },
     include: {
       translations: true,
     },
@@ -170,7 +186,7 @@ export const homeBrandPartnersService = {
 
   async getPublicPayload(localeRaw: string | undefined): Promise<HomeBrandPartnersPublicPayload> {
     const locale = normalizeLocale(localeRaw);
-    const cacheKey = `home:brand-partners:public:v4:${locale}`;
+    const cacheKey = `home:brand-partners:public:v5:${locale}`;
 
     return getCachedJson(cacheKey, BRAND_PARTNERS_PUBLIC_CACHE_TTL_SEC, async () => {
       const storage = await loadStorage();
