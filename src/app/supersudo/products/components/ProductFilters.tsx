@@ -109,7 +109,7 @@ export function ProductFilters({
       } else {
         chips.push({
           key: 'categories',
-          label: t('admin.products.categoriesSelectedChip', { count: selectedIds.length }),
+          label: t('admin.products.categoriesSelectedChip').replace('{count}', String(selectedIds.length)),
           onRemove: () => {
             setSelectedCategories(new Set());
             setPage(1);
@@ -242,7 +242,7 @@ export function ProductFilters({
                     chip.onRemove();
                   }}
                   className="shrink-0 rounded-full p-0.5 text-slate-400 transition-colors hover:bg-slate-200 hover:text-slate-800"
-                  aria-label={t('admin.products.removeFilterChip', { label: chip.label })}
+                  aria-label={t('admin.products.removeFilterChip').replace('{label}', chip.label)}
                 >
                   <X className="h-3 w-3" aria-hidden />
                 </button>

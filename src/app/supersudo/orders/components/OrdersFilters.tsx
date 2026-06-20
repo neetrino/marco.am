@@ -206,7 +206,7 @@ export function OrdersFilters({
                       chip.onRemove();
                     }}
                     className="shrink-0 rounded-full p-0.5 text-slate-400 transition-colors hover:bg-slate-200 hover:text-slate-800"
-                    aria-label={t('admin.orders.removeFilterChip', { label: chip.label })}
+                    aria-label={t('admin.orders.removeFilterChip').replace('{label}', chip.label)}
                   >
                     <X className="h-3 w-3" aria-hidden />
                   </button>

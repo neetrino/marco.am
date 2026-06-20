@@ -132,8 +132,8 @@ export function useProductDataLoading({
         window.requestIdleCallback(scheduleCatalog, { timeout: 2000 });
         window.requestIdleCallback(scheduleAttributes, { timeout: 3000 });
       } else {
-        window.setTimeout(scheduleCatalog, 400);
-        window.setTimeout(scheduleAttributes, 800);
+        setTimeout(scheduleCatalog, 400);
+        setTimeout(scheduleAttributes, 800);
       }
     });
 
