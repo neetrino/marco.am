@@ -77,9 +77,30 @@ export function useProductEditorTabLoader({
   const generalBackgroundStartedRef = useRef(false);
 
   const markTabLoaded = useCallback((tabId: ProductEditorTabId) => {
-    setLoadedTabs((prev) => new Set(prev).add(tabId));
-    setVisitedTabs((prev) => new Set(prev).add(tabId));
+    setLoadedTabs((prev) => {
+      if (prev.has(tabId)) {
+        return prev;
+      }
+      return new Set(prev).add(tabId);
+    });
+    setVisitedTabs((prev) => {
+      if (prev.has(tabId)) {
+        return prev;
+      }
+      return new Set(prev).add(tabId);
+    });
   }, []);
+
+  useEffect(() => {
+    if (!open) {
+      generalSeededRef.current = false;
+      generalBackgroundStartedRef.current = false;
+      inFlightRef.current.clear();
+      setLoadedTabs(new Set());
+      setVisitedTabs(new Set([PRODUCT_EDITOR_DEFAULT_TAB]));
+      setLoadingTab(null);
+    }
+  }, [open]);
 
   useLayoutEffect(() => {
     if (!open || !productId || !listProduct || generalSeededRef.current) {
@@ -183,7 +204,7 @@ export function useProductEditorTabLoader({
     if (!loadedTabs.has(PRODUCT_EDITOR_DEFAULT_TAB)) {
       void loadSection(PRODUCT_EDITOR_DEFAULT_TAB);
     }
-  }, [open, productId, listProduct, loadedTabs, loadSection, markTabLoaded]);
+  }, [open, productId, listProduct, loadSection, markTabLoaded]);
 
   useEffect(() => {
     if (!open) {
@@ -196,7 +217,7 @@ export function useProductEditorTabLoader({
     }
 
     if (loadedTabs.has(activeTab)) {
-      setVisitedTabs((prev) => new Set(prev).add(activeTab));
+      setVisitedTabs((prev) => (prev.has(activeTab) ? prev : new Set(prev).add(activeTab)));
       return;
     }
 
