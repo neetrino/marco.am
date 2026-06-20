@@ -1,3 +1,4 @@
+import { getStats } from "./admin-stats/stats-calculator";
 import { getUserActivity } from "./admin-stats/user-activity";
 import { getRecentOrders } from "./admin-stats/recent-orders";
 import { getTopProducts } from "./admin-stats/top-products";
@@ -5,7 +6,6 @@ import { getActivity } from "./admin-stats/activity";
 import {
   getCachedAdminAnalytics,
   getCachedAdminOrderStatusBreakdown,
-  getCachedAdminStats,
 } from "./admin-stats/admin-analytics-cache";
 import { getStockAnalytics } from "./admin-stats/stock-analytics";
 
@@ -17,7 +17,7 @@ class AdminStatsService {
    * Get dashboard stats
    */
   async getStats() {
-    return getCachedAdminStats();
+    return getStats();
   }
 
   /**

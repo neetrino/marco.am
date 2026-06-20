@@ -3,11 +3,9 @@ import { getCachedJson } from "@/lib/services/read-through-json-cache";
 
 import { getAnalytics } from "./analytics";
 import { getOrderStatusBreakdown } from "./order-status-breakdown";
-import { getStats } from "./stats-calculator";
 
 const ADMIN_ANALYTICS_CACHE_PREFIX = "admin:analytics:v1:";
 const ADMIN_ORDER_STATUS_BREAKDOWN_CACHE_KEY = "admin:analytics:order-status-breakdown:v1";
-const ADMIN_STATS_CACHE_KEY = "admin:stats:v1";
 const ADMIN_ANALYTICS_CACHE_TTL_SEC = 300;
 
 function buildAnalyticsCacheKey(
@@ -33,11 +31,6 @@ export async function getCachedAdminAnalytics(
   );
 }
 
-/** Read-through Redis cache for dashboard stats aggregate. */
-export async function getCachedAdminStats(): Promise<Awaited<ReturnType<typeof getStats>>> {
-  return getCachedJson(ADMIN_STATS_CACHE_KEY, ADMIN_ANALYTICS_CACHE_TTL_SEC, () => getStats());
-}
-
 /** Read-through Redis cache for analytics order-status breakdown widget. */
 export async function getCachedAdminOrderStatusBreakdown(): Promise<
   Awaited<ReturnType<typeof getOrderStatusBreakdown>>
@@ -49,9 +42,8 @@ export async function getCachedAdminOrderStatusBreakdown(): Promise<
   );
 }
 
-/** Clears server analytics/stats caches after order mutations. */
+/** Clears server analytics caches after order mutations. */
 export async function invalidateAdminAnalyticsCache(): Promise<void> {
   await cacheService.deletePattern(`${ADMIN_ANALYTICS_CACHE_PREFIX}*`);
   await cacheService.del(ADMIN_ORDER_STATUS_BREAKDOWN_CACHE_KEY);
-  await cacheService.del(ADMIN_STATS_CACHE_KEY);
 }
