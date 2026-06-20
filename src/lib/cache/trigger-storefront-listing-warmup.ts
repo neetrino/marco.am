@@ -1,3 +1,8 @@
+import {
+  WARMUP_INTERNAL_TOKEN_HEADER,
+  getWarmupInternalToken,
+} from '@/lib/cache/warmup-internal-token';
+
 const WARMUP_ROUTE_PATH = '/api/v1/internal/warm-storefront-listing';
 
 function resolveWarmupBaseUrl(): string {
@@ -15,7 +20,12 @@ function resolveWarmupBaseUrl(): string {
  */
 export async function triggerStorefrontListingWarmupRequest(): Promise<void> {
   const secret = process.env.WARMUP_INTERNAL_SECRET?.trim();
-  const headers: HeadersInit | undefined = secret ? { 'x-warmup-secret': secret } : undefined;
+  const headers: Record<string, string> = {
+    [WARMUP_INTERNAL_TOKEN_HEADER]: getWarmupInternalToken(),
+  };
+  if (secret) {
+    headers['x-warmup-secret'] = secret;
+  }
 
   try {
     await fetch(`${resolveWarmupBaseUrl()}${WARMUP_ROUTE_PATH}`, {
