@@ -11,6 +11,7 @@ import {
   syncProductPdpReadModel,
   syncProductPdpReadModelBatch,
 } from '@/lib/read-model/product-pdp-read-model-sync';
+import { invalidateProductsPlpCache } from '@/lib/services/read-through-json-cache';
 
 export const PRODUCT_LISTING_READ_MODEL_DEFAULT_LOCALES = ['en', 'hy', 'ru', 'ka'] as const;
 
@@ -242,6 +243,7 @@ export async function syncProductListingReadModel(
   if (!product || product.published === false || product.deletedAt) {
     const deleted = await db.productListingRow.deleteMany({ where: { productId } });
     await syncProductPdpReadModel(productId, { locales, discountSettings });
+    await invalidateProductsPlpCache();
     return {
       productId,
       rowsDeleted: deleted.count,
@@ -261,6 +263,7 @@ export async function syncProductListingReadModel(
 
   const deleted = await replaceProductListingRows({ productId, rows });
   await syncProductPdpReadModel(productId, { locales, discountSettings });
+  await invalidateProductsPlpCache();
 
   return {
     productId,
@@ -330,6 +333,7 @@ export async function syncProductListingReadModelBatch(
     batchSize,
     logProgress: options.logProgress,
   });
+  await invalidateProductsPlpCache();
 
   return {
     productsSynced,
@@ -344,6 +348,7 @@ export async function deleteProductListingReadModel(productId: string) {
   const startedAt = Date.now();
   const deleted = await db.productListingRow.deleteMany({ where: { productId } });
   await deleteProductPdpReadModel(productId);
+  await invalidateProductsPlpCache();
   return {
     productId,
     rowsDeleted: deleted.count,
@@ -405,6 +410,7 @@ export async function rebuildProductListingReadModel(
     discountSettings,
     logProgress: options.logProgress,
   });
+  await invalidateProductsPlpCache();
 
   return {
     productsRead,
