@@ -3,6 +3,54 @@ export type ShopCategoryFilterTreeNode = {
   children?: readonly ShopCategoryFilterTreeNode[];
 };
 
+function normalizeCategorySlug(slug: string): string {
+  return slug.trim().toLowerCase();
+}
+
+/**
+ * Slugs of category rows that must stay expanded so every selected slug is visible
+ * in the shop sidebar (opens ancestors; does not collapse user-expanded rows).
+ */
+export function collectCategoryFilterExpandKeys(
+  tree: readonly ShopCategoryFilterTreeNode[],
+  selectedSlugs: readonly string[],
+): ReadonlySet<string> {
+  const normalizedSelected = new Set(
+    selectedSlugs.map(normalizeCategorySlug).filter(Boolean),
+  );
+  if (normalizedSelected.size === 0) {
+    return new Set();
+  }
+
+  const expandKeys = new Set<string>();
+
+  function walk(node: ShopCategoryFilterTreeNode, ancestorKeys: readonly string[]): boolean {
+    const key = normalizeCategorySlug(node.slug);
+    const isSelected = normalizedSelected.has(key);
+    let hasSelectedInSubtree = isSelected;
+
+    for (const child of node.children ?? []) {
+      if (walk(child, [...ancestorKeys, key])) {
+        hasSelectedInSubtree = true;
+      }
+    }
+
+    if (hasSelectedInSubtree) {
+      for (const ancestorKey of ancestorKeys) {
+        expandKeys.add(ancestorKey);
+      }
+    }
+
+    return hasSelectedInSubtree;
+  }
+
+  for (const root of tree) {
+    walk(root, []);
+  }
+
+  return expandKeys;
+}
+
 function collectNodeAndDescendantSlugs(node: ShopCategoryFilterTreeNode): string[] {
   const slugs = [node.slug.toLowerCase()];
   for (const child of node.children ?? []) {

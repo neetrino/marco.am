@@ -17,6 +17,7 @@ import {
 import { ProductsFilterCheckboxVisual } from './ProductsFilterCheckbox';
 import { ProductsFilterScrollArea } from './ProductsFilterScrollArea';
 import { useMobileFiltersDraft } from './mobile-filters-draft-context';
+import { collectCategoryFilterExpandKeys } from '@/lib/shop-category-filter-descendant-slugs';
 
 interface CategoryFilterProps {
   category?: string;
@@ -231,6 +232,27 @@ export function CategoryFilter({
   useEffect(() => {
     setOptimisticSlugs(null);
   }, [categoryQs]);
+
+  useEffect(() => {
+    if (selectedSlugs.length === 0 || categories.length === 0) {
+      return;
+    }
+    const autoExpandKeys = collectCategoryFilterExpandKeys(categories, selectedSlugs);
+    if (autoExpandKeys.size === 0) {
+      return;
+    }
+    setExpandedKeys((prev) => {
+      let changed = false;
+      const next = new Set(prev);
+      for (const key of autoExpandKeys) {
+        if (!next.has(key)) {
+          next.add(key);
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [categories, categoryQs, selectedSlugs]);
 
   const buildNextCategorySlugs = useCallback(
     (slug: string): string[] => {
