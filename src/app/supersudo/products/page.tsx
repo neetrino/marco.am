@@ -1,13 +1,13 @@
 'use client';
 
-import { Suspense, useCallback, useEffect, useState, useMemo, useRef } from 'react';
+import { Suspense, useCallback, useEffect, useState, useMemo, useRef, startTransition } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { apiClient, getApiOrErrorMessage } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
 import { getStoredCurrency, initializeCurrencyRates, type CurrencyCode } from '../../../lib/currency';
 import { getStoredLanguage } from '../../../lib/language';
 import { AdminPageLayout } from '../components/AdminPageLayout';
-import { ProductFilters } from './components/ProductFilters';
+import { ProductFilters, type ProductPublishedFilter, type ProductStockFilter } from './components/ProductFilters';
 import { BulkSelectionControls } from './components/BulkSelectionControls';
 import { ProductsTable } from './components/ProductsTable';
 import { useProductHandlers } from './hooks/useProductHandlers';
@@ -29,6 +29,7 @@ import {
   readAdminSessionCache,
   writeAdminSessionCache,
 } from '@/lib/admin/admin-session-cache';
+import { warmProductEditorReferenceData } from '@/lib/admin/product-editor-section-cache';
 import { ProductEditorSheet } from './add/components/ProductEditorSheet';
 
 type AdminProductsCachePayload = {
@@ -52,8 +53,16 @@ function ProductsPageContent() {
   const searchParams = useSearchParams();
   const editParam = searchParams.get('edit');
   const createParam = searchParams.get('create');
-  const sheetOpen = Boolean(editParam || createParam);
-  const sheetProductId = editParam ?? null;
+
+  const [optimisticSheet, setOptimisticSheet] = useState<{
+    open: boolean;
+    productId: string | null;
+  }>({ open: false, productId: null });
+  const [editorMounted, setEditorMounted] = useState(false);
+
+  const urlSheetOpen = Boolean(editParam || createParam);
+  const sheetOpen = optimisticSheet.open || urlSheetOpen;
+  const sheetProductId = optimisticSheet.productId ?? editParam ?? null;
   const defaultProductsCacheKey = buildProductsDefaultListCacheKey(activeLocale);
   const defaultProductsCache = readAdminSessionCache<AdminProductsCachePayload>(
     defaultProductsCacheKey,
@@ -66,21 +75,18 @@ function ProductsPageContent() {
   const hadCategoriesCacheRef = useRef(cachedCategories !== null);
   const [products, setProducts] = useState<Product[]>(defaultProductsCache?.data ?? []);
   const [loading, setLoading] = useState(defaultProductsCache === null);
+  const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
   const [categories, setCategories] = useState<Category[]>(cachedCategories ?? []);
   const [categoriesLoading, setCategoriesLoading] = useState(cachedCategories === null);
-  const [categoriesExpanded, setCategoriesExpanded] = useState(false);
-  const [skuSearch, setSkuSearch] = useState('');
-  const [stockFilter, setStockFilter] = useState<'all' | 'inStock' | 'outOfStock'>('all');
+  const [stockFilter, setStockFilter] = useState<ProductStockFilter>('all');
+  const [publishedFilter, setPublishedFilter] = useState<ProductPublishedFilter>('all');
   const [page, setPage] = useState(1);
   const [meta, setMeta] = useState<ProductsResponse['meta'] | null>(defaultProductsCache?.meta ?? null);
-  const [minPrice, setMinPrice] = useState<string>('');
-  const [maxPrice, setMaxPrice] = useState<string>('');
   const [sortBy, setSortBy] = useState<string>('createdAt-desc');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
-  const [_togglingAllFeatured, setTogglingAllFeatured] = useState(false);
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
   const [updatingPublishedIds, setUpdatingPublishedIds] = useState<Set<string>>(new Set());
   const [updatingFeaturedIds, setUpdatingFeaturedIds] = useState<Set<string>>(new Set());
@@ -125,23 +131,6 @@ function ProductsPageContent() {
     void fetchCategories();
   }, [activeLocale]);
 
-  // Close category dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (categoriesExpanded && !target.closest('[data-category-dropdown]')) {
-        setCategoriesExpanded(false);
-      }
-    };
-
-    if (categoriesExpanded) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
-      };
-    }
-  }, [categoriesExpanded]);
-
   const fetchCategories = async () => {
     try {
       beginAdminDataFetch(hadCategoriesCacheRef.current, setCategoriesLoading);
@@ -161,20 +150,90 @@ function ProductsPageContent() {
   useEffect(() => {
     fetchProducts();
      
-  }, [page, search, selectedCategories, skuSearch, stockFilter, sortBy, minPrice, maxPrice, activeLocale]);
+  }, [page, search, selectedCategories, stockFilter, publishedFilter, sortBy, activeLocale]);
+
+  // Warm product-editor reference data (brands/categories/attributes/settings)
+  // on idle so the first product sheet opens without extra round-trips.
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    if ('requestIdleCallback' in window) {
+      const idleId = window.requestIdleCallback(() => warmProductEditorReferenceData(), {
+        timeout: 2500,
+      });
+      return () => window.cancelIdleCallback(idleId);
+    }
+    const timeoutId = window.setTimeout(() => warmProductEditorReferenceData(), 600);
+    return () => window.clearTimeout(timeoutId);
+  }, []);
+
+  const buildListRequest = useCallback(
+    (targetPage: number): { cacheKey: string; params: Record<string, string> } => {
+      const publishedParam =
+        publishedFilter === 'published' ? 'true' : publishedFilter === 'unpublished' ? 'false' : '';
+
+      const cacheKey = buildAdminProductsListCacheKey({
+        page: targetPage,
+        lang: activeLocale,
+        search,
+        category: selectedCategories.size > 0 ? Array.from(selectedCategories).join(',') : '',
+        published: publishedParam,
+        sort: sortBy,
+        stockFilter,
+      });
+
+      const params: Record<string, string> = {
+        page: targetPage.toString(),
+        limit: '20',
+        lang: activeLocale,
+      };
+      if (search.trim()) {
+        params.search = search.trim();
+      }
+      if (selectedCategories.size > 0) {
+        params.category = Array.from(selectedCategories).join(',');
+      }
+      if (publishedFilter === 'published') {
+        params.published = 'true';
+      } else if (publishedFilter === 'unpublished') {
+        params.published = 'false';
+      }
+      if (stockFilter === 'inStock') {
+        params.stock = 'inStock';
+      } else if (stockFilter === 'outOfStock') {
+        params.stock = 'outOfStock';
+      }
+      if (sortBy) {
+        params.sort = sortBy;
+      }
+
+      return { cacheKey, params };
+    },
+    [activeLocale, search, selectedCategories, publishedFilter, sortBy, stockFilter],
+  );
+
+  /** Best-effort prefetch of a neighbouring page into the session cache. */
+  const prefetchListPage = useCallback(
+    async (targetPage: number): Promise<void> => {
+      const { cacheKey, params } = buildListRequest(targetPage);
+      if (readAdminSessionCache<AdminProductsCachePayload>(cacheKey, ADMIN_SESSION_CACHE_TTL_MS) !== null) {
+        return;
+      }
+      try {
+        const response = await dedupedAdminRequest(cacheKey, () =>
+          apiClient.get<ProductsResponse>('/api/v1/supersudo/products', { params }),
+        );
+        writeAdminSessionCache(cacheKey, { data: response.data || [], meta: response.meta || null });
+      } catch {
+        // Prefetch is best-effort; the real fetch will surface any error.
+      }
+    },
+    [buildListRequest],
+  );
 
   const fetchProducts = async (options?: { force?: boolean }) => {
-    const cacheKey = buildAdminProductsListCacheKey({
-      page,
-      lang: activeLocale,
-      search,
-      category: selectedCategories.size > 0 ? Array.from(selectedCategories).join(',') : '',
-      sku: skuSearch,
-      minPrice,
-      maxPrice,
-      sort: sortBy,
-      stockFilter,
-    });
+    const { cacheKey, params } = buildListRequest(page);
     const cached = readAdminSessionCache<AdminProductsCachePayload>(cacheKey, ADMIN_SESSION_CACHE_TTL_MS);
     if (!options?.force && cached !== null) {
       setProducts(cached.data ?? []);
@@ -184,64 +243,23 @@ function ProductsPageContent() {
       return;
     }
 
+    // Stale-while-revalidate: keep current rows visible during a cold fetch and
+    // surface a lightweight progress bar; only show the full spinner when empty.
+    if (products.length > 0) {
+      setRefreshing(true);
+    } else {
+      setProducts([]);
+      setLoading(true);
+    }
+
     try {
-      beginAdminDataFetch(cached !== null, setLoading);
-      const params: Record<string, string> = {
-        page: page.toString(),
-        limit: '20',
-        lang: activeLocale,
-      };
-      
-      if (search.trim()) {
-        params.search = search.trim();
-      }
-
-      if (selectedCategories.size > 0) {
-        params.category = Array.from(selectedCategories).join(',');
-      }
-
-      if (skuSearch.trim()) {
-        params.sku = skuSearch.trim();
-      }
-
-      if (minPrice.trim()) {
-        params.minPrice = minPrice.trim();
-      }
-
-      if (maxPrice.trim()) {
-        params.maxPrice = maxPrice.trim();
-      }
-
-      if (sortBy && sortBy.startsWith('createdAt')) {
-        params.sort = sortBy;
-      }
-
       const response = await dedupedAdminRequest(cacheKey, () =>
         apiClient.get<ProductsResponse>('/api/v1/supersudo/products', {
           params,
         }),
       );
       
-      let filteredProducts = response.data || [];
-
-      // Stock filter (client-side)
-      if (stockFilter !== 'all') {
-        filteredProducts = filteredProducts.filter(product => {
-          const getTotalStock = (p: Product) => {
-            if (p.colorStocks && p.colorStocks.length > 0) {
-              return p.colorStocks.reduce((sum, cs) => sum + (cs.stock || 0), 0);
-            }
-            return p.stock ?? 0;
-          };
-          const totalStock = getTotalStock(product);
-          if (stockFilter === 'inStock') {
-            return totalStock > 0;
-          } else if (stockFilter === 'outOfStock') {
-            return totalStock === 0;
-          }
-          return true;
-        });
-      }
+      const filteredProducts = response.data || [];
 
       setProducts(filteredProducts);
       setMeta(response.meta || null);
@@ -255,55 +273,32 @@ function ProductsPageContent() {
       alert(t('admin.products.errorLoading').replace('{message}', getApiOrErrorMessage(err, t('admin.common.unknownErrorFallback'))));
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
-  // Client-side sorting for Product / Price / Stock columns
-  const sortedProducts = useMemo(() => {
-    if (!Array.isArray(products)) return [];
-
-    if (!sortBy || sortBy.startsWith('createdAt')) {
-      return products;
+  // Prefetch neighbouring pages on idle so paging flips instantly.
+  useEffect(() => {
+    if (loading || refreshing || !meta || typeof window === 'undefined') {
+      return;
     }
 
-    const [field, directionRaw] = sortBy.split('-');
-    const direction = directionRaw === 'asc' ? 1 : -1;
+    const run = () => {
+      if (page < (meta.totalPages ?? 1)) {
+        void prefetchListPage(page + 1);
+      }
+      if (page > 1) {
+        void prefetchListPage(page - 1);
+      }
+    };
 
-    logger.devLog('📊 [ADMIN] Applying client-side sort:', { field, direction: directionRaw });
-
-    const cloned = [...products];
-
-    if (field === 'price') {
-      cloned.sort((a, b) => {
-        const aPrice = a.price ?? 0;
-        const bPrice = b.price ?? 0;
-        if (aPrice === bPrice) return 0;
-        return aPrice > bPrice ? direction : -direction;
-      });
-    } else if (field === 'title') {
-      cloned.sort((a, b) => {
-        const aTitle = (a.title || '').toLowerCase();
-        const bTitle = (b.title || '').toLowerCase();
-        if (aTitle === bTitle) return 0;
-        return aTitle > bTitle ? direction : -direction;
-      });
-    } else if (field === 'stock') {
-      cloned.sort((a, b) => {
-        const getTotalStock = (product: Product) => {
-          if (product.colorStocks && product.colorStocks.length > 0) {
-            return product.colorStocks.reduce((sum, cs) => sum + (cs.stock || 0), 0);
-          }
-          return product.stock ?? 0;
-        };
-        const aStock = getTotalStock(a);
-        const bStock = getTotalStock(b);
-        if (aStock === bStock) return 0;
-        return aStock > bStock ? direction : -direction;
-      });
+    if ('requestIdleCallback' in window) {
+      const idleId = window.requestIdleCallback(run, { timeout: 1500 });
+      return () => window.cancelIdleCallback(idleId);
     }
-
-    return cloned;
-  }, [products, sortBy]);
+    const timeoutId = window.setTimeout(run, 300);
+    return () => window.clearTimeout(timeoutId);
+  }, [page, meta, loading, refreshing, prefetchListPage]);
 
   const categoryTitleById = useMemo(() => {
     const map = new Map<string, string>();
@@ -362,9 +357,7 @@ function ProductsPageContent() {
     fetchProducts,
     selectedIds,
     setSelectedIds,
-    setPage,
     setBulkDeleting,
-    setTogglingAllFeatured,
     setDeletingIds,
     setUpdatingPublishedIds,
     setUpdatingFeaturedIds,
@@ -373,25 +366,39 @@ function ProductsPageContent() {
   const handleClearFilters = () => {
     setSearch('');
     setSelectedCategories(new Set());
-    setSkuSearch('');
     setStockFilter('all');
+    setPublishedFilter('all');
     setPage(1);
   };
 
   const closeProductEditor = useCallback(() => {
-    router.replace('/supersudo/products', { scroll: false });
+    setOptimisticSheet({ open: false, productId: null });
+    startTransition(() => {
+      router.replace('/supersudo/products', { scroll: false });
+    });
   }, [router]);
 
   const openCreateProduct = useCallback(() => {
-    router.replace('/supersudo/products?create=1', { scroll: false });
+    setEditorMounted(true);
+    setOptimisticSheet({ open: true, productId: null });
+    startTransition(() => {
+      router.replace('/supersudo/products?create=1', { scroll: false });
+    });
   }, [router]);
 
-  const openEditProduct = useCallback(
-    (productId: string) => {
+  const openEditProduct = useCallback((productId: string) => {
+    setEditorMounted(true);
+    setOptimisticSheet({ open: true, productId });
+    startTransition(() => {
       router.replace(`/supersudo/products?edit=${productId}`, { scroll: false });
-    },
-    [router],
-  );
+    });
+  }, [router]);
+
+  useEffect(() => {
+    if (!editParam && !createParam && optimisticSheet.open) {
+      setOptimisticSheet({ open: false, productId: null });
+    }
+  }, [editParam, createParam, optimisticSheet.open]);
 
   const handleProductSaved = () => {
     closeProductEditor();
@@ -413,15 +420,6 @@ function ProductsPageContent() {
       title={t('admin.products.title')}
       headerActions={
         <div className="flex flex-wrap items-center justify-end gap-2">
-          {(search || selectedCategories.size > 0 || skuSearch || stockFilter !== 'all') ? (
-            <button
-              type="button"
-              onClick={handleClearFilters}
-              className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-600 transition-colors hover:border-slate-300 hover:text-slate-900"
-            >
-              {t('admin.products.clearAll')}
-            </button>
-          ) : null}
           <button
             type="button"
             onClick={openCreateProduct}
@@ -438,22 +436,15 @@ function ProductsPageContent() {
       <ProductFilters
         search={search}
         setSearch={setSearch}
-        skuSearch={skuSearch}
-        setSkuSearch={setSkuSearch}
         selectedCategories={selectedCategories}
         setSelectedCategories={setSelectedCategories}
         categories={categories}
         categoriesLoading={categoriesLoading}
-        categoriesExpanded={categoriesExpanded}
-        setCategoriesExpanded={setCategoriesExpanded}
         stockFilter={stockFilter}
         setStockFilter={setStockFilter}
-        minPrice={minPrice}
-        setMinPrice={setMinPrice}
-        maxPrice={maxPrice}
-        setMaxPrice={setMaxPrice}
-        handleSearch={handlers.handleSearch}
-        handleClearFilters={handleClearFilters}
+        publishedFilter={publishedFilter}
+        setPublishedFilter={setPublishedFilter}
+        onClearFilters={handleClearFilters}
         setPage={setPage}
       />
 
@@ -470,7 +461,7 @@ function ProductsPageContent() {
 
       <ProductsTable
         loading={loading}
-        sortedProducts={sortedProducts}
+        refreshing={refreshing}
         products={products}
         selectedIds={selectedIds}
         toggleSelect={handlers.toggleSelect}
@@ -492,13 +483,15 @@ function ProductsPageContent() {
         onEditProduct={openEditProduct}
       />
 
-      <ProductEditorSheet
-        open={sheetOpen}
-        productId={sheetProductId}
-        listProduct={editingListProduct}
-        onClose={closeProductEditor}
-        onSaved={handleProductSaved}
-      />
+      {editorMounted ? (
+        <ProductEditorSheet
+          open={sheetOpen}
+          productId={sheetProductId}
+          listProduct={editingListProduct}
+          onClose={closeProductEditor}
+          onSaved={handleProductSaved}
+        />
+      ) : null}
     </AdminPageLayout>
   );
 }

@@ -9,10 +9,11 @@ export interface ProductFilters {
   category?: string;
   categories?: string[];
   brand?: string[];
-  sku?: string;
+  published?: boolean;
   minPrice?: number;
   maxPrice?: number;
   sort?: string;
+  stock?: "all" | "inStock" | "outOfStock";
 }
 
 

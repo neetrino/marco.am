@@ -10,14 +10,6 @@ interface ProductCatalogTabProps {
   categoryIds: string[];
   primaryCategoryId: string;
   brandIds: string[];
-  useNewCategory: boolean;
-  useNewBrand: boolean;
-  newCategoryName: string;
-  newBrandName: string;
-  onUseNewCategoryChange: (use: boolean) => void;
-  onUseNewBrandChange: (use: boolean) => void;
-  onNewCategoryNameChange: (name: string) => void;
-  onNewBrandNameChange: (name: string) => void;
   onCategoryIdsChange: (ids: string[]) => void;
   onBrandIdsChange: (ids: string[]) => void;
   onPrimaryCategoryIdChange: (id: string) => void;
@@ -25,31 +17,47 @@ interface ProductCatalogTabProps {
   onVariantsUpdate: (updater: (prev: Variant[]) => Variant[]) => void;
 }
 
+function CatalogColumnDivider() {
+  return (
+    <>
+      <div
+        className="mx-5 h-px shrink-0 bg-gradient-to-r from-transparent via-slate-200/90 to-transparent lg:hidden"
+        aria-hidden
+      />
+      <div
+        className="hidden w-8 shrink-0 items-stretch justify-center py-4 lg:flex"
+        aria-hidden
+      >
+        <div className="w-px bg-gradient-to-b from-transparent via-slate-300/70 to-transparent" />
+      </div>
+    </>
+  );
+}
+
 export function ProductCatalogTab(props: ProductCatalogTabProps) {
   return (
-    <div className="w-full min-w-0 space-y-6">
-      <CatalogCategorySection
-        categories={props.categories}
-        categoryIds={props.categoryIds}
-        primaryCategoryId={props.primaryCategoryId}
-        useNewCategory={props.useNewCategory}
-        newCategoryName={props.newCategoryName}
-        onUseNewCategoryChange={props.onUseNewCategoryChange}
-        onNewCategoryNameChange={props.onNewCategoryNameChange}
-        onCategoryIdsChange={props.onCategoryIdsChange}
-        onPrimaryCategoryIdChange={props.onPrimaryCategoryIdChange}
-        isClothingCategory={props.isClothingCategory}
-        onVariantsUpdate={props.onVariantsUpdate}
-      />
-      <CatalogBrandSection
-        brands={props.brands}
-        brandIds={props.brandIds}
-        useNewBrand={props.useNewBrand}
-        newBrandName={props.newBrandName}
-        onUseNewBrandChange={props.onUseNewBrandChange}
-        onNewBrandNameChange={props.onNewBrandNameChange}
-        onBrandIdsChange={props.onBrandIdsChange}
-      />
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-slate-200/80 bg-white lg:flex-row">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col px-5 py-4">
+        <CatalogCategorySection
+          categories={props.categories}
+          categoryIds={props.categoryIds}
+          primaryCategoryId={props.primaryCategoryId}
+          onCategoryIdsChange={props.onCategoryIdsChange}
+          onPrimaryCategoryIdChange={props.onPrimaryCategoryIdChange}
+          isClothingCategory={props.isClothingCategory}
+          onVariantsUpdate={props.onVariantsUpdate}
+        />
+      </div>
+
+      <CatalogColumnDivider />
+
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col px-5 py-4">
+        <CatalogBrandSection
+          brands={props.brands}
+          brandIds={props.brandIds}
+          onBrandIdsChange={props.onBrandIdsChange}
+        />
+      </div>
     </div>
   );
 }

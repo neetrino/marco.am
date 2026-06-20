@@ -5,11 +5,13 @@ import { useTranslation } from '../../../../lib/i18n-client';
 import { AdminTablePagination } from '../../components/AdminTablePagination';
 import { formatCatalogPrice, type CurrencyCode } from '../../../../lib/currency';
 import { FeaturedStarToggle } from '../add/components/FeaturedStarToggle';
+import { warmProductEditorRowSections } from '@/lib/admin/product-editor-section-cache';
+import { AdminProductListImage, AdminProductListImagePlaceholder } from './AdminProductListImage';
 import type { Product, ProductsResponse } from '../types';
 
 interface ProductsTableProps {
   loading: boolean;
-  sortedProducts: Product[];
+  refreshing?: boolean;
   products: Product[];
   selectedIds: Set<string>;
   toggleSelect: (id: string) => void;
@@ -31,22 +33,9 @@ interface ProductsTableProps {
   onEditProduct: (productId: string) => void;
 }
 
-/**
- * Helper function to process image URLs
- * Handles relative paths, absolute URLs and base64
- */
-const processImageUrl = (url: string | null) => {
-  if (!url) return '';
-  if (url.startsWith('data:') || url.startsWith('http://') || url.startsWith('https://')) {
-    return url;
-  }
-  // For relative paths, ensure they start with a slash
-  return url.startsWith('/') ? url : `/${url}`;
-};
-
 export function ProductsTable({
   loading,
-  sortedProducts,
+  refreshing = false,
   products,
   selectedIds,
   toggleSelect,
@@ -68,18 +57,23 @@ export function ProductsTable({
   onEditProduct,
 }: ProductsTableProps) {
   const { t } = useTranslation();
-  const openProductEditor = (productId: string) => {
-    onEditProduct(productId);
-  };
 
   return (
-    <Card className="admin-table-card overflow-hidden rounded-2xl border-slate-200/80 shadow-md shadow-slate-200/60">
+    <Card className="admin-table-card relative overflow-hidden rounded-2xl border-slate-200/80 shadow-md shadow-slate-200/60">
+      {refreshing ? (
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0 z-10 h-0.5 overflow-hidden"
+          aria-hidden
+        >
+          <div className="route-nav-indicator-bar h-full w-1/3 rounded-full bg-marco-yellow" />
+        </div>
+      ) : null}
       {loading && products.length === 0 ? (
         <div className="p-8 text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
           <p className="text-gray-600">{t('admin.products.loadingProducts')}</p>
         </div>
-      ) : sortedProducts.length === 0 ? (
+      ) : products.length === 0 ? (
         <div className="p-8 text-center">
           <p className="text-gray-600">{t('admin.products.noProducts')}</p>
         </div>
@@ -253,15 +247,16 @@ export function ProductsTable({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200 bg-white">
-                {sortedProducts.map((product) => (
+                {products.map((product) => (
                   <tr
                     key={product.id}
                     className="group cursor-pointer transition-colors hover:bg-amber-50/50"
-                    onClick={() => openProductEditor(product.id)}
+                    onMouseDown={() => warmProductEditorRowSections(product.id)}
+                    onClick={() => onEditProduct(product.id)}
                     onKeyDown={(event) => {
                       if (event.key === 'Enter' || event.key === ' ') {
                         event.preventDefault();
-                        openProductEditor(product.id);
+                        onEditProduct(product.id);
                       }
                     }}
                     tabIndex={0}
@@ -278,12 +273,10 @@ export function ProductsTable({
                     </td>
                     <td className="max-w-xs py-3 pl-6 pr-3 align-middle">
                       <div className="flex items-center gap-2.5">
-                        {product.image && (
-                          <img
-                            src={processImageUrl(product.image)}
-                            alt={product.title}
-                            className="h-10 w-10 shrink-0 rounded-lg border border-slate-200 object-cover shadow-sm"
-                          />
+                        {product.image ? (
+                          <AdminProductListImage src={product.image} alt={product.title} />
+                        ) : (
+                          <AdminProductListImagePlaceholder />
                         )}
                         <div className="min-w-0 flex-1">
                           <div className="whitespace-normal break-words text-sm font-semibold text-slate-900 transition-colors group-hover:text-amber-900">
@@ -371,7 +364,7 @@ export function ProductsTable({
                           type="button"
                           onClick={(event) => {
                             event.stopPropagation();
-                            openProductEditor(product.id);
+                            onEditProduct(product.id);
                           }}
                           aria-label={t('admin.products.edit')}
                           className="!h-8 !min-h-8 !w-8 !max-w-none shrink-0 !px-0 !py-0 gap-0 rounded-md border border-transparent text-slate-700 hover:border-slate-200 hover:bg-slate-100 hover:text-slate-900"

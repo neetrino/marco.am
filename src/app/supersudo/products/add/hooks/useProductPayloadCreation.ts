@@ -6,6 +6,7 @@ import type { ProductDescriptionEntry } from '@/lib/products/product-description
 import { t as translateByLocale } from '@/lib/i18n';
 import { getStoredLanguage } from '@/lib/language';
 import { logger } from "@/lib/utils/logger";
+import { invalidateProductEditorSectionCaches } from '@/lib/admin/product-editor-section-cache';
 
 interface CreateAndSubmitPayloadProps {
   formData: {
@@ -98,6 +99,7 @@ export async function createAndSubmitPayload({
     try {
       if (isEditMode && productId) {
         const product = await apiClient.put(`/api/v1/supersudo/products/${productId}`, payload);
+        invalidateProductEditorSectionCaches(productId);
         logger.devLog('✅ [ADMIN] Product updated:', product);
         const baseMessage = mt('admin.products.add.productUpdatedSuccess');
         const extra = creationMessages.length ? `\n\n${creationMessages.join('\n')}` : '';

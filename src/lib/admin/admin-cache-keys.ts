@@ -17,9 +17,7 @@ type AdminProductsListCacheInput = {
   lang: string;
   search?: string;
   category?: string;
-  sku?: string;
-  minPrice?: string;
-  maxPrice?: string;
+  published?: string;
   sort?: string;
   stockFilter?: 'all' | 'inStock' | 'outOfStock';
 };
@@ -32,10 +30,8 @@ export function buildAdminProductsListCacheKey(input: AdminProductsListCacheInpu
     lang: input.lang,
     search: input.search?.trim() ?? '',
     category: input.category ?? '',
-    sku: input.sku?.trim() ?? '',
-    minPrice: input.minPrice?.trim() ?? '',
-    maxPrice: input.maxPrice?.trim() ?? '',
-    sort: input.sort?.startsWith('createdAt') ? input.sort : '',
+    published: input.published ?? '',
+    sort: input.sort ?? '',
   };
   if (input.stockFilter && input.stockFilter !== 'all') {
     params.stockFilter = input.stockFilter;
@@ -193,6 +189,10 @@ export function buildAnalyticsRequestParams(input: AnalyticsCacheInput): Record<
     params.endDate = input.endDate;
   }
   return params;
+}
+
+export function buildProductEditorSectionCacheKey(productId: string, section: string): string {
+  return `product-editor/${productId}/${section}`;
 }
 
 export const ADMIN_CACHE_KEYS = {

@@ -1,42 +1,9 @@
 import type { Category } from '../types';
 
-type CategoryTreeNode = Category & { children: CategoryTreeNode[] };
+export type CategoryTreeNode = Category & { children: CategoryTreeNode[] };
 
-type FlatCategoryNode = CategoryTreeNode & {
-  isSubcategory: boolean;
-  depth: number;
-  depthClass: string;
-};
-
-function depthPaddingClass(depth: number): string {
-  if (depth <= 0) return '';
-  if (depth === 1) return 'pl-5';
-  if (depth === 2) return 'pl-9';
-  if (depth === 3) return 'pl-12';
-  return 'pl-14';
-}
-
-function flattenTree(
-  nodes: CategoryTreeNode[],
-  depth = 0,
-  result: FlatCategoryNode[] = [],
-): FlatCategoryNode[] {
-  for (const node of nodes) {
-    result.push({
-      ...node,
-      isSubcategory: depth > 0,
-      depth,
-      depthClass: depthPaddingClass(depth),
-    });
-    if (node.children.length > 0) {
-      flattenTree(node.children, depth + 1, result);
-    }
-  }
-  return result;
-}
-
-/** Builds a flat, depth-indented category list for the catalog picker. */
-export function buildFlatCategoryTree(categories: Category[]): FlatCategoryNode[] {
+/** Builds nested category tree (roots with children arrays). */
+export function buildCategoryTreeNodes(categories: Category[]): CategoryTreeNode[] {
   const categoryMap = new Map<string, CategoryTreeNode>();
   const rootCategories: CategoryTreeNode[] = [];
 
@@ -45,12 +12,67 @@ export function buildFlatCategoryTree(categories: Category[]): FlatCategoryNode[
   });
 
   categories.forEach((category) => {
+    const node = categoryMap.get(category.id)!;
     if (category.parentId && categoryMap.has(category.parentId)) {
-      categoryMap.get(category.parentId)!.children.push(categoryMap.get(category.id)!);
+      categoryMap.get(category.parentId)!.children.push(node);
     } else {
-      rootCategories.push(categoryMap.get(category.id)!);
+      rootCategories.push(node);
     }
   });
 
-  return flattenTree(rootCategories);
+  return rootCategories;
 }
+
+const INDENT_PER_LEVEL_PX = 16;
+
+export function getCategoryNodeTitle(
+  node: CategoryTreeNode,
+  getLabel?: (category: Category) => string,
+): string {
+  return getLabel ? getLabel(node) : node.title;
+}
+
+export function categoryNodeTitleMatches(
+  node: CategoryTreeNode,
+  query: string,
+  getLabel?: (category: Category) => string,
+): boolean {
+  return getCategoryNodeTitle(node, getLabel).toLowerCase().includes(query);
+}
+
+export function categorySubtreeHasMatch(
+  node: CategoryTreeNode,
+  query: string,
+  getLabel?: (category: Category) => string,
+): boolean {
+  if (categoryNodeTitleMatches(node, query, getLabel)) {
+    return true;
+  }
+  return node.children.some((child) => categorySubtreeHasMatch(child, query, getLabel));
+}
+
+/** Collect category IDs that must be expanded so search matches stay visible. */
+export function collectCategorySearchExpandedIds(
+  nodes: CategoryTreeNode[],
+  query: string,
+  getLabel?: (category: Category) => string,
+): Set<string> {
+  const expanded = new Set<string>();
+
+  const walk = (node: CategoryTreeNode): boolean => {
+    const childMatches = node.children.map((child) => walk(child));
+    const hasMatchingChild = childMatches.some(Boolean);
+    const selfMatches = categoryNodeTitleMatches(node, query, getLabel);
+
+    if (hasMatchingChild && node.children.length > 0) {
+      expanded.add(node.id);
+    }
+
+    return selfMatches || hasMatchingChild;
+  };
+
+  nodes.forEach((node) => walk(node));
+  return expanded;
+}
+
+export { INDENT_PER_LEVEL_PX };

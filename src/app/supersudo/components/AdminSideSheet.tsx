@@ -19,6 +19,7 @@ interface AdminSideSheetProps {
   children: ReactNode;
   panelClassName?: string;
   closeOutsideClassName?: string;
+  headerClassName?: string;
 }
 
 /**
@@ -34,6 +35,7 @@ export function AdminSideSheet({
   children,
   panelClassName = ADMIN_SIDE_SHEET_PANEL_CLASS,
   closeOutsideClassName = ADMIN_SIDE_SHEET_CLOSE_OUTSIDE_CLASS,
+  headerClassName = 'shrink-0 border-b border-slate-200/80 px-5 py-3 dark:border-white/10',
 }: AdminSideSheetProps) {
   const handleClose = useCallback(() => {
     onClose();
@@ -87,7 +89,7 @@ export function AdminSideSheet({
         aria-modal="true"
         aria-label={ariaLabel}
       >
-        <header className="shrink-0 border-b border-slate-200/80 px-5 py-3 dark:border-white/10">
+        <header className={headerClassName}>
           {header}
         </header>
         <div className="flex min-h-0 flex-1 flex-col">{children}</div>

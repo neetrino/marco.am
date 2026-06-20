@@ -25,6 +25,7 @@ import { ProductDescriptionTab } from './ProductDescriptionTab';
 import { ProductImages } from './ProductImages';
 import { ProductCatalogTab } from './ProductCatalogTab';
 import { PricingInventorySection } from './PricingInventorySection';
+import { ProductEditorTabSkeleton } from './ProductEditorTabSkeleton';
 
 interface AddProductFormContentProps {
   formId: string;
@@ -63,10 +64,6 @@ interface AddProductFormContentProps {
   isEditMode: boolean;
   imageUploadLoading: boolean;
   imageUploadError: string | null;
-  useNewCategory: boolean;
-  useNewBrand: boolean;
-  newCategoryName: string;
-  newBrandName: string;
   selectedAttributesForVariants: Set<string>;
   selectedAttributeValueIds: Record<string, string[]>;
   attributesDropdownOpen: boolean;
@@ -80,10 +77,6 @@ interface AddProductFormContentProps {
   onUploadImages: (event: ChangeEvent<HTMLInputElement>) => Promise<void>;
   onRemoveImage: (index: number) => void;
   onSetFeaturedImage: (index: number) => void;
-  onUseNewCategoryChange: (use: boolean) => void;
-  onUseNewBrandChange: (use: boolean) => void;
-  onNewCategoryNameChange: (name: string) => void;
-  onNewBrandNameChange: (name: string) => void;
   onCategoryIdsChange: (ids: string[]) => void;
   onBrandIdsChange: (ids: string[]) => void;
   onPrimaryCategoryIdChange: (id: string) => void;
@@ -115,22 +108,38 @@ function TabPanel({
   tabId,
   activeTab,
   visited,
+  fillHeight = false,
+  isLoading = false,
   children,
 }: {
   tabId: ProductEditorTabId;
   activeTab: ProductEditorTabId;
   visited: boolean;
+  fillHeight?: boolean;
+  isLoading?: boolean;
   children: React.ReactNode;
 }) {
   if (!visited) {
     return null;
   }
 
+  const isActive = activeTab === tabId;
+
   return (
-    <div role="tabpanel" hidden={activeTab !== tabId} className={`w-full min-w-0 ${activeTab === tabId ? '' : 'hidden'}`}>
-      {children}
+    <div
+      role="tabpanel"
+      hidden={!isActive}
+      className={`w-full min-w-0 ${fillHeight ? 'flex min-h-0 flex-1 flex-col' : ''} ${isActive ? '' : 'hidden'}`}
+    >
+      {isLoading && isActive ? <ProductEditorTabSkeleton tabId={tabId} /> : children}
     </div>
   );
+}
+
+const FULL_HEIGHT_TABS: ProductEditorTabId[] = ['general', 'description', 'catalog'];
+
+function isFullHeightTab(tab: ProductEditorTabId): boolean {
+  return FULL_HEIGHT_TABS.includes(tab);
 }
 
 export function AddProductFormContent({
@@ -151,10 +160,6 @@ export function AddProductFormContent({
   isEditMode,
   imageUploadLoading,
   imageUploadError,
-  useNewCategory,
-  useNewBrand,
-  newCategoryName,
-  newBrandName,
   selectedAttributesForVariants,
   selectedAttributeValueIds,
   attributesDropdownOpen,
@@ -168,10 +173,6 @@ export function AddProductFormContent({
   onUploadImages,
   onRemoveImage,
   onSetFeaturedImage,
-  onUseNewCategoryChange,
-  onUseNewBrandChange,
-  onNewCategoryNameChange,
-  onNewBrandNameChange,
   onCategoryIdsChange,
   onBrandIdsChange,
   onPrimaryCategoryIdChange,
@@ -216,6 +217,8 @@ export function AddProductFormContent({
       ? formData.warrantyYears
       : null;
 
+  const fullHeightActive = isFullHeightTab(activeTab);
+
   return (
     <div className="flex min-h-0 flex-1 flex-col md:flex-row">
       <AdminVerticalTabs
@@ -227,17 +230,23 @@ export function AddProductFormContent({
 
       <div
         ref={scrollRef}
-        onScroll={onBodyScroll}
-        className="min-h-0 flex-1 overflow-y-auto px-5 py-4"
+        onScroll={fullHeightActive ? undefined : onBodyScroll}
+        className={`min-h-0 flex-1 px-5 py-4 ${
+          fullHeightActive ? 'flex flex-col overflow-hidden' : 'overflow-y-auto'
+        }`}
       >
-        {loadingTab === activeTab ? (
-          <div className="flex items-center justify-center py-16">
-            <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-gray-900" />
-          </div>
-        ) : null}
-
-        <form id={formId} onSubmit={handleSubmit} className={`w-full min-w-0 ${loadingTab === activeTab ? 'hidden' : ''}`}>
-          <TabPanel tabId="general" activeTab={activeTab} visited={visitedTabs.has('general')}>
+        <form
+          id={formId}
+          onSubmit={handleSubmit}
+          className={`w-full min-w-0 ${fullHeightActive ? 'flex min-h-0 flex-1 flex-col' : ''}`}
+        >
+          <TabPanel
+            tabId="general"
+            activeTab={activeTab}
+            visited={visitedTabs.has('general')}
+            fillHeight
+            isLoading={loadingTab === 'general'}
+          >
             <ProductGeneralTab
               productClass={formData.productClass}
               warrantyYears={warrantyYears}
@@ -250,14 +259,25 @@ export function AddProductFormContent({
             />
           </TabPanel>
 
-          <TabPanel tabId="description" activeTab={activeTab} visited={visitedTabs.has('description')}>
+          <TabPanel
+            tabId="description"
+            activeTab={activeTab}
+            visited={visitedTabs.has('description')}
+            fillHeight
+            isLoading={loadingTab === 'description'}
+          >
             <ProductDescriptionTab
               description={formData.description}
               onDescriptionChange={onDescriptionChange}
             />
           </TabPanel>
 
-          <TabPanel tabId="media" activeTab={activeTab} visited={visitedTabs.has('media')}>
+          <TabPanel
+            tabId="media"
+            activeTab={activeTab}
+            visited={visitedTabs.has('media')}
+            isLoading={loadingTab === 'media'}
+          >
             <ProductImages
               imageUrls={formData.imageUrls}
               featuredImageIndex={formData.featuredImageIndex}
@@ -270,21 +290,19 @@ export function AddProductFormContent({
             />
           </TabPanel>
 
-          <TabPanel tabId="catalog" activeTab={activeTab} visited={visitedTabs.has('catalog')}>
+          <TabPanel
+            tabId="catalog"
+            activeTab={activeTab}
+            visited={visitedTabs.has('catalog')}
+            fillHeight
+            isLoading={loadingTab === 'catalog'}
+          >
             <ProductCatalogTab
               categories={categories}
               brands={brands}
               categoryIds={formData.categoryIds}
               primaryCategoryId={formData.primaryCategoryId}
               brandIds={formData.brandIds}
-              useNewCategory={useNewCategory}
-              useNewBrand={useNewBrand}
-              newCategoryName={newCategoryName}
-              newBrandName={newBrandName}
-              onUseNewCategoryChange={onUseNewCategoryChange}
-              onUseNewBrandChange={onUseNewBrandChange}
-              onNewCategoryNameChange={onNewCategoryNameChange}
-              onNewBrandNameChange={onNewBrandNameChange}
               onCategoryIdsChange={onCategoryIdsChange}
               onBrandIdsChange={onBrandIdsChange}
               onPrimaryCategoryIdChange={onPrimaryCategoryIdChange}
@@ -293,7 +311,12 @@ export function AddProductFormContent({
             />
           </TabPanel>
 
-          <TabPanel tabId="pricing" activeTab={activeTab} visited={visitedTabs.has('pricing')}>
+          <TabPanel
+            tabId="pricing"
+            activeTab={activeTab}
+            visited={visitedTabs.has('pricing')}
+            isLoading={loadingTab === 'pricing'}
+          >
             <PricingInventorySection
               productType={productType}
               onProductTypeChange={onProductTypeChange}

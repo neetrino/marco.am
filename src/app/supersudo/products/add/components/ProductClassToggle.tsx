@@ -24,6 +24,7 @@ export function ProductClassToggle({ productClass, onChange }: ProductClassToggl
       onChange={onChange}
       ariaLabel={t('admin.products.add.productClassLabel')}
       columnsClass="grid-cols-2"
+      size="compact"
     />
   );
 }

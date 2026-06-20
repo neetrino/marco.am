@@ -125,20 +125,9 @@ function applyMediaSection({ product, setFormData }: ApplyMediaParams): void {
 interface ApplyCatalogParams {
   product: ProductData;
   setFormData: (updater: (prev: AddProductFormState) => AddProductFormState) => void;
-  setUseNewBrand: (use: boolean) => void;
-  setUseNewCategory: (use: boolean) => void;
-  setNewBrandName: (name: string) => void;
-  setNewCategoryName: (name: string) => void;
 }
 
-function applyCatalogSection({
-  product,
-  setFormData,
-  setUseNewBrand,
-  setUseNewCategory,
-  setNewBrandName,
-  setNewCategoryName,
-}: ApplyCatalogParams): void {
+function applyCatalogSection({ product, setFormData }: ApplyCatalogParams): void {
   const brandIds = product.brandId ? [product.brandId] : [];
 
   setFormData((prev) => ({
@@ -147,11 +136,6 @@ function applyCatalogSection({
     primaryCategoryId: product.primaryCategoryId || '',
     categoryIds: product.categoryIds || [],
   }));
-
-  setUseNewBrand(false);
-  setUseNewCategory(false);
-  setNewBrandName('');
-  setNewCategoryName('');
 }
 
 interface ApplyPricingParams {
@@ -334,10 +318,6 @@ export function applyProductEditorSection(
       applyCatalogSection({
         product,
         setFormData: handlers.setFormData,
-        setUseNewBrand: handlers.setUseNewBrand,
-        setUseNewCategory: handlers.setUseNewCategory,
-        setNewBrandName: handlers.setNewBrandName,
-        setNewCategoryName: handlers.setNewCategoryName,
       });
       break;
     case 'pricing':

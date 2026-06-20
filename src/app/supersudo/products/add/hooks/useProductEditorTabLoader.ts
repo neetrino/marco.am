@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { apiClient } from '@/lib/api-client';
 import { useTranslation } from '@/lib/i18n-client';
 import type { ProductEditorSection } from '../product-editor-tabs';
 import type { CurrencyCode } from '@/lib/currency';
@@ -10,13 +9,38 @@ import {
   PRODUCT_EDITOR_DEFAULT_TAB,
   type ProductEditorTabId,
 } from '../product-editor-tabs';
-import type { ProductData, Attribute } from '../types';
+import type { Attribute } from '../types';
 import type { AddProductFormState } from '../utils/productFormDataBuilder';
 import {
   applyGeneralSectionFromListProduct,
   applyProductEditorSection,
 } from '../utils/product-editor-section-apply';
+import {
+  fetchProductEditorSection,
+  readProductEditorSectionCache,
+  warmProductEditorReferenceData,
+} from '@/lib/admin/product-editor-section-cache';
 import { logger } from '@/lib/utils/logger';
+
+const BACKGROUND_SECTIONS: ProductEditorSection[] = ['description', 'catalog', 'media'];
+
+function deferAfterPaint(callback: () => void): void {
+  if (typeof window === 'undefined') {
+    callback();
+    return;
+  }
+  requestAnimationFrame(() => {
+    requestAnimationFrame(callback);
+  });
+}
+
+function scheduleIdleWork(callback: () => void): void {
+  if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+    window.requestIdleCallback(callback, { timeout: 2500 });
+  } else {
+    window.setTimeout(callback, 400);
+  }
+}
 
 interface UseProductEditorTabLoaderParams {
   open: boolean;
@@ -28,10 +52,6 @@ interface UseProductEditorTabLoaderParams {
   defaultCurrency: CurrencyCode;
   attributes: Attribute[];
   setFormData: (updater: (prev: AddProductFormState) => AddProductFormState) => void;
-  setUseNewBrand: (use: boolean) => void;
-  setUseNewCategory: (use: boolean) => void;
-  setNewBrandName: (name: string) => void;
-  setNewCategoryName: (name: string) => void;
   setHasVariantsToLoad: (has: boolean) => void;
   setProductType: (type: 'simple' | 'variable') => void;
   setSimpleProductData: (data: {
@@ -45,6 +65,7 @@ interface UseProductEditorTabLoaderParams {
 
 interface LoadSectionOptions {
   silent?: boolean;
+  force?: boolean;
 }
 
 export function useProductEditorTabLoader({
@@ -57,10 +78,6 @@ export function useProductEditorTabLoader({
   defaultCurrency,
   attributes,
   setFormData,
-  setUseNewBrand,
-  setUseNewCategory,
-  setNewBrandName,
-  setNewCategoryName,
   setHasVariantsToLoad,
   setProductType,
   setSimpleProductData,
@@ -74,12 +91,65 @@ export function useProductEditorTabLoader({
   const [loadingTab, setLoadingTab] = useState<ProductEditorTabId | null>(null);
   const inFlightRef = useRef<Set<ProductEditorTabId>>(new Set());
   const generalSeededRef = useRef(false);
-  const generalBackgroundStartedRef = useRef(false);
+  const prefetchStartedRef = useRef<string | null>(null);
+  const listProductRef = useRef(listProduct);
+  listProductRef.current = listProduct;
 
   const markTabLoaded = useCallback((tabId: ProductEditorTabId) => {
-    setLoadedTabs((prev) => new Set(prev).add(tabId));
-    setVisitedTabs((prev) => new Set(prev).add(tabId));
+    setLoadedTabs((prev) => {
+      if (prev.has(tabId)) {
+        return prev;
+      }
+      return new Set(prev).add(tabId);
+    });
+    setVisitedTabs((prev) => {
+      if (prev.has(tabId)) {
+        return prev;
+      }
+      return new Set(prev).add(tabId);
+    });
   }, []);
+
+  const visitTab = useCallback((tabId: ProductEditorTabId) => {
+    setVisitedTabs((prev) => {
+      if (prev.has(tabId)) {
+        return prev;
+      }
+      return new Set(prev).add(tabId);
+    });
+  }, []);
+
+  const applyHandlers = useCallback(
+    () => ({
+      setFormData,
+      setHasVariantsToLoad,
+      setProductType,
+      setSimpleProductData,
+      defaultCurrency,
+      defaultColorLabel: t('admin.products.add.defaultColor'),
+      attributes,
+    }),
+    [
+      setFormData,
+      setHasVariantsToLoad,
+      setProductType,
+      setSimpleProductData,
+      defaultCurrency,
+      attributes,
+      t,
+    ],
+  );
+
+  useEffect(() => {
+    if (!open) {
+      generalSeededRef.current = false;
+      prefetchStartedRef.current = null;
+      inFlightRef.current.clear();
+      setLoadedTabs(new Set());
+      setVisitedTabs(new Set([PRODUCT_EDITOR_DEFAULT_TAB]));
+      setLoadingTab(null);
+    }
+  }, [open]);
 
   useLayoutEffect(() => {
     if (!open || !productId || !listProduct || generalSeededRef.current) {
@@ -90,6 +160,20 @@ export function useProductEditorTabLoader({
     applyGeneralSectionFromListProduct(listProduct, setFormData);
     markTabLoaded(PRODUCT_EDITOR_DEFAULT_TAB);
   }, [open, productId, listProduct, setFormData, markTabLoaded]);
+
+  useLayoutEffect(() => {
+    if (!open || !productId) {
+      return;
+    }
+
+    const cachedGeneral = readProductEditorSectionCache(productId, PRODUCT_EDITOR_DEFAULT_TAB);
+    if (cachedGeneral === null) {
+      return;
+    }
+
+    applyProductEditorSection(PRODUCT_EDITOR_DEFAULT_TAB, cachedGeneral, applyHandlers());
+    markTabLoaded(PRODUCT_EDITOR_DEFAULT_TAB);
+  }, [open, productId, applyHandlers, markTabLoaded]);
 
   const loadSection = useCallback(
     async (section: ProductEditorSection, options?: LoadSectionOptions) => {
@@ -102,32 +186,34 @@ export function useProductEditorTabLoader({
         return;
       }
 
+      const cached = !options?.force ? readProductEditorSectionCache(productId, section) : null;
+      const hasListSeed =
+        section === PRODUCT_EDITOR_DEFAULT_TAB && listProductRef.current !== null;
+      const showSpinner = !options?.silent && cached === null && !hasListSeed;
+
+      if (cached !== null) {
+        applyProductEditorSection(section, cached, applyHandlers());
+        markTabLoaded(section);
+      }
+
       inFlightRef.current.add(section);
-      if (!options?.silent) {
+      if (showSpinner) {
         setLoadingTab(section);
       }
 
       try {
-        logger.devLog('📥 [ADMIN] Loading product section:', { productId, section, silent: options?.silent });
-        const product = await apiClient.get<ProductData>(
-          `/api/v1/supersudo/products/${productId}`,
-          { params: { section } },
-        );
-
-        applyProductEditorSection(section, product, {
-          setFormData,
-          setUseNewBrand,
-          setUseNewCategory,
-          setNewBrandName,
-          setNewCategoryName,
-          setHasVariantsToLoad,
-          setProductType,
-          setSimpleProductData,
-          defaultCurrency,
-          defaultColorLabel: t('admin.products.add.defaultColor'),
-          attributes,
+        logger.devLog('📥 [ADMIN] Loading product section:', {
+          productId,
+          section,
+          silent: options?.silent,
+          fromCache: cached !== null,
         });
 
+        const product = await fetchProductEditorSection(productId, section, {
+          force: options?.force,
+        });
+
+        applyProductEditorSection(section, product, applyHandlers());
         markTabLoaded(section);
         logger.devLog('✅ [ADMIN] Product section loaded:', section);
       } catch (err: unknown) {
@@ -137,30 +223,52 @@ export function useProductEditorTabLoader({
         }
       } finally {
         inFlightRef.current.delete(section);
-        if (!options?.silent) {
+        if (showSpinner) {
           setLoadingTab((current) => (current === section ? null : current));
         }
       }
     },
-    [
-      productId,
-      isLoggedIn,
-      isAdmin,
-      setFormData,
-      setUseNewBrand,
-      setUseNewCategory,
-      setNewBrandName,
-      setNewCategoryName,
-      setHasVariantsToLoad,
-      setProductType,
-      setSimpleProductData,
-      defaultCurrency,
-      attributes,
-      markTabLoaded,
-      onLoadError,
-      t,
-    ],
+    [productId, isLoggedIn, isAdmin, applyHandlers, markTabLoaded, onLoadError],
   );
+
+  const loadBackgroundSections = useCallback(() => {
+    let index = 0;
+
+    const loadNext = (): void => {
+      if (index >= BACKGROUND_SECTIONS.length) {
+        window.setTimeout(() => {
+          void loadSection('pricing', { silent: true });
+        }, 150);
+        return;
+      }
+
+      const section = BACKGROUND_SECTIONS[index];
+      index += 1;
+      void loadSection(section, { silent: true }).finally(() => {
+        scheduleIdleWork(loadNext);
+      });
+    };
+
+    scheduleIdleWork(loadNext);
+  }, [loadSection]);
+
+  useEffect(() => {
+    if (!open || !productId || !isLoggedIn || !isAdmin) {
+      return;
+    }
+
+    if (prefetchStartedRef.current === productId) {
+      return;
+    }
+    prefetchStartedRef.current = productId;
+
+    deferAfterPaint(() => {
+      warmProductEditorReferenceData();
+      void loadSection(PRODUCT_EDITOR_DEFAULT_TAB, { silent: true }).finally(() => {
+        loadBackgroundSections();
+      });
+    });
+  }, [open, productId, isLoggedIn, isAdmin, loadSection, loadBackgroundSections]);
 
   useEffect(() => {
     if (!open) {
@@ -172,39 +280,23 @@ export function useProductEditorTabLoader({
       return;
     }
 
-    if (listProduct) {
-      if (!generalBackgroundStartedRef.current) {
-        generalBackgroundStartedRef.current = true;
-        void loadSection(PRODUCT_EDITOR_DEFAULT_TAB, { silent: true });
-      }
+    if (loadedTabs.has(activeTab)) {
       return;
     }
 
-    if (!loadedTabs.has(PRODUCT_EDITOR_DEFAULT_TAB)) {
-      void loadSection(PRODUCT_EDITOR_DEFAULT_TAB);
-    }
-  }, [open, productId, listProduct, loadedTabs, loadSection, markTabLoaded]);
-
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
-
-    if (!productId) {
+    const cached = readProductEditorSectionCache(productId, activeTab);
+    if (cached !== null) {
+      applyProductEditorSection(activeTab, cached, applyHandlers());
       markTabLoaded(activeTab);
       return;
     }
 
-    if (loadedTabs.has(activeTab)) {
-      setVisitedTabs((prev) => new Set(prev).add(activeTab));
-      return;
-    }
-
     void loadSection(activeTab);
-  }, [activeTab, open, productId, loadedTabs, loadSection, markTabLoaded]);
+  }, [activeTab, open, productId, loadedTabs, loadSection, markTabLoaded, applyHandlers]);
 
   return {
     visitedTabs,
     loadingTab,
+    visitTab,
   };
 }

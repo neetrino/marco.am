@@ -1,4 +1,3 @@
-import type { FormEvent } from 'react';
 import { apiClient, getApiOrErrorMessage } from '../../../../lib/api-client';
 import { useTranslation } from '../../../../lib/i18n-client';
 import { showPopupConfirm } from '@/components/popup-service';
@@ -11,9 +10,7 @@ interface UseProductHandlersProps {
   fetchProducts: (options?: { force?: boolean }) => Promise<void>;
   selectedIds: Set<string>;
   setSelectedIds: (ids: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
-  setPage: (page: number | ((prev: number) => number)) => void;
   setBulkDeleting: (deleting: boolean) => void;
-  setTogglingAllFeatured: (toggling: boolean) => void;
   setDeletingIds: (ids: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
   setUpdatingPublishedIds: (ids: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
   setUpdatingFeaturedIds: (ids: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
@@ -25,20 +22,12 @@ export function useProductHandlers({
   fetchProducts,
   selectedIds,
   setSelectedIds,
-  setPage,
   setBulkDeleting,
-  setTogglingAllFeatured,
   setDeletingIds,
   setUpdatingPublishedIds,
   setUpdatingFeaturedIds,
 }: UseProductHandlersProps) {
   const { t } = useTranslation();
-
-  const handleSearch = (e: FormEvent) => {
-    e.preventDefault();
-    setPage(1);
-    fetchProducts();
-  };
 
   const toggleSelect = (id: string) => {
     setSelectedIds(prev => {
@@ -173,49 +162,13 @@ export function useProductHandlers({
     }
   };
 
-  const handleToggleAllFeatured = async () => {
-    if (products.length === 0) return;
-
-    // Check if all products are featured
-    const allFeatured = products.every(p => p.featured);
-    const newStatus = !allFeatured;
-
-    setTogglingAllFeatured(true);
-    try {
-      const results = await Promise.allSettled(
-        products.map(product => 
-          apiClient.put(`/api/v1/supersudo/products/${product.id}`, { featured: newStatus })
-        )
-      );
-      
-      const failed = results.filter(r => r.status === 'rejected');
-      const successCount = products.length - failed.length;
-      
-      logger.devLog(`✅ [ADMIN] Toggle all featured completed: ${successCount}/${products.length} successful`);
-      
-      // Refresh products list
-      await fetchProducts({ force: true });
-      
-      if (failed.length > 0) {
-        alert(t('admin.products.featuredToggleFinished').replace('{success}', successCount.toString()).replace('{total}', products.length.toString()));
-      }
-    } catch (err) {
-      console.error('❌ [ADMIN] Toggle all featured error:', err);
-      alert(t('admin.products.failedToUpdateFeatured'));
-    } finally {
-      setTogglingAllFeatured(false);
-    }
-  };
-
   return {
-    handleSearch,
     toggleSelect,
     toggleSelectAll,
     handleBulkDelete,
     handleDeleteProduct,
     handleTogglePublished,
     handleToggleFeatured,
-    handleToggleAllFeatured,
   };
 }
 
