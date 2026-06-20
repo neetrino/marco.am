@@ -424,6 +424,7 @@
     "searchPlaceholder": "Որոնել ըստ վերնագրի, slug-ի կամ SKU-ի...",
     "searchWithFiltersPlaceholder": "Ավելացրեք որոնման տեքստ…",
     "categoriesSelectedChip": "{count} կատեգորիա",
+    "removeFilterChip": "Հեռացնել {label}",
     "searchLabel": "Որոնել ապրանքներ",
     "clearSearch": "Մաքրել որոնումը",
     "openFilters": "Բացել ֆիլտրերը",

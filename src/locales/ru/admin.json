@@ -424,6 +424,7 @@
     "searchPlaceholder": "Поиск по названию, slug или SKU...",
     "searchWithFiltersPlaceholder": "Добавить текст поиска…",
     "categoriesSelectedChip": "{count} категорий",
+    "removeFilterChip": "Убрать {label}",
     "searchLabel": "Поиск товаров",
     "clearSearch": "Очистить поиск",
     "openFilters": "Открыть фильтры",

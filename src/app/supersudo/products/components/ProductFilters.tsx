@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ListFilter, Search, Trash2 } from 'lucide-react';
+import { ListFilter, Search, Trash2, X } from 'lucide-react';
 import { useTranslation } from '../../../../lib/i18n-client';
 import { ProductCategoryFilterTree } from './ProductCategoryFilterTree';
 import type { Category } from '../types';
@@ -25,6 +25,12 @@ interface ProductFiltersProps {
 }
 
 const FILTER_PANEL_ID = 'product-filters-panel';
+
+type ActiveFilterChip = {
+  key: string;
+  label: string;
+  onRemove: () => void;
+};
 
 export function ProductFilters({
   search,
@@ -53,8 +59,8 @@ export function ProductFilters({
     return count;
   }, [selectedCategories.size, stockFilter, publishedFilter]);
 
-  const activeFilterChips = useMemo(() => {
-    const chips: Array<{ key: string; label: string }> = [];
+  const activeFilterChips = useMemo((): ActiveFilterChip[] => {
+    const chips: ActiveFilterChip[] = [];
 
     const selectedIds = Array.from(selectedCategories);
     if (selectedIds.length > 0) {
@@ -62,31 +68,82 @@ export function ProductFilters({
         selectedIds.forEach((categoryId) => {
           const category = categories.find((item) => item.id === categoryId);
           if (category) {
-            chips.push({ key: `category-${categoryId}`, label: category.title });
+            chips.push({
+              key: `category-${categoryId}`,
+              label: category.title,
+              onRemove: () => {
+                const next = new Set(selectedCategories);
+                next.delete(categoryId);
+                setSelectedCategories(next);
+                setPage(1);
+              },
+            });
           }
         });
       } else {
         chips.push({
           key: 'categories',
           label: t('admin.products.categoriesSelectedChip', { count: selectedIds.length }),
+          onRemove: () => {
+            setSelectedCategories(new Set());
+            setPage(1);
+          },
         });
       }
     }
 
     if (stockFilter === 'inStock') {
-      chips.push({ key: 'stock', label: t('admin.products.inStock') });
+      chips.push({
+        key: 'stock',
+        label: t('admin.products.inStock'),
+        onRemove: () => {
+          setStockFilter('all');
+          setPage(1);
+        },
+      });
     } else if (stockFilter === 'outOfStock') {
-      chips.push({ key: 'stock', label: t('admin.products.outOfStock') });
+      chips.push({
+        key: 'stock',
+        label: t('admin.products.outOfStock'),
+        onRemove: () => {
+          setStockFilter('all');
+          setPage(1);
+        },
+      });
     }
 
     if (publishedFilter === 'published') {
-      chips.push({ key: 'status', label: t('admin.products.published') });
+      chips.push({
+        key: 'status',
+        label: t('admin.products.published'),
+        onRemove: () => {
+          setPublishedFilter('all');
+          setPage(1);
+        },
+      });
     } else if (publishedFilter === 'unpublished') {
-      chips.push({ key: 'status', label: t('admin.products.draft') });
+      chips.push({
+        key: 'status',
+        label: t('admin.products.draft'),
+        onRemove: () => {
+          setPublishedFilter('all');
+          setPage(1);
+        },
+      });
     }
 
     return chips;
-  }, [categories, publishedFilter, selectedCategories, stockFilter, t]);
+  }, [
+    categories,
+    publishedFilter,
+    selectedCategories,
+    setPage,
+    setPublishedFilter,
+    setSelectedCategories,
+    setStockFilter,
+    stockFilter,
+    t,
+  ]);
 
   const hasActiveFilters = activeFilterCount > 0;
   const hasAnythingToClear = search.length > 0 || hasActiveFilters;
@@ -148,9 +205,20 @@ export function ProductFilters({
             {activeFilterChips.map((chip) => (
               <span
                 key={chip.key}
-                className="inline-flex max-w-[11rem] items-center rounded-full border border-slate-200 bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-700"
+                className="inline-flex max-w-[13rem] items-center gap-0.5 rounded-full border border-slate-200 bg-slate-100 py-0.5 pl-2.5 pr-1 text-xs font-medium text-slate-700"
               >
                 <span className="truncate">{chip.label}</span>
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    chip.onRemove();
+                  }}
+                  className="shrink-0 rounded-full p-0.5 text-slate-400 transition-colors hover:bg-slate-200 hover:text-slate-800"
+                  aria-label={t('admin.products.removeFilterChip', { label: chip.label })}
+                >
+                  <X className="h-3 w-3" aria-hidden />
+                </button>
               </span>
             ))}
 
