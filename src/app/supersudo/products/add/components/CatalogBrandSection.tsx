@@ -8,6 +8,9 @@ import type { Brand } from '../types';
 const FIELD_CLASS =
   'admin-field w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-marco-yellow focus:outline-none focus:ring-2 focus:ring-marco-yellow/30';
 
+const CATALOG_LIST_CLASS =
+  'min-h-[24rem] max-h-[32rem] overflow-y-auto rounded-xl border border-slate-200/80 bg-slate-50/50 p-2';
+
 interface CatalogBrandSectionProps {
   brands: Brand[];
   brandIds: string[];
@@ -41,7 +44,7 @@ export function CatalogBrandSection({
   };
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
+    <section className="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
       <div className="border-b border-slate-200/70 px-4 py-4 sm:px-5 sm:py-5">
         <h3 className="text-sm font-semibold text-marco-black">{t('admin.products.add.brands')}</h3>
         <p className="mt-1 text-xs leading-relaxed text-slate-500">
@@ -49,7 +52,7 @@ export function CatalogBrandSection({
         </p>
       </div>
 
-      <div className="space-y-4 px-4 py-4 sm:px-5 sm:py-5">
+      <div className="flex flex-1 flex-col space-y-4 px-4 py-4 sm:px-5 sm:py-5">
         <div className="relative">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <input
@@ -82,7 +85,7 @@ export function CatalogBrandSection({
           </div>
         ) : null}
 
-        <div className="max-h-64 overflow-y-auto rounded-xl border border-slate-200/80 bg-slate-50/50 p-2">
+        <div className={CATALOG_LIST_CLASS}>
           {filteredBrands.length === 0 ? (
             <p className="px-2 py-6 text-center text-sm text-slate-500">
               {t('admin.products.add.catalogNoBrandsFound')}

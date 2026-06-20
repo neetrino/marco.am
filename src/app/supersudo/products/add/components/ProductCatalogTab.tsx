@@ -19,7 +19,7 @@ interface ProductCatalogTabProps {
 
 export function ProductCatalogTab(props: ProductCatalogTabProps) {
   return (
-    <div className="grid w-full min-w-0 grid-cols-1 gap-6 lg:grid-cols-2">
+    <div className="grid w-full min-w-0 grid-cols-1 items-stretch gap-6 lg:grid-cols-2">
       <CatalogCategorySection
         categories={props.categories}
         categoryIds={props.categoryIds}
