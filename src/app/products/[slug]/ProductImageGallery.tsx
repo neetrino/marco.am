@@ -21,7 +21,7 @@ interface ProductImageGalleryProps {
   onImageIndexChange: Dispatch<SetStateAction<number>>;
   thumbnailStartIndex: number;
   onThumbnailStartIndexChange: (index: number) => void;
-  /** Hint browser to decode the hero image first when only `/visual` data is available yet. */
+  /** Hint browser to decode the hero image first before the rest of the gallery. */
   mainImageHighPriority?: boolean;
 }
 

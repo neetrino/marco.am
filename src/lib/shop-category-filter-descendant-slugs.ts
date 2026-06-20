@@ -51,6 +51,41 @@ export function collectCategoryFilterExpandKeys(
   return expandKeys;
 }
 
+/**
+ * Deepest selected slug in the tree — used to scroll the sidebar to the active subcategory.
+ */
+export function findDeepestSelectedCategorySlug(
+  tree: readonly ShopCategoryFilterTreeNode[],
+  selectedSlugs: readonly string[],
+): string | null {
+  const normalizedSelected = new Set(
+    selectedSlugs.map(normalizeCategorySlug).filter(Boolean),
+  );
+  if (normalizedSelected.size === 0) {
+    return null;
+  }
+
+  let deepestSlug: string | null = null;
+  let deepestDepth = -1;
+
+  function walk(node: ShopCategoryFilterTreeNode, depth: number): void {
+    const key = normalizeCategorySlug(node.slug);
+    if (normalizedSelected.has(key) && depth > deepestDepth) {
+      deepestSlug = node.slug;
+      deepestDepth = depth;
+    }
+    for (const child of node.children ?? []) {
+      walk(child, depth + 1);
+    }
+  }
+
+  for (const root of tree) {
+    walk(root, 0);
+  }
+
+  return deepestSlug;
+}
+
 function collectNodeAndDescendantSlugs(node: ShopCategoryFilterTreeNode): string[] {
   const slugs = [node.slug.toLowerCase()];
   for (const child of node.children ?? []) {

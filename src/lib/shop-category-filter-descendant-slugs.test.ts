@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildAllowedCategorySlugs,
   collectCategoryFilterExpandKeys,
+  findDeepestSelectedCategorySlug,
   type ShopCategoryFilterTreeNode,
 } from '@/lib/shop-category-filter-descendant-slugs';
 
@@ -45,6 +46,22 @@ describe('collectCategoryFilterExpandKeys', () => {
 
   it('does not expand the selected root category itself', () => {
     expect(collectCategoryFilterExpandKeys(tree, ['furniture'])).toEqual(new Set());
+  });
+});
+
+describe('findDeepestSelectedCategorySlug', () => {
+  it('returns null when nothing is selected', () => {
+    expect(findDeepestSelectedCategorySlug(tree, [])).toBeNull();
+  });
+
+  it('returns the deepest selected slug', () => {
+    expect(findDeepestSelectedCategorySlug(tree, ['furniture', 'corner-sofas'])).toBe(
+      'corner-sofas',
+    );
+  });
+
+  it('returns a root slug when only the root is selected', () => {
+    expect(findDeepestSelectedCategorySlug(tree, ['lighting'])).toBe('lighting');
   });
 });
 
