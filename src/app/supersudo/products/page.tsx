@@ -29,6 +29,7 @@ import {
   readAdminSessionCache,
   writeAdminSessionCache,
 } from '@/lib/admin/admin-session-cache';
+import { warmProductEditorReferenceData } from '@/lib/admin/product-editor-section-cache';
 import { ProductEditorSheet } from './add/components/ProductEditorSheet';
 
 type AdminProductsCachePayload = {
@@ -74,6 +75,7 @@ function ProductsPageContent() {
   const hadCategoriesCacheRef = useRef(cachedCategories !== null);
   const [products, setProducts] = useState<Product[]>(defaultProductsCache?.data ?? []);
   const [loading, setLoading] = useState(defaultProductsCache === null);
+  const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
   const [categories, setCategories] = useState<Category[]>(cachedCategories ?? []);
@@ -151,19 +153,88 @@ function ProductsPageContent() {
      
   }, [page, search, selectedCategories, stockFilter, publishedFilter, sortBy, activeLocale]);
 
-  const fetchProducts = async (options?: { force?: boolean }) => {
-    const publishedParam =
-      publishedFilter === 'published' ? 'true' : publishedFilter === 'unpublished' ? 'false' : '';
+  // Warm product-editor reference data (brands/categories/attributes/settings)
+  // on idle so the first product sheet opens without extra round-trips.
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    if ('requestIdleCallback' in window) {
+      const idleId = window.requestIdleCallback(() => warmProductEditorReferenceData(), {
+        timeout: 2500,
+      });
+      return () => window.cancelIdleCallback(idleId);
+    }
+    const timeoutId = window.setTimeout(() => warmProductEditorReferenceData(), 600);
+    return () => window.clearTimeout(timeoutId);
+  }, []);
 
-    const cacheKey = buildAdminProductsListCacheKey({
-      page,
-      lang: activeLocale,
-      search,
-      category: selectedCategories.size > 0 ? Array.from(selectedCategories).join(',') : '',
-      published: publishedParam,
-      sort: sortBy,
-      stockFilter,
-    });
+  const buildListRequest = useCallback(
+    (targetPage: number): { cacheKey: string; params: Record<string, string> } => {
+      const publishedParam =
+        publishedFilter === 'published' ? 'true' : publishedFilter === 'unpublished' ? 'false' : '';
+
+      const cacheKey = buildAdminProductsListCacheKey({
+        page: targetPage,
+        lang: activeLocale,
+        search,
+        category: selectedCategories.size > 0 ? Array.from(selectedCategories).join(',') : '',
+        published: publishedParam,
+        sort: sortBy,
+        stockFilter,
+      });
+
+      const params: Record<string, string> = {
+        page: targetPage.toString(),
+        limit: '20',
+        lang: activeLocale,
+      };
+      if (search.trim()) {
+        params.search = search.trim();
+      }
+      if (selectedCategories.size > 0) {
+        params.category = Array.from(selectedCategories).join(',');
+      }
+      if (publishedFilter === 'published') {
+        params.published = 'true';
+      } else if (publishedFilter === 'unpublished') {
+        params.published = 'false';
+      }
+      if (stockFilter === 'inStock') {
+        params.stock = 'inStock';
+      } else if (stockFilter === 'outOfStock') {
+        params.stock = 'outOfStock';
+      }
+      if (sortBy) {
+        params.sort = sortBy;
+      }
+
+      return { cacheKey, params };
+    },
+    [activeLocale, search, selectedCategories, publishedFilter, sortBy, stockFilter],
+  );
+
+  /** Best-effort prefetch of a neighbouring page into the session cache. */
+  const prefetchListPage = useCallback(
+    async (targetPage: number): Promise<void> => {
+      const { cacheKey, params } = buildListRequest(targetPage);
+      if (readAdminSessionCache<AdminProductsCachePayload>(cacheKey, ADMIN_SESSION_CACHE_TTL_MS) !== null) {
+        return;
+      }
+      try {
+        const response = await dedupedAdminRequest(cacheKey, () =>
+          apiClient.get<ProductsResponse>('/api/v1/supersudo/products', { params }),
+        );
+        writeAdminSessionCache(cacheKey, { data: response.data || [], meta: response.meta || null });
+      } catch {
+        // Prefetch is best-effort; the real fetch will surface any error.
+      }
+    },
+    [buildListRequest],
+  );
+
+  const fetchProducts = async (options?: { force?: boolean }) => {
+    const { cacheKey, params } = buildListRequest(page);
     const cached = readAdminSessionCache<AdminProductsCachePayload>(cacheKey, ADMIN_SESSION_CACHE_TTL_MS);
     if (!options?.force && cached !== null) {
       setProducts(cached.data ?? []);
@@ -173,44 +244,16 @@ function ProductsPageContent() {
       return;
     }
 
-    if (cached === null) {
+    // Stale-while-revalidate: keep current rows visible during a cold fetch and
+    // surface a lightweight progress bar; only show the full spinner when empty.
+    if (products.length > 0) {
+      setRefreshing(true);
+    } else {
       setProducts([]);
       setLoading(true);
-    } else {
-      beginAdminDataFetch(true, setLoading);
     }
 
     try {
-      const params: Record<string, string> = {
-        page: page.toString(),
-        limit: '20',
-        lang: activeLocale,
-      };
-      
-      if (search.trim()) {
-        params.search = search.trim();
-      }
-
-      if (selectedCategories.size > 0) {
-        params.category = Array.from(selectedCategories).join(',');
-      }
-
-      if (publishedFilter === 'published') {
-        params.published = 'true';
-      } else if (publishedFilter === 'unpublished') {
-        params.published = 'false';
-      }
-
-      if (stockFilter === 'inStock') {
-        params.stock = 'inStock';
-      } else if (stockFilter === 'outOfStock') {
-        params.stock = 'outOfStock';
-      }
-
-      if (sortBy) {
-        params.sort = sortBy;
-      }
-
       const response = await dedupedAdminRequest(cacheKey, () =>
         apiClient.get<ProductsResponse>('/api/v1/supersudo/products', {
           params,
@@ -231,8 +274,32 @@ function ProductsPageContent() {
       alert(t('admin.products.errorLoading').replace('{message}', getApiOrErrorMessage(err, t('admin.common.unknownErrorFallback'))));
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
+
+  // Prefetch neighbouring pages on idle so paging flips instantly.
+  useEffect(() => {
+    if (loading || refreshing || !meta || typeof window === 'undefined') {
+      return;
+    }
+
+    const run = () => {
+      if (page < (meta.totalPages ?? 1)) {
+        void prefetchListPage(page + 1);
+      }
+      if (page > 1) {
+        void prefetchListPage(page - 1);
+      }
+    };
+
+    if ('requestIdleCallback' in window) {
+      const idleId = window.requestIdleCallback(run, { timeout: 1500 });
+      return () => window.cancelIdleCallback(idleId);
+    }
+    const timeoutId = window.setTimeout(run, 300);
+    return () => window.clearTimeout(timeoutId);
+  }, [page, meta, loading, refreshing, prefetchListPage]);
 
   const categoryTitleById = useMemo(() => {
     const map = new Map<string, string>();
@@ -396,6 +463,7 @@ function ProductsPageContent() {
 
       <ProductsTable
         loading={loading}
+        refreshing={refreshing}
         sortedProducts={products}
         products={products}
         selectedIds={selectedIds}

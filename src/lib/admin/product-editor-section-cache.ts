@@ -84,3 +84,14 @@ export function warmProductEditorReferenceData(): void {
 export function warmProductEditorGeneralSection(productId: string): void {
   void fetchProductEditorSection(productId, 'general');
 }
+
+/**
+ * Warm the sections a user lands on first when opening a product (general header
+ * + pricing/variants) plus shared reference data, so the sheet is interactive
+ * instantly. Triggered on pointer down — i.e. the click is already committed.
+ */
+export function warmProductEditorRowSections(productId: string): void {
+  void fetchProductEditorSection(productId, 'general');
+  void fetchProductEditorSection(productId, 'pricing');
+  warmProductEditorReferenceData();
+}

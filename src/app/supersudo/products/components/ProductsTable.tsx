@@ -5,12 +5,13 @@ import { useTranslation } from '../../../../lib/i18n-client';
 import { AdminTablePagination } from '../../components/AdminTablePagination';
 import { formatCatalogPrice, type CurrencyCode } from '../../../../lib/currency';
 import { FeaturedStarToggle } from '../add/components/FeaturedStarToggle';
-import { warmProductEditorGeneralSection } from '@/lib/admin/product-editor-section-cache';
+import { warmProductEditorRowSections } from '@/lib/admin/product-editor-section-cache';
 import { AdminProductListImage, AdminProductListImagePlaceholder } from './AdminProductListImage';
 import type { Product, ProductsResponse } from '../types';
 
 interface ProductsTableProps {
   loading: boolean;
+  refreshing?: boolean;
   sortedProducts: Product[];
   products: Product[];
   selectedIds: Set<string>;
@@ -35,6 +36,7 @@ interface ProductsTableProps {
 
 export function ProductsTable({
   loading,
+  refreshing = false,
   sortedProducts,
   products,
   selectedIds,
@@ -62,7 +64,15 @@ export function ProductsTable({
   };
 
   return (
-    <Card className="admin-table-card overflow-hidden rounded-2xl border-slate-200/80 shadow-md shadow-slate-200/60">
+    <Card className="admin-table-card relative overflow-hidden rounded-2xl border-slate-200/80 shadow-md shadow-slate-200/60">
+      {refreshing ? (
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0 z-10 h-0.5 overflow-hidden"
+          aria-hidden
+        >
+          <div className="route-nav-indicator-bar h-full w-1/3 rounded-full bg-marco-yellow" />
+        </div>
+      ) : null}
       {loading && products.length === 0 ? (
         <div className="p-8 text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
@@ -246,7 +256,7 @@ export function ProductsTable({
                   <tr
                     key={product.id}
                     className="group cursor-pointer transition-colors hover:bg-amber-50/50"
-                    onMouseDown={() => warmProductEditorGeneralSection(product.id)}
+                    onMouseDown={() => warmProductEditorRowSections(product.id)}
                     onClick={() => openProductEditor(product.id)}
                     onKeyDown={(event) => {
                       if (event.key === 'Enter' || event.key === ' ') {

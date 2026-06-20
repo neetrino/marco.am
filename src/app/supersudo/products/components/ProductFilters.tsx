@@ -25,6 +25,7 @@ interface ProductFiltersProps {
 }
 
 const FILTER_PANEL_ID = 'product-filters-panel';
+const SEARCH_DEBOUNCE_MS = 250;
 
 type ActiveFilterChip = {
   key: string;
@@ -50,6 +51,31 @@ export function ProductFilters({
   const rootRef = useRef<HTMLDivElement>(null);
   const [panelOpen, setPanelOpen] = useState(false);
   const [categorySearch, setCategorySearch] = useState('');
+  // Instant local input value; the network search is committed on a debounce so
+  // typing never triggers a request per keystroke.
+  const [inputValue, setInputValue] = useState(search);
+
+  useEffect(() => {
+    setInputValue(search);
+  }, [search]);
+
+  useEffect(() => {
+    if (inputValue === search) {
+      return;
+    }
+    const handle = window.setTimeout(() => {
+      setSearch(inputValue);
+      setPage(1);
+    }, SEARCH_DEBOUNCE_MS);
+    return () => window.clearTimeout(handle);
+  }, [inputValue, search, setSearch, setPage]);
+
+  const commitSearchNow = () => {
+    if (inputValue !== search) {
+      setSearch(inputValue);
+    }
+    setPage(1);
+  };
 
   const activeFilterCount = useMemo(() => {
     let count = 0;
@@ -146,9 +172,10 @@ export function ProductFilters({
   ]);
 
   const hasActiveFilters = activeFilterCount > 0;
-  const hasAnythingToClear = search.length > 0 || hasActiveFilters;
+  const hasAnythingToClear = inputValue.length > 0 || hasActiveFilters;
 
   const handleClearAll = () => {
+    setInputValue('');
     onClearFilters();
     setCategorySearch('');
     setPage(1);
@@ -224,16 +251,15 @@ export function ProductFilters({
 
             <input
               type="search"
-              value={search}
+              value={inputValue}
               onChange={(event) => {
-                setSearch(event.target.value);
-                setPage(1);
+                setInputValue(event.target.value);
               }}
               onFocus={openPanel}
               onKeyDown={(event) => {
                 if (event.key === 'Enter') {
                   event.preventDefault();
-                  setPage(1);
+                  commitSearchNow();
                 }
               }}
               placeholder={
