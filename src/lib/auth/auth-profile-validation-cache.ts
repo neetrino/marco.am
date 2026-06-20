@@ -1,11 +1,11 @@
 import { AUTH_USER_KEY, readStoredAuthUser } from './read-stored-auth-user';
 
 /** Session-scoped throttle for `/api/v1/users/profile` validation on client navigations. */
-export const AUTH_PROFILE_VALIDATED_AT_KEY = 'marco-auth-profile-validated-at';
+const AUTH_PROFILE_VALIDATED_AT_KEY = 'marco-auth-profile-validated-at';
 
-export const AUTH_PROFILE_VALIDATE_TTL_MS = 5 * 60 * 1000;
+const AUTH_PROFILE_VALIDATE_TTL_MS = 5 * 60 * 1000;
 
-export function readAuthProfileValidatedAt(): number | null {
+function readAuthProfileValidatedAt(): number | null {
   if (typeof sessionStorage === 'undefined') {
     return null;
   }

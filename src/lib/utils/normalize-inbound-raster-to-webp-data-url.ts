@@ -13,7 +13,7 @@ function parseDataUrl(dataUrl: string): { mime: string; buffer: Buffer } | null 
   return { mime, buffer };
 }
 
-export type ProductMediaPayloadItem = string | { url?: string; src?: string; value?: string };
+type ProductMediaPayloadItem = string | { url?: string; src?: string; value?: string };
 
 /**
  * Re-encodes admin inline raster uploads (`data:image/*;base64,...`) as WebP data URLs.

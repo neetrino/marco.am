@@ -13,7 +13,7 @@ import { ProductsShopPageTitle } from '@/components/ProductsHeader';
 import type { LanguageCode } from '@/lib/language';
 import { MOBILE_FILTERS_EVENT } from '@/lib/events';
 
-export type ProductsShopFiltersColumnProps = {
+type ProductsShopFiltersColumnProps = {
   readonly language: LanguageCode;
   readonly params: {
     category?: string;

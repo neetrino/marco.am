@@ -4,13 +4,13 @@
  */
 
 /** Hide technical-spec facets on `/products` until a category is selected. */
-export const PLP_REQUIRE_CATEGORY_FOR_ATTRIBUTE_FACETS = true;
+const PLP_REQUIRE_CATEGORY_FOR_ATTRIBUTE_FACETS = true;
 
 /**
  * Category slugs where published products never carry technical specs.
  * Explicit blocklist avoids pointless facet queries on furniture / hardware-only trees.
  */
-export const PLP_ATTRIBUTE_FACETS_DISABLED_CATEGORY_SLUGS: ReadonlySet<string> = new Set([
+const PLP_ATTRIBUTE_FACETS_DISABLED_CATEGORY_SLUGS: ReadonlySet<string> = new Set([
   'aqsesovar-2',
   'ardovkner-2',
   'blenderner',

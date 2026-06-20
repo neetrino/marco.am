@@ -63,7 +63,7 @@ type CompareProductWithRelations = {
   }>;
 };
 
-export type CompareApiSpec = {
+type CompareApiSpec = {
   key: string;
   name: string;
   value: string;

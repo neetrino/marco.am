@@ -23,7 +23,7 @@ function collectProductSlugs(product: ProductWithFullRelations): string[] {
   return [...slugs];
 }
 
-export type BuildProductPdpRowsArgs = {
+type BuildProductPdpRowsArgs = {
   product: ProductWithFullRelations;
   locales: readonly string[];
   discountSettings: ListingDiscountSettings;

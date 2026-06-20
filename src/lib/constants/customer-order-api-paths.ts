@@ -1,7 +1,7 @@
 /** Base path for authenticated customer order APIs (JWT). */
-export const CUSTOMER_ORDER_API_PREFIX = "/api/v1/orders" as const;
+const CUSTOMER_ORDER_API_PREFIX = "/api/v1/orders" as const;
 
-export type CustomerOrderHttpMethod = "GET" | "POST";
+type CustomerOrderHttpMethod = "GET" | "POST";
 
 export type CustomerOrderLink = {
   method: CustomerOrderHttpMethod;

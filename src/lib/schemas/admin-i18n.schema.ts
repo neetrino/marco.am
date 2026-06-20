@@ -28,6 +28,3 @@ export const updateI18nTranslationsPayloadSchema = z.object({
 
 export type I18nTranslationScope = z.infer<typeof i18nTranslationScopeSchema>;
 export type I18nTranslationEntry = z.infer<typeof i18nTranslationEntrySchema>;
-export type UpdateI18nTranslationsPayload = z.infer<
-  typeof updateI18nTranslationsPayloadSchema
->;

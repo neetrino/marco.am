@@ -1,7 +1,7 @@
 const COMMA_LIST_SPLIT = /,\s*/;
 const SPEC_FOOTNOTE_SPLIT = /\s+\*\s+/;
 
-export interface SpecificationValueFootnote {
+interface SpecificationValueFootnote {
   main: string;
   footnote: string | null;
 }

@@ -26,12 +26,12 @@ export function uncategorizedCategoryTitle(locale: ApiLocale): string {
   return "Other";
 }
 
-export type CompareCategoryProductPick = {
+type CompareCategoryProductPick = {
   primaryCategoryId: string | null;
   categoryIds: string[];
 };
 
-export type CompareLinePick = { productId: string };
+type CompareLinePick = { productId: string };
 
 /**
  * Greedy keep order: at most `maxPerCategory` per resolved category key and at most `maxList` lines total.

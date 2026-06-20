@@ -27,7 +27,7 @@ type CheckoutOrderSnapshotInput = {
   total: number;
 };
 
-export function buildOrderDetailsSnapshot(input: CheckoutOrderSnapshotInput): OrderDetails {
+function buildOrderDetailsSnapshot(input: CheckoutOrderSnapshotInput): OrderDetails {
   const now = new Date().toISOString();
   const shippingAddress =
     input.form.shippingMethod === 'courier' &&
@@ -105,7 +105,7 @@ export function buildOrderDetailsSnapshot(input: CheckoutOrderSnapshotInput): Or
   };
 }
 
-export function saveCheckoutSuccessSnapshot(order: OrderDetails): void {
+function saveCheckoutSuccessSnapshot(order: OrderDetails): void {
   try {
     sessionStorage.setItem(CHECKOUT_SUCCESS_SNAPSHOT_KEY, JSON.stringify(order));
   } catch {

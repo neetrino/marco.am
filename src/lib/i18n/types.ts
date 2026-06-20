@@ -59,6 +59,6 @@ export const STOREFRONT_NAMESPACES: readonly StorefrontNamespace[] = [
   'orders',
 ] as const;
 
-export const ALL_NAMESPACES: readonly Namespace[] = [...STOREFRONT_NAMESPACES, 'admin'];
+const ALL_NAMESPACES: readonly Namespace[] = [...STOREFRONT_NAMESPACES, 'admin'];
 
 export const ALL_NAMESPACES_SET = new Set<Namespace>(ALL_NAMESPACES);

@@ -77,7 +77,7 @@ export type AdminDashboardUserActivity = {
   }>;
 };
 
-export type AdminDashboardCachePayload = {
+type AdminDashboardCachePayload = {
   stats: AdminDashboardStats | null;
   recentOrders: AdminDashboardRecentOrder[];
   topProducts: AdminDashboardTopProduct[];
@@ -93,7 +93,7 @@ export function readAdminDashboardCache(): AdminDashboardCachePayload | null {
   );
 }
 
-export function writeAdminDashboardCache(payload: AdminDashboardCachePayload): void {
+function writeAdminDashboardCache(payload: AdminDashboardCachePayload): void {
   writeAdminSessionCache(ADMIN_CACHE_KEYS.dashboard, payload);
 }
 

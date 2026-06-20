@@ -18,13 +18,13 @@ const DEFAULT_LISTING_BATCH_SIZE = 100;
 const DEFAULT_AFFECTED_LISTING_BATCH_SIZE = 500;
 const DISCOUNT_KEYS = ['globalDiscount', 'categoryDiscounts', 'brandDiscounts'] as const;
 
-export type ProductListingReadModelRebuildOptions = {
+type ProductListingReadModelRebuildOptions = {
   locales?: readonly string[];
   batchSize?: number;
   logProgress?: (message: string) => void;
 };
 
-export type ProductListingReadModelBatchSyncOptions = Pick<
+type ProductListingReadModelBatchSyncOptions = Pick<
   ProductListingReadModelRebuildOptions,
   'locales' | 'batchSize' | 'logProgress'
 >;

@@ -14,7 +14,7 @@ type CategoryRecord = {
   translations: Array<{ locale: string; slug: string; title: string; fullPath: string }>;
 };
 
-export type MegaMenuCategoryNode = {
+type MegaMenuCategoryNode = {
   id: string;
   slug: string;
   title: string;

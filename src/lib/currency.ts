@@ -19,11 +19,6 @@ function formatAmountDigits(value: number): string {
   }).format(value);
 }
 
-/** Unicode symbol for UI (not ISO code like AMD/RUB). */
-export function getCurrencySymbol(currency: CurrencyCode): string {
-  return CURRENCIES[currency].symbol;
-}
-
 // Cache for currency rates from API
 let currencyRatesCache: Record<string, number> | null = null;
 let currencyRatesCacheTime: number = 0;

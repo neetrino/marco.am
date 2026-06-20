@@ -15,7 +15,7 @@ export const PRODUCT_PDP_READ_MODEL_DEFAULT_LOCALES = ['en', 'hy', 'ru', 'ka'] a
 const DEFAULT_PDP_BATCH_SIZE = 50;
 const MAX_PDP_BATCH_SIZE = 200;
 
-export type ProductPdpReadModelOptions = {
+type ProductPdpReadModelOptions = {
   locales?: readonly string[];
   discountSettings?: ListingDiscountSettings;
   batchSize?: number;

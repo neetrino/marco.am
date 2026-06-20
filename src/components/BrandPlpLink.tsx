@@ -11,7 +11,7 @@ const BRAND_PLP_WARM_TIMEOUT_MS = 8_000;
 
 type LinkProps = Omit<ComponentProps<typeof Link>, 'href' | 'prefetch'>;
 
-export type BrandPlpLinkProps = LinkProps & {
+type BrandPlpLinkProps = LinkProps & {
   readonly href: string;
   readonly children: ReactNode;
 };

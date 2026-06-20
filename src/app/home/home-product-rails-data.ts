@@ -15,7 +15,7 @@ import {
   HOME_APP_DOWNLOAD_DEFAULT_IMAGE_URL,
 } from '@/lib/constants/home-hero-admin-banners';
 
-export type HomeProductRailsData = {
+type HomeProductRailsData = {
   promotionProducts: SpecialOfferProduct[];
   newProducts: SpecialOfferProduct[];
   brandPartners: readonly HomeBrandPartnerPublicItem[] | null;

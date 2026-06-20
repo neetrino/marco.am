@@ -1,7 +1,7 @@
 import type { TechnicalSpecFacet } from '@/lib/services/products-technical-filters';
 import { isAttributeFacetScopeAllowed } from '@/constants/plp-category-facet-policy';
 
-export type AttributeFacetVisibilityContext = {
+type AttributeFacetVisibilityContext = {
   categorySlugTokens?: readonly string[];
 };
 

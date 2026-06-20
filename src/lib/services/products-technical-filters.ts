@@ -10,20 +10,6 @@ export function isReservedShopAttributeFilterKey(key: string): boolean {
   return !normalized || RESERVED_ATTRIBUTE_KEYS.has(normalized);
 }
 
-/**
- * Stable signature for `spec.*` / `specs` query keys — used for PLP filter cache keys and client refetch.
- */
-export function buildTechnicalFilterQuerySignature(searchParams: URLSearchParams): string {
-  const parts: string[] = [];
-  for (const [k, v] of searchParams.entries()) {
-    if (k.startsWith(TECHNICAL_SPEC_PREFIX) || k === "specs") {
-      parts.push(`${k}=${v}`);
-    }
-  }
-  parts.sort();
-  return parts.join("&");
-}
-
 export interface TechnicalSpecFacetValue {
   value: string;
   label: string;
@@ -125,13 +111,6 @@ export function parseTechnicalSpecFiltersFromSearchParams(
   }
 
   return parsed;
-}
-
-export function hasTechnicalSpecFilters(filters?: TechnicalSpecFilters): boolean {
-  if (!filters) {
-    return false;
-  }
-  return Object.values(filters).some((values) => values.length > 0);
 }
 
 function resolveOptionAttributeKey(option: VariantOptionLike): string | null {

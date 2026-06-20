@@ -84,7 +84,7 @@ export function fetchAdminCategoriesLite<T>(language: LanguageCode): Promise<{ d
 }
 
 /** Full categories list with product counts — admin categories page. */
-export function fetchAdminCategoriesWithCounts<T>(language: LanguageCode): Promise<{ data: T[] }> {
+function fetchAdminCategoriesWithCounts<T>(language: LanguageCode): Promise<{ data: T[] }> {
   const cached = readAdminCategoriesCache<T>(language, { includeCounts: true });
   if (cached !== null) {
     return Promise.resolve({ data: cached });

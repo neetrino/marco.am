@@ -3,7 +3,7 @@ import { db } from "@white-shop/db";
 /**
  * Activity item interface
  */
-export interface ActivityItem {
+interface ActivityItem {
   type: string;
   title: string;
   description: string;

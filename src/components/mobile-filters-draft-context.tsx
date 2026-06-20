@@ -2,7 +2,7 @@
 
 import { createContext, useContext, type ReactNode } from 'react';
 
-export interface MobileFiltersDraftContextValue {
+interface MobileFiltersDraftContextValue {
   readonly enabled: boolean;
   readonly searchParams: URLSearchParams;
   readonly updateSearchParams: (updater: (params: URLSearchParams) => void) => void;

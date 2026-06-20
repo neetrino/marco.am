@@ -3,7 +3,7 @@ import type { Prisma } from "@white-shop/db/prisma";
 /**
  * Variant option for processing
  */
-export interface VariantOptionInput {
+interface VariantOptionInput {
   attributeKey: string;
   value: string;
   valueId?: string;
@@ -12,7 +12,7 @@ export interface VariantOptionInput {
 /**
  * Processed variant option
  */
-export interface ProcessedVariantOption {
+interface ProcessedVariantOption {
   valueId?: string;
   attributeKey?: string;
   value?: string;

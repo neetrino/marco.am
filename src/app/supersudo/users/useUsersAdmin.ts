@@ -16,7 +16,7 @@ import {
   writeAdminSessionCache,
 } from '@/lib/admin/admin-session-cache';
 
-export interface AdminUserRow {
+interface AdminUserRow {
   id: string;
   email: string | null;
   phone: string | null;
@@ -28,7 +28,7 @@ export interface AdminUserRow {
   createdAt: string;
 }
 
-export interface UsersListResponse {
+interface UsersListResponse {
   data: AdminUserRow[];
   meta: {
     total: number;

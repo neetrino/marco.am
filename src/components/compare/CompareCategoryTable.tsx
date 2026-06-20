@@ -40,7 +40,7 @@ export function mapCompareItemToProduct(item: CompareClientItem): CompareTablePr
   };
 }
 
-export type CompareCategoryTableProps = {
+type CompareCategoryTableProps = {
   products: CompareTableProduct[];
   currency: CurrencyCode;
   t: (key: string) => string;

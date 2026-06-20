@@ -1,12 +1,10 @@
-import { createHmac, randomUUID, timingSafeEqual } from "crypto";
+import { createHmac, timingSafeEqual } from "crypto";
 import { z } from "zod";
 import { db } from "@white-shop/db";
-import { resolvePaymentCheckoutBaseUrl } from "../config/payment-env";
 
 /** Tolerance for decimal/float comparison on payment amounts (AMD). */
 const PAYMENT_AMOUNT_TOLERANCE = 0.01;
 
-const DEFAULT_SESSION_TTL_MS = 15 * 60 * 1000;
 
 const webhookPayloadSchema = z.object({
   eventId: z.string().min(1),
@@ -33,22 +31,9 @@ const webhookPayloadSchema = z.object({
   }),
 });
 
-export type PaymentWebhookPayload = z.infer<typeof webhookPayloadSchema>;
+type PaymentWebhookPayload = z.infer<typeof webhookPayloadSchema>;
 
-type SessionInput = {
-  paymentId: string;
-  orderId: string;
-  orderNumber: string;
-  amount: number;
-  currency: string;
-};
 
-type SessionResult = {
-  provider: string;
-  sessionId: string;
-  paymentUrl: string;
-  expiresAt: string;
-};
 
 type WebhookTransition = {
   paymentStatus: string;
@@ -90,29 +75,8 @@ const webhookTransitions: Record<PaymentWebhookPayload["type"], WebhookTransitio
   },
 };
 
-function getProvider(): string {
-  const raw = process.env.PAYMENT_PSP_PROVIDER?.trim();
-  if (!raw) {
-    return "mock_psp";
-  }
-  return raw.toLowerCase();
-}
 
-function getSessionTtlMs(): number {
-  const raw = Number(process.env.PAYMENT_PSP_SESSION_TTL_MS ?? DEFAULT_SESSION_TTL_MS);
-  if (!Number.isFinite(raw) || raw <= 0) {
-    return DEFAULT_SESSION_TTL_MS;
-  }
-  return Math.floor(raw);
-}
 
-function buildPaymentUrl(sessionId: string, orderNumber: string): string {
-  const base = resolvePaymentCheckoutBaseUrl();
-  const separator = base.includes("?") ? "&" : "?";
-  return `${base}${separator}session=${encodeURIComponent(sessionId)}&order=${encodeURIComponent(
-    orderNumber
-  )}`;
-}
 
 function toPaymentAmount(value: unknown): number {
   if (typeof value === "number" && Number.isFinite(value)) {
@@ -206,52 +170,6 @@ export function verifyWebhookSignature(rawBody: string, signature: string, secre
     return false;
   }
   return timingSafeEqual(a, b);
-}
-
-export async function createCardPaymentSession(input: SessionInput): Promise<SessionResult> {
-  const provider = getProvider();
-  const sessionId = `psp_${randomUUID().replace(/-/g, "")}`;
-  const expiresAt = new Date(Date.now() + getSessionTtlMs());
-  const paymentUrl = buildPaymentUrl(sessionId, input.orderNumber);
-  const idempotencyKey = `${input.orderNumber}:${sessionId}`;
-
-  await db.payment.update({
-    where: { id: input.paymentId },
-    data: {
-      provider,
-      providerTransactionId: sessionId,
-      idempotencyKey,
-      status: "processing",
-      providerResponse: {
-        sessionId,
-        paymentUrl,
-        expiresAt: expiresAt.toISOString(),
-        amount: input.amount,
-        currency: input.currency,
-      },
-    },
-  });
-
-  await db.orderEvent.create({
-    data: {
-      orderId: input.orderId,
-      type: "payment_session_created",
-      data: {
-        provider,
-        paymentId: input.paymentId,
-        sessionId,
-        paymentUrl,
-        expiresAt: expiresAt.toISOString(),
-      },
-    },
-  });
-
-  return {
-    provider,
-    sessionId,
-    paymentUrl,
-    expiresAt: expiresAt.toISOString(),
-  };
 }
 
 export async function processPaymentWebhook(

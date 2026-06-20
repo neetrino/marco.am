@@ -4,7 +4,7 @@ import { apiClient } from '@/lib/api-client';
 import { logger } from '@/lib/utils/logger';
 
 /** Legacy key — migrated once to the server-backed compare API. */
-export const LEGACY_COMPARE_STORAGE_KEY = 'shop_compare';
+const LEGACY_COMPARE_STORAGE_KEY = 'shop_compare';
 
 export type CompareClientSpec = {
   key: string;
@@ -34,21 +34,21 @@ export type CompareClientItem = {
   };
 };
 
-export type CompareClientSpecRow = {
+type CompareClientSpecRow = {
   key: string;
   name: string;
   valuesByProductId: Record<string, string | null>;
   different: boolean;
 };
 
-export type CompareClientSection = {
+type CompareClientSection = {
   categoryId: string;
   categoryName: string;
   items: CompareClientItem[];
   specRows: CompareClientSpecRow[];
 };
 
-export type CompareClientResponse = {
+type CompareClientResponse = {
   compare: {
     id: string;
     maxItems: number;
@@ -235,11 +235,6 @@ export async function migrateLegacyCompareFromLocalStorage(lang: string): Promis
   }
   invalidateCompareCache();
   dispatchCompareUpdated();
-}
-
-export async function fetchCompareItemCount(lang: string): Promise<number> {
-  const ids = await fetchCompareProductIds(lang);
-  return ids.length;
 }
 
 /**

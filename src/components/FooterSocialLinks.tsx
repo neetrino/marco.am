@@ -17,9 +17,9 @@ import {
 const FOOTER_SOCIAL_LINK_BASE =
   'inline-flex shrink-0 items-center justify-center rounded-full transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marco-black dark:focus-visible:outline-white';
 
-export type FooterSocialLinksDensity = 'default' | 'compact';
+type FooterSocialLinksDensity = 'default' | 'compact';
 
-export type FooterSocialApiLink = {
+type FooterSocialApiLink = {
   readonly platform: 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'viber';
   readonly href: string;
 };

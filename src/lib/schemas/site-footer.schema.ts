@@ -19,18 +19,13 @@ const hrefSchema = z
     "Must be a site path or http(s) URL",
   );
 
-export const siteFooterSocialPlatformSchema = z.enum([
+const siteFooterSocialPlatformSchema = z.enum([
   "instagram",
   "facebook",
   "telegram",
   "whatsapp",
   "viber",
 ]);
-
-export type SiteFooterSocialPlatform = z.infer<
-  typeof siteFooterSocialPlatformSchema
->;
-
 const navLinkSchema = z.object({
   id: z.string().min(1).max(64),
   label: localeTripleSchema,

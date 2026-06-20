@@ -1,5 +1,5 @@
 /** Hostnames allowed for Next.js Image optimization (production). */
-export const STOREFRONT_IMAGE_OPTIMIZER_HOSTS = new Set([
+const STOREFRONT_IMAGE_OPTIMIZER_HOSTS = new Set([
   'marco.am',
   'www.marco.am',
 ]);

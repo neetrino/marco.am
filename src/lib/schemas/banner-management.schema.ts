@@ -46,7 +46,7 @@ const bannerScheduleSchema = z
     }
   });
 
-export const bannerItemSchema = z.object({
+const bannerItemSchema = z.object({
   id: z.string().min(1).max(64),
   slot: z.enum(BANNER_SLOT_IDS),
   title: bannerTitleSchema,

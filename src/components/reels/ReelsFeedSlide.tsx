@@ -13,7 +13,7 @@ import { REELS_FEED_SLIDE_ID_PREFIX } from './reels-vertical-feed.constants';
 import { REELS_FEED_VIDEO_WINDOW_RADIUS } from './reels-page-grid.constants';
 import type { ReelInteractionState } from './useReelsFeedData';
 
-export type ReelsFeedSlideProps = {
+type ReelsFeedSlideProps = {
   item: ReelInteractionState;
   index: number;
   activeIndex: number;

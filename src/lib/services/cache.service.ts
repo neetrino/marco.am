@@ -45,7 +45,7 @@ const ERROR_COOLDOWN = 30000; // Only log errors every 30 seconds
 const MEMORY_CACHE_MAX_KEYS = 300;
 const memoryCache = new Map<string, { value: string; expiresAt: number }>();
 
-export type CacheBackend = "upstash" | "redis" | "memory";
+type CacheBackend = "upstash" | "redis" | "memory";
 
 function memoryGet(key: string): string | null {
   const entry = memoryCache.get(key);
@@ -155,7 +155,7 @@ async function initRedis() {
 /**
  * Get value from cache
  */
-export async function get(key: string): Promise<string | null> {
+async function get(key: string): Promise<string | null> {
   if (!redisAvailable) {
     await initRedis();
   }
@@ -181,7 +181,7 @@ export async function get(key: string): Promise<string | null> {
 /**
  * Set value in cache
  */
-export async function set(key: string, value: string): Promise<boolean> {
+async function set(key: string, value: string): Promise<boolean> {
   if (!redisAvailable) {
     await initRedis();
   }
@@ -208,7 +208,7 @@ export async function set(key: string, value: string): Promise<boolean> {
 /**
  * Set value in cache with expiration
  */
-export async function setex(key: string, seconds: number, value: string): Promise<boolean> {
+async function setex(key: string, seconds: number, value: string): Promise<boolean> {
   if (!redisAvailable) {
     await initRedis();
   }
@@ -238,7 +238,7 @@ export async function setex(key: string, seconds: number, value: string): Promis
 /**
  * Delete key from cache
  */
-export async function del(key: string): Promise<boolean> {
+async function del(key: string): Promise<boolean> {
   if (!redisAvailable) {
     await initRedis();
   }
@@ -283,7 +283,7 @@ async function scanKeysMatchingPatternIoRedis(
 /**
  * Get multiple keys matching pattern
  */
-export async function keys(pattern: string): Promise<string[]> {
+async function keys(pattern: string): Promise<string[]> {
   if (!redisAvailable) {
     await initRedis();
   }
@@ -308,7 +308,7 @@ export async function keys(pattern: string): Promise<string[]> {
 /**
  * Delete multiple keys matching pattern
  */
-export async function deletePattern(pattern: string): Promise<number> {
+async function deletePattern(pattern: string): Promise<number> {
   if (!redisAvailable) {
     await initRedis();
   }
@@ -355,14 +355,14 @@ export async function deletePattern(pattern: string): Promise<number> {
 /**
  * Check if Redis is available
  */
-export function isAvailable(): boolean {
+function isAvailable(): boolean {
   return redisAvailable;
 }
 
 /**
  * Resolve active cache backend. Returns "memory" when shared Redis/Upstash is unavailable.
  */
-export async function getBackend(): Promise<CacheBackend> {
+async function getBackend(): Promise<CacheBackend> {
   if (!connectionAttempted) {
     await initRedis();
   }

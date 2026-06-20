@@ -4,19 +4,19 @@ import { cartService } from "./cart.service";
 import { logger } from "../utils/logger";
 
 /** Why a line from the historical order was not added to the cart. */
-export type ReorderSkipReason =
+type ReorderSkipReason =
   | "no_variant"
   | "variant_not_found"
   | "unpublished"
   | "out_of_stock";
 
-export type ReorderAddedLine = {
+type ReorderAddedLine = {
   variantId: string;
   productId: string;
   quantity: number;
 };
 
-export type ReorderSkippedLine = {
+type ReorderSkippedLine = {
   variantId: string | null;
   sku: string;
   reason: ReorderSkipReason;

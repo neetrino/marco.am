@@ -50,7 +50,7 @@ export interface Order {
   createdAt: string;
 }
 
-export interface OrdersResponse {
+interface OrdersResponse {
   data: Order[];
   meta: {
     total: number;

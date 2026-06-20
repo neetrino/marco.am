@@ -3,7 +3,7 @@
  * Use this instead of ad-hoc `process.env` chains in API and middleware.
  */
 
-export type DeploymentTier = "development" | "staging" | "production";
+type DeploymentTier = "development" | "staging" | "production";
 
 const APP_ENV_ALIASES: Record<string, DeploymentTier> = {
   development: "development",

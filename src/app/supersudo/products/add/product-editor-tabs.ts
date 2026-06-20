@@ -13,7 +13,7 @@ export type ProductEditorSection = ProductEditorTabId;
 
 export const PRODUCT_EDITOR_DEFAULT_TAB: ProductEditorTabId = 'general';
 
-export function isProductEditorTabId(value: string): value is ProductEditorTabId {
+function isProductEditorTabId(value: string): value is ProductEditorTabId {
   return PRODUCT_EDITOR_TAB_IDS.includes(value as ProductEditorTabId);
 }
 

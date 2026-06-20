@@ -3,7 +3,7 @@ import { Inter } from 'next/font/google';
 /**
  * Primary UI font — self-hosted by Next.js at build time (no fonts.googleapis.com runtime requests).
  */
-export const inter = Inter({
+const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-inter',

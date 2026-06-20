@@ -15,7 +15,7 @@ const PRODUCT_BUY_CTA_ICON_NUDGE_LEFT_CLASS = 'translate-x-2';
 /** Keeps CTA label on one line next to icons without stretching full width. */
 const PRODUCT_BUY_CTA_LABEL_MAX_WIDTH_CLASS = 'max-w-[11rem] sm:max-w-[14rem]';
 
-export type ProductPurchaseActionsProps = {
+type ProductPurchaseActionsProps = {
   language: LanguageCode;
   price: number;
   quantity: number;

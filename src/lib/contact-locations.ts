@@ -72,10 +72,6 @@ export function phoneToTelHref(phone: string): string {
   return `tel:${phone.replace(/[^\d+]/gu, '')}`;
 }
 
-export function mapsSearchUrlForAddress(address: string): string {
-  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
-}
-
 /**
  * Google Maps embed centered on exact coordinates — marker matches `map` pin.
  * (Address-only geocoding is too loose for a tight storefront view.)

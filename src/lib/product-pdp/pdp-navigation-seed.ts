@@ -151,36 +151,6 @@ export function clearProductPdpNavigationSeedAnyLanguage(slug: string): void {
   }
 }
 
-export function consumeProductPdpNavigationSeed(
-  slug: string,
-  language: LanguageCode,
-): Product | null {
-  const value = readNavigationSeedEntry(keyFor(slug, language), true);
-  return value ? toSeedProduct(value) : null;
-}
-
-export function consumeProductPdpNavigationSeedAnyLanguage(
-  slug: string,
-  preferredLanguage: LanguageCode,
-): Product | null {
-  const preferred = consumeProductPdpNavigationSeed(slug, preferredLanguage);
-  if (preferred) {
-    return preferred;
-  }
-
-  const suffix = `:${normalizePdpSlug(slug)}`;
-  for (const [key] of seedStore.entries()) {
-    if (!key.endsWith(suffix)) {
-      continue;
-    }
-    const value = readNavigationSeedEntry(key, true);
-    if (value) {
-      return toSeedProduct(value);
-    }
-  }
-
-  return null;
-}
 
 export function buildProductFromPdpNavigationSeed(
   value: ProductPdpNavigationSeed,

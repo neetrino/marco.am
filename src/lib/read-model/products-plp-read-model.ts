@@ -38,7 +38,7 @@ export type { PlpReadModelSearchParams } from './products-plp-read-model-types';
 
 const PRODUCT_ID_LOOKUP_MAX_PAGE_SIZE = 500;
 
-export type PlpReadModelPayload = {
+type PlpReadModelPayload = {
   items: PlpReadModelProduct[];
   pagination: PlpListingMeta;
   filters: ProductsFiltersData;

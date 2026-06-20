@@ -11,8 +11,8 @@ import { generateSlug } from "@/app/supersudo/products/add/utils/productUtils";
 
 export const LOCALE = "hy";
 export const DEFAULT_STOCK = 0;
-export const FETCH_IMAGE_TIMEOUT_MS = 60_000;
-export const R2_PREFIX = "product-import/csv";
+const FETCH_IMAGE_TIMEOUT_MS = 60_000;
+const R2_PREFIX = "product-import/csv";
 
 export function parseImportArgs(argv: string[]): { csvPath: string; dryRun: boolean } {
   const dryRun = argv.includes("--dry-run");
@@ -47,7 +47,7 @@ export function buildR2Client(): S3Client | null {
   });
 }
 
-export async function uploadBufferToR2(
+async function uploadBufferToR2(
   client: S3Client,
   bucket: string,
   publicBase: string,
@@ -68,7 +68,7 @@ export async function uploadBufferToR2(
   return `${base}/${key.startsWith("/") ? key.slice(1) : key}`;
 }
 
-export async function fetchRemoteImage(
+async function fetchRemoteImage(
   url: string,
 ): Promise<{ buffer: Buffer; mime: string } | null> {
   const ctrl = new AbortController();

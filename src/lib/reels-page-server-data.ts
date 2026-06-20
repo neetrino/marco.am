@@ -6,7 +6,7 @@ import { getServerLanguage } from '@/lib/language-server';
 import type { ReelsPublicPayload } from '@/lib/schemas/reels-management.schema';
 import { reelsManagementService } from '@/lib/services/reels-management.service';
 
-export type ReelsPageServerData = {
+type ReelsPageServerData = {
   language: LanguageCode;
   feed: ReelsPublicPayload;
   watchCtaLabel: string;

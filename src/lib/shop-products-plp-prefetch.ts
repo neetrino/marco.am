@@ -19,11 +19,6 @@ function buildDefaultShopListingQueryString(): string {
   return '';
 }
 
-/** Stable facet key for the default PLP (no active filters in the URL). */
-export function buildDefaultShopFiltersClientKey(language: LanguageCode): string {
-  return buildProductsFiltersScopeKeyFromSearchParams(new URLSearchParams(), language);
-}
-
 function buildListingApiParams(queryString: string, language: LanguageCode): Record<string, string> {
   return buildShopListingApiParams(queryString, language);
 }

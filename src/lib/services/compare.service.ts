@@ -42,7 +42,7 @@ async function getOrCreateUserCompareList(userId: string): Promise<string> {
 /**
  * Resolves guest compare list: valid session token loads row; invalid/missing token creates a new session.
  */
-export async function ensureGuestCompareList(
+async function ensureGuestCompareList(
   sessionToken: string | undefined
 ): Promise<{ compareListId: string; sessionToken: string; created: boolean }> {
   if (sessionToken) {

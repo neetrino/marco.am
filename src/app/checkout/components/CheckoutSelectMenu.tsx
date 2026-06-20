@@ -16,7 +16,7 @@ import {
   CHECKOUT_SELECT_TRIGGER_OPEN_CLASS,
 } from '../checkout-form.constants';
 
-export type CheckoutSelectOption = {
+type CheckoutSelectOption = {
   value: string;
   label: string;
 };

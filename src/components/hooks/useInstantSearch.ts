@@ -13,7 +13,7 @@ export interface InstantSearchResultItem {
   href?: string;
 }
 
-export interface InstantSearchCategoryItem {
+interface InstantSearchCategoryItem {
   id: string;
   slug: string;
   title: string;
@@ -21,7 +21,7 @@ export interface InstantSearchCategoryItem {
   href: string;
 }
 
-export interface InstantSearchSuggestionItem {
+interface InstantSearchSuggestionItem {
   id: string;
   type: 'product' | 'category';
   title: string;
@@ -29,7 +29,7 @@ export interface InstantSearchSuggestionItem {
   href: string;
 }
 
-export interface UseInstantSearchOptions {
+interface UseInstantSearchOptions {
   debounceMs?: number;
   minQueryLength?: number;
   maxResults?: number;

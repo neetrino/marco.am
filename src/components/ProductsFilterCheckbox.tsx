@@ -1,4 +1,4 @@
-﻿export type ProductsFilterCheckboxVariant = 'default' | 'checkmark';
+﻿type ProductsFilterCheckboxVariant = 'default' | 'checkmark';
 
 interface ProductsFilterCheckboxVisualProps {
   readonly checked: boolean;

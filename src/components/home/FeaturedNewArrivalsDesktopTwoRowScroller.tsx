@@ -46,7 +46,7 @@ const skeletonCellStyle = {
   borderRadius: SPECIAL_OFFERS_CARD_SHELL_RADIUS_PX,
 } as const;
 
-export type FeaturedNewArrivalsDesktopTwoRowScrollerProps = {
+type FeaturedNewArrivalsDesktopTwoRowScrollerProps = {
   scrollerRef: Ref<HTMLDivElement>;
   loading: boolean;
   /** One entry per horizontal page (each up to {@link FEATURED_PRODUCTS_DESKTOP_PAGE_SIZE} items). */

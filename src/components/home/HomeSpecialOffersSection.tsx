@@ -97,7 +97,7 @@ interface ProductsResponse {
   items: SpecialOfferProduct[];
 }
 
-export type HomeSpecialOffersSectionProps = {
+type HomeSpecialOffersSectionProps = {
   readonly serverLanguage?: LanguageCode;
   readonly initialPromotionProducts?: readonly SpecialOfferProduct[];
 };

@@ -1,9 +1,6 @@
-export const DEFAULT_USER_ROLE = "customer" as const;
+const DEFAULT_USER_ROLE = "customer" as const;
 
-export const ALLOWED_USER_ROLES = ["customer", "admin"] as const;
-
-export type AllowedUserRole = (typeof ALLOWED_USER_ROLES)[number];
-
+const ALLOWED_USER_ROLES = ["customer", "admin"] as const;
 const ALLOWED_ROLE_SET = new Set<string>(ALLOWED_USER_ROLES);
 
 /**

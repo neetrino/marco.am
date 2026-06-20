@@ -1,7 +1,7 @@
 /**
  * Query params for `/api/v1/products/plp` on home strips — mirrors SSR read-model lean path.
  */
-export const HOME_STRIP_LISTING_API_FLAGS = {
+const HOME_STRIP_LISTING_API_FLAGS = {
   omitProductAttributes: '1',
   skipExactTotalCount: '1',
   homeStripListing: '1',

@@ -4,7 +4,7 @@ import { useEffect, useLayoutEffect, useState, type RefObject } from 'react';
 
 import { REELS_FEED_SLIDE_ID_PREFIX } from './reels-vertical-feed.constants';
 
-export function clampReelIndex(index: number, length: number): number {
+function clampReelIndex(index: number, length: number): number {
   if (length <= 0) {
     return 0;
   }

@@ -115,13 +115,3 @@ export interface GeneratedVariant {
   sku: string;
   image: string | null;
 }
-
-/** Simple (non-variable) product price/stock fields in the form. */
-export interface SimpleProductFormData {
-  price: string;
-  compareAtPrice: string;
-  sku: string;
-  quantity: string;
-}
-
-

@@ -5,7 +5,7 @@ const DEADLOCK_RETRY_BASE_MS = 100;
 /**
  * Detects PostgreSQL deadlock errors surfaced by Prisma batch/transaction calls.
  */
-export function isPrismaDeadlockError(error: unknown): boolean {
+function isPrismaDeadlockError(error: unknown): boolean {
   if (!error) {
     return false;
   }

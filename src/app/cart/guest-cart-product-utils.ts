@@ -33,19 +33,3 @@ export function findGuestCartVariant(
     product.variants.find((variant) => variant.id === variantId) ?? product.variants[0]
   );
 }
-
-export function resolveGuestCartItemTitle(
-  product: Product,
-  storedTitle: string | undefined,
-  fallback: string,
-): string {
-  const apiTitle = product.title?.trim();
-  if (apiTitle) {
-    return apiTitle;
-  }
-  const cachedTitle = storedTitle?.trim();
-  if (cachedTitle) {
-    return cachedTitle;
-  }
-  return fallback;
-}

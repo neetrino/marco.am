@@ -3,10 +3,10 @@ import { isLightMarketingRoute } from '@/lib/light-marketing-routes';
 const HOME_PATH = '/';
 
 /** Defer on home and static marketing routes so SSR is not competing for the DB pool. */
-export const HOME_HEADER_MEMBERSHIP_SYNC_DEFER_MS = 10_000;
+const HOME_HEADER_MEMBERSHIP_SYNC_DEFER_MS = 10_000;
 
 /** Default defer for wishlist/compare API sync on other storefront routes. */
-export const DEFAULT_HEADER_MEMBERSHIP_SYNC_DEFER_MS = 4_000;
+const DEFAULT_HEADER_MEMBERSHIP_SYNC_DEFER_MS = 4_000;
 
 export function resolveHeaderMembershipSyncDeferMs(pathname: string): number {
   if (pathname === HOME_PATH || isLightMarketingRoute(pathname)) {

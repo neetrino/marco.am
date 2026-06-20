@@ -53,7 +53,7 @@ function mergeServerLikeState(
   });
 }
 
-export type UseReelsFeedDataResult = {
+type UseReelsFeedDataResult = {
   reelItems: ReelInteractionState[];
   pendingLikeById: Record<string, boolean>;
   doubleTapBurstById: Record<string, number>;

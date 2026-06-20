@@ -39,7 +39,7 @@ export interface InstantSearchDbClient {
   };
 }
 
-export interface InstantSearchProductResult {
+interface InstantSearchProductResult {
   id: string;
   slug: string;
   title: string;
@@ -50,7 +50,7 @@ export interface InstantSearchProductResult {
   href: string;
 }
 
-export interface InstantSearchCategoryResult {
+interface InstantSearchCategoryResult {
   id: string;
   slug: string;
   title: string;
@@ -58,7 +58,7 @@ export interface InstantSearchCategoryResult {
   href: string;
 }
 
-export interface InstantSearchSuggestionItem {
+interface InstantSearchSuggestionItem {
   id: string;
   type: 'product' | 'category';
   title: string;
@@ -66,7 +66,7 @@ export interface InstantSearchSuggestionItem {
   href: string;
 }
 
-export interface InstantSearchResponse {
+interface InstantSearchResponse {
   query: string;
   locale: ApiLocale;
   results: InstantSearchProductResult[];
@@ -78,7 +78,7 @@ export interface InstantSearchResponse {
   };
 }
 
-export interface InstantSearchRequestParams {
+interface InstantSearchRequestParams {
   query: string;
   locale: ApiLocale;
   productLimit: number;

@@ -2,13 +2,13 @@ export const SUPPORTED_API_LOCALES = ["hy", "ru", "en"] as const;
 
 export type ApiLocale = (typeof SUPPORTED_API_LOCALES)[number];
 
-export type ApiLocaleSource =
+type ApiLocaleSource =
   | "query"
   | "preferred"
   | "accept-language"
   | "default";
 
-export type ApiLocaleResolution = {
+type ApiLocaleResolution = {
   requestedLocale: string | null;
   resolvedLocale: ApiLocale;
   fallbackUsed: boolean;
@@ -42,7 +42,7 @@ export function normalizeApiLocale(raw: string | null | undefined): ApiLocale | 
   return LOCALE_ALIASES[token] ?? null;
 }
 
-export function parseAcceptLanguageLocale(
+function parseAcceptLanguageLocale(
   acceptLanguageRaw: string | null | undefined,
 ): ApiLocale | null {
   if (!acceptLanguageRaw) {

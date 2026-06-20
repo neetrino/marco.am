@@ -22,7 +22,7 @@ interface ApplyGeneralParams {
   setFormData: (updater: (prev: AddProductFormState) => AddProductFormState) => void;
 }
 
-export function applyGeneralSection({ product, setFormData }: ApplyGeneralParams): void {
+function applyGeneralSection({ product, setFormData }: ApplyGeneralParams): void {
   setFormData((prev) => ({
     ...prev,
     title: product.title || '',
@@ -62,7 +62,7 @@ interface ApplyDescriptionParams {
   setFormData: (updater: (prev: AddProductFormState) => AddProductFormState) => void;
 }
 
-export function applyDescriptionSection({ product, setFormData }: ApplyDescriptionParams): void {
+function applyDescriptionSection({ product, setFormData }: ApplyDescriptionParams): void {
   setFormData((prev) => ({
     ...prev,
     description: product.description ?? [],
@@ -74,7 +74,7 @@ interface ApplyMediaParams {
   setFormData: (updater: (prev: AddProductFormState) => AddProductFormState) => void;
 }
 
-export function applyMediaSection({ product, setFormData }: ApplyMediaParams): void {
+function applyMediaSection({ product, setFormData }: ApplyMediaParams): void {
   const variantImagesFromProduct = collectVariantImagesFromProductVariants(product.variants || []);
   const variantImages = new Set([...variantImagesFromProduct]);
   const mediaList = product.media || [];
@@ -131,7 +131,7 @@ interface ApplyCatalogParams {
   setNewCategoryName: (name: string) => void;
 }
 
-export function applyCatalogSection({
+function applyCatalogSection({
   product,
   setFormData,
   setUseNewBrand,
@@ -170,7 +170,7 @@ interface ApplyPricingParams {
   attributes: Attribute[];
 }
 
-export function applyPricingSection({
+function applyPricingSection({
   product,
   defaultCurrency,
   defaultColorLabel,

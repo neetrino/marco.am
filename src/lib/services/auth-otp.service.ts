@@ -21,7 +21,7 @@ function getPepper(): string {
   return s;
 }
 
-export function hashOtpCode(code: string): string {
+function hashOtpCode(code: string): string {
   return createHmac("sha256", getPepper())
     .update(`otp:v1:${code}`)
     .digest("hex");

@@ -5,7 +5,7 @@ import type { PlpReadModelSearchParams } from './products-plp-read-model-types';
 
 const NEW_PRODUCT_WINDOW_DAYS = 30;
 
-export type FacetFilterDimension = 'category' | 'brand' | 'color' | 'size' | 'price' | (string & {});
+type FacetFilterDimension = 'category' | 'brand' | 'color' | 'size' | 'price' | (string & {});
 
 export type PlpFacetFilterInput = {
   locale: string;

@@ -40,17 +40,3 @@ export interface Cart {
   };
   itemsCount: number;
 }
-
-/**
- * Guest cart item interface
- */
-export interface GuestCartItem {
-  productId: string;
-  productSlug?: string;
-  variantId: string;
-  quantity: number;
-}
-
-
-
-

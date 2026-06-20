@@ -109,7 +109,7 @@ const featuredTitleBarStyle = {
   height: `${FEATURED_PRODUCTS_TITLE_BAR_THICKNESS_PX}px`,
 } as const;
 
-export type FeaturedProductsTabsProps = {
+type FeaturedProductsTabsProps = {
   /** Cookie / SSR language used to fetch `initialNewProducts` — keeps hydration aligned. */
   readonly serverLanguage?: LanguageCode;
   /** Server-rendered «new» strip so first paint is not an empty client waterfall. */

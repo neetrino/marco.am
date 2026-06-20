@@ -556,7 +556,7 @@ export type CategoryNavIcon =
   | { readonly kind: 'figma'; readonly src: string }
   | { readonly kind: 'lucide'; readonly Icon: LucideIcon };
 
-export type CategoryNavPromo = {
+type CategoryNavPromo = {
   readonly badge: string;
   readonly headline: string;
   readonly subline: string;

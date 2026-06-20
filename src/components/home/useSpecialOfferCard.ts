@@ -10,7 +10,7 @@ import { useTranslation } from '../../lib/i18n-client';
 
 import type { SpecialOfferProduct } from './special-offer-product.types';
 
-export interface UseSpecialOfferCardOptions {
+interface UseSpecialOfferCardOptions {
   /**
    * When set, missing API images still show a real image (e.g. unified nature asset);
    * placeholder only if this URL fails to load.

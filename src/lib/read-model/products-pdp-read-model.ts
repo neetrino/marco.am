@@ -2,7 +2,7 @@ import { db } from '@white-shop/db';
 import type { transformProduct } from '@/lib/services/products-slug/product-transformer';
 
 /** Detail payload shape stored in `product_pdp_rows.payload` (exact transform output). */
-export type PdpReadModelDetail = Awaited<ReturnType<typeof transformProduct>>;
+type PdpReadModelDetail = Awaited<ReturnType<typeof transformProduct>>;
 
 /**
  * PDP hot-path read: single indexed fetch from `product_pdp_rows`.

@@ -3,8 +3,8 @@ import {
   type ProductClass,
 } from "../constants/product-class";
 
-export type CheckoutCartClass = "retail-only" | "wholesale-only" | "mixed";
-export type DeliveryPricingRule = "yandex" | "free";
+type CheckoutCartClass = "retail-only" | "wholesale-only" | "mixed";
+type DeliveryPricingRule = "yandex" | "free";
 
 function normalizeProductClasses(
   productClasses: readonly unknown[]

@@ -6,7 +6,7 @@ import { getStoredLanguage } from '../lib/language';
 import { subscribeShopCategoryTreeUpdated } from '../lib/shop-category-tree-sync';
 import type { CategoriesResponse, Category } from './header/category-nav-types';
 
-export type CategorySearchIndex = Record<string, string[]>;
+type CategorySearchIndex = Record<string, string[]>;
 
 export function normalizeSearchValue(value: string): string {
   return value.trim().toLocaleLowerCase();

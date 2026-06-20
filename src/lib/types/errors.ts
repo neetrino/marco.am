@@ -6,7 +6,7 @@ import { getDeploymentTier } from "@/lib/config/deployment-env";
 
 const GENERIC_SERVER_ERROR_DETAIL = "An error occurred";
 
-export interface ApiError {
+interface ApiError {
   type?: string;
   title?: string;
   status?: number;
@@ -43,14 +43,14 @@ export class AppError extends Error implements ApiError {
 /**
  * Type guard to check if error is an AppError
  */
-export function isAppError(error: unknown): error is AppError {
+function isAppError(error: unknown): error is AppError {
   return error instanceof AppError;
 }
 
 /**
  * Type guard to check if error has ApiError shape
  */
-export function isApiError(error: unknown): error is ApiError {
+function isApiError(error: unknown): error is ApiError {
   return (
     typeof error === 'object' &&
     error !== null &&

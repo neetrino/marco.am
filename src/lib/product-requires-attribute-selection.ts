@@ -9,7 +9,7 @@ type ListingVariantOption = {
   } | null;
 };
 
-export type ListingVariantForSelection = {
+type ListingVariantForSelection = {
   stock?: number | null;
   options?: ListingVariantOption[] | null;
   attributes?: unknown;

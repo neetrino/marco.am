@@ -9,7 +9,6 @@ interface UseLabelManagementReturn {
 }
 
 export function useLabelManagement(
-  labels: ProductLabel[],
   setLabels: (updater: (prev: ProductLabel[]) => ProductLabel[]) => void
 ): UseLabelManagementReturn {
   const addLabel = () => {

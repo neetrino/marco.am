@@ -1,5 +1,5 @@
-export const TIDIO_SCRIPT_ID = 'tidio-widget-js';
-export const TIDIO_SRC = 'https://code.tidio.co/9ovkfmgncuyhg4kaemwvkdbvp5r7njec.js';
+const TIDIO_SCRIPT_ID = 'tidio-widget-js';
+const TIDIO_SRC = 'https://code.tidio.co/9ovkfmgncuyhg4kaemwvkdbvp5r7njec.js';
 
 /** Load chat only after deliberate interaction, or this idle fallback. */
 export const TIDIO_IDLE_FALLBACK_MS = 25_000;

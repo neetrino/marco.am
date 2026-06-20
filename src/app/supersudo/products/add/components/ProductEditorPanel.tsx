@@ -154,9 +154,8 @@ export function ProductEditorPanel({
     t,
   });
 
-  const { addLabel, removeLabel, updateLabel } = useLabelManagement(
-    formState.formData.labels,
-    (updater) => formState.setFormData((prev) => ({ ...prev, labels: updater(prev.labels) })),
+  const { addLabel, removeLabel, updateLabel } = useLabelManagement((updater) =>
+    formState.setFormData((prev) => ({ ...prev, labels: updater(prev.labels) })),
   );
 
   const { getColorAttribute, getSizeAttribute } = useProductAttributeHelpers({

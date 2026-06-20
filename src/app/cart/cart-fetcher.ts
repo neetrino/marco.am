@@ -184,7 +184,7 @@ function buildCartFromResolvedItems(validItems: CartItem[]): Cart {
   };
 }
 
-export async function fetchGuestCart(
+async function fetchGuestCart(
   t: (key: string) => string,
 ): Promise<Cart | null> {
   if (typeof window === 'undefined') {
@@ -265,7 +265,7 @@ export async function fetchGuestCart(
   }
 }
 
-export async function fetchLoggedInCart(): Promise<Cart | null> {
+async function fetchLoggedInCart(): Promise<Cart | null> {
   try {
     const response = await apiClient.get<{ cart: Cart }>('/api/v1/cart');
     return response.cart;

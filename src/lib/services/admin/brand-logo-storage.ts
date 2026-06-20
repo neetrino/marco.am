@@ -1,7 +1,7 @@
 import { isLocalFilesystemImageReference } from '@/lib/utils/image-utils';
 import { toSlug } from '@/lib/utils/slug';
 
-export const BRAND_LOGOS_R2_PREFIX = 'brands/logos/';
+const BRAND_LOGOS_R2_PREFIX = 'brands/logos/';
 
 const IMPORT_SLUG_PREFIX = 'import-';
 

@@ -53,7 +53,7 @@ function checkMemoryLimit(clientKey: string): boolean {
   return true;
 }
 
-export type ContactRateLimitResult = {
+type ContactRateLimitResult = {
   allowed: boolean;
   resetMs?: number;
 };

@@ -11,7 +11,7 @@ import {
   type ProductCardBrandLogoSize,
 } from './product-card-brand-logo.constants';
 
-export type ProductCardBrandMarkProps = {
+type ProductCardBrandMarkProps = {
   name: string;
   slug: string;
   logoUrl: string | null | undefined;

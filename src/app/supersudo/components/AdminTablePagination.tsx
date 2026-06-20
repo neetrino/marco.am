@@ -6,7 +6,7 @@ import { useTranslation } from '../../../lib/i18n-client';
 
 const TP = 'admin.common.tablePagination';
 
-export interface AdminTablePaginationProps {
+interface AdminTablePaginationProps {
   currentPage: number;
   totalPages: number;
   totalItems: number;

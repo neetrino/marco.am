@@ -116,7 +116,7 @@ const REELS_NAV_ICON_CLASS =
 /**
  * REELS: circular category thumbnails in a centered row with arrow scroll.
  */
-export type HomeReelsSectionProps = {
+type HomeReelsSectionProps = {
   items: PublicReelItem[];
 };
 

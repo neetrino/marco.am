@@ -116,7 +116,7 @@ export type PaginationSlotItem =
   | { readonly kind: 'ellipsis' }
   | { readonly kind: 'page'; readonly page: number; readonly href: string };
 
-export interface ProductsPaginationProps {
+interface ProductsPaginationProps {
   readonly page: number;
   readonly totalPages: number;
   readonly hasNextPage?: boolean;

@@ -15,7 +15,7 @@ function getActivePageIndex(el: HTMLDivElement, pageCount: number): number {
   return Math.min(pageCount - 1, Math.floor(ratio * pageCount));
 }
 
-export interface UseSpecialOffersCarouselOptions {
+interface UseSpecialOffersCarouselOptions {
   /** When false, scroller is unmounted — clear measured slot width. */
   isRailVisible: boolean;
   /** Pagination dots / scroll segments (2 on `md+`, 3 on `max-md`). */

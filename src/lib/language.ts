@@ -7,7 +7,7 @@ export const LANGUAGES = {
 } as const;
 
 export type LanguageCode = keyof typeof LANGUAGES;
-export const DEFAULT_LANGUAGE: LanguageCode = 'en';
+const DEFAULT_LANGUAGE: LanguageCode = 'en';
 
 /** Same key for localStorage and optional SSR cookie (`layout`). */
 export const LANGUAGE_PREFERENCE_KEY = 'shop_language';

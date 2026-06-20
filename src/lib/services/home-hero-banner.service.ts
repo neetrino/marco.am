@@ -12,14 +12,14 @@ import {
 type HeroLocale = "en" | "hy" | "ru";
 import { logger } from "@/lib/utils/logger";
 
-export type HomeHeroPublicCta = {
+type HomeHeroPublicCta = {
   id: string;
   label: string;
   href: string;
   sortOrder: number;
 };
 
-export type HomeHeroPublicPayload = {
+type HomeHeroPublicPayload = {
   headlineEmphasis: string;
   headlineAccent: string;
   imageDesktopUrl: string;

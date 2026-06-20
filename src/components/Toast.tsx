@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from '../lib/i18n-client';
 
-export type ToastType = 'success' | 'error' | 'warning' | 'info';
+type ToastType = 'success' | 'error' | 'warning' | 'info';
 
-export interface Toast {
+interface Toast {
   id: string;
   message: string;
   type: ToastType;

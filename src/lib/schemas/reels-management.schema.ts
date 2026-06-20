@@ -24,9 +24,9 @@ function isHttpsUrl(raw: string): boolean {
   }
 }
 
-export const reelModerationStatusSchema = z.enum(REEL_MODERATION_STATUSES);
+const reelModerationStatusSchema = z.enum(REEL_MODERATION_STATUSES);
 
-export const reelSourceTypeSchema = z.enum(REEL_SOURCE_TYPES);
+const reelSourceTypeSchema = z.enum(REEL_SOURCE_TYPES);
 
 const moderationSchema = z
   .object({
@@ -58,7 +58,7 @@ const moderationSchema = z
     }
   });
 
-export const reelItemSchema = z
+const reelItemSchema = z
   .object({
     id: z.string().min(1).max(64),
     title: localeLabelSchema,

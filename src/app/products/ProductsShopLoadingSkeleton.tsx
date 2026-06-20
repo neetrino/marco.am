@@ -2,7 +2,7 @@
 
 import { useTranslation } from '@/lib/i18n-client';
 
-export type ProductsShopLoadingSkeletonVariant = 'full' | 'body' | 'grid';
+type ProductsShopLoadingSkeletonVariant = 'full' | 'body' | 'grid';
 
 type ProductsShopLoadingSkeletonProps = {
   /** `body` = grid + filter column; `grid` = product grid cell only (parallel listing Suspense). */

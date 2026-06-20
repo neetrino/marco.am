@@ -129,7 +129,7 @@ function buildPublicSlotPayload(
   };
 }
 
-export type HomeHeroSlotsPayload = {
+type HomeHeroSlotsPayload = {
   primary: PublicBannersPayload;
   secondary: PublicBannersPayload;
 };

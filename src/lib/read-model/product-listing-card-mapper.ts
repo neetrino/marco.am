@@ -50,7 +50,7 @@ export const LISTING_CARD_SELECT = {
   requiresAttributeSelection: true,
 } satisfies Prisma.ProductListingRowSelect;
 
-export type ListingCardRow = Prisma.ProductListingRowGetPayload<{
+type ListingCardRow = Prisma.ProductListingRowGetPayload<{
   select: typeof LISTING_CARD_SELECT;
 }>;
 

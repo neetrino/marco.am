@@ -1,7 +1,7 @@
 /**
  * Parse colors data from various formats to string array
  */
-export function parseColors(colorsData: unknown): string[] {
+function parseColors(colorsData: unknown): string[] {
   if (!colorsData) {
     return [];
   }
@@ -29,7 +29,7 @@ export function parseColors(colorsData: unknown): string[] {
 /**
  * Format attribute value for response
  */
-export function formatAttributeValue(
+function formatAttributeValue(
   val: {
     id: string;
     value: string;

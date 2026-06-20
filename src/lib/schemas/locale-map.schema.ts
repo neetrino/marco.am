@@ -1,8 +1,5 @@
 import { z } from "zod";
 
-import { SUPPORTED_API_LOCALES } from "@/lib/i18n/api-locale";
-
-export const apiLocaleSchema = z.enum(SUPPORTED_API_LOCALES);
 
 export function buildLocalizedTextMapSchema(args: {
   max: number;

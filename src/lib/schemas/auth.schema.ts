@@ -20,8 +20,8 @@ const registerSchema = z.object({
   path: ["email"],
 });
 
-export type LoginInput = z.infer<typeof loginSchema>;
-export type RegisterInput = z.infer<typeof registerSchema>;
+type LoginInput = z.infer<typeof loginSchema>;
+type RegisterInput = z.infer<typeof registerSchema>;
 
 export function parseLoginBody(body: unknown): LoginInput {
   return loginSchema.parse(body);
@@ -47,9 +47,6 @@ const verifySchema = z.object({
 const resendVerificationSchema = z.object({
   verificationToken: z.string().min(10),
 });
-
-export type VerifyBody = z.infer<typeof verifySchema>;
-export type ResendVerificationBody = z.infer<typeof resendVerificationSchema>;
 
 export function safeParseVerify(body: unknown): ReturnType<typeof verifySchema.safeParse> {
   return verifySchema.safeParse(body);

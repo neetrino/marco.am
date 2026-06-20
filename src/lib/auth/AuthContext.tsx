@@ -1,6 +1,6 @@
 'use client';
 
-import React, {
+import {
   createContext,
   useContext,
   useState,
@@ -50,7 +50,7 @@ interface AuthResponse {
   user: User;
 }
 
-export type AuthFlowResult =
+type AuthFlowResult =
   | { status: 'authenticated' }
   | { status: 'needs_verification' };
 

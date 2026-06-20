@@ -4,7 +4,7 @@ import {
   type CategoryChildMap,
 } from "@/lib/services/category-subtree.service";
 
-export type ProductCategoryLinkRow = {
+type ProductCategoryLinkRow = {
   primaryCategoryId: string | null;
   categoryIds: string[];
 };

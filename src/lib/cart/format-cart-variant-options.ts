@@ -86,32 +86,6 @@ export function formatCartVariantOptionFromApi(opt: ApiVariantOption): CartVaria
   };
 }
 
-/**
- * Keeps one line per attribute and skips values already shown in the product title.
- */
-export function dedupeCartVariantOptions(
-  options: CartVariantOption[],
-  productTitle: string
-): CartVariantOption[] {
-  const seenKeys = new Set<string>();
-  const normalizedTitle = normalizeComparable(productTitle);
-  const uniqueOptions: CartVariantOption[] = [];
-
-  for (const option of options) {
-    const attributeKey = option.attributeKey.toLowerCase();
-    const normalizedValue = normalizeComparable(option.value);
-
-    if (!option.value || seenKeys.has(attributeKey) || normalizedValue === normalizedTitle) {
-      continue;
-    }
-
-    seenKeys.add(attributeKey);
-    uniqueOptions.push(option);
-  }
-
-  return uniqueOptions;
-}
-
 /** Shows SKU only when it adds information beyond the title and variant options. */
 export function shouldShowCartSku(
   sku: string,
