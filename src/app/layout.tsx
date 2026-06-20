@@ -1,17 +1,12 @@
 import React, { Suspense } from 'react';
 import type { Metadata } from 'next';
-import { cookies } from 'next/headers';
 import Script from 'next/script';
 import './globals.css';
 import { TidioDynamicLoader } from '../components/TidioDynamicLoader';
 import { ClientProviders } from '../components/ClientProviders';
 import { AppChrome } from '../components/AppChrome';
 import { appBodyFontClassName, appHtmlFontClassName } from '@/fonts/app-fonts';
-import {
-  LANGUAGE_PREFERENCE_KEY,
-  parseLanguageFromServer,
-  type LanguageCode,
-} from '../lib/language';
+import { DEFAULT_STOREFRONT_LANGUAGE } from '../lib/language';
 import { LanguagePreferenceProvider } from '../lib/language-context';
 import '../lib/i18n/register-admin-server';
 import { serializeClientI18nSeed } from '../lib/i18n/server-storefront-language-payload';
@@ -21,10 +16,8 @@ import { SITE_LOGO_SRC } from '@/lib/constants/site-brand';
 
 export const viewport = APP_VIEWPORT;
 
-export async function generateMetadata(): Promise<Metadata> {
-  const cookieStore = await cookies();
-  const lang: LanguageCode =
-    parseLanguageFromServer(cookieStore.get(LANGUAGE_PREFERENCE_KEY)?.value) ?? 'en';
+export function generateMetadata(): Metadata {
+  const lang = DEFAULT_STOREFRONT_LANGUAGE;
 
   return {
     title: t(lang, 'common.meta.title'),
@@ -36,14 +29,12 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const cookieStore = await cookies();
-  const initialLanguage: LanguageCode =
-    parseLanguageFromServer(cookieStore.get(LANGUAGE_PREFERENCE_KEY)?.value) ?? 'en';
+  const initialLanguage = DEFAULT_STOREFRONT_LANGUAGE;
   const i18nSeed = serializeClientI18nSeed(initialLanguage);
 
   return (
@@ -51,6 +42,20 @@ export default async function RootLayout({
       <body className={`${appBodyFontClassName} min-h-full bg-[var(--app-bg)] text-[var(--app-text)] antialiased transition-colors duration-200`}>
         <Script id="i18n-init" strategy="beforeInteractive">
           {`window.__MARCO_I18N__=${i18nSeed};`}
+        </Script>
+        <Script id="lang-init" strategy="beforeInteractive">
+          {`
+            (() => {
+              try {
+                const match = document.cookie.match(/(?:^|; )shop_language=([^;]+)/);
+                const raw = match ? decodeURIComponent(match[1]) : null;
+                const allowed = { en: 1, hy: 1, ru: 1, ka: 1 };
+                if (raw && allowed[raw]) {
+                  document.documentElement.lang = raw === 'ka' ? 'en' : raw;
+                }
+              } catch {}
+            })();
+          `}
         </Script>
         <Script id="theme-init" strategy="beforeInteractive">
           {`
