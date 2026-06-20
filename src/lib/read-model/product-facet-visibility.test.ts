@@ -28,9 +28,21 @@ describe('filterVisibleAttributeFacets', () => {
       facet('d', 'D', [PLP_ATTRIBUTE_FACET_MIN_PRODUCTS]),
     ];
 
-    const visible = filterVisibleAttributeFacets(input);
+    const visible = filterVisibleAttributeFacets(input, { categorySlugTokens: ['tekhnika-ev-elektronika'] });
     expect(visible.some((row) => row.key === 'b')).toBe(false);
     expect(visible.length).toBeLessThanOrEqual(PLP_ATTRIBUTE_FACET_MAX_GROUPS);
     expect(visible[0]?.key).toBe('a');
+  });
+
+  it('hides facets without category scope', () => {
+    const visible = filterVisibleAttributeFacets([facet('a', 'A', [10])], { categorySlugTokens: [] });
+    expect(visible).toEqual([]);
+  });
+
+  it('hides facets for blocklisted furniture categories', () => {
+    const visible = filterVisibleAttributeFacets([facet('a', 'A', [10])], {
+      categorySlugTokens: ['papovk-kahovyq'],
+    });
+    expect(visible).toEqual([]);
   });
 });

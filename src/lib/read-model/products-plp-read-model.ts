@@ -19,6 +19,11 @@ import {
 } from '@/lib/services/products-technical-filters';
 import { aggregateProductsPlpFacets } from './product-facet-live-aggregation';
 import {
+  LISTING_CARD_SELECT,
+  mapListingRowToCard,
+  type PlpReadModelProduct,
+} from './product-listing-card-mapper';
+import {
   firstCsvTokens,
   parseOptionalPrice,
   parsePositiveInt,
@@ -31,31 +36,6 @@ import type {
 export type { PlpReadModelSearchParams } from './products-plp-read-model-types';
 
 const PRODUCT_ID_LOOKUP_MAX_PAGE_SIZE = 500;
-
-type PlpReadModelProduct = {
-  id: string;
-  slug: string;
-  title: string;
-  price: number;
-  compareAtPrice: number | null;
-  originalPrice: number | null;
-  discountPercent: number | null;
-  isSpecialPrice: boolean;
-  image: string | null;
-  images: string[];
-  inStock: boolean;
-  brand: {
-    id: string;
-    slug: string;
-    name: string;
-    logoUrl: string | null;
-  } | null;
-  defaultVariantId: string | null;
-  labels: unknown[];
-  colors: Array<{ value: string; imageUrl?: string | null; colors?: string[] | null }>;
-  warrantyBadge: { years: number } | null;
-  requiresAttributeSelection: boolean;
-};
 
 export type PlpReadModelPayload = {
   items: PlpReadModelProduct[];
@@ -187,62 +167,6 @@ function buildWhere(params: PlpReadModelSearchParams): Prisma.ProductListingRowW
   };
 }
 
-function normalizeJsonArray(value: Prisma.JsonValue): unknown[] {
-  return Array.isArray(value) ? value : [];
-}
-
-function normalizeColors(value: Prisma.JsonValue): PlpReadModelProduct['colors'] {
-  const colors: PlpReadModelProduct['colors'] = [];
-  for (const item of normalizeJsonArray(value)) {
-    if (!item || typeof item !== 'object' || Array.isArray(item)) {
-      continue;
-    }
-    const row = item as { value?: unknown; imageUrl?: unknown; colors?: unknown };
-    const label = typeof row.value === 'string' ? row.value.trim() : '';
-    if (!label) {
-      continue;
-    }
-    colors.push({
-      value: label,
-      imageUrl: typeof row.imageUrl === 'string' ? row.imageUrl : null,
-      colors: Array.isArray(row.colors)
-        ? row.colors.filter((color): color is string => typeof color === 'string')
-        : null,
-    });
-  }
-  return colors;
-}
-
-function toProduct(row: Awaited<ReturnType<typeof fetchRows>>[number]): PlpReadModelProduct {
-  return {
-    id: row.productId,
-    slug: row.slug,
-    title: row.title,
-    price: row.price,
-    compareAtPrice: row.compareAtPrice,
-    originalPrice: row.originalPrice,
-    discountPercent: row.discountPercent > 0 ? row.discountPercent : null,
-    isSpecialPrice: row.isSpecialPrice,
-    image: row.image,
-    images: row.images,
-    inStock: row.inStock,
-    brand:
-      row.brandId && row.brandSlug && row.brandName
-        ? {
-            id: row.brandId,
-            slug: row.brandSlug,
-            name: row.brandName,
-            logoUrl: row.brandLogoUrl,
-          }
-        : null,
-    defaultVariantId: row.defaultVariantId,
-    labels: normalizeJsonArray(row.labels),
-    colors: normalizeColors(row.colors),
-    warrantyBadge: row.warrantyYears ? { years: row.warrantyYears } : null,
-    requiresAttributeSelection: row.requiresAttributeSelection,
-  };
-}
-
 export async function getProductsPlpReadModelFilters(
   params: PlpReadModelSearchParams,
 ): Promise<ProductsFiltersData> {
@@ -260,28 +184,7 @@ async function fetchRows(args: {
     orderBy: args.orderBy,
     skip: args.skip,
     take: args.take,
-    select: {
-      productId: true,
-      slug: true,
-      title: true,
-      price: true,
-      compareAtPrice: true,
-      originalPrice: true,
-      discountPercent: true,
-      isSpecialPrice: true,
-      image: true,
-      images: true,
-      inStock: true,
-      brandId: true,
-      brandSlug: true,
-      brandName: true,
-      brandLogoUrl: true,
-      defaultVariantId: true,
-      labels: true,
-      colors: true,
-      warrantyYears: true,
-      requiresAttributeSelection: true,
-    },
+    select: LISTING_CARD_SELECT,
   });
 }
 
@@ -317,7 +220,7 @@ export async function getProductsPlpReadModelPayload(
     nextCursor: null,
     totalIsExact: !hasNextPage,
   };
-  const items = visibleRows.map(toProduct);
+  const items = visibleRows.map(mapListingRowToCard);
   return {
     items,
     pagination: meta,

@@ -19,7 +19,7 @@ const generatedIndex = path.join(
   "prisma-client",
   "index.js",
 );
-const sourceSchema = path.join(repoRoot, "shared", "db", "prisma", "schema.prisma");
+const prismaDir = path.join(repoRoot, "shared", "db", "prisma");
 const generatedSchema = path.join(
   repoRoot,
   "shared",
@@ -33,16 +33,47 @@ function fileMtimeMs(filePath) {
   return fs.existsSync(filePath) ? fs.statSync(filePath).mtimeMs : 0;
 }
 
+/**
+ * @param {string} dir
+ * @returns {string[]}
+ */
+function collectPrismaSchemaFiles(dir) {
+  /** @type {string[]} */
+  const files = [];
+  const mainSchema = path.join(dir, "schema.prisma");
+  if (fs.existsSync(mainSchema)) {
+    files.push(mainSchema);
+  }
+
+  const modelsDir = path.join(dir, "models");
+  if (fs.existsSync(modelsDir)) {
+    for (const entry of fs.readdirSync(modelsDir, { withFileTypes: true })) {
+      if (entry.isFile() && entry.name.endsWith(".prisma")) {
+        files.push(path.join(modelsDir, entry.name));
+      }
+    }
+  }
+
+  return files;
+}
+
+function latestSourceSchemaMtimeMs() {
+  const files = collectPrismaSchemaFiles(prismaDir);
+  return files.reduce((latest, filePath) => {
+    return Math.max(latest, fileMtimeMs(filePath));
+  }, 0);
+}
+
 function shouldGeneratePrismaClient() {
   if (!fs.existsSync(generatedIndex) || !fs.existsSync(generatedSchema)) {
     return true;
   }
 
-  const sourceSchemaMtimeMs = fileMtimeMs(sourceSchema);
+  const sourceSchemaMtimeMs = latestSourceSchemaMtimeMs();
   const generatedSchemaMtimeMs = fileMtimeMs(generatedSchema);
   const generatedIndexMtimeMs = fileMtimeMs(generatedIndex);
 
-  // Regenerate when schema changed after the generated client artifacts.
+  // Regenerate when any schema file changed after the generated client artifacts.
   return sourceSchemaMtimeMs > Math.min(generatedSchemaMtimeMs, generatedIndexMtimeMs);
 }
 

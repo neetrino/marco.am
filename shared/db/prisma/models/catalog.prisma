@@ -1,0 +1,126 @@
+model Category {
+  id            String                @id @default(cuid())
+  parentId      String?
+  position      Int                   @default(0)
+  published     Boolean               @default(false)
+  showInHeader  Boolean               @default(true)
+  requiresSizes Boolean               @default(false)
+  media         Json[]                @default([])
+  translations  CategoryTranslation[]
+  deletedAt     DateTime?
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+
+  // Relations
+  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryTree")
+  products Product[]  @relation("ProductCategories")
+
+  @@index([parentId])
+  @@index([published])
+  @@index([deletedAt])
+  @@map("categories")
+}
+
+model CategoryTranslation {
+  id             String  @id @default(cuid())
+  categoryId     String
+  locale         String
+  title          String
+  slug           String
+  fullPath       String
+  description    String?
+  seoTitle       String?
+  seoDescription String?
+
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([categoryId, locale])
+  @@index([slug, locale])
+  @@map("category_translations")
+}
+
+model Brand {
+  id           String             @id @default(cuid())
+  slug         String             @unique
+  logoUrl      String?
+  published    Boolean            @default(false)
+  translations BrandTranslation[]
+  deletedAt    DateTime?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  // Relations
+  products Product[]
+
+  @@index([published])
+  @@index([deletedAt])
+  @@map("brands")
+}
+
+model BrandTranslation {
+  id          String  @id @default(cuid())
+  brandId     String
+  locale      String
+  name        String
+  description String?
+
+  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
+  @@unique([brandId, locale])
+  @@map("brand_translations")
+}
+
+model Attribute {
+  id                String                 @id @default(cuid())
+  key               String                 @unique
+  type              String                 @default("select")
+  filterable        Boolean                @default(true)
+  position          Int                    @default(0)
+  translations      AttributeTranslation[]
+  values            AttributeValue[]
+  productAttributes ProductAttribute[]
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+
+  @@map("attributes")
+}
+
+model AttributeTranslation {
+  id          String @id @default(cuid())
+  attributeId String
+  locale      String
+  name        String
+
+  attribute Attribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+
+  @@unique([attributeId, locale])
+  @@map("attribute_translations")
+}
+
+model AttributeValue {
+  id             String                      @id @default(cuid())
+  attributeId    String
+  value          String
+  position       Int                         @default(0)
+  colors         Json?                       @default("[]")
+  imageUrl       String?
+  translations   AttributeValueTranslation[]
+  variantOptions ProductVariantOption[]
+
+  attribute Attribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+
+  @@map("attribute_values")
+}
+
+model AttributeValueTranslation {
+  id               String @id @default(cuid())
+  attributeValueId String
+  locale           String
+  label            String
+
+  attributeValue AttributeValue @relation(fields: [attributeValueId], references: [id], onDelete: Cascade)
+
+  @@unique([attributeValueId, locale])
+  @@map("attribute_value_translations")
+}

@@ -225,8 +225,16 @@ function parseImages(value) {
   return urls;
 }
 
+function filterAttributeKey(label, filterIndex) {
+  const fromLabel = toAsciiSlug(label, `spec-${filterIndex}`);
+  if (fromLabel.length >= 2) {
+    return fromLabel;
+  }
+  return `marco_filter_${filterIndex}`;
+}
+
 /**
- * Woo export columns `Filter{N} - Label` → stable Prisma attribute keys `marco_filter_{N}`.
+ * CSV columns `Filter{N} - Label` → attribute keys from label slug (fallback: marco_filter_{N}).
  * @param {Record<string, string>} sampleRow First data row (or any row with same keys).
  * @returns {{ header: string, filterIndex: number, attributeKey: string, attributeLabel: string }[]}
  */
@@ -237,11 +245,12 @@ function buildFilterColumnDefinitions(sampleRow) {
     if (!m) continue;
     const filterIndex = Number.parseInt(m[1], 10);
     if (!Number.isFinite(filterIndex)) continue;
+    const attributeLabel = m[2].trim();
     defs.push({
       header,
       filterIndex,
-      attributeKey: `marco_filter_${filterIndex}`,
-      attributeLabel: m[2].trim(),
+      attributeKey: filterAttributeKey(attributeLabel, filterIndex),
+      attributeLabel,
     });
   }
   return defs.sort((a, b) => a.filterIndex - b.filterIndex);

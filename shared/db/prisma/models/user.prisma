@@ -1,0 +1,67 @@
+model User {
+  id                   String    @id @default(cuid())
+  email                String?   @unique
+  phone                String?   @unique
+  passwordHash         String?
+  passwordResetToken   String?
+  passwordResetExpires DateTime?
+  firstName            String?
+  lastName             String?
+  emailVerified        Boolean   @default(false)
+  phoneVerified        Boolean   @default(false)
+  locale               String    @default("en")
+  blocked              Boolean   @default(false)
+  roles                String[]  @default(["customer"])
+  authEpoch            Int       @default(0)
+  addresses            Address[]
+  deletedAt            DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  // Relations
+  carts                 Cart[]
+  wishlist              Wishlist?
+  compareList           CompareList?
+  orders                Order[]
+  reviews               ProductReview[]
+  authVerificationCodes AuthVerificationCode[]
+
+  @@index([deletedAt])
+  @@map("users")
+}
+
+model AuthVerificationCode {
+  id        String   @id @default(cuid())
+  userId    String
+  channel   String
+  codeHash  String
+  expiresAt DateTime
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("auth_verification_codes")
+}
+
+model Address {
+  id           String  @id @default(cuid())
+  userId       String
+  firstName    String?
+  lastName     String?
+  company      String?
+  addressLine1 String?
+  addressLine2 String?
+  city         String?
+  state        String?
+  postalCode   String?
+  countryCode  String  @default("AM")
+  phone        String?
+  isDefault    Boolean @default(false)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("addresses")
+}

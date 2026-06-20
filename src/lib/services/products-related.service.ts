@@ -1,8 +1,10 @@
 import { Prisma } from "@white-shop/db/prisma";
 import { db } from "@white-shop/db";
-import { getAllChildCategoryIds } from "./products-find-query/category-utils";
-import { executePlpLeanListingQuery } from "./products-find-query/plp-lean-listing-query";
-import { productsFindTransformService } from "./products-find-transform.service";
+import {
+  LISTING_CARD_SELECT,
+  mapListingRowToCard,
+  type PlpReadModelProduct,
+} from "@/lib/read-model/product-listing-card-mapper";
 
 const DEFAULT_RELATED_LIMIT = 10;
 const MAX_RELATED_LIMIT = 24;
@@ -11,34 +13,7 @@ const RELATED_FETCH_BUFFER = 1;
 
 type RelatedRule = "category" | "brand" | "other";
 
-type RelatedProduct = {
-  id: string;
-  slug: string;
-  title: string;
-  price: number;
-  defaultVariantId?: string | null;
-  originalPrice?: number | null;
-  compareAtPrice: number | null;
-  discountPercent?: number | null;
-  isSpecialPrice?: boolean;
-  image: string | null;
-  inStock: boolean;
-  brand?: {
-    id: string;
-    name: string;
-    slug: string;
-    logoUrl: string | null;
-  } | null;
-  categories?: Array<{ id: string; slug: string; title: string }>;
-  variants?: Array<{
-    options?: Array<{
-      key: string;
-      value: string;
-    }>;
-  }>;
-};
-
-type RelatedProductWithRule = RelatedProduct & {
+type RelatedProductWithRule = PlpReadModelProduct & {
   recommendationRule: RelatedRule;
 };
 
@@ -86,26 +61,21 @@ function productNotFoundError(slug: string) {
   };
 }
 
-async function buildCategoryScopeWhere(categoryId: string): Promise<Prisma.ProductWhereInput> {
-  const childCategoryIds = await getAllChildCategoryIds(categoryId);
-  const allCategoryIds = [categoryId, ...childCategoryIds];
-  const categoryConditions = allCategoryIds.flatMap((catId) => [
-    { primaryCategoryId: catId },
-    { categoryIds: { has: catId } },
-  ]);
-  return { OR: categoryConditions };
-}
-
+/**
+ * Related products served entirely from the listing read-model. Ancestor categories
+ * are denormalized into each row's `categoryIds`, so the "same category subtree"
+ * scope is a single GIN array match — no operational category-tree walk.
+ */
 class ProductsRelatedService {
   private async loadRelatedAnchor(slug: string): Promise<RelatedAnchor> {
-    const row = await db.product.findFirst({
+    const row = await db.productListingRow.findFirst({
       where: {
-        published: true,
+        slug,
+        isPublished: true,
         deletedAt: null,
-        translations: { some: { slug } },
       },
       select: {
-        id: true,
+        productId: true,
         primaryCategoryId: true,
         brandId: true,
       },
@@ -116,34 +86,31 @@ class ProductsRelatedService {
     }
 
     return {
-      id: row.id,
+      id: row.productId,
       primaryCategoryId: row.primaryCategoryId,
       brandId: row.brandId,
     };
   }
 
-  private async fetchLeanCandidates(
+  private async fetchCandidates(
     lang: string,
     limit: number,
     excludeIds: Set<string>,
-    scopeWhere: Prisma.ProductWhereInput,
-  ): Promise<RelatedProduct[]> {
-    const products = await executePlpLeanListingQuery(
-      {
-        published: true,
+    scope: Prisma.ProductListingRowWhereInput,
+  ): Promise<PlpReadModelProduct[]> {
+    const rows = await db.productListingRow.findMany({
+      where: {
+        locale: lang,
+        isPublished: true,
         deletedAt: null,
-        id: { notIn: Array.from(excludeIds) },
-        ...scopeWhere,
+        productId: { notIn: Array.from(excludeIds) },
+        ...scope,
       },
-      limit,
-      0,
-      { lang },
-    );
-    if (products.length === 0) {
-      return [];
-    }
-    const transformed = await productsFindTransformService.transformProducts(products, lang);
-    return transformed as RelatedProduct[];
+      orderBy: [{ hasPrice: "desc" }, { productCreatedAt: "desc" }],
+      take: limit,
+      select: LISTING_CARD_SELECT,
+    });
+    return rows.map(mapListingRowToCard);
   }
 
   async findBySlug(
@@ -160,7 +127,7 @@ class ProductsRelatedService {
     const selectedProducts: RelatedProductWithRule[] = [];
     const seenProductIds = new Set<string>([baseProduct.id]);
 
-    const tryAppendProducts = (products: RelatedProduct[], rule: RelatedRule): void => {
+    const tryAppendProducts = (products: PlpReadModelProduct[], rule: RelatedRule): void => {
       for (const candidate of products) {
         if (selectedProducts.length >= targetCount) {
           return;
@@ -179,28 +146,21 @@ class ProductsRelatedService {
     const needsMoreCandidates = () => selectedProducts.length < targetCount;
 
     if (baseProduct.primaryCategoryId && needsMoreCandidates()) {
-      const categoryWhere = await buildCategoryScopeWhere(baseProduct.primaryCategoryId);
-      const categoryBatch = await this.fetchLeanCandidates(
-        lang,
-        batchLimit,
-        seenProductIds,
-        categoryWhere,
-      );
+      const categoryBatch = await this.fetchCandidates(lang, batchLimit, seenProductIds, {
+        categoryIds: { has: baseProduct.primaryCategoryId },
+      });
       tryAppendProducts(categoryBatch, "category");
     }
 
     if (baseProduct.brandId && needsMoreCandidates()) {
-      const brandBatch = await this.fetchLeanCandidates(
-        lang,
-        batchLimit,
-        seenProductIds,
-        { brandId: baseProduct.brandId },
-      );
+      const brandBatch = await this.fetchCandidates(lang, batchLimit, seenProductIds, {
+        brandId: baseProduct.brandId,
+      });
       tryAppendProducts(brandBatch, "brand");
     }
 
     if (needsMoreCandidates()) {
-      const otherBatch = await this.fetchLeanCandidates(lang, batchLimit, seenProductIds, {});
+      const otherBatch = await this.fetchCandidates(lang, batchLimit, seenProductIds, {});
       tryAppendProducts(otherBatch, "other");
     }
 

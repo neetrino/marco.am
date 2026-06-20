@@ -190,6 +190,7 @@ async function fetchAttributeFacets(input: PlpFacetFilterInput): Promise<Technic
         values: facet.values.sort((a, b) => a.label.localeCompare(b.label)),
       }))
       .sort((a, b) => a.label.localeCompare(b.label)),
+    { categorySlugTokens: input.categorySlugTokens },
   );
 }
 

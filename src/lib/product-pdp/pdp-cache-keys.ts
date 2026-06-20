@@ -19,14 +19,6 @@ export function buildPdpDetailApiCacheKey(slug: string, lang: string): string {
   return `cache:products:detail:v1:${hashPdpCacheIdentity(slug, lang)}`;
 }
 
-export function buildPdpSummaryApiCacheKey(slug: string, lang: string): string {
-  return `cache:products:summary:v1:${hashPdpCacheIdentity('pdp:summary', slug, lang)}`;
-}
-
-export function buildPdpVisualApiCacheKey(slug: string, lang: string): string {
-  return `cache:products:pdp:visual:v1:${hashPdpCacheIdentity('pdp:visual', slug, lang)}`;
-}
-
 export function buildPdpRelatedApiCacheKey(
   slug: string,
   lang: string,

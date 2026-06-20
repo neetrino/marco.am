@@ -128,8 +128,8 @@
 
 1. **Excel `Worksheet`** — одна широкая таблица: ~41 колонка характеристик (Հզորություն, Ծավալ, Չափս…).
 2. **Импорт** создаёт attributes с ключами **`marco_filter_1` … `marco_filter_41`** по **номеру колонки**, а не по смыслу.
-3. В админке **Attributes → 43 штуки** (41 marco + color + 1 битый пустой key) — это **ожидаемый побочный эффект** импорта, но **не финальная модель**.
-4. **PLP** показывает фильтры из `technicalSpecs` товаров **в текущей категории** (или по всему каталогу без category).
+3. В админке **Attributes → 42 штуки** (41 marco + color; битый пустой key удалён) — это **ожидаемый побочный эффект** импорта, но **не финальная модель**.
+4. **PLP** показывает фильтры из `technicalSpecs` товаров **только при выбранной категории** (без category — 0 spec-фильтров).
 
 ### Что не так (найдено 2026-06-20)
 
@@ -137,14 +137,17 @@
 |---|---|---|
 | Названия «Marco Filter N» | Вместо «Հզորություն (BTU)» | **Исправлено** — options перезаписывают JSON snapshot |
 | Слишком много групп | Техника: **38** фильтров на одной странице | **Смягчено** — cap 12 + min 3 товара |
-| Непонятные ключи `marco_filter_N` | В URL `spec.marco_filter_15=…` | **Документировано** — нужна миграция ключей |
-| Битый attribute с пустым key | 2 values в DB | TODO — удалить |
-| Мягкая мебель | **0** фильтров (нет характеристик в Excel) | OK — не баг |
+| Непонятные ключи `marco_filter_N` | В URL `spec.marco_filter_15=…` | **Отложено (E4)** — нужна transliteration или EN labels |
+| Битый attribute с пустым key | 2 values в DB | **Исправлено** — удалён |
+| Мягкая мебель (`papovk-kahovyq`) | **0** фильтров (нет характеристик в Excel) | OK — blocklist + нет spec data |
+| Фильтры без категории | Все товары → десятки групп | **Исправлено** — spec-фильтры только с category |
 
 ### Что сделано в коде
 
 - `product-listing-row-builder.ts` — корректные labels из attribute translations
 - `product-facet-visibility.ts` — max **12** групп, min **3** товара в scope
+- `plp-category-facet-policy.ts` — spec-фильтры только с category; blocklist мебельных slug без specs
+- `scripts/cleanup-import-attributes.cjs` — удаление битого attribute, `filterable=false` для marco_filter_38–41
 - `src/scripts/audit-plp-attribute-facets.ts` — аудит
 
 ```bash
@@ -155,12 +158,12 @@ pnpm run rebuild:plp-read-model   # после fix labels
 
 ### Что делать дальше (Phase E — фильтры)
 
-- [ ] **E1.** Rebuild read-model после fix labels
-- [ ] **E2.** Удалить битый attribute с пустым `key`
-- [ ] **E3.** Согласовать с клиентом **whitelist фильтров по категориям** (мебель / техника / кухня…)
-- [ ] **E4.** Миграция `marco_filter_N` → семантические keys (`power_btu`, `capacity_l`, `material`…)
-- [ ] **E5.** Импорт v2: key = slug(заголовок колонки), не номер колонки
-- [ ] **E6.** `filterable: false` для редко используемых attributes в админке
+- [x] **E1.** Rebuild read-model после fix labels — **6952** rows
+- [x] **E2.** Удалить битый attribute с пустым `key`
+- [ ] **E3.** Согласовать с клиентом **whitelist фильтров по категориям** (мебель / техника / кухня…) — *частично: blocklist + require category*
+- [ ] **E4.** Миграция `marco_filter_N` → семантические keys — **отложено** (Armenian labels → пустые ASCII slugs)
+- [x] **E5.** Импорт v2: key = slug(заголовок колонки), fallback `marco_filter_{N}` — в `import-marco-csv-products.cjs`
+- [x] **E6.** `filterable: false` для marco_filter_38–41 (sparse)
 
 **Рекомендация:** не удалять все 41 attribute сразу — они несут данные товаров. Сначала UX (labels + cap), потом семантическая миграция с клиентом.
 

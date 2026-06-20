@@ -1,0 +1,59 @@
+model Wishlist {
+  id           String   @id @default(cuid())
+  userId       String?  @unique
+  sessionToken String?  @unique
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user  User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items WishlistItem[]
+
+  @@index([expiresAt])
+  @@map("wishlists")
+}
+
+model WishlistItem {
+  id          String   @id @default(cuid())
+  wishlistId  String
+  productId   String
+  position    Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  wishlist Wishlist @relation(fields: [wishlistId], references: [id], onDelete: Cascade)
+  product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([wishlistId, productId])
+  @@index([wishlistId])
+  @@map("wishlist_items")
+}
+
+model CompareList {
+  id           String   @id @default(cuid())
+  userId       String?  @unique
+  sessionToken String?  @unique
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user  User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CompareItem[]
+
+  @@index([expiresAt])
+  @@map("compare_lists")
+}
+
+model CompareItem {
+  id            String   @id @default(cuid())
+  compareListId String
+  productId     String
+  position      Int      @default(0)
+  createdAt     DateTime @default(now())
+
+  compareList CompareList @relation(fields: [compareListId], references: [id], onDelete: Cascade)
+  product     Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([compareListId, productId])
+  @@index([compareListId])
+  @@map("compare_items")
+}

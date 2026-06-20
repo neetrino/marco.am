@@ -1,4 +1,9 @@
 import type { TechnicalSpecFacet } from '@/lib/services/products-technical-filters';
+import { isAttributeFacetScopeAllowed } from '@/constants/plp-category-facet-policy';
+
+export type AttributeFacetVisibilityContext = {
+  categorySlugTokens?: readonly string[];
+};
 
 /** Minimum distinct products in scope that must carry a facet before it is shown. */
 export const PLP_ATTRIBUTE_FACET_MIN_PRODUCTS = 3;
@@ -11,7 +16,15 @@ function facetProductCoverage(facet: TechnicalSpecFacet): number {
 }
 
 /** Hide sparse/noisy imported facets; keep the most useful groups for the current PLP scope. */
-export function filterVisibleAttributeFacets(facets: TechnicalSpecFacet[]): TechnicalSpecFacet[] {
+export function filterVisibleAttributeFacets(
+  facets: TechnicalSpecFacet[],
+  context: AttributeFacetVisibilityContext = {},
+): TechnicalSpecFacet[] {
+  const categorySlugTokens = context.categorySlugTokens ?? [];
+  if (!isAttributeFacetScopeAllowed(categorySlugTokens)) {
+    return [];
+  }
+
   return facets
     .filter((facet) => facetProductCoverage(facet) >= PLP_ATTRIBUTE_FACET_MIN_PRODUCTS)
     .sort(
