@@ -139,7 +139,7 @@ export function useOrders() {
       buildOrdersDefaultListCacheKey(),
       ADMIN_SESSION_CACHE_TTL_MS,
     );
-    return !cached?.data?.length;
+    return cached === null;
   });
   const [currency, setCurrency] = useState<CurrencyCode>(getStoredCurrency());
   /** Sync initial filter state from URL so the first fetch matches shared links / refresh. */
@@ -195,15 +195,15 @@ export function useOrders() {
       sortOrder,
     });
     const cached = readAdminSessionCache<OrdersResponse>(cacheKey, ADMIN_SESSION_CACHE_TTL_MS);
-    if (!options?.force && cached?.data?.length) {
-      setOrders(cached.data);
+    if (!options?.force && cached !== null) {
+      setOrders(cached.data ?? []);
       setMeta(cached.meta ?? null);
       setLoading(false);
       return;
     }
 
     try {
-      beginAdminDataFetch(Boolean(cached?.data?.length), setLoading);
+      beginAdminDataFetch(cached !== null, setLoading);
       const response = await dedupedAdminRequest(cacheKey, () =>
         apiClient.get<OrdersResponse>('/api/v1/supersudo/orders', {
           params: buildAdminOrdersListApiParams({
