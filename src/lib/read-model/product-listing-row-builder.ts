@@ -316,6 +316,24 @@ function collectTechnicalSpecs(
   }
 
   for (const variant of product.variants ?? []) {
+    if (variant.attributes && typeof variant.attributes === 'object' && !Array.isArray(variant.attributes)) {
+      for (const [rawKey, rawValue] of Object.entries(variant.attributes as Record<string, unknown>)) {
+        const key = normalizeTechnicalFilterToken(rawKey);
+        if (!key || isReservedShopAttributeFilterKey(key)) {
+          continue;
+        }
+        for (const entry of readVariantAttributeEntries(rawValue)) {
+          addSpec({
+            key,
+            label: humanizeAttributeKeyTitle(rawKey),
+            type: 'select',
+            value: entry.value,
+            valueLabel: entry.label,
+          });
+        }
+      }
+    }
+
     for (const option of variant.options ?? []) {
       const attribute = option.attributeValue?.attribute;
       const rawKey = attribute?.key ?? option.attributeKey ?? '';
@@ -341,24 +359,6 @@ function collectTechnicalSpecs(
         value: valueLabel,
         valueLabel,
       });
-    }
-
-    if (variant.attributes && typeof variant.attributes === 'object' && !Array.isArray(variant.attributes)) {
-      for (const [rawKey, rawValue] of Object.entries(variant.attributes as Record<string, unknown>)) {
-        const key = normalizeTechnicalFilterToken(rawKey);
-        if (!key || isReservedShopAttributeFilterKey(key)) {
-          continue;
-        }
-        for (const entry of readVariantAttributeEntries(rawValue)) {
-          addSpec({
-            key,
-            label: humanizeAttributeKeyTitle(rawKey),
-            type: 'select',
-            value: entry.value,
-            valueLabel: entry.label,
-          });
-        }
-      }
     }
   }
 

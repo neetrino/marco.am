@@ -17,6 +17,7 @@ import {
   type PlpFacetFilterInput,
 } from './product-facet-live-where';
 import type { PlpReadModelSearchParams } from './products-plp-read-model-types';
+import { filterVisibleAttributeFacets } from './product-facet-visibility';
 
 const LISTING_TABLE = Prisma.sql`"product_listing_rows"`;
 
@@ -182,12 +183,14 @@ async function fetchAttributeFacets(input: PlpFacetFilterInput): Promise<Technic
     facet.values.push({ value: row.value, label: row.valueLabel, count: toCount(row.count) });
     byKey.set(row.key, facet);
   }
-  return [...byKey.values()]
-    .map((facet) => ({
-      ...facet,
-      values: facet.values.sort((a, b) => a.label.localeCompare(b.label)),
-    }))
-    .sort((a, b) => a.label.localeCompare(b.label));
+  return filterVisibleAttributeFacets(
+    [...byKey.values()]
+      .map((facet) => ({
+        ...facet,
+        values: facet.values.sort((a, b) => a.label.localeCompare(b.label)),
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label)),
+  );
 }
 
 async function loadCategoryRows(locale: string): Promise<CategoryRow[]> {

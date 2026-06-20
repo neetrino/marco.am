@@ -367,7 +367,10 @@ Exit criteria:
   - Проверка: `tsc` чист, eslint изменённых файлов чист, вся тест-сюита **249/249** зелёная.
 - [ ] Привести React к 19.2+ под Next 16; проверить сборку/гидрацию (мажорный бамп — отдельным шагом с прод-build).
 - [ ] CI smoke/perf script: `/products`, category PLP, brand PLP, promotion PLP с budget-порогами.
-- [ ] Bundle/JS audit для PLP.
+- [~] Bundle/JS audit (snapshot):
+  - Прод-build на текущем стеке (React 18.3.1 + Next 16.1.7) **успешен**, 126 static pages за ~485ms — стек стабилен (baseline).
+  - Total client JS ~4.5MB; крупнейшие chunks: `zod` 336KB (отдельный chunk, грузится у форм checkout/login/register/admin — на PLP не на критическом пути), `react-dom` 220KB, `lucide` 120KB (проверить tree-shaking иконок), 160/132KB — app-код.
+  - Точная привязка chunks→`/products` требует `@next/bundle-analyzer` (Next 16 не печатает per-route size). Follow-up.
 - [ ] Документировать rollback.
 
 Exit criteria:
