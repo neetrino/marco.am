@@ -1,3 +1,4 @@
+import { getProductPdpFromReadModel } from "@/lib/read-model/products-pdp-read-model";
 import { buildProductQuery } from "./products-slug/product-query-builder";
 import { transformProduct } from "./products-slug/product-transformer";
 
@@ -6,10 +7,16 @@ import { transformProduct } from "./products-slug/product-transformer";
  */
 class ProductsSlugService {
   /**
-   * Get product by slug
+   * Get product by slug.
+   * Hot path: single indexed fetch from the PDP read-model. Falls back to the
+   * operational query (deep include) only on a read-model miss.
    */
   async findBySlug(slug: string, lang: string = "en") {
-    // Build and execute query with comprehensive error handling
+    const fromReadModel = await getProductPdpFromReadModel(slug, lang);
+    if (fromReadModel) {
+      return fromReadModel;
+    }
+
     const product = await buildProductQuery(slug, lang);
 
     if (!product) {

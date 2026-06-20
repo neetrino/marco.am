@@ -37,6 +37,7 @@
     "export:marco-xlsx-skus": "python src/scripts/export-marco-xlsx-skus.py",
     "sync:product-skus-xlsx": "tsx src/scripts/sync-product-skus-from-xlsx.ts",
     "rebuild:plp-read-model": "tsx src/scripts/rebuild-product-listing-read-model.ts",
+    "rebuild:pdp-read-model": "tsx src/scripts/rebuild-product-pdp-read-model.ts",
     "marco:reconcile-manifest": "python3 scripts/build-marco-reconcile-manifest.py",
     "marco:reconcile": "node scripts/marco-import-reconcile.cjs --dry-run",
     "marco:reconcile:apply": "node scripts/marco-import-reconcile.cjs --execute --upload-brand-logos",

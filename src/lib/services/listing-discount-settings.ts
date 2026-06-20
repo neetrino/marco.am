@@ -45,3 +45,12 @@ export const getListingDiscountSettings = cache(async (): Promise<ListingDiscoun
   const rows = await getDiscountRowsData();
   return parseDiscountRows(rows);
 });
+
+/**
+ * Same parsed settings without `unstable_cache` — safe outside a request context
+ * (CLI read-model rebuilds). Identical parse, so produces identical pricing.
+ */
+export async function loadListingDiscountSettingsUncached(): Promise<ListingDiscountSettings> {
+  const rows = await fetchDiscountSettingRows();
+  return parseDiscountRows(rows);
+}

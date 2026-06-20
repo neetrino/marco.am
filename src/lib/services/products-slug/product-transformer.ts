@@ -18,7 +18,10 @@ import {
   type ProductDescriptionEntry,
 } from "@/lib/products/product-description";
 import { buildProductGalleryUrls } from "@/lib/products/product-gallery-urls";
-import { getListingDiscountSettings } from "../listing-discount-settings";
+import {
+  getListingDiscountSettings,
+  type ListingDiscountSettings,
+} from "../listing-discount-settings";
 
 type ProductTranslationShape = {
   locale: string;
@@ -85,12 +88,6 @@ type ProductDiscountBadge = {
 
 type StockStatus = "in_stock" | "out_of_stock";
 
-/**
- * Get discount settings from database
- */
-async function getDiscountSettings() {
-  return getListingDiscountSettings();
-}
 
 /**
  * Calculate actual discount with priority: productDiscount > categoryDiscount > brandDiscount > globalDiscount
@@ -501,7 +498,8 @@ function buildProductDescriptionI18nMap(
  */
 export async function transformProduct(
   product: ProductWithFullRelations,
-  lang: string = "en"
+  lang: string = "en",
+  injectedDiscountSettings?: ListingDiscountSettings
 ) {
   // Get translations
   const translations = Array.isArray(product.translations)
@@ -517,8 +515,9 @@ export async function transformProduct(
     ? brandTranslations.find((t: { locale: string }) => t.locale === lang) || brandTranslations[0]
     : null;
 
-  // Get discount settings
-  const { globalDiscount, categoryDiscounts, brandDiscounts } = await getDiscountSettings();
+  // Discount settings: injected during read-model build (loaded once), else fetched (cached).
+  const { globalDiscount, categoryDiscounts, brandDiscounts } =
+    injectedDiscountSettings ?? (await getListingDiscountSettings());
   
   const productDiscount = product.discountPercent || 0;
   

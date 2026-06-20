@@ -5,6 +5,12 @@ import {
   type CategoryAncestry,
   type ProductListingReadModelDiscountSettings,
 } from '@/lib/read-model/product-listing-row-builder';
+import {
+  deleteProductPdpReadModel,
+  rebuildProductPdpReadModel,
+  syncProductPdpReadModel,
+  syncProductPdpReadModelBatch,
+} from '@/lib/read-model/product-pdp-read-model-sync';
 
 export const PRODUCT_LISTING_READ_MODEL_DEFAULT_LOCALES = ['en', 'hy', 'ru', 'ka'] as const;
 
@@ -235,6 +241,7 @@ export async function syncProductListingReadModel(
 
   if (!product || product.published === false || product.deletedAt) {
     const deleted = await db.productListingRow.deleteMany({ where: { productId } });
+    await syncProductPdpReadModel(productId, { locales, discountSettings });
     return {
       productId,
       rowsDeleted: deleted.count,
@@ -253,6 +260,7 @@ export async function syncProductListingReadModel(
   });
 
   const deleted = await replaceProductListingRows({ productId, rows });
+  await syncProductPdpReadModel(productId, { locales, discountSettings });
 
   return {
     productId,
@@ -316,6 +324,13 @@ export async function syncProductListingReadModelBatch(
     );
   }
 
+  await syncProductPdpReadModelBatch(uniqueProductIds, {
+    locales,
+    discountSettings,
+    batchSize,
+    logProgress: options.logProgress,
+  });
+
   return {
     productsSynced,
     rowsDeleted,
@@ -328,6 +343,7 @@ export async function syncProductListingReadModelBatch(
 export async function deleteProductListingReadModel(productId: string) {
   const startedAt = Date.now();
   const deleted = await db.productListingRow.deleteMany({ where: { productId } });
+  await deleteProductPdpReadModel(productId);
   return {
     productId,
     rowsDeleted: deleted.count,
@@ -384,9 +400,16 @@ export async function rebuildProductListingReadModel(
     );
   }
 
+  const pdpResult = await rebuildProductPdpReadModel({
+    locales,
+    discountSettings,
+    logProgress: options.logProgress,
+  });
+
   return {
     productsRead,
     rowsWritten,
+    pdpRowsWritten: pdpResult.rowsWritten,
     durationMs: Date.now() - startedAt,
     locales,
   };

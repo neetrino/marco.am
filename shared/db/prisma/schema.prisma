@@ -434,6 +434,29 @@ model ProductListingRow {
   @@map("product_listing_rows")
 }
 
+// Read-model for the PDP (product detail) hot path: one row per product×locale
+// holding the exact transformed detail payload as JSON. A cold read becomes a
+// single indexed fetch instead of the deep operational include graph.
+// `slugs` holds every locale's slug for the product so lookup by any slug works.
+model ProductPdpRow {
+  id               String    @id @default(cuid())
+  productId        String
+  locale           String
+  slug             String
+  slugs            String[]  @default([])
+  payload          Json
+  isPublished      Boolean   @default(true)
+  productUpdatedAt DateTime
+  rebuiltAt        DateTime  @default(now())
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@unique([productId, locale])
+  @@index([locale, slug])
+  @@index([slugs], type: Gin)
+  @@map("product_pdp_rows")
+}
+
 // ============================================
 // CART MODEL
 // ============================================

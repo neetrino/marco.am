@@ -6,7 +6,7 @@ import type { ProductWithFullRelations } from "./types";
 /**
  * Base include configuration for product queries
  */
-const getBaseInclude = () => ({
+export const getBaseInclude = () => ({
   translations: true,
   brand: {
     include: {
@@ -67,7 +67,7 @@ const getBaseIncludeWithoutAttributeValue = () => ({
 /**
  * ProductAttributes include configuration
  */
-const getProductAttributesInclude = () => ({
+export const getProductAttributesInclude = () => ({
   productAttributes: {
     include: {
       attribute: {
