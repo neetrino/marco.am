@@ -181,7 +181,7 @@ export function ProductFilters({
             </div>
 
             <div className="grid gap-4 p-4 sm:grid-cols-2 sm:p-5">
-              <div className="sm:col-span-2">
+              <div className="min-w-0">
                 <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
                   {t('admin.products.filterByCategory')}
                 </label>
@@ -204,40 +204,46 @@ export function ProductFilters({
                 </div>
               </div>
 
-              <div>
-                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  {t('admin.products.filterByStock')}
-                </label>
-                <select
-                  value={stockFilter}
-                  onChange={(event) => {
-                    setStockFilter(event.target.value as ProductStockFilter);
-                    setPage(1);
-                  }}
-                  className={fieldClass}
-                >
-                  <option value="all">{t('admin.products.allProducts')}</option>
-                  <option value="inStock">{t('admin.products.inStock')}</option>
-                  <option value="outOfStock">{t('admin.products.outOfStock')}</option>
-                </select>
-              </div>
+              <div className="flex min-w-0 flex-col gap-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  {t('admin.products.filtersTitle')}
+                </p>
 
-              <div>
-                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  {t('admin.products.filterByStatus')}
-                </label>
-                <select
-                  value={publishedFilter}
-                  onChange={(event) => {
-                    setPublishedFilter(event.target.value as ProductPublishedFilter);
-                    setPage(1);
-                  }}
-                  className={fieldClass}
-                >
-                  <option value="all">{t('admin.products.allStatuses')}</option>
-                  <option value="published">{t('admin.products.published')}</option>
-                  <option value="unpublished">{t('admin.products.draft')}</option>
-                </select>
+                <div>
+                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    {t('admin.products.filterByStock')}
+                  </label>
+                  <select
+                    value={stockFilter}
+                    onChange={(event) => {
+                      setStockFilter(event.target.value as ProductStockFilter);
+                      setPage(1);
+                    }}
+                    className={fieldClass}
+                  >
+                    <option value="all">{t('admin.products.allProducts')}</option>
+                    <option value="inStock">{t('admin.products.inStock')}</option>
+                    <option value="outOfStock">{t('admin.products.outOfStock')}</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    {t('admin.products.filterByStatus')}
+                  </label>
+                  <select
+                    value={publishedFilter}
+                    onChange={(event) => {
+                      setPublishedFilter(event.target.value as ProductPublishedFilter);
+                      setPage(1);
+                    }}
+                    className={fieldClass}
+                  >
+                    <option value="all">{t('admin.products.allStatuses')}</option>
+                    <option value="published">{t('admin.products.published')}</option>
+                    <option value="unpublished">{t('admin.products.draft')}</option>
+                  </select>
+                </div>
               </div>
             </div>
           </div>
