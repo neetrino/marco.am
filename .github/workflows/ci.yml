@@ -10,7 +10,7 @@ jobs:
   ci:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       # Pin pnpm 9.x so CI does not run pnpm 11 bootstrap (can mis-read v9
       # lockfiles as ERR_PNPM_BROKEN_LOCKFILE). Must run before setup-node cache.
