@@ -164,8 +164,8 @@ function ProductsPageContent() {
       });
       return () => window.cancelIdleCallback(idleId);
     }
-    const timeoutId = window.setTimeout(() => warmProductEditorReferenceData(), 600);
-    return () => window.clearTimeout(timeoutId);
+    const timeoutId = setTimeout(() => warmProductEditorReferenceData(), 600);
+    return () => clearTimeout(timeoutId);
   }, []);
 
   const buildListRequest = useCallback(
@@ -296,8 +296,8 @@ function ProductsPageContent() {
       const idleId = window.requestIdleCallback(run, { timeout: 1500 });
       return () => window.cancelIdleCallback(idleId);
     }
-    const timeoutId = window.setTimeout(run, 300);
-    return () => window.clearTimeout(timeoutId);
+    const timeoutId = setTimeout(run, 300);
+    return () => clearTimeout(timeoutId);
   }, [page, meta, loading, refreshing, prefetchListPage]);
 
   const categoryTitleById = useMemo(() => {

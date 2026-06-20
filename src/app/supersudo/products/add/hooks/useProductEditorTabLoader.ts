@@ -38,7 +38,7 @@ function scheduleIdleWork(callback: () => void): void {
   if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
     window.requestIdleCallback(callback, { timeout: 2500 });
   } else {
-    window.setTimeout(callback, 400);
+    setTimeout(callback, 400);
   }
 }
 
