@@ -29,7 +29,7 @@ import type {
 type QuickSettingsSettingsPayload = AdminQuickSettingsBootstrapPayload['settings'];
 
 let dashboardBootstrapPromise: Promise<AdminDashboardCachePayload> | null = null;
-let quickSettingsBootstrapPromises = new Map<string, Promise<AdminQuickSettingsBootstrapPayload>>();
+const quickSettingsBootstrapPromises = new Map<string, Promise<AdminQuickSettingsBootstrapPayload>>();
 
 function dashboardPayloadFromBootstrap(
   bootstrap: AdminDashboardBootstrapPayload,
