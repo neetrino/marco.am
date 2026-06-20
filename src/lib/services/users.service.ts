@@ -1,6 +1,6 @@
 import { getErrorMessage } from "@/lib/types/errors";
 import { db } from "@white-shop/db";
-import { bumpAuthEpoch } from "@/lib/auth/auth-epoch";
+import { bumpAuthEpoch } from "@/lib/auth/auth-epoch-mutations";
 import { buildCustomerOrderLinks } from "../constants/customer-order-api-paths";
 import * as bcrypt from "bcryptjs";
 import type { UpdateProfileRequest } from "@/lib/schemas/user-profile.schema";
