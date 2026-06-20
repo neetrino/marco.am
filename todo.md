@@ -61,7 +61,12 @@
 - [x] CMS-контентные страницы переведены в клиентские (как `/stores`): убран `cookies()`; статический prerender в `hy` (SEO) + клиентская подмена языка. Контент берётся из локальных i18n-файлов, БД на билде не нужна.
       Удалён `lib/server-page-language.ts`, добавлен клиентобезопасный `lib/legal-page-date.ts`.
       Результат сборки (○ Static): `/about`, `/contact`, `/cookies`, `/privacy`, `/terms`, `/brands`, `/stores`.
-      Остались ƒ Dynamic (ожидаемо): `/`, `/products`, `/products/[slug]`, `/reels`, заказы/часть supersudo.
+      Остались ƒ Dynamic (ожидаемо): `/products`, `/products/[slug]`, `/reels`, заказы/часть supersudo.
+- [x] Главная `/` → статика (ISR). Снят `cookies()` из 4 серверных секций (hero/reels/2 товарные полки) — рендер в `hy`.
+      hero-изображения не зависят от языка; товарные полки сами до-локализуются на клиенте (`serverLanguage` + `language-updated` + React Query).
+      `export const revalidate = 300` + `export const dynamic = 'force-static'` (нужен из-за Upstash fetch-кеша, иначе маршрут уходит в dynamic).
+      Сборка: `○ / Revalidate 5m`; в пререндеренном HTML реальный hero+reels+полки.
+      Внимание: сборка теперь пререндерит `/` → нужна доступность БД/Redis на билде (локально ок). Свежесть hero/промо — до 5 мин (бэкстоп); при желании можно добавить `revalidatePath('/')` в админ-мутации баннеров/reels.
 
 ## Шаг 5 (исходные заметки)
 Цель: снять `cookies()` с серверного критического пути → сайт отдаётся статикой/из CDN, мгновенный первый кадр.

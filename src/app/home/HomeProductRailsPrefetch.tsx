@@ -1,18 +1,11 @@
-import { cookies } from 'next/headers';
-import {
-  LANGUAGE_PREFERENCE_KEY,
-  parseLanguageFromServer,
-  type LanguageCode,
-} from '@/lib/language';
+import { DEFAULT_STOREFRONT_LANGUAGE } from '@/lib/language';
 import { getHomeProductRailsDataCached } from './home-product-rails-data';
 
 /**
  * Starts the shared rails fetch early so `HomeProductRailsBoundary` hits React `cache()` immediately.
+ * Uses the default language; client rails refetch in the visitor's language after hydration.
  */
 export async function HomeProductRailsPrefetch() {
-  const cookieStore = await cookies();
-  const lang: LanguageCode =
-    parseLanguageFromServer(cookieStore.get(LANGUAGE_PREFERENCE_KEY)?.value) ?? 'en';
-  await getHomeProductRailsDataCached(lang);
+  await getHomeProductRailsDataCached(DEFAULT_STOREFRONT_LANGUAGE);
   return null;
 }

@@ -8,6 +8,16 @@ import { HomeHeroBannerFallback, HomeReelsRailFallback } from './HomeHeroReelsFa
 import { HomeReelsBelowHero } from './HomeReelsBelowHero';
 
 /**
+ * Home is prerendered as static HTML (instant hero/LCP) and refreshed via ISR every 5 minutes.
+ * `force-static` is required because the merchandising data is read through the Upstash (fetch-based)
+ * cache layer, which would otherwise opt the route into dynamic rendering. Hero images are
+ * locale-independent and the product strips re-localize client-side, so the default-language
+ * snapshot is correct for every visitor.
+ */
+export const revalidate = 300;
+export const dynamic = 'force-static';
+
+/**
  * Shell renders immediately; hero streams first, then REELS, then product rails (Figma `1:2665`).
  */
 export default function HomePage() {
