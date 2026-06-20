@@ -2,8 +2,8 @@ import { db } from "@white-shop/db";
 import { logger } from "@/lib/utils/logger";
 import { revalidateProductCache } from "./admin-products-update/cache-revalidator";
 import {
-  deleteProductReadModelAndRebuildFacetCounts,
-  syncProductReadModelAndFacetCounts,
+  deleteProductListingReadModel,
+  syncProductListingReadModel,
 } from "@/lib/read-model/product-read-model-sync";
 
 class AdminProductsDeleteService {
@@ -40,7 +40,7 @@ class AdminProductsDeleteService {
         published: false,
       },
     });
-    await deleteProductReadModelAndRebuildFacetCounts(productId);
+    await deleteProductListingReadModel(productId);
     await revalidateProductCache(productId, product.translations[0]?.slug);
 
     return { success: true };
@@ -92,7 +92,7 @@ class AdminProductsDeleteService {
         discountPercent: true,
       },
     });
-    await syncProductReadModelAndFacetCounts(productId);
+    await syncProductListingReadModel(productId);
     await revalidateProductCache(productId, product.translations[0]?.slug);
 
     logger.devLog('✅ [ADMIN PRODUCTS DELETE SERVICE] Product discount updated successfully:', {

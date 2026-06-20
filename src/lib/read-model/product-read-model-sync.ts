@@ -1,12 +1,8 @@
 import { db } from '@white-shop/db';
 import { Prisma } from '@white-shop/db/prisma';
 import {
-  buildProductFacetCountRows,
-  type CategoryFacetLabel,
-  type ProductFacetScopeFilter,
-} from '@/lib/read-model/product-facet-count-builder';
-import {
   buildProductListingRowsForLocales,
+  type CategoryAncestry,
   type ProductListingReadModelDiscountSettings,
 } from '@/lib/read-model/product-listing-row-builder';
 
@@ -14,7 +10,6 @@ export const PRODUCT_LISTING_READ_MODEL_DEFAULT_LOCALES = ['en', 'hy', 'ru', 'ka
 
 const DEFAULT_LISTING_BATCH_SIZE = 100;
 const DEFAULT_AFFECTED_LISTING_BATCH_SIZE = 500;
-const DEFAULT_FACET_BATCH_SIZE = 1_000;
 const DISCOUNT_KEYS = ['globalDiscount', 'categoryDiscounts', 'brandDiscounts'] as const;
 
 export type ProductListingReadModelRebuildOptions = {
@@ -23,20 +18,10 @@ export type ProductListingReadModelRebuildOptions = {
   logProgress?: (message: string) => void;
 };
 
-export type ProductFacetCountsRebuildOptions = {
-  batchSize?: number;
-  logProgress?: (message: string) => void;
-};
-
 export type ProductListingReadModelBatchSyncOptions = Pick<
   ProductListingReadModelRebuildOptions,
   'locales' | 'batchSize' | 'logProgress'
 >;
-
-type AffectedFacetScopes = {
-  includeCatalog: boolean;
-  categoryScopeKeys: string[];
-};
 
 function normalizeLocales(locales: readonly string[] | undefined): string[] {
   const source = locales?.length ? locales : PRODUCT_LISTING_READ_MODEL_DEFAULT_LOCALES;
@@ -64,28 +49,6 @@ function parseJsonRecord(value: unknown): Record<string, number> {
   return out;
 }
 
-function collectCategoryScopeKeysFromListingRows(
-  rows: ReadonlyArray<{ categorySlugs: readonly string[] }>,
-): string[] {
-  return [
-    ...new Set(
-      rows.flatMap((row) => row.categorySlugs.map((slug) => slug.trim()).filter(Boolean)),
-    ),
-  ];
-}
-
-function collectCategoryScopeKeysFromCreateRows(rows: readonly Prisma.ProductListingRowCreateManyInput[]): string[] {
-  return [
-    ...new Set(
-      rows.flatMap((row) =>
-        Array.isArray(row.categorySlugs)
-          ? row.categorySlugs.map((slug) => slug.trim()).filter(Boolean)
-          : [],
-      ),
-    ),
-  ];
-}
-
 async function loadDiscountSettings(): Promise<ProductListingReadModelDiscountSettings> {
   const rows = await db.settings.findMany({
     where: { key: { in: [...DISCOUNT_KEYS] } },
@@ -96,6 +59,31 @@ async function loadDiscountSettings(): Promise<ProductListingReadModelDiscountSe
     categoryDiscounts: parseJsonRecord(rows.find((row) => row.key === 'categoryDiscounts')?.value),
     brandDiscounts: parseJsonRecord(rows.find((row) => row.key === 'brandDiscounts')?.value),
   };
+}
+
+/** Category parent map + per-locale slugs, used to denormalize ancestor categories into rows. */
+async function loadCategoryAncestry(): Promise<CategoryAncestry> {
+  const categories = await db.category.findMany({
+    where: { published: true, deletedAt: null },
+    select: {
+      id: true,
+      parentId: true,
+      translations: { select: { locale: true, slug: true } },
+    },
+  });
+
+  const parentById = new Map<string, string | null>();
+  const slugByIdLocale = new Map<string, string>();
+  for (const category of categories) {
+    parentById.set(category.id, category.parentId ?? null);
+    for (const translation of category.translations) {
+      const slug = translation.slug?.trim();
+      if (slug) {
+        slugByIdLocale.set(`${category.id}:${translation.locale}`, slug);
+      }
+    }
+  }
+  return { parentById, slugByIdLocale };
 }
 
 function productReadModelSelect(locales: readonly string[]) {
@@ -239,15 +227,11 @@ export async function syncProductListingReadModel(
 ) {
   const startedAt = Date.now();
   const locales = normalizeLocales(options.locales);
-  const [discountSettings, product, previousRows] = await Promise.all([
+  const [discountSettings, categoryAncestry, product] = await Promise.all([
     loadDiscountSettings(),
+    loadCategoryAncestry(),
     fetchProductForReadModel(productId, locales),
-    db.productListingRow.findMany({
-      where: { productId },
-      select: { categorySlugs: true },
-    }),
   ]);
-  const previousCategoryScopeKeys = collectCategoryScopeKeysFromListingRows(previousRows);
 
   if (!product || product.published === false || product.deletedAt) {
     const deleted = await db.productListingRow.deleteMany({ where: { productId } });
@@ -257,10 +241,6 @@ export async function syncProductListingReadModel(
       rowsWritten: 0,
       durationMs: Date.now() - startedAt,
       locales,
-      affectedFacetScopes: {
-        includeCatalog: deleted.count > 0,
-        categoryScopeKeys: previousCategoryScopeKeys,
-      },
     };
   }
 
@@ -268,6 +248,7 @@ export async function syncProductListingReadModel(
     product,
     locales,
     discountSettings,
+    categoryAncestry,
     rebuiltAt: new Date(),
   });
 
@@ -279,15 +260,6 @@ export async function syncProductListingReadModel(
     rowsWritten: rows.length,
     durationMs: Date.now() - startedAt,
     locales,
-    affectedFacetScopes: {
-      includeCatalog: deleted.count > 0 || rows.length > 0,
-      categoryScopeKeys: [
-        ...new Set([
-          ...previousCategoryScopeKeys,
-          ...collectCategoryScopeKeysFromCreateRows(rows),
-        ]),
-      ],
-    },
   };
 }
 
@@ -299,27 +271,20 @@ export async function syncProductListingReadModelBatch(
   const uniqueProductIds = [...new Set(productIds.filter(Boolean))];
   const locales = normalizeLocales(options.locales);
   const batchSize = normalizeBatchSize(options.batchSize, DEFAULT_AFFECTED_LISTING_BATCH_SIZE, 500);
-  const discountSettings = await loadDiscountSettings();
+  const [discountSettings, categoryAncestry] = await Promise.all([
+    loadDiscountSettings(),
+    loadCategoryAncestry(),
+  ]);
   let rowsDeleted = 0;
   let rowsWritten = 0;
   let productsSynced = 0;
-  const affectedCategoryScopeKeys = new Set<string>();
 
   for (let index = 0; index < uniqueProductIds.length; index += batchSize) {
     const chunkIds = uniqueProductIds.slice(index, index + batchSize);
-    const [products, previousRows] = await Promise.all([
-      db.product.findMany({
-        where: { id: { in: chunkIds } },
-        select: productReadModelSelect(locales),
-      }),
-      db.productListingRow.findMany({
-        where: { productId: { in: chunkIds } },
-        select: { categorySlugs: true },
-      }),
-    ]);
-    for (const scopeKey of collectCategoryScopeKeysFromListingRows(previousRows)) {
-      affectedCategoryScopeKeys.add(scopeKey);
-    }
+    const products = await db.product.findMany({
+      where: { id: { in: chunkIds } },
+      select: productReadModelSelect(locales),
+    });
     const rebuiltAt = new Date();
     const rows = products
       .filter((product) => product.published !== false && !product.deletedAt)
@@ -328,12 +293,10 @@ export async function syncProductListingReadModelBatch(
           product,
           locales,
           discountSettings,
+          categoryAncestry,
           rebuiltAt,
         }),
       );
-    for (const scopeKey of collectCategoryScopeKeysFromCreateRows(rows)) {
-      affectedCategoryScopeKeys.add(scopeKey);
-    }
 
     const deleted = await db.$transaction(async (tx) => {
       const deleteResult = await tx.productListingRow.deleteMany({
@@ -359,28 +322,16 @@ export async function syncProductListingReadModelBatch(
     rowsWritten,
     durationMs: Date.now() - startedAt,
     locales,
-    affectedFacetScopes: {
-      includeCatalog: uniqueProductIds.length > 0,
-      categoryScopeKeys: [...affectedCategoryScopeKeys],
-    },
   };
 }
 
 export async function deleteProductListingReadModel(productId: string) {
   const startedAt = Date.now();
-  const previousRows = await db.productListingRow.findMany({
-    where: { productId },
-    select: { categorySlugs: true },
-  });
   const deleted = await db.productListingRow.deleteMany({ where: { productId } });
   return {
     productId,
     rowsDeleted: deleted.count,
     durationMs: Date.now() - startedAt,
-    affectedFacetScopes: {
-      includeCatalog: deleted.count > 0,
-      categoryScopeKeys: collectCategoryScopeKeysFromListingRows(previousRows),
-    },
   };
 }
 
@@ -390,7 +341,10 @@ export async function rebuildProductListingReadModel(
   const startedAt = Date.now();
   const locales = normalizeLocales(options.locales);
   const batchSize = normalizeBatchSize(options.batchSize, DEFAULT_LISTING_BATCH_SIZE, 500);
-  const discountSettings = await loadDiscountSettings();
+  const [discountSettings, categoryAncestry] = await Promise.all([
+    loadDiscountSettings(),
+    loadCategoryAncestry(),
+  ]);
   await db.productListingRow.deleteMany({});
 
   let cursorId: string | undefined;
@@ -413,6 +367,7 @@ export async function rebuildProductListingReadModel(
         product,
         locales,
         discountSettings,
+        categoryAncestry,
         rebuiltAt,
       }),
     );
@@ -437,240 +392,18 @@ export async function rebuildProductListingReadModel(
   };
 }
 
-async function loadCategoryLabels(): Promise<CategoryFacetLabel[]> {
-  const categories = await db.category.findMany({
-    where: {
-      published: true,
-      deletedAt: null,
-    },
-    select: {
-      id: true,
-      parentId: true,
-      position: true,
-      translations: {
-        select: {
-          locale: true,
-          slug: true,
-          title: true,
-        },
-      },
-    },
-  });
-
-  return categories.flatMap((category) =>
-    category.translations.map((translation) => ({
-      id: category.id,
-      parentId: category.parentId,
-      locale: translation.locale,
-      slug: translation.slug,
-      title: translation.title,
-      position: category.position,
-    })),
-  );
-}
-
-async function loadListingRowsForFacets() {
-  return db.productListingRow.findMany({
-    where: {
-      isPublished: true,
-      deletedAt: null,
-    },
-    select: {
-      productId: true,
-      locale: true,
-      brandId: true,
-      brandSlug: true,
-      brandName: true,
-      brandLogoUrl: true,
-      categoryIds: true,
-      colors: true,
-      sizeTokens: true,
-      technicalSpecs: true,
-      priceSort: true,
-    },
-  });
-}
-
-export async function rebuildProductFacetCountsFromReadModel(
-  options: ProductFacetCountsRebuildOptions = {},
-) {
-  const startedAt = Date.now();
-  const batchSize = normalizeBatchSize(options.batchSize, DEFAULT_FACET_BATCH_SIZE, 5_000);
-  const [rows, categoryLabels] = await Promise.all([
-    loadListingRowsForFacets(),
-    loadCategoryLabels(),
-  ]);
-  const facetRows = buildProductFacetCountRows({
-    rows,
-    categoryLabels,
-    rebuiltAt: new Date(),
-  });
-
-  await db.productFacetCount.deleteMany({});
-
-  let written = 0;
-  for (let index = 0; index < facetRows.length; index += batchSize) {
-    const batch = facetRows.slice(index, index + batchSize);
-    await db.productFacetCount.createMany({ data: batch });
-    written += batch.length;
-    options.logProgress?.(`[product-facet-counts] written rows=${written}/${facetRows.length}`);
-  }
-
-  return {
-    sourceRows: rows.length,
-    facetRows: written,
-    durationMs: Date.now() - startedAt,
-  };
-}
-
-export async function rebuildProductFacetCountsForScopesFromReadModel(
-  scopeFilter: ProductFacetScopeFilter,
-  options: ProductFacetCountsRebuildOptions = {},
-) {
-  const startedAt = Date.now();
-  const batchSize = normalizeBatchSize(options.batchSize, DEFAULT_FACET_BATCH_SIZE, 5_000);
-  const categoryScopeKeys = [...new Set(scopeFilter.categoryScopeKeys ?? [])];
-  const normalizedScopeFilter: ProductFacetScopeFilter = {
-    includeCatalog: scopeFilter.includeCatalog !== false,
-    categoryScopeKeys,
-  };
-  const [rows, categoryLabels] = await Promise.all([
-    loadListingRowsForFacets(),
-    loadCategoryLabels(),
-  ]);
-  const facetRows = buildProductFacetCountRows({
-    rows,
-    categoryLabels,
-    rebuiltAt: new Date(),
-    scopeFilter: normalizedScopeFilter,
-  });
-
-  await db.productFacetCount.deleteMany({
-    where: {
-      OR: [
-        ...(normalizedScopeFilter.includeCatalog
-          ? [{ scopeType: 'catalog', scopeKey: 'default' }]
-          : []),
-        ...categoryScopeKeys.map((scopeKey) => ({
-          scopeType: 'category',
-          scopeKey,
-        })),
-      ],
-    },
-  });
-
-  let written = 0;
-  for (let index = 0; index < facetRows.length; index += batchSize) {
-    const batch = facetRows.slice(index, index + batchSize);
-    await db.productFacetCount.createMany({ data: batch });
-    written += batch.length;
-    options.logProgress?.(`[product-facet-counts] written scoped rows=${written}/${facetRows.length}`);
-  }
-
-  return {
-    sourceRows: rows.length,
-    facetRows: written,
-    durationMs: Date.now() - startedAt,
-    scopeFilter: normalizedScopeFilter,
-  };
-}
-
-async function rebuildProductFacetCountsForAffectedScopes(
-  affectedFacetScopes: AffectedFacetScopes,
-) {
-  if (!affectedFacetScopes.includeCatalog && affectedFacetScopes.categoryScopeKeys.length === 0) {
-    return {
-      sourceRows: 0,
-      facetRows: 0,
-      durationMs: 0,
-      scopeFilter: {
-        includeCatalog: false,
-        categoryScopeKeys: [],
-      },
-    };
-  }
-
-  return rebuildProductFacetCountsForScopesFromReadModel(affectedFacetScopes);
-}
-
-async function loadCategoryScopeKeysForCategoryIds(categoryIds: readonly string[]): Promise<string[]> {
-  const uniqueCategoryIds = [...new Set(categoryIds.filter(Boolean))];
-  if (uniqueCategoryIds.length === 0) {
-    return [];
-  }
-
-  const [categoryTranslations, existingFacetRows] = await Promise.all([
-    db.categoryTranslation.findMany({
-      where: { categoryId: { in: uniqueCategoryIds } },
-      select: { slug: true },
-    }),
-    db.productFacetCount.findMany({
-      where: {
-        facetType: 'category',
-        OR: uniqueCategoryIds.map((categoryId) => ({
-          meta: {
-            path: ['categoryId'],
-            equals: categoryId,
-          },
-        })),
-      },
-      select: {
-        value: true,
-      },
-    }),
-  ]);
-
-  return [
-    ...new Set([
-      ...categoryTranslations.map((row) => row.slug),
-      ...existingFacetRows.map((row) => row.value),
-    ].filter(Boolean)),
-  ];
-}
-
-export async function syncProductReadModelAndFacetCounts(productId: string) {
-  const listing = await syncProductListingReadModel(productId);
-  const facets = await rebuildProductFacetCountsForAffectedScopes(listing.affectedFacetScopes);
-  return { listing, facets };
-}
-
-export async function syncProductListingReadModelBatchAndFacetCounts(
-  productIds: readonly string[],
-  options: ProductListingReadModelBatchSyncOptions = {},
-) {
-  const listing = await syncProductListingReadModelBatch(productIds, options);
-  const facets = await rebuildProductFacetCountsForAffectedScopes(listing.affectedFacetScopes);
-  return { listing, facets };
-}
-
-export async function syncProductsReadModelByBrandAndFacetCounts(brandId: string) {
+export async function syncProductListingReadModelByBrand(brandId: string) {
   const products = await db.product.findMany({
-    where: {
-      brandId,
-      deletedAt: null,
-    },
+    where: { brandId, deletedAt: null },
     select: { id: true },
   });
-  return syncProductListingReadModelBatchAndFacetCounts(products.map((product) => product.id));
+  return syncProductListingReadModelBatch(products.map((product) => product.id));
 }
 
-export async function syncProductsReadModelByCategoryIdsAndFacetCounts(categoryIds: readonly string[]) {
+export async function syncProductListingReadModelByCategoryIds(categoryIds: readonly string[]) {
   const uniqueCategoryIds = [...new Set(categoryIds.filter(Boolean))];
   if (uniqueCategoryIds.length === 0) {
-    const facets = await rebuildProductFacetCountsForAffectedScopes({
-      includeCatalog: false,
-      categoryScopeKeys: [],
-    });
-    return {
-      listing: {
-        productsSynced: 0,
-        rowsDeleted: 0,
-        rowsWritten: 0,
-        durationMs: 0,
-        locales: normalizeLocales(undefined),
-      },
-      facets,
-    };
+    return syncProductListingReadModelBatch([]);
   }
 
   const products = await db.product.findMany({
@@ -684,23 +417,10 @@ export async function syncProductsReadModelByCategoryIdsAndFacetCounts(categoryI
     },
     select: { id: true },
   });
-  const [listing, extraCategoryScopeKeys] = await Promise.all([
-    syncProductListingReadModelBatch(products.map((product) => product.id)),
-    loadCategoryScopeKeysForCategoryIds(uniqueCategoryIds),
-  ]);
-  const facets = await rebuildProductFacetCountsForAffectedScopes({
-    includeCatalog: listing.affectedFacetScopes.includeCatalog || extraCategoryScopeKeys.length > 0,
-    categoryScopeKeys: [
-      ...new Set([
-        ...listing.affectedFacetScopes.categoryScopeKeys,
-        ...extraCategoryScopeKeys,
-      ]),
-    ],
-  });
-  return { listing, facets };
+  return syncProductListingReadModelBatch(products.map((product) => product.id));
 }
 
-export async function syncProductsReadModelByAttributeIdAndFacetCounts(attributeId: string) {
+export async function syncProductListingReadModelByAttributeId(attributeId: string) {
   const [productAttributes, variantOptions] = await Promise.all([
     db.productAttribute.findMany({
       where: { attributeId },
@@ -708,14 +428,7 @@ export async function syncProductsReadModelByAttributeIdAndFacetCounts(attribute
     }),
     db.productVariantOption.findMany({
       where: {
-        OR: [
-          { attributeId },
-          {
-            attributeValue: {
-              attributeId,
-            },
-          },
-        ],
+        OR: [{ attributeId }, { attributeValue: { attributeId } }],
       },
       select: {
         variant: {
@@ -725,13 +438,13 @@ export async function syncProductsReadModelByAttributeIdAndFacetCounts(attribute
     }),
   ]);
 
-  return syncProductListingReadModelBatchAndFacetCounts([
+  return syncProductListingReadModelBatch([
     ...productAttributes.map((row) => row.productId),
     ...variantOptions.map((row) => row.variant.productId),
   ]);
 }
 
-export async function syncProductsReadModelByAttributeValueIdAndFacetCounts(attributeValueId: string) {
+export async function syncProductListingReadModelByAttributeValueId(attributeValueId: string) {
   const variantOptions = await db.productVariantOption.findMany({
     where: { valueId: attributeValueId },
     select: {
@@ -741,19 +454,7 @@ export async function syncProductsReadModelByAttributeValueIdAndFacetCounts(attr
     },
   });
 
-  return syncProductListingReadModelBatchAndFacetCounts(
+  return syncProductListingReadModelBatch(
     variantOptions.map((row) => row.variant.productId),
   );
-}
-
-export async function deleteProductReadModelAndRebuildFacetCounts(productId: string) {
-  const listing = await deleteProductListingReadModel(productId);
-  const facets = await rebuildProductFacetCountsForAffectedScopes(listing.affectedFacetScopes);
-  return { listing, facets };
-}
-
-export async function rebuildStorefrontReadModel(options: ProductListingReadModelRebuildOptions = {}) {
-  const listing = await rebuildProductListingReadModel(options);
-  const facets = await rebuildProductFacetCountsFromReadModel();
-  return { listing, facets };
 }

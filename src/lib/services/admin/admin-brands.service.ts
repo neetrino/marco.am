@@ -4,8 +4,8 @@ import { toSlug } from "@/lib/utils/slug";
 import { logger } from "@/lib/utils/logger";
 import { revalidateProductCache } from "./admin-products-update/cache-revalidator";
 import {
-  syncProductListingReadModelBatchAndFacetCounts,
-  syncProductsReadModelByBrandAndFacetCounts,
+  syncProductListingReadModelBatch,
+  syncProductListingReadModelByBrand,
 } from "@/lib/read-model/product-read-model-sync";
 
 class AdminBrandsService {
@@ -207,7 +207,7 @@ class AdminBrandsService {
       : [];
     const translation = brandTranslations[0] || null;
 
-    await syncProductsReadModelByBrandAndFacetCounts(brandId);
+    await syncProductListingReadModelByBrand(brandId);
 
     return {
       data: {
@@ -273,7 +273,7 @@ class AdminBrandsService {
       });
     });
 
-    await syncProductListingReadModelBatchAndFacetCounts(
+    await syncProductListingReadModelBatch(
       linkedProducts.map((product) => product.id),
     );
 

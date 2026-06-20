@@ -262,7 +262,7 @@ async function fetchCategoryFacets(input: PlpFacetFilterInput): Promise<Category
 export async function aggregateProductsPlpFacets(
   params: PlpReadModelSearchParams,
 ): Promise<ProductsFiltersData> {
-  const input = await buildFacetFilterInput(params);
+  const input = buildFacetFilterInput(params);
   const [brands, colors, sizes, priceRange, attributeFacets, categories] = await Promise.all([
     fetchBrandFacets(input),
     fetchColorFacets(input),

@@ -434,29 +434,6 @@ model ProductListingRow {
   @@map("product_listing_rows")
 }
 
-model ProductFacetCount {
-  id        String   @id @default(cuid())
-  locale    String
-  scopeType String
-  scopeKey  String
-  facetType String
-  facetKey  String
-  value     String
-  label     String
-  count     Int      @default(0)
-  position  Int      @default(0)
-  meta      Json     @default("{}")
-  rebuiltAt DateTime @default(now())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([locale, scopeType, scopeKey, facetType, facetKey, value])
-  @@index([locale, scopeType, scopeKey])
-  @@index([locale, scopeType, scopeKey, facetType])
-  @@index([locale, facetType, value])
-  @@map("product_facet_counts")
-}
-
 // ============================================
 // CART MODEL
 // ============================================

@@ -11,7 +11,7 @@ type ProductsShopFiltersReadModelSectionProps = {
   readonly ctx: ProductsShopListingServerContext;
 };
 
-/** Streams all PLP sidebar facets from `product_facet_counts` into the filter provider. */
+/** Streams all PLP sidebar facets (live-aggregated from `product_listing_rows`) into the filter provider. */
 export async function ProductsShopFiltersReadModelSection({
   raw,
   ctx,

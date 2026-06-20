@@ -31,7 +31,7 @@ import {
   normalizeProductCategoryLinks,
   toProductCategoriesConnect,
 } from "../product-category-links.service";
-import { syncProductReadModelAndFacetCounts } from "@/lib/read-model/product-read-model-sync";
+import { syncProductListingReadModel } from "@/lib/read-model/product-read-model-sync";
 
 type ProductMediaItem = string | { url: string };
 
@@ -435,7 +435,7 @@ class AdminProductsCreateService {
       });
 
       if (result?.id) {
-        await syncProductReadModelAndFacetCounts(result.id);
+        await syncProductListingReadModel(result.id);
       }
 
       // Revalidate cache

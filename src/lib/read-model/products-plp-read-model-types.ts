@@ -6,6 +6,7 @@ export type PlpReadModelSearchParams = {
   limit?: string;
   search?: string;
   category?: string;
+  ids?: string;
   brand?: string;
   filter?: string;
   minPrice?: string;

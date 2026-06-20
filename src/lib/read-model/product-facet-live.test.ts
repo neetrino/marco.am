@@ -5,7 +5,7 @@ import { rollupCategoryCounts } from '@/lib/read-model/product-facet-live-aggreg
 function baseInput(overrides: Partial<PlpFacetFilterInput> = {}): PlpFacetFilterInput {
   return {
     locale: 'en',
-    categoryIds: ['c1'],
+    categorySlugTokens: ['sofas'],
     brandTokens: ['acme'],
     colorTokens: ['black'],
     sizeTokens: [],
@@ -29,7 +29,7 @@ describe('buildFacetWhere drill-down', () => {
     expect(text).toContain('"locale"');
     expect(text).toContain('"brandId"');
     expect(text).toContain('"colorTokens"');
-    expect(text).toContain('"categoryIds"');
+    expect(text).toContain('"categorySlugs"');
   });
 
   it('excludes the brand dimension so sibling brands stay countable', () => {
@@ -37,14 +37,14 @@ describe('buildFacetWhere drill-down', () => {
     expect(text).not.toContain('"brandId"');
     expect(text).not.toContain('"brandSlug"');
     expect(text).toContain('"colorTokens"');
-    expect(text).toContain('"categoryIds"');
+    expect(text).toContain('"categorySlugs"');
   });
 
   it('excludes the color dimension while keeping other filters', () => {
     const text = sqlText(baseInput(), new Set(['color']));
     expect(text).not.toContain('"colorTokens"');
     expect(text).toContain('"brandId"');
-    expect(text).toContain('"categoryIds"');
+    expect(text).toContain('"categorySlugs"');
   });
 
   it('keeps contextual filters (search, promotion) regardless of exclusions', () => {

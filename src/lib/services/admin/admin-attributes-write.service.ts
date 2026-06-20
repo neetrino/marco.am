@@ -9,8 +9,8 @@ import {
   updateAttributeValue,
 } from "./admin-attributes-write/value-operations";
 import {
-  syncProductsReadModelByAttributeIdAndFacetCounts,
-  syncProductsReadModelByAttributeValueIdAndFacetCounts,
+  syncProductListingReadModelByAttributeId,
+  syncProductListingReadModelByAttributeValueId,
 } from "@/lib/read-model/product-read-model-sync";
 
 /**
@@ -41,7 +41,7 @@ class AdminAttributesWriteService {
     }
   ) {
     const result = await updateAttributeTranslation(attributeId, data);
-    await syncProductsReadModelByAttributeIdAndFacetCounts(attributeId);
+    await syncProductListingReadModelByAttributeId(attributeId);
     return result;
   }
 
@@ -69,7 +69,7 @@ class AdminAttributesWriteService {
     }
   ) {
     const result = await updateAttributeValue(attributeId, valueId, data);
-    await syncProductsReadModelByAttributeValueIdAndFacetCounts(valueId);
+    await syncProductListingReadModelByAttributeValueId(valueId);
     return result;
   }
 

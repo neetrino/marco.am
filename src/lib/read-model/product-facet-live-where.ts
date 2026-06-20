@@ -1,6 +1,6 @@
 import { Prisma } from '@white-shop/db/prisma';
 import { buildTechnicalSpecFilterToken } from '@/lib/services/products-technical-filters';
-import { firstCsvTokens, parseOptionalPrice, resolveCategoryIdsForFilter } from './product-plp-filter-parse';
+import { firstCsvTokens, parseOptionalPrice } from './product-plp-filter-parse';
 import type { PlpReadModelSearchParams } from './products-plp-read-model-types';
 
 const NEW_PRODUCT_WINDOW_DAYS = 30;
@@ -9,7 +9,7 @@ export type FacetFilterDimension = 'category' | 'brand' | 'color' | 'size' | 'pr
 
 export type PlpFacetFilterInput = {
   locale: string;
-  categoryIds: string[];
+  categorySlugTokens: string[];
   brandTokens: string[];
   colorTokens: string[];
   sizeTokens: string[];
@@ -21,10 +21,8 @@ export type PlpFacetFilterInput = {
   newOnly: boolean;
 };
 
-/** Build the normalized facet filter input (resolves category slugs to ids incl. descendants). */
-export async function buildFacetFilterInput(
-  params: PlpReadModelSearchParams,
-): Promise<PlpFacetFilterInput> {
+/** Build the normalized facet filter input. Category slugs match directly (ancestors denormalized). */
+export function buildFacetFilterInput(params: PlpReadModelSearchParams): PlpFacetFilterInput {
   const locale = params.lang ?? 'en';
   const categoryTokens = firstCsvTokens(params.category);
   const filter = params.filter?.trim();
@@ -38,7 +36,7 @@ export async function buildFacetFilterInput(
 
   return {
     locale,
-    categoryIds: await resolveCategoryIdsForFilter(categoryTokens, locale),
+    categorySlugTokens: categoryTokens,
     brandTokens: firstCsvTokens(params.brand),
     colorTokens: firstCsvTokens(params.colors, (token) => token.toLowerCase()),
     sizeTokens: firstCsvTokens(params.sizes, (token) => token.toUpperCase()),
@@ -77,10 +75,10 @@ function dimensionConditions(
   input: PlpFacetFilterInput,
 ): Array<{ dimension: FacetFilterDimension; sql: Prisma.Sql }> {
   const conditions: Array<{ dimension: FacetFilterDimension; sql: Prisma.Sql }> = [];
-  if (input.categoryIds.length > 0) {
+  if (input.categorySlugTokens.length > 0) {
     conditions.push({
       dimension: 'category',
-      sql: Prisma.sql`"categoryIds" && ARRAY[${Prisma.join(input.categoryIds)}]::text[]`,
+      sql: Prisma.sql`"categorySlugs" && ARRAY[${Prisma.join(input.categorySlugTokens)}]::text[]`,
     });
   }
   if (input.brandTokens.length > 0) {

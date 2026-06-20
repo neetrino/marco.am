@@ -1,15 +1,24 @@
 import { describe, expect, it } from 'vitest';
-import { buildProductListingRowsForLocales } from '@/lib/read-model/product-listing-row-builder';
+import {
+  buildProductListingRowsForLocales,
+  type CategoryAncestry,
+} from '@/lib/read-model/product-listing-row-builder';
 
 const createdAt = new Date('2026-01-01T00:00:00.000Z');
 const updatedAt = new Date('2026-01-02T00:00:00.000Z');
 const rebuiltAt = new Date('2026-01-03T00:00:00.000Z');
+
+const EMPTY_ANCESTRY: CategoryAncestry = {
+  parentById: new Map<string, string | null>(),
+  slugByIdLocale: new Map<string, string>(),
+};
 
 describe('buildProductListingRowsForLocales', () => {
   it('builds compact localized PLP rows from normalized product data', () => {
     const rows = buildProductListingRowsForLocales({
       locales: ['en', 'hy'],
       rebuiltAt,
+      categoryAncestry: EMPTY_ANCESTRY,
       discountSettings: {
         globalDiscount: 0,
         categoryDiscounts: { cat1: 10 },
@@ -146,6 +155,7 @@ describe('buildProductListingRowsForLocales', () => {
   it('falls back to the first translation when a locale-specific translation is missing', () => {
     const rows = buildProductListingRowsForLocales({
       locales: ['en', 'ru'],
+      categoryAncestry: EMPTY_ANCESTRY,
       discountSettings: { globalDiscount: 0, categoryDiscounts: {}, brandDiscounts: {} },
       product: {
         id: 'prod2',
@@ -159,5 +169,35 @@ describe('buildProductListingRowsForLocales', () => {
     expect(rows).toHaveLength(2);
     expect(rows.map((row) => row.locale)).toEqual(['en', 'ru']);
     expect(rows[1]).toMatchObject({ slug: 'only-en', title: 'Only EN' });
+  });
+
+  it('denormalizes ancestor category ids and slugs so parent filters match subcategory products', () => {
+    const ancestry: CategoryAncestry = {
+      parentById: new Map<string, string | null>([
+        ['cat-child', 'cat-parent'],
+        ['cat-parent', null],
+      ]),
+      slugByIdLocale: new Map<string, string>([
+        ['cat-child:en', 'sofas'],
+        ['cat-parent:en', 'furniture'],
+      ]),
+    };
+    const rows = buildProductListingRowsForLocales({
+      locales: ['en'],
+      categoryAncestry: ancestry,
+      discountSettings: { globalDiscount: 0, categoryDiscounts: {}, brandDiscounts: {} },
+      product: {
+        id: 'prod3',
+        primaryCategoryId: 'cat-child',
+        createdAt,
+        updatedAt,
+        translations: [{ locale: 'en', title: 'Sofa', slug: 'sofa' }],
+        variants: [],
+        categories: [{ id: 'cat-child', translations: [{ locale: 'en', title: 'Sofas', slug: 'sofas' }] }],
+      },
+    });
+
+    expect(rows[0]?.categoryIds).toEqual(['cat-child', 'cat-parent']);
+    expect(rows[0]?.categorySlugs).toEqual(['sofas', 'furniture']);
   });
 });

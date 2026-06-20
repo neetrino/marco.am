@@ -335,19 +335,27 @@ Exit criteria:
 
 ## Phase 10. Write-side: упрощение и харднинг
 
-- [ ] Удалить rebuild-машину фасетов из write-path (после Phase 8 она не нужна):
-  - убрать `rebuildProductFacetCountsFromReadModel` из admin-хуков
-  - admin-write оставляет только per-product/affected listing sync (транзакционный)
+- [x] Удалить rebuild-машину фасетов из write-path (после Phase 8 не нужна):
+  - `product-read-model-sync.ts` переписан как listing-only (760 → ~370 строк): убраны `rebuildProductFacetCounts*`, `loadCategoryLabels`, `loadListingRowsForFacets`, `loadCategoryScopeKeysForCategoryIds`, `affectedFacetScopes`, scope-fingerprint-хелперы.
+  - `...AndFacetCounts`-обёртки переименованы в чистые: `syncProductListingReadModel`, `syncProductListingReadModelByBrand/ByCategoryIds/ByAttributeId/ByAttributeValueId`, `deleteProductListingReadModel`, `rebuildProductListingReadModel`.
+  - Обновлены все вызовы в admin-сервисах (products create/update/delete, brands, categories ×5, attributes, settings); убраны 4 dead-вызова `rebuildProductFacetCountsFromReadModel` после reorder/move/delete категорий (дерево фасетов теперь live).
+- [x] Удалить мёртвый код: `product-facet-count-builder.ts`(+test), `src/scripts/rebuild-product-facet-counts.ts`, npm-скрипт `rebuild:plp-facets`.
+- [x] Снять таблицу `product_facet_counts`: удалена модель `ProductFacetCount` из schema + миграция `20260620140000_drop_product_facet_counts` (DROP TABLE, применена к dev DB), client перегенерирован.
+- [x] Денормализация категорийного дерева (вариант A — без новых колонок):
+  - builder включает ancestor-категории в существующие `categoryIds`/`categorySlugs` (closure через `parentById`); GIN-индексы уже есть.
+  - `loadCategoryAncestry()` в sync (parent-map + per-locale slugs), передаётся в builder во всех трёх путях (single/batch/rebuild).
+  - read-path переведён на прямой slug-матч: listing `categorySlugs hasSome tokens`, facet `categorySlugs && tokens` (вместо id-резолва).
+  - `resolveCategoryIdsForFilter` и `findCategoryBySlug` удалены (мёртвые); `buildWhere`/`buildFacetFilterInput` стали синхронными.
+  - read-model перестроен (rebuild, 7676 строк) для backfill предков.
 - [ ] Если где-то нужен тяжёлый пересчёт листинга (категория/бренд массово) — вынести в durable background job, не блокировать admin-ответ.
-- [ ] Денормализовать категорийное дерево, чтобы убрать operational-запросы (`findCategoryBySlug` + `getAllChildCategoryIds`) из hot-path:
-  - хранить descendant-ids/slug-пути в проекции или в отдельной materialized category-map
-- [ ] Снять таблицу `product_facet_counts` с hot-path (оставить только если решим как опциональный кэш; иначе удалить модель и миграцию).
+
+Проверка: `tsc --noEmit` чист, eslint изменённых файлов чист, read-model тесты (9) зелёные. Нет ссылок на `product_facet_counts`/`ProductFacetCount` в коде (только docs/TODO). Фильтр по родительской категории `furniture-making-accessories` → 24 товара из подкатегорий (`laminated-boards`/`laminated-chipboard`) через GIN, без operational `findCategoryBySlug`.
 
 Exit criteria:
 
-- Admin-write (1 товар) обновляет projection за сотни мс, без полного rebuild.
-- Категорийный PLP-запрос не читает operational `categories` на каждый запрос.
-- Нет окна, в котором storefront видит пустые фасеты.
+- [x] Admin-write больше не делает полный facet-rebuild (только транзакционный listing sync).
+- [x] Storefront-фасеты не зависят от записи — нет окна пустых фасетов (live-агрегация).
+- [x] Категорийный PLP-запрос не читает operational `categories` на каждый запрос (denorm slug-матч).
 
 ## Phase 11. Perf-харднинг (остаток Phase 7)
 

@@ -22,7 +22,6 @@ import {
   firstCsvTokens,
   parseOptionalPrice,
   parsePositiveInt,
-  resolveCategoryIdsForFilter,
 } from './product-plp-filter-parse';
 import type {
   PlpListingMeta,
@@ -121,7 +120,7 @@ function buildTechnicalSpecWhere(
   return conditions;
 }
 
-async function buildWhere(params: PlpReadModelSearchParams): Promise<Prisma.ProductListingRowWhereInput> {
+function buildWhere(params: PlpReadModelSearchParams): Prisma.ProductListingRowWhereInput {
   const minPrice = parseOptionalPrice(params.minPrice);
   const maxPrice = parseOptionalPrice(params.maxPrice);
   const and: Prisma.ProductListingRowWhereInput[] = [];
@@ -137,8 +136,9 @@ async function buildWhere(params: PlpReadModelSearchParams): Promise<Prisma.Prod
     and.push({ productId: { in: productIdTokens } });
   }
   if (categoryTokens.length > 0) {
-    const categoryIds = await resolveCategoryIdsForFilter(categoryTokens, params.lang ?? 'en');
-    and.push(categoryIds.length > 0 ? { categoryIds: { hasSome: categoryIds } } : { productId: { in: [] } });
+    // Ancestor slugs are denormalized into `categorySlugs`, so a parent-category filter
+    // matches subcategory products directly (no operational category lookup).
+    and.push({ categorySlugs: { hasSome: categoryTokens } });
   }
   if (brandTokens.length > 0) {
     and.push({
@@ -303,7 +303,7 @@ export async function getProductsPlpReadModelPayload(
   const includeItems = params.includeItems !== false && params.includeItems !== '0';
   const [rows, filters] = await Promise.all([
     includeItems
-      ? buildWhere(params).then((where) => fetchRows({ where, orderBy, skip, take: limit + 1 }))
+      ? fetchRows({ where: buildWhere(params), orderBy, skip, take: limit + 1 })
       : Promise.resolve([]),
     includeFilters ? aggregateProductsPlpFacets(params) : Promise.resolve(EMPTY_PRODUCTS_FILTERS),
   ]);

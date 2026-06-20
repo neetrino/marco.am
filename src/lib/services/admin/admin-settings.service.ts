@@ -1,7 +1,7 @@
 import { revalidateTag } from 'next/cache';
 import { db } from "@white-shop/db";
 import { CURRENCY_RATES_CACHE_KEY } from "@/lib/cache/public-cache-keys";
-import { rebuildStorefrontReadModel } from "@/lib/read-model/product-read-model-sync";
+import { rebuildProductListingReadModel } from "@/lib/read-model/product-read-model-sync";
 import { cacheService } from "@/lib/services/cache.service";
 import { logger } from "@/lib/utils/logger";
 
@@ -152,8 +152,8 @@ class AdminSettingsService {
     }
 
     if (discountSettingsChanged) {
-      const result = await rebuildStorefrontReadModel();
-      logger.info('Storefront read-model rebuilt after discount settings update', result);
+      const result = await rebuildProductListingReadModel();
+      logger.info('Product listing read-model rebuilt after discount settings update', result);
       await cacheService.deletePattern("products:*");
       await cacheService.deletePattern("cache:products:*");
     }

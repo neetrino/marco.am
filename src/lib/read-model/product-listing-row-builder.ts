@@ -16,6 +16,36 @@ export type ProductListingReadModelDiscountSettings = {
   brandDiscounts: Record<string, number>;
 };
 
+/**
+ * Category tree closure used to denormalize ancestor categories into each listing row,
+ * so a parent-category filter matches subcategory products via a direct GIN array match
+ * (no operational `categories` slug/descendant lookup on the storefront hot path).
+ */
+export type CategoryAncestry = {
+  parentById: ReadonlyMap<string, string | null>;
+  /** key `${categoryId}:${locale}` → slug */
+  slugByIdLocale: ReadonlyMap<string, string>;
+};
+
+const CATEGORY_ANCESTRY_WALK_GUARD = 64;
+
+function expandCategoryIdsWithAncestors(
+  ids: Iterable<string>,
+  parentById: ReadonlyMap<string, string | null>,
+): string[] {
+  const closure = new Set<string>();
+  for (const id of ids) {
+    let current: string | null | undefined = id;
+    let guard = 0;
+    while (current && !closure.has(current) && guard < CATEGORY_ANCESTRY_WALK_GUARD) {
+      closure.add(current);
+      current = parentById.get(current) ?? null;
+      guard += 1;
+    }
+  }
+  return [...closure];
+}
+
 type TranslationRow = {
   locale: string;
   title?: string | null;
@@ -347,9 +377,10 @@ export function buildProductListingRowsForLocales(args: {
   product: ProductListingReadModelInput;
   locales: readonly string[];
   discountSettings: ProductListingReadModelDiscountSettings;
+  categoryAncestry: CategoryAncestry;
   rebuiltAt?: Date;
 }): Prisma.ProductListingRowCreateManyInput[] {
-  const { product, locales, discountSettings } = args;
+  const { product, locales, discountSettings, categoryAncestry } = args;
   const rebuiltAt = args.rebuiltAt ?? new Date();
   const variants = product.variants ?? [];
   const variantsForPricing = variants.map((variant) => ({
@@ -364,7 +395,10 @@ export function buildProductListingRowsForLocales(args: {
     fallbackDiscountPercent: appliedDiscount > 0 ? appliedDiscount : null,
   });
   const images = buildProductGalleryUrls(product.media, variants).slice(0, 1);
-  const categoryIds = collectCategoryIds(product);
+  const categoryIds = expandCategoryIdsWithAncestors(
+    collectCategoryIds(product),
+    categoryAncestry.parentById,
+  );
   const stock = variant?.stock ?? 0;
 
   const rows: Array<Prisma.ProductListingRowCreateManyInput | null> = locales.map((locale) => {
@@ -377,7 +411,14 @@ export function buildProductListingRowsForLocales(args: {
 
       const brandTranslation = resolveTranslation(product.brand?.translations, locale);
       const brandName = trimString(brandTranslation?.name);
-      const categorySlugs = collectCategorySlugs(product, locale);
+      const categorySlugSet = new Set(collectCategorySlugs(product, locale));
+      for (const categoryId of categoryIds) {
+        const ancestorSlug = categoryAncestry.slugByIdLocale.get(`${categoryId}:${locale}`);
+        if (ancestorSlug) {
+          categorySlugSet.add(ancestorSlug);
+        }
+      }
+      const categorySlugs = [...categorySlugSet];
       const colors = collectColors(product, locale);
       const colorTokens = colors.map((color) => color.value.toLowerCase());
       const sizeTokens = collectSizeTokens(product, locale);
