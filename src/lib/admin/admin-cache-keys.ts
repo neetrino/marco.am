@@ -31,7 +31,7 @@ export function buildAdminProductsListCacheKey(input: AdminProductsListCacheInpu
     search: input.search?.trim() ?? '',
     category: input.category ?? '',
     published: input.published ?? '',
-    sort: input.sort?.startsWith('createdAt') ? input.sort : '',
+    sort: input.sort ?? '',
   };
   if (input.stockFilter && input.stockFilter !== 'all') {
     params.stockFilter = input.stockFilter;

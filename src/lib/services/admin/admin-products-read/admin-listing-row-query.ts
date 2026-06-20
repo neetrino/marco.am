@@ -86,9 +86,7 @@ export function buildAdminListingRowOrderBy(
     case "stock":
       return [{ stock: direction }, { productCreatedAt: "desc" }];
     case "price":
-      return direction === "asc"
-        ? [{ hasPrice: "desc" }, { priceSort: "asc" }, { productCreatedAt: "desc" }]
-        : [{ hasPrice: "desc" }, { priceSort: "desc" }, { productCreatedAt: "desc" }];
+      return [{ priceSort: direction }, { productCreatedAt: "desc" }];
     default:
       return [{ productCreatedAt: "desc" }];
   }
