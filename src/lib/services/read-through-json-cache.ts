@@ -3,6 +3,8 @@ import { cacheService } from "@/lib/services/cache.service";
 /** Coalesce concurrent cache misses for the same key (one DB/compute path per key). */
 const inflightByKey = new Map<string, Promise<unknown>>();
 
+const PRODUCTS_PLP_LISTING_PATTERN = "cache:products:plp:*";
+const PRODUCTS_PLP_FILTERS_PATTERN = "cache:products:filters:*";
 const BANNERS_PUBLIC_PATTERN = "banners:public:*";
 const REELS_PUBLIC_PATTERN = "reels:public:*";
 const CATEGORIES_TREE_PATTERN = "categories:tree:*";
@@ -63,6 +65,12 @@ export async function getCachedJson<T>(
   return inflightByKey.get(key) as Promise<T>;
 }
 
+/** Clear the storefront PLP listing + facet caches (call after a listing projection rebuild). */
+export async function invalidateProductsPlpCache(): Promise<void> {
+  await cacheService.deletePattern(PRODUCTS_PLP_LISTING_PATTERN);
+  await cacheService.deletePattern(PRODUCTS_PLP_FILTERS_PATTERN);
+}
+
 export async function invalidateBannersPublicCache(): Promise<void> {
   await cacheService.deletePattern(BANNERS_PUBLIC_PATTERN);
 }
@@ -75,7 +83,8 @@ export async function invalidateCategoryPublicCaches(): Promise<void> {
   await cacheService.deletePattern(CATEGORIES_TREE_PATTERN);
   await cacheService.deletePattern(CATEGORIES_MEGA_MENU_PATTERN);
   await cacheService.deletePattern(CATEGORIES_TOP_PATTERN);
-  await cacheService.deletePattern("cache:products:filters:*");
+  await cacheService.deletePattern(PRODUCTS_PLP_LISTING_PATTERN);
+  await cacheService.deletePattern(PRODUCTS_PLP_FILTERS_PATTERN);
 }
 
 export async function invalidateFooterPublicCache(): Promise<void> {

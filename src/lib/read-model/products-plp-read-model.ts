@@ -17,7 +17,14 @@ import {
   buildTechnicalSpecFilterToken,
   normalizeTechnicalFilterToken,
 } from '@/lib/services/products-technical-filters';
+import { getCachedJson } from '@/lib/services/read-through-json-cache';
 import { aggregateProductsPlpFacets } from './product-facet-live-aggregation';
+import {
+  PRODUCTS_PLP_CACHE_TTL_SEC,
+  buildPlpFiltersCacheKey,
+  buildPlpListingCacheKey,
+  shouldSkipPlpCache,
+} from './products-plp-read-model-cache';
 import { resolveCategoryIdsFromSlugs } from './product-category-slug-resolver';
 import {
   LISTING_CARD_SELECT,
@@ -193,7 +200,79 @@ function buildWhere(
 export async function getProductsPlpReadModelFilters(
   params: PlpReadModelSearchParams,
 ): Promise<ProductsFiltersData> {
-  return aggregateProductsPlpFacets(params);
+  if (shouldSkipPlpCache(params)) {
+    return aggregateProductsPlpFacets(params);
+  }
+  return getCachedJson(buildPlpFiltersCacheKey(params), PRODUCTS_PLP_CACHE_TTL_SEC, () =>
+    aggregateProductsPlpFacets(params),
+  );
+}
+
+type PlpListingItemsPayload = {
+  items: PlpReadModelProduct[];
+  pagination: PlpListingMeta;
+};
+
+function buildEmptyListingItems(params: PlpReadModelSearchParams): PlpListingItemsPayload {
+  const page = parsePositiveInt(params.page, 1, Number.MAX_SAFE_INTEGER);
+  const limit = parsePositiveInt(params.limit, SHOP_PLP_DEFAULT_PAGE_SIZE, SHOP_PLP_MAX_PAGE_SIZE);
+  return {
+    items: [],
+    pagination: {
+      total: 0,
+      page,
+      limit,
+      totalPages: 0,
+      hasNextPage: false,
+      nextCursor: null,
+      totalIsExact: true,
+    },
+  };
+}
+
+async function computeListingItems(params: PlpReadModelSearchParams): Promise<PlpListingItemsPayload> {
+  const page = parsePositiveInt(params.page, 1, Number.MAX_SAFE_INTEGER);
+  const maxLimit =
+    firstCsvTokens(params.ids).length > 0 ? PRODUCT_ID_LOOKUP_MAX_PAGE_SIZE : SHOP_PLP_MAX_PAGE_SIZE;
+  const limit = parsePositiveInt(params.limit, SHOP_PLP_DEFAULT_PAGE_SIZE, maxLimit);
+  const skip = (page - 1) * limit;
+  const orderBy = buildOrderBy(
+    params.sort ?? params.filter,
+    resolveShopPlpPricePresence(params.pricePresence),
+  );
+  const categoryIdTokens = await resolveCategoryIdsFromSlugs(firstCsvTokens(params.category));
+  const rows = await fetchRows({
+    where: buildWhere(params, categoryIdTokens),
+    orderBy,
+    skip,
+    take: limit + 1,
+  });
+  const hasNextPage = rows.length > limit;
+  const visibleRows = hasNextPage ? rows.slice(0, limit) : rows;
+  const total = hasNextPage ? skip + limit + 1 : skip + visibleRows.length;
+  return {
+    items: visibleRows.map(mapListingRowToCard),
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+      hasNextPage,
+      nextCursor: null,
+      totalIsExact: !hasNextPage,
+    },
+  };
+}
+
+async function getCachedListingItems(
+  params: PlpReadModelSearchParams,
+): Promise<PlpListingItemsPayload> {
+  if (shouldSkipPlpCache(params)) {
+    return computeListingItems(params);
+  }
+  return getCachedJson(buildPlpListingCacheKey(params), PRODUCTS_PLP_CACHE_TTL_SEC, () =>
+    computeListingItems(params),
+  );
 }
 
 async function fetchRows(args: {
@@ -214,40 +293,17 @@ async function fetchRows(args: {
 export async function getProductsPlpReadModelPayload(
   params: PlpReadModelSearchParams,
 ): Promise<PlpReadModelPayload> {
-  const page = parsePositiveInt(params.page, 1, Number.MAX_SAFE_INTEGER);
-  const maxLimit =
-    firstCsvTokens(params.ids).length > 0 ? PRODUCT_ID_LOOKUP_MAX_PAGE_SIZE : SHOP_PLP_MAX_PAGE_SIZE;
-  const limit = parsePositiveInt(params.limit, SHOP_PLP_DEFAULT_PAGE_SIZE, maxLimit);
-  const skip = (page - 1) * limit;
-  const orderBy = buildOrderBy(
-    params.sort ?? params.filter,
-    resolveShopPlpPricePresence(params.pricePresence),
-  );
   const includeFilters = params.includeFilters !== false && params.includeFilters !== '0';
   const includeItems = params.includeItems !== false && params.includeItems !== '0';
-  const categoryIdTokens = await resolveCategoryIdsFromSlugs(firstCsvTokens(params.category));
-  const [rows, filters] = await Promise.all([
-    includeItems
-      ? fetchRows({ where: buildWhere(params, categoryIdTokens), orderBy, skip, take: limit + 1 })
-      : Promise.resolve([]),
-    includeFilters ? aggregateProductsPlpFacets(params) : Promise.resolve(EMPTY_PRODUCTS_FILTERS),
+  const [listing, filters] = await Promise.all([
+    includeItems ? getCachedListingItems(params) : Promise.resolve(buildEmptyListingItems(params)),
+    includeFilters
+      ? getProductsPlpReadModelFilters(params)
+      : Promise.resolve(EMPTY_PRODUCTS_FILTERS),
   ]);
-  const hasNextPage = rows.length > limit;
-  const visibleRows = hasNextPage ? rows.slice(0, limit) : rows;
-  const total = hasNextPage ? skip + limit + 1 : skip + visibleRows.length;
-  const meta = {
-    total,
-    page,
-    limit,
-    totalPages: Math.ceil(total / limit),
-    hasNextPage,
-    nextCursor: null,
-    totalIsExact: !hasNextPage,
-  };
-  const items = visibleRows.map(mapListingRowToCard);
   return {
-    items,
-    pagination: meta,
+    items: listing.items,
+    pagination: listing.pagination,
     filters,
   };
 }
