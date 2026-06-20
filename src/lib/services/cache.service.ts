@@ -84,7 +84,15 @@ async function initRedis() {
   if (restUrl && restToken) {
     try {
       const { Redis } = await import("@upstash/redis");
-      upstashClient = new Redis({ url: restUrl, token: restToken });
+      // Keep raw string in/out: this service stores `JSON.stringify(...)` and the
+      // callers (`getCachedJson`) re-parse. With Upstash's default automatic JSON
+      // deserialization, GET returns a parsed object whose `.length` is undefined,
+      // so every read was treated as a miss. Disable it to restore cache hits.
+      upstashClient = new Redis({
+        url: restUrl,
+        token: restToken,
+        automaticDeserialization: false,
+      });
       redisAvailable = true;
       connectionAttempted = true;
       return;

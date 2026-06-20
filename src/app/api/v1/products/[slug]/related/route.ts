@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { toApiErrorResponse } from "@/lib/api/next-route-error";
 import { buildPdpRelatedApiCacheKey } from "@/lib/product-pdp/pdp-cache-keys";
+import { PDP_CACHE_TTL_SEC } from "@/lib/product-pdp/pdp-cache-ttl";
 import { productsRelatedService } from "@/lib/services/products-related.service";
 import { getCachedJson } from "@/lib/services/read-through-json-cache";
 
-const RELATED_LIST_CACHE_TTL_SEC = 300;
+const RELATED_LIST_CACHE_TTL_SEC = PDP_CACHE_TTL_SEC;
 
 export async function GET(
   req: NextRequest,

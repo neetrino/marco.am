@@ -5,12 +5,13 @@ import {
   buildPdpSsrRelatedCacheKey,
 } from '@/lib/product-pdp/pdp-cache-keys';
 import { RELATED_PRODUCTS_PAGE_SIZE } from '@/lib/product-pdp/related-products.constants';
+import { PDP_CACHE_TTL_SEC } from '@/lib/product-pdp/pdp-cache-ttl';
 import { getCachedJson } from '@/lib/services/read-through-json-cache';
 import { productsRelatedService } from '@/lib/services/products-related.service';
 import { productsService } from '@/lib/services/products.service';
 
-const PDP_DETAIL_CACHE_TTL_SEC = 180;
-const PDP_RELATED_CACHE_TTL_SEC = 300;
+const PDP_DETAIL_CACHE_TTL_SEC = PDP_CACHE_TTL_SEC;
+const PDP_RELATED_CACHE_TTL_SEC = PDP_CACHE_TTL_SEC;
 
 /**
  * Shared Redis-backed cache for full PDP SSR detail payload.

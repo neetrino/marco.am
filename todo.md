@@ -34,6 +34,12 @@
 - [x] `brands` — статическая оболочка + клиентская загрузка из кешированного API (вместо ISR; тот же эффект: мгновенно + свежо). `stores` — статика.
 - Вывод: отдельной работы по Шагу 2 не нужно.
 
+## Шаг 6 — Фикс: read‑through кеш на Upstash вообще не хитил ✅
+- [x] Причина: `@upstash/redis` с дефолтной авто‑десериализацией возвращал на GET объект, а `getCachedJson` ждёт строку (`hit.length > 0`) → каждый запрос = промах → пересчёт из БД (PLP/баннеры/reels/бренды).
+- [x] Фикс: `new Redis({ ..., automaticDeserialization: false })` в `cache.service.ts` — сырые строки in/out.
+- [x] Замер (прод): PLP тёплый 70–213 мс (было ~2.4–4.3 с), `/products` тёплый ~90–225 мс (было ~2–3 с).
+- [ ] Осталось (опц.): холодный запрос ~3 с — оптимизировать агрегацию фасетов (индексы / фасеты в проекцию).
+
 ## Шаг 3 — Кеш read‑model для `/products` (главный выигрыш для каталога) ✅
 - [x] Кеш листинга и фасетов на существующем `getCachedJson` (Redis/in‑memory), TTL 120с (подстраховка).
   - `src/lib/read-model/products-plp-read-model-cache.ts` (новый): ключи `cache:products:plp:v1:*` и `cache:products:filters:v1:*` по (filter‑scope + locale; листинг + page/limit/sort).

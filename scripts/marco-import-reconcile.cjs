@@ -40,6 +40,7 @@ const TEMP_SKU_PREFIX = "__RECONCILE__";
 const BRAND_LOGO_FILES = [
   { slug: "pacific", file: "pacific.png" },
   { slug: "disakulp", file: "disa-kulp.png" },
+  { slug: "pinskdrev", file: "pinskdrev.png", legacySlug: "brand-85ebe26ae2" },
 ];
 
 const prisma = new PrismaClient();

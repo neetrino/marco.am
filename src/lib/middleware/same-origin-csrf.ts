@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCorsAllowedOrigins } from "@/lib/config/deployment-env";
 
-const CSRF_EXEMPT_PATHS = new Set(["/api/v1/payments/webhook"]);
+const CSRF_EXEMPT_PATHS = new Set([
+  "/api/v1/payments/webhook",
+  // Internal loopback warm-up trigger (no Origin header); guarded by its own
+  // localhost/secret authorization in the route handler, so CSRF is redundant.
+  "/api/v1/internal/warm-storefront-listing",
+]);
 
 function isUnsafeMethod(method: string): boolean {
   return method !== "GET" && method !== "HEAD" && method !== "OPTIONS";
