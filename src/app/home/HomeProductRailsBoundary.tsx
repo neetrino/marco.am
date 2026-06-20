@@ -1,21 +1,14 @@
-import { cookies } from 'next/headers';
 import { FeaturedProductsTabs } from '@/components/FeaturedProductsTabs';
 import { HomeSpecialOffersSection } from '@/components/home/HomeSpecialOffersSection';
-import {
-  LANGUAGE_PREFERENCE_KEY,
-  parseLanguageFromServer,
-  type LanguageCode,
-} from '@/lib/language';
+import { DEFAULT_STOREFRONT_LANGUAGE } from '@/lib/language';
 import { getHomeProductRailsDataCached } from './home-product-rails-data';
 
 /**
  * Both home product strips resolve together (one Suspense, parallel Redis/DB).
+ * Rendered in the default language; client strips refetch in the visitor's language after hydration.
  */
 export async function HomeProductRailsBoundary() {
-  const cookieStore = await cookies();
-  const lang: LanguageCode =
-    parseLanguageFromServer(cookieStore.get(LANGUAGE_PREFERENCE_KEY)?.value) ?? 'en';
-
+  const lang = DEFAULT_STOREFRONT_LANGUAGE;
   const rails = await getHomeProductRailsDataCached(lang);
 
   return (

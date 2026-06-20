@@ -1,5 +1,7 @@
+'use client';
+
 import { t } from '@/lib/i18n';
-import { getServerLanguage } from '@/lib/language-server';
+import { useTranslation } from '@/lib/i18n-client';
 
 import { AboutHeroVideo } from './components/AboutHeroVideo';
 
@@ -17,9 +19,9 @@ const partnerParagraphKeys = [
   'about.partners.paragraph3',
 ] as const;
 
-/** About page — server i18n for instant paint; YouTube hero hydrates as a client island. */
-export async function AboutPageContent() {
-  const language = await getServerLanguage();
+/** About page — static shell prerendered in the default language; localized client-side. */
+export function AboutPageContent() {
+  const { lang: language } = useTranslation();
   const title = t(language, 'about.title');
 
   return (

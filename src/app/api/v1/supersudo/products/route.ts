@@ -3,6 +3,7 @@ import { jsonErrorResponse } from "@/lib/api/json-error-response";
 import { authenticateToken, requireAdmin } from "@/lib/middleware/auth";
 import { adminService } from "@/lib/services/admin.service";
 import { normalizeProductClass } from "@/lib/constants/product-class";
+import { revalidateStorefrontHome } from "@/lib/revalidate-storefront";
 import { logger } from "@/lib/utils/logger";
 
 /**
@@ -448,6 +449,7 @@ export async function POST(req: NextRequest) {
       title: displayTitle,
     });
 
+    revalidateStorefrontHome();
     return NextResponse.json(product, { status: 201 });
   } catch (error: unknown) {
     const totalTime = Date.now() - requestStartTime;

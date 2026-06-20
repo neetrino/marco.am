@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { authenticateToken, requireAdmin } from "@/lib/middleware/auth";
 import { adminService } from "@/lib/services/admin.service";
 import { normalizeProductClass } from "@/lib/constants/product-class";
+import { revalidateStorefrontHome } from "@/lib/revalidate-storefront";
 import {
   isProductEditorSection,
 } from "@/app/supersudo/products/add/product-editor-tabs";
@@ -187,6 +188,7 @@ export async function PUT(
     const product = await adminService.updateProduct(id, body);
     logger.devLog("✅ [ADMIN PRODUCTS] Product updated:", { id, productId: product?.id });
 
+    revalidateStorefrontHome();
     return NextResponse.json(product);
   } catch (error: any) {
     console.error("❌ [ADMIN PRODUCTS] PUT Error:", {
@@ -243,6 +245,7 @@ export async function DELETE(
     await adminService.deleteProduct(id);
     logger.devLog("✅ [ADMIN PRODUCTS] Product deleted:", id);
 
+    revalidateStorefrontHome();
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error("❌ [ADMIN PRODUCTS] DELETE Error:", error);

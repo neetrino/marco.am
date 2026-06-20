@@ -1,22 +1,26 @@
+'use client';
+
 import { Card } from '@shop/ui';
 
 import { t } from '@/lib/i18n';
-import { formatLegalPageDate, resolveServerPageLanguage } from '@/lib/server-page-language';
+import { useTranslation } from '@/lib/i18n-client';
+import { formatLegalPageDate } from '@/lib/legal-page-date';
 
 import { CookiesOptOutToolsParagraph } from './CookiesOptOutToolsParagraph';
 
 /**
- * Cookie Policy page — server-rendered from locale files (en / hy / ru).
+ * Cookie Policy page — static shell prerendered in the default language;
+ * localized client-side from bundled locale files (en / hy / ru).
  */
-export default async function CookiesPage() {
-  const lang = await resolveServerPageLanguage();
+export default function CookiesPage() {
+  const { lang } = useTranslation();
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <Card className="p-6 sm:p-8 space-y-8">
         <header className="space-y-2">
           <h1 className="text-4xl font-bold text-gray-900">{t(lang, 'cookies.title')}</h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600" suppressHydrationWarning>
             {t(lang, 'cookies.lastUpdated')} {formatLegalPageDate()}
           </p>
         </header>

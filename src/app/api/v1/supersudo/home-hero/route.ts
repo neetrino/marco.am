@@ -3,6 +3,7 @@ import { toApiErrorResponse } from "@/lib/api/next-route-error";
 import { authenticateToken, requireAdmin } from "@/lib/middleware/auth";
 import { homeHeroBannerStorageSchema } from "@/lib/schemas/home-hero-banner.schema";
 import { homeHeroBannerService } from "@/lib/services/home-hero-banner.service";
+import { revalidateStorefrontHome } from "@/lib/revalidate-storefront";
 import { logger } from "@/lib/utils/logger";
 
 /**
@@ -66,6 +67,7 @@ export async function PUT(req: NextRequest) {
     }
 
     const saved = await homeHeroBannerService.updateAdminStorage(parsed.data);
+    revalidateStorefrontHome();
     return NextResponse.json(saved);
   } catch (error: unknown) {
     logger.error("PUT /api/v1/supersudo/home-hero failed", { error });
