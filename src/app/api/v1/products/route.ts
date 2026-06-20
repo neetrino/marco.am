@@ -50,34 +50,24 @@ export async function GET(req: NextRequest) {
         timings.push({ name: "listing", durationMs: Date.now() - listingStartedAt });
 
         const responseStartedAt = Date.now();
+        const pagination = {
+          page: result.pagination.page,
+          limit: result.pagination.limit,
+          total: result.pagination.total,
+          totalPages: result.pagination.totalPages,
+          hasNextPage: result.pagination.hasNextPage,
+          nextCursor: result.pagination.nextCursor,
+          totalIsExact: result.pagination.totalIsExact,
+        };
         const response = compact
-          ? {
-              items: result.data,
-              pagination: {
-                page: result.meta.page,
-                limit: result.meta.limit,
-                total: result.meta.total,
-                totalPages: result.meta.totalPages,
-                hasNextPage: result.meta.hasNextPage,
-                nextCursor: result.meta.nextCursor,
-                totalIsExact: result.meta.totalIsExact,
-              },
-            }
+          ? { items: result.items, pagination }
           : {
-              items: result.data,
-              pagination: {
-                page: result.meta.page,
-                limit: result.meta.limit,
-                total: result.meta.total,
-                totalPages: result.meta.totalPages,
-                hasNextPage: result.meta.hasNextPage,
-                nextCursor: result.meta.nextCursor,
-                totalIsExact: result.meta.totalIsExact,
-              },
+              items: result.items,
+              pagination,
               filters: result.filters,
-              // Backward-compatible aliases for existing callers.
-              data: result.data,
-              meta: result.meta,
+              // Backward-compatible aliases for existing external callers of this endpoint.
+              data: result.items,
+              meta: result.pagination,
             };
         timings.push({ name: "shape", durationMs: Date.now() - responseStartedAt });
 

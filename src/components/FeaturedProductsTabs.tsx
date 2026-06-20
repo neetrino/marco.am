@@ -57,13 +57,7 @@ import {
 } from '@/lib/constants/home-hero-admin-banners';
 
 interface ProductsResponse {
-  data: SpecialOfferProduct[];
-  meta: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
+  items: SpecialOfferProduct[];
 }
 
 interface HomeBrandPartnersResponse {
@@ -146,7 +140,7 @@ async function fetchFeaturedStrip(
     params,
     suppressHttpErrorLogging: true,
   });
-  const rows = dedupeCardProductsByTitle(response.data ?? []);
+  const rows = dedupeCardProductsByTitle(response.items ?? []);
   return rows.slice(0, FEATURED_PRODUCTS_VISIBLE_COUNT);
 }
 
@@ -158,7 +152,7 @@ type CardVisualRow = {
 };
 
 interface CardVisualResponse {
-  data: CardVisualRow[];
+  items: CardVisualRow[];
 }
 
 async function fetchFeaturedNewVisualChunk(language: LanguageCode): Promise<CardVisualRow[]> {
@@ -173,7 +167,7 @@ async function fetchFeaturedNewVisualChunk(language: LanguageCode): Promise<Card
     }),
     suppressHttpErrorLogging: true,
   });
-  return response.data ?? [];
+  return response.items ?? [];
 }
 
 async function fetchHomeBrandPartners(

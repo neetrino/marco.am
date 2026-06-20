@@ -1,12 +1,16 @@
 /**
  * Backfill missing product brandId values using Marco.xlsx export.
  *
+ * ⚠️ DEPRECATED for routine use — infers brands from titles and creates junk brands.
+ * Prefer Excel `Brand` column + import reconcile script instead.
+ * Requires --force to run.
+ *
  * Prepare map (once, when xlsx changes):
  *   python src/scripts/export-marco-xlsx-brands.py
  *
  * Usage:
- *   pnpm exec tsx src/scripts/backfill-product-brands.ts --dry-run
- *   pnpm exec tsx src/scripts/backfill-product-brands.ts
+ *   pnpm exec tsx src/scripts/backfill-product-brands.ts --dry-run --force
+ *   pnpm exec tsx src/scripts/backfill-product-brands.ts --force
  */
 
 import { readFileSync } from "node:fs";
@@ -83,6 +87,14 @@ function inferBrandFromTitle(
 async function main(): Promise<void> {
   loadEnv();
   const dryRun = process.argv.includes("--dry-run");
+  const force = process.argv.includes("--force");
+  if (!force) {
+    process.stderr.write(
+      "backfill-product-brands is deprecated — pass --force only if you know why.\n",
+    );
+    process.exitCode = 1;
+    return;
+  }
   const brandMap = loadBrandMap();
 
   const [products, brandTranslations] = await Promise.all([

@@ -61,8 +61,6 @@ export type PlpReadModelPayload = {
   items: PlpReadModelProduct[];
   pagination: PlpListingMeta;
   filters: ProductsFiltersData;
-  data: PlpReadModelProduct[];
-  meta: PlpListingMeta;
 };
 
 function buildSortOrderBy(sort: string | undefined): Prisma.ProductListingRowOrderByWithRelationInput[] {
@@ -324,7 +322,5 @@ export async function getProductsPlpReadModelPayload(
     items,
     pagination: meta,
     filters,
-    data: items,
-    meta,
   };
 }

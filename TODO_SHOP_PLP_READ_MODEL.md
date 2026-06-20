@@ -359,16 +359,21 @@ Exit criteria:
 
 ## Phase 11. Perf-харднинг (остаток Phase 7)
 
-- [ ] Привести React к 19.2+ под Next 16; проверить сборку/гидрацию.
+- [x] Схлопнуть дублирование payload `items/pagination` vs `data/meta`:
+  - `PlpReadModelPayload` и `getProductsPlpReadModelPayload` → каноничная форма `{ items, pagination, filters }` (убраны дублирующие `data`/`meta` — массив товаров больше не сериализуется дважды в ответе `/plp`).
+  - Прямые server-потребители переведены на `.items`/`.pagination` (`ProductsShopListingSection`, `home-product-rails-data`, `/api/v1/products` route).
+  - HTTP-клиенты `/plp`, читавшие `.data`, мигрированы на `.items` (`HomeSpecialOffersSection`, `FeaturedProductsTabs` ×2, guest-cart, wishlist). Prefetch/listing-client уже читали `data ?? items` — фоллбэк сохранён.
+  - `/api/v1/products` (legacy route) сохраняет `data`/`meta` алиасы для внешних клиентов (мобайл) — публичный API не ломаем.
+  - Проверка: `tsc` чист, eslint изменённых файлов чист, вся тест-сюита **249/249** зелёная.
+- [ ] Привести React к 19.2+ под Next 16; проверить сборку/гидрацию (мажорный бамп — отдельным шагом с прод-build).
 - [ ] CI smoke/perf script: `/products`, category PLP, brand PLP, promotion PLP с budget-порогами.
 - [ ] Bundle/JS audit для PLP.
-- [ ] Схлопнуть дублирование payload `items/pagination` vs `data/meta` в одну форму.
 - [ ] Документировать rollback.
 
 Exit criteria:
 
-- Зафиксированы измеримые budgets и regression-checks в CI.
-- Версии Next/React совместимы, прод-сборка стабильна.
+- [ ] Зафиксированы измеримые budgets и regression-checks в CI.
+- [ ] Версии Next/React совместимы, прод-сборка стабильна.
 
 ## Phase 12. Скорость всего сайта (`todo.md` #4)
 

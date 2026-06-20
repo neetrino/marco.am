@@ -43,8 +43,8 @@ async function fetchProductsListing(
     return {
       ctx,
       productsData: {
-        data: [],
-        meta: {
+        items: [],
+        pagination: {
           total: 0,
           page: 1,
           limit: ctx.perPage,
@@ -64,8 +64,8 @@ export async function ProductsShopListingSection({ raw, ctx }: ProductsShopListi
 
   return (
     <ProductsShopListingClient
-      initialProducts={productsData.data.map(normalizeShopGridProduct)}
-      initialMeta={productsData.meta}
+      initialProducts={productsData.items.map(normalizeShopGridProduct)}
+      initialMeta={productsData.pagination}
       initialQueryString={ctx.initialQueryString}
       initialSort={ctx.params.sort || 'default'}
     />

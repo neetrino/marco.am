@@ -94,7 +94,7 @@ function specialOffersPaginationAriaPath(dotIndex: number): string {
 }
 
 interface ProductsResponse {
-  data: SpecialOfferProduct[];
+  items: SpecialOfferProduct[];
 }
 
 export type HomeSpecialOffersSectionProps = {
@@ -130,7 +130,7 @@ export function HomeSpecialOffersSection({
           sort: 'createdAt',
         }),
       });
-      return dedupeCardProductsByTitle(response.data ?? []);
+      return dedupeCardProductsByTitle(response.items ?? []);
     },
     staleTime: 300_000,
     initialData: initialPromotion,

@@ -51,6 +51,7 @@ def main() -> None:
         "ID",
         "Name",
         "SKU",
+        "DraftStatus",
         "Short description",
         "Description",
         "price",
@@ -73,6 +74,7 @@ def main() -> None:
         "Տիպ Մեծածախ /  Մանրածախ",
         "Тип Мեծածախ /  Մանրածախ",
         "Type",
+        "DraftStatus",
         "Черновик",
         "Description",
         "Desctriptop",
@@ -100,9 +102,10 @@ def main() -> None:
             raw_row = [normalize_cell(ws.cell(row=row_idx, column=col).value) for col in range(1, ws.max_column + 1)]
             output_row = {
                 "ID": pick(raw_row, "ID"),
-                "Name": pick(raw_row, "Name"),
+                "Name": pick(raw_row, "Name", "ƒ"),
                 "SKU": pick(raw_row, "SKU", "Артикул", "Արտիկուլ"),
-                "Short description": pick(raw_row, "Short description", "Черновик"),
+                "DraftStatus": pick(raw_row, "Черновик"),
+                "Short description": pick(raw_row, "Short description"),
                 "Description": pick(raw_row, "Description", "Desctriptop"),
                 "price": pick(raw_row, "price", "Price"),
                 "Sale price": pick(raw_row, "Sale price", "sale price"),

@@ -68,13 +68,13 @@ async function fetchHomeProductRailsData(
 
   if (promotionOutcome.status === 'fulfilled') {
     promotionProducts = dedupeCardProductsByTitle(
-      (promotionOutcome.value.data ?? []) as SpecialOfferProduct[],
+      (promotionOutcome.value.items ?? []) as SpecialOfferProduct[],
     ).slice(0, SPECIAL_OFFERS_PRODUCTS_LIMIT);
   }
 
   if (newOutcome.status === 'fulfilled') {
     newProducts = dedupeCardProductsByTitle(
-      (newOutcome.value.data ?? []) as SpecialOfferProduct[],
+      (newOutcome.value.items ?? []) as SpecialOfferProduct[],
     ).slice(0, FEATURED_PRODUCTS_VISIBLE_COUNT);
   }
 
