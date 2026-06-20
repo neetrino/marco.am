@@ -7,7 +7,7 @@ import { useTranslation } from '../../../lib/i18n-client';
 import { getStoredCurrency, initializeCurrencyRates, type CurrencyCode } from '../../../lib/currency';
 import { getStoredLanguage } from '../../../lib/language';
 import { AdminPageLayout } from '../components/AdminPageLayout';
-import { ProductFilters } from './components/ProductFilters';
+import { ProductFilters, type ProductPublishedFilter, type ProductStockFilter } from './components/ProductFilters';
 import { BulkSelectionControls } from './components/BulkSelectionControls';
 import { ProductsTable } from './components/ProductsTable';
 import { useProductHandlers } from './hooks/useProductHandlers';
@@ -70,13 +70,10 @@ function ProductsPageContent() {
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
   const [categories, setCategories] = useState<Category[]>(cachedCategories ?? []);
   const [categoriesLoading, setCategoriesLoading] = useState(cachedCategories === null);
-  const [categoriesExpanded, setCategoriesExpanded] = useState(false);
-  const [skuSearch, setSkuSearch] = useState('');
-  const [stockFilter, setStockFilter] = useState<'all' | 'inStock' | 'outOfStock'>('all');
+  const [stockFilter, setStockFilter] = useState<ProductStockFilter>('all');
+  const [publishedFilter, setPublishedFilter] = useState<ProductPublishedFilter>('all');
   const [page, setPage] = useState(1);
   const [meta, setMeta] = useState<ProductsResponse['meta'] | null>(defaultProductsCache?.meta ?? null);
-  const [minPrice, setMinPrice] = useState<string>('');
-  const [maxPrice, setMaxPrice] = useState<string>('');
   const [sortBy, setSortBy] = useState<string>('createdAt-desc');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
@@ -125,23 +122,6 @@ function ProductsPageContent() {
     void fetchCategories();
   }, [activeLocale]);
 
-  // Close category dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (categoriesExpanded && !target.closest('[data-category-dropdown]')) {
-        setCategoriesExpanded(false);
-      }
-    };
-
-    if (categoriesExpanded) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
-      };
-    }
-  }, [categoriesExpanded]);
-
   const fetchCategories = async () => {
     try {
       beginAdminDataFetch(hadCategoriesCacheRef.current, setCategoriesLoading);
@@ -161,17 +141,18 @@ function ProductsPageContent() {
   useEffect(() => {
     fetchProducts();
      
-  }, [page, search, selectedCategories, skuSearch, stockFilter, sortBy, minPrice, maxPrice, activeLocale]);
+  }, [page, search, selectedCategories, stockFilter, publishedFilter, sortBy, activeLocale]);
 
   const fetchProducts = async (options?: { force?: boolean }) => {
+    const publishedParam =
+      publishedFilter === 'published' ? 'true' : publishedFilter === 'unpublished' ? 'false' : '';
+
     const cacheKey = buildAdminProductsListCacheKey({
       page,
       lang: activeLocale,
       search,
       category: selectedCategories.size > 0 ? Array.from(selectedCategories).join(',') : '',
-      sku: skuSearch,
-      minPrice,
-      maxPrice,
+      published: publishedParam,
       sort: sortBy,
       stockFilter,
     });
@@ -200,16 +181,10 @@ function ProductsPageContent() {
         params.category = Array.from(selectedCategories).join(',');
       }
 
-      if (skuSearch.trim()) {
-        params.sku = skuSearch.trim();
-      }
-
-      if (minPrice.trim()) {
-        params.minPrice = minPrice.trim();
-      }
-
-      if (maxPrice.trim()) {
-        params.maxPrice = maxPrice.trim();
+      if (publishedFilter === 'published') {
+        params.published = 'true';
+      } else if (publishedFilter === 'unpublished') {
+        params.published = 'false';
       }
 
       if (sortBy && sortBy.startsWith('createdAt')) {
@@ -373,10 +348,16 @@ function ProductsPageContent() {
   const handleClearFilters = () => {
     setSearch('');
     setSelectedCategories(new Set());
-    setSkuSearch('');
     setStockFilter('all');
+    setPublishedFilter('all');
     setPage(1);
   };
+
+  const hasActiveFilters =
+    search.length > 0 ||
+    selectedCategories.size > 0 ||
+    stockFilter !== 'all' ||
+    publishedFilter !== 'all';
 
   const closeProductEditor = useCallback(() => {
     router.replace('/supersudo/products', { scroll: false });
@@ -413,7 +394,7 @@ function ProductsPageContent() {
       title={t('admin.products.title')}
       headerActions={
         <div className="flex flex-wrap items-center justify-end gap-2">
-          {(search || selectedCategories.size > 0 || skuSearch || stockFilter !== 'all') ? (
+          {hasActiveFilters ? (
             <button
               type="button"
               onClick={handleClearFilters}
@@ -438,22 +419,15 @@ function ProductsPageContent() {
       <ProductFilters
         search={search}
         setSearch={setSearch}
-        skuSearch={skuSearch}
-        setSkuSearch={setSkuSearch}
         selectedCategories={selectedCategories}
         setSelectedCategories={setSelectedCategories}
         categories={categories}
         categoriesLoading={categoriesLoading}
-        categoriesExpanded={categoriesExpanded}
-        setCategoriesExpanded={setCategoriesExpanded}
         stockFilter={stockFilter}
         setStockFilter={setStockFilter}
-        minPrice={minPrice}
-        setMinPrice={setMinPrice}
-        maxPrice={maxPrice}
-        setMaxPrice={setMaxPrice}
-        handleSearch={handlers.handleSearch}
-        handleClearFilters={handleClearFilters}
+        publishedFilter={publishedFilter}
+        setPublishedFilter={setPublishedFilter}
+        onClearFilters={handleClearFilters}
         setPage={setPage}
       />
 

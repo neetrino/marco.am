@@ -12,13 +12,13 @@ import { logger } from "@/lib/utils/logger";
  * @returns Нормализованные фильтры или ошибку валидации
  */
 function validateAndNormalizeFilters(searchParams: URLSearchParams): {
-  filters?: {
+    filters?: {
     page: number;
     limit: number;
     search?: string;
     categories?: string[];
     brand?: string[];
-    sku?: string;
+    published?: boolean;
     minPrice?: number;
     maxPrice?: number;
     sort?: string;
@@ -111,6 +111,23 @@ function validateAndNormalizeFilters(searchParams: URLSearchParams): {
   const brandParam = searchParams.get("brand");
   const brand = brandParam ? brandParam.split(",").filter(Boolean) : undefined;
 
+  const publishedParam = searchParams.get("published");
+  let published: boolean | undefined;
+  if (publishedParam === "true") {
+    published = true;
+  } else if (publishedParam === "false") {
+    published = false;
+  } else if (publishedParam !== null && publishedParam !== "") {
+    return {
+      error: {
+        type: "https://api.shop.am/problems/validation-error",
+        title: "Validation Error",
+        status: 400,
+        detail: "Parameter 'published' must be 'true' or 'false'",
+      },
+    };
+  }
+
   return {
     filters: {
       page,
@@ -118,7 +135,7 @@ function validateAndNormalizeFilters(searchParams: URLSearchParams): {
       search: searchParams.get("search")?.trim() || undefined,
       categories,
       brand,
-      sku: searchParams.get("sku")?.trim() || undefined,
+      published,
       minPrice,
       maxPrice,
       sort: searchParams.get("sort")?.trim() || undefined,
@@ -169,9 +186,9 @@ function hasValidVariantOptions(variant: unknown): boolean {
  * Query parameters:
  * - page: number (default: 1, min: 1)
  * - limit: number (default: 20, min: 1, max: 100)
- * - search: string (optional)
+ * - search: string (optional) — title, slug, or SKU
  * - category: string (comma-separated, optional)
- * - sku: string (optional)
+ * - published: boolean string 'true' | 'false' (optional)
  * - minPrice: number (optional, non-negative)
  * - maxPrice: number (optional, non-negative)
  * - sort: string (optional)

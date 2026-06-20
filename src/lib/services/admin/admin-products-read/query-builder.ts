@@ -11,7 +11,7 @@ export function buildProductWhereClause(filters: ProductFilters): Prisma.Product
 
   const andConditions: Prisma.ProductWhereInput[] = [];
 
-  // Search filter
+  // Search filter — title, slug, or SKU
   if (filters.search) {
     andConditions.push({
       OR: [
@@ -26,6 +26,12 @@ export function buildProductWhereClause(filters: ProductFilters): Prisma.Product
           },
         },
         {
+          slug: {
+            contains: filters.search,
+            mode: "insensitive",
+          },
+        },
+        {
           variants: {
             some: {
               sku: {
@@ -37,6 +43,10 @@ export function buildProductWhereClause(filters: ProductFilters): Prisma.Product
         },
       ],
     });
+  }
+
+  if (filters.published !== undefined) {
+    andConditions.push({ published: filters.published });
   }
 
   // Category filter - support both single category and multiple categories
@@ -85,20 +95,6 @@ export function buildProductWhereClause(filters: ProductFilters): Prisma.Product
       variants: {
         some: {
           price: priceRange,
-        },
-      },
-    });
-  }
-
-  // SKU filter
-  if (filters.sku) {
-    andConditions.push({
-      variants: {
-        some: {
-          sku: {
-            contains: filters.sku,
-            mode: "insensitive",
-          },
         },
       },
     });

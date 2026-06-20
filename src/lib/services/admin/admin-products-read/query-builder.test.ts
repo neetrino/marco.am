@@ -32,4 +32,13 @@ describe("buildProductWhereClause", () => {
     expect(where.AND).toBeDefined();
     expect(JSON.stringify(where)).toContain('"price":{"gte":100,"lte":200}');
   });
+
+  it("applies published filter", () => {
+    const where = buildProductWhereClause({
+      published: false,
+    });
+
+    expect(where.AND).toBeDefined();
+    expect(JSON.stringify(where)).toContain('"published":false');
+  });
 });

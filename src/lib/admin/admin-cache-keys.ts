@@ -17,7 +17,7 @@ type AdminProductsListCacheInput = {
   lang: string;
   search?: string;
   category?: string;
-  sku?: string;
+  published?: string;
   minPrice?: string;
   maxPrice?: string;
   sort?: string;
@@ -32,7 +32,7 @@ export function buildAdminProductsListCacheKey(input: AdminProductsListCacheInpu
     lang: input.lang,
     search: input.search?.trim() ?? '',
     category: input.category ?? '',
-    sku: input.sku?.trim() ?? '',
+    published: input.published ?? '',
     minPrice: input.minPrice?.trim() ?? '',
     maxPrice: input.maxPrice?.trim() ?? '',
     sort: input.sort?.startsWith('createdAt') ? input.sort : '',
