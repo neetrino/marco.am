@@ -1,6 +1,6 @@
 import type { Category } from '../types';
 
-type CategoryTreeNode = Category & { children: CategoryTreeNode[] };
+export type CategoryTreeNode = Category & { children: CategoryTreeNode[] };
 
 type FlatCategoryNode = CategoryTreeNode & {
   isSubcategory: boolean;
@@ -14,6 +14,27 @@ function depthPaddingClass(depth: number): string {
   if (depth === 2) return 'pl-9';
   if (depth === 3) return 'pl-12';
   return 'pl-14';
+}
+
+/** Builds nested category tree (roots with children arrays). */
+export function buildCategoryTreeNodes(categories: Category[]): CategoryTreeNode[] {
+  const categoryMap = new Map<string, CategoryTreeNode>();
+  const rootCategories: CategoryTreeNode[] = [];
+
+  categories.forEach((category) => {
+    categoryMap.set(category.id, { ...category, children: [] });
+  });
+
+  categories.forEach((category) => {
+    const node = categoryMap.get(category.id)!;
+    if (category.parentId && categoryMap.has(category.parentId)) {
+      categoryMap.get(category.parentId)!.children.push(node);
+    } else {
+      rootCategories.push(node);
+    }
+  });
+
+  return rootCategories;
 }
 
 function flattenTree(
@@ -37,20 +58,5 @@ function flattenTree(
 
 /** Builds a flat, depth-indented category list for the catalog picker. */
 export function buildFlatCategoryTree(categories: Category[]): FlatCategoryNode[] {
-  const categoryMap = new Map<string, CategoryTreeNode>();
-  const rootCategories: CategoryTreeNode[] = [];
-
-  categories.forEach((category) => {
-    categoryMap.set(category.id, { ...category, children: [] });
-  });
-
-  categories.forEach((category) => {
-    if (category.parentId && categoryMap.has(category.parentId)) {
-      categoryMap.get(category.parentId)!.children.push(categoryMap.get(category.id)!);
-    } else {
-      rootCategories.push(categoryMap.get(category.id)!);
-    }
-  });
-
-  return flattenTree(rootCategories);
+  return flattenTree(buildCategoryTreeNodes(categories));
 }

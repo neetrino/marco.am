@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ListFilter, Search, X } from 'lucide-react';
 import { useTranslation } from '../../../../lib/i18n-client';
-import { buildFlatCategoryTree } from '../add/utils/category-tree';
+import { ProductCategoryFilterTree } from './ProductCategoryFilterTree';
 import type { Category } from '../types';
 
 export type ProductStockFilter = 'all' | 'inStock' | 'outOfStock';
@@ -44,16 +44,6 @@ export function ProductFilters({
   const rootRef = useRef<HTMLDivElement>(null);
   const [panelOpen, setPanelOpen] = useState(false);
   const [categorySearch, setCategorySearch] = useState('');
-
-  const flatCategories = useMemo(() => buildFlatCategoryTree(categories), [categories]);
-
-  const filteredCategories = useMemo(() => {
-    const query = categorySearch.trim().toLowerCase();
-    if (!query) {
-      return flatCategories;
-    }
-    return flatCategories.filter((category) => category.title.toLowerCase().includes(query));
-  }, [flatCategories, categorySearch]);
 
   const activeFilterCount = useMemo(() => {
     let count = 0;
@@ -204,43 +194,13 @@ export function ProductFilters({
                   aria-label={t('admin.products.categorySearchPlaceholder')}
                 />
                 <div className="max-h-52 overflow-y-auto rounded-xl border border-slate-200/80 bg-slate-50/50 p-2">
-                  {categoriesLoading ? (
-                    <p className="px-2 py-4 text-center text-sm text-slate-500">
-                      {t('admin.products.loadingCategories')}
-                    </p>
-                  ) : filteredCategories.length === 0 ? (
-                    <p className="px-2 py-4 text-center text-sm text-slate-500">
-                      {t('admin.products.noCategoriesAvailable')}
-                    </p>
-                  ) : (
-                    <ul className="space-y-0.5">
-                      {filteredCategories.map((category) => (
-                        <li key={category.id}>
-                          <label
-                            className={`flex cursor-pointer items-center gap-2 rounded-lg px-2 py-2 transition-colors hover:bg-white ${category.depthClass}`}
-                          >
-                            <input
-                              type="checkbox"
-                              checked={selectedCategories.has(category.id)}
-                              onChange={(event) =>
-                                handleCategoryToggle(category.id, event.target.checked)
-                              }
-                              className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-500"
-                            />
-                            <span
-                              className={`min-w-0 flex-1 ${
-                                category.isSubcategory
-                                  ? 'text-xs text-slate-600'
-                                  : 'text-sm font-medium text-slate-800'
-                              }`}
-                            >
-                              {category.title}
-                            </span>
-                          </label>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+                  <ProductCategoryFilterTree
+                    categories={categories}
+                    categoriesLoading={categoriesLoading}
+                    categorySearch={categorySearch}
+                    selectedCategories={selectedCategories}
+                    onCategoryToggle={handleCategoryToggle}
+                  />
                 </div>
               </div>
 
