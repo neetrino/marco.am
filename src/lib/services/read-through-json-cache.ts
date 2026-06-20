@@ -5,6 +5,8 @@ const inflightByKey = new Map<string, Promise<unknown>>();
 
 const PRODUCTS_PLP_LISTING_PATTERN = "cache:products:plp:*";
 const PRODUCTS_PLP_FILTERS_PATTERN = "cache:products:filters:*";
+const PRODUCTS_PDP_PATTERN = "cache:products:pdp:*";
+const PRODUCTS_PDP_DETAIL_PATTERN = "cache:products:detail:*";
 const BANNERS_PUBLIC_PATTERN = "banners:public:*";
 const REELS_PUBLIC_PATTERN = "reels:public:*";
 const CATEGORIES_TREE_PATTERN = "categories:tree:*";
@@ -69,6 +71,18 @@ export async function getCachedJson<T>(
 export async function invalidateProductsPlpCache(): Promise<void> {
   await cacheService.deletePattern(PRODUCTS_PLP_LISTING_PATTERN);
   await cacheService.deletePattern(PRODUCTS_PLP_FILTERS_PATTERN);
+}
+
+/** Clear PDP SSR + API caches (detail + related) so warmed entries refresh on product change. */
+export async function invalidateProductPdpCache(): Promise<void> {
+  await cacheService.deletePattern(PRODUCTS_PDP_PATTERN);
+  await cacheService.deletePattern(PRODUCTS_PDP_DETAIL_PATTERN);
+}
+
+/** Clear every storefront product read cache (PLP + PDP) after a product projection change. */
+export async function invalidateProductReadCaches(): Promise<void> {
+  await invalidateProductsPlpCache();
+  await invalidateProductPdpCache();
 }
 
 export async function invalidateBannersPublicCache(): Promise<void> {
