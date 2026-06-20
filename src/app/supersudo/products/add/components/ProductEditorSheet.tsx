@@ -18,16 +18,12 @@ export function ProductEditorSheet({
   onClose,
   onSaved,
 }: ProductEditorSheetProps) {
-  if (!open) {
-    return null;
-  }
-
   const editorKey = productId ?? 'create';
 
   return (
     <ProductEditorPanel
       key={editorKey}
-      open
+      open={open}
       productId={productId}
       listProduct={listProduct}
       onCancel={onClose}

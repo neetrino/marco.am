@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useCallback, useEffect, useState, useMemo, useRef } from 'react';
+import { Suspense, useCallback, useEffect, useState, useMemo, useRef, startTransition } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { apiClient, getApiOrErrorMessage } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
@@ -52,8 +52,16 @@ function ProductsPageContent() {
   const searchParams = useSearchParams();
   const editParam = searchParams.get('edit');
   const createParam = searchParams.get('create');
-  const sheetOpen = Boolean(editParam || createParam);
-  const sheetProductId = editParam ?? null;
+
+  const [optimisticSheet, setOptimisticSheet] = useState<{
+    open: boolean;
+    productId: string | null;
+  }>({ open: false, productId: null });
+  const [editorMounted, setEditorMounted] = useState(false);
+
+  const urlSheetOpen = Boolean(editParam || createParam);
+  const sheetOpen = optimisticSheet.open || urlSheetOpen;
+  const sheetProductId = optimisticSheet.productId ?? editParam ?? null;
   const defaultProductsCacheKey = buildProductsDefaultListCacheKey(activeLocale);
   const defaultProductsCache = readAdminSessionCache<AdminProductsCachePayload>(
     defaultProductsCacheKey,
@@ -353,19 +361,33 @@ function ProductsPageContent() {
   };
 
   const closeProductEditor = useCallback(() => {
-    router.replace('/supersudo/products', { scroll: false });
+    setOptimisticSheet({ open: false, productId: null });
+    startTransition(() => {
+      router.replace('/supersudo/products', { scroll: false });
+    });
   }, [router]);
 
   const openCreateProduct = useCallback(() => {
-    router.replace('/supersudo/products?create=1', { scroll: false });
+    setEditorMounted(true);
+    setOptimisticSheet({ open: true, productId: null });
+    startTransition(() => {
+      router.replace('/supersudo/products?create=1', { scroll: false });
+    });
   }, [router]);
 
-  const openEditProduct = useCallback(
-    (productId: string) => {
+  const openEditProduct = useCallback((productId: string) => {
+    setEditorMounted(true);
+    setOptimisticSheet({ open: true, productId });
+    startTransition(() => {
       router.replace(`/supersudo/products?edit=${productId}`, { scroll: false });
-    },
-    [router],
-  );
+    });
+  }, [router]);
+
+  useEffect(() => {
+    if (!editParam && !createParam && optimisticSheet.open) {
+      setOptimisticSheet({ open: false, productId: null });
+    }
+  }, [editParam, createParam, optimisticSheet.open]);
 
   const handleProductSaved = () => {
     closeProductEditor();
@@ -450,13 +472,15 @@ function ProductsPageContent() {
         onEditProduct={openEditProduct}
       />
 
-      <ProductEditorSheet
-        open={sheetOpen}
-        productId={sheetProductId}
-        listProduct={editingListProduct}
-        onClose={closeProductEditor}
-        onSaved={handleProductSaved}
-      />
+      {editorMounted ? (
+        <ProductEditorSheet
+          open={sheetOpen}
+          productId={sheetProductId}
+          listProduct={editingListProduct}
+          onClose={closeProductEditor}
+          onSaved={handleProductSaved}
+        />
+      ) : null}
     </AdminPageLayout>
   );
 }

@@ -1,0 +1,125 @@
+import { apiClient } from '@/lib/api-client';
+import type { ProductEditorSection } from '@/app/supersudo/products/add/product-editor-tabs';
+import type { ProductData } from '@/app/supersudo/products/add/types';
+import { buildProductEditorSectionCacheKey } from '@/lib/admin/admin-cache-keys';
+import { dedupedAdminRequest } from '@/lib/admin/admin-request-dedup';
+import {
+  ADMIN_SESSION_CACHE_TTL_MS,
+  readAdminSessionCache,
+  writeAdminSessionCache,
+} from '@/lib/admin/admin-session-cache';
+import { getStoredLanguage } from '@/lib/language';
+import {
+  fetchAdminAttributes,
+  fetchAdminBrands,
+  fetchAdminCategoriesLite,
+  fetchAdminSettings,
+} from '@/lib/admin/admin-reference-data-cache';
+
+const warmedProductIds = new Set<string>();
+let referenceDataWarmStarted = false;
+
+/** Light sections — prefetch on row hover. Pricing loads after sheet is open. */
+const LIGHT_PRODUCT_EDITOR_SECTIONS: ProductEditorSection[] = [
+  'general',
+  'description',
+  'catalog',
+  'media',
+];
+
+const PRICING_EDITOR_SECTION: ProductEditorSection = 'pricing';
+
+export function readProductEditorSectionCache(
+  productId: string,
+  section: ProductEditorSection,
+): ProductData | null {
+  const key = buildProductEditorSectionCacheKey(productId, section);
+  return readAdminSessionCache<ProductData>(key, ADMIN_SESSION_CACHE_TTL_MS);
+}
+
+export function writeProductEditorSectionCache(
+  productId: string,
+  section: ProductEditorSection,
+  data: ProductData,
+): void {
+  const key = buildProductEditorSectionCacheKey(productId, section);
+  writeAdminSessionCache(key, data);
+}
+
+export function invalidateProductEditorSectionCaches(productId: string): void {
+  warmedProductIds.delete(productId);
+  if (typeof window === 'undefined') {
+    return;
+  }
+  try {
+    const storagePrefix = `marco-admin:product-editor/${productId}/`;
+    for (let index = sessionStorage.length - 1; index >= 0; index -= 1) {
+      const key = sessionStorage.key(index);
+      if (key?.startsWith(storagePrefix)) {
+        sessionStorage.removeItem(key);
+      }
+    }
+  } catch {
+    // ignore
+  }
+}
+
+/** Fetches one editor section with session cache + in-flight dedup. */
+export function fetchProductEditorSection(
+  productId: string,
+  section: ProductEditorSection,
+  options?: { force?: boolean },
+): Promise<ProductData> {
+  const cacheKey = buildProductEditorSectionCacheKey(productId, section);
+  const cached = readProductEditorSectionCache(productId, section);
+  if (!options?.force && cached !== null) {
+    return Promise.resolve(cached);
+  }
+
+  const requestKey = `product-editor-fetch:${productId}:${section}`;
+  return dedupedAdminRequest(requestKey, () =>
+    apiClient.get<ProductData>(`/api/v1/supersudo/products/${productId}`, {
+      params: { section },
+    }),
+  ).then((data) => {
+    writeAdminSessionCache(cacheKey, data);
+    return data;
+  });
+}
+
+/** Brands, categories lite, attributes, settings — shared session cache. */
+export function warmProductEditorReferenceData(): void {
+  if (referenceDataWarmStarted) {
+    return;
+  }
+  referenceDataWarmStarted = true;
+
+  const language = getStoredLanguage();
+  void fetchAdminBrands();
+  void fetchAdminCategoriesLite(language);
+  void fetchAdminAttributes();
+  void fetchAdminSettings();
+}
+
+/** Single-section warm on pointer down (before click) — general only. */
+export function warmProductEditorGeneralSection(productId: string): void {
+  void fetchProductEditorSection(productId, 'general');
+}
+
+/** Hover warm — light sections only so click is not competing with pricing fetch. */
+export function warmProductEditorForProduct(productId: string): void {
+  warmProductEditorReferenceData();
+
+  if (warmedProductIds.has(productId)) {
+    return;
+  }
+  warmedProductIds.add(productId);
+
+  LIGHT_PRODUCT_EDITOR_SECTIONS.forEach((section) => {
+    void fetchProductEditorSection(productId, section);
+  });
+}
+
+export function warmProductEditorPricingSection(productId: string): void {
+  void fetchProductEditorSection(productId, PRICING_EDITOR_SECTION);
+}

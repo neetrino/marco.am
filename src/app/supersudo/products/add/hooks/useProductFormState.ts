@@ -1,31 +1,32 @@
 import { useState, useRef } from 'react';
 import type { Brand, Category, Attribute, Variant, ProductLabel, GeneratedVariant } from '../types';
+import type { Product } from '../../types';
 import type { CurrencyCode } from '@/lib/currency';
 import type { ProductClass } from '@/lib/constants/product-class';
 import type { ProductDescriptionEntry } from '@/lib/products/product-description';
 
-export function useProductFormState() {
+export function useProductFormState(listProduct: Product | null = null) {
   const [loading, setLoading] = useState(false);
   const [brands, setBrands] = useState<Brand[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [attributes, setAttributes] = useState<Attribute[]>([]);
-  const [formData, setFormData] = useState({
-    title: '',
-    slug: '',
+  const [formData, setFormData] = useState(() => ({
+    title: listProduct?.title ?? '',
+    slug: listProduct?.slug ?? '',
     description: [] as ProductDescriptionEntry[],
-    productClass: 'retail' as ProductClass,
+    productClass: listProduct?.productClass ?? ('retail' as ProductClass),
     brandIds: [] as string[],
     primaryCategoryId: '',
     categoryIds: [] as string[],
     published: false,
-    featured: false,
+    featured: listProduct?.featured ?? false,
     imageUrls: [] as string[],
     featuredImageIndex: 0,
     mainProductImage: '' as string,
     variants: [] as Variant[],
     labels: [] as ProductLabel[],
     warrantyYears: null as number | null,
-  });
+  }));
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const variantImageInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const attributesDropdownRef = useRef<HTMLDivElement | null>(null);

@@ -44,7 +44,7 @@ export function ProductEditorPanel({
   const { isLoggedIn, isAdmin } = useAuth();
   const isEditMode = Boolean(productId);
 
-  const formState = useProductFormState();
+  const formState = useProductFormState(listProduct);
   const [activeTab, setActiveTab] = useState<ProductEditorTabId>('general');
   const scrollRef = useRef<HTMLDivElement>(null);
   const [slugCollapsed, setSlugCollapsed] = useState(false);
@@ -54,7 +54,7 @@ export function ProductEditorPanel({
     setSlugCollapsed(scrollTop > 12);
   }, []);
 
-  const { visitedTabs, loadingTab } = useProductEditorTabLoader({
+  const { visitedTabs, loadingTab, visitTab } = useProductEditorTabLoader({
     open,
     productId,
     listProduct,
@@ -70,12 +70,8 @@ export function ProductEditorPanel({
     onLoadError: onCancel,
   });
 
-  const loadCatalogReference = visitedTabs.has('catalog');
-  const loadPricingReference = visitedTabs.has('pricing');
-
   useProductDataLoading({
-    loadCatalogReference,
-    loadPricingReference,
+    eagerLoad: open,
     setBrands: formState.setBrands,
     setCategories: formState.setCategories,
     setAttributes: formState.setAttributes,
@@ -93,7 +89,7 @@ export function ProductEditorPanel({
     setSelectedAttributeValueIds: formState.setSelectedAttributeValueIds,
     setGeneratedVariants: formState.setGeneratedVariants,
     setHasVariantsToLoad: formState.setHasVariantsToLoad,
-    enabled: loadPricingReference,
+    enabled: open && Boolean(productId),
   });
 
   const { applyToAllVariants } = useVariantGeneration({
@@ -182,8 +178,9 @@ export function ProductEditorPanel({
   });
 
   const handleTabChange = useCallback((tabId: ProductEditorTabId) => {
+    visitTab(tabId);
     setActiveTab(tabId);
-  }, []);
+  }, [visitTab]);
 
   const sheetHeader = (
     <div className="flex items-start justify-between gap-4">

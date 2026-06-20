@@ -191,6 +191,10 @@ export function buildAnalyticsRequestParams(input: AnalyticsCacheInput): Record<
   return params;
 }
 
+export function buildProductEditorSectionCacheKey(productId: string, section: string): string {
+  return `product-editor/${productId}/${section}`;
+}
+
 export const ADMIN_CACHE_KEYS = {
   dashboard: 'dashboard',
   categories: 'list/categories',

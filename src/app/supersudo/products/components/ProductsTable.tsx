@@ -5,6 +5,7 @@ import { useTranslation } from '../../../../lib/i18n-client';
 import { AdminTablePagination } from '../../components/AdminTablePagination';
 import { formatCatalogPrice, type CurrencyCode } from '../../../../lib/currency';
 import { FeaturedStarToggle } from '../add/components/FeaturedStarToggle';
+import { warmProductEditorGeneralSection } from '@/lib/admin/product-editor-section-cache';
 import type { Product, ProductsResponse } from '../types';
 
 interface ProductsTableProps {
@@ -257,6 +258,7 @@ export function ProductsTable({
                   <tr
                     key={product.id}
                     className="group cursor-pointer transition-colors hover:bg-amber-50/50"
+                    onMouseDown={() => warmProductEditorGeneralSection(product.id)}
                     onClick={() => openProductEditor(product.id)}
                     onKeyDown={(event) => {
                       if (event.key === 'Enter' || event.key === ' ') {
