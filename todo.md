@@ -55,8 +55,9 @@
 - [x] Язык по умолчанию: **hy** (`DEFAULT_STOREFRONT_LANGUAGE` в `language.ts`); per-language SEO не критичен.
 - [x] Убран `cookies()` из корневого `layout.tsx` (и `generateMetadata`) → оболочка статическая; cookie‑язык применяется на клиенте до отрисовки (`LanguagePreferenceProvider` уже это делал + добавлен инлайн `lang-init`).
 - [x] Результат: текстовые страницы (contact, terms, faq, privacy, cookies, shipping, returns, about, support, stores…) больше не держатся динамикой layout → статика.
+- [x] `stores` — клиентская страница без серверных данных → стала статикой автоматически (от снятия cookies в layout).
+- [x] `brands` — переведена на статическую оболочку + клиентскую загрузку из кешированного `GET /api/v1/home/brand-partners` (локализуется под пользователя; сетка уже окно 20 + скролл). Удалены лишние серверные файлы (`BrandsPageContent`, `BrandsPagePrefetch`, `BrandsDirectoryGrid`, `brands-page-server-data`).
 - [ ] Проверить статус рендера сборкой: `pnpm build` (увидеть `○ Static` против `ƒ Dynamic`).
-- [ ] Бренды/stores: данные тянутся через `getServerLanguage()` (cookies) → пока остаются динамическими. Отдельный мини‑шаг: рендер в дефолтном языке + ISR + client‑локализация заголовка (h1), чтобы не было hy‑текста у не‑hy пользователей.
 
 ## Шаг 5 (исходные заметки)
 Цель: снять `cookies()` с серверного критического пути → сайт отдаётся статикой/из CDN, мгновенный первый кадр.
