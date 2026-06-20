@@ -1,20 +1,7 @@
-import {
-  buildCategoryChildMap,
-  collectDescendantIds,
-  type CategoryChildMap,
-} from "@/lib/services/category-subtree.service";
-
 type ProductCategoryLinkRow = {
   primaryCategoryId: string | null;
   categoryIds: string[];
 };
-
-function collectSubtreeIdsIncludingSelf(
-  rootCategoryId: string,
-  childMap: CategoryChildMap,
-): string[] {
-  return [rootCategoryId, ...collectDescendantIds(rootCategoryId, childMap)];
-}
 
 function productLinkedCategoryIds(product: ProductCategoryLinkRow): Set<string> {
   const linked = new Set<string>();
@@ -27,43 +14,58 @@ function productLinkedCategoryIds(product: ProductCategoryLinkRow): Set<string> 
   return linked;
 }
 
+function buildParentById(
+  categoryRows: Array<{ id: string; parentId: string | null }>,
+): Map<string, string | null> {
+  return new Map(categoryRows.map((row) => [row.id, row.parentId]));
+}
+
+/** Category ids whose subtree contains `categoryId` (self + ancestors). */
+function collectSubtreeRootIds(
+  categoryId: string,
+  parentById: Map<string, string | null>,
+): string[] {
+  const roots: string[] = [];
+  let current: string | null = categoryId;
+  const visited = new Set<string>();
+
+  while (current && !visited.has(current)) {
+    visited.add(current);
+    roots.push(current);
+    current = parentById.get(current) ?? null;
+  }
+
+  return roots;
+}
+
 /**
  * Distinct product counts per category subtree (category + descendants).
  *
- * Summing per-level direct counts double-counts products linked along ancestor
- * chains; this matches storefront facet counts and category filters.
+ * A product linked to category L increments every category C where L lies in
+ * subtree(C) — equivalently, C is L or an ancestor of L. This replaces the
+ * previous O(categories × products) scan with O(products × links × depth).
  */
 export function buildDistinctSubtreeProductCountMap(
   categoryRows: Array<{ id: string; parentId: string | null }>,
   products: ProductCategoryLinkRow[],
 ): Map<string, number> {
-  const childMap = buildCategoryChildMap(categoryRows);
-  const subtreeByCategoryId = new Map<string, Set<string>>();
-
-  for (const row of categoryRows) {
-    subtreeByCategoryId.set(
-      row.id,
-      new Set(collectSubtreeIdsIncludingSelf(row.id, childMap)),
-    );
-  }
-
+  const parentById = buildParentById(categoryRows);
   const counts = new Map<string, number>(
     categoryRows.map((row) => [row.id, 0]),
   );
 
   for (const product of products) {
-    const linked = productLinkedCategoryIds(product);
-    for (const [categoryId, subtreeIds] of subtreeByCategoryId) {
-      let matches = false;
-      for (const linkedId of linked) {
-        if (subtreeIds.has(linkedId)) {
-          matches = true;
-          break;
+    const matchingCategories = new Set<string>();
+    for (const linkedId of productLinkedCategoryIds(product)) {
+      for (const rootId of collectSubtreeRootIds(linkedId, parentById)) {
+        if (counts.has(rootId)) {
+          matchingCategories.add(rootId);
         }
       }
-      if (matches) {
-        counts.set(categoryId, (counts.get(categoryId) ?? 0) + 1);
-      }
+    }
+
+    for (const categoryId of matchingCategories) {
+      counts.set(categoryId, (counts.get(categoryId) ?? 0) + 1);
     }
   }
 

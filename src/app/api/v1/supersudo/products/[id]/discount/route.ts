@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateToken, requireAdmin } from "@/lib/middleware/auth";
 import { adminService } from "@/lib/services/admin.service";
+import { invalidateAdminProductDiscountsCache } from "@/lib/services/admin/admin-products-read/product-discounts-list";
 import { revalidateStorefrontHome } from "@/lib/revalidate-storefront";
 import { logger } from "@/lib/utils/logger";
 
@@ -57,6 +58,7 @@ export async function PATCH(
     const result = await adminService.updateProductDiscount(id, discountPercent);
     logger.devLog("✅ [ADMIN PRODUCTS] Product discount updated:", { id, result });
 
+    await invalidateAdminProductDiscountsCache();
     revalidateStorefrontHome();
     return NextResponse.json({ success: true, discountPercent: result.discountPercent });
   } catch (error: any) {

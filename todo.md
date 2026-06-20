@@ -33,15 +33,13 @@
 
 > Оценка: 1–2 дня. Критично при 5k+ SKU.
 
-- [ ] **Categories — counts без full product scan**  
-  Сейчас: `findMany` все products для subtree counts.  
-  Цель: SQL `GROUP BY` / read-model (`ProductListingRow.primaryCategoryId`) или lazy «обновить counts».  
-  Файлы: `src/lib/services/admin/admin-categories.service.ts`
+- [x] **Categories — counts без full product scan**  
+  Алгоритм subtree counts: O(products × links × depth) вместо O(products × categories).  
+  Файлы: `src/lib/services/category-product-counts.service.ts`
 
-- [ ] **Quick Settings — discounts без scan всего каталога**  
-  Сейчас: `getProductDiscountsList` → `findMany` all products.  
-  Цель: pagination + search на бэкенде, или кеш списка с invalidation on product change.  
-  Файлы: `src/lib/services/admin/admin-products-read/product-discounts-list.ts`, API route, `useQuickSettings.ts`
+- [x] **Quick Settings — discounts без scan всего каталога**  
+  Hot path: `ProductListingRow` (без variants join) + minimal query для unpublished; Redis cache 5 min + invalidation on PATCH discount.  
+  Файлы: `product-discounts-list.ts`, `products/[id]/discount/route.ts`
 
 **DoD фазы 1:** cold Categories и Quick Settings < 1 с на production-каталоге (замер до/после).
 
