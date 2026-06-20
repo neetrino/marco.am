@@ -185,22 +185,26 @@ export function ProductFilters({
                 <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
                   {t('admin.products.filterByCategory')}
                 </label>
-                <input
-                  type="search"
-                  value={categorySearch}
-                  onChange={(event) => setCategorySearch(event.target.value)}
-                  placeholder={t('admin.products.categorySearchPlaceholder')}
-                  className={`${fieldClass} mb-2`}
-                  aria-label={t('admin.products.categorySearchPlaceholder')}
-                />
-                <div className="max-h-52 overflow-y-auto rounded-xl border border-slate-200/80 bg-slate-50/50 p-2">
-                  <ProductCategoryFilterTree
-                    categories={categories}
-                    categoriesLoading={categoriesLoading}
-                    categorySearch={categorySearch}
-                    selectedCategories={selectedCategories}
-                    onCategoryToggle={handleCategoryToggle}
-                  />
+                <div className="overflow-hidden rounded-xl border border-slate-200/80 bg-slate-50/50 shadow-sm shadow-slate-200/40 transition-colors focus-within:border-slate-400 focus-within:ring-2 focus-within:ring-slate-800/10">
+                  <div className="border-b border-slate-200/80 bg-white px-3 py-2">
+                    <input
+                      type="search"
+                      value={categorySearch}
+                      onChange={(event) => setCategorySearch(event.target.value)}
+                      placeholder={t('admin.products.categorySearchPlaceholder')}
+                      className="w-full border-0 bg-transparent py-1.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-0"
+                      aria-label={t('admin.products.categorySearchPlaceholder')}
+                    />
+                  </div>
+                  <div className="max-h-52 overflow-y-auto p-2">
+                    <ProductCategoryFilterTree
+                      categories={categories}
+                      categoriesLoading={categoriesLoading}
+                      categorySearch={categorySearch}
+                      selectedCategories={selectedCategories}
+                      onCategoryToggle={handleCategoryToggle}
+                    />
+                  </div>
                 </div>
               </div>
 
