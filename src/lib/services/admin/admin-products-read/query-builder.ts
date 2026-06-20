@@ -18,17 +18,21 @@ export function buildProductWhereClause(filters: ProductFilters): Prisma.Product
         {
           translations: {
             some: {
-              title: {
-                contains: filters.search,
-                mode: "insensitive",
-              },
+              OR: [
+                {
+                  title: {
+                    contains: filters.search,
+                    mode: "insensitive",
+                  },
+                },
+                {
+                  slug: {
+                    contains: filters.search,
+                    mode: "insensitive",
+                  },
+                },
+              ],
             },
-          },
-        },
-        {
-          slug: {
-            contains: filters.search,
-            mode: "insensitive",
           },
         },
         {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ListFilter, Search, Trash2, X } from 'lucide-react';
+import { ListFilter, Search, Trash2 } from 'lucide-react';
 import { useTranslation } from '../../../../lib/i18n-client';
 import { ProductCategoryFilterTree } from './ProductCategoryFilterTree';
 import type { Category } from '../types';
@@ -181,40 +181,29 @@ export function ProductFilters({
             />
           </div>
 
-          {hasAnythingToClear ? (
-            <button
-              type="button"
-              onClick={handleClearAll}
-              className="shrink-0 rounded-lg p-1.5 text-red-500 transition-colors hover:bg-red-50 hover:text-red-600"
-              aria-label={t('admin.products.clearAll')}
-            >
-              <X className="h-4 w-4" aria-hidden />
-            </button>
-          ) : null}
-
           <button
             type="button"
             onClick={() => {
-              if (hasActiveFilters) {
+              if (hasAnythingToClear) {
                 handleClearAll();
                 return;
               }
               togglePanel();
             }}
             className={`relative mr-2 flex shrink-0 items-center justify-center rounded-lg p-2 transition-colors sm:mr-3 ${
-              hasActiveFilters
+              hasAnythingToClear
                 ? 'bg-red-500 text-white hover:bg-red-600'
                 : panelOpen
                   ? 'bg-slate-900 text-white hover:bg-slate-800'
                   : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
             }`}
             aria-label={
-              hasActiveFilters ? t('admin.products.clearAll') : t('admin.products.openFilters')
+              hasAnythingToClear ? t('admin.products.clearAll') : t('admin.products.openFilters')
             }
             aria-expanded={panelOpen}
             aria-controls={FILTER_PANEL_ID}
           >
-            {hasActiveFilters ? (
+            {hasAnythingToClear ? (
               <Trash2 className="h-4 w-4" aria-hidden />
             ) : (
               <ListFilter className="h-4 w-4" aria-hidden />
