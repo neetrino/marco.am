@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ListFilter, Search, X } from 'lucide-react';
+import { ListFilter, Search, Trash2, X } from 'lucide-react';
 import { useTranslation } from '../../../../lib/i18n-client';
 import { ProductCategoryFilterTree } from './ProductCategoryFilterTree';
 import type { Category } from '../types';
@@ -53,6 +53,50 @@ export function ProductFilters({
     return count;
   }, [selectedCategories.size, stockFilter, publishedFilter]);
 
+  const activeFilterChips = useMemo(() => {
+    const chips: Array<{ key: string; label: string }> = [];
+
+    const selectedIds = Array.from(selectedCategories);
+    if (selectedIds.length > 0) {
+      if (selectedIds.length <= 3) {
+        selectedIds.forEach((categoryId) => {
+          const category = categories.find((item) => item.id === categoryId);
+          if (category) {
+            chips.push({ key: `category-${categoryId}`, label: category.title });
+          }
+        });
+      } else {
+        chips.push({
+          key: 'categories',
+          label: t('admin.products.categoriesSelectedChip', { count: selectedIds.length }),
+        });
+      }
+    }
+
+    if (stockFilter === 'inStock') {
+      chips.push({ key: 'stock', label: t('admin.products.inStock') });
+    } else if (stockFilter === 'outOfStock') {
+      chips.push({ key: 'stock', label: t('admin.products.outOfStock') });
+    }
+
+    if (publishedFilter === 'published') {
+      chips.push({ key: 'status', label: t('admin.products.published') });
+    } else if (publishedFilter === 'unpublished') {
+      chips.push({ key: 'status', label: t('admin.products.draft') });
+    }
+
+    return chips;
+  }, [categories, publishedFilter, selectedCategories, stockFilter, t]);
+
+  const hasActiveFilters = activeFilterCount > 0;
+  const hasAnythingToClear = search.length > 0 || hasActiveFilters;
+
+  const handleClearAll = () => {
+    onClearFilters();
+    setCategorySearch('');
+    setPage(1);
+  };
+
   useEffect(() => {
     if (!panelOpen) {
       return;
@@ -100,37 +144,49 @@ export function ProductFilters({
             aria-hidden
           />
 
-          <input
-            type="search"
-            value={search}
-            onChange={(event) => {
-              setSearch(event.target.value);
-              setPage(1);
-            }}
-            onFocus={openPanel}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter') {
-                event.preventDefault();
-                setPage(1);
-              }
-            }}
-            placeholder={t('admin.products.searchPlaceholder')}
-            autoComplete="off"
-            className="min-w-0 flex-1 border-0 bg-transparent py-3 pl-1 pr-2 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-0"
-            aria-label={t('admin.products.searchLabel')}
-            aria-expanded={panelOpen}
-            aria-controls={FILTER_PANEL_ID}
-          />
+          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5 py-2 pl-1 pr-2">
+            {activeFilterChips.map((chip) => (
+              <span
+                key={chip.key}
+                className="inline-flex max-w-[11rem] items-center rounded-full border border-slate-200 bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-700"
+              >
+                <span className="truncate">{chip.label}</span>
+              </span>
+            ))}
 
-          {search.length > 0 ? (
-            <button
-              type="button"
-              onClick={() => {
-                setSearch('');
+            <input
+              type="search"
+              value={search}
+              onChange={(event) => {
+                setSearch(event.target.value);
                 setPage(1);
               }}
-              className="shrink-0 rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
-              aria-label={t('admin.products.clearSearch')}
+              onFocus={openPanel}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  event.preventDefault();
+                  setPage(1);
+                }
+              }}
+              placeholder={
+                activeFilterChips.length > 0
+                  ? t('admin.products.searchWithFiltersPlaceholder')
+                  : t('admin.products.searchPlaceholder')
+              }
+              autoComplete="off"
+              className="min-w-[7rem] flex-1 border-0 bg-transparent py-1 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-0"
+              aria-label={t('admin.products.searchLabel')}
+              aria-expanded={panelOpen}
+              aria-controls={FILTER_PANEL_ID}
+            />
+          </div>
+
+          {hasAnythingToClear ? (
+            <button
+              type="button"
+              onClick={handleClearAll}
+              className="shrink-0 rounded-lg p-1.5 text-red-500 transition-colors hover:bg-red-50 hover:text-red-600"
+              aria-label={t('admin.products.clearAll')}
             >
               <X className="h-4 w-4" aria-hidden />
             </button>
@@ -138,40 +194,46 @@ export function ProductFilters({
 
           <button
             type="button"
-            onClick={togglePanel}
+            onClick={() => {
+              if (hasActiveFilters) {
+                handleClearAll();
+                return;
+              }
+              togglePanel();
+            }}
             className={`relative mr-2 flex shrink-0 items-center justify-center rounded-lg p-2 transition-colors sm:mr-3 ${
-              panelOpen || activeFilterCount > 0
-                ? 'bg-slate-900 text-white hover:bg-slate-800'
-                : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
+              hasActiveFilters
+                ? 'bg-red-500 text-white hover:bg-red-600'
+                : panelOpen
+                  ? 'bg-slate-900 text-white hover:bg-slate-800'
+                  : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
             }`}
-            aria-label={t('admin.products.openFilters')}
+            aria-label={
+              hasActiveFilters ? t('admin.products.clearAll') : t('admin.products.openFilters')
+            }
             aria-expanded={panelOpen}
             aria-controls={FILTER_PANEL_ID}
           >
-            <ListFilter className="h-4 w-4" aria-hidden />
-            {activeFilterCount > 0 ? (
-              <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-marco-yellow px-1 text-[10px] font-bold text-marco-black">
-                {activeFilterCount}
-              </span>
-            ) : null}
+            {hasActiveFilters ? (
+              <Trash2 className="h-4 w-4" aria-hidden />
+            ) : (
+              <ListFilter className="h-4 w-4" aria-hidden />
+            )}
           </button>
         </div>
 
         {panelOpen ? (
           <div
             id={FILTER_PANEL_ID}
-            className="absolute left-0 right-0 top-[calc(100%+0.375rem)] z-30 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg shadow-slate-300/30"
+            className="absolute left-0 right-0 top-[calc(100%+0.375rem)] z-30 max-h-[min(44rem,85vh)] overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg shadow-slate-300/30"
           >
             <div className="border-b border-slate-100 px-4 py-3 sm:px-5">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-sm font-semibold text-slate-800">{t('admin.products.filtersTitle')}</p>
-                {activeFilterCount > 0 || search.length > 0 ? (
+                {hasAnythingToClear ? (
                   <button
                     type="button"
-                    onClick={() => {
-                      onClearFilters();
-                      setCategorySearch('');
-                    }}
+                    onClick={handleClearAll}
                     className="text-xs font-medium text-slate-500 transition-colors hover:text-slate-900"
                   >
                     {t('admin.products.clearAll')}
@@ -196,7 +258,7 @@ export function ProductFilters({
                       aria-label={t('admin.products.categorySearchPlaceholder')}
                     />
                   </div>
-                  <div className="max-h-52 overflow-y-auto p-2">
+                  <div className="max-h-[min(32rem,55vh)] overflow-y-auto p-2">
                     <ProductCategoryFilterTree
                       categories={categories}
                       categoriesLoading={categoriesLoading}

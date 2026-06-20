@@ -422,6 +422,8 @@
     "title": "Товары",
     "backToAdmin": "Вернуться в панель администратора",
     "searchPlaceholder": "Поиск по названию, slug или SKU...",
+    "searchWithFiltersPlaceholder": "Добавить текст поиска…",
+    "categoriesSelectedChip": "{count} категорий",
     "searchLabel": "Поиск товаров",
     "clearSearch": "Очистить поиск",
     "openFilters": "Открыть фильтры",
