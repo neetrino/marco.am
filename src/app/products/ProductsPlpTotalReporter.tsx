@@ -8,7 +8,7 @@ type ProductsPlpTotalReporterProps = {
 };
 
 /**
- * Notifies `ProductsShopClientShell` so `ProductsHeader` can show meta.total without blocking on listing fetch.
+ * Notifies `ProductsShopClientShell` so `ProductsShopPageTitle` can include meta.total without blocking on listing fetch.
  */
 export function ProductsPlpTotalReporter({ total }: ProductsPlpTotalReporterProps) {
   useEffect(() => {

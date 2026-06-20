@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import { ProductsShopPageTitle } from '@/components/ProductsHeader';
 import { resolveProductsShopListingServerContext } from '@/lib/products-shop-listing-server-context';
 import { ProductsShopFiltersColumn } from './ProductsShopFiltersColumn';
 import { ProductsShopFiltersReadModelSection } from './ProductsShopFiltersReadModelSection';
@@ -17,16 +18,23 @@ export async function ProductsShopStreamedSection({ raw }: ProductsShopStreamedS
   const ctx = await resolveProductsShopListingServerContext(raw);
 
   return (
-    <div className="marco-header-container flex flex-col min-[744px]:flex-row min-[744px]:gap-5 xl:gap-8">
-      <ProductsShopFiltersColumn language={ctx.language} params={ctx.params}>
-        <Suspense fallback={null}>
-          <ProductsShopFiltersReadModelSection raw={raw} ctx={ctx} />
-        </Suspense>
-      </ProductsShopFiltersColumn>
+    <div className="marco-header-container pt-[58px]">
+      <div className="flex flex-col min-[744px]:flex-row min-[744px]:gap-5 xl:gap-8">
+        <ProductsShopFiltersColumn language={ctx.language} params={ctx.params}>
+          <Suspense fallback={null}>
+            <ProductsShopFiltersReadModelSection raw={raw} ctx={ctx} />
+          </Suspense>
+        </ProductsShopFiltersColumn>
 
-      <Suspense fallback={<ProductsShopListingCacheFallback />}>
-        <ProductsShopListingSection raw={raw} ctx={ctx} />
-      </Suspense>
+        <div className="min-w-0 flex-1 w-full min-[744px]:w-auto">
+          <div className="pb-2 min-[744px]:hidden">
+            <ProductsShopPageTitle />
+          </div>
+          <Suspense fallback={<ProductsShopListingCacheFallback />}>
+            <ProductsShopListingSection raw={raw} ctx={ctx} />
+          </Suspense>
+        </div>
+      </div>
     </div>
   );
 }

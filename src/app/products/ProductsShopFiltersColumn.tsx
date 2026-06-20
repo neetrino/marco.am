@@ -9,8 +9,7 @@ import { SizeFilter } from '@/components/SizeFilter';
 import { ShopAttributeFacetsFilter } from '@/components/ShopAttributeFacetsFilter';
 import { ProductsFiltersProvider } from '@/components/ProductsFiltersProvider';
 import { MobileFiltersDrawer } from '@/components/MobileFiltersDrawer';
-import { productsFiltersSectionFont } from '@/lib/products-filters-typography';
-import { t } from '@/lib/i18n';
+import { ProductsShopPageTitle } from '@/components/ProductsHeader';
 import type { LanguageCode } from '@/lib/language';
 import { MOBILE_FILTERS_EVENT } from '@/lib/events';
 
@@ -44,16 +43,9 @@ export function ProductsShopFiltersColumn({
     >
       {children}
       <aside className="hidden w-[16rem] shrink-0 bg-white dark:bg-[var(--app-bg)] min-[744px]:sticky min-[744px]:top-4 min-[744px]:z-10 min-[744px]:self-start min-[744px]:block xl:w-[20rem]">
-        <div className="border-r border-solid border-[#e2e8f0] dark:border-white/20 pb-4 pt-4 min-[744px]:pl-0 min-[744px]:pr-3 xl:pb-6 xl:pt-6 xl:pr-6">
-          <div className="mb-4 flex flex-col gap-1 lg:mb-5 xl:mb-6">
-            <h2
-              className={`${productsFiltersSectionFont.className} text-sm font-semibold leading-5 tracking-[-0.31px] text-[#0f172b] dark:text-white lg:text-base lg:leading-6`}
-            >
-              {t(language, 'products.filters.panelTitle')}
-            </h2>
-            <p className="text-xs font-normal leading-snug tracking-[-0.15px] text-[#62748e] dark:text-white/72 lg:text-sm lg:leading-5">
-              {t(language, 'products.filters.panelSubtitle')}
-            </p>
+        <div className="border-r border-solid border-[#e2e8f0] dark:border-white/20 pb-4 min-[744px]:pl-0 min-[744px]:pr-3 xl:pb-6 xl:pr-6">
+          <div className="mb-4 lg:mb-5 xl:mb-6">
+            <ProductsShopPageTitle />
           </div>
           <CategoryFilter
             category={params.category}
@@ -91,11 +83,6 @@ export function ProductsShopFiltersColumn({
 
       <MobileFiltersDrawer openEventName={MOBILE_FILTERS_EVENT}>
         <div className="space-y-0 rounded-[20px] bg-white px-4 pb-4 pt-3 shadow-sm ring-1 ring-black/[0.06] dark:bg-zinc-900 dark:ring-white/10">
-          <div className="mb-4">
-            <p className="text-sm font-normal leading-5 tracking-[-0.15px] text-[#62748e] dark:text-white/72">
-              {t(language, 'products.filters.panelSubtitle')}
-            </p>
-          </div>
           <CategoryFilter
             category={params.category}
             search={params.search}
