@@ -1,8 +1,8 @@
 import type { Category } from '../types';
 
-export type CategoryTreeNode = Category & { children: CategoryTreeNode[] };
+type CategoryTreeNode = Category & { children: CategoryTreeNode[] };
 
-export type FlatCategoryNode = CategoryTreeNode & {
+type FlatCategoryNode = CategoryTreeNode & {
   isSubcategory: boolean;
   depth: number;
   depthClass: string;

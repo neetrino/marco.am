@@ -2,7 +2,7 @@
 
 import { useTranslation } from '@/lib/i18n-client';
 
-export type ProductsShopLoadingSkeletonVariant = 'full' | 'body' | 'grid';
+type ProductsShopLoadingSkeletonVariant = 'full' | 'body' | 'grid';
 
 type ProductsShopLoadingSkeletonProps = {
   /** `body` = grid + filter column; `grid` = product grid cell only (parallel listing Suspense). */
@@ -39,22 +39,12 @@ export function ProductsShopLoadingSkeleton({ variant = 'full' }: ProductsShopLo
     );
   }
 
-  const headerSkeleton =
-    variant === 'full' ? (
-      <div className="marco-header-container border-b border-slate-200/80 pb-3 pt-[58px] dark:border-white/10 sm:pb-4">
-        <div className="hidden sm:flex sm:items-center sm:justify-between sm:gap-4">
-          <div className={`h-9 w-52 max-w-[72%] sm:h-10 ${bar}`} />
-          <div className="flex gap-3">
-            <div className={`h-9 w-28 rounded-lg ${block}`} />
-            <div className={`h-9 w-40 rounded-lg ${block}`} />
-          </div>
-        </div>
-        <div className="flex flex-col gap-3 pt-4 sm:hidden">
-          <div className={`h-8 w-44 ${bar}`} />
-          <div className={`h-11 w-full rounded-lg ${block}`} />
-        </div>
-      </div>
-    ) : null;
+  const titleSkeleton = (
+    <div className="mb-4 lg:mb-5 xl:mb-6">
+      <div className={`h-8 w-36 sm:h-9 sm:w-44 ${bar}`} />
+      <div className={`mt-2 h-1 w-20 rounded-sm ${bar}`} />
+    </div>
+  );
 
   return (
     <div
@@ -62,20 +52,22 @@ export function ProductsShopLoadingSkeleton({ variant = 'full' }: ProductsShopLo
       aria-busy="true"
       aria-label={t('common.ariaLabels.loadingShop')}
     >
-      {headerSkeleton}
+      <div className="marco-header-container pt-[58px]">
+        <div className="flex flex-col min-[744px]:flex-row min-[744px]:gap-5 xl:gap-8">
+          <aside className="hidden w-[16rem] shrink-0 min-[744px]:block xl:w-[20rem]" aria-hidden>
+            <div className="space-y-3 border-r border-slate-200/90 pb-4 dark:border-white/15 min-[744px]:pr-3 xl:space-y-4 xl:pb-6 xl:pr-6">
+              {titleSkeleton}
+              <div className={`h-32 w-full ${block}`} />
+              <div className={`h-24 w-full ${block}`} />
+              <div className={`h-20 w-full ${block}`} />
+            </div>
+          </aside>
 
-      <div className="marco-header-container flex flex-col min-[744px]:flex-row min-[744px]:gap-5 xl:gap-8">
-        <aside className="hidden w-[16rem] shrink-0 min-[744px]:block xl:w-[20rem]" aria-hidden>
-          <div className="space-y-3 border-r border-slate-200/90 pb-4 pt-4 dark:border-white/15 min-[744px]:pr-3 xl:space-y-4 xl:pb-6 xl:pt-6 xl:pr-6">
-            <div className={`h-5 w-28 ${bar}`} />
-            <div className={`h-4 w-40 ${bar}`} />
-            <div className={`h-32 w-full ${block}`} />
-            <div className={`h-24 w-full ${block}`} />
-            <div className={`h-20 w-full ${block}`} />
+          <div className="min-w-0 flex-1 w-full min-[744px]:w-auto">
+            <div className="pb-2 min-[744px]:hidden">{titleSkeleton}</div>
+            {gridSkeleton}
           </div>
-        </aside>
-
-        {gridSkeleton}
+        </div>
       </div>
     </div>
   );

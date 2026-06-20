@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, type JSX } from 'react';
 
 import { chunkArray, padChunksToMinimumCount } from '../lib/chunk-array';
 import { t } from '../lib/i18n';

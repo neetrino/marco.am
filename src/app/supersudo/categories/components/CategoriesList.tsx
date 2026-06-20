@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, type JSX } from 'react';
 import { useTranslation } from '../../../../lib/i18n-client';
 import { getStoredLanguage, type LanguageCode } from '../../../../lib/language';
 import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '../../../../lib/utils/image-utils';

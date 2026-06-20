@@ -25,5 +25,3 @@ export const ADMIN_PRIORITY_PREFETCH_ROUTES = [
   '/supersudo/products',
   '/supersudo/settings',
 ] as const;
-
-export type AdminPanelRoute = (typeof ADMIN_PANEL_ROUTES)[number];

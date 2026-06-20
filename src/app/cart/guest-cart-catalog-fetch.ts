@@ -34,19 +34,20 @@ export async function fetchGuestCartCatalogProducts(
   const responses = await Promise.all(
     chunks.map((chunk) =>
       apiClient.get<{
-        data: GuestCartCatalogProduct[];
-      }>('/api/v1/products', {
+        items: GuestCartCatalogProduct[];
+      }>('/api/v1/products/plp', {
         params: {
           lang,
           ids: chunk.join(','),
           limit: String(chunk.length),
+          includeFilters: '0',
         },
       }),
     ),
   );
 
   const byId = new Map<string, GuestCartCatalogProduct>();
-  for (const row of responses.flatMap((response) => response.data ?? [])) {
+  for (const row of responses.flatMap((response) => response.items ?? [])) {
     byId.set(row.id, row);
   }
   return byId;

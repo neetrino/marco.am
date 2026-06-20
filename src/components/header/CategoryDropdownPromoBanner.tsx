@@ -1,7 +1,7 @@
 ﻿'use client';
 
-import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
+import { ShopListingLink } from './ShopListingLink';
 import { headerCategoryNavFont } from './headerCategoryNavTypography';
 
 /** Figma 218:5785 — promo strip (gradient, pill badge, headline, subline, yellow CTA + arrow). */
@@ -37,9 +37,9 @@ export function CategoryDropdownPromoBanner({
       >
         {subline}
       </p>
-      <Link
+      <ShopListingLink
         href={href}
-        onClick={onNavigate}
+        onNavigate={onNavigate}
         className={`${headerCategoryNavFont.className} inline-flex w-auto max-w-full items-center gap-2 self-start rounded-[68px] bg-marco-yellow py-2 pl-4 pr-1.5 text-sm font-bold !text-[#383838] dark:!text-[#383838] transition-[filter] hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/20 sm:gap-2.5 sm:pl-5 sm:pr-2 sm:text-base`}
       >
         <span className="min-w-0 whitespace-nowrap !text-[#383838] dark:!text-[#383838]">{ctaLabel}</span>
@@ -52,7 +52,7 @@ export function CategoryDropdownPromoBanner({
             strokeWidth={2.5}
           />
         </span>
-      </Link>
+      </ShopListingLink>
     </div>
   );
 }

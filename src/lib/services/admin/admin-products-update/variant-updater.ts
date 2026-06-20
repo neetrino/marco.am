@@ -8,7 +8,7 @@ import {
   type ProductClass,
 } from "@/lib/constants/product-class";
 
-export interface PreparedVariantInput {
+interface PreparedVariantInput {
   id?: string;
   sku?: string;
   productClass: ProductClass;

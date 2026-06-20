@@ -18,7 +18,7 @@ const WHY_CHOOSE_PUBLIC_CACHE_TTL_SEC = 300;
 
 type HomeLocale = "en" | "hy" | "ru";
 
-export type WhyChooseUsPublicItem = {
+type WhyChooseUsPublicItem = {
   id: string;
   title: string;
   body: string;
@@ -26,7 +26,7 @@ export type WhyChooseUsPublicItem = {
   sortOrder: number;
 };
 
-export type WhyChooseUsPublicPayload = {
+type WhyChooseUsPublicPayload = {
   sectionTitle: string;
   items: WhyChooseUsPublicItem[];
 };

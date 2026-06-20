@@ -31,7 +31,7 @@ export function readStoredGuestCart(): StoredGuestCartItem[] {
   }
 }
 
-export function writeStoredGuestCart(items: StoredGuestCartItem[]): void {
+function writeStoredGuestCart(items: StoredGuestCartItem[]): void {
   if (typeof window === 'undefined') {
     return;
   }
@@ -50,7 +50,7 @@ export function runGuestCartMutation<T>(fn: () => T): Promise<T> {
   return result;
 }
 
-export type GuestCartUpsertInput = {
+type GuestCartUpsertInput = {
   productId: string;
   productSlug: string;
   variantId: string;
@@ -64,7 +64,7 @@ export type GuestCartUpsertInput = {
   options?: CartVariantOption[];
 };
 
-export function normalizeStoredImage(image: string | null | undefined): string | null {
+function normalizeStoredImage(image: string | null | undefined): string | null {
   const trimmed = image?.trim();
   return trimmed || null;
 }

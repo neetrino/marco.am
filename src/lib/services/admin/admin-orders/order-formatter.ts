@@ -9,7 +9,7 @@ type OrderItemVariantOption = {
 };
 
 /** Parses checkout snapshot e.g. "color: Red, size: M" into display options. */
-export function parseVariantTitleOptions(
+function parseVariantTitleOptions(
   variantTitle: string | null | undefined,
 ): OrderItemVariantOption[] {
   if (!variantTitle?.trim()) {
@@ -103,7 +103,7 @@ export function formatOrderForList(order: {
 /**
  * Format order item for detail response — uses OrderItem snapshot fields only.
  */
-export function formatOrderItem(item: {
+function formatOrderItem(item: {
   id: string;
   variantId: string | null;
   productTitle: string | null;

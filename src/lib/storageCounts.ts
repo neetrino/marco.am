@@ -3,15 +3,14 @@
 /**
  * Shared storage keys used to keep wishlist, compare and cart data in localStorage.
  */
-export const STORAGE_KEYS = {
+const STORAGE_KEYS = {
   wishlist: 'shop_wishlist',
   compare: 'shop_compare',
   cart: 'shop_cart_guest',
 } as const;
 
-export const WISHLIST_KEY = STORAGE_KEYS.wishlist;
-export const COMPARE_KEY = STORAGE_KEYS.compare;
-export const CART_KEY = STORAGE_KEYS.cart;
+const WISHLIST_KEY = STORAGE_KEYS.wishlist;
+const COMPARE_KEY = STORAGE_KEYS.compare;
 
 /**
  * Returns the stored length for an array kept under the provided key.

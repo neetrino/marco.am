@@ -69,6 +69,8 @@ interface SpecialOfferCardProps {
   maxWidthPx?: number;
   imagePriority?: boolean;
   detailsPending?: boolean;
+  /** PLP/grid performance: render one image while keeping full PDP seed data. */
+  preferSingleImage?: boolean;
 }
 
 /**
@@ -83,6 +85,7 @@ export function SpecialOfferCard({
   maxWidthPx,
   imagePriority = false,
   detailsPending: detailsPendingProp = false,
+  preferSingleImage = false,
 }: SpecialOfferCardProps) {
   const hasDisplayPrice = product.price > 0;
   const detailsPending = detailsPendingProp || Boolean(product.detailsPending);
@@ -138,6 +141,10 @@ export function SpecialOfferCard({
       : product.image
         ? [product.image]
         : [];
+  const mediaImages =
+    preferSingleImage && galleryImages.length > 1
+      ? [galleryImages[0] as string]
+      : galleryImages;
 
   const cornerTranslatePx = Math.round(
     (SPECIAL_OFFERS_CARD_CORNER_MASK_SIZE_PX * SPECIAL_OFFERS_CARD_CORNER_MASK_TRANSLATE_PERCENT) / 100,
@@ -263,7 +270,7 @@ export function SpecialOfferCard({
                 ? product.slug || t('home.featured_products.card_loading_aria')
                 : product.title
             }
-            images={galleryImages}
+            images={mediaImages}
             showPlaceholder={showPlaceholder}
             onImageError={onImageError}
             imagePriority={imagePriority}

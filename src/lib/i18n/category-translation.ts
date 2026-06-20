@@ -9,7 +9,7 @@ type LocaleTriple = { hy: string; en: string; ru: string };
 
 const TITLE_MAP = categoryTitleMap as Record<string, LocaleTriple>;
 
-export type CategoryTranslationRow = {
+type CategoryTranslationRow = {
   locale: string;
   title: string;
   slug: string;

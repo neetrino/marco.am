@@ -116,9 +116,11 @@ export type PaginationSlotItem =
   | { readonly kind: 'ellipsis' }
   | { readonly kind: 'page'; readonly page: number; readonly href: string };
 
-export interface ProductsPaginationProps {
+interface ProductsPaginationProps {
   readonly page: number;
   readonly totalPages: number;
+  readonly hasNextPage?: boolean;
+  readonly totalIsExact?: boolean;
   readonly hrefFirst: string;
   readonly hrefBack: string;
   readonly hrefNext: string;
@@ -132,6 +134,8 @@ export interface ProductsPaginationProps {
 export function ProductsPagination({
   page,
   totalPages,
+  hasNextPage,
+  totalIsExact = true,
   hrefFirst,
   hrefBack,
   hrefNext,
@@ -143,6 +147,7 @@ export function ProductsPagination({
 
   const inactiveControl = `${PAGINATION_CONTROL_WHITE} cursor-not-allowed opacity-45`;
   const inactiveGrey = `${PAGINATION_CONTROL_GREY} cursor-not-allowed opacity-45`;
+  const canGoNext = totalIsExact ? page < totalPages : Boolean(hasNextPage);
 
   return (
     <nav
@@ -150,7 +155,7 @@ export function ProductsPagination({
       aria-label={t('common.pagination.navAriaLabel')}
     >
       {/* First */}
-      {page > 1 ? (
+      {totalIsExact && page > 1 ? (
         <PaginationNavLink
           href={hrefFirst}
           onNavigate={onNavigate}
@@ -160,12 +165,12 @@ export function ProductsPagination({
           <IconChevronsLeft className="shrink-0 text-[#313131] dark:text-[#313131]" />
           <span className="text-[#313131] dark:text-[#313131]">{t('common.pagination.first')}</span>
         </PaginationNavLink>
-      ) : (
+      ) : totalIsExact ? (
         <span className={`${inactiveGrey} gap-1 dark:text-[#313131]`} aria-disabled="true">
           <IconChevronsLeft className="shrink-0 text-[#313131] dark:text-[#313131]" />
           <span className="text-[#313131] dark:text-[#313131]">{t('common.pagination.first')}</span>
         </span>
-      )}
+      ) : null}
 
       {/* Back (previous page) */}
       {page > 1 ? (
@@ -186,7 +191,7 @@ export function ProductsPagination({
       )}
 
       {/* Page numbers + ellipsis */}
-      {slotItems.map((item, idx) =>
+      {(totalIsExact ? slotItems : [{ kind: 'page' as const, page, href: hrefBack }]).map((item, idx) =>
         item.kind === 'ellipsis' ? (
           <span
             key={`ellipsis-${idx}`}
@@ -218,7 +223,7 @@ export function ProductsPagination({
       )}
 
       {/* Next */}
-      {page < totalPages ? (
+      {canGoNext ? (
         <PaginationNavLink
           href={hrefNext}
           onNavigate={onNavigate}
@@ -236,7 +241,7 @@ export function ProductsPagination({
       )}
 
       {/* Last */}
-      {page < totalPages ? (
+      {totalIsExact && page < totalPages ? (
         <PaginationNavLink
           href={hrefLast}
           onNavigate={onNavigate}
@@ -246,12 +251,12 @@ export function ProductsPagination({
           <span className="text-[#313131] dark:text-[#313131]">{t('common.pagination.last')}</span>
           <IconChevronsRight className="shrink-0 text-[#313131] dark:text-[#313131]" />
         </PaginationNavLink>
-      ) : (
+      ) : totalIsExact ? (
         <span className={`${inactiveGrey} gap-1 dark:text-[#313131]`} aria-disabled="true">
           <span className="text-[#313131] dark:text-[#313131]">{t('common.pagination.last')}</span>
           <IconChevronsRight className="shrink-0 text-[#313131] dark:text-[#313131]" />
         </span>
-      )}
+      ) : null}
     </nav>
   );
 }

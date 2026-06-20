@@ -8,7 +8,7 @@ import type { LanguageCode } from "@/lib/language";
 import type { Category } from "../types";
 import { getLocalizedCategoryTitle } from "../utils";
 
-export function buildHierarchyConfirmMessage(
+function buildHierarchyConfirmMessage(
   reasons: HierarchyChangeReason[],
   categories: Category[],
   t: (key: string) => string,

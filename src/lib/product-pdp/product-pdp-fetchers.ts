@@ -56,8 +56,6 @@ async function requestProductDetail(slug: string, lang: LanguageCode): Promise<P
   return request;
 }
 
-export type ProductDetailPayload = Awaited<ReturnType<typeof fetchProductDetail>>;
-
 export async function fetchProductDetail(slug: string, lang: LanguageCode): Promise<Product> {
   try {
     return await requestProductDetail(slug, lang);

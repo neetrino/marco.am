@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback, memo, useRef } from 'react';
+import { useState, useEffect, useMemo, useCallback, memo, useRef, type RefObject } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useShopProductsListingSearchParams } from '@/lib/use-shop-products-listing-search-params';
@@ -9,6 +9,7 @@ import { apiClient } from '../lib/api-client';
 import { getStoredLanguage } from '../lib/language';
 import { warmShopProductsClientCaches } from '@/lib/shop-products-plp-prefetch';
 import { useProductsFilters, useShopFiltersTranslation, type CategoryFilterOption } from './ProductsFiltersProvider';
+import type { ProductsFiltersData } from '@/lib/shop-products-filters-types';
 import {
   PRODUCTS_FILTER_SECTION_SHELL_CLASS,
   productsFiltersSectionFont,
@@ -16,6 +17,7 @@ import {
 import { ProductsFilterCheckboxVisual } from './ProductsFilterCheckbox';
 import { ProductsFilterScrollArea } from './ProductsFilterScrollArea';
 import { useMobileFiltersDraft } from './mobile-filters-draft-context';
+import { collectCategoryFilterExpandKeys, findDeepestSelectedCategorySlug } from '@/lib/shop-category-filter-descendant-slugs';
 
 interface CategoryFilterProps {
   category?: string;
@@ -43,6 +45,8 @@ interface CategoryFilterRowProps {
   expandAria: (title: string) => string;
   collapseAria: (title: string) => string;
   noSubcategoriesAria: (title: string) => string;
+  scrollTargetRef?: RefObject<HTMLDivElement | null>;
+  scrollTargetSlug?: string | null;
 }
 
 const CategoryFilterRow = memo(function CategoryFilterRow({
@@ -56,20 +60,34 @@ const CategoryFilterRow = memo(function CategoryFilterRow({
   expandAria,
   collapseAria,
   noSubcategoriesAria,
+  scrollTargetRef,
+  scrollTargetSlug,
 }: CategoryFilterRowProps) {
   const key = node.slug.toLowerCase();
   const childList = node.children ?? [];
   const hasChildren = childList.length > 0;
   const expanded = expandedKeys.has(key);
   const isSelected = selectedSlugs.some((s) => s.toLowerCase() === node.slug.toLowerCase());
+  const isTopLevel = depth === 0;
+  const isScrollTarget =
+    scrollTargetSlug != null && node.slug.toLowerCase() === scrollTargetSlug.toLowerCase();
 
   const countClass =
     'shrink-0 whitespace-nowrap text-base leading-6 tracking-[-0.31px] text-[#90a1b9] dark:text-white/68';
 
+  const titleClass = isSelected
+    ? 'font-semibold text-[#0f172a] dark:text-white'
+    : isTopLevel
+      ? 'font-semibold text-[#314158] dark:text-[#b8c2cf]'
+      : 'font-normal text-[#5d7285] dark:text-[#8f9fb2]';
+
   return (
     <div className="flex flex-col gap-3">
       <div
-        className="flex w-full min-w-0 items-center gap-2 pr-3"
+        ref={isScrollTarget ? scrollTargetRef : undefined}
+        className={`flex w-full min-w-0 items-center gap-2 rounded-md pr-3 transition-colors duration-200 ease-out ${
+          isSelected ? 'bg-[#f1f5f9] py-1 dark:bg-white/[0.06]' : ''
+        }`}
         style={{ paddingLeft: depth > 0 ? depth * 14 : 0 }}
       >
         <button
@@ -80,9 +98,7 @@ const CategoryFilterRow = memo(function CategoryFilterRow({
         >
           <ProductsFilterCheckboxVisual checked={isSelected} variant="checkmark" />
           <span
-            className={`min-w-0 flex-1 truncate text-base leading-6 tracking-[0.16px] transition-colors duration-200 ease-out ${
-              isSelected ? 'text-[#314158] dark:text-[#b8c2cf]' : 'text-[#5d7285] dark:text-[#8f9fb2]'
-            }`}
+            className={`min-w-0 flex-1 truncate text-base leading-6 tracking-[0.16px] transition-colors duration-200 ease-out ${titleClass}`}
           >
             {node.title}
           </span>
@@ -141,6 +157,8 @@ const CategoryFilterRow = memo(function CategoryFilterRow({
               expandAria={expandAria}
               collapseAria={collapseAria}
               noSubcategoriesAria={noSubcategoriesAria}
+              scrollTargetRef={scrollTargetRef}
+              scrollTargetSlug={scrollTargetSlug}
             />
           ))}
         </div>
@@ -166,6 +184,7 @@ export function CategoryFilter({
   const [optimisticSlugs, setOptimisticSlugs] = useState<string[] | null>(null);
   const [expandedKeys, setExpandedKeys] = useState<ReadonlySet<string>>(() => new Set());
   const prefetchedListingKeysRef = useRef<Set<string>>(new Set());
+  const scrollTargetRef = useRef<HTMLDivElement | null>(null);
 
   const categories = useMemo(() => {
     if (filtersContext?.data?.categories?.length) {
@@ -193,8 +212,15 @@ export function CategoryFilter({
       if (maxPrice) params.maxPrice = maxPrice;
       const filterParam = searchParams.get('filter');
       if (filterParam) params.filter = filterParam;
-      const response = await apiClient.get<{ categories: CategoryFilterOption[] }>('/api/v1/products/filters', { params });
-      const raw = response.categories ?? [];
+      const response = await apiClient.get<ProductsFiltersData | { filters?: ProductsFiltersData }>('/api/v1/products/plp', {
+        params: {
+          ...params,
+          includeItems: '0',
+          includeFilters: '1',
+        },
+      });
+      const filters = 'filters' in response && response.filters ? response.filters : response as ProductsFiltersData;
+      const raw = filters.categories ?? [];
       setFallbackCategories(raw.map(normalizeCategoryChildren));
     } catch (_err) {
       setFallbackCategories([]);
@@ -220,9 +246,55 @@ export function CategoryFilter({
 
   const selectedSlugs = optimisticSlugs ?? selectedFromUrl;
 
+  const scrollTargetSlug = useMemo(
+    () => findDeepestSelectedCategorySlug(categories, selectedSlugs),
+    [categories, selectedSlugs],
+  );
+
   useEffect(() => {
     setOptimisticSlugs(null);
   }, [categoryQs]);
+
+  useEffect(() => {
+    if (selectedSlugs.length === 0 || categories.length === 0) {
+      return;
+    }
+    const autoExpandKeys = collectCategoryFilterExpandKeys(categories, selectedSlugs);
+    if (autoExpandKeys.size === 0) {
+      return;
+    }
+    setExpandedKeys((prev) => {
+      let changed = false;
+      const next = new Set(prev);
+      for (const key of autoExpandKeys) {
+        if (!next.has(key)) {
+          next.add(key);
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [categories, categoryQs, selectedSlugs]);
+
+  useEffect(() => {
+    if (!scrollTargetSlug || categories.length === 0) {
+      return;
+    }
+
+    const requiredExpandKeys = collectCategoryFilterExpandKeys(categories, selectedSlugs);
+    const ancestorsExpanded = [...requiredExpandKeys].every((key) => expandedKeys.has(key));
+    if (!ancestorsExpanded) {
+      return;
+    }
+
+    const frame = requestAnimationFrame(() => {
+      scrollTargetRef.current?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    });
+
+    return () => {
+      cancelAnimationFrame(frame);
+    };
+  }, [categories, categoryQs, expandedKeys, scrollTargetSlug, selectedSlugs]);
 
   const buildNextCategorySlugs = useCallback(
     (slug: string): string[] => {
@@ -393,6 +465,8 @@ export function CategoryFilter({
               expandAria={expandAria}
               collapseAria={collapseAria}
               noSubcategoriesAria={noSubcategoriesAria}
+              scrollTargetRef={scrollTargetRef}
+              scrollTargetSlug={scrollTargetSlug}
             />
           ))}
         </div>

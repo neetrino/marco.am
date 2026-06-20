@@ -11,13 +11,13 @@ export type GuestCheckoutItemInput = {
   quantity: number;
 };
 
-export type NormalizedGuestCheckoutItem = {
+type NormalizedGuestCheckoutItem = {
   productId: string;
   variantId: string;
   quantity: number;
 };
 
-export type ResolvedGuestCheckoutItem = {
+type ResolvedGuestCheckoutItem = {
   variantId: string;
   productId: string;
   quantity: number;

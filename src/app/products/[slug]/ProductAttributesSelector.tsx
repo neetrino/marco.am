@@ -58,10 +58,6 @@ const getColorValue = (colorName: string): string => {
   const normalizedName = colorName.toLowerCase().trim();
   return colorMap[normalizedName] || '#CCCCCC';
 };
-
-/** Canonical variant picker keys for compatibility and legacy fallbacks. */
-export const VARIANT_PICKER_ATTRIBUTE_KEYS = new Set<string>(['color', 'size']);
-
 const getDistinctAttributeOptionCount = (attrGroups: AttributeGroupValue[]): number => {
   const distinctValues = new Set<string>();
   attrGroups.forEach((group) => {

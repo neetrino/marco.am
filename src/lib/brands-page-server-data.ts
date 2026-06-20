@@ -6,7 +6,7 @@ import { getServerLanguage } from '@/lib/language-server';
 import { homeBrandPartnersService } from '@/lib/services/home-brand-partners.service';
 import type { HomeBrandPartnerPublicItem } from '@/lib/types/home-brand-partners-public';
 
-export type BrandsPageServerData = {
+type BrandsPageServerData = {
   language: LanguageCode;
   brands: HomeBrandPartnerPublicItem[];
   pageTitle: string;

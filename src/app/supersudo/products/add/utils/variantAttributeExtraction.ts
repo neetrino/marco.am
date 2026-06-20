@@ -27,7 +27,7 @@ interface Variant {
 /**
  * Extracts color from variant options
  */
-export function extractColorFromOptions(variant: Variant): string {
+function extractColorFromOptions(variant: Variant): string {
   if (variant.color) {
     return variant.color;
   }
@@ -64,7 +64,7 @@ export function extractColorFromOptions(variant: Variant): string {
 /**
  * Extracts size from variant options
  */
-export function extractSizeFromOptions(variant: Variant): string {
+function extractSizeFromOptions(variant: Variant): string {
   if (variant.size) {
     return variant.size;
   }
@@ -101,7 +101,7 @@ export function extractSizeFromOptions(variant: Variant): string {
 /**
  * Extracts color from SKU (format: prefix-color-size)
  */
-export function extractColorFromSku(variant: Variant): string {
+function extractColorFromSku(variant: Variant): string {
   if (!variant.sku) {
     return '';
   }
@@ -120,7 +120,7 @@ export function extractColorFromSku(variant: Variant): string {
 /**
  * Extracts size from SKU (format: prefix-color-size)
  */
-export function extractSizeFromSku(variant: Variant): string {
+function extractSizeFromSku(variant: Variant): string {
   if (!variant.sku) {
     return '';
   }

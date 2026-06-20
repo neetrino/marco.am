@@ -13,7 +13,7 @@ function getReelsActivePageIndex(el: HTMLDivElement, pageCount: number): number 
   return idx;
 }
 
-export type UseHomeReelsCarouselOptions = {
+type UseHomeReelsCarouselOptions = {
   pageCount: number;
 };
 

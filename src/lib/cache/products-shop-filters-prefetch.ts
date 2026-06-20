@@ -1,4 +1,4 @@
-import { searchParamsRecordToUrlSearchParams } from '@/lib/cache/products-filters-redis';
+import { searchParamsRecordToUrlSearchParams } from '@/lib/search-params-record';
 import type { ProductsShopListingServerContext } from '@/lib/products-shop-listing-server-context';
 import { buildProductsFiltersScopeKeyFromSearchParams } from '@/lib/products-filters-client-key';
 import type { ProductsPageSearchParams } from '@/app/products/products-page-search-params';

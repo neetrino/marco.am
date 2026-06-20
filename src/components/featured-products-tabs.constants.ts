@@ -62,6 +62,3 @@ export const FEATURED_PRODUCTS_GRID_GAP_Y_CLASS = 'md:gap-y-10';
 
 /** Max desktop horizontal pages (dots + scroll segments). */
 export const FEATURED_PRODUCTS_FOOTER_DOT_COUNT_DESKTOP = 2;
-
-/** Mobile: three dots above «Տեսնել ավելին». */
-export const FEATURED_PRODUCTS_FOOTER_DOT_COUNT_MOBILE = 3;

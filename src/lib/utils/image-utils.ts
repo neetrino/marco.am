@@ -47,7 +47,7 @@ export function isLocalFilesystemImageReference(url: string): boolean {
 /**
  * Validates if a URL is a valid image URL
  */
-export function isValidImageUrl(url: ImageUrlInput): boolean {
+function isValidImageUrl(url: ImageUrlInput): boolean {
   if (!url) return false;
   
   const urlStr = typeof url === 'string' ? url.trim() : '';
@@ -246,7 +246,7 @@ export function normalizeUrlForComparison(url: string): string {
  * Gets all normalized variations of a URL for comparison
  * Useful when comparing URLs that might have different formats
  */
-export function getUrlVariations(url: string): string[] {
+function getUrlVariations(url: string): string[] {
   if (!url) return [];
   
   const normalized = normalizeUrlForComparison(url);

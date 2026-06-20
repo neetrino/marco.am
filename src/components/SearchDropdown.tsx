@@ -7,7 +7,7 @@ import { formatCatalogPrice, getStoredCurrency } from '../lib/currency';
 import type { InstantSearchResultItem } from './hooks/useInstantSearch';
 import { ProductImagePlaceholder } from './ProductImagePlaceholder';
 
-export interface SearchDropdownProps {
+interface SearchDropdownProps {
   results: InstantSearchResultItem[];
   loading: boolean;
   error: string | null;

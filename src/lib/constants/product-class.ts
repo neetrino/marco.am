@@ -2,7 +2,7 @@ export const PRODUCT_CLASSES = ["retail", "wholesale"] as const;
 
 export type ProductClass = (typeof PRODUCT_CLASSES)[number];
 
-export const DEFAULT_PRODUCT_CLASS: ProductClass = "retail";
+const DEFAULT_PRODUCT_CLASS: ProductClass = "retail";
 
 export function normalizeProductClass(value: unknown): ProductClass | null {
   if (typeof value !== "string") {

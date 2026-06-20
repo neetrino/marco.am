@@ -27,7 +27,7 @@ const footerDotStyle = {
   height: SPECIAL_OFFERS_PAGINATION_DOT_SIZE_PX,
 } as const;
 
-export type FeaturedProductsStripBrandsRailProps = {
+type FeaturedProductsStripBrandsRailProps = {
   readonly language: LanguageCode;
   readonly isMaxMd: boolean;
   readonly homeBrandPartners: HomeBrandPartnerPublicItem[] | null;

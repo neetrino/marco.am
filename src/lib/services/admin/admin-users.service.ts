@@ -1,6 +1,6 @@
 import { Prisma } from "@white-shop/db/prisma";
 import { db } from "@white-shop/db";
-import { bumpAuthEpoch } from "@/lib/auth/auth-epoch";
+import { bumpAuthEpoch } from "@/lib/auth/auth-epoch-mutations";
 import { sanitizeUserRoles } from "@/lib/constants/user-roles";
 import type {
   AdminUserListItem,

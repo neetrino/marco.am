@@ -12,11 +12,6 @@ export const primaryNavLinks: PrimaryNavLink[] = [
   { href: '/reels', translationKey: 'common.navigation.reels' },
 ];
 
-/** Internal primary nav paths — used for eager route prefetch. */
-export const primaryNavInternalHrefs: readonly string[] = primaryNavLinks
-  .filter((link): link is Extract<PrimaryNavLink, { external?: false }> => link.external !== true)
-  .map((link) => link.href);
-
 /** Match current route to primary nav `href` without treating `/` as a prefix of everything. */
 export function isPrimaryNavHrefActive(pathname: string, href: string): boolean {
   if (href === '/') {

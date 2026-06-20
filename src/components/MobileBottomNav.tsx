@@ -27,7 +27,7 @@ import {
 } from './mobile-bottom-nav.constants';
 import { MobileBottomNavShopSheet } from './mobile-bottom-nav-shop-sheet';
 
-export type MobileNavIconSlot = 'home' | 'shop' | 'wishlist' | 'cart' | 'profile';
+type MobileNavIconSlot = 'home' | 'shop' | 'wishlist' | 'cart' | 'profile';
 
 interface MobileNavItem {
   label: string;

@@ -1,4 +1,4 @@
-import type { Cart, CartItem } from './types';
+import type { Cart } from './types';
 
 function collectImageUrls(cart: Cart | null): Set<string> {
   const urls = new Set<string>();
@@ -53,15 +53,4 @@ export async function preloadNewCartImages(
   }
 
   await Promise.all([...pendingUrls].map((url) => preloadImage(url)));
-}
-
-export function cartHasMissingImages(cart: Cart | null): boolean {
-  if (!cart || cart.items.length === 0) {
-    return false;
-  }
-  return cart.items.some((item) => !item.variant.product.image);
-}
-
-export function countCartItemsMissingImages(items: CartItem[]): number {
-  return items.filter((item) => !item.variant.product.image).length;
 }

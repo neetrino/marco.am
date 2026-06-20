@@ -1,0 +1,104 @@
+model Order {
+  id                String       @id @default(cuid())
+  number            String       @unique
+  userId            String?
+  status            String       @default("pending")
+  paymentStatus     String       @default("pending")
+  fulfillmentStatus String       @default("unfulfilled")
+  subtotal          Float
+  discountAmount    Float        @default(0)
+  shippingAmount    Float        @default(0)
+  taxAmount         Float        @default(0)
+  total             Float
+  currency          String       @default("AMD")
+  customerEmail     String?
+  customerPhone     String?
+  customerLocale    String       @default("en")
+  couponCode        String?
+  billingAddress    Json?
+  shippingAddress   Json?
+  shippingMethod    String?
+  trackingNumber    String?
+  notes             String?      @db.Text
+  adminNotes        String?      @db.Text
+  ipAddress         String?
+  userAgent         String?
+  paidAt            DateTime?
+  fulfilledAt       DateTime?
+  cancelledAt       DateTime?
+  items             OrderItem[]
+  payments          Payment[]
+  events            OrderEvent[]
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  // Relations
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([status, createdAt(sort: Desc)])
+  @@index([customerEmail])
+  @@index([createdAt(sort: Desc)])
+  @@map("orders")
+}
+
+model OrderItem {
+  id           String  @id @default(cuid())
+  orderId      String
+  variantId    String?
+  productTitle String
+  variantTitle String?
+  sku          String
+  quantity     Int
+  price        Float
+  total        Float
+  imageUrl     String?
+
+  order   Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variant ProductVariant? @relation(fields: [variantId], references: [id])
+
+  @@index([orderId])
+  @@index([variantId])
+  @@map("order_items")
+}
+
+model Payment {
+  id                    String    @id @default(cuid())
+  orderId               String
+  provider              String
+  providerTransactionId String?
+  method                String?
+  amount                Float
+  currency              String    @default("AMD")
+  status                String    @default("pending")
+  cardLast4             String?
+  cardBrand             String?
+  errorCode             String?
+  errorMessage          String?
+  providerResponse      Json?
+  idempotencyKey        String?
+  completedAt           DateTime?
+  failedAt              DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@map("payments")
+}
+
+model OrderEvent {
+  id        String   @id @default(cuid())
+  orderId   String
+  type      String
+  data      Json?
+  userId    String?
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@map("order_events")
+}

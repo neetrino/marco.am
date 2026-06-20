@@ -9,7 +9,7 @@ import { shouldBypassNextImageOptimizer } from '@/lib/utils/should-bypass-next-i
 
 import { REELS_PAGE_PRIORITY_TILE_COUNT } from './reels-page-grid.constants';
 
-export type ReelsGridTileProps = {
+type ReelsGridTileProps = {
   index: number;
   href: string;
   posterUrl: string;

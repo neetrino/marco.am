@@ -18,13 +18,13 @@ const DEFAULT_LIKES_STORAGE: ReelsLikesStorage = {
   items: [],
 };
 
-export type ReelsLikesSnapshot = {
+type ReelsLikesSnapshot = {
   likesByReelId: Record<string, number>;
   viewerLikedReelIds: Set<string>;
   viewerLikedReelsCount: number;
 };
 
-export type ReelsLikesByReelId = Record<string, number>;
+type ReelsLikesByReelId = Record<string, number>;
 
 function parseLikesStorage(raw: unknown): ReelsLikesStorage | null {
   const parsed = reelsLikesStorageSchema.safeParse(raw);

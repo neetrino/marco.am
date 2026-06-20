@@ -6,7 +6,7 @@ import { logger } from "@/lib/utils/logger";
 
 type RateLimitWindow = `${number} s` | `${number} m` | `${number} h`;
 
-export type UpstashRateLimitSpec = {
+type UpstashRateLimitSpec = {
   prefix: string;
   limit: number;
   window: RateLimitWindow;
@@ -49,7 +49,7 @@ function getLimiter(spec: UpstashRateLimitSpec): Ratelimit | null {
   return limiter;
 }
 
-export function tooManyRequestsError(detail: string): NextResponse {
+function tooManyRequestsError(detail: string): NextResponse {
   return NextResponse.json(
     {
       type: "https://api.shop.am/problems/too-many-requests",

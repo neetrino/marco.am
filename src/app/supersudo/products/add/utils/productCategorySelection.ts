@@ -3,13 +3,13 @@ type CategoryWithParent = {
   parentId?: string | null;
 };
 
-export function buildCategoryParentMap(
+function buildCategoryParentMap(
   categories: CategoryWithParent[],
 ): Map<string, CategoryWithParent> {
   return new Map(categories.map((category) => [category.id, category]));
 }
 
-export function buildCategoryChildMap(
+function buildCategoryChildMap(
   categories: CategoryWithParent[],
 ): Map<string, string[]> {
   const childMap = new Map<string, string[]>();
@@ -26,7 +26,7 @@ export function buildCategoryChildMap(
   return childMap;
 }
 
-export function collectCategoryAncestorIds(
+function collectCategoryAncestorIds(
   categoryId: string,
   byId: Map<string, CategoryWithParent>,
 ): string[] {
@@ -43,7 +43,7 @@ export function collectCategoryAncestorIds(
   return ancestors;
 }
 
-export function collectCategoryDescendantIds(
+function collectCategoryDescendantIds(
   categoryId: string,
   childMap: Map<string, string[]>,
 ): string[] {

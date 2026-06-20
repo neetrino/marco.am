@@ -1,5 +1,4 @@
 // Translation utilities
-import { getStoredLanguage, type LanguageCode } from './language';
 
 export const translations = {
   en: {
@@ -364,49 +363,5 @@ export const translations = {
   },
 } as const;
 
-export type TranslationKey = keyof typeof translations.en;
-
-export function getTranslation(key: string, language?: LanguageCode): string {
-  const lang = language || getStoredLanguage();
-  const keys = key.split('.');
-  let value: unknown = translations[lang];
-  
-  for (const k of keys) {
-    if (
-      value !== null &&
-      typeof value === "object" &&
-      !Array.isArray(value) &&
-      k in value
-    ) {
-      value = (value as Record<string, unknown>)[k];
-    } else {
-      // Fallback to English if translation not found
-      value = translations.en;
-      for (const k2 of keys) {
-        if (
-          value !== null &&
-          typeof value === "object" &&
-          !Array.isArray(value) &&
-          k2 in value
-        ) {
-          value = (value as Record<string, unknown>)[k2];
-        } else {
-          return key;
-        }
-      }
-      break;
-    }
-  }
-  
-  return typeof value === 'string' ? value : key;
-}
 
 // Simple hook for client components
-export function useTranslation() {
-  // This will be implemented in client components using useState/useEffect
-  // For now, just return a function that uses current language
-  return {
-    t: (key: string) => getTranslation(key),
-  };
-}
-

@@ -24,7 +24,7 @@ const ProductSpecifications = dynamic(() =>
   import('./ProductSpecifications').then((m) => ({ default: m.ProductSpecifications })),
 );
 
-export type ProductPageClientProps = {
+type ProductPageClientProps = {
   slugParam: string;
   serverLanguage: LanguageCode;
 };

@@ -9,7 +9,7 @@ export type HierarchyChangeReason =
   | { type: "reassign_from_other_parent"; categoryIds: string[] }
   | { type: "clear_all_subcategories"; removedCount: number };
 
-export type HierarchyChangeAssessment = {
+type HierarchyChangeAssessment = {
   requiresConfirmation: boolean;
   reasons: HierarchyChangeReason[];
 };

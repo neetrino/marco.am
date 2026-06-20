@@ -21,13 +21,13 @@ const montserrat = Montserrat({
   display: 'swap',
 });
 
-export type HomeReelPreviewToggleLike = (args: {
+type HomeReelPreviewToggleLike = (args: {
   reelId: string;
   forceLiked?: boolean;
   registerBurst?: boolean;
 }) => void;
 
-export type HomeReelPreviewDialogProps = {
+type HomeReelPreviewDialogProps = {
   items: ReelInteractionState[];
   initialIndex: number;
   pendingLikeById: Record<string, boolean>;

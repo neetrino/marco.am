@@ -24,7 +24,7 @@ function isCategoryAllowedByExclusion(category: Category, lang: LanguageCode): b
 }
 
 /** Pre-order walk: every descendant of `nodes`, including intermediate parents. */
-export function flattenCategorySubtree(nodes: readonly Category[]): Category[] {
+function flattenCategorySubtree(nodes: readonly Category[]): Category[] {
   const result: Category[] = [];
   for (const node of nodes) {
     result.push(node);
@@ -36,7 +36,7 @@ export function flattenCategorySubtree(nodes: readonly Category[]): Category[] {
 }
 
 /** Drop legacy/duplicate nav rows only — keep every distinct DB category. */
-export function filterCategoriesForNav(categories: Category[], lang: LanguageCode): Category[] {
+function filterCategoriesForNav(categories: Category[], lang: LanguageCode): Category[] {
   return categories.filter((category) => isCategoryAllowedByExclusion(category, lang) && hasRenderableBranch(category, lang));
 }
 
@@ -101,7 +101,7 @@ function mergeCategoryMedia(preferred: Category, fallback: Category): Category {
 }
 
 /** Merge rows that share the same localized nav label (legacy duplicate roots only). */
-export function dedupeCategories(categories: Category[], lang: LanguageCode): Category[] {
+function dedupeCategories(categories: Category[], lang: LanguageCode): Category[] {
   const keyToIndex = new Map<string, number>();
   const result: Category[] = [];
   const pinnedCategoryIds = new Set<string>();

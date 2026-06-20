@@ -18,7 +18,7 @@ const r2 =
       })
     : null;
 
-export type UploadToR2Options = {
+type UploadToR2Options = {
   /** Sent as `Cache-Control` on the object (CDN / browser caching). */
   cacheControl?: string;
 };

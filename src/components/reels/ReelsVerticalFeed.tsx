@@ -22,7 +22,7 @@ const montserrat = Montserrat({
   display: 'swap',
 });
 
-export type ReelsVerticalFeedProps = {
+type ReelsVerticalFeedProps = {
   initialIndex: number;
   items: PublicReelItem[];
 };

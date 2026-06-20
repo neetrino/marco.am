@@ -1,7 +1,7 @@
 import { cartLineSubtotal } from './line-subtotal';
 import type { Cart, CartItem } from './types';
 
-export type OptimisticCartAddDetail = {
+type OptimisticCartAddDetail = {
   quantity?: number;
   price?: number;
   productId?: string;

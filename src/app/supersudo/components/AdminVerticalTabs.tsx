@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 
-export interface AdminVerticalTabItem<T extends string = string> {
+interface AdminVerticalTabItem<T extends string = string> {
   id: T;
   label: string;
   icon?: ReactNode;

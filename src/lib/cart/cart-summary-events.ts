@@ -1,6 +1,6 @@
 import type { Cart } from '../../app/cart/types';
 
-export type CartSummaryEventDetail = {
+type CartSummaryEventDetail = {
   itemsCount: number;
   total: number;
   currency: string;

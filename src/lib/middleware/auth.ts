@@ -9,7 +9,7 @@ import { readAuthSessionToken } from "@/lib/auth/auth-session-cookie";
 import { normalizeUserRoles } from "@/lib/constants/user-roles";
 import { logger } from "@/lib/utils/logger";
 
-export interface AuthUser {
+interface AuthUser {
   id: string;
   email: string | null;
   phone: string | null;

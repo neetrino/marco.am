@@ -1,5 +1,6 @@
 ﻿'use client';
 
+import type { JSX } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { Facebook, Instagram, Send } from 'lucide-react';
 import { useTranslation } from '../../lib/i18n-client';

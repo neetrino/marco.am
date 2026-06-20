@@ -23,7 +23,7 @@ function slackBleedStartFromStyle(linkStyle?: CSSProperties): string {
   return `${HOME_BANNERS_CTA_PADDING_LEFT_PX}px`;
 }
 
-export type HomeFloorBannerSlackCtaLinkProps = {
+type HomeFloorBannerSlackCtaLinkProps = {
   href: string;
   ariaLabel: string;
   className: string;

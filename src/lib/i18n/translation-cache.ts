@@ -1,7 +1,7 @@
 export const SKIP_I18N_RESULT_CACHE = process.env.NODE_ENV === 'development';
 
-export const TRANSLATION_RESULT_CACHE_MAX = 1000;
-export const ATTRIBUTE_LABEL_CACHE_MAX = 500;
+const TRANSLATION_RESULT_CACHE_MAX = 1000;
+const ATTRIBUTE_LABEL_CACHE_MAX = 500;
 
 const translationCache = new Map<string, string>();
 const attributeLabelCache = new Map<string, string>();

@@ -1,6 +1,7 @@
 import { revalidateTag } from 'next/cache';
 import { db } from "@white-shop/db";
 import { CURRENCY_RATES_CACHE_KEY } from "@/lib/cache/public-cache-keys";
+import { rebuildProductListingReadModel } from "@/lib/read-model/product-read-model-sync";
 import { cacheService } from "@/lib/services/cache.service";
 import { logger } from "@/lib/utils/logger";
 
@@ -54,6 +55,7 @@ class AdminSettingsService {
    */
   async updateSettings(data: any) {
     logger.devLog('⚙️ [ADMIN SERVICE] Updating settings...', data);
+    let discountSettingsChanged = false;
     
     // Update global discount
     if (data.globalDiscount !== undefined) {
@@ -72,6 +74,7 @@ class AdminSettingsService {
       });
       logger.devLog('✅ [ADMIN SERVICE] Global discount updated:', globalDiscountValue);
       revalidateListingDiscountCache();
+      discountSettingsChanged = true;
     }
     
     // Update category discounts
@@ -90,6 +93,7 @@ class AdminSettingsService {
       });
       logger.devLog('✅ [ADMIN SERVICE] Category discounts updated:', data.categoryDiscounts);
       revalidateListingDiscountCache();
+      discountSettingsChanged = true;
     }
     
     // Update brand discounts
@@ -108,6 +112,7 @@ class AdminSettingsService {
       });
       logger.devLog('✅ [ADMIN SERVICE] Brand discounts updated:', data.brandDiscounts);
       revalidateListingDiscountCache();
+      discountSettingsChanged = true;
     }
     
     // Update default currency
@@ -144,6 +149,13 @@ class AdminSettingsService {
       });
       logger.devLog('✅ [ADMIN SERVICE] Currency rates updated:', data.currencyRates);
       await cacheService.del(CURRENCY_RATES_CACHE_KEY);
+    }
+
+    if (discountSettingsChanged) {
+      const result = await rebuildProductListingReadModel();
+      logger.info('Product listing read-model rebuilt after discount settings update', result);
+      await cacheService.deletePattern("products:*");
+      await cacheService.deletePattern("cache:products:*");
     }
     
     return { success: true };
@@ -271,6 +283,5 @@ class AdminSettingsService {
 }
 
 export const adminSettingsService = new AdminSettingsService();
-
 
 

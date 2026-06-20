@@ -14,10 +14,6 @@ export const HOME_BRANDS_TITLE_TO_RAIL_GAP_PX = 56;
 export const HOME_BRANDS_BLOCK_PADDING_BOTTOM_MOBILE_PX = 10;
 /** `md+` — slightly tighter seam before banner strip. */
 export const HOME_BRANDS_BLOCK_PADDING_BOTTOM_DESKTOP_PX = 58;
-
-/** Horizontal scroll step for brand rail navigation (px). */
-export const HOME_BRANDS_RAIL_SCROLL_PX = 280;
-
 /**
  * `max-md` — brand logo rail → decorative dots.
  */

@@ -10,7 +10,7 @@ interface ProductImagesProps {
   featuredImageIndex: number;
   imageUploadLoading: boolean;
   imageUploadError: string | null;
-  fileInputRef: RefObject<HTMLInputElement>;
+  fileInputRef: RefObject<HTMLInputElement | null>;
   onUploadImages: (event: ChangeEvent<HTMLInputElement>) => void;
   onRemoveImage: (index: number) => void;
   onSetFeaturedImage: (index: number) => void;

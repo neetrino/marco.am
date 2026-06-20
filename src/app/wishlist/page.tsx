@@ -52,18 +52,18 @@ async function fetchProductsForWishlistIds(ids: string[], lang: string): Promise
   const responses = await Promise.all(
     chunks.map((chunk) =>
       apiClient.get<{
-        data: Product[];
-        meta: { total: number; page: number; limit: number; totalPages: number };
-      }>('/api/v1/products', {
+        items: Product[];
+      }>('/api/v1/products/plp', {
         params: {
           lang,
           ids: chunk.join(','),
           limit: String(chunk.length),
+          includeFilters: '0',
         },
       })
     )
   );
-  return responses.flatMap((response) => response.data);
+  return responses.flatMap((response) => response.items);
 }
 
 type FetchWishlistOptions = {

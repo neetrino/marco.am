@@ -1,7 +1,6 @@
 ﻿'use client';
 
 import Image from 'next/image';
-import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useState } from 'react';
@@ -11,6 +10,7 @@ import type { Category } from './category-nav-types';
 import type { MegaMenuSubcategoryGroup } from './categoryNavList';
 import type { CategoryNavIcon } from './categoryNavPresentation';
 import { resolveCategoryNavPresentation } from './categoryNavPresentation';
+import { ShopListingLink } from './ShopListingLink';
 import { headerCategoryNavFont } from './headerCategoryNavTypography';
 import {
   HEADER_MEGA_MENU_DESCENDANT_PREVIEW_COUNT,
@@ -57,13 +57,13 @@ function SubcategoryDescendantList({
         const row = resolveCategoryNavPresentation(descendant.slug, descendant.title, lang);
         return (
           <li key={descendant.id}>
-            <Link
+            <ShopListingLink
               href={`/products?category=${descendant.slug}`}
-              onClick={onNavigate}
+              onNavigate={onNavigate}
               className={MEGA_DESCENDANT_LINK_CLASS}
             >
               {row.title}
-            </Link>
+            </ShopListingLink>
           </li>
         );
       })}
@@ -96,7 +96,7 @@ function SubcategoryGroupParent({
   const count = parent.productCount ?? 0;
 
   return (
-    <Link href={`/products?category=${parent.slug}`} onClick={onNavigate} className={MEGA_PARENT_LINK_CLASS}>
+    <ShopListingLink href={`/products?category=${parent.slug}`} onNavigate={onNavigate} className={MEGA_PARENT_LINK_CLASS}>
       <SubcategoryIcon icon={row.icon} imageSrc={imageSrc} />
       <span className="min-w-0 text-left text-sm font-bold leading-[18px] tracking-[0.14px] !text-[#383838] dark:!text-[#383838]">
         {row.title}
@@ -112,7 +112,7 @@ function SubcategoryGroupParent({
       >
         <ArrowUpRight className="size-3 shrink-0 !text-white dark:!text-white" strokeWidth={2.25} />
       </span>
-    </Link>
+    </ShopListingLink>
   );
 }
 

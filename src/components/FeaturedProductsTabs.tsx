@@ -57,13 +57,7 @@ import {
 } from '@/lib/constants/home-hero-admin-banners';
 
 interface ProductsResponse {
-  data: SpecialOfferProduct[];
-  meta: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
+  items: SpecialOfferProduct[];
 }
 
 interface HomeBrandPartnersResponse {
@@ -115,7 +109,7 @@ const featuredTitleBarStyle = {
   height: `${FEATURED_PRODUCTS_TITLE_BAR_THICKNESS_PX}px`,
 } as const;
 
-export type FeaturedProductsTabsProps = {
+type FeaturedProductsTabsProps = {
   /** Cookie / SSR language used to fetch `initialNewProducts` — keeps hydration aligned. */
   readonly serverLanguage?: LanguageCode;
   /** Server-rendered «new» strip so first paint is not an empty client waterfall. */
@@ -142,11 +136,11 @@ async function fetchFeaturedStrip(
     filter,
     sort: 'createdAt',
   });
-  const response = await apiClient.get<ProductsResponse>('/api/v1/products', {
+  const response = await apiClient.get<ProductsResponse>('/api/v1/products/plp', {
     params,
     suppressHttpErrorLogging: true,
   });
-  const rows = dedupeCardProductsByTitle(response.data ?? []);
+  const rows = dedupeCardProductsByTitle(response.items ?? []);
   return rows.slice(0, FEATURED_PRODUCTS_VISIBLE_COUNT);
 }
 
@@ -158,21 +152,22 @@ type CardVisualRow = {
 };
 
 interface CardVisualResponse {
-  data: CardVisualRow[];
+  items: CardVisualRow[];
 }
 
 async function fetchFeaturedNewVisualChunk(language: LanguageCode): Promise<CardVisualRow[]> {
-  const response = await apiClient.get<CardVisualResponse>('/api/v1/products', {
+  const response = await apiClient.get<CardVisualResponse>('/api/v1/products/plp', {
     params: buildHomeStripListingApiParams({
       limit: String(HOME_PRODUCT_CHUNK_SIZE),
       lang: language,
       filter: 'new',
       sort: 'createdAt',
       cardVisualOnly: '1',
+      includeFilters: '0',
     }),
     suppressHttpErrorLogging: true,
   });
-  return response.data ?? [];
+  return response.items ?? [];
 }
 
 async function fetchHomeBrandPartners(

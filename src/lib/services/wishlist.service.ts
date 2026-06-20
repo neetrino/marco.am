@@ -11,7 +11,7 @@ function wishlistExpiresAt(): Date {
   return new Date(Date.now() + WISHLIST_SESSION_MAX_AGE_SECONDS * 1000);
 }
 
-export type WishlistApiItem = {
+type WishlistApiItem = {
   productId: string;
   title: string;
   slug: string;
@@ -19,7 +19,7 @@ export type WishlistApiItem = {
   addedAt: string;
 };
 
-export type WishlistApiPayload = {
+type WishlistApiPayload = {
   wishlist: {
     id: string;
     items: WishlistApiItem[];
@@ -51,7 +51,7 @@ async function getOrCreateUserWishlist(userId: string): Promise<string> {
 /**
  * Resolves guest wishlist: valid session token loads row; invalid/missing token creates a new session.
  */
-export async function ensureGuestWishlist(
+async function ensureGuestWishlist(
   sessionToken: string | undefined
 ): Promise<{ wishlistId: string; sessionToken: string; created: boolean }> {
   if (sessionToken) {
@@ -122,7 +122,7 @@ async function addProductToWishlist(wishlistId: string, productId: string): Prom
   });
 }
 
-export async function buildWishlistPayload(
+async function buildWishlistPayload(
   wishlistId: string,
   locale: string,
   fields: "full" | "ids" = "full"
@@ -220,21 +220,6 @@ export async function getWishlistForGuest(
 }> {
   const { wishlistId, sessionToken: token, created } = await ensureGuestWishlist(sessionToken);
   const payload = await buildWishlistPayload(wishlistId, locale, fields);
-  return { payload, sessionToken: token, sessionCreated: created };
-}
-
-export async function addWishlistItemForGuest(
-  sessionToken: string | undefined,
-  productId: string,
-  locale: string
-): Promise<{
-  payload: WishlistApiPayload;
-  sessionToken: string;
-  sessionCreated: boolean;
-}> {
-  const { wishlistId, sessionToken: token, created } = await ensureGuestWishlist(sessionToken);
-  await addProductToWishlist(wishlistId, productId);
-  const payload = await buildWishlistPayload(wishlistId, locale);
   return { payload, sessionToken: token, sessionCreated: created };
 }
 

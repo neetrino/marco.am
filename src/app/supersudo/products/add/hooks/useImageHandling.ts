@@ -195,7 +195,6 @@ export function useImageHandling({
 
       setImageUrls((prev) => {
         const newImageUrls = [...prev, ...uploadedImages];
-        const _newFeaturedIdx = prev.length === 0 ? 0 : featuredImageIndex;
         if (prev.length === 0 && newImageUrls.length > 0) {
           setFeaturedImageIndex(0);
           setMainProductImage(newImageUrls[0]);

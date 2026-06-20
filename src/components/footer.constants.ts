@@ -4,10 +4,6 @@
 
 /** Footer surface: matches the site page surface in dark mode. */
 export const FOOTER_SURFACE_CLASS = 'bg-[#f2f2f2] dark:bg-[var(--app-surface)]';
-
-/** Inner wrapper — `.marco-footer-inner` in `globals.css` (tablet shell; 1367+ same `max-w-7xl` as hero / header). */
-export const FOOTER_INNER_CONTAINER_CLASS = 'marco-footer-inner';
-
 /** Footer secondary text. */
 export const FOOTER_MUTED_TEXT_CLASS = 'text-[#6b7280] dark:text-[#cfcfcf]';
 
@@ -76,7 +72,7 @@ export const FOOTER_TABLET_COLUMN_CENTER_CLASS =
 /**
  * Nudges Company / Support / Contacts down vs. the brand column (4-col footer).
  */
-export const FOOTER_GRID_NAV_COLUMNS_PAD_TOP_CLASS = 'lg:pt-9';
+const FOOTER_GRID_NAV_COLUMNS_PAD_TOP_CLASS = 'lg:pt-9';
 
 /**
  * Company / Support cells: centered on iPad Pro; wide desktop left-aligned.
@@ -110,9 +106,6 @@ export const FOOTER_NAV_THREE_COLUMN_ROW_CLASS =
 export const FOOTER_COPYRIGHT_STRIP_MARGIN_TOP_CLASS = 'mt-4';
 /** Padding under the rule, above social / copyright / payments. */
 export const FOOTER_COPYRIGHT_STRIP_PADDING_TOP_CLASS = 'pt-3';
-/** Vertical gap between stacked copyright-row blocks on small screens. */
-export const FOOTER_COPYRIGHT_STRIP_STACK_GAP_CLASS = 'gap-5';
-
 /**
  * Main footer grid — below `lg`: brand + four nav cells (pipes hidden). `lg+`: brand | one flex row
  * (see {@link FOOTER_NAV_THREE_COLUMN_ROW_CLASS}) so gutters between Nav, pipes, Support, Contacts stay even.
@@ -122,8 +115,6 @@ export const FOOTER_MAIN_GRID_CLASS =
 
 /** Footer MARCO GROUP logo frame (91:81 aspect). */
 export const FOOTER_BRAND_LOGO_WIDTH_PX = 380;
-export const FOOTER_BRAND_LOGO_HEIGHT_PX = 340;
-
 /**
  * Brand logo frame — larger than legacy 91×81; same ~91:81 aspect.
  * Blurb overlays the lower area via {@link FOOTER_BRAND_DESCRIPTION_OVERLAP_CLASS} (logo position unchanged).

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Heart } from 'lucide-react';
 
-export type ReelLikeButtonProps = {
+type ReelLikeButtonProps = {
   ariaLabel: string;
   liked: boolean;
   burstVersion: number;

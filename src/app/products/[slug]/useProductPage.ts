@@ -16,7 +16,7 @@ import { useProductActions } from './hooks/useProductActions';
 import { useProductQuantity } from './hooks/useProductQuantity';
 import { useProductCalculations } from './hooks/useProductCalculations';
 
-export type UseProductPageInput = {
+type UseProductPageInput = {
   slugParam: string;
   serverLanguage: LanguageCode;
 };

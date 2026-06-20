@@ -1,7 +1,7 @@
 import { z } from "zod";
 
-export const promoCodeDiscountTypeSchema = z.enum(["percentage", "fixed"]);
-export const promoCodeScopeSchema = z.enum(["all", "retail", "wholesale"]);
+const promoCodeDiscountTypeSchema = z.enum(["percentage", "fixed"]);
+const promoCodeScopeSchema = z.enum(["all", "retail", "wholesale"]);
 
 const nullableFiniteNumberSchema = z
   .number()

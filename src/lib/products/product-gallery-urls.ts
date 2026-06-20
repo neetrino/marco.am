@@ -4,7 +4,7 @@ import {
   smartSplitUrls,
 } from '@/lib/utils/image-utils';
 
-export type ProductGalleryVariantInput = {
+type ProductGalleryVariantInput = {
   imageUrl?: string | null;
 };
 

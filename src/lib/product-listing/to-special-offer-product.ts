@@ -4,7 +4,7 @@ import type { SpecialOfferProduct } from '@/components/home/special-offer-produc
 import type { ProductLabel } from '@/components/ProductLabels';
 
 /** Minimal listing row shape accepted by catalog, wishlist, and related-product cards. */
-export type ProductListingCardInput = {
+type ProductListingCardInput = {
   id: string;
   slug: string;
   title: string;

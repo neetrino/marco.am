@@ -1,7 +1,7 @@
 import { db } from "@white-shop/db";
 import { formatProductForList } from "./product-formatter";
 
-export type ProductDiscountRow = {
+type ProductDiscountRow = {
   id: string;
   title: string;
   image: string | null;

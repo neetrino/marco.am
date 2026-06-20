@@ -1,4 +1,4 @@
-export const SHOP_PLP_DEFAULT_PRICE_PRESENCE = 'with' as const;
+const SHOP_PLP_DEFAULT_PRICE_PRESENCE = 'with' as const;
 
 export type ShopPlpPricePresence = 'with' | 'without';
 

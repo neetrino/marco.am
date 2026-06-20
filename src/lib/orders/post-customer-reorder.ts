@@ -5,7 +5,7 @@ import {
 } from "@/lib/constants/customer-order-api-paths";
 
 /** Response body from `POST /api/v1/orders/{number}/reorder` (see `prefillCartFromOrder`). */
-export type CustomerReorderResponse = {
+type CustomerReorderResponse = {
   orderNumber: string;
   added: Array<{
     variantId: string;

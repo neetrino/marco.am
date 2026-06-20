@@ -1,0 +1,145 @@
+enum ProductClass {
+  retail
+  wholesale
+}
+
+model Product {
+  id                String               @id @default(cuid())
+  brandId           String?
+  productClass      ProductClass         @default(retail)
+  skuPrefix         String?
+  media             Json[]               @default([])
+  published         Boolean              @default(false)
+  featured          Boolean              @default(false)
+  publishedAt       DateTime?
+  translations      ProductTranslation[]
+  categoryIds       String[]
+  primaryCategoryId String?
+  attributeIds      String[]
+  variants          ProductVariant[]
+  labels            ProductLabel[]
+  productAttributes ProductAttribute[]
+  discountPercent   Int                  @default(0)
+  /// 1, 2, or 3 — null means no warranty badge on product cards.
+  warrantyYears     Int?
+  deletedAt         DateTime?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+
+  // Relations
+  brand           Brand?           @relation(fields: [brandId], references: [id])
+  categories      Category[]       @relation("ProductCategories")
+  cartItems       CartItem[]
+  reviews         ProductReview[]
+  wishlistItems   WishlistItem[]
+  compareItems    CompareItem[]
+
+  @@index([brandId])
+  @@index([primaryCategoryId])
+  @@index([published, publishedAt])
+  @@index([published, deletedAt])
+  @@index([published, deletedAt, createdAt(sort: Desc)])
+  @@index([published, deletedAt, discountPercent(sort: Desc), createdAt(sort: Desc)])
+  @@index([categoryIds], type: Gin)
+  @@index([featured])
+  @@index([deletedAt])
+  @@map("products")
+}
+
+model ProductTranslation {
+  id              String  @id @default(cuid())
+  productId       String
+  locale          String
+  title           String
+  slug            String
+  subtitle        String?
+  /// Array of { title, value } specification rows (no HTML).
+  description     Json?
+  seoTitle        String?
+  seoDescription  String?
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, locale])
+  @@index([slug, locale])
+  @@index([locale, title])
+  @@map("product_translations")
+}
+
+model ProductVariant {
+  id             String                 @id @default(cuid())
+  productId      String
+  productClass   ProductClass           @default(retail)
+  sku            String?                @unique
+  barcode        String?
+  price          Float
+  compareAtPrice Float?
+  cost           Float?
+  stock          Int                    @default(0)
+  stockReserved  Int                    @default(0)
+  weightGrams    Int?
+  imageUrl       String?
+  position       Int                    @default(0)
+  published      Boolean                @default(true)
+  attributes     Json?                  // JSONB: Stores variant attributes as { "color": [...], "size": [...] }
+  options        ProductVariantOption[]
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+
+  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+
+  @@index([productId])
+  @@index([published, price])
+  @@index([productId, published, price])
+  @@index([published, compareAtPrice, productId])
+  @@map("product_variants")
+}
+
+model ProductVariantOption {
+  id           String  @id @default(cuid())
+  variantId    String
+  attributeId  String?
+  attributeKey String?
+  valueId      String?
+  value        String?
+
+  variant        ProductVariant  @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  attributeValue AttributeValue? @relation(fields: [valueId], references: [id], onDelete: SetNull)
+
+  @@index([variantId])
+  @@index([valueId])
+  @@index([attributeKey, value])
+  @@map("product_variant_options")
+}
+
+model ProductLabel {
+  id        String  @id @default(cuid())
+  productId String
+  type      String // 'text' | 'percentage'
+  value     String
+  position  String  @default("top-left") // 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
+  color     String?
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@map("product_labels")
+}
+
+model ProductAttribute {
+  id          String   @id @default(cuid())
+  productId   String
+  attributeId String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  product   Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  attribute Attribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, attributeId])
+  @@index([productId])
+  @@index([attributeId])
+  @@map("product_attributes")
+}

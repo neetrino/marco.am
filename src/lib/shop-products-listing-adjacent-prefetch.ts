@@ -30,8 +30,11 @@ function prefetchListingPageIntoCache(queryString: string): void {
   }
   adjacentPrefetchInFlight.add(queryString);
   void apiClient
-    .get<ListingApiResponse>('/api/v1/products', {
-      params: buildShopListingApiParams(queryString, getStoredLanguage()),
+    .get<ListingApiResponse>('/api/v1/products/plp', {
+      params: {
+        ...buildShopListingApiParams(queryString, getStoredLanguage()),
+        includeFilters: '0',
+      },
       suppressNetworkErrorLogging: true,
     })
     .then((response) => {
@@ -43,6 +46,9 @@ function prefetchListingPageIntoCache(queryString: string): void {
             page: 1,
             limit: SHOP_PLP_DEFAULT_PAGE_SIZE,
             totalPages: 0,
+            hasNextPage: false,
+            nextCursor: null,
+            totalIsExact: true,
           },
       });
     })

@@ -1,8 +1,12 @@
-import { db } from "@white-shop/db";
-
 type AuthEpochPayload = {
   authEpoch?: unknown;
 };
+
+/**
+ * Pure, Edge-safe auth-epoch helpers. Must NOT import the Prisma client, so the
+ * Edge middleware can read the JWT epoch without pulling the Node query engine
+ * into the Edge Runtime bundle. DB mutations live in `auth-epoch-mutations.ts`.
+ */
 
 /**
  * Reads `authEpoch` from a JWT payload. Missing/invalid values map to `0` for backward compatibility.
@@ -17,15 +21,4 @@ export function readTokenAuthEpoch(payload: AuthEpochPayload): number {
 
 export function isAuthEpochValid(tokenEpoch: number, userEpoch: number): boolean {
   return tokenEpoch === userEpoch;
-}
-
-/**
- * Invalidates all existing JWTs for the user (logout, password change, role/block updates).
- */
-export async function bumpAuthEpoch(userId: string): Promise<void> {
-  await db.user.update({
-    where: { id: userId },
-    data: { authEpoch: { increment: 1 } },
-    select: { id: true },
-  });
 }

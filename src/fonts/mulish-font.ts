@@ -4,7 +4,7 @@ import { Mulish } from 'next/font/google';
  * Tidio chat accent face — loaded only when chat activates (see TidioDeferredLoader).
  * Kept out of root layout so Mulish woff2 files do not compete with Inter on first paint.
  */
-export const mulish = Mulish({
+const mulish = Mulish({
   subsets: ['latin'],
   weight: ['400', '600'],
   display: 'swap',

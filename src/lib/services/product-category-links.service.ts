@@ -8,7 +8,7 @@ export type NormalizedProductCategoryLinks = {
   categoryIds: string[];
 };
 
-export type ProductCategoryLinksInput = {
+type ProductCategoryLinksInput = {
   primaryCategoryId?: string | null;
   categoryIds?: string[];
 };

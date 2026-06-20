@@ -7,7 +7,7 @@ import { ReelLikeButton } from './ReelLikeButton';
 
 type TapIntent = 'single' | 'double';
 
-export type ReelVideoPlayerLikeControl = {
+type ReelVideoPlayerLikeControl = {
   ariaLabel: string;
   liked: boolean;
   burstVersion: number;
@@ -15,7 +15,7 @@ export type ReelVideoPlayerLikeControl = {
   onToggle: () => void;
 };
 
-export type ReelVideoPlayerProps = {
+type ReelVideoPlayerProps = {
   reelId: string;
   title: string;
   videoUrl: string;

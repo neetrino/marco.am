@@ -1,29 +1,18 @@
-/** REELS rail — circle thumbnail size. */
-export const REELS_CIRCLE_SIZE_PX = 128;
-
 /** Mobile — circle size; three columns still fit via `REELS_MOBILE_TILE_BASIS_CSS`. */
 export const REELS_MOBILE_CIRCLE_SIZE_PX = 88;
-
-/** Horizontal gap between reel tiles (circles). */
-export const REELS_ITEM_GAP_PX = 44;
-
 /**
  * Mobile (`max-md`): gap between reel tiles; paired with `REELS_MOBILE_TILE_BASIS_CSS` (three columns).
  */
-export const REELS_MOBILE_ITEM_GAP_PX = 8;
+const REELS_MOBILE_ITEM_GAP_PX = 8;
 
 /** Mobile rail: exactly this many tiles visible across the scroller width (`max-md`). */
-export const REELS_MOBILE_VISIBLE_COLUMN_COUNT = 3;
+const REELS_MOBILE_VISIBLE_COLUMN_COUNT = 3;
 
 /**
  * Flex-basis for each mobile reel tile — `(100% − (n−1)×gap) / n` so only `n` circles fit per view.
  * Set on scroller as `--reels-mobile-tile-basis` for `HomeReelsSection` links.
  */
 export const REELS_MOBILE_TILE_BASIS_CSS = `calc((100% - ${(REELS_MOBILE_VISIBLE_COLUMN_COUNT - 1) * REELS_MOBILE_ITEM_GAP_PX}px) / ${REELS_MOBILE_VISIBLE_COLUMN_COUNT})`;
-
-/** Minimum column width for each tile (label uses nowrap; column can grow). */
-export const REELS_COLUMN_MIN_WIDTH_PX = 148;
-
 /** Portion of viewport width to scroll per arrow tap (horizontal strip). */
 export const REELS_SCROLL_FRACTION = 0.9;
 

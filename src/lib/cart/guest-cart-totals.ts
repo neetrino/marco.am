@@ -5,7 +5,7 @@ import {
   type StoredGuestCartItem,
 } from '../../app/cart/guest-cart-local';
 
-export type GuestCartTotals = {
+type GuestCartTotals = {
   itemsCount: number;
   total: number;
 };

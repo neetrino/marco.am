@@ -11,7 +11,7 @@ import {
 } from 'react';
 import { CartDrawer } from '../../components/cart/CartDrawer';
 
-export const CART_DRAWER_OPEN_EVENT = 'cart-drawer-open';
+const CART_DRAWER_OPEN_EVENT = 'cart-drawer-open';
 
 interface CartDrawerContextValue {
   isOpen: boolean;

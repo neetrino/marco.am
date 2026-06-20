@@ -75,10 +75,7 @@ export async function invalidateCategoryPublicCaches(): Promise<void> {
   await cacheService.deletePattern(CATEGORIES_TREE_PATTERN);
   await cacheService.deletePattern(CATEGORIES_MEGA_MENU_PATTERN);
   await cacheService.deletePattern(CATEGORIES_TOP_PATTERN);
-  const { invalidateProductsFiltersPublicCaches } = await import(
-    '@/lib/cache/products-filters-redis'
-  );
-  await invalidateProductsFiltersPublicCaches();
+  await cacheService.deletePattern("cache:products:filters:*");
 }
 
 export async function invalidateFooterPublicCache(): Promise<void> {

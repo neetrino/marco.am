@@ -14,7 +14,7 @@ import {
   resendVerificationOtp,
 } from "./auth-verification-flow.service";
 
-export interface RegisterData {
+interface RegisterData {
   email?: string;
   phone?: string;
   password: string;
@@ -22,22 +22,22 @@ export interface RegisterData {
   lastName?: string;
 }
 
-export interface LoginData {
+interface LoginData {
   email?: string;
   phone?: string;
   password: string;
 }
 
-export type AuthSuccess = AuthSuccessPayload;
+type AuthSuccess = AuthSuccessPayload;
 
-export type AuthPendingVerification = {
+type AuthPendingVerification = {
   needsVerification: true;
   channel: VerificationChannel;
   verificationToken: string;
 };
 
-export type RegisterResult = AuthSuccess | AuthPendingVerification;
-export type LoginResult = AuthSuccess | AuthPendingVerification;
+type RegisterResult = AuthSuccess | AuthPendingVerification;
+type LoginResult = AuthSuccess | AuthPendingVerification;
 
 export function isAuthPendingVerification(
   result: LoginResult | RegisterResult

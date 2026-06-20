@@ -5,29 +5,7 @@ export type ShopCategoryFilterRow = {
   slug: string;
   title: string;
 };
-
-/**
- * Walk past categories that are omitted from the shop filter (e.g. legacy demo rows)
- * so children attach to the nearest visible ancestor — enables one expand/collapse group.
- */
-export function resolveVisibleCategoryParentId(
-  start: string | null,
-  visibleRowIds: ReadonlySet<string>,
-  skippedParentById: ReadonlyMap<string, string | null>,
-): string | null {
-  let p: string | null = start;
-  let guard = 0;
-  while (p && !visibleRowIds.has(p) && guard++ < 64) {
-    const next = skippedParentById.get(p);
-    if (next === undefined) {
-      return null;
-    }
-    p = next;
-  }
-  return p && visibleRowIds.has(p) ? p : null;
-}
-
-export type CategoryFilterTreeNode = {
+type CategoryFilterTreeNode = {
   slug: string;
   title: string;
   count: number;

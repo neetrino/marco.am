@@ -8,7 +8,7 @@ import { processImageFile } from '@/lib/utils/image-utils';
 
 export const ADMIN_IMAGE_WEBP_ONLY_MESSAGE = 'Only WebP images are allowed';
 
-export function isAdminWebpFile(file: File): boolean {
+function isAdminWebpFile(file: File): boolean {
   const mime = file.type.toLowerCase();
   if (mime === ADMIN_IMAGE_MIME) {
     return true;

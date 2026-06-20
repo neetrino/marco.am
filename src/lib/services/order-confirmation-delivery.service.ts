@@ -1,14 +1,14 @@
 import { logger } from "../utils/logger";
 import { getPublicAppUrl } from "../config/deployment-env";
 
-export type DeliveryStatus = "sent" | "skipped" | "failed";
+type DeliveryStatus = "sent" | "skipped" | "failed";
 
-export interface DeliveryChannelResult {
+interface DeliveryChannelResult {
   status: DeliveryStatus;
   detail: string;
 }
 
-export interface OrderConfirmationDeliveryResult {
+interface OrderConfirmationDeliveryResult {
   email: DeliveryChannelResult;
   sms: DeliveryChannelResult;
 }

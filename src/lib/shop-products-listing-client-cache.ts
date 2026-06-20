@@ -3,6 +3,9 @@ type ListingMeta = {
   page: number;
   limit: number;
   totalPages: number;
+  hasNextPage?: boolean;
+  nextCursor?: string | null;
+  totalIsExact?: boolean;
 };
 
 export type ShopListingCachePayload = {
@@ -12,7 +15,7 @@ export type ShopListingCachePayload = {
 
 const LISTING_CACHE_TTL_MS = 120_000;
 /** Skip background revalidation when session cache is still fresh (matches API Cache-Control). */
-export const SHOP_LISTING_CACHE_REVALIDATE_AFTER_MS = 30_000;
+const SHOP_LISTING_CACHE_REVALIDATE_AFTER_MS = 30_000;
 
 const listingCache = new Map<string, { payload: ShopListingCachePayload; storedAt: number }>();
 

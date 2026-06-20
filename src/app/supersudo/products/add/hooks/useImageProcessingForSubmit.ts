@@ -1,5 +1,5 @@
 /** Variant-like objects that may carry comma-separated image URLs for submit. */
-export type VariantImageCarrier = { imageUrl?: string };
+type VariantImageCarrier = { imageUrl?: string };
 
 interface ProcessImagesForSubmitProps {
   imageUrls: string[];

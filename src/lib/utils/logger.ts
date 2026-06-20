@@ -5,7 +5,7 @@
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
-export interface LogContext {
+interface LogContext {
   [key: string]: unknown;
 }
 

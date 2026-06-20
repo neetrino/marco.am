@@ -15,7 +15,7 @@ import {
   REELS_PAGE_RENDER_BATCH_SIZE,
 } from './reels-page-grid.constants';
 
-export type ReelsPageGridProps = {
+type ReelsPageGridProps = {
   readonly items: PublicReelItem[];
   readonly watchCtaLabel: string;
   readonly language: LanguageCode;

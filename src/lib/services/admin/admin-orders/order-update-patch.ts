@@ -75,7 +75,7 @@ type OrderScalars = {
   adminNotes: string | null;
 };
 
-export type OrderUpdatePatch = {
+type OrderUpdatePatch = {
   updateData: {
     status?: string;
     paymentStatus?: string;

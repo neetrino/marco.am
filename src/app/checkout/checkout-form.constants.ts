@@ -38,10 +38,6 @@ export const CHECKOUT_SELECT_OPTION_IDLE_CLASS =
 
 export const CHECKOUT_SELECT_OPTION_HIGHLIGHT_CLASS =
   'bg-marco-yellow/[0.08] dark:bg-marco-yellow/[0.12]';
-
-/** @deprecated Use CHECKOUT_SELECT_TRIGGER_* classes via CheckoutSelectMenu */
-export const CHECKOUT_SELECT_FIELD_CLASS = CHECKOUT_SELECT_TRIGGER_BASE_CLASS;
-
 export const CHECKOUT_SELECT_FIELD_ERROR_CLASS = 'border-error ring-2 ring-error/20';
 
 export const CHECKOUT_FULFILLMENT_TOGGLE_ACTIVE_CLASS =

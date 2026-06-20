@@ -11,7 +11,7 @@ const BRAND_PLP_WARM_TIMEOUT_MS = 8_000;
 
 type LinkProps = Omit<ComponentProps<typeof Link>, 'href' | 'prefetch'>;
 
-export type BrandPlpLinkProps = LinkProps & {
+type BrandPlpLinkProps = LinkProps & {
   readonly href: string;
   readonly children: ReactNode;
 };
@@ -26,7 +26,7 @@ function queryStringFromPlpHref(href: string): string {
 
 /**
  * Brand logo card link — disables Next viewport prefetch and warms PLP listing
- * only on explicit click so home/brands grids do not flood `/api/v1/products?brand=…`.
+ * only on explicit click so home/brands grids do not flood `/api/v1/products/plp?brand=…`.
  */
 export function BrandPlpLink({
   href,

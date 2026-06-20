@@ -10,6 +10,7 @@ import { getStoredLanguage } from '../lib/language';
 import { getColorHex } from '../lib/colorMap';
 import { shouldBypassNextImageOptimizer } from '@/lib/utils/should-bypass-next-image-optimizer';
 import { useProductsFilters, useShopFiltersTranslation } from './ProductsFiltersProvider';
+import type { ProductsFiltersData } from '@/lib/shop-products-filters-types';
 import {
   PRODUCTS_FILTER_SECTION_SHELL_CLASS,
   productsFiltersSectionFont,
@@ -95,8 +96,15 @@ export function ColorFilter({ category, search, minPrice, maxPrice }: ColorFilte
       if (maxPrice) params.maxPrice = maxPrice;
       const filterParam = searchParams.get('filter');
       if (filterParam) params.filter = filterParam;
-      const response = await apiClient.get<{ colors: ColorOption[] }>('/api/v1/products/filters', { params });
-      setColors(response.colors ?? []);
+      const response = await apiClient.get<ProductsFiltersData | { filters?: ProductsFiltersData }>('/api/v1/products/plp', {
+        params: {
+          ...params,
+          includeItems: '0',
+          includeFilters: '1',
+        },
+      });
+      const filters = 'filters' in response && response.filters ? response.filters : response as ProductsFiltersData;
+      setColors(filters.colors ?? []);
     } catch (_error) {
       setColors([]);
     } finally {

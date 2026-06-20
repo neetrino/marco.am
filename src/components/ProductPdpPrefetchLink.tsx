@@ -22,7 +22,7 @@ import {
 
 type LinkProps = Omit<ComponentProps<typeof Link>, 'href' | 'prefetch'>;
 
-export type ProductPdpPrefetchLinkProps = LinkProps & {
+type ProductPdpPrefetchLinkProps = LinkProps & {
   href: string;
   /** Base product slug (same segment as `/products/[slug]`). */
   productSlug: string;

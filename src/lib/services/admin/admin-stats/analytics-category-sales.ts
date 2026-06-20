@@ -1,6 +1,6 @@
 import { db } from "@white-shop/db";
 
-export type TopCategoryAnalyticsRow = {
+type TopCategoryAnalyticsRow = {
   categoryId: string;
   categoryName: string;
   totalQuantity: number;

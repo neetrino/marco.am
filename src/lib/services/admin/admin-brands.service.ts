@@ -3,6 +3,10 @@ import { assertPersistableBrandLogoUrl } from "@/lib/services/admin/brand-logo-s
 import { toSlug } from "@/lib/utils/slug";
 import { logger } from "@/lib/utils/logger";
 import { revalidateProductCache } from "./admin-products-update/cache-revalidator";
+import {
+  syncProductListingReadModelBatch,
+  syncProductListingReadModelByBrand,
+} from "@/lib/read-model/product-read-model-sync";
 
 class AdminBrandsService {
   /**
@@ -203,6 +207,8 @@ class AdminBrandsService {
       : [];
     const translation = brandTranslations[0] || null;
 
+    await syncProductListingReadModelByBrand(brandId);
+
     return {
       data: {
         id: updatedBrand!.id,
@@ -267,6 +273,10 @@ class AdminBrandsService {
       });
     });
 
+    await syncProductListingReadModelBatch(
+      linkedProducts.map((product) => product.id),
+    );
+
     await Promise.all(
       linkedProducts.map((product) => revalidateProductCache(product.id, product.translations[0]?.slug))
     );
@@ -277,6 +287,4 @@ class AdminBrandsService {
 }
 
 export const adminBrandsService = new AdminBrandsService();
-
-
 

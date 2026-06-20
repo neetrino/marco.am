@@ -33,13 +33,13 @@ type CheckoutValidationCode =
   | "required_pickup_branch"
   | "notes_too_long";
 
-export type CheckoutValidationIssue = {
+type CheckoutValidationIssue = {
   field: CheckoutValidationField;
   code: CheckoutValidationCode;
   message: string;
 };
 
-export type ValidatedCheckoutCustomer = {
+type ValidatedCheckoutCustomer = {
   email: string;
   phone: string;
   firstName: string;

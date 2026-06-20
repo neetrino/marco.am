@@ -63,7 +63,7 @@ export function getOrderCustomerDisplay(order: OrderDetails): {
   };
 }
 
-export type OrderShippingDisplay = {
+type OrderShippingDisplay = {
   methodId: "courier" | "pickup" | "unknown";
   addressLine?: string;
   city?: string;

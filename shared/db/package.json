@@ -9,21 +9,21 @@
     "./prisma": "./prisma.ts"
   },
   "scripts": {
-    "db:generate": "prisma generate && node scripts/copy-prisma-schema-to-generated.cjs && node ../../scripts/verify-prisma-engine.cjs && node ../../scripts/sync-prisma-cwd-fallback.cjs",
-    "db:push": "prisma db push",
-    "db:migrate": "prisma migrate dev",
-    "db:migrate:deploy": "prisma migrate deploy",
-    "db:studio": "prisma studio",
-    "db:seed": "prisma db seed",
+    "db:generate": "prisma generate --schema prisma && node scripts/copy-prisma-schema-to-generated.cjs && node ../../scripts/verify-prisma-engine.cjs && node ../../scripts/sync-prisma-cwd-fallback.cjs",
+    "db:push": "prisma db push --schema prisma",
+    "db:migrate": "prisma migrate dev --schema prisma",
+    "db:migrate:deploy": "prisma migrate deploy --schema prisma",
+    "db:studio": "prisma studio --schema prisma",
+    "db:seed": "prisma db seed --schema prisma",
     "db:seed:apple": "node prisma/seed-apple-product.cjs",
     "postinstall": "pnpm run db:generate"
   },
   "prisma": {
+    "schema": "prisma",
     "seed": "node prisma/seed.cjs"
   },
   "dependencies": {
-    "@prisma/client": "^5.9.0",
-    "prisma": "^5.9.0"
+    "@prisma/client": "^6.7.0",
+    "prisma": "^6.7.0"
   }
 }
-

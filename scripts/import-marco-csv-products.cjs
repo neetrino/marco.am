@@ -79,6 +79,8 @@ const ROW_TIMEOUT_MS = Math.max(
 );
 const SKIP_R2_UPLOAD = process.env.IMPORT_SKIP_R2 === "1";
 const ALLOW_NO_PRICE = process.env.IMPORT_ALLOW_NO_PRICE === "1";
+const CREATE_BRANDS = process.env.IMPORT_CREATE_BRANDS === "1";
+const SKIP_CATEGORY_UPDATE_ON_EXISTING = process.env.IMPORT_SKIP_CATEGORY_UPDATE !== "0";
 const r2 =
   process.env.R2_ACCOUNT_ID &&
   process.env.R2_ACCESS_KEY_ID &&
@@ -186,6 +188,15 @@ function parseInteger(value) {
   return parsed === null ? 0 : Math.max(0, Math.trunc(parsed));
 }
 
+function isDraftRow(row) {
+  const draftCell = String(row.DraftStatus ?? row["Черновик"] ?? "").trim().toLowerCase();
+  return draftCell === "черновик" || draftCell === "draft";
+}
+
+function resolvePublished(row) {
+  return !isDraftRow(row);
+}
+
 function inferProductClass(value) {
   const normalized = String(value || "").trim().toLowerCase();
   if (!normalized) return "retail";
@@ -214,8 +225,16 @@ function parseImages(value) {
   return urls;
 }
 
+function filterAttributeKey(label, filterIndex) {
+  const fromLabel = toAsciiSlug(label, `spec-${filterIndex}`);
+  if (fromLabel.length >= 2) {
+    return fromLabel;
+  }
+  return `marco_filter_${filterIndex}`;
+}
+
 /**
- * Woo export columns `Filter{N} - Label` → stable Prisma attribute keys `marco_filter_{N}`.
+ * CSV columns `Filter{N} - Label` → attribute keys from label slug (fallback: marco_filter_{N}).
  * @param {Record<string, string>} sampleRow First data row (or any row with same keys).
  * @returns {{ header: string, filterIndex: number, attributeKey: string, attributeLabel: string }[]}
  */
@@ -226,11 +245,12 @@ function buildFilterColumnDefinitions(sampleRow) {
     if (!m) continue;
     const filterIndex = Number.parseInt(m[1], 10);
     if (!Number.isFinite(filterIndex)) continue;
+    const attributeLabel = m[2].trim();
     defs.push({
       header,
       filterIndex,
-      attributeKey: `marco_filter_${filterIndex}`,
-      attributeLabel: m[2].trim(),
+      attributeKey: filterAttributeKey(attributeLabel, filterIndex),
+      attributeLabel,
     });
   }
   return defs.sort((a, b) => a.filterIndex - b.filterIndex);
@@ -361,6 +381,20 @@ async function ensureBrand(name) {
 
   let brand = await prisma.brand.findUnique({ where: { slug } });
   if (!brand) {
+    const byTranslation = await prisma.brandTranslation.findFirst({
+      where: {
+        name: { equals: cleanName, mode: "insensitive" },
+        brand: { deletedAt: null },
+      },
+      select: { brandId: true },
+    });
+    if (byTranslation) {
+      brandCache.set(slug, byTranslation.brandId);
+      return byTranslation.brandId;
+    }
+    if (!CREATE_BRANDS) {
+      return null;
+    }
     brand = await prisma.brand.create({
       data: {
         slug,
@@ -558,8 +592,12 @@ async function upsertProduct(row, index, filterDefs) {
   }
 
   const skuFromSheet = String(row.SKU || row["Артикул"] || row["Արտիկուլ"] || "").trim();
-  const skuFallbackTail = hashText(`${id}-${title}`, 8).toUpperCase();
-  const sku = skuFromSheet || `MARCO-${id}-${skuFallbackTail}`;
+  if (!skuFromSheet) {
+    return { status: "skipped", reason: "missing SKU/Артикул" };
+  }
+  const sku = skuFromSheet;
+  const published = resolvePublished(row);
+  const publishedAt = published ? new Date() : null;
   const regularPrice = parseNumber(row.price);
   const salePrice = parseNumber(row["Sale price"]);
   const hasExplicitPrice = salePrice !== null || regularPrice !== null;
@@ -572,7 +610,7 @@ async function upsertProduct(row, index, filterDefs) {
   const stock = hasExplicitPrice ? parseInteger(row.Stock) : 0;
   const media = parseImages(row.Images);
   const storedMedia = SKIP_R2_UPLOAD ? media : await migrateImagesToR2(media, id);
-  const brandId = await ensureBrand(row.Brand);
+  const brandId = row.Brand ? await ensureBrand(row.Brand) : null;
   const categoryIds = await ensureCategories(row.Category);
   const primaryCategoryId = categoryIds[categoryIds.length - 1] || categoryIds[0] || null;
   const productClass = inferProductClass(row.Type);
@@ -665,20 +703,23 @@ async function upsertProduct(row, index, filterDefs) {
     }
 
     await prisma.$transaction(async (tx) => {
+      const updateData = {
+        brandId,
+        productClass,
+        media: storedMedia,
+        published,
+        publishedAt,
+        discountPercent,
+      };
+      if (!(UPDATE_EXISTING && SKIP_CATEGORY_UPDATE_ON_EXISTING)) {
+        updateData.categoryIds = categoryIds;
+        updateData.primaryCategoryId = primaryCategoryId;
+        updateData.attributeIds = productAttributeIdsUnique;
+        updateData.categories = { set: categoryIds.map((categoryId) => ({ id: categoryId })) };
+      }
       await tx.product.update({
         where: { id: existingVariant.productId },
-        data: {
-          brandId,
-          productClass,
-          media: storedMedia,
-          published: true,
-          publishedAt: new Date(),
-          categoryIds,
-          primaryCategoryId,
-          attributeIds: productAttributeIdsUnique,
-          discountPercent,
-          categories: { set: categoryIds.map((categoryId) => ({ id: categoryId })) },
-        },
+        data: updateData,
       });
 
       for (const locale of LOCALES) {
@@ -714,7 +755,7 @@ async function upsertProduct(row, index, filterDefs) {
           compareAtPrice,
           stock,
           imageUrl: storedMedia[0] || null,
-          published: true,
+          published,
           attributes: variantAttributesJson,
         },
       });
@@ -757,9 +798,9 @@ async function upsertProduct(row, index, filterDefs) {
       brandId,
       skuPrefix: `MARCO-${id}`,
       media: storedMedia,
-      published: true,
+      published,
       featured: index < 24,
-      publishedAt: new Date(),
+      publishedAt,
       categoryIds,
       primaryCategoryId,
       attributeIds: productAttributeIdsUnique,
@@ -793,7 +834,7 @@ async function upsertProduct(row, index, filterDefs) {
           stock,
           imageUrl: storedMedia[0] || undefined,
           position: 0,
-          published: true,
+          published,
           attributes: variantAttributesJson ?? undefined,
           options:
             variantOptionCreates.length > 0

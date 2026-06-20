@@ -4,7 +4,7 @@ import { TOP_CUSTOMERS_BY_SPEND_LIMIT } from "@/lib/constants/customer-analytics
 
 import { buildCustomerIdentityKey } from "./customer-identity";
 
-export type NewVsRepeatAnalytics = {
+type NewVsRepeatAnalytics = {
   /** Distinct customers (user or guest email) whose first order ever falls in the period. */
   newCustomers: number;
   /** Distinct customers who ordered in the period and had an order before the period start. */
@@ -16,7 +16,7 @@ export type NewVsRepeatAnalytics = {
   ordersUnattributed: number;
 };
 
-export type TopCustomerBySpendRow = {
+type TopCustomerBySpendRow = {
   identityType: "user" | "email";
   userId: string | null;
   email: string | null;
@@ -26,7 +26,7 @@ export type TopCustomerBySpendRow = {
   currency: string;
 };
 
-export type CustomerAnalyticsBlock = {
+type CustomerAnalyticsBlock = {
   newVsRepeat: NewVsRepeatAnalytics;
   topCustomersBySpend: TopCustomerBySpendRow[];
 };

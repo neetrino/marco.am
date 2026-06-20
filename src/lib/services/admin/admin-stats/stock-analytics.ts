@@ -32,7 +32,7 @@ function resolveImageUrl(
   return extractImageFromMedia(productMedia);
 }
 
-export type StockAnalyticsVariantRow = {
+type StockAnalyticsVariantRow = {
   variantId: string;
   productId: string;
   sku: string | null;
@@ -45,7 +45,7 @@ export type StockAnalyticsVariantRow = {
   updatedAt: string;
 };
 
-export type StockAnalyticsResult = {
+type StockAnalyticsResult = {
   locale: string;
   lowStockThreshold: number;
   outOfStock: {

@@ -7,6 +7,7 @@ import { pushShopProductsListingUrl } from '../lib/push-shop-products-listing-ur
 import { apiClient } from '../lib/api-client';
 import { getStoredLanguage } from '../lib/language';
 import { useProductsFilters, useShopFiltersTranslation } from './ProductsFiltersProvider';
+import type { ProductsFiltersData } from '@/lib/shop-products-filters-types';
 import {
   PRODUCTS_FILTER_SECTION_SHELL_CLASS,
   productsFiltersSectionFont,
@@ -83,9 +84,16 @@ export function SizeFilter({ category, search, minPrice, maxPrice }: SizeFilterP
       const filterParam = searchParams.get('filter');
       if (filterParam) params.filter = filterParam;
 
-      const response = await apiClient.get<{ colors: unknown[]; sizes: SizeOption[] }>('/api/v1/products/filters', { params });
+      const response = await apiClient.get<ProductsFiltersData | { filters?: ProductsFiltersData }>('/api/v1/products/plp', {
+        params: {
+          ...params,
+          includeItems: '0',
+          includeFilters: '1',
+        },
+      });
+      const filters = 'filters' in response && response.filters ? response.filters : response as ProductsFiltersData;
 
-      setSizes(response.sizes || []);
+      setSizes(filters.sizes || []);
     } catch (_error) {
       setSizes([]);
     } finally {

@@ -1,0 +1,41 @@
+model Cart {
+  id          String     @id @default(cuid())
+  userId      String?
+  guestToken  String?    @unique
+  locale      String     @default("en")
+  couponCode  String?
+  abandoned   Boolean    @default(false)
+  abandonedAt DateTime?
+  expiresAt   DateTime
+  items       CartItem[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // Relations
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([abandoned, abandonedAt])
+  @@index([expiresAt])
+  @@map("carts")
+}
+
+model CartItem {
+  id            String   @id @default(cuid())
+  cartId        String
+  variantId     String
+  productId     String
+  quantity      Int
+  priceSnapshot Float
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  cart    Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  variant ProductVariant @relation(fields: [variantId], references: [id])
+  product Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([cartId])
+  @@index([variantId])
+  @@index([productId])
+  @@map("cart_items")
+}

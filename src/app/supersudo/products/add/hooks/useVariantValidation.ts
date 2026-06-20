@@ -18,7 +18,6 @@ export function useVariantValidation({
   productType,
   variants,
   simpleProductData,
-  isClothingCategory,
   setLoading,
 }: UseVariantValidationProps) {
   const mt = (path: string): string => translateByLocale(getStoredLanguage(), path);
@@ -45,7 +44,6 @@ export function useVariantValidation({
         }
         skuSet.add(variantSku);
         
-        const _categoryRequiresSizes = isClothingCategory();
         const colorData = variant.colors && variant.colors.length > 0 ? variant.colors : [];
         
         if (colorData.length > 0) {

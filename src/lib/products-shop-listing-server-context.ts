@@ -10,7 +10,7 @@ import {
   SHOP_PLP_DEFAULT_PAGE_SIZE,
   SHOP_PLP_MAX_PAGE_SIZE,
 } from '@/lib/constants/shop-plp-pagination';
-import { searchParamsRecordToUrlSearchParams } from '@/lib/cache/products-filters-redis';
+import { searchParamsRecordToUrlSearchParams } from '@/lib/search-params-record';
 import type { ProductsPageSearchParams } from '@/app/products/products-page-search-params';
 
 function firstParam(value: string | string[] | undefined): string | undefined {
@@ -63,8 +63,12 @@ function buildInitialQueryString(raw: ProductsPageSearchParams): string {
 export const resolveProductsShopListingServerContext = cache(
   async (raw: ProductsPageSearchParams): Promise<ProductsShopListingServerContext> => {
     const cookieStore = await cookies();
+    // URL is the source of truth for locale (shareable links, SEO, audits); the
+    // cookie is only a fallback when the URL carries no explicit `lang`.
     const language: LanguageCode =
-      parseLanguageFromServer(cookieStore.get(LANGUAGE_PREFERENCE_KEY)?.value) ?? 'en';
+      parseLanguageFromServer(firstParam(raw.lang)) ??
+      parseLanguageFromServer(cookieStore.get(LANGUAGE_PREFERENCE_KEY)?.value) ??
+      'en';
     const params = {
       page: firstParam(raw.page),
       limit: firstParam(raw.limit),

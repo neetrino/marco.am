@@ -1,6 +1,6 @@
-import { getProductsListingCached } from '@/lib/cache/products-listing-redis';
-import { searchParamsRecordToUrlSearchParams } from '@/lib/cache/products-filters-redis';
+import { searchParamsRecordToUrlSearchParams } from '@/lib/search-params-record';
 import type { ProductsShopListingServerContext } from '@/lib/products-shop-listing-server-context';
+import { getProductsPlpReadModelPayload } from '@/lib/read-model/products-plp-read-model';
 import { parseTechnicalSpecFiltersFromSearchParams } from '@/lib/services/products-technical-filters';
 import type { ProductsPageSearchParams } from './products-page-search-params';
 import { ProductsShopListingClient } from './ProductsShopListingClient';
@@ -20,14 +20,14 @@ async function fetchProductsListing(
   );
 
   try {
-    const productsData = await getProductsListingCached({
-      page: ctx.page,
-      limit: ctx.perPage,
+    const productsData = await getProductsPlpReadModelPayload({
+      page: String(ctx.page),
+      limit: String(ctx.perPage),
       lang: ctx.language,
       search: ctx.params.search?.trim() || undefined,
       category: ctx.params.category?.trim() || undefined,
-      minPrice: ctx.filtersMinPrice,
-      maxPrice: ctx.filtersMaxPrice,
+      minPrice: ctx.params.minPrice?.trim() || undefined,
+      maxPrice: ctx.params.maxPrice?.trim() || undefined,
       colors: ctx.params.colors?.trim() || undefined,
       sizes: ctx.params.sizes?.trim() || undefined,
       brand: ctx.params.brand?.trim() || undefined,
@@ -35,8 +35,7 @@ async function fetchProductsListing(
       sort: ctx.params.sort?.trim() || undefined,
       pricePresence: ctx.pricePresence,
       technicalSpecs,
-      listingOmitProductAttributes: true,
-      plpLeanListing: true,
+      includeFilters: false,
     });
     return { ctx, productsData };
   } catch (error) {
@@ -44,8 +43,16 @@ async function fetchProductsListing(
     return {
       ctx,
       productsData: {
-        data: [],
-        meta: { total: 0, page: 1, limit: ctx.perPage, totalPages: 0 },
+        items: [],
+        pagination: {
+          total: 0,
+          page: 1,
+          limit: ctx.perPage,
+          totalPages: 0,
+          hasNextPage: false,
+          nextCursor: null,
+          totalIsExact: true,
+        },
       },
     };
   }
@@ -57,8 +64,8 @@ export async function ProductsShopListingSection({ raw, ctx }: ProductsShopListi
 
   return (
     <ProductsShopListingClient
-      initialProducts={productsData.data.map(normalizeShopGridProduct)}
-      initialMeta={productsData.meta}
+      initialProducts={productsData.items.map(normalizeShopGridProduct)}
+      initialMeta={productsData.pagination}
       initialQueryString={ctx.initialQueryString}
       initialSort={ctx.params.sort || 'default'}
     />

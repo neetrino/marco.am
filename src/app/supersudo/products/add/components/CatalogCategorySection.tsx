@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Search, Star, X } from 'lucide-react';
 import { Input } from '@shop/ui';
 import { useTranslation } from '@/lib/i18n-client';
@@ -55,13 +55,13 @@ export function CatalogCategorySection({
   const normalizedLocale = normalizeCategoryLocale(lang ?? getStoredLanguage());
   const mode: CatalogMode = useNewCategory ? 'new' : 'existing';
 
-  const getCategoryLabel = (category: Category): string => {
+  const getCategoryLabel = useCallback((category: Category): string => {
     const localizedTitle = category.translations?.[normalizedLocale];
     if (typeof localizedTitle === 'string' && localizedTitle.trim().length > 0) {
       return localizedTitle.trim();
     }
     return category.title;
-  };
+  }, [normalizedLocale]);
 
   const displayCategories = useMemo(() => buildFlatCategoryTree(categories), [categories]);
 
@@ -73,7 +73,7 @@ export function CatalogCategorySection({
     return displayCategories.filter((category) =>
       getCategoryLabel(category).toLowerCase().includes(query),
     );
-  }, [displayCategories, searchQuery, normalizedLocale]);
+  }, [displayCategories, searchQuery, getCategoryLabel]);
 
   const handleCategoryChange = (categoryId: string, checked: boolean) => {
     const newCategoryIds = applyProductCategorySelectionChange(

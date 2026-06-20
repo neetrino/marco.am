@@ -1,6 +1,6 @@
 import { db } from "@white-shop/db";
 
-export type OrderSummaryStats = {
+type OrderSummaryStats = {
   totalOrders: number;
   paidOrders: number;
   pendingOrders: number;

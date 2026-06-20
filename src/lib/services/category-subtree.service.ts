@@ -38,23 +38,6 @@ export function collectDescendantIds(
   return descendants;
 }
 
-export function collectAncestorIds(
-  categoryId: string,
-  byId: Map<string, CategoryParentRow>,
-): string[] {
-  const ancestors: string[] = [];
-  let current = byId.get(categoryId)?.parentId ?? null;
-  let guard = 0;
-
-  while (current && guard < 64) {
-    guard += 1;
-    ancestors.push(current);
-    current = byId.get(current)?.parentId ?? null;
-  }
-
-  return ancestors;
-}
-
 /**
  * Expands selected category IDs to include all non-deleted descendants.
  */

@@ -25,12 +25,12 @@ type CheckoutErrorBody = {
 
 type TranslationFn = (key: string) => string;
 
-export type CheckoutFieldError = {
+type CheckoutFieldError = {
   field: CheckoutFieldName;
   message: string;
 };
 
-export type CheckoutSubmissionErrorResult = {
+type CheckoutSubmissionErrorResult = {
   fieldErrors: CheckoutFieldError[];
   globalError: string | null;
 };

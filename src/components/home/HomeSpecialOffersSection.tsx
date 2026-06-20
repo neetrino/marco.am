@@ -94,10 +94,10 @@ function specialOffersPaginationAriaPath(dotIndex: number): string {
 }
 
 interface ProductsResponse {
-  data: SpecialOfferProduct[];
+  items: SpecialOfferProduct[];
 }
 
-export type HomeSpecialOffersSectionProps = {
+type HomeSpecialOffersSectionProps = {
   readonly serverLanguage?: LanguageCode;
   readonly initialPromotionProducts?: readonly SpecialOfferProduct[];
 };
@@ -122,7 +122,7 @@ export function HomeSpecialOffersSection({
   const specialOffersQuery = useQuery({
     queryKey: queryKeys.specialOffersPromotion(language, SPECIAL_OFFERS_PRODUCTS_LIMIT),
     queryFn: async () => {
-      const response = await apiClient.get<ProductsResponse>('/api/v1/products', {
+      const response = await apiClient.get<ProductsResponse>('/api/v1/products/plp', {
         params: buildHomeStripListingApiParams({
           limit: String(SPECIAL_OFFERS_PRODUCTS_LIMIT),
           lang: language,
@@ -130,7 +130,7 @@ export function HomeSpecialOffersSection({
           sort: 'createdAt',
         }),
       });
-      return dedupeCardProductsByTitle(response.data ?? []);
+      return dedupeCardProductsByTitle(response.items ?? []);
     },
     staleTime: 300_000,
     initialData: initialPromotion,

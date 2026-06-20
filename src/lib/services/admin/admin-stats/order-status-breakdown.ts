@@ -2,7 +2,7 @@ import { db } from "@white-shop/db";
 import { isAdminOrderStatus } from "@/lib/constants/admin-order-status";
 import { calculateDateRange } from "./analytics-date-range";
 
-export type OrderStatusBreakdownByStatus = {
+type OrderStatusBreakdownByStatus = {
   pending: number;
   processing: number;
   completed: number;
@@ -11,7 +11,7 @@ export type OrderStatusBreakdownByStatus = {
   other: number;
 };
 
-export type OrderStatusBreakdownWindow = {
+type OrderStatusBreakdownWindow = {
   period: "today" | "week" | "month";
   dateRange: {
     start: string;
@@ -24,7 +24,7 @@ export type OrderStatusBreakdownWindow = {
 /**
  * Response for `GET /api/v1/supersudo/analytics/order-status-breakdown` (admin analytics UI).
  */
-export type OrderStatusBreakdownResponse = {
+type OrderStatusBreakdownResponse = {
   windows: [OrderStatusBreakdownWindow, OrderStatusBreakdownWindow, OrderStatusBreakdownWindow];
 };
 

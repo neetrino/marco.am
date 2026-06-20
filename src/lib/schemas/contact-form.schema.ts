@@ -6,7 +6,7 @@ import {
 } from "@/lib/constants/contact-form";
 import { isValidEmail } from "@/lib/utils/email";
 
-export const contactFormBodySchema = z.object({
+const contactFormBodySchema = z.object({
   name: z
     .string()
     .trim()
@@ -33,8 +33,6 @@ export const contactFormBodySchema = z.object({
   /** Cloudflare Turnstile token — required when `TURNSTILE_SECRET_KEY` is set. */
   turnstileToken: z.string().optional(),
 });
-
-export type ContactFormBody = z.infer<typeof contactFormBodySchema>;
 
 export function safeParseContactForm(body: unknown) {
   return contactFormBodySchema.safeParse(body);

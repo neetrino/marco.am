@@ -8,6 +8,10 @@ import {
   reorderAttributeValues,
   updateAttributeValue,
 } from "./admin-attributes-write/value-operations";
+import {
+  syncProductListingReadModelByAttributeId,
+  syncProductListingReadModelByAttributeValueId,
+} from "@/lib/read-model/product-read-model-sync";
 
 /**
  * Service for admin attribute write operations
@@ -36,7 +40,9 @@ class AdminAttributesWriteService {
       locale?: string;
     }
   ) {
-    return updateAttributeTranslation(attributeId, data);
+    const result = await updateAttributeTranslation(attributeId, data);
+    await syncProductListingReadModelByAttributeId(attributeId);
+    return result;
   }
 
   /**
@@ -62,7 +68,9 @@ class AdminAttributesWriteService {
       locale?: string;
     }
   ) {
-    return updateAttributeValue(attributeId, valueId, data);
+    const result = await updateAttributeValue(attributeId, valueId, data);
+    await syncProductListingReadModelByAttributeValueId(valueId);
+    return result;
   }
 
   async reorderAttributes(data: { attributeId: string; targetAttributeId: string }) {

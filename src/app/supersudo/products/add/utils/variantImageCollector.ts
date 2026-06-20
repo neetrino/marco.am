@@ -2,26 +2,6 @@
  * Utilities for collecting variant images
  */
 
-import type { ColorData } from '../types';
-
-/**
- * Collects variant images from color data
- */
-export function collectVariantImagesFromColors(colors: ColorData[]): Set<string> {
-  const variantImages = new Set<string>();
-
-  colors.forEach((c) => {
-    c.images.forEach((img) => {
-      if (img) {
-        variantImages.add(img);
-        const normalized = img.startsWith('/') ? img : `/${img}`;
-        variantImages.add(normalized);
-      }
-    });
-  });
-
-  return variantImages;
-}
 
 /**
  * Collects variant images from product variants

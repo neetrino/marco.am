@@ -58,12 +58,3 @@ export function parseOptionalPositiveNumber(raw: string): number | null {
   }
   return parsed;
 }
-
-export function parseOptionalPositiveInt(raw: string): number | null {
-  const parsed = parseOptionalPositiveNumber(raw);
-  if (parsed == null) {
-    return null;
-  }
-  const intValue = Math.trunc(parsed);
-  return intValue > 0 ? intValue : null;
-}

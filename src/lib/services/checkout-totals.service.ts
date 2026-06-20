@@ -19,7 +19,7 @@ function extractCartItemProductClasses(items: AuthenticatedCartItem[]): string[]
   return items.map((item) => resolveProductClass(item.productClass));
 }
 
-export type ComputeCheckoutTotalsInput = {
+type ComputeCheckoutTotalsInput = {
   userId?: string;
   locale: string;
   cartId?: string;

@@ -23,7 +23,7 @@ export type CategoryNode = {
   translations: CategoryTranslation[];
 };
 
-export type CategoryResponseItem = {
+type CategoryResponseItem = {
   id: string;
   title: string;
   slug: string;
@@ -133,7 +133,7 @@ export function normalizeCategoryMedia(media: unknown): string[] {
   return [...new Set(normalized)];
 }
 
-export function normalizeLocalizedTitles(
+function normalizeLocalizedTitles(
   translations: Partial<Record<SupportedCategoryLocale, string>> | undefined,
   supportedLocales: readonly SupportedCategoryLocale[],
 ): Partial<Record<SupportedCategoryLocale, string>> {
@@ -174,7 +174,7 @@ export function buildCategoryTranslationsInput(args: {
   return normalized;
 }
 
-export function resolveCategoryTranslation(
+function resolveCategoryTranslation(
   translations: CategoryTranslation[],
   locale: string,
   defaultLocale: string,
@@ -190,7 +190,7 @@ export function resolveCategoryTranslation(
   );
 }
 
-export function mapTranslationsByLocale(
+function mapTranslationsByLocale(
   translations: CategoryTranslation[],
   supportedLocales: readonly SupportedCategoryLocale[],
 ): Partial<Record<SupportedCategoryLocale, string>> {
@@ -228,7 +228,7 @@ export function mapCategory(
   };
 }
 
-export function isAncestorInGraph(
+function isAncestorInGraph(
   ancestorId: string,
   descendantId: string,
   categoryGraph: CategoryGraph,

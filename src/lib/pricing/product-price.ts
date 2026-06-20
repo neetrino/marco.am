@@ -1,4 +1,4 @@
-export interface ResolvedProductPrice {
+interface ResolvedProductPrice {
   currentPrice: number;
   oldPrice: number | null;
   compareAtPrice: number | null;

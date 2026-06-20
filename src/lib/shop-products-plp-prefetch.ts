@@ -19,11 +19,6 @@ function buildDefaultShopListingQueryString(): string {
   return '';
 }
 
-/** Stable facet key for the default PLP (no active filters in the URL). */
-export function buildDefaultShopFiltersClientKey(language: LanguageCode): string {
-  return buildProductsFiltersScopeKeyFromSearchParams(new URLSearchParams(), language);
-}
-
 function buildListingApiParams(queryString: string, language: LanguageCode): Record<string, string> {
   return buildShopListingApiParams(queryString, language);
 }
@@ -93,14 +88,21 @@ export function warmShopProductsClientCaches(
     }
   });
 
-  const listingRequest = apiClient.get<ProductsListingApiResponse>('/api/v1/products', {
-    params: buildListingApiParams(queryString, language),
+  const listingRequest = apiClient.get<ProductsListingApiResponse>('/api/v1/products/plp', {
+    params: {
+      ...buildListingApiParams(queryString, language),
+      includeFilters: '0',
+    },
     timeoutMs: options?.timeoutMs,
     suppressNetworkErrorLogging: options?.suppressTimeoutLogging,
   });
   const filtersRequest = includeFilters
-    ? apiClient.get<ProductsFiltersData>('/api/v1/products/filters', {
-        params: filtersParams,
+    ? apiClient.get<ProductsFiltersData | { filters?: ProductsFiltersData }>('/api/v1/products/plp', {
+        params: {
+          ...filtersParams,
+          includeItems: '0',
+          includeFilters: '1',
+        },
         timeoutMs: options?.timeoutMs,
         suppressNetworkErrorLogging: options?.suppressTimeoutLogging,
       })
@@ -109,7 +111,8 @@ export function warmShopProductsClientCaches(
   void Promise.all([filtersRequest, listingRequest])
     .then(([filters, listing]) => {
       if (filters) {
-        writeShopFiltersCache(scopedFiltersKey, filters);
+        const filtersPayload = 'filters' in filters && filters.filters ? filters.filters : filters as ProductsFiltersData;
+        writeShopFiltersCache(scopedFiltersKey, filtersPayload);
       }
       writeShopListingCache(queryString, {
         data: listing.data ?? listing.items ?? [],
@@ -118,6 +121,9 @@ export function warmShopProductsClientCaches(
           page: 1,
           limit: SHOP_PLP_DEFAULT_PAGE_SIZE,
           totalPages: 0,
+          hasNextPage: false,
+          nextCursor: null,
+          totalIsExact: true,
         },
       });
       const normalized = (listing.data ?? listing.items ?? []).map(normalizeShopGridProduct);

@@ -7,6 +7,7 @@ import { pushShopProductsListingUrl } from '../lib/push-shop-products-listing-ur
 import { apiClient } from '../lib/api-client';
 import { getStoredLanguage } from '../lib/language';
 import { useProductsFilters, useShopFiltersTranslation, type BrandOption } from './ProductsFiltersProvider';
+import type { ProductsFiltersData } from '@/lib/shop-products-filters-types';
 import {
   PRODUCTS_FILTER_SECTION_SHELL_CLASS,
   productsFiltersSectionFont,
@@ -48,8 +49,15 @@ export function BrandFilter({ category, search, minPrice, maxPrice }: BrandFilte
       if (maxPrice) params.maxPrice = maxPrice;
       const filterParam = searchParams.get('filter');
       if (filterParam) params.filter = filterParam;
-      const response = await apiClient.get<{ brands: BrandOption[] }>('/api/v1/products/filters', { params });
-      setFallbackBrands(response.brands ?? []);
+      const response = await apiClient.get<ProductsFiltersData | { filters?: ProductsFiltersData }>('/api/v1/products/plp', {
+        params: {
+          ...params,
+          includeItems: '0',
+          includeFilters: '1',
+        },
+      });
+      const filters = 'filters' in response && response.filters ? response.filters : response as ProductsFiltersData;
+      setFallbackBrands(filters.brands ?? []);
     } catch (_err) {
       setFallbackBrands([]);
     } finally {

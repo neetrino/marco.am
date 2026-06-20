@@ -1,5 +1,5 @@
-const COLOR_ATTRIBUTE_KEYS = ['color', 'colour', 'guyn'] as const;
-const SIZE_ATTRIBUTE_KEYS = ['size'] as const;
+const COLOR_ATTRIBUTE_KEYS = ['color', 'colors', 'colour', 'guyn'] as const;
+const SIZE_ATTRIBUTE_KEYS = ['size', 'sizes'] as const;
 
 function normalizeAttributeKey(key: string | null | undefined): string {
   return (key || '').trim().toLowerCase();

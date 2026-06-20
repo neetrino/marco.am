@@ -17,32 +17,6 @@ export function countDirectSubcategories(categories: Category[], parentId: strin
   return categories.filter((category) => category.parentId === parentId).length;
 }
 
-export function sortSubcategoriesForAdmin(
-  categories: Category[],
-  lookup: Category[],
-  locale: LanguageCode = 'en',
-): Category[] {
-  return [...categories].sort((a, b) => {
-    const parentA = getLocalizedCategoryTitle(
-      lookup.find((item) => item.id === a.parentId) ?? null,
-      locale,
-    );
-    const parentB = getLocalizedCategoryTitle(
-      lookup.find((item) => item.id === b.parentId) ?? null,
-      locale,
-    );
-    const byParent = parentA.localeCompare(parentB, undefined, { sensitivity: 'base' });
-    if (byParent !== 0) {
-      return byParent;
-    }
-    return getLocalizedCategoryTitle(a, locale).localeCompare(
-      getLocalizedCategoryTitle(b, locale),
-      undefined,
-      { sensitivity: 'base' },
-    );
-  });
-}
-
 export function getLocalizedCategoryTitle(
   category: Category | null | undefined,
   locale: LanguageCode,

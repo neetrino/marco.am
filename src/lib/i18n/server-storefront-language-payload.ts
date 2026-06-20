@@ -11,12 +11,12 @@ const STOREFRONT_LANGUAGE_PAYLOADS = {
   ru: ruStorefrontNamespaces,
 } as const satisfies Record<'en' | 'hy' | 'ru', StorefrontNamespacesPayload>;
 
-export type ClientI18nSeed = {
+type ClientI18nSeed = {
   lang: LanguageCode;
   namespaces: StorefrontNamespacesPayload;
 };
 
-export function getStorefrontLanguagePayload(lang: LanguageCode): StorefrontNamespacesPayload {
+function getStorefrontLanguagePayload(lang: LanguageCode): StorefrontNamespacesPayload {
   if (lang in STOREFRONT_LANGUAGE_PAYLOADS) {
     return STOREFRONT_LANGUAGE_PAYLOADS[lang as keyof typeof STOREFRONT_LANGUAGE_PAYLOADS];
   }

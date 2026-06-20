@@ -32,16 +32,6 @@ function dispatchPopupRequest<T extends PopupResult>(
   });
 }
 
-export function showPopupAlert(message: string): Promise<void> {
-  return dispatchPopupRequest<void>(
-    {
-      kind: 'alert',
-      message,
-    },
-    undefined,
-  );
-}
-
 export function showPopupConfirm(message: string): Promise<boolean> {
   return dispatchPopupRequest<boolean>(
     {

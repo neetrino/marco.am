@@ -13,7 +13,7 @@ export type ContactFormCopy = {
   readonly submitError: string;
 };
 
-export type ContactPageCopy = {
+type ContactPageCopy = {
   readonly writeToUsTitle: string;
   readonly pageTitle: string;
   readonly mapSectionTitle: string;

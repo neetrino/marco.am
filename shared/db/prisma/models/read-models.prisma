@@ -1,0 +1,82 @@
+model ProductListingRow {
+  id                         String   @id @default(cuid())
+  productId                  String
+  locale                     String
+  slug                       String
+  title                      String
+  subtitle                   String?
+  brandId                    String?
+  brandSlug                  String?
+  brandName                  String?
+  brandLogoUrl               String?
+  primaryCategoryId          String?
+  categoryIds                String[] @default([])
+  categorySlugs              String[] @default([])
+  price                      Float    @default(0)
+  compareAtPrice             Float?
+  originalPrice              Float?
+  priceSort                  Float    @default(0)
+  hasPrice                   Boolean  @default(false)
+  discountPercent            Int      @default(0)
+  isSpecialPrice             Boolean  @default(false)
+  defaultVariantId           String?
+  stock                      Int      @default(0)
+  inStock                    Boolean  @default(false)
+  image                      String?
+  images                     String[] @default([])
+  labels                     Json     @default("[]")
+  colors                     Json     @default("[]")
+  colorTokens                String[] @default([])
+  sizeTokens                 String[] @default([])
+  technicalSpecTokens        String[] @default([])
+  technicalSpecs             Json     @default("[]")
+  warrantyYears              Int?
+  requiresAttributeSelection Boolean  @default(false)
+  searchText                 String   @default("")
+  publishedAt                DateTime?
+  productCreatedAt           DateTime
+  productUpdatedAt           DateTime
+  isPublished                Boolean  @default(true)
+  deletedAt                  DateTime?
+  rebuiltAt                  DateTime @default(now())
+  createdAt                  DateTime @default(now())
+  updatedAt                  DateTime @updatedAt
+
+  @@unique([productId, locale])
+  @@unique([locale, slug])
+  @@index([locale, isPublished, deletedAt, productCreatedAt(sort: Desc)])
+  @@index([locale, brandId])
+  @@index([locale, brandSlug])
+  @@index([locale, priceSort])
+  @@index([locale, hasPrice, productCreatedAt(sort: Desc)])
+  @@index([locale, discountPercent(sort: Desc), productCreatedAt(sort: Desc)])
+  @@index([categoryIds], type: Gin)
+  @@index([categorySlugs], type: Gin)
+  @@index([colorTokens], type: Gin)
+  @@index([sizeTokens], type: Gin)
+  @@index([technicalSpecTokens], type: Gin)
+  @@map("product_listing_rows")
+}
+
+// Read-model for the PDP (product detail) hot path: one row per product×locale
+// holding the exact transformed detail payload as JSON. A cold read becomes a
+// single indexed fetch instead of the deep operational include graph.
+// `slugs` holds every locale's slug for the product so lookup by any slug works.
+model ProductPdpRow {
+  id               String    @id @default(cuid())
+  productId        String
+  locale           String
+  slug             String
+  slugs            String[]  @default([])
+  payload          Json
+  isPublished      Boolean   @default(true)
+  productUpdatedAt DateTime
+  rebuiltAt        DateTime  @default(now())
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@unique([productId, locale])
+  @@index([locale, slug])
+  @@index([slugs], type: Gin)
+  @@map("product_pdp_rows")
+}

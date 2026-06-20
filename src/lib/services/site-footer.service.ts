@@ -19,21 +19,21 @@ const FOOTER_PUBLIC_CACHE_TTL_SEC = 300;
 
 type HomeLocale = "en" | "hy" | "ru";
 
-export type SiteFooterPublicNavLink = {
+type SiteFooterPublicNavLink = {
   readonly id: string;
   readonly label: string;
   readonly href: string;
   readonly sortOrder: number;
 };
 
-export type SiteFooterPublicSocialLink = {
+type SiteFooterPublicSocialLink = {
   readonly id: string;
   readonly platform: SiteFooterStorage["socialLinks"][number]["platform"];
   readonly href: string;
   readonly sortOrder: number;
 };
 
-export type SiteFooterPublicPayload = {
+type SiteFooterPublicPayload = {
   readonly companyColumnTitle: string;
   readonly supportColumnTitle: string;
   readonly contactsColumnTitle: string;

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, type ReactNode } from 'react';
-import { ProductsHeader } from '@/components/ProductsHeader';
+import { ProductsShopPlpShellProvider } from '@/lib/products-shop-plp-shell-context';
 import { PRODUCTS_PLP_TOTAL_EVENT } from '@/lib/products-plp-total-event';
 
 type ProductsShopClientShellProps = {
@@ -9,8 +9,8 @@ type ProductsShopClientShellProps = {
 };
 
 /**
- * Renders the PLP header immediately; listing Suspense streams below.
- * Total count is patched when `ProductsPlpTotalReporter` runs after the server fetch.
+ * PLP shell — provides streamed total count for page title accessibility.
+ * Visual title lives in the filter column / mobile listing header.
  */
 export function ProductsShopClientShell({ children }: ProductsShopClientShellProps) {
   const [total, setTotal] = useState<number | undefined>(undefined);
@@ -29,9 +29,10 @@ export function ProductsShopClientShell({ children }: ProductsShopClientShellPro
   }, []);
 
   return (
-    <div className="w-full max-w-full pb-4 md:pb-32 lg:pb-40">
-      <ProductsHeader total={total} />
-      {children}
-    </div>
+    <ProductsShopPlpShellProvider total={total}>
+      <div className="w-full max-w-full pb-4 md:pb-32 lg:pb-40">
+        {children}
+      </div>
+    </ProductsShopPlpShellProvider>
   );
 }

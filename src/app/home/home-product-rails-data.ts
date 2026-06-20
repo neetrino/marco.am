@@ -2,9 +2,9 @@ import { cache } from 'react';
 import { FEATURED_PRODUCTS_VISIBLE_COUNT } from '@/components/featured-products-tabs.constants';
 import type { SpecialOfferProduct } from '@/components/home/special-offer-product.types';
 import { SPECIAL_OFFERS_PRODUCTS_LIMIT } from '@/constants/specialOffersSection';
-import { getProductsListingCached } from '@/lib/cache/products-listing-redis';
 import { dedupeCardProductsByTitle } from '@/lib/dedupeCardProductsByTitle';
 import type { LanguageCode } from '@/lib/language';
+import { getProductsPlpReadModelPayload } from '@/lib/read-model/products-plp-read-model';
 import { bannerManagementService } from '@/lib/services/banner-management.service';
 import type { PublicBannersPayload } from '@/lib/services/banner-management.service';
 import { homeBrandPartnersService } from '@/lib/services/home-brand-partners.service';
@@ -15,7 +15,7 @@ import {
   HOME_APP_DOWNLOAD_DEFAULT_IMAGE_URL,
 } from '@/lib/constants/home-hero-admin-banners';
 
-export type HomeProductRailsData = {
+type HomeProductRailsData = {
   promotionProducts: SpecialOfferProduct[];
   newProducts: SpecialOfferProduct[];
   brandPartners: readonly HomeBrandPartnerPublicItem[] | null;
@@ -32,36 +32,32 @@ async function fetchHomeProductRailsData(
 ): Promise<HomeProductRailsData> {
   const [promotionOutcome, newOutcome, partnersOutcome, promoBannersOutcome, appBannerOutcome] =
     await Promise.allSettled([
-    getProductsListingCached({
-      page: 1,
-      limit: SPECIAL_OFFERS_PRODUCTS_LIMIT,
-      lang,
-      filter: 'promotion',
-      sort: 'createdAt',
-      listingOmitProductAttributes: true,
-      skipExactTotalCount: true,
-      homeStripListing: true,
-    }),
-    getProductsListingCached({
-      page: 1,
-      limit: FEATURED_PRODUCTS_VISIBLE_COUNT,
-      lang,
-      filter: 'new',
-      sort: 'createdAt',
-      listingOmitProductAttributes: true,
-      skipExactTotalCount: true,
-      homeStripListing: true,
-    }),
-    homeBrandPartnersService.getPublicPayload(lang),
-    bannerManagementService.getPublicSlotPayload({
-      slot: 'home.promo.strip',
-      localeRaw: lang,
-    }),
-    bannerManagementService.getPublicSlotPayload({
-      slot: 'home.app.banner',
-      localeRaw: lang,
-    }),
-  ]);
+      getProductsPlpReadModelPayload({
+        page: '1',
+        limit: String(SPECIAL_OFFERS_PRODUCTS_LIMIT),
+        lang,
+        filter: 'promotion',
+        sort: 'createdAt',
+        includeFilters: '0',
+      }),
+      getProductsPlpReadModelPayload({
+        page: '1',
+        limit: String(FEATURED_PRODUCTS_VISIBLE_COUNT),
+        lang,
+        filter: 'new',
+        sort: 'createdAt',
+        includeFilters: '0',
+      }),
+      homeBrandPartnersService.getPublicPayload(lang),
+      bannerManagementService.getPublicSlotPayload({
+        slot: 'home.promo.strip',
+        localeRaw: lang,
+      }),
+      bannerManagementService.getPublicSlotPayload({
+        slot: 'home.app.banner',
+        localeRaw: lang,
+      }),
+    ]);
 
   let promotionProducts: SpecialOfferProduct[] = [];
   let newProducts: SpecialOfferProduct[] = [];
@@ -72,13 +68,13 @@ async function fetchHomeProductRailsData(
 
   if (promotionOutcome.status === 'fulfilled') {
     promotionProducts = dedupeCardProductsByTitle(
-      (promotionOutcome.value.data ?? []) as SpecialOfferProduct[],
+      (promotionOutcome.value.items ?? []) as SpecialOfferProduct[],
     ).slice(0, SPECIAL_OFFERS_PRODUCTS_LIMIT);
   }
 
   if (newOutcome.status === 'fulfilled') {
     newProducts = dedupeCardProductsByTitle(
-      (newOutcome.value.data ?? []) as SpecialOfferProduct[],
+      (newOutcome.value.items ?? []) as SpecialOfferProduct[],
     ).slice(0, FEATURED_PRODUCTS_VISIBLE_COUNT);
   }
 

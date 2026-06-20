@@ -1,20 +1,4 @@
-﻿/**
- * Home «Special offers» strip — layout and Figma-aligned tokens.
- */
-
-/** Local JPEG — one «nature» photo for every tile when unified mode is on. */
-export const SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC =
-  '/images/home/special-offers-unified-nature.webp';
-
-/**
- * When true, product thumbnails from the API are ignored and
- * {@link SPECIAL_OFFERS_UNIFIED_NATURE_IMAGE_SRC} is used instead (same look on every card).
- * On by default in development; production uses real images unless `NEXT_PUBLIC_SPECIAL_OFFERS_UNIFIED_IMAGE=1`.
- */
-export const SPECIAL_OFFERS_USE_UNIFIED_NATURE_IMAGE =
-  false;
-
-/** Horizontal gap between product cards in the carousel (wider gap → slightly narrower slots, still 4-up). */
+﻿/** Horizontal gap between product cards in the carousel (wider gap → slightly narrower slots, still 4-up). */
 export const SPECIAL_OFFERS_CARD_GAP_PX = 24;
 
 /** Product cards visible at once in the rail (lg+), aligned with Figma strip. */
@@ -59,10 +43,6 @@ export const SPECIAL_OFFERS_SCROLLER_PADDING_BOTTOM_DESKTOP_PX = 4;
  */
 export const SPECIAL_OFFERS_MOBILE_SCROLLER_CLASS =
   'flex min-w-0 flex-row flex-nowrap overflow-x-auto overflow-y-hidden overscroll-x-contain [touch-action:pan-x_pan-y] [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
-
-/** Portion of scroller width to move per arrow tap. */
-export const SPECIAL_OFFERS_SCROLL_FRACTION = 0.85;
-
 /** Section title (Montserrat Bold) — «Հատուկ առաջարկներ» / special offers heading. */
 export const SPECIAL_OFFERS_TITLE_FONT_SIZE_CLAMP = 'clamp(17px, 3vw, 42px)';
 
@@ -104,22 +84,6 @@ export const SPECIAL_OFFERS_CARD_MAX_WIDTH_PX = 252;
 
 /** Design reference: fixed card height. */
 export const SPECIAL_OFFERS_CARD_HEIGHT_PX = 400;
-
-/** Figma `101:3350` — warranty pill background. */
-export const SPECIAL_OFFERS_WARRANTY_BADGE_BG = '#1e1e1e';
-
-/** Figma `101:3350` — top line (e.g. «3 ՏԱՐԻ»). */
-export const SPECIAL_OFFERS_WARRANTY_BADGE_ACCENT = '#FFCA03';
-
-/** Figma `101:3350` — pill minimum size (scaled with compact card). */
-export const SPECIAL_OFFERS_WARRANTY_BADGE_MIN_WIDTH_PX = 58;
-
-/** Figma `101:3350` — pill minimum size (scaled with compact card). */
-export const SPECIAL_OFFERS_WARRANTY_BADGE_MIN_HEIGHT_PX = 35;
-
-/** Figma `101:3350` — corner radius (`rounded-[16px]`). */
-export const SPECIAL_OFFERS_WARRANTY_BADGE_RADIUS_PX = 14;
-
 /** Warranty pill inset from card top — matches former `top-3`. */
 export const SPECIAL_OFFERS_WARRANTY_BADGE_TOP_INSET_PX = 12;
 
@@ -148,12 +112,6 @@ export const SPECIAL_OFFERS_CARD_MOBILE_NOTCH_HEIGHT_PX = 38;
 
 /** Top radii of the notch (half-circle cap). */
 export const SPECIAL_OFFERS_CARD_MOBILE_NOTCH_TOP_RADIUS_PX = 38;
-
-/**
- * Corner mask fill — must match `HomeSpecialOffersSection` surface (`bg-white`).
- */
-export const SPECIAL_OFFERS_CARD_CORNER_MASK_BG = '#ffffff';
-
 /**
  * Wishlist, compare, discount pill — inset from card top-right (smaller or negative `right` = farther right).
  */
@@ -207,23 +165,6 @@ export const SPECIAL_OFFERS_PRICE_BLOCK_LIFT_FROM_BOTTOM_PX = 33;
 
 /** Image well height inside special-offer card (Figma). */
 export const SPECIAL_OFFERS_IMAGE_WELL_HEIGHT_PX = 177;
-
-/**
- * Image well corner radius — rounder inner frame (see `SPECIAL_OFFERS_CARD_SHELL_RADIUS_PX`).
- */
-export const SPECIAL_OFFERS_IMAGE_WELL_RADIUS_PX = 19;
-
-/** Horizontal optical nudge — shift product image left inside the well. */
-export const SPECIAL_OFFERS_IMAGE_NUDGE_LEFT_PX = 4;
-
-/**
- * Vertical offset for product image in the well (`translateY`; positive = down).
- */
-export const SPECIAL_OFFERS_IMAGE_TRANSLATE_Y_PX = 7;
-
-/** On mobile 2×2 cards — extra downward nudge for product photo (add to translateY). */
-export const SPECIAL_OFFERS_IMAGE_TRANSLATE_Y_MOBILE_EXTRA_PX = 3;
-
 /** Gallery pagination — flex gap between dot hit targets (often 0; use overlap for tighter pips). */
 export const SPECIAL_OFFERS_GALLERY_DOTS_GAP_PX = 0;
 
@@ -260,25 +201,8 @@ export const SPECIAL_OFFERS_CARD_PADDING_TOP_CSS_VAR = '--special-offers-card-pa
 
 /** Inner horizontal padding — matches `px-4` on the card content column (`md+`). */
 export const SPECIAL_OFFERS_CARD_PADDING_X_PX = 16;
-
-/** Mobile: image well spans card edge-to-edge — no inner horizontal inset. */
-export const SPECIAL_OFFERS_CARD_PADDING_X_MOBILE_PX = 0;
-
 /** CSS variable on the card shell — drives padding + overlay icon offsets. */
 export const SPECIAL_OFFERS_CARD_PADDING_X_CSS_VAR = '--special-offers-card-pad-x';
-
-/**
- * Wishlist / compare / discount — `top` from the **outer** card wrapper (stack is outside `overflow:hidden`).
- */
-export const SPECIAL_OFFERS_ACTIONS_STACK_TOP_FROM_CARD_OUTER_PX =
-  SPECIAL_OFFERS_CARD_PADDING_TOP_PX + SPECIAL_OFFERS_ACTIONS_STACK_INSET_TOP_PX;
-
-/**
- * Wishlist / compare / discount — `right` from the **outer** card wrapper’s right edge.
- */
-export const SPECIAL_OFFERS_ACTIONS_STACK_RIGHT_FROM_CARD_OUTER_PX =
-  SPECIAL_OFFERS_CARD_PADDING_X_PX + SPECIAL_OFFERS_ACTIONS_STACK_INSET_RIGHT_PX;
-
 /**
  * Pull the actions stack past the card border so icons can sit outside the rounded shell.
  */
@@ -306,30 +230,6 @@ export const SPECIAL_OFFERS_COLOR_SWATCH_SIZE_PX = 15;
 
 /** Gap between swatch circles — slightly looser than 1px. */
 export const SPECIAL_OFFERS_COLOR_SWATCH_GAP_PX = 2;
-
-/** Padding-top on swatch column — aligns swatches below brand line (Figma `305:2171`). */
-export const SPECIAL_OFFERS_COLOR_SWATCH_COLUMN_PADDING_TOP_PX = 12;
-
-/**
- * Space between title block and rating row — Figma `101:3637` (`top-[81px]` vs title end ~64px).
- */
-export const SPECIAL_OFFERS_TITLE_TO_STARS_MARGIN_TOP_PX = 18;
-
-/** Outlined star size — Figma Product1 star frames `h-[13px]`. */
-export const SPECIAL_OFFERS_STAR_SIZE_PX = 9;
-
-/** Thin stroke for outlined stars (Figma dev). */
-export const SPECIAL_OFFERS_STAR_STROKE_WIDTH = 1.25;
-
-/** Horizontal gap between star icons. */
-export const SPECIAL_OFFERS_STAR_GAP_PX = 12;
-
-/** Gap between the star group and the review count `(n)`. */
-export const SPECIAL_OFFERS_STAR_TO_REVIEW_COUNT_GAP_PX = 8;
-
-/** Review count — Figma `101:3648` uses 14px (Product1). */
-export const SPECIAL_OFFERS_REVIEW_COUNT_FONT_SIZE_PX = 14;
-
 /**
  * Viewport min width at which the rail uses ResizeObserver slot math for exactly
  * {@link SPECIAL_OFFERS_VISIBLE_COLUMNS} cards (same idea as featured «Նորույթներ» `md:grid-cols-4`).
@@ -353,12 +253,6 @@ export const SPECIAL_OFFERS_PAGINATION_DOT_GAP_MOBILE_PX = 6;
 /** Dot row — `md+` (slightly wider spacing between dots). */
 export const SPECIAL_OFFERS_PAGINATION_DOT_GAP_DESKTOP_PX = 10;
 export const SPECIAL_OFFERS_RAIL_TO_PAGINATION_GAP_PX = 42;
-
-/** Extra space above dot row on `max-md` (2×2 grid + floating cart needs more air). */
-export const SPECIAL_OFFERS_RAIL_TO_PAGINATION_GAP_MOBILE_PX = 58;
-
-/** Space between dot row and «Տեսնել ավելին» CTA — `max-md`. */
-export const SPECIAL_OFFERS_PAGINATION_TO_CTA_GAP_MOBILE_PX = 30;
 /** `md+` — tighter stack under decorative / pagination dots. */
 export const SPECIAL_OFFERS_PAGINATION_TO_CTA_GAP_DESKTOP_PX = 20;
 

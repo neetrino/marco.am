@@ -31,6 +31,7 @@ import {
   normalizeProductCategoryLinks,
   toProductCategoriesConnect,
 } from "../product-category-links.service";
+import { syncProductListingReadModel } from "@/lib/read-model/product-read-model-sync";
 
 type ProductMediaItem = string | { url: string };
 
@@ -433,6 +434,10 @@ class AdminProductsCreateService {
         });
       });
 
+      if (result?.id) {
+        await syncProductListingReadModel(result.id);
+      }
+
       // Revalidate cache
       try {
         logger.devLog('🧹 [ADMIN PRODUCTS CREATE SERVICE] Revalidating paths for new product');
@@ -456,7 +461,6 @@ class AdminProductsCreateService {
 }
 
 export const adminProductsCreateService = new AdminProductsCreateService();
-
 
 
 

@@ -1,5 +1,5 @@
 /** Fired after admin mutates categories so open shop UI can refetch `/api/v1/categories/tree`. */
-export const SHOP_CATEGORY_TREE_UPDATED_EVENT = "shop-category-tree-updated";
+const SHOP_CATEGORY_TREE_UPDATED_EVENT = "shop-category-tree-updated";
 
 export function notifyShopCategoryTreeUpdated(): void {
   if (typeof window === "undefined") {

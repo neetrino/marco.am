@@ -9,7 +9,7 @@ import { useTranslation } from '@/lib/i18n-client';
 const pulse = 'animate-pulse rounded-xl bg-slate-200 dark:bg-slate-700';
 
 /** Main-column placeholder while auth resolves — sidebar stays mounted in AdminShell. */
-export function AdminMainSkeleton() {
+function AdminMainSkeleton() {
   const { t } = useTranslation();
 
   return (

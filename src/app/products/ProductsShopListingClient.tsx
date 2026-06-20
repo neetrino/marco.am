@@ -40,6 +40,9 @@ type ListingMeta = {
   page: number;
   limit: number;
   totalPages: number;
+  hasNextPage?: boolean;
+  nextCursor?: string | null;
+  totalIsExact?: boolean;
 };
 
 type ProductsListingApiResponse = {
@@ -114,6 +117,9 @@ function normalizeListingApiResponse(response: ProductsListingApiResponse): {
         page: 1,
         limit: SHOP_PLP_DEFAULT_PAGE_SIZE,
         totalPages: 0,
+        hasNextPage: false,
+        nextCursor: null,
+        totalIsExact: true,
       },
   };
 }
@@ -125,7 +131,7 @@ const PLP_LISTING_ROOT_CLASS =
 const PLP_PDP_CACHE_SYNC_IDLE_TIMEOUT_MS = 2_000;
 
 /**
- * Client-driven PLP grid — filter/pagination changes fetch `/api/v1/products` immediately
+ * Client-driven PLP grid — filter/pagination changes fetch `/api/v1/products/plp` immediately
  * instead of waiting for a full RSC navigation round-trip.
  */
 export function ProductsShopListingClient({
@@ -213,7 +219,7 @@ export function ProductsShopListingClient({
         setIsFetching(false);
       }
       try {
-        const response = await apiClient.get<ProductsListingApiResponse>('/api/v1/products', {
+        const response = await apiClient.get<ProductsListingApiResponse>('/api/v1/products/plp', {
           params: buildListingApiParams(nextQueryString),
           signal: abortController.signal,
           suppressAbortErrorLogging: true,
@@ -231,7 +237,15 @@ export function ProductsShopListingClient({
         }
         if (!options?.silent) {
           setProducts([]);
-          setMeta({ total: 0, page: 1, limit: SHOP_PLP_DEFAULT_PAGE_SIZE, totalPages: 0 });
+          setMeta({
+            total: 0,
+            page: 1,
+            limit: SHOP_PLP_DEFAULT_PAGE_SIZE,
+            totalPages: 0,
+            hasNextPage: false,
+            nextCursor: null,
+            totalIsExact: true,
+          });
           setShowGridSkeleton(false);
           setHasOptimisticListing(false);
           reportTotal(0);
@@ -340,11 +354,24 @@ export function ProductsShopListingClient({
   const visibleMeta = isHydrated ? meta : initialMeta;
   const visibleSort = isHydrated ? sortBy : initialSort;
   const visiblePage = visibleMeta.page;
+  const visibleTotalIsExact = visibleMeta.totalIsExact !== false;
+  const visibleHasNextPage = visibleTotalIsExact
+    ? visiblePage < visibleMeta.totalPages
+    : Boolean(visibleMeta.hasNextPage);
   const showFetchingSkeleton = isHydrated && isFetching && !hasOptimisticListing;
   const showSkeleton = isHydrated && showGridSkeleton;
   const disableProgressiveRender = showSkeleton || showFetchingSkeleton || hasOptimisticListing;
 
   const visiblePaginationSlotItems: PaginationSlotItem[] = useMemo(() => {
+    if (visibleMeta.totalIsExact === false) {
+      return [
+        {
+          kind: 'page',
+          page: visiblePage,
+          href: buildPaginationUrl(queryString, visiblePage),
+        },
+      ];
+    }
     return getPaginationPages(visibleMeta.totalPages, visiblePage).map((item) =>
       item === 'ellipsis'
         ? { kind: 'ellipsis' }
@@ -354,7 +381,7 @@ export function ProductsShopListingClient({
             href: buildPaginationUrl(queryString, item),
           },
     );
-  }, [visibleMeta.totalPages, visiblePage, queryString]);
+  }, [visibleMeta.totalIsExact, visibleMeta.totalPages, visiblePage, queryString]);
 
   return (
     <div className="min-w-0 flex-1 w-full min-[744px]:w-auto">
@@ -373,13 +400,20 @@ export function ProductsShopListingClient({
             sortBy={visibleSort}
             disableProgressiveRender={disableProgressiveRender}
           />
-          {visibleMeta.totalPages > 1 ? (
+          {visibleMeta.totalPages > 1 || visibleHasNextPage || visiblePage > 1 ? (
             <ProductsPagination
               page={visiblePage}
               totalPages={visibleMeta.totalPages}
+              hasNextPage={visibleHasNextPage}
+              totalIsExact={visibleTotalIsExact}
               hrefFirst={buildPaginationUrl(queryString, 1)}
               hrefBack={buildPaginationUrl(queryString, Math.max(1, visiblePage - 1))}
-              hrefNext={buildPaginationUrl(queryString, Math.min(visibleMeta.totalPages, visiblePage + 1))}
+              hrefNext={buildPaginationUrl(
+                queryString,
+                visibleTotalIsExact
+                  ? Math.min(visibleMeta.totalPages, visiblePage + 1)
+                  : visiblePage + 1,
+              )}
               hrefLast={buildPaginationUrl(queryString, visibleMeta.totalPages)}
               slotItems={visiblePaginationSlotItems}
               onNavigate={navigateToPage}
