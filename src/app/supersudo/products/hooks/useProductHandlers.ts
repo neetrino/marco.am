@@ -11,7 +11,6 @@ interface UseProductHandlersProps {
   selectedIds: Set<string>;
   setSelectedIds: (ids: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
   setBulkDeleting: (deleting: boolean) => void;
-  setTogglingAllFeatured: (toggling: boolean) => void;
   setDeletingIds: (ids: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
   setUpdatingPublishedIds: (ids: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
   setUpdatingFeaturedIds: (ids: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
@@ -24,7 +23,6 @@ export function useProductHandlers({
   selectedIds,
   setSelectedIds,
   setBulkDeleting,
-  setTogglingAllFeatured,
   setDeletingIds,
   setUpdatingPublishedIds,
   setUpdatingFeaturedIds,
@@ -164,40 +162,6 @@ export function useProductHandlers({
     }
   };
 
-  const handleToggleAllFeatured = async () => {
-    if (products.length === 0) return;
-
-    // Check if all products are featured
-    const allFeatured = products.every(p => p.featured);
-    const newStatus = !allFeatured;
-
-    setTogglingAllFeatured(true);
-    try {
-      const results = await Promise.allSettled(
-        products.map(product => 
-          apiClient.put(`/api/v1/supersudo/products/${product.id}`, { featured: newStatus })
-        )
-      );
-      
-      const failed = results.filter(r => r.status === 'rejected');
-      const successCount = products.length - failed.length;
-      
-      logger.devLog(`✅ [ADMIN] Toggle all featured completed: ${successCount}/${products.length} successful`);
-      
-      // Refresh products list
-      await fetchProducts({ force: true });
-      
-      if (failed.length > 0) {
-        alert(t('admin.products.featuredToggleFinished').replace('{success}', successCount.toString()).replace('{total}', products.length.toString()));
-      }
-    } catch (err) {
-      console.error('❌ [ADMIN] Toggle all featured error:', err);
-      alert(t('admin.products.failedToUpdateFeatured'));
-    } finally {
-      setTogglingAllFeatured(false);
-    }
-  };
-
   return {
     toggleSelect,
     toggleSelectAll,
@@ -205,7 +169,6 @@ export function useProductHandlers({
     handleDeleteProduct,
     handleTogglePublished,
     handleToggleFeatured,
-    handleToggleAllFeatured,
   };
 }
 

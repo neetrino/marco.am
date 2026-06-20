@@ -87,7 +87,6 @@ function ProductsPageContent() {
   const [sortBy, setSortBy] = useState<string>('createdAt-desc');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
-  const [_togglingAllFeatured, setTogglingAllFeatured] = useState(false);
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
   const [updatingPublishedIds, setUpdatingPublishedIds] = useState<Set<string>>(new Set());
   const [updatingFeaturedIds, setUpdatingFeaturedIds] = useState<Set<string>>(new Set());
@@ -359,7 +358,6 @@ function ProductsPageContent() {
     selectedIds,
     setSelectedIds,
     setBulkDeleting,
-    setTogglingAllFeatured,
     setDeletingIds,
     setUpdatingPublishedIds,
     setUpdatingFeaturedIds,
@@ -464,7 +462,6 @@ function ProductsPageContent() {
       <ProductsTable
         loading={loading}
         refreshing={refreshing}
-        sortedProducts={products}
         products={products}
         selectedIds={selectedIds}
         toggleSelect={handlers.toggleSelect}

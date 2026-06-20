@@ -12,7 +12,6 @@ import type { Product, ProductsResponse } from '../types';
 interface ProductsTableProps {
   loading: boolean;
   refreshing?: boolean;
-  sortedProducts: Product[];
   products: Product[];
   selectedIds: Set<string>;
   toggleSelect: (id: string) => void;
@@ -37,7 +36,6 @@ interface ProductsTableProps {
 export function ProductsTable({
   loading,
   refreshing = false,
-  sortedProducts,
   products,
   selectedIds,
   toggleSelect,
@@ -59,9 +57,6 @@ export function ProductsTable({
   onEditProduct,
 }: ProductsTableProps) {
   const { t } = useTranslation();
-  const openProductEditor = (productId: string) => {
-    onEditProduct(productId);
-  };
 
   return (
     <Card className="admin-table-card relative overflow-hidden rounded-2xl border-slate-200/80 shadow-md shadow-slate-200/60">
@@ -78,7 +73,7 @@ export function ProductsTable({
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
           <p className="text-gray-600">{t('admin.products.loadingProducts')}</p>
         </div>
-      ) : sortedProducts.length === 0 ? (
+      ) : products.length === 0 ? (
         <div className="p-8 text-center">
           <p className="text-gray-600">{t('admin.products.noProducts')}</p>
         </div>
@@ -252,16 +247,16 @@ export function ProductsTable({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200 bg-white">
-                {sortedProducts.map((product) => (
+                {products.map((product) => (
                   <tr
                     key={product.id}
                     className="group cursor-pointer transition-colors hover:bg-amber-50/50"
                     onMouseDown={() => warmProductEditorRowSections(product.id)}
-                    onClick={() => openProductEditor(product.id)}
+                    onClick={() => onEditProduct(product.id)}
                     onKeyDown={(event) => {
                       if (event.key === 'Enter' || event.key === ' ') {
                         event.preventDefault();
-                        openProductEditor(product.id);
+                        onEditProduct(product.id);
                       }
                     }}
                     tabIndex={0}
@@ -369,7 +364,7 @@ export function ProductsTable({
                           type="button"
                           onClick={(event) => {
                             event.stopPropagation();
-                            openProductEditor(product.id);
+                            onEditProduct(product.id);
                           }}
                           aria-label={t('admin.products.edit')}
                           className="!h-8 !min-h-8 !w-8 !max-w-none shrink-0 !px-0 !py-0 gap-0 rounded-md border border-transparent text-slate-700 hover:border-slate-200 hover:bg-slate-100 hover:text-slate-900"

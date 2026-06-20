@@ -1,6 +1,5 @@
 import { Prisma } from "@white-shop/db/prisma";
 import { db } from "@white-shop/db";
-import { ensureProductVariantAttributesColumn } from "../../../utils/db-ensure";
 import { logger } from "../../../utils/logger";
 
 /**
@@ -65,15 +64,6 @@ const getProductAttributesInclude = () => ({
     },
   },
 });
-
-/**
- * Check if error is related to product_variants.attributes column
- */
-function isVariantAttributesError(error: unknown): boolean {
-  const errorMessage = error instanceof Error ? error.message : String(error);
-  return errorMessage.includes('product_variants.attributes') || 
-         (errorMessage.includes('attributes') && errorMessage.includes('does not exist'));
-}
 
 /**
  * Check if error is related to productAttributes table
@@ -154,87 +144,6 @@ export async function findProductIdsBySkuSearch(search: string): Promise<string[
   });
 
   return rows.map((row) => row.productId);
-}
-
-/**
- * Execute product list query with error handling
- */
-export async function executeProductListQuery(
-  where: Prisma.ProductWhereInput,
-  orderBy: Prisma.ProductOrderByWithRelationInput,
-  skip: number,
-  take: number,
-  locale: string,
-) {
-  const queryStartTime = Date.now();
-  const listInclude = getProductListInclude(locale);
-
-  try {
-    logger.debug('Fetching products and count in parallel...');
-    const countPromise = db.product.count({ where });
-    const productsPromise = db.product.findMany({
-      where,
-      skip,
-      take,
-      orderBy,
-      include: listInclude,
-    });
-
-    const [products, total] = await Promise.all([productsPromise, countPromise]);
-
-    const queryTime = Date.now() - queryStartTime;
-    logger.debug(`Products list query completed in ${queryTime}ms`, {
-      found: products.length,
-      total,
-    });
-
-    return { products, total };
-  } catch (error: unknown) {
-    // If product_variants.attributes column doesn't exist, try to create it and retry
-    if (isVariantAttributesError(error)) {
-      logger.warn('product_variants.attributes column not found, attempting to create it...');
-      try {
-        await ensureProductVariantAttributesColumn();
-        const [products, total] = await Promise.all([
-          db.product.findMany({
-            where,
-            skip,
-            take,
-            orderBy,
-            include: listInclude,
-          }),
-          db.product.count({ where }),
-        ]);
-
-        const queryTime = Date.now() - queryStartTime;
-        logger.debug(`Products list query completed after retry in ${queryTime}ms`, {
-          found: products.length,
-          total,
-        });
-
-        return { products, total };
-      } catch (retryError: unknown) {
-        const queryTime = Date.now() - queryStartTime;
-        const errorMessage = retryError instanceof Error ? retryError.message : String(retryError);
-        logger.error(`Database query error after ${queryTime}ms (after retry)`, { error: errorMessage });
-        throw retryError;
-      }
-    }
-
-    const queryTime = Date.now() - queryStartTime;
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    const errorObj = error as { code?: string; meta?: unknown; stack?: string };
-    logger.error(`Database query error after ${queryTime}ms`, {
-      error: {
-        message: errorMessage,
-        code: errorObj?.code,
-        meta: errorObj?.meta,
-        stack: errorObj?.stack?.substring(0, 500),
-      },
-    });
-    
-    throw error;
-  }
 }
 
 /**

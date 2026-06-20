@@ -80,11 +80,6 @@ export function warmProductEditorReferenceData(): void {
   void fetchAdminSettings();
 }
 
-/** Single-section warm on pointer down (before click) — general only. */
-export function warmProductEditorGeneralSection(productId: string): void {
-  void fetchProductEditorSection(productId, 'general');
-}
-
 /**
  * Warm the sections a user lands on first when opening a product (general header
  * + pricing/variants) plus shared reference data, so the sheet is interactive
