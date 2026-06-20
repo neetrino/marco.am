@@ -17,11 +17,26 @@ interface ProductCatalogTabProps {
   onVariantsUpdate: (updater: (prev: Variant[]) => Variant[]) => void;
 }
 
+function CatalogColumnDivider() {
+  return (
+    <>
+      <div
+        className="mx-5 h-px shrink-0 bg-gradient-to-r from-transparent via-slate-200/90 to-transparent lg:hidden"
+        aria-hidden
+      />
+      <div
+        className="hidden w-8 shrink-0 items-stretch justify-center py-4 lg:flex"
+        aria-hidden
+      >
+        <div className="w-px bg-gradient-to-b from-transparent via-slate-300/70 to-transparent" />
+      </div>
+    </>
+  );
+}
+
 export function ProductCatalogTab(props: ProductCatalogTabProps) {
   return (
-    <div
-      className="flex min-h-0 flex-1 flex-col divide-y divide-slate-200/80 overflow-hidden rounded-xl border border-slate-200/80 bg-white lg:flex-row lg:divide-x lg:divide-y-0"
-    >
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-slate-200/80 bg-white lg:flex-row">
       <div className="flex min-h-0 min-w-0 flex-1 flex-col px-5 py-4">
         <CatalogCategorySection
           categories={props.categories}
@@ -33,6 +48,9 @@ export function ProductCatalogTab(props: ProductCatalogTabProps) {
           onVariantsUpdate={props.onVariantsUpdate}
         />
       </div>
+
+      <CatalogColumnDivider />
+
       <div className="flex min-h-0 min-w-0 flex-1 flex-col px-5 py-4">
         <CatalogBrandSection
           brands={props.brands}

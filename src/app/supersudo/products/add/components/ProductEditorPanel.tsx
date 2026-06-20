@@ -257,6 +257,7 @@ export function ProductEditorPanel({
             : t('admin.products.add.addNewProduct')
         }
         closeLabel={t('admin.common.close')}
+        headerClassName="shrink-0 px-5 py-3"
         header={sheetHeader}
       >
         <AddProductFormContent
