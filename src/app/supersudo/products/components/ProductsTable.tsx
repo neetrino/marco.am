@@ -6,6 +6,7 @@ import { AdminTablePagination } from '../../components/AdminTablePagination';
 import { formatCatalogPrice, type CurrencyCode } from '../../../../lib/currency';
 import { FeaturedStarToggle } from '../add/components/FeaturedStarToggle';
 import { warmProductEditorGeneralSection } from '@/lib/admin/product-editor-section-cache';
+import { AdminProductListImage, AdminProductListImagePlaceholder } from './AdminProductListImage';
 import type { Product, ProductsResponse } from '../types';
 
 interface ProductsTableProps {
@@ -31,19 +32,6 @@ interface ProductsTableProps {
   categoryTitleById: Map<string, string>;
   onEditProduct: (productId: string) => void;
 }
-
-/**
- * Helper function to process image URLs
- * Handles relative paths, absolute URLs and base64
- */
-const processImageUrl = (url: string | null) => {
-  if (!url) return '';
-  if (url.startsWith('data:') || url.startsWith('http://') || url.startsWith('https://')) {
-    return url;
-  }
-  // For relative paths, ensure they start with a slash
-  return url.startsWith('/') ? url : `/${url}`;
-};
 
 export function ProductsTable({
   loading,
@@ -280,12 +268,10 @@ export function ProductsTable({
                     </td>
                     <td className="max-w-xs py-3 pl-6 pr-3 align-middle">
                       <div className="flex items-center gap-2.5">
-                        {product.image && (
-                          <img
-                            src={processImageUrl(product.image)}
-                            alt={product.title}
-                            className="h-10 w-10 shrink-0 rounded-lg border border-slate-200 object-cover shadow-sm"
-                          />
+                        {product.image ? (
+                          <AdminProductListImage src={product.image} alt={product.title} />
+                        ) : (
+                          <AdminProductListImagePlaceholder />
                         )}
                         <div className="min-w-0 flex-1">
                           <div className="whitespace-normal break-words text-sm font-semibold text-slate-900 transition-colors group-hover:text-amber-900">

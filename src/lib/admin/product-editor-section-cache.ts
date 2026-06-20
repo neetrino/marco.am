@@ -16,18 +16,7 @@ import {
   fetchAdminSettings,
 } from '@/lib/admin/admin-reference-data-cache';
 
-const warmedProductIds = new Set<string>();
 let referenceDataWarmStarted = false;
-
-/** Light sections — prefetch on row hover. Pricing loads after sheet is open. */
-const LIGHT_PRODUCT_EDITOR_SECTIONS: ProductEditorSection[] = [
-  'general',
-  'description',
-  'catalog',
-  'media',
-];
-
-const PRICING_EDITOR_SECTION: ProductEditorSection = 'pricing';
 
 export function readProductEditorSectionCache(
   productId: string,
@@ -37,17 +26,7 @@ export function readProductEditorSectionCache(
   return readAdminSessionCache<ProductData>(key, ADMIN_SESSION_CACHE_TTL_MS);
 }
 
-export function writeProductEditorSectionCache(
-  productId: string,
-  section: ProductEditorSection,
-  data: ProductData,
-): void {
-  const key = buildProductEditorSectionCacheKey(productId, section);
-  writeAdminSessionCache(key, data);
-}
-
 export function invalidateProductEditorSectionCaches(productId: string): void {
-  warmedProductIds.delete(productId);
   if (typeof window === 'undefined') {
     return;
   }
@@ -104,22 +83,4 @@ export function warmProductEditorReferenceData(): void {
 /** Single-section warm on pointer down (before click) — general only. */
 export function warmProductEditorGeneralSection(productId: string): void {
   void fetchProductEditorSection(productId, 'general');
-}
-
-/** Hover warm — light sections only so click is not competing with pricing fetch. */
-export function warmProductEditorForProduct(productId: string): void {
-  warmProductEditorReferenceData();
-
-  if (warmedProductIds.has(productId)) {
-    return;
-  }
-  warmedProductIds.add(productId);
-
-  LIGHT_PRODUCT_EDITOR_SECTIONS.forEach((section) => {
-    void fetchProductEditorSection(productId, section);
-  });
-}
-
-export function warmProductEditorPricingSection(productId: string): void {
-  void fetchProductEditorSection(productId, PRICING_EDITOR_SECTION);
 }

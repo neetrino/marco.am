@@ -173,8 +173,14 @@ function ProductsPageContent() {
       return;
     }
 
+    if (cached === null) {
+      setProducts([]);
+      setLoading(true);
+    } else {
+      beginAdminDataFetch(true, setLoading);
+    }
+
     try {
-      beginAdminDataFetch(cached !== null, setLoading);
       const params: Record<string, string> = {
         page: page.toString(),
         limit: '20',
@@ -195,7 +201,13 @@ function ProductsPageContent() {
         params.published = 'false';
       }
 
-      if (sortBy && sortBy.startsWith('createdAt')) {
+      if (stockFilter === 'inStock') {
+        params.stock = 'inStock';
+      } else if (stockFilter === 'outOfStock') {
+        params.stock = 'outOfStock';
+      }
+
+      if (sortBy) {
         params.sort = sortBy;
       }
 
@@ -205,26 +217,7 @@ function ProductsPageContent() {
         }),
       );
       
-      let filteredProducts = response.data || [];
-
-      // Stock filter (client-side)
-      if (stockFilter !== 'all') {
-        filteredProducts = filteredProducts.filter(product => {
-          const getTotalStock = (p: Product) => {
-            if (p.colorStocks && p.colorStocks.length > 0) {
-              return p.colorStocks.reduce((sum, cs) => sum + (cs.stock || 0), 0);
-            }
-            return p.stock ?? 0;
-          };
-          const totalStock = getTotalStock(product);
-          if (stockFilter === 'inStock') {
-            return totalStock > 0;
-          } else if (stockFilter === 'outOfStock') {
-            return totalStock === 0;
-          }
-          return true;
-        });
-      }
+      const filteredProducts = response.data || [];
 
       setProducts(filteredProducts);
       setMeta(response.meta || null);
@@ -240,53 +233,6 @@ function ProductsPageContent() {
       setLoading(false);
     }
   };
-
-  // Client-side sorting for Product / Price / Stock columns
-  const sortedProducts = useMemo(() => {
-    if (!Array.isArray(products)) return [];
-
-    if (!sortBy || sortBy.startsWith('createdAt')) {
-      return products;
-    }
-
-    const [field, directionRaw] = sortBy.split('-');
-    const direction = directionRaw === 'asc' ? 1 : -1;
-
-    logger.devLog('📊 [ADMIN] Applying client-side sort:', { field, direction: directionRaw });
-
-    const cloned = [...products];
-
-    if (field === 'price') {
-      cloned.sort((a, b) => {
-        const aPrice = a.price ?? 0;
-        const bPrice = b.price ?? 0;
-        if (aPrice === bPrice) return 0;
-        return aPrice > bPrice ? direction : -direction;
-      });
-    } else if (field === 'title') {
-      cloned.sort((a, b) => {
-        const aTitle = (a.title || '').toLowerCase();
-        const bTitle = (b.title || '').toLowerCase();
-        if (aTitle === bTitle) return 0;
-        return aTitle > bTitle ? direction : -direction;
-      });
-    } else if (field === 'stock') {
-      cloned.sort((a, b) => {
-        const getTotalStock = (product: Product) => {
-          if (product.colorStocks && product.colorStocks.length > 0) {
-            return product.colorStocks.reduce((sum, cs) => sum + (cs.stock || 0), 0);
-          }
-          return product.stock ?? 0;
-        };
-        const aStock = getTotalStock(a);
-        const bStock = getTotalStock(b);
-        if (aStock === bStock) return 0;
-        return aStock > bStock ? direction : -direction;
-      });
-    }
-
-    return cloned;
-  }, [products, sortBy]);
 
   const categoryTitleById = useMemo(() => {
     const map = new Map<string, string>();
@@ -450,7 +396,7 @@ function ProductsPageContent() {
 
       <ProductsTable
         loading={loading}
-        sortedProducts={sortedProducts}
+        sortedProducts={products}
         products={products}
         selectedIds={selectedIds}
         toggleSelect={handlers.toggleSelect}

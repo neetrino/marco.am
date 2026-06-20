@@ -1,4 +1,5 @@
 import { pickVariantForListingPrice } from '@/lib/product-variant-listing-pick';
+import { resolveAdminProductListImageUrl } from '@/lib/admin/admin-list-product-image';
 
 /**
  * Format product for list response
@@ -19,6 +20,7 @@ export function formatProductForList(product: {
     price: number;
     stock: number;
     compareAtPrice: number | null;
+    imageUrl?: string | null;
   }>;
   media?: unknown[];
   categoryIds?: string[];
@@ -32,7 +34,7 @@ export function formatProductForList(product: {
   
   const variant = pickVariantForListingPrice(product.variants ?? []);
   
-  const image = extractImageFromMedia(product.media);
+  const image = resolveAdminProductListImageUrl(product.media, product.variants ?? []);
 
   const rawCategoryIds = product.categoryIds ?? [];
   const primaryId = product.primaryCategoryId ?? null;
@@ -60,29 +62,3 @@ export function formatProductForList(product: {
     categories,
   };
 }
-
-/**
- * Extract image from media array
- */
-function extractImageFromMedia(media: unknown[] | undefined): string | null {
-  if (!Array.isArray(media) || media.length === 0) {
-    return null;
-  }
-
-  const firstMedia = media[0];
-  
-  if (typeof firstMedia === "string") {
-    return firstMedia;
-  }
-  
-  if (firstMedia && typeof firstMedia === "object" && "url" in firstMedia) {
-    const mediaObj = firstMedia as { url?: string };
-    return mediaObj.url || null;
-  }
-
-  return null;
-}
-
-
-
-

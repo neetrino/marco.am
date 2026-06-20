@@ -112,12 +112,15 @@ export function buildProductWhereClause(filters: ProductFilters): Prisma.Product
 }
 
 /**
- * Build orderBy clause for product queries
+ * Build orderBy clause for product queries (legacy Product table path).
  */
 export function buildProductOrderByClause(filters: ProductFilters): Prisma.ProductOrderByWithRelationInput {
   if (filters.sort) {
     const [field, direction] = filters.sort.split("-");
-    return { [field]: direction || "desc" };
+    const dir = direction === "asc" ? "asc" : "desc";
+    if (field === "createdAt") {
+      return { createdAt: dir };
+    }
   }
   return { createdAt: "desc" };
 }

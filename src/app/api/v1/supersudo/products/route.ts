@@ -23,6 +23,7 @@ function validateAndNormalizeFilters(searchParams: URLSearchParams): {
     maxPrice?: number;
     sort?: string;
       lang?: string;
+    stock?: "inStock" | "outOfStock";
   };
   error?: {
     type: string;
@@ -128,6 +129,21 @@ function validateAndNormalizeFilters(searchParams: URLSearchParams): {
     };
   }
 
+  const stockParam = searchParams.get("stock");
+  let stock: "inStock" | "outOfStock" | undefined;
+  if (stockParam === "inStock" || stockParam === "outOfStock") {
+    stock = stockParam;
+  } else if (stockParam !== null && stockParam !== "" && stockParam !== "all") {
+    return {
+      error: {
+        type: "https://api.shop.am/problems/validation-error",
+        title: "Validation Error",
+        status: 400,
+        detail: "Parameter 'stock' must be 'inStock' or 'outOfStock'",
+      },
+    };
+  }
+
   return {
     filters: {
       page,
@@ -140,6 +156,7 @@ function validateAndNormalizeFilters(searchParams: URLSearchParams): {
       maxPrice,
       sort: searchParams.get("sort")?.trim() || undefined,
       lang: searchParams.get("lang")?.trim() || undefined,
+      stock,
     },
   };
 }

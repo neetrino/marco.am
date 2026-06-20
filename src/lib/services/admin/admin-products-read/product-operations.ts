@@ -2,8 +2,15 @@ import { parseProductDescriptionJson } from "@/lib/products/product-description"
 import { logger } from "../../../utils/logger";
 import { expandCategoryIdsWithDescendants } from "../../category-subtree.service";
 import type { ProductFilters } from "./types";
-import { buildProductWhereClause, buildProductOrderByClause } from "./query-builder";
-import { executeProductListQuery, executeProductDetailQuery } from "./query-executor";
+import {
+  buildAdminListingRowOrderBy,
+  buildAdminListingRowWhere,
+} from "./admin-listing-row-query";
+import {
+  executeAdminProductListViaListingRows,
+  executeProductDetailQuery,
+  findProductIdsBySkuSearch,
+} from "./query-executor";
 import { formatProductForList } from "./product-formatter";
 import { formatVariantForAdmin } from "./variant-formatter";
 
@@ -41,12 +48,28 @@ export async function getProducts(filters: ProductFilters) {
   const skip = (page - 1) * limit;
 
   const resolvedFilters = await withExpandedCategoryFilters(filters);
-  const where = buildProductWhereClause(resolvedFilters);
-  const orderBy = buildProductOrderByClause(resolvedFilters);
+  const productIdsFromSku = resolvedFilters.search?.trim()
+    ? await findProductIdsBySkuSearch(resolvedFilters.search.trim())
+    : [];
+  const listingWhere = buildAdminListingRowWhere(
+    resolvedFilters,
+    locale,
+    productIdsFromSku,
+  );
+  const listingOrderBy = buildAdminListingRowOrderBy(resolvedFilters.sort);
 
-  logger.debug('Executing database queries...', { where: JSON.stringify(where, null, 2) });
+  logger.debug('Executing admin listing-row query...', {
+    sort: resolvedFilters.sort,
+    locale,
+  });
 
-  const { products, total } = await executeProductListQuery(where, orderBy, skip, limit, locale);
+  const { products, total } = await executeAdminProductListViaListingRows(
+    listingWhere,
+    listingOrderBy,
+    skip,
+    limit,
+    locale,
+  );
 
   const data = products.map((product) => formatProductForList(product, locale));
 

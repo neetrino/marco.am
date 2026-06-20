@@ -18,7 +18,6 @@ import {
 import {
   fetchProductEditorSection,
   readProductEditorSectionCache,
-  warmProductEditorPricingSection,
   warmProductEditorReferenceData,
 } from '@/lib/admin/product-editor-section-cache';
 import { logger } from '@/lib/utils/logger';
@@ -232,29 +231,26 @@ export function useProductEditorTabLoader({
     [productId, isLoggedIn, isAdmin, applyHandlers, markTabLoaded, onLoadError],
   );
 
-  const loadBackgroundSections = useCallback(
-    (targetProductId: string) => {
-      let index = 0;
+  const loadBackgroundSections = useCallback(() => {
+    let index = 0;
 
-      const loadNext = (): void => {
-        if (index >= BACKGROUND_SECTIONS.length) {
-          window.setTimeout(() => {
-            void loadSection('pricing', { silent: true });
-          }, 150);
-          return;
-        }
+    const loadNext = (): void => {
+      if (index >= BACKGROUND_SECTIONS.length) {
+        window.setTimeout(() => {
+          void loadSection('pricing', { silent: true });
+        }, 150);
+        return;
+      }
 
-        const section = BACKGROUND_SECTIONS[index];
-        index += 1;
-        void loadSection(section, { silent: true }).finally(() => {
-          scheduleIdleWork(loadNext);
-        });
-      };
+      const section = BACKGROUND_SECTIONS[index];
+      index += 1;
+      void loadSection(section, { silent: true }).finally(() => {
+        scheduleIdleWork(loadNext);
+      });
+    };
 
-      scheduleIdleWork(loadNext);
-    },
-    [loadSection],
-  );
+    scheduleIdleWork(loadNext);
+  }, [loadSection]);
 
   useEffect(() => {
     if (!open || !productId || !isLoggedIn || !isAdmin) {
@@ -269,7 +265,7 @@ export function useProductEditorTabLoader({
     deferAfterPaint(() => {
       warmProductEditorReferenceData();
       void loadSection(PRODUCT_EDITOR_DEFAULT_TAB, { silent: true }).finally(() => {
-        loadBackgroundSections(productId);
+        loadBackgroundSections();
       });
     });
   }, [open, productId, isLoggedIn, isAdmin, loadSection, loadBackgroundSections]);
@@ -293,10 +289,6 @@ export function useProductEditorTabLoader({
       applyProductEditorSection(activeTab, cached, applyHandlers());
       markTabLoaded(activeTab);
       return;
-    }
-
-    if (activeTab === 'pricing') {
-      warmProductEditorPricingSection(productId);
     }
 
     void loadSection(activeTab);
