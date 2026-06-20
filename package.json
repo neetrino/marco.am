@@ -43,6 +43,7 @@
     "audit:plp-facets": "tsx src/scripts/audit-plp-attribute-facets.ts",
     "db:migrate:deploy": "node src/scripts/run-migrations.js",
     "check:perf-env": "node scripts/check-perf-env.mjs",
+    "check:perf-budget": "node scripts/check-perf-budget.mjs",
     "warm:home-cache": "node scripts/warm-home-cache.mjs"
   },
   "dependencies": {

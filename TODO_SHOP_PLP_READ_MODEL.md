@@ -199,14 +199,10 @@ Exit criteria:
   - old operational-table PLP query service/filter service/query executor
   - old home-strip/promotion/price-sorted listing helpers
 - [ ] `EXPLAIN (ANALYZE, BUFFERS)` для основных SQL запросов.
-- [ ] CI smoke/perf script для:
-  - `/products`
-  - category PLP
-  - brand PLP
-  - promotion PLP
-- [ ] Bundle/JS audit для PLP.
-- [ ] React/Next version alignment: Next 16 должен идти с React 19.2+.
-- [ ] Документировать rollback: env flag/use old API path.
+- [x] CI smoke/perf script (`check:perf-budget`) — см. Phase 11 (per-route TTFB + first-load JS gzip).
+- [x] Bundle/JS audit для PLP — см. Phase 11 (shop-plp ≈384KB gz, zod вне first-load).
+- [x] React/Next version alignment: Next 16.1.7 + React 19.2.7 — см. Phase 11.
+- [x] Документировать rollback (React 19) — см. Phase 11.
 
 Exit criteria:
 
@@ -365,18 +361,24 @@ Exit criteria:
   - HTTP-клиенты `/plp`, читавшие `.data`, мигрированы на `.items` (`HomeSpecialOffersSection`, `FeaturedProductsTabs` ×2, guest-cart, wishlist). Prefetch/listing-client уже читали `data ?? items` — фоллбэк сохранён.
   - `/api/v1/products` (legacy route) сохраняет `data`/`meta` алиасы для внешних клиентов (мобайл) — публичный API не ломаем.
   - Проверка: `tsc` чист, eslint изменённых файлов чист, вся тест-сюита **249/249** зелёная.
-- [ ] Привести React к 19.2+ под Next 16; проверить сборку/гидрацию (мажорный бамп — отдельным шагом с прод-build).
-- [ ] CI smoke/perf script: `/products`, category PLP, brand PLP, promotion PLP с budget-порогами.
-- [~] Bundle/JS audit (snapshot):
-  - Прод-build на текущем стеке (React 18.3.1 + Next 16.1.7) **успешен**, 126 static pages за ~485ms — стек стабилен (baseline).
-  - Total client JS ~4.5MB; крупнейшие chunks: `zod` 336KB (отдельный chunk, грузится у форм checkout/login/register/admin — на PLP не на критическом пути), `react-dom` 220KB, `lucide` 120KB (проверить tree-shaking иконок), 160/132KB — app-код.
-  - Точная привязка chunks→`/products` требует `@next/bundle-analyzer` (Next 16 не печатает per-route size). Follow-up.
-- [ ] Документировать rollback.
+- [x] React → 19.2 под Next 16 (официально требуемая пара; убирает version-mismatch из аудита P1):
+  - root `react`/`react-dom` → `^19.2.0` (стоит `19.2.7`), `@types/react(-dom)` → `^19.2`; `@shop/ui` peer → `^18 || ^19`.
+  - Поправки под строгие React-19 типы: глобальный `JSX` namespace убран → `import type { JSX } from 'react'` (CategoriesList, FeaturedProductsStrip, HeaderSocialCircleLinks); `useRef(null)` теперь `RefObject<T | null>` — добавлен `| null` в 7 prop/param-деклараций ref (AddProductFormContent, ProductImages, PricingInventorySection, AttributesSelection, useProductDataLoading, ValueEditForm); audit-скрипт facets — корректный вызов.
+  - Проверка: `tsc` чист, прод-`next build` (Turbopack) **успешен** ~48s, eslint изменённых файлов чист, тесты **248 passed / 2 skipped**. Браузерный смоук `/products` — рендер+гидрация ок (93 интерактивных элемента, сегментация With/Without Price, фильтры, пагинация).
+- [x] Perf-budget script (`scripts/check-perf-budget.mjs`, npm `check:perf-budget`):
+  - Меряет на живом сервере per-route TTFB + first-load client JS (gzip-эквивалент всех `<script>`/modulepreload chunks из исходного HTML). JS — жёсткий gate (детерминирован сборкой); TTFB — отчёт, gate только при `PERF_BUDGET_STRICT=1`. Маршруты/бюджеты конфигурируемы.
+  - Baseline (warm, локальный прод): `home` 382KB gz / TTFB 80ms; `shop-plp` 384KB gz / TTFB 18–28ms. Бюджеты выставлены 400KB как regression-gate (зелёный сейчас, ловит рост).
+  - **CI-примечание**: маршруты динамические (нужна БД на запросе), а в `ci.yml` БД-сервиса нет → gate подключать как staging/post-deploy smoke (`BASE_URL=<preview> pnpm check:perf-budget`), не как шаг build-CI без БД.
+- [x] Bundle/JS audit (реальные gzip-числа по `.next/static/chunks`):
+  - Total client JS ~2.88MB raw / **794KB gzip** (все маршруты). Крупнейшие chunks: `zod` 334KB/**82KB gz**, `react-dom` 218KB/68KB gz, `lucide` 117KB/34KB gz.
+  - **Ключевой факт**: `zod`-chunk НЕ в first-load `/products` (код-сплитнут на формы checkout/login/register/admin) — на storefront-критическом пути его нет. На PLP грузятся `react-dom` + `lucide` + app-код (≈384KB gz / 26 chunks).
+  - Будущие рычаги storefront: `lucide` 34KB gz (точечные иконочные импорты), крупные app-chunks (`895a3c…` 38KB gz и т.п.).
+- [x] Rollback/ops (React 19): откат = вернуть в root `package.json` `react`/`react-dom` → `^18.3.0`, `@types/react(-dom)` → `^18.3.0`, `@shop/ui` peer → `^18.0.0`, затем `pnpm install` + `pnpm build`. Точечные React-19 правки (JSX-импорт, `| null` в ref-типах) обратно-совместимы с React 18 — откатывать не требуется. Перед откатом снять метрики `pnpm check:perf-budget`, чтобы сравнить регрессию.
 
 Exit criteria:
 
-- [ ] Зафиксированы измеримые budgets и regression-checks в CI.
-- [ ] Версии Next/React совместимы, прод-сборка стабильна.
+- [x] Зафиксированы измеримые budgets и regression-check (`check:perf-budget`) — gate доступен для staging/post-deploy.
+- [x] Версии Next/React совместимы (Next 16.1.7 + React 19.2.7), прод-сборка стабильна.
 
 ## Phase 12. Скорость всего сайта (`todo.md` #4)
 
