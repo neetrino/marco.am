@@ -53,10 +53,6 @@ function readManifest() {
   return JSON.parse(fs.readFileSync(MANIFEST_PATH, "utf8"));
 }
 
-function isSyntheticSku(sku) {
-  return typeof sku === "string" && sku.startsWith("MARCO-");
-}
-
 async function unpublishProducts(productIds) {
   if (productIds.length === 0) return 0;
   const result = await prisma.product.updateMany({

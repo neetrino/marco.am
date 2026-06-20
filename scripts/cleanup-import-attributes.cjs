@@ -20,17 +20,6 @@ const { PrismaClient } = require(path.join(
 const MIN_PRODUCTS_FOR_FILTERABLE = 3;
 const TEMP_KEY_PREFIX = '__cleanup_empty_key__';
 
-function toAsciiSlug(value, fallbackPrefix) {
-  const slug = String(value || '')
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 80);
-  return slug || fallbackPrefix;
-}
-
 async function countProductsForAttribute(prisma, attributeId) {
   return prisma.product.count({
     where: {
