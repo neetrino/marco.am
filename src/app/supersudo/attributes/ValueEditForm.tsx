@@ -13,7 +13,7 @@ interface ValueEditFormProps {
   editingImageUrl: string | null;
   savingValue: boolean;
   imageUploading: boolean;
-  fileInputRef: React.RefObject<HTMLInputElement>;
+  fileInputRef: React.RefObject<HTMLInputElement | null>;
   onLabelChange: (label: string) => void;
   onColorsChange: (colors: string[]) => void;
   onImageUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;

@@ -11,7 +11,7 @@ interface AttributesSelectionProps {
   selectedAttributesForVariants: Set<string>;
   selectedAttributeValueIds: Record<string, string[]>;
   attributesDropdownOpen: boolean;
-  attributesDropdownRef: RefObject<HTMLDivElement>;
+  attributesDropdownRef: RefObject<HTMLDivElement | null>;
   onAttributesDropdownToggle: () => void;
   onAttributeToggle: (attributeId: string, checked: boolean) => void;
   onAttributeRemove: (attributeId: string) => void;

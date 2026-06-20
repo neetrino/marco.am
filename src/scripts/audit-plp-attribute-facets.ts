@@ -22,7 +22,7 @@ async function main(): Promise<void> {
 
   const [attrCount, facets, attributeRows] = await Promise.all([
     db.attribute.count(),
-    aggregateProductsPlpFacets({ lang: 'hy', category, page: 1, pageSize: 24 }),
+    aggregateProductsPlpFacets({ lang: 'hy', category }),
     db.attribute.findMany({
       orderBy: { key: 'asc' },
       select: {

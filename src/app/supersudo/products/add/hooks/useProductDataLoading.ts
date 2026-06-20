@@ -15,7 +15,7 @@ interface UseProductDataLoadingProps {
   setDefaultCurrency: (currency: CurrencyCode) => void;
   attributesDropdownOpen: boolean;
   setAttributesDropdownOpen: (open: boolean) => void;
-  attributesDropdownRef: React.RefObject<HTMLDivElement>;
+  attributesDropdownRef: React.RefObject<HTMLDivElement | null>;
 }
 
 export function useProductDataLoading({

@@ -28,7 +28,7 @@ import { PricingInventorySection } from './PricingInventorySection';
 
 interface AddProductFormContentProps {
   formId: string;
-  scrollRef: React.RefObject<HTMLDivElement>;
+  scrollRef: React.RefObject<HTMLDivElement | null>;
   onBodyScroll: () => void;
   activeTab: ProductEditorTabId;
   visitedTabs: Set<ProductEditorTabId>;
@@ -72,8 +72,8 @@ interface AddProductFormContentProps {
   attributesDropdownOpen: boolean;
   generatedVariants: GeneratedVariant[];
   hasVariantsToLoad: boolean;
-  fileInputRef: React.RefObject<HTMLInputElement>;
-  attributesDropdownRef: React.RefObject<HTMLDivElement>;
+  fileInputRef: React.RefObject<HTMLInputElement | null>;
+  attributesDropdownRef: React.RefObject<HTMLDivElement | null>;
   variantImageInputRefs: React.MutableRefObject<Record<string, HTMLInputElement | null>>;
   onDescriptionChange: (entries: ProductDescriptionEntry[]) => void;
   onProductTypeChange: (type: 'simple' | 'variable') => void;
