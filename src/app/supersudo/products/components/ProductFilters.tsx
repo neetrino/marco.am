@@ -180,7 +180,7 @@ export function ProductFilters({
               </div>
             </div>
 
-            <div className="grid gap-4 p-4 sm:grid-cols-2 sm:p-5">
+            <div className="grid gap-4 p-4 sm:grid-cols-[7fr_3fr] sm:p-5">
               <div className="min-w-0">
                 <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
                   {t('admin.products.filterByCategory')}
@@ -205,10 +205,6 @@ export function ProductFilters({
               </div>
 
               <div className="flex min-w-0 flex-col gap-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  {t('admin.products.filtersTitle')}
-                </p>
-
                 <div>
                   <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
                     {t('admin.products.filterByStock')}
