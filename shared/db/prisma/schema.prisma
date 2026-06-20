@@ -392,6 +392,7 @@ model ProductListingRow {
   compareAtPrice             Float?
   originalPrice              Float?
   priceSort                  Float    @default(0)
+  hasPrice                   Boolean  @default(false)
   discountPercent            Int      @default(0)
   isSpecialPrice             Boolean  @default(false)
   defaultVariantId           String?
@@ -423,6 +424,7 @@ model ProductListingRow {
   @@index([locale, brandId])
   @@index([locale, brandSlug])
   @@index([locale, priceSort])
+  @@index([locale, hasPrice, productCreatedAt(sort: Desc)])
   @@index([locale, discountPercent(sort: Desc), productCreatedAt(sort: Desc)])
   @@index([categoryIds], type: Gin)
   @@index([categorySlugs], type: Gin)

@@ -407,6 +407,7 @@ export function buildProductListingRowsForLocales(args: {
         compareAtPrice: pricing.compareAtPrice,
         originalPrice: pricing.oldPrice,
         priceSort: pricing.currentPrice,
+        hasPrice: pricing.currentPrice > 0,
         discountPercent: pricing.discountPercent ?? 0,
         isSpecialPrice: pricing.isSpecialPrice,
         defaultVariantId: variant?.id ?? null,

@@ -221,3 +221,159 @@ Exit criteria:
 - [ ] Phase 5 mostly complete: listing and filters sidebar switched; remaining browser QA for pagination/selected/empty states.
 - [x] Phase 6 baseline complete: product/variant/brand/category/attribute/discount write hooks подключены; осталась optimization follow-up для non-blocking incremental rebuild.
 - [ ] Phase 7 in progress: legacy PLP/filter/listing cleanup done; remaining perf/SQL/CI/bundle tasks open.
+
+---
+
+# Часть 2. Форвард-план после QA-аудита (2026-06-20)
+
+Источники: QA-аудит read-model + бизнес-заметки `todo.md` (4 пункта). Эта часть фиксирует, что и в каком порядке доделывать. Реализация по фазам строго сверху вниз; каждая фаза закрывается только после тестов и runtime-замеров.
+
+## Связь требований и фаз
+
+| Откуда | Требование | Где решается |
+|---|---|---|
+| Аудит P0 #1 | Фасеты для brand/price/search/комбинаций показывают глобальные counts, не совпадающие с листингом | Phase 8 |
+| `todo.md` #3 | Фильтры должны показывать только то, что применимо к товарам выбранной категории | Phase 8 + Phase 9 |
+| `todo.md` #2 | Категории в сайдбаре всегда видимы и переключаемы, не скрываются при выборе | Phase 8 (drill-down semantics) + Phase 9 (UI) |
+| `todo.md` #1 | With/Without price не должен давать пустую категорию; сегментировать, а не жёстко исключать | Phase 9 |
+| Аудит P0 #2 | Полный нетранзакционный rebuild фасетов на admin-write (окно пустых фасетов, блокировка запроса) | Phase 10 |
+| Аудит P1 | Категорийный фильтр ходит в operational tables на hot-path | Phase 10 |
+| Аудит P1 | Next 16 + React 18.3 несовместимы | Phase 11 |
+| Аудит P2 | Нет EXPLAIN, CI perf, дублирование `items/data` в payload | Phase 11 |
+| `todo.md` #4 | Ускорить весь сайт: приоритет — главная страница и PDP | Phase 12 |
+
+## Рекомендованный порядок и обоснование
+
+1. **Сначала архитектурный фикс фасетов (Phase 8), а не быстрые UX-правки.** Причина: `todo.md` #3 и #2 невозможно сделать корректно поверх текущего предрасчёта scope — нужны корректные scoped-counts для произвольных комбинаций. Live-агрегация закрывает и баг аудита P0 #1, и требование #3 одной заменой.
+2. Затем **UX PLP (Phase 9)** — #1/#2/#3 как видимое поведение поверх корректных фасетов.
+3. Затем **упрощение/харднинг write-side (Phase 10)** — после перехода на live-агрегацию вся тяжёлая rebuild-машина фасетов удаляется, write становится дешёвым.
+4. Затем **perf-харднинг (Phase 11)** — EXPLAIN, версии, CI, payload.
+5. В конце — **скорость всего сайта (Phase 12)**: главная + PDP.
+
+Альтернатива: сделать дешёвые #1/#2 раньше Phase 8. Не рекомендую — #2 (категории не скрываются) корректно завязано на drill-down семантику фасетов из Phase 8, иначе придётся переписывать дважды.
+
+---
+
+## Phase 8. Фасеты через live-агрегацию (архитектурный фикс)
+
+Цель: убрать предрасчёт `product_facet_counts` как источник, считать фасеты на лету агрегатом по узкой `product_listing_rows` с теми же фильтрами, что и листинг. Это даёт всегда-корректные counts для любых комбинаций и удешевляет запись.
+
+- [x] Реализовать SQL-агрегацию фасетов по `product_listing_rows` (`$queryRaw` + `Prisma.sql`/`Prisma.join`):
+  - brand: `GROUP BY brandSlug` + meta
+  - category: `unnest(categoryIds)` → (categoryId, productId) пары + ancestor rollup distinct-продуктов в JS
+  - color: `jsonb_array_elements(colors) GROUP BY lower(value)` (label/imageUrl/hex из JSON)
+  - size: `unnest(sizeTokens) GROUP BY`
+  - attribute: `jsonb_array_elements(technicalSpecs) GROUP BY key,value` (с label/type)
+  - price: `min/max(priceSort)`
+- [x] Реализовать drill-down семантику: при подсчёте counts конкретной фасеты её собственное измерение исключается из WHERE (`buildFacetWhere(except)`); selected spec-keys считаются отдельными запросами с исключением своей группы.
+- [x] Категорийная фасета считается без применения выбранной категории к самой себе → все категории остаются видимы (вход для `todo.md` #2).
+- [x] Прочие фасеты считаются в scope выбранной категории/фильтров → показываются только применимые (вход для `todo.md` #3).
+- [x] `getProductsPlpReadModelFilters` переключён на live-агрегацию; `fetchFilters`/`resolveFacetScope`/чтение `product_facet_counts` удалены из read-path.
+- [x] `EXPLAIN (ANALYZE, BUFFERS)` для brand facet: index scan по `product_listing_rows_locale_priceSort_idx`, execution `2.297 ms`, без seq scan.
+- [x] Тесты на drill-down исключение измерений и ancestor-rollup (`product-facet-live.test.ts`).
+
+Файлы:
+
+- `src/lib/read-model/product-facet-live-where.ts` — нормализация фильтров + `buildFacetWhere(except)`.
+- `src/lib/read-model/product-facet-live-aggregation.ts` — facet-запросы + сборка `ProductsFiltersData` + `rollupCategoryCounts`.
+- `src/lib/read-model/product-plp-filter-parse.ts` — общие парс-хелперы (DRY с листингом).
+- `src/lib/read-model/products-plp-read-model-types.ts` — общие типы (разрыв циклического импорта).
+
+Замеры (local → remote Neon, cold; DB-side aggregation ~2-5 ms, остальное — сетевой RTT и резолв slug категории через operational tables, см. Phase 10):
+
+- default facets: `2416 ms` wall (brands=57, categories=3 root, colors=10, attrs=40, price 381-1197000).
+- category facets (`furniture-making-accessories`): `4352 ms` wall, сужено до brands=1/colors=0/attrs=2 (drill-down подтверждён). Из них ~2.2s — `findCategoryBySlug` по operational tables.
+- category+brand combined payload: `1349 ms` wall.
+
+Exit criteria:
+
+- [x] Counts сайдбара сужаются под активные фильтры (drill-down), не глобальные.
+- [ ] Facet-агрегация p95 на prod-like (co-located Neon, warm pool) <= 50 ms — проверить после деплоя/прогретого пула; DB-side уже ~2-5 ms.
+- [x] Планы запросов используют индексы без полного seq scan (подтверждено для brand facet).
+
+Остаток (переходит в Phase 10): резолв slug категории через operational tables на hot-path даёт основной wall-clock; денормализовать.
+
+## Phase 9. PLP UX: price-presence, категории, контекстные фильтры
+
+- [x] `todo.md` #1 — With/Without price как сегментация, а не жёсткое исключение:
+  - реализовано через денормализованную колонку `hasPrice` + сортировка `hasPrice` первым ключом (`with` → priced first, `without` → unpriced first), а не вторым запросом
+  - жёсткий price-presence фильтр убран из listing `buildWhere`
+  - категория с unpriced товарами больше не пустая
+- [x] `todo.md` #2 — блок категорий в сайдбаре:
+  - по факту закрыт Phase 8: drill-down исключает категорию из собственного фасета → соседние категории сохраняют counts и не пропадают (раньше scope-прун скрывал их)
+  - price-presence убран из base-условий фасетов → категории с unpriced товарами больше не получают count 0 и не прячутся
+  - `CategoryFilter` уже всегда рендерит полный список и лишь отмечает выбранную (схлопывания при выборе не было)
+- [x] `todo.md` #3 — фильтры зависят от категории:
+  - закрыт Phase 8: фасеты brand/color/size/attribute считаются в scope выбранной категории (drill-down)
+  - filter-компоненты уже возвращают `null` при пустом фасете (`BrandFilter`, и т.д.) и скрывают группы без значений (`ShopAttributeFacetsFilter`)
+- [x] Сохранить optimistic UI и session cache при переключениях (не затронуто).
+- [x] Browser QA (закрывает остаток Phase 5): pagination, counts, selected filters, empty states — все 5 проверок PASS.
+
+Изменения данных/схемы:
+
+- Migration `20260620120000_storefront_read_model_has_price`: `hasPrice BOOLEAN` + backfill `("priceSort" > 0)` + index `(locale, hasPrice, productCreatedAt desc)`. Применена к dev DB, client перегенерирован. Полный rebuild не требовался (backfill в миграции).
+- `product-listing-row-builder.ts`: пишет `hasPrice`.
+- Facets: `pricePresence` убран из base; price range считается по `priceSort > 0`.
+
+Фикс Prisma raw-query (выявлен в browser QA, не воспроизводился под `tsx`):
+
+- Расширенный клиент (`shared/db/client.ts` `$extends`/`$allOperations`) несовместим с `$queryRaw(Prisma.sql`...`)` (→ «Argument query is missing»), а tagged-форма не инлайнит вложенные `Prisma.sql` (→ `syntax error at "$1"`).
+- Решение: композиция остаётся на `Prisma.sql`/`Prisma.join`, выполнение — через `$queryRawUnsafe(query.text, ...query.values)` (хелпер `runFacetQuery`). Это совпадает с уже принятым в проекте паттерном (`admin-attributes-write/migration.ts`).
+
+Проверка:
+
+- dev DB (en): `hasPrice` priced=1164/unpriced=755; `with` → priced первыми; `without` → unpriced первыми; категория `furniture-making-accessories` (`with`) → priced первым, затем unpriced (не пустая).
+- API: `/api/v1/products/plp?includeFilters=1` → 200; default brands=81/colors=10/attrs=40, категория → brands=25/colors=0/attrs=2 (drill-down).
+- Browser QA (все PASS): сегментация, категории видимы при выборе, Furniture сужает фильтры до 1 бренда (Colors/Attributes скрыты), counts/selected/Clear, pagination.
+
+Exit criteria:
+
+- [x] Вход в непустую категорию никогда не даёт пустой экран из-за price-presence.
+- [x] Категории не исчезают при выборе.
+- [x] В категории видны только применимые фильтры; counts корректны (drill-down).
+- [x] Подтверждено в браузере (pagination/selected/empty states).
+
+## Phase 10. Write-side: упрощение и харднинг
+
+- [ ] Удалить rebuild-машину фасетов из write-path (после Phase 8 она не нужна):
+  - убрать `rebuildProductFacetCountsFromReadModel` из admin-хуков
+  - admin-write оставляет только per-product/affected listing sync (транзакционный)
+- [ ] Если где-то нужен тяжёлый пересчёт листинга (категория/бренд массово) — вынести в durable background job, не блокировать admin-ответ.
+- [ ] Денормализовать категорийное дерево, чтобы убрать operational-запросы (`findCategoryBySlug` + `getAllChildCategoryIds`) из hot-path:
+  - хранить descendant-ids/slug-пути в проекции или в отдельной materialized category-map
+- [ ] Снять таблицу `product_facet_counts` с hot-path (оставить только если решим как опциональный кэш; иначе удалить модель и миграцию).
+
+Exit criteria:
+
+- Admin-write (1 товар) обновляет projection за сотни мс, без полного rebuild.
+- Категорийный PLP-запрос не читает operational `categories` на каждый запрос.
+- Нет окна, в котором storefront видит пустые фасеты.
+
+## Phase 11. Perf-харднинг (остаток Phase 7)
+
+- [ ] Привести React к 19.2+ под Next 16; проверить сборку/гидрацию.
+- [ ] CI smoke/perf script: `/products`, category PLP, brand PLP, promotion PLP с budget-порогами.
+- [ ] Bundle/JS audit для PLP.
+- [ ] Схлопнуть дублирование payload `items/pagination` vs `data/meta` в одну форму.
+- [ ] Документировать rollback.
+
+Exit criteria:
+
+- Зафиксированы измеримые budgets и regression-checks в CI.
+- Версии Next/React совместимы, прод-сборка стабильна.
+
+## Phase 12. Скорость всего сайта (`todo.md` #4)
+
+- [ ] Снять baseline (TTFB/LCP/INP, payload, DB-времена) для главной и PDP.
+- [ ] Главная страница: найти архитектурные и DB-узкие места; перевести горячие выборки на read-model/проекции, где оправдано.
+- [ ] PDP: убрать тяжёлые operational joins из горячего рендера; рассмотреть PDP-проекцию или точечные индексы по результатам EXPLAIN.
+- [ ] Применить общий паттерн (узкая проекция + индексы + минимум client JS) к остальным медленным маршрутам.
+
+Exit criteria:
+
+- Главная и PDP открываются в пределах согласованного budget на прогретом соединении.
+- Есть baseline → after таблица по каждому маршруту.
+
+## Примечание к старым фазам
+
+- Phase 3 unchecked-пункты (brand/promotion scoped precomputed facets) **намеренно отменяются**: предрасчёт scope заменяется live-агрегацией (Phase 8), поэтому материализовать дополнительные scope не требуется.
