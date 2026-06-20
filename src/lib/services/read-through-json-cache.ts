@@ -79,10 +79,13 @@ export async function invalidateProductPdpCache(): Promise<void> {
   await cacheService.deletePattern(PRODUCTS_PDP_DETAIL_PATTERN);
 }
 
-/** Clear every storefront product read cache (PLP + PDP) after a product projection change. */
+/** Clear every storefront product read cache (PLP + PDP + brand directory) after a product projection change. */
 export async function invalidateProductReadCaches(): Promise<void> {
   await invalidateProductsPlpCache();
   await invalidateProductPdpCache();
+  // Brand directory membership ("brands with shop-visible products") derives from the
+  // product projection, so it must refresh when products change.
+  await invalidateHomeBrandPartnersPublicCache();
 }
 
 export async function invalidateBannersPublicCache(): Promise<void> {
