@@ -443,7 +443,12 @@ class OrdersService {
         customerPhone: order.order.customerPhone ?? undefined,
       });
 
-      void invalidateAdminAnalyticsCache();
+      void invalidateAdminAnalyticsCache().catch((cacheError: unknown) => {
+        logger.error('Failed to invalidate admin analytics cache after checkout', {
+          orderId: order.order.id,
+          error: cacheError,
+        });
+      });
 
       // Return order and payment info
       return {

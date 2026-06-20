@@ -126,7 +126,12 @@ async function persistOrderUpdate(
     });
   });
 
-  void invalidateAdminAnalyticsCache();
+  void invalidateAdminAnalyticsCache().catch((cacheError: unknown) => {
+    logger.error('Failed to invalidate admin analytics cache after order update', {
+      orderId,
+      error: cacheError,
+    });
+  });
 
   return getOrderById(orderId);
 }
@@ -183,6 +188,12 @@ export async function deleteOrder(orderId: string) {
         where: { id: orderId },
       });
       logger.info('Order deleted successfully', { orderId, orderNumber: existing.number });
+      void invalidateAdminAnalyticsCache().catch((cacheError: unknown) => {
+        logger.error('Failed to invalidate admin analytics cache after order delete', {
+          orderId,
+          error: cacheError,
+        });
+      });
     } catch (deleteError: unknown) {
       const errorMessage = deleteError instanceof Error ? deleteError.message : String(deleteError);
       const errorCode = deleteError && typeof deleteError === 'object' && 'code' in deleteError ? String(deleteError.code) : '';

@@ -3,16 +3,17 @@ import { getProductDiscountsList } from "@/lib/services/admin/admin-products-rea
 import { adminBrandsService } from "@/lib/services/admin/admin-brands.service";
 import { adminCategoriesService } from "@/lib/services/admin/admin-categories.service";
 import { adminSettingsService } from "@/lib/services/admin/admin-settings.service";
+import { logger } from "@/lib/utils/logger";
 
 export const ADMIN_BOOTSTRAP_PATHS = ["dashboard", "quick-settings"] as const;
 
 export type AdminBootstrapPath = (typeof ADMIN_BOOTSTRAP_PATHS)[number];
 
 export type AdminDashboardBootstrapPayload = {
-  stats: Awaited<ReturnType<typeof adminStatsService.getStats>>;
+  stats: Awaited<ReturnType<typeof adminStatsService.getStats>> | null;
   recentOrders: { data: Awaited<ReturnType<typeof adminStatsService.getRecentOrders>> };
   topProducts: { data: Awaited<ReturnType<typeof adminStatsService.getTopProducts>> };
-  userActivity: { data: Awaited<ReturnType<typeof adminStatsService.getUserActivity>> };
+  userActivity: { data: Awaited<ReturnType<typeof adminStatsService.getUserActivity>> | null };
 };
 
 export type AdminQuickSettingsBootstrapPayload = {
@@ -54,8 +55,16 @@ export function parseAdminBootstrapPaths(raw: string | null): AdminBootstrapPath
   return paths;
 }
 
+function settledValue<T>(result: PromiseSettledResult<T>, fallback: T, label: string): T {
+  if (result.status === "fulfilled") {
+    return result.value;
+  }
+  logger.error("Admin dashboard bootstrap section failed", { section: label, reason: result.reason });
+  return fallback;
+}
+
 async function buildDashboardBootstrap(): Promise<AdminDashboardBootstrapPayload> {
-  const [stats, recentOrders, topProducts, userActivity] = await Promise.all([
+  const [stats, recentOrders, topProducts, userActivity] = await Promise.allSettled([
     adminStatsService.getStats(),
     adminStatsService.getRecentOrders(5),
     adminStatsService.getTopProducts(5),
@@ -63,10 +72,10 @@ async function buildDashboardBootstrap(): Promise<AdminDashboardBootstrapPayload
   ]);
 
   return {
-    stats,
-    recentOrders: { data: recentOrders },
-    topProducts: { data: topProducts },
-    userActivity: { data: userActivity },
+    stats: settledValue(stats, null, "stats"),
+    recentOrders: { data: settledValue(recentOrders, [], "recentOrders") },
+    topProducts: { data: settledValue(topProducts, [], "topProducts") },
+    userActivity: { data: settledValue(userActivity, null, "userActivity") },
   };
 }
 

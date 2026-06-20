@@ -35,7 +35,7 @@ function dashboardPayloadFromBootstrap(
   bootstrap: AdminDashboardBootstrapPayload,
 ): AdminDashboardCachePayload {
   return {
-    stats: bootstrap.stats as AdminDashboardStats,
+    stats: (bootstrap.stats ?? null) as AdminDashboardStats | null,
     recentOrders: (bootstrap.recentOrders.data ?? []) as AdminDashboardRecentOrder[],
     topProducts: (bootstrap.topProducts.data ?? []) as AdminDashboardTopProduct[],
     userActivity: (bootstrap.userActivity.data ?? null) as AdminDashboardUserActivity | null,
