@@ -19,9 +19,6 @@ type CategoryLocale = 'hy' | 'en' | 'ru';
 const FIELD_CLASS =
   'admin-field w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-marco-yellow focus:outline-none focus:ring-2 focus:ring-marco-yellow/30';
 
-const CATALOG_LIST_CLASS =
-  'min-h-[24rem] max-h-[32rem] overflow-y-auto rounded-xl border border-slate-200/80 bg-slate-50/50 p-2';
-
 function normalizeCategoryLocale(locale: string): CategoryLocale {
   if (locale === 'hy' || locale === 'en' || locale === 'ru') {
     return locale;
@@ -153,7 +150,7 @@ export function CatalogCategorySection({
     return (
       <li key={node.id}>
         <div
-          className="flex items-center gap-1 rounded-lg py-1.5 transition-colors hover:bg-white"
+          className="flex items-center gap-1 rounded-lg py-1.5 transition-colors hover:bg-slate-50"
           style={{ paddingLeft: `${depth * INDENT_PER_LEVEL_PX}px` }}
         >
           {hasChildren && !isSearching ? (
@@ -221,16 +218,16 @@ export function CatalogCategorySection({
     : treeRoots;
 
   return (
-    <section className="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
-      <div className="border-b border-slate-200/70 px-4 py-4 sm:px-5 sm:py-5">
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="shrink-0">
         <h3 className="text-sm font-semibold text-marco-black">{t('admin.products.add.categories')}</h3>
         <p className="mt-1 text-xs leading-relaxed text-slate-500">
           {t('admin.products.add.catalogCategoriesHint')}
         </p>
       </div>
 
-      <div className="flex flex-1 flex-col space-y-4 px-4 py-4 sm:px-5 sm:py-5">
-        <div className="relative">
+      <div className="flex min-h-0 flex-1 flex-col gap-3 pt-4">
+        <div className="relative shrink-0">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <input
             type="search"
@@ -242,7 +239,7 @@ export function CatalogCategorySection({
         </div>
 
         {selectedCategories.length > 0 ? (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex shrink-0 flex-wrap gap-2">
             {selectedCategories.map((category) => {
               const isPrimary = primaryCategoryId === category.id;
               return (
@@ -282,7 +279,7 @@ export function CatalogCategorySection({
           </div>
         ) : null}
 
-        <div className={CATALOG_LIST_CLASS}>
+        <div className="min-h-0 flex-1 overflow-y-auto">
           {visibleRoots.length === 0 ? (
             <p className="px-2 py-6 text-center text-sm text-slate-500">
               {t('admin.products.add.catalogNoCategoriesFound')}
@@ -294,6 +291,6 @@ export function CatalogCategorySection({
           )}
         </div>
       </div>
-    </section>
+    </div>
   );
 }

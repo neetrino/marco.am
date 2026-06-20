@@ -107,11 +107,13 @@ function TabPanel({
   tabId,
   activeTab,
   visited,
+  fillHeight = false,
   children,
 }: {
   tabId: ProductEditorTabId;
   activeTab: ProductEditorTabId;
   visited: boolean;
+  fillHeight?: boolean;
   children: React.ReactNode;
 }) {
   if (!visited) {
@@ -119,7 +121,11 @@ function TabPanel({
   }
 
   return (
-    <div role="tabpanel" hidden={activeTab !== tabId} className={`w-full min-w-0 ${activeTab === tabId ? '' : 'hidden'}`}>
+    <div
+      role="tabpanel"
+      hidden={activeTab !== tabId}
+      className={`w-full min-w-0 ${fillHeight ? 'flex min-h-0 flex-1 flex-col' : ''} ${activeTab === tabId ? '' : 'hidden'}`}
+    >
       {children}
     </div>
   );
@@ -211,8 +217,10 @@ export function AddProductFormContent({
 
       <div
         ref={scrollRef}
-        onScroll={onBodyScroll}
-        className="min-h-0 flex-1 overflow-y-auto px-5 py-4"
+        onScroll={activeTab === 'catalog' ? undefined : onBodyScroll}
+        className={`min-h-0 flex-1 px-5 py-4 ${
+          activeTab === 'catalog' ? 'flex flex-col overflow-hidden' : 'overflow-y-auto'
+        }`}
       >
         {loadingTab === activeTab ? (
           <div className="flex items-center justify-center py-16">
@@ -220,7 +228,11 @@ export function AddProductFormContent({
           </div>
         ) : null}
 
-        <form id={formId} onSubmit={handleSubmit} className={`w-full min-w-0 ${loadingTab === activeTab ? 'hidden' : ''}`}>
+        <form
+          id={formId}
+          onSubmit={handleSubmit}
+          className={`w-full min-w-0 ${activeTab === 'catalog' ? 'flex min-h-0 flex-1 flex-col' : ''} ${loadingTab === activeTab ? 'hidden' : ''}`}
+        >
           <TabPanel tabId="general" activeTab={activeTab} visited={visitedTabs.has('general')}>
             <ProductGeneralTab
               productClass={formData.productClass}
@@ -254,7 +266,7 @@ export function AddProductFormContent({
             />
           </TabPanel>
 
-          <TabPanel tabId="catalog" activeTab={activeTab} visited={visitedTabs.has('catalog')}>
+          <TabPanel tabId="catalog" activeTab={activeTab} visited={visitedTabs.has('catalog')} fillHeight>
             <ProductCatalogTab
               categories={categories}
               brands={brands}
