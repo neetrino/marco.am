@@ -3,9 +3,11 @@ import { getUserActivity } from "./admin-stats/user-activity";
 import { getRecentOrders } from "./admin-stats/recent-orders";
 import { getTopProducts } from "./admin-stats/top-products";
 import { getActivity } from "./admin-stats/activity";
-import { getAnalytics } from "./admin-stats/analytics";
+import {
+  getCachedAdminAnalytics,
+  getCachedAdminOrderStatusBreakdown,
+} from "./admin-stats/admin-analytics-cache";
 import { getStockAnalytics } from "./admin-stats/stock-analytics";
-import { getOrderStatusBreakdown } from "./admin-stats/order-status-breakdown";
 
 /**
  * Service for admin statistics operations
@@ -50,7 +52,7 @@ class AdminStatsService {
    * Get analytics data
    */
   async getAnalytics(period: string = 'week', startDate?: string, endDate?: string) {
-    return getAnalytics(period, startDate, endDate);
+    return getCachedAdminAnalytics(period, startDate, endDate);
   }
 
   /**
@@ -69,7 +71,7 @@ class AdminStatsService {
    * Order counts by status for today, last 7 days, last 30 days (createdAt window).
    */
   async getOrderStatusBreakdown() {
-    return getOrderStatusBreakdown();
+    return getCachedAdminOrderStatusBreakdown();
   }
 }
 

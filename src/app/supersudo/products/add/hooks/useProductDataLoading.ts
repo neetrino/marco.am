@@ -1,7 +1,12 @@
 import { useEffect, useRef } from 'react';
-import { apiClient } from '@/lib/api-client';
 import { CURRENCIES, type CurrencyCode } from '@/lib/currency';
 import { getStoredLanguage } from '@/lib/language';
+import {
+  fetchAdminAttributes,
+  fetchAdminBrands,
+  fetchAdminCategoriesLite,
+  fetchAdminSettings,
+} from '@/lib/admin/admin-reference-data-cache';
 import type { Brand, Category, Attribute } from '../types';
 import { logger } from '@/lib/utils/logger';
 import { findAttributeBySemanticKey } from '@/lib/attribute-keys';
@@ -58,8 +63,8 @@ export function useProductDataLoading({
 
     const loadDefaultCurrency = async () => {
       try {
-        const settingsRes = await apiClient.get<{ defaultCurrency?: string }>('/api/v1/supersudo/settings');
-        const currency = (settingsRes.defaultCurrency || 'AMD') as CurrencyCode;
+        const settings = await fetchAdminSettings<{ defaultCurrency?: string }>();
+        const currency = (settings.defaultCurrency || 'AMD') as CurrencyCode;
         if (currency in CURRENCIES) {
           setDefaultCurrency(currency);
           logger.devLog('✅ [ADMIN] Default currency loaded:', currency);
@@ -84,13 +89,11 @@ export function useProductDataLoading({
       try {
         logger.devLog('📥 [ADMIN] Fetching brands and categories...');
         const activeLocale = getStoredLanguage();
-        const [brandsRes, categoriesRes] = await Promise.all([
-          apiClient.get<{ data: Brand[] }>('/api/v1/supersudo/brands'),
-          apiClient.get<{ data: Category[] }>('/api/v1/supersudo/categories', {
-            params: { lang: activeLocale },
-          }),
+        const [brands, categoriesRes] = await Promise.all([
+          fetchAdminBrands<Brand>(),
+          fetchAdminCategoriesLite<Category>(activeLocale),
         ]);
-        setBrands(brandsRes.data || []);
+        setBrands(brands);
         setCategories(categoriesRes.data || []);
       } catch (err: unknown) {
         console.error('❌ [ADMIN] Error fetching catalog data:', err);
@@ -110,11 +113,11 @@ export function useProductDataLoading({
     const fetchAttributes = async () => {
       try {
         logger.devLog('📥 [ADMIN] Fetching attributes...');
-        const attributesRes = await apiClient.get<{ data: Attribute[] }>('/api/v1/supersudo/attributes');
-        setAttributes(attributesRes.data || []);
-        if (attributesRes.data && attributesRes.data.length > 0) {
-          const colorAttr = findAttributeBySemanticKey(attributesRes.data, 'color');
-          const sizeAttr = findAttributeBySemanticKey(attributesRes.data, 'size');
+        const attributesData = await fetchAdminAttributes<Attribute>();
+        setAttributes(attributesData);
+        if (attributesData.length > 0) {
+          const colorAttr = findAttributeBySemanticKey(attributesData, 'color');
+          const sizeAttr = findAttributeBySemanticKey(attributesData, 'size');
           if (!colorAttr) {
             console.warn('⚠️ [ADMIN] Color attribute not found in loaded attributes!');
           }

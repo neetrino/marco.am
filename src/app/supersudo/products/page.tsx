@@ -16,7 +16,7 @@ import { logger } from "@/lib/utils/logger";
 import {
   fetchAdminCategoriesLite,
   readAdminCategoriesCache,
-  warmAdminReferenceDataCaches,
+  warmAdminCategoriesCache,
 } from '@/lib/admin/admin-reference-data-cache';
 import {
   buildAdminProductsListCacheKey,
@@ -62,14 +62,14 @@ function ProductsPageContent() {
   const cachedCategories = readAdminCategoriesCache<Category>(activeLocale, {
     includeCounts: false,
   });
-  const hadProductsCacheRef = useRef(Boolean(defaultProductsCache));
-  const hadCategoriesCacheRef = useRef(Boolean(cachedCategories?.length));
+  const hadProductsCacheRef = useRef(defaultProductsCache !== null);
+  const hadCategoriesCacheRef = useRef(cachedCategories !== null);
   const [products, setProducts] = useState<Product[]>(defaultProductsCache?.data ?? []);
-  const [loading, setLoading] = useState(!hadProductsCacheRef.current);
+  const [loading, setLoading] = useState(defaultProductsCache === null);
   const [search, setSearch] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
   const [categories, setCategories] = useState<Category[]>(cachedCategories ?? []);
-  const [categoriesLoading, setCategoriesLoading] = useState(!hadCategoriesCacheRef.current);
+  const [categoriesLoading, setCategoriesLoading] = useState(cachedCategories === null);
   const [categoriesExpanded, setCategoriesExpanded] = useState(false);
   const [skuSearch, setSkuSearch] = useState('');
   const [stockFilter, setStockFilter] = useState<'all' | 'inStock' | 'outOfStock'>('all');
@@ -88,7 +88,7 @@ function ProductsPageContent() {
 
   // Initialize currency rates and listen for currency changes
   useEffect(() => {
-    warmAdminReferenceDataCaches(activeLocale);
+    warmAdminCategoriesCache(activeLocale);
   }, [activeLocale]);
 
   useEffect(() => {
@@ -176,16 +176,16 @@ function ProductsPageContent() {
       stockFilter,
     });
     const cached = readAdminSessionCache<AdminProductsCachePayload>(cacheKey, ADMIN_SESSION_CACHE_TTL_MS);
-    if (!options?.force && cached?.data?.length) {
-      setProducts(cached.data);
-      setMeta(cached.meta);
+    if (!options?.force && cached !== null) {
+      setProducts(cached.data ?? []);
+      setMeta(cached.meta ?? null);
       setLoading(false);
       hadProductsCacheRef.current = true;
       return;
     }
 
     try {
-      beginAdminDataFetch(Boolean(cached?.data?.length), setLoading);
+      beginAdminDataFetch(cached !== null, setLoading);
       const params: Record<string, string> = {
         page: page.toString(),
         limit: '20',

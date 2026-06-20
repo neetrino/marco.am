@@ -7,6 +7,7 @@ import { apiClient, getApiOrErrorMessage } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
 import { showPopupConfirm } from '@/components/popup-service';
 import { AdminPageLayout } from '../components/AdminPageLayout';
+import { DeliveryPageSkeleton } from '../components/AdminPageSkeletons';
 import { logger } from "@/lib/utils/logger";
 import { ADMIN_CACHE_KEYS } from '@/lib/admin/admin-cache-keys';
 import { beginAdminDataFetch } from '@/lib/admin/admin-fetch-helpers';
@@ -114,18 +115,21 @@ export default function DeliveryPage() {
     setLocations(updated);
   };
 
+  const currentPath = pathname || '/supersudo/delivery';
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600">{t('admin.common.loading')}</p>
-        </div>
-      </div>
+      <AdminPageLayout
+        currentPath={currentPath}
+        router={router}
+        t={t}
+        title={t('admin.delivery.title')}
+      >
+        <DeliveryPageSkeleton />
+      </AdminPageLayout>
     );
   }
 
-  const currentPath = pathname || '/supersudo/delivery';
   const formatAmd = (value: number) => new Intl.NumberFormat('en-US').format(value);
 
   return (

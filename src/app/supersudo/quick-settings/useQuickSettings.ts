@@ -5,13 +5,13 @@ import { apiClient, getApiOrErrorMessage } from '@/lib/api-client';
 import { logger } from '@/lib/utils/logger';
 import type { LanguageCode } from '@/lib/language';
 import { ADMIN_CACHE_KEYS, buildProductDiscountsCacheKey } from '@/lib/admin/admin-cache-keys';
-import { beginAdminDataFetch } from '@/lib/admin/admin-fetch-helpers';
-import { dedupedAdminRequest } from '@/lib/admin/admin-request-dedup';
+import {
+  fetchAdminQuickSettingsBootstrap,
+  mapQuickSettingsBootstrap,
+} from '@/lib/admin/admin-bootstrap-client';
 import {
   readAdminBrandsCache,
   readAdminCategoriesCache,
-  writeAdminBrandsCache,
-  writeAdminCategoriesCache,
 } from '@/lib/admin/admin-reference-data-cache';
 import {
   ADMIN_SESSION_CACHE_TTL_MS,
@@ -100,139 +100,84 @@ export function useQuickSettings({ activeLocale, t }: UseQuickSettingsParams) {
     );
   }, []);
 
-  const fetchSettings = useCallback(async (options?: { force?: boolean }) => {
-    const cached = readAdminSessionCache<SettingsPayload>(
+  const loadInitialPayload = useCallback(async () => {
+    const settingsCached = readAdminSessionCache<SettingsPayload>(
       ADMIN_CACHE_KEYS.settings,
       ADMIN_SESSION_CACHE_TTL_MS,
     );
-    if (!options?.force && cached !== null) {
-      applySettings(cached);
-      setDiscountLoading(false);
-      hadSettingsCacheRef.current = true;
+    const productsCached = readAdminSessionCache<ProductDiscountsPayload>(
+      productDiscountsCacheKey,
+      ADMIN_SESSION_CACHE_TTL_MS,
+    );
+    const categoriesCached = readAdminCategoriesCache<QuickSettingsCategory>(activeLocale, {
+      includeCounts: false,
+    });
+    const brandsCached = readAdminBrandsCache<QuickSettingsBrand>();
+
+    const needsBootstrap =
+      settingsCached === null ||
+      productsCached === null ||
+      categoriesCached === null ||
+      brandsCached === null;
+
+    if (!needsBootstrap) {
       return;
     }
 
+    if (settingsCached === null) {
+      setDiscountLoading(true);
+    }
+    if (productsCached === null) {
+      setProductsLoading(true);
+    }
+    if (categoriesCached === null) {
+      setCategoriesLoading(true);
+    }
+    if (brandsCached === null) {
+      setBrandsLoading(true);
+    }
+
     try {
-      beginAdminDataFetch(hadSettingsCacheRef.current, setDiscountLoading);
-      const settings = await dedupedAdminRequest(ADMIN_CACHE_KEYS.settings, () =>
-        apiClient.get<SettingsPayload>('/api/v1/supersudo/settings'),
-      );
-      applySettings(settings);
-      writeAdminSessionCache(ADMIN_CACHE_KEYS.settings, settings);
+      const bootstrap = await fetchAdminQuickSettingsBootstrap(activeLocale);
+      const mapped = mapQuickSettingsBootstrap(bootstrap);
+      applySettings(mapped.settings);
+      setCategories(mapped.categories);
+      setBrands(mapped.brands);
+      applyProductRows(mapped.products);
       hadSettingsCacheRef.current = true;
+      hadProductsCacheRef.current = true;
+      hadCategoriesCacheRef.current = true;
+      hadBrandsCacheRef.current = true;
     } catch (err: unknown) {
-      logger.error('Quick settings: settings fetch failed', { error: err });
+      logger.error('Quick settings: bootstrap fetch failed', { error: err });
       if (!hadSettingsCacheRef.current) {
         applySettings({});
       }
-    } finally {
-      setDiscountLoading(false);
-    }
-  }, [applySettings]);
-
-  const fetchProductDiscounts = useCallback(async (options?: { force?: boolean }) => {
-    const cacheKey = buildProductDiscountsCacheKey(activeLocale);
-    const cached = readAdminSessionCache<ProductDiscountsPayload>(
-      cacheKey,
-      ADMIN_SESSION_CACHE_TTL_MS,
-    );
-    if (!options?.force && cached !== null) {
-      applyProductRows(cached.data ?? []);
-      setProductsLoading(false);
-      hadProductsCacheRef.current = true;
-      return;
-    }
-
-    try {
-      beginAdminDataFetch(hadProductsCacheRef.current, setProductsLoading);
-      const response = await dedupedAdminRequest(cacheKey, () =>
-        apiClient.get<ProductDiscountsPayload>('/api/v1/supersudo/products/discounts', {
-          params: { lang: activeLocale },
-        }),
-      );
-      const rows = response.data ?? [];
-      applyProductRows(rows);
-      writeAdminSessionCache(cacheKey, { data: rows });
-      hadProductsCacheRef.current = true;
-    } catch (err: unknown) {
-      logger.error('Quick settings: product discounts fetch failed', { error: err });
       if (!hadProductsCacheRef.current) {
         applyProductRows([]);
       }
-    } finally {
-      setProductsLoading(false);
-    }
-  }, [activeLocale, applyProductRows]);
-
-  const fetchCategories = useCallback(async (options?: { force?: boolean }) => {
-    const cached = readAdminCategoriesCache<QuickSettingsCategory>(activeLocale, {
-      includeCounts: false,
-    });
-    if (!options?.force && cached !== null) {
-      setCategories(cached);
-      setCategoriesLoading(false);
-      hadCategoriesCacheRef.current = true;
-      return;
-    }
-
-    const requestKey = `categories:${activeLocale}:lite`;
-    try {
-      beginAdminDataFetch(hadCategoriesCacheRef.current, setCategoriesLoading);
-      const response = await dedupedAdminRequest(requestKey, () =>
-        apiClient.get<{ data: QuickSettingsCategory[] }>('/api/v1/supersudo/categories', {
-          params: { lang: activeLocale, counts: 'false' },
-        }),
-      );
-      const rows = response.data ?? [];
-      setCategories(rows);
-      writeAdminCategoriesCache(activeLocale, rows, { includeCounts: false });
-      hadCategoriesCacheRef.current = true;
-    } catch (err: unknown) {
-      logger.error('Quick settings: categories fetch failed', { error: err });
       if (!hadCategoriesCacheRef.current) {
         setCategories([]);
       }
-    } finally {
-      setCategoriesLoading(false);
-    }
-  }, [activeLocale]);
-
-  const fetchBrands = useCallback(async (options?: { force?: boolean }) => {
-    const cached = readAdminBrandsCache<QuickSettingsBrand>();
-    if (!options?.force && cached !== null) {
-      setBrands(cached);
-      setBrandsLoading(false);
-      hadBrandsCacheRef.current = true;
-      return;
-    }
-
-    try {
-      beginAdminDataFetch(hadBrandsCacheRef.current, setBrandsLoading);
-      const response = await dedupedAdminRequest(ADMIN_CACHE_KEYS.brands, () =>
-        apiClient.get<{ data: QuickSettingsBrand[] }>('/api/v1/supersudo/brands'),
-      );
-      const rows = response.data ?? [];
-      setBrands(rows);
-      writeAdminBrandsCache(rows);
-      hadBrandsCacheRef.current = true;
-    } catch (err: unknown) {
-      logger.error('Quick settings: brands fetch failed', { error: err });
       if (!hadBrandsCacheRef.current) {
         setBrands([]);
       }
     } finally {
+      setDiscountLoading(false);
+      setProductsLoading(false);
+      setCategoriesLoading(false);
       setBrandsLoading(false);
     }
-  }, []);
+  }, [
+    activeLocale,
+    applyProductRows,
+    applySettings,
+    productDiscountsCacheKey,
+  ]);
 
   useEffect(() => {
-    void Promise.all([
-      fetchSettings(),
-      fetchProductDiscounts(),
-      fetchCategories(),
-      fetchBrands(),
-    ]);
-  }, [fetchSettings, fetchProductDiscounts, fetchCategories, fetchBrands]);
+    void loadInitialPayload();
+  }, [loadInitialPayload]);
 
   const clampDiscountValue = (value: number) => {
     if (Number.isNaN(value)) {

@@ -17,6 +17,7 @@ import { resolveGuestCheckoutItems } from "./checkout-guest-items.service";
 import { shouldChargeCourierShipping } from "./checkout-delivery-rules.service";
 import { resolveProductClass, type ProductClass } from "../constants/product-class";
 import { promoCodesService } from "./promo-codes.service";
+import { invalidateAdminAnalyticsCache } from "@/lib/services/admin/admin-stats/admin-analytics-cache";
 
 const orderNumberId = customAlphabet("0123456789ABCDEFGHJKLMNPQRSTUVWXYZ", 10);
 
@@ -440,6 +441,13 @@ class OrdersService {
         currency: order.order.currency,
         customerEmail: order.order.customerEmail ?? undefined,
         customerPhone: order.order.customerPhone ?? undefined,
+      });
+
+      void invalidateAdminAnalyticsCache().catch((cacheError: unknown) => {
+        logger.error('Failed to invalidate admin analytics cache after checkout', {
+          orderId: order.order.id,
+          error: cacheError,
+        });
       });
 
       // Return order and payment info

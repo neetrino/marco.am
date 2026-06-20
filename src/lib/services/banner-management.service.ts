@@ -13,6 +13,7 @@ import {
   getCachedJson,
   invalidateBannersPublicCache,
 } from "@/lib/services/read-through-json-cache";
+import { isRecoverableDbReadError } from "@/lib/utils/recoverable-db-read-error";
 import { logger } from "@/lib/utils/logger";
 
 const BANNER_PUBLIC_CACHE_TTL_SEC = 90;
@@ -62,15 +63,26 @@ function parseStored(raw: unknown): BannerManagementStorage | null {
 }
 
 async function loadStorage(): Promise<BannerManagementStorage> {
-  const row = await db.settings.findUnique({
-    where: { key: BANNER_MANAGEMENT_SETTINGS_KEY },
-  });
-  if (!row) {
+  try {
+    const row = await db.settings.findUnique({
+      where: { key: BANNER_MANAGEMENT_SETTINGS_KEY },
+    });
+    if (!row) {
+      return DEFAULT_BANNER_STORAGE;
+    }
+
+    const valid = parseStored(row.value);
+    return valid ?? DEFAULT_BANNER_STORAGE;
+  } catch (error) {
+    if (!isRecoverableDbReadError(error)) {
+      throw error;
+    }
+    logger.error(
+      "[bannerManagement] DB unavailable while loading settings. Falling back to default banners.",
+      error,
+    );
     return DEFAULT_BANNER_STORAGE;
   }
-
-  const valid = parseStored(row.value);
-  return valid ?? DEFAULT_BANNER_STORAGE;
 }
 
 function isScheduledNow(
