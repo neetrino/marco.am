@@ -6,6 +6,7 @@ function baseInput(overrides: Partial<PlpFacetFilterInput> = {}): PlpFacetFilter
   return {
     locale: 'en',
     categorySlugTokens: ['sofas'],
+    categoryIdTokens: [],
     brandTokens: ['acme'],
     colorTokens: ['black'],
     sizeTokens: [],
@@ -45,6 +46,12 @@ describe('buildFacetWhere drill-down', () => {
     expect(text).not.toContain('"colorTokens"');
     expect(text).toContain('"brandId"');
     expect(text).toContain('"categorySlugs"');
+  });
+
+  it('prefers locale-agnostic category IDs over slugs when resolved', () => {
+    const text = sqlText(baseInput({ categoryIdTokens: ['cat-1'] }), new Set());
+    expect(text).toContain('"categoryIds"');
+    expect(text).not.toContain('"categorySlugs"');
   });
 
   it('keeps contextual filters (search, promotion) regardless of exclusions', () => {

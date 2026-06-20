@@ -23,6 +23,12 @@ const TTFB_BUDGET_MS = Number(process.env.PERF_TTFB_BUDGET_MS ?? 1500);
 const KB = 1024;
 
 /**
+ * Sample slugs for dynamic routes; overridable so the gate survives catalog churn.
+ */
+const PDP_SLUG = process.env.PERF_PDP_SLUG ?? 'marco-23679-hisense-auf48utr4snmhe';
+const PLP_CATEGORY = process.env.PERF_PLP_CATEGORY ?? 'furniture-making-accessories';
+
+/**
  * Routes that define the storefront's critical loading paths.
  * Budgets are regression gates: set just above the measured baseline so growth
  * fails CI. Tighten as bundles shrink; loosen only with team alignment.
@@ -30,6 +36,8 @@ const KB = 1024;
 const ROUTES = [
   { path: '/', label: 'home', jsBudgetKb: 400 },
   { path: '/products', label: 'shop-plp', jsBudgetKb: 400 },
+  { path: `/products?category=${PLP_CATEGORY}`, label: 'shop-cat', jsBudgetKb: 400 },
+  { path: `/products/${PDP_SLUG}`, label: 'pdp', jsBudgetKb: 400 },
 ];
 
 const CHUNK_SRC_RE = /(?:src|href)="(\/_next\/static\/[^"]+?\.js)"/g;

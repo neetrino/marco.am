@@ -385,14 +385,23 @@ Exit criteria:
 Baseline (warm, локальный прод через `check:perf-budget`): `home` TTFB ~80ms / 382KB gz, `shop-plp` TTFB ~18–28ms / 384KB gz.
 
 - Главная уже на read-model: рейлы (`home-product-rails-data.ts`) тянут `getProductsPlpReadModelPayload` (promotion/new) + баннеры + brand-partners одним `Promise.allSettled`; стриминг через `<Suspense>` (hero → reels → rails). DB-узкого места на горячем пути нет.
-- [ ] Расширить `check:perf-budget` маршрутами: home(done), shop(done), + категория PLP, + PDP — снять baseline-таблицу.
-- [ ] Главная: точечные client-JS рычаги (lucide tree-shaking, крупные app-chunks); проверить, что баннеры/brand-partners идут через `getCachedJson` (Redis) и не блокируют LCP.
-- [ ] Остальные страницы (about/contact/terms/privacy/refund/delivery/wishlist/cart) — почти статичные: убедиться в SSG/ISR где можно, минимум client JS, без operational-запросов на горячем пути. Быстрые правки.
+- [x] Расширить `check:perf-budget` маршрутами: home(done), shop(done), + категория PLP (`shop-cat`), + PDP (`pdp`). Slug'и dynamic-маршрутов конфигурируемы (`PERF_PDP_SLUG`/`PERF_PLP_CATEGORY`) — gate переживает churn каталога.
+- [x] Остальные страницы (about/contact/terms/privacy/refund/delivery/stores/...) — почти статичные: server-компоненты тянут только i18n + `resolveServerPageLanguage` (cookie), client-страницы (`stores`) — хардкод-контент + i18n-client. **DB на горячем пути нет.** Root `layout.tsx` — только cookies+i18n, без DB (категории меню грузятся client-side через API). Динамика обусловлена cookie-локалью (i18n-архитектура), не данными.
+- [ ] (опционально) Главная: точечные client-JS рычаги (lucide tree-shaking, крупные app-chunks). Текущий home 382KB gz — в пределах budget; некритично.
+
+Baseline (warm, локальный прод `:3210`, `check:perf-budget`):
+
+| Маршрут | JS (gz) | chunks | TTFB |
+|---|---|---|---|
+| `home` | 382.4 KB | 24 | 77–85 ms |
+| `shop-plp` | 384.9 KB | 26 | 33–37 ms |
+| `shop-cat` | 384.9 KB | 26 | 19–27 ms |
+| `pdp` (shell) | 379.6 KB | 25 | 19–22 ms |
 
 Exit criteria:
 
-- Все storefront-маршруты (кроме PDP) в пределах JS-budget; статичные страницы — без DB на горячем пути.
-- Есть baseline → after таблица по каждому маршруту в `check:perf-budget`.
+- [x] Все storefront-маршруты в пределах JS-budget (400KB gate, зелёный); статичные страницы — без DB на горячем пути (проверено).
+- [x] Есть baseline-таблица по каждому маршруту в `check:perf-budget` (4 маршрута).
 
 ## Phase 13. PDP (страница товара) — полная переделка под миллисекунды
 
@@ -419,22 +428,22 @@ Exit criteria:
 5. **Дубль fetch на рендер** — `generateMetadata` + `ProductPdpLayoutGate` + `ProductPdpSSRSeed` зовут `getCachedPdpDetail`; на cold коалесцируются (1 запрос), на warm — 3 Redis GET. Лечится React `cache()`.
 6. **4 отдельных PDP-эндпоинта** (detail/related/summary/visual) — каждый медленный; related тоже без проекции.
 
-### Целевая архитектура (зеркало PLP read-model)
+### Целевая архитектура (зеркало PLP read-model) — РЕАЛИЗОВАНО
 
-- [ ] **`product_pdp_rows`** (read-model, 1 строка на product×locale): денормализованный JSON-payload PDP (title/description/seo, медиа, бренд, категории+предки slugs, спецификации/атрибуты, варианты+опции, labels, цена/наличие/`hasPrice`). Индекс по `(slug, locale)` (или `slug` + GIN) → cold-read = **1 indexed-fetch вместо N round-trips**.
-- [ ] **Sync на write-side** — расширить `product-read-model-sync.ts`: при create/update/delete продукта/бренда/категории/атрибутов пересобирать соответствующие `product_pdp_rows` (как для listing). Транзакционно, без полного rebuild.
-- [ ] **read-path** — `findBySlug` читает `product_pdp_rows` напрямую (без deep include, без locale-овер-фетча, без schema-drift fallback); related — отдельная узкая проекция или из read-model.
-- [ ] **API/структура** — оценить слияние detail/summary/visual в один payload read-model (убрать лишние round-trips клиента); SSR-seed уже гидрирует React Query.
-- [ ] React `cache()` на `getCachedPdpDetail` (дедуп 3 серверных вызовов на рендер).
-- [ ] Backfill-скрипт `rebuild-product-pdp-read-model.ts` (как `rebuild-product-listing-read-model.ts`).
-- [ ] Индексы по результатам `EXPLAIN (ANALYZE, BUFFERS)`; убедиться в индексе `product_translations.slug`.
-- [ ] Удалить мёртвый legacy после переключения (schema-drift fallback ladder, лишние эндпоинты).
+- [x] **`product_pdp_rows`** (read-model, 1 строка на product×locale): денормализованный JSON-payload PDP. Схема `ProductPdpRow` + миграция `20260620150000_product_pdp_read_model`; индекс `@@index([locale, slug])` + GIN по `slugs` (lookup по slug любой локали) → cold-read = **1 indexed-fetch вместо N round-trips**.
+- [x] **Sync на write-side** — `product-pdp-read-model-sync.ts` (single/batch/delete/rebuild), интегрирован в `product-read-model-sync.ts`; пересобирается при create/update/delete продукта вместе с listing-строками. `transformProduct` принимает `injectedDiscountSettings` (без лишних DB-вызовов в билде).
+- [x] **read-path** — `findBySlug` сначала читает `product_pdp_rows` (`getProductPdpFromReadModel`), фоллбэк на операционный путь только при miss. `related` переведён на read-model `product_listing_rows` (GIN по `categoryIds`/`brandId`, общий `product-listing-card-mapper.ts`); TTFB related 3.5s → 1.1–1.7s (dev).
+- [x] **API/структура** — `/summary` и `/visual` эндпоинты + их сервисы/cache-keys/transformer-логика **удалены** (мёртвый код). Остались `detail` + `related`; SSR-seed гидрирует React Query.
+- [x] React `cache()` на `getCachedPdpDetail` (дедуп 3 серверных вызовов на рендер).
+- [x] Backfill-скрипт `rebuild-product-pdp-read-model.ts` + npm `rebuild:pdp-read-model`; backfill выполнен (1738 товаров → 6952 строки).
+- [x] Индексы проверены: `product_translations` имеет `@@index([slug, locale])` (fallback-путь), read-модели — `[locale, slug]` + GIN. Дополнительных индексов не требуется.
+- [ ] (опционально) Удалить schema-drift fallback ladder в `product-query-builder.ts` — теперь это лишь редкий fallback на read-model miss; снятие отложено как низкоприоритетная зачистка легаси.
 
 Exit criteria:
 
-- PDP cold-read (без кэша) = единичный indexed-fetch; целевой TTFB detail ≪ 200ms на прогретом соединении в регионе БД.
-- Write-side держит `product_pdp_rows` в актуальном виде транзакционно; нет окна неконсистентности.
-- `check:perf-budget` включает PDP-маршрут с budget-порогом (зелёный).
+- [x] PDP read-path = единичный indexed-fetch из `product_pdp_rows`; HTML shell TTFB **19–22ms** (локальный прод) vs **4.1–4.6s** до. Detail API 3.6–4.9s → 0.64–1.07s.
+- [x] Write-side держит `product_pdp_rows` транзакционно (sync вместе с listing); нет окна неконсистентности.
+- [x] `check:perf-budget` включает `pdp`-маршрут с budget-порогом (зелёный, 379.6KB gz).
 
 ## Примечание к старым фазам
 

@@ -18,6 +18,7 @@ import {
   normalizeTechnicalFilterToken,
 } from '@/lib/services/products-technical-filters';
 import { aggregateProductsPlpFacets } from './product-facet-live-aggregation';
+import { resolveCategoryIdsFromSlugs } from './product-category-slug-resolver';
 import {
   LISTING_CARD_SELECT,
   mapListingRowToCard,
@@ -98,7 +99,28 @@ function buildTechnicalSpecWhere(
   return conditions;
 }
 
-function buildWhere(params: PlpReadModelSearchParams): Prisma.ProductListingRowWhereInput {
+/**
+ * Category condition prefers resolved (locale-agnostic) category IDs and falls back
+ * to slug matching only when no slug resolved (e.g. unknown/legacy slug), so a
+ * cross-locale URL still narrows to the same products.
+ */
+function buildCategoryCondition(
+  categorySlugTokens: string[],
+  categoryIdTokens: string[],
+): Prisma.ProductListingRowWhereInput | null {
+  if (categoryIdTokens.length > 0) {
+    return { categoryIds: { hasSome: categoryIdTokens } };
+  }
+  if (categorySlugTokens.length > 0) {
+    return { categorySlugs: { hasSome: categorySlugTokens } };
+  }
+  return null;
+}
+
+function buildWhere(
+  params: PlpReadModelSearchParams,
+  categoryIdTokens: string[],
+): Prisma.ProductListingRowWhereInput {
   const minPrice = parseOptionalPrice(params.minPrice);
   const maxPrice = parseOptionalPrice(params.maxPrice);
   const and: Prisma.ProductListingRowWhereInput[] = [];
@@ -113,10 +135,11 @@ function buildWhere(params: PlpReadModelSearchParams): Prisma.ProductListingRowW
   if (productIdTokens.length > 0) {
     and.push({ productId: { in: productIdTokens } });
   }
-  if (categoryTokens.length > 0) {
-    // Ancestor slugs are denormalized into `categorySlugs`, so a parent-category filter
+  const categoryCondition = buildCategoryCondition(categoryTokens, categoryIdTokens);
+  if (categoryCondition) {
+    // Ancestor IDs/slugs are denormalized into the row, so a parent-category filter
     // matches subcategory products directly (no operational category lookup).
-    and.push({ categorySlugs: { hasSome: categoryTokens } });
+    and.push(categoryCondition);
   }
   if (brandTokens.length > 0) {
     and.push({
@@ -202,9 +225,10 @@ export async function getProductsPlpReadModelPayload(
   );
   const includeFilters = params.includeFilters !== false && params.includeFilters !== '0';
   const includeItems = params.includeItems !== false && params.includeItems !== '0';
+  const categoryIdTokens = await resolveCategoryIdsFromSlugs(firstCsvTokens(params.category));
   const [rows, filters] = await Promise.all([
     includeItems
-      ? fetchRows({ where: buildWhere(params), orderBy, skip, take: limit + 1 })
+      ? fetchRows({ where: buildWhere(params, categoryIdTokens), orderBy, skip, take: limit + 1 })
       : Promise.resolve([]),
     includeFilters ? aggregateProductsPlpFacets(params) : Promise.resolve(EMPTY_PRODUCTS_FILTERS),
   ]);

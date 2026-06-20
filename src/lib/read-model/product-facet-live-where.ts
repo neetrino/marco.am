@@ -10,6 +10,8 @@ export type FacetFilterDimension = 'category' | 'brand' | 'color' | 'size' | 'pr
 export type PlpFacetFilterInput = {
   locale: string;
   categorySlugTokens: string[];
+  /** Locale-agnostic category IDs resolved from the slug tokens (preferred over slugs for filtering). */
+  categoryIdTokens: string[];
   brandTokens: string[];
   colorTokens: string[];
   sizeTokens: string[];
@@ -37,6 +39,7 @@ export function buildFacetFilterInput(params: PlpReadModelSearchParams): PlpFace
   return {
     locale,
     categorySlugTokens: categoryTokens,
+    categoryIdTokens: [],
     brandTokens: firstCsvTokens(params.brand),
     colorTokens: firstCsvTokens(params.colors, (token) => token.toLowerCase()),
     sizeTokens: firstCsvTokens(params.sizes, (token) => token.toUpperCase()),
@@ -75,7 +78,12 @@ function dimensionConditions(
   input: PlpFacetFilterInput,
 ): Array<{ dimension: FacetFilterDimension; sql: Prisma.Sql }> {
   const conditions: Array<{ dimension: FacetFilterDimension; sql: Prisma.Sql }> = [];
-  if (input.categorySlugTokens.length > 0) {
+  if (input.categoryIdTokens.length > 0) {
+    conditions.push({
+      dimension: 'category',
+      sql: Prisma.sql`"categoryIds" && ARRAY[${Prisma.join(input.categoryIdTokens)}]::text[]`,
+    });
+  } else if (input.categorySlugTokens.length > 0) {
     conditions.push({
       dimension: 'category',
       sql: Prisma.sql`"categorySlugs" && ARRAY[${Prisma.join(input.categorySlugTokens)}]::text[]`,
