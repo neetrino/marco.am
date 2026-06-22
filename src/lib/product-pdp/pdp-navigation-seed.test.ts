@@ -18,7 +18,7 @@ const baseSeed: ProductPdpNavigationSeed = {
     'https://cdn.example.com/3.png',
     'https://cdn.example.com/4.png',
   ],
-  brand: { id: 'b1', name: 'Brand' },
+  brand: { id: 'b1', slug: 'brand', name: 'Brand' },
   price: 1000,
   inStock: true,
 };

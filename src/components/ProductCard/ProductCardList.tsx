@@ -81,6 +81,7 @@ export function ProductCardList({
             brand: product.brand
               ? {
                   id: product.brand.id,
+                  slug: product.brand.slug,
                   name: product.brand.name,
                   logo: product.brand.logoUrl ?? null,
                 }
