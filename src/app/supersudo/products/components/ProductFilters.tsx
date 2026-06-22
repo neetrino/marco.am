@@ -271,8 +271,6 @@ export function ProductFilters({
               autoComplete="off"
               className="min-w-[7rem] flex-1 border-0 bg-transparent py-1 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-0"
               aria-label={t('admin.products.searchLabel')}
-              aria-expanded={panelOpen}
-              aria-controls={FILTER_PANEL_ID}
             />
           </div>
 

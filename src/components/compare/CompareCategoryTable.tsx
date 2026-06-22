@@ -66,6 +66,7 @@ export function CompareCategoryTable({
     brand: product.brand
       ? {
           id: product.brand.id,
+          slug: product.brand.id,
           name: product.brand.name,
           logo: null,
         }

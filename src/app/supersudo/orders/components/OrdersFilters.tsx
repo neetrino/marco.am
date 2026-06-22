@@ -125,27 +125,23 @@ export function OrdersFilters({
     return count;
   }, [paymentStatusFilter, statusFilter]);
 
-  const activeFilterChips = useMemo((): ActiveFilterChip[] => {
-    const chips: ActiveFilterChip[] = [];
+  const activeFilterChips: ActiveFilterChip[] = [];
 
-    if (statusFilter) {
-      chips.push({
-        key: 'order-status',
-        label: getOrderStatusLabel(statusFilter),
-        onRemove: () => handleStatusChange(''),
-      });
-    }
+  if (statusFilter) {
+    activeFilterChips.push({
+      key: 'order-status',
+      label: getOrderStatusLabel(statusFilter),
+      onRemove: () => handleStatusChange(''),
+    });
+  }
 
-    if (paymentStatusFilter) {
-      chips.push({
-        key: 'payment-status',
-        label: getPaymentStatusLabel(paymentStatusFilter),
-        onRemove: () => handlePaymentStatusChange(''),
-      });
-    }
-
-    return chips;
-  }, [paymentStatusFilter, statusFilter, t]);
+  if (paymentStatusFilter) {
+    activeFilterChips.push({
+      key: 'payment-status',
+      label: getPaymentStatusLabel(paymentStatusFilter),
+      onRemove: () => handlePaymentStatusChange(''),
+    });
+  }
 
   const hasActiveFilters = activeFilterCount > 0;
   const hasAnythingToClear = searchQuery.length > 0 || hasActiveFilters;
@@ -232,8 +228,6 @@ export function OrdersFilters({
                 autoComplete="off"
                 className="min-w-[7rem] flex-1 border-0 bg-transparent py-1 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-0"
                 aria-label={t('admin.orders.searchLabel')}
-                aria-expanded={panelOpen}
-                aria-controls={FILTER_PANEL_ID}
               />
             </div>
 

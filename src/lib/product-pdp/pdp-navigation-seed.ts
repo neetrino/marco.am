@@ -8,12 +8,6 @@ type ProductCategorySeed = {
   title: string;
 };
 
-type ProductBrandSeed = {
-  id: string;
-  name: string;
-  logo?: string | null;
-};
-
 export type ProductPdpNavigationSeed = {
   id: string;
   slug: string;
@@ -21,7 +15,7 @@ export type ProductPdpNavigationSeed = {
   image: string | null;
   /** Full PLP gallery — same order as PDP canonical gallery. */
   images?: string[];
-  brand: ProductBrandSeed | null;
+  brand: Product['brand'] | null;
   categories?: ProductCategorySeed[];
   labels?: Product["labels"];
   warrantyYears?: Product["warrantyYears"];
