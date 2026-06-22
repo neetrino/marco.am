@@ -75,6 +75,7 @@ export function ProductFilters({
       setSearch(inputValue);
     }
     setPage(1);
+    setPanelOpen(false);
   };
 
   const activeFilterCount = useMemo(() => {
