@@ -114,6 +114,7 @@ export interface Product {
   labels?: ProductLabel[];
   brand?: {
     id: string;
+    slug: string;
     name: string;
     logo?: string | null;
   };

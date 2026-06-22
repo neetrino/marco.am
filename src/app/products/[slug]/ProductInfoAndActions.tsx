@@ -6,6 +6,7 @@ import { t, getProductText } from '../../../lib/i18n';
 import type { LanguageCode } from '../../../lib/language';
 import { getProductDescriptionNotes } from '../../../lib/products/product-description';
 import { ProductWarrantyBadge } from '../../../components/ProductCard/ProductWarrantyBadge';
+import { BrandPlpLink } from '../../../components/BrandPlpLink';
 import { ProductCardBrandMark } from '../../../components/ProductCard/ProductCardBrandMark';
 import {
   ProductAttributesSelector,
@@ -115,12 +116,18 @@ export function ProductInfoAndActions({
         {(product.brand || primaryCategory) && (
           <div className="mb-5 flex flex-wrap items-center gap-3 md:gap-4">
             {product.brand ? (
-              <ProductCardBrandMark
-                name={product.brand.name}
-                slug={product.brand.name}
-                logoUrl={product.brand.logo}
-                size="pdp"
-              />
+              <BrandPlpLink
+                href={`/products?brand=${encodeURIComponent(product.brand.id)}`}
+                className="rounded-lg transition-opacity hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-marco-yellow focus-visible:ring-offset-2"
+                aria-label={product.brand.name}
+              >
+                <ProductCardBrandMark
+                  name={product.brand.name}
+                  slug={product.brand.slug}
+                  logoUrl={product.brand.logo}
+                  size="pdp"
+                />
+              </BrandPlpLink>
             ) : null}
             {primaryCategory ? (
               <span className="inline-flex rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">
