@@ -67,44 +67,28 @@ export const AdminSidebar = memo(function AdminSidebar({ currentPath, t }: Admin
       </div>
       <aside className="hidden lg:block lg:w-64 flex-shrink-0">
         <nav className="fixed left-0 top-0 z-40 flex h-screen w-64 flex-col border-r border-marco-border bg-white/95 p-3 shadow-[0_8px_24px_rgba(16,16,16,0.06)] backdrop-blur-sm">
-          <div className="mb-3 border-b border-marco-border pb-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-marco-text/70">{t('admin.common.adminPanel')}</p>
-          </div>
           {homeTab ? (
             <div className="mb-3 border-b border-marco-border pb-3">
               <AdminNavLink
                 href={homeTab.path}
-                className={`group w-full flex items-center justify-between rounded-2xl border px-3 py-3 text-sm font-semibold transition-all duration-200 ${
+                className={`group w-full flex items-center rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors duration-200 ${
                   currentPath === '/'
-                    ? 'border-marco-yellow bg-marco-yellow/90 text-marco-black shadow-[0_8px_20px_rgba(247,206,63,0.35)]'
-                    : 'border-marco-yellow/40 bg-marco-yellow/20 text-marco-text hover:-translate-y-0.5 hover:border-marco-yellow hover:bg-marco-yellow/35 hover:text-marco-black'
+                    ? 'bg-marco-yellow text-marco-black shadow-sm'
+                    : 'text-marco-text hover:bg-marco-gray hover:text-marco-black'
                 }`}
               >
                 <span className="flex items-center gap-3">
                   <span
-                    className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl transition-colors ${
+                    className={`flex-shrink-0 transition-colors ${
                       currentPath === '/'
-                        ? 'bg-marco-black/10 text-marco-black'
-                        : 'bg-marco-yellow/35 text-marco-text/80 group-hover:bg-marco-yellow/50 group-hover:text-marco-black'
+                        ? 'text-marco-black'
+                        : 'text-marco-text/70 group-hover:text-marco-black'
                     }`}
                   >
                     {homeTab.icon}
                   </span>
-                  <span className="text-left leading-tight">
-                    <span className="block text-xs font-medium uppercase tracking-[0.08em] text-current/70">{t('admin.common.quickAccess')}</span>
-                    <span className="block">{homeTab.label}</span>
-                  </span>
+                  <span className="text-left">{homeTab.label}</span>
                 </span>
-                <svg
-                  className={`h-4 w-4 transition-transform duration-200 ${
-                    currentPath === '/' ? 'text-marco-black' : 'text-marco-text/50 group-hover:translate-x-0.5 group-hover:text-marco-black'
-                  }`}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
               </AdminNavLink>
             </div>
           ) : null}
