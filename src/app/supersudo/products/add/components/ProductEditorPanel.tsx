@@ -185,7 +185,6 @@ export function ProductEditorPanel({
     defaultCurrency: formState.defaultCurrency,
     isEditMode,
     productId,
-    isClothingCategory,
     onSubmit,
     baselineRef,
   });

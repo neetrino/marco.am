@@ -59,7 +59,6 @@ interface UseProductFormHandlersProps {
   defaultCurrency: CurrencyCode;
   isEditMode: boolean;
   productId: string | null;
-  isClothingCategory: () => boolean;
   /** Hands the built payload + optimistic row to the list page, which persists it in the background. */
   onSubmit: (request: OptimisticSaveRequest) => void;
   /** Baseline fingerprints captured on load; unchanged heavy sections are stripped from the update payload. */
@@ -79,7 +78,6 @@ export function useProductFormHandlers({
   defaultCurrency,
   isEditMode,
   productId,
-  isClothingCategory,
   onSubmit,
   baselineRef,
 }: UseProductFormHandlersProps) {
