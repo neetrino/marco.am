@@ -118,6 +118,7 @@ export function useProductHandlers({
           product.id === productId ? { ...product, published: newStatus } : product
         )
       );
+      await fetchProducts({ force: true });
     } catch (err: unknown) {
       console.error('❌ [ADMIN] Error updating product status:', err);
       alert(t('admin.products.errorUpdatingStatus').replace('{message}', getApiOrErrorMessage(err, t('admin.common.unknownErrorFallback'))));
