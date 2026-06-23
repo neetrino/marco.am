@@ -63,8 +63,6 @@ export function VariantBuilder({
     return [];
   };
 
-  const attributesToShow = generatedVariants.length > 0 ? getAttributesToShow(generatedVariants[0]) : [];
-
   return (
     <FormSection title={t('admin.products.add.variantBuilder')}>
       <div className="space-y-6">
@@ -118,47 +116,15 @@ export function VariantBuilder({
               </div>
             </div>
 
-            <div className="border border-gray-300 rounded-lg" style={{ overflowX: 'hidden', overflowY: 'hidden' }}>
-              <table className="w-full divide-y divide-gray-200 bg-white">
-                <thead className="bg-gray-50">
-                  <tr>
-                    {attributesToShow.map((attributeId) => {
-                      const attribute = attributes.find((a) => a.id === attributeId);
-                      return attribute ? (
-                        <th
-                          key={attributeId}
-                          className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          {attribute.name}
-                        </th>
-                      ) : null;
-                    })}
-                    <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {t('admin.products.add.price')}
-                    </th>
-                    <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {t('admin.products.add.compareAtPrice')}
-                    </th>
-                    <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {t('admin.products.add.stock')}
-                    </th>
-                    <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {t('admin.products.add.sku')}
-                    </th>
-                    <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {t('admin.products.add.image')}
-                    </th>
-                    <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
-                      {t('admin.products.add.actions')}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {generatedVariants.map((variant) => {
-                    const variantAttributesToShow = getAttributesToShow(variant);
+            <div className="border border-gray-300 rounded-lg overflow-hidden bg-white divide-y divide-gray-200">
+              {generatedVariants.map((variant) => {
+                const variantAttributesToShow = getAttributesToShow(variant);
 
-                    return (
-                      <tr key={variant.id} className="hover:bg-gray-50">
+                return (
+                  <div key={variant.id} className="p-4 hover:bg-gray-50">
+                    {/* Row 1: variant attributes */}
+                    {variantAttributesToShow.length > 0 && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 mb-4">
                         {variantAttributesToShow.map((attributeId) => {
                           const attribute = attributes.find((a) => a.id === attributeId);
                           if (!attribute) return null;
@@ -183,196 +149,218 @@ export function VariantBuilder({
                             .filter((v): v is NonNullable<typeof v> => v !== null);
 
                           return (
-                            <td key={attributeId} className="px-2 py-2 whitespace-nowrap">
-                              <div className="relative">
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    onOpenValueModal({ variantId: variant.id, attributeId });
-                                  }}
-                                  className="w-full text-left flex items-center gap-1 p-1.5 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500"
-                                >
-                                  <div className="flex-1 flex flex-wrap items-center gap-1 min-w-0">
-                                    {selectedValues.length > 0 ? (
-                                      selectedValues.map((val) => (
-                                        <span
-                                          key={val.id}
-                                          className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-gray-100 text-gray-700 rounded text-xs"
-                                        >
-                                          {val.imageUrl ? (
-                                            <img
-                                              src={val.imageUrl}
-                                              alt={val.label}
-                                              className="w-3 h-3 object-cover rounded border border-gray-300"
-                                            />
-                                          ) : isColor && val.colorHex ? (
-                                            <span
-                                              className="inline-block w-3 h-3 rounded-full border border-gray-300"
-                                              style={{ backgroundColor: val.colorHex }}
-                                            />
-                                          ) : null}
-                                          {val.label}
-                                        </span>
-                                      ))
-                                    ) : (
-                                      <span className="text-xs text-gray-500">{t('admin.products.add.valuesPlaceholder')}</span>
-                                    )}
-                                  </div>
-                                  <svg
-                                    className="w-3 h-3 text-gray-400 transition-transform flex-shrink-0"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                  </svg>
-                                </button>
-                              </div>
-                            </td>
-                          );
-                        })}
-                        <td className="px-2 py-2 whitespace-nowrap">
-                          <div className="flex items-center gap-1">
-                            <Input
-                              type="number"
-                              value={variant.price}
-                              onChange={(e) => {
-                                onVariantUpdate((prev) =>
-                                  prev.map((v) => (v.id === variant.id ? { ...v, price: e.target.value } : v))
-                                );
-                              }}
-                              placeholder={t('admin.products.add.pricePlaceholder')}
-                              className="w-20 text-xs"
-                              min="0"
-                              step="0.01"
-                            />
-                            <span className="text-xs text-gray-500">{CURRENCIES[defaultCurrency].symbol}</span>
-                          </div>
-                        </td>
-                        <td className="px-2 py-2 whitespace-nowrap">
-                          <div className="flex items-center gap-1">
-                            <Input
-                              type="number"
-                              value={variant.compareAtPrice}
-                              onChange={(e) => {
-                                onVariantUpdate((prev) =>
-                                  prev.map((v) => (v.id === variant.id ? { ...v, compareAtPrice: e.target.value } : v))
-                                );
-                              }}
-                              placeholder={t('admin.products.add.pricePlaceholder')}
-                              className="w-20 text-xs"
-                              min="0"
-                              step="0.01"
-                            />
-                            <span className="text-xs text-gray-500">{CURRENCIES[defaultCurrency].symbol}</span>
-                          </div>
-                        </td>
-                        <td className="px-2 py-2 whitespace-nowrap">
-                          <Input
-                            type="number"
-                            value={variant.stock}
-                            onChange={(e) => {
-                              onVariantUpdate((prev) =>
-                                prev.map((v) => (v.id === variant.id ? { ...v, stock: e.target.value } : v))
-                              );
-                            }}
-                            placeholder={t('admin.products.add.quantityPlaceholder')}
-                            className="w-16 text-xs"
-                            min="0"
-                          />
-                        </td>
-                        <td className="px-2 py-2 whitespace-nowrap">
-                          <Input
-                            type="text"
-                            value={variant.sku}
-                            onChange={(e) => {
-                              onVariantUpdate((prev) =>
-                                prev.map((v) => (v.id === variant.id ? { ...v, sku: e.target.value } : v))
-                              );
-                            }}
-                            placeholder={t('admin.products.add.skuPlaceholder')}
-                            className="w-24 text-xs"
-                          />
-                        </td>
-                        <td className="px-2 py-2 whitespace-nowrap">
-                          <div className="flex items-center gap-2">
-                            {variant.image ? (
-                              <div className="relative inline-block">
-                                <img
-                                  src={variant.image}
-                                  alt="Variant image"
-                                  className="w-12 h-12 object-cover border border-gray-300 rounded-md"
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    onVariantUpdate((prev) =>
-                                      prev.map((v) => (v.id === variant.id ? { ...v, image: null } : v))
-                                    );
-                                    if (variantImageInputRefs.current?.[variant.id]) {
-                                      variantImageInputRefs.current[variant.id]!.value = '';
-                                    }
-                                  }}
-                                  className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600 transition-colors"
-                                  title={t('admin.products.add.removeImage')}
-                                >
-                                  <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                  </svg>
-                                </button>
-                              </div>
-                            ) : (
+                            <div key={attributeId}>
+                              <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">
+                                {attribute.name}
+                              </label>
                               <button
                                 type="button"
-                                onClick={() => variantImageInputRefs.current?.[variant.id]?.click()}
-                                disabled={imageUploadLoading}
-                                className="px-2 py-1 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                                onClick={() => {
+                                  onOpenValueModal({ variantId: variant.id, attributeId });
+                                }}
+                                className="w-full text-left flex items-center gap-2 p-2 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500"
                               >
-                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                <div className="flex-1 flex flex-wrap items-center gap-1 min-w-0">
+                                  {selectedValues.length > 0 ? (
+                                    selectedValues.map((val) => (
+                                      <span
+                                        key={val.id}
+                                        className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs"
+                                      >
+                                        {val.imageUrl ? (
+                                          <img
+                                            src={val.imageUrl}
+                                            alt={val.label}
+                                            className="w-3.5 h-3.5 object-cover rounded border border-gray-300"
+                                          />
+                                        ) : isColor && val.colorHex ? (
+                                          <span
+                                            className="inline-block w-3.5 h-3.5 rounded-full border border-gray-300"
+                                            style={{ backgroundColor: val.colorHex }}
+                                          />
+                                        ) : null}
+                                        {val.label}
+                                      </span>
+                                    ))
+                                  ) : (
+                                    <span className="text-sm text-gray-500">{t('admin.products.add.valuesPlaceholder')}</span>
+                                  )}
+                                </div>
+                                <svg
+                                  className="w-4 h-4 text-gray-400 flex-shrink-0"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                 </svg>
-                                <span className="hidden sm:inline">
-                                  {imageUploadLoading ? t('admin.products.add.uploading') : t('admin.products.add.uploadImage')}
-                                </span>
-                                <span className="sm:hidden">+</span>
                               </button>
-                            )}
-                            <input
-                              ref={(el) => {
-                                if (variantImageInputRefs.current) {
-                                  variantImageInputRefs.current[variant.id] = el;
-                                }
-                              }}
-                              type="file"
-                              accept={ADMIN_IMAGE_ACCEPT}
-                              onChange={(e) => onVariantImageUpload(variant.id, e)}
-                              className="hidden"
-                            />
-                          </div>
-                        </td>
-                        <td className="px-2 py-2 whitespace-nowrap">
-                          <button
-                            type="button"
-                            onClick={() => onVariantDelete(variant.id)}
-                            className="px-2 py-1 text-xs font-medium text-red-700 bg-red-50 border border-red-300 rounded-md hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors flex items-center gap-1"
-                            title={t('admin.products.add.deleteVariant')}
-                          >
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* Row 2: pricing, inventory, image, actions */}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 items-end">
+                      <div>
+                        <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">
+                          {t('admin.products.add.price')}
+                        </label>
+                        <div className="flex items-center gap-1.5">
+                          <Input
+                            type="number"
+                            value={variant.price}
+                            onChange={(e) => {
+                              onVariantUpdate((prev) =>
+                                prev.map((v) => (v.id === variant.id ? { ...v, price: e.target.value } : v))
+                              );
+                            }}
+                            placeholder={t('admin.products.add.pricePlaceholder')}
+                            className="w-full text-sm"
+                            min="0"
+                            step="0.01"
+                          />
+                          <span className="text-sm text-gray-500 flex-shrink-0">{CURRENCIES[defaultCurrency].symbol}</span>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">
+                          {t('admin.products.add.compareAtPrice')}
+                        </label>
+                        <div className="flex items-center gap-1.5">
+                          <Input
+                            type="number"
+                            value={variant.compareAtPrice}
+                            onChange={(e) => {
+                              onVariantUpdate((prev) =>
+                                prev.map((v) => (v.id === variant.id ? { ...v, compareAtPrice: e.target.value } : v))
+                              );
+                            }}
+                            placeholder={t('admin.products.add.pricePlaceholder')}
+                            className="w-full text-sm"
+                            min="0"
+                            step="0.01"
+                          />
+                          <span className="text-sm text-gray-500 flex-shrink-0">{CURRENCIES[defaultCurrency].symbol}</span>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">
+                          {t('admin.products.add.stock')}
+                        </label>
+                        <Input
+                          type="number"
+                          value={variant.stock}
+                          onChange={(e) => {
+                            onVariantUpdate((prev) =>
+                              prev.map((v) => (v.id === variant.id ? { ...v, stock: e.target.value } : v))
+                            );
+                          }}
+                          placeholder={t('admin.products.add.quantityPlaceholder')}
+                          className="w-full text-sm"
+                          min="0"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">
+                          {t('admin.products.add.sku')}
+                        </label>
+                        <Input
+                          type="text"
+                          value={variant.sku}
+                          onChange={(e) => {
+                            onVariantUpdate((prev) =>
+                              prev.map((v) => (v.id === variant.id ? { ...v, sku: e.target.value } : v))
+                            );
+                          }}
+                          placeholder={t('admin.products.add.skuPlaceholder')}
+                          className="w-full text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">
+                          {t('admin.products.add.image')}
+                        </label>
+                        <div className="flex items-center gap-2">
+                          {variant.image ? (
+                            <div className="relative inline-block">
+                              <img
+                                src={variant.image}
+                                alt="Variant image"
+                                className="w-12 h-12 object-cover border border-gray-300 rounded-md"
                               />
-                            </svg>
-                            {t('admin.products.add.delete')}
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  onVariantUpdate((prev) =>
+                                    prev.map((v) => (v.id === variant.id ? { ...v, image: null } : v))
+                                  );
+                                  if (variantImageInputRefs.current?.[variant.id]) {
+                                    variantImageInputRefs.current[variant.id]!.value = '';
+                                  }
+                                }}
+                                className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600 transition-colors"
+                                title={t('admin.products.add.removeImage')}
+                              >
+                                <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => variantImageInputRefs.current?.[variant.id]?.click()}
+                              disabled={imageUploadLoading}
+                              className="w-full px-2 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                              </svg>
+                              <span className="truncate">
+                                {imageUploadLoading ? t('admin.products.add.uploading') : t('admin.products.add.uploadImage')}
+                              </span>
+                            </button>
+                          )}
+                          <input
+                            ref={(el) => {
+                              if (variantImageInputRefs.current) {
+                                variantImageInputRefs.current[variant.id] = el;
+                              }
+                            }}
+                            type="file"
+                            accept={ADMIN_IMAGE_ACCEPT}
+                            onChange={(e) => onVariantImageUpload(variant.id, e)}
+                            className="hidden"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">
+                          {t('admin.products.add.actions')}
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => onVariantDelete(variant.id)}
+                          className="w-full px-3 py-2 text-sm font-medium text-red-700 bg-red-50 border border-red-300 rounded-md hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors flex items-center justify-center gap-1.5"
+                          title={t('admin.products.add.deleteVariant')}
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                            />
+                          </svg>
+                          {t('admin.products.add.delete')}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
 
             <div className="mt-4 flex justify-end gap-2">

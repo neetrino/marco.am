@@ -9,8 +9,8 @@ import {
 import {
   executeAdminProductListViaListingRows,
   executeProductDetailQuery,
-  findProductIdsBySkuSearch,
 } from "./query-executor";
+import { findProductIdsBySkuSearch } from "@/lib/product-search/find-product-ids-by-sku";
 import { formatProductForList } from "./product-formatter";
 import { formatVariantForAdmin } from "./variant-formatter";
 

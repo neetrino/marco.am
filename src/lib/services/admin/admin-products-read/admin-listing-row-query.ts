@@ -2,8 +2,6 @@ import { Prisma } from "@white-shop/db/prisma";
 import { buildListingRowSearchWhereInput } from "@/lib/product-search/listing-row-where";
 import type { ProductFilters } from "./types";
 
-export { splitProductSearchTokens as splitAdminSearchTokens } from "@/lib/product-search/match";
-
 /**
  * Maps admin product list filters to ProductListingRow where clause.
  * Sorting uses the read model so price/stock/title order applies across the full catalog.

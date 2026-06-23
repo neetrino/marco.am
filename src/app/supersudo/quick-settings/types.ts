@@ -1,5 +1,3 @@
-import { matchesProductSearchFields } from '@/lib/product-search/match';
-
 export interface QuickSettingsCategory {
   id: string;
   title: string;
@@ -23,21 +21,7 @@ export interface QuickSettingsProductRow {
   sku?: string;
 }
 
-/** Token-based search aligned with admin product list (title, slug, brand text, SKU). */
-export function matchesQuickSettingsProductSearch(
-  row: QuickSettingsProductRow,
-  rawQuery: string,
-): boolean {
-  return matchesProductSearchFields(
-    {
-      title: row.title,
-      slug: row.slug,
-      searchText: row.searchText,
-      sku: row.sku,
-    },
-    rawQuery,
-  );
-}
+export { matchesProductSearchFields } from '@/lib/product-search/match';
 
 /** Keeps the first row per product id (listing projection wins over unpublished fallback). */
 export function dedupeQuickSettingsProductRows(

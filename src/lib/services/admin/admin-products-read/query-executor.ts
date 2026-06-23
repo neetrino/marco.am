@@ -2,8 +2,6 @@ import { Prisma } from "@white-shop/db/prisma";
 import { db } from "@white-shop/db";
 import { logger } from "../../../utils/logger";
 
-export { findProductIdsBySkuSearch } from "@/lib/product-search/find-product-ids-by-sku";
-
 /**
  * Base include configuration for product list queries
  */

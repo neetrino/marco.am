@@ -1,19 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  buildAdminListingRowWhere,
-  splitAdminSearchTokens,
-} from './admin-listing-row-query';
-
-describe('splitAdminSearchTokens', () => {
-  it('splits on whitespace and drops empty parts', () => {
-    expect(splitAdminSearchTokens('  Vestel  65U9700T  17MBI  185  ')).toEqual([
-      'Vestel',
-      '65U9700T',
-      '17MBI',
-      '185',
-    ]);
-  });
-});
+import { buildAdminListingRowWhere } from './admin-listing-row-query';
 
 describe('buildAdminListingRowWhere search', () => {
   it('requires every token to match text fields', () => {

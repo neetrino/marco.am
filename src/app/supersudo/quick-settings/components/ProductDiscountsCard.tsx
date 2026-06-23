@@ -6,7 +6,7 @@ import { useTranslation } from '../../../../lib/i18n-client';
 import { formatCatalogPrice } from '../../../../lib/currency';
 import { AdminTablePagination } from '../../components/AdminTablePagination';
 import {
-  matchesQuickSettingsProductSearch,
+  matchesProductSearchFields,
   type QuickSettingsProductRow,
 } from '../types';
 
@@ -38,7 +38,17 @@ export function ProductDiscountsCard({
       return products;
     }
 
-    return products.filter((product) => matchesQuickSettingsProductSearch(product, searchQuery));
+    return products.filter((product) =>
+      matchesProductSearchFields(
+        {
+          title: product.title,
+          slug: product.slug,
+          searchText: product.searchText,
+          sku: product.sku,
+        },
+        searchQuery,
+      ),
+    );
   }, [products, searchQuery]);
 
   const totalPages = useMemo(
