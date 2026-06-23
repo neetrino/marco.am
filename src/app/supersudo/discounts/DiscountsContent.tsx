@@ -98,8 +98,8 @@ export function DiscountsContent({
       currentPath={currentPath}
       router={router}
       t={t}
-      title={t('admin.quickSettings.title')}
-      subtitle={t('admin.quickSettings.subtitle')}
+      title={t('admin.discounts.title')}
+      subtitle={t('admin.discounts.subtitle')}
     >
       <div className="flex min-h-[calc(100dvh-11rem)] flex-col">
         <Card className="admin-card flex min-h-0 flex-1 flex-col overflow-hidden border-slate-200/80 bg-gradient-to-br from-white via-white to-slate-50 shadow-[0_14px_36px_rgba(15,23,42,0.08)]">

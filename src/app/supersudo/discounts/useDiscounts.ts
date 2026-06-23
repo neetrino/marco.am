@@ -191,7 +191,7 @@ export function useDiscounts({ activeLocale, t }: UseDiscountsParams) {
   const persistSettings = async () => {
     const discountValue = parseFloat(globalDiscount.toString());
     if (Number.isNaN(discountValue) || discountValue < 0 || discountValue > 100) {
-      alert(tRef.current('admin.quickSettings.discountMustBeValid'));
+      alert(tRef.current('admin.discounts.discountMustBeValid'));
       return false;
     }
 
@@ -218,11 +218,11 @@ export function useDiscounts({ activeLocale, t }: UseDiscountsParams) {
     try {
       const saved = await persistSettings();
       if (saved) {
-        alert(tRef.current('admin.quickSettings.savedSuccess'));
+        alert(tRef.current('admin.discounts.savedSuccess'));
       }
     } catch (err: unknown) {
       const errorMessage = getApiOrErrorMessage(err, 'Failed to save');
-      alert(tRef.current('admin.quickSettings.errorSaving').replace('{message}', errorMessage));
+      alert(tRef.current('admin.discounts.errorSaving').replace('{message}', errorMessage));
     } finally {
       setDiscountSaving(false);
     }
@@ -233,11 +233,11 @@ export function useDiscounts({ activeLocale, t }: UseDiscountsParams) {
     try {
       const saved = await persistSettings();
       if (saved) {
-        alert(tRef.current('admin.quickSettings.savedSuccess'));
+        alert(tRef.current('admin.discounts.savedSuccess'));
       }
     } catch (err: unknown) {
       const errorMessage = getApiOrErrorMessage(err, 'Failed to save');
-      alert(tRef.current('admin.quickSettings.errorSaving').replace('{message}', errorMessage));
+      alert(tRef.current('admin.discounts.errorSaving').replace('{message}', errorMessage));
     } finally {
       setCategorySaving(false);
     }
@@ -248,11 +248,11 @@ export function useDiscounts({ activeLocale, t }: UseDiscountsParams) {
     try {
       const saved = await persistSettings();
       if (saved) {
-        alert(tRef.current('admin.quickSettings.savedSuccess'));
+        alert(tRef.current('admin.discounts.savedSuccess'));
       }
     } catch (err: unknown) {
       const errorMessage = getApiOrErrorMessage(err, 'Failed to save');
-      alert(tRef.current('admin.quickSettings.errorSaving').replace('{message}', errorMessage));
+      alert(tRef.current('admin.discounts.errorSaving').replace('{message}', errorMessage));
     } finally {
       setBrandSaving(false);
     }
@@ -266,7 +266,7 @@ export function useDiscounts({ activeLocale, t }: UseDiscountsParams) {
     const isInvalidAmount =
       current.type === 'AMOUNT' && (current.value === null || current.value <= 0);
     if (isInvalidPercent || isInvalidAmount) {
-      alert(tRef.current('admin.quickSettings.discountMustBeValid'));
+      alert(tRef.current('admin.discounts.discountMustBeValid'));
       return;
     }
 
@@ -294,10 +294,10 @@ export function useDiscounts({ activeLocale, t }: UseDiscountsParams) {
         });
       }
 
-      alert(tRef.current('admin.quickSettings.productDiscountSaved'));
+      alert(tRef.current('admin.discounts.productDiscountSaved'));
     } catch (err: unknown) {
       const errorMessage = getApiOrErrorMessage(err, 'Failed to save');
-      alert(tRef.current('admin.quickSettings.errorSavingProduct').replace('{message}', errorMessage));
+      alert(tRef.current('admin.discounts.errorSavingProduct').replace('{message}', errorMessage));
     } finally {
       setSavingProductId(null);
     }

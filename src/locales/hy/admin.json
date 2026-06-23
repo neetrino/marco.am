@@ -680,11 +680,9 @@
     "baseCurrency": "Հիմնական արժույթ (միշտ 1)",
     "rateToUSD": "Փոխարժեք USD-ի նկատմամբ (1 USD = նշված արժեք)"
   },
-  "quickSettings": {
-    "title": "Արագ կարգավորումներ",
-    "subtitle": "Արագ կարգավորումներ և զեղչերի կառավարում",
-    "quickSettingsTitle": "Արագ կարգավորումներ",
-    "quickSettingsSubtitle": "Արագ կարգավորումներ և զեղչերի կառավարում",
+  "discounts": {
+    "title": "Զեղչեր",
+    "subtitle": "Գլոբալ, կատեգորիայի, բրենդի և ապրանքի զեղչերի կառավարում",
     "tabsLabel": "Զեղչերի բաժիններ",
     "tabs": {
       "global": "Գլոբալ",
@@ -722,7 +720,7 @@
     "noBrands": "Բրենդներ չեն գտնվել",
     "brandId": "Բրենդի ID: {id}",
     "productDiscounts": "Ապրանքի զեղչեր",
-    "productDiscountsSubtitle": "Սահմանել անհատական զեղչի տոկոս յուրաքանչյուր ապրանքի համար",
+    "productDiscountsSubtitle": "Սահմանել տոկոս կամ ֆիքսված ակցիոն գին յուրաքանչյուր ապրանքի համար",
     "loadingProducts": "Բեռնվում են ապրանքները...",
     "noProducts": "Ապրանքներ չեն գտնվել",
     "showingPage": "Էջ {page} / {totalPages} ({total} ապրանք)",

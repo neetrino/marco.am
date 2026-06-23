@@ -17,7 +17,7 @@ export function DiscountSettingsTabs({ activeTab, onTabChange }: DiscountSetting
   return (
     <div
       role="tablist"
-      aria-label={t('admin.quickSettings.tabsLabel')}
+      aria-label={t('admin.discounts.tabsLabel')}
       className="flex gap-1 overflow-x-auto rounded-xl border-2 border-slate-200 bg-slate-100 p-1.5 shadow-inner"
     >
       {TAB_IDS.map((tabId) => {
@@ -37,7 +37,7 @@ export function DiscountSettingsTabs({ activeTab, onTabChange }: DiscountSetting
                 : 'bg-transparent text-slate-500 hover:bg-white/90 hover:text-slate-800'
             }`}
           >
-            {t(`admin.quickSettings.tabs.${tabId}`)}
+            {t(`admin.discounts.tabs.${tabId}`)}
           </button>
         );
       })}

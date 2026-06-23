@@ -680,11 +680,9 @@
     "baseCurrency": "Базовая валюта (всегда 1)",
     "rateToUSD": "Курс к USD (1 USD = указанное значение)"
   },
-  "quickSettings": {
-    "title": "Быстрые настройки",
-    "subtitle": "Быстрые настройки и управление скидками",
-    "quickSettingsTitle": "Быстрые настройки",
-    "quickSettingsSubtitle": "Быстрые настройки и управление скидками",
+  "discounts": {
+    "title": "Скидки",
+    "subtitle": "Управление глобальными, категорийными, брендовыми и товарными скидками",
     "tabsLabel": "Разделы скидок",
     "tabs": {
       "global": "Глобальная",
@@ -722,7 +720,7 @@
     "noBrands": "Бренды не найдены",
     "brandId": "ID бренда: {id}",
     "productDiscounts": "Скидки на товары",
-    "productDiscountsSubtitle": "Установить индивидуальный процент скидки для каждого товара",
+    "productDiscountsSubtitle": "Установить процент или фиксированную акционную цену для каждого товара",
     "loadingProducts": "Загрузка товаров...",
     "noProducts": "Товары не найдены",
     "showingPage": "Страница {page} / {totalPages} ({total} товаров)",

@@ -156,7 +156,7 @@ export function CategoryDiscountsCard({
                   : 'text-xs font-medium text-slate-700'
               }`}
             >
-              {node.title || t('admin.quickSettings.untitledCategory')}
+              {node.title || t('admin.discounts.untitledCategory')}
             </p>
           </div>
 
@@ -188,7 +188,7 @@ export function CategoryDiscountsCard({
               disabled={currentValue === undefined}
               className="text-slate-600 hover:bg-amber-100 hover:text-amber-900"
             >
-              {t('admin.quickSettings.clear')}
+              {t('admin.discounts.clear')}
             </Button>
           </div>
         </div>
@@ -214,8 +214,8 @@ export function CategoryDiscountsCard({
     >
       <div className="mb-4 flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold tracking-tight text-slate-900">{t('admin.quickSettings.categoryDiscounts')}</h2>
-          <p className="text-sm text-slate-600">{t('admin.quickSettings.categoryDiscountsSubtitle')}</p>
+          <h2 className="text-xl font-semibold tracking-tight text-slate-900">{t('admin.discounts.categoryDiscounts')}</h2>
+          <p className="text-sm text-slate-600">{t('admin.discounts.categoryDiscountsSubtitle')}</p>
         </div>
         <Button
           variant="primary"
@@ -226,10 +226,10 @@ export function CategoryDiscountsCard({
           {categorySaving ? (
             <div className="flex items-center gap-2">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-              <span>{t('admin.quickSettings.saving')}</span>
+              <span>{t('admin.discounts.saving')}</span>
             </div>
           ) : (
-            t('admin.quickSettings.save')
+            t('admin.discounts.save')
           )}
         </Button>
       </div>
@@ -248,18 +248,18 @@ export function CategoryDiscountsCard({
           disabled={searchQuery.length === 0}
           className="shrink-0 text-slate-700 hover:bg-slate-100"
         >
-          {t('admin.quickSettings.clear')}
+          {t('admin.discounts.clear')}
         </Button>
       </div>
 
       {categoriesLoading ? (
         <div className="py-8 text-center">
           <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-b-2 border-slate-900"></div>
-          <p className="text-slate-600">{t('admin.quickSettings.loadingCategories')}</p>
+          <p className="text-slate-600">{t('admin.discounts.loadingCategories')}</p>
         </div>
       ) : categories.length === 0 ? (
         <div className="rounded-lg border border-dashed border-slate-300 py-6 text-center text-slate-600">
-          {t('admin.quickSettings.noCategories')}
+          {t('admin.discounts.noCategories')}
         </div>
       ) : !hasVisibleNodes ? (
         <div className="rounded-lg border border-dashed border-slate-300 py-6 text-center text-slate-600">

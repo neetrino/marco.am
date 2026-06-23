@@ -66,7 +66,7 @@ export function BrandDiscountsCard({
           >
             <div className="flex-1 min-w-0">
               <p className="truncate text-sm font-semibold text-slate-900">
-                {brand.name || t('admin.quickSettings.untitledBrand')}
+                {brand.name || t('admin.discounts.untitledBrand')}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -93,7 +93,7 @@ export function BrandDiscountsCard({
                 disabled={currentValue === undefined}
                 className="text-slate-600 hover:bg-slate-100"
               >
-                {t('admin.quickSettings.clear')}
+                {t('admin.discounts.clear')}
               </Button>
             </div>
           </div>
@@ -110,8 +110,8 @@ export function BrandDiscountsCard({
     >
       <div className="mb-4 flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold tracking-tight text-slate-900">{t('admin.quickSettings.brandDiscounts')}</h2>
-          <p className="text-sm text-slate-600">{t('admin.quickSettings.brandDiscountsSubtitle')}</p>
+          <h2 className="text-xl font-semibold tracking-tight text-slate-900">{t('admin.discounts.brandDiscounts')}</h2>
+          <p className="text-sm text-slate-600">{t('admin.discounts.brandDiscountsSubtitle')}</p>
         </div>
         <Button
           variant="primary"
@@ -122,10 +122,10 @@ export function BrandDiscountsCard({
           {brandSaving ? (
             <div className="flex items-center gap-2">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-              <span>{t('admin.quickSettings.saving')}</span>
+              <span>{t('admin.discounts.saving')}</span>
             </div>
           ) : (
-            t('admin.quickSettings.save')
+            t('admin.discounts.save')
           )}
         </Button>
       </div>
@@ -144,18 +144,18 @@ export function BrandDiscountsCard({
           disabled={searchQuery.length === 0}
           className="shrink-0 text-slate-700 hover:bg-slate-100"
         >
-          {t('admin.quickSettings.clear')}
+          {t('admin.discounts.clear')}
         </Button>
       </div>
 
       {brandsLoading ? (
         <div className="py-8 text-center">
           <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-b-2 border-slate-900"></div>
-          <p className="text-slate-600">{t('admin.quickSettings.loadingBrands')}</p>
+          <p className="text-slate-600">{t('admin.discounts.loadingBrands')}</p>
         </div>
       ) : brands.length === 0 ? (
         <div className="rounded-lg border border-dashed border-slate-300 py-6 text-center text-slate-600">
-          {t('admin.quickSettings.noBrands')}
+          {t('admin.discounts.noBrands')}
         </div>
       ) : filteredBrands.length === 0 ? (
         <div className="rounded-lg border border-dashed border-slate-300 py-6 text-center text-slate-600">

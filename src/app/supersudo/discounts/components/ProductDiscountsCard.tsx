@@ -83,8 +83,8 @@ export function ProductDiscountsCard({
       }`}
     >
       <div className="mb-6">
-        <h2 className="mb-2 text-lg font-semibold tracking-tight text-slate-900">{t('admin.quickSettings.productDiscounts')}</h2>
-        <p className="text-sm text-slate-600">{t('admin.quickSettings.productDiscountsSubtitle')}</p>
+        <h2 className="mb-2 text-lg font-semibold tracking-tight text-slate-900">{t('admin.discounts.productDiscounts')}</h2>
+        <p className="text-sm text-slate-600">{t('admin.discounts.productDiscountsSubtitle')}</p>
       </div>
 
       <div className="mb-4 flex gap-2">
@@ -101,22 +101,22 @@ export function ProductDiscountsCard({
           disabled={searchQuery.length === 0}
           className="shrink-0 text-slate-700 hover:bg-slate-100"
         >
-          {t('admin.quickSettings.clear')}
+          {t('admin.discounts.clear')}
         </Button>
       </div>
 
       {productsLoading ? (
         <div className="py-8 text-center">
           <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-b-2 border-slate-900"></div>
-          <p className="text-slate-600">{t('admin.quickSettings.loadingProducts')}</p>
+          <p className="text-slate-600">{t('admin.discounts.loadingProducts')}</p>
         </div>
       ) : products.length === 0 ? (
         <div className="rounded-lg border border-dashed border-slate-300 py-8 text-center">
-          <p className="text-slate-600">{t('admin.quickSettings.noProducts')}</p>
+          <p className="text-slate-600">{t('admin.discounts.noProducts')}</p>
         </div>
       ) : filteredProducts.length === 0 ? (
         <div className="rounded-lg border border-dashed border-slate-300 py-8 text-center">
-          <p className="text-slate-600">{t('admin.quickSettings.noProducts')}</p>
+          <p className="text-slate-600">{t('admin.discounts.noProducts')}</p>
         </div>
       ) : (
         <div className={fillHeight ? 'flex min-h-0 flex-1 flex-col' : 'space-y-3'}>
@@ -192,7 +192,7 @@ export function ProductDiscountsCard({
                         <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
                       </div>
                     ) : (
-                      t('admin.quickSettings.save')
+                      t('admin.discounts.save')
                     )}
                   </Button>
                 </div>

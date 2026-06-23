@@ -35,8 +35,8 @@ export function GlobalDiscountCard({
           </svg>
         </div>
         <div>
-          <h3 className="text-lg font-semibold tracking-tight text-slate-900">{t('admin.quickSettings.globalDiscount')}</h3>
-          <p className="text-xs text-slate-500">{t('admin.quickSettings.forAllProducts')}</p>
+          <h3 className="text-lg font-semibold tracking-tight text-slate-900">{t('admin.discounts.globalDiscount')}</h3>
+          <p className="text-xs text-slate-500">{t('admin.discounts.forAllProducts')}</p>
         </div>
       </div>
 
@@ -74,10 +74,10 @@ export function GlobalDiscountCard({
               {discountSaving ? (
                 <div className="flex items-center gap-2">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  <span>{t('admin.quickSettings.saving')}</span>
+                  <span>{t('admin.discounts.saving')}</span>
                 </div>
               ) : (
-                t('admin.quickSettings.save')
+                t('admin.discounts.save')
               )}
             </Button>
           </div>
@@ -85,7 +85,7 @@ export function GlobalDiscountCard({
           {globalDiscount > 0 ? (
             <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3">
               <p className="text-sm text-emerald-800">
-                <strong>{t('admin.quickSettings.active')}</strong> {t('admin.quickSettings.discountApplied').replace('{percent}', globalDiscount.toString())}
+                <strong>{t('admin.discounts.active')}</strong> {t('admin.discounts.discountApplied').replace('{percent}', globalDiscount.toString())}
               </p>
               {globalDiscountExpiresAt ? (
                 <p className="mt-1 text-xs text-emerald-700">
@@ -96,7 +96,7 @@ export function GlobalDiscountCard({
           ) : (
             <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
               <p className="text-sm text-slate-600">
-                {t('admin.quickSettings.noGlobalDiscount')}
+                {t('admin.discounts.noGlobalDiscount')}
               </p>
             </div>
           )}
@@ -140,7 +140,7 @@ export function GlobalDiscountCard({
               onClick={() => setGlobalDiscount(0)}
               className="w-full px-3 text-slate-600 hover:bg-slate-100"
             >
-              {t('admin.quickSettings.cancel')}
+              {t('admin.discounts.cancel')}
             </Button>
           </div>
         </div>

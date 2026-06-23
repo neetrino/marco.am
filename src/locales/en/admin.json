@@ -680,11 +680,9 @@
     "baseCurrency": "Base Currency (always 1)",
     "rateToUSD": "Rate to USD (1 USD = specified value)"
   },
-  "quickSettings": {
-    "title": "Quick Settings",
-    "subtitle": "Quick settings and discount management",
-    "quickSettingsTitle": "Quick Settings",
-    "quickSettingsSubtitle": "Quick settings and discount management",
+  "discounts": {
+    "title": "Discounts",
+    "subtitle": "Manage global, category, brand, and product discounts",
     "tabsLabel": "Discount sections",
     "tabs": {
       "global": "Global",
@@ -722,7 +720,7 @@
     "noBrands": "No brands found",
     "brandId": "Brand ID: {id}",
     "productDiscounts": "Product Discounts",
-    "productDiscountsSubtitle": "Set individual discount percentage for each product",
+    "productDiscountsSubtitle": "Set a percent or fixed sale price for each product",
     "loadingProducts": "Loading products...",
     "noProducts": "No products found",
     "showingPage": "Page {page} / {totalPages} ({total} products)",
