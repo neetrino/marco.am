@@ -12,11 +12,14 @@ export interface Product {
   productClass?: ProductClass;
   published: boolean;
   featured?: boolean;
+  /** Current selling price (standard price with any active discount applied). */
   price: number;
   stock: number;
+  /** Resolved discount percentage for the struck-price badge. */
   discountPercent?: number;
   discountExpiresAt?: string | null;
-  compareAtPrice?: number | null;
+  /** Standard price shown struck-through when a discount applies; null otherwise. */
+  originalPrice?: number | null;
   colorStocks?: Array<{
     color: string;
     stock: number;

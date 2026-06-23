@@ -1,3 +1,5 @@
+import type { DiscountKind } from '@/lib/discount/discount-expiry';
+
 export interface DiscountsCategory {
   id: string;
   title: string;
@@ -15,7 +17,8 @@ export interface DiscountsProductRow {
   title: string;
   image?: string | null;
   price?: number;
-  discountPercent?: number;
+  discountType?: DiscountKind;
+  discountValue?: number | null;
   discountExpiresAt?: string | null;
   slug?: string;
   searchText?: string;

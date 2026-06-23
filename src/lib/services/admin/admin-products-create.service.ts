@@ -37,12 +37,19 @@ import {
   toProductCategoriesConnect,
 } from "../product-category-links.service";
 import { syncProductListingReadModel } from "@/lib/read-model/product-read-model-sync";
+import { normalizeVariantDiscountForWrite } from "./variant-discount-write";
+import type { DiscountKind } from "@/lib/discount/discount-expiry";
 
 type ProductMediaItem = string | { url: string };
 
+type VariantDiscountInput = {
+  discountType?: DiscountKind | string | null;
+  discountValue?: number | string | null;
+  discountExpiresAt?: string | null;
+};
+
 type CreateProductVariantInput = {
   price: string | number;
-  compareAtPrice?: string | number;
   stock: string | number;
   sku?: string;
   productClass?: ProductClass;
@@ -55,7 +62,7 @@ type CreateProductVariantInput = {
     value: string;
     valueId?: string;
   }>;
-};
+} & VariantDiscountInput;
 
 type VariantOptionPayload =
   | { valueId: string }
@@ -122,7 +129,6 @@ class AdminProductsCreateService {
     attributeIds?: string[];
     variants: Array<{
       price: string | number;
-      compareAtPrice?: string | number;
       stock: string | number;
       sku?: string;
       productClass?: ProductClass;
@@ -135,7 +141,7 @@ class AdminProductsCreateService {
         value: string;
         valueId?: string;
       }>;
-    }>;
+    } & VariantDiscountInput>;
   }) {
     try {
       logger.devLog('🆕 [ADMIN PRODUCTS CREATE SERVICE] Creating product:', data.title);
@@ -245,9 +251,7 @@ class AdminProductsCreateService {
             const rawPrice = typeof variant.price === 'number' ? variant.price : parseFloat(String(variant.price));
             const price = Number.isNaN(rawPrice) ? 0 : rawPrice;
             const stock = typeof variant.stock === 'number' ? variant.stock : parseInt(String(variant.stock), 10);
-            const compareAtPrice = variant.compareAtPrice !== undefined && variant.compareAtPrice !== null && variant.compareAtPrice !== ''
-              ? (typeof variant.compareAtPrice === 'number' ? variant.compareAtPrice : parseFloat(String(variant.compareAtPrice)))
-              : undefined;
+            const discount = normalizeVariantDiscountForWrite(variant);
 
             // Generate unique SKU for this variant
             const uniqueSku = await this.resolveVariantSku(
@@ -279,7 +283,9 @@ class AdminProductsCreateService {
               sku: uniqueSku,
               productClass: resolveProductClass(variant.productClass ?? data.productClass),
               price,
-              compareAtPrice,
+              discountType: discount.discountType,
+              discountValue: discount.discountValue,
+              discountExpiresAt: discount.discountExpiresAt,
               stock: isNaN(stock) ? 0 : stock,
               imageUrl: processedVariantImageUrl,
               published: variant.published !== false,

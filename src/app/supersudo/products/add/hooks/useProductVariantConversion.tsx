@@ -3,6 +3,10 @@
 import { useEffect } from 'react';
 import { CATALOG_PRICE_CURRENCY, convertPrice, type CurrencyCode } from '@/lib/currency';
 import type { GeneratedVariant } from '../types';
+import {
+  fromApiVariantDiscount,
+  type VariantDiscount,
+} from '../utils/variant-discount';
 import { logger } from "@/lib/utils/logger";
 
 interface UseProductVariantConversionProps {
@@ -120,13 +124,16 @@ export function useProductVariantConversion({
         id: string;
         selectedValueIds: string[];
         price: number;
-        compareAtPrice: number | null;
+        discount: VariantDiscount;
         stock: number;
         sku: string;
         image: string | null;
         originalVariantIds: string[];
       }
-      
+
+      const convertAmountToDefault = (value: number): number =>
+        convertPrice(value, CATALOG_PRICE_CURRENCY, defaultCurrency);
+
       const variantDataList: VariantData[] = [];
       
       productVariants.forEach((variant: any, variantIndex: number) => {
@@ -244,16 +251,13 @@ export function useProductVariantConversion({
           variant.price !== undefined && variant.price !== null
             ? convertPrice(variant.price, CATALOG_PRICE_CURRENCY, defaultCurrency)
             : 0;
-        const compareAtPriceInDefaultCurrency =
-          variant.compareAtPrice !== undefined && variant.compareAtPrice !== null
-            ? convertPrice(variant.compareAtPrice, CATALOG_PRICE_CURRENCY, defaultCurrency)
-            : null;
-        
+        const discount = fromApiVariantDiscount(variant, convertAmountToDefault);
+
         variantDataList.push({
           id: variant.id || `variant-${Date.now()}-${variantIndex}-${Math.random()}`,
           selectedValueIds: selectedValueIds.sort(),
           price: priceInDefaultCurrency,
-          compareAtPrice: compareAtPriceInDefaultCurrency,
+          discount,
           stock: variant.stock !== undefined && variant.stock !== null ? variant.stock : 0,
           sku: variant.sku || '',
           image: variantImage,
@@ -266,9 +270,9 @@ export function useProductVariantConversion({
       variantDataList.forEach((variantData) => {
         const valueIdsKey = variantData.selectedValueIds.join(',');
         const priceKey = variantData.price.toString();
-        const compareAtPriceKey = variantData.compareAtPrice !== null ? variantData.compareAtPrice.toString() : 'null';
-        
-        const groupKey = `${valueIdsKey}|${priceKey}|${compareAtPriceKey}`;
+        const discountKey = JSON.stringify(variantData.discount);
+
+        const groupKey = `${valueIdsKey}|${priceKey}|${discountKey}`;
         
         if (!variantGroups.has(groupKey)) {
           variantGroups.set(groupKey, []);
@@ -280,7 +284,7 @@ export function useProductVariantConversion({
         id: string;
         selectedValueIds: string[];
         price: string;
-        compareAtPrice: string;
+        discount: VariantDiscount;
         stock: string;
         sku: string;
         image: string | null;
@@ -308,7 +312,7 @@ export function useProductVariantConversion({
           id: `variant-group-${Date.now()}-${Math.random()}`,
           selectedValueIds: Array.from(allValueIds).sort(),
           price: firstVariant.price.toString(),
-          compareAtPrice: firstVariant.compareAtPrice !== null ? firstVariant.compareAtPrice.toString() : '',
+          discount: firstVariant.discount,
           stock: stockValue.toString(),
           sku: combinedSku,
           image: combinedImage,

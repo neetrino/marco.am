@@ -7,14 +7,9 @@ import type { ProductLabel } from '../types';
 import { GeneralSettingRow } from './GeneralSettingRow';
 import { ProductClassToggle } from './ProductClassToggle';
 import { ProductLabels } from './ProductLabels';
-import { ProductDiscountSection } from './ProductDiscountSection';
 import { ProductWarrantyToggle } from './ProductWarrantyToggle';
 
 interface ProductGeneralTabProps {
-  productId?: string | null;
-  isEditMode?: boolean;
-  discountPercent?: number;
-  discountExpiresAt?: string | null;
   productClass: ProductClass;
   warrantyYears: ProductWarrantyYears | null;
   labels: ProductLabel[];
@@ -47,10 +42,6 @@ function GeneralSettingsDivider() {
 }
 
 export function ProductGeneralTab({
-  productId = null,
-  isEditMode = false,
-  discountPercent = 0,
-  discountExpiresAt = null,
   productClass,
   warrantyYears,
   labels,
@@ -85,21 +76,6 @@ export function ProductGeneralTab({
           </GeneralSettingRow>
         </div>
       </div>
-
-      <div
-        className="mx-4 h-px shrink-0 bg-gradient-to-r from-transparent via-slate-200/90 to-transparent lg:mx-5"
-        aria-hidden
-      />
-
-      {isEditMode && productId ? (
-        <div className="px-4 py-3 lg:px-5">
-          <ProductDiscountSection
-            productId={productId}
-            initialDiscountPercent={discountPercent}
-            initialDiscountExpiresAt={discountExpiresAt}
-          />
-        </div>
-      ) : null}
 
       <div
         className="mx-4 h-px shrink-0 bg-gradient-to-r from-transparent via-slate-200/90 to-transparent lg:mx-5"

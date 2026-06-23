@@ -3,7 +3,6 @@ import { Prisma } from '@white-shop/db/prisma';
 import {
   buildProductListingRowsForLocales,
   type CategoryAncestry,
-  type ProductListingReadModelDiscountSettings,
 } from '@/lib/read-model/product-listing-row-builder';
 import {
   deleteProductPdpReadModel,
@@ -15,6 +14,7 @@ import { invalidateProductReadCaches } from '@/lib/services/read-through-json-ca
 import {
   loadListingDiscountSettingsUncached,
   toActiveListingDiscountSettings,
+  type ListingDiscountSettings,
 } from '@/lib/services/listing-discount-settings';
 
 export const PRODUCT_LISTING_READ_MODEL_DEFAULT_LOCALES = ['en', 'hy', 'ru', 'ka'] as const;
@@ -44,9 +44,12 @@ function normalizeBatchSize(value: number | undefined, fallback: number, max: nu
     : fallback;
 }
 
-async function loadDiscountSettings(): Promise<ProductListingReadModelDiscountSettings> {
-  const settings = await loadListingDiscountSettingsUncached();
-  return toActiveListingDiscountSettings(settings);
+/**
+ * Raw discount settings. The listing builder consumes the active (expiry-resolved) form,
+ * while the PDP sync re-resolves them itself, so this returns the raw settings.
+ */
+async function loadDiscountSettings(): Promise<ListingDiscountSettings> {
+  return loadListingDiscountSettingsUncached();
 }
 
 /** Category parent map + per-locale slugs, used to denormalize ancestor categories into rows. */
@@ -81,7 +84,8 @@ function productReadModelSelect(locales: readonly string[]) {
     primaryCategoryId: true,
     categoryIds: true,
     media: true,
-    discountPercent: true,
+    discountType: true,
+    discountValue: true,
     discountExpiresAt: true,
     warrantyYears: true,
     published: true,
@@ -116,7 +120,9 @@ function productReadModelSelect(locales: readonly string[]) {
         id: true,
         imageUrl: true,
         price: true,
-        compareAtPrice: true,
+        discountType: true,
+        discountValue: true,
+        discountExpiresAt: true,
         stock: true,
         published: true,
         attributes: true,
@@ -237,7 +243,7 @@ export async function syncProductListingReadModel(
   const rows = buildProductListingRowsForLocales({
     product,
     locales,
-    discountSettings,
+    discountSettings: toActiveListingDiscountSettings(discountSettings),
     categoryAncestry,
     rebuiltAt: new Date(),
   });
@@ -267,6 +273,7 @@ export async function syncProductListingReadModelBatch(
     loadDiscountSettings(),
     loadCategoryAncestry(),
   ]);
+  const activeDiscountSettings = toActiveListingDiscountSettings(discountSettings);
   let rowsDeleted = 0;
   let rowsWritten = 0;
   let productsSynced = 0;
@@ -284,7 +291,7 @@ export async function syncProductListingReadModelBatch(
         buildProductListingRowsForLocales({
           product,
           locales,
-          discountSettings,
+          discountSettings: activeDiscountSettings,
           categoryAncestry,
           rebuiltAt,
         }),
@@ -347,6 +354,7 @@ export async function rebuildProductListingReadModel(
     loadDiscountSettings(),
     loadCategoryAncestry(),
   ]);
+  const activeDiscountSettings = toActiveListingDiscountSettings(discountSettings);
   await db.productListingRow.deleteMany({});
 
   let cursorId: string | undefined;
@@ -368,7 +376,7 @@ export async function rebuildProductListingReadModel(
       buildProductListingRowsForLocales({
         product,
         locales,
-        discountSettings,
+        discountSettings: activeDiscountSettings,
         categoryAncestry,
         rebuiltAt,
       }),

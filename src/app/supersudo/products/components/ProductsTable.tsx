@@ -363,15 +363,9 @@ export function ProductsTable({
                         <div className="text-sm font-semibold text-slate-900">
                           {formatCatalogPrice(product.price, currency)}
                         </div>
-                        {(product.compareAtPrice && product.compareAtPrice > product.price) || 
-                         (product.discountPercent && product.discountPercent > 0) ? (
+                        {product.originalPrice && product.originalPrice > product.price ? (
                           <div className="mt-0.5 text-xs text-slate-500 line-through">
-                            {formatCatalogPrice(
-                              product.compareAtPrice && product.compareAtPrice > product.price
-                                ? product.compareAtPrice
-                                : product.price / (1 - (product.discountPercent || 0) / 100),
-                              currency
-                            )}
+                            {formatCatalogPrice(product.originalPrice, currency)}
                           </div>
                         ) : null}
                       </div>

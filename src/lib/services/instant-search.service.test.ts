@@ -72,7 +72,15 @@ describe('instant-search.service', () => {
               { locale: 'en', slug: 'iphone-15', title: 'iPhone 15' },
               { locale: 'hy', slug: 'iphone-15-hy', title: 'iPhone 15 HY' },
             ],
-            variants: [{ price: 499000, compareAtPrice: 529000, imageUrl: null }],
+            variants: [
+              {
+                price: 529000,
+                discountType: 'AMOUNT',
+                discountValue: 499000,
+                discountExpiresAt: null,
+                imageUrl: null,
+              },
+            ],
             categories: [
               {
                 id: 'cat-1',

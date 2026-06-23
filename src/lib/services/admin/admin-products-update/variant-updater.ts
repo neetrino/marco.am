@@ -7,13 +7,17 @@ import {
   resolveProductClass,
   type ProductClass,
 } from "@/lib/constants/product-class";
+import { normalizeVariantDiscountForWrite } from "../variant-discount-write";
+import type { DiscountKind } from "@/lib/discount/discount-expiry";
 
 interface PreparedVariantInput {
   id?: string;
   sku?: string;
   productClass: ProductClass;
   price: number;
-  compareAtPrice?: number;
+  discountType: DiscountKind;
+  discountValue: number | null;
+  discountExpiresAt: Date | null;
   stock: number;
   normalizedImageUrl?: string;
   published?: boolean;
@@ -124,7 +128,9 @@ async function updateExistingVariant(
       sku: variant.sku ? variant.sku.trim() : undefined,
       productClass: variant.productClass,
       price: variant.price,
-      compareAtPrice: variant.compareAtPrice,
+      discountType: variant.discountType,
+      discountValue: variant.discountValue,
+      discountExpiresAt: variant.discountExpiresAt,
       stock: isNaN(variant.stock) ? 0 : variant.stock,
       imageUrl: variant.normalizedImageUrl,
       published: variant.published !== false,
@@ -173,7 +179,9 @@ async function createNewVariant(
       sku: variant.sku ? variant.sku.trim() : undefined,
       productClass: variant.productClass,
       price: variant.price,
-      compareAtPrice: variant.compareAtPrice,
+      discountType: variant.discountType,
+      discountValue: variant.discountValue,
+      discountExpiresAt: variant.discountExpiresAt,
       stock: isNaN(variant.stock) ? 0 : variant.stock,
       imageUrl: variant.normalizedImageUrl,
       published: variant.published !== false,
@@ -242,7 +250,9 @@ export async function prepareVariantForWrite(
     sku?: string;
     productClass?: ProductClass;
     price: string | number;
-    compareAtPrice?: string | number;
+    discountType?: DiscountKind | string | null;
+    discountValue?: number | string | null;
+    discountExpiresAt?: string | null;
     stock: string | number;
     imageUrl?: string;
     published?: boolean;
@@ -256,7 +266,8 @@ export async function prepareVariantForWrite(
   },
   fallbackProductClass: ProductClass
 ): Promise<PreparedVariantInput> {
-  const { price, stock, compareAtPrice } = parseVariantPrices(variant);
+  const { price, stock } = parseVariantPrices(variant);
+  const discount = normalizeVariantDiscountForWrite(variant);
   const normalizedImageUrl = await processVariantImageUrl(variant.imageUrl);
 
   return {
@@ -264,7 +275,9 @@ export async function prepareVariantForWrite(
     productClass: resolveProductClass(variant.productClass ?? fallbackProductClass),
     price,
     stock,
-    compareAtPrice,
+    discountType: discount.discountType,
+    discountValue: discount.discountValue,
+    discountExpiresAt: discount.discountExpiresAt,
     normalizedImageUrl,
   };
 }

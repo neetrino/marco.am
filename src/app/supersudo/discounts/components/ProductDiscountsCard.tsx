@@ -4,7 +4,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { Card, Button, Input } from '@shop/ui';
 import { useTranslation } from '../../../../lib/i18n-client';
 import { formatCatalogPrice } from '../../../../lib/currency';
-import { DiscountExpiresPicker } from '@/components/admin/DiscountExpiresPicker';
+import { DiscountControl, type DiscountControlValue } from '@/components/admin/DiscountControl';
+import { activeTypedDiscount } from '@/lib/discount/discount-expiry';
+import { resolveProductPrice } from '@/lib/pricing/product-price';
 import { AdminTablePagination } from '../../components/AdminTablePagination';
 import {
   matchesProductSearchFields,
@@ -15,10 +17,8 @@ interface ProductDiscountsCardProps {
   fillHeight?: boolean;
   products: DiscountsProductRow[];
   productsLoading: boolean;
-  productDiscounts: Record<string, number>;
-  setProductDiscounts: React.Dispatch<React.SetStateAction<Record<string, number>>>;
-  productDiscountExpires: Record<string, string | null>;
-  setProductDiscountExpiresAt: (productId: string, value: string | null) => void;
+  productDiscounts: Record<string, DiscountControlValue>;
+  setProductDiscount: (productId: string, value: DiscountControlValue) => void;
   handleProductDiscountSave: (productId: string) => void;
   savingProductId: string | null;
 }
@@ -30,9 +30,7 @@ export function ProductDiscountsCard({
   products,
   productsLoading,
   productDiscounts,
-  setProductDiscounts,
-  productDiscountExpires,
-  setProductDiscountExpiresAt,
+  setProductDiscount,
   handleProductDiscountSave,
   savingProductId,
 }: ProductDiscountsCardProps) {
@@ -124,11 +122,18 @@ export function ProductDiscountsCard({
         <div className={fillHeight ? 'flex min-h-0 flex-1 flex-col' : 'space-y-3'}>
           <div className={fillHeight ? 'min-h-0 flex-1 space-y-3 overflow-y-auto' : 'space-y-3'}>
           {paginatedProducts.map((product) => {
-            const currentDiscount = Number(productDiscounts[product.id] ?? product.discountPercent ?? 0);
+            const discount: DiscountControlValue = productDiscounts[product.id] ?? {
+              type: product.discountType ?? 'NONE',
+              value: product.discountValue ?? null,
+              expiresAt: product.discountExpiresAt ?? null,
+            };
             const originalPrice = product.price || 0;
-            const discountedPrice = currentDiscount > 0 && originalPrice > 0
-              ? Math.round(originalPrice * (1 - currentDiscount / 100))
-              : originalPrice;
+            const pricing = resolveProductPrice({
+              standardPrice: originalPrice,
+              discount: activeTypedDiscount(discount),
+            });
+            const discountedPrice = pricing.currentPrice;
+            const hasDiscount = pricing.oldPrice !== null;
 
             return (
               <div
@@ -147,7 +152,7 @@ export function ProductDiscountsCard({
                 <div className="flex-1 min-w-0">
                   <h3 className="truncate text-sm font-semibold text-slate-900">{product.title}</h3>
                   <div className="mt-1 flex items-center gap-2">
-                    {currentDiscount > 0 && originalPrice > 0 ? (
+                    {hasDiscount && originalPrice > 0 ? (
                       <>
                         <span className="select-none text-xs font-semibold text-slate-700">
                           {formatCatalogPrice(discountedPrice, 'AMD')}
@@ -155,9 +160,11 @@ export function ProductDiscountsCard({
                         <span className="select-none text-xs text-slate-400 line-through">
                           {formatCatalogPrice(originalPrice, 'AMD')}
                         </span>
-                        <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-semibold text-rose-700">
-                          -{currentDiscount}%
-                        </span>
+                        {pricing.discountPercent ? (
+                          <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-semibold text-rose-700">
+                            -{pricing.discountPercent}%
+                          </span>
+                        ) : null}
                       </>
                     ) : (
                       <span className="select-none text-xs text-slate-500">
@@ -167,27 +174,11 @@ export function ProductDiscountsCard({
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Input
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="0.1"
-                    value={productDiscounts[product.id] ?? product.discountPercent ?? 0}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      const discountValue = value === '' ? 0 : parseFloat(value) || 0;
-                      setProductDiscounts((prev) => ({
-                        ...prev,
-                        [product.id]: discountValue,
-                      }));
-                    }}
-                    className="w-20 border-slate-300 bg-white"
-                    placeholder="0"
-                  />
-                  <span className="w-6 text-sm font-semibold text-slate-700">%</span>
-                  <DiscountExpiresPicker
-                    value={productDiscountExpires[product.id] ?? product.discountExpiresAt ?? null}
-                    onChange={(expiresAt) => setProductDiscountExpiresAt(product.id, expiresAt)}
+                  <DiscountControl
+                    value={discount}
+                    onChange={(next) => setProductDiscount(product.id, next)}
+                    allowAmount
+                    disabled={savingProductId === product.id}
                   />
                   <Button
                     variant="primary"

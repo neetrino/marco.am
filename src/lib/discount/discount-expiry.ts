@@ -1,5 +1,20 @@
 /** Shared discount expiry helpers for admin settings and product discounts. */
 
+/** Discount kind, mirrors the Prisma `DiscountType` enum. */
+export type DiscountKind = 'NONE' | 'PERCENT' | 'AMOUNT';
+
+/** Resolved discount ready for price computation. */
+export type AppliedDiscount = { type: DiscountKind; value: number };
+
+export const NO_DISCOUNT: AppliedDiscount = { type: 'NONE', value: 0 };
+
+/** Raw product/variant discount as stored (supports PERCENT or AMOUNT). */
+export type TypedDiscountInput = {
+  type: DiscountKind | null | undefined;
+  value: number | null | undefined;
+  expiresAt: string | Date | null | undefined;
+};
+
 export type DiscountEntry = {
   percent: number;
   expiresAt: string | null;
@@ -112,6 +127,62 @@ export function toActiveDiscountMap(map: DiscountMap, now: Date = new Date()): R
     }
   }
   return out;
+}
+
+/** Returns the active typed discount, or NONE when empty, non-positive, or expired. */
+export function activeTypedDiscount(
+  input: TypedDiscountInput | null | undefined,
+  now: Date = new Date(),
+): AppliedDiscount {
+  if (!input || !input.type || input.type === 'NONE') {
+    return NO_DISCOUNT;
+  }
+  const value = Number(input.value);
+  if (!Number.isFinite(value) || value <= 0) {
+    return NO_DISCOUNT;
+  }
+  if (isDiscountExpired(input.expiresAt, now)) {
+    return NO_DISCOUNT;
+  }
+  return { type: input.type, value };
+}
+
+/**
+ * Precedence chain: variant → product → category → brand → global.
+ * Category/brand/global support percent only (already expiry-resolved by the caller).
+ */
+export type EffectiveDiscountChain = {
+  variant?: TypedDiscountInput | null;
+  product?: TypedDiscountInput | null;
+  categoryPercent?: number;
+  brandPercent?: number;
+  globalPercent?: number;
+};
+
+export function resolveEffectiveDiscount(
+  chain: EffectiveDiscountChain,
+  now: Date = new Date(),
+): AppliedDiscount {
+  const variant = activeTypedDiscount(chain.variant, now);
+  if (variant.type !== 'NONE') {
+    return variant;
+  }
+  const product = activeTypedDiscount(chain.product, now);
+  if (product.type !== 'NONE') {
+    return product;
+  }
+  const settingsPercent =
+    (chain.categoryPercent ?? 0) > 0
+      ? chain.categoryPercent
+      : (chain.brandPercent ?? 0) > 0
+        ? chain.brandPercent
+        : (chain.globalPercent ?? 0) > 0
+          ? chain.globalPercent
+          : 0;
+  if (settingsPercent && settingsPercent > 0) {
+    return { type: 'PERCENT', value: settingsPercent };
+  }
+  return NO_DISCOUNT;
 }
 
 export function formatDiscountExpiresAt(

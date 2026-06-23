@@ -1,5 +1,6 @@
 import type { ProductClass } from "@/lib/constants/product-class";
 import type { ProductDescriptionEntry } from "@/lib/products/product-description";
+import type { DiscountKind } from "@/lib/discount/discount-expiry";
 
 /**
  * Update product data interface
@@ -30,7 +31,9 @@ export interface UpdateProductData {
   variants?: Array<{
     id?: string;
     price: string | number;
-    compareAtPrice?: string | number;
+    discountType?: DiscountKind | string | null;
+    discountValue?: number | string | null;
+    discountExpiresAt?: string | null;
     stock: string | number;
     sku?: string;
     productClass?: ProductClass;

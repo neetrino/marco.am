@@ -5,6 +5,7 @@ import { Card } from '@shop/ui';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '../../../lib/i18n-client';
 import type { DiscountMap } from '@/lib/discount/discount-expiry';
+import type { DiscountControlValue } from '@/components/admin/DiscountControl';
 import type {
   DiscountsBrand,
   DiscountsCategory,
@@ -50,10 +51,8 @@ interface DiscountsContentProps {
   brandSaving: boolean;
   products: DiscountsProductRow[];
   productsLoading: boolean;
-  productDiscounts: Record<string, number>;
-  setProductDiscounts: React.Dispatch<React.SetStateAction<Record<string, number>>>;
-  productDiscountExpires: Record<string, string | null>;
-  setProductDiscountExpiresAt: (productId: string, value: string | null) => void;
+  productDiscounts: Record<string, DiscountControlValue>;
+  setProductDiscount: (productId: string, value: DiscountControlValue) => void;
   handleProductDiscountSave: (productId: string) => void;
   savingProductId: string | null;
 }
@@ -88,9 +87,7 @@ export function DiscountsContent({
   products,
   productsLoading,
   productDiscounts,
-  setProductDiscounts,
-  productDiscountExpires,
-  setProductDiscountExpiresAt,
+  setProductDiscount,
   handleProductDiscountSave,
   savingProductId,
 }: DiscountsContentProps) {
@@ -183,9 +180,7 @@ export function DiscountsContent({
                   products={products}
                   productsLoading={productsLoading}
                   productDiscounts={productDiscounts}
-                  setProductDiscounts={setProductDiscounts}
-                  productDiscountExpires={productDiscountExpires}
-                  setProductDiscountExpiresAt={setProductDiscountExpiresAt}
+                  setProductDiscount={setProductDiscount}
                   handleProductDiscountSave={handleProductDiscountSave}
                   savingProductId={savingProductId}
                 />

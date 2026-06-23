@@ -76,9 +76,13 @@ async function main(): Promise<void> {
       continue;
     }
 
-    const variantPrice = salePrice !== undefined && salePrice > 0 ? salePrice : listPrice;
-    const compareAt =
-      salePrice !== undefined && salePrice > 0 && listPrice > salePrice ? listPrice : undefined;
+    const hasSale = salePrice !== undefined && salePrice > 0 && listPrice > salePrice;
+    // Standard price is the list price; an active sale becomes an AMOUNT (final sale price) discount.
+    const variantPrice = hasSale
+      ? listPrice
+      : salePrice !== undefined && salePrice > 0
+        ? salePrice
+        : listPrice;
 
     const legacyId = (row["ID"] ?? "").trim() || nanoid(8);
     const imagesCell = row["Images"] ?? "";
@@ -128,7 +132,8 @@ async function main(): Promise<void> {
         variants: [
           {
             price: variantPrice,
-            compareAtPrice: compareAt,
+            discountType: hasSale ? "AMOUNT" : "NONE",
+            discountValue: hasSale ? (salePrice ?? null) : null,
             stock: DEFAULT_STOCK,
             sku,
             options: colorOptions.length > 0 ? colorOptions : undefined,

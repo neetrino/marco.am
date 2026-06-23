@@ -8,7 +8,9 @@ import { FormSection } from './FormSection';
 import { getColorHex } from '../../../../../lib/colorMap';
 import { CURRENCIES, type CurrencyCode } from '../../../../../lib/currency';
 import { showPopupPrompt } from '@/components/popup-service';
+import { DiscountControl } from '@/components/admin/DiscountControl';
 import type { Attribute, GeneratedVariant } from '../types';
+import type { VariantDiscount } from '../utils/variant-discount';
 import { logger } from "@/lib/utils/logger";
 
 interface VariantBuilderProps {
@@ -23,7 +25,7 @@ interface VariantBuilderProps {
   onVariantUpdate: (updater: (prev: GeneratedVariant[]) => GeneratedVariant[]) => void;
   onVariantDelete: (variantId: string) => void;
   onVariantAdd: () => void;
-  onApplyToAll: (field: 'price' | 'compareAtPrice' | 'stock' | 'sku', value: string) => void;
+  onApplyToAll: (field: 'price' | 'stock' | 'sku', value: string) => void;
   onVariantImageUpload: (variantId: string, event: ChangeEvent<HTMLInputElement>) => void;
   onOpenValueModal: (modal: { variantId: string; attributeId: string } | null) => void;
 }
@@ -202,7 +204,7 @@ export function VariantBuilder({
                     )}
 
                     {/* Row 2: pricing, inventory, image, actions */}
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 items-end">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 items-end">
                       <div>
                         <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">
                           {t('admin.products.add.price')}
@@ -214,27 +216,6 @@ export function VariantBuilder({
                             onChange={(e) => {
                               onVariantUpdate((prev) =>
                                 prev.map((v) => (v.id === variant.id ? { ...v, price: e.target.value } : v))
-                              );
-                            }}
-                            placeholder={t('admin.products.add.pricePlaceholder')}
-                            className="w-full text-sm"
-                            min="0"
-                            step="0.01"
-                          />
-                          <span className="text-sm text-gray-500 flex-shrink-0">{CURRENCIES[defaultCurrency].symbol}</span>
-                        </div>
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">
-                          {t('admin.products.add.compareAtPrice')}
-                        </label>
-                        <div className="flex items-center gap-1.5">
-                          <Input
-                            type="number"
-                            value={variant.compareAtPrice}
-                            onChange={(e) => {
-                              onVariantUpdate((prev) =>
-                                prev.map((v) => (v.id === variant.id ? { ...v, compareAtPrice: e.target.value } : v))
                               );
                             }}
                             placeholder={t('admin.products.add.pricePlaceholder')}
@@ -357,6 +338,22 @@ export function VariantBuilder({
                           {t('admin.products.add.delete')}
                         </button>
                       </div>
+                    </div>
+
+                    {/* Row 3: per-variant discount */}
+                    <div className="mt-3">
+                      <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">
+                        {t('admin.products.add.discount')}
+                      </label>
+                      <DiscountControl
+                        value={variant.discount}
+                        onChange={(next: VariantDiscount) => {
+                          onVariantUpdate((prev) =>
+                            prev.map((v) => (v.id === variant.id ? { ...v, discount: next } : v))
+                          );
+                        }}
+                        currencySymbol={CURRENCIES[defaultCurrency].symbol}
+                      />
                     </div>
                   </div>
                 );

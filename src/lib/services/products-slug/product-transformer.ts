@@ -23,7 +23,10 @@ import {
   toActiveListingDiscountSettings,
   type ListingDiscountSettings,
 } from "../listing-discount-settings";
-import { activeDiscountPercent } from "@/lib/discount/discount-expiry";
+import {
+  resolveEffectiveDiscount,
+  type TypedDiscountInput,
+} from "@/lib/discount/discount-expiry";
 
 type ProductTranslationShape = {
   locale: string;
@@ -91,36 +94,23 @@ type ProductDiscountBadge = {
 type StockStatus = "in_stock" | "out_of_stock";
 
 
-/**
- * Calculate actual discount with priority: productDiscount > categoryDiscount > brandDiscount > globalDiscount
- */
-function calculateActualDiscount(
-  productDiscount: number,
-  primaryCategoryId: string | null,
-  brandId: string | null,
-  categoryDiscounts: Record<string, number>,
-  brandDiscounts: Record<string, number>,
-  globalDiscount: number
-): number {
-  if (productDiscount > 0) {
-    return productDiscount;
-  }
+/** Settings-level (percent-only) discounts that apply to a product. */
+type SettingsDiscountPercents = {
+  categoryPercent: number;
+  brandPercent: number;
+  globalPercent: number;
+};
 
-  // Check category discounts
-  if (primaryCategoryId && categoryDiscounts[primaryCategoryId]) {
-    return categoryDiscounts[primaryCategoryId];
-  }
-
-  // Check brand discounts
-  if (brandId && brandDiscounts[brandId]) {
-    return brandDiscounts[brandId];
-  }
-
-  if (globalDiscount > 0) {
-    return globalDiscount;
-  }
-
-  return 0;
+function toTypedDiscountInput(source: {
+  discountType?: string | null;
+  discountValue?: number | null;
+  discountExpiresAt?: Date | string | null;
+}): TypedDiscountInput {
+  return {
+    type: (source.discountType ?? 'NONE') as TypedDiscountInput['type'],
+    value: source.discountValue ?? null,
+    expiresAt: source.discountExpiresAt ?? null,
+  };
 }
 
 function transformGallery(
@@ -277,20 +267,24 @@ function resolveProductStockSummary(variants: ProductVariantWithOptions[]): {
 }
 
 function buildVariantPricing(
-  originalPrice: number,
-  compareAtPrice: number | null,
-  actualDiscount: number
+  standardPrice: number,
+  variantDiscount: TypedDiscountInput,
+  productDiscount: TypedDiscountInput,
+  settings: SettingsDiscountPercents
 ): {
   currentPrice: number;
   oldPrice: number | null;
   discountPercent: number | null;
   discountBadge: ProductDiscountBadge | null;
 } {
-  const resolved = resolveProductPrice({
-    currentPrice: originalPrice,
-    compareAtPrice,
-    fallbackDiscountPercent: actualDiscount,
+  const applied = resolveEffectiveDiscount({
+    variant: variantDiscount,
+    product: productDiscount,
+    categoryPercent: settings.categoryPercent,
+    brandPercent: settings.brandPercent,
+    globalPercent: settings.globalPercent,
   });
+  const resolved = resolveProductPrice({ standardPrice, discount: applied });
 
   return {
     currentPrice: resolved.currentPrice,
@@ -305,20 +299,17 @@ function buildVariantPricing(
  */
 function transformVariants(
   variants: ProductVariantWithOptions[],
-  actualDiscount: number,
+  productDiscount: TypedDiscountInput,
+  settings: SettingsDiscountPercents,
   globalDiscount: number,
-  productDiscount: number,
   lang: string
 ) {
   return variants
     .sort((a: { price: number }, b: { price: number }) => a.price - b.price)
     .map((variant: ProductVariantWithOptions) => {
       const basePrice = variant.price;
-      const compareAtPrice =
-        typeof variant.compareAtPrice === "number" && Number.isFinite(variant.compareAtPrice)
-          ? variant.compareAtPrice
-          : null;
-      const pricing = buildVariantPricing(basePrice, compareAtPrice, actualDiscount);
+      const variantDiscount = toTypedDiscountInput(variant);
+      const pricing = buildVariantPricing(basePrice, variantDiscount, productDiscount, settings);
 
       const variantImageUrl = transformVariantImageUrl(variant);
       
@@ -338,9 +329,9 @@ function transformVariants(
         currentPrice: pricing.currentPrice,
         oldPrice: pricing.oldPrice,
         discountBadge: pricing.discountBadge,
-        compareAtPrice,
+        compareAtPrice: pricing.oldPrice,
         globalDiscount: globalDiscount > 0 ? globalDiscount : null,
-        productDiscount: productDiscount > 0 ? productDiscount : null,
+        productDiscount: pricing.discountPercent,
         stock: variant.stock,
         inStock: variant.stock > 0,
         stockStatus: toStockStatus(variant.stock),
@@ -522,20 +513,19 @@ export async function transformProduct(
   const { globalDiscount, categoryDiscounts, brandDiscounts } =
     toActiveListingDiscountSettings(rawDiscountSettings);
 
-  const productDiscount = activeDiscountPercent(
-    product.discountPercent || 0,
-    (product as { discountExpiresAt?: Date | null }).discountExpiresAt ?? null,
+  const productDiscountInput = toTypedDiscountInput(
+    product as {
+      discountType?: string | null;
+      discountValue?: number | null;
+      discountExpiresAt?: Date | null;
+    },
   );
-  
-  // Calculate actual discount
-  const actualDiscount = calculateActualDiscount(
-    productDiscount,
-    product.primaryCategoryId,
-    product.brandId,
-    categoryDiscounts,
-    brandDiscounts,
-    globalDiscount
-  );
+  const settingsPercents: SettingsDiscountPercents = {
+    categoryPercent:
+      (product.primaryCategoryId && categoryDiscounts[product.primaryCategoryId]) || 0,
+    brandPercent: (product.brandId && brandDiscounts[product.brandId]) || 0,
+    globalPercent: globalDiscount,
+  };
 
   // Transform categories
   const categories = Array.isArray(product.categories) ? product.categories.map((cat: { id: string; translations?: Array<{ locale: string; slug: string; title: string }> }) => {
@@ -566,9 +556,9 @@ export async function transformProduct(
   const transformedVariants = rawVariantsForTransform.length
     ? transformVariants(
         rawVariantsForTransform,
-        actualDiscount,
+        productDiscountInput,
+        settingsPercents,
         globalDiscount,
-        productDiscount,
         lang
       )
     : [];
@@ -624,7 +614,7 @@ export async function transformProduct(
       discountBadge: primaryVariant?.discountBadge ?? null,
     },
     globalDiscount: globalDiscount > 0 ? globalDiscount : null,
-    productDiscount: productDiscount > 0 ? productDiscount : null,
+    productDiscount: primaryVariant?.productDiscount ?? null,
     technicalSpecifications,
     seo: {
       title: translation?.seoTitle || translation?.title,

@@ -15,6 +15,11 @@ import {
   collectVariantImagesFromProductVariants,
 } from '../utils/variantImageCollector';
 import { hasVariantsWithAttributes } from '../utils/productTypeDetector';
+import {
+  fromApiVariantDiscount,
+  EMPTY_VARIANT_DISCOUNT,
+  type VariantDiscount,
+} from '../utils/variant-discount';
 import { logger } from '@/lib/utils/logger';
 
 interface ApplyGeneralParams {
@@ -150,7 +155,7 @@ interface ApplyPricingParams {
   setProductType: (type: 'simple' | 'variable') => void;
   setSimpleProductData: (data: {
     price: string;
-    compareAtPrice: string;
+    discount: VariantDiscount;
     sku: string;
     quantity: string;
     variantId: string;
@@ -169,8 +174,10 @@ function applyPricingSection({
   attributes,
 }: ApplyPricingParams): void {
   const colorDataMap = new Map<string, ColorData>();
+  const convertAmountToDefault = (value: number): number =>
+    convertPrice(value, CATALOG_PRICE_CURRENCY, defaultCurrency);
   let firstPrice = '';
-  let firstCompareAtPrice = '';
+  let firstDiscount: VariantDiscount = { ...EMPTY_VARIANT_DISCOUNT };
   let firstSku = '';
 
   (product.variants || []).forEach((rawVariant, index) => {
@@ -213,20 +220,11 @@ function applyPricingSection({
             ? variantRow.price
             : parseFloat(String(variantRow.price || '0'))
           : 0;
-      const firstCompareAtPriceCatalog =
-        variantRow.compareAtPrice !== undefined && variantRow.compareAtPrice !== null
-          ? typeof variantRow.compareAtPrice === 'number'
-            ? variantRow.compareAtPrice
-            : parseFloat(String(variantRow.compareAtPrice || '0'))
-          : 0;
       firstPrice =
         firstPriceCatalog > 0
           ? String(convertPrice(firstPriceCatalog, CATALOG_PRICE_CURRENCY, defaultCurrency))
           : '';
-      firstCompareAtPrice =
-        firstCompareAtPriceCatalog > 0
-          ? String(convertPrice(firstCompareAtPriceCatalog, CATALOG_PRICE_CURRENCY, defaultCurrency))
-          : '';
+      firstDiscount = fromApiVariantDiscount(variantRow, convertAmountToDefault);
       firstSku = variantRow.sku || '';
     }
   });
@@ -234,7 +232,7 @@ function applyPricingSection({
   const mergedVariant: Variant = {
     id: `variant-${Date.now()}-${Math.random()}`,
     price: firstPrice,
-    compareAtPrice: firstCompareAtPrice,
+    discount: firstDiscount,
     sku: firstSku,
     colors: Array.from(colorDataMap.values()),
   };
@@ -275,23 +273,19 @@ function applyPricingSection({
               ),
             )
           : '',
-        compareAtPrice: firstVariant.compareAtPrice
-          ? String(
-              convertPrice(
-                typeof firstVariant.compareAtPrice === 'number'
-                  ? firstVariant.compareAtPrice
-                  : parseFloat(String(firstVariant.compareAtPrice || '0')),
-                CATALOG_PRICE_CURRENCY,
-                defaultCurrency,
-              ),
-            )
-          : '',
+        discount: fromApiVariantDiscount(firstVariant, convertAmountToDefault),
         sku: firstVariant.sku || '',
         quantity: String(firstVariant.stock || 0),
         variantId: firstVariant.id || '',
       });
     } else {
-      setSimpleProductData({ price: '', compareAtPrice: '', sku: '', quantity: '0', variantId: '' });
+      setSimpleProductData({
+        price: '',
+        discount: { ...EMPTY_VARIANT_DISCOUNT },
+        sku: '',
+        quantity: '0',
+        variantId: '',
+      });
     }
   } else {
     setProductType('variable');

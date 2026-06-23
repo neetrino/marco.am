@@ -10,6 +10,7 @@ import {
   type ProductEditorTabId,
 } from '../product-editor-tabs';
 import type { Attribute } from '../types';
+import type { VariantDiscount } from '../utils/variant-discount';
 import type { AddProductFormState } from '../utils/productFormDataBuilder';
 import {
   applyGeneralSectionFromListProduct,
@@ -56,7 +57,7 @@ interface UseProductEditorTabLoaderParams {
   setProductType: (type: 'simple' | 'variable') => void;
   setSimpleProductData: (data: {
     price: string;
-    compareAtPrice: string;
+    discount: VariantDiscount;
     sku: string;
     quantity: string;
     variantId: string;

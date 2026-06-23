@@ -1,5 +1,6 @@
 import { db } from "@white-shop/db";
 
+import type { DiscountKind } from "@/lib/discount/discount-expiry";
 import { cacheService } from "@/lib/services/cache.service";
 import { getCachedJson } from "@/lib/services/read-through-json-cache";
 import { logger } from "@/lib/utils/logger";
@@ -10,14 +11,27 @@ type ProductDiscountRow = {
   slug: string;
   image: string | null;
   price: number;
-  discountPercent: number;
+  discountType: DiscountKind;
+  discountValue: number | null;
   discountExpiresAt: string | null;
   searchText: string;
   sku: string;
 };
 
+type ProductDiscountFields = {
+  discountType: DiscountKind;
+  discountValue: number | null;
+  discountExpiresAt: string | null;
+};
+
+const NONE_DISCOUNT_FIELDS: ProductDiscountFields = {
+  discountType: "NONE",
+  discountValue: null,
+  discountExpiresAt: null,
+};
+
 const ADMIN_PRODUCT_DISCOUNTS_CACHE_TTL_SEC = 300;
-const ADMIN_PRODUCT_DISCOUNTS_CACHE_PREFIX = "admin:product-discounts:v4:";
+const ADMIN_PRODUCT_DISCOUNTS_CACHE_PREFIX = "admin:product-discounts:v5:";
 
 function normalizeLocale(localeInput?: string): string {
   const locale = localeInput?.trim().toLowerCase();
@@ -31,25 +45,20 @@ function mapListingRow(
     slug: string;
     image: string | null;
     price: number;
-    discountPercent: number;
-    discountExpiresAt: string | Date | null;
     searchText: string;
   },
+  discount: ProductDiscountFields,
   sku: string,
 ): ProductDiscountRow {
-  const expiresAt =
-    row.discountExpiresAt instanceof Date
-      ? row.discountExpiresAt.toISOString()
-      : row.discountExpiresAt;
-
   return {
     id: row.productId,
     title: row.title,
     slug: row.slug,
     image: row.image,
     price: row.price,
-    discountPercent: row.discountPercent,
-    discountExpiresAt: expiresAt,
+    discountType: discount.discountType,
+    discountValue: discount.discountValue,
+    discountExpiresAt: discount.discountExpiresAt,
     searchText: row.searchText,
     sku,
   };
@@ -88,9 +97,9 @@ async function fetchVariantSkusByProductId(productIds: string[]): Promise<Map<st
   );
 }
 
-async function fetchProductExpiresAtByProductId(
+async function fetchProductDiscountsByProductId(
   productIds: string[],
-): Promise<Map<string, string | null>> {
+): Promise<Map<string, ProductDiscountFields>> {
   if (productIds.length === 0) {
     return new Map();
   }
@@ -98,17 +107,33 @@ async function fetchProductExpiresAtByProductId(
   try {
     const products = await db.product.findMany({
       where: { id: { in: productIds } },
-      select: { id: true, discountExpiresAt: true },
+      select: {
+        id: true,
+        discountType: true,
+        discountValue: true,
+        discountExpiresAt: true,
+      },
     });
 
     return new Map(
-      products.map((product) => [product.id, product.discountExpiresAt?.toISOString() ?? null]),
+      products.map((product) => [
+        product.id,
+        {
+          discountType: product.discountType as DiscountKind,
+          discountValue: product.discountValue ?? null,
+          discountExpiresAt: product.discountExpiresAt?.toISOString() ?? null,
+        },
+      ]),
     );
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
-    if (message.includes("discountExpiresAt")) {
+    if (
+      message.includes("discountType") ||
+      message.includes("discountValue") ||
+      message.includes("discountExpiresAt")
+    ) {
       logger.warn(
-        "[product-discounts-list] discountExpiresAt missing in Prisma client — run pnpm db:generate and restart the dev server",
+        "[product-discounts-list] discount fields missing in Prisma client — run pnpm db:generate and restart the dev server",
       );
       return new Map();
     }
@@ -125,7 +150,6 @@ async function fetchProductDiscountsListUncached(locale: string): Promise<{ data
       slug: true,
       image: true,
       price: true,
-      discountPercent: true,
       searchText: true,
       productCreatedAt: true,
     },
@@ -133,17 +157,15 @@ async function fetchProductDiscountsListUncached(locale: string): Promise<{ data
   });
 
   const productIds = listingRows.map((row) => row.productId);
-  const [skusByProductId, expiresAtByProductId] = await Promise.all([
+  const [skusByProductId, discountsByProductId] = await Promise.all([
     fetchVariantSkusByProductId(productIds),
-    fetchProductExpiresAtByProductId(productIds),
+    fetchProductDiscountsByProductId(productIds),
   ]);
 
   const data = listingRows.map((row) =>
     mapListingRow(
-      {
-        ...row,
-        discountExpiresAt: expiresAtByProductId.get(row.productId) ?? null,
-      },
+      row,
+      discountsByProductId.get(row.productId) ?? NONE_DISCOUNT_FIELDS,
       skusByProductId.get(row.productId) ?? "",
     ),
   );
@@ -154,6 +176,7 @@ async function fetchProductDiscountsListUncached(locale: string): Promise<{ data
 /** Clears cached admin product discount lists (all locales). */
 export async function invalidateAdminProductDiscountsCache(): Promise<void> {
   await cacheService.deletePattern(`${ADMIN_PRODUCT_DISCOUNTS_CACHE_PREFIX}*`);
+  await cacheService.deletePattern("admin:product-discounts:v4:*");
   await cacheService.deletePattern("admin:product-discounts:v2:*");
   await cacheService.deletePattern("admin:product-discounts:v1:*");
 }

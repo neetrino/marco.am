@@ -19,6 +19,7 @@ import {
   writeAdminSessionCache,
 } from '@/lib/admin/admin-session-cache';
 import { parseDiscountMap, serializeDiscountMap, type DiscountMap } from '@/lib/discount/discount-expiry';
+import type { DiscountControlValue } from '@/components/admin/DiscountControl';
 
 import {
   dedupeDiscountProductRows,
@@ -26,6 +27,15 @@ import {
   type DiscountsCategory,
   type DiscountsProductRow,
 } from './types';
+
+function rowToDiscountValue(row: DiscountsProductRow): DiscountControlValue {
+  const type = row.discountType ?? 'NONE';
+  return {
+    type,
+    value: type === 'NONE' ? null : row.discountValue ?? null,
+    expiresAt: row.discountExpiresAt ?? null,
+  };
+}
 
 type SettingsPayload = {
   globalDiscount?: number;
@@ -76,13 +86,9 @@ export function useDiscounts({ activeLocale, t }: UseDiscountsParams) {
     dedupeDiscountProductRows(cachedProducts?.data ?? []),
   );
   const [productsLoading, setProductsLoading] = useState(cachedProducts === null);
-  const [productDiscounts, setProductDiscounts] = useState<Record<string, number>>(() => {
+  const [productDiscounts, setProductDiscounts] = useState<Record<string, DiscountControlValue>>(() => {
     const rows = dedupeDiscountProductRows(cachedProducts?.data ?? []);
-    return Object.fromEntries(rows.map((row) => [row.id, row.discountPercent ?? 0]));
-  });
-  const [productDiscountExpires, setProductDiscountExpires] = useState<Record<string, string | null>>(() => {
-    const rows = dedupeDiscountProductRows(cachedProducts?.data ?? []);
-    return Object.fromEntries(rows.map((row) => [row.id, row.discountExpiresAt ?? null]));
+    return Object.fromEntries(rows.map((row) => [row.id, rowToDiscountValue(row)]));
   });
   const [savingProductId, setSavingProductId] = useState<string | null>(null);
 
@@ -105,10 +111,7 @@ export function useDiscounts({ activeLocale, t }: UseDiscountsParams) {
     const uniqueRows = dedupeDiscountProductRows(rows);
     setProducts(uniqueRows);
     setProductDiscounts(
-      Object.fromEntries(uniqueRows.map((row) => [row.id, row.discountPercent ?? 0])),
-    );
-    setProductDiscountExpires(
-      Object.fromEntries(uniqueRows.map((row) => [row.id, row.discountExpiresAt ?? null])),
+      Object.fromEntries(uniqueRows.map((row) => [row.id, rowToDiscountValue(row)])),
     );
   }, []);
 
@@ -256,29 +259,29 @@ export function useDiscounts({ activeLocale, t }: UseDiscountsParams) {
   };
 
   const handleProductDiscountSave = async (productId: string) => {
-    const discountValue = productDiscounts[productId] ?? 0;
-    if (Number.isNaN(discountValue) || discountValue < 0 || discountValue > 100) {
+    const current = productDiscounts[productId] ?? { type: 'NONE', value: null, expiresAt: null };
+    const isInvalidPercent =
+      current.type === 'PERCENT' &&
+      (current.value === null || current.value < 0 || current.value > 100);
+    const isInvalidAmount =
+      current.type === 'AMOUNT' && (current.value === null || current.value <= 0);
+    if (isInvalidPercent || isInvalidAmount) {
       alert(tRef.current('admin.quickSettings.discountMustBeValid'));
       return;
     }
 
     setSavingProductId(productId);
     try {
-      const discountExpiresAt = productDiscountExpires[productId] ?? null;
-      await apiClient.patch(`/api/v1/supersudo/products/${productId}/discount`, {
-        discountPercent: discountValue,
-        discountExpiresAt,
-      });
+      const nextRow = {
+        discountType: current.type,
+        discountValue: current.type === 'NONE' ? null : current.value,
+        discountExpiresAt: current.expiresAt,
+      };
+      await apiClient.patch(`/api/v1/supersudo/products/${productId}/discount`, nextRow);
 
       setProducts((prev) =>
-        prev.map((row) =>
-          row.id === productId
-            ? { ...row, discountPercent: discountValue, discountExpiresAt }
-            : row,
-        ),
+        prev.map((row) => (row.id === productId ? { ...row, ...nextRow } : row)),
       );
-      setProductDiscounts((prev) => ({ ...prev, [productId]: discountValue }));
-      setProductDiscountExpires((prev) => ({ ...prev, [productId]: discountExpiresAt }));
 
       const cacheKey = buildProductDiscountsCacheKey(activeLocale);
       const cached = readAdminSessionCache<ProductDiscountsPayload>(
@@ -287,11 +290,7 @@ export function useDiscounts({ activeLocale, t }: UseDiscountsParams) {
       );
       if (cached?.data) {
         writeAdminSessionCache(cacheKey, {
-          data: cached.data.map((row) =>
-            row.id === productId
-              ? { ...row, discountPercent: discountValue, discountExpiresAt }
-              : row,
-          ),
+          data: cached.data.map((row) => (row.id === productId ? { ...row, ...nextRow } : row)),
         });
       }
 
@@ -384,8 +383,8 @@ export function useDiscounts({ activeLocale, t }: UseDiscountsParams) {
     });
   };
 
-  const setProductDiscountExpiresAt = (productId: string, expiresAt: string | null) => {
-    setProductDiscountExpires((prev) => ({ ...prev, [productId]: expiresAt }));
+  const setProductDiscount = (productId: string, value: DiscountControlValue) => {
+    setProductDiscounts((prev) => ({ ...prev, [productId]: value }));
   };
 
   return {
@@ -415,9 +414,7 @@ export function useDiscounts({ activeLocale, t }: UseDiscountsParams) {
     products,
     productsLoading,
     productDiscounts,
-    setProductDiscounts,
-    productDiscountExpires,
-    setProductDiscountExpiresAt,
+    setProductDiscount,
     handleProductDiscountSave,
     savingProductId,
   };

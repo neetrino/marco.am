@@ -30,6 +30,7 @@ import {
   type SectionFingerprints,
 } from '../utils/product-editor-dirty';
 import type { Product } from '../../types';
+import { EMPTY_VARIANT_DISCOUNT } from '../utils/variant-discount';
 
 interface ProductEditorPanelProps {
   open: boolean;
@@ -318,8 +319,6 @@ export function ProductEditorPanel({
           defaultCurrency={formState.defaultCurrency}
           isEditMode={isEditMode}
           productId={productId}
-          discountPercent={listProduct?.discountPercent ?? 0}
-          discountExpiresAt={listProduct?.discountExpiresAt ?? null}
           imageUploadLoading={formState.imageUploadLoading}
           imageUploadError={formState.imageUploadError}
           selectedAttributesForVariants={formState.selectedAttributesForVariants}
@@ -340,7 +339,7 @@ export function ProductEditorPanel({
           onBrandIdsChange={(ids) => formState.setFormData((prev) => ({ ...prev, brandIds: ids }))}
           onPrimaryCategoryIdChange={(id) => formState.setFormData((prev) => ({ ...prev, primaryCategoryId: id }))}
           onPriceChange={(value) => formState.setSimpleProductData((prev) => ({ ...prev, price: value }))}
-          onCompareAtPriceChange={(value) => formState.setSimpleProductData((prev) => ({ ...prev, compareAtPrice: value }))}
+          onDiscountChange={(value) => formState.setSimpleProductData((prev) => ({ ...prev, discount: value }))}
           onSkuChange={(value) => formState.setSimpleProductData((prev) => ({ ...prev, sku: value }))}
           onQuantityChange={(value) => formState.setSimpleProductData((prev) => ({ ...prev, quantity: value }))}
           onAttributesDropdownToggle={() => formState.setAttributesDropdownOpen(!formState.attributesDropdownOpen)}
@@ -378,7 +377,7 @@ export function ProductEditorPanel({
                   id: 'variant-all',
                   selectedValueIds: Object.values(formState.selectedAttributeValueIds).flat(),
                   price: '',
-                  compareAtPrice: '',
+                  discount: EMPTY_VARIANT_DISCOUNT,
                   stock: '',
                   sku: '',
                   image: null,

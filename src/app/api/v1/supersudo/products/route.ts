@@ -286,7 +286,7 @@ export async function GET(req: NextRequest) {
  * - media?: any[]
  * - labels?: Array<{type: string, value: string, position: string, color?: string}>
  * - attributeIds?: string[]
- * - variants: Array<{price: string|number, compareAtPrice?: string|number, stock: string|number, sku?: string, color?: string, size?: string, imageUrl?: string, published?: boolean}> (required)
+ * - variants: Array<{price: string|number, discountType?: 'NONE'|'PERCENT'|'AMOUNT', discountValue?: number|null, discountExpiresAt?: string|null, stock: string|number, sku?: string, color?: string, size?: string, imageUrl?: string, published?: boolean}> (required)
  */
 export async function POST(req: NextRequest) {
   const requestStartTime = Date.now();

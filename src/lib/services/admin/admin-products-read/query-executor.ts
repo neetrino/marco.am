@@ -15,7 +15,14 @@ const getProductListInclude = (locale: string) => ({
     where: { published: true },
     take: 1,
     orderBy: { price: "asc" as const },
-    select: { price: true, stock: true, compareAtPrice: true, imageUrl: true },
+    select: {
+      price: true,
+      stock: true,
+      imageUrl: true,
+      discountType: true,
+      discountValue: true,
+      discountExpiresAt: true,
+    },
   },
 });
 

@@ -1,4 +1,5 @@
 import type { Variant, GeneratedVariant } from '../types';
+import type { VariantDiscount } from './variant-discount';
 import type { ProductDescriptionEntry } from '@/lib/products/product-description';
 
 /**
@@ -21,7 +22,7 @@ export interface DirtyFingerprintInput {
   productType: 'simple' | 'variable';
   simpleProductData: {
     price: string;
-    compareAtPrice: string;
+    discount: VariantDiscount;
     sku: string;
     quantity: string;
     variantId: string;

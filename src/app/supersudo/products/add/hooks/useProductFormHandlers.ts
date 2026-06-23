@@ -1,6 +1,12 @@
 import type { FormEvent, MutableRefObject } from 'react';
 import { CATALOG_PRICE_CURRENCY, convertPrice, type CurrencyCode } from '@/lib/currency';
 import type { Attribute, Variant, GeneratedVariant } from '../types';
+import {
+  toApiVariantDiscount,
+  type VariantDiscount,
+} from '../utils/variant-discount';
+import { resolveProductPrice } from '@/lib/pricing/product-price';
+import { activeTypedDiscount } from '@/lib/discount/discount-expiry';
 import { useVariantConversionToFormData } from './useVariantConversionToFormData';
 import { useVariantValidation } from './useVariantValidation';
 import { processImagesForSubmit } from './useImageProcessingForSubmit';
@@ -41,7 +47,7 @@ interface UseProductFormHandlersProps {
   productType: 'simple' | 'variable';
   simpleProductData: {
     price: string;
-    compareAtPrice: string;
+    discount: VariantDiscount;
     sku: string;
     quantity: string;
     variantId: string;
@@ -123,6 +129,8 @@ export function useProductFormHandlers({
       const variants: any[] = [];
       const selectedProductClass = formData.productClass || "retail";
       const variantSkuSet = new Set<string>();
+      const convertAmountToCatalog = (value: number): number =>
+        convertPrice(value, defaultCurrency, CATALOG_PRICE_CURRENCY);
 
       if (productType === 'simple') {
         logger.devLog('📦 [ADMIN] Processing Simple Product');
@@ -134,25 +142,25 @@ export function useProductFormHandlers({
           defaultCurrency,
           CATALOG_PRICE_CURRENCY
         );
-        const compareAtPriceCatalog =
-          simpleProductData.compareAtPrice && simpleProductData.compareAtPrice.trim() !== ''
-            ? convertPrice(parseFloat(simpleProductData.compareAtPrice), defaultCurrency, CATALOG_PRICE_CURRENCY)
-            : undefined;
+        const simpleDiscount = toApiVariantDiscount(
+          simpleProductData.discount,
+          convertAmountToCatalog,
+        );
         const trimmedSku = simpleProductData.sku.trim();
         const simpleVariant: Record<string, unknown> = {
           price: priceCatalog,
           stock: parseInt(simpleProductData.quantity) || 0,
           productClass: selectedProductClass,
           published: true,
+          discountType: simpleDiscount.discountType,
+          discountValue: simpleDiscount.discountValue,
+          discountExpiresAt: simpleDiscount.discountExpiresAt,
         };
         if (trimmedSku) {
           simpleVariant.sku = trimmedSku;
         }
         if (isEditMode && simpleProductData.variantId) {
           simpleVariant.id = simpleProductData.variantId;
-        }
-        if (compareAtPriceCatalog !== undefined) {
-          simpleVariant.compareAtPrice = compareAtPriceCatalog;
         }
         variants.push(simpleVariant);
         if (trimmedSku) {
@@ -172,9 +180,7 @@ export function useProductFormHandlers({
               defaultCurrency,
               CATALOG_PRICE_CURRENCY
             );
-            const variantCompareAtPriceCatalog = genVariant.compareAtPrice
-              ? convertPrice(parseFloat(genVariant.compareAtPrice), defaultCurrency, CATALOG_PRICE_CURRENCY)
-              : undefined;
+            const variantDiscount = toApiVariantDiscount(genVariant.discount, convertAmountToCatalog);
             
             const attributeValueMap: Record<string, Array<{ valueId: string; value: string }>> = {};
             
@@ -204,7 +210,7 @@ export function useProductFormHandlers({
               }
               variants.push({
                 price: variantPriceCatalog,
-                compareAtPrice: variantCompareAtPriceCatalog,
+                ...variantDiscount,
                 stock: parseInt(genVariant.stock || '0') || 0,
                 sku: finalSku || undefined,
                 imageUrl: genVariant.image || undefined,
@@ -255,7 +261,7 @@ export function useProductFormHandlers({
 
                 variants.push({
                   price: variantPriceCatalog,
-                  compareAtPrice: variantCompareAtPriceCatalog,
+                  ...variantDiscount,
                   stock: parseInt(genVariant.stock || '0') || 0,
                   sku: finalSku || undefined,
                   imageUrl: genVariant.image || undefined,
@@ -274,14 +280,12 @@ export function useProductFormHandlers({
               defaultCurrency,
               CATALOG_PRICE_CURRENCY
             );
-            const baseVariantData: any = { price: variantPriceCatalog, published: true };
-            if (variant.compareAtPrice) {
-              baseVariantData.compareAtPrice = convertPrice(
-                parseFloat(variant.compareAtPrice),
-                defaultCurrency,
-                CATALOG_PRICE_CURRENCY
-              );
-            }
+            const variantDiscount = toApiVariantDiscount(variant.discount, convertAmountToCatalog);
+            const baseVariantData: any = {
+              price: variantPriceCatalog,
+              published: true,
+              ...variantDiscount,
+            };
             const colorDataArray = variant.colors || [];
             // Simplified variant processing - full logic would be in separate hook
             if (colorDataArray.length > 0) {
@@ -417,14 +421,33 @@ export function useProductFormHandlers({
         }
       }
 
-      const primaryVariant = finalVariants[0] as { price?: unknown; compareAtPrice?: unknown } | undefined;
-      const optimisticPrice = Number(primaryVariant?.price) || 0;
+      const primaryVariant = finalVariants[0] as
+        | {
+            price?: unknown;
+            discountType?: unknown;
+            discountValue?: unknown;
+            discountExpiresAt?: unknown;
+          }
+        | undefined;
+      const standardPrice = Number(primaryVariant?.price) || 0;
+      const appliedDiscount = activeTypedDiscount({
+        type: (primaryVariant?.discountType as VariantDiscount['type'] | undefined) ?? 'NONE',
+        value: (primaryVariant?.discountValue as number | null | undefined) ?? null,
+        expiresAt: (primaryVariant?.discountExpiresAt as string | null | undefined) ?? null,
+      });
+      const resolvedOptimisticPrice = resolveProductPrice({
+        standardPrice,
+        discount: appliedDiscount,
+      });
+      const optimisticPrice = resolvedOptimisticPrice.currentPrice;
       const optimisticStock = finalVariants.reduce(
         (sum, variant) => sum + (Number((variant as { stock?: unknown }).stock) || 0),
         0,
       );
-      const optimisticCompareAt =
-        primaryVariant?.compareAtPrice != null ? Number(primaryVariant.compareAtPrice) || null : null;
+      const optimisticOriginalPrice = resolvedOptimisticPrice.oldPrice;
+      const optimisticDiscountPercent = resolvedOptimisticPrice.discountPercent ?? 0;
+      const optimisticDiscountExpiresAt =
+        (primaryVariant?.discountExpiresAt as string | null | undefined) ?? null;
       const optimisticImage =
         mainImage ?? finalMedia[0] ?? (currentFormData.mainProductImage || currentFormData.imageUrls[0] || null);
 
@@ -434,7 +457,9 @@ export function useProductFormHandlers({
         slug: currentFormData.slug,
         price: optimisticPrice,
         stock: optimisticStock,
-        compareAtPrice: optimisticCompareAt,
+        originalPrice: optimisticOriginalPrice,
+        discountPercent: optimisticDiscountPercent,
+        discountExpiresAt: optimisticDiscountExpiresAt,
         image: optimisticImage,
         featured: currentFormData.featured,
         published: isEditMode ? currentFormData.published : true,

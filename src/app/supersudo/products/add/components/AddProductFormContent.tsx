@@ -12,6 +12,7 @@ import type {
   ProductLabel,
   GeneratedVariant,
 } from '../types';
+import type { VariantDiscount } from '../utils/variant-discount';
 import type { CurrencyCode } from '@/lib/currency';
 import type { ProductClass } from '@/lib/constants/product-class';
 import type { ProductWarrantyYears } from '@/lib/constants/product-warranty';
@@ -54,7 +55,7 @@ interface AddProductFormContentProps {
   productType: 'simple' | 'variable';
   simpleProductData: {
     price: string;
-    compareAtPrice: string;
+    discount: VariantDiscount;
     sku: string;
     quantity: string;
   };
@@ -64,8 +65,6 @@ interface AddProductFormContentProps {
   defaultCurrency: CurrencyCode;
   isEditMode: boolean;
   productId?: string | null;
-  discountPercent?: number;
-  discountExpiresAt?: string | null;
   imageUploadLoading: boolean;
   imageUploadError: string | null;
   selectedAttributesForVariants: Set<string>;
@@ -86,7 +85,7 @@ interface AddProductFormContentProps {
   onBrandIdsChange: (ids: string[]) => void;
   onPrimaryCategoryIdChange: (id: string) => void;
   onPriceChange: (value: string) => void;
-  onCompareAtPriceChange: (value: string) => void;
+  onDiscountChange: (value: VariantDiscount) => void;
   onSkuChange: (value: string) => void;
   onQuantityChange: (value: string) => void;
   onAttributesDropdownToggle: () => void;
@@ -104,7 +103,7 @@ interface AddProductFormContentProps {
   onWarrantyYearsChange: (years: ProductWarrantyYears | null) => void;
   onProductClassChange: (productClass: ProductClass) => void;
   onVariantsUpdate: (updater: (prev: Variant[]) => Variant[]) => void;
-  onApplyToAllVariants: (field: 'price' | 'compareAtPrice' | 'stock' | 'sku', value: string) => void;
+  onApplyToAllVariants: (field: 'price' | 'stock' | 'sku', value: string) => void;
   isClothingCategory: () => boolean;
   handleSubmit: (e: React.FormEvent) => void;
 }
@@ -164,8 +163,6 @@ export function AddProductFormContent({
   defaultCurrency,
   isEditMode,
   productId = null,
-  discountPercent = 0,
-  discountExpiresAt = null,
   imageUploadLoading,
   imageUploadError,
   selectedAttributesForVariants,
@@ -186,7 +183,7 @@ export function AddProductFormContent({
   onBrandIdsChange,
   onPrimaryCategoryIdChange,
   onPriceChange,
-  onCompareAtPriceChange,
+  onDiscountChange,
   onSkuChange,
   onQuantityChange,
   onAttributesDropdownToggle,
@@ -258,10 +255,6 @@ export function AddProductFormContent({
             isLoading={loadingTab === 'general'}
           >
             <ProductGeneralTab
-              productId={productId}
-              isEditMode={isEditMode}
-              discountPercent={discountPercent}
-              discountExpiresAt={discountExpiresAt}
               productClass={formData.productClass}
               warrantyYears={warrantyYears}
               labels={formData.labels}
@@ -339,7 +332,7 @@ export function AddProductFormContent({
               simpleProductData={simpleProductData}
               defaultCurrency={defaultCurrency}
               onPriceChange={onPriceChange}
-              onCompareAtPriceChange={onCompareAtPriceChange}
+              onDiscountChange={onDiscountChange}
               onSkuChange={onSkuChange}
               onQuantityChange={onQuantityChange}
               attributes={attributes}

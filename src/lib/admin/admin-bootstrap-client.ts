@@ -18,6 +18,7 @@ import {
   writeAdminCategoriesCache,
 } from '@/lib/admin/admin-reference-data-cache';
 import { writeAdminSessionCache } from '@/lib/admin/admin-session-cache';
+import type { DiscountKind } from '@/lib/discount/discount-expiry';
 import type { LanguageCode } from '@/lib/language';
 import type {
   AdminBootstrapPath,
@@ -129,7 +130,8 @@ export type DiscountsBootstrapResult = {
     title: string;
     image?: string | null;
     price?: number;
-    discountPercent?: number;
+    discountType?: DiscountKind;
+    discountValue?: number | null;
     discountExpiresAt?: string | null;
   }>;
 };

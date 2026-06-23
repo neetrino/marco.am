@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import type { Attribute, GeneratedVariant } from '../types';
+import { EMPTY_VARIANT_DISCOUNT } from '../utils/variant-discount';
 import { logger } from "@/lib/utils/logger";
 
 interface UseVariantGenerationProps {
@@ -67,7 +68,7 @@ export function useVariantGeneration({
         id: variantId,
         selectedValueIds: allSelectedValueIds,
         price: existingAutoVariant?.price || '',
-        compareAtPrice: existingAutoVariant?.compareAtPrice || '',
+        discount: existingAutoVariant?.discount ?? { ...EMPTY_VARIANT_DISCOUNT },
         stock: existingAutoVariant?.stock || '',
         sku: existingAutoVariant?.sku || '',
         image: existingAutoVariant?.image || null,
@@ -78,7 +79,7 @@ export function useVariantGeneration({
         prev[0]?.id === 'variant-all' &&
         areValueIdsEqual(prev[0].selectedValueIds, autoVariant.selectedValueIds) &&
         prev[0].price === autoVariant.price &&
-        prev[0].compareAtPrice === autoVariant.compareAtPrice &&
+        prev[0].discount === autoVariant.discount &&
         prev[0].stock === autoVariant.stock &&
         prev[0].sku === autoVariant.sku &&
         prev[0].image === autoVariant.image
@@ -98,7 +99,7 @@ export function useVariantGeneration({
     logger.devLog('✅ [VARIANT BUILDER] Single variant generated with', selectedAttrs.length, 'attributes');
   };
 
-  const applyToAllVariants = (field: 'price' | 'compareAtPrice' | 'stock' | 'sku', value: string) => {
+  const applyToAllVariants = (field: 'price' | 'stock' | 'sku', value: string) => {
     setGeneratedVariants((prev) =>
       prev.map((variant) => ({
         ...variant,

@@ -4,6 +4,7 @@ import type { RefObject } from 'react';
 import { useTranslation } from '@/lib/i18n-client';
 import type { CurrencyCode } from '@/lib/currency';
 import type { Attribute, GeneratedVariant } from '../types';
+import type { VariantDiscount } from '../utils/variant-discount';
 import { ProductTypeTabs } from './ProductTypeTabs';
 import { SimpleProductFields } from './SimpleProductFields';
 import { AttributesSelection } from './AttributesSelection';
@@ -14,13 +15,13 @@ interface PricingInventorySectionProps {
   onProductTypeChange: (type: 'simple' | 'variable') => void;
   simpleProductData: {
     price: string;
-    compareAtPrice: string;
+    discount: VariantDiscount;
     sku: string;
     quantity: string;
   };
   defaultCurrency: CurrencyCode;
   onPriceChange: (value: string) => void;
-  onCompareAtPriceChange: (value: string) => void;
+  onDiscountChange: (value: VariantDiscount) => void;
   onSkuChange: (value: string) => void;
   onQuantityChange: (value: string) => void;
   attributes: Attribute[];
@@ -40,7 +41,7 @@ interface PricingInventorySectionProps {
   onVariantUpdate: (variants: GeneratedVariant[] | ((prev: GeneratedVariant[]) => GeneratedVariant[])) => void;
   onVariantDelete: (variantId: string) => void;
   onVariantAdd: () => void;
-  onApplyToAllVariants: (field: 'price' | 'compareAtPrice' | 'stock' | 'sku', value: string) => void;
+  onApplyToAllVariants: (field: 'price' | 'stock' | 'sku', value: string) => void;
   onVariantImageUpload: (variantId: string, event: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
   onOpenValueModal: (modal: { variantId: string; attributeId: string } | null) => void;
 }
@@ -51,7 +52,7 @@ export function PricingInventorySection({
   simpleProductData,
   defaultCurrency,
   onPriceChange,
-  onCompareAtPriceChange,
+  onDiscountChange,
   onSkuChange,
   onQuantityChange,
   attributes,
@@ -89,12 +90,12 @@ export function PricingInventorySection({
         <SimpleProductFields
           embedded
           price={simpleProductData.price}
-          compareAtPrice={simpleProductData.compareAtPrice}
+          discount={simpleProductData.discount}
           sku={simpleProductData.sku}
           quantity={simpleProductData.quantity}
           defaultCurrency={defaultCurrency}
           onPriceChange={onPriceChange}
-          onCompareAtPriceChange={onCompareAtPriceChange}
+          onDiscountChange={onDiscountChange}
           onSkuChange={onSkuChange}
           onQuantityChange={onQuantityChange}
         />

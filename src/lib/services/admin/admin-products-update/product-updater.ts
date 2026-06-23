@@ -20,7 +20,7 @@ import {
  * Collect variant images from data or existing variants
  */
 export async function collectVariantImages(
-  variants: UpdateProductData['variants'],
+  variants: Array<{ imageUrl?: string; normalizedImageUrl?: string }> | undefined,
   existingVariantImageUrls: string[] = []
 ): Promise<string[]> {
   const allVariantImages: string[] = [];

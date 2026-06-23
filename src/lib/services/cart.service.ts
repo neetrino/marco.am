@@ -7,6 +7,9 @@ import {
   formatCartVariantOptionFromDb,
   type CartVariantOption,
 } from "../cart/format-cart-variant-options";
+import { getActiveListingDiscountSettings } from "./listing-discount-settings";
+import { resolveEffectiveDiscount, type TypedDiscountInput } from "@/lib/discount/discount-expiry";
+import { resolveProductPrice } from "@/lib/pricing/product-price";
 
 class CartService {
   async getCartSummary(userId: string, locale: string = "en") {
@@ -28,25 +31,9 @@ class CartService {
    * Get or create user's cart
    */
   async getCart(userId: string, locale: string = "en") {
-    // Get discount settings
-    const discountSettings = await db.settings.findMany({
-      where: {
-        key: {
-          in: ["globalDiscount", "categoryDiscounts", "brandDiscounts"],
-        },
-      },
-    });
-
-    const globalDiscount =
-      Number(
-        discountSettings.find((s: { key: string; value: unknown }) => s.key === "globalDiscount")?.value
-      ) || 0;
-    
-    const categoryDiscountsSetting = discountSettings.find((s: { key: string; value: unknown }) => s.key === "categoryDiscounts");
-    const categoryDiscounts = categoryDiscountsSetting ? (categoryDiscountsSetting.value as Record<string, number>) || {} : {};
-    
-    const brandDiscountsSetting = discountSettings.find((s: { key: string; value: unknown }) => s.key === "brandDiscounts");
-    const brandDiscounts = brandDiscountsSetting ? (brandDiscountsSetting.value as Record<string, number>) || {} : {};
+    // Active discount settings (expiry already applied) shared with the storefront resolver.
+    const { globalDiscount, categoryDiscounts, brandDiscounts } =
+      await getActiveListingDiscountSettings();
     let cart = await db.cart.findFirst({
       where: {
         userId,
@@ -144,7 +131,9 @@ class CartService {
         product: {
           id: string;
           media: unknown;
-          discountPercent?: number;
+          discountType?: string | null;
+          discountValue?: number | null;
+          discountExpiresAt?: Date | null;
           primaryCategoryId?: string | null;
           brandId?: string | null;
           productClass?: string | null;
@@ -155,7 +144,9 @@ class CartService {
           sku: string | null;
           stock: number;
           price: number;
-          compareAtPrice?: number | null;
+          discountType?: string | null;
+          discountValue?: number | null;
+          discountExpiresAt?: Date | null;
           productClass?: string | null;
           options?: Array<{
             attributeKey: string | null;
@@ -179,33 +170,28 @@ class CartService {
 
         const imageUrl = extractMediaUrl(product?.media);
 
-        const productDiscount = product?.discountPercent ?? 0;
-        let appliedDiscount = 0;
-        if (productDiscount > 0) {
-          appliedDiscount = productDiscount;
-        } else {
-          const primaryCategoryId = product?.primaryCategoryId;
-          if (primaryCategoryId && categoryDiscounts[primaryCategoryId]) {
-            appliedDiscount = categoryDiscounts[primaryCategoryId];
-          } else {
-            const brandId = product?.brandId;
-            if (brandId && brandDiscounts[brandId]) {
-              appliedDiscount = brandDiscounts[brandId];
-            } else if (globalDiscount > 0) {
-              appliedDiscount = globalDiscount;
-            }
-          }
-        }
+        const toTyped = (source: {
+          discountType?: string | null;
+          discountValue?: number | null;
+          discountExpiresAt?: Date | null;
+        } | null | undefined): TypedDiscountInput => ({
+          type: (source?.discountType ?? "NONE") as TypedDiscountInput["type"],
+          value: source?.discountValue ?? null,
+          expiresAt: source?.discountExpiresAt ?? null,
+        });
+        const appliedDiscount = resolveEffectiveDiscount({
+          variant: toTyped(variant),
+          product: toTyped(product),
+          categoryPercent:
+            (product?.primaryCategoryId && categoryDiscounts[product.primaryCategoryId]) || 0,
+          brandPercent: (product?.brandId && brandDiscounts[product.brandId]) || 0,
+          globalPercent: globalDiscount,
+        });
 
-        const variantOriginalPrice = variant?.price ?? 0;
-        let finalPrice = variantOriginalPrice;
-        let originalPrice: number | null = null;
-        if (appliedDiscount > 0 && variantOriginalPrice > 0) {
-          finalPrice = variantOriginalPrice * (1 - appliedDiscount / 100);
-          originalPrice = variantOriginalPrice;
-        } else if (variant?.compareAtPrice != null && variant.compareAtPrice > variantOriginalPrice) {
-          originalPrice = Number(variant.compareAtPrice);
-        }
+        const standardPrice = variant?.price ?? 0;
+        const pricing = resolveProductPrice({ standardPrice, discount: appliedDiscount });
+        const finalPrice = pricing.currentPrice;
+        const originalPrice = pricing.oldPrice;
 
         return {
           id: item.id,

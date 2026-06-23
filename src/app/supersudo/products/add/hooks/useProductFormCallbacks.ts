@@ -4,6 +4,7 @@
 
 import type { ChangeEvent } from 'react';
 import type { Category, GeneratedVariant } from '../types';
+import { EMPTY_VARIANT_DISCOUNT } from '../utils/variant-discount';
 import { generateSlug } from '../utils/productUtils';
 import { logger } from "@/lib/utils/logger";
 
@@ -80,7 +81,7 @@ export function useProductFormCallbacks({
       id: `variant-${Date.now()}-${Math.random()}`,
       selectedValueIds: [],
       price: '0.00',
-      compareAtPrice: '0.00',
+      discount: { ...EMPTY_VARIANT_DISCOUNT },
       stock: '0',
       sku: '',
       image: null,

@@ -3,6 +3,14 @@ enum ProductClass {
   wholesale
 }
 
+/// Discount kind. NONE = no discount; PERCENT = discountValue is a percentage off
+/// the standard price; AMOUNT = discountValue is the final (sale) price in catalog currency.
+enum DiscountType {
+  NONE
+  PERCENT
+  AMOUNT
+}
+
 model Product {
   id                String               @id @default(cuid())
   brandId           String?
@@ -19,7 +27,10 @@ model Product {
   variants          ProductVariant[]
   labels            ProductLabel[]
   productAttributes ProductAttribute[]
-  discountPercent   Int                  @default(0)
+  /// Product-level discount applied to all variants unless a variant overrides it.
+  discountType      DiscountType         @default(NONE)
+  /// PERCENT: percentage off; AMOUNT: final sale price in catalog currency.
+  discountValue     Float?
   /// When set, product discount is ignored after this moment (UTC).
   discountExpiresAt DateTime?
   /// 1, 2, or 3 — null means no warranty badge on product cards.
@@ -41,7 +52,7 @@ model Product {
   @@index([published, publishedAt])
   @@index([published, deletedAt])
   @@index([published, deletedAt, createdAt(sort: Desc)])
-  @@index([published, deletedAt, discountPercent(sort: Desc), createdAt(sort: Desc)])
+  @@index([published, deletedAt, discountType, createdAt(sort: Desc)])
   @@index([categoryIds], type: Gin)
   @@index([featured])
   @@index([deletedAt])
@@ -75,8 +86,14 @@ model ProductVariant {
   productClass   ProductClass           @default(retail)
   sku            String?                @unique
   barcode        String?
+  /// Standard (base) price — the source of truth. Final price is derived from the discount.
   price          Float
-  compareAtPrice Float?
+  /// Variant-level discount; overrides the product-level discount when set.
+  discountType   DiscountType           @default(NONE)
+  /// PERCENT: percentage off; AMOUNT: final sale price in catalog currency.
+  discountValue  Float?
+  /// When set, variant discount is ignored after this moment (UTC).
+  discountExpiresAt DateTime?
   cost           Float?
   stock          Int                    @default(0)
   stockReserved  Int                    @default(0)
@@ -96,7 +113,7 @@ model ProductVariant {
   @@index([productId])
   @@index([published, price])
   @@index([productId, published, price])
-  @@index([published, compareAtPrice, productId])
+  @@index([published, discountType, productId])
   @@map("product_variants")
 }
 

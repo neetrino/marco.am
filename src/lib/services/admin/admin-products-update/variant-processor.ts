@@ -167,29 +167,24 @@ export async function processVariantOptions(
 }
 
 /**
- * Parse variant price, stock, and compareAtPrice
+ * Parse variant price and stock
  */
 export function parseVariantPrices(variant: {
   price: string | number;
-  compareAtPrice?: string | number;
   stock: string | number;
 }): {
   price: number;
   stock: number;
-  compareAtPrice?: number;
 } {
   const rawPrice = typeof variant.price === 'number' ? variant.price : parseFloat(String(variant.price));
   const price = Number.isNaN(rawPrice) ? 0 : rawPrice;
   const stock = typeof variant.stock === 'number' ? variant.stock : parseInt(String(variant.stock), 10);
-  const compareAtPrice = variant.compareAtPrice !== undefined && variant.compareAtPrice !== null && variant.compareAtPrice !== ''
-    ? (typeof variant.compareAtPrice === 'number' ? variant.compareAtPrice : parseFloat(String(variant.compareAtPrice)))
-    : undefined;
 
   if (price < 0) {
     throw new Error(`Invalid price value: ${variant.price}`);
   }
 
-  return { price, stock: Number.isNaN(stock) ? 0 : stock, compareAtPrice };
+  return { price, stock: Number.isNaN(stock) ? 0 : stock };
 }
 
 

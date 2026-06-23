@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import type { Brand, Category, Attribute, Variant, ProductLabel, GeneratedVariant } from '../types';
+import { EMPTY_VARIANT_DISCOUNT } from '../utils/variant-discount';
 import type { Product } from '../../types';
 import type { CurrencyCode } from '@/lib/currency';
 import type { ProductClass } from '@/lib/constants/product-class';
@@ -45,7 +46,7 @@ export function useProductFormState(listProduct: Product | null = null) {
   const [productType, setProductType] = useState<'simple' | 'variable'>('simple');
   const [simpleProductData, setSimpleProductData] = useState({
     price: '',
-    compareAtPrice: '',
+    discount: { ...EMPTY_VARIANT_DISCOUNT },
     sku: '',
     quantity: '',
     variantId: '',

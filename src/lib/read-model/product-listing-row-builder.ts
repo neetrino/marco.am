@@ -11,7 +11,11 @@ import {
 } from '@/lib/services/products-technical-filters';
 import { toProductSubtitlePlainText } from '@/lib/security/sanitize-product-html';
 
-import { activeDiscountPercent } from '@/lib/discount/discount-expiry';
+import {
+  resolveEffectiveDiscount,
+  type AppliedDiscount,
+  type TypedDiscountInput,
+} from '@/lib/discount/discount-expiry';
 
 export type ProductListingReadModelDiscountSettings = {
   globalDiscount: number;
@@ -64,7 +68,8 @@ type ProductListingReadModelInput = {
   primaryCategoryId?: string | null;
   categoryIds?: string[] | null;
   media?: unknown;
-  discountPercent?: number | null;
+  discountType?: string | null;
+  discountValue?: number | null;
   discountExpiresAt?: Date | null;
   warrantyYears?: number | null;
   published?: boolean | null;
@@ -83,7 +88,9 @@ type ProductListingReadModelInput = {
     id: string;
     imageUrl?: string | null;
     price: number;
-    compareAtPrice?: number | null;
+    discountType?: string | null;
+    discountValue?: number | null;
+    discountExpiresAt?: Date | null;
     stock?: number | null;
     published?: boolean | null;
     attributes?: Prisma.JsonValue | null;
@@ -132,22 +139,27 @@ function trimString(value: string | null | undefined): string | null {
 
 function resolveAppliedDiscount(
   product: ProductListingReadModelInput,
+  variant: { discountType?: string | null; discountValue?: number | null; discountExpiresAt?: Date | null } | null | undefined,
   settings: ProductListingReadModelDiscountSettings,
-): number {
-  const productDiscount = activeDiscountPercent(
-    Number(product.discountPercent) || 0,
-    product.discountExpiresAt ?? null,
-  );
-  if (productDiscount > 0) {
-    return productDiscount;
-  }
-  if (product.primaryCategoryId && settings.categoryDiscounts[product.primaryCategoryId]) {
-    return settings.categoryDiscounts[product.primaryCategoryId];
-  }
-  if (product.brandId && settings.brandDiscounts[product.brandId]) {
-    return settings.brandDiscounts[product.brandId];
-  }
-  return settings.globalDiscount > 0 ? settings.globalDiscount : 0;
+): AppliedDiscount {
+  const toTyped = (source: {
+    discountType?: string | null;
+    discountValue?: number | null;
+    discountExpiresAt?: Date | null;
+  }): TypedDiscountInput => ({
+    type: (source.discountType ?? 'NONE') as TypedDiscountInput['type'],
+    value: source.discountValue ?? null,
+    expiresAt: source.discountExpiresAt ?? null,
+  });
+
+  return resolveEffectiveDiscount({
+    variant: variant ? toTyped(variant) : null,
+    product: toTyped(product),
+    categoryPercent:
+      (product.primaryCategoryId && settings.categoryDiscounts[product.primaryCategoryId]) || 0,
+    brandPercent: (product.brandId && settings.brandDiscounts[product.brandId]) || 0,
+    globalPercent: settings.globalDiscount,
+  });
 }
 
 function collectCategoryIds(product: ProductListingReadModelInput): string[] {
@@ -395,11 +407,10 @@ export function buildProductListingRowsForLocales(args: {
     published: variant.published ?? undefined,
   }));
   const variant = pickVariantForListingPrice(variantsForPricing);
-  const appliedDiscount = resolveAppliedDiscount(product, discountSettings);
+  const appliedDiscount = resolveAppliedDiscount(product, variant, discountSettings);
   const pricing = resolveProductPrice({
-    currentPrice: variant?.price ?? 0,
-    compareAtPrice: variant?.compareAtPrice ?? null,
-    fallbackDiscountPercent: appliedDiscount > 0 ? appliedDiscount : null,
+    standardPrice: variant?.price ?? 0,
+    discount: appliedDiscount,
   });
   const images = buildProductGalleryUrls(product.media, variants).slice(0, 1);
   const categoryIds = expandCategoryIdsWithAncestors(
