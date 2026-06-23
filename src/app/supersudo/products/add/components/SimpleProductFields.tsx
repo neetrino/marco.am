@@ -62,6 +62,7 @@ export function SimpleProductFields({
               {t('admin.products.add.discount')}
             </label>
             <DiscountControl
+              compact
               value={discount}
               onChange={onDiscountChange}
               currencySymbol={CURRENCIES[defaultCurrency].symbol}

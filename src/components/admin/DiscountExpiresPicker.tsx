@@ -22,6 +22,8 @@ type DiscountExpiresPickerProps = {
   value: string | null;
   onChange: (value: string | null) => void;
   disabled?: boolean;
+  /** Icon-only trigger for compact toolbars (product variant editor). */
+  compact?: boolean;
   className?: string;
 };
 
@@ -39,6 +41,7 @@ export function DiscountExpiresPicker({
   value,
   onChange,
   disabled = false,
+  compact = false,
   className = '',
 }: DiscountExpiresPickerProps) {
   const { t, lang } = useTranslation();
@@ -101,13 +104,22 @@ export function DiscountExpiresPicker({
         aria-haspopup="dialog"
         aria-expanded={open}
         aria-controls={popoverId}
+        title={triggerLabel}
         onClick={() => setOpen((prev) => !prev)}
-        className="inline-flex h-9 min-w-[9.5rem] items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-left text-sm text-slate-700 shadow-sm transition hover:border-rose-200 hover:bg-rose-50/40 disabled:cursor-not-allowed disabled:opacity-60"
+        className={
+          compact
+            ? `relative inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-amber-300 bg-amber-50 text-amber-800 shadow-sm transition hover:border-amber-400 hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-60${value ? ' border-amber-400 bg-amber-100' : ''}`
+            : 'inline-flex h-9 min-w-[9.5rem] items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-left text-sm text-slate-700 shadow-sm transition hover:border-rose-200 hover:bg-rose-50/40 disabled:cursor-not-allowed disabled:opacity-60'
+        }
       >
-        <svg className="h-4 w-4 shrink-0 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+        <svg className={`h-4 w-4 shrink-0 ${compact ? 'text-amber-600' : 'text-rose-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
         </svg>
-        <span className="truncate">{triggerLabel}</span>
+        {compact ? (
+          <span className="sr-only">{triggerLabel}</span>
+        ) : (
+          <span className="truncate">{triggerLabel}</span>
+        )}
       </button>
 
       {open ? (

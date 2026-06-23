@@ -13,6 +13,17 @@ import type { Attribute, GeneratedVariant } from '../types';
 import type { VariantDiscount } from '../utils/variant-discount';
 import { logger } from "@/lib/utils/logger";
 
+const VARIANT_FIELD_LABEL =
+  'mb-1.5 block text-xs font-medium uppercase tracking-wider text-gray-500';
+const VARIANT_ROW_GAP = 'gap-x-4 gap-y-2';
+const VARIANT_PRICE_WIDTH = 'w-[148px] sm:w-[168px]';
+const VARIANT_STOCK_WIDTH = 'w-[96px]';
+const VARIANT_SKU_WIDTH = 'w-[112px] sm:w-[128px]';
+const VARIANT_ROW_DIVIDER =
+  'flex h-9 shrink-0 items-center px-1 text-base font-light leading-none text-slate-300';
+const VARIANT_ICON_BTN =
+  'inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-gray-300 bg-white text-gray-600 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:cursor-not-allowed disabled:opacity-50';
+
 interface VariantBuilderProps {
   generatedVariants: GeneratedVariant[];
   attributes: Attribute[];
@@ -203,157 +214,169 @@ export function VariantBuilder({
                       </div>
                     )}
 
-                    {/* Row 2: pricing, inventory, image, actions */}
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 items-end">
-                      <div>
-                        <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">
-                          {t('admin.products.add.price')}
-                        </label>
-                        <div className="flex items-center gap-1.5">
-                          <Input
-                            type="number"
-                            value={variant.price}
-                            onChange={(e) => {
+                    {/* Price + discount + date | stock, SKU, image, delete */}
+                    <div className={`flex w-full flex-wrap items-end ${VARIANT_ROW_GAP}`}>
+                      <div className={`flex flex-wrap items-end ${VARIANT_ROW_GAP}`}>
+                        <div className={VARIANT_PRICE_WIDTH}>
+                          <label className={VARIANT_FIELD_LABEL}>
+                            {t('admin.products.add.price')}
+                          </label>
+                          <div className="flex h-9 items-center gap-1.5">
+                            <Input
+                              type="number"
+                              value={variant.price}
+                              onChange={(e) => {
+                                onVariantUpdate((prev) =>
+                                  prev.map((v) => (v.id === variant.id ? { ...v, price: e.target.value } : v))
+                                );
+                              }}
+                              placeholder={t('admin.products.add.pricePlaceholder')}
+                              className="h-9 w-full text-sm"
+                              min="0"
+                              step="0.01"
+                            />
+                            <span className="shrink-0 text-sm text-gray-500">{CURRENCIES[defaultCurrency].symbol}</span>
+                          </div>
+                        </div>
+                        <div>
+                          <label className={VARIANT_FIELD_LABEL}>
+                            {t('admin.products.add.discount')}
+                          </label>
+                          <DiscountControl
+                            compact
+                            value={variant.discount}
+                            onChange={(next: VariantDiscount) => {
                               onVariantUpdate((prev) =>
-                                prev.map((v) => (v.id === variant.id ? { ...v, price: e.target.value } : v))
+                                prev.map((v) => (v.id === variant.id ? { ...v, discount: next } : v))
                               );
                             }}
-                            placeholder={t('admin.products.add.pricePlaceholder')}
-                            className="w-full text-sm"
-                            min="0"
-                            step="0.01"
+                            currencySymbol={CURRENCIES[defaultCurrency].symbol}
                           />
-                          <span className="text-sm text-gray-500 flex-shrink-0">{CURRENCIES[defaultCurrency].symbol}</span>
                         </div>
                       </div>
-                      <div>
-                        <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">
-                          {t('admin.products.add.stock')}
-                        </label>
-                        <Input
-                          type="number"
-                          value={variant.stock}
-                          onChange={(e) => {
-                            onVariantUpdate((prev) =>
-                              prev.map((v) => (v.id === variant.id ? { ...v, stock: e.target.value } : v))
-                            );
-                          }}
-                          placeholder={t('admin.products.add.quantityPlaceholder')}
-                          className="w-full text-sm"
-                          min="0"
-                        />
+                      <div className="flex flex-wrap items-end gap-x-2 gap-y-2">
+                        <div aria-hidden="true">
+                          <span className={`${VARIANT_FIELD_LABEL} invisible select-none`}>·</span>
+                          <div className={VARIANT_ROW_DIVIDER}>|</div>
+                        </div>
+                        <div className={VARIANT_SKU_WIDTH}>
+                          <label className={VARIANT_FIELD_LABEL}>
+                            {t('admin.products.add.sku')}
+                          </label>
+                          <Input
+                            type="text"
+                            value={variant.sku}
+                            onChange={(e) => {
+                              onVariantUpdate((prev) =>
+                                prev.map((v) => (v.id === variant.id ? { ...v, sku: e.target.value } : v))
+                              );
+                            }}
+                            placeholder={t('admin.products.add.skuPlaceholder')}
+                            className="h-9 w-full text-sm"
+                          />
+                        </div>
+                        <div className={VARIANT_STOCK_WIDTH}>
+                          <label className={VARIANT_FIELD_LABEL}>
+                            {t('admin.products.add.stock')}
+                          </label>
+                          <Input
+                            type="number"
+                            value={variant.stock}
+                            onChange={(e) => {
+                              onVariantUpdate((prev) =>
+                                prev.map((v) => (v.id === variant.id ? { ...v, stock: e.target.value } : v))
+                              );
+                            }}
+                            placeholder={t('admin.products.add.quantityPlaceholder')}
+                            className="h-9 w-full text-sm"
+                            min="0"
+                          />
+                        </div>
                       </div>
-                      <div>
-                        <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">
-                          {t('admin.products.add.sku')}
-                        </label>
-                        <Input
-                          type="text"
-                          value={variant.sku}
-                          onChange={(e) => {
-                            onVariantUpdate((prev) =>
-                              prev.map((v) => (v.id === variant.id ? { ...v, sku: e.target.value } : v))
-                            );
-                          }}
-                          placeholder={t('admin.products.add.skuPlaceholder')}
-                          className="w-full text-sm"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">
-                          {t('admin.products.add.image')}
-                        </label>
-                        <div className="flex items-center gap-2">
-                          {variant.image ? (
-                            <div className="relative inline-block">
-                              <img
-                                src={variant.image}
-                                alt="Variant image"
-                                className="w-12 h-12 object-cover border border-gray-300 rounded-md"
-                              />
+                      <div className={`ml-auto flex flex-wrap items-end ${VARIANT_ROW_GAP}`}>
+                        <div>
+                          <label className={VARIANT_FIELD_LABEL}>
+                            {t('admin.products.add.image')}
+                          </label>
+                          <div className="flex h-9 items-center">
+                            {variant.image ? (
+                              <div className="relative h-9 w-9 shrink-0">
+                                <img
+                                  src={variant.image}
+                                  alt="Variant image"
+                                  className="h-9 w-9 rounded-md border border-gray-300 object-cover"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    onVariantUpdate((prev) =>
+                                      prev.map((v) => (v.id === variant.id ? { ...v, image: null } : v))
+                                    );
+                                    if (variantImageInputRefs.current?.[variant.id]) {
+                                      variantImageInputRefs.current[variant.id]!.value = '';
+                                    }
+                                  }}
+                                  className="absolute -right-1 -top-1 rounded-full bg-red-500 p-0.5 text-white transition-colors hover:bg-red-600"
+                                  title={t('admin.products.add.removeImage')}
+                                >
+                                  <svg className="h-2.5 w-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                  </svg>
+                                </button>
+                              </div>
+                            ) : (
                               <button
                                 type="button"
-                                onClick={() => {
-                                  onVariantUpdate((prev) =>
-                                    prev.map((v) => (v.id === variant.id ? { ...v, image: null } : v))
-                                  );
-                                  if (variantImageInputRefs.current?.[variant.id]) {
-                                    variantImageInputRefs.current[variant.id]!.value = '';
-                                  }
-                                }}
-                                className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600 transition-colors"
-                                title={t('admin.products.add.removeImage')}
+                                onClick={() => variantImageInputRefs.current?.[variant.id]?.click()}
+                                disabled={imageUploadLoading}
+                                className={VARIANT_ICON_BTN}
+                                title={
+                                  imageUploadLoading
+                                    ? t('admin.products.add.uploading')
+                                    : t('admin.products.add.uploadImage')
+                                }
+                                aria-label={t('admin.products.add.uploadImage')}
                               >
-                                <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                                 </svg>
                               </button>
-                            </div>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={() => variantImageInputRefs.current?.[variant.id]?.click()}
-                              disabled={imageUploadLoading}
-                              className="w-full px-2 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                              </svg>
-                              <span className="truncate">
-                                {imageUploadLoading ? t('admin.products.add.uploading') : t('admin.products.add.uploadImage')}
-                              </span>
-                            </button>
-                          )}
-                          <input
-                            ref={(el) => {
-                              if (variantImageInputRefs.current) {
-                                variantImageInputRefs.current[variant.id] = el;
-                              }
-                            }}
-                            type="file"
-                            accept={ADMIN_IMAGE_ACCEPT}
-                            onChange={(e) => onVariantImageUpload(variant.id, e)}
-                            className="hidden"
-                          />
+                            )}
+                            <input
+                              ref={(el) => {
+                                if (variantImageInputRefs.current) {
+                                  variantImageInputRefs.current[variant.id] = el;
+                                }
+                              }}
+                              type="file"
+                              accept={ADMIN_IMAGE_ACCEPT}
+                              onChange={(e) => onVariantImageUpload(variant.id, e)}
+                              className="hidden"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <span className={`${VARIANT_FIELD_LABEL} invisible select-none`} aria-hidden="true">
+                            ·
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => onVariantDelete(variant.id)}
+                            className={`${VARIANT_ICON_BTN} border-red-300 bg-red-50 text-red-600 hover:bg-red-100 focus:ring-red-500`}
+                            title={t('admin.products.add.deleteVariant')}
+                            aria-label={t('admin.products.add.deleteVariant')}
+                          >
+                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                              />
+                            </svg>
+                          </button>
                         </div>
                       </div>
-                      <div>
-                        <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">
-                          {t('admin.products.add.actions')}
-                        </label>
-                        <button
-                          type="button"
-                          onClick={() => onVariantDelete(variant.id)}
-                          className="w-full px-3 py-2 text-sm font-medium text-red-700 bg-red-50 border border-red-300 rounded-md hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors flex items-center justify-center gap-1.5"
-                          title={t('admin.products.add.deleteVariant')}
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                            />
-                          </svg>
-                          {t('admin.products.add.delete')}
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Row 3: per-variant discount */}
-                    <div className="mt-3">
-                      <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">
-                        {t('admin.products.add.discount')}
-                      </label>
-                      <DiscountControl
-                        value={variant.discount}
-                        onChange={(next: VariantDiscount) => {
-                          onVariantUpdate((prev) =>
-                            prev.map((v) => (v.id === variant.id ? { ...v, discount: next } : v))
-                          );
-                        }}
-                        currencySymbol={CURRENCIES[defaultCurrency].symbol}
-                      />
                     </div>
                   </div>
                 );
