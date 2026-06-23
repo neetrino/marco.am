@@ -204,3 +204,22 @@ export function formatDiscountExpiresAt(
     minute: '2-digit',
   }).format(date);
 }
+
+/** Short date label for compact discount toolbars (day + month + year, no time). */
+export function formatDiscountExpiresAtCompact(
+  iso: string | null | undefined,
+  locale: string,
+): string {
+  if (!iso) {
+    return '';
+  }
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+  return new Intl.DateTimeFormat(locale, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  }).format(date);
+}

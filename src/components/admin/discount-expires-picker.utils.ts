@@ -105,3 +105,33 @@ export function monthLabel(month: number, locale: string): string {
 export function formatHourMinute(parts: DateParts): string {
   return `${pad(parts.hour)}:${pad(parts.minute)}`;
 }
+
+export const DISCOUNT_EXPIRES_POPOVER_WIDTH_PX = 296;
+export const DISCOUNT_EXPIRES_POPOVER_ESTIMATED_HEIGHT_PX = 420;
+export const DISCOUNT_EXPIRES_POPOVER_GAP_PX = 8;
+export const DISCOUNT_EXPIRES_POPOVER_Z_INDEX = 280;
+
+export type PopoverCoords = {
+  top: number;
+  left: number;
+};
+
+/** Fixed viewport coords for a portal popover aligned to the trigger's right edge. */
+export function computeDiscountExpiresPopoverCoords(trigger: DOMRect): PopoverCoords {
+  const viewportW = window.innerWidth;
+  const viewportH = window.innerHeight;
+  const gap = DISCOUNT_EXPIRES_POPOVER_GAP_PX;
+  const width = DISCOUNT_EXPIRES_POPOVER_WIDTH_PX;
+  const height = DISCOUNT_EXPIRES_POPOVER_ESTIMATED_HEIGHT_PX;
+
+  let left = trigger.right - width;
+  left = Math.max(gap, Math.min(left, viewportW - width - gap));
+
+  let top = trigger.bottom + gap;
+  if (top + height > viewportH - gap) {
+    top = trigger.top - height - gap;
+  }
+  top = Math.max(gap, top);
+
+  return { top, left };
+}
