@@ -5,10 +5,7 @@ import { formatAdminOrderListTotal } from '../utils/order-list-display';
 import { CurrencyCode } from '../../../../lib/currency';
 import { getStatusColor, getPaymentStatusColor } from '../utils/orderUtils';
 import { ADMIN_ORDER_STATUS_I18N_KEY } from '../utils/order-status-labels';
-import {
-  ORDER_TABLE_BODY_CELL,
-  ORDER_TABLE_LAST_CELL,
-} from './orders-table-layout';
+import { ORDER_TABLE_BODY_CELL } from './orders-table-layout';
 import type { Order } from '../useOrders';
 
 interface OrderRowProps {
@@ -38,7 +35,6 @@ export function OrderRow({
 
   const listTotalLabel = formatAdminOrderListTotal(order, formatCurrency);
   const bodyCell = ORDER_TABLE_BODY_CELL;
-  const bodyCellLast = `${ORDER_TABLE_BODY_CELL} ${ORDER_TABLE_LAST_CELL}`;
 
   return (
     <tr className="group transition-colors hover:bg-amber-50/50">
@@ -120,7 +116,7 @@ export function OrderRow({
           )}
         </div>
       </td>
-      <td className={`${bodyCellLast} whitespace-nowrap text-sm text-slate-500`}>
+      <td className={`${bodyCell} whitespace-nowrap text-sm text-slate-500`}>
         {new Date(order.createdAt).toLocaleDateString()}
       </td>
     </tr>

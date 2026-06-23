@@ -2,8 +2,7 @@
 export const ORDER_TABLE_HEADER_CELL =
   'border-r border-slate-300 bg-slate-50 px-3 py-3 text-left text-[10px] font-semibold uppercase leading-snug tracking-wide text-slate-500 whitespace-normal';
 
-export const ORDER_TABLE_BODY_CELL =
-  'border-r border-slate-200 bg-white px-3 py-2.5';
+export const ORDER_TABLE_BODY_CELL = 'bg-white px-3 py-2.5';
 
 export const ORDER_TABLE_LAST_CELL = 'border-r-0';
 
