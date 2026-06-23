@@ -196,7 +196,6 @@ async function fetchProductBatch(args: {
 }) {
   return db.product.findMany({
     where: {
-      published: true,
       deletedAt: null,
     },
     orderBy: { id: 'asc' },
@@ -240,7 +239,7 @@ export async function syncProductListingReadModel(
     fetchProductForReadModel(productId, locales),
   ]);
 
-  if (!product || product.published === false || product.deletedAt) {
+  if (!product || product.deletedAt) {
     const deleted = await db.productListingRow.deleteMany({ where: { productId } });
     await syncProductPdpReadModel(productId, { locales, discountSettings });
     await invalidateProductReadCaches();
@@ -298,7 +297,7 @@ export async function syncProductListingReadModelBatch(
     });
     const rebuiltAt = new Date();
     const rows = products
-      .filter((product) => product.published !== false && !product.deletedAt)
+      .filter((product) => !product.deletedAt)
       .flatMap((product) =>
         buildProductListingRowsForLocales({
           product,

@@ -152,6 +152,30 @@ describe('buildProductListingRowsForLocales', () => {
     });
   });
 
+  it('marks draft products as unpublished in listing rows', () => {
+    const rows = buildProductListingRowsForLocales({
+      locales: ['en'],
+      rebuiltAt,
+      categoryAncestry: EMPTY_ANCESTRY,
+      discountSettings: { globalDiscount: 0, categoryDiscounts: {}, brandDiscounts: {} },
+      product: {
+        id: 'draft-prod',
+        published: false,
+        createdAt,
+        updatedAt,
+        translations: [{ locale: 'en', title: 'Draft Phone', slug: 'draft-phone' }],
+        variants: [],
+      },
+    });
+
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({
+      productId: 'draft-prod',
+      isPublished: false,
+      title: 'Draft Phone',
+    });
+  });
+
   it('falls back to the first translation when a locale-specific translation is missing', () => {
     const rows = buildProductListingRowsForLocales({
       locales: ['en', 'ru'],
