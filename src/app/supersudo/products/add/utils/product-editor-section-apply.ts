@@ -27,6 +27,7 @@ function applyGeneralSection({ product, setFormData }: ApplyGeneralParams): void
     ...prev,
     title: product.title || '',
     slug: product.slug || '',
+    published: product.published ?? false,
     featured: product.featured || false,
     productClass: product.productClass || 'retail',
     warrantyYears:
@@ -52,6 +53,7 @@ export function applyGeneralSectionFromListProduct(
     ...prev,
     title: product.title || '',
     slug: product.slug || '',
+    published: product.published ?? false,
     featured: product.featured ?? false,
     productClass: product.productClass ?? 'retail',
   }));

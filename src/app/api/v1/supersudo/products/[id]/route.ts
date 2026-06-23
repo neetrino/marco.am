@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { authenticateToken, requireAdmin } from "@/lib/middleware/auth";
 import { adminService } from "@/lib/services/admin.service";
 import { normalizeProductClass } from "@/lib/constants/product-class";
-import { revalidateStorefrontHome } from "@/lib/revalidate-storefront";
+import { runProductUpdateSideEffects } from "@/lib/services/admin/admin-products-update.service";
 import {
   isProductEditorSection,
 } from "@/app/supersudo/products/add/product-editor-tabs";
@@ -188,7 +188,9 @@ export async function PUT(
     const product = await adminService.updateProduct(id, body);
     logger.devLog("✅ [ADMIN PRODUCTS] Product updated:", { id, productId: product?.id });
 
-    revalidateStorefrontHome();
+    const productSlug = product.translations?.[0]?.slug;
+    after(() => runProductUpdateSideEffects(id, productSlug));
+
     return NextResponse.json(product);
   } catch (error: any) {
     console.error("❌ [ADMIN PRODUCTS] PUT Error:", {

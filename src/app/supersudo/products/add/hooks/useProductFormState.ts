@@ -18,7 +18,7 @@ export function useProductFormState(listProduct: Product | null = null) {
     brandIds: [] as string[],
     primaryCategoryId: '',
     categoryIds: [] as string[],
-    published: false,
+    published: listProduct?.published ?? false,
     featured: listProduct?.featured ?? false,
     imageUrls: [] as string[],
     featuredImageIndex: 0,

@@ -68,12 +68,16 @@ export async function createAndSubmitPayload({
       brandId: finalBrandIds.length > 0 ? finalBrandIds[0] : undefined,
       primaryCategoryId: finalPrimaryCategoryId || undefined,
       categoryIds: resolvedCategoryIds.length > 0 ? resolvedCategoryIds : undefined,
-      published: isEditMode ? formData.published : true,
       featured: formData.featured,
       locale: 'en',
       variants: variants,
       attributeIds,
     };
+
+    // Published status is toggled from the products list, not the editor form.
+    if (!isEditMode) {
+      payload.published = true;
+    }
     
     if (finalMedia.length > 0) {
       payload.media = finalMedia;
