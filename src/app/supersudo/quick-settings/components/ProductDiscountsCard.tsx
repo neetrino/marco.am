@@ -5,7 +5,10 @@ import { Card, Button, Input } from '@shop/ui';
 import { useTranslation } from '../../../../lib/i18n-client';
 import { formatCatalogPrice } from '../../../../lib/currency';
 import { AdminTablePagination } from '../../components/AdminTablePagination';
-import type { QuickSettingsProductRow } from '../types';
+import {
+  matchesQuickSettingsProductSearch,
+  type QuickSettingsProductRow,
+} from '../types';
 
 interface ProductDiscountsCardProps {
   products: QuickSettingsProductRow[];
@@ -31,15 +34,11 @@ export function ProductDiscountsCard({
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredProducts = useMemo(() => {
-    const normalizedQuery = searchQuery.trim().toLowerCase();
-    if (!normalizedQuery) {
+    if (!searchQuery.trim()) {
       return products;
     }
 
-    return products.filter((product) => {
-      const productTitle = product.title.toLowerCase();
-      return productTitle.includes(normalizedQuery);
-    });
+    return products.filter((product) => matchesQuickSettingsProductSearch(product, searchQuery));
   }, [products, searchQuery]);
 
   const totalPages = useMemo(

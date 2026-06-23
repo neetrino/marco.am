@@ -16,6 +16,26 @@ export interface QuickSettingsProductRow {
   image?: string | null;
   price?: number;
   discountPercent?: number;
+  searchText?: string;
+  sku?: string;
+}
+
+/** Token-based search aligned with admin product list (title, slug, brand, SKU). */
+export function matchesQuickSettingsProductSearch(
+  row: QuickSettingsProductRow,
+  rawQuery: string,
+): boolean {
+  const tokens = rawQuery.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  if (tokens.length === 0) {
+    return true;
+  }
+
+  const haystack = [row.title, row.searchText, row.sku]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  return tokens.every((token) => haystack.includes(token));
 }
 
 /** Keeps the first row per product id (listing projection wins over unpublished fallback). */
