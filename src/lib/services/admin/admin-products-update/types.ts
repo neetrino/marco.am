@@ -28,6 +28,7 @@ export interface UpdateProductData {
   }>;
   warrantyYears?: number | null;
   attributeIds?: string[];
+  attributeValueIds?: string[];
   variants?: Array<{
     id?: string;
     price: string | number;
@@ -48,7 +49,6 @@ export interface UpdateProductData {
     }>;
   }>;
 }
-
 
 
 

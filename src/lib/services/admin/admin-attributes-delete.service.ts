@@ -84,6 +84,19 @@ class AdminAttributesDeleteService {
         };
       }
 
+      const productAttributeValuesCount = await db.productAttributeValue.count({
+        where: { attributeId },
+      });
+
+      if (productAttributeValuesCount > 0) {
+        throw {
+          status: 400,
+          type: "https://api.shop.am/problems/validation-error",
+          title: "Cannot delete attribute",
+          detail: `Attribute is used in ${productAttributeValuesCount} product attribute value(s). Please remove it from products first.`,
+        };
+      }
+
       // Ստուգում ենք, արդյոք attribute values-ները օգտագործվում են variants-ներում
       logger.devLog('🔍 [ADMIN ATTRIBUTES DELETE SERVICE] Ստուգվում է, արդյոք attribute values-ները օգտագործվում են variants-ներում...');
       const attributeValues = await db.attributeValue.findMany({
@@ -233,6 +246,21 @@ class AdminAttributesDeleteService {
         };
       }
 
+      const productAttributeValuesCount = await db.productAttributeValue.count({
+        where: {
+          attributeValueId,
+        },
+      });
+
+      if (productAttributeValuesCount > 0) {
+        throw {
+          status: 400,
+          type: "https://api.shop.am/problems/validation-error",
+          title: "Cannot delete attribute value",
+          detail: `Attribute value is used in ${productAttributeValuesCount} product(s). Please remove it from products first.`,
+        };
+      }
+
       // Delete attribute value
       await db.attributeValue.delete({
         where: { id: attributeValueId },
@@ -301,7 +329,6 @@ class AdminAttributesDeleteService {
 }
 
 export const adminAttributesDeleteService = new AdminAttributesDeleteService();
-
 
 
 

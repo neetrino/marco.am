@@ -8,6 +8,7 @@ import { collectVariantImages, buildProductUpdateData, updateProductTranslation,
 import { prepareVariantForWrite, updateOrCreateVariant } from "./variant-updater";
 import { updateAttributeValueImageUrls } from "./attribute-value-updater";
 import { normalizeProductCategoryLinks } from "../../product-category-links.service";
+import { syncProductAttributeValues } from "../product-attribute-values.service";
 
 function sanitizeUpdatePayload(data: UpdateProductData) {
   return {
@@ -20,6 +21,8 @@ function sanitizeUpdatePayload(data: UpdateProductData) {
     labelsCount: data.labels?.length ?? 0,
     hasAttributeIds: data.attributeIds !== undefined,
     attributeIdsCount: data.attributeIds?.length ?? 0,
+    hasAttributeValueIds: data.attributeValueIds !== undefined,
+    attributeValueIdsCount: data.attributeValueIds?.length ?? 0,
     locale: data.locale ?? "en",
   };
 }
@@ -140,6 +143,7 @@ export async function updateProduct(
 
       // 3. Update ProductAttribute relations
       await updateProductAttributes(productId, data.attributeIds, tx);
+      await syncProductAttributeValues(productId, data.attributeValueIds, tx);
 
       // 4. Update variants
       if (preparedVariants !== undefined) {
@@ -235,7 +239,6 @@ export async function updateProduct(
     throw error;
   }
 }
-
 
 
 

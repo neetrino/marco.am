@@ -70,6 +70,12 @@ const getProductAttributesInclude = () => ({
       attribute: true,
     },
   },
+  attributeValues: {
+    select: {
+      attributeId: true,
+      attributeValueId: true,
+    },
+  },
 });
 
 /**
@@ -80,6 +86,7 @@ export function isProductAttributesError(error: unknown): boolean {
   const errorMessage = error instanceof Error ? error.message : String(error);
   return (errorObj && typeof errorObj === 'object' && 'code' in errorObj && errorObj.code === 'P2021') || 
          errorMessage.includes('productAttributes') || 
+         errorMessage.includes('product_attribute_values') ||
          errorMessage.includes('does not exist');
 }
 
@@ -158,4 +165,3 @@ export async function executeProductDetailQuery(productId: string) {
     throw error;
   }
 }
-

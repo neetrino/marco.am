@@ -168,6 +168,13 @@ function isValidAttributeIds(attributeIds: unknown): attributeIds is string[] {
   );
 }
 
+function isValidAttributeValueIds(attributeValueIds: unknown): attributeValueIds is string[] {
+  return (
+    Array.isArray(attributeValueIds) &&
+    attributeValueIds.every((id) => typeof id === "string" && id.trim().length > 0)
+  );
+}
+
 function hasValidVariantOptions(variant: unknown): boolean {
   if (!variant || typeof variant !== "object") {
     return false;
@@ -286,6 +293,7 @@ export async function GET(req: NextRequest) {
  * - media?: any[]
  * - labels?: Array<{type: string, value: string, position: string, color?: string}>
  * - attributeIds?: string[]
+ * - attributeValueIds?: string[]
  * - variants: Array<{price: string|number, discountType?: 'NONE'|'PERCENT'|'AMOUNT', discountValue?: number|null, discountExpiresAt?: string|null, stock: string|number, sku?: string, color?: string, size?: string, imageUrl?: string, published?: boolean}> (required)
  */
 export async function POST(req: NextRequest) {
@@ -406,6 +414,19 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (body.attributeValueIds !== undefined && !isValidAttributeValueIds(body.attributeValueIds)) {
+      return NextResponse.json(
+        {
+          type: "https://api.shop.am/problems/validation-error",
+          title: "Validation Error",
+          status: 400,
+          detail: "Field 'attributeValueIds' must be an array of non-empty strings",
+          instance: req.url,
+        },
+        { status: 400 }
+      );
+    }
+
     if (body.productClass !== undefined && normalizeProductClass(body.productClass) === null) {
       return NextResponse.json(
         {
@@ -497,4 +518,3 @@ export async function POST(req: NextRequest) {
     return jsonErrorResponse(error, req.url);
   }
 }
-

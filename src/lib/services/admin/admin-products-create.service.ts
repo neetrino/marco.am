@@ -39,6 +39,7 @@ import {
 import { syncProductListingReadModel } from "@/lib/read-model/product-read-model-sync";
 import { normalizeVariantDiscountForWrite } from "./variant-discount-write";
 import type { DiscountKind } from "@/lib/discount/discount-expiry";
+import { syncProductAttributeValues } from "./product-attribute-values.service";
 
 type ProductMediaItem = string | { url: string };
 
@@ -127,6 +128,7 @@ class AdminProductsCreateService {
     }>;
     warrantyYears?: number | null;
     attributeIds?: string[];
+    attributeValueIds?: string[];
     variants: Array<{
       price: string | number;
       stock: string | number;
@@ -435,6 +437,8 @@ class AdminProductsCreateService {
           }
         }
 
+        await syncProductAttributeValues(product.id, data.attributeValueIds, tx);
+
         return await tx.product.findUnique({
           where: { id: product.id },
           include: {
@@ -476,7 +480,6 @@ class AdminProductsCreateService {
 }
 
 export const adminProductsCreateService = new AdminProductsCreateService();
-
 
 
 

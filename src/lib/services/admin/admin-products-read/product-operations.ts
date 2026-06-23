@@ -107,6 +107,7 @@ export async function getProductById(productId: string) {
     translations?: Array<{ locale: string; title?: string; slug?: string; subtitle?: string | null; description?: unknown }>;
     labels?: Array<{ id: string; type: string; value: string; position: string; color: string | null }>;
     variants?: Array<unknown>;
+    attributeValues?: Array<{ attributeId?: string; attributeValueId?: string }>;
   };
   const translations = Array.isArray(productWithRelations.translations) ? productWithRelations.translations : [];
   const translation = translations.find((t: { locale: string }) => t.locale === "en") || translations[0] || null;
@@ -132,6 +133,12 @@ export async function getProductById(productId: string) {
   
   // Merge both sources and remove duplicates
   const allAttributeIds = Array.from(new Set([...attributeIds, ...legacyAttributeIds]));
+  const productAttributeValues = Array.isArray(productWithRelations.attributeValues)
+    ? productWithRelations.attributeValues
+    : [];
+  const attributeValueIds = productAttributeValues
+    .map((row) => row.attributeValueId)
+    .filter((id): id is string => Boolean(id));
 
   return {
     id: product.id,
@@ -144,6 +151,7 @@ export async function getProductById(productId: string) {
     primaryCategoryId: product.primaryCategoryId || null,
     categoryIds: product.categoryIds || [],
     attributeIds: allAttributeIds, // All attribute IDs that this product has
+    attributeValueIds,
     published: product.published,
     featured: Boolean(product.featured),
     warrantyYears:
@@ -161,4 +169,3 @@ export async function getProductById(productId: string) {
     variants: variants.map((v) => formatVariantForAdmin(v as Parameters<typeof formatVariantForAdmin>[0])),
   };
 }
-
