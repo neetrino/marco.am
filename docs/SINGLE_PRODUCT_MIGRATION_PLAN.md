@@ -5,8 +5,12 @@
 > **only as product-level filtering metadata** (color, size, technical specs).
 >
 > Context: project is **not in production yet**, real catalog is effectively
-> single-product (existing variants are placeholders). This removes the historical
-> data-migration risk and makes a clean cut safe.
+> single-product (existing variants are placeholders).
+>
+> **Source of truth = the current database**, not the Excel source. Products and
+> categories were hand-curated directly in the DB, so the migration is **in-place
+> data backfill** (move variant fields onto product), **not** a reset + Excel
+> re-import. Excel/JSON is used only as a pre-migration backup.
 
 **Status:** Proposal — awaiting approval before touching schema / public contracts.
 **Owner:** —
@@ -84,22 +88,34 @@ filtering UX stays as-is (already token-based in the read-model).
 
 ## 4. Phases
 
-> Each phase should compile + pass typecheck/lint before moving on. Since not in prod,
-> DB is reset & re-seeded rather than data-migrated.
+> Each phase should compile + pass typecheck/lint before moving on. The current DB
+> is the source of truth → data is **migrated in place (backfill)**, never reset.
 
-### Phase 1 — Schema (DB)
-- [ ] Update `shared/db/prisma/models/product.prisma` (move fields onto `Product`).
-- [ ] Add `ProductAttributeValue` model; adjust `catalog.prisma` relations.
-- [ ] Remove `ProductVariant` / `ProductVariantOption` models.
-- [ ] Update `cart.prisma` (`CartItem` drop `variantId`).
-- [ ] Update `order.prisma` (`OrderItem` drop `variantId` / `variantTitle`).
-- [ ] Update `read-models.prisma` (drop `defaultVariantId`, `requiresAttributeSelection`).
-- [ ] Create migration; reset dev DB (`prisma migrate reset`) — no prod data.
+### Phase 0 — Backup & audit (before any schema change)
+- [ ] Full backup: `pg_dump` (or JSON export) of the current DB. Keep as rollback safety.
+- [ ] Audit report: list products with >1 distinct sellable variant (different
+      price/stock). Review & resolve manually before the destructive Phase 1c.
+
+### Phase 1 — Schema (DB), in-place backfill
+- [ ] **1a (additive):** migration adds **nullable** sellable-unit columns to
+      `products` (`price`, `compareAtPrice`, `cost`, `stock`, `stockReserved`, `sku`,
+      `barcode`, `weightGrams`, `imageUrl`) and creates `product_attribute_values`.
+      Update `product.prisma` / `catalog.prisma` accordingly.
+- [ ] **1b (backfill script):** TS + Prisma script that, per product, picks the
+      representative variant via existing `pickVariantForListingPrice` logic and writes
+      price/stock/sku onto the product; collects distinct attribute values from
+      `product_variant_options` (+ `variant.attributes` JSON) into
+      `product_attribute_values`. Idempotent + dry-run mode.
+- [ ] **1c (destructive):** migration sets `NOT NULL` where required, drops
+      `ProductVariant` / `ProductVariantOption`, removes `variantId` from `cart.prisma`
+      (`CartItem`) and `order.prisma` (`OrderItem` + `variantTitle`), and drops
+      `defaultVariantId` / `requiresAttributeSelection` from `read-models.prisma`.
 - [ ] Regenerate Prisma client.
 
-### Phase 2 — Import / Seed
+### Phase 2 — Import / Seed (fresh-install path only)
 - [ ] `scripts/import-marco-csv-products.cjs` + `src/scripts/import-marco-csv-products.ts`:
       write price/stock/sku onto product; map attributes → `ProductAttributeValue`.
+      (Used for new/empty environments — existing DB is migrated in place, not re-imported.)
 - [ ] `shared/db/prisma/seed.cjs`, `seed-apple-product.cjs`, `add-40-products.cjs`.
 - [ ] Reconcile/sku scripts: `marco-import-reconcile.cjs`,
       `sync-product-skus-from-xlsx.ts`.
@@ -161,14 +177,17 @@ filtering UX stays as-is (already token-based in the read-model).
 | Risk | Mitigation |
 |---|---|
 | Wide blast radius (many files reference `variant`) | Phased, compile after each phase; keep PRs per phase. |
-| Order history shape change | Not in prod → reset DB; `OrderItem` keeps denormalized snapshot fields anyway. |
-| Filtering regressions (color/size/specs) | Read-model tokens unchanged; cover with builder tests. |
-| Hidden multi-variant products in real data | Confirmed single; add import guard that fails if a source row implies >1 sellable unit. |
+| Losing hand-curated DB data | DB is source of truth → in-place backfill (Phase 1b), never reset/re-import. Full `pg_dump` backup in Phase 0. |
+| Order history shape change | `OrderItem` keeps denormalized snapshot fields (`sku`/`title`/`price`/`imageUrl`); only `variantId` link is dropped. |
+| Filtering regressions (color/size/specs) | Read-model tokens unchanged; backfill `product_attribute_values`; cover with builder tests. |
+| Hidden multi-variant products | Phase 0 audit report lists them for manual resolution **before** the destructive Phase 1c. |
 
 ## 6. Rollback
 
-Work on a feature branch; each phase is a separate commit/PR. Since DB is reset (no prod),
-rollback = revert branch + `prisma migrate reset` to the previous schema.
+Work on a feature branch; each phase is a separate commit/PR. The additive Phase 1a and
+backfill 1b are non-destructive (old variant tables still intact). If something is wrong
+before Phase 1c, just revert the branch. After Phase 1c, restore from the Phase 0
+`pg_dump` backup + revert the branch.
 
 ## 7. Open decisions (confirm in Phase 1)
 
