@@ -19,10 +19,11 @@ import {
   writeAdminSessionCache,
 } from '@/lib/admin/admin-session-cache';
 
-import type {
-  QuickSettingsBrand,
-  QuickSettingsCategory,
-  QuickSettingsProductRow,
+import {
+  dedupeQuickSettingsProductRows,
+  type QuickSettingsBrand,
+  type QuickSettingsCategory,
+  type QuickSettingsProductRow,
 } from './types';
 
 type SettingsPayload = {
@@ -71,10 +72,12 @@ export function useQuickSettings({ activeLocale, t }: UseQuickSettingsParams) {
   const [discountLoading, setDiscountLoading] = useState(cachedSettings === null);
   const [discountSaving, setDiscountSaving] = useState(false);
 
-  const [products, setProducts] = useState<QuickSettingsProductRow[]>(cachedProducts?.data ?? []);
+  const [products, setProducts] = useState<QuickSettingsProductRow[]>(
+    dedupeQuickSettingsProductRows(cachedProducts?.data ?? []),
+  );
   const [productsLoading, setProductsLoading] = useState(cachedProducts === null);
   const [productDiscounts, setProductDiscounts] = useState<Record<string, number>>(() => {
-    const rows = cachedProducts?.data ?? [];
+    const rows = dedupeQuickSettingsProductRows(cachedProducts?.data ?? []);
     return Object.fromEntries(rows.map((row) => [row.id, row.discountPercent ?? 0]));
   });
   const [savingProductId, setSavingProductId] = useState<string | null>(null);
@@ -94,9 +97,10 @@ export function useQuickSettings({ activeLocale, t }: UseQuickSettingsParams) {
   }, []);
 
   const applyProductRows = useCallback((rows: QuickSettingsProductRow[]) => {
-    setProducts(rows);
+    const uniqueRows = dedupeQuickSettingsProductRows(rows);
+    setProducts(uniqueRows);
     setProductDiscounts(
-      Object.fromEntries(rows.map((row) => [row.id, row.discountPercent ?? 0])),
+      Object.fromEntries(uniqueRows.map((row) => [row.id, row.discountPercent ?? 0])),
     );
   }, []);
 

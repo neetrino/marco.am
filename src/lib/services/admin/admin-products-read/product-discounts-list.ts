@@ -106,11 +106,16 @@ async function fetchProductDiscountsListUncached(locale: string): Promise<{ data
     }),
   ]);
 
+  const listingProductIds = new Set(listingRows.map((row) => row.productId));
+  const unpublishedOnly = unpublishedProducts.filter(
+    (product) => !listingProductIds.has(product.id),
+  );
+
   const publishedRows = listingRows.map((row) => ({
     row: mapListingRow(row),
     sortAt: row.productCreatedAt,
   }));
-  const unpublishedRows = unpublishedProducts.map((product) => ({
+  const unpublishedRows = unpublishedOnly.map((product) => ({
     row: mapUnpublishedProduct(product),
     sortAt: product.createdAt,
   }));

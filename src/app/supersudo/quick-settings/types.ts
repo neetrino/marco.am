@@ -17,3 +17,19 @@ export interface QuickSettingsProductRow {
   price?: number;
   discountPercent?: number;
 }
+
+/** Keeps the first row per product id (listing projection wins over unpublished fallback). */
+export function dedupeQuickSettingsProductRows(
+  rows: QuickSettingsProductRow[],
+): QuickSettingsProductRow[] {
+  const seen = new Set<string>();
+  const unique: QuickSettingsProductRow[] = [];
+  for (const row of rows) {
+    if (seen.has(row.id)) {
+      continue;
+    }
+    seen.add(row.id);
+    unique.push(row);
+  }
+  return unique;
+}
