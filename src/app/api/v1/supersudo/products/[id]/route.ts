@@ -7,6 +7,7 @@ import {
   isProductEditorSection,
 } from "@/app/supersudo/products/add/product-editor-tabs";
 import { logger } from "@/lib/utils/logger";
+import { revalidateStorefrontHome } from "@/lib/revalidate-storefront";
 
 function isValidAttributeIds(attributeIds: unknown): attributeIds is string[] {
   return (
