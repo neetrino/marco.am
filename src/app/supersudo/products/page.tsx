@@ -397,10 +397,15 @@ function ProductsPageContent() {
     });
   }, [router]);
 
+  // Close the optimistic sheet only when the URL param is actually removed (e.g. browser back),
+  // never during the open transition where the param is still being applied (avoids open flicker).
+  const hadUrlSheetParamRef = useRef(false);
   useEffect(() => {
-    if (!editParam && !createParam && optimisticSheet.open) {
+    const hasUrlSheetParam = Boolean(editParam || createParam);
+    if (!hasUrlSheetParam && hadUrlSheetParamRef.current && optimisticSheet.open) {
       setOptimisticSheet({ open: false, productId: null });
     }
+    hadUrlSheetParamRef.current = hasUrlSheetParam;
   }, [editParam, createParam, optimisticSheet.open]);
 
   const handleProductSubmit = (request: OptimisticSaveRequest) => {
