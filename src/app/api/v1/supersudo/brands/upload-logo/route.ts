@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { authenticateToken, requireAdmin } from '@/lib/middleware/auth';
 import { isR2Configured, uploadToR2 } from '@/lib/r2';
+import { adminBrandsService } from '@/lib/services/admin/admin-brands.service';
 import {
   buildBrandLogoR2Key,
   resolveBrandLogoR2Basename,
@@ -133,6 +134,12 @@ export async function POST(req: NextRequest) {
         },
         { status: 500 },
       );
+    }
+
+    const brandId = readNonEmptyString(body.brandId);
+    if (brandId) {
+      await adminBrandsService.updateBrand(brandId, { logoUrl: url });
+      logger.info('Brand logo upload: persisted and synced storefront projection', { brandId });
     }
 
     return NextResponse.json({ url, key }, { status: 200 });

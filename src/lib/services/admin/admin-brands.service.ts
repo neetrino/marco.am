@@ -109,6 +109,8 @@ class AdminBrandsService {
     const brandTranslations = Array.isArray(brand.translations) ? brand.translations : [];
     const translation = brandTranslations.find((t: { locale: string }) => t.locale === locale) || brandTranslations[0] || null;
 
+    await syncProductListingReadModelByBrand(brand.id);
+
     return {
       data: {
         id: brand.id,
