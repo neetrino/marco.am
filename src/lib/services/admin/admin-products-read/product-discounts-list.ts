@@ -110,7 +110,7 @@ async function fetchProductDiscountsListUncached(locale: string): Promise<{ data
   return { data };
 }
 
-/** Clears cached quick-settings product discount lists (all locales). */
+/** Clears cached admin product discount lists (all locales). */
 export async function invalidateAdminProductDiscountsCache(): Promise<void> {
   await cacheService.deletePattern(`${ADMIN_PRODUCT_DISCOUNTS_CACHE_PREFIX}*`);
   await cacheService.deletePattern("admin:product-discounts:v2:*");
@@ -118,7 +118,7 @@ export async function invalidateAdminProductDiscountsCache(): Promise<void> {
 }
 
 /**
- * Lightweight published product rows for quick-settings discount UI.
+ * Lightweight published product rows for admin discounts UI.
  * Hot path reads from the listing projection; variant SKUs are joined for client-side search.
  */
 export async function getProductDiscountsList(

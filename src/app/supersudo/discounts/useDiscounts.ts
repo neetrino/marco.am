@@ -6,8 +6,8 @@ import { logger } from '@/lib/utils/logger';
 import type { LanguageCode } from '@/lib/language';
 import { ADMIN_CACHE_KEYS, buildProductDiscountsCacheKey } from '@/lib/admin/admin-cache-keys';
 import {
-  fetchAdminQuickSettingsBootstrap,
-  mapQuickSettingsBootstrap,
+  fetchAdminDiscountsBootstrap,
+  mapDiscountsBootstrap,
 } from '@/lib/admin/admin-bootstrap-client';
 import {
   readAdminBrandsCache,
@@ -21,10 +21,10 @@ import {
 import { parseDiscountMap, serializeDiscountMap, type DiscountMap } from '@/lib/discount/discount-expiry';
 
 import {
-  dedupeQuickSettingsProductRows,
-  type QuickSettingsBrand,
-  type QuickSettingsCategory,
-  type QuickSettingsProductRow,
+  dedupeDiscountProductRows,
+  type DiscountsBrand,
+  type DiscountsCategory,
+  type DiscountsProductRow,
 } from './types';
 
 type SettingsPayload = {
@@ -34,14 +34,14 @@ type SettingsPayload = {
   brandDiscounts?: DiscountMap;
 };
 
-type ProductDiscountsPayload = { data: QuickSettingsProductRow[] };
+type ProductDiscountsPayload = { data: DiscountsProductRow[] };
 
-type UseQuickSettingsParams = {
+type UseDiscountsParams = {
   activeLocale: LanguageCode;
   t: (key: string) => string;
 };
 
-export function useQuickSettings({ activeLocale, t }: UseQuickSettingsParams) {
+export function useDiscounts({ activeLocale, t }: UseDiscountsParams) {
   const tRef = useRef(t);
   tRef.current = t;
 
@@ -54,10 +54,10 @@ export function useQuickSettings({ activeLocale, t }: UseQuickSettingsParams) {
     productDiscountsCacheKey,
     ADMIN_SESSION_CACHE_TTL_MS,
   );
-  const cachedCategories = readAdminCategoriesCache<QuickSettingsCategory>(activeLocale, {
+  const cachedCategories = readAdminCategoriesCache<DiscountsCategory>(activeLocale, {
     includeCounts: false,
   });
-  const cachedBrands = readAdminBrandsCache<QuickSettingsBrand>();
+  const cachedBrands = readAdminBrandsCache<DiscountsBrand>();
 
   const [globalDiscount, setGlobalDiscount] = useState<number>(cachedSettings?.globalDiscount ?? 0);
   const [globalDiscountExpiresAt, setGlobalDiscountExpiresAt] = useState<string | null>(
@@ -72,25 +72,25 @@ export function useQuickSettings({ activeLocale, t }: UseQuickSettingsParams) {
   const [discountLoading, setDiscountLoading] = useState(cachedSettings === null);
   const [discountSaving, setDiscountSaving] = useState(false);
 
-  const [products, setProducts] = useState<QuickSettingsProductRow[]>(
-    dedupeQuickSettingsProductRows(cachedProducts?.data ?? []),
+  const [products, setProducts] = useState<DiscountsProductRow[]>(
+    dedupeDiscountProductRows(cachedProducts?.data ?? []),
   );
   const [productsLoading, setProductsLoading] = useState(cachedProducts === null);
   const [productDiscounts, setProductDiscounts] = useState<Record<string, number>>(() => {
-    const rows = dedupeQuickSettingsProductRows(cachedProducts?.data ?? []);
+    const rows = dedupeDiscountProductRows(cachedProducts?.data ?? []);
     return Object.fromEntries(rows.map((row) => [row.id, row.discountPercent ?? 0]));
   });
   const [productDiscountExpires, setProductDiscountExpires] = useState<Record<string, string | null>>(() => {
-    const rows = dedupeQuickSettingsProductRows(cachedProducts?.data ?? []);
+    const rows = dedupeDiscountProductRows(cachedProducts?.data ?? []);
     return Object.fromEntries(rows.map((row) => [row.id, row.discountExpiresAt ?? null]));
   });
   const [savingProductId, setSavingProductId] = useState<string | null>(null);
 
-  const [categories, setCategories] = useState<QuickSettingsCategory[]>(cachedCategories ?? []);
+  const [categories, setCategories] = useState<DiscountsCategory[]>(cachedCategories ?? []);
   const [categoriesLoading, setCategoriesLoading] = useState(cachedCategories === null);
   const [categorySaving, setCategorySaving] = useState(false);
 
-  const [brands, setBrands] = useState<QuickSettingsBrand[]>(cachedBrands ?? []);
+  const [brands, setBrands] = useState<DiscountsBrand[]>(cachedBrands ?? []);
   const [brandsLoading, setBrandsLoading] = useState(cachedBrands === null);
   const [brandSaving, setBrandSaving] = useState(false);
 
@@ -101,8 +101,8 @@ export function useQuickSettings({ activeLocale, t }: UseQuickSettingsParams) {
     setBrandDiscounts(settings.brandDiscounts ?? {});
   }, []);
 
-  const applyProductRows = useCallback((rows: QuickSettingsProductRow[]) => {
-    const uniqueRows = dedupeQuickSettingsProductRows(rows);
+  const applyProductRows = useCallback((rows: DiscountsProductRow[]) => {
+    const uniqueRows = dedupeDiscountProductRows(rows);
     setProducts(uniqueRows);
     setProductDiscounts(
       Object.fromEntries(uniqueRows.map((row) => [row.id, row.discountPercent ?? 0])),
@@ -121,10 +121,10 @@ export function useQuickSettings({ activeLocale, t }: UseQuickSettingsParams) {
       productDiscountsCacheKey,
       ADMIN_SESSION_CACHE_TTL_MS,
     );
-    const categoriesCached = readAdminCategoriesCache<QuickSettingsCategory>(activeLocale, {
+    const categoriesCached = readAdminCategoriesCache<DiscountsCategory>(activeLocale, {
       includeCounts: false,
     });
-    const brandsCached = readAdminBrandsCache<QuickSettingsBrand>();
+    const brandsCached = readAdminBrandsCache<DiscountsBrand>();
 
     if (settingsCached) {
       applySettings(settingsCached);
@@ -148,8 +148,8 @@ export function useQuickSettings({ activeLocale, t }: UseQuickSettingsParams) {
     }
 
     try {
-      const bootstrap = await fetchAdminQuickSettingsBootstrap(activeLocale);
-      const mapped = mapQuickSettingsBootstrap(bootstrap);
+      const bootstrap = await fetchAdminDiscountsBootstrap(activeLocale);
+      const mapped = mapDiscountsBootstrap(bootstrap);
       applySettings({
         globalDiscount: mapped.settings.globalDiscount,
         globalDiscountExpiresAt: mapped.settings.globalDiscountExpiresAt ?? null,

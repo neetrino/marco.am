@@ -7,8 +7,6 @@ export type DiscountEntry = {
 
 export type DiscountMap = Record<string, DiscountEntry>;
 
-const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z$/;
-
 export function parseIsoDate(value: unknown): string | null {
   if (typeof value !== 'string' || !value.trim()) {
     return null;
@@ -134,8 +132,4 @@ export function formatDiscountExpiresAt(
     hour: '2-digit',
     minute: '2-digit',
   }).format(date);
-}
-
-export function isValidIsoDateString(value: string): boolean {
-  return ISO_DATE_PATTERN.test(value) && !Number.isNaN(new Date(value).getTime());
 }

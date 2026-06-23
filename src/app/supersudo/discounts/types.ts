@@ -1,16 +1,16 @@
-export interface QuickSettingsCategory {
+export interface DiscountsCategory {
   id: string;
   title: string;
   parentId: string | null;
 }
 
-export interface QuickSettingsBrand {
+export interface DiscountsBrand {
   id: string;
   name: string;
   logoUrl?: string;
 }
 
-export interface QuickSettingsProductRow {
+export interface DiscountsProductRow {
   id: string;
   title: string;
   image?: string | null;
@@ -25,11 +25,9 @@ export interface QuickSettingsProductRow {
 export { matchesProductSearchFields } from '@/lib/product-search/match';
 
 /** Keeps the first row per product id (listing projection wins over unpublished fallback). */
-export function dedupeQuickSettingsProductRows(
-  rows: QuickSettingsProductRow[],
-): QuickSettingsProductRow[] {
+export function dedupeDiscountProductRows(rows: DiscountsProductRow[]): DiscountsProductRow[] {
   const seen = new Set<string>();
-  const unique: QuickSettingsProductRow[] = [];
+  const unique: DiscountsProductRow[] = [];
   for (const row of rows) {
     if (seen.has(row.id)) {
       continue;

@@ -5,7 +5,7 @@ import { adminCategoriesService } from "@/lib/services/admin/admin-categories.se
 import { adminSettingsService } from "@/lib/services/admin/admin-settings.service";
 import { logger } from "@/lib/utils/logger";
 
-export const ADMIN_BOOTSTRAP_PATHS = ["dashboard", "discounts", "quick-settings"] as const;
+export const ADMIN_BOOTSTRAP_PATHS = ["dashboard", "discounts"] as const;
 
 export type AdminBootstrapPath = (typeof ADMIN_BOOTSTRAP_PATHS)[number];
 
@@ -16,7 +16,7 @@ export type AdminDashboardBootstrapPayload = {
   userActivity: { data: Awaited<ReturnType<typeof adminStatsService.getUserActivity>> | null };
 };
 
-export type AdminQuickSettingsBootstrapPayload = {
+export type AdminDiscountsBootstrapPayload = {
   settings: Awaited<ReturnType<typeof adminSettingsService.getSettings>>;
   categories: Awaited<ReturnType<typeof adminCategoriesService.getCategories>>;
   brands: Awaited<ReturnType<typeof adminBrandsService.getBrands>>;
@@ -25,9 +25,7 @@ export type AdminQuickSettingsBootstrapPayload = {
 
 export type AdminBootstrapResponse = {
   dashboard?: AdminDashboardBootstrapPayload;
-  discounts?: AdminQuickSettingsBootstrapPayload;
-  /** @deprecated Use `discounts` — kept for older admin clients. */
-  "quick-settings"?: AdminQuickSettingsBootstrapPayload;
+  discounts?: AdminDiscountsBootstrapPayload;
 };
 
 function normalizeLocale(localeInput?: string): string {
@@ -81,7 +79,7 @@ async function buildDashboardBootstrap(): Promise<AdminDashboardBootstrapPayload
   };
 }
 
-async function buildQuickSettingsBootstrap(locale: string): Promise<AdminQuickSettingsBootstrapPayload> {
+async function buildDiscountsBootstrap(locale: string): Promise<AdminDiscountsBootstrapPayload> {
   const normalizedLocale = normalizeLocale(locale);
   const [settings, categories, brands, productDiscounts] = await Promise.all([
     adminSettingsService.getSettings(),
@@ -114,11 +112,10 @@ export async function buildAdminBootstrap(
     );
   }
 
-  if (paths.includes("discounts") || paths.includes("quick-settings")) {
+  if (paths.includes("discounts")) {
     tasks.push(
-      buildQuickSettingsBootstrap(locale ?? "en").then((payload) => {
+      buildDiscountsBootstrap(locale ?? "en").then((payload) => {
         response.discounts = payload;
-        response["quick-settings"] = payload;
       }),
     );
   }

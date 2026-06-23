@@ -13,9 +13,9 @@ describe("parseAdminBootstrapPaths", () => {
   });
 
   it("parses known paths and ignores unknown duplicates", () => {
-    expect(parseAdminBootstrapPaths("dashboard,quick-settings,unknown,dashboard")).toEqual([
+    expect(parseAdminBootstrapPaths("dashboard,discounts,unknown,dashboard")).toEqual([
       "dashboard",
-      "quick-settings",
+      "discounts",
     ]);
   });
 

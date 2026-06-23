@@ -7,11 +7,11 @@ import { formatCatalogPrice } from '../../../../lib/currency';
 import { DiscountExpiresPicker } from '@/components/admin/DiscountExpiresPicker';
 import {
   matchesProductSearchFields,
-  type QuickSettingsProductRow,
+  type DiscountsProductRow,
 } from '../types';
 
 interface ProductDiscountsCardProps {
-  products: QuickSettingsProductRow[];
+  products: DiscountsProductRow[];
   productsLoading: boolean;
   productDiscounts: Record<string, number>;
   setProductDiscounts: React.Dispatch<React.SetStateAction<Record<string, number>>>;

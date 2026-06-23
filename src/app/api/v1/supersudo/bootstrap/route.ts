@@ -12,7 +12,7 @@ import { logger } from "@/lib/utils/logger";
 export const dynamic = "force-dynamic";
 
 /**
- * GET /api/v1/supersudo/bootstrap?paths=dashboard,quick-settings&lang=en
+ * GET /api/v1/supersudo/bootstrap?paths=dashboard,discounts&lang=en
  * Collapses multi-fetch admin cold loads into one HTTP round-trip.
  */
 export async function GET(req: NextRequest) {
@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
               type: "https://api.shop.am/problems/validation-error",
               title: "Validation Error",
               status: 400,
-              detail: "Query param paths is required (e.g. paths=dashboard or paths=quick-settings)",
+              detail: "Query param paths is required (e.g. paths=dashboard or paths=discounts)",
               instance: req.url,
             },
             { status: 400 },

@@ -5,9 +5,9 @@ import { useRouter } from 'next/navigation';
 import { useTranslation } from '../../../lib/i18n-client';
 import type { DiscountMap } from '@/lib/discount/discount-expiry';
 import type {
-  QuickSettingsBrand,
-  QuickSettingsCategory,
-  QuickSettingsProductRow,
+  DiscountsBrand,
+  DiscountsCategory,
+  DiscountsProductRow,
 } from './types';
 import { AdminPageLayout } from '../components/AdminPageLayout';
 import { GlobalDiscountCard } from './components/GlobalDiscountCard';
@@ -16,7 +16,7 @@ import { CategoryDiscountsCard } from './components/CategoryDiscountsCard';
 import { BrandDiscountsCard } from './components/BrandDiscountsCard';
 import { ProductDiscountsCard } from './components/ProductDiscountsCard';
 
-interface QuickSettingsContentProps {
+interface DiscountsContentProps {
   currentPath: string;
   router: ReturnType<typeof useRouter>;
   t: ReturnType<typeof useTranslation>['t'];
@@ -27,7 +27,7 @@ interface QuickSettingsContentProps {
   discountLoading: boolean;
   discountSaving: boolean;
   handleDiscountSave: () => void;
-  categories: QuickSettingsCategory[];
+  categories: DiscountsCategory[];
   categoriesLoading: boolean;
   categoryDiscounts: DiscountMap;
   updateCategoryDiscountValue: (categoryId: string, value: string) => void;
@@ -35,7 +35,7 @@ interface QuickSettingsContentProps {
   clearCategoryDiscount: (categoryId: string) => void;
   handleCategoryDiscountSave: () => void;
   categorySaving: boolean;
-  brands: QuickSettingsBrand[];
+  brands: DiscountsBrand[];
   brandsLoading: boolean;
   brandDiscounts: DiscountMap;
   updateBrandDiscountValue: (brandId: string, value: string) => void;
@@ -43,7 +43,7 @@ interface QuickSettingsContentProps {
   clearBrandDiscount: (brandId: string) => void;
   handleBrandDiscountSave: () => void;
   brandSaving: boolean;
-  products: QuickSettingsProductRow[];
+  products: DiscountsProductRow[];
   productsLoading: boolean;
   productDiscounts: Record<string, number>;
   setProductDiscounts: React.Dispatch<React.SetStateAction<Record<string, number>>>;
@@ -53,7 +53,7 @@ interface QuickSettingsContentProps {
   savingProductId: string | null;
 }
 
-export function QuickSettingsContent({
+export function DiscountsContent({
   currentPath,
   router,
   t,
@@ -88,7 +88,7 @@ export function QuickSettingsContent({
   setProductDiscountExpiresAt,
   handleProductDiscountSave,
   savingProductId,
-}: QuickSettingsContentProps) {
+}: DiscountsContentProps) {
   return (
     <AdminPageLayout
       currentPath={currentPath}

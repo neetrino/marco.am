@@ -11,7 +11,7 @@ import {
   buildProductsDefaultListCacheKey,
   buildUsersDefaultListCacheKey,
 } from '@/lib/admin/admin-cache-keys';
-import { fetchAdminQuickSettingsBootstrap } from '@/lib/admin/admin-bootstrap-client';
+import { fetchAdminDiscountsBootstrap } from '@/lib/admin/admin-bootstrap-client';
 import { warmAdminDashboardCache } from '@/lib/admin/admin-dashboard-client-cache';
 import {
   warmAdminCategoriesCache,
@@ -100,7 +100,7 @@ function warmSettingsCache(): void {
   );
 }
 
-function warmQuickSettingsCache(language: string): void {
+function warmDiscountsCache(language: string): void {
   const settingsCached = readAdminSessionCache<unknown>(
     ADMIN_CACHE_KEYS.settings,
     ADMIN_SESSION_CACHE_TTL_MS,
@@ -127,7 +127,7 @@ function warmQuickSettingsCache(language: string): void {
     return;
   }
 
-  void fetchAdminQuickSettingsBootstrap(language as 'en' | 'hy' | 'ru');
+  void fetchAdminDiscountsBootstrap(language as 'en' | 'hy' | 'ru');
 }
 
 function warmDeliveryCache(): void {
@@ -240,7 +240,7 @@ export function warmAdminPageCacheForPath(path: string): void {
       warmSettingsCache();
       return;
     case '/supersudo/discounts':
-      warmQuickSettingsCache(language);
+      warmDiscountsCache(language);
       return;
     case '/supersudo/delivery':
       warmDeliveryCache();
