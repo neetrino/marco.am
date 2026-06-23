@@ -685,6 +685,13 @@
     "subtitle": "Быстрые настройки и управление скидками",
     "quickSettingsTitle": "Быстрые настройки",
     "quickSettingsSubtitle": "Быстрые настройки и управление скидками",
+    "tabsLabel": "Разделы скидок",
+    "tabs": {
+      "global": "Глобальная",
+      "category": "Категории",
+      "brand": "Бренды",
+      "product": "Товары"
+    },
     "globalDiscount": "Глобальная скидка",
     "forAllProducts": "Для всех товаров",
     "save": "Сохранить",

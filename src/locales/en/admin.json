@@ -685,6 +685,13 @@
     "subtitle": "Quick settings and discount management",
     "quickSettingsTitle": "Quick Settings",
     "quickSettingsSubtitle": "Quick settings and discount management",
+    "tabsLabel": "Discount sections",
+    "tabs": {
+      "global": "Global",
+      "category": "Categories",
+      "brand": "Brands",
+      "product": "Products"
+    },
     "globalDiscount": "Global Discount",
     "forAllProducts": "For All Products",
     "save": "Save",

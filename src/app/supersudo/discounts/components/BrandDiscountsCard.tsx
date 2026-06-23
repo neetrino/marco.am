@@ -13,6 +13,7 @@ interface AdminBrand {
 }
 
 interface BrandDiscountsCardProps {
+  fillHeight?: boolean;
   brands: AdminBrand[];
   brandsLoading: boolean;
   brandDiscounts: DiscountMap;
@@ -24,6 +25,7 @@ interface BrandDiscountsCardProps {
 }
 
 export function BrandDiscountsCard({
+  fillHeight = false,
   brands,
   brandsLoading,
   brandDiscounts,
@@ -49,8 +51,63 @@ export function BrandDiscountsCard({
     });
   }, [brands, searchQuery]);
 
+  const listClassName = fillHeight
+    ? 'min-h-0 flex-1 overflow-y-auto rounded-xl border border-slate-100 bg-slate-50/50 p-2'
+    : 'max-h-[440px] overflow-y-auto rounded-xl border border-slate-100 bg-slate-50/50 p-2';
+
+  const brandList = (
+    <div className={listClassName}>
+      {filteredBrands.map((brand) => {
+        const currentValue = brandDiscounts[brand.id];
+        return (
+          <div
+            key={brand.id}
+            className="mb-2 flex items-center gap-4 rounded-lg border border-transparent bg-white px-4 py-3 shadow-[0_2px_8px_rgba(15,23,42,0.04)] transition-all duration-200 last:mb-0 hover:-translate-y-0.5 hover:border-slate-200 hover:shadow-[0_8px_22px_rgba(15,23,42,0.08)]"
+          >
+            <div className="flex-1 min-w-0">
+              <p className="truncate text-sm font-semibold text-slate-900">
+                {brand.name || t('admin.quickSettings.untitledBrand')}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Input
+                type="number"
+                min="0"
+                max="100"
+                step="0.1"
+                value={currentValue === undefined ? '' : currentValue.percent}
+                onChange={(e) => updateBrandDiscountValue(brand.id, e.target.value)}
+                className="w-24 border-slate-300 bg-white"
+                placeholder="0"
+              />
+              <span className="text-sm font-semibold text-slate-700">%</span>
+              <DiscountExpiresPicker
+                value={currentValue?.expiresAt ?? null}
+                onChange={(expiresAt) => updateBrandDiscountExpires(brand.id, expiresAt)}
+                disabled={currentValue === undefined}
+              />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => clearBrandDiscount(brand.id)}
+                disabled={currentValue === undefined}
+                className="text-slate-600 hover:bg-slate-100"
+              >
+                {t('admin.quickSettings.clear')}
+              </Button>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+
   return (
-    <Card className="admin-card mb-6 border-slate-200/80 bg-white/95 shadow-[0_12px_28px_rgba(15,23,42,0.07)]">
+    <Card
+      className={`admin-card border-slate-200/80 bg-white/95 shadow-[0_12px_28px_rgba(15,23,42,0.07)] ${
+        fillHeight ? 'mb-0 flex min-h-0 flex-1 flex-col' : 'mb-6'
+      }`}
+    >
       <div className="mb-4 flex items-center justify-between">
         <div>
           <h2 className="text-xl font-semibold tracking-tight text-slate-900">{t('admin.quickSettings.brandDiscounts')}</h2>
@@ -104,54 +161,10 @@ export function BrandDiscountsCard({
         <div className="rounded-lg border border-dashed border-slate-300 py-6 text-center text-slate-600">
           {t('admin.brands.searchNoMatches')}
         </div>
+      ) : fillHeight ? (
+        <div className="flex min-h-0 flex-1 flex-col">{brandList}</div>
       ) : (
-        <div className="max-h-[440px] overflow-y-auto rounded-xl border border-slate-100 bg-slate-50/50 p-2">
-          {filteredBrands.map((brand) => {
-            const currentValue = brandDiscounts[brand.id];
-            return (
-              <div
-                key={brand.id}
-                className="mb-2 flex items-center gap-4 rounded-lg border border-transparent bg-white px-4 py-3 shadow-[0_2px_8px_rgba(15,23,42,0.04)] transition-all duration-200 last:mb-0 hover:-translate-y-0.5 hover:border-slate-200 hover:shadow-[0_8px_22px_rgba(15,23,42,0.08)]"
-              >
-                <div className="flex-1 min-w-0">
-                  <p className="truncate text-sm font-semibold text-slate-900">
-                    {brand.name || t('admin.quickSettings.untitledBrand')}
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    {t('admin.quickSettings.brandId').replace('{id}', brand.id)}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Input
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="0.1"
-                    value={currentValue === undefined ? '' : currentValue.percent}
-                    onChange={(e) => updateBrandDiscountValue(brand.id, e.target.value)}
-                    className="w-24 border-slate-300 bg-white"
-                    placeholder="0"
-                  />
-                  <span className="text-sm font-semibold text-slate-700">%</span>
-                  <DiscountExpiresPicker
-                    value={currentValue?.expiresAt ?? null}
-                    onChange={(expiresAt) => updateBrandDiscountExpires(brand.id, expiresAt)}
-                    disabled={currentValue === undefined}
-                  />
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => clearBrandDiscount(brand.id)}
-                    disabled={currentValue === undefined}
-                    className="text-slate-600 hover:bg-slate-100"
-                  >
-                    {t('admin.quickSettings.clear')}
-                  </Button>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        brandList
       )}
     </Card>
   );

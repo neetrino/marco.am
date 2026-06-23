@@ -12,6 +12,7 @@ import {
 } from '../types';
 
 interface ProductDiscountsCardProps {
+  fillHeight?: boolean;
   products: DiscountsProductRow[];
   productsLoading: boolean;
   productDiscounts: Record<string, number>;
@@ -25,6 +26,7 @@ interface ProductDiscountsCardProps {
 const PRODUCT_ITEMS_PER_PAGE = 12;
 
 export function ProductDiscountsCard({
+  fillHeight = false,
   products,
   productsLoading,
   productDiscounts,
@@ -77,7 +79,11 @@ export function ProductDiscountsCard({
   }, [currentPage, filteredProducts]);
 
   return (
-    <Card className="admin-card border-slate-200/80 bg-white/95 shadow-[0_12px_28px_rgba(15,23,42,0.08)]">
+    <Card
+      className={`admin-card border-slate-200/80 bg-white/95 shadow-[0_12px_28px_rgba(15,23,42,0.08)] ${
+        fillHeight ? 'mb-0 flex min-h-0 flex-1 flex-col' : ''
+      }`}
+    >
       <div className="mb-6">
         <h2 className="mb-2 text-lg font-semibold tracking-tight text-slate-900">{t('admin.quickSettings.productDiscounts')}</h2>
         <p className="text-sm text-slate-600">{t('admin.quickSettings.productDiscountsSubtitle')}</p>
@@ -115,7 +121,8 @@ export function ProductDiscountsCard({
           <p className="text-slate-600">{t('admin.quickSettings.noProducts')}</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className={fillHeight ? 'flex min-h-0 flex-1 flex-col' : 'space-y-3'}>
+          <div className={fillHeight ? 'min-h-0 flex-1 space-y-3 overflow-y-auto' : 'space-y-3'}>
           {paginatedProducts.map((product) => {
             const currentDiscount = Number(productDiscounts[product.id] ?? product.discountPercent ?? 0);
             const originalPrice = product.price || 0;
@@ -201,6 +208,7 @@ export function ProductDiscountsCard({
               </div>
             );
           })}
+          </div>
 
           {totalPages > 1 ? (
             <AdminTablePagination

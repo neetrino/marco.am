@@ -685,6 +685,13 @@
     "subtitle": "Արագ կարգավորումներ և զեղչերի կառավարում",
     "quickSettingsTitle": "Արագ կարգավորումներ",
     "quickSettingsSubtitle": "Արագ կարգավորումներ և զեղչերի կառավարում",
+    "tabsLabel": "Զեղչերի բաժիններ",
+    "tabs": {
+      "global": "Գլոբալ",
+      "category": "Կատեգորիաներ",
+      "brand": "Բրենդներ",
+      "product": "Ապրանքներ"
+    },
     "globalDiscount": "Գլոբալ զեղչ",
     "forAllProducts": "Բոլոր ապրանքների համար",
     "save": "Պահել",
