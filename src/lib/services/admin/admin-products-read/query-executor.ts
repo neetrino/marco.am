@@ -1,6 +1,7 @@
 import { Prisma } from "@white-shop/db/prisma";
 import { db } from "@white-shop/db";
 import { logger } from "../../../utils/logger";
+import { splitAdminSearchTokens } from "./admin-listing-row-query";
 
 /**
  * Base include configuration for product list queries
@@ -126,16 +127,18 @@ export async function executeAdminProductListViaListingRows(
 
 const SKU_SEARCH_PRODUCT_ID_LIMIT = 200;
 
-/** Resolve product IDs whose variant SKU matches the admin search term. */
+/** Resolve product IDs whose variant SKU matches any admin search token. */
 export async function findProductIdsBySkuSearch(search: string): Promise<string[]> {
-  const term = search.trim();
-  if (!term) {
+  const tokens = splitAdminSearchTokens(search);
+  if (tokens.length === 0) {
     return [];
   }
 
   const rows = await db.productVariant.findMany({
     where: {
-      sku: { contains: term, mode: "insensitive" },
+      OR: tokens.map((token) => ({
+        sku: { contains: token, mode: "insensitive" },
+      })),
       product: { deletedAt: null },
     },
     select: { productId: true },

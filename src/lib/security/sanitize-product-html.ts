@@ -1,9 +1,17 @@
-import DOMPurify from 'isomorphic-dompurify';
+import sanitizeHtml from 'sanitize-html';
 
-const PURIFY_CONFIG = {
-  ALLOWED_TAGS: ['p', 'br', 'strong', 'b', 'em', 'i', 'u', 'span', 'a', 'ul', 'ol', 'li'],
-  ALLOWED_ATTR: ['href', 'target', 'rel', 'style'],
-  ALLOW_DATA_ATTR: false,
+const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
+  allowedTags: ['p', 'br', 'strong', 'b', 'em', 'i', 'u', 'span', 'a', 'ul', 'ol', 'li'],
+  allowedAttributes: {
+    a: ['href', 'target', 'rel'],
+    span: ['style'],
+    p: ['style'],
+  },
+  allowedStyles: {
+    '*': {
+      color: [/^#[0-9a-f]{3,8}$/i, /^rgb\(/],
+    },
+  },
 };
 
 /** Strips unsafe HTML; allowlist matches the admin TipTap toolbar. */
@@ -13,7 +21,15 @@ export function sanitizeProductSubtitleHtml(html: string): string {
     return '';
   }
 
-  return DOMPurify.sanitize(trimmed, PURIFY_CONFIG).trim();
+  return sanitizeHtml(trimmed, SANITIZE_OPTIONS).trim();
+}
+
+function visiblePlainText(html: string): string {
+  return html
+    .replace(/<br\s*\/?>/gi, ' ')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/gi, ' ')
+    .trim();
 }
 
 /** True when sanitized HTML has no visible text content. */
@@ -27,13 +43,7 @@ export function isProductSubtitleHtmlEmpty(html: string | null | undefined): boo
     return true;
   }
 
-  const plain = sanitized
-    .replace(/<br\s*\/?>/gi, ' ')
-    .replace(/<[^>]+>/g, '')
-    .replace(/&nbsp;/gi, ' ')
-    .trim();
-
-  return plain.length === 0;
+  return visiblePlainText(sanitized).length === 0;
 }
 
 /** Wraps legacy plain-text subtitles for the HTML editor. */

@@ -1,6 +1,23 @@
 import { Prisma } from "@white-shop/db/prisma";
 import type { ProductFilters } from "./types";
 
+/** Split user search into words; ignores extra whitespace between tokens. */
+export function splitAdminSearchTokens(search: string): string[] {
+  return search.trim().split(/\s+/).filter(Boolean);
+}
+
+function buildListingRowTextTokenCondition(
+  token: string,
+): Prisma.ProductListingRowWhereInput {
+  return {
+    OR: [
+      { title: { contains: token, mode: "insensitive" } },
+      { slug: { contains: token, mode: "insensitive" } },
+      { searchText: { contains: token, mode: "insensitive" } },
+    ],
+  };
+}
+
 /**
  * Maps admin product list filters to ProductListingRow where clause.
  * Sorting uses the read model so price/stock/title order applies across the full catalog.
@@ -53,10 +70,11 @@ export function buildAdminListingRowWhere(
 
   const searchTerm = filters.search?.trim();
   if (searchTerm) {
+    const tokens = splitAdminSearchTokens(searchTerm);
     const searchConditions: Prisma.ProductListingRowWhereInput[] = [
-      { title: { contains: searchTerm, mode: "insensitive" } },
-      { slug: { contains: searchTerm, mode: "insensitive" } },
-      { searchText: { contains: searchTerm, mode: "insensitive" } },
+      {
+        AND: tokens.map((token) => buildListingRowTextTokenCondition(token)),
+      },
     ];
     if (productIdsFromSku.length > 0) {
       searchConditions.push({ productId: { in: productIdsFromSku } });
