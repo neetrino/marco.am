@@ -47,7 +47,7 @@ type ProductAttributeValueShape = {
   id: string;
   value: string;
   imageUrl: string | null;
-  colors: string | null;
+  colors: string[] | null;
   translations?: ProductAttributeValueTranslationShape[];
 };
 
@@ -61,6 +61,12 @@ type ProductAttributeShape = {
 type ProductAttributeLinkShape = {
   id: string;
   attribute: ProductAttributeShape;
+};
+
+type ProductAttributeValueLinkShape = {
+  attributeValue?: ProductAttributeValueShape & {
+    attribute?: ProductAttributeShape;
+  };
 };
 
 type ProductDescriptionI18nMap = Record<
@@ -368,10 +374,48 @@ function transformVariants(
  * Transform productAttributes
  */
 function collectAttributeValueOptions(
+  product: ProductWithFullRelations,
   variants: ProductVariantWithOptions[],
   lang: string,
 ): Record<string, ProductAttributeValueShape[]> {
   const valuesByAttributeId = new Map<string, Map<string, ProductAttributeValueShape>>();
+
+  const addValue = (attributeId: string, valueEntry: ProductAttributeValueShape) => {
+    const valuesForAttribute = valuesByAttributeId.get(attributeId) ?? new Map();
+    valuesForAttribute.set(valueEntry.id, valueEntry);
+    valuesByAttributeId.set(attributeId, valuesForAttribute);
+  };
+
+  const normalizeColors = (colors: unknown): string[] | null => {
+    if (!Array.isArray(colors)) {
+      return null;
+    }
+    const values = colors.filter((item): item is string => typeof item === "string" && item.trim().length > 0);
+    return values.length > 0 ? values : null;
+  };
+
+  const productAttributeValues = (product as { attributeValues?: ProductAttributeValueLinkShape[] })
+    .attributeValues;
+
+  for (const row of productAttributeValues ?? []) {
+    const attributeValue = row.attributeValue;
+    const attribute = attributeValue?.attribute;
+    if (!attributeValue || !attribute?.id) {
+      continue;
+    }
+    const translation =
+      attributeValue.translations?.find((entry) => entry.locale === lang) ??
+      attributeValue.translations?.[0];
+    addValue(attribute.id, {
+      id: attributeValue.id,
+      value: attributeValue.value,
+      imageUrl: attributeValue.imageUrl ?? null,
+      colors: normalizeColors(attributeValue.colors),
+      translations: translation
+        ? [{ locale: translation.locale, label: translation.label }]
+        : [],
+    });
+  }
 
   for (const variant of variants) {
     for (const option of variant.options ?? []) {
@@ -387,15 +431,13 @@ function collectAttributeValueOptions(
         id: attributeValue.id,
         value: attributeValue.value,
         imageUrl: attributeValue.imageUrl ?? null,
-        colors: typeof attributeValue.colors === "string" ? attributeValue.colors : null,
+        colors: normalizeColors(attributeValue.colors),
         translations: translation
           ? [{ locale: translation.locale, label: translation.label }]
           : [],
       };
 
-      const valuesForAttribute = valuesByAttributeId.get(attribute.id) ?? new Map();
-      valuesForAttribute.set(attributeValue.id, valueEntry);
-      valuesByAttributeId.set(attribute.id, valuesForAttribute);
+      addValue(attribute.id, valueEntry);
     }
   }
 
@@ -420,7 +462,7 @@ function transformProductAttributes(
   
   if (Array.isArray(productAttrs) && productAttrs.length > 0) {
     const variants = Array.isArray(product.variants) ? product.variants : [];
-    const valuesByAttributeId = collectAttributeValueOptions(variants, lang);
+    const valuesByAttributeId = collectAttributeValueOptions(product, variants, lang);
     const mapped = productAttrs.map((pa) => {
       const attr = pa.attribute;
       const attrTranslation = attr.translations?.find((t: { locale: string }) => t.locale === lang) || attr.translations?.[0];
@@ -628,4 +670,3 @@ export async function transformProduct(
     warrantyYears: normalizeProductWarrantyYears(product.warrantyYears),
   };
 }
-

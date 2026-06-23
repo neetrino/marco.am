@@ -156,6 +156,32 @@ function productReadModelSelect(locales: readonly string[]) {
         },
       },
     },
+    attributeValues: {
+      select: {
+        attributeValue: {
+          select: {
+            value: true,
+            imageUrl: true,
+            colors: true,
+            translations: {
+              where: { locale: { in: [...locales] } },
+              select: { locale: true, label: true },
+            },
+            attribute: {
+              select: {
+                key: true,
+                type: true,
+                filterable: true,
+                translations: {
+                  where: { locale: { in: [...locales] } },
+                  select: { locale: true, name: true },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
     labels: {
       select: {
         id: true,
@@ -439,8 +465,12 @@ export async function syncProductListingReadModelByCategoryIds(categoryIds: read
 }
 
 export async function syncProductListingReadModelByAttributeId(attributeId: string) {
-  const [productAttributes, variantOptions] = await Promise.all([
+  const [productAttributes, productAttributeValues, variantOptions] = await Promise.all([
     db.productAttribute.findMany({
+      where: { attributeId },
+      select: { productId: true },
+    }),
+    db.productAttributeValue.findMany({
       where: { attributeId },
       select: { productId: true },
     }),
@@ -458,21 +488,29 @@ export async function syncProductListingReadModelByAttributeId(attributeId: stri
 
   return syncProductListingReadModelBatch([
     ...productAttributes.map((row) => row.productId),
+    ...productAttributeValues.map((row) => row.productId),
     ...variantOptions.map((row) => row.variant.productId),
   ]);
 }
 
 export async function syncProductListingReadModelByAttributeValueId(attributeValueId: string) {
-  const variantOptions = await db.productVariantOption.findMany({
-    where: { valueId: attributeValueId },
-    select: {
-      variant: {
-        select: { productId: true },
+  const [productAttributeValues, variantOptions] = await Promise.all([
+    db.productAttributeValue.findMany({
+      where: { attributeValueId },
+      select: { productId: true },
+    }),
+    db.productVariantOption.findMany({
+      where: { valueId: attributeValueId },
+      select: {
+        variant: {
+          select: { productId: true },
+        },
       },
-    },
-  });
+    }),
+  ]);
 
-  return syncProductListingReadModelBatch(
-    variantOptions.map((row) => row.variant.productId),
-  );
+  return syncProductListingReadModelBatch([
+    ...productAttributeValues.map((row) => row.productId),
+    ...variantOptions.map((row) => row.variant.productId),
+  ]);
 }

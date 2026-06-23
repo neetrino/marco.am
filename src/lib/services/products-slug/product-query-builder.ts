@@ -82,6 +82,30 @@ export const getProductAttributesInclude = () => ({
       },
     },
   },
+  attributeValues: {
+    include: {
+      attributeValue: {
+        include: {
+          attribute: {
+            include: {
+              translations: {
+                select: {
+                  locale: true,
+                  name: true,
+                },
+              },
+            },
+          },
+          translations: {
+            select: {
+              locale: true,
+              label: true,
+            },
+          },
+        },
+      },
+    },
+  },
 });
 
 /**
@@ -103,7 +127,13 @@ const getBaseWhere = (slug: string, _lang: string) => ({
 function isProductAttributesError(error: unknown): boolean {
   const errorMessage = error instanceof Error ? error.message : String(error);
   const errorCode = error && typeof error === 'object' && 'code' in error ? String(error.code) : '';
-  return errorCode === 'P2021' || errorMessage.includes('product_attributes') || errorMessage.includes('does not exist');
+  return (
+    errorCode === 'P2021' ||
+    errorMessage.includes('product_attributes') ||
+    errorMessage.includes('product_attribute_values') ||
+    errorMessage.includes('attributeValues') ||
+    errorMessage.includes('does not exist')
+  );
 }
 
 /**
@@ -365,4 +395,3 @@ async function logProductNotFoundDiagnostics(slug: string, lang: string): Promis
     });
   }
 }
-

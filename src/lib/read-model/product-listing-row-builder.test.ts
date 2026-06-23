@@ -179,6 +179,71 @@ describe('buildProductListingRowsForLocales', () => {
     });
   });
 
+  it('builds filter tokens from product-level attribute values', () => {
+    const rows = buildProductListingRowsForLocales({
+      locales: ['en'],
+      rebuiltAt,
+      categoryAncestry: EMPTY_ANCESTRY,
+      discountSettings: { globalDiscount: 0, categoryDiscounts: {}, brandDiscounts: {} },
+      product: {
+        id: 'simple-prod',
+        published: true,
+        createdAt,
+        updatedAt,
+        translations: [{ locale: 'en', title: 'Simple Chair', slug: 'simple-chair' }],
+        variants: [
+          {
+            id: 'var-simple',
+            imageUrl: null,
+            price: 200,
+            discountType: 'NONE',
+            discountValue: null,
+            discountExpiresAt: null,
+            stock: 3,
+            published: true,
+            attributes: null,
+            options: [],
+          },
+        ],
+        attributeValues: [
+          {
+            attributeValue: {
+              value: 'red',
+              imageUrl: null,
+              colors: ['#ff0000'],
+              translations: [{ locale: 'en', label: 'Red' }],
+              attribute: { key: 'color' },
+            },
+          },
+          {
+            attributeValue: {
+              value: 'm',
+              translations: [{ locale: 'en', label: 'M' }],
+              attribute: { key: 'size' },
+            },
+          },
+          {
+            attributeValue: {
+              value: 'wood',
+              translations: [{ locale: 'en', label: 'Wood' }],
+              attribute: {
+                key: 'material',
+                type: 'select',
+                filterable: true,
+                translations: [{ locale: 'en', name: 'Material' }],
+              },
+            },
+          },
+        ],
+      },
+    });
+
+    expect(rows[0]?.colors).toEqual([{ value: 'Red', imageUrl: null, colors: ['#ff0000'] }]);
+    expect(rows[0]?.colorTokens).toEqual(['red']);
+    expect(rows[0]?.sizeTokens).toEqual(['M']);
+    expect(rows[0]?.technicalSpecTokens).toEqual(['material=wood']);
+  });
+
   it('falls back to the first translation when a locale-specific translation is missing', () => {
     const rows = buildProductListingRowsForLocales({
       locales: ['en', 'ru'],

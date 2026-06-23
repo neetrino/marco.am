@@ -111,6 +111,20 @@ type ProductListingReadModelInput = {
       } | null;
     }> | null;
   }> | null;
+  attributeValues?: Array<{
+    attributeValue?: {
+      value?: string | null;
+      imageUrl?: string | null;
+      colors?: Prisma.JsonValue | null;
+      translations?: TranslationRow[] | null;
+      attribute?: {
+        key?: string | null;
+        type?: string | null;
+        filterable?: boolean | null;
+        translations?: TranslationRow[] | null;
+      } | null;
+    } | null;
+  }> | null;
   labels?: Array<{
     id: string;
     type: string;
@@ -193,9 +207,13 @@ function collectCategorySlugs(product: ProductListingReadModelInput, locale: str
 }
 
 function readLocalizedAttributeValueLabel(
-  attributeValue: NonNullable<
-    NonNullable<ProductListingReadModelInput['variants']>[number]['options']
-  >[number]['attributeValue'],
+  attributeValue:
+    | {
+        value?: string | null;
+        translations?: TranslationRow[] | null;
+      }
+    | null
+    | undefined,
   locale: string,
 ): string | null {
   const translation = resolveTranslation(attributeValue?.translations, locale);
@@ -240,6 +258,30 @@ function getLocalizedAttributeName(
 
 function collectColors(product: ProductListingReadModelInput, locale: string) {
   const colorMap = new Map<string, { value: string; imageUrl: string | null; colors: string[] | null }>();
+  for (const row of product.attributeValues ?? []) {
+    const attributeValue = row.attributeValue;
+    const key = attributeValue?.attribute?.key ?? '';
+    if (!isColorAttributeKey(key)) {
+      continue;
+    }
+    const label = readLocalizedAttributeValueLabel(attributeValue, locale);
+    if (!label) {
+      continue;
+    }
+    const normalized = label.toLowerCase();
+    if (colorMap.has(normalized)) {
+      continue;
+    }
+    colorMap.set(normalized, {
+      value: label,
+      imageUrl: attributeValue?.imageUrl ?? null,
+      colors: normalizeColorHexList(attributeValue?.colors),
+    });
+  }
+  if (colorMap.size > 0) {
+    return [...colorMap.values()];
+  }
+
   for (const variant of product.variants ?? []) {
     for (const option of variant.options ?? []) {
       const key = option.attributeValue?.attribute?.key ?? option.attributeKey ?? '';
@@ -267,6 +309,21 @@ function collectColors(product: ProductListingReadModelInput, locale: string) {
 
 function collectSizeTokens(product: ProductListingReadModelInput, locale: string): string[] {
   const sizes = new Set<string>();
+  for (const row of product.attributeValues ?? []) {
+    const attributeValue = row.attributeValue;
+    const key = attributeValue?.attribute?.key ?? '';
+    if (!isSizeAttributeKey(key)) {
+      continue;
+    }
+    const label = readLocalizedAttributeValueLabel(attributeValue, locale);
+    if (label) {
+      sizes.add(label.toUpperCase());
+    }
+  }
+  if (sizes.size > 0) {
+    return [...sizes];
+  }
+
   for (const variant of product.variants ?? []) {
     for (const option of variant.options ?? []) {
       const key = option.attributeValue?.attribute?.key ?? option.attributeKey ?? '';
@@ -332,6 +389,36 @@ function collectTechnicalSpecs(
       value,
       valueLabel: input.valueLabel,
     });
+  }
+
+  for (const row of product.attributeValues ?? []) {
+    const attributeValue = row.attributeValue;
+    const attribute = attributeValue?.attribute;
+    const rawKey = attribute?.key ?? '';
+    if (!rawKey || isColorAttributeKey(rawKey) || isSizeAttributeKey(rawKey)) {
+      continue;
+    }
+    if (attribute?.filterable === false) {
+      continue;
+    }
+    const key = normalizeTechnicalFilterToken(rawKey);
+    if (!key || isReservedShopAttributeFilterKey(key)) {
+      continue;
+    }
+    const valueLabel = readLocalizedAttributeValueLabel(attributeValue, locale);
+    if (!valueLabel) {
+      continue;
+    }
+    addSpec({
+      key,
+      label: getLocalizedAttributeName(attribute, locale, rawKey),
+      type: attribute?.type ?? 'select',
+      value: valueLabel,
+      valueLabel,
+    });
+  }
+  if (specs.size > 0) {
+    return [...specs.values()].sort((a, b) => a.label.localeCompare(b.label));
   }
 
   for (const variant of product.variants ?? []) {
