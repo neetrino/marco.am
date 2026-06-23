@@ -27,6 +27,7 @@ model Product {
   variants          ProductVariant[]
   labels            ProductLabel[]
   productAttributes ProductAttribute[]
+  attributeValues   ProductAttributeValue[]
   /// Product-level discount applied to all variants unless a variant overrides it.
   discountType      DiscountType         @default(NONE)
   /// PERCENT: percentage off; AMOUNT: final sale price in catalog currency.
@@ -162,4 +163,24 @@ model ProductAttribute {
   @@index([productId])
   @@index([attributeId])
   @@map("product_attributes")
+}
+
+model ProductAttributeValue {
+  id               String   @id @default(cuid())
+  productId        String
+  attributeId      String
+  attributeValueId String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  product        Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  attribute      Attribute      @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+  attributeValue AttributeValue @relation(fields: [attributeValueId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, attributeValueId])
+  @@index([productId])
+  @@index([attributeId])
+  @@index([attributeValueId])
+  @@index([productId, attributeId])
+  @@map("product_attribute_values")
 }
