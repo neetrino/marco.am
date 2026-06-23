@@ -104,13 +104,14 @@ export function fetchAdminQuickSettingsBootstrap(
     return existing;
   }
 
-  const promise = fetchAdminBootstrapResponse(['quick-settings'], locale)
+  const promise = fetchAdminBootstrapResponse(['discounts'], locale)
     .then((response) => {
-      if (!response['quick-settings']) {
-        throw new Error('Admin bootstrap missing quick-settings payload');
+      const payload = response.discounts ?? response['quick-settings'];
+      if (!payload) {
+        throw new Error('Admin bootstrap missing discounts payload');
       }
-      applyQuickSettingsBootstrapToSessionCache(response['quick-settings'], locale);
-      return response['quick-settings'];
+      applyQuickSettingsBootstrapToSessionCache(payload, locale);
+      return payload;
     })
     .finally(() => {
       quickSettingsBootstrapPromises.delete(locale);
@@ -130,6 +131,7 @@ export type QuickSettingsBootstrapResult = {
     image?: string | null;
     price?: number;
     discountPercent?: number;
+    discountExpiresAt?: string | null;
   }>;
 };
 

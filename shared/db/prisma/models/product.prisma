@@ -20,6 +20,8 @@ model Product {
   labels            ProductLabel[]
   productAttributes ProductAttribute[]
   discountPercent   Int                  @default(0)
+  /// When set, product discount is ignored after this moment (UTC).
+  discountExpiresAt DateTime?
   /// 1, 2, or 3 — null means no warranty badge on product cards.
   warrantyYears     Int?
   deletedAt         DateTime?

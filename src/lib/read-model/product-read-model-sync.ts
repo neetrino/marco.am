@@ -12,12 +12,15 @@ import {
   syncProductPdpReadModelBatch,
 } from '@/lib/read-model/product-pdp-read-model-sync';
 import { invalidateProductReadCaches } from '@/lib/services/read-through-json-cache';
+import {
+  loadListingDiscountSettingsUncached,
+  toActiveListingDiscountSettings,
+} from '@/lib/services/listing-discount-settings';
 
 export const PRODUCT_LISTING_READ_MODEL_DEFAULT_LOCALES = ['en', 'hy', 'ru', 'ka'] as const;
 
 const DEFAULT_LISTING_BATCH_SIZE = 100;
 const DEFAULT_AFFECTED_LISTING_BATCH_SIZE = 500;
-const DISCOUNT_KEYS = ['globalDiscount', 'categoryDiscounts', 'brandDiscounts'] as const;
 
 type ProductListingReadModelRebuildOptions = {
   locales?: readonly string[];
@@ -41,31 +44,9 @@ function normalizeBatchSize(value: number | undefined, fallback: number, max: nu
     : fallback;
 }
 
-function parseJsonRecord(value: unknown): Record<string, number> {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    return {};
-  }
-
-  const out: Record<string, number> = {};
-  for (const [key, raw] of Object.entries(value)) {
-    const numeric = Number(raw);
-    if (Number.isFinite(numeric) && numeric > 0) {
-      out[key] = numeric;
-    }
-  }
-  return out;
-}
-
 async function loadDiscountSettings(): Promise<ProductListingReadModelDiscountSettings> {
-  const rows = await db.settings.findMany({
-    where: { key: { in: [...DISCOUNT_KEYS] } },
-  });
-
-  return {
-    globalDiscount: Number(rows.find((row) => row.key === 'globalDiscount')?.value) || 0,
-    categoryDiscounts: parseJsonRecord(rows.find((row) => row.key === 'categoryDiscounts')?.value),
-    brandDiscounts: parseJsonRecord(rows.find((row) => row.key === 'brandDiscounts')?.value),
-  };
+  const settings = await loadListingDiscountSettingsUncached();
+  return toActiveListingDiscountSettings(settings);
 }
 
 /** Category parent map + per-locale slugs, used to denormalize ancestor categories into rows. */
@@ -101,6 +82,7 @@ function productReadModelSelect(locales: readonly string[]) {
     categoryIds: true,
     media: true,
     discountPercent: true,
+    discountExpiresAt: true,
     warrantyYears: true,
     published: true,
     publishedAt: true,

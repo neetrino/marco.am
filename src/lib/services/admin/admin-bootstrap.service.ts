@@ -5,7 +5,7 @@ import { adminCategoriesService } from "@/lib/services/admin/admin-categories.se
 import { adminSettingsService } from "@/lib/services/admin/admin-settings.service";
 import { logger } from "@/lib/utils/logger";
 
-export const ADMIN_BOOTSTRAP_PATHS = ["dashboard", "quick-settings"] as const;
+export const ADMIN_BOOTSTRAP_PATHS = ["dashboard", "discounts", "quick-settings"] as const;
 
 export type AdminBootstrapPath = (typeof ADMIN_BOOTSTRAP_PATHS)[number];
 
@@ -25,6 +25,8 @@ export type AdminQuickSettingsBootstrapPayload = {
 
 export type AdminBootstrapResponse = {
   dashboard?: AdminDashboardBootstrapPayload;
+  discounts?: AdminQuickSettingsBootstrapPayload;
+  /** @deprecated Use `discounts` — kept for older admin clients. */
   "quick-settings"?: AdminQuickSettingsBootstrapPayload;
 };
 
@@ -112,9 +114,10 @@ export async function buildAdminBootstrap(
     );
   }
 
-  if (paths.includes("quick-settings")) {
+  if (paths.includes("discounts") || paths.includes("quick-settings")) {
     tasks.push(
       buildQuickSettingsBootstrap(locale ?? "en").then((payload) => {
+        response.discounts = payload;
         response["quick-settings"] = payload;
       }),
     );

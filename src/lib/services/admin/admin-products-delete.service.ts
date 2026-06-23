@@ -49,8 +49,16 @@ class AdminProductsDeleteService {
   /**
    * Update product discount
    */
-  async updateProductDiscount(productId: string, discountPercent: number) {
-    logger.devLog('💰 [ADMIN PRODUCTS DELETE SERVICE] updateProductDiscount called:', { productId, discountPercent });
+  async updateProductDiscount(
+    productId: string,
+    discountPercent: number,
+    discountExpiresAt: string | null = null,
+  ) {
+    logger.devLog('💰 [ADMIN PRODUCTS DELETE SERVICE] updateProductDiscount called:', {
+      productId,
+      discountPercent,
+      discountExpiresAt,
+    });
     
     const product = await db.product.findUnique({
       where: { id: productId },
@@ -87,9 +95,11 @@ class AdminProductsDeleteService {
       where: { id: productId },
       data: {
         discountPercent: clampedDiscount,
+        discountExpiresAt: discountExpiresAt ? new Date(discountExpiresAt) : null,
       },
       select: {
         discountPercent: true,
+        discountExpiresAt: true,
       },
     });
     await syncProductListingReadModel(productId);
@@ -100,7 +110,11 @@ class AdminProductsDeleteService {
       discountPercent: updated.discountPercent,
     });
 
-    return { success: true, discountPercent: updated.discountPercent };
+    return {
+      success: true,
+      discountPercent: updated.discountPercent,
+      discountExpiresAt: updated.discountExpiresAt?.toISOString() ?? null,
+    };
   }
 }
 

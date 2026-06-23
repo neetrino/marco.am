@@ -15,6 +15,7 @@ export interface Product {
   price: number;
   stock: number;
   discountPercent?: number;
+  discountExpiresAt?: string | null;
   compareAtPrice?: number | null;
   colorStocks?: Array<{
     color: string;

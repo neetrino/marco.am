@@ -5,7 +5,7 @@ import type { AdminMenuItem } from '../../components/AdminMenuDrawer';
  *
  * ԿԱՐԵՎՈՐ.
  * - Մենյուի բոլոր կետերը centrally պահում ենք այստեղ, որ բոլոր admin էջերում նույնը լինի։
- * - "Discounts" label-ը նույնն է ամեն տեղ, ուղիղ տանում է `/supersudo/quick-settings` էջ։
+ * - "Discounts" label points to `/supersudo/discounts`.
  * - Hero/Banner-ը ցուցադրվում է Dashboard-ից հետո։ Հաղորդագրություններ, Վերլուծություն, Առաքում՝ Settings-ից առաջ։
  * 
  * Note: This function returns menu items with translated labels.
@@ -152,9 +152,9 @@ export function getAdminMenuTABS(t: (path: string) => string): AdminMenuItem[] {
     ),
   },
   {
-    id: 'quick-settings',
+    id: 'discounts',
     label: t('admin.menu.discounts'),
-    path: '/supersudo/quick-settings',
+    path: '/supersudo/discounts',
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path

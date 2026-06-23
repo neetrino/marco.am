@@ -1,8 +1,20 @@
 import { cache } from 'react';
 import { unstable_cache } from 'next/cache';
 import { db } from '@white-shop/db';
+import {
+  activeDiscountPercent,
+  parseDiscountMap,
+  parseIsoDate,
+  toActiveDiscountMap,
+  type DiscountMap,
+} from '@/lib/discount/discount-expiry';
 
-const DISCOUNT_KEYS = ['globalDiscount', 'categoryDiscounts', 'brandDiscounts'] as const;
+const DISCOUNT_KEYS = [
+  'globalDiscount',
+  'globalDiscountExpiresAt',
+  'categoryDiscounts',
+  'brandDiscounts',
+] as const;
 
 async function fetchDiscountSettingRows() {
   return db.settings.findMany({
@@ -12,12 +24,19 @@ async function fetchDiscountSettingRows() {
   });
 }
 
-const getDiscountRowsData = unstable_cache(fetchDiscountSettingRows, ['listing-discount-settings-v1'], {
+const getDiscountRowsData = unstable_cache(fetchDiscountSettingRows, ['listing-discount-settings-v2'], {
   revalidate: 120,
   tags: ['listing-discount-settings'],
 });
 
 export type ListingDiscountSettings = {
+  globalDiscount: number;
+  globalDiscountExpiresAt: string | null;
+  categoryDiscounts: DiscountMap;
+  brandDiscounts: DiscountMap;
+};
+
+export type ActiveListingDiscountSettings = {
   globalDiscount: number;
   categoryDiscounts: Record<string, number>;
   brandDiscounts: Record<string, number>;
@@ -28,13 +47,33 @@ function parseDiscountRows(
 ): ListingDiscountSettings {
   const globalDiscount =
     Number(rows.find((s) => s.key === 'globalDiscount')?.value) || 0;
+  const globalDiscountExpiresAt = parseIsoDate(
+    rows.find((s) => s.key === 'globalDiscountExpiresAt')?.value,
+  );
   const categoryRow = rows.find((s) => s.key === 'categoryDiscounts');
   const brandRow = rows.find((s) => s.key === 'brandDiscounts');
-  const categoryDiscounts = categoryRow
-    ? ((categoryRow.value as Record<string, number>) || {})
-    : {};
-  const brandDiscounts = brandRow ? ((brandRow.value as Record<string, number>) || {}) : {};
-  return { globalDiscount, categoryDiscounts, brandDiscounts };
+
+  return {
+    globalDiscount,
+    globalDiscountExpiresAt,
+    categoryDiscounts: parseDiscountMap(categoryRow?.value),
+    brandDiscounts: parseDiscountMap(brandRow?.value),
+  };
+}
+
+export function toActiveListingDiscountSettings(
+  settings: ListingDiscountSettings,
+  now: Date = new Date(),
+): ActiveListingDiscountSettings {
+  return {
+    globalDiscount: activeDiscountPercent(
+      settings.globalDiscount,
+      settings.globalDiscountExpiresAt,
+      now,
+    ),
+    categoryDiscounts: toActiveDiscountMap(settings.categoryDiscounts, now),
+    brandDiscounts: toActiveDiscountMap(settings.brandDiscounts, now),
+  };
 }
 
 /**
@@ -53,4 +92,10 @@ export const getListingDiscountSettings = cache(async (): Promise<ListingDiscoun
 export async function loadListingDiscountSettingsUncached(): Promise<ListingDiscountSettings> {
   const rows = await fetchDiscountSettingRows();
   return parseDiscountRows(rows);
+}
+
+/** Active percents after expiry filtering — used by pricing transforms. */
+export async function getActiveListingDiscountSettings(): Promise<ActiveListingDiscountSettings> {
+  const settings = await getListingDiscountSettings();
+  return toActiveListingDiscountSettings(settings);
 }

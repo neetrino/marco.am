@@ -16,6 +16,7 @@ export interface QuickSettingsProductRow {
   image?: string | null;
   price?: number;
   discountPercent?: number;
+  discountExpiresAt?: string | null;
   slug?: string;
   searchText?: string;
   sku?: string;

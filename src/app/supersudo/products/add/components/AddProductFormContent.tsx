@@ -63,6 +63,9 @@ interface AddProductFormContentProps {
   attributes: Attribute[];
   defaultCurrency: CurrencyCode;
   isEditMode: boolean;
+  productId?: string | null;
+  discountPercent?: number;
+  discountExpiresAt?: string | null;
   imageUploadLoading: boolean;
   imageUploadError: string | null;
   selectedAttributesForVariants: Set<string>;
@@ -160,6 +163,9 @@ export function AddProductFormContent({
   attributes,
   defaultCurrency,
   isEditMode,
+  productId = null,
+  discountPercent = 0,
+  discountExpiresAt = null,
   imageUploadLoading,
   imageUploadError,
   selectedAttributesForVariants,
@@ -252,6 +258,10 @@ export function AddProductFormContent({
             isLoading={loadingTab === 'general'}
           >
             <ProductGeneralTab
+              productId={productId}
+              isEditMode={isEditMode}
+              discountPercent={discountPercent}
+              discountExpiresAt={discountExpiresAt}
               productClass={formData.productClass}
               warrantyYears={warrantyYears}
               labels={formData.labels}

@@ -20,8 +20,10 @@ import {
 import { buildProductGalleryUrls } from "@/lib/products/product-gallery-urls";
 import {
   getListingDiscountSettings,
+  toActiveListingDiscountSettings,
   type ListingDiscountSettings,
 } from "../listing-discount-settings";
+import { activeDiscountPercent } from "@/lib/discount/discount-expiry";
 
 type ProductTranslationShape = {
   locale: string;
@@ -516,10 +518,14 @@ export async function transformProduct(
     : null;
 
   // Discount settings: injected during read-model build (loaded once), else fetched (cached).
+  const rawDiscountSettings = injectedDiscountSettings ?? (await getListingDiscountSettings());
   const { globalDiscount, categoryDiscounts, brandDiscounts } =
-    injectedDiscountSettings ?? (await getListingDiscountSettings());
-  
-  const productDiscount = product.discountPercent || 0;
+    toActiveListingDiscountSettings(rawDiscountSettings);
+
+  const productDiscount = activeDiscountPercent(
+    product.discountPercent || 0,
+    (product as { discountExpiresAt?: Date | null }).discountExpiresAt ?? null,
+  );
   
   // Calculate actual discount
   const actualDiscount = calculateActualDiscount(

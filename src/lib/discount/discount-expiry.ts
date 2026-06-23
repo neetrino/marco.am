@@ -1,0 +1,141 @@
+/** Shared discount expiry helpers for admin settings and product discounts. */
+
+export type DiscountEntry = {
+  percent: number;
+  expiresAt: string | null;
+};
+
+export type DiscountMap = Record<string, DiscountEntry>;
+
+const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z$/;
+
+export function parseIsoDate(value: unknown): string | null {
+  if (typeof value !== 'string' || !value.trim()) {
+    return null;
+  }
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+  return date.toISOString();
+}
+
+export function isDiscountExpired(
+  expiresAt: string | Date | null | undefined,
+  now: Date = new Date(),
+): boolean {
+  if (!expiresAt) {
+    return false;
+  }
+  const expiry = expiresAt instanceof Date ? expiresAt : new Date(expiresAt);
+  if (Number.isNaN(expiry.getTime())) {
+    return false;
+  }
+  return expiry.getTime() <= now.getTime();
+}
+
+export function activeDiscountPercent(
+  percent: number,
+  expiresAt: string | Date | null | undefined,
+  now: Date = new Date(),
+): number {
+  if (percent <= 0 || isDiscountExpired(expiresAt, now)) {
+    return 0;
+  }
+  return percent;
+}
+
+export function activeDiscountEntry(
+  entry: DiscountEntry | undefined,
+  now: Date = new Date(),
+): number {
+  if (!entry) {
+    return 0;
+  }
+  return activeDiscountPercent(entry.percent, entry.expiresAt, now);
+}
+
+function parseDiscountEntry(raw: unknown): DiscountEntry | null {
+  if (typeof raw === 'number' && Number.isFinite(raw) && raw > 0) {
+    return { percent: raw, expiresAt: null };
+  }
+
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+    return null;
+  }
+
+  const record = raw as { percent?: unknown; expiresAt?: unknown };
+  const percent = Number(record.percent);
+  if (!Number.isFinite(percent) || percent <= 0) {
+    return null;
+  }
+
+  return {
+    percent,
+    expiresAt: parseIsoDate(record.expiresAt),
+  };
+}
+
+/** Parses legacy `{ id: number }` and new `{ id: { percent, expiresAt } }` maps. */
+export function parseDiscountMap(raw: unknown): DiscountMap {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+    return {};
+  }
+
+  const out: DiscountMap = {};
+  for (const [key, value] of Object.entries(raw)) {
+    const entry = parseDiscountEntry(value);
+    if (entry) {
+      out[key] = entry;
+    }
+  }
+  return out;
+}
+
+export function serializeDiscountMap(map: DiscountMap): Record<string, DiscountEntry> {
+  const out: Record<string, DiscountEntry> = {};
+  for (const [key, entry] of Object.entries(map)) {
+    if (entry.percent > 0) {
+      out[key] = {
+        percent: entry.percent,
+        expiresAt: entry.expiresAt,
+      };
+    }
+  }
+  return out;
+}
+
+export function toActiveDiscountMap(map: DiscountMap, now: Date = new Date()): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const [key, entry] of Object.entries(map)) {
+    const percent = activeDiscountEntry(entry, now);
+    if (percent > 0) {
+      out[key] = percent;
+    }
+  }
+  return out;
+}
+
+export function formatDiscountExpiresAt(
+  iso: string | null | undefined,
+  locale: string,
+): string {
+  if (!iso) {
+    return '';
+  }
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+  return new Intl.DateTimeFormat(locale, {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date);
+}
+
+export function isValidIsoDateString(value: string): boolean {
+  return ISO_DATE_PATTERN.test(value) && !Number.isNaN(new Date(value).getTime());
+}

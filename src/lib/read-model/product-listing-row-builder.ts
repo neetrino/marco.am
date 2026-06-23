@@ -11,6 +11,8 @@ import {
 } from '@/lib/services/products-technical-filters';
 import { toProductSubtitlePlainText } from '@/lib/security/sanitize-product-html';
 
+import { activeDiscountPercent } from '@/lib/discount/discount-expiry';
+
 export type ProductListingReadModelDiscountSettings = {
   globalDiscount: number;
   categoryDiscounts: Record<string, number>;
@@ -63,6 +65,7 @@ type ProductListingReadModelInput = {
   categoryIds?: string[] | null;
   media?: unknown;
   discountPercent?: number | null;
+  discountExpiresAt?: Date | null;
   warrantyYears?: number | null;
   published?: boolean | null;
   publishedAt?: Date | null;
@@ -131,7 +134,10 @@ function resolveAppliedDiscount(
   product: ProductListingReadModelInput,
   settings: ProductListingReadModelDiscountSettings,
 ): number {
-  const productDiscount = Number(product.discountPercent) || 0;
+  const productDiscount = activeDiscountPercent(
+    Number(product.discountPercent) || 0,
+    product.discountExpiresAt ?? null,
+  );
   if (productDiscount > 0) {
     return productDiscount;
   }
@@ -451,6 +457,7 @@ export function buildProductListingRowsForLocales(args: {
         priceSort: pricing.currentPrice,
         hasPrice: pricing.currentPrice > 0,
         discountPercent: pricing.discountPercent ?? 0,
+        discountExpiresAt: product.discountExpiresAt ?? null,
         isSpecialPrice: pricing.isSpecialPrice,
         defaultVariantId: variant?.id ?? null,
         stock,

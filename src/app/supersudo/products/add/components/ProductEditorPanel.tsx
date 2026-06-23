@@ -317,6 +317,9 @@ export function ProductEditorPanel({
           attributes={formState.attributes}
           defaultCurrency={formState.defaultCurrency}
           isEditMode={isEditMode}
+          productId={productId}
+          discountPercent={listProduct?.discountPercent ?? 0}
+          discountExpiresAt={listProduct?.discountExpiresAt ?? null}
           imageUploadLoading={formState.imageUploadLoading}
           imageUploadError={formState.imageUploadError}
           selectedAttributesForVariants={formState.selectedAttributesForVariants}

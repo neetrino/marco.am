@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Card, Button, Input } from '@shop/ui';
 import { useTranslation } from '../../../../lib/i18n-client';
 import { formatCatalogPrice } from '../../../../lib/currency';
-import { AdminTablePagination } from '../../components/AdminTablePagination';
+import { DiscountExpiresPicker } from '@/components/admin/DiscountExpiresPicker';
 import {
   matchesProductSearchFields,
   type QuickSettingsProductRow,
@@ -15,6 +15,8 @@ interface ProductDiscountsCardProps {
   productsLoading: boolean;
   productDiscounts: Record<string, number>;
   setProductDiscounts: React.Dispatch<React.SetStateAction<Record<string, number>>>;
+  productDiscountExpires: Record<string, string | null>;
+  setProductDiscountExpiresAt: (productId: string, value: string | null) => void;
   handleProductDiscountSave: (productId: string) => void;
   savingProductId: string | null;
 }
@@ -26,6 +28,8 @@ export function ProductDiscountsCard({
   productsLoading,
   productDiscounts,
   setProductDiscounts,
+  productDiscountExpires,
+  setProductDiscountExpiresAt,
   handleProductDiscountSave,
   savingProductId,
 }: ProductDiscountsCardProps) {
@@ -173,6 +177,10 @@ export function ProductDiscountsCard({
                     placeholder="0"
                   />
                   <span className="w-6 text-sm font-semibold text-slate-700">%</span>
+                  <DiscountExpiresPicker
+                    value={productDiscountExpires[product.id] ?? product.discountExpiresAt ?? null}
+                    onChange={(expiresAt) => setProductDiscountExpiresAt(product.id, expiresAt)}
+                  />
                   <Button
                     variant="primary"
                     size="sm"

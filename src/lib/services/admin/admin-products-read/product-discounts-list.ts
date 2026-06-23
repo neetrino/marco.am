@@ -10,6 +10,7 @@ type ProductDiscountRow = {
   image: string | null;
   price: number;
   discountPercent: number;
+  discountExpiresAt: string | null;
   searchText: string;
   sku: string;
 };
@@ -30,6 +31,7 @@ function mapListingRow(
     image: string | null;
     price: number;
     discountPercent: number;
+    discountExpiresAt?: Date | null;
     searchText: string;
   },
   sku: string,
@@ -41,6 +43,7 @@ function mapListingRow(
     image: row.image,
     price: row.price,
     discountPercent: row.discountPercent,
+    discountExpiresAt: row.discountExpiresAt?.toISOString() ?? null,
     searchText: row.searchText,
     sku,
   };
@@ -89,6 +92,7 @@ async function fetchProductDiscountsListUncached(locale: string): Promise<{ data
       image: true,
       price: true,
       discountPercent: true,
+      discountExpiresAt: true,
       searchText: true,
       productCreatedAt: true,
     },

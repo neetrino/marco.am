@@ -11,6 +11,7 @@ export function formatProductForList(product: {
   featured: boolean | null;
   productClass?: "retail" | "wholesale";
   discountPercent: number | null;
+  discountExpiresAt?: Date | null;
   createdAt: Date;
   translations?: Array<{
     slug: string;
@@ -55,6 +56,7 @@ export function formatProductForList(product: {
     price: variant?.price || 0,
     stock: variant?.stock || 0,
     discountPercent: product.discountPercent || 0,
+    discountExpiresAt: product.discountExpiresAt?.toISOString() ?? null,
     compareAtPrice: variant?.compareAtPrice || null,
     colorStocks: [], // Can be enhanced later
     image,

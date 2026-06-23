@@ -411,6 +411,8 @@
   },
   "products": {
     "title": "Ապրանքներ",
+    "discountTitle": "Ապրանքի զեղչ",
+    "discountHint": "Ավարտի ամսաթիվը պարտադիր չէ — զեղչը ավտոմատ կդադար միացված ժամանակին։",
     "backToAdmin": "Վերադառնալ ադմինիստրատորի վահան",
     "searchPlaceholder": "Որոնել ըստ վերնագրի, slug-ի կամ SKU-ի...",
     "searchWithFiltersPlaceholder": "Ավելացրեք որոնման տեքստ…",
@@ -724,6 +726,18 @@
     "errorSavingProduct": "Սխալ: {message}",
     "untitledCategory": "Անանուն կատեգորիա",
     "untitledBrand": "Անանուն բրենդ"
+  },
+  "discountExpires": {
+    "selectDate": "Նշել ամսաթիվ",
+    "dialogLabel": "Զեղչի ավարտի ամսաթիվ",
+    "prevMonth": "Նախորդ ամիս",
+    "nextMonth": "Հաջորդ ամիս",
+    "time": "Ժամ",
+    "hour": "Ժամ",
+    "minute": "Րոպե",
+    "clear": "Մաքրել",
+    "apply": "Կիրառել",
+    "until": "Գործում է մինչև"
   },
   "priceFilter": {
     "title": "Զտել ըստ գնի կարգավորումներ",

@@ -3,6 +3,7 @@
 import { Card } from '@shop/ui';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '../../../lib/i18n-client';
+import type { DiscountMap } from '@/lib/discount/discount-expiry';
 import type {
   QuickSettingsBrand,
   QuickSettingsCategory,
@@ -21,20 +22,24 @@ interface QuickSettingsContentProps {
   t: ReturnType<typeof useTranslation>['t'];
   globalDiscount: number;
   setGlobalDiscount: (value: number) => void;
+  globalDiscountExpiresAt: string | null;
+  setGlobalDiscountExpiresAt: (value: string | null) => void;
   discountLoading: boolean;
   discountSaving: boolean;
   handleDiscountSave: () => void;
   categories: QuickSettingsCategory[];
   categoriesLoading: boolean;
-  categoryDiscounts: Record<string, number>;
+  categoryDiscounts: DiscountMap;
   updateCategoryDiscountValue: (categoryId: string, value: string) => void;
+  updateCategoryDiscountExpires: (categoryId: string, value: string | null) => void;
   clearCategoryDiscount: (categoryId: string) => void;
   handleCategoryDiscountSave: () => void;
   categorySaving: boolean;
   brands: QuickSettingsBrand[];
   brandsLoading: boolean;
-  brandDiscounts: Record<string, number>;
+  brandDiscounts: DiscountMap;
   updateBrandDiscountValue: (brandId: string, value: string) => void;
+  updateBrandDiscountExpires: (brandId: string, value: string | null) => void;
   clearBrandDiscount: (brandId: string) => void;
   handleBrandDiscountSave: () => void;
   brandSaving: boolean;
@@ -42,6 +47,8 @@ interface QuickSettingsContentProps {
   productsLoading: boolean;
   productDiscounts: Record<string, number>;
   setProductDiscounts: React.Dispatch<React.SetStateAction<Record<string, number>>>;
+  productDiscountExpires: Record<string, string | null>;
+  setProductDiscountExpiresAt: (productId: string, value: string | null) => void;
   handleProductDiscountSave: (productId: string) => void;
   savingProductId: string | null;
 }
@@ -52,6 +59,8 @@ export function QuickSettingsContent({
   t,
   globalDiscount,
   setGlobalDiscount,
+  globalDiscountExpiresAt,
+  setGlobalDiscountExpiresAt,
   discountLoading,
   discountSaving,
   handleDiscountSave,
@@ -59,6 +68,7 @@ export function QuickSettingsContent({
   categoriesLoading,
   categoryDiscounts,
   updateCategoryDiscountValue,
+  updateCategoryDiscountExpires,
   clearCategoryDiscount,
   handleCategoryDiscountSave,
   categorySaving,
@@ -66,6 +76,7 @@ export function QuickSettingsContent({
   brandsLoading,
   brandDiscounts,
   updateBrandDiscountValue,
+  updateBrandDiscountExpires,
   clearBrandDiscount,
   handleBrandDiscountSave,
   brandSaving,
@@ -73,6 +84,8 @@ export function QuickSettingsContent({
   productsLoading,
   productDiscounts,
   setProductDiscounts,
+  productDiscountExpires,
+  setProductDiscountExpiresAt,
   handleProductDiscountSave,
   savingProductId,
 }: QuickSettingsContentProps) {
@@ -96,6 +109,8 @@ export function QuickSettingsContent({
           <GlobalDiscountCard
             globalDiscount={globalDiscount}
             setGlobalDiscount={setGlobalDiscount}
+            globalDiscountExpiresAt={globalDiscountExpiresAt}
+            setGlobalDiscountExpiresAt={setGlobalDiscountExpiresAt}
             discountLoading={discountLoading}
             discountSaving={discountSaving}
             handleDiscountSave={handleDiscountSave}
@@ -110,6 +125,7 @@ export function QuickSettingsContent({
         categoriesLoading={categoriesLoading}
         categoryDiscounts={categoryDiscounts}
         updateCategoryDiscountValue={updateCategoryDiscountValue}
+        updateCategoryDiscountExpires={updateCategoryDiscountExpires}
         clearCategoryDiscount={clearCategoryDiscount}
         handleCategoryDiscountSave={handleCategoryDiscountSave}
         categorySaving={categorySaving}
@@ -120,6 +136,7 @@ export function QuickSettingsContent({
         brandsLoading={brandsLoading}
         brandDiscounts={brandDiscounts}
         updateBrandDiscountValue={updateBrandDiscountValue}
+        updateBrandDiscountExpires={updateBrandDiscountExpires}
         clearBrandDiscount={clearBrandDiscount}
         handleBrandDiscountSave={handleBrandDiscountSave}
         brandSaving={brandSaving}
@@ -130,6 +147,8 @@ export function QuickSettingsContent({
         productsLoading={productsLoading}
         productDiscounts={productDiscounts}
         setProductDiscounts={setProductDiscounts}
+        productDiscountExpires={productDiscountExpires}
+        setProductDiscountExpiresAt={setProductDiscountExpiresAt}
         handleProductDiscountSave={handleProductDiscountSave}
         savingProductId={savingProductId}
       />

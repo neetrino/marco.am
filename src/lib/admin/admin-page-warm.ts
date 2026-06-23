@@ -239,7 +239,7 @@ export function warmAdminPageCacheForPath(path: string): void {
     case '/supersudo/settings':
       warmSettingsCache();
       return;
-    case '/supersudo/quick-settings':
+    case '/supersudo/discounts':
       warmQuickSettingsCache(language);
       return;
     case '/supersudo/delivery':

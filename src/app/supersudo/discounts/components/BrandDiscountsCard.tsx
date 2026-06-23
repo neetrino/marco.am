@@ -3,6 +3,8 @@
 import { useMemo, useState } from 'react';
 import { Card, Button, Input } from '@shop/ui';
 import { useTranslation } from '../../../../lib/i18n-client';
+import { DiscountExpiresPicker } from '@/components/admin/DiscountExpiresPicker';
+import type { DiscountMap } from '@/lib/discount/discount-expiry';
 
 interface AdminBrand {
   id: string;
@@ -13,8 +15,9 @@ interface AdminBrand {
 interface BrandDiscountsCardProps {
   brands: AdminBrand[];
   brandsLoading: boolean;
-  brandDiscounts: Record<string, number>;
+  brandDiscounts: DiscountMap;
   updateBrandDiscountValue: (brandId: string, value: string) => void;
+  updateBrandDiscountExpires: (brandId: string, value: string | null) => void;
   clearBrandDiscount: (brandId: string) => void;
   handleBrandDiscountSave: () => void;
   brandSaving: boolean;
@@ -25,6 +28,7 @@ export function BrandDiscountsCard({
   brandsLoading,
   brandDiscounts,
   updateBrandDiscountValue,
+  updateBrandDiscountExpires,
   clearBrandDiscount,
   handleBrandDiscountSave,
   brandSaving,
@@ -123,12 +127,17 @@ export function BrandDiscountsCard({
                     min="0"
                     max="100"
                     step="0.1"
-                    value={currentValue === undefined ? '' : currentValue}
+                    value={currentValue === undefined ? '' : currentValue.percent}
                     onChange={(e) => updateBrandDiscountValue(brand.id, e.target.value)}
                     className="w-24 border-slate-300 bg-white"
                     placeholder="0"
                   />
                   <span className="text-sm font-semibold text-slate-700">%</span>
+                  <DiscountExpiresPicker
+                    value={currentValue?.expiresAt ?? null}
+                    onChange={(expiresAt) => updateBrandDiscountExpires(brand.id, expiresAt)}
+                    disabled={currentValue === undefined}
+                  />
                   <Button
                     variant="ghost"
                     size="sm"
@@ -147,4 +156,3 @@ export function BrandDiscountsCard({
     </Card>
   );
 }
-

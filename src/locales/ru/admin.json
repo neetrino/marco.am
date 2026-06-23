@@ -411,6 +411,8 @@
   },
   "products": {
     "title": "Товары",
+    "discountTitle": "Скидка на товар",
+    "discountHint": "Дата окончания необязательна — скидка автоматически отключится в указанный момент.",
     "backToAdmin": "Вернуться в панель администратора",
     "searchPlaceholder": "Поиск по названию, slug или SKU...",
     "searchWithFiltersPlaceholder": "Добавить текст поиска…",
@@ -724,6 +726,18 @@
     "errorSavingProduct": "Ошибка: {message}",
     "untitledCategory": "Безымянная категория",
     "untitledBrand": "Безымянный бренд"
+  },
+  "discountExpires": {
+    "selectDate": "Указать дату",
+    "dialogLabel": "Дата окончания скидки",
+    "prevMonth": "Предыдущий месяц",
+    "nextMonth": "Следующий месяц",
+    "time": "Время",
+    "hour": "Час",
+    "minute": "Минута",
+    "clear": "Очистить",
+    "apply": "Применить",
+    "until": "Действует до"
   },
   "priceFilter": {
     "title": "Настройки фильтра по цене",

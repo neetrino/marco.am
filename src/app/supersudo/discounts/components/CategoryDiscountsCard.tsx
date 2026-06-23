@@ -3,6 +3,8 @@
 import { useMemo, useState } from 'react';
 import { Card, Button, Input } from '@shop/ui';
 import { useTranslation } from '../../../../lib/i18n-client';
+import { DiscountExpiresPicker } from '@/components/admin/DiscountExpiresPicker';
+import type { DiscountMap } from '@/lib/discount/discount-expiry';
 
 interface AdminCategory {
   id: string;
@@ -13,8 +15,9 @@ interface AdminCategory {
 interface CategoryDiscountsCardProps {
   categories: AdminCategory[];
   categoriesLoading: boolean;
-  categoryDiscounts: Record<string, number>;
+  categoryDiscounts: DiscountMap;
   updateCategoryDiscountValue: (categoryId: string, value: string) => void;
+  updateCategoryDiscountExpires: (categoryId: string, value: string | null) => void;
   clearCategoryDiscount: (categoryId: string) => void;
   handleCategoryDiscountSave: () => void;
   categorySaving: boolean;
@@ -25,6 +28,7 @@ export function CategoryDiscountsCard({
   categoriesLoading,
   categoryDiscounts,
   updateCategoryDiscountValue,
+  updateCategoryDiscountExpires,
   clearCategoryDiscount,
   handleCategoryDiscountSave,
   categorySaving,
@@ -125,12 +129,17 @@ export function CategoryDiscountsCard({
                     min="0"
                     max="100"
                     step="0.1"
-                    value={currentValue === undefined ? '' : currentValue}
+                    value={currentValue === undefined ? '' : currentValue.percent}
                     onChange={(e) => updateCategoryDiscountValue(category.id, e.target.value)}
                     className="w-24 border-slate-300 bg-white"
                     placeholder="0"
                   />
                   <span className="text-sm font-semibold text-slate-700">%</span>
+                  <DiscountExpiresPicker
+                    value={currentValue?.expiresAt ?? null}
+                    onChange={(expiresAt) => updateCategoryDiscountExpires(category.id, expiresAt)}
+                    disabled={currentValue === undefined}
+                  />
                   <Button
                     variant="ghost"
                     size="sm"
@@ -149,4 +158,3 @@ export function CategoryDiscountsCard({
     </Card>
   );
 }
-
