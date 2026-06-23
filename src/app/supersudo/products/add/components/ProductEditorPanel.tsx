@@ -322,7 +322,6 @@ export function ProductEditorPanel({
           attributes={formState.attributes}
           defaultCurrency={formState.defaultCurrency}
           isEditMode={isEditMode}
-          productId={productId}
           imageUploadLoading={formState.imageUploadLoading}
           imageUploadError={formState.imageUploadError}
           selectedAttributesForVariants={formState.selectedAttributesForVariants}

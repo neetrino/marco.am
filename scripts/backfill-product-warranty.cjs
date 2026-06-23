@@ -48,10 +48,6 @@ function normalizeWarrantyYears(value) {
   return null;
 }
 
-function importSlugPrefix(legacyId) {
-  return `marco-${legacyId}-`;
-}
-
 async function loadMatchIndex() {
   const variants = await prisma.productVariant.findMany({
     select: {

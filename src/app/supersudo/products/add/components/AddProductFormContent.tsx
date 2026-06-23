@@ -64,7 +64,6 @@ interface AddProductFormContentProps {
   attributes: Attribute[];
   defaultCurrency: CurrencyCode;
   isEditMode: boolean;
-  productId?: string | null;
   imageUploadLoading: boolean;
   imageUploadError: string | null;
   selectedAttributesForVariants: Set<string>;
@@ -162,7 +161,6 @@ export function AddProductFormContent({
   attributes,
   defaultCurrency,
   isEditMode,
-  productId = null,
   imageUploadLoading,
   imageUploadError,
   selectedAttributesForVariants,
