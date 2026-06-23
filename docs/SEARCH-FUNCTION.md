@@ -4,47 +4,40 @@
 
 ---
 
-## Текущая реализация
+## Единая логика (`src/lib/product-search/`)
 
-### Общая схема
+Все product search paths используют **одинаковую token-AND семантику**:
 
-- **Каталог товаров** (`/products`): поиск по строке `?search=...` обрабатывается API и сервисом `products-find-query`. Условие строится в Prisma (регистронезависимый `contains` по переводам и SKU).
-- **Сервер:** Next.js API и сервисный слой → Prisma → PostgreSQL. Никаких внешних поисковых сервисов.
+- Запрос разбивается на слова (пробелы).
+- **Каждый** token должен совпасть хотя бы с одним полем.
+- Регистронезависимо (`insensitive` / `ILIKE`).
 
-### Где реализовано
+| Модуль | Назначение |
+|--------|------------|
+| `match.ts` | `splitProductSearchTokens`, `matchesProductSearchFields` — client-side filter (admin discounts) |
+| `listing-row-where.ts` | `buildListingRowSearchWhereInput` — Prisma WHERE для `ProductListingRow` |
+| `find-product-ids-by-sku.ts` | `findProductIdsBySkuSearch` — SKU fallback по variant.sku |
+| `operational-where.ts` | `buildOperationalProductSearchWhere`, `buildOperationalCategorySearchWhere` — instant search |
 
-| Место | Описание |
-|-------|----------|
-| `src/lib/services/products-find-query/query-builder.ts` | Построение фильтра поиска для Prisma: `buildSearchFilter(search)` |
-| `src/app/api/v1/products/route.ts` | API списка товаров, принимает параметр `search` |
-| `src/app/products/page.tsx` | Страница каталога: передаёт `search` из URL в API |
+### Поля поиска
 
-### Логика поиска (query-builder)
+**Listing row (admin products, PLP, facets):** `title`, `slug`, `searchText` + SKU через `productId IN (...)`.
 
-Поиск по полям (OR, регистронезависимо, `mode: "insensitive"`):
+**Operational tables (instant search):** `title`, `subtitle`, `sku` (товары); `title`, `slug`, `fullPath` (категории).
 
-- **Переводы товара:** `title`, `subtitle`
-- **Варианты:** `sku`
-
-Условие добавляется в общий `where` вместе с фильтрами категории, бренда и т.д.
+**Client-side (admin discounts):** те же поля, что listing row + `sku` на строке.
 
 ---
 
-## Вариант «хороший или лучше»
+## Где используется
 
-**Текущий вариант (собственный поиск через Prisma) — хороший и достаточный** для типичного каталога на Vercel:
-
-- Нет зависимостей от внешнего поискового сервиса (ни хостинг, ни лимиты).
-- Один источник правды — PostgreSQL; не нужно синхронизировать индекс.
-- Регистронезависимый поиск по названию, подзаголовку и SKU покрывает большинство сценариев.
-- Подходит для объёма в тысячи товаров при нормальных индексах БД.
-
-**Когда имеет смысл подключать Meilisearch/Algolia:**
-
-- Очень большой каталог (десятки/сотни тысяч позиций) и жёсткие требования к скорости и релевантности.
-- Нужны подсказки (autocomplete), исправление опечаток, фасетный поиск «из коробки».
-
-**Итог:** для WhiteShop.am оставляем собственный поиск через Prisma — этого достаточно. При росте требований можно отдельно добавить instant search в хедере (см. ниже) или позже рассмотреть внешний движок.
+| Место | Execution | Модуль |
+|-------|-----------|--------|
+| Admin → Products | Server API | `listing-row-where` + `find-product-ids-by-sku` |
+| Admin → Discounts | Client filter на preloaded list | `match.ts` |
+| Storefront PLP (`/products?search=`) | Server read model | `listing-row-where` + SKU |
+| PLP sidebar facets | Server SQL | token-AND на `searchText` + SKU |
+| Instant search (header) | Server API | `operational-where.ts` |
 
 ---
 
@@ -54,31 +47,31 @@
 
 ### Контракт API
 
-- Query: `q` (обяз.), `lang` (`en|hy|ru`, optional), `limit` (legacy alias для `productLimit`), `productLimit`, `categoryLimit`.
-- Response:
-  - `results[]` — товары (slug/title/price/image/category/href),
-  - `categories[]` — категории (slug/title/fullPath/href),
-  - `suggestions[]` — объединённый список подсказок (`type = product|category`) для быстрого dropdown UX.
-- Поиск делается через Prisma/PostgreSQL без внешнего движка.
+- Query: `q` (обяз.), `lang` (`en|hy|ru`, optional), `limit`, `productLimit`, `categoryLimit`.
+- Response: `results[]`, `categories[]`, `suggestions[]`.
 
 ### Ключевые файлы
 
 | Файл | Назначение |
 |------|------------|
-| `src/components/hooks/useInstantSearch.ts` | Хук: состояние, debounce, fetch к API, навигация с клавиатуры |
-| `src/app/api/search/instant/route.ts` | API endpoint: parse query-параметры и вернуть `results + categories + suggestions` |
-| `src/lib/services/instant-search.service.ts` | Бизнес-логика поиска товаров+категорий, сбор `suggestions` |
-| `src/components/SearchDropdown.tsx` | UI выпадающего списка (карточки, лоадер, ссылка «Տեսնել բոլորը» на `/products?search=...`) |
-| Хедер (DesktopHeader / MobileHeader или общий Header) | Инпут + хук + SearchDropdown, Enter → `/products?search=...` |
+| `src/components/hooks/useInstantSearch.ts` | Debounce, fetch, keyboard nav |
+| `src/app/api/search/instant/route.ts` | API endpoint |
+| `src/lib/services/instant-search.service.ts` | Бизнес-логика |
+| `src/components/SearchDropdown.tsx` | UI dropdown |
 
 ### Важно
 
-- Отмена предыдущего запроса через `AbortController` при новом вводе.
-- Без кэша ответа, чтобы новые товары из админки сразу отображались.
-- Доступность: `aria-controls`, `aria-expanded`, `role="listbox"`, `role="option"`.
-
-Категории и suggestions уже доступны в API-контракте для дальнейшего расширения UI (например, смешанный dropdown с товарами и категориями).
+- `AbortController` при новом вводе.
+- Без кэша ответа — новые товары из админки сразу видны.
+- Enter → `/products?search=...` (тот же token-AND на PLP).
 
 ---
 
-*Документ актуален для WhiteShop.am. Meilisearch из проекта удалён; используется только собственный поиск через Prisma.*
+## Когда имеет смысл внешний движок
+
+- Очень большой каталог и жёсткие требования к релевантности / опечаткам.
+- Meilisearch/Algolia — отдельное решение, сейчас не используется.
+
+---
+
+*Документ актуален для WhiteShop.am. Поиск — только через Prisma/PostgreSQL и shared `lib/product-search`.*

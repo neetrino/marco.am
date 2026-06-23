@@ -12,6 +12,7 @@ function baseInput(overrides: Partial<PlpFacetFilterInput> = {}): PlpFacetFilter
     sizeTokens: [],
     technicalSpecGroups: [],
     search: null,
+    productIdsFromSku: [],
     minPrice: undefined,
     maxPrice: undefined,
     promotion: false,

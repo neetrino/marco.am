@@ -1,4 +1,4 @@
-import { matchesAdminProductSearchFields } from '@/lib/admin/admin-product-search-match';
+import { matchesProductSearchFields } from '@/lib/product-search/match';
 
 export interface QuickSettingsCategory {
   id: string;
@@ -28,7 +28,7 @@ export function matchesQuickSettingsProductSearch(
   row: QuickSettingsProductRow,
   rawQuery: string,
 ): boolean {
-  return matchesAdminProductSearchFields(
+  return matchesProductSearchFields(
     {
       title: row.title,
       slug: row.slug,

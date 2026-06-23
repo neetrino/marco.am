@@ -1,20 +1,8 @@
 import { Prisma } from "@white-shop/db/prisma";
-import { splitAdminSearchTokens } from "@/lib/admin/admin-product-search-match";
+import { buildListingRowSearchWhereInput } from "@/lib/product-search/listing-row-where";
 import type { ProductFilters } from "./types";
 
-export { splitAdminSearchTokens } from "@/lib/admin/admin-product-search-match";
-
-function buildListingRowTextTokenCondition(
-  token: string,
-): Prisma.ProductListingRowWhereInput {
-  return {
-    OR: [
-      { title: { contains: token, mode: "insensitive" } },
-      { slug: { contains: token, mode: "insensitive" } },
-      { searchText: { contains: token, mode: "insensitive" } },
-    ],
-  };
-}
+export { splitProductSearchTokens as splitAdminSearchTokens } from "@/lib/product-search/match";
 
 /**
  * Maps admin product list filters to ProductListingRow where clause.
@@ -68,16 +56,10 @@ export function buildAdminListingRowWhere(
 
   const searchTerm = filters.search?.trim();
   if (searchTerm) {
-    const tokens = splitAdminSearchTokens(searchTerm);
-    const searchConditions: Prisma.ProductListingRowWhereInput[] = [
-      {
-        AND: tokens.map((token) => buildListingRowTextTokenCondition(token)),
-      },
-    ];
-    if (productIdsFromSku.length > 0) {
-      searchConditions.push({ productId: { in: productIdsFromSku } });
+    const searchWhere = buildListingRowSearchWhereInput(searchTerm, productIdsFromSku);
+    if (searchWhere) {
+      where.AND = [searchWhere];
     }
-    where.AND = [{ OR: searchConditions }];
   }
 
   return where;

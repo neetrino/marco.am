@@ -8,6 +8,10 @@ import {
 import { resolveListingHeroImageUrl } from '@/lib/products/product-gallery-urls';
 import { processImageUrl } from '@/lib/utils/image-utils';
 import { resolveProductPrice } from '@/lib/pricing/product-price';
+import {
+  buildOperationalCategorySearchWhere,
+  buildOperationalProductSearchWhere,
+} from '@/lib/product-search/operational-where';
 
 const DEFAULT_PRODUCT_LIMIT = 8;
 const DEFAULT_CATEGORY_LIMIT = 4;
@@ -102,58 +106,6 @@ function parseLimit(rawLimit: string | null, fallback: number): number {
     return fallback;
   }
   return Math.min(rounded, MAX_LIMIT);
-}
-
-function buildProductSearchWhere(query: string): Prisma.ProductWhereInput {
-  const term = query.trim();
-  if (!term) {
-    return {};
-  }
-
-  return {
-    OR: [
-      {
-        translations: {
-          some: {
-            title: { contains: term, mode: 'insensitive' },
-          },
-        },
-      },
-      {
-        translations: {
-          some: {
-            subtitle: { contains: term, mode: 'insensitive' },
-          },
-        },
-      },
-      {
-        variants: {
-          some: {
-            sku: { contains: term, mode: 'insensitive' },
-          },
-        },
-      },
-    ],
-  };
-}
-
-function buildCategorySearchWhere(query: string): Prisma.CategoryWhereInput {
-  const term = query.trim();
-  if (!term) {
-    return {};
-  }
-
-  return {
-    translations: {
-      some: {
-        OR: [
-          { title: { contains: term, mode: 'insensitive' } },
-          { slug: { contains: term, mode: 'insensitive' } },
-          { fullPath: { contains: term, mode: 'insensitive' } },
-        ],
-      },
-    },
-  };
 }
 
 function mapProductResult(
@@ -271,7 +223,7 @@ export async function searchInstant(
       where: {
         published: true,
         deletedAt: null,
-        ...buildProductSearchWhere(params.query),
+        ...buildOperationalProductSearchWhere(params.query),
       },
       take: params.productLimit,
       include: {
@@ -292,7 +244,7 @@ export async function searchInstant(
       where: {
         published: true,
         deletedAt: null,
-        ...buildCategorySearchWhere(params.query),
+        ...buildOperationalCategorySearchWhere(params.query),
       },
       take: params.categoryLimit,
       include: {

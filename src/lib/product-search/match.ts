@@ -1,9 +1,9 @@
 /** Split user search into words; ignores extra whitespace between tokens. */
-export function splitAdminSearchTokens(search: string): string[] {
+export function splitProductSearchTokens(search: string): string[] {
   return search.trim().split(/\s+/).filter(Boolean);
 }
 
-export type AdminProductSearchFields = {
+export type ProductSearchFields = {
   title?: string | null;
   slug?: string | null;
   searchText?: string | null;
@@ -17,7 +17,7 @@ function fieldContainsToken(field: string | null | undefined, token: string): bo
   return field.toLowerCase().includes(token.toLowerCase());
 }
 
-function tokenMatchesFields(fields: AdminProductSearchFields, token: string): boolean {
+function tokenMatchesFields(fields: ProductSearchFields, token: string): boolean {
   return (
     fieldContainsToken(fields.title, token) ||
     fieldContainsToken(fields.slug, token) ||
@@ -27,14 +27,13 @@ function tokenMatchesFields(fields: AdminProductSearchFields, token: string): bo
 }
 
 /**
- * Client-side mirror of admin product list text search:
- * every token must match title, slug, searchText, or SKU (case-insensitive).
+ * Client-side product search: every token must match title, slug, searchText, or SKU.
  */
-export function matchesAdminProductSearchFields(
-  fields: AdminProductSearchFields,
+export function matchesProductSearchFields(
+  fields: ProductSearchFields,
   rawQuery: string,
 ): boolean {
-  const tokens = splitAdminSearchTokens(rawQuery);
+  const tokens = splitProductSearchTokens(rawQuery);
   if (tokens.length === 0) {
     return true;
   }
