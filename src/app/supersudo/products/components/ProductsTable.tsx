@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Card, Button } from '@shop/ui';
 import { useTranslation } from '../../../../lib/i18n-client';
 import { AdminTablePagination } from '../../components/AdminTablePagination';
@@ -7,6 +8,7 @@ import { formatCatalogPrice, type CurrencyCode } from '../../../../lib/currency'
 import { FeaturedStarToggle } from '../add/components/FeaturedStarToggle';
 import { warmProductEditorRowSections } from '@/lib/admin/product-editor-section-cache';
 import { AdminProductListImage, AdminProductListImagePlaceholder } from './AdminProductListImage';
+import { ProductDeleteConfirmDialog } from './ProductDeleteConfirmDialog';
 import type { Product, ProductsResponse } from '../types';
 
 interface ProductsTableProps {
@@ -19,7 +21,7 @@ interface ProductsTableProps {
   sortBy: string;
   handleHeaderSort: (field: 'price' | 'createdAt' | 'title' | 'stock') => void;
   currency: CurrencyCode;
-  handleDeleteProduct: (productId: string, productTitle: string) => void;
+  handleDeleteProduct: (productId: string) => void;
   handleTogglePublished: (productId: string, currentStatus: boolean, productTitle: string) => void;
   handleToggleFeatured: (productId: string, currentStatus: boolean, productTitle: string) => void;
   deletingIds: Set<string>;
@@ -57,8 +59,25 @@ export function ProductsTable({
   onEditProduct,
 }: ProductsTableProps) {
   const { t } = useTranslation();
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null);
+
+  const confirmDelete = () => {
+    if (!deleteTarget) {
+      return;
+    }
+    handleDeleteProduct(deleteTarget.id);
+    setDeleteTarget(null);
+  };
 
   return (
+    <>
+    <ProductDeleteConfirmDialog
+      open={deleteTarget !== null}
+      productTitle={deleteTarget?.title ?? ''}
+      deleting={deleteTarget !== null && deletingIds.has(deleteTarget.id)}
+      onConfirm={confirmDelete}
+      onCancel={() => setDeleteTarget(null)}
+    />
     <Card className="admin-table-card relative overflow-hidden rounded-2xl border-slate-200/80 shadow-md shadow-slate-200/60">
       {refreshing ? (
         <div
@@ -401,7 +420,7 @@ export function ProductsTable({
                           onClick={(event) => {
                             event.stopPropagation();
                             if (product.pendingSync) return;
-                            handleDeleteProduct(product.id, product.title);
+                            setDeleteTarget({ id: product.id, title: product.title });
                           }}
                           disabled={deletingIds.has(product.id) || product.pendingSync}
                           aria-label={deletingIds.has(product.id) ? t('admin.products.deleting') : t('admin.products.delete')}
@@ -467,6 +486,7 @@ export function ProductsTable({
         </>
       )}
     </Card>
+    </>
   );
 }
 

@@ -67,11 +67,7 @@ export function useProductHandlers({
     }
   };
 
-  const handleDeleteProduct = async (productId: string, productTitle: string) => {
-    if (!(await showPopupConfirm(t('admin.products.deleteConfirm').replace('{title}', productTitle)))) {
-      return;
-    }
-
+  const handleDeleteProduct = async (productId: string) => {
     setDeletingIds((prev) => new Set(prev).add(productId));
     // Optimistic removal — the row disappears immediately, the request runs in the background.
     _setProducts((prev) => prev.filter((product) => product.id !== productId));
