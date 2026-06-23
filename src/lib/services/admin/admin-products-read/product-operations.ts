@@ -7,11 +7,6 @@ import {
   buildAdminListingRowWhere,
 } from "./admin-listing-row-query";
 import {
-  buildAdminDraftProductOrderBy,
-  buildAdminDraftProductWhere,
-  executeAdminDraftProductList,
-} from "./admin-draft-product-query";
-import {
   executeAdminProductListViaListingRows,
   executeProductDetailQuery,
   findProductIdsBySkuSearch,
@@ -56,27 +51,24 @@ export async function getProducts(filters: ProductFilters) {
   const productIdsFromSku = resolvedFilters.search?.trim()
     ? await findProductIdsBySkuSearch(resolvedFilters.search.trim())
     : [];
+  const listingWhere = buildAdminListingRowWhere(
+    resolvedFilters,
+    locale,
+    productIdsFromSku,
+  );
+  const listingOrderBy = buildAdminListingRowOrderBy(resolvedFilters.sort);
 
-  const useDraftSource = resolvedFilters.published === false;
-  const { products, total } = useDraftSource
-    ? await executeAdminDraftProductList(
-        buildAdminDraftProductWhere(resolvedFilters, productIdsFromSku),
-        buildAdminDraftProductOrderBy(resolvedFilters.sort),
-        skip,
-        limit,
-        locale,
-      )
-    : await executeAdminProductListViaListingRows(
-        buildAdminListingRowWhere(resolvedFilters, locale, productIdsFromSku),
-        buildAdminListingRowOrderBy(resolvedFilters.sort),
-        skip,
-        limit,
-        locale,
-      );
+  logger.debug('Executing admin listing-row query...', {
+    sort: resolvedFilters.sort,
+    locale,
+  });
 
-  logger.debug(
-    useDraftSource ? 'Executed admin draft product query' : 'Executed admin listing-row query',
-    { sort: resolvedFilters.sort, locale },
+  const { products, total } = await executeAdminProductListViaListingRows(
+    listingWhere,
+    listingOrderBy,
+    skip,
+    limit,
+    locale,
   );
 
   const data = products.map((product) => formatProductForList(product, locale));

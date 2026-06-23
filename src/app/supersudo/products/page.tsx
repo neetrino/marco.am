@@ -148,8 +148,7 @@ function ProductsPageContent() {
   };
 
   useEffect(() => {
-    // Draft filter reads Product.published directly; bypass stale session cache.
-    fetchProducts({ force: publishedFilter === 'unpublished' });
+    fetchProducts();
   }, [page, search, selectedCategories, stockFilter, publishedFilter, sortBy, activeLocale]);
 
   // Warm product-editor reference data (brands/categories/attributes/settings)
