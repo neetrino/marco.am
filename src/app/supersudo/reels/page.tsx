@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { ChangeEvent } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { apiClient, getApiOrErrorMessage } from '@/lib/api-client';
@@ -8,6 +9,11 @@ import { useTranslation } from '@/lib/i18n-client';
 import { showPopupConfirm } from '@/components/popup-service';
 import type { ReelsManagementStorage } from '@/lib/schemas/reels-management.schema';
 import { REELS_MANAGEMENT_STORAGE_VERSION } from '@/lib/constants/reels-management';
+import { ADMIN_IMAGE_ACCEPT } from '@/lib/constants/admin-image-upload';
+import {
+  adminWebpFileFromDataUrl,
+  processAdminImageFile,
+} from '@/lib/utils/process-admin-image-file';
 import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '@/lib/utils/image-utils';
 import { ADMIN_CACHE_KEYS } from '@/lib/admin/admin-cache-keys';
 import { beginAdminDataFetch } from '@/lib/admin/admin-fetch-helpers';
@@ -26,6 +32,10 @@ type ReelsLikesResponse = {
 
 type ReelsViewsResponse = {
   viewsByReelId: Record<string, number>;
+};
+
+type UploadPosterResponse = {
+  url: string;
 };
 
 type ReelFormState = {
@@ -98,7 +108,9 @@ export default function ReelsPage() {
   const [viewsByReelId, setViewsByReelId] = useState<Record<string, number>>(cachedReels?.viewsByReelId ?? {});
   const [form, setForm] = useState<ReelFormState>(EMPTY_FORM);
   const [isAddFormOpen, setIsAddFormOpen] = useState(false);
+  const [uploadingPoster, setUploadingPoster] = useState(false);
   const [previewReel, setPreviewReel] = useState<PreviewReelState | null>(null);
+  const posterInputRef = useRef<HTMLInputElement | null>(null);
 
   const reload = useCallback(async (options?: { force?: boolean }) => {
     const cacheKey = ADMIN_CACHE_KEYS.reelsAdmin;
@@ -258,6 +270,42 @@ export default function ReelsPage() {
     await persistStorage(nextStorage);
   };
 
+  const handlePosterUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) {
+      return;
+    }
+
+    setUploadingPoster(true);
+    try {
+      const dataUrl = await processAdminImageFile(file, 'catalog');
+      const webpFile = await adminWebpFileFromDataUrl(dataUrl, 'poster.webp');
+      const payload = new FormData();
+      payload.append('file', webpFile);
+
+      const response = await fetch('/api/v1/supersudo/reels/upload-poster', {
+        method: 'POST',
+        body: payload,
+      });
+
+      const responseBody = (await response.json().catch(() => null)) as UploadPosterResponse | { detail?: string } | null;
+      if (!response.ok || !responseBody || !('url' in responseBody)) {
+        const detail = responseBody && 'detail' in responseBody ? responseBody.detail : null;
+        throw new Error(detail || t('admin.reels.posterUploadFailed'));
+      }
+
+      setForm((prev) => ({
+        ...prev,
+        posterUrl: responseBody.url,
+      }));
+    } catch (error: unknown) {
+      alert(getApiOrErrorMessage(error, t('admin.reels.posterUploadFailed')));
+    } finally {
+      setUploadingPoster(false);
+    }
+  };
+
   const addReelHeaderAction = (
     <button
       type="button"
@@ -320,15 +368,44 @@ export default function ReelsPage() {
                 />
                 <p className="text-xs text-gray-500">{t('admin.reels.videoUrlHint')}</p>
               </label>
-              <label className="space-y-1 md:col-span-2">
-                <span className="text-xs font-medium text-gray-600">{t('admin.reels.posterUrl')}</span>
-                <input
-                  value={form.posterUrl}
-                  onChange={(e) => setForm((prev) => ({ ...prev, posterUrl: e.target.value }))}
-                  placeholder={t('admin.reels.posterUrlPlaceholder')}
-                  className="admin-field"
-                />
-              </label>
+              <div className="space-y-2 md:col-span-2">
+                <span className="text-xs font-medium text-gray-600">{t('admin.reels.poster')}</span>
+                <div className="rounded-xl border border-dashed border-marco-border bg-white/80 p-3">
+                  <input
+                    ref={posterInputRef}
+                    type="file"
+                    accept={ADMIN_IMAGE_ACCEPT}
+                    onChange={handlePosterUpload}
+                    className="hidden"
+                  />
+                  <div className="flex flex-wrap items-center gap-3">
+                    {form.posterUrl.trim().length > 0 ? (
+                      <img
+                        src={toDomSafeImgSrcString(toSafeImgAttributeSrc(form.posterUrl) ?? '')}
+                        alt=""
+                        className="h-20 w-14 rounded-lg border border-gray-200 object-cover"
+                      />
+                    ) : null}
+                    <button
+                      type="button"
+                      onClick={() => posterInputRef.current?.click()}
+                      disabled={uploadingPoster}
+                      className="inline-flex h-9 items-center rounded-lg border border-marco-yellow/60 bg-marco-yellow/25 px-3.5 text-sm font-medium text-marco-black transition hover:bg-marco-yellow/40 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {uploadingPoster ? t('admin.reels.uploadingPoster') : t('admin.reels.uploadPoster')}
+                    </button>
+                    {form.posterUrl.trim().length > 0 ? (
+                      <button
+                        type="button"
+                        onClick={() => setForm((prev) => ({ ...prev, posterUrl: '' }))}
+                        className="inline-flex h-9 items-center rounded-lg border border-marco-border bg-white px-3.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+                      >
+                        {t('admin.reels.removePoster')}
+                      </button>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
               <div className="mt-1 flex items-center gap-2 md:col-span-2">
                 <button
                   onClick={handleAdd}
