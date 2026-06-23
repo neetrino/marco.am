@@ -283,6 +283,7 @@ export function ProductEditorPanel({
           fileInputRef={formState.fileInputRef}
           attributesDropdownRef={formState.attributesDropdownRef}
           variantImageInputRefs={formState.variantImageInputRefs}
+          onSubtitleChange={(subtitleHtml) => formState.setFormData((prev) => ({ ...prev, subtitleHtml }))}
           onDescriptionChange={(description) => formState.setFormData((prev) => ({ ...prev, description }))}
           onProductTypeChange={formState.setProductType}
           onUploadImages={handleUploadImages}

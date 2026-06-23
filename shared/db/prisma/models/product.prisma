@@ -52,6 +52,7 @@ model ProductTranslation {
   locale          String
   title           String
   slug            String
+  /// HTML short text shown under price on PDP (sanitized on save).
   subtitle        String?
   /// Array of { title, value } specification rows (no HTML).
   description     Json?

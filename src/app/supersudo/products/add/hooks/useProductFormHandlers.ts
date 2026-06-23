@@ -16,6 +16,7 @@ interface UseProductFormHandlersProps {
   formData: {
     title: string;
     slug: string;
+    subtitleHtml: string;
     description: ProductDescriptionEntry[];
     productClass: ProductClass;
     brandIds: string[];

@@ -13,6 +13,7 @@ export function useProductFormState(listProduct: Product | null = null) {
   const [formData, setFormData] = useState(() => ({
     title: listProduct?.title ?? '',
     slug: listProduct?.slug ?? '',
+    subtitleHtml: '',
     description: [] as ProductDescriptionEntry[],
     productClass: listProduct?.productClass ?? ('retail' as ProductClass),
     brandIds: [] as string[],

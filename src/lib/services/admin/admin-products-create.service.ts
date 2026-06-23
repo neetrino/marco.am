@@ -19,9 +19,14 @@ import {
 } from "@/lib/constants/product-class";
 import { normalizeProductWarrantyYears } from "@/lib/constants/product-warranty";
 import {
+  filterProductDescriptionForSave,
   toPrismaProductDescription,
   type ProductDescriptionEntry,
 } from "@/lib/products/product-description";
+import {
+  isProductSubtitleHtmlEmpty,
+  sanitizeProductSubtitleHtml,
+} from "@/lib/security/sanitize-product-html";
 import { logger } from "@/lib/utils/logger";
 import type { PrismaTransactionClient } from "@/lib/types/prisma";
 import { getErrorMessage, getPrismaErrorCode } from "@/lib/types/errors";
@@ -372,9 +377,11 @@ class AdminProductsCreateService {
                 locale: data.locale || "en",
                 title: data.title,
                 slug: data.slug,
-                subtitle: data.subtitle || undefined,
+                subtitle: isProductSubtitleHtmlEmpty(data.subtitle)
+                  ? undefined
+                  : sanitizeProductSubtitleHtml(data.subtitle ?? ''),
                 description: data.description?.length
-                  ? toPrismaProductDescription(data.description)
+                  ? toPrismaProductDescription(filterProductDescriptionForSave(data.description))
                   : undefined,
               },
             },

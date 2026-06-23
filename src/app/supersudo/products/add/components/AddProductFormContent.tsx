@@ -38,6 +38,7 @@ interface AddProductFormContentProps {
   formData: {
     title: string;
     slug: string;
+    subtitleHtml: string;
     description: ProductDescriptionEntry[];
     productClass: ProductClass;
     brandIds: string[];
@@ -72,6 +73,7 @@ interface AddProductFormContentProps {
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   attributesDropdownRef: React.RefObject<HTMLDivElement | null>;
   variantImageInputRefs: React.MutableRefObject<Record<string, HTMLInputElement | null>>;
+  onSubtitleChange: (html: string) => void;
   onDescriptionChange: (entries: ProductDescriptionEntry[]) => void;
   onProductTypeChange: (type: 'simple' | 'variable') => void;
   onUploadImages: (event: ChangeEvent<HTMLInputElement>) => Promise<void>;
@@ -168,6 +170,7 @@ export function AddProductFormContent({
   fileInputRef,
   attributesDropdownRef,
   variantImageInputRefs,
+  onSubtitleChange,
   onDescriptionChange,
   onProductTypeChange,
   onUploadImages,
@@ -267,7 +270,9 @@ export function AddProductFormContent({
             isLoading={loadingTab === 'description'}
           >
             <ProductDescriptionTab
+              subtitleHtml={formData.subtitleHtml}
               description={formData.description}
+              onSubtitleChange={onSubtitleChange}
               onDescriptionChange={onDescriptionChange}
             />
           </TabPanel>

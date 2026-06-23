@@ -128,6 +128,13 @@ export function getProductDescriptionSpecs(entries: ProductDescriptionEntry[]): 
   return entries.filter((entry) => entry.title.trim().length > 0);
 }
 
+/** Keeps only specification rows; drops legacy note rows (empty title). */
+export function filterProductDescriptionForSave(entries: ProductDescriptionEntry[]): ProductDescriptionEntry[] {
+  return getProductDescriptionSpecs(entries).filter(
+    (entry) => entry.title.trim().length > 0 && entry.value.trim().length > 0,
+  );
+}
+
 /** Prisma JSON column payload for create/update. */
 export function toPrismaProductDescription(
   entries: ProductDescriptionEntry[],

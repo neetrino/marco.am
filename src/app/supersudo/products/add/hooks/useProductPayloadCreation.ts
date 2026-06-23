@@ -3,6 +3,11 @@ import { getErrorMessage } from '@/lib/types/errors';
 import type { ProductLabel, Variant } from '../types';
 import type { ProductClass } from '@/lib/constants/product-class';
 import type { ProductDescriptionEntry } from '@/lib/products/product-description';
+import { filterProductDescriptionForSave } from '@/lib/products/product-description';
+import {
+  isProductSubtitleHtmlEmpty,
+  sanitizeProductSubtitleHtml,
+} from '@/lib/security/sanitize-product-html';
 import { t as translateByLocale } from '@/lib/i18n';
 import { getStoredLanguage } from '@/lib/language';
 import { logger } from "@/lib/utils/logger";
@@ -12,6 +17,7 @@ interface CreateAndSubmitPayloadProps {
   formData: {
     title: string;
     slug: string;
+    subtitleHtml: string;
     description: ProductDescriptionEntry[];
     productClass: ProductClass;
     categoryIds: string[];
@@ -63,7 +69,10 @@ export async function createAndSubmitPayload({
   const payload: Record<string, unknown> = {
       title: formData.title,
       slug: formData.slug,
-      description: formData.description.filter((entry) => entry.title.trim() || entry.value.trim()),
+      subtitle: isProductSubtitleHtmlEmpty(formData.subtitleHtml)
+        ? null
+        : sanitizeProductSubtitleHtml(formData.subtitleHtml),
+      description: filterProductDescriptionForSave(formData.description),
       productClass: formData.productClass,
       brandId: finalBrandIds.length > 0 ? finalBrandIds[0] : undefined,
       primaryCategoryId: finalPrimaryCategoryId || undefined,
