@@ -39,6 +39,7 @@ interface UseProductFormHandlersProps {
     compareAtPrice: string;
     sku: string;
     quantity: string;
+    variantId: string;
   };
   selectedAttributesForVariants: Set<string>;
   generatedVariants: GeneratedVariant[];
@@ -77,8 +78,6 @@ export function useProductFormHandlers({
   const { validateVariants } = useVariantValidation({
     productType,
     variants: formData.variants,
-    simpleProductData,
-    isClothingCategory,
     setLoading,
   });
 
@@ -111,16 +110,6 @@ export function useProductFormHandlers({
         return;
       }
 
-      if (productType === 'variable' && generatedVariants.length > 0) {
-        for (const genVariant of generatedVariants) {
-          if (!genVariant.sku?.trim()) {
-            alert(mt('admin.products.add.allVariantSkuRequired'));
-            setLoading(false);
-            return;
-          }
-        }
-      }
-
       // Process variants for API
       const variants: any[] = [];
       const selectedProductClass = formData.productClass || "retail";
@@ -140,18 +129,26 @@ export function useProductFormHandlers({
           simpleProductData.compareAtPrice && simpleProductData.compareAtPrice.trim() !== ''
             ? convertPrice(parseFloat(simpleProductData.compareAtPrice), defaultCurrency, CATALOG_PRICE_CURRENCY)
             : undefined;
-        const simpleVariant: any = {
+        const trimmedSku = simpleProductData.sku.trim();
+        const simpleVariant: Record<string, unknown> = {
           price: priceCatalog,
           stock: parseInt(simpleProductData.quantity) || 0,
-          sku: simpleProductData.sku.trim(),
           productClass: selectedProductClass,
           published: true,
         };
+        if (trimmedSku) {
+          simpleVariant.sku = trimmedSku;
+        }
+        if (isEditMode && simpleProductData.variantId) {
+          simpleVariant.id = simpleProductData.variantId;
+        }
         if (compareAtPriceCatalog !== undefined) {
           simpleVariant.compareAtPrice = compareAtPriceCatalog;
         }
         variants.push(simpleVariant);
-        variantSkuSet.add(simpleProductData.sku.trim());
+        if (trimmedSku) {
+          variantSkuSet.add(trimmedSku);
+        }
         logger.devLog('✅ [ADMIN] Simple product variant created:', simpleVariant);
       } else {
         // Variable products variant processing (simplified - full logic remains in original)
@@ -188,22 +185,19 @@ export function useProductFormHandlers({
             const attributeKeys = Object.keys(attributeValueMap);
             if (attributeKeys.length === 0) {
               const finalSku = genVariant.sku?.trim() ?? '';
-              if (!finalSku) {
-                alert(mt('admin.products.add.allVariantSkuRequired'));
-                setLoading(false);
-                return;
-              }
-              if (variantSkuSet.has(finalSku)) {
+              if (finalSku && variantSkuSet.has(finalSku)) {
                 alert(mt('admin.products.add.duplicateSku').replace('{sku}', finalSku));
                 setLoading(false);
                 return;
               }
-              variantSkuSet.add(finalSku);
+              if (finalSku) {
+                variantSkuSet.add(finalSku);
+              }
               variants.push({
                 price: variantPriceCatalog,
                 compareAtPrice: variantCompareAtPriceCatalog,
                 stock: parseInt(genVariant.stock || '0') || 0,
-                sku: finalSku,
+                sku: finalSku || undefined,
                 imageUrl: genVariant.image || undefined,
                 published: true,
               });
@@ -241,23 +235,20 @@ export function useProductFormHandlers({
                 });
                 
                 const finalSku = genVariant.sku?.trim() ?? '';
-                if (!finalSku) {
-                  alert(mt('admin.products.add.allVariantSkuRequired'));
-                  setLoading(false);
-                  return;
-                }
-                if (variantSkuSet.has(finalSku)) {
+                if (finalSku && variantSkuSet.has(finalSku)) {
                   alert(mt('admin.products.add.duplicateSku').replace('{sku}', finalSku));
                   setLoading(false);
                   return;
                 }
-                variantSkuSet.add(finalSku);
-                
+                if (finalSku) {
+                  variantSkuSet.add(finalSku);
+                }
+
                 variants.push({
                   price: variantPriceCatalog,
                   compareAtPrice: variantCompareAtPriceCatalog,
                   stock: parseInt(genVariant.stock || '0') || 0,
-                  sku: finalSku,
+                  sku: finalSku || undefined,
                   imageUrl: genVariant.image || undefined,
                   published: true,
                   options: variantOptions.length > 0 ? variantOptions : undefined,
@@ -292,17 +283,14 @@ export function useProductFormHandlers({
                   colorSizes.forEach((size) => {
                     const stockForVariant = colorSizeStocks[size] || colorData.stock || '0';
                     const finalSku = (colorData.sizeLabels?.[size] || variant.sku || '').trim();
-                    if (!finalSku) {
-                      alert(mt('admin.products.add.allVariantSkuRequired'));
-                      setLoading(false);
-                      return;
-                    }
-                    if (variantSkuSet.has(finalSku)) {
+                    if (finalSku && variantSkuSet.has(finalSku)) {
                       alert(mt('admin.products.add.duplicateSku').replace('{sku}', finalSku));
                       setLoading(false);
                       return;
                     }
-                    variantSkuSet.add(finalSku);
+                    if (finalSku) {
+                      variantSkuSet.add(finalSku);
+                    }
                     const variantImageUrl = colorData.images && colorData.images.length > 0 ? colorData.images.join(',') : undefined;
                     const sizePrice = colorData.sizePrices?.[size];
                     const finalPrice =
@@ -336,7 +324,7 @@ export function useProductFormHandlers({
                       color: colorData.colorValue,
                       size: size,
                       stock: parseInt(stockForVariant) || 0,
-                      sku: finalSku,
+                      sku: finalSku || undefined,
                       imageUrl: variantImageUrl,
                       options: variantOptions.length > 0 ? variantOptions : undefined,
                     });
@@ -348,14 +336,14 @@ export function useProductFormHandlers({
         }
       }
 
-      // Final SKU validation — manual entry only, no auto-generation
+      // SKU is optional. Enforce uniqueness only across provided (non-empty) SKUs.
       const finalSkuSet = new Set<string>();
       for (const variant of variants) {
         const sku = variant.sku?.trim() ?? '';
+        variant.productClass = variant.productClass || selectedProductClass;
         if (!sku) {
-          alert(mt('admin.products.add.allVariantSkuRequired'));
-          setLoading(false);
-          return;
+          variant.sku = undefined;
+          continue;
         }
         if (finalSkuSet.has(sku)) {
           alert(mt('admin.products.add.duplicateSku').replace('{sku}', sku));
@@ -363,7 +351,6 @@ export function useProductFormHandlers({
           return;
         }
         variant.sku = sku;
-        variant.productClass = variant.productClass || selectedProductClass;
         finalSkuSet.add(sku);
       }
 

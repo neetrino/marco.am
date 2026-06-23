@@ -153,6 +153,7 @@ interface ApplyPricingParams {
     compareAtPrice: string;
     sku: string;
     quantity: string;
+    variantId: string;
   }) => void;
   attributes: Attribute[];
 }
@@ -287,9 +288,10 @@ function applyPricingSection({
           : '',
         sku: firstVariant.sku || '',
         quantity: String(firstVariant.stock || 0),
+        variantId: firstVariant.id || '',
       });
     } else {
-      setSimpleProductData({ price: '', compareAtPrice: '', sku: '', quantity: '0' });
+      setSimpleProductData({ price: '', compareAtPrice: '', sku: '', quantity: '0', variantId: '' });
     }
   } else {
     setProductType('variable');

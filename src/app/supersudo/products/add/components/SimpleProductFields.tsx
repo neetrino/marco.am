@@ -84,7 +84,6 @@ export function SimpleProductFields({
               onChange={(e) => onSkuChange(e.target.value)}
               placeholder={t('admin.products.add.skuPlaceholder')}
               className="w-full"
-              required
             />
           </div>
 

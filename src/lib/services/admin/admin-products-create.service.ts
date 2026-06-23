@@ -63,18 +63,19 @@ type VariantOptionPayload =
 
 class AdminProductsCreateService {
   /**
-   * Validate and return SKU for product variant.
-   * SKU must be provided manually — no auto-generation.
+   * Validate and return SKU for a product variant.
+   * SKU is optional: empty input resolves to `undefined` (stored as null).
+   * When provided, it must be unique within the product and across the catalog.
    */
   private async resolveVariantSku(
     tx: PrismaTransactionClient,
     baseSku: string | undefined,
     variantIndex: number,
     usedSkus: Set<string>
-  ): Promise<string> {
+  ): Promise<string | undefined> {
     const trimmedSku = baseSku?.trim() ?? '';
     if (!trimmedSku) {
-      throw new Error(`Variant ${variantIndex + 1} is missing a SKU. Please enter a SKU for every variant.`);
+      return undefined;
     }
 
     if (usedSkus.has(trimmedSku)) {

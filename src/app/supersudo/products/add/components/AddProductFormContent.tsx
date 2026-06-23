@@ -241,6 +241,7 @@ export function AddProductFormContent({
         <form
           id={formId}
           onSubmit={handleSubmit}
+          noValidate
           className={`w-full min-w-0 ${fullHeightActive ? 'flex min-h-0 flex-1 flex-col' : ''}`}
         >
           <TabPanel

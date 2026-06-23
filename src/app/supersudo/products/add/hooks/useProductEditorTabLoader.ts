@@ -59,6 +59,7 @@ interface UseProductEditorTabLoaderParams {
     compareAtPrice: string;
     sku: string;
     quantity: string;
+    variantId: string;
   }) => void;
   onLoadError: () => void;
 }

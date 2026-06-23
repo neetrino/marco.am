@@ -48,6 +48,7 @@ export function useProductFormState(listProduct: Product | null = null) {
     compareAtPrice: '',
     sku: '',
     quantity: '',
+    variantId: '',
   });
   const [selectedAttributesForVariants, setSelectedAttributesForVariants] = useState<Set<string>>(new Set());
   const [selectedAttributeValueIds, setSelectedAttributeValueIds] = useState<Record<string, string[]>>({});
