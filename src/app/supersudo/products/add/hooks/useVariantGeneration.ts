@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import type { Attribute, GeneratedVariant } from '../types';
+import type { GeneratedVariant } from '../types';
 import { EMPTY_VARIANT_DISCOUNT } from '../utils/variant-discount';
 import { logger } from "@/lib/utils/logger";
 
@@ -9,9 +9,6 @@ interface UseVariantGenerationProps {
   selectedAttributesForVariants: Set<string>;
   selectedAttributeValueIds: Record<string, string[]>;
   productType: 'simple' | 'variable';
-  attributes: Attribute[];
-  formDataSlug: string;
-  formDataTitle: string;
   isEditMode: boolean;
   productId: string | null;
   setGeneratedVariants: (updater: (prev: GeneratedVariant[]) => GeneratedVariant[]) => void;
@@ -21,9 +18,6 @@ export function useVariantGeneration({
   selectedAttributesForVariants,
   selectedAttributeValueIds,
   productType,
-  attributes,
-  formDataSlug,
-  formDataTitle,
   isEditMode,
   productId,
   setGeneratedVariants,
@@ -136,11 +130,9 @@ export function useVariantGeneration({
         setGeneratedVariants((prev) => (prev.length === 0 ? prev : []));
       }
     }
-  }, [productType, selectedAttributesForVariants, selectedAttributeValueIds, attributes, formDataSlug, formDataTitle, isEditMode, productId]);
+  }, [productType, selectedAttributesForVariants, selectedAttributeValueIds, isEditMode, productId]);
 
   return {
-    generateVariantsFromAttributes,
     applyToAllVariants,
   };
 }
-

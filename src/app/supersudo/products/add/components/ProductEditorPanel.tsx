@@ -108,9 +108,6 @@ export function ProductEditorPanel({
   const { applyToAllVariants } = useVariantGeneration({
     selectedAttributesForVariants: formState.selectedAttributesForVariants,
     selectedAttributeValueIds: formState.selectedAttributeValueIds,
-    attributes: formState.attributes,
-    formDataSlug: formState.formData.slug,
-    formDataTitle: formState.formData.title,
     productType: formState.productType,
     isEditMode,
     productId,
