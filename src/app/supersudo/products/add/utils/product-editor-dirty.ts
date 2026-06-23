@@ -30,6 +30,7 @@ export interface DirtyFingerprintInput {
   variants: Variant[];
   generatedVariants: GeneratedVariant[];
   selectedAttributeIds: string[];
+  selectedAttributeValueIds: string[];
 }
 
 /** Serializes the save-relevant slice of each gated section into a comparable string. */
@@ -52,6 +53,7 @@ export function computeGatedFingerprints(
       variants: input.variants,
       generatedVariants: input.generatedVariants,
       attributeIds: [...input.selectedAttributeIds].sort(),
+      attributeValueIds: [...input.selectedAttributeValueIds].sort(),
     }),
   };
 }

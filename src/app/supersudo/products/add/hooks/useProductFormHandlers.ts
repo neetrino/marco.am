@@ -53,6 +53,7 @@ interface UseProductFormHandlersProps {
     variantId: string;
   };
   selectedAttributesForVariants: Set<string>;
+  selectedAttributeValueIds: Record<string, string[]>;
   generatedVariants: GeneratedVariant[];
   attributes: Attribute[];
   defaultCurrency: CurrencyCode;
@@ -72,6 +73,7 @@ export function useProductFormHandlers({
   productType,
   simpleProductData,
   selectedAttributesForVariants,
+  selectedAttributeValueIds,
   generatedVariants,
   attributes,
   defaultCurrency,
@@ -367,9 +369,15 @@ export function useProductFormHandlers({
         finalSkuSet.add(sku);
       }
 
-      // Persist only attributes explicitly selected for this product.
-      const attributeIds =
-        productType === 'variable' ? Array.from(selectedAttributesForVariants) : [];
+      // Persist filter/spec attributes independently from sellable variants.
+      const attributeIds = Array.from(selectedAttributesForVariants);
+      const selectedAttributeValueIdList = [
+        ...Object.values(selectedAttributeValueIds).flat(),
+        ...(productType === 'variable'
+          ? generatedVariants.flatMap((variant) => variant.selectedValueIds)
+          : []),
+      ];
+      const attributeValueIds = [...new Set(selectedAttributeValueIdList.filter(Boolean))];
 
       // Process images
       const { finalMedia, mainImage, processedVariants } = processImagesForSubmit({
@@ -387,6 +395,7 @@ export function useProductFormHandlers({
         finalCategoryIds,
         variants: finalVariants,
         attributeIds,
+        attributeValueIds,
         finalMedia,
         mainImage,
         isEditMode,
@@ -405,6 +414,7 @@ export function useProductFormHandlers({
           variants: currentFormData.variants,
           generatedVariants,
           selectedAttributeIds: Array.from(selectedAttributesForVariants),
+          selectedAttributeValueIds: attributeValueIds,
         });
         const dirty = resolveDirtySections(current, baselineRef.current);
         if (!dirty.media) {
@@ -418,6 +428,7 @@ export function useProductFormHandlers({
         if (!dirty.pricing) {
           delete payload.variants;
           delete payload.attributeIds;
+          delete payload.attributeValueIds;
         }
       }
 

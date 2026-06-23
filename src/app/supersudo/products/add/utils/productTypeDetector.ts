@@ -6,7 +6,7 @@
  * Checks if variants have attributes
  */
 export function hasVariantsWithAttributes(variants: unknown[]): boolean {
-  if (!variants || variants.length === 0) {
+  if (!variants || variants.length <= 1) {
     return false;
   }
 
@@ -21,4 +21,3 @@ export function hasVariantsWithAttributes(variants: unknown[]): boolean {
     return false;
   });
 }
-

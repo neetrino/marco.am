@@ -87,18 +87,33 @@ export function PricingInventorySection({
       </h2>
 
       {productType === 'simple' ? (
-        <SimpleProductFields
-          embedded
-          price={simpleProductData.price}
-          discount={simpleProductData.discount}
-          sku={simpleProductData.sku}
-          quantity={simpleProductData.quantity}
-          defaultCurrency={defaultCurrency}
-          onPriceChange={onPriceChange}
-          onDiscountChange={onDiscountChange}
-          onSkuChange={onSkuChange}
-          onQuantityChange={onQuantityChange}
-        />
+        <div className="space-y-6">
+          <SimpleProductFields
+            embedded
+            price={simpleProductData.price}
+            discount={simpleProductData.discount}
+            sku={simpleProductData.sku}
+            quantity={simpleProductData.quantity}
+            defaultCurrency={defaultCurrency}
+            onPriceChange={onPriceChange}
+            onDiscountChange={onDiscountChange}
+            onSkuChange={onSkuChange}
+            onQuantityChange={onQuantityChange}
+          />
+          <AttributesSelection
+            embedded
+            title={t('admin.products.add.attributes')}
+            attributes={attributes}
+            selectedAttributesForVariants={selectedAttributesForVariants}
+            selectedAttributeValueIds={selectedAttributeValueIds}
+            attributesDropdownOpen={attributesDropdownOpen}
+            attributesDropdownRef={attributesDropdownRef}
+            onAttributesDropdownToggle={onAttributesDropdownToggle}
+            onAttributeToggle={onAttributeToggle}
+            onAttributeRemove={onAttributeRemove}
+            onAttributeValuesOpen={onAttributeValuesOpen}
+          />
+        </div>
       ) : (
         <div className="space-y-6">
           <AttributesSelection

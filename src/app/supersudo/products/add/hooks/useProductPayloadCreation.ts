@@ -31,6 +31,7 @@ interface BuildProductPayloadProps {
   finalCategoryIds: string[];
   variants: Variant[];
   attributeIds: string[];
+  attributeValueIds: string[];
   finalMedia: string[];
   mainImage: string | null;
   isEditMode: boolean;
@@ -44,6 +45,7 @@ export function buildProductPayload({
   finalCategoryIds,
   variants,
   attributeIds,
+  attributeValueIds,
   finalMedia,
   mainImage,
   isEditMode,
@@ -70,6 +72,7 @@ export function buildProductPayload({
     locale: 'en',
     variants,
     attributeIds,
+    attributeValueIds,
   };
 
   // Published status is toggled from the products list, not the editor form.

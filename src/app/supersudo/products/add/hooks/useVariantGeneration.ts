@@ -8,6 +8,7 @@ import { logger } from "@/lib/utils/logger";
 interface UseVariantGenerationProps {
   selectedAttributesForVariants: Set<string>;
   selectedAttributeValueIds: Record<string, string[]>;
+  productType: 'simple' | 'variable';
   attributes: Attribute[];
   formDataSlug: string;
   formDataTitle: string;
@@ -19,6 +20,7 @@ interface UseVariantGenerationProps {
 export function useVariantGeneration({
   selectedAttributesForVariants,
   selectedAttributeValueIds,
+  productType,
   attributes,
   formDataSlug,
   formDataTitle,
@@ -109,6 +111,11 @@ export function useVariantGeneration({
   };
 
   useEffect(() => {
+    if (productType !== 'variable') {
+      setGeneratedVariants((prev) => (prev.length === 0 ? prev : []));
+      return;
+    }
+
     const hasPendingInitialConversion = Boolean(
       isEditMode &&
       productId &&
@@ -129,12 +136,11 @@ export function useVariantGeneration({
         setGeneratedVariants((prev) => (prev.length === 0 ? prev : []));
       }
     }
-  }, [selectedAttributesForVariants, selectedAttributeValueIds, attributes, formDataSlug, formDataTitle, isEditMode, productId]);
+  }, [productType, selectedAttributesForVariants, selectedAttributeValueIds, attributes, formDataSlug, formDataTitle, isEditMode, productId]);
 
   return {
     generateVariantsFromAttributes,
     applyToAllVariants,
   };
 }
-
 

@@ -78,6 +78,8 @@ export function ProductEditorPanel({
     setSelectedAttributesForVariants: formState.setSelectedAttributesForVariants,
     setSelectedAttributeValueIds: formState.setSelectedAttributeValueIds,
     setSimpleProductData: formState.setSimpleProductData,
+    setSelectedAttributesForVariants: formState.setSelectedAttributesForVariants,
+    setSelectedAttributeValueIds: formState.setSelectedAttributeValueIds,
     onLoadError: onCancel,
   });
 
@@ -109,6 +111,7 @@ export function ProductEditorPanel({
     attributes: formState.attributes,
     formDataSlug: formState.formData.slug,
     formDataTitle: formState.formData.title,
+    productType: formState.productType,
     isEditMode,
     productId,
     setGeneratedVariants: formState.setGeneratedVariants,
@@ -179,6 +182,7 @@ export function ProductEditorPanel({
     productType: formState.productType,
     simpleProductData: formState.simpleProductData,
     selectedAttributesForVariants: formState.selectedAttributesForVariants,
+    selectedAttributeValueIds: formState.selectedAttributeValueIds,
     generatedVariants: formState.generatedVariants,
     attributes: formState.attributes,
     defaultCurrency: formState.defaultCurrency,
@@ -208,6 +212,7 @@ export function ProductEditorPanel({
       variants: formState.formData.variants,
       generatedVariants: formState.generatedVariants,
       selectedAttributeIds: Array.from(formState.selectedAttributesForVariants),
+      selectedAttributeValueIds: Object.values(formState.selectedAttributeValueIds).flat(),
     });
     for (const section of GATED_SECTIONS) {
       if (loadedTabs.has(section) && baselineRef.current[section] === undefined) {
@@ -222,6 +227,7 @@ export function ProductEditorPanel({
     formState.simpleProductData,
     formState.generatedVariants,
     formState.selectedAttributesForVariants,
+    formState.selectedAttributeValueIds,
   ]);
 
   const handleTabChange = useCallback((tabId: ProductEditorTabId) => {
