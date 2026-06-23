@@ -118,17 +118,12 @@ export function parseProductDescriptionJson(value: unknown): ProductDescriptionE
     .filter((item) => item.title.length > 0 || item.value.length > 0);
 }
 
-/** Returns note-only rows (empty title) for optional PDP display. */
-export function getProductDescriptionNotes(entries: ProductDescriptionEntry[]): ProductDescriptionEntry[] {
-  return entries.filter((entry) => !entry.title.trim() && entry.value.trim());
-}
-
 /** Returns spec rows (non-empty title) for the specifications table. */
 export function getProductDescriptionSpecs(entries: ProductDescriptionEntry[]): ProductDescriptionEntry[] {
   return entries.filter((entry) => entry.title.trim().length > 0);
 }
 
-/** Keeps only specification rows; drops legacy note rows (empty title). */
+/** Keeps only specification rows with title and value. */
 export function filterProductDescriptionForSave(entries: ProductDescriptionEntry[]): ProductDescriptionEntry[] {
   return getProductDescriptionSpecs(entries).filter(
     (entry) => entry.title.trim().length > 0 && entry.value.trim().length > 0,

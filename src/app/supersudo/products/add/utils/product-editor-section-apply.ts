@@ -65,20 +65,10 @@ interface ApplyDescriptionParams {
 }
 
 function applyDescriptionSection({ product, setFormData }: ApplyDescriptionParams): void {
-  const entries = product.description ?? [];
-  const specsOnly = entries.filter((entry) => entry.title.trim().length > 0);
-  const legacyNotes = entries
-    .filter((entry) => !entry.title.trim() && entry.value.trim())
-    .map((entry) => entry.value.trim());
-
-  const subtitleHtml =
-    product.subtitle?.trim() ||
-    (legacyNotes.length > 0 ? legacyNotes.join('<br>') : '');
-
   setFormData((prev) => ({
     ...prev,
-    subtitleHtml,
-    description: specsOnly,
+    subtitleHtml: product.subtitle ?? '',
+    description: (product.description ?? []).filter((entry) => entry.title.trim().length > 0),
   }));
 }
 

@@ -11,10 +11,10 @@ loadEnvConfig(process.cwd());
 
 import { PrismaClient } from '@white-shop/db/prisma';
 import {
-  getProductDescriptionNotes,
   getProductDescriptionSpecs,
   parseProductDescriptionJson,
   toPrismaProductDescription,
+  type ProductDescriptionEntry,
 } from '@/lib/products/product-description';
 import {
   isProductSubtitleHtmlEmpty,
@@ -108,7 +108,10 @@ async function migrate(): Promise<void> {
 
   for (const translation of translations) {
     const entries = parseProductDescriptionJson(translation.description);
-    const notes = getProductDescriptionNotes(entries);
+    const notes = entries.filter(
+      (entry): entry is ProductDescriptionEntry =>
+        !entry.title.trim() && entry.value.trim().length > 0,
+    );
     if (notes.length === 0) {
       continue;
     }

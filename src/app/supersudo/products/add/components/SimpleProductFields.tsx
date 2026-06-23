@@ -38,7 +38,7 @@ export function SimpleProductFields({
           {/* Price */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t('admin.products.add.price')} *
+              {t('admin.products.add.price')}
             </label>
             <div className="flex items-center gap-2">
               <Input
@@ -49,7 +49,6 @@ export function SimpleProductFields({
                 className="flex-1"
                 min="0"
                 step="0.01"
-                required
               />
               <span className="text-sm text-gray-500 whitespace-nowrap">{CURRENCIES[defaultCurrency].symbol}</span>
             </div>
@@ -92,7 +91,7 @@ export function SimpleProductFields({
           {/* Quantity */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t('admin.products.add.quantity')} *
+              {t('admin.products.add.quantity')}
             </label>
             <Input
               type="number"
@@ -101,7 +100,6 @@ export function SimpleProductFields({
               placeholder={t('admin.products.add.quantityPlaceholder')}
               className="w-full"
               min="0"
-              required
             />
           </div>
         </div>

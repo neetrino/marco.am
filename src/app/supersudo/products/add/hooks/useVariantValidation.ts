@@ -90,17 +90,9 @@ export function useVariantValidation({
 
     // Validate simple product fields
     if (productType === 'simple') {
-      if (!simpleProductData.price || simpleProductData.price.trim() === '') {
-        setLoading(false);
-        return null;
-      }
       if (!simpleProductData.sku || simpleProductData.sku.trim() === '') {
         setLoading(false);
         return mt('admin.products.add.skuRequired');
-      }
-      if (!simpleProductData.quantity || simpleProductData.quantity.trim() === '') {
-        setLoading(false);
-        return null;
       }
     }
 

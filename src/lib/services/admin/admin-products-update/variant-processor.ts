@@ -178,17 +178,18 @@ export function parseVariantPrices(variant: {
   stock: number;
   compareAtPrice?: number;
 } {
-  const price = typeof variant.price === 'number' ? variant.price : parseFloat(String(variant.price));
+  const rawPrice = typeof variant.price === 'number' ? variant.price : parseFloat(String(variant.price));
+  const price = Number.isNaN(rawPrice) ? 0 : rawPrice;
   const stock = typeof variant.stock === 'number' ? variant.stock : parseInt(String(variant.stock), 10);
   const compareAtPrice = variant.compareAtPrice !== undefined && variant.compareAtPrice !== null && variant.compareAtPrice !== ''
     ? (typeof variant.compareAtPrice === 'number' ? variant.compareAtPrice : parseFloat(String(variant.compareAtPrice)))
     : undefined;
 
-  if (isNaN(price) || price < 0) {
+  if (price < 0) {
     throw new Error(`Invalid price value: ${variant.price}`);
   }
 
-  return { price, stock, compareAtPrice };
+  return { price, stock: Number.isNaN(stock) ? 0 : stock, compareAtPrice };
 }
 
 

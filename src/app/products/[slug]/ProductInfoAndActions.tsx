@@ -6,7 +6,6 @@ import { t, getProductText } from '../../../lib/i18n';
 import type { LanguageCode } from '../../../lib/language';
 import { ProductShortDescription } from './ProductShortDescription';
 import { isProductSubtitleHtmlEmpty } from '../../../lib/security/sanitize-product-html';
-import { getProductDescriptionNotes } from '../../../lib/products/product-description';
 import { ProductWarrantyBadge } from '../../../components/ProductCard/ProductWarrantyBadge';
 import { BrandPlpLink } from '../../../components/BrandPlpLink';
 import { ProductCardBrandMark } from '../../../components/ProductCard/ProductCardBrandMark';
@@ -95,18 +94,8 @@ export function ProductInfoAndActions({
   detailsPending = false,
 }: ProductInfoAndActionsProps) {
   const localizedShortDescription =
-    product.i18n?.descriptions[language]?.shortDescription ?? product.shortDescription ?? product.subtitle;
-  const localizedEntries = product.i18n?.descriptions[language]?.entries ?? product.description ?? [];
-  const legacyDescriptionNotes = getProductDescriptionNotes(localizedEntries).filter(
-    (note) => note.value.trim().length >= 24,
-  );
-  const legacySubtitleHtml =
-    legacyDescriptionNotes.length > 0
-      ? legacyDescriptionNotes.map((note) => note.value.trim()).join('<br>')
-      : null;
-  const subtitleHtml = !isProductSubtitleHtmlEmpty(localizedShortDescription)
-    ? localizedShortDescription
-    : legacySubtitleHtml;
+    product.i18n?.descriptions[language]?.shortDescription ?? product.shortDescription ?? null;
+  const subtitleHtml = localizedShortDescription;
   const noPriceLabel = t(language, 'products.noPrice.label');
   const hasMultiValueAttributeGroup = Array.from(attributeGroups.values()).some(
     (values) => values.length > 1,

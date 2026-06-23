@@ -241,7 +241,8 @@ class AdminProductsCreateService {
               }
             }
 
-            const price = typeof variant.price === 'number' ? variant.price : parseFloat(String(variant.price));
+            const rawPrice = typeof variant.price === 'number' ? variant.price : parseFloat(String(variant.price));
+            const price = Number.isNaN(rawPrice) ? 0 : rawPrice;
             const stock = typeof variant.stock === 'number' ? variant.stock : parseInt(String(variant.stock), 10);
             const compareAtPrice = variant.compareAtPrice !== undefined && variant.compareAtPrice !== null && variant.compareAtPrice !== ''
               ? (typeof variant.compareAtPrice === 'number' ? variant.compareAtPrice : parseFloat(String(variant.compareAtPrice)))

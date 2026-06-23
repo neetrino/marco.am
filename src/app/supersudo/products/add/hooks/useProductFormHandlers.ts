@@ -128,8 +128,11 @@ export function useProductFormHandlers({
 
       if (productType === 'simple') {
         logger.devLog('📦 [ADMIN] Processing Simple Product');
+        const simplePriceRaw = simpleProductData.price.trim();
+        const simplePriceValue =
+          simplePriceRaw === '' ? 0 : parseFloat(simplePriceRaw);
         const priceCatalog = convertPrice(
-          parseFloat(simpleProductData.price),
+          Number.isNaN(simplePriceValue) ? 0 : simplePriceValue,
           defaultCurrency,
           CATALOG_PRICE_CURRENCY
         );
