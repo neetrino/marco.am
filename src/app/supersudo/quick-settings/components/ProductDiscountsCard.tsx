@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Card, Button, Input } from '@shop/ui';
 import { useTranslation } from '../../../../lib/i18n-client';
+import { formatCatalogPrice } from '../../../../lib/currency';
 import { AdminTablePagination } from '../../components/AdminTablePagination';
 import type { QuickSettingsProductRow } from '../types';
 
@@ -60,14 +61,6 @@ export function ProductDiscountsCard({
     const startIndex = (currentPage - 1) * PRODUCT_ITEMS_PER_PAGE;
     return filteredProducts.slice(startIndex, startIndex + PRODUCT_ITEMS_PER_PAGE);
   }, [currentPage, filteredProducts]);
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-    }).format(price);
-  };
 
   return (
     <Card className="admin-card border-slate-200/80 bg-white/95 shadow-[0_12px_28px_rgba(15,23,42,0.08)]">
@@ -136,10 +129,10 @@ export function ProductDiscountsCard({
                     {currentDiscount > 0 && originalPrice > 0 ? (
                       <>
                         <span className="select-none text-xs font-semibold text-slate-700">
-                          {formatPrice(discountedPrice)}
+                          {formatCatalogPrice(discountedPrice, 'AMD')}
                         </span>
                         <span className="select-none text-xs text-slate-400 line-through">
-                          {formatPrice(originalPrice)}
+                          {formatCatalogPrice(originalPrice, 'AMD')}
                         </span>
                         <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-semibold text-rose-700">
                           -{currentDiscount}%
@@ -147,7 +140,7 @@ export function ProductDiscountsCard({
                       </>
                     ) : (
                       <span className="select-none text-xs text-slate-500">
-                        {originalPrice > 0 ? formatPrice(originalPrice) : 'N/A'}
+                        {originalPrice > 0 ? formatCatalogPrice(originalPrice, 'AMD') : 'N/A'}
                       </span>
                     )}
                   </div>
