@@ -5,6 +5,7 @@ import { Card, Button, Input } from '@shop/ui';
 import { useTranslation } from '../../../../lib/i18n-client';
 import { formatCatalogPrice } from '../../../../lib/currency';
 import { DiscountExpiresPicker } from '@/components/admin/DiscountExpiresPicker';
+import { AdminTablePagination } from '../../components/AdminTablePagination';
 import {
   matchesProductSearchFields,
   type DiscountsProductRow,
