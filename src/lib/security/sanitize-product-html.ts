@@ -1,4 +1,5 @@
 import sanitizeHtml from 'sanitize-html';
+import { stripTags } from '@/lib/products/product-description-parsing';
 
 const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
   allowedTags: ['p', 'br', 'strong', 'b', 'em', 'i', 'u', 'span', 'a', 'ul', 'ol', 'li'],
@@ -58,4 +59,13 @@ export function normalizeProductSubtitleForEditor(value: string | null | undefin
   }
 
   return `<p>${trimmed.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>`;
+}
+
+/** Plain text for search indexes and non-HTML consumers. */
+export function toProductSubtitlePlainText(html: string | null | undefined): string {
+  if (!html?.trim()) {
+    return '';
+  }
+
+  return stripTags(sanitizeProductSubtitleHtml(html));
 }

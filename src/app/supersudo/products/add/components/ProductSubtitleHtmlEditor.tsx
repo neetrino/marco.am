@@ -14,7 +14,13 @@ import {
   sanitizeProductSubtitleHtml,
 } from '@/lib/security/sanitize-product-html';
 
-const SUBTITLE_COLORS = ['#383838', '#dc2626', '#2563eb', '#16a34a', '#ca8a04'] as const;
+const SUBTITLE_COLORS = [
+  { value: '#383838', swatchClass: 'bg-[#383838]' },
+  { value: '#dc2626', swatchClass: 'bg-red-600' },
+  { value: '#2563eb', swatchClass: 'bg-blue-600' },
+  { value: '#16a34a', swatchClass: 'bg-green-600' },
+  { value: '#ca8a04', swatchClass: 'bg-yellow-600' },
+] as const;
 
 interface ProductSubtitleHtmlEditorProps {
   value: string;
@@ -161,15 +167,14 @@ export function ProductSubtitleHtmlEditor({ value, onChange }: ProductSubtitleHt
         </ToolbarButton>
         <div className="ml-1 flex items-center gap-1 border-l border-slate-200 pl-2">
           <Palette className="h-3.5 w-3.5 text-slate-500" aria-hidden />
-          {SUBTITLE_COLORS.map((color) => (
+          {SUBTITLE_COLORS.map(({ value, swatchClass }) => (
             <button
-              key={color}
+              key={value}
               type="button"
               aria-label={t('admin.products.add.shortDescriptionColor')}
-              title={color}
-              onClick={() => editor.chain().focus().setColor(color).run()}
-              className="h-5 w-5 rounded-full border border-slate-200"
-              style={{ backgroundColor: color }}
+              title={value}
+              onClick={() => editor.chain().focus().setColor(value).run()}
+              className={`h-5 w-5 rounded-full border border-slate-200 ${swatchClass}`}
             />
           ))}
         </div>

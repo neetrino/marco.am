@@ -3,6 +3,7 @@ import {
   isProductSubtitleHtmlEmpty,
   normalizeProductSubtitleForEditor,
   sanitizeProductSubtitleHtml,
+  toProductSubtitlePlainText,
 } from './sanitize-product-html';
 
 describe('sanitizeProductSubtitleHtml', () => {
@@ -37,5 +38,11 @@ describe('normalizeProductSubtitleForEditor', () => {
 
   it('passes through sanitized HTML', () => {
     expect(normalizeProductSubtitleForEditor('<p><strong>Note</strong></p>')).toContain('<strong>Note</strong>');
+  });
+});
+
+describe('toProductSubtitlePlainText', () => {
+  it('returns plain text without tags', () => {
+    expect(toProductSubtitlePlainText('<p><strong>*</strong> Note</p>')).toBe('* Note');
   });
 });

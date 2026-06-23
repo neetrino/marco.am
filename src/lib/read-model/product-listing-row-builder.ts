@@ -9,6 +9,7 @@ import {
   isReservedShopAttributeFilterKey,
   normalizeTechnicalFilterToken,
 } from '@/lib/services/products-technical-filters';
+import { toProductSubtitlePlainText } from '@/lib/security/sanitize-product-html';
 
 export type ProductListingReadModelDiscountSettings = {
   globalDiscount: number;
@@ -466,7 +467,7 @@ export function buildProductListingRowsForLocales(args: {
         requiresAttributeSelection: productRequiresAttributeSelection(variants),
         searchText: buildSearchText([
           title,
-          translation?.subtitle,
+          toProductSubtitlePlainText(translation?.subtitle),
           slug,
           brandName,
           product.brand?.slug,

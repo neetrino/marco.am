@@ -23,10 +23,12 @@ import {
 } from '@/lib/security/sanitize-product-html';
 
 import { syncProductPdpReadModelBatch } from '@/lib/read-model/product-pdp-read-model-sync';
+import { syncProductListingReadModelBatch } from '@/lib/read-model/product-read-model-sync';
 
 const prisma = new PrismaClient();
 const dryRun = process.argv.includes('--dry-run');
 const syncReadModelOnly = process.argv.includes('--sync-read-model-only');
+const syncListingReadModelOnly = process.argv.includes('--sync-listing-read-model-only');
 const BATCH_SIZE = 100;
 
 function notesToSubtitleHtml(notes: Array<{ value: string }>): string {
@@ -57,14 +59,36 @@ async function syncReadModelsForProducts(productIds: readonly string[]): Promise
   console.log(`PDP read-model synced in ${((Date.now() - syncStartedAt) / 1000).toFixed(1)}s.`);
 }
 
+async function syncListingReadModelsForProducts(productIds: readonly string[]): Promise<void> {
+  if (productIds.length === 0) {
+    console.log('No products to sync listing read-model.');
+    return;
+  }
+
+  console.log(`Syncing listing read-model for ${productIds.length} product(s)...`);
+  const syncStartedAt = Date.now();
+  await syncProductListingReadModelBatch(productIds, {
+    logProgress: (message) => console.log(message),
+  });
+  console.log(`Listing read-model synced in ${((Date.now() - syncStartedAt) / 1000).toFixed(1)}s.`);
+}
+
+async function getProductIdsWithSubtitle(): Promise<string[]> {
+  const rows = await prisma.productTranslation.findMany({
+    where: { subtitle: { not: null } },
+    select: { productId: true },
+  });
+  return [...new Set(rows.map((row) => row.productId))];
+}
+
 async function migrate(): Promise<void> {
+  if (syncListingReadModelOnly) {
+    await syncListingReadModelsForProducts(await getProductIdsWithSubtitle());
+    return;
+  }
+
   if (syncReadModelOnly) {
-    const rows = await prisma.productTranslation.findMany({
-      where: { subtitle: { not: null } },
-      select: { productId: true },
-    });
-    const productIds = [...new Set(rows.map((row) => row.productId))];
-    await syncReadModelsForProducts(productIds);
+    await syncReadModelsForProducts(await getProductIdsWithSubtitle());
     return;
   }
 
@@ -134,6 +158,7 @@ async function migrate(): Promise<void> {
 
   const productIds = [...new Set(pending.map((item) => item.productId))];
   await syncReadModelsForProducts(productIds);
+  await syncListingReadModelsForProducts(productIds);
 }
 
 migrate()

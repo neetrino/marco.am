@@ -224,4 +224,31 @@ describe('buildProductListingRowsForLocales', () => {
     expect(rows[0]?.categoryIds).toEqual(['cat-child', 'cat-parent']);
     expect(rows[0]?.categorySlugs).toEqual(['sofas', 'furniture']);
   });
+
+  it('strips HTML from subtitle when building searchText', () => {
+    const rows = buildProductListingRowsForLocales({
+      locales: ['hy'],
+      categoryAncestry: EMPTY_ANCESTRY,
+      discountSettings: { globalDiscount: 0, categoryDiscounts: {}, brandDiscounts: {} },
+      product: {
+        id: 'prod-html-subtitle',
+        createdAt,
+        updatedAt,
+        translations: [
+          {
+            locale: 'hy',
+            title: 'MIDEA MID60S130i',
+            slug: 'marco-21777-midea-mid60s130i',
+            subtitle: '<p><strong>*</strong> Dimensions may vary</p>',
+          },
+        ],
+        variants: [{ id: 'var1', price: 100, stock: 1, published: true }],
+      },
+    });
+
+    expect(rows[0]?.searchText).toContain('midea mid60s130i');
+    expect(rows[0]?.searchText).toContain('dimensions may vary');
+    expect(rows[0]?.searchText).not.toContain('<p>');
+    expect(rows[0]?.searchText).not.toContain('<strong>');
+  });
 });
