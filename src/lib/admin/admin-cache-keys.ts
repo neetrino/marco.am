@@ -155,7 +155,7 @@ export function buildAdminOrderDetailCacheKey(orderId: string): string {
 }
 
 export function buildProductDiscountsCacheKey(lang: string): string {
-  return buildAdminListCacheKey('products/discounts', { lang });
+  return buildAdminListCacheKey('products/discounts:v3', { lang });
 }
 
 export function buildAdminBootstrapCacheKey(

@@ -6,6 +6,7 @@ import { getCachedJson } from "@/lib/services/read-through-json-cache";
 type ProductDiscountRow = {
   id: string;
   title: string;
+  slug: string;
   image: string | null;
   price: number;
   discountPercent: number;
@@ -14,7 +15,7 @@ type ProductDiscountRow = {
 };
 
 const ADMIN_PRODUCT_DISCOUNTS_CACHE_TTL_SEC = 300;
-const ADMIN_PRODUCT_DISCOUNTS_CACHE_PREFIX = "admin:product-discounts:v2:";
+const ADMIN_PRODUCT_DISCOUNTS_CACHE_PREFIX = "admin:product-discounts:v3:";
 
 function normalizeLocale(localeInput?: string): string {
   const locale = localeInput?.trim().toLowerCase();
@@ -25,6 +26,7 @@ function mapListingRow(
   row: {
     productId: string;
     title: string;
+    slug: string;
     image: string | null;
     price: number;
     discountPercent: number;
@@ -35,6 +37,7 @@ function mapListingRow(
   return {
     id: row.productId,
     title: row.title,
+    slug: row.slug,
     image: row.image,
     price: row.price,
     discountPercent: row.discountPercent,
@@ -82,6 +85,7 @@ async function fetchProductDiscountsListUncached(locale: string): Promise<{ data
     select: {
       productId: true,
       title: true,
+      slug: true,
       image: true,
       price: true,
       discountPercent: true,
@@ -105,6 +109,7 @@ async function fetchProductDiscountsListUncached(locale: string): Promise<{ data
 /** Clears cached quick-settings product discount lists (all locales). */
 export async function invalidateAdminProductDiscountsCache(): Promise<void> {
   await cacheService.deletePattern(`${ADMIN_PRODUCT_DISCOUNTS_CACHE_PREFIX}*`);
+  await cacheService.deletePattern("admin:product-discounts:v2:*");
   await cacheService.deletePattern("admin:product-discounts:v1:*");
 }
 

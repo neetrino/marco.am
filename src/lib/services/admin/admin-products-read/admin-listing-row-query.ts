@@ -1,10 +1,8 @@
 import { Prisma } from "@white-shop/db/prisma";
+import { splitAdminSearchTokens } from "@/lib/admin/admin-product-search-match";
 import type { ProductFilters } from "./types";
 
-/** Split user search into words; ignores extra whitespace between tokens. */
-export function splitAdminSearchTokens(search: string): string[] {
-  return search.trim().split(/\s+/).filter(Boolean);
-}
+export { splitAdminSearchTokens } from "@/lib/admin/admin-product-search-match";
 
 function buildListingRowTextTokenCondition(
   token: string,
