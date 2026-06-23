@@ -4,7 +4,7 @@ import type { Attribute, Variant, GeneratedVariant } from '../types';
 import { useVariantConversionToFormData } from './useVariantConversionToFormData';
 import { useVariantValidation } from './useVariantValidation';
 import { processImagesForSubmit } from './useImageProcessingForSubmit';
-import { createAndSubmitPayload } from './useProductPayloadCreation';
+import { buildProductPayload, type OptimisticSaveRequest } from './useProductPayloadCreation';
 import type { ProductClass } from '@/lib/constants/product-class';
 import { logger } from "@/lib/utils/logger";
 import { findAttributeBySemanticKey } from '@/lib/attribute-keys';
@@ -48,7 +48,8 @@ interface UseProductFormHandlersProps {
   isEditMode: boolean;
   productId: string | null;
   isClothingCategory: () => boolean;
-  onSuccess: () => void;
+  /** Hands the built payload + optimistic row to the list page, which persists it in the background. */
+  onSubmit: (request: OptimisticSaveRequest) => void;
 }
 
 export function useProductFormHandlers({
@@ -64,7 +65,7 @@ export function useProductFormHandlers({
   isEditMode,
   productId,
   isClothingCategory,
-  onSuccess,
+  onSubmit,
 }: UseProductFormHandlersProps) {
   const mt = (path: string): string => translateByLocale(getStoredLanguage(), path);
   const { convertGeneratedVariantsToFormData } = useVariantConversionToFormData({
@@ -367,8 +368,7 @@ export function useProductFormHandlers({
       });
       const finalVariants = processedVariants.length > 0 ? processedVariants : variants;
 
-      // Create and submit payload
-      await createAndSubmitPayload({
+      const payload = buildProductPayload({
         formData: currentFormData,
         finalBrandIds,
         finalPrimaryCategoryId,
@@ -378,14 +378,38 @@ export function useProductFormHandlers({
         finalMedia,
         mainImage,
         isEditMode,
-        productId,
-        creationMessages: [],
-        setLoading,
-        onSuccess,
       });
+
+      const primaryVariant = finalVariants[0] as { price?: unknown; compareAtPrice?: unknown } | undefined;
+      const optimisticPrice = Number(primaryVariant?.price) || 0;
+      const optimisticStock = finalVariants.reduce(
+        (sum, variant) => sum + (Number((variant as { stock?: unknown }).stock) || 0),
+        0,
+      );
+      const optimisticCompareAt =
+        primaryVariant?.compareAtPrice != null ? Number(primaryVariant.compareAtPrice) || null : null;
+      const optimisticImage =
+        mainImage ?? finalMedia[0] ?? (currentFormData.mainProductImage || currentFormData.imageUrls[0] || null);
+
+      const optimisticRow = {
+        id: isEditMode && productId ? productId : `temp-${Date.now()}`,
+        title: currentFormData.title,
+        slug: currentFormData.slug,
+        price: optimisticPrice,
+        stock: optimisticStock,
+        compareAtPrice: optimisticCompareAt,
+        image: optimisticImage,
+        featured: currentFormData.featured,
+        published: isEditMode ? currentFormData.published : true,
+        productClass: currentFormData.productClass,
+        createdAt: new Date().toISOString(),
+        pendingSync: true,
+      };
+
+      onSubmit({ isEditMode, productId, payload, optimisticRow });
+      setLoading(false);
     } catch (err: unknown) {
-      console.error('❌ [ADMIN] Error saving product:', err);
-    } finally {
+      console.error('❌ [ADMIN] Error preparing product submit:', err);
       setLoading(false);
     }
   };

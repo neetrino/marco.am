@@ -23,6 +23,7 @@ import { useProductFormHandlers } from '../hooks/useProductFormHandlers';
 import { useProductFormCallbacks } from '../hooks/useProductFormCallbacks';
 import { isClothingCategory as checkIsClothingCategory } from '../utils/productUtils';
 import { type ProductEditorTabId } from '../product-editor-tabs';
+import type { OptimisticSaveRequest } from '../hooks/useProductPayloadCreation';
 import type { Product } from '../../types';
 
 interface ProductEditorPanelProps {
@@ -30,7 +31,7 @@ interface ProductEditorPanelProps {
   productId: string | null;
   listProduct?: Product | null;
   onCancel: () => void;
-  onSaved: () => void;
+  onSubmit: (request: OptimisticSaveRequest) => void;
 }
 
 export function ProductEditorPanel({
@@ -38,7 +39,7 @@ export function ProductEditorPanel({
   productId,
   listProduct = null,
   onCancel,
-  onSaved,
+  onSubmit,
 }: ProductEditorPanelProps) {
   const { t } = useTranslation();
   const { isLoggedIn, isAdmin } = useAuth();
@@ -174,7 +175,7 @@ export function ProductEditorPanel({
     isEditMode,
     productId,
     isClothingCategory,
-    onSuccess: onSaved,
+    onSubmit,
   });
 
   const handleTabChange = useCallback((tabId: ProductEditorTabId) => {

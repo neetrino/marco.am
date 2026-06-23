@@ -23,6 +23,8 @@ export interface Product {
   image: string | null;
   createdAt: string;
   categories?: ProductListCategory[];
+  /** True while an optimistic create/update is still being persisted on the backend. */
+  pendingSync?: boolean;
 }
 
 export interface ProductsResponse {

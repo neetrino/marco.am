@@ -31,6 +31,10 @@ import {
 } from '@/lib/admin/admin-session-cache';
 import { warmProductEditorReferenceData } from '@/lib/admin/product-editor-section-cache';
 import { ProductEditorSheet } from './add/components/ProductEditorSheet';
+import {
+  submitProductPayload,
+  type OptimisticSaveRequest,
+} from './add/hooks/useProductPayloadCreation';
 
 type AdminProductsCachePayload = {
   data: Product[];
@@ -399,9 +403,40 @@ function ProductsPageContent() {
     }
   }, [editParam, createParam, optimisticSheet.open]);
 
-  const handleProductSaved = () => {
+  const handleProductSubmit = (request: OptimisticSaveRequest) => {
+    // 1) Close the sheet instantly — the admin should not wait for the backend.
     closeProductEditor();
-    void fetchProducts({ force: true });
+
+    // 2) Reflect the change in the list immediately (optimistic).
+    setProducts((prev) => {
+      if (request.isEditMode && request.productId) {
+        return prev.map((product) =>
+          product.id === request.productId
+            ? { ...product, ...request.optimisticRow, id: product.id }
+            : product,
+        );
+      }
+      return [request.optimisticRow as Product, ...prev];
+    });
+
+    // 3) Persist in the background, then reconcile the list with server truth.
+    void (async () => {
+      try {
+        await submitProductPayload({
+          isEditMode: request.isEditMode,
+          productId: request.productId,
+          payload: request.payload,
+        });
+        await fetchProducts({ force: true });
+      } catch (err: unknown) {
+        // Roll back the optimistic change by reloading the authoritative list.
+        await fetchProducts({ force: true });
+        const base = request.isEditMode
+          ? t('admin.products.add.failedToUpdateProduct')
+          : t('admin.products.add.failedToCreateProduct');
+        alert(`${base}\n${getApiOrErrorMessage(err, t('admin.common.unknownErrorFallback'))}`);
+      }
+    })();
   };
 
   const editingListProduct = useMemo(
@@ -488,7 +523,7 @@ function ProductsPageContent() {
           productId={sheetProductId}
           listProduct={editingListProduct}
           onClose={closeProductEditor}
-          onSaved={handleProductSaved}
+          onSubmit={handleProductSubmit}
         />
       ) : null}
     </AdminPageLayout>
