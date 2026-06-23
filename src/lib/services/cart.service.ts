@@ -15,7 +15,9 @@ class CartService {
       cart: {
         itemsCount: cart.itemsCount,
         totals: {
-          total: cart.totals.total,
+          // Header badge shows the products sum (subtotal), not the coupon-discounted
+          // total — keeps it consistent with the optimistic add and the guest cart.
+          total: cart.totals.subtotal,
           currency: cart.totals.currency,
         },
       },

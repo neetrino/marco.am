@@ -1,10 +1,15 @@
-import type { FormEvent } from 'react';
+import type { FormEvent, MutableRefObject } from 'react';
 import { CATALOG_PRICE_CURRENCY, convertPrice, type CurrencyCode } from '@/lib/currency';
 import type { Attribute, Variant, GeneratedVariant } from '../types';
 import { useVariantConversionToFormData } from './useVariantConversionToFormData';
 import { useVariantValidation } from './useVariantValidation';
 import { processImagesForSubmit } from './useImageProcessingForSubmit';
 import { buildProductPayload, type OptimisticSaveRequest } from './useProductPayloadCreation';
+import {
+  computeGatedFingerprints,
+  resolveDirtySections,
+  type SectionFingerprints,
+} from '../utils/product-editor-dirty';
 import type { ProductClass } from '@/lib/constants/product-class';
 import { logger } from "@/lib/utils/logger";
 import { findAttributeBySemanticKey } from '@/lib/attribute-keys';
@@ -50,6 +55,8 @@ interface UseProductFormHandlersProps {
   isClothingCategory: () => boolean;
   /** Hands the built payload + optimistic row to the list page, which persists it in the background. */
   onSubmit: (request: OptimisticSaveRequest) => void;
+  /** Baseline fingerprints captured on load; unchanged heavy sections are stripped from the update payload. */
+  baselineRef?: MutableRefObject<SectionFingerprints>;
 }
 
 export function useProductFormHandlers({
@@ -66,6 +73,7 @@ export function useProductFormHandlers({
   productId,
   isClothingCategory,
   onSubmit,
+  baselineRef,
 }: UseProductFormHandlersProps) {
   const mt = (path: string): string => translateByLocale(getStoredLanguage(), path);
   const { convertGeneratedVariantsToFormData } = useVariantConversionToFormData({
@@ -379,6 +387,35 @@ export function useProductFormHandlers({
         mainImage,
         isEditMode,
       });
+
+      // Skip re-sending heavy sections the user did not touch → backend takes its fast path.
+      if (isEditMode && baselineRef) {
+        const current = computeGatedFingerprints({
+          imageUrls: currentFormData.imageUrls,
+          featuredImageIndex: currentFormData.featuredImageIndex,
+          mainProductImage: currentFormData.mainProductImage,
+          subtitleHtml: currentFormData.subtitleHtml,
+          description: currentFormData.description,
+          productType,
+          simpleProductData,
+          variants: currentFormData.variants,
+          generatedVariants,
+          selectedAttributeIds: Array.from(selectedAttributesForVariants),
+        });
+        const dirty = resolveDirtySections(current, baselineRef.current);
+        if (!dirty.media) {
+          delete payload.media;
+          delete payload.mainProductImage;
+        }
+        if (!dirty.description) {
+          delete payload.subtitle;
+          delete payload.description;
+        }
+        if (!dirty.pricing) {
+          delete payload.variants;
+          delete payload.attributeIds;
+        }
+      }
 
       const primaryVariant = finalVariants[0] as { price?: unknown; compareAtPrice?: unknown } | undefined;
       const optimisticPrice = Number(primaryVariant?.price) || 0;

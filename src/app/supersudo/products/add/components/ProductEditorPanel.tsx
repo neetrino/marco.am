@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { Button } from '@shop/ui';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { useTranslation } from '@/lib/i18n-client';
@@ -24,6 +24,11 @@ import { useProductFormCallbacks } from '../hooks/useProductFormCallbacks';
 import { isClothingCategory as checkIsClothingCategory } from '../utils/productUtils';
 import { type ProductEditorTabId } from '../product-editor-tabs';
 import type { OptimisticSaveRequest } from '../hooks/useProductPayloadCreation';
+import {
+  GATED_SECTIONS,
+  computeGatedFingerprints,
+  type SectionFingerprints,
+} from '../utils/product-editor-dirty';
 import type { Product } from '../../types';
 
 interface ProductEditorPanelProps {
@@ -55,7 +60,9 @@ export function ProductEditorPanel({
     setSlugCollapsed(scrollTop > 12);
   }, []);
 
-  const { visitedTabs, loadingTab, visitTab } = useProductEditorTabLoader({
+  const baselineRef = useRef<SectionFingerprints>({});
+
+  const { loadedTabs, visitedTabs, loadingTab, visitTab } = useProductEditorTabLoader({
     open,
     productId,
     listProduct,
@@ -176,7 +183,43 @@ export function ProductEditorPanel({
     productId,
     isClothingCategory,
     onSubmit,
+    baselineRef,
   });
+
+  useEffect(() => {
+    baselineRef.current = {};
+  }, [open, productId]);
+
+  useEffect(() => {
+    if (!isEditMode) {
+      return;
+    }
+    const current = computeGatedFingerprints({
+      imageUrls: formState.formData.imageUrls,
+      featuredImageIndex: formState.formData.featuredImageIndex,
+      mainProductImage: formState.formData.mainProductImage,
+      subtitleHtml: formState.formData.subtitleHtml,
+      description: formState.formData.description,
+      productType: formState.productType,
+      simpleProductData: formState.simpleProductData,
+      variants: formState.formData.variants,
+      generatedVariants: formState.generatedVariants,
+      selectedAttributeIds: Array.from(formState.selectedAttributesForVariants),
+    });
+    for (const section of GATED_SECTIONS) {
+      if (loadedTabs.has(section) && baselineRef.current[section] === undefined) {
+        baselineRef.current[section] = current[section];
+      }
+    }
+  }, [
+    isEditMode,
+    loadedTabs,
+    formState.formData,
+    formState.productType,
+    formState.simpleProductData,
+    formState.generatedVariants,
+    formState.selectedAttributesForVariants,
+  ]);
 
   const handleTabChange = useCallback((tabId: ProductEditorTabId) => {
     visitTab(tabId);

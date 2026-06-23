@@ -296,6 +296,7 @@ export function useProductEditorTabLoader({
   }, [activeTab, open, productId, loadedTabs, loadSection, markTabLoaded, applyHandlers]);
 
   return {
+    loadedTabs,
     visitedTabs,
     loadingTab,
     visitTab,
