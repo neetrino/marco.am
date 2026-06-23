@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { ChangeEvent } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { apiClient, getApiOrErrorMessage } from '@/lib/api-client';
@@ -9,11 +8,6 @@ import { useTranslation } from '@/lib/i18n-client';
 import { showPopupConfirm } from '@/components/popup-service';
 import type { ReelsManagementStorage } from '@/lib/schemas/reels-management.schema';
 import { REELS_MANAGEMENT_STORAGE_VERSION } from '@/lib/constants/reels-management';
-import { ADMIN_IMAGE_ACCEPT } from '@/lib/constants/admin-image-upload';
-import {
-  adminWebpFileFromDataUrl,
-  processAdminImageFile,
-} from '@/lib/utils/process-admin-image-file';
 import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '@/lib/utils/image-utils';
 import { ADMIN_CACHE_KEYS } from '@/lib/admin/admin-cache-keys';
 import { beginAdminDataFetch } from '@/lib/admin/admin-fetch-helpers';
@@ -34,15 +28,10 @@ type ReelsViewsResponse = {
   viewsByReelId: Record<string, number>;
 };
 
-type UploadVideoResponse = {
-  url: string;
-};
-
 type ReelFormState = {
   titleHy: string;
   videoUrl: string;
   posterUrl: string;
-  sourceType: 'admin_upload' | 'external_url';
 };
 
 type PreviewReelState = {
@@ -55,7 +44,6 @@ const EMPTY_FORM: ReelFormState = {
   titleHy: '',
   videoUrl: '',
   posterUrl: '',
-  sourceType: 'external_url',
 };
 const REELS_LIKES_LABEL = 'likes';
 const REELS_VIEWS_LABEL = 'views';
@@ -110,11 +98,7 @@ export default function ReelsPage() {
   const [viewsByReelId, setViewsByReelId] = useState<Record<string, number>>(cachedReels?.viewsByReelId ?? {});
   const [form, setForm] = useState<ReelFormState>(EMPTY_FORM);
   const [isAddFormOpen, setIsAddFormOpen] = useState(false);
-  const [uploadingVideo, setUploadingVideo] = useState(false);
-  const [uploadingPoster, setUploadingPoster] = useState(false);
   const [previewReel, setPreviewReel] = useState<PreviewReelState | null>(null);
-  const videoInputRef = useRef<HTMLInputElement | null>(null);
-  const posterInputRef = useRef<HTMLInputElement | null>(null);
 
   const reload = useCallback(async (options?: { force?: boolean }) => {
     const cacheKey = ADMIN_CACHE_KEYS.reelsAdmin;
@@ -217,7 +201,7 @@ export default function ReelsPage() {
             ru: form.titleHy.trim(),
             en: form.titleHy.trim(),
           },
-          sourceType: form.sourceType,
+          sourceType: 'external_url',
           videoUrl: form.videoUrl.trim(),
           posterUrl: form.posterUrl.trim().length > 0 ? form.posterUrl.trim() : null,
           active: true,
@@ -274,77 +258,6 @@ export default function ReelsPage() {
     await persistStorage(nextStorage);
   };
 
-  const handleVideoUpload = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    event.target.value = '';
-    if (!file) {
-      return;
-    }
-
-    setUploadingVideo(true);
-    try {
-      const payload = new FormData();
-      payload.append('file', file);
-
-      const response = await fetch('/api/v1/supersudo/reels/upload-video', {
-        method: 'POST',
-        body: payload,
-      });
-
-      const responseBody = (await response.json().catch(() => null)) as UploadVideoResponse | { detail?: string } | null;
-      if (!response.ok || !responseBody || !('url' in responseBody)) {
-        const detail = responseBody && 'detail' in responseBody ? responseBody.detail : null;
-        throw new Error(detail || t('admin.reels.uploadFailed'));
-      }
-
-      setForm((prev) => ({
-        ...prev,
-        sourceType: 'admin_upload',
-        videoUrl: responseBody.url,
-      }));
-    } catch (error: unknown) {
-      alert(getApiOrErrorMessage(error, t('admin.reels.uploadFailed')));
-    } finally {
-      setUploadingVideo(false);
-    }
-  };
-
-  const handlePosterUpload = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    event.target.value = '';
-    if (!file) {
-      return;
-    }
-
-    setUploadingPoster(true);
-    try {
-      const dataUrl = await processAdminImageFile(file, 'catalog');
-      const webpFile = await adminWebpFileFromDataUrl(dataUrl, 'poster.webp');
-      const payload = new FormData();
-      payload.append('file', webpFile);
-
-      const response = await fetch('/api/v1/supersudo/reels/upload-poster', {
-        method: 'POST',
-        body: payload,
-      });
-
-      const responseBody = (await response.json().catch(() => null)) as UploadVideoResponse | { detail?: string } | null;
-      if (!response.ok || !responseBody || !('url' in responseBody)) {
-        const detail = responseBody && 'detail' in responseBody ? responseBody.detail : null;
-        throw new Error(detail || t('admin.reels.posterUploadFailed'));
-      }
-
-      setForm((prev) => ({
-        ...prev,
-        posterUrl: responseBody.url,
-      }));
-    } catch (error: unknown) {
-      alert(getApiOrErrorMessage(error, t('admin.reels.posterUploadFailed')));
-    } finally {
-      setUploadingPoster(false);
-    }
-  };
-
   const addReelHeaderAction = (
     <button
       type="button"
@@ -397,69 +310,25 @@ export default function ReelsPage() {
                   className="admin-field"
                 />
               </label>
-              <label className="space-y-1">
-                <span className="text-xs font-medium text-gray-600">{t('admin.reels.externalSource')}</span>
-                <select
-                  value={form.sourceType}
-                  onChange={(e) => setForm((prev) => ({ ...prev, sourceType: e.target.value as ReelFormState['sourceType'] }))}
-                  className="admin-field"
-                >
-                  <option value="external_url">{t('admin.reels.externalSource')}</option>
-                  <option value="admin_upload">{t('admin.reels.adminUpload')}</option>
-                </select>
-              </label>
               <label className="space-y-1 md:col-span-2">
                 <span className="text-xs font-medium text-gray-600">{t('admin.reels.videoUrl')}</span>
                 <input
                   value={form.videoUrl}
                   onChange={(e) => setForm((prev) => ({ ...prev, videoUrl: e.target.value }))}
-                  placeholder={t('admin.reels.videoUrl')}
+                  placeholder={t('admin.reels.videoUrlPlaceholder')}
                   className="admin-field"
                 />
+                <p className="text-xs text-gray-500">{t('admin.reels.videoUrlHint')}</p>
               </label>
-              <div className="rounded-xl border border-dashed border-marco-border bg-white/80 p-3 md:col-span-2">
-                <input
-                  ref={videoInputRef}
-                  type="file"
-                  accept="video/mp4,video/webm,video/quicktime,video/ogg"
-                  onChange={handleVideoUpload}
-                  className="hidden"
-                />
-                <button
-                  type="button"
-                  onClick={() => videoInputRef.current?.click()}
-                  disabled={uploadingVideo}
-                  className="inline-flex h-9 items-center rounded-lg border border-marco-yellow/60 bg-marco-yellow/25 px-3.5 text-sm font-medium text-marco-black transition hover:bg-marco-yellow/40 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {uploadingVideo ? t('admin.reels.uploadingVideo') : t('admin.reels.uploadVideo')}
-                </button>
-              </div>
               <label className="space-y-1 md:col-span-2">
                 <span className="text-xs font-medium text-gray-600">{t('admin.reels.posterUrl')}</span>
                 <input
                   value={form.posterUrl}
                   onChange={(e) => setForm((prev) => ({ ...prev, posterUrl: e.target.value }))}
-                  placeholder={t('admin.reels.posterUrl')}
+                  placeholder={t('admin.reels.posterUrlPlaceholder')}
                   className="admin-field"
                 />
               </label>
-              <div className="rounded-xl border border-dashed border-marco-border bg-white/80 p-3 md:col-span-2">
-                <input
-                  ref={posterInputRef}
-                  type="file"
-                  accept={ADMIN_IMAGE_ACCEPT}
-                  onChange={handlePosterUpload}
-                  className="hidden"
-                />
-                <button
-                  type="button"
-                  onClick={() => posterInputRef.current?.click()}
-                  disabled={uploadingPoster}
-                  className="inline-flex h-9 items-center rounded-lg border border-marco-yellow/60 bg-marco-yellow/25 px-3.5 text-sm font-medium text-marco-black transition hover:bg-marco-yellow/40 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {uploadingPoster ? t('admin.reels.uploadingPoster') : t('admin.reels.uploadPoster')}
-                </button>
-              </div>
               <div className="mt-1 flex items-center gap-2 md:col-span-2">
                 <button
                   onClick={handleAdd}
