@@ -309,21 +309,6 @@ export function ProductFilters({
             id={FILTER_PANEL_ID}
             className="absolute left-0 right-0 top-[calc(100%+0.375rem)] z-30 max-h-[min(44rem,85vh)] overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg shadow-slate-300/30"
           >
-            <div className="border-b border-slate-100 px-4 py-3 sm:px-5">
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-sm font-semibold text-slate-800">{t('admin.products.filtersTitle')}</p>
-                {hasAnythingToClear ? (
-                  <button
-                    type="button"
-                    onClick={handleClearAll}
-                    className="text-xs font-medium text-slate-500 transition-colors hover:text-slate-900"
-                  >
-                    {t('admin.products.clearAll')}
-                  </button>
-                ) : null}
-              </div>
-            </div>
-
             <div className="grid gap-4 p-4 sm:grid-cols-[7fr_3fr] sm:p-5">
               <div className="min-w-0">
                 <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500">
