@@ -1,3 +1,5 @@
+import { formatAmountDigits } from './amount-format';
+
 // Currency utilities and exchange rates
 export const CURRENCIES = {
   USD: { code: 'USD', symbol: '$', name: 'US Dollar', rate: 1 },
@@ -8,16 +10,6 @@ export const CURRENCIES = {
 } as const;
 
 export type CurrencyCode = keyof typeof CURRENCIES;
-
-/**
- * Localized digits only (no currency code/symbol) — grouping for display.
- */
-function formatAmountDigits(value: number): string {
-  return new Intl.NumberFormat('en-US', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value);
-}
 
 // Cache for currency rates from API
 let currencyRatesCache: Record<string, number> | null = null;
