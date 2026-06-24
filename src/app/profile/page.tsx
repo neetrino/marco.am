@@ -1,6 +1,7 @@
 'use client';
 
 import { Suspense, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '../../lib/auth/AuthContext';
 import { useTranslation } from '../../lib/i18n-client';
 import { useProfilePage } from './useProfilePage';
@@ -17,6 +18,7 @@ import { buildProfileTabs } from './ProfileTabsConfig';
 import type { ProfileTab, ProfileTabConfig } from './types';
 
 function ProfilePageContent() {
+  const router = useRouter();
   const { isLoggedIn, isLoading: authLoading } = useAuth();
   const { t } = useTranslation();
   const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
@@ -79,6 +81,12 @@ function ProfilePageContent() {
   }, []);
 
   useEffect(() => {
+    if (!authLoading && !isLoggedIn) {
+      router.replace(`/login?redirect=${encodeURIComponent('/profile')}`);
+    }
+  }, [authLoading, isLoggedIn, router]);
+
+  useEffect(() => {
     if (!isMobileViewport || activeTab !== 'dashboard') {
       return;
     }
@@ -86,7 +94,7 @@ function ProfilePageContent() {
     handleTabChange('orders');
   }, [activeTab, handleTabChange, isMobileViewport]);
 
-  if (authLoading) {
+  if (authLoading || !isLoggedIn) {
     return (
       <div className="marco-header-container py-12">
         <div className="text-center">
@@ -96,9 +104,6 @@ function ProfilePageContent() {
     );
   }
 
-  if (!isLoggedIn) {
-    return null;
-  }
   const tabs: ProfileTabConfig[] = buildProfileTabs(t);
 
   const handleProfileTabChange = (tab: ProfileTab) => {

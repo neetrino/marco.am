@@ -13,6 +13,13 @@ import {
   enforceUpstashRateLimit,
 } from "@/lib/middleware/upstash-rate-limit";
 import { getAuthContext } from "@/lib/middleware/auth-edge";
+import {
+  guardAuthenticatedPage,
+  isAuthRequiredOrdersApi,
+  isAuthRequiredPage,
+  isAuthRequiredUsersApi,
+  requireAuthenticatedApi,
+} from "@/lib/middleware/auth-protected-routes";
 
 async function requireAdminAuth(request: NextRequest): Promise<{
   response: NextResponse | null;
@@ -148,26 +155,11 @@ function applyCorsHeaders(
   return response;
 }
 
-/**
- * Edge guard for the admin UI pages: redirect unauthenticated visitors to /login
- * before any admin HTML is served (the per-route admin role check still runs in
- * each API handler and in the client AdminAccessGate).
- */
-async function guardSupersudoPage(request: NextRequest): Promise<NextResponse | null> {
-  const { token, decoded } = await getAuthContext(request);
-  if (token && decoded) {
-    return null;
-  }
-  const loginUrl = new URL("/login", request.nextUrl.origin);
-  loginUrl.searchParams.set("redirect", request.nextUrl.pathname);
-  return NextResponse.redirect(loginUrl);
-}
-
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  if (pathname === "/supersudo" || pathname.startsWith("/supersudo/")) {
-    const redirect = await guardSupersudoPage(request);
+  if (isAuthRequiredPage(pathname)) {
+    const redirect = await guardAuthenticatedPage(request);
     if (redirect) {
       return redirect;
     }
@@ -203,6 +195,11 @@ export async function proxy(request: NextRequest) {
         if (uploadRateLimitResponse) {
           return applyCorsHeaders(uploadRateLimitResponse, corsHeaders);
         }
+      }
+    } else if (isAuthRequiredUsersApi(pathname) || isAuthRequiredOrdersApi(pathname)) {
+      const authResult = await requireAuthenticatedApi(request);
+      if (authResult.response) {
+        return applyCorsHeaders(authResult.response, corsHeaders);
       }
     } else if (
       (pathname === "/api/v1/auth/login" || pathname === "/api/v1/auth/register") &&
@@ -247,7 +244,13 @@ export const config = {
   matcher: [
     "/supersudo",
     "/supersudo/:path*",
+    "/profile",
+    "/wishlist",
+    "/orders/:path*",
     "/api/v1/supersudo/:path*",
+    "/api/v1/users/:path*",
+    "/api/v1/orders",
+    "/api/v1/orders/:path*",
     "/api/v1/auth/login",
     "/api/v1/auth/register",
     "/api/v1/auth/verify",
