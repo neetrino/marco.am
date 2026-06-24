@@ -1,8 +1,7 @@
 import { db } from "@white-shop/db";
 import type { ProductEditorSection } from "@/app/supersudo/products/add/product-editor-tabs";
 import { parseProductDescriptionJson } from "@/lib/products/product-description";
-import { formatVariantForAdmin } from "./variant-formatter";
-import { isProductAttributesError } from "./query-executor";
+import { loadPricingSection } from "./product-editor-pricing-loader";
 
 const ADMIN_PRODUCT_LOCALE = "en";
 
@@ -27,26 +26,6 @@ function normalizeWarrantyYears(value: number | null | undefined): 1 | 2 | 3 | n
   }
   return null;
 }
-
-function mergeAttributeIds(
-  productAttributeIds: Array<{ attributeId: string }>,
-  legacyAttributeIds: string[],
-): string[] {
-  const fromRelations = productAttributeIds.map((row) => row.attributeId).filter(Boolean);
-  return Array.from(new Set([...fromRelations, ...legacyAttributeIds]));
-}
-
-const pricingVariantInclude = {
-  options: {
-    include: {
-      attributeValue: {
-        include: {
-          attribute: true,
-        },
-      },
-    },
-  },
-} as const;
 
 async function loadGeneralSection(productId: string) {
   const product = await db.product.findUnique({
@@ -161,81 +140,6 @@ async function loadCatalogSection(productId: string) {
     primaryCategoryId: product.primaryCategoryId || null,
     categoryIds: product.categoryIds || [],
   };
-}
-
-async function loadPricingSection(productId: string) {
-  try {
-    const product = await db.product.findUnique({
-      where: { id: productId },
-      select: {
-        id: true,
-        attributeIds: true,
-        variants: {
-          include: pricingVariantInclude,
-          orderBy: { position: "asc" },
-        },
-        productAttributes: {
-          select: { attributeId: true },
-        },
-        attributeValues: {
-          select: { attributeId: true, attributeValueId: true },
-        },
-      },
-    });
-
-    if (!product) {
-      createProductNotFoundError(productId);
-    }
-
-    return {
-      id: product.id,
-      attributeIds: mergeAttributeIds(product.productAttributes, product.attributeIds || []),
-      attributeValues: product.attributeValues.map((row) => ({
-        attributeId: row.attributeId,
-        attributeValueId: row.attributeValueId,
-      })),
-      attributeValueIds: product.attributeValues.map((row) => row.attributeValueId),
-      variants: product.variants.map((variant) =>
-        formatVariantForAdmin(variant as Parameters<typeof formatVariantForAdmin>[0]),
-      ),
-    };
-  } catch (error: unknown) {
-    if (!isProductAttributesError(error)) {
-      throw error;
-    }
-
-    const product = await db.product.findUnique({
-      where: { id: productId },
-      select: {
-        id: true,
-        attributeIds: true,
-        variants: {
-          include: pricingVariantInclude,
-          orderBy: { position: "asc" },
-        },
-        attributeValues: {
-          select: { attributeId: true, attributeValueId: true },
-        },
-      },
-    });
-
-    if (!product) {
-      createProductNotFoundError(productId);
-    }
-
-    return {
-      id: product.id,
-      attributeIds: product.attributeIds || [],
-      attributeValues: product.attributeValues.map((row) => ({
-        attributeId: row.attributeId,
-        attributeValueId: row.attributeValueId,
-      })),
-      attributeValueIds: product.attributeValues.map((row) => row.attributeValueId),
-      variants: product.variants.map((variant) =>
-        formatVariantForAdmin(variant as Parameters<typeof formatVariantForAdmin>[0]),
-      ),
-    };
-  }
 }
 
 /** Loads only the DB fields required for a product editor tab. */
