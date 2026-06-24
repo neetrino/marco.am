@@ -11,6 +11,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { apiClient, ApiError, getClientErrorDetail, getErrorHttpStatus } from '../api-client';
 import { getErrorMessage } from '../types/errors';
+import { MIN_PASSWORD_LENGTH } from '@/lib/constants/password-policy';
 import { logger } from "@/lib/utils/logger";
 import { getStoredLanguage } from '../language';
 import {
@@ -313,7 +314,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           errorMessage = 'User with this email or phone already exists';
         } else if (errorText.includes('400') || errorText.includes('Validation failed')) {
           if (errorText.includes('password') || errorText.includes('Password')) {
-            errorMessage = 'Password must be at least 6 characters';
+            errorMessage = `Password must be at least ${MIN_PASSWORD_LENGTH} characters`;
           } else if (errorText.includes('email') || errorText.includes('phone')) {
             errorMessage = 'Please provide email or phone and password';
           } else {

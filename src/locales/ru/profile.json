@@ -117,9 +117,9 @@
     "changedSuccess": "Пароль успешно изменен",
     "failedToChange": "Не удалось изменить пароль",
     "passwordsDoNotMatch": "Новые пароли не совпадают",
-    "passwordMinLength": "Пароль должен содержать не менее 6 символов",
+    "passwordMinLength": "Пароль должен содержать не менее 8 символов",
     "currentPasswordPlaceholder": "Введите текущий пароль",
-    "newPasswordPlaceholder": "Введите новый пароль (мин. 6 символов)",
+    "newPasswordPlaceholder": "Введите новый пароль (мин. 8 символов)",
     "confirmPasswordPlaceholder": "Подтвердите новый пароль"
   },
   "orders": {

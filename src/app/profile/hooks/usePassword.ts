@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { isPasswordLongEnough } from '@/lib/constants/password-policy';
 import { apiClient } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
 
@@ -35,7 +36,7 @@ export function usePassword({ onError, onSuccess }: UsePasswordProps) {
       return;
     }
 
-    if (passwordForm.newPassword.length < 6) {
+    if (!isPasswordLongEnough(passwordForm.newPassword)) {
       onError(t('profile.password.passwordMinLength'));
       setSavingPassword(false);
       return;
@@ -67,7 +68,3 @@ export function usePassword({ onError, onSuccess }: UsePasswordProps) {
     handleChangePassword,
   };
 }
-
-
-
-

@@ -76,18 +76,15 @@ function parseRateLimitWindowToMs(window: RateLimitWindow): number {
   return value * multipliers[unit];
 }
 
-function warnMemoryFallbackOnce(requireInProduction: boolean): void {
+function warnMemoryFallbackOnce(): void {
   if (memoryFallbackWarned) {
     return;
   }
   memoryFallbackWarned = true;
-  const tier = getDeploymentTier();
-  if (requireInProduction && tier === "production") {
-    logger.warn(
-      "Rate limiting uses in-memory fallback — set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN on Vercel for distributed limits",
-      { tier }
-    );
-  }
+  logger.warn(
+    "Rate limiting uses in-memory fallback — set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN for distributed limits",
+    { tier: getDeploymentTier() }
+  );
 }
 
 function checkMemoryLimit(clientKey: string, spec: UpstashRateLimitSpec): boolean {
@@ -116,7 +113,24 @@ export async function enforceUpstashRateLimit(
   const clientIp = getClientIp(request);
   const limiter = getLimiter(spec);
   if (!limiter) {
-    warnMemoryFallbackOnce(requireInProduction);
+    const tier = getDeploymentTier();
+    if (requireInProduction && tier === "production") {
+      logger.error(
+        "Rate limiting unavailable in production — configure UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN",
+        { tier, prefix: spec.prefix }
+      );
+      return NextResponse.json(
+        {
+          type: "https://api.shop.am/problems/service-unavailable",
+          title: "Service Unavailable",
+          status: 503,
+          detail: "Rate limiting is temporarily unavailable",
+        },
+        { status: 503 }
+      );
+    }
+
+    warnMemoryFallbackOnce();
     const allowed = checkMemoryLimit(`${spec.prefix}:${clientIp}`, spec);
     return allowed ? null : tooManyRequestsError(spec.detail);
   }

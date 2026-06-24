@@ -13,6 +13,7 @@ import {
   PENDING_WISHLIST_PRODUCT_QUERY_PARAM,
 } from '../../lib/wishlist/wishlist-client';
 import { Eye, EyeOff } from 'lucide-react';
+import { isPasswordLongEnough } from '@/lib/constants/password-policy';
 import { logger } from "@/lib/utils/logger";
 
 function RegisterPageContent() {
@@ -74,7 +75,7 @@ function RegisterPageContent() {
       return;
     }
 
-    if (password.length < 6) {
+    if (!isPasswordLongEnough(password)) {
       logger.devLog('❌ [REGISTER PAGE] Validation failed: Password too short');
       setError(t('register.errors.passwordMinLength'));
       setIsSubmitting(false);

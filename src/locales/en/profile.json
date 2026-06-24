@@ -117,9 +117,9 @@
     "changedSuccess": "Password successfully changed",
     "failedToChange": "Failed to change password",
     "passwordsDoNotMatch": "New passwords do not match",
-    "passwordMinLength": "Password must be at least 6 characters",
+    "passwordMinLength": "Password must be at least 8 characters",
     "currentPasswordPlaceholder": "Enter your current password",
-    "newPasswordPlaceholder": "Enter new password (min. 6 characters)",
+    "newPasswordPlaceholder": "Enter new password (min. 8 characters)",
     "confirmPasswordPlaceholder": "Confirm new password"
   },
   "orders": {

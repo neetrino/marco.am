@@ -20,12 +20,12 @@ export function AdminLayoutClient({ children }: AdminLayoutClientProps) {
   return (
     <>
       <AdminThemeGuard />
-      <AdminShell>
-        <AdminAccessGate>
+      <AdminAccessGate>
+        <AdminShell>
           <AdminRoutePrefetch />
           {children}
-        </AdminAccessGate>
-      </AdminShell>
+        </AdminShell>
+      </AdminAccessGate>
     </>
   );
 }

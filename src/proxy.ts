@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { getCorsAllowedOrigins } from "@/lib/config/deployment-env";
 import { checkSameOriginRequest } from "@/lib/middleware/same-origin-csrf";
@@ -12,48 +13,38 @@ import {
 import {
   enforceUpstashRateLimit,
 } from "@/lib/middleware/upstash-rate-limit";
-import { getAuthContext } from "@/lib/middleware/auth-edge";
+import {
+  guardAuthenticatedPage,
+  isAuthRequiredOrdersApi,
+  isAuthRequiredPage,
+  isAuthRequiredUsersApi,
+  requireAdminApi,
+  requireAuthenticatedApi,
+} from "@/lib/middleware/auth-protected-routes";
+import {
+  getOrCreateRequestId,
+  REQUEST_ID_HEADER,
+} from "@/lib/observability/request-id";
+import {
+  buildContentSecurityPolicyHeader,
+  CSP_NONCE_REQUEST_HEADER,
+} from "@/lib/security/content-security-policy";
 
-async function requireAdminAuth(request: NextRequest): Promise<{
-  response: NextResponse | null;
-  userId: string | null;
-}> {
-  const { token, decoded } = await getAuthContext(request);
-
-  if (!token) {
-    return {
-      response: NextResponse.json(
-        {
-          type: "https://api.shop.am/problems/unauthorized",
-          title: "Unauthorized",
-          status: 401,
-          detail: "Missing or invalid Authorization header",
-        },
-        { status: 401 }
-      ),
-      userId: null,
-    };
-  }
-
-  if (!decoded) {
-    return {
-      response: NextResponse.json(
-        {
-          type: "https://api.shop.am/problems/unauthorized",
-          title: "Unauthorized",
-          status: 401,
-          detail: "Invalid or expired token",
-        },
-        { status: 401 }
-      ),
-      userId: null,
-    };
-  }
-
-  return {
-    response: null,
-    userId: decoded.userId,
-  };
+function continueWithPageSecurity(request: NextRequest): NextResponse {
+  const nonce = Buffer.from(randomUUID()).toString("base64");
+  const requestId = getOrCreateRequestId(request.headers);
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set(CSP_NONCE_REQUEST_HEADER, nonce);
+  requestHeaders.set(REQUEST_ID_HEADER, requestId);
+  const response = NextResponse.next({
+    request: { headers: requestHeaders },
+  });
+  response.headers.set(
+    "Content-Security-Policy",
+    buildContentSecurityPolicyHeader({ nonce })
+  );
+  response.headers.set(REQUEST_ID_HEADER, requestId);
+  return response;
 }
 
 /** Rate limit for auth endpoints (login/register) by IP */
@@ -148,13 +139,23 @@ function applyCorsHeaders(
   return response;
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
+  if (isAuthRequiredPage(pathname)) {
+    const redirect = await guardAuthenticatedPage(request);
+    if (redirect) {
+      return redirect;
+    }
+    return continueWithPageSecurity(request);
+  }
+
   if (pathname.startsWith("/api/")) {
+    const requestId = getOrCreateRequestId(request.headers);
     const sanitizedHeaders = new Headers(request.headers);
     sanitizedHeaders.delete("x-auth-user-id");
     sanitizedHeaders.delete("x-auth-roles");
+    sanitizedHeaders.set(REQUEST_ID_HEADER, requestId);
     const corsHeaders = getCorsHeaders(request);
     if (request.method === "OPTIONS") {
       return new NextResponse(null, { status: 204, headers: corsHeaders });
@@ -166,7 +167,7 @@ export async function middleware(request: NextRequest) {
     let forwardedHeaders = sanitizedHeaders;
 
     if (pathname.startsWith("/api/v1/supersudo/")) {
-      const authResult = await requireAdminAuth(request);
+      const authResult = await requireAdminApi(request);
       if (authResult.response) {
         return applyCorsHeaders(authResult.response, corsHeaders);
       }
@@ -180,6 +181,11 @@ export async function middleware(request: NextRequest) {
         if (uploadRateLimitResponse) {
           return applyCorsHeaders(uploadRateLimitResponse, corsHeaders);
         }
+      }
+    } else if (isAuthRequiredUsersApi(pathname) || isAuthRequiredOrdersApi(pathname)) {
+      const authResult = await requireAuthenticatedApi(request);
+      if (authResult.response) {
+        return applyCorsHeaders(authResult.response, corsHeaders);
       }
     } else if (
       (pathname === "/api/v1/auth/login" || pathname === "/api/v1/auth/register") &&
@@ -213,21 +219,16 @@ export async function middleware(request: NextRequest) {
         headers: forwardedHeaders,
       },
     });
+    response.headers.set(REQUEST_ID_HEADER, requestId);
     applyCorsHeaders(response, corsHeaders);
     return response;
   }
 
-  return NextResponse.next();
+  return continueWithPageSecurity(request);
 }
 
 export const config = {
   matcher: [
-    "/api/v1/supersudo/:path*",
-    "/api/v1/auth/login",
-    "/api/v1/auth/register",
-    "/api/v1/auth/verify",
-    "/api/v1/auth/resend-verification",
-    "/api/v1/:path*",
-    "/api/health",
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };

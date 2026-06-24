@@ -30,11 +30,11 @@
     "mustAcceptTerms": "You must accept the terms to continue",
     "emailOrPhoneRequired": "Please provide email or phone number",
     "passwordRequired": "Please enter a password",
-    "passwordMinLength": "Password must be at least 6 characters",
+    "passwordMinLength": "Password must be at least 8 characters",
     "passwordsDoNotMatch": "Passwords do not match",
     "registrationFailed": "Registration failed. Please try again."
   },
-  "passwordHint": "Must be at least 6 characters"
+  "passwordHint": "Must be at least 8 characters"
 }
 
 

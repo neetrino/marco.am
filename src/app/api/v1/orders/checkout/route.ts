@@ -3,8 +3,13 @@ import { z } from "zod";
 import { authenticateToken } from "@/lib/middleware/auth";
 import { withApiRouteMetrics } from "@/lib/observability/api-route-metrics";
 import { ordersService } from "@/lib/services/orders.service";
+import {
+  runWithIdempotency,
+  validateIdempotencyKey,
+} from "@/lib/services/idempotency.service";
+import { getOrCreateRequestId } from "@/lib/observability/request-id";
 import { toApiError } from "@/lib/types/errors";
-import { logger } from "@/lib/utils/logger";
+import { logger, withRequestId } from "@/lib/utils/logger";
 
 const checkoutBodySchema = z
   .object({
@@ -50,8 +55,9 @@ export async function POST(req: NextRequest) {
     "/api/v1/orders/checkout",
     "POST",
     async () => {
+      const requestId = getOrCreateRequestId(req.headers);
       try {
-        logger.info("Checkout request received");
+        logger.info("Checkout request received", withRequestId(requestId));
         const user = await authenticateToken(req);
         const raw = await req.json();
         const parsed = checkoutBodySchema.safeParse(raw);
@@ -78,36 +84,52 @@ export async function POST(req: NextRequest) {
           "en";
         const checkoutLocale = user?.locale ?? acceptLang;
 
-        logger.debug("Checkout data", {
+        const idempotencyKey = req.headers.get("idempotency-key")?.trim() || undefined;
+        if (idempotencyKey) {
+          validateIdempotencyKey(idempotencyKey);
+        }
+
+        logger.debug("Checkout data", withRequestId(requestId, {
           userId: user?.id,
           cartId: data.cartId,
           itemsCount: data.items?.length || 0,
           paymentMethod: data.paymentMethod,
           shippingMethod: data.shippingMethod,
+        }));
+
+        type CheckoutResult = Awaited<ReturnType<typeof ordersService.checkout>>;
+        const runCheckout = async () => ({
+          status: 201,
+          body: await ordersService.checkout(data, user?.id, checkoutLocale),
         });
+        const executed = idempotencyKey
+          ? await runWithIdempotency<CheckoutResult>(
+              { key: idempotencyKey, scope: "checkout", userId: user?.id, payload: data },
+              runCheckout,
+            )
+          : await runCheckout();
+        const result = executed.body;
 
-        const result = await ordersService.checkout(data, user?.id, checkoutLocale);
-
-        logger.info("Checkout successful", {
+        logger.info("Checkout successful", withRequestId(requestId, {
           orderNumber: result.order?.number,
           orderId: result.order?.id,
           total: result.order?.total,
-        });
+        }));
 
         return NextResponse.json(result, {
-          status: 201,
+          status: executed.status,
           headers: {
             "X-Route-Duration-Ms": String(Date.now() - startedAt),
           },
         });
       } catch (error: unknown) {
-        logger.error("Checkout error", { error });
+        logger.error("Checkout error", withRequestId(requestId, { error }));
         if (error instanceof Error) {
-          logger.error("Checkout error details", {
+          logger.error("Checkout error details", withRequestId(requestId, {
             message: error.message,
             stack: error.stack,
             name: error.name,
-          });
+          }));
         }
         const apiError = toApiError(error, req.url);
         return NextResponse.json(apiError, {

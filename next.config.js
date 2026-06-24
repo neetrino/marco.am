@@ -4,18 +4,6 @@ const {
   getPreferredLanIPv4Addresses,
 } = require('./scripts/lib/lan-ip.cjs');
 
-function getPublicR2Origin() {
-  const raw = process.env.R2_PUBLIC_URL;
-  if (!raw) {
-    return null;
-  }
-  try {
-    return new URL(raw).origin;
-  } catch {
-    return null;
-  }
-}
-
 function getHostnameFromUrl(raw) {
   if (!raw) {
     return null;
@@ -46,80 +34,9 @@ function getAllowedDevOrigins() {
   return Array.from(hosts);
 }
 
-const r2Origin = getPublicR2Origin();
 const r2PublicBase = process.env.R2_PUBLIC_URL
   ? process.env.R2_PUBLIC_URL.replace(/\/$/, '')
   : null;
-const mediaSources = ["'self'", 'blob:', 'https:'];
-if (r2Origin) {
-  mediaSources.push(r2Origin);
-}
-
-const VERCEL_TOOLBAR_FRAME_HOSTS = [
-  'https://www.google.com',
-  'https://google.com',
-  'https://maps.google.com',
-  'https://www.openstreetmap.org',
-  'https://openstreetmap.org',
-  'https://www.youtube.com',
-  'https://youtube.com',
-  'https://www.youtube-nocookie.com',
-  'https://youtube-nocookie.com',
-];
-
-/**
- * CSP is baked at build time — read env here (inside headers()), not at module load.
- * Vercel toolbar injects feedback.js on hosted deployments (preview + prod for team);
- * `VERCEL_ENV=preview` alone is unreliable during `next build`.
- */
-function buildContentSecurityPolicy() {
-  const isDevelopment = process.env.NODE_ENV === 'development';
-  const allowVercelToolbar =
-    isDevelopment || process.env.VERCEL === '1';
-
-  const scriptSources = ["'self'", "'unsafe-inline'", 'https://code.tidio.co'];
-  if (isDevelopment) {
-    scriptSources.push("'unsafe-eval'");
-  }
-  if (allowVercelToolbar) {
-    scriptSources.push('https://vercel.live');
-  }
-
-  const frameSources = ["'self'", ...VERCEL_TOOLBAR_FRAME_HOSTS];
-  if (allowVercelToolbar) {
-    frameSources.push('https://vercel.live');
-  }
-
-  const connectSources = ["'self'", 'https:', 'wss://socket.tidio.co'];
-  const fontSources = [
-    "'self'",
-    'https://fonts.gstatic.com',
-    'https://code.tidio.co',
-    'data:',
-  ];
-  const styleSources = ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'];
-  if (allowVercelToolbar) {
-    connectSources.push('https://vercel.live', 'wss://ws-us3.pusher.com');
-    fontSources.push('https://vercel.live', 'https://assets.vercel.com');
-    styleSources.push('https://vercel.live');
-  }
-
-  return [
-    "default-src 'self'",
-    `script-src ${scriptSources.join(' ')}`,
-    `style-src ${styleSources.join(' ')}`,
-    `font-src ${fontSources.join(' ')}`,
-    "img-src 'self' data: https: blob:",
-    `media-src ${mediaSources.join(' ')}`,
-    `connect-src ${connectSources.join(' ')}`,
-    "base-uri 'self'",
-    "form-action 'self'",
-    "object-src 'none'",
-    // Map embeds (Google Maps / OSM) + About page YouTube hero; default-src alone blocks embeds
-    `frame-src ${frameSources.join(' ')}`,
-    "frame-ancestors 'none'",
-  ].join('; ');
-}
 
 /** Default storefront media host(s) — also set NEXT_IMAGE_REMOTE_HOSTS for extra CDNs. */
 const DEFAULT_STOREFRONT_IMAGE_HOSTS = ['marco.am', 'www.marco.am'];
@@ -249,10 +166,6 @@ const nextConfig = {
           {
             key: 'Strict-Transport-Security',
             value: 'max-age=31536000; includeSubDomains; preload',
-          },
-          {
-            key: 'Content-Security-Policy',
-            value: buildContentSecurityPolicy(),
           },
         ],
       },
