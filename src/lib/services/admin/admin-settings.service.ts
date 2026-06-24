@@ -1,4 +1,9 @@
 import { revalidateTag } from 'next/cache';
+import {
+  parseDiscountMap,
+  parseIsoDate,
+  serializeDiscountMap,
+} from "@/lib/discount/discount-expiry";
 import { db } from "@white-shop/db";
 import { CURRENCY_RATES_CACHE_KEY } from "@/lib/cache/public-cache-keys";
 import { rebuildProductListingReadModel } from "@/lib/read-model/product-read-model-sync";
@@ -21,12 +26,20 @@ class AdminSettingsService {
     const settings = await db.settings.findMany({
       where: {
         key: {
-          in: ['globalDiscount', 'categoryDiscounts', 'brandDiscounts', 'defaultCurrency', 'currencyRates'],
+          in: [
+            'globalDiscount',
+            'globalDiscountExpiresAt',
+            'categoryDiscounts',
+            'brandDiscounts',
+            'defaultCurrency',
+            'currencyRates',
+          ],
         },
       },
     });
     
     const globalDiscountSetting = settings.find((s) => s.key === 'globalDiscount');
+    const globalDiscountExpiresAtSetting = settings.find((s) => s.key === 'globalDiscountExpiresAt');
     const categoryDiscountsSetting = settings.find((s) => s.key === 'categoryDiscounts');
     const brandDiscountsSetting = settings.find((s) => s.key === 'brandDiscounts');
     const defaultCurrencySetting = settings.find((s) => s.key === 'defaultCurrency');
@@ -43,8 +56,11 @@ class AdminSettingsService {
     
     return {
       globalDiscount: globalDiscountSetting ? Number(globalDiscountSetting.value) : 0,
-      categoryDiscounts: categoryDiscountsSetting ? (categoryDiscountsSetting.value as Record<string, number>) : {},
-      brandDiscounts: brandDiscountsSetting ? (brandDiscountsSetting.value as Record<string, number>) : {},
+      globalDiscountExpiresAt: parseIsoDate(globalDiscountExpiresAtSetting?.value),
+      categoryDiscounts: categoryDiscountsSetting
+        ? parseDiscountMap(categoryDiscountsSetting.value)
+        : {},
+      brandDiscounts: brandDiscountsSetting ? parseDiscountMap(brandDiscountsSetting.value) : {},
       defaultCurrency: defaultCurrencySetting ? (defaultCurrencySetting.value as string) : 'AMD',
       currencyRates: currencyRatesSetting ? (currencyRatesSetting.value as Record<string, number>) : defaultCurrencyRates,
     };
@@ -76,37 +92,62 @@ class AdminSettingsService {
       revalidateListingDiscountCache();
       discountSettingsChanged = true;
     }
+
+    if (data.globalDiscountExpiresAt !== undefined) {
+      const expiresAt = parseIsoDate(data.globalDiscountExpiresAt);
+      if (expiresAt) {
+        await db.settings.upsert({
+          where: { key: 'globalDiscountExpiresAt' },
+          update: {
+            value: expiresAt,
+            updatedAt: new Date(),
+          },
+          create: {
+            key: 'globalDiscountExpiresAt',
+            value: expiresAt,
+            description: 'Global discount expiry timestamp (ISO UTC)',
+          },
+        });
+      } else {
+        await db.settings.deleteMany({ where: { key: 'globalDiscountExpiresAt' } });
+      }
+      logger.devLog('✅ [ADMIN SERVICE] Global discount expiry updated:', expiresAt);
+      revalidateListingDiscountCache();
+      discountSettingsChanged = true;
+    }
     
     // Update category discounts
     if (data.categoryDiscounts !== undefined) {
+      const categoryDiscounts = serializeDiscountMap(parseDiscountMap(data.categoryDiscounts));
       await db.settings.upsert({
         where: { key: 'categoryDiscounts' },
         update: {
-          value: data.categoryDiscounts,
+          value: categoryDiscounts,
           updatedAt: new Date(),
         },
         create: {
           key: 'categoryDiscounts',
-          value: data.categoryDiscounts,
+          value: categoryDiscounts,
           description: 'Discount percentages by category ID',
         },
       });
-      logger.devLog('✅ [ADMIN SERVICE] Category discounts updated:', data.categoryDiscounts);
+      logger.devLog('✅ [ADMIN SERVICE] Category discounts updated:', categoryDiscounts);
       revalidateListingDiscountCache();
       discountSettingsChanged = true;
     }
     
     // Update brand discounts
     if (data.brandDiscounts !== undefined) {
+      const brandDiscounts = serializeDiscountMap(parseDiscountMap(data.brandDiscounts));
       await db.settings.upsert({
         where: { key: 'brandDiscounts' },
         update: {
-          value: data.brandDiscounts,
+          value: brandDiscounts,
           updatedAt: new Date(),
         },
         create: {
           key: 'brandDiscounts',
-          value: data.brandDiscounts,
+          value: brandDiscounts,
           description: 'Discount percentages by brand ID',
         },
       });

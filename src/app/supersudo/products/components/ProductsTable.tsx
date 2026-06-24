@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Card, Button } from '@shop/ui';
 import { useTranslation } from '../../../../lib/i18n-client';
 import { AdminTablePagination } from '../../components/AdminTablePagination';
@@ -7,6 +8,7 @@ import { formatCatalogPrice, type CurrencyCode } from '../../../../lib/currency'
 import { FeaturedStarToggle } from '../add/components/FeaturedStarToggle';
 import { warmProductEditorRowSections } from '@/lib/admin/product-editor-section-cache';
 import { AdminProductListImage, AdminProductListImagePlaceholder } from './AdminProductListImage';
+import { ProductDeleteConfirmDialog } from './ProductDeleteConfirmDialog';
 import type { Product, ProductsResponse } from '../types';
 
 interface ProductsTableProps {
@@ -19,7 +21,7 @@ interface ProductsTableProps {
   sortBy: string;
   handleHeaderSort: (field: 'price' | 'createdAt' | 'title' | 'stock') => void;
   currency: CurrencyCode;
-  handleDeleteProduct: (productId: string, productTitle: string) => void;
+  handleDeleteProduct: (productId: string) => void;
   handleTogglePublished: (productId: string, currentStatus: boolean, productTitle: string) => void;
   handleToggleFeatured: (productId: string, currentStatus: boolean, productTitle: string) => void;
   deletingIds: Set<string>;
@@ -57,8 +59,25 @@ export function ProductsTable({
   onEditProduct,
 }: ProductsTableProps) {
   const { t } = useTranslation();
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null);
+
+  const confirmDelete = () => {
+    if (!deleteTarget) {
+      return;
+    }
+    handleDeleteProduct(deleteTarget.id);
+    setDeleteTarget(null);
+  };
 
   return (
+    <>
+    <ProductDeleteConfirmDialog
+      open={deleteTarget !== null}
+      productTitle={deleteTarget?.title ?? ''}
+      deleting={deleteTarget !== null && deletingIds.has(deleteTarget.id)}
+      onConfirm={confirmDelete}
+      onCancel={() => setDeleteTarget(null)}
+    />
     <Card className="admin-table-card relative overflow-hidden rounded-2xl border-slate-200/80 shadow-md shadow-slate-200/60">
       {refreshing ? (
         <div
@@ -250,12 +269,21 @@ export function ProductsTable({
                 {products.map((product) => (
                   <tr
                     key={product.id}
-                    className="group cursor-pointer transition-colors hover:bg-amber-50/50"
-                    onMouseDown={() => warmProductEditorRowSections(product.id)}
-                    onClick={() => onEditProduct(product.id)}
+                    className={`group cursor-pointer transition-colors hover:bg-amber-50/50 ${
+                      product.pendingSync ? 'opacity-60' : ''
+                    }`}
+                    onMouseDown={() => {
+                      if (product.id.startsWith('temp-')) return;
+                      warmProductEditorRowSections(product.id);
+                    }}
+                    onClick={() => {
+                      if (product.id.startsWith('temp-')) return;
+                      onEditProduct(product.id);
+                    }}
                     onKeyDown={(event) => {
                       if (event.key === 'Enter' || event.key === ' ') {
                         event.preventDefault();
+                        if (product.id.startsWith('temp-')) return;
                         onEditProduct(product.id);
                       }
                     }}
@@ -279,8 +307,17 @@ export function ProductsTable({
                           <AdminProductListImagePlaceholder />
                         )}
                         <div className="min-w-0 flex-1">
-                          <div className="whitespace-normal break-words text-sm font-semibold text-slate-900 transition-colors group-hover:text-amber-900">
-                            {product.title}
+                          <div className="flex items-center gap-2">
+                            <span className="whitespace-normal break-words text-sm font-semibold text-slate-900 transition-colors group-hover:text-amber-900">
+                              {product.title}
+                            </span>
+                            {product.pendingSync ? (
+                              <span
+                                className="inline-block h-3 w-3 shrink-0 animate-spin rounded-full border-2 border-slate-300 border-t-slate-600"
+                                aria-label={t('admin.common.saving')}
+                                title={t('admin.common.saving')}
+                              />
+                            ) : null}
                           </div>
                         </div>
                       </div>
@@ -326,15 +363,9 @@ export function ProductsTable({
                         <div className="text-sm font-semibold text-slate-900">
                           {formatCatalogPrice(product.price, currency)}
                         </div>
-                        {(product.compareAtPrice && product.compareAtPrice > product.price) || 
-                         (product.discountPercent && product.discountPercent > 0) ? (
+                        {product.originalPrice && product.originalPrice > product.price ? (
                           <div className="mt-0.5 text-xs text-slate-500 line-through">
-                            {formatCatalogPrice(
-                              product.compareAtPrice && product.compareAtPrice > product.price
-                                ? product.compareAtPrice
-                                : product.price / (1 - (product.discountPercent || 0) / 100),
-                              currency
-                            )}
+                            {formatCatalogPrice(product.originalPrice, currency)}
                           </div>
                         ) : null}
                       </div>
@@ -348,9 +379,10 @@ export function ProductsTable({
                         <FeaturedStarToggle
                           size="sm"
                           featured={Boolean(product.featured)}
-                          onToggle={() =>
-                            handleToggleFeatured(product.id, product.featured || false, product.title)
-                          }
+                          onToggle={() => {
+                            if (product.pendingSync) return;
+                            handleToggleFeatured(product.id, product.featured || false, product.title);
+                          }}
                           markLabel={t('admin.products.clickToMarkFeatured')}
                           removeLabel={t('admin.products.clickToRemoveFeatured')}
                         />
@@ -364,10 +396,12 @@ export function ProductsTable({
                           type="button"
                           onClick={(event) => {
                             event.stopPropagation();
+                            if (product.pendingSync) return;
                             onEditProduct(product.id);
                           }}
+                          disabled={product.pendingSync}
                           aria-label={t('admin.products.edit')}
-                          className="!h-8 !min-h-8 !w-8 !max-w-none shrink-0 !px-0 !py-0 gap-0 rounded-md border border-transparent text-slate-700 hover:border-slate-200 hover:bg-slate-100 hover:text-slate-900"
+                          className="!h-8 !min-h-8 !w-8 !max-w-none shrink-0 !px-0 !py-0 gap-0 rounded-md border border-transparent text-slate-700 hover:border-slate-200 hover:bg-slate-100 hover:text-slate-900 disabled:opacity-70"
                         >
                           <svg className="h-5 w-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -379,9 +413,10 @@ export function ProductsTable({
                           type="button"
                           onClick={(event) => {
                             event.stopPropagation();
-                            handleDeleteProduct(product.id, product.title);
+                            if (product.pendingSync) return;
+                            setDeleteTarget({ id: product.id, title: product.title });
                           }}
-                          disabled={deletingIds.has(product.id)}
+                          disabled={deletingIds.has(product.id) || product.pendingSync}
                           aria-label={deletingIds.has(product.id) ? t('admin.products.deleting') : t('admin.products.delete')}
                           className="!h-8 !min-h-8 !w-8 !max-w-none shrink-0 !px-0 !py-0 gap-0 rounded-md border border-transparent text-red-600 hover:border-red-100 hover:bg-red-50 hover:text-red-700 disabled:opacity-70"
                         >
@@ -404,6 +439,7 @@ export function ProductsTable({
                             type="button"
                             onClick={(event) => {
                               event.stopPropagation();
+                              if (product.pendingSync) return;
                               handleTogglePublished(product.id, product.published, product.title);
                             }}
                             className={`relative inline-flex h-6 w-10 shrink-0 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 ${
@@ -444,6 +480,7 @@ export function ProductsTable({
         </>
       )}
     </Card>
+    </>
   );
 }
 

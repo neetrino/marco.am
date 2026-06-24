@@ -60,9 +60,6 @@ export function useVariantConversionToFormData({
               if (variant.price) {
                 colorData.price = variant.price;
               }
-              if (variant.compareAtPrice) {
-                colorData.compareAtPrice = variant.compareAtPrice;
-              }
               
               if (sizeAttribute && selectedSizeValueIds.length > 0) {
                 selectedSizeValueIds.forEach((sizeValueId) => {
@@ -173,7 +170,7 @@ export function useVariantConversionToFormData({
         allNewVariants.push({
           id: variant.id || `variant-${Date.now()}-${variantIndex}-${Math.random()}`,
           price: variant.price || '0',
-          compareAtPrice: variant.compareAtPrice || '',
+          discount: variant.discount,
           sku: finalSku,
           colors: colors.length > 0 ? colors : [],
         });

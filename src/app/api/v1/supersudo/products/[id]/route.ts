@@ -1,17 +1,25 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { authenticateToken, requireAdmin } from "@/lib/middleware/auth";
 import { adminService } from "@/lib/services/admin.service";
 import { normalizeProductClass } from "@/lib/constants/product-class";
-import { revalidateStorefrontHome } from "@/lib/revalidate-storefront";
+import { runProductUpdateSideEffects } from "@/lib/services/admin/admin-products-update.service";
 import {
   isProductEditorSection,
 } from "@/app/supersudo/products/add/product-editor-tabs";
 import { logger } from "@/lib/utils/logger";
+import { revalidateStorefrontHome } from "@/lib/revalidate-storefront";
 
 function isValidAttributeIds(attributeIds: unknown): attributeIds is string[] {
   return (
     Array.isArray(attributeIds) &&
     attributeIds.every((id) => typeof id === "string" && id.trim().length > 0)
+  );
+}
+
+function isValidAttributeValueIds(attributeValueIds: unknown): attributeValueIds is string[] {
+  return (
+    Array.isArray(attributeValueIds) &&
+    attributeValueIds.every((id) => typeof id === "string" && id.trim().length > 0)
   );
 }
 
@@ -143,6 +151,19 @@ export async function PUT(
       );
     }
 
+    if (body.attributeValueIds !== undefined && !isValidAttributeValueIds(body.attributeValueIds)) {
+      return NextResponse.json(
+        {
+          type: "https://api.shop.am/problems/validation-error",
+          title: "Validation Error",
+          status: 400,
+          detail: "Field 'attributeValueIds' must be an array of non-empty strings",
+          instance: req.url,
+        },
+        { status: 400 }
+      );
+    }
+
     if (Array.isArray(body.variants)) {
       for (const [index, variant] of body.variants.entries()) {
         const variantClass = typeof variant === "object" && variant !== null
@@ -188,7 +209,9 @@ export async function PUT(
     const product = await adminService.updateProduct(id, body);
     logger.devLog("✅ [ADMIN PRODUCTS] Product updated:", { id, productId: product?.id });
 
-    revalidateStorefrontHome();
+    const productSlug = product.translations?.[0]?.slug;
+    after(() => runProductUpdateSideEffects(id, productSlug));
+
     return NextResponse.json(product);
   } catch (error: any) {
     console.error("❌ [ADMIN PRODUCTS] PUT Error:", {
@@ -261,4 +284,3 @@ export async function DELETE(
     );
   }
 }
-

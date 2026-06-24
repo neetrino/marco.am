@@ -44,6 +44,16 @@ export type ProductWithFullRelations = Prisma.ProductGetPayload<{
         };
       };
     };
+    attributeValues?: {
+      include: {
+        attributeValue: {
+          include: {
+            attribute: true;
+            translations: true;
+          };
+        };
+      };
+    };
   };
 }>;
 
@@ -51,7 +61,6 @@ export type ProductWithFullRelations = Prisma.ProductGetPayload<{
  * Type for product variant with options
  */
 export type ProductVariantWithOptions = ProductWithFullRelations['variants'][number];
-
 
 
 

@@ -4,6 +4,7 @@ import type { RefObject } from 'react';
 import { useTranslation } from '@/lib/i18n-client';
 import type { CurrencyCode } from '@/lib/currency';
 import type { Attribute, GeneratedVariant } from '../types';
+import type { VariantDiscount } from '../utils/variant-discount';
 import { ProductTypeTabs } from './ProductTypeTabs';
 import { SimpleProductFields } from './SimpleProductFields';
 import { AttributesSelection } from './AttributesSelection';
@@ -14,13 +15,13 @@ interface PricingInventorySectionProps {
   onProductTypeChange: (type: 'simple' | 'variable') => void;
   simpleProductData: {
     price: string;
-    compareAtPrice: string;
+    discount: VariantDiscount;
     sku: string;
     quantity: string;
   };
   defaultCurrency: CurrencyCode;
   onPriceChange: (value: string) => void;
-  onCompareAtPriceChange: (value: string) => void;
+  onDiscountChange: (value: VariantDiscount) => void;
   onSkuChange: (value: string) => void;
   onQuantityChange: (value: string) => void;
   attributes: Attribute[];
@@ -40,7 +41,7 @@ interface PricingInventorySectionProps {
   onVariantUpdate: (variants: GeneratedVariant[] | ((prev: GeneratedVariant[]) => GeneratedVariant[])) => void;
   onVariantDelete: (variantId: string) => void;
   onVariantAdd: () => void;
-  onApplyToAllVariants: (field: 'price' | 'compareAtPrice' | 'stock' | 'sku', value: string) => void;
+  onApplyToAllVariants: (field: 'price' | 'stock' | 'sku', value: string) => void;
   onVariantImageUpload: (variantId: string, event: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
   onOpenValueModal: (modal: { variantId: string; attributeId: string } | null) => void;
 }
@@ -51,7 +52,7 @@ export function PricingInventorySection({
   simpleProductData,
   defaultCurrency,
   onPriceChange,
-  onCompareAtPriceChange,
+  onDiscountChange,
   onSkuChange,
   onQuantityChange,
   attributes,
@@ -86,18 +87,33 @@ export function PricingInventorySection({
       </h2>
 
       {productType === 'simple' ? (
-        <SimpleProductFields
-          embedded
-          price={simpleProductData.price}
-          compareAtPrice={simpleProductData.compareAtPrice}
-          sku={simpleProductData.sku}
-          quantity={simpleProductData.quantity}
-          defaultCurrency={defaultCurrency}
-          onPriceChange={onPriceChange}
-          onCompareAtPriceChange={onCompareAtPriceChange}
-          onSkuChange={onSkuChange}
-          onQuantityChange={onQuantityChange}
-        />
+        <div className="space-y-6">
+          <SimpleProductFields
+            embedded
+            price={simpleProductData.price}
+            discount={simpleProductData.discount}
+            sku={simpleProductData.sku}
+            quantity={simpleProductData.quantity}
+            defaultCurrency={defaultCurrency}
+            onPriceChange={onPriceChange}
+            onDiscountChange={onDiscountChange}
+            onSkuChange={onSkuChange}
+            onQuantityChange={onQuantityChange}
+          />
+          <AttributesSelection
+            embedded
+            title={t('admin.products.add.attributes')}
+            attributes={attributes}
+            selectedAttributesForVariants={selectedAttributesForVariants}
+            selectedAttributeValueIds={selectedAttributeValueIds}
+            attributesDropdownOpen={attributesDropdownOpen}
+            attributesDropdownRef={attributesDropdownRef}
+            onAttributesDropdownToggle={onAttributesDropdownToggle}
+            onAttributeToggle={onAttributeToggle}
+            onAttributeRemove={onAttributeRemove}
+            onAttributeValuesOpen={onAttributeValuesOpen}
+          />
+        </div>
       ) : (
         <div className="space-y-6">
           <AttributesSelection

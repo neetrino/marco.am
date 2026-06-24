@@ -1,4 +1,5 @@
 import { getAttributeBucket, isColorAttributeKey, isSizeAttributeKey } from "@/lib/attribute-keys";
+import type { DiscountKind } from "@/lib/discount/discount-expiry";
 
 /**
  * Format variant for admin product detail response
@@ -6,7 +7,9 @@ import { getAttributeBucket, isColorAttributeKey, isSizeAttributeKey } from "@/l
 export function formatVariantForAdmin(variant: {
   id: string;
   price: number;
-  compareAtPrice: number | null;
+  discountType: DiscountKind | null;
+  discountValue: number | null;
+  discountExpiresAt: Date | null;
   stock: number;
   sku: string | null;
   productClass?: "retail" | "wholesale";
@@ -100,7 +103,9 @@ export function formatVariantForAdmin(variant: {
   return {
     id: variant.id,
     price: variant.price.toString(),
-    compareAtPrice: variant.compareAtPrice?.toString() || "",
+    discountType: (variant.discountType ?? "NONE") as DiscountKind,
+    discountValue: variant.discountValue ?? null,
+    discountExpiresAt: variant.discountExpiresAt ? variant.discountExpiresAt.toISOString() : null,
     stock: variant.stock.toString(),
     sku: variant.sku || "",
     productClass: variant.productClass || "retail",

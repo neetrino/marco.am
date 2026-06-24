@@ -1,135 +1,189 @@
 import { db } from "@white-shop/db";
 
+import type { DiscountKind } from "@/lib/discount/discount-expiry";
 import { cacheService } from "@/lib/services/cache.service";
 import { getCachedJson } from "@/lib/services/read-through-json-cache";
+import { logger } from "@/lib/utils/logger";
 
 type ProductDiscountRow = {
   id: string;
   title: string;
+  slug: string;
   image: string | null;
   price: number;
-  discountPercent: number;
+  discountType: DiscountKind;
+  discountValue: number | null;
+  discountExpiresAt: string | null;
+  searchText: string;
+  sku: string;
+};
+
+type ProductDiscountFields = {
+  discountType: DiscountKind;
+  discountValue: number | null;
+  discountExpiresAt: string | null;
+};
+
+const NONE_DISCOUNT_FIELDS: ProductDiscountFields = {
+  discountType: "NONE",
+  discountValue: null,
+  discountExpiresAt: null,
 };
 
 const ADMIN_PRODUCT_DISCOUNTS_CACHE_TTL_SEC = 300;
-const ADMIN_PRODUCT_DISCOUNTS_CACHE_PREFIX = "admin:product-discounts:v1:";
-
-const UNPUBLISHED_PRODUCT_SELECT = {
-  id: true,
-  discountPercent: true,
-  media: true,
-  createdAt: true,
-  translations: {
-    take: 1,
-    select: { title: true },
-  },
-  variants: {
-    where: { published: true },
-    take: 1,
-    orderBy: { price: "asc" as const },
-    select: { price: true },
-  },
-} as const;
+const ADMIN_PRODUCT_DISCOUNTS_CACHE_PREFIX = "admin:product-discounts:v5:";
 
 function normalizeLocale(localeInput?: string): string {
   const locale = localeInput?.trim().toLowerCase();
   return locale === "hy" || locale === "ru" || locale === "en" ? locale : "en";
 }
 
-function firstImageUrl(media: unknown): string | null {
-  if (!Array.isArray(media) || media.length === 0) {
-    return null;
-  }
-  const first = media[0];
-  return typeof first === "string" ? first : null;
-}
-
-function mapListingRow(row: {
-  productId: string;
-  title: string;
-  image: string | null;
-  price: number;
-  discountPercent: number;
-}): ProductDiscountRow {
+function mapListingRow(
+  row: {
+    productId: string;
+    title: string;
+    slug: string;
+    image: string | null;
+    price: number;
+    searchText: string;
+  },
+  discount: ProductDiscountFields,
+  sku: string,
+): ProductDiscountRow {
   return {
     id: row.productId,
     title: row.title,
+    slug: row.slug,
     image: row.image,
     price: row.price,
-    discountPercent: row.discountPercent,
+    discountType: discount.discountType,
+    discountValue: discount.discountValue,
+    discountExpiresAt: discount.discountExpiresAt,
+    searchText: row.searchText,
+    sku,
   };
 }
 
-function mapUnpublishedProduct(product: {
-  id: string;
-  discountPercent: number | null;
-  media: unknown;
-  translations: Array<{ title: string }>;
-  variants: Array<{ price: number }>;
-}): ProductDiscountRow {
-  const title = product.translations[0]?.title?.trim() || product.id;
-  const price = product.variants[0]?.price ?? 0;
-  return {
-    id: product.id,
-    title,
-    image: firstImageUrl(product.media),
-    price,
-    discountPercent: product.discountPercent ?? 0,
-  };
+async function fetchVariantSkusByProductId(productIds: string[]): Promise<Map<string, string>> {
+  if (productIds.length === 0) {
+    return new Map();
+  }
+
+  const variants = await db.productVariant.findMany({
+    where: {
+      productId: { in: productIds },
+      published: true,
+      sku: { not: null },
+    },
+    select: { productId: true, sku: true },
+    orderBy: { price: "asc" },
+  });
+
+  const skusByProductId = new Map<string, string[]>();
+  for (const variant of variants) {
+    const sku = variant.sku?.trim();
+    if (!sku) {
+      continue;
+    }
+    const existing = skusByProductId.get(variant.productId) ?? [];
+    if (!existing.includes(sku)) {
+      existing.push(sku);
+    }
+    skusByProductId.set(variant.productId, existing);
+  }
+
+  return new Map(
+    [...skusByProductId.entries()].map(([productId, skus]) => [productId, skus.join(" ")]),
+  );
+}
+
+async function fetchProductDiscountsByProductId(
+  productIds: string[],
+): Promise<Map<string, ProductDiscountFields>> {
+  if (productIds.length === 0) {
+    return new Map();
+  }
+
+  try {
+    const products = await db.product.findMany({
+      where: { id: { in: productIds } },
+      select: {
+        id: true,
+        discountType: true,
+        discountValue: true,
+        discountExpiresAt: true,
+      },
+    });
+
+    return new Map(
+      products.map((product) => [
+        product.id,
+        {
+          discountType: product.discountType as DiscountKind,
+          discountValue: product.discountValue ?? null,
+          discountExpiresAt: product.discountExpiresAt?.toISOString() ?? null,
+        },
+      ]),
+    );
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (
+      message.includes("discountType") ||
+      message.includes("discountValue") ||
+      message.includes("discountExpiresAt")
+    ) {
+      logger.warn(
+        "[product-discounts-list] discount fields missing in Prisma client — run pnpm db:generate and restart the dev server",
+      );
+      return new Map();
+    }
+    throw error;
+  }
 }
 
 async function fetchProductDiscountsListUncached(locale: string): Promise<{ data: ProductDiscountRow[] }> {
-  const [listingRows, unpublishedProducts] = await Promise.all([
-    db.productListingRow.findMany({
-      where: { locale, deletedAt: null },
-      select: {
-        productId: true,
-        title: true,
-        image: true,
-        price: true,
-        discountPercent: true,
-        productCreatedAt: true,
-      },
-      orderBy: { productCreatedAt: "desc" },
-    }),
-    db.product.findMany({
-      where: { deletedAt: null, published: false },
-      orderBy: { createdAt: "desc" },
-      select: {
-        ...UNPUBLISHED_PRODUCT_SELECT,
-        translations: {
-          where: { locale },
-          take: 1,
-          select: { title: true },
-        },
-      },
-    }),
+  const listingRows = await db.productListingRow.findMany({
+    where: { locale, deletedAt: null, isPublished: true },
+    select: {
+      productId: true,
+      title: true,
+      slug: true,
+      image: true,
+      price: true,
+      searchText: true,
+      productCreatedAt: true,
+    },
+    orderBy: { productCreatedAt: "desc" },
+  });
+
+  const productIds = listingRows.map((row) => row.productId);
+  const [skusByProductId, discountsByProductId] = await Promise.all([
+    fetchVariantSkusByProductId(productIds),
+    fetchProductDiscountsByProductId(productIds),
   ]);
 
-  const publishedRows = listingRows.map((row) => ({
-    row: mapListingRow(row),
-    sortAt: row.productCreatedAt,
-  }));
-  const unpublishedRows = unpublishedProducts.map((product) => ({
-    row: mapUnpublishedProduct(product),
-    sortAt: product.createdAt,
-  }));
-
-  const data = [...publishedRows, ...unpublishedRows]
-    .sort((left, right) => right.sortAt.getTime() - left.sortAt.getTime())
-    .map((entry) => entry.row);
+  const data = listingRows.map((row) =>
+    mapListingRow(
+      row,
+      discountsByProductId.get(row.productId) ?? NONE_DISCOUNT_FIELDS,
+      skusByProductId.get(row.productId) ?? "",
+    ),
+  );
 
   return { data };
 }
 
-/** Clears cached quick-settings product discount lists (all locales). */
+/** Clears cached admin product discount lists (all locales). */
 export async function invalidateAdminProductDiscountsCache(): Promise<void> {
   await cacheService.deletePattern(`${ADMIN_PRODUCT_DISCOUNTS_CACHE_PREFIX}*`);
+  await cacheService.deletePattern("admin:product-discounts:v4:*");
+  await cacheService.deletePattern("admin:product-discounts:v2:*");
+  await cacheService.deletePattern("admin:product-discounts:v1:*");
 }
 
 /**
- * Lightweight product rows for quick-settings discount UI.
- * Hot path reads from the listing projection; unpublished products use a minimal fallback query.
+ * Lightweight published product rows for admin discounts UI.
+ * Hot path reads from the listing projection; variant SKUs are joined for client-side search.
  */
 export async function getProductDiscountsList(
   localeInput?: string,

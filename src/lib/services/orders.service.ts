@@ -1,7 +1,7 @@
 import { db } from "@white-shop/db";
 import { Prisma } from "@white-shop/db/prisma";
-import { customAlphabet } from "nanoid";
 import type { CheckoutData } from "../types/checkout";
+import { allocateOrderNumber } from "./order-number.service";
 import { logger } from "../utils/logger";
 import { adminDeliveryService } from "./admin/admin-delivery.service";
 import { extractMediaUrl } from "../utils/extractMediaUrl";
@@ -19,16 +19,6 @@ import { resolveProductClass, type ProductClass } from "../constants/product-cla
 import { promoCodesService } from "./promo-codes.service";
 import { invalidateAdminAnalyticsCache } from "@/lib/services/admin/admin-stats/admin-analytics-cache";
 
-const orderNumberId = customAlphabet("0123456789ABCDEFGHJKLMNPQRSTUVWXYZ", 10);
-
-function generateOrderNumber(): string {
-  const now = new Date();
-  const ymd =
-    now.getFullYear().toString().slice(-2) +
-    String(now.getMonth() + 1).padStart(2, "0") +
-    String(now.getDate()).padStart(2, "0");
-  return `${ymd}-${orderNumberId()}`;
-}
 type CartItemWithRelations = Prisma.CartItemGetPayload<{
   include: {
     product: {
@@ -293,12 +283,11 @@ class OrdersService {
       const taxAmount = 0; // TODO: Calculate tax if needed
       const total = subtotal - discountAmount + shippingAmount + taxAmount;
 
-      // Generate order number
-      const orderNumber = generateOrderNumber();
-
       // Create order with items in a transaction (timeout to avoid hung connections)
       const order = await db.$transaction(
         async (tx: Prisma.TransactionClient) => {
+        const orderNumber = await allocateOrderNumber(tx);
+
         // Create order
         const newOrder = await tx.order.create({
           data: {

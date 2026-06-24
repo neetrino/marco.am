@@ -15,7 +15,14 @@ const getProductListInclude = (locale: string) => ({
     where: { published: true },
     take: 1,
     orderBy: { price: "asc" as const },
-    select: { price: true, stock: true, compareAtPrice: true, imageUrl: true },
+    select: {
+      price: true,
+      stock: true,
+      imageUrl: true,
+      discountType: true,
+      discountValue: true,
+      discountExpiresAt: true,
+    },
   },
 });
 
@@ -63,6 +70,12 @@ const getProductAttributesInclude = () => ({
       attribute: true,
     },
   },
+  attributeValues: {
+    select: {
+      attributeId: true,
+      attributeValueId: true,
+    },
+  },
 });
 
 /**
@@ -73,6 +86,7 @@ export function isProductAttributesError(error: unknown): boolean {
   const errorMessage = error instanceof Error ? error.message : String(error);
   return (errorObj && typeof errorObj === 'object' && 'code' in errorObj && errorObj.code === 'P2021') || 
          errorMessage.includes('productAttributes') || 
+         errorMessage.includes('product_attribute_values') ||
          errorMessage.includes('does not exist');
 }
 
@@ -124,28 +138,6 @@ export async function executeAdminProductListViaListingRows(
   return { products: ordered, total };
 }
 
-const SKU_SEARCH_PRODUCT_ID_LIMIT = 200;
-
-/** Resolve product IDs whose variant SKU matches the admin search term. */
-export async function findProductIdsBySkuSearch(search: string): Promise<string[]> {
-  const term = search.trim();
-  if (!term) {
-    return [];
-  }
-
-  const rows = await db.productVariant.findMany({
-    where: {
-      sku: { contains: term, mode: "insensitive" },
-      product: { deletedAt: null },
-    },
-    select: { productId: true },
-    distinct: ["productId"],
-    take: SKU_SEARCH_PRODUCT_ID_LIMIT,
-  });
-
-  return rows.map((row) => row.productId);
-}
-
 /**
  * Execute product detail query with error handling
  */
@@ -173,4 +165,3 @@ export async function executeProductDetailQuery(productId: string) {
     throw error;
   }
 }
-

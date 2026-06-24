@@ -17,6 +17,8 @@ import {
   buildTechnicalSpecFilterToken,
   normalizeTechnicalFilterToken,
 } from '@/lib/services/products-technical-filters';
+import { buildListingRowSearchWhereInput } from '@/lib/product-search/listing-row-where';
+import { findProductIdsBySkuSearch } from '@/lib/product-search/find-product-ids-by-sku';
 import { getCachedJson } from '@/lib/services/read-through-json-cache';
 import { aggregateProductsPlpFacets } from './product-facet-live-aggregation';
 import {
@@ -127,6 +129,7 @@ function buildCategoryCondition(
 function buildWhere(
   params: PlpReadModelSearchParams,
   categoryIdTokens: string[],
+  productIdsFromSku: string[] = [],
 ): Prisma.ProductListingRowWhereInput {
   const minPrice = parseOptionalPrice(params.minPrice);
   const maxPrice = parseOptionalPrice(params.maxPrice);
@@ -157,12 +160,10 @@ function buildWhere(
     });
   }
   if (search) {
-    and.push({
-      searchText: {
-        contains: search.toLowerCase(),
-        mode: Prisma.QueryMode.insensitive,
-      },
-    });
+    const searchWhere = buildListingRowSearchWhereInput(search, productIdsFromSku);
+    if (searchWhere) {
+      and.push(searchWhere);
+    }
   }
   if (colorTokens.length > 0) {
     and.push({ colorTokens: { hasSome: colorTokens } });
@@ -241,8 +242,10 @@ async function computeListingItems(params: PlpReadModelSearchParams): Promise<Pl
     resolveShopPlpPricePresence(params.pricePresence),
   );
   const categoryIdTokens = await resolveCategoryIdsFromSlugs(firstCsvTokens(params.category));
+  const search = params.search?.trim();
+  const productIdsFromSku = search ? await findProductIdsBySkuSearch(search) : [];
   const rows = await fetchRows({
-    where: buildWhere(params, categoryIdTokens),
+    where: buildWhere(params, categoryIdTokens, productIdsFromSku),
     orderBy,
     skip,
     take: limit + 1,

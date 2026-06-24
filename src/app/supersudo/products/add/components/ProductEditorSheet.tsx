@@ -1,6 +1,7 @@
 'use client';
 
 import { ProductEditorPanel } from './ProductEditorPanel';
+import type { OptimisticSaveRequest } from '../hooks/useProductPayloadCreation';
 import type { Product } from '../../types';
 
 interface ProductEditorSheetProps {
@@ -8,7 +9,7 @@ interface ProductEditorSheetProps {
   productId: string | null;
   listProduct?: Product | null;
   onClose: () => void;
-  onSaved: () => void;
+  onSubmit: (request: OptimisticSaveRequest) => void;
 }
 
 export function ProductEditorSheet({
@@ -16,7 +17,7 @@ export function ProductEditorSheet({
   productId,
   listProduct = null,
   onClose,
-  onSaved,
+  onSubmit,
 }: ProductEditorSheetProps) {
   const editorKey = productId ?? 'create';
 
@@ -27,7 +28,7 @@ export function ProductEditorSheet({
       productId={productId}
       listProduct={listProduct}
       onCancel={onClose}
-      onSaved={onSaved}
+      onSubmit={onSubmit}
     />
   );
 }

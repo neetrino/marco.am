@@ -6,8 +6,8 @@ import { logger } from '@/lib/utils/logger';
 import type { LanguageCode } from '@/lib/language';
 import { ADMIN_CACHE_KEYS, buildProductDiscountsCacheKey } from '@/lib/admin/admin-cache-keys';
 import {
-  fetchAdminQuickSettingsBootstrap,
-  mapQuickSettingsBootstrap,
+  fetchAdminDiscountsBootstrap,
+  mapDiscountsBootstrap,
 } from '@/lib/admin/admin-bootstrap-client';
 import {
   readAdminBrandsCache,
@@ -18,27 +18,40 @@ import {
   readAdminSessionCache,
   writeAdminSessionCache,
 } from '@/lib/admin/admin-session-cache';
+import { parseDiscountMap, serializeDiscountMap, type DiscountMap } from '@/lib/discount/discount-expiry';
+import type { DiscountControlValue } from '@/components/admin/DiscountControl';
 
-import type {
-  QuickSettingsBrand,
-  QuickSettingsCategory,
-  QuickSettingsProductRow,
+import {
+  dedupeDiscountProductRows,
+  type DiscountsBrand,
+  type DiscountsCategory,
+  type DiscountsProductRow,
 } from './types';
+
+function rowToDiscountValue(row: DiscountsProductRow): DiscountControlValue {
+  const type = row.discountType ?? 'NONE';
+  return {
+    type,
+    value: type === 'NONE' ? null : row.discountValue ?? null,
+    expiresAt: row.discountExpiresAt ?? null,
+  };
+}
 
 type SettingsPayload = {
   globalDiscount?: number;
-  categoryDiscounts?: Record<string, number>;
-  brandDiscounts?: Record<string, number>;
+  globalDiscountExpiresAt?: string | null;
+  categoryDiscounts?: DiscountMap;
+  brandDiscounts?: DiscountMap;
 };
 
-type ProductDiscountsPayload = { data: QuickSettingsProductRow[] };
+type ProductDiscountsPayload = { data: DiscountsProductRow[] };
 
-type UseQuickSettingsParams = {
+type UseDiscountsParams = {
   activeLocale: LanguageCode;
   t: (key: string) => string;
 };
 
-export function useQuickSettings({ activeLocale, t }: UseQuickSettingsParams) {
+export function useDiscounts({ activeLocale, t }: UseDiscountsParams) {
   const tRef = useRef(t);
   tRef.current = t;
 
@@ -51,52 +64,54 @@ export function useQuickSettings({ activeLocale, t }: UseQuickSettingsParams) {
     productDiscountsCacheKey,
     ADMIN_SESSION_CACHE_TTL_MS,
   );
-  const cachedCategories = readAdminCategoriesCache<QuickSettingsCategory>(activeLocale, {
+  const cachedCategories = readAdminCategoriesCache<DiscountsCategory>(activeLocale, {
     includeCounts: false,
   });
-  const cachedBrands = readAdminBrandsCache<QuickSettingsBrand>();
-
-  const hadSettingsCacheRef = useRef(cachedSettings !== null);
-  const hadProductsCacheRef = useRef(cachedProducts !== null);
-  const hadCategoriesCacheRef = useRef(cachedCategories !== null);
-  const hadBrandsCacheRef = useRef(cachedBrands !== null);
+  const cachedBrands = readAdminBrandsCache<DiscountsBrand>();
 
   const [globalDiscount, setGlobalDiscount] = useState<number>(cachedSettings?.globalDiscount ?? 0);
-  const [categoryDiscounts, setCategoryDiscounts] = useState<Record<string, number>>(
+  const [globalDiscountExpiresAt, setGlobalDiscountExpiresAt] = useState<string | null>(
+    cachedSettings?.globalDiscountExpiresAt ?? null,
+  );
+  const [categoryDiscounts, setCategoryDiscounts] = useState<DiscountMap>(
     cachedSettings?.categoryDiscounts ?? {},
   );
-  const [brandDiscounts, setBrandDiscounts] = useState<Record<string, number>>(
+  const [brandDiscounts, setBrandDiscounts] = useState<DiscountMap>(
     cachedSettings?.brandDiscounts ?? {},
   );
   const [discountLoading, setDiscountLoading] = useState(cachedSettings === null);
   const [discountSaving, setDiscountSaving] = useState(false);
 
-  const [products, setProducts] = useState<QuickSettingsProductRow[]>(cachedProducts?.data ?? []);
+  const [products, setProducts] = useState<DiscountsProductRow[]>(
+    dedupeDiscountProductRows(cachedProducts?.data ?? []),
+  );
   const [productsLoading, setProductsLoading] = useState(cachedProducts === null);
-  const [productDiscounts, setProductDiscounts] = useState<Record<string, number>>(() => {
-    const rows = cachedProducts?.data ?? [];
-    return Object.fromEntries(rows.map((row) => [row.id, row.discountPercent ?? 0]));
+  const [productDiscounts, setProductDiscounts] = useState<Record<string, DiscountControlValue>>(() => {
+    const rows = dedupeDiscountProductRows(cachedProducts?.data ?? []);
+    return Object.fromEntries(rows.map((row) => [row.id, rowToDiscountValue(row)]));
   });
   const [savingProductId, setSavingProductId] = useState<string | null>(null);
 
-  const [categories, setCategories] = useState<QuickSettingsCategory[]>(cachedCategories ?? []);
+  const [categories, setCategories] = useState<DiscountsCategory[]>(cachedCategories ?? []);
   const [categoriesLoading, setCategoriesLoading] = useState(cachedCategories === null);
   const [categorySaving, setCategorySaving] = useState(false);
 
-  const [brands, setBrands] = useState<QuickSettingsBrand[]>(cachedBrands ?? []);
+  const [brands, setBrands] = useState<DiscountsBrand[]>(cachedBrands ?? []);
   const [brandsLoading, setBrandsLoading] = useState(cachedBrands === null);
   const [brandSaving, setBrandSaving] = useState(false);
 
   const applySettings = useCallback((settings: SettingsPayload) => {
     setGlobalDiscount(settings.globalDiscount ?? 0);
+    setGlobalDiscountExpiresAt(settings.globalDiscountExpiresAt ?? null);
     setCategoryDiscounts(settings.categoryDiscounts ?? {});
     setBrandDiscounts(settings.brandDiscounts ?? {});
   }, []);
 
-  const applyProductRows = useCallback((rows: QuickSettingsProductRow[]) => {
-    setProducts(rows);
+  const applyProductRows = useCallback((rows: DiscountsProductRow[]) => {
+    const uniqueRows = dedupeDiscountProductRows(rows);
+    setProducts(uniqueRows);
     setProductDiscounts(
-      Object.fromEntries(rows.map((row) => [row.id, row.discountPercent ?? 0])),
+      Object.fromEntries(uniqueRows.map((row) => [row.id, rowToDiscountValue(row)])),
     );
   }, []);
 
@@ -109,59 +124,46 @@ export function useQuickSettings({ activeLocale, t }: UseQuickSettingsParams) {
       productDiscountsCacheKey,
       ADMIN_SESSION_CACHE_TTL_MS,
     );
-    const categoriesCached = readAdminCategoriesCache<QuickSettingsCategory>(activeLocale, {
+    const categoriesCached = readAdminCategoriesCache<DiscountsCategory>(activeLocale, {
       includeCounts: false,
     });
-    const brandsCached = readAdminBrandsCache<QuickSettingsBrand>();
+    const brandsCached = readAdminBrandsCache<DiscountsBrand>();
 
-    const needsBootstrap =
-      settingsCached === null ||
-      productsCached === null ||
-      categoriesCached === null ||
-      brandsCached === null;
+    if (settingsCached) {
+      applySettings(settingsCached);
+      setDiscountLoading(false);
+    }
+    if (productsCached) {
+      applyProductRows(productsCached.data ?? []);
+      setProductsLoading(false);
+    }
+    if (categoriesCached) {
+      setCategories(categoriesCached);
+      setCategoriesLoading(false);
+    }
+    if (brandsCached) {
+      setBrands(brandsCached);
+      setBrandsLoading(false);
+    }
 
-    if (!needsBootstrap) {
+    if (settingsCached && productsCached && categoriesCached && brandsCached) {
       return;
     }
 
-    if (settingsCached === null) {
-      setDiscountLoading(true);
-    }
-    if (productsCached === null) {
-      setProductsLoading(true);
-    }
-    if (categoriesCached === null) {
-      setCategoriesLoading(true);
-    }
-    if (brandsCached === null) {
-      setBrandsLoading(true);
-    }
-
     try {
-      const bootstrap = await fetchAdminQuickSettingsBootstrap(activeLocale);
-      const mapped = mapQuickSettingsBootstrap(bootstrap);
-      applySettings(mapped.settings);
+      const bootstrap = await fetchAdminDiscountsBootstrap(activeLocale);
+      const mapped = mapDiscountsBootstrap(bootstrap);
+      applySettings({
+        globalDiscount: mapped.settings.globalDiscount,
+        globalDiscountExpiresAt: mapped.settings.globalDiscountExpiresAt ?? null,
+        categoryDiscounts: parseDiscountMap(mapped.settings.categoryDiscounts),
+        brandDiscounts: parseDiscountMap(mapped.settings.brandDiscounts),
+      });
+      applyProductRows(mapped.products);
       setCategories(mapped.categories);
       setBrands(mapped.brands);
-      applyProductRows(mapped.products);
-      hadSettingsCacheRef.current = true;
-      hadProductsCacheRef.current = true;
-      hadCategoriesCacheRef.current = true;
-      hadBrandsCacheRef.current = true;
     } catch (err: unknown) {
-      logger.error('Quick settings: bootstrap fetch failed', { error: err });
-      if (!hadSettingsCacheRef.current) {
-        applySettings({});
-      }
-      if (!hadProductsCacheRef.current) {
-        applyProductRows([]);
-      }
-      if (!hadCategoriesCacheRef.current) {
-        setCategories([]);
-      }
-      if (!hadBrandsCacheRef.current) {
-        setBrands([]);
-      }
+      logger.error('Failed to load discounts bootstrap', err);
     } finally {
       setDiscountLoading(false);
       setProductsLoading(false);
@@ -186,37 +188,23 @@ export function useQuickSettings({ activeLocale, t }: UseQuickSettingsParams) {
     return Math.min(100, Math.max(0, Math.round(value * 100) / 100));
   };
 
-  const buildDiscountPayload = () => {
-    const filterMap = (map: Record<string, number>) =>
-      Object.entries(map).reduce<Record<string, number>>((acc, [id, value]) => {
-        if (typeof value === 'number' && value > 0) {
-          acc[id] = clampDiscountValue(value);
-        }
-        return acc;
-      }, {});
-
-    return {
-      categoryDiscounts: filterMap(categoryDiscounts),
-      brandDiscounts: filterMap(brandDiscounts),
-    };
-  };
-
   const persistSettings = async () => {
     const discountValue = parseFloat(globalDiscount.toString());
     if (Number.isNaN(discountValue) || discountValue < 0 || discountValue > 100) {
-      alert(tRef.current('admin.quickSettings.discountMustBeValid'));
+      alert(tRef.current('admin.discounts.discountMustBeValid'));
       return false;
     }
 
-    await apiClient.put('/api/v1/supersudo/settings', {
+    const payload = {
       globalDiscount: discountValue,
-      ...buildDiscountPayload(),
-    });
-
-    const nextSettings: SettingsPayload = {
-      globalDiscount: discountValue,
-      ...buildDiscountPayload(),
+      globalDiscountExpiresAt,
+      categoryDiscounts: serializeDiscountMap(categoryDiscounts),
+      brandDiscounts: serializeDiscountMap(brandDiscounts),
     };
+
+    await apiClient.put('/api/v1/supersudo/settings', payload);
+
+    const nextSettings: SettingsPayload = payload;
     applySettings(nextSettings);
     const existing =
       readAdminSessionCache<SettingsPayload>(ADMIN_CACHE_KEYS.settings, ADMIN_SESSION_CACHE_TTL_MS) ??
@@ -230,11 +218,11 @@ export function useQuickSettings({ activeLocale, t }: UseQuickSettingsParams) {
     try {
       const saved = await persistSettings();
       if (saved) {
-        alert(tRef.current('admin.quickSettings.savedSuccess'));
+        alert(tRef.current('admin.discounts.savedSuccess'));
       }
     } catch (err: unknown) {
       const errorMessage = getApiOrErrorMessage(err, 'Failed to save');
-      alert(tRef.current('admin.quickSettings.errorSaving').replace('{message}', errorMessage));
+      alert(tRef.current('admin.discounts.errorSaving').replace('{message}', errorMessage));
     } finally {
       setDiscountSaving(false);
     }
@@ -245,11 +233,11 @@ export function useQuickSettings({ activeLocale, t }: UseQuickSettingsParams) {
     try {
       const saved = await persistSettings();
       if (saved) {
-        alert(tRef.current('admin.quickSettings.savedSuccess'));
+        alert(tRef.current('admin.discounts.savedSuccess'));
       }
     } catch (err: unknown) {
       const errorMessage = getApiOrErrorMessage(err, 'Failed to save');
-      alert(tRef.current('admin.quickSettings.errorSaving').replace('{message}', errorMessage));
+      alert(tRef.current('admin.discounts.errorSaving').replace('{message}', errorMessage));
     } finally {
       setCategorySaving(false);
     }
@@ -260,35 +248,40 @@ export function useQuickSettings({ activeLocale, t }: UseQuickSettingsParams) {
     try {
       const saved = await persistSettings();
       if (saved) {
-        alert(tRef.current('admin.quickSettings.savedSuccess'));
+        alert(tRef.current('admin.discounts.savedSuccess'));
       }
     } catch (err: unknown) {
       const errorMessage = getApiOrErrorMessage(err, 'Failed to save');
-      alert(tRef.current('admin.quickSettings.errorSaving').replace('{message}', errorMessage));
+      alert(tRef.current('admin.discounts.errorSaving').replace('{message}', errorMessage));
     } finally {
       setBrandSaving(false);
     }
   };
 
   const handleProductDiscountSave = async (productId: string) => {
-    const discountValue = productDiscounts[productId] ?? 0;
-    if (Number.isNaN(discountValue) || discountValue < 0 || discountValue > 100) {
-      alert(tRef.current('admin.quickSettings.discountMustBeValid'));
+    const current = productDiscounts[productId] ?? { type: 'NONE', value: null, expiresAt: null };
+    const isInvalidPercent =
+      current.type === 'PERCENT' &&
+      (current.value === null || current.value < 0 || current.value > 100);
+    const isInvalidAmount =
+      current.type === 'AMOUNT' && (current.value === null || current.value <= 0);
+    if (isInvalidPercent || isInvalidAmount) {
+      alert(tRef.current('admin.discounts.discountMustBeValid'));
       return;
     }
 
     setSavingProductId(productId);
     try {
-      await apiClient.patch(`/api/v1/supersudo/products/${productId}/discount`, {
-        discountPercent: discountValue,
-      });
+      const nextRow = {
+        discountType: current.type,
+        discountValue: current.type === 'NONE' ? null : current.value,
+        discountExpiresAt: current.expiresAt,
+      };
+      await apiClient.patch(`/api/v1/supersudo/products/${productId}/discount`, nextRow);
 
       setProducts((prev) =>
-        prev.map((row) =>
-          row.id === productId ? { ...row, discountPercent: discountValue } : row,
-        ),
+        prev.map((row) => (row.id === productId ? { ...row, ...nextRow } : row)),
       );
-      setProductDiscounts((prev) => ({ ...prev, [productId]: discountValue }));
 
       const cacheKey = buildProductDiscountsCacheKey(activeLocale);
       const cached = readAdminSessionCache<ProductDiscountsPayload>(
@@ -297,16 +290,14 @@ export function useQuickSettings({ activeLocale, t }: UseQuickSettingsParams) {
       );
       if (cached?.data) {
         writeAdminSessionCache(cacheKey, {
-          data: cached.data.map((row) =>
-            row.id === productId ? { ...row, discountPercent: discountValue } : row,
-          ),
+          data: cached.data.map((row) => (row.id === productId ? { ...row, ...nextRow } : row)),
         });
       }
 
-      alert(tRef.current('admin.quickSettings.productDiscountSaved'));
+      alert(tRef.current('admin.discounts.productDiscountSaved'));
     } catch (err: unknown) {
       const errorMessage = getApiOrErrorMessage(err, 'Failed to save');
-      alert(tRef.current('admin.quickSettings.errorSavingProduct').replace('{message}', errorMessage));
+      alert(tRef.current('admin.discounts.errorSavingProduct').replace('{message}', errorMessage));
     } finally {
       setSavingProductId(null);
     }
@@ -322,7 +313,26 @@ export function useQuickSettings({ activeLocale, t }: UseQuickSettingsParams) {
       return;
     }
     const numericValue = clampDiscountValue(parseFloat(value));
-    setCategoryDiscounts((prev) => ({ ...prev, [categoryId]: numericValue }));
+    setCategoryDiscounts((prev) => ({
+      ...prev,
+      [categoryId]: {
+        percent: numericValue,
+        expiresAt: prev[categoryId]?.expiresAt ?? null,
+      },
+    }));
+  };
+
+  const updateCategoryDiscountExpires = (categoryId: string, expiresAt: string | null) => {
+    setCategoryDiscounts((prev) => {
+      const current = prev[categoryId];
+      if (!current) {
+        return prev;
+      }
+      return {
+        ...prev,
+        [categoryId]: { ...current, expiresAt },
+      };
+    });
   };
 
   const updateBrandDiscountValue = (brandId: string, value: string) => {
@@ -335,7 +345,26 @@ export function useQuickSettings({ activeLocale, t }: UseQuickSettingsParams) {
       return;
     }
     const numericValue = clampDiscountValue(parseFloat(value));
-    setBrandDiscounts((prev) => ({ ...prev, [brandId]: numericValue }));
+    setBrandDiscounts((prev) => ({
+      ...prev,
+      [brandId]: {
+        percent: numericValue,
+        expiresAt: prev[brandId]?.expiresAt ?? null,
+      },
+    }));
+  };
+
+  const updateBrandDiscountExpires = (brandId: string, expiresAt: string | null) => {
+    setBrandDiscounts((prev) => {
+      const current = prev[brandId];
+      if (!current) {
+        return prev;
+      }
+      return {
+        ...prev,
+        [brandId]: { ...current, expiresAt },
+      };
+    });
   };
 
   const clearCategoryDiscount = (categoryId: string) => {
@@ -354,9 +383,15 @@ export function useQuickSettings({ activeLocale, t }: UseQuickSettingsParams) {
     });
   };
 
+  const setProductDiscount = (productId: string, value: DiscountControlValue) => {
+    setProductDiscounts((prev) => ({ ...prev, [productId]: value }));
+  };
+
   return {
     globalDiscount,
     setGlobalDiscount,
+    globalDiscountExpiresAt,
+    setGlobalDiscountExpiresAt,
     discountLoading,
     discountSaving,
     handleDiscountSave,
@@ -364,6 +399,7 @@ export function useQuickSettings({ activeLocale, t }: UseQuickSettingsParams) {
     categoriesLoading,
     categoryDiscounts,
     updateCategoryDiscountValue,
+    updateCategoryDiscountExpires,
     clearCategoryDiscount,
     handleCategoryDiscountSave,
     categorySaving,
@@ -371,13 +407,14 @@ export function useQuickSettings({ activeLocale, t }: UseQuickSettingsParams) {
     brandsLoading,
     brandDiscounts,
     updateBrandDiscountValue,
+    updateBrandDiscountExpires,
     clearBrandDiscount,
     handleBrandDiscountSave,
     brandSaving,
     products,
     productsLoading,
     productDiscounts,
-    setProductDiscounts,
+    setProductDiscount,
     handleProductDiscountSave,
     savingProductId,
   };

@@ -12,6 +12,7 @@ import type {
   ProductLabel,
   GeneratedVariant,
 } from '../types';
+import type { VariantDiscount } from '../utils/variant-discount';
 import type { CurrencyCode } from '@/lib/currency';
 import type { ProductClass } from '@/lib/constants/product-class';
 import type { ProductWarrantyYears } from '@/lib/constants/product-warranty';
@@ -38,6 +39,7 @@ interface AddProductFormContentProps {
   formData: {
     title: string;
     slug: string;
+    subtitleHtml: string;
     description: ProductDescriptionEntry[];
     productClass: ProductClass;
     brandIds: string[];
@@ -53,7 +55,7 @@ interface AddProductFormContentProps {
   productType: 'simple' | 'variable';
   simpleProductData: {
     price: string;
-    compareAtPrice: string;
+    discount: VariantDiscount;
     sku: string;
     quantity: string;
   };
@@ -72,6 +74,7 @@ interface AddProductFormContentProps {
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   attributesDropdownRef: React.RefObject<HTMLDivElement | null>;
   variantImageInputRefs: React.MutableRefObject<Record<string, HTMLInputElement | null>>;
+  onSubtitleChange: (html: string) => void;
   onDescriptionChange: (entries: ProductDescriptionEntry[]) => void;
   onProductTypeChange: (type: 'simple' | 'variable') => void;
   onUploadImages: (event: ChangeEvent<HTMLInputElement>) => Promise<void>;
@@ -81,7 +84,7 @@ interface AddProductFormContentProps {
   onBrandIdsChange: (ids: string[]) => void;
   onPrimaryCategoryIdChange: (id: string) => void;
   onPriceChange: (value: string) => void;
-  onCompareAtPriceChange: (value: string) => void;
+  onDiscountChange: (value: VariantDiscount) => void;
   onSkuChange: (value: string) => void;
   onQuantityChange: (value: string) => void;
   onAttributesDropdownToggle: () => void;
@@ -99,7 +102,7 @@ interface AddProductFormContentProps {
   onWarrantyYearsChange: (years: ProductWarrantyYears | null) => void;
   onProductClassChange: (productClass: ProductClass) => void;
   onVariantsUpdate: (updater: (prev: Variant[]) => Variant[]) => void;
-  onApplyToAllVariants: (field: 'price' | 'compareAtPrice' | 'stock' | 'sku', value: string) => void;
+  onApplyToAllVariants: (field: 'price' | 'stock' | 'sku', value: string) => void;
   isClothingCategory: () => boolean;
   handleSubmit: (e: React.FormEvent) => void;
 }
@@ -168,6 +171,7 @@ export function AddProductFormContent({
   fileInputRef,
   attributesDropdownRef,
   variantImageInputRefs,
+  onSubtitleChange,
   onDescriptionChange,
   onProductTypeChange,
   onUploadImages,
@@ -177,7 +181,7 @@ export function AddProductFormContent({
   onBrandIdsChange,
   onPrimaryCategoryIdChange,
   onPriceChange,
-  onCompareAtPriceChange,
+  onDiscountChange,
   onSkuChange,
   onQuantityChange,
   onAttributesDropdownToggle,
@@ -238,6 +242,7 @@ export function AddProductFormContent({
         <form
           id={formId}
           onSubmit={handleSubmit}
+          noValidate
           className={`w-full min-w-0 ${fullHeightActive ? 'flex min-h-0 flex-1 flex-col' : ''}`}
         >
           <TabPanel
@@ -267,7 +272,9 @@ export function AddProductFormContent({
             isLoading={loadingTab === 'description'}
           >
             <ProductDescriptionTab
+              subtitleHtml={formData.subtitleHtml}
               description={formData.description}
+              onSubtitleChange={onSubtitleChange}
               onDescriptionChange={onDescriptionChange}
             />
           </TabPanel>
@@ -323,7 +330,7 @@ export function AddProductFormContent({
               simpleProductData={simpleProductData}
               defaultCurrency={defaultCurrency}
               onPriceChange={onPriceChange}
-              onCompareAtPriceChange={onCompareAtPriceChange}
+              onDiscountChange={onDiscountChange}
               onSkuChange={onSkuChange}
               onQuantityChange={onQuantityChange}
               attributes={attributes}

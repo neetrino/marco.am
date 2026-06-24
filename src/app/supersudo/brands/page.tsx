@@ -106,9 +106,15 @@ export default function BrandsPage() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [brands.length, brandSearch]);
+  }, [brandSearch]);
 
-  const totalPages = Math.ceil(filteredBrands.length / ITEMS_PER_PAGE);
+  const totalPages = Math.max(1, Math.ceil(filteredBrands.length / ITEMS_PER_PAGE));
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedBrands = filteredBrands.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   const selectedOnPage = paginatedBrands.filter((brand) => selectedBrandIds.includes(brand.id)).length;

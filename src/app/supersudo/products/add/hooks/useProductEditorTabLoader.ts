@@ -10,6 +10,7 @@ import {
   type ProductEditorTabId,
 } from '../product-editor-tabs';
 import type { Attribute } from '../types';
+import type { VariantDiscount } from '../utils/variant-discount';
 import type { AddProductFormState } from '../utils/productFormDataBuilder';
 import {
   applyGeneralSectionFromListProduct,
@@ -54,11 +55,14 @@ interface UseProductEditorTabLoaderParams {
   setFormData: (updater: (prev: AddProductFormState) => AddProductFormState) => void;
   setHasVariantsToLoad: (has: boolean) => void;
   setProductType: (type: 'simple' | 'variable') => void;
+  setSelectedAttributesForVariants: (value: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
+  setSelectedAttributeValueIds: (value: Record<string, string[]> | ((prev: Record<string, string[]>) => Record<string, string[]>)) => void;
   setSimpleProductData: (data: {
     price: string;
-    compareAtPrice: string;
+    discount: VariantDiscount;
     sku: string;
     quantity: string;
+    variantId: string;
   }) => void;
   onLoadError: () => void;
 }
@@ -80,6 +84,8 @@ export function useProductEditorTabLoader({
   setFormData,
   setHasVariantsToLoad,
   setProductType,
+  setSelectedAttributesForVariants,
+  setSelectedAttributeValueIds,
   setSimpleProductData,
   onLoadError,
 }: UseProductEditorTabLoaderParams) {
@@ -124,6 +130,8 @@ export function useProductEditorTabLoader({
       setFormData,
       setHasVariantsToLoad,
       setProductType,
+      setSelectedAttributesForVariants,
+      setSelectedAttributeValueIds,
       setSimpleProductData,
       defaultCurrency,
       defaultColorLabel: t('admin.products.add.defaultColor'),
@@ -133,6 +141,8 @@ export function useProductEditorTabLoader({
       setFormData,
       setHasVariantsToLoad,
       setProductType,
+      setSelectedAttributesForVariants,
+      setSelectedAttributeValueIds,
       setSimpleProductData,
       defaultCurrency,
       attributes,
@@ -295,6 +305,7 @@ export function useProductEditorTabLoader({
   }, [activeTab, open, productId, loadedTabs, loadSection, markTabLoaded, applyHandlers]);
 
   return {
+    loadedTabs,
     visitedTabs,
     loadingTab,
     visitTab,

@@ -3,14 +3,22 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Card, Button, Input } from '@shop/ui';
 import { useTranslation } from '../../../../lib/i18n-client';
+import { formatCatalogPrice } from '../../../../lib/currency';
+import { DiscountControl, type DiscountControlValue } from '@/components/admin/DiscountControl';
+import { activeTypedDiscount } from '@/lib/discount/discount-expiry';
+import { resolveProductPrice } from '@/lib/pricing/product-price';
 import { AdminTablePagination } from '../../components/AdminTablePagination';
-import type { QuickSettingsProductRow } from '../types';
+import {
+  matchesProductSearchFields,
+  type DiscountsProductRow,
+} from '../types';
 
 interface ProductDiscountsCardProps {
-  products: QuickSettingsProductRow[];
+  fillHeight?: boolean;
+  products: DiscountsProductRow[];
   productsLoading: boolean;
-  productDiscounts: Record<string, number>;
-  setProductDiscounts: React.Dispatch<React.SetStateAction<Record<string, number>>>;
+  productDiscounts: Record<string, DiscountControlValue>;
+  setProductDiscount: (productId: string, value: DiscountControlValue) => void;
   handleProductDiscountSave: (productId: string) => void;
   savingProductId: string | null;
 }
@@ -18,10 +26,11 @@ interface ProductDiscountsCardProps {
 const PRODUCT_ITEMS_PER_PAGE = 12;
 
 export function ProductDiscountsCard({
+  fillHeight = false,
   products,
   productsLoading,
   productDiscounts,
-  setProductDiscounts,
+  setProductDiscount,
   handleProductDiscountSave,
   savingProductId,
 }: ProductDiscountsCardProps) {
@@ -30,15 +39,21 @@ export function ProductDiscountsCard({
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredProducts = useMemo(() => {
-    const normalizedQuery = searchQuery.trim().toLowerCase();
-    if (!normalizedQuery) {
+    if (!searchQuery.trim()) {
       return products;
     }
 
-    return products.filter((product) => {
-      const productTitle = product.title.toLowerCase();
-      return productTitle.includes(normalizedQuery);
-    });
+    return products.filter((product) =>
+      matchesProductSearchFields(
+        {
+          title: product.title,
+          slug: product.slug,
+          searchText: product.searchText,
+          sku: product.sku,
+        },
+        searchQuery,
+      ),
+    );
   }, [products, searchQuery]);
 
   const totalPages = useMemo(
@@ -61,19 +76,15 @@ export function ProductDiscountsCard({
     return filteredProducts.slice(startIndex, startIndex + PRODUCT_ITEMS_PER_PAGE);
   }, [currentPage, filteredProducts]);
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-    }).format(price);
-  };
-
   return (
-    <Card className="admin-card border-slate-200/80 bg-white/95 shadow-[0_12px_28px_rgba(15,23,42,0.08)]">
+    <Card
+      className={`admin-card border-slate-200/80 bg-white/95 shadow-[0_12px_28px_rgba(15,23,42,0.08)] ${
+        fillHeight ? 'mb-0 flex min-h-0 flex-1 flex-col' : ''
+      }`}
+    >
       <div className="mb-6">
-        <h2 className="mb-2 text-lg font-semibold tracking-tight text-slate-900">{t('admin.quickSettings.productDiscounts')}</h2>
-        <p className="text-sm text-slate-600">{t('admin.quickSettings.productDiscountsSubtitle')}</p>
+        <h2 className="mb-2 text-lg font-semibold tracking-tight text-slate-900">{t('admin.discounts.productDiscounts')}</h2>
+        <p className="text-sm text-slate-600">{t('admin.discounts.productDiscountsSubtitle')}</p>
       </div>
 
       <div className="mb-4 flex gap-2">
@@ -90,31 +101,39 @@ export function ProductDiscountsCard({
           disabled={searchQuery.length === 0}
           className="shrink-0 text-slate-700 hover:bg-slate-100"
         >
-          {t('admin.quickSettings.clear')}
+          {t('admin.discounts.clear')}
         </Button>
       </div>
 
       {productsLoading ? (
         <div className="py-8 text-center">
           <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-b-2 border-slate-900"></div>
-          <p className="text-slate-600">{t('admin.quickSettings.loadingProducts')}</p>
+          <p className="text-slate-600">{t('admin.discounts.loadingProducts')}</p>
         </div>
       ) : products.length === 0 ? (
         <div className="rounded-lg border border-dashed border-slate-300 py-8 text-center">
-          <p className="text-slate-600">{t('admin.quickSettings.noProducts')}</p>
+          <p className="text-slate-600">{t('admin.discounts.noProducts')}</p>
         </div>
       ) : filteredProducts.length === 0 ? (
         <div className="rounded-lg border border-dashed border-slate-300 py-8 text-center">
-          <p className="text-slate-600">{t('admin.quickSettings.noProducts')}</p>
+          <p className="text-slate-600">{t('admin.discounts.noProducts')}</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className={fillHeight ? 'flex min-h-0 flex-1 flex-col' : 'space-y-3'}>
+          <div className={fillHeight ? 'min-h-0 flex-1 space-y-3 overflow-y-auto' : 'space-y-3'}>
           {paginatedProducts.map((product) => {
-            const currentDiscount = Number(productDiscounts[product.id] ?? product.discountPercent ?? 0);
+            const discount: DiscountControlValue = productDiscounts[product.id] ?? {
+              type: product.discountType ?? 'NONE',
+              value: product.discountValue ?? null,
+              expiresAt: product.discountExpiresAt ?? null,
+            };
             const originalPrice = product.price || 0;
-            const discountedPrice = currentDiscount > 0 && originalPrice > 0
-              ? Math.round(originalPrice * (1 - currentDiscount / 100))
-              : originalPrice;
+            const pricing = resolveProductPrice({
+              standardPrice: originalPrice,
+              discount: activeTypedDiscount(discount),
+            });
+            const discountedPrice = pricing.currentPrice;
+            const hasDiscount = pricing.oldPrice !== null;
 
             return (
               <div
@@ -133,44 +152,34 @@ export function ProductDiscountsCard({
                 <div className="flex-1 min-w-0">
                   <h3 className="truncate text-sm font-semibold text-slate-900">{product.title}</h3>
                   <div className="mt-1 flex items-center gap-2">
-                    {currentDiscount > 0 && originalPrice > 0 ? (
+                    {hasDiscount && originalPrice > 0 ? (
                       <>
                         <span className="select-none text-xs font-semibold text-slate-700">
-                          {formatPrice(discountedPrice)}
+                          {formatCatalogPrice(discountedPrice, 'AMD')}
                         </span>
                         <span className="select-none text-xs text-slate-400 line-through">
-                          {formatPrice(originalPrice)}
+                          {formatCatalogPrice(originalPrice, 'AMD')}
                         </span>
-                        <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-semibold text-rose-700">
-                          -{currentDiscount}%
-                        </span>
+                        {pricing.discountPercent ? (
+                          <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-semibold text-rose-700">
+                            -{pricing.discountPercent}%
+                          </span>
+                        ) : null}
                       </>
                     ) : (
                       <span className="select-none text-xs text-slate-500">
-                        {originalPrice > 0 ? formatPrice(originalPrice) : 'N/A'}
+                        {originalPrice > 0 ? formatCatalogPrice(originalPrice, 'AMD') : 'N/A'}
                       </span>
                     )}
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Input
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="0.1"
-                    value={productDiscounts[product.id] ?? product.discountPercent ?? 0}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      const discountValue = value === '' ? 0 : parseFloat(value) || 0;
-                      setProductDiscounts((prev) => ({
-                        ...prev,
-                        [product.id]: discountValue,
-                      }));
-                    }}
-                    className="w-20 border-slate-300 bg-white"
-                    placeholder="0"
+                  <DiscountControl
+                    value={discount}
+                    onChange={(next) => setProductDiscount(product.id, next)}
+                    allowAmount
+                    disabled={savingProductId === product.id}
                   />
-                  <span className="w-6 text-sm font-semibold text-slate-700">%</span>
                   <Button
                     variant="primary"
                     size="sm"
@@ -183,13 +192,14 @@ export function ProductDiscountsCard({
                         <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
                       </div>
                     ) : (
-                      t('admin.quickSettings.save')
+                      t('admin.discounts.save')
                     )}
                   </Button>
                 </div>
               </div>
             );
           })}
+          </div>
 
           {totalPages > 1 ? (
             <AdminTablePagination

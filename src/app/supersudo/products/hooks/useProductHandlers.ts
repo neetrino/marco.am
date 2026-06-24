@@ -67,24 +67,23 @@ export function useProductHandlers({
     }
   };
 
-  const handleDeleteProduct = async (productId: string, productTitle: string) => {
-    if (!(await showPopupConfirm(t('admin.products.deleteConfirm').replace('{title}', productTitle)))) {
-      return;
-    }
+  const handleDeleteProduct = async (productId: string) => {
+    setDeletingIds((prev) => new Set(prev).add(productId));
+    // Optimistic removal — the row disappears immediately, the request runs in the background.
+    _setProducts((prev) => prev.filter((product) => product.id !== productId));
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      next.delete(productId);
+      return next;
+    });
 
     try {
-      setDeletingIds((prev) => new Set(prev).add(productId));
       await apiClient.delete(`/api/v1/supersudo/products/${productId}`);
       logger.devLog('✅ [ADMIN] Product deleted successfully');
-
-      setSelectedIds((prev) => {
-        const next = new Set(prev);
-        next.delete(productId);
-        return next;
-      });
-      _setProducts((prev) => prev.filter((product) => product.id !== productId));
     } catch (err: unknown) {
       console.error('❌ [ADMIN] Error deleting product:', err);
+      // Roll back by restoring the authoritative list.
+      await fetchProducts({ force: true });
       alert(t('admin.products.errorDeleting').replace('{message}', getApiOrErrorMessage(err, t('admin.common.unknownErrorFallback'))));
     } finally {
       setDeletingIds((prev) => {

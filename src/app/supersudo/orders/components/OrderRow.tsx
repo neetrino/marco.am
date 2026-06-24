@@ -5,6 +5,7 @@ import { formatAdminOrderListTotal } from '../utils/order-list-display';
 import { CurrencyCode } from '../../../../lib/currency';
 import { getStatusColor, getPaymentStatusColor } from '../utils/orderUtils';
 import { ADMIN_ORDER_STATUS_I18N_KEY } from '../utils/order-status-labels';
+import { ORDER_TABLE_BODY_CELL } from './orders-table-layout';
 import type { Order } from '../useOrders';
 
 interface OrderRowProps {
@@ -33,10 +34,11 @@ export function OrderRow({
   const { t } = useTranslation();
 
   const listTotalLabel = formatAdminOrderListTotal(order, formatCurrency);
+  const bodyCell = ORDER_TABLE_BODY_CELL;
 
   return (
     <tr className="group transition-colors hover:bg-amber-50/50">
-      <td className="px-2.5 py-2.5">
+      <td className={`${bodyCell} px-2.5`}>
         <input
           type="checkbox"
           aria-label={t('admin.orders.selectOrder').replace('{number}', order.number)}
@@ -46,15 +48,15 @@ export function OrderRow({
         />
       </td>
       <td
-        className="cursor-pointer whitespace-nowrap px-3 py-2.5"
+        className={`${bodyCell} cursor-pointer whitespace-nowrap px-1.5`}
         onClick={onViewDetails}
       >
-        <div className="inline-flex max-w-full rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold tracking-wide text-slate-700 transition-colors group-hover:bg-amber-100 group-hover:text-amber-900">
-          <span className="truncate">#{order.number}</span>
+        <div className="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold tracking-wide text-slate-700 transition-colors group-hover:bg-amber-100 group-hover:text-amber-900">
+          <span>#{order.number}</span>
         </div>
       </td>
       <td
-        className="cursor-pointer px-3 py-2.5"
+        className={`${bodyCell} min-w-0 cursor-pointer`}
         onClick={onViewDetails}
       >
         <div className="truncate text-sm font-semibold leading-5 text-slate-900 transition-colors group-hover:text-amber-900">
@@ -67,14 +69,14 @@ export function OrderRow({
           {t('admin.orders.viewOrderDetails')}
         </div>
       </td>
-      <td className="whitespace-nowrap px-3 py-2.5 text-sm font-semibold text-slate-900">
+      <td className={`${bodyCell} whitespace-nowrap text-sm font-semibold text-slate-900`}>
         {listTotalLabel}
       </td>
-      <td className="whitespace-nowrap px-3 py-2.5 text-sm text-slate-500">
+      <td className={`${bodyCell} whitespace-nowrap text-sm text-slate-500`}>
         {order.itemsCount}
       </td>
-      <td className="whitespace-nowrap px-3 py-2.5">
-        <div className="flex items-center gap-2">
+      <td className={`${bodyCell} whitespace-nowrap`}>
+        <div className="flex items-center">
           {updatingStatus ? (
             <div className="flex items-center gap-2">
               <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-gray-900"></div>
@@ -84,7 +86,7 @@ export function OrderRow({
             <select
               value={order.status}
               onChange={(e) => onStatusChange(e.target.value)}
-              className={`h-8 cursor-pointer rounded-lg border-0 px-2.5 py-1 text-xs font-semibold shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500 ${getStatusColor(order.status)}`}
+              className={`h-8 w-full max-w-full cursor-pointer rounded-lg border-0 px-2 py-1 text-xs font-semibold shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500 ${getStatusColor(order.status)}`}
             >
               <option value="pending">{t(ADMIN_ORDER_STATUS_I18N_KEY.pending)}</option>
               <option value="processing">{t(ADMIN_ORDER_STATUS_I18N_KEY.processing)}</option>
@@ -94,8 +96,8 @@ export function OrderRow({
           )}
         </div>
       </td>
-      <td className="whitespace-nowrap px-3 py-2.5">
-        <div className="flex items-center gap-2">
+      <td className={`${bodyCell} whitespace-nowrap`}>
+        <div className="flex items-center">
           {updatingPaymentStatus ? (
             <div className="flex items-center gap-2">
               <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-gray-900"></div>
@@ -105,7 +107,7 @@ export function OrderRow({
             <select
               value={order.paymentStatus}
               onChange={(e) => onPaymentStatusChange(e.target.value)}
-              className={`h-8 cursor-pointer rounded-lg border-0 px-2.5 py-1 text-xs font-semibold shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500 ${getPaymentStatusColor(order.paymentStatus)}`}
+              className={`h-8 w-full max-w-full cursor-pointer rounded-lg border-0 px-2 py-1 text-xs font-semibold shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500 ${getPaymentStatusColor(order.paymentStatus)}`}
             >
               <option value="paid">{t('admin.orders.paid')}</option>
               <option value="pending">{t('admin.orders.pendingPayment')}</option>
@@ -114,7 +116,7 @@ export function OrderRow({
           )}
         </div>
       </td>
-      <td className="whitespace-nowrap px-3 py-2.5 text-sm text-slate-500">
+      <td className={`${bodyCell} whitespace-nowrap text-sm text-slate-500`}>
         {new Date(order.createdAt).toLocaleDateString()}
       </td>
     </tr>

@@ -197,6 +197,25 @@ function resolvePublished(row) {
   return !isDraftRow(row);
 }
 
+function normalizeProductWarrantyYears(value) {
+  if (value === null || value === undefined || value === "" || value === "none") {
+    return null;
+  }
+  const numeric = typeof value === "string" ? Number.parseInt(value, 10) : value;
+  if (numeric === 1 || numeric === 2 || numeric === 3) {
+    return numeric;
+  }
+  const match = String(value).match(/(\d+)/);
+  if (!match) {
+    return null;
+  }
+  const parsed = Number.parseInt(match[1], 10);
+  if (parsed === 1 || parsed === 2 || parsed === 3) {
+    return parsed;
+  }
+  return null;
+}
+
 function inferProductClass(value) {
   const normalized = String(value || "").trim().toLowerCase();
   if (!normalized) return "retail";
@@ -624,6 +643,7 @@ async function upsertProduct(row, index, filterDefs) {
     regularPrice && compareAtPrice
       ? Math.max(0, Math.round(((regularPrice - price) / regularPrice) * 100))
       : 0;
+  const warrantyYears = normalizeProductWarrantyYears(row.Warranty ?? row["Երաշխիք"]);
 
   let colorAttributeId = null;
   let colorValueId = null;
@@ -710,6 +730,7 @@ async function upsertProduct(row, index, filterDefs) {
         published,
         publishedAt,
         discountPercent,
+        warrantyYears,
       };
       if (!(UPDATE_EXISTING && SKIP_CATEGORY_UPDATE_ON_EXISTING)) {
         updateData.categoryIds = categoryIds;
@@ -805,6 +826,7 @@ async function upsertProduct(row, index, filterDefs) {
       primaryCategoryId,
       attributeIds: productAttributeIdsUnique,
       discountPercent,
+      warrantyYears,
       categories:
         categoryIds.length > 0
           ? { connect: categoryIds.map((categoryId) => ({ id: categoryId })) }

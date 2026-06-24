@@ -80,6 +80,7 @@ model Attribute {
   translations      AttributeTranslation[]
   values            AttributeValue[]
   productAttributes ProductAttribute[]
+  productAttributeValues ProductAttributeValue[]
   createdAt         DateTime               @default(now())
   updatedAt         DateTime               @updatedAt
 
@@ -107,6 +108,7 @@ model AttributeValue {
   imageUrl       String?
   translations   AttributeValueTranslation[]
   variantOptions ProductVariantOption[]
+  productValues  ProductAttributeValue[]
 
   attribute Attribute @relation(fields: [attributeId], references: [id], onDelete: Cascade)
 

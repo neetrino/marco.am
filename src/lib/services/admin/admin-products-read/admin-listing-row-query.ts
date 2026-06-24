@@ -1,4 +1,5 @@
 import { Prisma } from "@white-shop/db/prisma";
+import { buildListingRowSearchWhereInput } from "@/lib/product-search/listing-row-where";
 import type { ProductFilters } from "./types";
 
 /**
@@ -53,15 +54,10 @@ export function buildAdminListingRowWhere(
 
   const searchTerm = filters.search?.trim();
   if (searchTerm) {
-    const searchConditions: Prisma.ProductListingRowWhereInput[] = [
-      { title: { contains: searchTerm, mode: "insensitive" } },
-      { slug: { contains: searchTerm, mode: "insensitive" } },
-      { searchText: { contains: searchTerm, mode: "insensitive" } },
-    ];
-    if (productIdsFromSku.length > 0) {
-      searchConditions.push({ productId: { in: productIdsFromSku } });
+    const searchWhere = buildListingRowSearchWhereInput(searchTerm, productIdsFromSku);
+    if (searchWhere) {
+      where.AND = [searchWhere];
     }
-    where.AND = [{ OR: searchConditions }];
   }
 
   return where;

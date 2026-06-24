@@ -10,6 +10,7 @@ import type { ProductClass } from '@/lib/constants/product-class';
 export interface AddProductFormState {
   title: string;
   slug: string;
+  subtitleHtml: string;
   description: ProductDescriptionEntry[];
   productClass: ProductClass;
   brandIds: string[];

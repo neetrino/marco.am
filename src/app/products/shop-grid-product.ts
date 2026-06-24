@@ -1,4 +1,5 @@
 import type { ProductLabel } from '@/components/ProductLabels';
+import type { ProductWarrantyYears } from '@/lib/constants/product-warranty';
 import type { ProductListingBrand } from '@/lib/types/product-listing-brand';
 
 export type ShopGridProduct = {
@@ -16,6 +17,8 @@ export type ShopGridProduct = {
   requiresAttributeSelection?: boolean | null;
   labels: ProductLabel[];
   categories?: Array<{ id: string; slug: string; title: string }>;
+  warrantyYears?: ProductWarrantyYears | null;
+  warrantyBadge?: { years: ProductWarrantyYears } | null;
 };
 
 export function normalizeShopGridProduct(p: unknown): ShopGridProduct {
@@ -35,6 +38,8 @@ export function normalizeShopGridProduct(p: unknown): ShopGridProduct {
     requiresAttributeSelection?: boolean | null;
     labels?: ProductLabel[];
     categories?: ShopGridProduct['categories'];
+    warrantyYears?: ProductWarrantyYears | null;
+    warrantyBadge?: { years: ProductWarrantyYears } | null;
   };
   return {
     id: row.id,
@@ -53,5 +58,7 @@ export function normalizeShopGridProduct(p: unknown): ShopGridProduct {
     requiresAttributeSelection: row.requiresAttributeSelection ?? null,
     labels: row.labels ?? [],
     categories: row.categories ?? [],
+    warrantyYears: row.warrantyYears ?? null,
+    warrantyBadge: row.warrantyBadge ?? null,
   };
 }

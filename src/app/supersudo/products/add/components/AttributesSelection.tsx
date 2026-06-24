@@ -17,6 +17,7 @@ interface AttributesSelectionProps {
   onAttributeRemove: (attributeId: string) => void;
   onAttributeValuesOpen: (attributeId: string) => void;
   embedded?: boolean;
+  title?: string;
 }
 
 export function AttributesSelection({
@@ -30,6 +31,7 @@ export function AttributesSelection({
   onAttributeRemove,
   onAttributeValuesOpen,
   embedded,
+  title,
 }: AttributesSelectionProps) {
   const { t } = useTranslation();
 
@@ -114,7 +116,7 @@ export function AttributesSelection({
                 const selectedValueIds = selectedAttributeValueIds[attributeId] || [];
                 const selectedValues = selectedValueIds
                   .map(id => attribute.values.find(v => v.id === id))
-                  .filter((v): v is NonNullable<typeof v> => v !== null);
+                  .filter((v): v is NonNullable<typeof v> => v != null);
                 
                 // Get first selected value's image if available
                 const previewImage = selectedValues.find(v => v.imageUrl)?.imageUrl;
@@ -175,7 +177,7 @@ export function AttributesSelection({
     return (
       <div>
         <p className="mb-3 text-sm font-medium text-gray-700">
-          {t('admin.products.add.selectAttributesForVariants')}
+          {title ?? t('admin.products.add.selectAttributesForVariants')}
         </p>
         {content}
       </div>
@@ -188,5 +190,3 @@ export function AttributesSelection({
     </FormSection>
   );
 }
-
-

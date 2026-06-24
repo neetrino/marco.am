@@ -19,6 +19,7 @@ import {
 import type { PlpReadModelSearchParams } from './products-plp-read-model-types';
 import { filterVisibleAttributeFacets } from './product-facet-visibility';
 import { resolveCategoryIdsFromSlugs } from './product-category-slug-resolver';
+import { findProductIdsBySkuSearch } from '@/lib/product-search/find-product-ids-by-sku';
 
 const LISTING_TABLE = Prisma.sql`"product_listing_rows"`;
 
@@ -269,6 +270,9 @@ export async function aggregateProductsPlpFacets(
 ): Promise<ProductsFiltersData> {
   const input = buildFacetFilterInput(params);
   input.categoryIdTokens = await resolveCategoryIdsFromSlugs(input.categorySlugTokens);
+  if (input.search) {
+    input.productIdsFromSku = await findProductIdsBySkuSearch(input.search);
+  }
   const [brands, colors, sizes, priceRange, attributeFacets, categories] = await Promise.all([
     fetchBrandFacets(input),
     fetchColorFacets(input),

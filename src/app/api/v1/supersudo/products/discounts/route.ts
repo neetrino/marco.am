@@ -5,7 +5,7 @@ import { adminService } from "@/lib/services/admin.service";
 
 /**
  * GET /api/v1/supersudo/products/discounts
- * Lightweight list for quick-settings product discounts (id, title, image, price, discountPercent).
+ * Lightweight list for admin discounts page (id, title, image, price, discountPercent, discountExpiresAt).
  */
 export async function GET(req: NextRequest) {
   try {

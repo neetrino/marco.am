@@ -17,27 +17,27 @@ export function QuickInfoCard() {
           </svg>
         </div>
         <div>
-          <h3 className="text-base font-semibold tracking-tight text-slate-900">{t('admin.quickSettings.usefulInformation')}</h3>
-          <p className="text-xs text-slate-500">{t('admin.quickSettings.aboutDiscounts')}</p>
+          <h3 className="text-base font-semibold tracking-tight text-slate-900">{t('admin.discounts.usefulInformation')}</h3>
+          <p className="text-xs text-slate-500">{t('admin.discounts.aboutDiscounts')}</p>
         </div>
       </div>
 
       <div className="space-y-2 rounded-lg border border-sky-100/80 bg-white/80 p-3 text-sm text-slate-600">
         <div className="flex items-start gap-2">
           <span className="mt-0.5 font-semibold text-sky-600">•</span>
-          <p>{t('admin.quickSettings.discountApplies')}</p>
+          <p>{t('admin.discounts.discountApplies')}</p>
         </div>
         <div className="flex items-start gap-2">
           <span className="mt-0.5 font-semibold text-sky-600">•</span>
-          <p>{t('admin.quickSettings.discountExample')}</p>
+          <p>{t('admin.discounts.discountExample')}</p>
         </div>
         <div className="flex items-start gap-2">
           <span className="mt-0.5 font-semibold text-sky-600">•</span>
-          <p>{t('admin.quickSettings.noDiscount')}</p>
+          <p>{t('admin.discounts.noDiscount')}</p>
         </div>
         <div className="flex items-start gap-2">
           <span className="mt-0.5 font-semibold text-sky-600">•</span>
-          <p>{t('admin.quickSettings.changesApplied')}</p>
+          <p>{t('admin.discounts.changesApplied')}</p>
         </div>
       </div>
 
@@ -48,7 +48,7 @@ export function QuickInfoCard() {
           onClick={() => router.push('/supersudo/settings')}
           className="w-full border border-sky-100 bg-white text-slate-700 hover:bg-sky-50"
         >
-          {t('admin.quickSettings.moreSettings')}
+          {t('admin.discounts.moreSettings')}
         </Button>
       </div>
     </div>

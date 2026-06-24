@@ -5,6 +5,13 @@ import { Card } from '@shop/ui';
 import { CurrencyCode } from '../../../../lib/currency';
 import { OrderRow } from './OrderRow';
 import { AdminTablePagination } from '../../components/AdminTablePagination';
+import {
+  ORDER_TABLE_HEADER_CELL,
+  ORDER_TABLE_LAST_CELL,
+  ORDER_TABLE_CLASS,
+  ORDER_TABLE_HEAD_CLASS,
+  ORDER_TABLE_HEAD_ROW_CLASS,
+} from './orders-table-layout';
 import type { Order } from '../useOrders';
 
 interface OrdersTableProps {
@@ -47,6 +54,8 @@ export function OrdersTable({
   formatCurrency,
 }: OrdersTableProps) {
   const { t } = useTranslation();
+  const headerCell = `${ORDER_TABLE_HEADER_CELL}`;
+  const headerCellLast = `${ORDER_TABLE_HEADER_CELL} ${ORDER_TABLE_LAST_CELL}`;
 
   if (loading) {
     return (
@@ -71,21 +80,21 @@ export function OrdersTable({
 
   return (
     <Card className="admin-table-card border-slate-200/80 bg-white shadow-[0_10px_24px_rgba(15,23,42,0.07)]">
-      <div className="overflow-x-hidden">
-        <table className="w-full table-fixed divide-y divide-slate-200">
+      <div className="overflow-x-auto">
+        <table className={ORDER_TABLE_CLASS}>
           <colgroup>
-            <col className="w-8" />
-            <col className="w-[18%]" />
-            <col className="w-[24%]" />
-            <col className="w-[12%]" />
-            <col className="w-[7%]" />
-            <col className="w-[13%]" />
-            <col className="w-[13%]" />
-            <col className="w-[13%]" />
+            <col className="w-9" />
+            <col className="w-14" />
+            <col className="w-[26%]" />
+            <col className="w-[11%]" />
+            <col className="w-[8%]" />
+            <col className="w-[17%]" />
+            <col className="w-[16%]" />
+            <col className="w-[11%]" />
           </colgroup>
-          <thead className="sticky top-0 z-10 bg-slate-50/90 backdrop-blur">
-            <tr>
-              <th className="px-2.5 py-2">
+          <thead className={ORDER_TABLE_HEAD_CLASS}>
+            <tr className={ORDER_TABLE_HEAD_ROW_CLASS}>
+              <th className={`${headerCell} px-2.5`}>
                 <input
                   type="checkbox"
                   aria-label={t('admin.orders.selectAllOrders')}
@@ -94,14 +103,14 @@ export function OrdersTable({
                   className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-500"
                 />
               </th>
-              <th className="px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+              <th className={`${headerCell} px-1.5`}>
                 {t('admin.orders.orderNumber')}
               </th>
-              <th className="px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+              <th className={headerCell}>
                 {t('admin.orders.customer')}
               </th>
               <th
-                className="cursor-pointer select-none px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-500 hover:bg-slate-100"
+                className={`${headerCell} cursor-pointer select-none hover:bg-slate-100`}
                 onClick={() => onSort('total')}
               >
                 <div className="flex items-center gap-1">
@@ -124,17 +133,17 @@ export function OrdersTable({
                   </div>
                 </div>
               </th>
-              <th className="px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+              <th className={headerCell}>
                 {t('admin.orders.items')}
               </th>
-              <th className="px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+              <th className={headerCell}>
                 {t('admin.orders.status')}
               </th>
-              <th className="px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+              <th className={headerCell}>
                 {t('admin.orders.payment')}
               </th>
               <th
-                className="cursor-pointer select-none px-3 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-500 hover:bg-slate-100"
+                className={`${headerCellLast} cursor-pointer select-none hover:bg-slate-100`}
                 onClick={() => onSort('createdAt')}
               >
                 <div className="flex items-center gap-1">
@@ -159,7 +168,7 @@ export function OrdersTable({
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 bg-white">
+          <tbody className="bg-white [&>tr:not(:last-child)>td]:border-b [&>tr:not(:last-child)>td]:border-slate-100">
             {orders.map((order) => (
               <OrderRow
                 key={order.id}

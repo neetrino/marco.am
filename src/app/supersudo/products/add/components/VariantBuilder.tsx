@@ -8,8 +8,21 @@ import { FormSection } from './FormSection';
 import { getColorHex } from '../../../../../lib/colorMap';
 import { CURRENCIES, type CurrencyCode } from '../../../../../lib/currency';
 import { showPopupPrompt } from '@/components/popup-service';
+import { DiscountControl } from '@/components/admin/DiscountControl';
 import type { Attribute, GeneratedVariant } from '../types';
+import type { VariantDiscount } from '../utils/variant-discount';
 import { logger } from "@/lib/utils/logger";
+
+const VARIANT_FIELD_LABEL =
+  'mb-1.5 block text-xs font-medium uppercase tracking-wider text-gray-500';
+const VARIANT_ROW_GAP = 'gap-x-4 gap-y-2';
+const VARIANT_PRICE_WIDTH = 'w-[148px] sm:w-[168px]';
+const VARIANT_STOCK_WIDTH = 'w-[96px]';
+const VARIANT_SKU_WIDTH = 'w-[112px] sm:w-[128px]';
+const VARIANT_ROW_DIVIDER =
+  'flex h-9 shrink-0 items-center px-1 text-base font-light leading-none text-slate-300';
+const VARIANT_ICON_BTN =
+  'inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-gray-300 bg-white text-gray-600 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:cursor-not-allowed disabled:opacity-50';
 
 interface VariantBuilderProps {
   generatedVariants: GeneratedVariant[];
@@ -23,7 +36,7 @@ interface VariantBuilderProps {
   onVariantUpdate: (updater: (prev: GeneratedVariant[]) => GeneratedVariant[]) => void;
   onVariantDelete: (variantId: string) => void;
   onVariantAdd: () => void;
-  onApplyToAll: (field: 'price' | 'compareAtPrice' | 'stock' | 'sku', value: string) => void;
+  onApplyToAll: (field: 'price' | 'stock' | 'sku', value: string) => void;
   onVariantImageUpload: (variantId: string, event: ChangeEvent<HTMLInputElement>) => void;
   onOpenValueModal: (modal: { variantId: string; attributeId: string } | null) => void;
 }
@@ -62,8 +75,6 @@ export function VariantBuilder({
     }
     return [];
   };
-
-  const attributesToShow = generatedVariants.length > 0 ? getAttributesToShow(generatedVariants[0]) : [];
 
   return (
     <FormSection title={t('admin.products.add.variantBuilder')}>
@@ -118,47 +129,15 @@ export function VariantBuilder({
               </div>
             </div>
 
-            <div className="border border-gray-300 rounded-lg" style={{ overflowX: 'hidden', overflowY: 'hidden' }}>
-              <table className="w-full divide-y divide-gray-200 bg-white">
-                <thead className="bg-gray-50">
-                  <tr>
-                    {attributesToShow.map((attributeId) => {
-                      const attribute = attributes.find((a) => a.id === attributeId);
-                      return attribute ? (
-                        <th
-                          key={attributeId}
-                          className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          {attribute.name}
-                        </th>
-                      ) : null;
-                    })}
-                    <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {t('admin.products.add.price')}
-                    </th>
-                    <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {t('admin.products.add.compareAtPrice')}
-                    </th>
-                    <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {t('admin.products.add.stock')}
-                    </th>
-                    <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {t('admin.products.add.sku')}
-                    </th>
-                    <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      {t('admin.products.add.image')}
-                    </th>
-                    <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
-                      {t('admin.products.add.actions')}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {generatedVariants.map((variant) => {
-                    const variantAttributesToShow = getAttributesToShow(variant);
+            <div className="border border-gray-300 rounded-lg overflow-hidden bg-white divide-y divide-gray-200">
+              {generatedVariants.map((variant) => {
+                const variantAttributesToShow = getAttributesToShow(variant);
 
-                    return (
-                      <tr key={variant.id} className="hover:bg-gray-50">
+                return (
+                  <div key={variant.id} className="p-4 hover:bg-gray-50">
+                    {/* Row 1: variant attributes */}
+                    {variantAttributesToShow.length > 0 && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 mb-4">
                         {variantAttributesToShow.map((attributeId) => {
                           const attribute = attributes.find((a) => a.id === attributeId);
                           if (!attribute) return null;
@@ -183,56 +162,66 @@ export function VariantBuilder({
                             .filter((v): v is NonNullable<typeof v> => v !== null);
 
                           return (
-                            <td key={attributeId} className="px-2 py-2 whitespace-nowrap">
-                              <div className="relative">
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    onOpenValueModal({ variantId: variant.id, attributeId });
-                                  }}
-                                  className="w-full text-left flex items-center gap-1 p-1.5 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                            <div key={attributeId}>
+                              <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">
+                                {attribute.name}
+                              </label>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  onOpenValueModal({ variantId: variant.id, attributeId });
+                                }}
+                                className="w-full text-left flex items-center gap-2 p-2 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                              >
+                                <div className="flex-1 flex flex-wrap items-center gap-1 min-w-0">
+                                  {selectedValues.length > 0 ? (
+                                    selectedValues.map((val) => (
+                                      <span
+                                        key={val.id}
+                                        className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs"
+                                      >
+                                        {val.imageUrl ? (
+                                          <img
+                                            src={val.imageUrl}
+                                            alt={val.label}
+                                            className="w-3.5 h-3.5 object-cover rounded border border-gray-300"
+                                          />
+                                        ) : isColor && val.colorHex ? (
+                                          <span
+                                            className="inline-block w-3.5 h-3.5 rounded-full border border-gray-300"
+                                            style={{ backgroundColor: val.colorHex }}
+                                          />
+                                        ) : null}
+                                        {val.label}
+                                      </span>
+                                    ))
+                                  ) : (
+                                    <span className="text-sm text-gray-500">{t('admin.products.add.valuesPlaceholder')}</span>
+                                  )}
+                                </div>
+                                <svg
+                                  className="w-4 h-4 text-gray-400 flex-shrink-0"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
                                 >
-                                  <div className="flex-1 flex flex-wrap items-center gap-1 min-w-0">
-                                    {selectedValues.length > 0 ? (
-                                      selectedValues.map((val) => (
-                                        <span
-                                          key={val.id}
-                                          className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-gray-100 text-gray-700 rounded text-xs"
-                                        >
-                                          {val.imageUrl ? (
-                                            <img
-                                              src={val.imageUrl}
-                                              alt={val.label}
-                                              className="w-3 h-3 object-cover rounded border border-gray-300"
-                                            />
-                                          ) : isColor && val.colorHex ? (
-                                            <span
-                                              className="inline-block w-3 h-3 rounded-full border border-gray-300"
-                                              style={{ backgroundColor: val.colorHex }}
-                                            />
-                                          ) : null}
-                                          {val.label}
-                                        </span>
-                                      ))
-                                    ) : (
-                                      <span className="text-xs text-gray-500">{t('admin.products.add.valuesPlaceholder')}</span>
-                                    )}
-                                  </div>
-                                  <svg
-                                    className="w-3 h-3 text-gray-400 transition-transform flex-shrink-0"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                  </svg>
-                                </button>
-                              </div>
-                            </td>
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                              </button>
+                            </div>
                           );
                         })}
-                        <td className="px-2 py-2 whitespace-nowrap">
-                          <div className="flex items-center gap-1">
+                      </div>
+                    )}
+
+                    {/* Price + discount + date | stock, SKU, image, delete */}
+                    <div className={`flex w-full flex-wrap items-end ${VARIANT_ROW_GAP}`}>
+                      <div className={`flex flex-wrap items-end ${VARIANT_ROW_GAP}`}>
+                        <div className={VARIANT_PRICE_WIDTH}>
+                          <label className={VARIANT_FIELD_LABEL}>
+                            {t('admin.products.add.price')}
+                          </label>
+                          <div className="flex h-9 items-center gap-1.5">
                             <Input
                               type="number"
                               value={variant.price}
@@ -242,46 +231,38 @@ export function VariantBuilder({
                                 );
                               }}
                               placeholder={t('admin.products.add.pricePlaceholder')}
-                              className="w-20 text-xs"
+                              className="h-9 w-full text-sm"
                               min="0"
                               step="0.01"
                             />
-                            <span className="text-xs text-gray-500">{CURRENCIES[defaultCurrency].symbol}</span>
+                            <span className="shrink-0 text-sm text-gray-500">{CURRENCIES[defaultCurrency].symbol}</span>
                           </div>
-                        </td>
-                        <td className="px-2 py-2 whitespace-nowrap">
-                          <div className="flex items-center gap-1">
-                            <Input
-                              type="number"
-                              value={variant.compareAtPrice}
-                              onChange={(e) => {
-                                onVariantUpdate((prev) =>
-                                  prev.map((v) => (v.id === variant.id ? { ...v, compareAtPrice: e.target.value } : v))
-                                );
-                              }}
-                              placeholder={t('admin.products.add.pricePlaceholder')}
-                              className="w-20 text-xs"
-                              min="0"
-                              step="0.01"
-                            />
-                            <span className="text-xs text-gray-500">{CURRENCIES[defaultCurrency].symbol}</span>
-                          </div>
-                        </td>
-                        <td className="px-2 py-2 whitespace-nowrap">
-                          <Input
-                            type="number"
-                            value={variant.stock}
-                            onChange={(e) => {
+                        </div>
+                        <div>
+                          <label className={VARIANT_FIELD_LABEL}>
+                            {t('admin.products.add.discount')}
+                          </label>
+                          <DiscountControl
+                            compact
+                            value={variant.discount}
+                            onChange={(next: VariantDiscount) => {
                               onVariantUpdate((prev) =>
-                                prev.map((v) => (v.id === variant.id ? { ...v, stock: e.target.value } : v))
+                                prev.map((v) => (v.id === variant.id ? { ...v, discount: next } : v))
                               );
                             }}
-                            placeholder={t('admin.products.add.quantityPlaceholder')}
-                            className="w-16 text-xs"
-                            min="0"
+                            currencySymbol={CURRENCIES[defaultCurrency].symbol}
                           />
-                        </td>
-                        <td className="px-2 py-2 whitespace-nowrap">
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap items-end gap-x-2 gap-y-2">
+                        <div aria-hidden="true">
+                          <span className={`${VARIANT_FIELD_LABEL} invisible select-none`}>·</span>
+                          <div className={VARIANT_ROW_DIVIDER}>|</div>
+                        </div>
+                        <div className={VARIANT_SKU_WIDTH}>
+                          <label className={VARIANT_FIELD_LABEL}>
+                            {t('admin.products.add.sku')}
+                          </label>
                           <Input
                             type="text"
                             value={variant.sku}
@@ -291,17 +272,39 @@ export function VariantBuilder({
                               );
                             }}
                             placeholder={t('admin.products.add.skuPlaceholder')}
-                            className="w-24 text-xs"
+                            className="h-9 w-full text-sm"
                           />
-                        </td>
-                        <td className="px-2 py-2 whitespace-nowrap">
-                          <div className="flex items-center gap-2">
+                        </div>
+                        <div className={VARIANT_STOCK_WIDTH}>
+                          <label className={VARIANT_FIELD_LABEL}>
+                            {t('admin.products.add.stock')}
+                          </label>
+                          <Input
+                            type="number"
+                            value={variant.stock}
+                            onChange={(e) => {
+                              onVariantUpdate((prev) =>
+                                prev.map((v) => (v.id === variant.id ? { ...v, stock: e.target.value } : v))
+                              );
+                            }}
+                            placeholder={t('admin.products.add.quantityPlaceholder')}
+                            className="h-9 w-full text-sm"
+                            min="0"
+                          />
+                        </div>
+                      </div>
+                      <div className={`ml-auto flex flex-wrap items-end ${VARIANT_ROW_GAP}`}>
+                        <div>
+                          <label className={VARIANT_FIELD_LABEL}>
+                            {t('admin.products.add.image')}
+                          </label>
+                          <div className="flex h-9 items-center">
                             {variant.image ? (
-                              <div className="relative inline-block">
+                              <div className="relative h-9 w-9 shrink-0">
                                 <img
                                   src={variant.image}
                                   alt="Variant image"
-                                  className="w-12 h-12 object-cover border border-gray-300 rounded-md"
+                                  className="h-9 w-9 rounded-md border border-gray-300 object-cover"
                                 />
                                 <button
                                   type="button"
@@ -313,10 +316,10 @@ export function VariantBuilder({
                                       variantImageInputRefs.current[variant.id]!.value = '';
                                     }
                                   }}
-                                  className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600 transition-colors"
+                                  className="absolute -right-1 -top-1 rounded-full bg-red-500 p-0.5 text-white transition-colors hover:bg-red-600"
                                   title={t('admin.products.add.removeImage')}
                                 >
-                                  <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <svg className="h-2.5 w-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                   </svg>
                                 </button>
@@ -326,15 +329,17 @@ export function VariantBuilder({
                                 type="button"
                                 onClick={() => variantImageInputRefs.current?.[variant.id]?.click()}
                                 disabled={imageUploadLoading}
-                                className="px-2 py-1 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                                className={VARIANT_ICON_BTN}
+                                title={
+                                  imageUploadLoading
+                                    ? t('admin.products.add.uploading')
+                                    : t('admin.products.add.uploadImage')
+                                }
+                                aria-label={t('admin.products.add.uploadImage')}
                               >
-                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                                 </svg>
-                                <span className="hidden sm:inline">
-                                  {imageUploadLoading ? t('admin.products.add.uploading') : t('admin.products.add.uploadImage')}
-                                </span>
-                                <span className="sm:hidden">+</span>
                               </button>
                             )}
                             <input
@@ -349,15 +354,19 @@ export function VariantBuilder({
                               className="hidden"
                             />
                           </div>
-                        </td>
-                        <td className="px-2 py-2 whitespace-nowrap">
+                        </div>
+                        <div>
+                          <span className={`${VARIANT_FIELD_LABEL} invisible select-none`} aria-hidden="true">
+                            ·
+                          </span>
                           <button
                             type="button"
                             onClick={() => onVariantDelete(variant.id)}
-                            className="px-2 py-1 text-xs font-medium text-red-700 bg-red-50 border border-red-300 rounded-md hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors flex items-center gap-1"
+                            className={`${VARIANT_ICON_BTN} border-red-300 bg-red-50 text-red-600 hover:bg-red-100 focus:ring-red-500`}
                             title={t('admin.products.add.deleteVariant')}
+                            aria-label={t('admin.products.add.deleteVariant')}
                           >
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
@@ -365,14 +374,13 @@ export function VariantBuilder({
                                 d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                               />
                             </svg>
-                            {t('admin.products.add.delete')}
                           </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
 
             <div className="mt-4 flex justify-end gap-2">

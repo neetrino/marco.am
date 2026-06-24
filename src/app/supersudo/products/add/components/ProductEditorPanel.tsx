@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { Button } from '@shop/ui';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { useTranslation } from '@/lib/i18n-client';
@@ -23,14 +23,21 @@ import { useProductFormHandlers } from '../hooks/useProductFormHandlers';
 import { useProductFormCallbacks } from '../hooks/useProductFormCallbacks';
 import { isClothingCategory as checkIsClothingCategory } from '../utils/productUtils';
 import { type ProductEditorTabId } from '../product-editor-tabs';
+import type { OptimisticSaveRequest } from '../hooks/useProductPayloadCreation';
+import {
+  GATED_SECTIONS,
+  computeGatedFingerprints,
+  type SectionFingerprints,
+} from '../utils/product-editor-dirty';
 import type { Product } from '../../types';
+import { EMPTY_VARIANT_DISCOUNT } from '../utils/variant-discount';
 
 interface ProductEditorPanelProps {
   open: boolean;
   productId: string | null;
   listProduct?: Product | null;
   onCancel: () => void;
-  onSaved: () => void;
+  onSubmit: (request: OptimisticSaveRequest) => void;
 }
 
 export function ProductEditorPanel({
@@ -38,7 +45,7 @@ export function ProductEditorPanel({
   productId,
   listProduct = null,
   onCancel,
-  onSaved,
+  onSubmit,
 }: ProductEditorPanelProps) {
   const { t } = useTranslation();
   const { isLoggedIn, isAdmin } = useAuth();
@@ -54,7 +61,9 @@ export function ProductEditorPanel({
     setSlugCollapsed(scrollTop > 12);
   }, []);
 
-  const { visitedTabs, loadingTab, visitTab } = useProductEditorTabLoader({
+  const baselineRef = useRef<SectionFingerprints>({});
+
+  const { loadedTabs, visitedTabs, loadingTab, visitTab } = useProductEditorTabLoader({
     open,
     productId,
     listProduct,
@@ -66,6 +75,8 @@ export function ProductEditorPanel({
     setFormData: formState.setFormData,
     setHasVariantsToLoad: formState.setHasVariantsToLoad,
     setProductType: formState.setProductType,
+    setSelectedAttributesForVariants: formState.setSelectedAttributesForVariants,
+    setSelectedAttributeValueIds: formState.setSelectedAttributeValueIds,
     setSimpleProductData: formState.setSimpleProductData,
     onLoadError: onCancel,
   });
@@ -95,9 +106,7 @@ export function ProductEditorPanel({
   const { applyToAllVariants } = useVariantGeneration({
     selectedAttributesForVariants: formState.selectedAttributesForVariants,
     selectedAttributeValueIds: formState.selectedAttributeValueIds,
-    attributes: formState.attributes,
-    formDataSlug: formState.formData.slug,
-    formDataTitle: formState.formData.title,
+    productType: formState.productType,
     isEditMode,
     productId,
     setGeneratedVariants: formState.setGeneratedVariants,
@@ -168,14 +177,52 @@ export function ProductEditorPanel({
     productType: formState.productType,
     simpleProductData: formState.simpleProductData,
     selectedAttributesForVariants: formState.selectedAttributesForVariants,
+    selectedAttributeValueIds: formState.selectedAttributeValueIds,
     generatedVariants: formState.generatedVariants,
     attributes: formState.attributes,
     defaultCurrency: formState.defaultCurrency,
     isEditMode,
     productId,
-    isClothingCategory,
-    onSuccess: onSaved,
+    onSubmit,
+    baselineRef,
   });
+
+  useEffect(() => {
+    baselineRef.current = {};
+  }, [open, productId]);
+
+  useEffect(() => {
+    if (!isEditMode) {
+      return;
+    }
+    const current = computeGatedFingerprints({
+      imageUrls: formState.formData.imageUrls,
+      featuredImageIndex: formState.formData.featuredImageIndex,
+      mainProductImage: formState.formData.mainProductImage,
+      subtitleHtml: formState.formData.subtitleHtml,
+      description: formState.formData.description,
+      productType: formState.productType,
+      simpleProductData: formState.simpleProductData,
+      variants: formState.formData.variants,
+      generatedVariants: formState.generatedVariants,
+      selectedAttributeIds: Array.from(formState.selectedAttributesForVariants),
+      selectedAttributeValueIds: Object.values(formState.selectedAttributeValueIds).flat(),
+    });
+    for (const section of GATED_SECTIONS) {
+      if (loadedTabs.has(section) && baselineRef.current[section] === undefined) {
+        baselineRef.current[section] = current[section];
+      }
+    }
+  }, [
+    isEditMode,
+    loadedTabs,
+    formState.formData,
+    formState.productType,
+    formState.simpleProductData,
+    formState.generatedVariants,
+    formState.selectedAttributesForVariants,
+    formState.selectedAttributeValueIds,
+  ]);
 
   const handleTabChange = useCallback((tabId: ProductEditorTabId) => {
     visitTab(tabId);
@@ -283,6 +330,7 @@ export function ProductEditorPanel({
           fileInputRef={formState.fileInputRef}
           attributesDropdownRef={formState.attributesDropdownRef}
           variantImageInputRefs={formState.variantImageInputRefs}
+          onSubtitleChange={(subtitleHtml) => formState.setFormData((prev) => ({ ...prev, subtitleHtml }))}
           onDescriptionChange={(description) => formState.setFormData((prev) => ({ ...prev, description }))}
           onProductTypeChange={formState.setProductType}
           onUploadImages={handleUploadImages}
@@ -292,7 +340,7 @@ export function ProductEditorPanel({
           onBrandIdsChange={(ids) => formState.setFormData((prev) => ({ ...prev, brandIds: ids }))}
           onPrimaryCategoryIdChange={(id) => formState.setFormData((prev) => ({ ...prev, primaryCategoryId: id }))}
           onPriceChange={(value) => formState.setSimpleProductData((prev) => ({ ...prev, price: value }))}
-          onCompareAtPriceChange={(value) => formState.setSimpleProductData((prev) => ({ ...prev, compareAtPrice: value }))}
+          onDiscountChange={(value) => formState.setSimpleProductData((prev) => ({ ...prev, discount: value }))}
           onSkuChange={(value) => formState.setSimpleProductData((prev) => ({ ...prev, sku: value }))}
           onQuantityChange={(value) => formState.setSimpleProductData((prev) => ({ ...prev, quantity: value }))}
           onAttributesDropdownToggle={() => formState.setAttributesDropdownOpen(!formState.attributesDropdownOpen)}
@@ -324,18 +372,17 @@ export function ProductEditorPanel({
         <ValueSelectionModal
           openValueModal={formState.openValueModal}
           variant={
-            formState.generatedVariants.find((v) => v.id === formState.openValueModal!.variantId) ||
-            (formState.openValueModal.variantId === 'variant-all'
+            formState.openValueModal.variantId === 'variant-all'
               ? {
                   id: 'variant-all',
                   selectedValueIds: Object.values(formState.selectedAttributeValueIds).flat(),
                   price: '',
-                  compareAtPrice: '',
+                  discount: EMPTY_VARIANT_DISCOUNT,
                   stock: '',
                   sku: '',
                   image: null,
                 }
-              : undefined)
+              : formState.generatedVariants.find((v) => v.id === formState.openValueModal!.variantId)
           }
           attribute={formState.attributes.find((a) => a.id === formState.openValueModal!.attributeId)}
           selectedAttributeValueIds={formState.selectedAttributeValueIds}

@@ -1,4 +1,5 @@
 import { Prisma } from '@white-shop/db/prisma';
+import { splitProductSearchTokens } from '@/lib/product-search/match';
 import { buildTechnicalSpecFilterToken } from '@/lib/services/products-technical-filters';
 import { firstCsvTokens, parseOptionalPrice } from './product-plp-filter-parse';
 import type { PlpReadModelSearchParams } from './products-plp-read-model-types';
@@ -17,6 +18,7 @@ export type PlpFacetFilterInput = {
   sizeTokens: string[];
   technicalSpecGroups: Array<{ key: string; dimension: string; tokens: string[] }>;
   search: string | null;
+  productIdsFromSku: string[];
   minPrice: number | undefined;
   maxPrice: number | undefined;
   promotion: boolean;
@@ -45,6 +47,7 @@ export function buildFacetFilterInput(params: PlpReadModelSearchParams): PlpFace
     sizeTokens: firstCsvTokens(params.sizes, (token) => token.toUpperCase()),
     technicalSpecGroups,
     search: params.search?.trim() || null,
+    productIdsFromSku: [],
     minPrice: parseOptionalPrice(params.minPrice),
     maxPrice: parseOptionalPrice(params.maxPrice),
     promotion: filter === 'promotion' || filter === 'special_offer',
@@ -60,7 +63,18 @@ function baseConditions(input: PlpFacetFilterInput): Prisma.Sql[] {
     Prisma.sql`"deletedAt" IS NULL`,
   ];
   if (input.search) {
-    conditions.push(Prisma.sql`"searchText" ILIKE ${`%${input.search}%`}`);
+    const tokens = splitProductSearchTokens(input.search);
+    const textMatch = tokens.map((token) => Prisma.sql`"searchText" ILIKE ${`%${token}%`}`);
+    if (textMatch.length > 0) {
+      const textClause = Prisma.sql`(${Prisma.join(textMatch, ' AND ')})`;
+      if (input.productIdsFromSku.length > 0) {
+        conditions.push(
+          Prisma.sql`(${textClause} OR "productId" = ANY(ARRAY[${Prisma.join(input.productIdsFromSku)}]))`,
+        );
+      } else {
+        conditions.push(textClause);
+      }
+    }
   }
   if (input.promotion) {
     conditions.push(Prisma.sql`("discountPercent" > 0 OR "isSpecialPrice" = true)`);

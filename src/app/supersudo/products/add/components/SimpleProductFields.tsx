@@ -4,15 +4,17 @@ import { Input } from '@shop/ui';
 import { useTranslation } from '../../../../../lib/i18n-client';
 import { FormSection } from './FormSection';
 import { CURRENCIES, type CurrencyCode } from '../../../../../lib/currency';
+import { DiscountControl } from '@/components/admin/DiscountControl';
+import type { VariantDiscount } from '../utils/variant-discount';
 
 interface SimpleProductFieldsProps {
   price: string;
-  compareAtPrice: string;
+  discount: VariantDiscount;
   sku: string;
   quantity: string;
   defaultCurrency: CurrencyCode;
   onPriceChange: (value: string) => void;
-  onCompareAtPriceChange: (value: string) => void;
+  onDiscountChange: (value: VariantDiscount) => void;
   onSkuChange: (value: string) => void;
   onQuantityChange: (value: string) => void;
   embedded?: boolean;
@@ -20,12 +22,12 @@ interface SimpleProductFieldsProps {
 
 export function SimpleProductFields({
   price,
-  compareAtPrice,
+  discount,
   sku,
   quantity,
   defaultCurrency,
   onPriceChange,
-  onCompareAtPriceChange,
+  onDiscountChange,
   onSkuChange,
   onQuantityChange,
   embedded,
@@ -38,7 +40,7 @@ export function SimpleProductFields({
           {/* Price */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t('admin.products.add.price')} *
+              {t('admin.products.add.price')}
             </label>
             <div className="flex items-center gap-2">
               <Input
@@ -49,29 +51,22 @@ export function SimpleProductFields({
                 className="flex-1"
                 min="0"
                 step="0.01"
-                required
               />
               <span className="text-sm text-gray-500 whitespace-nowrap">{CURRENCIES[defaultCurrency].symbol}</span>
             </div>
           </div>
 
-          {/* Compare At Price */}
+          {/* Discount */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t('admin.products.add.compareAtPrice')}
+              {t('admin.products.add.discount')}
             </label>
-            <div className="flex items-center gap-2">
-              <Input
-                type="number"
-                value={compareAtPrice}
-                onChange={(e) => onCompareAtPriceChange(e.target.value)}
-                placeholder={t('admin.products.add.pricePlaceholder')}
-                className="flex-1"
-                min="0"
-                step="0.01"
-              />
-              <span className="text-sm text-gray-500 whitespace-nowrap">{CURRENCIES[defaultCurrency].symbol}</span>
-            </div>
+            <DiscountControl
+              compact
+              value={discount}
+              onChange={onDiscountChange}
+              currencySymbol={CURRENCIES[defaultCurrency].symbol}
+            />
           </div>
 
           {/* SKU */}
@@ -85,14 +80,13 @@ export function SimpleProductFields({
               onChange={(e) => onSkuChange(e.target.value)}
               placeholder={t('admin.products.add.skuPlaceholder')}
               className="w-full"
-              required
             />
           </div>
 
           {/* Quantity */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t('admin.products.add.quantity')} *
+              {t('admin.products.add.quantity')}
             </label>
             <Input
               type="number"
@@ -101,7 +95,6 @@ export function SimpleProductFields({
               placeholder={t('admin.products.add.quantityPlaceholder')}
               className="w-full"
               min="0"
-              required
             />
           </div>
         </div>

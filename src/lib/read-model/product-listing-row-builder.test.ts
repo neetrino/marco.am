@@ -30,7 +30,8 @@ describe('buildProductListingRowsForLocales', () => {
         primaryCategoryId: 'cat1',
         categoryIds: ['cat2'],
         media: [{ url: 'https://cdn.example.com/main.png', position: 1 }],
-        discountPercent: 0,
+        discountType: 'NONE',
+        discountValue: null,
         warrantyYears: 2,
         published: true,
         publishedAt: createdAt,
@@ -52,7 +53,9 @@ describe('buildProductListingRowsForLocales', () => {
             id: 'var1',
             imageUrl: 'https://cdn.example.com/variant.png',
             price: 100,
-            compareAtPrice: null,
+            discountType: 'NONE',
+            discountValue: null,
+            discountExpiresAt: null,
             stock: 5,
             published: true,
             attributes: null,
@@ -117,8 +120,8 @@ describe('buildProductListingRowsForLocales', () => {
       brandName: 'Brand One',
       categoryIds: ['cat1', 'cat2'],
       categorySlugs: ['phones'],
-      price: 100,
-      originalPrice: 111.11111111111111,
+      price: 90,
+      originalPrice: 100,
       discountPercent: 10,
       defaultVariantId: 'var1',
       inStock: true,
@@ -150,6 +153,95 @@ describe('buildProductListingRowsForLocales', () => {
       title: 'Հեռախոս X',
       categorySlugs: ['heraxosner'],
     });
+  });
+
+  it('marks draft products as unpublished in listing rows', () => {
+    const rows = buildProductListingRowsForLocales({
+      locales: ['en'],
+      rebuiltAt,
+      categoryAncestry: EMPTY_ANCESTRY,
+      discountSettings: { globalDiscount: 0, categoryDiscounts: {}, brandDiscounts: {} },
+      product: {
+        id: 'draft-prod',
+        published: false,
+        createdAt,
+        updatedAt,
+        translations: [{ locale: 'en', title: 'Draft Phone', slug: 'draft-phone' }],
+        variants: [],
+      },
+    });
+
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({
+      productId: 'draft-prod',
+      isPublished: false,
+      title: 'Draft Phone',
+    });
+  });
+
+  it('builds filter tokens from product-level attribute values', () => {
+    const rows = buildProductListingRowsForLocales({
+      locales: ['en'],
+      rebuiltAt,
+      categoryAncestry: EMPTY_ANCESTRY,
+      discountSettings: { globalDiscount: 0, categoryDiscounts: {}, brandDiscounts: {} },
+      product: {
+        id: 'simple-prod',
+        published: true,
+        createdAt,
+        updatedAt,
+        translations: [{ locale: 'en', title: 'Simple Chair', slug: 'simple-chair' }],
+        variants: [
+          {
+            id: 'var-simple',
+            imageUrl: null,
+            price: 200,
+            discountType: 'NONE',
+            discountValue: null,
+            discountExpiresAt: null,
+            stock: 3,
+            published: true,
+            attributes: null,
+            options: [],
+          },
+        ],
+        attributeValues: [
+          {
+            attributeValue: {
+              value: 'red',
+              imageUrl: null,
+              colors: ['#ff0000'],
+              translations: [{ locale: 'en', label: 'Red' }],
+              attribute: { key: 'color' },
+            },
+          },
+          {
+            attributeValue: {
+              value: 'm',
+              translations: [{ locale: 'en', label: 'M' }],
+              attribute: { key: 'size' },
+            },
+          },
+          {
+            attributeValue: {
+              value: 'wood',
+              translations: [{ locale: 'en', label: 'Wood' }],
+              attribute: {
+                key: 'material',
+                type: 'select',
+                filterable: true,
+                translations: [{ locale: 'en', name: 'Material' }],
+              },
+            },
+          },
+        ],
+      },
+    });
+
+    expect(rows[0]?.colors).toEqual([{ value: 'Red', imageUrl: null, colors: ['#ff0000'] }]);
+    expect(rows[0]?.colorTokens).toEqual(['red']);
+    expect(rows[0]?.sizeTokens).toEqual(['M']);
+    expect(rows[0]?.technicalSpecTokens).toEqual(['material=wood']);
   });
 
   it('falls back to the first translation when a locale-specific translation is missing', () => {
@@ -199,5 +291,32 @@ describe('buildProductListingRowsForLocales', () => {
 
     expect(rows[0]?.categoryIds).toEqual(['cat-child', 'cat-parent']);
     expect(rows[0]?.categorySlugs).toEqual(['sofas', 'furniture']);
+  });
+
+  it('strips HTML from subtitle when building searchText', () => {
+    const rows = buildProductListingRowsForLocales({
+      locales: ['hy'],
+      categoryAncestry: EMPTY_ANCESTRY,
+      discountSettings: { globalDiscount: 0, categoryDiscounts: {}, brandDiscounts: {} },
+      product: {
+        id: 'prod-html-subtitle',
+        createdAt,
+        updatedAt,
+        translations: [
+          {
+            locale: 'hy',
+            title: 'MIDEA MID60S130i',
+            slug: 'marco-21777-midea-mid60s130i',
+            subtitle: '<p><strong>*</strong> Dimensions may vary</p>',
+          },
+        ],
+        variants: [{ id: 'var1', price: 100, stock: 1, published: true }],
+      },
+    });
+
+    expect(rows[0]?.searchText).toContain('midea mid60s130i');
+    expect(rows[0]?.searchText).toContain('dimensions may vary');
+    expect(rows[0]?.searchText).not.toContain('<p>');
+    expect(rows[0]?.searchText).not.toContain('<strong>');
   });
 });

@@ -15,10 +15,24 @@ import {
   buildTechnicalSpecifications,
   type ProductTechnicalSpecification,
 } from "@/lib/services/products-slug/technical-specifications";
+import { pickVariantForListingPrice } from "@/lib/product-variant-listing-pick";
+import { resolveProductPrice } from "@/lib/pricing/product-price";
+import {
+  resolveEffectiveDiscount,
+  type TypedDiscountInput,
+} from "@/lib/discount/discount-expiry";
+import {
+  getActiveListingDiscountSettings,
+  type ActiveListingDiscountSettings,
+} from "@/lib/services/listing-discount-settings";
 
 type CompareProductWithRelations = {
   id: string;
   primaryCategoryId: string | null;
+  brandId: string | null;
+  discountType: string | null;
+  discountValue: number | null;
+  discountExpiresAt: Date | null;
   categoryIds: string[];
   media: Prisma.JsonValue[] | null;
   translations: Array<{ locale: string; title: string; slug: string }>;
@@ -37,7 +51,9 @@ type CompareProductWithRelations = {
     published: boolean;
     stock: number;
     price: number;
-    compareAtPrice: number | null;
+    discountType: string | null;
+    discountValue: number | null;
+    discountExpiresAt: Date | null;
     imageUrl: string | null;
     options: Array<{
       attributeKey: string | null;
@@ -245,27 +261,47 @@ function mapVariantSpecifications(
   return buildTechnicalSpecifications(productAttributes, variantForSpecs, locale);
 }
 
-function computePricing(product: CompareProductWithRelations): {
+function toTypedDiscount(source: {
+  discountType?: string | null;
+  discountValue?: number | null;
+  discountExpiresAt?: Date | null;
+}): TypedDiscountInput {
+  return {
+    type: (source.discountType ?? "NONE") as TypedDiscountInput["type"],
+    value: source.discountValue ?? null,
+    expiresAt: source.discountExpiresAt ?? null,
+  };
+}
+
+function computePricing(
+  product: CompareProductWithRelations,
+  settings: ActiveListingDiscountSettings,
+): {
   price: number;
   originalPrice: number | null;
   compareAtPrice: number | null;
   discountPercent: number | null;
 } {
-  const variants = product.variants.filter((variant) => variant.published);
-  const source = variants.length > 0 ? variants : product.variants;
-  const price = source.length > 0 ? Math.min(...source.map((variant) => variant.price)) : 0;
-  const compareAtValues = source
-    .map((variant) => variant.compareAtPrice)
-    .filter((value): value is number => typeof value === "number" && value > price);
-  const originalPrice =
-    compareAtValues.length > 0 ? Math.max(...compareAtValues) : null;
-  const compareAtPrice = originalPrice;
-  const discountPercent =
-    originalPrice && originalPrice > price
-      ? Math.round(((originalPrice - price) / originalPrice) * 100)
-      : null;
+  const variant = pickVariantForListingPrice(product.variants);
+  if (!variant) {
+    return { price: 0, originalPrice: null, compareAtPrice: null, discountPercent: null };
+  }
+  const discount = resolveEffectiveDiscount({
+    variant: toTypedDiscount(variant),
+    product: toTypedDiscount(product),
+    categoryPercent:
+      (product.primaryCategoryId && settings.categoryDiscounts[product.primaryCategoryId]) || 0,
+    brandPercent: (product.brandId && settings.brandDiscounts[product.brandId]) || 0,
+    globalPercent: settings.globalDiscount,
+  });
+  const pricing = resolveProductPrice({ standardPrice: variant.price, discount });
 
-  return { price, originalPrice, compareAtPrice, discountPercent };
+  return {
+    price: pricing.currentPrice,
+    originalPrice: pricing.oldPrice,
+    compareAtPrice: pricing.compareAtPrice,
+    discountPercent: pricing.discountPercent,
+  };
 }
 
 async function fetchCompareProducts(productIds: string[]) {
@@ -381,7 +417,10 @@ export async function buildComparePayload(
   }
 
   const productIds = rows.map((row) => row.productId);
-  const products = await fetchCompareProducts(productIds);
+  const [products, discountSettings] = await Promise.all([
+    fetchCompareProducts(productIds),
+    getActiveListingDiscountSettings(),
+  ]);
   const productById = new Map(products.map((product) => [product.id, product]));
 
   const items: CompareApiItem[] = rows.flatMap((row) => {
@@ -395,7 +434,7 @@ export async function buildComparePayload(
       return [];
     }
 
-    const pricing = computePricing(product);
+    const pricing = computePricing(product, discountSettings);
     const specifications = mapVariantSpecifications(product, locale).map((spec) => ({
       key: spec.key,
       name: spec.name,

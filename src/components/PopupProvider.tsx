@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from '@/lib/i18n-client';
 import { POPUP_EVENT_NAME, type PopupRequestDetail } from './popup-service';
 
 interface QueuedPopupRequest extends PopupRequestDetail {
@@ -27,6 +28,7 @@ function dispatchToast(message: string, type: 'success' | 'error', duration?: nu
 }
 
 export function PopupProvider() {
+  const { t } = useTranslation();
   const [queue, setQueue] = useState<QueuedPopupRequest[]>([]);
   const [inputValue, setInputValue] = useState('');
 
@@ -131,15 +133,23 @@ export function PopupProvider() {
               onClick={() => closeActive(isPrompt ? null : false)}
               className="inline-flex h-10 items-center rounded-xl border border-[var(--app-border-strong)] px-4 text-sm font-medium text-[var(--app-text-muted)] transition hover:bg-[var(--app-bg-muted)]"
             >
-              Cancel
+              {t('common.buttons.cancel')}
             </button>
           ) : null}
           <button
             type="button"
             onClick={() => closeActive(isPrompt ? inputValue : isConfirm ? true : undefined)}
-            className="inline-flex h-10 items-center rounded-xl bg-marco-yellow px-4 text-sm font-semibold text-marco-black transition hover:brightness-95"
+            className={
+              isConfirm
+                ? 'inline-flex h-10 items-center rounded-xl bg-red-600 px-4 text-sm font-semibold text-white transition hover:bg-red-700'
+                : 'inline-flex h-10 items-center rounded-xl bg-marco-yellow px-4 text-sm font-semibold text-marco-black transition hover:brightness-95'
+            }
           >
-            OK
+            {isConfirm
+              ? t('common.buttons.remove')
+              : isPrompt
+                ? t('common.buttons.submit')
+                : t('common.buttons.close')}
           </button>
         </div>
       </div>

@@ -1,17 +1,20 @@
 import { apiClient } from '@/lib/api-client';
-import { getErrorMessage } from '@/lib/types/errors';
 import type { ProductLabel, Variant } from '../types';
+import type { Product } from '../../types';
 import type { ProductClass } from '@/lib/constants/product-class';
 import type { ProductDescriptionEntry } from '@/lib/products/product-description';
-import { t as translateByLocale } from '@/lib/i18n';
-import { getStoredLanguage } from '@/lib/language';
-import { logger } from "@/lib/utils/logger";
+import { filterProductDescriptionForSave } from '@/lib/products/product-description';
+import {
+  isProductSubtitleHtmlEmpty,
+  sanitizeProductSubtitleHtml,
+} from '@/lib/security/sanitize-product-html';
 import { invalidateProductEditorSectionCaches } from '@/lib/admin/product-editor-section-cache';
 
-interface CreateAndSubmitPayloadProps {
+interface BuildProductPayloadProps {
   formData: {
     title: string;
     slug: string;
+    subtitleHtml: string;
     description: ProductDescriptionEntry[];
     productClass: ProductClass;
     categoryIds: string[];
@@ -28,31 +31,25 @@ interface CreateAndSubmitPayloadProps {
   finalCategoryIds: string[];
   variants: Variant[];
   attributeIds: string[];
+  attributeValueIds: string[];
   finalMedia: string[];
   mainImage: string | null;
   isEditMode: boolean;
-  productId: string | null;
-  creationMessages: string[];
-  setLoading: (loading: boolean) => void;
-  onSuccess: () => void;
 }
 
-export async function createAndSubmitPayload({
+/** Builds the product create/update request payload. Pure and synchronous. */
+export function buildProductPayload({
   formData,
   finalBrandIds,
   finalPrimaryCategoryId,
   finalCategoryIds,
   variants,
   attributeIds,
+  attributeValueIds,
   finalMedia,
   mainImage,
   isEditMode,
-  productId,
-  creationMessages,
-  setLoading,
-  onSuccess,
-}: CreateAndSubmitPayloadProps): Promise<void> {
-  const mt = (path: string): string => translateByLocale(getStoredLanguage(), path);
+}: BuildProductPayloadProps): Record<string, unknown> {
   const resolvedCategoryIds =
     finalCategoryIds.length > 0
       ? finalCategoryIds
@@ -61,81 +58,73 @@ export async function createAndSubmitPayload({
         : formData.categoryIds;
 
   const payload: Record<string, unknown> = {
-      title: formData.title,
-      slug: formData.slug,
-      description: formData.description.filter((entry) => entry.title.trim() || entry.value.trim()),
-      productClass: formData.productClass,
-      brandId: finalBrandIds.length > 0 ? finalBrandIds[0] : undefined,
-      primaryCategoryId: finalPrimaryCategoryId || undefined,
-      categoryIds: resolvedCategoryIds.length > 0 ? resolvedCategoryIds : undefined,
-      published: isEditMode ? formData.published : true,
-      featured: formData.featured,
-      locale: 'en',
-      variants: variants,
-      attributeIds,
-    };
-    
-    if (finalMedia.length > 0) {
-      payload.media = finalMedia;
-    }
-    
-    if (mainImage) {
-      payload.mainProductImage = mainImage;
-    }
+    title: formData.title,
+    slug: formData.slug,
+    subtitle: isProductSubtitleHtmlEmpty(formData.subtitleHtml)
+      ? null
+      : sanitizeProductSubtitleHtml(formData.subtitleHtml),
+    description: filterProductDescriptionForSave(formData.description),
+    productClass: formData.productClass,
+    brandId: finalBrandIds.length > 0 ? finalBrandIds[0] : undefined,
+    primaryCategoryId: finalPrimaryCategoryId || undefined,
+    categoryIds: resolvedCategoryIds.length > 0 ? resolvedCategoryIds : undefined,
+    featured: formData.featured,
+    locale: 'en',
+    variants,
+    attributeIds,
+    attributeValueIds,
+  };
 
-    payload.labels = (formData.labels || [])
-      .filter((label) => label.value && label.value.trim() !== '')
-      .map((label) => ({
-        type: label.type,
-        value: label.value.trim(),
-        position: label.position,
-        color: label.color || null,
-      }));
+  // Published status is toggled from the products list, not the editor form.
+  if (!isEditMode) {
+    payload.published = true;
+  }
 
-    payload.warrantyYears = formData.warrantyYears;
+  if (finalMedia.length > 0) {
+    payload.media = finalMedia;
+  }
 
-    logger.devLog('📤 [ADMIN] Sending payload:', JSON.stringify(payload, null, 2));
-    
-    try {
-      if (isEditMode && productId) {
-        const product = await apiClient.put(`/api/v1/supersudo/products/${productId}`, payload);
-        invalidateProductEditorSectionCaches(productId);
-        logger.devLog('✅ [ADMIN] Product updated:', product);
-        const baseMessage = mt('admin.products.add.productUpdatedSuccess');
-        const extra = creationMessages.length ? `\n\n${creationMessages.join('\n')}` : '';
-        alert(`${baseMessage}${extra}`);
-      } else {
-        const product = await apiClient.post('/api/v1/supersudo/products', payload);
-        logger.devLog('✅ [ADMIN] Product created:', product);
-        const baseMessage = mt('admin.products.add.productCreatedSuccess');
-        const extra = creationMessages.length ? `\n\n${creationMessages.join('\n')}` : '';
-        alert(`${baseMessage}${extra}`);
-      }
-      
-      onSuccess();
-    } catch (err: unknown) {
-      console.error('❌ [ADMIN] Error saving product:', err);
+  if (mainImage) {
+    payload.mainProductImage = mainImage;
+  }
 
-      let errorMessage = isEditMode
-        ? mt('admin.products.add.failedToUpdateProduct')
-        : mt('admin.products.add.failedToCreateProduct');
-      const raw = getErrorMessage(err);
+  payload.labels = (formData.labels || [])
+    .filter((label) => label.value && label.value.trim() !== '')
+    .map((label) => ({
+      type: label.type,
+      value: label.value.trim(),
+      position: label.position,
+      color: label.color || null,
+    }));
 
-      if (raw.includes('<!DOCTYPE') || raw.includes('<html')) {
-        const mongoErrorMatch = raw.match(/MongoServerError[^<]+/);
-        if (mongoErrorMatch) {
-          errorMessage = `${mt('admin.products.add.databaseErrorPrefix')} ${mongoErrorMatch[0]}`;
-        } else {
-          errorMessage = mt('admin.products.add.databaseErrorSkuConflict');
-        }
-      } else if (raw && raw !== mt('admin.common.unknownErrorFallback')) {
-        errorMessage = raw;
-      }
+  payload.warrantyYears = formData.warrantyYears;
 
-      alert(errorMessage);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
+  return payload;
 }
 
+/** Optimistic save handoff: the editor builds this, the list page persists it in the background. */
+export interface OptimisticSaveRequest {
+  isEditMode: boolean;
+  productId: string | null;
+  payload: Record<string, unknown>;
+  /** Row patch (update) or full temp row (create) applied to the list immediately. */
+  optimisticRow: Partial<Product> & { id: string };
+}
+
+/** Persists a product payload. Resolves with the API response; throws on failure. */
+export async function submitProductPayload(args: {
+  isEditMode: boolean;
+  productId: string | null;
+  payload: Record<string, unknown>;
+}): Promise<unknown> {
+  if (args.isEditMode && args.productId) {
+    const product = await apiClient.put(
+      `/api/v1/supersudo/products/${args.productId}`,
+      args.payload,
+    );
+    invalidateProductEditorSectionCaches(args.productId);
+    return product;
+  }
+
+  return apiClient.post('/api/v1/supersudo/products', args.payload);
+}

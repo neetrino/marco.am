@@ -1,10 +1,21 @@
-import type { FormEvent } from 'react';
+import type { FormEvent, MutableRefObject } from 'react';
 import { CATALOG_PRICE_CURRENCY, convertPrice, type CurrencyCode } from '@/lib/currency';
 import type { Attribute, Variant, GeneratedVariant } from '../types';
+import {
+  toApiVariantDiscount,
+  type VariantDiscount,
+} from '../utils/variant-discount';
+import { resolveProductPrice } from '@/lib/pricing/product-price';
+import { activeTypedDiscount } from '@/lib/discount/discount-expiry';
 import { useVariantConversionToFormData } from './useVariantConversionToFormData';
 import { useVariantValidation } from './useVariantValidation';
 import { processImagesForSubmit } from './useImageProcessingForSubmit';
-import { createAndSubmitPayload } from './useProductPayloadCreation';
+import { buildProductPayload, type OptimisticSaveRequest } from './useProductPayloadCreation';
+import {
+  computeGatedFingerprints,
+  resolveDirtySections,
+  type SectionFingerprints,
+} from '../utils/product-editor-dirty';
 import type { ProductClass } from '@/lib/constants/product-class';
 import { logger } from "@/lib/utils/logger";
 import { findAttributeBySemanticKey } from '@/lib/attribute-keys';
@@ -16,6 +27,7 @@ interface UseProductFormHandlersProps {
   formData: {
     title: string;
     slug: string;
+    subtitleHtml: string;
     description: ProductDescriptionEntry[];
     productClass: ProductClass;
     brandIds: string[];
@@ -35,18 +47,22 @@ interface UseProductFormHandlersProps {
   productType: 'simple' | 'variable';
   simpleProductData: {
     price: string;
-    compareAtPrice: string;
+    discount: VariantDiscount;
     sku: string;
     quantity: string;
+    variantId: string;
   };
   selectedAttributesForVariants: Set<string>;
+  selectedAttributeValueIds: Record<string, string[]>;
   generatedVariants: GeneratedVariant[];
   attributes: Attribute[];
   defaultCurrency: CurrencyCode;
   isEditMode: boolean;
   productId: string | null;
-  isClothingCategory: () => boolean;
-  onSuccess: () => void;
+  /** Hands the built payload + optimistic row to the list page, which persists it in the background. */
+  onSubmit: (request: OptimisticSaveRequest) => void;
+  /** Baseline fingerprints captured on load; unchanged heavy sections are stripped from the update payload. */
+  baselineRef?: MutableRefObject<SectionFingerprints>;
 }
 
 export function useProductFormHandlers({
@@ -56,13 +72,14 @@ export function useProductFormHandlers({
   productType,
   simpleProductData,
   selectedAttributesForVariants,
+  selectedAttributeValueIds,
   generatedVariants,
   attributes,
   defaultCurrency,
   isEditMode,
   productId,
-  isClothingCategory,
-  onSuccess,
+  onSubmit,
+  baselineRef,
 }: UseProductFormHandlersProps) {
   const mt = (path: string): string => translateByLocale(getStoredLanguage(), path);
   const { convertGeneratedVariantsToFormData } = useVariantConversionToFormData({
@@ -76,8 +93,6 @@ export function useProductFormHandlers({
   const { validateVariants } = useVariantValidation({
     productType,
     variants: formData.variants,
-    simpleProductData,
-    isClothingCategory,
     setLoading,
   });
 
@@ -110,44 +125,47 @@ export function useProductFormHandlers({
         return;
       }
 
-      if (productType === 'variable' && generatedVariants.length > 0) {
-        for (const genVariant of generatedVariants) {
-          if (!genVariant.sku?.trim()) {
-            alert(mt('admin.products.add.allVariantSkuRequired'));
-            setLoading(false);
-            return;
-          }
-        }
-      }
-
       // Process variants for API
       const variants: any[] = [];
       const selectedProductClass = formData.productClass || "retail";
       const variantSkuSet = new Set<string>();
+      const convertAmountToCatalog = (value: number): number =>
+        convertPrice(value, defaultCurrency, CATALOG_PRICE_CURRENCY);
 
       if (productType === 'simple') {
         logger.devLog('📦 [ADMIN] Processing Simple Product');
+        const simplePriceRaw = simpleProductData.price.trim();
+        const simplePriceValue =
+          simplePriceRaw === '' ? 0 : parseFloat(simplePriceRaw);
         const priceCatalog = convertPrice(
-          parseFloat(simpleProductData.price),
+          Number.isNaN(simplePriceValue) ? 0 : simplePriceValue,
           defaultCurrency,
           CATALOG_PRICE_CURRENCY
         );
-        const compareAtPriceCatalog =
-          simpleProductData.compareAtPrice && simpleProductData.compareAtPrice.trim() !== ''
-            ? convertPrice(parseFloat(simpleProductData.compareAtPrice), defaultCurrency, CATALOG_PRICE_CURRENCY)
-            : undefined;
-        const simpleVariant: any = {
+        const simpleDiscount = toApiVariantDiscount(
+          simpleProductData.discount,
+          convertAmountToCatalog,
+        );
+        const trimmedSku = simpleProductData.sku.trim();
+        const simpleVariant: Record<string, unknown> = {
           price: priceCatalog,
           stock: parseInt(simpleProductData.quantity) || 0,
-          sku: simpleProductData.sku.trim(),
           productClass: selectedProductClass,
           published: true,
+          discountType: simpleDiscount.discountType,
+          discountValue: simpleDiscount.discountValue,
+          discountExpiresAt: simpleDiscount.discountExpiresAt,
         };
-        if (compareAtPriceCatalog !== undefined) {
-          simpleVariant.compareAtPrice = compareAtPriceCatalog;
+        if (trimmedSku) {
+          simpleVariant.sku = trimmedSku;
+        }
+        if (isEditMode && simpleProductData.variantId) {
+          simpleVariant.id = simpleProductData.variantId;
         }
         variants.push(simpleVariant);
-        variantSkuSet.add(simpleProductData.sku.trim());
+        if (trimmedSku) {
+          variantSkuSet.add(trimmedSku);
+        }
         logger.devLog('✅ [ADMIN] Simple product variant created:', simpleVariant);
       } else {
         // Variable products variant processing (simplified - full logic remains in original)
@@ -162,9 +180,7 @@ export function useProductFormHandlers({
               defaultCurrency,
               CATALOG_PRICE_CURRENCY
             );
-            const variantCompareAtPriceCatalog = genVariant.compareAtPrice
-              ? convertPrice(parseFloat(genVariant.compareAtPrice), defaultCurrency, CATALOG_PRICE_CURRENCY)
-              : undefined;
+            const variantDiscount = toApiVariantDiscount(genVariant.discount, convertAmountToCatalog);
             
             const attributeValueMap: Record<string, Array<{ valueId: string; value: string }>> = {};
             
@@ -184,22 +200,19 @@ export function useProductFormHandlers({
             const attributeKeys = Object.keys(attributeValueMap);
             if (attributeKeys.length === 0) {
               const finalSku = genVariant.sku?.trim() ?? '';
-              if (!finalSku) {
-                alert(mt('admin.products.add.allVariantSkuRequired'));
-                setLoading(false);
-                return;
-              }
-              if (variantSkuSet.has(finalSku)) {
+              if (finalSku && variantSkuSet.has(finalSku)) {
                 alert(mt('admin.products.add.duplicateSku').replace('{sku}', finalSku));
                 setLoading(false);
                 return;
               }
-              variantSkuSet.add(finalSku);
+              if (finalSku) {
+                variantSkuSet.add(finalSku);
+              }
               variants.push({
                 price: variantPriceCatalog,
-                compareAtPrice: variantCompareAtPriceCatalog,
+                ...variantDiscount,
                 stock: parseInt(genVariant.stock || '0') || 0,
-                sku: finalSku,
+                sku: finalSku || undefined,
                 imageUrl: genVariant.image || undefined,
                 published: true,
               });
@@ -237,23 +250,20 @@ export function useProductFormHandlers({
                 });
                 
                 const finalSku = genVariant.sku?.trim() ?? '';
-                if (!finalSku) {
-                  alert(mt('admin.products.add.allVariantSkuRequired'));
-                  setLoading(false);
-                  return;
-                }
-                if (variantSkuSet.has(finalSku)) {
+                if (finalSku && variantSkuSet.has(finalSku)) {
                   alert(mt('admin.products.add.duplicateSku').replace('{sku}', finalSku));
                   setLoading(false);
                   return;
                 }
-                variantSkuSet.add(finalSku);
-                
+                if (finalSku) {
+                  variantSkuSet.add(finalSku);
+                }
+
                 variants.push({
                   price: variantPriceCatalog,
-                  compareAtPrice: variantCompareAtPriceCatalog,
+                  ...variantDiscount,
                   stock: parseInt(genVariant.stock || '0') || 0,
-                  sku: finalSku,
+                  sku: finalSku || undefined,
                   imageUrl: genVariant.image || undefined,
                   published: true,
                   options: variantOptions.length > 0 ? variantOptions : undefined,
@@ -270,14 +280,12 @@ export function useProductFormHandlers({
               defaultCurrency,
               CATALOG_PRICE_CURRENCY
             );
-            const baseVariantData: any = { price: variantPriceCatalog, published: true };
-            if (variant.compareAtPrice) {
-              baseVariantData.compareAtPrice = convertPrice(
-                parseFloat(variant.compareAtPrice),
-                defaultCurrency,
-                CATALOG_PRICE_CURRENCY
-              );
-            }
+            const variantDiscount = toApiVariantDiscount(variant.discount, convertAmountToCatalog);
+            const baseVariantData: any = {
+              price: variantPriceCatalog,
+              published: true,
+              ...variantDiscount,
+            };
             const colorDataArray = variant.colors || [];
             // Simplified variant processing - full logic would be in separate hook
             if (colorDataArray.length > 0) {
@@ -288,17 +296,14 @@ export function useProductFormHandlers({
                   colorSizes.forEach((size) => {
                     const stockForVariant = colorSizeStocks[size] || colorData.stock || '0';
                     const finalSku = (colorData.sizeLabels?.[size] || variant.sku || '').trim();
-                    if (!finalSku) {
-                      alert(mt('admin.products.add.allVariantSkuRequired'));
-                      setLoading(false);
-                      return;
-                    }
-                    if (variantSkuSet.has(finalSku)) {
+                    if (finalSku && variantSkuSet.has(finalSku)) {
                       alert(mt('admin.products.add.duplicateSku').replace('{sku}', finalSku));
                       setLoading(false);
                       return;
                     }
-                    variantSkuSet.add(finalSku);
+                    if (finalSku) {
+                      variantSkuSet.add(finalSku);
+                    }
                     const variantImageUrl = colorData.images && colorData.images.length > 0 ? colorData.images.join(',') : undefined;
                     const sizePrice = colorData.sizePrices?.[size];
                     const finalPrice =
@@ -332,7 +337,7 @@ export function useProductFormHandlers({
                       color: colorData.colorValue,
                       size: size,
                       stock: parseInt(stockForVariant) || 0,
-                      sku: finalSku,
+                      sku: finalSku || undefined,
                       imageUrl: variantImageUrl,
                       options: variantOptions.length > 0 ? variantOptions : undefined,
                     });
@@ -344,14 +349,14 @@ export function useProductFormHandlers({
         }
       }
 
-      // Final SKU validation — manual entry only, no auto-generation
+      // SKU is optional. Enforce uniqueness only across provided (non-empty) SKUs.
       const finalSkuSet = new Set<string>();
       for (const variant of variants) {
         const sku = variant.sku?.trim() ?? '';
+        variant.productClass = variant.productClass || selectedProductClass;
         if (!sku) {
-          alert(mt('admin.products.add.allVariantSkuRequired'));
-          setLoading(false);
-          return;
+          variant.sku = undefined;
+          continue;
         }
         if (finalSkuSet.has(sku)) {
           alert(mt('admin.products.add.duplicateSku').replace('{sku}', sku));
@@ -359,13 +364,18 @@ export function useProductFormHandlers({
           return;
         }
         variant.sku = sku;
-        variant.productClass = variant.productClass || selectedProductClass;
         finalSkuSet.add(sku);
       }
 
-      // Persist only attributes explicitly selected for this product.
-      const attributeIds =
-        productType === 'variable' ? Array.from(selectedAttributesForVariants) : [];
+      // Persist filter/spec attributes independently from sellable variants.
+      const attributeIds = Array.from(selectedAttributesForVariants);
+      const selectedAttributeValueIdList = [
+        ...Object.values(selectedAttributeValueIds).flat(),
+        ...(productType === 'variable'
+          ? generatedVariants.flatMap((variant) => variant.selectedValueIds)
+          : []),
+      ];
+      const attributeValueIds = [...new Set(selectedAttributeValueIdList.filter(Boolean))];
 
       // Process images
       const { finalMedia, mainImage, processedVariants } = processImagesForSubmit({
@@ -376,25 +386,101 @@ export function useProductFormHandlers({
       });
       const finalVariants = processedVariants.length > 0 ? processedVariants : variants;
 
-      // Create and submit payload
-      await createAndSubmitPayload({
+      const payload = buildProductPayload({
         formData: currentFormData,
         finalBrandIds,
         finalPrimaryCategoryId,
         finalCategoryIds,
         variants: finalVariants,
         attributeIds,
+        attributeValueIds,
         finalMedia,
         mainImage,
         isEditMode,
-        productId,
-        creationMessages: [],
-        setLoading,
-        onSuccess,
       });
+
+      // Skip re-sending heavy sections the user did not touch → backend takes its fast path.
+      if (isEditMode && baselineRef) {
+        const current = computeGatedFingerprints({
+          imageUrls: currentFormData.imageUrls,
+          featuredImageIndex: currentFormData.featuredImageIndex,
+          mainProductImage: currentFormData.mainProductImage,
+          subtitleHtml: currentFormData.subtitleHtml,
+          description: currentFormData.description,
+          productType,
+          simpleProductData,
+          variants: currentFormData.variants,
+          generatedVariants,
+          selectedAttributeIds: Array.from(selectedAttributesForVariants),
+          selectedAttributeValueIds: attributeValueIds,
+        });
+        const dirty = resolveDirtySections(current, baselineRef.current);
+        if (!dirty.media) {
+          delete payload.media;
+          delete payload.mainProductImage;
+        }
+        if (!dirty.description) {
+          delete payload.subtitle;
+          delete payload.description;
+        }
+        if (!dirty.pricing) {
+          delete payload.variants;
+          delete payload.attributeIds;
+          delete payload.attributeValueIds;
+        }
+      }
+
+      const primaryVariant = finalVariants[0] as
+        | {
+            price?: unknown;
+            discountType?: unknown;
+            discountValue?: unknown;
+            discountExpiresAt?: unknown;
+          }
+        | undefined;
+      const standardPrice = Number(primaryVariant?.price) || 0;
+      const appliedDiscount = activeTypedDiscount({
+        type: (primaryVariant?.discountType as VariantDiscount['type'] | undefined) ?? 'NONE',
+        value: (primaryVariant?.discountValue as number | null | undefined) ?? null,
+        expiresAt: (primaryVariant?.discountExpiresAt as string | null | undefined) ?? null,
+      });
+      const resolvedOptimisticPrice = resolveProductPrice({
+        standardPrice,
+        discount: appliedDiscount,
+      });
+      const optimisticPrice = resolvedOptimisticPrice.currentPrice;
+      const optimisticStock = finalVariants.reduce(
+        (sum, variant) => sum + (Number((variant as { stock?: unknown }).stock) || 0),
+        0,
+      );
+      const optimisticOriginalPrice = resolvedOptimisticPrice.oldPrice;
+      const optimisticDiscountPercent = resolvedOptimisticPrice.discountPercent ?? 0;
+      const optimisticDiscountExpiresAt =
+        (primaryVariant?.discountExpiresAt as string | null | undefined) ?? null;
+      const optimisticImage =
+        mainImage ?? finalMedia[0] ?? (currentFormData.mainProductImage || currentFormData.imageUrls[0] || null);
+
+      const optimisticRow = {
+        id: isEditMode && productId ? productId : `temp-${Date.now()}`,
+        title: currentFormData.title,
+        slug: currentFormData.slug,
+        price: optimisticPrice,
+        stock: optimisticStock,
+        originalPrice: optimisticOriginalPrice,
+        discountPercent: optimisticDiscountPercent,
+        discountExpiresAt: optimisticDiscountExpiresAt,
+        image: optimisticImage,
+        featured: currentFormData.featured,
+        published: isEditMode ? currentFormData.published : true,
+        productClass: currentFormData.productClass,
+        createdAt: new Date().toISOString(),
+        pendingSync: true,
+      };
+
+      onSubmit({ isEditMode, productId, payload, optimisticRow });
+      setLoading(false);
     } catch (err: unknown) {
-      console.error('❌ [ADMIN] Error saving product:', err);
-    } finally {
+      console.error('❌ [ADMIN] Error preparing product submit:', err);
       setLoading(false);
     }
   };

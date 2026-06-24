@@ -8,22 +8,41 @@ import {
 import { resolveListingHeroImageUrl } from '@/lib/products/product-gallery-urls';
 import { processImageUrl } from '@/lib/utils/image-utils';
 import { resolveProductPrice } from '@/lib/pricing/product-price';
+import { resolveEffectiveDiscount, type TypedDiscountInput } from '@/lib/discount/discount-expiry';
+import {
+  buildOperationalCategorySearchWhere,
+  buildOperationalProductSearchWhere,
+} from '@/lib/product-search/operational-where';
 
 const DEFAULT_PRODUCT_LIMIT = 8;
 const DEFAULT_CATEGORY_LIMIT = 4;
 const MAX_LIMIT = 20;
 const MIN_LIMIT = 1;
-type ProductSearchRecord = {
+type DiscountFields = {
+  discountType?: string | null;
+  discountValue?: number | null;
+  discountExpiresAt?: Date | null;
+};
+
+type ProductSearchRecord = DiscountFields & {
   id: string;
   primaryCategoryId: string | null;
   media: Prisma.JsonValue[] | null;
   translations: Array<{ locale: string; slug: string; title: string }>;
-  variants: Array<{ price: number; compareAtPrice: number | null; imageUrl: string | null }>;
+  variants: Array<DiscountFields & { price: number; imageUrl: string | null }>;
   categories: Array<{
     id: string;
     translations: Array<{ locale: string; title: string }>;
   }>;
 };
+
+function toTypedDiscount(source: DiscountFields | null | undefined): TypedDiscountInput {
+  return {
+    type: (source?.discountType ?? 'NONE') as TypedDiscountInput['type'],
+    value: source?.discountValue ?? null,
+    expiresAt: source?.discountExpiresAt ?? null,
+  };
+}
 
 type CategorySearchRecord = {
   id: string;
@@ -104,58 +123,6 @@ function parseLimit(rawLimit: string | null, fallback: number): number {
   return Math.min(rounded, MAX_LIMIT);
 }
 
-function buildProductSearchWhere(query: string): Prisma.ProductWhereInput {
-  const term = query.trim();
-  if (!term) {
-    return {};
-  }
-
-  return {
-    OR: [
-      {
-        translations: {
-          some: {
-            title: { contains: term, mode: 'insensitive' },
-          },
-        },
-      },
-      {
-        translations: {
-          some: {
-            subtitle: { contains: term, mode: 'insensitive' },
-          },
-        },
-      },
-      {
-        variants: {
-          some: {
-            sku: { contains: term, mode: 'insensitive' },
-          },
-        },
-      },
-    ],
-  };
-}
-
-function buildCategorySearchWhere(query: string): Prisma.CategoryWhereInput {
-  const term = query.trim();
-  if (!term) {
-    return {};
-  }
-
-  return {
-    translations: {
-      some: {
-        OR: [
-          { title: { contains: term, mode: 'insensitive' } },
-          { slug: { contains: term, mode: 'insensitive' } },
-          { fullPath: { contains: term, mode: 'insensitive' } },
-        ],
-      },
-    },
-  };
-}
-
 function mapProductResult(
   product: ProductSearchRecord,
   locale: ApiLocale,
@@ -167,8 +134,11 @@ function mapProductResult(
 
   const firstVariant = product.variants[0];
   const pricing = resolveProductPrice({
-    currentPrice: firstVariant?.price ?? 0,
-    compareAtPrice: firstVariant?.compareAtPrice ?? null,
+    standardPrice: firstVariant?.price ?? 0,
+    discount: resolveEffectiveDiscount({
+      variant: toTypedDiscount(firstVariant),
+      product: toTypedDiscount(product),
+    }),
   });
   let image = resolveListingHeroImageUrl(product.media, product.variants);
   if (!image && firstVariant?.imageUrl) {
@@ -271,7 +241,7 @@ export async function searchInstant(
       where: {
         published: true,
         deletedAt: null,
-        ...buildProductSearchWhere(params.query),
+        ...buildOperationalProductSearchWhere(params.query),
       },
       take: params.productLimit,
       include: {
@@ -292,7 +262,7 @@ export async function searchInstant(
       where: {
         published: true,
         deletedAt: null,
-        ...buildCategorySearchWhere(params.query),
+        ...buildOperationalCategorySearchWhere(params.query),
       },
       take: params.categoryLimit,
       include: {

@@ -1,5 +1,7 @@
 import type { ProductClass } from "@/lib/constants/product-class";
 import type { ProductDescriptionEntry } from "@/lib/products/product-description";
+import type { DiscountKind } from "@/lib/discount/discount-expiry";
+import type { VariantDiscount } from "./utils/variant-discount";
 
 export interface Brand {
   id: string;
@@ -38,11 +40,9 @@ export interface ColorData {
   images: string[]; // Массив изображений для этого цвета (file upload)
   stock: string; // Base stock for color (if no sizes)
   price?: string; // Цена для этого конкретного цвета (опционально)
-  compareAtPrice?: string; // Старая цена для этого конкретного цвета (скидка)
   sizes: string[]; // Размеры для этого цвета
   sizeStocks: Record<string, string>; // Stock для каждого размера этого цвета: { "S": "10", "M": "5" }
   sizePrices?: Record<string, string>; // Price для каждого размера этого цвета: { "S": "100", "M": "120" }
-  sizeCompareAtPrices?: Record<string, string>; // CompareAtPrice для каждого размера: { "S": "150", "M": "180" }
   sizeLabels?: Record<string, string>; // Original labels for manually added sizes: { "s": "S" }
   isFeatured?: boolean; // Является ли этот цвет основным для товара
 }
@@ -51,8 +51,8 @@ export interface ColorData {
 // Note: sizes are now managed at color level, not variant level
 export interface Variant {
   id: string;
-  price: string; // Общая цена для всех цветов (fallback, если color-ի price չկа)
-  compareAtPrice: string;
+  price: string; // Общая цена для всех цветов (fallback, если color-ի price չկа) — standard price
+  discount: VariantDiscount;
   sku: string;
   productClass?: ProductClass;
   sizes?: string[]; 
@@ -73,7 +73,9 @@ export interface ProductLabel {
 export interface AdminProductVariantRow {
   id?: string;
   price?: string | number;
-  compareAtPrice?: string | number;
+  discountType?: DiscountKind | null;
+  discountValue?: number | null;
+  discountExpiresAt?: string | null;
   stock?: string | number;
   sku?: string;
   productClass?: ProductClass;
@@ -96,6 +98,8 @@ export interface ProductData {
   primaryCategoryId?: string | null;
   categoryIds?: string[];
   attributeIds?: string[]; // All attribute IDs that this product has
+  attributeValues?: Array<{ attributeId: string; attributeValueId: string }>;
+  attributeValueIds?: string[]; // Selected product-level attribute value IDs
   published: boolean;
   featured?: boolean;
   media?: string[];
@@ -110,7 +114,7 @@ export interface GeneratedVariant {
   id: string; // Unique ID for this variant
   selectedValueIds: string[]; // Array of selected value IDs from all attributes
   price: string;
-  compareAtPrice: string;
+  discount: VariantDiscount;
   stock: string;
   sku: string;
   image: string | null;

@@ -4,7 +4,8 @@ import type { MouseEvent } from 'react';
 import { formatCatalogPrice, type CurrencyCode } from '../../../lib/currency';
 import { t, getProductText } from '../../../lib/i18n';
 import type { LanguageCode } from '../../../lib/language';
-import { getProductDescriptionNotes } from '../../../lib/products/product-description';
+import { ProductShortDescription } from './ProductShortDescription';
+import { isProductSubtitleHtmlEmpty } from '../../../lib/security/sanitize-product-html';
 import { ProductWarrantyBadge } from '../../../components/ProductCard/ProductWarrantyBadge';
 import { BrandPlpLink } from '../../../components/BrandPlpLink';
 import { ProductCardBrandMark } from '../../../components/ProductCard/ProductCardBrandMark';
@@ -92,15 +93,14 @@ export function ProductInfoAndActions({
   getRequiredAttributesMessage,
   detailsPending = false,
 }: ProductInfoAndActionsProps) {
-  const localizedEntries = product.i18n?.descriptions[language]?.entries ?? product.description ?? [];
-  const descriptionNotes = getProductDescriptionNotes(localizedEntries).filter(
-    (note) => note.value.trim().length >= 24,
-  );
+  const localizedShortDescription =
+    product.i18n?.descriptions[language]?.shortDescription ?? product.shortDescription ?? null;
+  const subtitleHtml = localizedShortDescription;
   const noPriceLabel = t(language, 'products.noPrice.label');
   const hasMultiValueAttributeGroup = Array.from(attributeGroups.values()).some(
     (values) => values.length > 1,
   );
-  const hasDescription = descriptionNotes.length > 0;
+  const hasDescription = !isProductSubtitleHtmlEmpty(subtitleHtml);
   const showDescriptionSkeleton = detailsPending && !hasDescription;
   const displaySku = currentVariant?.sku || product.variants.find((variant) => Boolean(variant.sku))?.sku || null;
   const hasAttributeSelectors =
@@ -181,10 +181,8 @@ export function ProductInfoAndActions({
             <div className="h-4 w-[88%] animate-pulse rounded bg-gray-200/80 dark:bg-white/10" />
           </div>
         ) : hasDescription ? (
-          <div className="mb-8 animate-fade-in space-y-2 text-sm text-gray-600">
-            {descriptionNotes.map((note, index) => (
-              <p key={`description-note-${index}`}>{note.value}</p>
-            ))}
+          <div className="mb-8 animate-fade-in">
+            <ProductShortDescription html={subtitleHtml} />
           </div>
         ) : null}
 

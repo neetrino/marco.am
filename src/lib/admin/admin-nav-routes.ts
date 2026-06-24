@@ -8,7 +8,7 @@ export const ADMIN_PANEL_ROUTES = [
   '/supersudo/brands',
   '/supersudo/attributes',
   '/supersudo/promo-codes',
-  '/supersudo/quick-settings',
+  '/supersudo/discounts',
   '/supersudo/users',
   '/supersudo/reels',
   '/supersudo/price-filter-settings',

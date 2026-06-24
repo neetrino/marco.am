@@ -177,6 +177,9 @@ async function loadPricingSection(productId: string) {
         productAttributes: {
           select: { attributeId: true },
         },
+        attributeValues: {
+          select: { attributeId: true, attributeValueId: true },
+        },
       },
     });
 
@@ -187,6 +190,11 @@ async function loadPricingSection(productId: string) {
     return {
       id: product.id,
       attributeIds: mergeAttributeIds(product.productAttributes, product.attributeIds || []),
+      attributeValues: product.attributeValues.map((row) => ({
+        attributeId: row.attributeId,
+        attributeValueId: row.attributeValueId,
+      })),
+      attributeValueIds: product.attributeValues.map((row) => row.attributeValueId),
       variants: product.variants.map((variant) =>
         formatVariantForAdmin(variant as Parameters<typeof formatVariantForAdmin>[0]),
       ),
@@ -205,6 +213,9 @@ async function loadPricingSection(productId: string) {
           include: pricingVariantInclude,
           orderBy: { position: "asc" },
         },
+        attributeValues: {
+          select: { attributeId: true, attributeValueId: true },
+        },
       },
     });
 
@@ -215,6 +226,11 @@ async function loadPricingSection(productId: string) {
     return {
       id: product.id,
       attributeIds: product.attributeIds || [],
+      attributeValues: product.attributeValues.map((row) => ({
+        attributeId: row.attributeId,
+        attributeValueId: row.attributeValueId,
+      })),
+      attributeValueIds: product.attributeValues.map((row) => row.attributeValueId),
       variants: product.variants.map((variant) =>
         formatVariantForAdmin(variant as Parameters<typeof formatVariantForAdmin>[0]),
       ),

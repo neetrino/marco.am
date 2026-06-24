@@ -18,18 +18,19 @@ import {
   writeAdminCategoriesCache,
 } from '@/lib/admin/admin-reference-data-cache';
 import { writeAdminSessionCache } from '@/lib/admin/admin-session-cache';
+import type { DiscountKind } from '@/lib/discount/discount-expiry';
 import type { LanguageCode } from '@/lib/language';
 import type {
   AdminBootstrapPath,
   AdminBootstrapResponse,
   AdminDashboardBootstrapPayload,
-  AdminQuickSettingsBootstrapPayload,
+  AdminDiscountsBootstrapPayload,
 } from '@/lib/services/admin/admin-bootstrap.service';
 
-type QuickSettingsSettingsPayload = AdminQuickSettingsBootstrapPayload['settings'];
+type DiscountsSettingsPayload = AdminDiscountsBootstrapPayload['settings'];
 
 let dashboardBootstrapPromise: Promise<AdminDashboardCachePayload> | null = null;
-const quickSettingsBootstrapPromises = new Map<string, Promise<AdminQuickSettingsBootstrapPayload>>();
+const discountsBootstrapPromises = new Map<string, Promise<AdminDiscountsBootstrapPayload>>();
 
 function dashboardPayloadFromBootstrap(
   bootstrap: AdminDashboardBootstrapPayload,
@@ -50,8 +51,8 @@ export function applyDashboardBootstrapToSessionCache(
   return payload;
 }
 
-export function applyQuickSettingsBootstrapToSessionCache(
-  bootstrap: AdminQuickSettingsBootstrapPayload,
+export function applyDiscountsBootstrapToSessionCache(
+  bootstrap: AdminDiscountsBootstrapPayload,
   locale: LanguageCode,
 ): void {
   writeAdminSessionCache(ADMIN_CACHE_KEYS.settings, bootstrap.settings);
@@ -95,33 +96,33 @@ export function fetchAdminDashboardBootstrap(): Promise<AdminDashboardCachePaylo
   return dashboardBootstrapPromise;
 }
 
-/** Single HTTP bootstrap for quick-settings cold load (replaces 4 parallel API calls). */
-export function fetchAdminQuickSettingsBootstrap(
+/** Single HTTP bootstrap for discounts page cold load (replaces 4 parallel API calls). */
+export function fetchAdminDiscountsBootstrap(
   locale: LanguageCode,
-): Promise<AdminQuickSettingsBootstrapPayload> {
-  const existing = quickSettingsBootstrapPromises.get(locale);
+): Promise<AdminDiscountsBootstrapPayload> {
+  const existing = discountsBootstrapPromises.get(locale);
   if (existing) {
     return existing;
   }
 
-  const promise = fetchAdminBootstrapResponse(['quick-settings'], locale)
+  const promise = fetchAdminBootstrapResponse(['discounts'], locale)
     .then((response) => {
-      if (!response['quick-settings']) {
-        throw new Error('Admin bootstrap missing quick-settings payload');
+      if (!response.discounts) {
+        throw new Error('Admin bootstrap missing discounts payload');
       }
-      applyQuickSettingsBootstrapToSessionCache(response['quick-settings'], locale);
-      return response['quick-settings'];
+      applyDiscountsBootstrapToSessionCache(response.discounts, locale);
+      return response.discounts;
     })
     .finally(() => {
-      quickSettingsBootstrapPromises.delete(locale);
+      discountsBootstrapPromises.delete(locale);
     });
 
-  quickSettingsBootstrapPromises.set(locale, promise);
+  discountsBootstrapPromises.set(locale, promise);
   return promise;
 }
 
-export type QuickSettingsBootstrapResult = {
-  settings: QuickSettingsSettingsPayload;
+export type DiscountsBootstrapResult = {
+  settings: DiscountsSettingsPayload;
   categories: Array<{ id: string; title: string; parentId: string | null }>;
   brands: Array<{ id: string; name: string; logoUrl?: string }>;
   products: Array<{
@@ -129,13 +130,15 @@ export type QuickSettingsBootstrapResult = {
     title: string;
     image?: string | null;
     price?: number;
-    discountPercent?: number;
+    discountType?: DiscountKind;
+    discountValue?: number | null;
+    discountExpiresAt?: string | null;
   }>;
 };
 
-export function mapQuickSettingsBootstrap(
-  bootstrap: AdminQuickSettingsBootstrapPayload,
-): QuickSettingsBootstrapResult {
+export function mapDiscountsBootstrap(
+  bootstrap: AdminDiscountsBootstrapPayload,
+): DiscountsBootstrapResult {
   return {
     settings: bootstrap.settings,
     categories: bootstrap.categories.data ?? [],

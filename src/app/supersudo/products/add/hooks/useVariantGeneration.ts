@@ -1,15 +1,14 @@
 'use client';
 
 import { useEffect } from 'react';
-import type { Attribute, GeneratedVariant } from '../types';
+import type { GeneratedVariant } from '../types';
+import { EMPTY_VARIANT_DISCOUNT } from '../utils/variant-discount';
 import { logger } from "@/lib/utils/logger";
 
 interface UseVariantGenerationProps {
   selectedAttributesForVariants: Set<string>;
   selectedAttributeValueIds: Record<string, string[]>;
-  attributes: Attribute[];
-  formDataSlug: string;
-  formDataTitle: string;
+  productType: 'simple' | 'variable';
   isEditMode: boolean;
   productId: string | null;
   setGeneratedVariants: (updater: (prev: GeneratedVariant[]) => GeneratedVariant[]) => void;
@@ -18,9 +17,7 @@ interface UseVariantGenerationProps {
 export function useVariantGeneration({
   selectedAttributesForVariants,
   selectedAttributeValueIds,
-  attributes,
-  formDataSlug,
-  formDataTitle,
+  productType,
   isEditMode,
   productId,
   setGeneratedVariants,
@@ -67,7 +64,7 @@ export function useVariantGeneration({
         id: variantId,
         selectedValueIds: allSelectedValueIds,
         price: existingAutoVariant?.price || '',
-        compareAtPrice: existingAutoVariant?.compareAtPrice || '',
+        discount: existingAutoVariant?.discount ?? { ...EMPTY_VARIANT_DISCOUNT },
         stock: existingAutoVariant?.stock || '',
         sku: existingAutoVariant?.sku || '',
         image: existingAutoVariant?.image || null,
@@ -78,7 +75,7 @@ export function useVariantGeneration({
         prev[0]?.id === 'variant-all' &&
         areValueIdsEqual(prev[0].selectedValueIds, autoVariant.selectedValueIds) &&
         prev[0].price === autoVariant.price &&
-        prev[0].compareAtPrice === autoVariant.compareAtPrice &&
+        prev[0].discount === autoVariant.discount &&
         prev[0].stock === autoVariant.stock &&
         prev[0].sku === autoVariant.sku &&
         prev[0].image === autoVariant.image
@@ -98,7 +95,7 @@ export function useVariantGeneration({
     logger.devLog('✅ [VARIANT BUILDER] Single variant generated with', selectedAttrs.length, 'attributes');
   };
 
-  const applyToAllVariants = (field: 'price' | 'compareAtPrice' | 'stock' | 'sku', value: string) => {
+  const applyToAllVariants = (field: 'price' | 'stock' | 'sku', value: string) => {
     setGeneratedVariants((prev) =>
       prev.map((variant) => ({
         ...variant,
@@ -108,6 +105,11 @@ export function useVariantGeneration({
   };
 
   useEffect(() => {
+    if (productType !== 'variable') {
+      setGeneratedVariants((prev) => (prev.length === 0 ? prev : []));
+      return;
+    }
+
     const hasPendingInitialConversion = Boolean(
       isEditMode &&
       productId &&
@@ -128,12 +130,9 @@ export function useVariantGeneration({
         setGeneratedVariants((prev) => (prev.length === 0 ? prev : []));
       }
     }
-  }, [selectedAttributesForVariants, selectedAttributeValueIds, attributes, formDataSlug, formDataTitle, isEditMode, productId]);
+  }, [productType, selectedAttributesForVariants, selectedAttributeValueIds, isEditMode, productId]);
 
   return {
-    generateVariantsFromAttributes,
     applyToAllVariants,
   };
 }
-
-

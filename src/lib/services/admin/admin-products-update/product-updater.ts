@@ -10,13 +10,17 @@ import { normalizeProductClass } from "@/lib/constants/product-class";
 import { normalizeProductWarrantyYears } from "@/lib/constants/product-warranty";
 import type { NormalizedProductCategoryLinks } from "../../product-category-links.service";
 import { toProductCategoriesSet } from "../../product-category-links.service";
-import { toPrismaProductDescription } from "@/lib/products/product-description";
+import { toPrismaProductDescription, filterProductDescriptionForSave } from "@/lib/products/product-description";
+import {
+  isProductSubtitleHtmlEmpty,
+  sanitizeProductSubtitleHtml,
+} from "@/lib/security/sanitize-product-html";
 
 /**
  * Collect variant images from data or existing variants
  */
 export async function collectVariantImages(
-  variants: UpdateProductData['variants'],
+  variants: Array<{ imageUrl?: string; normalizedImageUrl?: string }> | undefined,
   existingVariantImageUrls: string[] = []
 ): Promise<string[]> {
   const allVariantImages: string[] = [];
@@ -118,6 +122,17 @@ export async function updateProductTranslation(
 ) {
   if (data.title || data.slug || data.subtitle !== undefined || data.description !== undefined) {
     const locale = data.locale || "en";
+    const sanitizedSubtitle =
+      data.subtitle !== undefined
+        ? isProductSubtitleHtmlEmpty(data.subtitle)
+          ? null
+          : sanitizeProductSubtitleHtml(data.subtitle)
+        : undefined;
+    const sanitizedDescription =
+      data.description !== undefined
+        ? filterProductDescriptionForSave(data.description)
+        : undefined;
+
     await tx.productTranslation.upsert({
       where: {
         productId_locale: {
@@ -128,9 +143,9 @@ export async function updateProductTranslation(
       update: {
         ...(data.title && { title: data.title }),
         ...(data.slug && { slug: data.slug }),
-        ...(data.subtitle !== undefined && { subtitle: data.subtitle || null }),
-        ...(data.description !== undefined && {
-          description: toPrismaProductDescription(data.description),
+        ...(sanitizedSubtitle !== undefined && { subtitle: sanitizedSubtitle }),
+        ...(sanitizedDescription !== undefined && {
+          description: toPrismaProductDescription(sanitizedDescription),
         }),
       },
       create: {
@@ -138,8 +153,8 @@ export async function updateProductTranslation(
         locale,
         title: data.title || "",
         slug: data.slug || "",
-        subtitle: data.subtitle || null,
-        description: toPrismaProductDescription(data.description ?? []),
+        subtitle: sanitizedSubtitle ?? null,
+        description: toPrismaProductDescription(sanitizedDescription ?? []),
       },
     });
   }

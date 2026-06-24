@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import type { Brand, Category, Attribute, Variant, ProductLabel, GeneratedVariant } from '../types';
+import { EMPTY_VARIANT_DISCOUNT } from '../utils/variant-discount';
 import type { Product } from '../../types';
 import type { CurrencyCode } from '@/lib/currency';
 import type { ProductClass } from '@/lib/constants/product-class';
@@ -13,12 +14,13 @@ export function useProductFormState(listProduct: Product | null = null) {
   const [formData, setFormData] = useState(() => ({
     title: listProduct?.title ?? '',
     slug: listProduct?.slug ?? '',
+    subtitleHtml: '',
     description: [] as ProductDescriptionEntry[],
     productClass: listProduct?.productClass ?? ('retail' as ProductClass),
     brandIds: [] as string[],
     primaryCategoryId: '',
     categoryIds: [] as string[],
-    published: false,
+    published: listProduct?.published ?? false,
     featured: listProduct?.featured ?? false,
     imageUrls: [] as string[],
     featuredImageIndex: 0,
@@ -44,9 +46,10 @@ export function useProductFormState(listProduct: Product | null = null) {
   const [productType, setProductType] = useState<'simple' | 'variable'>('simple');
   const [simpleProductData, setSimpleProductData] = useState({
     price: '',
-    compareAtPrice: '',
+    discount: { ...EMPTY_VARIANT_DISCOUNT },
     sku: '',
     quantity: '',
+    variantId: '',
   });
   const [selectedAttributesForVariants, setSelectedAttributesForVariants] = useState<Set<string>>(new Set());
   const [selectedAttributeValueIds, setSelectedAttributeValueIds] = useState<Record<string, string[]>>({});

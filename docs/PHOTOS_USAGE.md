@@ -75,7 +75,7 @@
 | `src/app/supersudo/attributes/ValueEditForm.tsx` | Редактирование значения: картинка. |
 | `src/app/supersudo/orders/components/OrderDetailsItems.tsx` | Товары в заказе: фото. |
 | `src/app/supersudo/analytics/components/TopProducts.tsx` | Топ товаров: картинка. |
-| `src/app/supersudo/quick-settings/components/ProductDiscountsCard.tsx` | Скидки: картинка. |
+| `src/app/supersudo/discounts/components/ProductDiscountsCard.tsx` | Скидки: картинка. |
 | `src/app/supersudo/components/TopProductsCard.tsx` | Карточка топ товаров. |
 
 ### Утилиты и типы

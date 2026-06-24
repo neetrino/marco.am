@@ -9,6 +9,13 @@ import {
   isReservedShopAttributeFilterKey,
   normalizeTechnicalFilterToken,
 } from '@/lib/services/products-technical-filters';
+import { toProductSubtitlePlainText } from '@/lib/security/sanitize-product-html';
+
+import {
+  resolveEffectiveDiscount,
+  type AppliedDiscount,
+  type TypedDiscountInput,
+} from '@/lib/discount/discount-expiry';
 
 export type ProductListingReadModelDiscountSettings = {
   globalDiscount: number;
@@ -61,7 +68,9 @@ type ProductListingReadModelInput = {
   primaryCategoryId?: string | null;
   categoryIds?: string[] | null;
   media?: unknown;
-  discountPercent?: number | null;
+  discountType?: string | null;
+  discountValue?: number | null;
+  discountExpiresAt?: Date | null;
   warrantyYears?: number | null;
   published?: boolean | null;
   publishedAt?: Date | null;
@@ -79,7 +88,9 @@ type ProductListingReadModelInput = {
     id: string;
     imageUrl?: string | null;
     price: number;
-    compareAtPrice?: number | null;
+    discountType?: string | null;
+    discountValue?: number | null;
+    discountExpiresAt?: Date | null;
     stock?: number | null;
     published?: boolean | null;
     attributes?: Prisma.JsonValue | null;
@@ -99,6 +110,20 @@ type ProductListingReadModelInput = {
         } | null;
       } | null;
     }> | null;
+  }> | null;
+  attributeValues?: Array<{
+    attributeValue?: {
+      value?: string | null;
+      imageUrl?: string | null;
+      colors?: Prisma.JsonValue | null;
+      translations?: TranslationRow[] | null;
+      attribute?: {
+        key?: string | null;
+        type?: string | null;
+        filterable?: boolean | null;
+        translations?: TranslationRow[] | null;
+      } | null;
+    } | null;
   }> | null;
   labels?: Array<{
     id: string;
@@ -128,19 +153,27 @@ function trimString(value: string | null | undefined): string | null {
 
 function resolveAppliedDiscount(
   product: ProductListingReadModelInput,
+  variant: { discountType?: string | null; discountValue?: number | null; discountExpiresAt?: Date | null } | null | undefined,
   settings: ProductListingReadModelDiscountSettings,
-): number {
-  const productDiscount = Number(product.discountPercent) || 0;
-  if (productDiscount > 0) {
-    return productDiscount;
-  }
-  if (product.primaryCategoryId && settings.categoryDiscounts[product.primaryCategoryId]) {
-    return settings.categoryDiscounts[product.primaryCategoryId];
-  }
-  if (product.brandId && settings.brandDiscounts[product.brandId]) {
-    return settings.brandDiscounts[product.brandId];
-  }
-  return settings.globalDiscount > 0 ? settings.globalDiscount : 0;
+): AppliedDiscount {
+  const toTyped = (source: {
+    discountType?: string | null;
+    discountValue?: number | null;
+    discountExpiresAt?: Date | null;
+  }): TypedDiscountInput => ({
+    type: (source.discountType ?? 'NONE') as TypedDiscountInput['type'],
+    value: source.discountValue ?? null,
+    expiresAt: source.discountExpiresAt ?? null,
+  });
+
+  return resolveEffectiveDiscount({
+    variant: variant ? toTyped(variant) : null,
+    product: toTyped(product),
+    categoryPercent:
+      (product.primaryCategoryId && settings.categoryDiscounts[product.primaryCategoryId]) || 0,
+    brandPercent: (product.brandId && settings.brandDiscounts[product.brandId]) || 0,
+    globalPercent: settings.globalDiscount,
+  });
 }
 
 function collectCategoryIds(product: ProductListingReadModelInput): string[] {
@@ -174,9 +207,13 @@ function collectCategorySlugs(product: ProductListingReadModelInput, locale: str
 }
 
 function readLocalizedAttributeValueLabel(
-  attributeValue: NonNullable<
-    NonNullable<ProductListingReadModelInput['variants']>[number]['options']
-  >[number]['attributeValue'],
+  attributeValue:
+    | {
+        value?: string | null;
+        translations?: TranslationRow[] | null;
+      }
+    | null
+    | undefined,
   locale: string,
 ): string | null {
   const translation = resolveTranslation(attributeValue?.translations, locale);
@@ -221,6 +258,30 @@ function getLocalizedAttributeName(
 
 function collectColors(product: ProductListingReadModelInput, locale: string) {
   const colorMap = new Map<string, { value: string; imageUrl: string | null; colors: string[] | null }>();
+  for (const row of product.attributeValues ?? []) {
+    const attributeValue = row.attributeValue;
+    const key = attributeValue?.attribute?.key ?? '';
+    if (!isColorAttributeKey(key)) {
+      continue;
+    }
+    const label = readLocalizedAttributeValueLabel(attributeValue, locale);
+    if (!label) {
+      continue;
+    }
+    const normalized = label.toLowerCase();
+    if (colorMap.has(normalized)) {
+      continue;
+    }
+    colorMap.set(normalized, {
+      value: label,
+      imageUrl: attributeValue?.imageUrl ?? null,
+      colors: normalizeColorHexList(attributeValue?.colors),
+    });
+  }
+  if (colorMap.size > 0) {
+    return [...colorMap.values()];
+  }
+
   for (const variant of product.variants ?? []) {
     for (const option of variant.options ?? []) {
       const key = option.attributeValue?.attribute?.key ?? option.attributeKey ?? '';
@@ -248,6 +309,21 @@ function collectColors(product: ProductListingReadModelInput, locale: string) {
 
 function collectSizeTokens(product: ProductListingReadModelInput, locale: string): string[] {
   const sizes = new Set<string>();
+  for (const row of product.attributeValues ?? []) {
+    const attributeValue = row.attributeValue;
+    const key = attributeValue?.attribute?.key ?? '';
+    if (!isSizeAttributeKey(key)) {
+      continue;
+    }
+    const label = readLocalizedAttributeValueLabel(attributeValue, locale);
+    if (label) {
+      sizes.add(label.toUpperCase());
+    }
+  }
+  if (sizes.size > 0) {
+    return [...sizes];
+  }
+
   for (const variant of product.variants ?? []) {
     for (const option of variant.options ?? []) {
       const key = option.attributeValue?.attribute?.key ?? option.attributeKey ?? '';
@@ -313,6 +389,36 @@ function collectTechnicalSpecs(
       value,
       valueLabel: input.valueLabel,
     });
+  }
+
+  for (const row of product.attributeValues ?? []) {
+    const attributeValue = row.attributeValue;
+    const attribute = attributeValue?.attribute;
+    const rawKey = attribute?.key ?? '';
+    if (!rawKey || isColorAttributeKey(rawKey) || isSizeAttributeKey(rawKey)) {
+      continue;
+    }
+    if (attribute?.filterable === false) {
+      continue;
+    }
+    const key = normalizeTechnicalFilterToken(rawKey);
+    if (!key || isReservedShopAttributeFilterKey(key)) {
+      continue;
+    }
+    const valueLabel = readLocalizedAttributeValueLabel(attributeValue, locale);
+    if (!valueLabel) {
+      continue;
+    }
+    addSpec({
+      key,
+      label: getLocalizedAttributeName(attribute, locale, rawKey),
+      type: attribute?.type ?? 'select',
+      value: valueLabel,
+      valueLabel,
+    });
+  }
+  if (specs.size > 0) {
+    return [...specs.values()].sort((a, b) => a.label.localeCompare(b.label));
   }
 
   for (const variant of product.variants ?? []) {
@@ -388,11 +494,10 @@ export function buildProductListingRowsForLocales(args: {
     published: variant.published ?? undefined,
   }));
   const variant = pickVariantForListingPrice(variantsForPricing);
-  const appliedDiscount = resolveAppliedDiscount(product, discountSettings);
+  const appliedDiscount = resolveAppliedDiscount(product, variant, discountSettings);
   const pricing = resolveProductPrice({
-    currentPrice: variant?.price ?? 0,
-    compareAtPrice: variant?.compareAtPrice ?? null,
-    fallbackDiscountPercent: appliedDiscount > 0 ? appliedDiscount : null,
+    standardPrice: variant?.price ?? 0,
+    discount: appliedDiscount,
   });
   const images = buildProductGalleryUrls(product.media, variants).slice(0, 1);
   const categoryIds = expandCategoryIdsWithAncestors(
@@ -450,6 +555,7 @@ export function buildProductListingRowsForLocales(args: {
         priceSort: pricing.currentPrice,
         hasPrice: pricing.currentPrice > 0,
         discountPercent: pricing.discountPercent ?? 0,
+        discountExpiresAt: product.discountExpiresAt ?? null,
         isSpecialPrice: pricing.isSpecialPrice,
         defaultVariantId: variant?.id ?? null,
         stock,
@@ -466,7 +572,7 @@ export function buildProductListingRowsForLocales(args: {
         requiresAttributeSelection: productRequiresAttributeSelection(variants),
         searchText: buildSearchText([
           title,
-          translation?.subtitle,
+          toProductSubtitlePlainText(translation?.subtitle),
           slug,
           brandName,
           product.brand?.slug,

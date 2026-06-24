@@ -1,5 +1,6 @@
 'use client';
 
+import { Fragment } from 'react';
 import { t } from '../../../lib/i18n';
 import type { LanguageCode } from '../../../lib/language';
 import {
@@ -77,17 +78,24 @@ export function ProductSpecifications({ product, language }: ProductSpecificatio
       <h2 className="text-2xl font-bold uppercase tracking-tight text-marco-black md:text-3xl">
         {specificationTitle}
       </h2>
-      <dl className="mt-6 divide-y divide-gray-100 overflow-hidden rounded-2xl border border-gray-200/90 bg-white shadow-sm ring-1 ring-black/[0.02]">
+      <dl className="mt-6 grid grid-cols-1 gap-x-8 overflow-hidden rounded-2xl border border-gray-200/90 bg-white px-4 shadow-sm ring-1 ring-black/[0.02] sm:grid-cols-[max-content_minmax(0,1fr)] sm:items-center sm:px-5">
         {rows.map((row, index) => (
-          <div
-            key={`${row.title}-${index}`}
-            className="grid gap-2 px-4 py-4 sm:grid-cols-[minmax(0,11rem)_minmax(0,1fr)] sm:items-start sm:gap-x-8 sm:px-5 sm:py-4"
-          >
-            <dt className="text-sm font-medium tracking-tight text-gray-500 md:text-base">{row.title}</dt>
-            <dd className="min-w-0 text-sm font-medium text-marco-black md:text-base">
+          <Fragment key={`${row.title}-${index}`}>
+            <dt
+              className={`py-2 text-sm font-bold tracking-tight text-marco-black sm:whitespace-nowrap md:text-base${
+                index > 0 ? ' border-t border-gray-100' : ''
+              }`}
+            >
+              {row.title}
+            </dt>
+            <dd
+              className={`min-w-0 pb-2 text-sm font-normal text-gray-700 sm:py-2 md:text-base${
+                index > 0 ? ' sm:border-t sm:border-gray-100' : ''
+              }`}
+            >
               <SpecificationValueDisplay value={row.value} />
             </dd>
-          </div>
+          </Fragment>
         ))}
       </dl>
     </section>

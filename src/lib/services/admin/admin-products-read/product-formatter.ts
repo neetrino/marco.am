@@ -1,5 +1,7 @@
 import { pickVariantForListingPrice } from '@/lib/product-variant-listing-pick';
 import { resolveAdminProductListImageUrl } from '@/lib/admin/admin-list-product-image';
+import { resolveEffectiveDiscount, type DiscountKind } from '@/lib/discount/discount-expiry';
+import { resolveProductPrice } from '@/lib/pricing/product-price';
 
 /**
  * Format product for list response
@@ -10,7 +12,9 @@ export function formatProductForList(product: {
   published: boolean;
   featured: boolean | null;
   productClass?: "retail" | "wholesale";
-  discountPercent: number | null;
+  discountType?: DiscountKind | null;
+  discountValue?: number | null;
+  discountExpiresAt?: Date | null;
   createdAt: Date;
   translations?: Array<{
     slug: string;
@@ -19,8 +23,10 @@ export function formatProductForList(product: {
   variants?: Array<{
     price: number;
     stock: number;
-    compareAtPrice: number | null;
     imageUrl?: string | null;
+    discountType?: DiscountKind | null;
+    discountValue?: number | null;
+    discountExpiresAt?: Date | null;
   }>;
   media?: unknown[];
   categoryIds?: string[];
@@ -33,7 +39,24 @@ export function formatProductForList(product: {
     : null;
   
   const variant = pickVariantForListingPrice(product.variants ?? []);
-  
+
+  const standardPrice = variant?.price ?? 0;
+  const appliedDiscount = resolveEffectiveDiscount({
+    variant: variant
+      ? {
+          type: variant.discountType ?? 'NONE',
+          value: variant.discountValue ?? null,
+          expiresAt: variant.discountExpiresAt ?? null,
+        }
+      : null,
+    product: {
+      type: product.discountType ?? 'NONE',
+      value: product.discountValue ?? null,
+      expiresAt: product.discountExpiresAt ?? null,
+    },
+  });
+  const resolvedPrice = resolveProductPrice({ standardPrice, discount: appliedDiscount });
+
   const image = resolveAdminProductListImageUrl(product.media, product.variants ?? []);
 
   const rawCategoryIds = product.categoryIds ?? [];
@@ -52,10 +75,14 @@ export function formatProductForList(product: {
     productClass: product.productClass || "retail",
     published: product.published,
     featured: product.featured || false,
-    price: variant?.price || 0,
+    price: resolvedPrice.currentPrice,
     stock: variant?.stock || 0,
-    discountPercent: product.discountPercent || 0,
-    compareAtPrice: variant?.compareAtPrice || null,
+    discountPercent: resolvedPrice.discountPercent ?? 0,
+    discountExpiresAt:
+      variant?.discountExpiresAt?.toISOString() ??
+      product.discountExpiresAt?.toISOString() ??
+      null,
+    originalPrice: resolvedPrice.oldPrice,
     colorStocks: [], // Can be enhanced later
     image,
     createdAt: product.createdAt.toISOString(),

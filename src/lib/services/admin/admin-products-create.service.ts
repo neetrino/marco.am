@@ -19,9 +19,14 @@ import {
 } from "@/lib/constants/product-class";
 import { normalizeProductWarrantyYears } from "@/lib/constants/product-warranty";
 import {
+  filterProductDescriptionForSave,
   toPrismaProductDescription,
   type ProductDescriptionEntry,
 } from "@/lib/products/product-description";
+import {
+  isProductSubtitleHtmlEmpty,
+  sanitizeProductSubtitleHtml,
+} from "@/lib/security/sanitize-product-html";
 import { logger } from "@/lib/utils/logger";
 import type { PrismaTransactionClient } from "@/lib/types/prisma";
 import { getErrorMessage, getPrismaErrorCode } from "@/lib/types/errors";
@@ -32,12 +37,20 @@ import {
   toProductCategoriesConnect,
 } from "../product-category-links.service";
 import { syncProductListingReadModel } from "@/lib/read-model/product-read-model-sync";
+import { normalizeVariantDiscountForWrite } from "./variant-discount-write";
+import type { DiscountKind } from "@/lib/discount/discount-expiry";
+import { syncProductAttributeValues } from "./product-attribute-values.service";
 
 type ProductMediaItem = string | { url: string };
 
+type VariantDiscountInput = {
+  discountType?: DiscountKind | string | null;
+  discountValue?: number | string | null;
+  discountExpiresAt?: string | null;
+};
+
 type CreateProductVariantInput = {
   price: string | number;
-  compareAtPrice?: string | number;
   stock: string | number;
   sku?: string;
   productClass?: ProductClass;
@@ -50,7 +63,7 @@ type CreateProductVariantInput = {
     value: string;
     valueId?: string;
   }>;
-};
+} & VariantDiscountInput;
 
 type VariantOptionPayload =
   | { valueId: string }
@@ -58,18 +71,19 @@ type VariantOptionPayload =
 
 class AdminProductsCreateService {
   /**
-   * Validate and return SKU for product variant.
-   * SKU must be provided manually — no auto-generation.
+   * Validate and return SKU for a product variant.
+   * SKU is optional: empty input resolves to `undefined` (stored as null).
+   * When provided, it must be unique within the product and across the catalog.
    */
   private async resolveVariantSku(
     tx: PrismaTransactionClient,
     baseSku: string | undefined,
     variantIndex: number,
     usedSkus: Set<string>
-  ): Promise<string> {
+  ): Promise<string | undefined> {
     const trimmedSku = baseSku?.trim() ?? '';
     if (!trimmedSku) {
-      throw new Error(`Variant ${variantIndex + 1} is missing a SKU. Please enter a SKU for every variant.`);
+      return undefined;
     }
 
     if (usedSkus.has(trimmedSku)) {
@@ -114,9 +128,9 @@ class AdminProductsCreateService {
     }>;
     warrantyYears?: number | null;
     attributeIds?: string[];
+    attributeValueIds?: string[];
     variants: Array<{
       price: string | number;
-      compareAtPrice?: string | number;
       stock: string | number;
       sku?: string;
       productClass?: ProductClass;
@@ -129,7 +143,7 @@ class AdminProductsCreateService {
         value: string;
         valueId?: string;
       }>;
-    }>;
+    } & VariantDiscountInput>;
   }) {
     try {
       logger.devLog('🆕 [ADMIN PRODUCTS CREATE SERVICE] Creating product:', data.title);
@@ -236,11 +250,10 @@ class AdminProductsCreateService {
               }
             }
 
-            const price = typeof variant.price === 'number' ? variant.price : parseFloat(String(variant.price));
+            const rawPrice = typeof variant.price === 'number' ? variant.price : parseFloat(String(variant.price));
+            const price = Number.isNaN(rawPrice) ? 0 : rawPrice;
             const stock = typeof variant.stock === 'number' ? variant.stock : parseInt(String(variant.stock), 10);
-            const compareAtPrice = variant.compareAtPrice !== undefined && variant.compareAtPrice !== null && variant.compareAtPrice !== ''
-              ? (typeof variant.compareAtPrice === 'number' ? variant.compareAtPrice : parseFloat(String(variant.compareAtPrice)))
-              : undefined;
+            const discount = normalizeVariantDiscountForWrite(variant);
 
             // Generate unique SKU for this variant
             const uniqueSku = await this.resolveVariantSku(
@@ -272,7 +285,9 @@ class AdminProductsCreateService {
               sku: uniqueSku,
               productClass: resolveProductClass(variant.productClass ?? data.productClass),
               price,
-              compareAtPrice,
+              discountType: discount.discountType,
+              discountValue: discount.discountValue,
+              discountExpiresAt: discount.discountExpiresAt,
               stock: isNaN(stock) ? 0 : stock,
               imageUrl: processedVariantImageUrl,
               published: variant.published !== false,
@@ -372,9 +387,11 @@ class AdminProductsCreateService {
                 locale: data.locale || "en",
                 title: data.title,
                 slug: data.slug,
-                subtitle: data.subtitle || undefined,
+                subtitle: isProductSubtitleHtmlEmpty(data.subtitle)
+                  ? undefined
+                  : sanitizeProductSubtitleHtml(data.subtitle ?? ''),
                 description: data.description?.length
-                  ? toPrismaProductDescription(data.description)
+                  ? toPrismaProductDescription(filterProductDescriptionForSave(data.description))
                   : undefined,
               },
             },
@@ -420,6 +437,8 @@ class AdminProductsCreateService {
           }
         }
 
+        await syncProductAttributeValues(product.id, data.attributeValueIds, tx);
+
         return await tx.product.findUnique({
           where: { id: product.id },
           include: {
@@ -461,7 +480,6 @@ class AdminProductsCreateService {
 }
 
 export const adminProductsCreateService = new AdminProductsCreateService();
-
 
 
 
