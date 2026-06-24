@@ -1,5 +1,6 @@
 import * as bcrypt from "bcryptjs";
 import { db } from "@white-shop/db";
+import { BCRYPT_ROUNDS, MIN_PASSWORD_LENGTH, isPasswordLongEnough } from "@/lib/constants/password-policy";
 import { logger } from "../utils/logger";
 import { isAuthVerificationRequired } from "../constants/auth-verification";
 import {
@@ -76,12 +77,12 @@ class AuthService {
       };
     }
 
-    if (!data.password || data.password.length < 6) {
+    if (!isPasswordLongEnough(data.password)) {
       throw {
         status: 400,
         type: "https://api.shop.am/problems/validation-error",
         title: "Validation failed",
-        detail: "Password must be at least 6 characters",
+        detail: `Password must be at least ${MIN_PASSWORD_LENGTH} characters`,
       };
     }
 
@@ -106,7 +107,7 @@ class AuthService {
       };
     }
 
-    const passwordHash = await bcrypt.hash(data.password, 10);
+    const passwordHash = await bcrypt.hash(data.password, BCRYPT_ROUNDS);
     const requireVerification = isAuthVerificationRequired();
     const emailVerified = Boolean(email && !requireVerification);
     const phoneVerified = Boolean(phone && !requireVerification);

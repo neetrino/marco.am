@@ -1,6 +1,7 @@
 import { getErrorMessage } from "@/lib/types/errors";
 import { db } from "@white-shop/db";
 import { bumpAuthEpoch } from "@/lib/auth/auth-epoch-mutations";
+import { BCRYPT_ROUNDS, MIN_PASSWORD_LENGTH, isPasswordLongEnough } from "@/lib/constants/password-policy";
 import { buildCustomerOrderLinks } from "../constants/customer-order-api-paths";
 import * as bcrypt from "bcryptjs";
 import type { UpdateProfileRequest } from "@/lib/schemas/user-profile.schema";
@@ -150,6 +151,15 @@ class UsersService {
       };
     }
 
+    if (!isPasswordLongEnough(newPassword)) {
+      throw {
+        status: 400,
+        type: "https://api.shop.am/problems/validation-error",
+        title: "Validation Error",
+        detail: `New password must be at least ${MIN_PASSWORD_LENGTH} characters long`,
+      };
+    }
+
     const user = await db.user.findUnique({
       where: { id: userId },
       select: {
@@ -205,7 +215,7 @@ class UsersService {
     }
 
     try {
-      const newPasswordHash = await bcrypt.hash(newPassword.trim(), 10);
+      const newPasswordHash = await bcrypt.hash(newPassword.trim(), BCRYPT_ROUNDS);
       await db.user.update({
         where: { id: userId },
         data: { passwordHash: newPasswordHash },

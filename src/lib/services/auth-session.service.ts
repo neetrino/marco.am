@@ -1,4 +1,5 @@
 import * as jwt from "jsonwebtoken";
+import { normalizeUserRoles } from "@/lib/constants/user-roles";
 import { db } from "@white-shop/db";
 import { logger } from "../utils/logger";
 
@@ -29,6 +30,7 @@ export async function buildAuthSuccessPayload(
       lastName: true,
       roles: true,
       authEpoch: true,
+      blocked: true,
     },
   });
 
@@ -42,6 +44,15 @@ export async function buildAuthSuccessPayload(
     };
   }
 
+  if (user.blocked) {
+    throw {
+      status: 403,
+      type: "https://api.shop.am/problems/forbidden",
+      title: "Account blocked",
+      detail: "Your account has been blocked",
+    };
+  }
+
   if (!process.env.JWT_SECRET) {
     logger.error("Auth config error: JWT_SECRET is not set");
     throw {
@@ -52,8 +63,9 @@ export async function buildAuthSuccessPayload(
     };
   }
 
+  const roles = normalizeUserRoles(user.roles);
   const token = jwt.sign(
-    { userId: user.id, authEpoch: user.authEpoch },
+    { userId: user.id, authEpoch: user.authEpoch, roles },
     process.env.JWT_SECRET as string,
     { expiresIn: process.env.JWT_EXPIRES_IN || "7d" } as jwt.SignOptions
   );
@@ -65,7 +77,7 @@ export async function buildAuthSuccessPayload(
       phone: user.phone,
       firstName: user.firstName,
       lastName: user.lastName,
-      roles: user.roles,
+      roles,
     },
     token,
   };

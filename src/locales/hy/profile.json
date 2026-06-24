@@ -117,9 +117,9 @@
     "changedSuccess": "Գաղտնաբառը հաջողությամբ փոխվեց",
     "failedToChange": "Չհաջողվեց փոխել գաղտնաբառը",
     "passwordsDoNotMatch": "Նոր գաղտնաբառերը չեն համընկնում",
-    "passwordMinLength": "Գաղտնաբառը պետք է լինի առնվազն 6 նիշ",
+    "passwordMinLength": "Գաղտնաբառը պետք է լինի առնվազն 8 նիշ",
     "currentPasswordPlaceholder": "Մուտքագրեք ձեր ներկա գաղտնաբառը",
-    "newPasswordPlaceholder": "Մուտքագրեք նոր գաղտնաբառ (նվազագույն 6 նիշ)",
+    "newPasswordPlaceholder": "Մուտքագրեք նոր գաղտնաբառ (նվազագույն 8 նիշ)",
     "confirmPasswordPlaceholder": "Հաստատեք նոր գաղտնաբառը"
   },
   "orders": {

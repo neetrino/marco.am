@@ -4,9 +4,15 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
 const getAuthContextMock = vi.fn();
+const validateSessionAtEdgeMock = vi.fn();
 
 vi.mock("@/lib/middleware/auth-edge", () => ({
   getAuthContext: (...args: unknown[]) => getAuthContextMock(...args),
+}));
+
+vi.mock("@/lib/middleware/auth-session-edge", () => ({
+  validateSessionAtEdge: (...args: unknown[]) => validateSessionAtEdgeMock(...args),
+  sessionHasAdminRole: (session: { roles: string[] }) => session.roles.includes("admin"),
 }));
 
 vi.mock("@/lib/middleware/upstash-rate-limit", () => ({
@@ -14,14 +20,6 @@ vi.mock("@/lib/middleware/upstash-rate-limit", () => ({
 }));
 
 import { config, proxy } from "./proxy";
-
-const AUTH_REQUIRED_PAGE_MATCHERS = [
-  "/supersudo",
-  "/supersudo/:path*",
-  "/profile",
-  "/wishlist",
-  "/orders/:path*",
-] as const;
 
 function buildRequest(
   path: string,
@@ -33,6 +31,14 @@ function buildRequest(
   });
 }
 
+function mockValidSession(userId: string, roles: string[] = ["customer"]) {
+  getAuthContextMock.mockResolvedValue({
+    token: "valid.jwt",
+    decoded: { userId, authEpoch: 1 },
+  });
+  validateSessionAtEdgeMock.mockResolvedValue({ userId, roles });
+}
+
 describe("proxy security regression", () => {
   it("is wired from src/proxy.ts (root middleware.ts must not exist)", () => {
     const root = process.cwd();
@@ -41,22 +47,18 @@ describe("proxy security regression", () => {
     expect(existsSync(resolve(root, "src/middleware.ts"))).toBe(false);
   });
 
-  it("matcher covers every auth-required storefront page", () => {
-    for (const matcher of AUTH_REQUIRED_PAGE_MATCHERS) {
-      expect(config.matcher).toContain(matcher);
-    }
-  });
-
-  it("matcher covers account and admin API prefixes", () => {
-    expect(config.matcher).toContain("/api/v1/users/:path*");
-    expect(config.matcher).toContain("/api/v1/supersudo/:path*");
-    expect(config.matcher.some((entry) => entry.includes("orders"))).toBe(true);
+  it("uses a broad matcher that excludes static assets only", () => {
+    expect(config.matcher).toHaveLength(1);
+    const pattern = config.matcher[0];
+    expect(pattern).toContain("_next/static");
+    expect(pattern).toContain("favicon.ico");
   });
 });
 
 describe("proxy auth and CSRF behavior", () => {
   beforeEach(() => {
     getAuthContextMock.mockReset();
+    validateSessionAtEdgeMock.mockReset();
     getAuthContextMock.mockResolvedValue({ token: null, decoded: null });
   });
 
@@ -112,13 +114,26 @@ describe("proxy auth and CSRF behavior", () => {
   });
 
   it("allows authenticated visitors through private pages", async () => {
-    getAuthContextMock.mockResolvedValue({
-      token: "valid.jwt",
-      decoded: { userId: "user-1", authEpoch: 1 },
-    });
+    mockValidSession("user-1");
 
     const response = await proxy(buildRequest("/profile"));
     expect(response.status).toBe(200);
     expect(response.headers.get("location")).toBeNull();
+  });
+
+  it("redirects non-admin users away from supersudo", async () => {
+    mockValidSession("user-1", ["customer"]);
+
+    const response = await proxy(buildRequest("/supersudo"));
+    expect(response.status).toBe(307);
+    expect(response.headers.get("location")).toBe("http://localhost:3000/");
+  });
+
+  it("sets per-request CSP on storefront pages", async () => {
+    const response = await proxy(buildRequest("/"));
+    const csp = response.headers.get("Content-Security-Policy");
+    expect(csp).toBeTruthy();
+    expect(csp).toContain("script-src");
+    expect(csp).toMatch(/'nonce-[^']+'/);
   });
 });

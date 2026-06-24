@@ -37,7 +37,7 @@ describe("auth.schema", () => {
     it("parses valid register with email", () => {
       const body = {
         email: "u@x.com",
-        password: "123456",
+        password: "12345678",
         firstName: "A",
         lastName: "B",
       };
@@ -46,18 +46,18 @@ describe("auth.schema", () => {
     });
 
     it("parses valid register with phone", () => {
-      const body = { phone: "+123", password: "123456" };
+      const body = { phone: "+123", password: "12345678" };
       expect(parseRegisterBody(body)).toEqual(body);
     });
 
-    it("rejects password shorter than 6", () => {
-      const body = { email: "u@x.com", password: "12345" };
+    it("rejects password shorter than 8", () => {
+      const body = { email: "u@x.com", password: "1234567" };
       expect(() => parseRegisterBody(body)).toThrow();
       expect(safeParseRegister(body).success).toBe(false);
     });
 
     it("rejects when neither email nor phone", () => {
-      const body = { password: "123456" };
+      const body = { password: "12345678" };
       expect(() => parseRegisterBody(body)).toThrow();
     });
   });

@@ -11,18 +11,11 @@ function isWarmupEnabled(): boolean {
 
 function isWarmupAuthorized(req: Request): boolean {
   const secret = process.env.WARMUP_INTERNAL_SECRET?.trim();
-  if (secret && req.headers.get('x-warmup-secret') === secret) {
+  if (secret && req.headers.get("x-warmup-secret") === secret) {
     return true;
   }
 
-  // Same-process loopback trigger from instrumentation: token authorizes regardless
-  // of bind host (standalone binds 0.0.0.0, so the loopback host check is unreliable).
-  if (req.headers.get(WARMUP_INTERNAL_TOKEN_HEADER) === getWarmupInternalToken()) {
-    return true;
-  }
-
-  const host = new URL(req.url).hostname;
-  return host === '127.0.0.1' || host === 'localhost' || host === '::1';
+  return req.headers.get(WARMUP_INTERNAL_TOKEN_HEADER) === getWarmupInternalToken();
 }
 
 /** Best-effort Redis warm for hot storefront paths; triggered from instrumentation via loopback fetch. */

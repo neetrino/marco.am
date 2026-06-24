@@ -3,9 +3,12 @@ import { jwtVerify } from "jose";
 import { readTokenAuthEpoch } from "@/lib/auth/auth-epoch";
 import { AUTH_SESSION_COOKIE_NAME } from "@/lib/auth/auth-session-cookie";
 
-type JwtPayload = {
+import { normalizeUserRoles } from "@/lib/constants/user-roles";
+
+export type JwtPayload = {
   userId: string;
   authEpoch: number;
+  roles: string[];
 };
 
 function readTokenFromRequest(request: NextRequest): string | null {
@@ -29,6 +32,11 @@ function normalizePayload(payload: unknown): JwtPayload | null {
   return {
     userId,
     authEpoch: readTokenAuthEpoch(record),
+    roles: normalizeUserRoles(
+      Array.isArray(record.roles)
+        ? record.roles.filter((role): role is string => typeof role === "string")
+        : []
+    ),
   };
 }
 

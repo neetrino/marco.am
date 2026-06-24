@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { getCorsAllowedOrigins } from "@/lib/config/deployment-env";
 import { checkSameOriginRequest } from "@/lib/middleware/same-origin-csrf";
@@ -12,55 +13,31 @@ import {
 import {
   enforceUpstashRateLimit,
 } from "@/lib/middleware/upstash-rate-limit";
-import { getAuthContext } from "@/lib/middleware/auth-edge";
 import {
   guardAuthenticatedPage,
   isAuthRequiredOrdersApi,
   isAuthRequiredPage,
   isAuthRequiredUsersApi,
+  requireAdminApi,
   requireAuthenticatedApi,
 } from "@/lib/middleware/auth-protected-routes";
+import {
+  buildContentSecurityPolicyHeader,
+  CSP_NONCE_REQUEST_HEADER,
+} from "@/lib/security/content-security-policy";
 
-async function requireAdminAuth(request: NextRequest): Promise<{
-  response: NextResponse | null;
-  userId: string | null;
-}> {
-  const { token, decoded } = await getAuthContext(request);
-
-  if (!token) {
-    return {
-      response: NextResponse.json(
-        {
-          type: "https://api.shop.am/problems/unauthorized",
-          title: "Unauthorized",
-          status: 401,
-          detail: "Missing or invalid Authorization header",
-        },
-        { status: 401 }
-      ),
-      userId: null,
-    };
-  }
-
-  if (!decoded) {
-    return {
-      response: NextResponse.json(
-        {
-          type: "https://api.shop.am/problems/unauthorized",
-          title: "Unauthorized",
-          status: 401,
-          detail: "Invalid or expired token",
-        },
-        { status: 401 }
-      ),
-      userId: null,
-    };
-  }
-
-  return {
-    response: null,
-    userId: decoded.userId,
-  };
+function continueWithPageSecurity(request: NextRequest): NextResponse {
+  const nonce = Buffer.from(randomUUID()).toString("base64");
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set(CSP_NONCE_REQUEST_HEADER, nonce);
+  const response = NextResponse.next({
+    request: { headers: requestHeaders },
+  });
+  response.headers.set(
+    "Content-Security-Policy",
+    buildContentSecurityPolicyHeader({ nonce })
+  );
+  return response;
 }
 
 /** Rate limit for auth endpoints (login/register) by IP */
@@ -163,7 +140,7 @@ export async function proxy(request: NextRequest) {
     if (redirect) {
       return redirect;
     }
-    return NextResponse.next();
+    return continueWithPageSecurity(request);
   }
 
   if (pathname.startsWith("/api/")) {
@@ -181,7 +158,7 @@ export async function proxy(request: NextRequest) {
     let forwardedHeaders = sanitizedHeaders;
 
     if (pathname.startsWith("/api/v1/supersudo/")) {
-      const authResult = await requireAdminAuth(request);
+      const authResult = await requireAdminApi(request);
       if (authResult.response) {
         return applyCorsHeaders(authResult.response, corsHeaders);
       }
@@ -237,25 +214,11 @@ export async function proxy(request: NextRequest) {
     return response;
   }
 
-  return NextResponse.next();
+  return continueWithPageSecurity(request);
 }
 
 export const config = {
   matcher: [
-    "/supersudo",
-    "/supersudo/:path*",
-    "/profile",
-    "/wishlist",
-    "/orders/:path*",
-    "/api/v1/supersudo/:path*",
-    "/api/v1/users/:path*",
-    "/api/v1/orders",
-    "/api/v1/orders/:path*",
-    "/api/v1/auth/login",
-    "/api/v1/auth/register",
-    "/api/v1/auth/verify",
-    "/api/v1/auth/resend-verification",
-    "/api/v1/:path*",
-    "/api/health",
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };

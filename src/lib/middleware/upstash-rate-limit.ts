@@ -116,6 +116,23 @@ export async function enforceUpstashRateLimit(
   const clientIp = getClientIp(request);
   const limiter = getLimiter(spec);
   if (!limiter) {
+    const tier = getDeploymentTier();
+    if (requireInProduction && tier === "production") {
+      logger.error(
+        "Rate limiting unavailable in production — configure UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN",
+        { tier, prefix: spec.prefix }
+      );
+      return NextResponse.json(
+        {
+          type: "https://api.shop.am/problems/service-unavailable",
+          title: "Service Unavailable",
+          status: 503,
+          detail: "Rate limiting is temporarily unavailable",
+        },
+        { status: 503 }
+      );
+    }
+
     warnMemoryFallbackOnce(requireInProduction);
     const allowed = checkMemoryLimit(`${spec.prefix}:${clientIp}`, spec);
     return allowed ? null : tooManyRequestsError(spec.detail);
