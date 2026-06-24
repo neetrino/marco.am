@@ -22,14 +22,20 @@ import {
   requireAuthenticatedApi,
 } from "@/lib/middleware/auth-protected-routes";
 import {
+  getOrCreateRequestId,
+  REQUEST_ID_HEADER,
+} from "@/lib/observability/request-id";
+import {
   buildContentSecurityPolicyHeader,
   CSP_NONCE_REQUEST_HEADER,
 } from "@/lib/security/content-security-policy";
 
 function continueWithPageSecurity(request: NextRequest): NextResponse {
   const nonce = Buffer.from(randomUUID()).toString("base64");
+  const requestId = getOrCreateRequestId(request.headers);
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set(CSP_NONCE_REQUEST_HEADER, nonce);
+  requestHeaders.set(REQUEST_ID_HEADER, requestId);
   const response = NextResponse.next({
     request: { headers: requestHeaders },
   });
@@ -37,6 +43,7 @@ function continueWithPageSecurity(request: NextRequest): NextResponse {
     "Content-Security-Policy",
     buildContentSecurityPolicyHeader({ nonce })
   );
+  response.headers.set(REQUEST_ID_HEADER, requestId);
   return response;
 }
 
@@ -144,9 +151,11 @@ export async function proxy(request: NextRequest) {
   }
 
   if (pathname.startsWith("/api/")) {
+    const requestId = getOrCreateRequestId(request.headers);
     const sanitizedHeaders = new Headers(request.headers);
     sanitizedHeaders.delete("x-auth-user-id");
     sanitizedHeaders.delete("x-auth-roles");
+    sanitizedHeaders.set(REQUEST_ID_HEADER, requestId);
     const corsHeaders = getCorsHeaders(request);
     if (request.method === "OPTIONS") {
       return new NextResponse(null, { status: 204, headers: corsHeaders });
@@ -210,6 +219,7 @@ export async function proxy(request: NextRequest) {
         headers: forwardedHeaders,
       },
     });
+    response.headers.set(REQUEST_ID_HEADER, requestId);
     applyCorsHeaders(response, corsHeaders);
     return response;
   }

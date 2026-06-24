@@ -1,0 +1,16 @@
+model IdempotencyKey {
+  id             String    @id @default(cuid())
+  key            String
+  scope          String
+  userId         String?
+  requestHash    String
+  status         String    @default("in_progress")
+  responseStatus Int?
+  responseBody   Json?
+  createdAt      DateTime  @default(now())
+  completedAt    DateTime?
+
+  @@unique([key, scope])
+  @@index([createdAt])
+  @@map("idempotency_keys")
+}

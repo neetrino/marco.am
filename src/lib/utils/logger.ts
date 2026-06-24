@@ -9,6 +9,14 @@ interface LogContext {
   [key: string]: unknown;
 }
 
+/**
+ * Merges a request id into a log context so handlers can correlate logs with a
+ * specific request, e.g. `logger.info("msg", withRequestId(reqId, {...}))`.
+ */
+export function withRequestId(requestId: string, context?: LogContext): LogContext {
+  return { ...context, requestId };
+}
+
 function toContext(rest: unknown[]): LogContext | undefined {
   if (rest.length === 0) return undefined;
   if (rest.length === 1) {
