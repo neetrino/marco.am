@@ -148,8 +148,31 @@ function applyCorsHeaders(
   return response;
 }
 
+/**
+ * Edge guard for the admin UI pages: redirect unauthenticated visitors to /login
+ * before any admin HTML is served (the per-route admin role check still runs in
+ * each API handler and in the client AdminAccessGate).
+ */
+async function guardSupersudoPage(request: NextRequest): Promise<NextResponse | null> {
+  const { token, decoded } = await getAuthContext(request);
+  if (token && decoded) {
+    return null;
+  }
+  const loginUrl = new URL("/login", request.nextUrl.origin);
+  loginUrl.searchParams.set("redirect", request.nextUrl.pathname);
+  return NextResponse.redirect(loginUrl);
+}
+
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
+
+  if (pathname === "/supersudo" || pathname.startsWith("/supersudo/")) {
+    const redirect = await guardSupersudoPage(request);
+    if (redirect) {
+      return redirect;
+    }
+    return NextResponse.next();
+  }
 
   if (pathname.startsWith("/api/")) {
     const sanitizedHeaders = new Headers(request.headers);
@@ -222,6 +245,8 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
+    "/supersudo",
+    "/supersudo/:path*",
     "/api/v1/supersudo/:path*",
     "/api/v1/auth/login",
     "/api/v1/auth/register",

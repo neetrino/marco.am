@@ -13,6 +13,12 @@ const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
       color: [/^#[0-9a-f]{3,8}$/i, /^rgb\(/],
     },
   },
+  allowedSchemes: ['http', 'https', 'mailto', 'tel'],
+  transformTags: {
+    a: sanitizeHtml.simpleTransform('a', {
+      rel: 'noopener noreferrer nofollow',
+    }),
+  },
 };
 
 /** Strips unsafe HTML; allowlist matches the admin TipTap toolbar. */

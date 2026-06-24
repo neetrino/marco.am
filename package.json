@@ -82,7 +82,7 @@
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.555.0",
     "nanoid": "^5.1.6",
-    "next": "^16.1.7",
+    "next": "^16.2.9",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-hook-form": "^7.66.0",
@@ -102,7 +102,7 @@
     "csv-parse": "^6.2.1",
     "eslint": "^9.0.0",
     "eslint-config-next": "^16.0.7",
-    "postcss": "^8.4.0",
+    "postcss": "^8.5.10",
     "tailwindcss": "^3.4.0",
     "tsx": "^4.21.0",
     "typescript": "^5.3.0",
@@ -114,5 +114,12 @@
   },
   "prisma": {
     "schema": "shared/db/prisma"
+  },
+  "pnpm": {
+    "overrides": {
+      "fast-xml-parser": ">=5.7.0",
+      "@babel/core": ">=7.29.6",
+      "postcss@<8.5.10": ">=8.5.10"
+    }
   }
 }
