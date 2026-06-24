@@ -14,7 +14,11 @@ interface UseProductVariantConversionProps {
   attributes: any[];
   defaultCurrency: CurrencyCode;
   setSelectedAttributesForVariants: (attrs: Set<string>) => void;
-  setSelectedAttributeValueIds: (ids: Record<string, string[]>) => void;
+  setSelectedAttributeValueIds: (
+    ids:
+      | Record<string, string[]>
+      | ((current: Record<string, string[]>) => Record<string, string[]>),
+  ) => void;
   setGeneratedVariants: (variants: GeneratedVariant[]) => void;
   setHasVariantsToLoad: (has: boolean) => void;
   enabled?: boolean;
@@ -117,8 +121,15 @@ export function useProductVariantConversion({
         Array.from(attributeIdsSet)
       );
       setSelectedAttributesForVariants(attributeIdsSet);
-      
-      setSelectedAttributeValueIds(attributeValueIdsMap);
+
+      setSelectedAttributeValueIds((current) => {
+        const hasLoadedValues = Object.values(attributeValueIdsMap).some((ids) => ids.length > 0);
+        const hasCurrentValues = Object.values(current).some((ids) => ids.length > 0);
+        if (!hasLoadedValues && hasCurrentValues) {
+          return current;
+        }
+        return attributeValueIdsMap;
+      });
       
       interface VariantData {
         id: string;
@@ -356,4 +367,3 @@ export function useProductVariantConversion({
     }
   }, [productId, attributes, defaultCurrency, setSelectedAttributesForVariants, setSelectedAttributeValueIds, setGeneratedVariants, setHasVariantsToLoad, enabled]);
 }
-

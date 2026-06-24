@@ -55,6 +55,8 @@ interface UseProductEditorTabLoaderParams {
   setFormData: (updater: (prev: AddProductFormState) => AddProductFormState) => void;
   setHasVariantsToLoad: (has: boolean) => void;
   setProductType: (type: 'simple' | 'variable') => void;
+  setSelectedAttributesForVariants: (value: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
+  setSelectedAttributeValueIds: (value: Record<string, string[]> | ((prev: Record<string, string[]>) => Record<string, string[]>)) => void;
   setSimpleProductData: (data: {
     price: string;
     discount: VariantDiscount;
@@ -82,6 +84,8 @@ export function useProductEditorTabLoader({
   setFormData,
   setHasVariantsToLoad,
   setProductType,
+  setSelectedAttributesForVariants,
+  setSelectedAttributeValueIds,
   setSimpleProductData,
   onLoadError,
 }: UseProductEditorTabLoaderParams) {
@@ -126,6 +130,8 @@ export function useProductEditorTabLoader({
       setFormData,
       setHasVariantsToLoad,
       setProductType,
+      setSelectedAttributesForVariants,
+      setSelectedAttributeValueIds,
       setSimpleProductData,
       defaultCurrency,
       defaultColorLabel: t('admin.products.add.defaultColor'),
@@ -135,6 +141,8 @@ export function useProductEditorTabLoader({
       setFormData,
       setHasVariantsToLoad,
       setProductType,
+      setSelectedAttributesForVariants,
+      setSelectedAttributeValueIds,
       setSimpleProductData,
       defaultCurrency,
       attributes,

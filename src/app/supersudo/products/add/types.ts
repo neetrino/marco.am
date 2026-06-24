@@ -98,6 +98,8 @@ export interface ProductData {
   primaryCategoryId?: string | null;
   categoryIds?: string[];
   attributeIds?: string[]; // All attribute IDs that this product has
+  attributeValues?: Array<{ attributeId: string; attributeValueId: string }>;
+  attributeValueIds?: string[]; // Selected product-level attribute value IDs
   published: boolean;
   featured?: boolean;
   media?: string[];

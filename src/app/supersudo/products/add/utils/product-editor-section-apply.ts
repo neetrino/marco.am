@@ -153,6 +153,8 @@ interface ApplyPricingParams {
   setFormData: (updater: (prev: AddProductFormState) => AddProductFormState) => void;
   setHasVariantsToLoad: (has: boolean) => void;
   setProductType: (type: 'simple' | 'variable') => void;
+  setSelectedAttributesForVariants: (value: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
+  setSelectedAttributeValueIds: (value: Record<string, string[]> | ((prev: Record<string, string[]>) => Record<string, string[]>)) => void;
   setSimpleProductData: (data: {
     price: string;
     discount: VariantDiscount;
@@ -170,6 +172,8 @@ function applyPricingSection({
   setFormData,
   setHasVariantsToLoad,
   setProductType,
+  setSelectedAttributesForVariants,
+  setSelectedAttributeValueIds,
   setSimpleProductData,
   attributes,
 }: ApplyPricingParams): void {
@@ -249,9 +253,39 @@ function applyPricingSection({
   }
 
   const productAttributeIds = Array.isArray(product.attributeIds) ? product.attributeIds : [];
+  const productAttributeValueIds = Array.isArray(product.attributeValueIds)
+    ? product.attributeValueIds
+    : [];
+  const productAttributeValuePairs = Array.isArray(product.attributeValues)
+    ? product.attributeValues
+    : [];
   (window as Window & { __productAttributeIds?: string[] }).__productAttributeIds =
     productAttributeIds;
   (window as Window & { __productAttributeIdsLoaded?: boolean }).__productAttributeIdsLoaded = true;
+  setSelectedAttributesForVariants(new Set(productAttributeIds));
+  setSelectedAttributeValueIds(() => {
+    const next: Record<string, string[]> = {};
+    for (const row of productAttributeValuePairs) {
+      if (!row.attributeId || !row.attributeValueId) {
+        continue;
+      }
+      next[row.attributeId] = [...(next[row.attributeId] ?? []), row.attributeValueId];
+    }
+    if (Object.keys(next).length > 0) {
+      return next;
+    }
+
+    for (const valueId of productAttributeValueIds) {
+      const attribute = attributes.find((candidate) =>
+        candidate.values.some((value) => value.id === valueId),
+      );
+      if (!attribute) {
+        continue;
+      }
+      next[attribute.id] = [...(next[attribute.id] ?? []), valueId];
+    }
+    return next;
+  });
 
   const variants = product.variants || [];
   const hasVariants = variants.length > 0;
@@ -325,6 +359,8 @@ export function applyProductEditorSection(
         setFormData: handlers.setFormData,
         setHasVariantsToLoad: handlers.setHasVariantsToLoad,
         setProductType: handlers.setProductType,
+        setSelectedAttributesForVariants: handlers.setSelectedAttributesForVariants,
+        setSelectedAttributeValueIds: handlers.setSelectedAttributeValueIds,
         setSimpleProductData: handlers.setSimpleProductData,
         defaultCurrency: handlers.defaultCurrency,
         defaultColorLabel: handlers.defaultColorLabel,

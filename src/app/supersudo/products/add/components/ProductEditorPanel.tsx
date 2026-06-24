@@ -75,6 +75,8 @@ export function ProductEditorPanel({
     setFormData: formState.setFormData,
     setHasVariantsToLoad: formState.setHasVariantsToLoad,
     setProductType: formState.setProductType,
+    setSelectedAttributesForVariants: formState.setSelectedAttributesForVariants,
+    setSelectedAttributeValueIds: formState.setSelectedAttributeValueIds,
     setSimpleProductData: formState.setSimpleProductData,
     onLoadError: onCancel,
   });
@@ -371,8 +373,7 @@ export function ProductEditorPanel({
         <ValueSelectionModal
           openValueModal={formState.openValueModal}
           variant={
-            formState.generatedVariants.find((v) => v.id === formState.openValueModal!.variantId) ||
-            (formState.openValueModal.variantId === 'variant-all'
+            formState.openValueModal.variantId === 'variant-all'
               ? {
                   id: 'variant-all',
                   selectedValueIds: Object.values(formState.selectedAttributeValueIds).flat(),
@@ -382,7 +383,7 @@ export function ProductEditorPanel({
                   sku: '',
                   image: null,
                 }
-              : undefined)
+              : formState.generatedVariants.find((v) => v.id === formState.openValueModal!.variantId)
           }
           attribute={formState.attributes.find((a) => a.id === formState.openValueModal!.attributeId)}
           selectedAttributeValueIds={formState.selectedAttributeValueIds}
