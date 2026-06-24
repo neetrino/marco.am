@@ -76,8 +76,6 @@ export function AttributesSelection({
               autoComplete="off"
               className="w-full rounded-md border border-gray-300 bg-white py-2 pl-9 pr-9 text-sm text-gray-900 placeholder:text-gray-500 focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500"
               aria-label={t('admin.attributes.searchLabel')}
-              aria-expanded={attributesDropdownOpen}
-              aria-controls="product-attribute-dropdown"
             />
             {attributeSearch.length > 0 ? (
               <button
@@ -97,6 +95,7 @@ export function AttributesSelection({
               className="absolute right-2 rounded p-0.5 text-gray-500 hover:text-gray-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-500"
               aria-label={t('admin.products.add.selectAttributes')}
               aria-expanded={attributesDropdownOpen}
+              aria-controls="product-attribute-dropdown"
             >
               <svg
                 className={`h-4 w-4 transition-transform duration-200 ${
