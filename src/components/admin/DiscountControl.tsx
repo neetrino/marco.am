@@ -3,6 +3,7 @@
 import { Input } from '@shop/ui';
 import { DiscountExpiresPicker } from './DiscountExpiresPicker';
 import type { DiscountKind } from '@/lib/discount/discount-expiry';
+import { formatAmountInput, parseAmountInput } from '@/lib/amount-format';
 
 export type DiscountControlValue = {
   type: DiscountKind;
@@ -72,6 +73,16 @@ export function DiscountControl({
     onChange(normalize(activeKind, parsed, value.expiresAt));
   };
 
+  const handleAmountValueChange = (raw: string) => {
+    const parsed = raw === '' ? null : parseFloat(raw);
+    onChange(normalize('AMOUNT', parsed, value.expiresAt));
+  };
+
+  const amountDisplayValue =
+    value.value === null || value.value === undefined
+      ? ''
+      : formatAmountInput(value.value);
+
   const handleExpiresChange = (expiresAt: string | null) => {
     onChange({ ...value, expiresAt });
   };
@@ -97,14 +108,19 @@ export function DiscountControl({
             <span className={COMPACT_DISCOUNT_KIND}>%</span>
           )}
           <input
-            type="number"
-            min="0"
+            type={isPercent ? 'number' : 'text'}
+            inputMode={isPercent ? 'decimal' : 'numeric'}
+            min={isPercent ? '0' : undefined}
             max={isPercent ? PERCENT_MAX : undefined}
-            step={isPercent ? '0.1' : '1'}
-            value={value.value ?? ''}
+            step={isPercent ? '0.1' : undefined}
+            value={isPercent ? (value.value ?? '') : amountDisplayValue}
             disabled={disabled}
             placeholder="0"
-            onChange={(event) => handleValueChange(event.target.value)}
+            onChange={(event) =>
+              isPercent
+                ? handleValueChange(event.target.value)
+                : handleAmountValueChange(parseAmountInput(event.target.value))
+            }
             className={COMPACT_DISCOUNT_INPUT}
           />
         </div>
@@ -149,17 +165,31 @@ export function DiscountControl({
         </div>
       ) : null}
       <div className="flex items-center gap-1.5">
-        <Input
-          type="number"
-          min="0"
-          max={isPercent ? PERCENT_MAX : undefined}
-          step={isPercent ? '0.1' : '1'}
-          value={value.value ?? ''}
-          disabled={disabled}
-          onChange={(event) => handleValueChange(event.target.value)}
-          className="w-28 border-slate-300 bg-white"
-          placeholder="0"
-        />
+        {isPercent ? (
+          <Input
+            type="number"
+            min="0"
+            max={PERCENT_MAX}
+            step="0.1"
+            value={value.value ?? ''}
+            disabled={disabled}
+            onChange={(event) => handleValueChange(event.target.value)}
+            className="w-28 border-slate-300 bg-white"
+            placeholder="0"
+          />
+        ) : (
+          <Input
+            type="text"
+            inputMode="numeric"
+            value={amountDisplayValue}
+            disabled={disabled}
+            onChange={(event) =>
+              handleAmountValueChange(parseAmountInput(event.target.value))
+            }
+            className="w-28 border-slate-300 bg-white"
+            placeholder="0"
+          />
+        )}
         <span className="shrink-0 text-sm text-gray-500">{unitSuffix}</span>
       </div>
       {showExpires ? (

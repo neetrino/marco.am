@@ -84,10 +84,16 @@ const getProductAttributesInclude = () => ({
 export function isProductAttributesError(error: unknown): boolean {
   const errorObj = error as { code?: string; message?: string };
   const errorMessage = error instanceof Error ? error.message : String(error);
-  return (errorObj && typeof errorObj === 'object' && 'code' in errorObj && errorObj.code === 'P2021') || 
-         errorMessage.includes('productAttributes') || 
-         errorMessage.includes('product_attribute_values') ||
-         errorMessage.includes('does not exist');
+  const mentionsAttributeRelations =
+    errorMessage.includes("productAttributes") ||
+    errorMessage.includes("product_attribute_values") ||
+    errorMessage.includes("attributeValues");
+
+  return (
+    (typeof errorObj.code === "string" && errorObj.code === "P2021") ||
+    mentionsAttributeRelations ||
+    errorMessage.includes("does not exist")
+  );
 }
 
 /**

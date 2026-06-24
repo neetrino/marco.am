@@ -29,7 +29,7 @@ interface PricingInventorySectionProps {
   selectedAttributeValueIds: Record<string, string[]>;
   attributesDropdownOpen: boolean;
   attributesDropdownRef: RefObject<HTMLDivElement | null>;
-  onAttributesDropdownToggle: () => void;
+  onAttributesDropdownOpenChange: (open: boolean) => void;
   onAttributeToggle: (attributeId: string, checked: boolean) => void;
   onAttributeRemove: (attributeId: string) => void;
   onAttributeValuesOpen: (attributeId: string) => void;
@@ -60,7 +60,7 @@ export function PricingInventorySection({
   selectedAttributeValueIds,
   attributesDropdownOpen,
   attributesDropdownRef,
-  onAttributesDropdownToggle,
+  onAttributesDropdownOpenChange,
   onAttributeToggle,
   onAttributeRemove,
   onAttributeValuesOpen,
@@ -103,12 +103,13 @@ export function PricingInventorySection({
           <AttributesSelection
             embedded
             title={t('admin.products.add.attributes')}
+            detailedValueDisplay
             attributes={attributes}
             selectedAttributesForVariants={selectedAttributesForVariants}
             selectedAttributeValueIds={selectedAttributeValueIds}
             attributesDropdownOpen={attributesDropdownOpen}
             attributesDropdownRef={attributesDropdownRef}
-            onAttributesDropdownToggle={onAttributesDropdownToggle}
+            onAttributesDropdownOpenChange={onAttributesDropdownOpenChange}
             onAttributeToggle={onAttributeToggle}
             onAttributeRemove={onAttributeRemove}
             onAttributeValuesOpen={onAttributeValuesOpen}
@@ -123,7 +124,7 @@ export function PricingInventorySection({
             selectedAttributeValueIds={selectedAttributeValueIds}
             attributesDropdownOpen={attributesDropdownOpen}
             attributesDropdownRef={attributesDropdownRef}
-            onAttributesDropdownToggle={onAttributesDropdownToggle}
+            onAttributesDropdownOpenChange={onAttributesDropdownOpenChange}
             onAttributeToggle={onAttributeToggle}
             onAttributeRemove={onAttributeRemove}
             onAttributeValuesOpen={onAttributeValuesOpen}

@@ -87,7 +87,7 @@ interface AddProductFormContentProps {
   onDiscountChange: (value: VariantDiscount) => void;
   onSkuChange: (value: string) => void;
   onQuantityChange: (value: string) => void;
-  onAttributesDropdownToggle: () => void;
+  onAttributesDropdownOpenChange: (open: boolean) => void;
   onAttributeToggle: (attributeId: string, checked: boolean) => void;
   onAttributeRemove: (attributeId: string) => void;
   onAttributeValuesOpen: (attributeId: string) => void;
@@ -184,7 +184,7 @@ export function AddProductFormContent({
   onDiscountChange,
   onSkuChange,
   onQuantityChange,
-  onAttributesDropdownToggle,
+  onAttributesDropdownOpenChange,
   onAttributeToggle,
   onAttributeRemove,
   onAttributeValuesOpen,
@@ -338,7 +338,7 @@ export function AddProductFormContent({
               selectedAttributeValueIds={selectedAttributeValueIds}
               attributesDropdownOpen={attributesDropdownOpen}
               attributesDropdownRef={attributesDropdownRef}
-              onAttributesDropdownToggle={onAttributesDropdownToggle}
+              onAttributesDropdownOpenChange={onAttributesDropdownOpenChange}
               onAttributeToggle={onAttributeToggle}
               onAttributeRemove={onAttributeRemove}
               onAttributeValuesOpen={onAttributeValuesOpen}

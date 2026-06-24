@@ -9,6 +9,7 @@ import { getColorHex } from '../../../../../lib/colorMap';
 import { CURRENCIES, type CurrencyCode } from '../../../../../lib/currency';
 import { showPopupPrompt } from '@/components/popup-service';
 import { DiscountControl } from '@/components/admin/DiscountControl';
+import { AmountInput } from '@/components/admin/AmountInput';
 import type { Attribute, GeneratedVariant } from '../types';
 import type { VariantDiscount } from '../utils/variant-discount';
 import { logger } from "@/lib/utils/logger";
@@ -222,18 +223,16 @@ export function VariantBuilder({
                             {t('admin.products.add.price')}
                           </label>
                           <div className="flex h-9 items-center gap-1.5">
-                            <Input
-                              type="number"
+                            <AmountInput
                               value={variant.price}
-                              onChange={(e) => {
+                              onChange={(nextPrice) => {
                                 onVariantUpdate((prev) =>
-                                  prev.map((v) => (v.id === variant.id ? { ...v, price: e.target.value } : v))
+                                  prev.map((v) => (v.id === variant.id ? { ...v, price: nextPrice } : v))
                                 );
                               }}
                               placeholder={t('admin.products.add.pricePlaceholder')}
                               className="h-9 w-full text-sm"
-                              min="0"
-                              step="0.01"
+                              allowDecimals
                             />
                             <span className="shrink-0 text-sm text-gray-500">{CURRENCIES[defaultCurrency].symbol}</span>
                           </div>

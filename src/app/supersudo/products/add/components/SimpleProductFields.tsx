@@ -5,6 +5,7 @@ import { useTranslation } from '../../../../../lib/i18n-client';
 import { FormSection } from './FormSection';
 import { CURRENCIES, type CurrencyCode } from '../../../../../lib/currency';
 import { DiscountControl } from '@/components/admin/DiscountControl';
+import { AmountInput } from '@/components/admin/AmountInput';
 import type { VariantDiscount } from '../utils/variant-discount';
 
 interface SimpleProductFieldsProps {
@@ -43,14 +44,12 @@ export function SimpleProductFields({
               {t('admin.products.add.price')}
             </label>
             <div className="flex items-center gap-2">
-              <Input
-                type="number"
+              <AmountInput
                 value={price}
-                onChange={(e) => onPriceChange(e.target.value)}
+                onChange={onPriceChange}
                 placeholder={t('admin.products.add.pricePlaceholder')}
                 className="flex-1"
-                min="0"
-                step="0.01"
+                allowDecimals
               />
               <span className="text-sm text-gray-500 whitespace-nowrap">{CURRENCIES[defaultCurrency].symbol}</span>
             </div>

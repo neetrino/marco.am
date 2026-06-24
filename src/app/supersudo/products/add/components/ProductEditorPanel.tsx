@@ -343,7 +343,7 @@ export function ProductEditorPanel({
           onDiscountChange={(value) => formState.setSimpleProductData((prev) => ({ ...prev, discount: value }))}
           onSkuChange={(value) => formState.setSimpleProductData((prev) => ({ ...prev, sku: value }))}
           onQuantityChange={(value) => formState.setSimpleProductData((prev) => ({ ...prev, quantity: value }))}
-          onAttributesDropdownToggle={() => formState.setAttributesDropdownOpen(!formState.attributesDropdownOpen)}
+          onAttributesDropdownOpenChange={(open) => formState.setAttributesDropdownOpen(open)}
           onAttributeToggle={handleAttributeToggle}
           onAttributeRemove={handleAttributeRemove}
           onAttributeValuesOpen={(attributeId) =>

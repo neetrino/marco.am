@@ -1,10 +1,15 @@
 import type { Attribute } from './useAttributes';
 
+export type SearchableAttribute = Pick<Attribute, 'id' | 'key' | 'name' | 'type' | 'values'>;
+
 /**
  * Client-side filter for the admin attributes list: matches name, key, type,
  * and value labels / stored values / color hex tokens.
  */
-export function filterAttributesBySearch(attributes: Attribute[], rawSearch: string): Attribute[] {
+export function filterAttributesBySearch<T extends SearchableAttribute>(
+  attributes: T[],
+  rawSearch: string,
+): T[] {
   const raw = rawSearch.trim().toLowerCase();
   if (!raw) {
     return attributes;
