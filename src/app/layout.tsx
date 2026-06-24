@@ -1,6 +1,5 @@
 import React, { Suspense } from 'react';
 import type { Metadata } from 'next';
-import { headers } from 'next/headers';
 import Script from 'next/script';
 import './globals.css';
 import { TidioDynamicLoader } from '../components/TidioDynamicLoader';
@@ -14,7 +13,6 @@ import { serializeClientI18nSeed } from '../lib/i18n/server-storefront-language-
 import { t } from '../lib/i18n';
 import { APP_VIEWPORT } from '../constants/viewport';
 import { SITE_LOGO_SRC } from '@/lib/constants/site-brand';
-import { CSP_NONCE_REQUEST_HEADER } from '@/lib/security/content-security-policy';
 
 export const viewport = APP_VIEWPORT;
 
@@ -38,15 +36,14 @@ export default async function RootLayout({
 }) {
   const initialLanguage = DEFAULT_STOREFRONT_LANGUAGE;
   const i18nSeed = serializeClientI18nSeed(initialLanguage);
-  const nonce = (await headers()).get(CSP_NONCE_REQUEST_HEADER) ?? undefined;
 
   return (
     <html lang={initialLanguage} className={`h-full ${appHtmlFontClassName}`} suppressHydrationWarning>
       <body className={`${appBodyFontClassName} min-h-full bg-[var(--app-bg)] text-[var(--app-text)] antialiased transition-colors duration-200`}>
-        <Script id="i18n-init" strategy="beforeInteractive" nonce={nonce}>
+        <Script id="i18n-init" strategy="beforeInteractive">
           {`window.__MARCO_I18N__=${i18nSeed};`}
         </Script>
-        <Script id="lang-init" strategy="beforeInteractive" nonce={nonce}>
+        <Script id="lang-init" strategy="beforeInteractive">
           {`
             (() => {
               try {
@@ -60,7 +57,7 @@ export default async function RootLayout({
             })();
           `}
         </Script>
-        <Script id="theme-init" strategy="beforeInteractive" nonce={nonce}>
+        <Script id="theme-init" strategy="beforeInteractive">
           {`
             (() => {
               try {

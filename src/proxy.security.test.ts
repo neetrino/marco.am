@@ -129,11 +129,12 @@ describe("proxy auth and CSRF behavior", () => {
     expect(response.headers.get("location")).toBe("http://localhost:3000/");
   });
 
-  it("sets per-request CSP on storefront pages", async () => {
+  it("sets a strict CSP on storefront pages", async () => {
     const response = await proxy(buildRequest("/"));
     const csp = response.headers.get("Content-Security-Policy");
     expect(csp).toBeTruthy();
-    expect(csp).toContain("script-src");
-    expect(csp).toMatch(/'nonce-[^']+'/);
+    expect(csp).toContain("script-src 'self' 'unsafe-inline'");
+    expect(csp).toContain("object-src 'none'");
+    expect(csp).toContain("frame-ancestors 'none'");
   });
 });

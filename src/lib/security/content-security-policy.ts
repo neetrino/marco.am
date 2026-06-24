@@ -12,22 +12,21 @@ const VERCEL_TOOLBAR_FRAME_HOSTS = [
   "https://youtube-nocookie.com",
 ];
 
-type BuildCspOptions = {
-  nonce: string;
-};
-
 /**
- * Per-request CSP with nonce for inline scripts. Production omits `unsafe-inline`
- * on script-src; development keeps it for Next.js HMR.
+ * Site-wide CSP. Scripts allow `'unsafe-inline'` because storefront pages are
+ * statically rendered/CDN-cached, which is incompatible with per-request nonces
+ * (Next.js only injects nonces during dynamic rendering). Other directives stay
+ * strict (`object-src 'none'`, `base-uri 'self'`, `form-action 'self'`,
+ * `frame-ancestors 'none'`) to limit the impact of inline scripts.
  */
-export function buildContentSecurityPolicyHeader(options: BuildCspOptions): string {
+export function buildContentSecurityPolicyHeader(): string {
   const tier = getDeploymentTier();
   const isDevelopment = tier === "development";
   const allowVercelToolbar = isDevelopment || process.env.VERCEL === "1";
 
-  const scriptSources = ["'self'", `'nonce-${options.nonce}'`, "https://code.tidio.co"];
+  const scriptSources = ["'self'", "'unsafe-inline'", "https://code.tidio.co"];
   if (isDevelopment) {
-    scriptSources.push("'unsafe-inline'", "'unsafe-eval'");
+    scriptSources.push("'unsafe-eval'");
   }
   if (allowVercelToolbar) {
     scriptSources.push("https://vercel.live");
@@ -69,6 +68,3 @@ export function buildContentSecurityPolicyHeader(options: BuildCspOptions): stri
     "frame-ancestors 'none'",
   ].join("; ");
 }
-
-/** Header name forwarded from proxy to RSC for inline Script nonces. */
-export const CSP_NONCE_REQUEST_HEADER = "x-nonce";
