@@ -163,7 +163,7 @@ async function guardSupersudoPage(request: NextRequest): Promise<NextResponse | 
   return NextResponse.redirect(loginUrl);
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   if (pathname === "/supersudo" || pathname.startsWith("/supersudo/")) {
