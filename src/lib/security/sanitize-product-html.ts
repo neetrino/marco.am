@@ -25,14 +25,6 @@ export function sanitizeProductSubtitleHtml(html: string): string {
   return sanitizeHtml(trimmed, SANITIZE_OPTIONS).trim();
 }
 
-function visiblePlainText(html: string): string {
-  return html
-    .replace(/<br\s*\/?>/gi, ' ')
-    .replace(/<[^>]+>/g, '')
-    .replace(/&nbsp;/gi, ' ')
-    .trim();
-}
-
 /** True when sanitized HTML has no visible text content. */
 export function isProductSubtitleHtmlEmpty(html: string | null | undefined): boolean {
   if (!html?.trim()) {
@@ -44,7 +36,7 @@ export function isProductSubtitleHtmlEmpty(html: string | null | undefined): boo
     return true;
   }
 
-  return visiblePlainText(sanitized).length === 0;
+  return stripTags(sanitized).length === 0;
 }
 
 /** Wraps legacy plain-text subtitles for the HTML editor. */

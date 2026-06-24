@@ -45,32 +45,36 @@ interface TranslationUpdate {
   description: ReturnType<typeof toPrismaProductDescription>;
 }
 
+function logLine(message: string): void {
+  process.stdout.write(`${message}\n`);
+}
+
 async function syncReadModelsForProducts(productIds: readonly string[]): Promise<void> {
   if (productIds.length === 0) {
-    console.log('No products to sync.');
+    logLine('No products to sync.');
     return;
   }
 
-  console.log(`Syncing PDP read-model for ${productIds.length} product(s)...`);
+  logLine(`Syncing PDP read-model for ${productIds.length} product(s)...`);
   const syncStartedAt = Date.now();
   await syncProductPdpReadModelBatch(productIds, {
-    logProgress: (message) => console.log(message),
+    logProgress: logLine,
   });
-  console.log(`PDP read-model synced in ${((Date.now() - syncStartedAt) / 1000).toFixed(1)}s.`);
+  logLine(`PDP read-model synced in ${((Date.now() - syncStartedAt) / 1000).toFixed(1)}s.`);
 }
 
 async function syncListingReadModelsForProducts(productIds: readonly string[]): Promise<void> {
   if (productIds.length === 0) {
-    console.log('No products to sync listing read-model.');
+    logLine('No products to sync listing read-model.');
     return;
   }
 
-  console.log(`Syncing listing read-model for ${productIds.length} product(s)...`);
+  logLine(`Syncing listing read-model for ${productIds.length} product(s)...`);
   const syncStartedAt = Date.now();
   await syncProductListingReadModelBatch(productIds, {
-    logProgress: (message) => console.log(message),
+    logProgress: logLine,
   });
-  console.log(`Listing read-model synced in ${((Date.now() - syncStartedAt) / 1000).toFixed(1)}s.`);
+  logLine(`Listing read-model synced in ${((Date.now() - syncStartedAt) / 1000).toFixed(1)}s.`);
 }
 
 async function getProductIdsWithSubtitle(): Promise<string[]> {
@@ -131,12 +135,12 @@ async function migrate(): Promise<void> {
     });
   }
 
-  console.log(
+  logLine(
     `Found ${pending.length} translation(s) with legacy note rows (of ${translations.length} total).`,
   );
 
   if (dryRun) {
-    console.log(`Dry run — no writes. Example: ${pending[0]?.slug ?? 'n/a'} (${pending[0]?.locale ?? 'n/a'})`);
+    logLine(`Dry run — no writes. Example: ${pending[0]?.slug ?? 'n/a'} (${pending[0]?.locale ?? 'n/a'})`);
     return;
   }
 
@@ -153,11 +157,11 @@ async function migrate(): Promise<void> {
         }),
       ),
     );
-    console.log(`Updated ${Math.min(offset + BATCH_SIZE, pending.length)}/${pending.length}`);
+    logLine(`Updated ${Math.min(offset + BATCH_SIZE, pending.length)}/${pending.length}`);
   }
 
   const elapsedSec = ((Date.now() - startedAt) / 1000).toFixed(1);
-  console.log(`Done. ${pending.length} translation(s) updated in ${elapsedSec}s.`);
+  logLine(`Done. ${pending.length} translation(s) updated in ${elapsedSec}s.`);
 
   const productIds = [...new Set(pending.map((item) => item.productId))];
   await syncReadModelsForProducts(productIds);
