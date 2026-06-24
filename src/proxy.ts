@@ -33,16 +33,17 @@ import {
 function continueWithPageSecurity(request: NextRequest): NextResponse {
   const nonce = Buffer.from(randomUUID()).toString("base64");
   const requestId = getOrCreateRequestId(request.headers);
+  const cspHeader = buildContentSecurityPolicyHeader({ nonce });
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set(CSP_NONCE_REQUEST_HEADER, nonce);
   requestHeaders.set(REQUEST_ID_HEADER, requestId);
+  // Next.js reads the nonce from the request CSP header to apply it to its own
+  // framework scripts; without this, strict (prod) CSP blocks hydration.
+  requestHeaders.set("Content-Security-Policy", cspHeader);
   const response = NextResponse.next({
     request: { headers: requestHeaders },
   });
-  response.headers.set(
-    "Content-Security-Policy",
-    buildContentSecurityPolicyHeader({ nonce })
-  );
+  response.headers.set("Content-Security-Policy", cspHeader);
   response.headers.set(REQUEST_ID_HEADER, requestId);
   return response;
 }
