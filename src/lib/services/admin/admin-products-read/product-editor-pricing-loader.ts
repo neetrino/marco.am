@@ -1,6 +1,7 @@
 import { db } from "@white-shop/db";
 import { formatVariantForAdmin } from "./variant-formatter";
 import { isProductAttributesError } from "./query-executor";
+import { createProductNotFoundError } from "./product-not-found-error";
 
 const pricingVariantInclude = {
   options: {
@@ -28,15 +29,6 @@ type PricingProductRow = {
   attributeValues?: Array<{ attributeId: string; attributeValueId: string }>;
   variants: PricingVariantRow[];
 };
-
-function createProductNotFoundError(productId: string): never {
-  throw {
-    status: 404,
-    type: "https://api.shop.am/problems/not-found",
-    title: "Product not found",
-    detail: `Product with id '${productId}' does not exist`,
-  };
-}
 
 function mergeAttributeIds(
   productAttributeIds: Array<{ attributeId: string }> | undefined,

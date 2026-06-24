@@ -2,19 +2,11 @@ import { db } from "@white-shop/db";
 import type { ProductEditorSection } from "@/app/supersudo/products/add/product-editor-tabs";
 import { parseProductDescriptionJson } from "@/lib/products/product-description";
 import { loadPricingSection } from "./product-editor-pricing-loader";
+import { createProductNotFoundError } from "./product-not-found-error";
 
 const ADMIN_PRODUCT_LOCALE = "en";
 
 type TranslationRow = { locale: string };
-
-function createProductNotFoundError(productId: string): never {
-  throw {
-    status: 404,
-    type: "https://api.shop.am/problems/not-found",
-    title: "Product not found",
-    detail: `Product with id '${productId}' does not exist`,
-  };
-}
 
 function pickTranslation<T extends TranslationRow>(translations: T[]): T | null {
   return translations.find((row) => row.locale === ADMIN_PRODUCT_LOCALE) ?? translations[0] ?? null;
