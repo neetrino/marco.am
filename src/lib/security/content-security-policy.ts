@@ -14,7 +14,6 @@ const VERCEL_TOOLBAR_FRAME_HOSTS = [
 
 type BuildCspOptions = {
   nonce: string;
-  mediaSources?: string[];
 };
 
 /**
@@ -53,7 +52,7 @@ export function buildContentSecurityPolicyHeader(options: BuildCspOptions): stri
     styleSources.push("https://vercel.live");
   }
 
-  const mediaSources = options.mediaSources ?? ["'self'", "blob:", "https:"];
+  const mediaSources = ["'self'", "blob:", "https:"];
 
   return [
     "default-src 'self'",

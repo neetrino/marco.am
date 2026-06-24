@@ -76,18 +76,15 @@ function parseRateLimitWindowToMs(window: RateLimitWindow): number {
   return value * multipliers[unit];
 }
 
-function warnMemoryFallbackOnce(requireInProduction: boolean): void {
+function warnMemoryFallbackOnce(): void {
   if (memoryFallbackWarned) {
     return;
   }
   memoryFallbackWarned = true;
-  const tier = getDeploymentTier();
-  if (requireInProduction && tier === "production") {
-    logger.warn(
-      "Rate limiting uses in-memory fallback — set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN on Vercel for distributed limits",
-      { tier }
-    );
-  }
+  logger.warn(
+    "Rate limiting uses in-memory fallback — set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN for distributed limits",
+    { tier: getDeploymentTier() }
+  );
 }
 
 function checkMemoryLimit(clientKey: string, spec: UpstashRateLimitSpec): boolean {
@@ -133,7 +130,7 @@ export async function enforceUpstashRateLimit(
       );
     }
 
-    warnMemoryFallbackOnce(requireInProduction);
+    warnMemoryFallbackOnce();
     const allowed = checkMemoryLimit(`${spec.prefix}:${clientIp}`, spec);
     return allowed ? null : tooManyRequestsError(spec.detail);
   }

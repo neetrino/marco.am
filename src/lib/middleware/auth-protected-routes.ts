@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuthContext, type JwtPayload } from "@/lib/middleware/auth-edge";
+import { getAuthContext } from "@/lib/middleware/auth-edge";
 import {
   sessionHasAdminRole,
   validateSessionAtEdge,
@@ -56,7 +56,7 @@ function buildHomeRedirect(request: NextRequest): NextResponse {
 
 async function resolveValidatedSession(
   request: NextRequest
-): Promise<{ decoded: JwtPayload; session: ValidatedEdgeSession } | null> {
+): Promise<{ session: ValidatedEdgeSession } | null> {
   const { token, decoded } = await getAuthContext(request);
   if (!token || !decoded) {
     return null;
@@ -67,7 +67,7 @@ async function resolveValidatedSession(
     return null;
   }
 
-  return { decoded, session };
+  return { session };
 }
 
 /**

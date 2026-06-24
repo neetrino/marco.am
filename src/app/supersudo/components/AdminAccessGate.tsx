@@ -29,7 +29,8 @@ type AdminAccessGateProps = {
 };
 
 /**
- * Central admin auth guard — sidebar shell persists in AdminShell; only main column swaps.
+ * Client-side admin guard — no admin chrome until session confirms admin role.
+ * Edge proxy also blocks non-admins before HTML is served.
  */
 export function AdminAccessGate({ children }: AdminAccessGateProps) {
   const { isLoggedIn, isAdmin, isLoading, user } = useAuth();

@@ -68,7 +68,3 @@ export function usePassword({ onError, onSuccess }: UsePasswordProps) {
     handleChangePassword,
   };
 }
-
-
-
-
