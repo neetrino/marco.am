@@ -78,8 +78,6 @@ export function ProductEditorPanel({
     setSelectedAttributesForVariants: formState.setSelectedAttributesForVariants,
     setSelectedAttributeValueIds: formState.setSelectedAttributeValueIds,
     setSimpleProductData: formState.setSimpleProductData,
-    setSelectedAttributesForVariants: formState.setSelectedAttributesForVariants,
-    setSelectedAttributeValueIds: formState.setSelectedAttributeValueIds,
     onLoadError: onCancel,
   });
 
