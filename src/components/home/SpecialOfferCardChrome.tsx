@@ -20,6 +20,7 @@ import {
   SPECIAL_OFFERS_WARRANTY_BADGE_LEFT_INSET_PX,
   SPECIAL_OFFERS_WARRANTY_BADGE_TOP_INSET_PX,
 } from './home-special-offers.constants';
+import { MARCO_SLATE_ICON_CHIP_CLASS } from '@/lib/constants/marco-brand-colors';
 import { ProductWarrantyBadge } from '@/components/ProductCard/ProductWarrantyBadge';
 import type { ProductWarrantyYears } from '@/lib/constants/product-warranty';
 
@@ -99,7 +100,7 @@ export function SpecialOfferActionsStack({
       <button
         type="button"
         onClick={onWishlist}
-        className="flex h-8 w-8 items-center justify-center rounded-full bg-marco-black text-white shadow-sm transition-colors hover:bg-marco-text"
+        className={`flex h-8 w-8 items-center justify-center rounded-full ${MARCO_SLATE_ICON_CHIP_CLASS}`}
         aria-label={wishlistAria}
       >
         <Heart
@@ -114,7 +115,7 @@ export function SpecialOfferActionsStack({
       <button
         type="button"
         onClick={onCompare}
-        className="flex h-8 w-8 items-center justify-center rounded-full bg-marco-black text-white shadow-sm transition-colors hover:bg-marco-text"
+        className={`flex h-8 w-8 items-center justify-center rounded-full ${MARCO_SLATE_ICON_CHIP_CLASS}`}
         aria-label={compareAria}
       >
         <CompareIcon

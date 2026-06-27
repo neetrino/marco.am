@@ -134,7 +134,7 @@ export function HomeGradientBannerCta({ language }: HomeGradientBannerCtaProps) 
       slackStopPad={`${HOME_GRADIENT_BANNER_CTA_SLACK_HOVER_END_INSET_INLINE_START_PX}px`}
       className={`${montserratSlateCta.className} pointer-events-auto bg-marco-yellow font-bold text-[#383838] transition hover:-translate-y-0.5 active:translate-y-px dark:text-[#383838] ${enDesktopPillClass}`}
       style={linkStyle}
-      trailClassName="bg-marco-black"
+      trailClassName="bg-[var(--marco-slate)]"
       labelWrapperClassName={`transition-colors [transition-duration:var(--slack-dur)] [transition-timing-function:var(--slack-ease)] motion-reduce:transition-none group-hover:text-white group-focus-visible:text-white dark:group-hover:text-white dark:group-focus-visible:text-white ${labelSpanClassName} ${language === 'hy' ? labelHyDesktopClass : ''} ${labelRuTranslateClass}`}
       label={
         <span
@@ -149,7 +149,7 @@ export function HomeGradientBannerCta({ language }: HomeGradientBannerCtaProps) 
           {label}
         </span>
       }
-      chipInnerClassName={`flex shrink-0 items-center justify-center rounded-full bg-marco-black text-white transition-colors [transition-duration:var(--slack-dur)] [transition-timing-function:var(--slack-ease)] motion-reduce:transition-none group-hover:bg-marco-yellow group-hover:text-marco-black group-focus-visible:bg-marco-yellow group-focus-visible:text-marco-black dark:group-hover:bg-marco-yellow dark:group-hover:text-marco-black dark:group-focus-visible:bg-marco-yellow dark:group-focus-visible:text-marco-black ${iconRuDesktopTranslateClass} ${iconHyDesktopTranslateClass}`}
+      chipInnerClassName={`flex shrink-0 items-center justify-center rounded-full bg-[var(--marco-slate)] text-white transition-colors [transition-duration:var(--slack-dur)] [transition-timing-function:var(--slack-ease)] motion-reduce:transition-none group-hover:bg-marco-yellow group-hover:text-marco-black group-focus-visible:bg-marco-yellow group-focus-visible:text-marco-black dark:group-hover:bg-marco-yellow dark:group-hover:text-marco-black dark:group-focus-visible:bg-marco-yellow dark:group-focus-visible:text-marco-black ${iconRuDesktopTranslateClass} ${iconHyDesktopTranslateClass}`}
       chipInnerStyle={iconFrameStyle}
       chipChildren={
         <ArrowUpRight

@@ -107,7 +107,7 @@ function SubcategoryGroupParent({
         </span>
       ) : null}
       <span
-        className="ml-0.5 flex size-7 shrink-0 items-center justify-center rounded-full !bg-[#383838] text-white opacity-80 transition-opacity group-hover:opacity-100 dark:!bg-[#383838]"
+        className="ml-0.5 flex size-7 shrink-0 items-center justify-center rounded-full !bg-[var(--marco-slate)] text-white transition-opacity group-hover:opacity-100"
         aria-hidden
       >
         <ArrowUpRight className="size-3 shrink-0 !text-white dark:!text-white" strokeWidth={2.25} />

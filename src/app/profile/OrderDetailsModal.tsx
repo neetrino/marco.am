@@ -2,6 +2,10 @@ import { Button } from '@shop/ui';
 import type { CurrencyCode } from '@/lib/currency';
 import { OrderDetailsBody } from './components/OrderDetailsBody';
 import type { OrderDetails } from './types';
+import {
+  PROFILE_OUTLINE_BUTTON_CLASS,
+  PROFILE_PRIMARY_COMPACT_BUTTON_CLASS,
+} from './profile-button.classes';
 
 interface OrderDetailsModalProps {
   selectedOrder: OrderDetails;
@@ -50,7 +54,13 @@ export function OrderDetailsModal({
               </p>
             </div>
             <div className="flex items-center gap-3">
-              <Button onClick={onReOrder} disabled={isReordering} variant="primary" size="sm">
+              <Button
+                onClick={onReOrder}
+                disabled={isReordering}
+                variant="primary"
+                size="sm"
+                className={PROFILE_PRIMARY_COMPACT_BUTTON_CLASS}
+              >
                 {isReordering ? t('profile.orderDetails.adding') : t('profile.orderDetails.reorder')}
               </Button>
               <button
@@ -80,7 +90,7 @@ export function OrderDetailsModal({
             ) : orderDetailsError ? (
               <div className="py-12 text-center">
                 <p className="mb-4 text-red-600">{orderDetailsError}</p>
-                <Button onClick={onClose} variant="outline">
+                <Button onClick={onClose} variant="outline" className={PROFILE_OUTLINE_BUTTON_CLASS}>
                   {t('profile.orderDetails.close')}
                 </Button>
               </div>
