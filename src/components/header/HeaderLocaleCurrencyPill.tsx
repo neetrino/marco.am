@@ -11,6 +11,7 @@ import {
   HEADER_LOCALE_PILL_PADDING_X_CLASS,
   HEADER_LOCALE_PILL_RADIUS_CLASS,
   HEADER_MOBILE_HEADER_ROUND_CONTROL_CLASS,
+  HEADER_INK_CLASS,
 } from './header.constants';
 
 const ChevronDownIcon = () => (
@@ -86,7 +87,7 @@ function LocaleLanguageRows({
           disabled={isActive}
           className={`w-full px-4 py-2.5 text-left text-sm transition-colors ${
             isActive
-              ? 'bg-gray-50 font-semibold text-[#111827] dark:text-[#ffffff]'
+              ? 'bg-gray-50 font-semibold text-[var(--marco-slate)] dark:text-[#ffffff]'
               : 'text-gray-700 hover:bg-gray-50'
           }`}
         >
@@ -112,7 +113,7 @@ function LocaleCurrencyRows({
         onClick={() => onCurrencySelect(currency.code)}
         className={`flex w-full items-center justify-between px-4 py-2.5 text-sm transition-colors ${
           isActive
-            ? 'bg-gray-50 font-semibold text-[#111827] dark:text-[#ffffff]'
+            ? 'bg-gray-50 font-semibold text-[var(--marco-slate)] dark:text-[#ffffff]'
             : 'text-gray-700 hover:bg-gray-50'
         }`}
       >
@@ -249,7 +250,7 @@ export function HeaderLocaleCurrencyPill({
   }, [onMenuOpenChange, showMenu]);
 
   const isDrawer = variant === 'drawer';
-  const toolbarButtonClass = `flex shrink-0 items-center justify-center overflow-hidden bg-marco-gray text-xs font-bold leading-none text-marco-text ${HEADER_LOCALE_PILL_MIN_WIDTH_CLASS} ${HEADER_LOCALE_PILL_PADDING_X_CLASS} ${HEADER_LOCALE_PILL_INNER_GAP_CLASS} ${HEADER_LOCALE_PILL_HEIGHT_CLASS} ${HEADER_LOCALE_PILL_RADIUS_CLASS}`;
+  const toolbarButtonClass = `flex shrink-0 items-center justify-center overflow-hidden bg-marco-gray text-xs font-bold leading-none ${HEADER_INK_CLASS} ${HEADER_LOCALE_PILL_MIN_WIDTH_CLASS} ${HEADER_LOCALE_PILL_PADDING_X_CLASS} ${HEADER_LOCALE_PILL_INNER_GAP_CLASS} ${HEADER_LOCALE_PILL_HEIGHT_CLASS} ${HEADER_LOCALE_PILL_RADIUS_CLASS}`;
   const drawerButtonClass =
     'flex h-auto min-h-11 w-full items-center justify-between gap-2 overflow-hidden rounded-full bg-marco-black px-4 py-2.5 text-xs font-bold leading-none text-white';
 
@@ -341,11 +342,11 @@ export function MobileHeaderLocaleCurrencyButton({
         data-theme-static="true"
         className={`${HEADER_MOBILE_HEADER_ROUND_CONTROL_CLASS} gap-1 px-3 dark:!bg-white dark:ring-1 dark:ring-black/15`}
       >
-        <Globe className="h-5 w-5 shrink-0 dark:!text-black" strokeWidth={2.25} aria-hidden />
-        <span className="text-xs font-bold leading-none dark:!text-black" aria-hidden>
+        <Globe className="h-5 w-5 shrink-0 dark:!text-[var(--marco-slate)]" strokeWidth={2.25} aria-hidden />
+        <span className="text-xs font-bold leading-none dark:!text-[var(--marco-slate)]" aria-hidden>
           /
         </span>
-        <Banknote className="h-5 w-5 shrink-0 dark:!text-black" strokeWidth={2} aria-hidden />
+        <Banknote className="h-5 w-5 shrink-0 dark:!text-[var(--marco-slate)]" strokeWidth={2} aria-hidden />
       </button>
       {showMenu && (
         <LocaleCurrencyMenu

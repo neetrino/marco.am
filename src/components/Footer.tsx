@@ -12,14 +12,19 @@ import {
   FOOTER_BRAND_LOGO_BOX_CLASS,
   FOOTER_BRAND_LOGO_SHIFT_CLASS,
   FOOTER_BRAND_LOGO_WIDTH_PX,
+  FOOTER_BORDER_TOP_CLASS,
   FOOTER_COMPANY_LINKS,
   FOOTER_GRID_COMPANY_SUPPORT_WRAPPER_CLASS,
   FOOTER_GRID_CONTACTS_WRAPPER_CLASS,
   FOOTER_COPYRIGHT_STRIP_MARGIN_TOP_CLASS,
   FOOTER_COPYRIGHT_STRIP_PADDING_TOP_CLASS,
+  FOOTER_COPYRIGHT_BORDER_CLASS,
   FOOTER_COLUMN_PIPE_BAR_CLASS,
   FOOTER_COLUMN_PIPE_CLASS,
   FOOTER_HEADING_TEXT_CLASS,
+  FOOTER_INK_TEXT_CLASS,
+  FOOTER_LINK_HOVER_CLASS,
+  FOOTER_MUTED_TEXT_CLASS,
   FOOTER_MAIN_GRID_CLASS,
   FOOTER_NAV_THREE_COLUMN_ROW_CLASS,
   FOOTER_NAV_BODY_TEXT_CLASS,
@@ -30,7 +35,6 @@ import {
   FOOTER_NAV_COLUMN_LINK_WORD_SPACING_CLASS,
   FOOTER_NAV_COLUMN_LIST_ITEM_GAP_CLASS,
   FOOTER_NAV_HEADING_TEXT_CLASS,
-  FOOTER_MUTED_TEXT_CLASS,
   FOOTER_SUPPORT_LINKS,
   FOOTER_SURFACE_CLASS,
   FOOTER_TABLET_COLUMN_CENTER_CLASS,
@@ -46,7 +50,7 @@ import { FooterPaymentLogos } from './FooterPaymentLogos';
 import { FooterSocialLinks } from './FooterSocialLinks';
 import { SITE_LOGO_SRC } from '@/lib/constants/site-brand';
 
-const FOOTER_LINK_CLASS = `${FOOTER_MUTED_TEXT_CLASS} ${FOOTER_NAV_BODY_TEXT_CLASS} transition-colors hover:text-marco-black dark:hover:text-white`;
+const FOOTER_LINK_CLASS = `${FOOTER_INK_TEXT_CLASS} ${FOOTER_NAV_BODY_TEXT_CLASS} transition-opacity ${FOOTER_LINK_HOVER_CLASS}`;
 const FOOTER_SECONDARY_EMAIL = 'marcogrouparmenia@mail.ru';
 const FOOTER_PRIMARY_PHONES = ['+374 93 52 04 06', '+374 98 19 04 06', '+374 41 34 04 06'] as const;
 
@@ -102,12 +106,12 @@ function FooterContactsColumn() {
       </p>
       <div className="flex items-start gap-2 md:max-[1023px]:justify-center min-[1024px]:max-[1366px]:justify-center">
         <MapPin
-          className="mt-0 h-[18px] w-[18px] shrink-0 -translate-x-px translate-y-[3px] self-start text-marco-yellow"
+          className="mt-0 h-[18px] w-[18px] shrink-0 -translate-x-px translate-y-[3px] self-start text-[var(--marco-slate)]"
           strokeWidth={2}
           aria-hidden
         />
         <p
-          className={`${FOOTER_NAV_BODY_TEXT_CLASS} leading-snug whitespace-pre-line ${FOOTER_MUTED_TEXT_CLASS}`}
+          className={`${FOOTER_NAV_BODY_TEXT_CLASS} leading-snug whitespace-pre-line ${FOOTER_INK_TEXT_CLASS}`}
         >
           {t('contact.address')}
         </p>
@@ -128,7 +132,7 @@ function FooterContactsColumn() {
             <a
               key={phone}
               href={`tel:${phone.replace(/\s/g, '')}`}
-              className={`${FOOTER_NAV_BODY_TEXT_CLASS} transition-colors hover:text-marco-black hover:underline dark:hover:text-white ${FOOTER_MUTED_TEXT_CLASS}`}
+              className={`${FOOTER_NAV_BODY_TEXT_CLASS} transition-opacity ${FOOTER_LINK_HOVER_CLASS} hover:underline ${FOOTER_INK_TEXT_CLASS}`}
             >
               {phone}
             </a>
@@ -148,7 +152,7 @@ function FooterContactsColumn() {
         />
         <a
           href={`mailto:${t('contact.email')}`}
-          className={`${FOOTER_NAV_BODY_TEXT_CLASS} transition-colors hover:text-marco-black dark:hover:text-white ${FOOTER_MUTED_TEXT_CLASS}`}
+          className={`${FOOTER_NAV_BODY_TEXT_CLASS} transition-opacity ${FOOTER_LINK_HOVER_CLASS} ${FOOTER_INK_TEXT_CLASS}`}
         >
           {t('contact.email')}
         </a>
@@ -166,7 +170,7 @@ function FooterContactsColumn() {
         />
         <a
           href={`mailto:${FOOTER_SECONDARY_EMAIL}`}
-          className={`${FOOTER_NAV_BODY_TEXT_CLASS} transition-colors hover:text-marco-black dark:hover:text-white ${FOOTER_MUTED_TEXT_CLASS}`}
+          className={`${FOOTER_NAV_BODY_TEXT_CLASS} transition-opacity ${FOOTER_LINK_HOVER_CLASS} ${FOOTER_INK_TEXT_CLASS}`}
         >
           {FOOTER_SECONDARY_EMAIL}
         </a>
@@ -181,7 +185,7 @@ function FooterCopyright() {
 
   return (
     <p
-      className="inline-block whitespace-nowrap text-center text-[10px] leading-tight text-gray-500 dark:text-[#c7c7c7] sm:text-[11px] md:text-xs lg:text-[13px]"
+      className={`inline-block whitespace-nowrap text-center text-[10px] leading-tight sm:text-[11px] md:text-xs lg:text-[13px] ${FOOTER_MUTED_TEXT_CLASS}`}
       suppressHydrationWarning
     >
       <span>
@@ -191,7 +195,7 @@ function FooterCopyright() {
         href={NEETRINO_STUDIO_HREF}
         target="_blank"
         rel="noopener noreferrer"
-        className="font-medium text-marco-black no-underline hover:opacity-80 dark:text-white"
+        className={`font-medium ${FOOTER_INK_TEXT_CLASS} no-underline hover:opacity-80 dark:hover:text-white`}
       >
         {t('common.footer.marco.creditStudio')}
       </a>
@@ -207,7 +211,7 @@ export function Footer() {
   const { t } = useTranslation();
 
   return (
-    <footer className={`${FOOTER_SURFACE_CLASS} border-t border-black/5 dark:border-white/10`}>
+    <footer className={`${FOOTER_SURFACE_CLASS} ${FOOTER_BORDER_TOP_CLASS}`}>
       <div className="marco-header-container pb-7 pt-6">
         <div className={FOOTER_MAIN_GRID_CLASS}>
           <div
@@ -224,7 +228,7 @@ export function Footer() {
               />
             </div>
             <p
-              className={`${FOOTER_BRAND_DESCRIPTION_OVERLAP_CLASS} ${FOOTER_BRAND_DESCRIPTION_TEXT_CLASS} ${FOOTER_SURFACE_CLASS} ${FOOTER_MUTED_TEXT_CLASS}`}
+              className={`${FOOTER_BRAND_DESCRIPTION_OVERLAP_CLASS} ${FOOTER_BRAND_DESCRIPTION_TEXT_CLASS} ${FOOTER_SURFACE_CLASS} ${FOOTER_INK_TEXT_CLASS}`}
             >
               {t('common.footer.marco.brandDescription')}
             </p>
@@ -256,7 +260,7 @@ export function Footer() {
         </div>
 
         <div
-          className={`${FOOTER_COPYRIGHT_STRIP_MARGIN_TOP_CLASS} flex w-full flex-row items-center justify-between gap-2 border-t border-black/10 dark:border-white/10 ${FOOTER_COPYRIGHT_STRIP_PADDING_TOP_CLASS}`}
+          className={`${FOOTER_COPYRIGHT_STRIP_MARGIN_TOP_CLASS} flex w-full flex-row items-center justify-between gap-2 ${FOOTER_COPYRIGHT_BORDER_CLASS} ${FOOTER_COPYRIGHT_STRIP_PADDING_TOP_CLASS}`}
         >
           <div className="flex shrink-0 justify-start">
             <FooterSocialLinks density="compact" />

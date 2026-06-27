@@ -51,6 +51,7 @@ export default function BrandsPage() {
   const [localLogoPreviewUrl, setLocalLogoPreviewUrl] = useState<string | null>(null);
   const logoObjectUrlRef = useRef<string | null>(null);
   const logoUploadRequestIdRef = useRef(0);
+  const logoUploadPromiseRef = useRef<Promise<string> | null>(null);
 
   const filteredBrands = useMemo((): Brand[] => {
     const raw = brandSearch.trim().toLowerCase();
@@ -153,9 +154,19 @@ export default function BrandsPage() {
 
   const resetForm = () => {
     logoUploadRequestIdRef.current += 1;
+    logoUploadPromiseRef.current = null;
     setLogoUploading(false);
     clearLocalLogoPreview();
     setFormData({ name: '', logoUrl: '' });
+  };
+
+  const resolveLogoUrlForSave = async (fallbackLogoUrl: string): Promise<string> => {
+    const pendingLogoUpload = logoUploadPromiseRef.current;
+    if (!pendingLogoUpload) {
+      return fallbackLogoUrl.trim();
+    }
+
+    return (await pendingLogoUpload).trim();
   };
 
   const handleLogoFile = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -187,8 +198,8 @@ export default function BrandsPage() {
     const uploadRequestId = logoUploadRequestIdRef.current + 1;
     logoUploadRequestIdRef.current = uploadRequestId;
 
-    try {
-      setLogoUploading(true);
+    setLogoUploading(true);
+    const uploadPromise = (async (): Promise<string> => {
       const image = await processAdminImageFile(imageFile, 'logo');
       const result = await apiClient.post<{ url: string }>('/api/v1/supersudo/brands/upload-logo', {
         image,
@@ -196,8 +207,14 @@ export default function BrandsPage() {
         slug: editingBrand?.slug,
         brandId: editingBrand?.id,
       });
+      return result.url;
+    })();
+    logoUploadPromiseRef.current = uploadPromise;
+
+    try {
+      const uploadedLogoUrl = await uploadPromise;
       if (logoUploadRequestIdRef.current === uploadRequestId) {
-        setFormData((prev) => ({ ...prev, logoUrl: result.url }));
+        setFormData((prev) => ({ ...prev, logoUrl: uploadedLogoUrl }));
       }
     } catch (err: unknown) {
       logger.error('Brand logo upload failed', { error: err });
@@ -207,6 +224,7 @@ export default function BrandsPage() {
       }
     } finally {
       if (logoUploadRequestIdRef.current === uploadRequestId) {
+        logoUploadPromiseRef.current = null;
         setLogoUploading(false);
       }
       if (event.target) {
@@ -329,7 +347,7 @@ export default function BrandsPage() {
 
     setSaving(true);
     try {
-      const trimmedLogo = formData.logoUrl.trim();
+      const trimmedLogo = await resolveLogoUrlForSave(formData.logoUrl);
       await apiClient.post('/api/v1/supersudo/brands', {
         name: formData.name.trim(),
         ...(trimmedLogo ? { logoUrl: trimmedLogo } : {}),
@@ -354,7 +372,7 @@ export default function BrandsPage() {
 
     setSaving(true);
     try {
-      const trimmedLogo = formData.logoUrl.trim();
+      const trimmedLogo = await resolveLogoUrlForSave(formData.logoUrl);
       await apiClient.put(`/api/v1/supersudo/brands/${editingBrand.id}`, {
         name: formData.name.trim(),
         logoUrl: trimmedLogo.length > 0 ? trimmedLogo : null,
@@ -629,8 +647,8 @@ export default function BrandsPage() {
                 <label className="mb-1 block text-sm font-medium text-gray-700">
                   {t('admin.brands.logoLabel')}
                 </label>
-                <div className="flex flex-wrap items-center gap-2">
-                  <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">
+                <div className="space-y-2">
+                  <label className="group flex min-h-36 w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 p-4 text-center transition-colors hover:border-amber-400 hover:bg-amber-50/50">
                     <input
                       type="file"
                       accept={ADMIN_IMAGE_ACCEPT}
@@ -638,32 +656,38 @@ export default function BrandsPage() {
                       disabled={logoUploading || saving}
                       onChange={handleLogoFile}
                     />
-                    {logoUploading ? t('admin.brands.logoUploading') : t('admin.brands.logoUpload')}
+                    {safeFormLogoPreviewUrl ? (
+                      <img
+                        src={toDomSafeImgSrcString(safeFormLogoPreviewUrl)}
+                        alt=""
+                        className="max-h-24 max-w-full object-contain"
+                      />
+                    ) : (
+                      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-2xl font-semibold text-slate-400 ring-1 ring-slate-200">
+                        +
+                      </span>
+                    )}
+                    <span className="text-sm font-semibold text-slate-800 group-hover:text-amber-900">
+                      {logoUploading ? t('admin.brands.logoUploading') : t('admin.brands.logoUpload')}
+                    </span>
                   </label>
                   {safeFormLogoPreviewUrl ? (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      disabled={saving || logoUploading}
-                      onClick={() => {
-                        clearLocalLogoPreview();
-                        setFormData((prev) => ({ ...prev, logoUrl: '' }));
-                      }}
-                    >
-                      {t('admin.brands.logoRemove')}
-                    </Button>
+                    <div className="flex justify-end">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={saving || logoUploading}
+                        onClick={() => {
+                          clearLocalLogoPreview();
+                          setFormData((prev) => ({ ...prev, logoUrl: '' }));
+                        }}
+                      >
+                        {t('admin.brands.logoRemove')}
+                      </Button>
+                    </div>
                   ) : null}
                 </div>
-                {safeFormLogoPreviewUrl ? (
-                  <div className="mt-3 flex justify-center rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    <img
-                      src={toDomSafeImgSrcString(safeFormLogoPreviewUrl)}
-                      alt=""
-                      className="max-h-28 max-w-full object-contain"
-                    />
-                  </div>
-                ) : null}
               </div>
               <div className="flex items-center justify-end gap-2 pt-3">
                 <Button type="button" variant="outline" onClick={handleCloseAddModal} disabled={saving}>
@@ -672,7 +696,7 @@ export default function BrandsPage() {
                 <Button
                   type="button"
                   variant="primary"
-                  disabled={saving || logoUploading}
+                  disabled={saving}
                   onClick={handleCreateBrand}
                 >
                   {saving ? t('admin.brands.saving') : t('admin.brands.create')}
@@ -712,8 +736,8 @@ export default function BrandsPage() {
                 <label className="mb-1 block text-sm font-medium text-gray-700">
                   {t('admin.brands.logoLabel')}
                 </label>
-                <div className="flex flex-wrap items-center gap-2">
-                  <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">
+                <div className="space-y-2">
+                  <label className="group flex min-h-36 w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 p-4 text-center transition-colors hover:border-amber-400 hover:bg-amber-50/50">
                     <input
                       type="file"
                       accept={ADMIN_IMAGE_ACCEPT}
@@ -721,32 +745,38 @@ export default function BrandsPage() {
                       disabled={logoUploading || saving}
                       onChange={handleLogoFile}
                     />
-                    {logoUploading ? t('admin.brands.logoUploading') : t('admin.brands.logoUpload')}
+                    {safeFormLogoPreviewUrl ? (
+                      <img
+                        src={toDomSafeImgSrcString(safeFormLogoPreviewUrl)}
+                        alt=""
+                        className="max-h-24 max-w-full object-contain"
+                      />
+                    ) : (
+                      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-2xl font-semibold text-slate-400 ring-1 ring-slate-200">
+                        +
+                      </span>
+                    )}
+                    <span className="text-sm font-semibold text-slate-800 group-hover:text-amber-900">
+                      {logoUploading ? t('admin.brands.logoUploading') : t('admin.brands.logoUpload')}
+                    </span>
                   </label>
                   {safeFormLogoPreviewUrl ? (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      disabled={saving || logoUploading}
-                      onClick={() => {
-                        clearLocalLogoPreview();
-                        setFormData((prev) => ({ ...prev, logoUrl: '' }));
-                      }}
-                    >
-                      {t('admin.brands.logoRemove')}
-                    </Button>
+                    <div className="flex justify-end">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={saving || logoUploading}
+                        onClick={() => {
+                          clearLocalLogoPreview();
+                          setFormData((prev) => ({ ...prev, logoUrl: '' }));
+                        }}
+                      >
+                        {t('admin.brands.logoRemove')}
+                      </Button>
+                    </div>
                   ) : null}
                 </div>
-                {safeFormLogoPreviewUrl ? (
-                  <div className="mt-3 flex justify-center rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    <img
-                      src={toDomSafeImgSrcString(safeFormLogoPreviewUrl)}
-                      alt=""
-                      className="max-h-28 max-w-full object-contain"
-                    />
-                  </div>
-                ) : null}
               </div>
               <div className="flex items-center justify-end gap-2 pt-3">
                 <Button type="button" variant="outline" onClick={handleCloseEditModal} disabled={saving}>
@@ -755,7 +785,7 @@ export default function BrandsPage() {
                 <Button
                   type="button"
                   variant="primary"
-                  disabled={saving || logoUploading}
+                  disabled={saving}
                   onClick={handleUpdateBrand}
                 >
                   {saving ? t('admin.brands.saving') : t('admin.brands.update')}
