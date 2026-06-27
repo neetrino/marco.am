@@ -3,6 +3,7 @@
 import { Card } from '@shop/ui';
 import { useTranslation } from '../../../lib/i18n-client';
 import { formatCurrency, formatDate } from '../utils/dashboardUtils';
+import { ADMIN_AVATAR_CHIP_CLASS } from './admin-button.classes';
 
 interface UserActivity {
   recentRegistrations: Array<{
@@ -101,7 +102,9 @@ function ActiveUserRow({ name, contact, orderCount, totalSpent }: ActiveUserRowP
     <div className="group rounded-2xl border border-marco-border/80 bg-white/85 p-3 transition-all duration-200 hover:-translate-y-0.5 hover:border-marco-yellow/60 hover:bg-marco-yellow/10">
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-marco-black text-xs font-bold text-white">
+          <div
+            className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl ${ADMIN_AVATAR_CHIP_CLASS}`}
+          >
             {getInitials(name)}
           </div>
           <div className="min-w-0">

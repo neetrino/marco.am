@@ -7,6 +7,7 @@ import {
   ORDER_DETAIL_LABEL_CLASS,
   ORDER_DETAIL_SECTION_CLASS,
 } from './order-details-layout.constants';
+import { ADMIN_PRIMARY_COMPACT_BUTTON_CLASS } from '../../components/admin-button.classes';
 
 interface OrderDetailsNotesProps {
   orderDetails: OrderDetails;
@@ -70,7 +71,7 @@ export function OrderDetailsNotes({
               type="button"
               onClick={handleSaveClick}
               disabled={!isDirty || saving}
-              className="rounded-lg bg-slate-900 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
+              className={ADMIN_PRIMARY_COMPACT_BUTTON_CLASS}
             >
               {saving
                 ? t('admin.orders.orderDetails.savingInternalNotes')
