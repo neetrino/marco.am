@@ -41,6 +41,7 @@ import {
   mobileDrawerCompactPillClass,
   mobileDrawerNavPillClass,
 } from './header-mobile-drawer.classes';
+import { HEADER_INK_CLASS } from './header.constants';
 
 type Props = {
   data: ReturnType<typeof useHeaderData>;
@@ -306,7 +307,7 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
                           <button
                             type="button"
                             onClick={() => setCallFlow('idle')}
-                            className="w-full py-2 text-center text-[11px] font-semibold uppercase tracking-wide text-marco-text/75 underline-offset-2 hover:text-marco-black hover:underline dark:text-zinc-400 dark:hover:text-white"
+                            className={`w-full py-2 text-center text-[11px] font-semibold uppercase tracking-wide ${HEADER_INK_CLASS} opacity-75 underline-offset-2 hover:underline dark:text-zinc-400 dark:hover:text-white`}
                           >
                             {t('contact.drawerCall.cancel')}
                           </button>

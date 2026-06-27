@@ -12,3 +12,6 @@ export const MARCO_SLATE_ICON_CHIP_CLASS =
 /** Pill CTAs — empty states, add to cart, browse actions. */
 export const MARCO_SLATE_PILL_BUTTON_CLASS =
   '!bg-[var(--marco-slate)] !text-white hover:brightness-95 active:brightness-90';
+
+/** Primary body / heading ink — replaces black and near-black text. */
+export const MARCO_SLATE_TEXT_CLASS = 'text-[var(--marco-slate)]';

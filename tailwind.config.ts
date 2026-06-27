@@ -46,7 +46,7 @@ const config: Config = {
         info: '#3B82F6',
         marco: {
           yellow: MARCO_YELLOW,
-          black: MARCO_ANTHRACITE,
+          black: MARCO_SLATE_HEX,
           slate: MARCO_SLATE_HEX,
           gray: '#f4f4f4',
           border: '#ebebeb',

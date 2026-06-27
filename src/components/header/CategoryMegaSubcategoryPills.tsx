@@ -27,13 +27,13 @@ const SUBPILL_LUCIDE_STROKE_PX = 26;
 const MEGA_GROUP_GRID_CLASS = HEADER_MEGA_MENU_SUBCATEGORY_GRID_CLASS;
 
 const MEGA_PARENT_LINK_CLASS =
-  `${headerCategoryNavFont.className} group mb-3 flex w-full max-w-full items-center gap-2 rounded-xl px-1 py-1.5 !text-[#383838] transition-[background-color,color] duration-150 hover:bg-marco-gray/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/15 dark:!text-[#383838]`;
+  `${headerCategoryNavFont.className} group mb-3 flex w-full max-w-full items-center gap-2 rounded-xl px-1 py-1.5 !text-[var(--marco-slate)] transition-[background-color,color] duration-150 hover:bg-marco-gray/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/15 dark:!text-[var(--marco-slate)]`;
 
 const MEGA_DESCENDANT_LINK_CLASS =
-  `${headerCategoryNavFont.className} block rounded-lg px-2 py-1.5 text-sm leading-5 !text-[#383838]/85 transition-[background-color,color] duration-150 hover:bg-marco-gray/60 hover:!text-[#383838] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/10 dark:!text-[#383838]/85 dark:hover:!text-[#383838]`;
+  `${headerCategoryNavFont.className} block rounded-lg px-2 py-1.5 text-sm leading-5 !text-[var(--marco-slate)]/85 transition-[background-color,color] duration-150 hover:bg-marco-gray/60 hover:!text-[var(--marco-slate)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/10 dark:!text-[var(--marco-slate)]/85 dark:hover:!text-[var(--marco-slate)]`;
 
 const MEGA_DESCENDANT_SEE_ALL_CLASS =
-  `${headerCategoryNavFont.className} mt-0.5 block w-full rounded-lg px-2 py-1.5 text-left text-sm font-semibold leading-5 !text-[#383838] underline decoration-[#383838]/30 underline-offset-2 transition-[background-color,color,decoration-color] duration-150 hover:bg-marco-gray/60 hover:decoration-[#383838] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/10 dark:!text-[#383838]`;
+  `${headerCategoryNavFont.className} mt-0.5 block w-full rounded-lg px-2 py-1.5 text-left text-sm font-semibold leading-5 !text-[var(--marco-slate)] underline decoration-[var(--marco-slate)]/30 underline-offset-2 transition-[background-color,color,decoration-color] duration-150 hover:bg-marco-gray/60 hover:decoration-[var(--marco-slate)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/10 dark:!text-[var(--marco-slate)]`;
 
 function SubcategoryDescendantList({
   descendants,
@@ -98,11 +98,11 @@ function SubcategoryGroupParent({
   return (
     <ShopListingLink href={`/products?category=${parent.slug}`} onNavigate={onNavigate} className={MEGA_PARENT_LINK_CLASS}>
       <SubcategoryIcon icon={row.icon} imageSrc={imageSrc} />
-      <span className="min-w-0 text-left text-sm font-bold leading-[18px] tracking-[0.14px] !text-[#383838] dark:!text-[#383838]">
+      <span className="min-w-0 text-left text-sm font-bold leading-[18px] tracking-[0.14px] !text-[var(--marco-slate)] dark:!text-[var(--marco-slate)]">
         {row.title}
       </span>
       {count > 0 ? (
-        <span className="shrink-0 whitespace-nowrap text-sm font-normal tabular-nums !text-[#383838]/60 dark:!text-[#383838]/60">
+        <span className="shrink-0 whitespace-nowrap text-sm font-normal tabular-nums !text-[var(--marco-slate)]/60 dark:!text-[var(--marco-slate)]/60">
           ({count})
         </span>
       ) : null}
@@ -119,7 +119,7 @@ function SubcategoryGroupParent({
 function SubcategoryIcon({ icon, imageSrc }: { icon: CategoryNavIcon; imageSrc: string | null }) {
   if (imageSrc) {
     return (
-      <span className="flex size-[34px] shrink-0 items-center justify-center !text-[#383838] dark:!text-[#383838]">
+      <span className="flex size-[34px] shrink-0 items-center justify-center !text-[var(--marco-slate)] dark:!text-[var(--marco-slate)]">
         <Image
           src={toDomSafeImgSrcString(imageSrc)}
           alt=""
@@ -135,7 +135,7 @@ function SubcategoryIcon({ icon, imageSrc }: { icon: CategoryNavIcon; imageSrc: 
   }
   if (icon.kind === 'figma') {
     return (
-      <span className="flex size-[34px] shrink-0 items-center justify-center !text-[#383838] dark:!text-[#383838]">
+      <span className="flex size-[34px] shrink-0 items-center justify-center !text-[var(--marco-slate)] dark:!text-[var(--marco-slate)]">
         <Image
           src={icon.src}
           alt=""
@@ -151,10 +151,10 @@ function SubcategoryIcon({ icon, imageSrc }: { icon: CategoryNavIcon; imageSrc: 
   }
   const RowLucide: LucideIcon = icon.Icon;
   return (
-    <span className="flex size-[34px] shrink-0 items-center justify-center !text-[#383838] dark:!text-[#383838]">
+    <span className="flex size-[34px] shrink-0 items-center justify-center !text-[var(--marco-slate)] dark:!text-[var(--marco-slate)]">
       <RowLucide
         size={SUBPILL_LUCIDE_STROKE_PX}
-        className="shrink-0 !text-[#383838] dark:!text-[#383838]"
+        className="shrink-0 !text-[var(--marco-slate)] dark:!text-[var(--marco-slate)]"
         strokeWidth={1.35}
         aria-hidden
       />
@@ -212,13 +212,13 @@ export function CategoryMegaSubcategoryPills({
         <div className="flex flex-wrap items-center gap-2.5 md:gap-3">
           <h2
             id={sectionHeadingId}
-            className={`${headerCategoryNavFont.className} text-[20px] font-bold uppercase leading-tight tracking-[-0.02em] !text-[#383838] md:text-[26px] md:leading-[1.1] lg:text-[32px] lg:leading-[37px] dark:!text-[#383838]`}
+            className={`${headerCategoryNavFont.className} text-[20px] font-bold uppercase leading-tight tracking-[-0.02em] !text-[var(--marco-slate)] md:text-[26px] md:leading-[1.1] lg:text-[32px] lg:leading-[37px] dark:!text-[var(--marco-slate)]`}
           >
             {sectionTitle}
           </h2>
           {sectionProductCount && sectionProductCount > 0 ? (
             <span
-              className={`${headerCategoryNavFont.className} inline-flex shrink-0 items-center rounded-full bg-marco-yellow px-2.5 py-0.5 text-sm font-bold tabular-nums !text-[#383838] dark:!text-[#383838]`}
+              className={`${headerCategoryNavFont.className} inline-flex shrink-0 items-center rounded-full bg-marco-yellow px-2.5 py-0.5 text-sm font-bold tabular-nums !text-[var(--marco-slate)] dark:!text-[var(--marco-slate)]`}
             >
               {sectionProductCount}
             </span>

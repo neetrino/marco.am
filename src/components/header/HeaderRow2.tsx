@@ -23,6 +23,7 @@ import {
   getHeaderSearchInputPaddingLeftClass,
   getHeaderSearchSubmitClass,
   getHeaderSearchSubmitWidthClass,
+  HEADER_INK_CLASS,
 } from './header.constants';
 import { HeaderChevronDownIcon, HeaderSearchGlyph } from './HeaderInlineIcons';
 import { HeaderRow2RightToolbar } from './HeaderRow2RightToolbar';
@@ -204,10 +205,10 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
                 onClick={() => setShowProductsMenu((open) => !open)}
                 onMouseEnter={prefetchMegaMenu}
                 onFocus={prefetchMegaMenu}
-                className={`flex w-full items-center !bg-[var(--marco-slate)] !text-white dark:!bg-white dark:!text-[#383838] dark:ring-1 dark:ring-black/10 ${getHeaderCategoryButtonClass(
+                className={`flex w-full items-center !bg-[var(--marco-slate)] !text-white dark:!bg-white dark:!text-[var(--marco-slate)] dark:ring-1 dark:ring-black/10 ${getHeaderCategoryButtonClass(
                   row2TabletLike,
                   row2DesktopLike,
-                )} [&_svg]:!text-white dark:[&_svg]:!text-[#383838]`}
+                )} [&_svg]:!text-white dark:[&_svg]:!text-[var(--marco-slate)]`}
                 aria-expanded={showProductsMenu}
                 aria-haspopup="dialog"
               >
@@ -354,7 +355,7 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
                           }}
                           onKeyDown={searchHandleKeyDown}
                           placeholder={t('common.placeholders.search')}
-                          className="min-h-0 min-w-0 flex-1 w-full border-0 bg-transparent pr-6 text-xs leading-normal text-marco-text dark:!text-[#383838] placeholder:text-[rgba(33,43,54,0.46)] focus:outline-none focus:ring-0"
+                          className={`min-h-0 min-w-0 flex-1 w-full border-0 bg-transparent pr-6 text-xs leading-normal ${HEADER_INK_CLASS} placeholder:text-[rgba(63,84,102,0.46)] focus:outline-none focus:ring-0`}
                           aria-controls="search-results"
                           aria-autocomplete="list"
                         />

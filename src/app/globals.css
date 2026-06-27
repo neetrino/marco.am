@@ -12,11 +12,11 @@
     --app-surface-muted: #f3f4f6;
     --app-border: #e5e7eb;
     --app-border-strong: #d1d5db;
-    --app-text: #111827;
+    --app-text: var(--marco-slate);
     --app-text-muted: #4b5563;
     --app-text-soft: #6b7280;
     --special-offers-card-cutout-bg: #ffffff;
-    --text-on-yellow: #181111;
+    --text-on-yellow: var(--marco-slate);
   }
 
   .dark {
@@ -420,14 +420,14 @@
 .dark button.bg-gray-900,
 .dark a.bg-gray-900 {
   background-color: #f5f5f5 !important;
-  color: var(--marco-anthracite) !important;
+  color: var(--marco-slate) !important;
   border-color: #f5f5f5 !important;
 }
 
 .dark button[class*='bg-\\[\\#383838\\]'],
 .dark a[class*='bg-\\[\\#383838\\]'] {
   background-color: #f5f5f5 !important;
-  color: var(--marco-anthracite) !important;
+  color: var(--marco-slate) !important;
   border-color: #f5f5f5 !important;
 }
 
@@ -447,7 +447,7 @@
 .dark [class*='rounded-\\[60px\\]'][class*='bg-\\[\\#383838\\]'],
 .dark [class*='rounded-\\[68px\\]'][class*='bg-\\[\\#383838\\]'] {
   background-color: #f5f5f5 !important;
-  color: var(--marco-anthracite) !important;
+  color: var(--marco-slate) !important;
   border-color: #f5f5f5 !important;
 }
 
@@ -492,7 +492,7 @@
   [class*='text-\\[\\#383838\\]'],
   [class*='text-\\[\\#181111\\]']
 ) {
-  color: var(--marco-anthracite) !important;
+  color: var(--marco-slate) !important;
 }
 
 /**
@@ -906,6 +906,47 @@ body[data-categories-menu-open='true'] [id^='tidio-'] {
  * Uses CSS variable so buttons stay opaque even before Tailwind config hot-reload.
  */
 @layer utilities {
+  /**
+   * Light mode — remap near-black Tailwind text utilities to brand slate.
+   * `text-marco-black` follows tailwind `marco.black`; these cover gray/slate/neutral tokens.
+   */
+  html:not(.dark) :is(
+    .text-gray-900,
+    .text-gray-800,
+    .text-black,
+    .text-slate-900,
+    .text-slate-800,
+    .text-neutral-900,
+    .text-neutral-800
+  ) {
+    color: var(--marco-slate) !important;
+  }
+
+  html:not(.dark) :is(
+    [class*='text-\\[\\#383838\\]'],
+    [class*='text-\\[\\#181111\\]'],
+    [class*='text-\\[\\#111827\\]']
+  ) {
+    color: var(--marco-slate) !important;
+  }
+
+  html:not(.dark) :is(
+    .hover\:text-gray-900:hover,
+    .hover\:text-gray-800:hover,
+    .hover\:text-slate-900:hover,
+    .hover\:text-black:hover
+  ) {
+    color: var(--marco-slate) !important;
+  }
+
+  .text-marco-slate,
+  .\!text-marco-slate,
+  .text-\[var\(--marco-slate\)\],
+  .\!text-\[var\(--marco-slate\)\] {
+    color: var(--marco-slate) !important;
+    --tw-text-opacity: 1 !important;
+  }
+
   .bg-marco-slate,
   .\!bg-marco-slate,
   .bg-\[var\(--marco-slate\)\],
