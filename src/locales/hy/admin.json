@@ -814,6 +814,7 @@
     "searchMatchCount": "{matched}՝ {total} բրենդներից",
     "searchNoMatches": "Ձեր որոնմանը համապատասխանող բրենդներ չկան։",
     "logo": "Լոգո",
+    "logoLabel": "Լոգո",
     "logoUrlLabel": "Լոգոյի հղում կամ վերբեռնում",
     "logoUrlPlaceholder": "https://… (R2 URL վերբեռնումից հետո)",
     "logoUpload": "Վերբեռնել նկար",

@@ -814,6 +814,7 @@
     "searchMatchCount": "{matched} из {total} брендов",
     "searchNoMatches": "Нет брендов, подходящих под запрос.",
     "logo": "Логотип",
+    "logoLabel": "Логотип",
     "logoUrlLabel": "URL логотипа или загрузка",
     "logoUrlPlaceholder": "https://… (URL из R2 после загрузки)",
     "logoUpload": "Загрузить изображение",

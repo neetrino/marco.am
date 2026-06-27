@@ -4,9 +4,9 @@ import type { ChangeEvent } from 'react';
 import { useRef, useEffect } from 'react';
 import { getErrorMessage } from '@/lib/types/errors';
 import {
-  ADMIN_IMAGE_WEBP_ONLY_MESSAGE,
+  ADMIN_IMAGE_INVALID_MESSAGE,
   processAdminImageFile,
-  validateAdminWebpFile,
+  validateAdminImageFile,
 } from '@/lib/utils/process-admin-image-file';
 import type { Variant } from '../types';
 import type { GeneratedVariant } from '../types';
@@ -140,7 +140,7 @@ export function useImageHandling({
 
       const filePromises = files.map(async (file, index) => {
         try {
-          const formatError = validateAdminWebpFile(file, 'catalog');
+          const formatError = validateAdminImageFile(file, 'catalog');
           if (formatError) {
             console.warn(`⚠️ [UPLOAD] Skipping invalid file ${index + 1}/${files.length}:`, file.name, formatError);
             return { success: false, error: `"${file.name}": ${formatError}`, index };
@@ -219,7 +219,7 @@ export function useImageHandling({
     }
 
     const file = files[0];
-    const formatError = validateAdminWebpFile(file, 'catalog');
+    const formatError = validateAdminImageFile(file, 'catalog');
     if (formatError) {
       setImageUploadError(`"${file.name}": ${formatError}`);
       if (event.target) {
@@ -262,9 +262,9 @@ export function useImageHandling({
       return;
     }
 
-    const imageFiles = files.filter((file) => validateAdminWebpFile(file, 'catalog') === null);
+    const imageFiles = files.filter((file) => validateAdminImageFile(file, 'catalog') === null);
     if (imageFiles.length === 0) {
-      setImageUploadError(ADMIN_IMAGE_WEBP_ONLY_MESSAGE);
+      setImageUploadError(ADMIN_IMAGE_INVALID_MESSAGE);
       if (event.target) {
         event.target.value = '';
       }
