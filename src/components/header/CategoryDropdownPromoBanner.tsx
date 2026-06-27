@@ -44,7 +44,7 @@ export function CategoryDropdownPromoBanner({
       >
         <span className="min-w-0 whitespace-nowrap !text-[#383838] dark:!text-[#383838]">{ctaLabel}</span>
         <span
-          className="flex size-9 shrink-0 items-center justify-center rounded-full !bg-[#383838] text-white dark:!bg-[#383838] sm:size-10"
+          className="flex size-9 shrink-0 items-center justify-center rounded-full !bg-[var(--marco-slate)] text-white sm:size-10"
           aria-hidden
         >
           <ArrowUpRight

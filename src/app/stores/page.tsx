@@ -3,6 +3,7 @@
 import { Card, Button } from '@shop/ui';
 import Link from 'next/link';
 import { useTranslation } from '../../lib/i18n-client';
+import { MARCO_SLATE_PILL_BUTTON_CLASS } from '@/lib/constants/marco-brand-colors';
 
 export default function StoresPage() {
   const { t } = useTranslation();
@@ -166,7 +167,7 @@ export default function StoresPage() {
           <Button
             variant="primary"
             size="lg"
-            className="!h-11 !rounded-full !border-0 !bg-marco-black !px-8 !text-sm font-semibold uppercase tracking-wide !text-white hover:!brightness-95"
+            className={`${MARCO_SLATE_PILL_BUTTON_CLASS} !h-11 !rounded-full !border-0 !px-8 !text-sm font-semibold uppercase tracking-wide transition-[filter]`}
           >
             {t('stores.cantFind.contactUs')}
           </Button>

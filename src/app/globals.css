@@ -5,6 +5,7 @@
 @layer base {
   :root {
     --marco-anthracite: #383838;
+    --marco-slate: #3f5466;
     --app-bg: #ffffff;
     --app-bg-muted: #f8fafc;
     --app-surface: #ffffff;
@@ -898,4 +899,43 @@ body[data-categories-menu-open='true'] [id^='tidio-'] {
   visibility: hidden !important;
   opacity: 0 !important;
   pointer-events: none !important;
+}
+
+/**
+ * Brand CTA fill (#3F5466) — solid, never inverted in dark mode.
+ * Uses CSS variable so buttons stay opaque even before Tailwind config hot-reload.
+ */
+@layer utilities {
+  .bg-marco-slate,
+  .\!bg-marco-slate,
+  .bg-\[var\(--marco-slate\)\],
+  .\!bg-\[var\(--marco-slate\)\] {
+    background-color: var(--marco-slate) !important;
+    --tw-bg-opacity: 1 !important;
+    opacity: 1;
+  }
+
+  .group:hover .group-hover\:bg-marco-slate,
+  .group:focus-visible .group-focus-visible\:bg-marco-slate,
+  .group:hover .group-hover\:bg-\[var\(--marco-slate\)\],
+  .group:focus-visible .group-focus-visible\:bg-\[var\(--marco-slate\)\] {
+    background-color: var(--marco-slate) !important;
+  }
+
+  .focus-visible\:outline-marco-slate:focus-visible,
+  .focus-visible\:outline-\[var\(--marco-slate\)\]:focus-visible {
+    outline-color: var(--marco-slate);
+  }
+
+  .dark .bg-marco-slate,
+  .dark .\!bg-marco-slate,
+  .dark .bg-\[var\(--marco-slate\)\],
+  .dark .\!bg-\[var\(--marco-slate\)\],
+  .dark .group:hover .group-hover\:bg-marco-slate,
+  .dark .group:focus-visible .group-focus-visible\:bg-marco-slate,
+  .dark .group:hover .group-hover\:bg-\[var\(--marco-slate\)\],
+  .dark .group:focus-visible .group-focus-visible\:bg-\[var\(--marco-slate\)\] {
+    background-color: var(--marco-slate) !important;
+    color: #ffffff !important;
+  }
 }

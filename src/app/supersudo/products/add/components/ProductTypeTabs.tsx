@@ -1,6 +1,7 @@
 'use client';
 
 import { useTranslation } from '../../../../../lib/i18n-client';
+import { ADMIN_SEGMENT_TAB_ACTIVE_CLASS } from '../../../components/admin-button.classes';
 
 interface ProductTypeTabsProps {
   productType: 'simple' | 'variable';
@@ -36,7 +37,7 @@ export function ProductTypeTabs({ productType, onChange }: ProductTypeTabsProps)
               onClick={() => onChange(tab.id)}
               className={`min-w-0 flex-1 rounded-lg px-4 py-3 text-center text-sm font-bold transition-all sm:text-base ${
                 isActive
-                  ? 'bg-slate-900 text-white shadow-md ring-1 ring-slate-900/10'
+                  ? ADMIN_SEGMENT_TAB_ACTIVE_CLASS
                   : 'bg-transparent text-slate-500 hover:bg-white/90 hover:text-slate-800'
               }`}
             >

@@ -204,7 +204,7 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
                 onClick={() => setShowProductsMenu((open) => !open)}
                 onMouseEnter={prefetchMegaMenu}
                 onFocus={prefetchMegaMenu}
-                className={`flex w-full items-center !bg-[#383838] !text-white dark:!bg-white dark:!text-[#383838] dark:ring-1 dark:ring-black/10 ${getHeaderCategoryButtonClass(
+                className={`flex w-full items-center !bg-[var(--marco-slate)] !text-white dark:!bg-white dark:!text-[#383838] dark:ring-1 dark:ring-black/10 ${getHeaderCategoryButtonClass(
                   row2TabletLike,
                   row2DesktopLike,
                 )} [&_svg]:!text-white dark:[&_svg]:!text-[#383838]`}

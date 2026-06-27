@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ListFilter, Search, Trash2, X } from 'lucide-react';
 import { useTranslation } from '../../../../lib/i18n-client';
 import { ProductCategoryFilterTree } from './ProductCategoryFilterTree';
+import { ADMIN_FILTER_TOGGLE_ACTIVE_CLASS } from '../../components/admin-button.classes';
 import type { Category } from '../types';
 
 export type ProductStockFilter = 'all' | 'inStock' | 'outOfStock';
@@ -287,7 +288,7 @@ export function ProductFilters({
               hasAnythingToClear
                 ? 'bg-red-500 text-white hover:bg-red-600'
                 : panelOpen
-                  ? 'bg-slate-900 text-white hover:bg-slate-800'
+                  ? ADMIN_FILTER_TOGGLE_ACTIVE_CLASS
                   : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
             }`}
             aria-label={

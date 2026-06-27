@@ -1,6 +1,10 @@
 import type { FormEvent } from 'react';
 import { Button, Input, Card } from '@shop/ui';
 import type { UserProfile } from './types';
+import {
+  PROFILE_PRIMARY_BUTTON_CLASS,
+  PROFILE_OUTLINE_BUTTON_CLASS,
+} from './profile-button.classes';
 
 interface ProfilePersonalInfoProps {
   personalInfo: {
@@ -65,7 +69,7 @@ export function ProfilePersonalInfo({
             type="submit"
             variant="primary"
             disabled={savingPersonal}
-            className="whitespace-nowrap !rounded-full !px-4 sm:!px-6 !py-3 !bg-marco-black !text-white !hover:bg-marco-black hover:opacity-90 transition-opacity"
+            className={`whitespace-nowrap ${PROFILE_PRIMARY_BUTTON_CLASS}`}
           >
             {savingPersonal ? (
               t('profile.personal.saving')
@@ -79,7 +83,7 @@ export function ProfilePersonalInfo({
           <Button
             type="button"
             variant="outline"
-            className="whitespace-nowrap !rounded-full !px-4 sm:!px-6 !py-3"
+            className={`whitespace-nowrap ${PROFILE_OUTLINE_BUTTON_CLASS}`}
             onClick={() => {
               setPersonalInfo({
                 firstName: profile?.firstName || '',

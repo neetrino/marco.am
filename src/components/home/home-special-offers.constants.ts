@@ -268,7 +268,7 @@ export const SPECIAL_OFFERS_SECTION_PAGINATION_TO_CTA_GAP_MOBILE_PX = 24;
  * Shared «See more» pill — slightly smaller than legacy min-w-[200px] px-10 py-4 text-base.
  */
 export const SPECIAL_OFFERS_CTA_LINK_CLASS =
-  'inline-flex min-w-[176px] items-center justify-center rounded-full bg-marco-black px-8 py-3 text-sm font-bold text-white transition-transform hover:-translate-y-0.5';
+  'inline-flex min-w-[176px] items-center justify-center rounded-full bg-[var(--marco-slate)] px-8 py-3 text-sm font-bold text-white transition-transform hover:-translate-y-0.5';
 
 /**
  * Brand line — Tailwind text classes (Figma reference).

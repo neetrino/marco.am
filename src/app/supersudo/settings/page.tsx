@@ -7,6 +7,7 @@ import { apiClient, getApiOrErrorMessage } from '../../../lib/api-client';
 import { useTranslation } from '../../../lib/i18n-client';
 import { clearCurrencyRatesCache } from '../../../lib/currency';
 import { AdminPageLayout } from '../components/AdminPageLayout';
+import { ADMIN_CODE_BADGE_CLASS } from '../components/admin-button.classes';
 import { SettingsPageSkeleton } from '../components/AdminPageSkeletons';
 import { logger } from '@/lib/utils/logger';
 import { ADMIN_CACHE_KEYS } from '@/lib/admin/admin-cache-keys';
@@ -439,7 +440,9 @@ export default function SettingsPage() {
                     <div className="mb-3 flex items-start justify-between gap-3">
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="inline-flex min-w-[52px] justify-center rounded-full bg-marco-black px-2.5 py-1 text-xs font-bold tracking-[0.14em] text-marco-yellow">
+                          <span
+                            className={`inline-flex min-w-[52px] justify-center rounded-full px-2.5 py-1 ${ADMIN_CODE_BADGE_CLASS}`}
+                          >
                             {field.code}
                           </span>
                           {isBaseCurrency ? (
