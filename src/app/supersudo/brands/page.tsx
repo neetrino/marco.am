@@ -14,7 +14,7 @@ import {
   fetchAdminBrands,
 } from '@/lib/admin/admin-reference-data-cache';
 import { ADMIN_IMAGE_ACCEPT } from '@/lib/constants/admin-image-upload';
-import { processAdminImageFile } from '@/lib/utils/process-admin-image-file';
+import { processAdminImageFile, validateAdminImageFile } from '@/lib/utils/process-admin-image-file';
 import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '@/lib/utils/image-utils';
 import { showPopupConfirm } from '@/components/popup-service';
 import { showToast } from '../../../components/Toast';
@@ -48,6 +48,9 @@ export default function BrandsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [brandSearch, setBrandSearch] = useState('');
   const [logoUploading, setLogoUploading] = useState(false);
+  const [localLogoPreviewUrl, setLocalLogoPreviewUrl] = useState<string | null>(null);
+  const logoObjectUrlRef = useRef<string | null>(null);
+  const logoUploadRequestIdRef = useRef(0);
 
   const filteredBrands = useMemo((): Brand[] => {
     const raw = brandSearch.trim().toLowerCase();
@@ -124,22 +127,47 @@ export default function BrandsPage() {
     [brands, selectedBrandIds]
   );
 
+  const clearLocalLogoPreview = useCallback(() => {
+    if (logoObjectUrlRef.current) {
+      URL.revokeObjectURL(logoObjectUrlRef.current);
+      logoObjectUrlRef.current = null;
+    }
+    setLocalLogoPreviewUrl(null);
+  }, []);
+
+  const showLocalLogoPreview = useCallback((file: File) => {
+    const objectUrl = URL.createObjectURL(file);
+    if (logoObjectUrlRef.current) {
+      URL.revokeObjectURL(logoObjectUrlRef.current);
+    }
+    logoObjectUrlRef.current = objectUrl;
+    setLocalLogoPreviewUrl(objectUrl);
+  }, []);
+
   const safeFormLogoPreviewUrl = useMemo(
-    () => toSafeImgAttributeSrc(formData.logoUrl.trim()),
-    [formData.logoUrl],
+    () => localLogoPreviewUrl ?? toSafeImgAttributeSrc(formData.logoUrl.trim()),
+    [formData.logoUrl, localLogoPreviewUrl],
   );
 
+  useEffect(() => () => clearLocalLogoPreview(), [clearLocalLogoPreview]);
+
   const resetForm = () => {
+    logoUploadRequestIdRef.current += 1;
+    setLogoUploading(false);
+    clearLocalLogoPreview();
     setFormData({ name: '', logoUrl: '' });
   };
 
   const handleLogoFile = async (event: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
-    const imageFile = files.find((f) => f.type === 'image/webp' || f.name.toLowerCase().endsWith('.webp'));
+    const imageFile = files[0];
     if (!imageFile) {
-      if (files.length > 0) {
-        showToast(t('admin.brands.logoInvalidFile'), 'warning');
-      }
+      return;
+    }
+
+    const validationError = validateAdminImageFile(imageFile, 'logo');
+    if (validationError) {
+      showToast(validationError || t('admin.brands.logoInvalidFile'), 'warning');
       if (event.target) {
         event.target.value = '';
       }
@@ -155,6 +183,10 @@ export default function BrandsPage() {
       return;
     }
 
+    showLocalLogoPreview(imageFile);
+    const uploadRequestId = logoUploadRequestIdRef.current + 1;
+    logoUploadRequestIdRef.current = uploadRequestId;
+
     try {
       setLogoUploading(true);
       const image = await processAdminImageFile(imageFile, 'logo');
@@ -164,12 +196,19 @@ export default function BrandsPage() {
         slug: editingBrand?.slug,
         brandId: editingBrand?.id,
       });
-      setFormData((prev) => ({ ...prev, logoUrl: result.url }));
+      if (logoUploadRequestIdRef.current === uploadRequestId) {
+        setFormData((prev) => ({ ...prev, logoUrl: result.url }));
+      }
     } catch (err: unknown) {
       logger.error('Brand logo upload failed', { error: err });
       showToast(getApiOrErrorMessage(err, t('admin.brands.errorSaving')), 'error');
+      if (logoUploadRequestIdRef.current === uploadRequestId) {
+        clearLocalLogoPreview();
+      }
     } finally {
-      setLogoUploading(false);
+      if (logoUploadRequestIdRef.current === uploadRequestId) {
+        setLogoUploading(false);
+      }
       if (event.target) {
         event.target.value = '';
       }
@@ -265,6 +304,7 @@ export default function BrandsPage() {
   };
 
   const handleOpenEditModal = (brand: Brand) => {
+    clearLocalLogoPreview();
     setEditingBrand(brand);
     setFormData({ name: brand.name, logoUrl: brand.logoUrl ?? '' });
     setShowEditModal(true);
@@ -586,18 +626,9 @@ export default function BrandsPage() {
                 />
               </div>
               <div>
-                <label htmlFor="add-brand-logo-url" className="mb-1 block text-sm font-medium text-gray-700">
-                  {t('admin.brands.logoUrlLabel')}
+                <label className="mb-1 block text-sm font-medium text-gray-700">
+                  {t('admin.brands.logoLabel')}
                 </label>
-                <input
-                  id="add-brand-logo-url"
-                  type="text"
-                  value={formData.logoUrl}
-                  onChange={(event) => setFormData((prev) => ({ ...prev, logoUrl: event.target.value }))}
-                  className="admin-field mb-2"
-                  placeholder={t('admin.brands.logoUrlPlaceholder')}
-                  autoComplete="off"
-                />
                 <div className="flex flex-wrap items-center gap-2">
                   <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">
                     <input
@@ -609,13 +640,16 @@ export default function BrandsPage() {
                     />
                     {logoUploading ? t('admin.brands.logoUploading') : t('admin.brands.logoUpload')}
                   </label>
-                  {formData.logoUrl.trim() !== '' ? (
+                  {safeFormLogoPreviewUrl ? (
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
-                      disabled={saving}
-                      onClick={() => setFormData((prev) => ({ ...prev, logoUrl: '' }))}
+                      disabled={saving || logoUploading}
+                      onClick={() => {
+                        clearLocalLogoPreview();
+                        setFormData((prev) => ({ ...prev, logoUrl: '' }));
+                      }}
                     >
                       {t('admin.brands.logoRemove')}
                     </Button>
@@ -675,18 +709,9 @@ export default function BrandsPage() {
                 />
               </div>
               <div>
-                <label htmlFor="edit-brand-logo-url" className="mb-1 block text-sm font-medium text-gray-700">
-                  {t('admin.brands.logoUrlLabel')}
+                <label className="mb-1 block text-sm font-medium text-gray-700">
+                  {t('admin.brands.logoLabel')}
                 </label>
-                <input
-                  id="edit-brand-logo-url"
-                  type="text"
-                  value={formData.logoUrl}
-                  onChange={(event) => setFormData((prev) => ({ ...prev, logoUrl: event.target.value }))}
-                  className="admin-field mb-2"
-                  placeholder={t('admin.brands.logoUrlPlaceholder')}
-                  autoComplete="off"
-                />
                 <div className="flex flex-wrap items-center gap-2">
                   <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">
                     <input
@@ -698,13 +723,16 @@ export default function BrandsPage() {
                     />
                     {logoUploading ? t('admin.brands.logoUploading') : t('admin.brands.logoUpload')}
                   </label>
-                  {formData.logoUrl.trim() !== '' ? (
+                  {safeFormLogoPreviewUrl ? (
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
-                      disabled={saving}
-                      onClick={() => setFormData((prev) => ({ ...prev, logoUrl: '' }))}
+                      disabled={saving || logoUploading}
+                      onClick={() => {
+                        clearLocalLogoPreview();
+                        setFormData((prev) => ({ ...prev, logoUrl: '' }));
+                      }}
                     >
                       {t('admin.brands.logoRemove')}
                     </Button>

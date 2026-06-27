@@ -6,22 +6,24 @@ import {
 } from '@/lib/constants/admin-image-upload';
 import { processImageFile } from '@/lib/utils/image-utils';
 
-export const ADMIN_IMAGE_WEBP_ONLY_MESSAGE = 'Only WebP images are allowed';
+const IMAGE_FILE_EXTENSION_PATTERN = /\.(avif|gif|jpe?g|png|webp)$/i;
 
-function isAdminWebpFile(file: File): boolean {
+export const ADMIN_IMAGE_INVALID_MESSAGE = 'Only image files are allowed';
+
+function isAdminImageFile(file: File): boolean {
   const mime = file.type.toLowerCase();
-  if (mime === ADMIN_IMAGE_MIME) {
+  if (mime.startsWith('image/')) {
     return true;
   }
-  return mime === '' && file.name.toLowerCase().endsWith('.webp');
+  return mime === '' && IMAGE_FILE_EXTENSION_PATTERN.test(file.name);
 }
 
-export function validateAdminWebpFile(
+export function validateAdminImageFile(
   file: File,
   profile: AdminImageUploadProfile,
 ): string | null {
-  if (!isAdminWebpFile(file)) {
-    return ADMIN_IMAGE_WEBP_ONLY_MESSAGE;
+  if (!isAdminImageFile(file)) {
+    return ADMIN_IMAGE_INVALID_MESSAGE;
   }
   if (file.size <= 0) {
     return 'Image file is empty';
@@ -34,14 +36,14 @@ export function validateAdminWebpFile(
 }
 
 /**
- * Validates WebP input and compresses/resizes for admin uploads.
+ * Validates image input and compresses/resizes to WebP for admin uploads.
  * @returns Base64 data URL (`data:image/webp;base64,...`)
  */
 export async function processAdminImageFile(
   file: File,
   profile: AdminImageUploadProfile,
 ): Promise<string> {
-  const validationError = validateAdminWebpFile(file, profile);
+  const validationError = validateAdminImageFile(file, profile);
   if (validationError) {
     throw new Error(validationError);
   }

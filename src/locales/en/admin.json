@@ -814,6 +814,7 @@
     "searchMatchCount": "{matched} of {total} brands",
     "searchNoMatches": "No brands match your search.",
     "logo": "Logo",
+    "logoLabel": "Logo",
     "logoUrlLabel": "Logo URL or upload",
     "logoUrlPlaceholder": "https://… (R2 URL after upload)",
     "logoUpload": "Upload image",
