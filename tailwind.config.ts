@@ -50,7 +50,7 @@ const config: Config = {
           slate: MARCO_SLATE_HEX,
           gray: '#f4f4f4',
           border: '#ebebeb',
-          text: '#333333',
+          text: MARCO_SLATE_HEX,
         },
       },
       fontFamily: {
