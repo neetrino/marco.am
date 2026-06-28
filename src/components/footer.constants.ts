@@ -15,15 +15,14 @@ export const FOOTER_BORDER_TOP_CLASS =
 export const FOOTER_COPYRIGHT_BORDER_CLASS =
   'border-t border-[var(--marco-slate)]/15 dark:border-white/10';
 
-/** Footer secondary / legal fine print — slate at reduced strength. */
-export const FOOTER_MUTED_TEXT_CLASS =
-  'text-[var(--marco-slate)]/75 dark:text-[#cfcfcf]';
+/** Footer secondary / legal fine print — same brand ink as the header. */
+export const FOOTER_MUTED_TEXT_CLASS = `${MARCO_SLATE_TEXT_CLASS} dark:text-white/88`;
 
-/** Footer body copy and links — brand slate in light mode (default, not hover-only). */
-export const FOOTER_INK_TEXT_CLASS = `${MARCO_SLATE_TEXT_CLASS} dark:text-[#cfcfcf]`;
+/** Footer body copy and links — same brand ink as the header. */
+export const FOOTER_INK_TEXT_CLASS = `${MARCO_SLATE_TEXT_CLASS} dark:text-white/88`;
 
-/** Footer heading text — brand slate in light mode. */
-export const FOOTER_HEADING_TEXT_CLASS = `${MARCO_SLATE_TEXT_CLASS} dark:text-white`;
+/** Footer heading text — same brand ink as the header. */
+export const FOOTER_HEADING_TEXT_CLASS = `${MARCO_SLATE_TEXT_CLASS} dark:text-white/88`;
 
 /** Optional link emphasis on hover — opacity only; color stays slate. */
 export const FOOTER_LINK_HOVER_CLASS = 'hover:opacity-80 dark:hover:opacity-90';
