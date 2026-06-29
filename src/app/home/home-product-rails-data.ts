@@ -1,8 +1,8 @@
 import { cache } from 'react';
-import { FEATURED_PRODUCTS_VISIBLE_COUNT } from '@/components/featured-products-tabs.constants';
 import type { SpecialOfferProduct } from '@/components/home/special-offer-product.types';
 import { SPECIAL_OFFERS_PRODUCTS_LIMIT } from '@/constants/specialOffersSection';
 import { dedupeCardProductsByTitle } from '@/lib/dedupeCardProductsByTitle';
+import { loadHomeNewArrivalsPool } from '@/lib/home/home-new-arrivals-pool';
 import type { LanguageCode } from '@/lib/language';
 import { getProductsPlpReadModelPayload } from '@/lib/read-model/products-plp-read-model';
 import { bannerManagementService } from '@/lib/services/banner-management.service';
@@ -40,14 +40,7 @@ async function fetchHomeProductRailsData(
         sort: 'createdAt',
         includeFilters: '0',
       }),
-      getProductsPlpReadModelPayload({
-        page: '1',
-        limit: String(FEATURED_PRODUCTS_VISIBLE_COUNT),
-        lang,
-        filter: 'new',
-        sort: 'createdAt',
-        includeFilters: '0',
-      }),
+      loadHomeNewArrivalsPool(lang, getProductsPlpReadModelPayload),
       homeBrandPartnersService.getPublicPayload(lang),
       bannerManagementService.getPublicSlotPayload({
         slot: 'home.promo.strip',
@@ -73,9 +66,7 @@ async function fetchHomeProductRailsData(
   }
 
   if (newOutcome.status === 'fulfilled') {
-    newProducts = dedupeCardProductsByTitle(
-      (newOutcome.value.items ?? []) as SpecialOfferProduct[],
-    ).slice(0, FEATURED_PRODUCTS_VISIBLE_COUNT);
+    newProducts = newOutcome.value as SpecialOfferProduct[];
   }
 
   if (partnersOutcome.status === 'fulfilled') {

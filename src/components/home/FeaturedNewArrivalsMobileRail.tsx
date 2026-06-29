@@ -12,8 +12,6 @@ import {
   HOME_PRODUCT_MOBILE_RAIL_PAGE_GAP_PX,
   SPECIAL_OFFERS_CARD_HEIGHT_PX,
   SPECIAL_OFFERS_CTA_LINK_CLASS,
-  SPECIAL_OFFERS_MOBILE_GRID_COLUMN_GAP_PX,
-  SPECIAL_OFFERS_MOBILE_GRID_ROW_GAP_PX,
   SPECIAL_OFFERS_MOBILE_GRID_SCROLLER_PADDING_BOTTOM_PX,
   SPECIAL_OFFERS_MOBILE_SCROLLER_CLASS,
   SPECIAL_OFFERS_PAGINATION_DOT_GAP_MOBILE_PX,
@@ -21,7 +19,10 @@ import {
   SPECIAL_OFFERS_SECTION_PAGINATION_TO_CTA_GAP_MOBILE_PX,
   SPECIAL_OFFERS_SECTION_RAIL_TO_PAGINATION_GAP_MOBILE_PX,
 } from './home-special-offers.constants';
-import { FEATURED_NEW_ARRIVALS_MOBILE_RAIL_CARDS_PER_PAGE } from '../featured-products-tabs.constants';
+import {
+  FEATURED_NEW_ARRIVALS_MOBILE_RAIL_CARDS_PER_PAGE,
+  FEATURED_NEW_ARRIVALS_MOBILE_ROW_COLUMN_GAP_PX,
+} from '../featured-products-tabs.constants';
 import { useHomeMobileProductRailScrollport } from './useHomeMobileProductRailScrollport';
 import { isHomeRailAboveFoldImage } from '@/lib/constants/home-listing-api-params';
 import type { SpecialOfferProduct } from './special-offer-product.types';
@@ -54,7 +55,7 @@ type FeaturedNewArrivalsMobileRailProps = {
 };
 
 /**
- * Mobile «Նորույթներ»: horizontal snap pages, each 2×2 cards; scrollport width via `useHomeMobileProductRailScrollport`.
+ * Mobile «Նորույթներ»: horizontal snap pages, each 1×4 cards; scrollport width via `useHomeMobileProductRailScrollport`.
  */
 export function FeaturedNewArrivalsMobileRail({
   productChunks,
@@ -82,11 +83,11 @@ export function FeaturedNewArrivalsMobileRail({
         {productChunks.map((chunk, pageIndex) => (
           <div
             key={`featured-mobile-page-${pageIndex}`}
-            className="grid min-h-0 shrink-0 snap-start snap-always grid-cols-2 justify-items-stretch"
+            className="grid min-h-0 shrink-0 snap-start snap-always grid-cols-4 justify-items-stretch"
             style={{
               ...pageSlideStyle,
-              columnGap: SPECIAL_OFFERS_MOBILE_GRID_COLUMN_GAP_PX,
-              rowGap: SPECIAL_OFFERS_MOBILE_GRID_ROW_GAP_PX,
+              columnGap: FEATURED_NEW_ARRIVALS_MOBILE_ROW_COLUMN_GAP_PX,
+              rowGap: 0,
             }}
           >
             {padChunkToSize(chunk, FEATURED_NEW_ARRIVALS_MOBILE_RAIL_CARDS_PER_PAGE).map(

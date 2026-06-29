@@ -11,7 +11,7 @@ import { t } from '../lib/i18n';
 import { logger } from '../lib/utils/logger';
 import { queryKeys } from '../lib/query-keys';
 import { dedupeCardProductsByTitle } from '../lib/dedupeCardProductsByTitle';
-import { buildHomeStripListingApiParams } from '@/lib/constants/home-listing-api-params';
+import { buildHomeStripListingApiParams, plpParamsToHomeApiQuery } from '@/lib/constants/home-listing-api-params';
 import { FeaturedProductsStrip } from './FeaturedProductsStrip';
 import { HomeAppBanner } from './home/HomeAppBanner';
 import { HomeGradientBanner } from './home/HomeGradientBanner';
@@ -45,7 +45,12 @@ import type { HomeBrandPartnerPublicItem } from '@/lib/types/home-brand-partners
 import type { PublicBannersPayload } from '@/lib/services/banner-management.service';
 import type { SpecialOfferProduct } from './home/special-offer-product.types';
 import { useIsMaxMd } from './home/use-is-max-md';
-import { HOME_PRODUCT_CHUNK_SIZE } from '../constants/homeProductChunks';
+import {
+  HOME_NEW_ARRIVALS_ROTATION_PERIOD_MS,
+  HOME_NEW_ARRIVALS_SELECTION_POOL_SIZE,
+  getHomeNewArrivalsRotationBucket,
+} from '@/lib/home/home-new-arrivals-selection';
+import { loadHomeNewArrivalsPool } from '@/lib/home/home-new-arrivals-pool';
 import {
   HOME_APP_DOWNLOAD_BANNER_ID,
   HOME_APP_DOWNLOAD_DEFAULT_IMAGE_URL,
@@ -126,12 +131,31 @@ type FeaturedProductsTabsProps = {
   readonly initialAppDownloadBannerUrl?: string | null;
 };
 
+async function fetchHomeNewArrivalsFromApi<T extends { id: string }>(
+  language: LanguageCode,
+  listingExtras: Record<string, string> = {},
+): Promise<T[]> {
+  return loadHomeNewArrivalsPool(language, async (params) => {
+    const response = await apiClient.get<{ items: T[] }>('/api/v1/products/plp', {
+      params: buildHomeStripListingApiParams({
+        ...plpParamsToHomeApiQuery(params),
+        ...listingExtras,
+      }),
+      suppressHttpErrorLogging: true,
+    });
+    return response;
+  });
+}
+
 async function fetchFeaturedStrip(
   filter: string,
   language: LanguageCode,
 ): Promise<SpecialOfferProduct[]> {
+  if (filter === 'new') {
+    return fetchHomeNewArrivalsFromApi<SpecialOfferProduct>(language);
+  }
   const params = buildHomeStripListingApiParams({
-    limit: String(FEATURED_PRODUCTS_VISIBLE_COUNT),
+    limit: String(HOME_NEW_ARRIVALS_SELECTION_POOL_SIZE),
     lang: language,
     filter,
     sort: 'createdAt',
@@ -140,8 +164,7 @@ async function fetchFeaturedStrip(
     params,
     suppressHttpErrorLogging: true,
   });
-  const rows = dedupeCardProductsByTitle(response.items ?? []);
-  return rows.slice(0, FEATURED_PRODUCTS_VISIBLE_COUNT);
+  return dedupeCardProductsByTitle(response.items ?? []);
 }
 
 type CardVisualRow = {
@@ -151,23 +174,8 @@ type CardVisualRow = {
   images: string[];
 };
 
-interface CardVisualResponse {
-  items: CardVisualRow[];
-}
-
 async function fetchFeaturedNewVisualChunk(language: LanguageCode): Promise<CardVisualRow[]> {
-  const response = await apiClient.get<CardVisualResponse>('/api/v1/products/plp', {
-    params: buildHomeStripListingApiParams({
-      limit: String(HOME_PRODUCT_CHUNK_SIZE),
-      lang: language,
-      filter: 'new',
-      sort: 'createdAt',
-      cardVisualOnly: '1',
-      includeFilters: '0',
-    }),
-    suppressHttpErrorLogging: true,
-  });
-  return response.items ?? [];
+  return fetchHomeNewArrivalsFromApi<CardVisualRow>(language, { cardVisualOnly: '1' });
 }
 
 async function fetchHomeBrandPartners(
@@ -280,10 +288,17 @@ export function FeaturedProductsTabs({
       ? [...initialNewProducts]
       : undefined;
 
+  const newArrivalsRotationBucket = getHomeNewArrivalsRotationBucket();
+
   const featuredQuery = useQuery({
-    queryKey: queryKeys.featuredHomeStrip(filter, language, FEATURED_PRODUCTS_VISIBLE_COUNT),
+    queryKey: queryKeys.featuredHomeStrip(
+      filter,
+      language,
+      HOME_NEW_ARRIVALS_SELECTION_POOL_SIZE,
+      newArrivalsRotationBucket,
+    ),
     queryFn: () => fetchFeaturedStrip(filter, language),
-    staleTime: 300_000,
+    staleTime: HOME_NEW_ARRIVALS_ROTATION_PERIOD_MS,
     initialData: initialForNewTab,
     /** Skip duplicate `/api/v1/products` right after SSR (react-hooks/purity disallows `Date.now()` in render). */
     refetchOnMount: initialForNewTab === undefined,
@@ -367,9 +382,15 @@ export function FeaturedProductsTabs({
     : null;
 
   const newStripVisualQuery = useQuery({
-    queryKey: queryKeys.productsCardVisual('new', language, 1, HOME_PRODUCT_CHUNK_SIZE),
+    queryKey: queryKeys.productsCardVisual(
+      'new',
+      language,
+      1,
+      HOME_NEW_ARRIVALS_SELECTION_POOL_SIZE,
+      newArrivalsRotationBucket,
+    ),
     queryFn: () => fetchFeaturedNewVisualChunk(language),
-    staleTime: 300_000,
+    staleTime: HOME_NEW_ARRIVALS_ROTATION_PERIOD_MS,
     enabled: activeTab === 'new' && initialForNewTab === undefined,
   });
 
@@ -377,10 +398,7 @@ export function FeaturedProductsTabs({
     if (activeTab !== 'new') {
       return featuredQuery.data ?? [];
     }
-    const full = dedupeCardProductsByTitle(featuredQuery.data ?? []).slice(
-      0,
-      FEATURED_PRODUCTS_VISIBLE_COUNT,
-    );
+    const full = dedupeCardProductsByTitle(featuredQuery.data ?? []);
     if (full.length > 0) {
       return full.map((p) => ({ ...p, detailsPending: false }));
     }
@@ -394,7 +412,7 @@ export function FeaturedProductsTabs({
       !featuredQuery.isError &&
       (newStripVisualQuery.isPending || featuredQuery.isPending)
     ) {
-      return createHomeFeaturedShellPlaceholders(HOME_PRODUCT_CHUNK_SIZE);
+      return createHomeFeaturedShellPlaceholders(FEATURED_PRODUCTS_VISIBLE_COUNT);
     }
     return [];
   }, [
