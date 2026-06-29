@@ -369,6 +369,15 @@
   color: var(--marco-slate) !important;
 }
 
+/** Product card price — true #000 in light mode (not remapped to marco-slate). */
+.product-card-price {
+  color: #000000 !important;
+}
+
+.dark .product-card-list .product-card-price {
+  color: var(--app-text) !important;
+}
+
 .dark .text-gray-900,
 .dark .text-gray-800,
 .dark .text-black {

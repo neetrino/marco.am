@@ -8,6 +8,7 @@ import type { LanguageCode } from '../lib/language';
 import type { HomeBrandPartnerPublicItem } from '@/lib/types/home-brand-partners-public';
 import {
   FEATURED_NEW_ARRIVALS_MOBILE_RAIL_CARDS_PER_PAGE,
+  FEATURED_NEW_ARRIVALS_MOBILE_ROW_COLUMN_GAP_PX,
   FEATURED_PRODUCTS_DESKTOP_PAGE_SIZE,
   FEATURED_PRODUCTS_FOOTER_DOT_COUNT_DESKTOP,
 } from './featured-products-tabs.constants';
@@ -16,9 +17,7 @@ import { FeaturedNewArrivalsMobileRail } from './home/FeaturedNewArrivalsMobileR
 import {
   SPECIAL_OFFERS_CARD_HEIGHT_PX,
   SPECIAL_OFFERS_CARD_SHELL_RADIUS_PX,
-  SPECIAL_OFFERS_MOBILE_GRID_COLUMN_GAP_PX,
   SPECIAL_OFFERS_MOBILE_GRID_PAGE_SIZE,
-  SPECIAL_OFFERS_MOBILE_GRID_ROW_GAP_PX,
   SPECIAL_OFFERS_MOBILE_PAGINATION_PAGE_COUNT,
   SPECIAL_OFFERS_PAGINATION_DOT_GAP_DESKTOP_PX,
   SPECIAL_OFFERS_PAGINATION_DOT_GAP_MOBILE_PX,
@@ -66,7 +65,7 @@ type FeaturedProductsStripProps = {
 };
 
 /**
- * `md+`: 2×4 cards per page, horizontal scroll (up to two pages). `max-md`: 2×2 cards per snap page.
+ * `md+`: 1×4 cards per page, horizontal scroll (two pages when eight products). `max-md`: 1×4 snap page.
  */
 export function FeaturedProductsStrip({
   language,
@@ -128,6 +127,7 @@ export function FeaturedProductsStrip({
 
   const {
     scrollerRef: featuredDesktopScrollerRef,
+    railSlotWidthPx: featuredDesktopRailSlotWidthPx,
     activePage: featuredDesktopActivePage,
     canScrollPrev: canScrollFeaturedDesktopPrev,
     canScrollNext: canScrollFeaturedDesktopNext,
@@ -205,11 +205,8 @@ export function FeaturedProductsStrip({
   if (loading) {
     featuredContent = isMaxMd ? (
       <div
-        className="grid w-full grid-cols-2"
-        style={{
-          columnGap: SPECIAL_OFFERS_MOBILE_GRID_COLUMN_GAP_PX,
-          rowGap: SPECIAL_OFFERS_MOBILE_GRID_ROW_GAP_PX,
-        }}
+        className="grid w-full grid-cols-4"
+        style={{ columnGap: FEATURED_NEW_ARRIVALS_MOBILE_ROW_COLUMN_GAP_PX }}
       >
         {Array.from({ length: FEATURED_NEW_ARRIVALS_MOBILE_RAIL_CARDS_PER_PAGE }).map((_, i) => (
           <div key={`sk-m-${i}`} className="flex min-h-0 w-full min-w-0">
@@ -220,6 +217,7 @@ export function FeaturedProductsStrip({
     ) : (
       <FeaturedNewArrivalsDesktopTwoRowScroller
         scrollerRef={featuredDesktopScrollerRef}
+        railSlotWidthPx={featuredDesktopRailSlotWidthPx}
         loading
         pages={[]}
         paginationPageCount={FEATURED_PRODUCTS_FOOTER_DOT_COUNT_DESKTOP}
@@ -262,6 +260,7 @@ export function FeaturedProductsStrip({
     ) : (
       <FeaturedNewArrivalsDesktopTwoRowScroller
         scrollerRef={featuredDesktopScrollerRef}
+        railSlotWidthPx={featuredDesktopRailSlotWidthPx}
         loading={false}
         pages={desktopPages}
         paginationPageCount={desktopPaginationCount}

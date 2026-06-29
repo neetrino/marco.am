@@ -39,26 +39,22 @@ export const FEATURED_PRODUCTS_TITLE_TO_GRID_GAP_PX = 42;
 export const FEATURED_PRODUCTS_TITLE_INSET_LEFT_PX = 16;
 
 /**
- * Mobile «Նորույթներ»: one horizontal snap page = 2 rows × 2 columns (four cards).
- * Special offers mobile rail uses two cards per page (`HOME_PRODUCT_MOBILE_RAIL_CARDS_PER_PAGE`).
+ * Mobile «Նորույթներ»: one horizontal snap page = 1 row × 4 columns (four cards).
  */
 export const FEATURED_NEW_ARRIVALS_MOBILE_RAIL_CARDS_PER_PAGE = 4;
 
-/**
- * Desktop «Նորույթներ»: one horizontal page = 2 rows × 4 columns (8 cards).
- */
-export const FEATURED_PRODUCTS_DESKTOP_PAGE_SIZE = 8;
+/** Tighter column gap so four cards fit one mobile row without clipping. */
+export const FEATURED_NEW_ARRIVALS_MOBILE_ROW_COLUMN_GAP_PX = 8;
 
 /**
- * «Նորույթներ» fetch cap — first screen + one carousel page; keeps home image load bounded.
+ * Desktop «Նորույթներ»: one horizontal page = 1 row × 4 columns (matches special offers rail).
  */
-export const FEATURED_PRODUCTS_VISIBLE_COUNT = 12;
+export const FEATURED_PRODUCTS_DESKTOP_PAGE_SIZE = 4;
 
 /**
- * Vertical gap between card rows on `md+` only. On `max-md`, row gap matches
- * `SPECIAL_OFFERS_MOBILE_GRID_ROW_GAP_PX` («Հատուկ առաջարկներ») via inline style in `FeaturedProductsStrip`.
+ * «Նորույթներ» visible cards — one row of four on screen; weekly shuffle picks this many from the pool.
  */
-export const FEATURED_PRODUCTS_GRID_GAP_Y_CLASS = 'md:gap-y-10';
+export const FEATURED_PRODUCTS_VISIBLE_COUNT = 8;
 
-/** Max desktop horizontal pages (dots + scroll segments). */
+/** Max desktop horizontal pages (dots + scroll segments) — two rows of four when eight products. */
 export const FEATURED_PRODUCTS_FOOTER_DOT_COUNT_DESKTOP = 2;

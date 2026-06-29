@@ -2,12 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { authenticateToken, requireAdmin } from '@/lib/middleware/auth';
 import { isR2Configured, uploadToR2 } from '@/lib/r2';
-import { adminBrandsService } from '@/lib/services/admin/admin-brands.service';
 import {
+  appendBrandLogoCacheBuster,
   buildBrandLogoR2Key,
   resolveBrandLogoR2Basename,
 } from '@/lib/services/admin/brand-logo-storage';
-import { prepareRasterForR2Upload } from '@/lib/utils/prepare-raster-for-r2-upload';
+import { ADMIN_IMAGE_MIME } from '@/lib/constants/admin-image-upload';
 import { logger } from '@/lib/utils/logger';
 import { parseAdminImageDataUrl } from '@/lib/utils/validate-admin-image-upload';
 
@@ -118,9 +118,8 @@ export async function POST(req: NextRequest) {
       brandId: readNonEmptyString(body.brandId),
     });
 
-    const prepared = await prepareRasterForR2Upload(parsed.buffer, parsed.mime);
-    const key = buildBrandLogoR2Key(basename, prepared.extension);
-    const url = await uploadToR2(key, prepared.buffer, prepared.contentType);
+    const key = buildBrandLogoR2Key(basename, 'webp');
+    const url = await uploadToR2(key, parsed.buffer, ADMIN_IMAGE_MIME);
 
     if (!url) {
       logger.error('Brand logo upload: R2 upload failed', { key, basename });
@@ -136,13 +135,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const brandId = readNonEmptyString(body.brandId);
-    if (brandId) {
-      await adminBrandsService.updateBrand(brandId, { logoUrl: url });
-      logger.info('Brand logo upload: persisted and synced storefront projection', { brandId });
-    }
+    const versionedUrl = appendBrandLogoCacheBuster(url, parsed.buffer);
 
-    return NextResponse.json({ url, key }, { status: 200 });
+    return NextResponse.json({ url: versionedUrl, key }, { status: 200 });
   } catch (error: unknown) {
     const err = error as {
       message?: string;
