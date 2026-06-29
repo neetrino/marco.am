@@ -192,12 +192,12 @@ export function Header({ initialLanguage }: HeaderProps) {
         <button
           type="button"
           onClick={() => setMobileMenuOpen(true)}
-          className={`${HEADER_MOBILE_HEADER_ROUND_CONTROL_CLASS} dark:!bg-white dark:ring-1 dark:ring-black/15`}
+          className={`${HEADER_MOBILE_HEADER_ROUND_CONTROL_CLASS} [&_svg]:!text-white`}
           aria-label={t('common.ariaLabels.openMenu')}
           aria-expanded={mobileMenuOpen}
         >
           <svg
-            className="h-6 w-6 shrink-0 dark:!text-black dark:[&_path]:!stroke-black"
+            className="h-6 w-6 shrink-0 !text-white [&_path]:stroke-current"
             viewBox="0 0 24 24"
             fill="none"
             aria-hidden
