@@ -12,6 +12,10 @@ import { ProductCardActions } from './ProductCardActions';
 import { ProductImagePlaceholder } from '../ProductImagePlaceholder';
 import type { ProductLabel } from '../ProductLabels';
 import { ProductPricePromoBadge } from './ProductPricePromoBadge';
+import {
+  PRODUCT_CARD_LIST_SURFACE_CLASS,
+  PRODUCT_CARD_PRICE_CLASS,
+} from './product-card-price.constants';
 
 interface ProductCardListProps {
   product: {
@@ -64,7 +68,7 @@ export function ProductCardList({
 
   return (
     <div
-      className={`bg-white rounded-lg overflow-hidden hover:bg-gray-50 transition-colors ${listSurfaceClass}`}
+      className={`bg-white rounded-lg overflow-hidden hover:bg-gray-50 transition-colors ${listSurfaceClass} ${PRODUCT_CARD_LIST_SURFACE_CLASS}`}
     >
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 px-5 sm:px-6 py-4 sm:py-5">
         <ProductPdpPrefetchLink
@@ -149,7 +153,7 @@ export function ProductCardList({
           {hasDisplayPrice ? (
             <div className="flex w-full flex-shrink-0 flex-col sm:w-auto">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xl font-semibold text-marco-black sm:text-2xl">
+                <span className={`text-xl font-semibold sm:text-2xl ${PRODUCT_CARD_PRICE_CLASS}`}>
                   {formatCatalogPrice(product.price, currency)}
                 </span>
                 <ProductPricePromoBadge

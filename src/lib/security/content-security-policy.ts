@@ -56,6 +56,7 @@ export function buildContentSecurityPolicyHeader(): string {
   return [
     "default-src 'self'",
     `script-src ${scriptSources.join(" ")}`,
+    "worker-src 'self' blob:",
     `style-src ${styleSources.join(" ")}`,
     `font-src ${fontSources.join(" ")}`,
     "img-src 'self' data: https: blob:",
