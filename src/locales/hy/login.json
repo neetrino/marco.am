@@ -2,8 +2,8 @@
   "title": "Բարի վերադարձ",
   "subtitle": "Մուտք գործեք ձեր հաշիվ՝ շարունակելու համար",
   "form": {
-    "emailOrPhone": "Էլ. փոստ կամ հեռախոս",
-    "emailOrPhonePlaceholder": "marcofurniture@mail.ru կամ +374 XX XXX XXX",
+    "email": "Էլ. փոստ",
+    "emailPlaceholder": "marcofurniture@mail.ru",
     "password": "Գաղտնաբառ",
     "passwordPlaceholder": "••••••••",
     "forgotPassword": "Մոռացել եք գաղտնաբառը?",
@@ -13,7 +13,7 @@
     "signUp": "Գրանցվել"
   },
   "errors": {
-    "emailOrPhoneRequired": "Խնդրում ենք մուտքագրել ձեր էլ. փոստը կամ հեռախոսահամարը",
+    "emailRequired": "Խնդրում ենք մուտքագրել ձեր էլ. փոստը",
     "passwordRequired": "Խնդրում ենք մուտքագրել ձեր գաղտնաբառը",
     "loginFailed": "Մուտքը ձախողվեց: Խնդրում ենք կրկին փորձել:"
   },

@@ -44,7 +44,7 @@ function getPostLoginRedirect(redirectTo: string): string {
 
 function LoginPageContent() {
   const { t } = useTranslation();
-  const [emailOrPhone, setEmailOrPhone] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -64,8 +64,8 @@ function LoginPageContent() {
     logger.devLog('🔐 [LOGIN PAGE] Form submitted');
 
     // Validation
-    if (!emailOrPhone.trim()) {
-      setError(t('login.errors.emailOrPhoneRequired'));
+    if (!email.trim()) {
+      setError(t('login.errors.emailRequired'));
       setIsSubmitting(false);
       return;
     }
@@ -78,7 +78,7 @@ function LoginPageContent() {
 
     try {
       logger.devLog('📤 [LOGIN PAGE] Calling login function...');
-      const flow = await login(emailOrPhone.trim(), password);
+      const flow = await login(email.trim(), password);
       if (flow.status === 'needs_verification') {
         const verifyQs = new URLSearchParams();
         verifyQs.set('redirect', redirectTo);
@@ -132,16 +132,17 @@ function LoginPageContent() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="emailOrPhone" className="block text-sm font-medium text-gray-700 mb-2">
-              {t('login.form.emailOrPhone')}
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              {t('login.form.email')}
             </label>
             <Input
-              id="emailOrPhone"
-              type="text"
-              placeholder={t('login.form.emailOrPhonePlaceholder')}
+              id="email"
+              type="email"
+              autoComplete="email"
+              placeholder={t('login.form.emailPlaceholder')}
               className="w-full"
-              value={emailOrPhone}
-              onChange={(e) => setEmailOrPhone(e.target.value)}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               disabled={isSubmitting || isLoading}
               required
             />

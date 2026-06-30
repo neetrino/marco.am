@@ -2,8 +2,8 @@
   "title": "Добро пожаловать",
   "subtitle": "Войдите в свой аккаунт, чтобы продолжить",
   "form": {
-    "emailOrPhone": "Email или Телефон",
-    "emailOrPhonePlaceholder": "marcofurniture@mail.ru или +7 XXX XXX XX XX",
+    "email": "Email",
+    "emailPlaceholder": "marcofurniture@mail.ru",
     "password": "Пароль",
     "passwordPlaceholder": "••••••••",
     "forgotPassword": "Забыли пароль?",
@@ -13,7 +13,7 @@
     "signUp": "Зарегистрироваться"
   },
   "errors": {
-    "emailOrPhoneRequired": "Пожалуйста, введите ваш email или номер телефона",
+    "emailRequired": "Пожалуйста, введите ваш email",
     "passwordRequired": "Пожалуйста, введите ваш пароль",
     "loginFailed": "Ошибка входа. Пожалуйста, попробуйте снова."
   },
