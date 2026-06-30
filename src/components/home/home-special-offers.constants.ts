@@ -225,6 +225,9 @@ export const SPECIAL_OFFERS_IMAGE_TO_TEXT_GAP_PX = 31;
 /** On mobile 2×2 cards — shift brand/title/stars/price block down (translateY). */
 export const SPECIAL_OFFERS_CARD_TEXT_SHIFT_DOWN_MOBILE_PX = 2;
 
+/** On mobile product cards — lift brand logo slightly above the card bottom edge. */
+export const SPECIAL_OFFERS_BRAND_LOGO_LIFT_MOBILE_PX = 24;
+
 /** Color variant swatches under title — enlarged for clearer visibility. */
 export const SPECIAL_OFFERS_COLOR_SWATCH_SIZE_PX = 15;
 

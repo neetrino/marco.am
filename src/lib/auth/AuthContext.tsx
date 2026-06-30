@@ -62,7 +62,7 @@ interface AuthContextType {
   isLoading: boolean;
   isAdmin: boolean;
   roles: string[];
-  login: (_emailOrPhone: string, _password: string) => Promise<AuthFlowResult>;
+  login: (_email: string, _password: string) => Promise<AuthFlowResult>;
   register: (_data: RegisterData) => Promise<AuthFlowResult>;
   completeVerification: (
     _code: string,
@@ -190,19 +190,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     void validateStoredSession();
   }, []);
 
-  const login = async (emailOrPhone: string, password: string): Promise<AuthFlowResult> => {
+  const login = async (email: string, password: string): Promise<AuthFlowResult> => {
     logger.devLog('🔐 [AUTH] Login attempt:', {
-      emailOrPhone: emailOrPhone ? 'provided' : 'not provided',
+      email: email ? 'provided' : 'not provided',
       password: password ? 'provided' : 'not provided',
     });
 
     try {
       setIsLoading(true);
 
-      const isEmail = emailOrPhone.includes('@');
-      const requestData = isEmail
-        ? { email: emailOrPhone, password }
-        : { phone: emailOrPhone, password };
+      const requestData = { email, password };
 
       logger.devLog('📤 [AUTH] Sending login request to API...');
       const response = await apiClient.post<unknown>(

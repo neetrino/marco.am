@@ -559,7 +559,7 @@ export function FeaturedProductsTabs({
           <HomeAppBanner language={language} imageUrl={appDownloadBannerUrl} />
         </div>
         <div className="md:hidden">
-          <HomeMobileBannerProductShowcase imageUrl={promoPrimaryMobileImageUrl} />
+          <HomeMobileBannerProductShowcase language={language} imageUrl={promoPrimaryMobileImageUrl} />
         </div>
         <div className="hidden md:block">
           <HomeGradientBanner
