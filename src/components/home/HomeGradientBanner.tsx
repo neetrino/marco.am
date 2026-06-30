@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react';
+import Link from 'next/link';
 import { Montserrat } from 'next/font/google';
 
 import { t } from '../../lib/i18n';
@@ -6,6 +7,7 @@ import type { LanguageCode } from '../../lib/language';
 import { HOME_APP_BANNER_INNER_CLASS } from './home-app-banner.constants';
 import {
   HOME_GRADIENT_BANNER_ASPECT_RATIO,
+  HOME_GRADIENT_BANNER_CTA_HREF,
   HOME_GRADIENT_BANNER_CTA_ROW_OFFSET_X_PX,
   HOME_GRADIENT_BANNER_CTA_ROW_OFFSET_Y_PX,
   HOME_GRADIENT_BANNER_SURFACE_BASE_HEX,
@@ -61,11 +63,11 @@ export function HomeGradientBanner({
         style={{ gap: `${HOME_BANNERS_ROW_GAP_PX}px` }}
       >
         <div className="min-w-0">
-          <div
-            className={`relative w-full max-w-[min(100%,460px)] overflow-hidden md:max-w-[min(100%,320px)] lg:max-w-[min(100%,460px)] ${montserratBanner.className}`}
+          <Link
+            href={HOME_GRADIENT_BANNER_CTA_HREF}
+            aria-label={`${t(language, 'home.promo_featured_cta')}. ${t(language, 'home.promo_featured_title')}`}
+            className={`group/banner relative block w-full max-w-[min(100%,460px)] overflow-hidden transition hover:-translate-y-0.5 active:translate-y-px md:max-w-[min(100%,320px)] lg:max-w-[min(100%,460px)] ${montserratBanner.className}`}
             style={buildBannerSurfaceStyle()}
-            role="region"
-            aria-label={t(language, 'home.gradient_banner.aria')}
           >
             <HomeGradientBannerBackdrop
               className="pointer-events-none absolute inset-0 z-0"
@@ -74,15 +76,15 @@ export function HomeGradientBanner({
             <div className="absolute inset-0 z-[1] flex flex-col pb-5 pt-4">
               <div className="flex min-h-0 flex-1 items-center justify-center px-2" />
               <div
-                className="pointer-events-auto flex shrink-0 justify-start"
+                className="pointer-events-none flex shrink-0 justify-start"
                 style={{
                   transform: `translate(${HOME_GRADIENT_BANNER_CTA_ROW_OFFSET_X_PX}px, ${HOME_GRADIENT_BANNER_CTA_ROW_OFFSET_Y_PX}px)`,
                 }}
               >
-                <HomeGradientBannerCta language={language} />
+                <HomeGradientBannerCta language={language} decorative />
               </div>
             </div>
-          </div>
+          </Link>
         </div>
         <div className="flex min-h-0 min-w-0">
           <HomeSecondaryBanner

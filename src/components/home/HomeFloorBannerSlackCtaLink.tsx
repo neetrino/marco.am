@@ -26,6 +26,8 @@ function slackBleedStartFromStyle(linkStyle?: CSSProperties): string {
 type HomeFloorBannerSlackCtaLinkProps = {
   href: string;
   ariaLabel: string;
+  /** When true, renders a non-interactive shell (for use inside an outer banner link). */
+  decorative?: boolean;
   className: string;
   style?: CSSProperties;
   /** Expanding fill behind the label (e.g. `bg-marco-black`). */
@@ -62,6 +64,7 @@ type HomeFloorBannerSlackCtaLinkProps = {
 export function HomeFloorBannerSlackCtaLink({
   href,
   ariaLabel,
+  decorative = false,
   className,
   style,
   trailClassName,
@@ -115,13 +118,9 @@ export function HomeFloorBannerSlackCtaLink({
       ? { insetInlineEnd: slackChipRestInsetInlineEndPx, insetInlineStart: 'auto' }
       : undefined;
 
-  return (
-    <Link
-      href={href}
-      aria-label={ariaLabel}
-      className={`group relative isolate flex w-full max-w-full shrink-0 items-stretch overflow-hidden ${slackStopPadClassName ?? ''} ${className}`}
-      style={mergedStyle}
-    >
+  const sharedClassName = `group relative isolate flex w-full max-w-full shrink-0 items-stretch overflow-hidden ${slackStopPadClassName ?? ''} ${className}`;
+  const inner = (
+    <>
       <span aria-hidden className={`${motionTrail} ${trailClassName}`} />
       <div
         className="relative z-[2] flex min-h-0 min-w-0 flex-1 items-center [container-type:inline-size]"
@@ -140,6 +139,25 @@ export function HomeFloorBannerSlackCtaLink({
           </span>
         </span>
       </div>
+    </>
+  );
+
+  if (decorative) {
+    return (
+      <span aria-hidden className={sharedClassName} style={mergedStyle}>
+        {inner}
+      </span>
+    );
+  }
+
+  return (
+    <Link
+      href={href}
+      aria-label={ariaLabel}
+      className={sharedClassName}
+      style={mergedStyle}
+    >
+      {inner}
     </Link>
   );
 }
