@@ -65,7 +65,7 @@ type FeaturedProductsStripProps = {
 };
 
 /**
- * `md+`: 1×4 cards per page, horizontal scroll (two pages when eight products). `max-md`: 1×4 snap page.
+ * `md+`: 1×4 cards per page, horizontal scroll (two pages when eight products). `max-md`: 1×2 snap page.
  */
 export function FeaturedProductsStrip({
   language,
@@ -205,7 +205,7 @@ export function FeaturedProductsStrip({
   if (loading) {
     featuredContent = isMaxMd ? (
       <div
-        className="grid w-full grid-cols-4"
+        className="grid w-full grid-cols-2"
         style={{ columnGap: FEATURED_NEW_ARRIVALS_MOBILE_ROW_COLUMN_GAP_PX }}
       >
         {Array.from({ length: FEATURED_NEW_ARRIVALS_MOBILE_RAIL_CARDS_PER_PAGE }).map((_, i) => (

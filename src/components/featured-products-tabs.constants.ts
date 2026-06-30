@@ -39,12 +39,12 @@ export const FEATURED_PRODUCTS_TITLE_TO_GRID_GAP_PX = 42;
 export const FEATURED_PRODUCTS_TITLE_INSET_LEFT_PX = 16;
 
 /**
- * Mobile «Նորույթներ»: one horizontal snap page = 1 row × 4 columns (four cards).
+ * Mobile «Նորույթներ»: one horizontal snap page = 1 row × 2 columns (two cards).
  */
-export const FEATURED_NEW_ARRIVALS_MOBILE_RAIL_CARDS_PER_PAGE = 4;
+export const FEATURED_NEW_ARRIVALS_MOBILE_RAIL_CARDS_PER_PAGE = 2;
 
-/** Tighter column gap so four cards fit one mobile row without clipping. */
-export const FEATURED_NEW_ARRIVALS_MOBILE_ROW_COLUMN_GAP_PX = 8;
+/** Column gap between the two mobile cards (matches special-offers mobile rail). */
+export const FEATURED_NEW_ARRIVALS_MOBILE_ROW_COLUMN_GAP_PX = 12;
 
 /**
  * Desktop «Նորույթներ»: one horizontal page = 1 row × 4 columns (matches special offers rail).

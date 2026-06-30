@@ -28,6 +28,7 @@ import {
   SPECIAL_OFFERS_CART_BUTTON_INSET_RIGHT_PX,
   SPECIAL_OFFERS_CART_BUTTON_MOBILE_BOTTOM_PX,
   SPECIAL_OFFERS_CARD_TEXT_SHIFT_DOWN_MOBILE_PX,
+  SPECIAL_OFFERS_BRAND_LOGO_LIFT_MOBILE_PX,
   SPECIAL_OFFERS_PRICE_BLOCK_LIFT_FROM_BOTTOM_PX,
   SPECIAL_OFFERS_PRICE_ROW_END_PADDING_PX,
 } from './home-special-offers.constants';
@@ -306,7 +307,14 @@ export function SpecialOfferCard({
               ) : null}
 
               {product.brand ? (
-                <div className="min-h-[1.25rem]">
+                <div
+                  className="min-h-[1.25rem]"
+                  style={
+                    layout === 'mobileGrid'
+                      ? { marginBottom: SPECIAL_OFFERS_BRAND_LOGO_LIFT_MOBILE_PX }
+                      : undefined
+                  }
+                >
                   <ProductCardBrandMark
                     name={product.brand.name}
                     slug={product.brand.slug}

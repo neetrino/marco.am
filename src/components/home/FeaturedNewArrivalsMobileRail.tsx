@@ -55,7 +55,7 @@ type FeaturedNewArrivalsMobileRailProps = {
 };
 
 /**
- * Mobile «Նորույթներ»: horizontal snap pages, each 1×4 cards; scrollport width via `useHomeMobileProductRailScrollport`.
+ * Mobile «Նորույթներ»: horizontal snap pages, each 1×2 cards; scrollport width via `useHomeMobileProductRailScrollport`.
  */
 export function FeaturedNewArrivalsMobileRail({
   productChunks,
@@ -83,7 +83,7 @@ export function FeaturedNewArrivalsMobileRail({
         {productChunks.map((chunk, pageIndex) => (
           <div
             key={`featured-mobile-page-${pageIndex}`}
-            className="grid min-h-0 shrink-0 snap-start snap-always grid-cols-4 justify-items-stretch"
+            className="grid min-h-0 shrink-0 snap-start snap-always grid-cols-2 justify-items-stretch"
             style={{
               ...pageSlideStyle,
               columnGap: FEATURED_NEW_ARRIVALS_MOBILE_ROW_COLUMN_GAP_PX,
