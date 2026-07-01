@@ -3,8 +3,8 @@ export const PRODUCT_WARRANTY_YEAR_OPTIONS = [1, 2, 3] as const;
 
 export type ProductWarrantyYears = (typeof PRODUCT_WARRANTY_YEAR_OPTIONS)[number];
 
-/** Figma warranty pill — dark shell (`1180:3483`). */
-export const PRODUCT_WARRANTY_BADGE_BG = '#1e1e1e';
+/** Figma warranty pill — slate shell (`1180:3483`, R63 G84 B102). */
+export const PRODUCT_WARRANTY_BADGE_BG = '#3f5466';
 
 /** Figma warranty pill — accent (`1180:3483`). */
 export const PRODUCT_WARRANTY_BADGE_ACCENT = '#ffca03';
