@@ -34,7 +34,7 @@ export function AboutPageContent() {
             <div className="space-y-6 lg:py-4">
               <div className="h-1 w-14 rounded-full bg-gradient-to-r from-marco-yellow to-marco-black/30" />
 
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#7CB342] md:text-base">
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-marco-yellow md:text-base">
                 {t(language, 'about.subtitle')}
               </p>
 
@@ -57,7 +57,7 @@ export function AboutPageContent() {
           <div className="mx-auto max-w-4xl text-center">
             <div className="mx-auto mb-5 h-1 w-14 rounded-full bg-gradient-to-r from-marco-yellow to-marco-black/30" />
 
-            <p className="mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-[#7CB342] md:text-base">
+            <p className="mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-marco-yellow md:text-base">
               {t(language, 'about.partners.subtitle')}
             </p>
 
