@@ -151,23 +151,35 @@ export function prepareSubcategoriesForNav(root: Category, lang: LanguageCode): 
   return filterCategoriesForNav(flattenCategorySubtree(root.children), lang);
 }
 
+function filterCategoryTreeForNav(categories: readonly Category[], lang: LanguageCode): Category[] {
+  return categories
+    .filter((category) => isCategoryAllowedByExclusion(category, lang) && hasRenderableBranch(category, lang))
+    .map((category) => ({
+      ...category,
+      children: filterCategoryTreeForNav(category.children, lang),
+    }));
+}
+
 export type MegaMenuSubcategoryGroup = {
   parent: Category;
-  descendants: Category[];
+  children: Category[];
 };
 
 /**
  * Group root descendants by direct child for mega-menu:
  * - `parent`: direct child of selected root
- * - `descendants`: flattened subtree under that child (excludes the parent itself)
+ * - `children`: nested subtree under that child (excludes the parent itself)
  */
 export function prepareMegaMenuSubcategoryGroups(
   root: Category,
   lang: LanguageCode,
 ): MegaMenuSubcategoryGroup[] {
-  const directChildren = filterCategoriesForNav(root.children, lang);
+  const directChildren = filterCategoryTreeForNav(root.children, lang);
   return directChildren.map((child) => ({
-    parent: child,
-    descendants: filterCategoriesForNav(flattenCategorySubtree(child.children), lang),
+    parent: {
+      ...child,
+      children: [],
+    },
+    children: child.children,
   }));
 }
