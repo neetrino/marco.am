@@ -45,7 +45,7 @@
     "cashDescription": "Pay cash when you receive your order",
     "cashOnDelivery": "Cash on Delivery",
     "cashOnDeliveryDescription": "Pay cash when you receive your order",
-    "arca": "Card (ArCa / IDBank)",
+    "arca": "By card",
     "arcaDescription": "Pay with Visa, Mastercard, or ArCa",
     "idram": "Idram",
     "idramDescription": "Pay with your Idram wallet"

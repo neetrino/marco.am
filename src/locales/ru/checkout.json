@@ -45,8 +45,8 @@
     "cashDescription": "Оплатите наличными при получении заказа",
     "cashOnDelivery": "Наложенный платеж",
     "cashOnDeliveryDescription": "Оплатите наличными при получении заказа",
-    "arca": "Карта (ArCa / IDBank)",
-    "arcaDescription": "Оплата Visa, Mastercard или ArCa",
+    "arca": "Картой",
+    "arcaDescription": "Оплатите картой Visa, Mastercard или ArCa",
     "idram": "Idram",
     "idramDescription": "Оплата через кошелёк Idram"
   },
