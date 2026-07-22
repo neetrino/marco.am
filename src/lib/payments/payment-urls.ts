@@ -20,7 +20,18 @@ export const ARCA_API_CALLBACK_PATH = "/api/v1/payments/arca/callback";
 export const ARCA_API_FAIL_PATH = "/api/v1/payments/arca/fail";
 
 function absoluteUrl(path: string): string {
-  return `${getPublicAppUrl()}${path}`;
+  const base = getPublicAppUrl();
+  try {
+    return new URL(path, `${base}/`).toString();
+  } catch {
+    throw {
+      status: 503,
+      type: "https://api.shop.am/problems/internal-error",
+      title: "Service Unavailable",
+      detail:
+        "Public app URL is not configured. Set APP_URL or NEXT_PUBLIC_APP_URL to an absolute https URL (e.g. https://marco.am).",
+    };
+  }
 }
 
 /** URLs registered (or to register) with Idram merchant portal. */
