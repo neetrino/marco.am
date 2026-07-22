@@ -44,7 +44,11 @@
     "cash": "Կանխիկ",
     "cashDescription": "Վճարեք կանխիկ, երբ ստանաք ձեր պատվերը",
     "cashOnDelivery": "Կանխիկ առաքման ժամանակ",
-    "cashOnDeliveryDescription": "Վճարեք կանխիկ, երբ ստանաք ձեր պատվերը"
+    "cashOnDeliveryDescription": "Վճարեք կանխիկ, երբ ստանաք ձեր պատվերը",
+    "arca": "Քարտ (ArCa / IDBank)",
+    "arcaDescription": "Visa, Mastercard կամ ArCa քարտով վճարում",
+    "idram": "Idram",
+    "idramDescription": "Վճարեք Idram դրամապանակով"
   },
   "summary": {
     "items": "Ապրանքներ",

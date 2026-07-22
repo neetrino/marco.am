@@ -230,6 +230,12 @@ class CartService {
       });
     } catch {
       promoDiscount = { couponCode: null, discountAmount: 0 };
+      if (cart.couponCode) {
+        await db.cart.update({
+          where: { id: cart.id },
+          data: { couponCode: null },
+        });
+      }
     }
     const total = subtotal - promoDiscount.discountAmount;
 
