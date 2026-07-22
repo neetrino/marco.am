@@ -162,7 +162,9 @@ export function CheckoutForm({
               />
               <div className="min-w-0 flex-1">
                 <div className="font-semibold text-gray-900 dark:text-slate-100">{method.name}</div>
-                <div className="text-sm text-gray-500 dark:text-slate-400">{method.description}</div>
+                <div className="hidden text-sm text-gray-500 sm:block dark:text-slate-400">
+                  {method.description}
+                </div>
               </div>
             </label>
           ))}

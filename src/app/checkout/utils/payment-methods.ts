@@ -18,13 +18,17 @@ export function usePaymentMethods(): PaymentMethod[] {
       id: 'arca',
       name: t('checkout.payment.arca'),
       description: t('checkout.payment.arcaDescription'),
-      logos: [],
+      logos: [
+        '/payments/arca.svg',
+        '/payments/mastercard.svg',
+        '/payments/visa.svg',
+      ],
     },
     {
       id: 'idram',
       name: t('checkout.payment.idram'),
       description: t('checkout.payment.idramDescription'),
-      logos: [],
+      logos: ['/payments/idram.svg'],
     },
     {
       id: 'cash',
