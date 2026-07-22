@@ -72,6 +72,8 @@ export async function getTopProducts(limit: number = 5) {
         sku: variant?.sku ?? "N/A",
         totalQuantity: group._sum.quantity ?? 0,
         totalRevenue: group._sum.total ?? 0,
+        /** Order line totals are stored in checkout currency (AMD). */
+        currency: "AMD" as const,
         orderCount: group._count._all ?? 0,
         image: extractImageFromMedia(
           Array.isArray(product?.media) ? product.media : undefined,

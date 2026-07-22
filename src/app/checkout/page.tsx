@@ -4,14 +4,13 @@ import { useRouter } from 'next/navigation';
 import { Card, Button } from '@shop/ui';
 import { useTranslation } from '../../lib/i18n-client';
 import { CheckoutForm } from './CheckoutForm';
-import { CheckoutModals } from './CheckoutModals';
 import { OrderSummary } from './OrderSummary';
 import { useCheckout } from './useCheckout';
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { t } = useTranslation();
-  
+
   const {
     cart,
     loading,
@@ -20,8 +19,6 @@ export default function CheckoutPage() {
     currency,
     logoErrors,
     setLogoErrors,
-    showShippingModal,
-    setShowShippingModal,
     deliveryCities,
     loadingDeliveryCities,
     pickupBranches,
@@ -29,7 +26,6 @@ export default function CheckoutPage() {
     checkoutTotalsStale,
     register,
     setValue,
-    handleSubmit,
     errors,
     isSubmitting,
     paymentMethod,
@@ -39,7 +35,6 @@ export default function CheckoutPage() {
     paymentMethods,
     orderSummary,
     handlePlaceOrder,
-    onSubmit,
     fetchCart,
     appliedCouponCode,
     applyPromo,
@@ -82,7 +77,6 @@ export default function CheckoutPage() {
 
       <form onSubmit={handlePlaceOrder}>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Checkout Form */}
           <CheckoutForm
             register={register}
             setValue={setValue}
@@ -102,7 +96,6 @@ export default function CheckoutPage() {
             loadingDeliveryCities={loadingDeliveryCities}
           />
 
-          {/* Order Summary */}
           <OrderSummary
             cart={cart}
             orderSummary={orderSummary}
@@ -127,29 +120,6 @@ export default function CheckoutPage() {
           />
         </div>
       </form>
-
-      <CheckoutModals
-        showShippingModal={showShippingModal}
-        setShowShippingModal={setShowShippingModal}
-        register={register}
-        handleSubmit={handleSubmit}
-        setValue={setValue}
-        errors={errors}
-        isSubmitting={isSubmitting}
-        shippingMethod={shippingMethod}
-        paymentMethod={paymentMethod}
-        shippingCity={shippingCity}
-        pickupBranchId={pickupBranchId}
-        cart={cart}
-        orderSummary={orderSummary}
-        currency={currency}
-        loadingCheckoutTotals={loadingCheckoutTotals}
-        checkoutTotalsStale={checkoutTotalsStale}
-        deliveryCities={deliveryCities}
-        loadingDeliveryCities={loadingDeliveryCities}
-        pickupBranches={pickupBranches}
-        onSubmit={onSubmit}
-      />
     </div>
   );
 }

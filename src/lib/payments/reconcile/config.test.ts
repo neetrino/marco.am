@@ -32,7 +32,7 @@ describe("resolvePaymentReconcileConfig", () => {
 
   it("falls back when values are out of bounds", () => {
     vi.stubEnv("PAYMENT_RECONCILE_INTERVAL_MINUTES", "0");
-    vi.stubEnv("PAYMENT_PENDING_TIMEOUT_MINUTES", "2");
+    vi.stubEnv("PAYMENT_PENDING_TIMEOUT_MINUTES", "0");
     vi.stubEnv("PAYMENT_RECONCILE_BATCH_SIZE", "999");
 
     expect(resolvePaymentReconcileConfig()).toEqual({

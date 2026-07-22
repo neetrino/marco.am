@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, type FieldErrors } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { getStoredCurrency } from '../../lib/currency';
 import { getStoredLanguage } from '../../lib/language';
@@ -19,6 +19,18 @@ import { apiClient } from '../../lib/api-client';
 import { logger } from '../../lib/utils/logger';
 import type { CheckoutFormData } from './types';
 
+function scrollToFirstCheckoutError(validationErrors: FieldErrors<CheckoutFormData>): void {
+  const firstErrorField = Object.keys(validationErrors)[0];
+  if (!firstErrorField) {
+    return;
+  }
+
+  const errorElement = document.querySelector(`[name="${firstErrorField}"]`);
+  if (errorElement) {
+    errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+}
+
 type DeliveryLocationsResponse = {
   cities: string[];
 };
@@ -30,7 +42,6 @@ export function useCheckout() {
   const [currency, setCurrency] = useState(getStoredCurrency());
   const [_language, setLanguage] = useState(getStoredLanguage());
   const [logoErrors, setLogoErrors] = useState<Record<string, boolean>>({});
-  const [showShippingModal, setShowShippingModal] = useState(false);
   const [deliveryCities, setDeliveryCities] = useState<string[]>([]);
   const [loadingDeliveryCities, setLoadingDeliveryCities] = useState(false);
 
@@ -180,12 +191,12 @@ export function useCheckout() {
 
   const handlePlaceOrder = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (isCourierShipping(shippingMethod)) {
       const formData = watch();
       const hasShippingAddress = formData.shippingAddress && formData.shippingAddress.trim().length > 0;
       const hasShippingCity = formData.shippingCity && formData.shippingCity.trim().length > 0;
-      
+
       if (!hasShippingAddress || !hasShippingCity) {
         setError(t('checkout.errors.fillShippingAddress'));
         const shippingSection = document.querySelector('[data-shipping-section]');
@@ -207,17 +218,12 @@ export function useCheckout() {
         return;
       }
     }
-    
-    if (!isLoggedIn) {
-      setShowShippingModal(true);
-      return;
-    }
-    
-    handleSubmit(submitOrder)(e);
-  };
 
-  const onSubmit = (data: CheckoutFormData) => {
-    submitOrder(data);
+    // Skip confirmation popup: submit when valid, otherwise surface field errors on the page.
+    handleSubmit(submitOrder, (validationErrors) => {
+      setError(t('checkout.errors.fillRequiredFields'));
+      scrollToFirstCheckoutError(validationErrors);
+    })(e);
   };
 
   return {
@@ -229,8 +235,6 @@ export function useCheckout() {
     currency,
     logoErrors,
     setLogoErrors,
-    showShippingModal,
-    setShowShippingModal,
     deliveryCities,
     loadingDeliveryCities,
     pickupBranches,
@@ -239,7 +243,6 @@ export function useCheckout() {
     checkoutTotalsStale,
     // Form
     register,
-    handleSubmit,
     errors,
     isSubmitting,
     setValue,
@@ -256,11 +259,8 @@ export function useCheckout() {
     clearPromo,
     // Actions
     handlePlaceOrder,
-    onSubmit,
     fetchCart,
     // Auth
     isLoggedIn,
   };
 }
-
-export type CheckoutHandleSubmit = ReturnType<typeof useCheckout>['handleSubmit'];

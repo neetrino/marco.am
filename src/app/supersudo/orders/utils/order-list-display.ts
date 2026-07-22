@@ -1,10 +1,23 @@
-import { convertPrice, type CurrencyCode } from '@/lib/currency';
+import {
+  coerceCurrencyCode,
+  convertPrice,
+  type CurrencyCode,
+} from '@/lib/currency';
 import type { Order } from '../useOrders';
 
 type OrderListTotalInput = Pick<
   Order,
   'subtotal' | 'discountAmount' | 'taxAmount' | 'total' | 'shippingAmount' | 'currency'
 >;
+
+/** Order money fields are stored in `order.currency` (checkout writes AMD). */
+function toAmd(amount: number, orderCurrency: string | undefined): number {
+  const stored = coerceCurrencyCode(orderCurrency, 'AMD');
+  if (stored === 'AMD') {
+    return amount;
+  }
+  return convertPrice(amount, stored, 'AMD');
+}
 
 /** Same total display as admin orders table row. */
 export function formatAdminOrderListTotal(
@@ -16,15 +29,15 @@ export function formatAdminOrderListTotal(
     order.discountAmount !== undefined &&
     order.taxAmount !== undefined
   ) {
-    const subtotalAmd = convertPrice(order.subtotal, 'USD', 'AMD');
-    const discountAmd = convertPrice(order.discountAmount, 'USD', 'AMD');
-    const taxAmd = convertPrice(order.taxAmount, 'USD', 'AMD');
+    const subtotalAmd = toAmd(order.subtotal, order.currency);
+    const discountAmd = toAmd(order.discountAmount, order.currency);
+    const taxAmd = toAmd(order.taxAmount, order.currency);
     const totalWithoutShippingAmd = subtotalAmd - discountAmd + taxAmd;
     return formatCurrency(totalWithoutShippingAmd, order.currency, 'AMD');
   }
 
-  const totalAmd = convertPrice(order.total, 'USD', 'AMD');
-  const shippingAmd = order.shippingAmount || 0;
+  const totalAmd = toAmd(order.total, order.currency);
+  const shippingAmd = toAmd(order.shippingAmount || 0, order.currency);
   const totalWithoutShippingAmd = totalAmd - shippingAmd;
   return formatCurrency(totalWithoutShippingAmd, order.currency, 'AMD');
 }

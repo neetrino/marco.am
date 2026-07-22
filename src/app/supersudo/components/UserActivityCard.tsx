@@ -113,7 +113,7 @@ function ActiveUserRow({ name, contact, orderCount, totalSpent }: ActiveUserRowP
           </div>
         </div>
         <div className="text-right">
-          <p className="text-xs font-semibold text-marco-black">{formatCurrency(totalSpent, 'USD')}</p>
+          <p className="text-xs font-semibold text-marco-black">{formatCurrency(totalSpent, 'AMD')}</p>
           <p className="text-[11px] text-marco-text/60">{orderCount} orders</p>
         </div>
       </div>

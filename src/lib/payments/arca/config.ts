@@ -28,6 +28,18 @@ function envFlagFalse(raw: string | undefined): boolean {
   return raw?.trim().toLowerCase() === "false";
 }
 
+/** Trim and strip accidental wrapping quotes from Vercel/dashboard pastes. */
+function readEnvCredential(raw: string | undefined): string {
+  const trimmed = raw?.trim() ?? "";
+  if (
+    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+    (trimmed.startsWith("'") && trimmed.endsWith("'"))
+  ) {
+    return trimmed.slice(1, -1).trim();
+  }
+  return trimmed;
+}
+
 function resolveRestBaseUrl(testMode: boolean): string {
   const override = process.env.ARCA_PAYMENT_REST_BASE_URL?.trim();
   if (override) {
@@ -46,17 +58,17 @@ export function resolveArcaConfig(): ArcaConfig {
     ? envFlagTrue(process.env.ARCA_TEST_MODE)
     : !envFlagFalse(process.env.ARCA_TEST_MODE);
 
-  const username = (
+  const username = readEnvCredential(
     testMode
       ? process.env.ARCA_USERNAME || process.env.ARCA_LIVE_USERNAME
-      : process.env.ARCA_LIVE_USERNAME || process.env.ARCA_USERNAME
-  )?.trim() ?? "";
+      : process.env.ARCA_LIVE_USERNAME || process.env.ARCA_USERNAME,
+  );
 
-  const password = (
+  const password = readEnvCredential(
     testMode
       ? process.env.ARCA_PASSWORD || process.env.ARCA_LIVE_PASSWORD
-      : process.env.ARCA_LIVE_PASSWORD || process.env.ARCA_PASSWORD
-  )?.trim() ?? "";
+      : process.env.ARCA_LIVE_PASSWORD || process.env.ARCA_PASSWORD,
+  );
 
   return {
     testMode,

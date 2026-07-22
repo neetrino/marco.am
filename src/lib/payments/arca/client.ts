@@ -67,6 +67,23 @@ async function postArcaForm(
       };
     }
     return asRecord(json);
+  } catch (error: unknown) {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "status" in error &&
+      "type" in error
+    ) {
+      throw error;
+    }
+    const message = error instanceof Error ? error.message : "ArCa request failed";
+    logger.error("ArCa HTTP request failed", { action, message, error });
+    throw {
+      status: 502,
+      type: "https://api.shop.am/problems/bad-gateway",
+      title: "Bad Gateway",
+      detail: `ArCa / IDBank unreachable: ${message}`,
+    };
   } finally {
     clearTimeout(timer);
   }
