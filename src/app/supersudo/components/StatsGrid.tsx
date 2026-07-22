@@ -127,7 +127,7 @@ export function StatsGrid({ stats, statsLoading }: StatsGridProps) {
                 <div className="animate-pulse h-8 w-24 bg-gray-200 rounded mt-1"></div>
               ) : (
                 <p className="mt-1 text-2xl font-bold text-marco-black">
-                  {stats ? formatCurrency(stats.revenue.total, stats.revenue.currency) : '0 USD'}
+                  {stats ? formatCurrency(stats.revenue.total, stats.revenue.currency) : '0 AMD'}
                 </p>
               )}
             </div>

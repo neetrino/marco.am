@@ -19,6 +19,8 @@ import { resolveProductClass, type ProductClass } from "../constants/product-cla
 import { promoCodesService } from "./promo-codes.service";
 import { invalidateAdminAnalyticsCache } from "@/lib/services/admin/admin-stats/admin-analytics-cache";
 import { startOnlinePaymentIfNeeded } from "@/lib/payments/start-online-payment";
+import { assertArcaConfigured, resolveArcaConfig } from "@/lib/payments/arca/config";
+import { assertIdramConfigured, resolveIdramConfig } from "@/lib/payments/idram/config";
 
 type CartItemWithRelations = Prisma.CartItemGetPayload<{
   include: {
@@ -71,6 +73,12 @@ class OrdersService {
       } = data;
       const shippingMethod = normalizeShippingMethod(rawShippingMethod);
       const paymentMethod = resolveCheckoutPaymentMethod(rawPaymentMethod);
+      // Fail fast before creating an order if merchant credentials are missing on Vercel.
+      if (paymentMethod === "arca") {
+        assertArcaConfigured(resolveArcaConfig());
+      } else if (paymentMethod === "idram") {
+        assertIdramConfigured(resolveIdramConfig());
+      }
       // shippingAmount is ignored — computed server-side from shippingMethod and address
 
       const { email, phone, firstName, lastName, notes: orderNotes } =

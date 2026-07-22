@@ -20,6 +20,18 @@ function envFlagFalse(raw: string | undefined): boolean {
   return raw?.trim().toLowerCase() === "false";
 }
 
+/** Trim and strip accidental wrapping quotes from Vercel/dashboard pastes. */
+function readEnvCredential(raw: string | undefined): string {
+  const trimmed = raw?.trim() ?? "";
+  if (
+    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+    (trimmed.startsWith("'") && trimmed.endsWith("'"))
+  ) {
+    return trimmed.slice(1, -1).trim();
+  }
+  return trimmed;
+}
+
 /**
  * Resolves Idram credentials. Production tier forces live keys when LIVE_* are set.
  */
@@ -29,17 +41,17 @@ export function resolveIdramConfig(): IdramConfig {
     ? envFlagTrue(process.env.IDRAM_TEST_MODE)
     : !envFlagFalse(process.env.IDRAM_TEST_MODE);
 
-  const recAccount = (
+  const recAccount = readEnvCredential(
     testMode
       ? process.env.IDRAM_REC_ACCOUNT || process.env.IDRAM_LIVE_REC_ACCOUNT
-      : process.env.IDRAM_LIVE_REC_ACCOUNT || process.env.IDRAM_REC_ACCOUNT
-  )?.trim() ?? "";
+      : process.env.IDRAM_LIVE_REC_ACCOUNT || process.env.IDRAM_REC_ACCOUNT,
+  );
 
-  const secretKey = (
+  const secretKey = readEnvCredential(
     testMode
       ? process.env.IDRAM_SECRET_KEY || process.env.IDRAM_LIVE_SECRET_KEY
-      : process.env.IDRAM_LIVE_SECRET_KEY || process.env.IDRAM_SECRET_KEY
-  )?.trim() ?? "";
+      : process.env.IDRAM_LIVE_SECRET_KEY || process.env.IDRAM_SECRET_KEY,
+  );
 
   const getPaymentUrl =
     process.env.IDRAM_GET_PAYMENT_URL?.trim() || DEFAULT_GET_PAYMENT_URL;

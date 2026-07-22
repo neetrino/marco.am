@@ -13,6 +13,7 @@ interface TopProduct {
   sku: string;
   totalQuantity: number;
   totalRevenue: number;
+  currency?: string;
   orderCount: number;
   image?: string | null;
 }
@@ -84,7 +85,7 @@ export function TopProductsCard({ topProducts, topProductsLoading }: TopProducts
               </div>
               <div className="text-right">
                 <p className="text-sm font-semibold text-marco-black">
-                  {formatCurrency(product.totalRevenue, 'USD')}
+                  {formatCurrency(product.totalRevenue, product.currency ?? 'AMD')}
                 </p>
               </div>
             </div>

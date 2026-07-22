@@ -27,23 +27,15 @@ export function useAdminOrderCurrency() {
   const formatCurrency = (
     amount: number,
     _orderCurrency = 'AMD',
-    fromCurrency: CurrencyCode = 'USD'
+    fromCurrency: CurrencyCode = 'AMD'
   ): string => {
     const displayCurrency = currency;
 
-    if (displayCurrency === 'AMD') {
-      if (fromCurrency === 'USD') {
-        return formatPriceInCurrency(convertPrice(amount, 'USD', 'AMD'), 'AMD');
-      }
-      return formatPriceInCurrency(amount, 'AMD');
+    if (fromCurrency === displayCurrency) {
+      return formatPriceInCurrency(amount, displayCurrency);
     }
 
-    if (fromCurrency === 'USD') {
-      const amdAmount = convertPrice(amount, 'USD', 'AMD');
-      return formatPriceInCurrency(convertPrice(amdAmount, 'AMD', displayCurrency), displayCurrency);
-    }
-
-    return formatPriceInCurrency(convertPrice(amount, 'AMD', displayCurrency), displayCurrency);
+    return formatPriceInCurrency(convertPrice(amount, fromCurrency, displayCurrency), displayCurrency);
   };
 
   return { currency, formatCurrency };
