@@ -63,6 +63,13 @@ describe("checkSameOriginRequest", () => {
     expect(response).toBeNull();
   });
 
+  it("exempts Idram RESULT and WC-api POSTs without Origin", () => {
+    expect(
+      checkSameOriginRequest(buildRequest("/api/v1/payments/idram/callback")),
+    ).toBeNull();
+    expect(checkSameOriginRequest(buildRequest("/wc-api/idram_result"))).toBeNull();
+  });
+
   it("skips GET requests", () => {
     const response = checkSameOriginRequest(
       buildRequest("/api/v1/products", {

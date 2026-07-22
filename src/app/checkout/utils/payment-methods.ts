@@ -15,6 +15,18 @@ export function usePaymentMethods(): PaymentMethod[] {
 
   return [
     {
+      id: 'arca',
+      name: t('checkout.payment.arca'),
+      description: t('checkout.payment.arcaDescription'),
+      logos: [],
+    },
+    {
+      id: 'idram',
+      name: t('checkout.payment.idram'),
+      description: t('checkout.payment.idramDescription'),
+      logos: [],
+    },
+    {
       id: 'cash',
       name: t('checkout.payment.cash'),
       description: t('checkout.payment.cashDescription'),

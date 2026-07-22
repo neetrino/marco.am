@@ -17,7 +17,9 @@ export function useCheckoutSchema() {
     shippingMethod: z.enum(['pickup', 'courier'], {
       message: t('checkout.errors.selectShippingMethod'),
     }),
-    paymentMethod: z.literal("cash"),
+    paymentMethod: z.enum(["cash", "idram", "arca"], {
+      message: t("checkout.errors.selectPaymentMethod"),
+    }),
     shippingAddress: z.string().optional(),
     shippingCity: z.string().optional(),
     pickupBranchId: z.string().optional(),

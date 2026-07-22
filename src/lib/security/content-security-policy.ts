@@ -16,7 +16,7 @@ const VERCEL_TOOLBAR_FRAME_HOSTS = [
  * Site-wide CSP. Scripts allow `'unsafe-inline'` because storefront pages are
  * statically rendered/CDN-cached, which is incompatible with per-request nonces
  * (Next.js only injects nonces during dynamic rendering). Other directives stay
- * strict (`object-src 'none'`, `base-uri 'self'`, `form-action 'self'`,
+ * strict (`object-src 'none'`, `base-uri 'self'`, limited `form-action`,
  * `frame-ancestors 'none'`) to limit the impact of inline scripts.
  */
 export function buildContentSecurityPolicyHeader(): string {
@@ -53,6 +53,9 @@ export function buildContentSecurityPolicyHeader(): string {
 
   const mediaSources = ["'self'", "blob:", "https:"];
 
+  // Idram GetPayment is a cross-origin form POST from /api/v1/payments/idram/start.
+  const formActions = ["'self'", "https://banking.idram.am"];
+
   return [
     "default-src 'self'",
     `script-src ${scriptSources.join(" ")}`,
@@ -63,7 +66,7 @@ export function buildContentSecurityPolicyHeader(): string {
     `media-src ${mediaSources.join(" ")}`,
     `connect-src ${connectSources.join(" ")}`,
     "base-uri 'self'",
-    "form-action 'self'",
+    `form-action ${formActions.join(" ")}`,
     "object-src 'none'",
     `frame-src ${frameSources.join(" ")}`,
     "frame-ancestors 'none'",
