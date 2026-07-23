@@ -24,6 +24,8 @@ type ProductListingCardInput = {
   warrantyBadge?: { years: ProductWarrantyYears } | null;
   colors?: Array<{ value: string; imageUrl?: string | null; colors?: string[] | null }>;
   requiresAttributeSelection?: boolean | null;
+  /** Listing / default variant SKU shown under the title. */
+  sku?: string | null;
 };
 
 /**
@@ -58,5 +60,6 @@ export function toSpecialOfferProduct(p: ProductListingCardInput): SpecialOfferP
     warrantyBadge: p.warrantyBadge,
     colors: p.colors,
     requiresAttributeSelection: p.requiresAttributeSelection,
+    sku: p.sku ?? null,
   };
 }

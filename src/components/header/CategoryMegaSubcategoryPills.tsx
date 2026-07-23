@@ -1,7 +1,6 @@
 ﻿'use client';
 
 import Image from 'next/image';
-import { ArrowUpRight, ChevronDown } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from '../../lib/i18n-client';
@@ -90,38 +89,19 @@ function SubcategoryDescendantItem({
   level: number;
   onNavigate: () => void;
 }) {
-  const { t } = useTranslation();
-  const [expanded, setExpanded] = useState(false);
   const row = resolveCategoryNavPresentation(category.slug, category.title, lang);
   const hasChildren = category.children.length > 0;
 
   return (
     <li>
-      <div className="flex min-w-0 items-center gap-1">
-        <ShopListingLink
-          href={`/products?category=${category.slug}`}
-          onNavigate={onNavigate}
-          className={`${MEGA_DESCENDANT_LINK_CLASS} min-w-0 flex-1`}
-        >
-          {row.title}
-        </ShopListingLink>
-        {hasChildren ? (
-          <button
-            type="button"
-            onClick={() => setExpanded((current) => !current)}
-            className="flex size-7 shrink-0 items-center justify-center rounded-full bg-marco-gray text-[var(--marco-slate)] transition-[background-color] duration-150 hover:bg-marco-yellow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/15"
-            aria-expanded={expanded}
-            aria-label={`${row.title} ${t('common.navigation.categoriesMegaMenu.subcategories')}`}
-          >
-            <ChevronDown
-              className={`size-4 transition-transform ${expanded ? 'rotate-180' : ''}`}
-              strokeWidth={2}
-              aria-hidden
-            />
-          </button>
-        ) : null}
-      </div>
-      {hasChildren && expanded ? (
+      <ShopListingLink
+        href={`/products?category=${category.slug}`}
+        onNavigate={onNavigate}
+        className={MEGA_DESCENDANT_LINK_CLASS}
+      >
+        {row.title}
+      </ShopListingLink>
+      {hasChildren ? (
         <SubcategoryDescendantList
           categories={category.children}
           lang={lang}
@@ -135,26 +115,19 @@ function SubcategoryDescendantItem({
 
 function SubcategoryGroupParent({
   parent,
-  expanded,
-  hasChildren,
   lang,
   onNavigate,
-  onToggleChildren,
 }: {
   parent: Category;
-  expanded: boolean;
-  hasChildren: boolean;
   lang: LanguageCode;
   onNavigate: () => void;
-  onToggleChildren: () => void;
 }) {
-  const { t } = useTranslation();
   const row = resolveCategoryNavPresentation(parent.slug, parent.title, lang);
   const imageSrc = toSafeImgAttributeSrc(parent.media?.[0] ?? null);
   const count = parent.productCount ?? 0;
 
   return (
-    <div className="mb-2 flex min-w-0 items-center gap-1.5">
+    <div className="mb-2 min-w-0">
       <ShopListingLink href={`/products?category=${parent.slug}`} onNavigate={onNavigate} className={MEGA_PARENT_LINK_CLASS}>
         <SubcategoryIcon icon={row.icon} imageSrc={imageSrc} />
         <span className="min-w-0 flex-1 text-left text-sm font-bold leading-[18px] tracking-[0.14px] !text-[var(--marco-slate)] dark:!text-[var(--marco-slate)]">
@@ -165,28 +138,7 @@ function SubcategoryGroupParent({
             ({count})
           </span>
         ) : null}
-        <span
-          className="ml-0.5 flex size-7 shrink-0 items-center justify-center rounded-full !bg-[var(--marco-slate)] text-white transition-opacity group-hover:opacity-100"
-          aria-hidden
-        >
-          <ArrowUpRight className="size-3 shrink-0 !text-white dark:!text-white" strokeWidth={2.25} />
-        </span>
       </ShopListingLink>
-      {hasChildren ? (
-        <button
-          type="button"
-          onClick={onToggleChildren}
-          className="flex size-8 shrink-0 items-center justify-center rounded-full bg-marco-gray text-[var(--marco-slate)] transition-[background-color] duration-150 hover:bg-marco-yellow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/15"
-          aria-expanded={expanded}
-          aria-label={`${row.title} ${t('common.navigation.categoriesMegaMenu.subcategories')}`}
-        >
-          <ChevronDown
-            className={`size-4 transition-transform ${expanded ? 'rotate-180' : ''}`}
-            strokeWidth={2.1}
-            aria-hidden
-          />
-        </button>
-      ) : null}
     </div>
   );
 }
@@ -200,20 +152,12 @@ function SubcategoryGroup({
   lang: LanguageCode;
   onNavigate: () => void;
 }) {
-  const [expanded, setExpanded] = useState(false);
   const hasChildren = group.children.length > 0;
 
   return (
     <li className="min-w-0 w-full">
-      <SubcategoryGroupParent
-        parent={group.parent}
-        expanded={expanded}
-        hasChildren={hasChildren}
-        lang={lang}
-        onNavigate={onNavigate}
-        onToggleChildren={() => setExpanded((current) => !current)}
-      />
-      {hasChildren && expanded ? (
+      <SubcategoryGroupParent parent={group.parent} lang={lang} onNavigate={onNavigate} />
+      {hasChildren ? (
         <SubcategoryDescendantList categories={group.children} lang={lang} onNavigate={onNavigate} />
       ) : null}
     </li>

@@ -20,6 +20,8 @@ export type PlpReadModelProduct = {
     logoUrl: string | null;
   } | null;
   defaultVariantId: string | null;
+  /** Listing variant SKU; filled by {@link attachListingCardSkus}. */
+  sku: string | null;
   labels: unknown[];
   colors: Array<{ value: string; imageUrl?: string | null; colors?: string[] | null }>;
   warrantyBadge: { years: number } | null;
@@ -104,6 +106,7 @@ export function mapListingRowToCard(row: ListingCardRow): PlpReadModelProduct {
           }
         : null,
     defaultVariantId: row.defaultVariantId,
+    sku: null,
     labels: normalizeJsonArray(row.labels),
     colors: normalizeColors(row.colors),
     warrantyBadge: row.warrantyYears ? { years: row.warrantyYears } : null,

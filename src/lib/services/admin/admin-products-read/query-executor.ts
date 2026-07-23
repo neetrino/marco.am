@@ -18,6 +18,7 @@ const getProductListInclude = (locale: string) => ({
     select: {
       price: true,
       stock: true,
+      sku: true,
       imageUrl: true,
       discountType: true,
       discountValue: true,

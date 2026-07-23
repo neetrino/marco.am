@@ -319,6 +319,11 @@ export function ProductsTable({
                               />
                             ) : null}
                           </div>
+                          {product.sku ? (
+                            <p className="mt-0.5 truncate text-xs text-slate-500" title={product.sku}>
+                              {t('admin.products.sku')}: {product.sku}
+                            </p>
+                          ) : null}
                         </div>
                       </div>
                     </td>

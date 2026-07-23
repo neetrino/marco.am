@@ -445,6 +445,7 @@
     "selectAll": "Выбрать все товары",
     "selectProduct": "Выбрать товар {title}",
     "product": "ТОВАР",
+    "sku": "SKU",
     "categories": "КАТЕГОРИИ",
     "stock": "НАЛИЧИЕ",
     "price": "ЦЕНА",
