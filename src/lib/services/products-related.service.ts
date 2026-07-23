@@ -5,6 +5,7 @@ import {
   mapListingRowToCard,
   type PlpReadModelProduct,
 } from "@/lib/read-model/product-listing-card-mapper";
+import { attachListingCardSkus } from "@/lib/read-model/attach-listing-card-skus";
 
 const DEFAULT_RELATED_LIMIT = 10;
 const MAX_RELATED_LIMIT = 24;
@@ -110,7 +111,7 @@ class ProductsRelatedService {
       take: limit,
       select: LISTING_CARD_SELECT,
     });
-    return rows.map(mapListingRowToCard);
+    return attachListingCardSkus(rows.map(mapListingRowToCard));
   }
 
   async findBySlug(

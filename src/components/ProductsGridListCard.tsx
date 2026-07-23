@@ -27,6 +27,7 @@ type ProductsGridListCardProduct = {
   labels?: ProductLabel[];
   colors?: Array<{ value: string; imageUrl?: string | null; colors?: string[] | null }>;
   requiresAttributeSelection?: boolean | null;
+  sku?: string | null;
 };
 
 interface ProductsGridListCardProps {

@@ -6,6 +6,7 @@ import Image from 'next/image';
 import type { MouseEvent } from 'react';
 import type { ProductListingBrand } from '@/lib/types/product-listing-brand';
 import { formatCatalogPrice, type CurrencyCode } from '../../lib/currency';
+import { useTranslation } from '@/lib/i18n-client';
 import { ProductCardBrandMark } from './ProductCardBrandMark';
 import { ProductColors } from './ProductColors';
 import { ProductCardActions } from './ProductCardActions';
@@ -34,6 +35,7 @@ interface ProductCardListProps {
     isSpecialPrice?: boolean;
     colors?: Array<{ value: string; imageUrl?: string | null; colors?: string[] | null }>;
     categories?: Array<{ id: string; slug: string; title: string }>;
+    sku?: string | null;
   };
   currency: CurrencyCode;
   isInWishlist: boolean;
@@ -61,6 +63,7 @@ export function ProductCardList({
   onAddToCart,
   wishlistPage = false,
 }: ProductCardListProps) {
+  const { t } = useTranslation();
   const hasDisplayPrice = product.price > 0;
   const listSurfaceClass = wishlistPage
     ? 'border border-gray-200 shadow-sm dark:border-white/30'
@@ -133,6 +136,11 @@ export function ProductCardList({
             <h3 className="line-clamp-2 text-xl font-medium text-gray-900 transition-colors sm:text-2xl">
               {product.title}
             </h3>
+            {product.sku ? (
+              <p className="mt-0.5 truncate text-sm text-gray-500" title={product.sku}>
+                {t('common.messages.sku')}: {product.sku}
+              </p>
+            ) : null}
             <div className="mt-1">
               {product.brand ? (
                 <ProductCardBrandMark

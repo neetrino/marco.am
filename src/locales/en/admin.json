@@ -445,6 +445,7 @@
     "selectAll": "Select all products",
     "selectProduct": "Select product {title}",
     "product": "PRODUCT",
+    "sku": "SKU",
     "categories": "CATEGORIES",
     "stock": "STOCK",
     "price": "PRICE",

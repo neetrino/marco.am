@@ -21,6 +21,7 @@ import { buildListingRowSearchWhereInput } from '@/lib/product-search/listing-ro
 import { findProductIdsBySkuSearch } from '@/lib/product-search/find-product-ids-by-sku';
 import { getCachedJson } from '@/lib/services/read-through-json-cache';
 import { aggregateProductsPlpFacets } from './product-facet-live-aggregation';
+import { attachListingCardSkus } from './attach-listing-card-skus';
 import {
   PRODUCTS_PLP_CACHE_TTL_SEC,
   buildPlpFiltersCacheKey,
@@ -294,12 +295,16 @@ async function fetchRows(args: {
 async function getCachedListingItems(
   params: PlpReadModelSearchParams,
 ): Promise<PlpListingItemsPayload> {
-  if (shouldSkipPlpCache(params)) {
-    return computeListingItems(params);
-  }
-  return getCachedJson(buildPlpListingCacheKey(params), PRODUCTS_PLP_CACHE_TTL_SEC, () =>
-    computeListingItems(params),
-  );
+  const payload = shouldSkipPlpCache(params)
+    ? await computeListingItems(params)
+    : await getCachedJson(buildPlpListingCacheKey(params), PRODUCTS_PLP_CACHE_TTL_SEC, () =>
+        computeListingItems(params),
+      );
+  return {
+    ...payload,
+    // Attach outside cache so SKU still appears on older cached listing payloads.
+    items: await attachListingCardSkus(payload.items),
+  };
 }
 
 export async function getProductsPlpReadModelPayload(

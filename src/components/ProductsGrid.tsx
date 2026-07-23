@@ -31,6 +31,7 @@ interface Product {
   warrantyBadge?: { years: import('@/lib/constants/product-warranty').ProductWarrantyYears } | null;
   colors?: Array<{ value: string; imageUrl?: string | null; colors?: string[] | null }>;
   requiresAttributeSelection?: boolean | null;
+  sku?: string | null;
 }
 
 type ViewMode = 'list' | 'grid-2' | 'grid-3';

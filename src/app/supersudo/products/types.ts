@@ -15,6 +15,8 @@ export interface Product {
   /** Current selling price (standard price with any active discount applied). */
   price: number;
   stock: number;
+  /** Primary listing variant SKU (null when unset). */
+  sku?: string | null;
   /** Resolved discount percentage for the struck-price badge. */
   discountPercent?: number;
   discountExpiresAt?: string | null;
