@@ -185,14 +185,14 @@ export function Header({ initialLanguage }: HeaderProps) {
         )}
 
       <div
-        className={`${HEADER_CONTAINER_CLASS} ${compactPrimaryNav ? 'flex' : 'hidden'} items-center justify-between gap-2 border-b py-2 ${
+        className={`${HEADER_CONTAINER_CLASS} ${compactPrimaryNav ? 'grid' : 'hidden'} grid-cols-[1fr_auto_1fr] items-center gap-2 border-b py-2 ${
           isReelsWatchRoute ? 'border-white/10 bg-black text-white' : 'border-marco-border'
         }`}
       >
         <button
           type="button"
           onClick={() => setMobileMenuOpen(true)}
-          className={`${HEADER_MOBILE_HEADER_ROUND_CONTROL_CLASS} [&_svg]:!text-white`}
+          className={`${HEADER_MOBILE_HEADER_ROUND_CONTROL_CLASS} justify-self-start [&_svg]:!text-white`}
           aria-label={t('common.ariaLabels.openMenu')}
           aria-expanded={mobileMenuOpen}
         >
@@ -211,13 +211,15 @@ export function Header({ initialLanguage }: HeaderProps) {
           </svg>
         </button>
         <MarcoLogo />
-        <MobileHeaderLocaleCurrencyButton
-          selectedCurrency={selectedCurrency}
-          onCurrencyChange={handleCurrencyChange}
-          initialLanguage={initialLanguage}
-          ariaLabel={t('common.ariaLabels.languageCurrencyMenu')}
-          onMenuOpenChange={setShowLocaleCurrencyMenu}
-        />
+        <div className="justify-self-end">
+          <MobileHeaderLocaleCurrencyButton
+            selectedCurrency={selectedCurrency}
+            onCurrencyChange={handleCurrencyChange}
+            initialLanguage={initialLanguage}
+            ariaLabel={t('common.ariaLabels.languageCurrencyMenu')}
+            onMenuOpenChange={setShowLocaleCurrencyMenu}
+          />
+        </div>
       </div>
 
       <div
