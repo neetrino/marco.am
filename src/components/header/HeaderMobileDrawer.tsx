@@ -34,7 +34,6 @@ import {
   MOBILE_DRAWER_CLOSE_BTN_CLASS,
   MOBILE_DRAWER_CONTACT_COMPACT_CLASS,
   MOBILE_DRAWER_CTA_COMPACT_CLASS,
-  MOBILE_DRAWER_CTA_PILL_CLASS,
   MOBILE_DRAWER_MENU_HEADER_ROW_CLASS,
   MOBILE_DRAWER_CONTENT_MAX_CLASS,
   MOBILE_DRAWER_PANEL_CLASS,
@@ -233,25 +232,7 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
                     </Link>
                   ) : null}
                 </>
-              ) : (
-                <>
-                  <Link
-                    href="/register"
-                    onClick={closeDrawer}
-                    className={MOBILE_DRAWER_CTA_PILL_CLASS}
-                  >
-                    {t('register.form.createAccount')}
-                  </Link>
-                  <Link
-                    href="/login"
-                    onClick={closeDrawer}
-                    className={`${mobileDrawerNavPillClass(false)} normal-case font-semibold`}
-                  >
-                    <span>{t('common.navigation.login')}</span>
-                    <ChevronRight className="h-5 w-5 shrink-0 opacity-50" aria-hidden />
-                  </Link>
-                </>
-              )}
+              ) : null}
             </nav>
 
               <footer className="mt-auto flex shrink-0 flex-col pb-1">

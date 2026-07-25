@@ -111,8 +111,8 @@ export function ProductInfoAndActions({
   const hasDisplayPrice = Number.isFinite(price) && price > 0;
 
   return (
-    <div className="flex h-full min-h-[420px] flex-col">
-      <div className="flex-1">
+    <div className={`flex flex-col ${hasDisplayPrice ? 'h-full min-h-[420px]' : ''}`}>
+      <div className={hasDisplayPrice ? 'flex-1' : ''}>
         {(product.brand || primaryCategory) && (
           <div className="mb-5 flex flex-wrap items-center gap-3 md:gap-4">
             {product.brand ? (

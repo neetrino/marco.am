@@ -68,9 +68,10 @@ export const PRODUCT_CARD_BRAND_LOGO_SIZES: Record<
       'truncate text-sm font-semibold uppercase leading-none tracking-wide text-gray-500 dark:text-[#383838] sm:text-base',
   },
   specialOffer: {
-    rowClassName: 'flex min-h-6 max-w-[96px] items-center overflow-visible md:min-h-7 md:max-w-[108px]',
+    rowClassName:
+      'flex min-h-[22px] max-w-[96px] items-center overflow-visible md:min-h-7 md:max-w-[108px]',
     logoCellClassName:
-      'relative h-6 w-full max-w-[96px] shrink-0 md:h-7 md:max-w-[108px]',
+      'relative h-[22px] w-full max-w-[96px] shrink-0 md:h-7 md:max-w-[108px]',
     logoSizes: '(max-width: 768px) 96px, 108px',
     imageClassName: 'object-contain object-left origin-left',
     wordmarkClassName:
