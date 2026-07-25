@@ -30,6 +30,7 @@ import {
   SPECIAL_OFFERS_CARD_TEXT_SHIFT_DOWN_MOBILE_PX,
   SPECIAL_OFFERS_BRAND_LOGO_LIFT_MOBILE_PX,
   SPECIAL_OFFERS_PRICE_BLOCK_LIFT_FROM_BOTTOM_PX,
+  SPECIAL_OFFERS_PRICE_TO_BRAND_GAP_MOBILE_PX,
   SPECIAL_OFFERS_PRICE_ROW_END_PADDING_PX,
 } from './home-special-offers.constants';
 import { ProductCardBrandMark } from '../ProductCard/ProductCardBrandMark';
@@ -294,7 +295,10 @@ export function SpecialOfferCard({
               {hasDisplayPrice ? (
                 <div
                   style={{
-                    marginBottom: SPECIAL_OFFERS_PRICE_BLOCK_LIFT_FROM_BOTTOM_PX,
+                    marginBottom:
+                      layout === 'mobileGrid'
+                        ? SPECIAL_OFFERS_PRICE_TO_BRAND_GAP_MOBILE_PX
+                        : SPECIAL_OFFERS_PRICE_BLOCK_LIFT_FROM_BOTTOM_PX,
                   }}
                 >
                   <SpecialOfferCardPricing

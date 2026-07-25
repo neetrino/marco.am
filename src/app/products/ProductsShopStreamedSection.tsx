@@ -18,7 +18,7 @@ export async function ProductsShopStreamedSection({ raw }: ProductsShopStreamedS
   const ctx = await resolveProductsShopListingServerContext(raw);
 
   return (
-    <div className="marco-header-container pt-[58px]">
+    <div className="marco-header-container pt-3 min-[744px]:pt-[58px]">
       <div className="flex flex-col min-[744px]:flex-row min-[744px]:gap-5 xl:gap-8">
         <ProductsShopFiltersColumn language={ctx.language} params={ctx.params}>
           <Suspense fallback={null}>

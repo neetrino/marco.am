@@ -85,7 +85,7 @@ export const SPECIAL_OFFERS_CARD_MAX_WIDTH_PX = 252;
 /** Design reference: fixed card height. */
 export const SPECIAL_OFFERS_CARD_HEIGHT_PX = 400;
 /** Warranty pill inset from card top — matches former `top-3`. */
-export const SPECIAL_OFFERS_WARRANTY_BADGE_TOP_INSET_PX = 12;
+export const SPECIAL_OFFERS_WARRANTY_BADGE_TOP_INSET_PX = 6;
 
 /** Warranty pill inset from card left — default rail / desktop (`left-3`). */
 export const SPECIAL_OFFERS_WARRANTY_BADGE_LEFT_INSET_PX = 12;
@@ -129,7 +129,7 @@ export const SPECIAL_OFFERS_CART_BUTTON_INSET_BOTTOM_PX = 5;
 export const SPECIAL_OFFERS_CART_BUTTON_INSET_RIGHT_PX = 4;
 
 /** Mobile: cart centered on the notch — protrudes below the shell (reference `.card__button`). */
-export const SPECIAL_OFFERS_CART_BUTTON_MOBILE_BOTTOM_PX = -22;
+export const SPECIAL_OFFERS_CART_BUTTON_MOBILE_BOTTOM_PX = -26;
 
 /** Floating add-to-cart circle (edge length). */
 export const SPECIAL_OFFERS_CART_BUTTON_SIZE_PX = 48;
@@ -160,8 +160,12 @@ export const SPECIAL_OFFERS_PRICE_LINE_HEIGHT_PX = 28;
 
 /**
  * Lifts the price row (`mt-auto`) slightly off the card bottom — visual breathing room.
+ * On mobile with a brand logo below, this is the gap between price and brand.
  */
 export const SPECIAL_OFFERS_PRICE_BLOCK_LIFT_FROM_BOTTOM_PX = 33;
+
+/** Mobile 2×2 — tighter gap between price and brand logo. */
+export const SPECIAL_OFFERS_PRICE_TO_BRAND_GAP_MOBILE_PX = 12;
 
 /** Image well height inside special-offer card (Figma). */
 export const SPECIAL_OFFERS_IMAGE_WELL_HEIGHT_PX = 177;
@@ -226,7 +230,7 @@ export const SPECIAL_OFFERS_IMAGE_TO_TEXT_GAP_PX = 31;
 export const SPECIAL_OFFERS_CARD_TEXT_SHIFT_DOWN_MOBILE_PX = 2;
 
 /** On mobile product cards — lift brand logo slightly above the card bottom edge. */
-export const SPECIAL_OFFERS_BRAND_LOGO_LIFT_MOBILE_PX = 24;
+export const SPECIAL_OFFERS_BRAND_LOGO_LIFT_MOBILE_PX = 28;
 
 /** Color variant swatches under title — enlarged for clearer visibility. */
 export const SPECIAL_OFFERS_COLOR_SWATCH_SIZE_PX = 15;
