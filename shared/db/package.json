@@ -23,7 +23,7 @@
     "seed": "node prisma/seed.cjs"
   },
   "dependencies": {
-    "@prisma/client": "^6.7.0",
+    "@prisma/client": "^7.9.0",
     "prisma": "^6.7.0"
   }
 }
