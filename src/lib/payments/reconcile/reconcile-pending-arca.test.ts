@@ -35,8 +35,6 @@ import { reconcilePendingArcaPayments } from "./reconcile-pending-arca";
 describe("reconcilePendingArcaPayments", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.stubEnv("PAYMENT_PENDING_TIMEOUT_MINUTES", "60");
-    vi.stubEnv("PAYMENT_RECONCILE_BATCH_SIZE", "25");
   });
 
   it("marks paid when bank reports deposited", async () => {

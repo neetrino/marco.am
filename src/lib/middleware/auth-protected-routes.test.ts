@@ -180,6 +180,18 @@ describe("requireAuthenticatedApi", () => {
     expect(response).toBeNull();
     expect(userId).toBe("user-42");
   });
+
+  it("returns the DB-validated roles alongside userId", async () => {
+    mockValidSession("user-42", ["customer"]);
+    const { roles } = await requireAuthenticatedApi(buildRequest("/api/v1/orders"));
+    expect(roles).toEqual(["customer"]);
+  });
+
+  it("returns null roles when authentication fails", async () => {
+    getAuthContextMock.mockResolvedValue({ token: null, decoded: null });
+    const { roles } = await requireAuthenticatedApi(buildRequest("/api/v1/orders"));
+    expect(roles).toBeNull();
+  });
 });
 
 describe("requireAdminApi", () => {
@@ -198,10 +210,17 @@ describe("requireAdminApi", () => {
 
   it("passes through for admin users", async () => {
     mockValidSession("admin-1", ["admin"]);
-    const { response, userId } = await requireAdminApi(
+    const { response, userId, roles } = await requireAdminApi(
       buildRequest("/api/v1/supersudo/products")
     );
     expect(response).toBeNull();
     expect(userId).toBe("admin-1");
+    expect(roles).toEqual(["admin"]);
+  });
+
+  it("returns null roles for forbidden non-admin users", async () => {
+    mockValidSession("user-1", ["customer"]);
+    const { roles } = await requireAdminApi(buildRequest("/api/v1/supersudo/products"));
+    expect(roles).toBeNull();
   });
 });

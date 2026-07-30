@@ -1,23 +1,16 @@
 'use client';
 
-import { useEffect, useRef, type MutableRefObject } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { warmReelsPageClientCache } from '@/lib/reels-page-prefetch';
 import { getStoredLanguage } from '@/lib/language';
-import { isLightMarketingRoute } from '@/lib/light-marketing-routes';
 import { warmShopProductsClientCaches } from '@/lib/shop-products-plp-prefetch';
 
-const EXTRA_PREFETCH_ROUTES = ['/wishlist', '/profile', '/login'] as const;
-/** Lightweight marketing routes — prefetch first so About/Contact/Reels open instantly. */
-const LIGHT_MARKETING_ROUTES = ['/', '/about', '/contact', '/reels', '/compare', '/brands', '/products'] as const;
 const PRODUCTS_SHOP_PATH = '/products';
 const REELS_PATH = '/reels';
 const INTERACTION_PREFETCH_MAX_SEGMENTS = 2;
 const HOME_PATH = '/';
 const INTERACTION_PRODUCTS_WARM_TIMEOUT_MS = 8_000;
-const STAGGER_PREFETCH_DELAY_MS = 100;
-const IDLE_PREFETCH_TIMEOUT_MS = 4_000;
-const MARKETING_IDLE_WARM_DELAY_MS = 800;
 
 function shouldSkipIdlePrefetch(): boolean {
   if (typeof navigator === 'undefined') {
@@ -78,108 +71,12 @@ function isBrandFilteredProductsRoute(queryString: string): boolean {
   return new URLSearchParams(queryString).has('brand');
 }
 
-type AppRouter = ReturnType<typeof useRouter>;
-
-function scheduleIdleTask(task: () => void, timeoutMs: number): () => void {
-  if (typeof requestIdleCallback !== 'undefined') {
-    const id = requestIdleCallback(task, { timeout: timeoutMs });
-    return () => cancelIdleCallback(id);
-  }
-  const timer = window.setTimeout(task, timeoutMs);
-  return () => window.clearTimeout(timer);
-}
-
-function prefetchRouteIfNeeded(
-  route: string,
-  pathname: string,
-  router: AppRouter,
-  warmedRef: MutableRefObject<Set<string>>,
-): void {
-  if (route === pathname || warmedRef.current.has(route)) {
-    return;
-  }
-  warmedRef.current.add(route);
-  void router.prefetch(route);
-}
-
-function prefetchRoutesStaggered(
-  routes: readonly string[],
-  pathname: string,
-  router: AppRouter,
-  warmedRef: MutableRefObject<Set<string>>,
-): () => void {
-  const timers: number[] = [];
-  let staggerIndex = 0;
-  for (const route of routes) {
-    if (route === pathname || warmedRef.current.has(route)) {
-      continue;
-    }
-    warmedRef.current.add(route);
-    const delay = staggerIndex * STAGGER_PREFETCH_DELAY_MS;
-    staggerIndex += 1;
-    timers.push(
-      window.setTimeout(() => {
-        void router.prefetch(route);
-      }, delay),
-    );
-  }
-  return () => {
-    for (const timer of timers) {
-      window.clearTimeout(timer);
-    }
-  };
-}
-
 /**
- * Prefetches high-traffic routes on idle; API payloads warm only on link interaction.
+ * Prefetches routes and warms PLP/reels client caches only on link interaction (pointer/focus).
  */
 export function GlobalRoutePrefetch() {
-  const pathname = usePathname();
   const router = useRouter();
-  const warmedRef = useRef<Set<string>>(new Set());
   const interactionWarmedRef = useRef<Set<string>>(new Set());
-
-  useEffect(() => {
-    if (shouldSkipIdlePrefetch()) {
-      return;
-    }
-
-    const cancelLight = prefetchRoutesStaggered(
-      LIGHT_MARKETING_ROUTES,
-      pathname,
-      router,
-      warmedRef,
-    );
-    const cancelHeavy = scheduleIdleTask(() => {
-      for (const route of EXTRA_PREFETCH_ROUTES) {
-        prefetchRouteIfNeeded(route, pathname, router, warmedRef);
-      }
-    }, IDLE_PREFETCH_TIMEOUT_MS);
-
-    return () => {
-      cancelLight();
-      cancelHeavy();
-    };
-  }, [pathname, router]);
-
-  useEffect(() => {
-    if (shouldSkipIdlePrefetch() || isLightMarketingRoute(pathname)) {
-      return;
-    }
-    const language = getStoredLanguage();
-    const cancelWarm = scheduleIdleTask(() => {
-      if (pathname !== REELS_PATH) {
-        warmReelsPageClientCache(language);
-      }
-      if (pathname !== PRODUCTS_SHOP_PATH) {
-        warmShopProductsClientCaches(language, '', {
-          includeCategories: true,
-          suppressTimeoutLogging: true,
-        });
-      }
-    }, MARKETING_IDLE_WARM_DELAY_MS);
-    return cancelWarm;
-  }, [pathname]);
 
   useEffect(() => {
     const prefetchFromElement = (target: EventTarget | null) => {

@@ -18,7 +18,7 @@
   "crons": [
     {
       "path": "/api/v1/cron/reconcile-payments",
-      "schedule": "*/5 * * * *"
+      "schedule": "*/30 * * * *"
     }
   ],
   "rewrites": [
