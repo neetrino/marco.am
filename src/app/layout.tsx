@@ -1,6 +1,7 @@
 import React, { Suspense } from 'react';
 import type { Metadata } from 'next';
 import Script from 'next/script';
+import { Analytics } from '@vercel/analytics/next';
 import './globals.css';
 import { TidioDynamicLoader } from '../components/TidioDynamicLoader';
 import { ClientProviders } from '../components/ClientProviders';
@@ -81,6 +82,7 @@ export default async function RootLayout({
             </ClientProviders>
           </LanguagePreferenceProvider>
         </Suspense>
+        <Analytics />
       </body>
     </html>
   );
