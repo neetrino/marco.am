@@ -10,7 +10,9 @@ export async function POST(
   { params }: { params: Promise<{ number: string }> }
 ) {
   try {
-    const user = await authenticateToken(req);
+    // Needs the real `user.locale` to prefill the cart in the right language;
+    // the proxy fast path doesn't carry it, so force the DB lookup here.
+    const user = await authenticateToken(req, { needsProfile: true });
     if (!user) {
       return NextResponse.json(
         {

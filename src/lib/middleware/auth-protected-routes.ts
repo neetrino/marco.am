@@ -89,9 +89,16 @@ export async function guardAuthenticatedPage(
   return null;
 }
 
+export type ApiAuthResult = {
+  response: NextResponse | null;
+  userId: string | null;
+  /** DB-validated roles for the session; `null` when auth failed. */
+  roles: string[] | null;
+};
+
 export async function requireAuthenticatedApi(
   request: NextRequest
-): Promise<{ response: NextResponse | null; userId: string | null }> {
+): Promise<ApiAuthResult> {
   const resolved = await resolveValidatedSession(request);
   if (!resolved) {
     const { token, decoded } = await getAuthContext(request);
@@ -112,15 +119,20 @@ export async function requireAuthenticatedApi(
         { status: 401 }
       ),
       userId: null,
+      roles: null,
     };
   }
 
-  return { response: null, userId: resolved.session.userId };
+  return {
+    response: null,
+    userId: resolved.session.userId,
+    roles: resolved.session.roles,
+  };
 }
 
 export async function requireAdminApi(
   request: NextRequest
-): Promise<{ response: NextResponse | null; userId: string | null }> {
+): Promise<ApiAuthResult> {
   const resolved = await resolveValidatedSession(request);
   if (!resolved) {
     const { token, decoded } = await getAuthContext(request);
@@ -141,6 +153,7 @@ export async function requireAdminApi(
         { status: 401 }
       ),
       userId: null,
+      roles: null,
     };
   }
 
@@ -156,8 +169,13 @@ export async function requireAdminApi(
         { status: 403 }
       ),
       userId: null,
+      roles: null,
     };
   }
 
-  return { response: null, userId: resolved.session.userId };
+  return {
+    response: null,
+    userId: resolved.session.userId,
+    roles: resolved.session.roles,
+  };
 }

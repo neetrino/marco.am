@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCorsAllowedOrigins } from "@/lib/config/deployment-env";
+import { AUTH_ROLES_HEADER, AUTH_USER_ID_HEADER } from "@/lib/constants/auth-headers";
 import { checkSameOriginRequest } from "@/lib/middleware/same-origin-csrf";
 import {
   AUTH_RESEND_RATE_LIMIT_MAX,
@@ -133,6 +134,25 @@ function applyCorsHeaders(
   return response;
 }
 
+/**
+ * Forwards the proxy's DB-validated session to the route handler so
+ * `authenticateToken` can skip its own `user` table lookup. Safe because
+ * `sanitizedHeaders` already had any client-supplied auth headers stripped.
+ */
+function forwardValidatedSession(
+  sanitizedHeaders: Headers,
+  userId: string | null,
+  roles: string[] | null
+): Headers {
+  if (!userId || !roles) {
+    return sanitizedHeaders;
+  }
+  const nextHeaders = new Headers(sanitizedHeaders);
+  nextHeaders.set(AUTH_USER_ID_HEADER, userId);
+  nextHeaders.set(AUTH_ROLES_HEADER, roles.join(","));
+  return nextHeaders;
+}
+
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
@@ -147,8 +167,8 @@ export async function proxy(request: NextRequest) {
   if (pathname.startsWith("/api/")) {
     const requestId = getOrCreateRequestId(request.headers);
     const sanitizedHeaders = new Headers(request.headers);
-    sanitizedHeaders.delete("x-auth-user-id");
-    sanitizedHeaders.delete("x-auth-roles");
+    sanitizedHeaders.delete(AUTH_USER_ID_HEADER);
+    sanitizedHeaders.delete(AUTH_ROLES_HEADER);
     sanitizedHeaders.set(REQUEST_ID_HEADER, requestId);
     const corsHeaders = getCorsHeaders(request);
     if (request.method === "OPTIONS") {
@@ -165,11 +185,11 @@ export async function proxy(request: NextRequest) {
       if (authResult.response) {
         return applyCorsHeaders(authResult.response, corsHeaders);
       }
-      const nextHeaders = new Headers(sanitizedHeaders);
-      if (authResult.userId) {
-        nextHeaders.set("x-auth-user-id", authResult.userId);
-      }
-      forwardedHeaders = nextHeaders;
+      forwardedHeaders = forwardValidatedSession(
+        sanitizedHeaders,
+        authResult.userId,
+        authResult.roles
+      );
       if (pathname.includes("/upload-") && request.method === "POST") {
         const uploadRateLimitResponse = await checkAdminUploadRateLimit(request);
         if (uploadRateLimitResponse) {
@@ -181,6 +201,11 @@ export async function proxy(request: NextRequest) {
       if (authResult.response) {
         return applyCorsHeaders(authResult.response, corsHeaders);
       }
+      forwardedHeaders = forwardValidatedSession(
+        sanitizedHeaders,
+        authResult.userId,
+        authResult.roles
+      );
     } else if (
       (pathname === "/api/v1/auth/login" || pathname === "/api/v1/auth/register") &&
       request.method === "POST"

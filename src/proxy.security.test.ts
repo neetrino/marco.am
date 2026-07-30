@@ -129,6 +129,52 @@ describe("proxy auth and CSRF behavior", () => {
     expect(response.headers.get("location")).toBe("http://localhost:3000/");
   });
 
+  it("strips client-supplied x-auth-user-id/x-auth-roles before validating", async () => {
+    // No session mocked to succeed -> if the spoofed headers were trusted
+    // as-is, requireAuthenticatedApi would never even be consulted here;
+    // we assert the request still comes back 401 rather than being
+    // silently authenticated by the attacker-supplied headers.
+    const response = await proxy(
+      buildRequest("/api/v1/users/profile", {
+        headers: {
+          "x-auth-user-id": "attacker-controlled-id",
+          "x-auth-roles": "admin",
+        },
+      })
+    );
+    expect(response.status).toBe(401);
+  });
+
+  it("overwrites spoofed x-auth-* headers with the real validated session", async () => {
+    mockValidSession("user-42", ["customer"]);
+
+    const response = await proxy(
+      buildRequest("/api/v1/users/profile", {
+        headers: {
+          "x-auth-user-id": "attacker-controlled-id",
+          "x-auth-roles": "admin",
+        },
+      })
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("x-middleware-request-x-auth-user-id")).toBe("user-42");
+    expect(response.headers.get("x-middleware-request-x-auth-roles")).toBe("customer");
+  });
+
+  it("forwards proxy-validated userId/roles headers to users API route handlers", async () => {
+    // NextResponse.next({ request: { headers } }) encodes the forwarded
+    // request headers as `x-middleware-request-<name>` response headers,
+    // which is how Next.js reconstructs the request for the route handler.
+    mockValidSession("user-42", ["customer"]);
+
+    const response = await proxy(buildRequest("/api/v1/users/profile"));
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("x-middleware-request-x-auth-user-id")).toBe("user-42");
+    expect(response.headers.get("x-middleware-request-x-auth-roles")).toBe("customer");
+  });
+
   it("sets a strict CSP on storefront pages", async () => {
     const response = await proxy(buildRequest("/"));
     const csp = response.headers.get("Content-Security-Policy");
