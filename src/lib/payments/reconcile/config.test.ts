@@ -12,7 +12,7 @@ describe("resolvePaymentReconcileConfig", () => {
     vi.stubEnv("PAYMENT_RECONCILE_BATCH_SIZE", "");
 
     expect(resolvePaymentReconcileConfig()).toEqual({
-      intervalMinutes: 5,
+      intervalMinutes: 15,
       timeoutMinutes: 60,
       batchSize: 25,
     });
@@ -36,7 +36,7 @@ describe("resolvePaymentReconcileConfig", () => {
     vi.stubEnv("PAYMENT_RECONCILE_BATCH_SIZE", "999");
 
     expect(resolvePaymentReconcileConfig()).toEqual({
-      intervalMinutes: 5,
+      intervalMinutes: 15,
       timeoutMinutes: 60,
       batchSize: 25,
     });

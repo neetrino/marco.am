@@ -3,7 +3,7 @@
  * Cron schedule itself lives in vercel.json and should match intervalMinutes.
  */
 
-const DEFAULT_INTERVAL_MINUTES = 5;
+const DEFAULT_INTERVAL_MINUTES = 15;
 const DEFAULT_TIMEOUT_MINUTES = 60;
 const DEFAULT_BATCH_SIZE = 25;
 

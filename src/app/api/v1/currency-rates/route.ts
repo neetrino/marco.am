@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { CURRENCY_RATES_CACHE_KEY } from "@/lib/cache/public-cache-keys";
 import { adminService } from "@/lib/services/admin.service";
 import { getCachedJson } from "@/lib/services/read-through-json-cache";
+import { logger } from "@/lib/utils/logger";
 
 const CURRENCY_RATES_TTL_SEC = 300;
 
@@ -19,7 +20,7 @@ export async function GET() {
     });
     return NextResponse.json(rates);
   } catch (error: unknown) {
-    console.error("❌ [CURRENCY RATES] Error:", error);
+    logger.error("Currency rates fetch failed", { error });
     return NextResponse.json({
       USD: 1,
       AMD: 400,
