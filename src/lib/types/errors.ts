@@ -59,7 +59,8 @@ function isApiError(error: unknown): error is ApiError {
 }
 
 function shouldSanitizeClientDetail(status: number | undefined): boolean {
-  return getDeploymentTier() === "production" && (status ?? 500) >= 500;
+  // Keep 502/503 provider messages visible; only hide opaque internal 500s.
+  return getDeploymentTier() === "production" && (status ?? 500) === 500;
 }
 
 /**

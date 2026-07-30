@@ -15,7 +15,7 @@ import {
 } from './footer-social.constants';
 
 const FOOTER_SOCIAL_LINK_BASE =
-  'inline-flex shrink-0 items-center justify-center rounded-full transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marco-black dark:focus-visible:outline-white';
+  'inline-flex shrink-0 items-center justify-center rounded-full transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--marco-slate)] dark:focus-visible:outline-white';
 
 type FooterSocialLinksDensity = 'default' | 'compact';
 

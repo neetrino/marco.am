@@ -12,9 +12,10 @@ import { beginAdminDataFetch } from '@/lib/admin/admin-fetch-helpers';
 import {
   readAdminBrandsCache,
   fetchAdminBrands,
+  writeAdminBrandsCache,
 } from '@/lib/admin/admin-reference-data-cache';
 import { ADMIN_IMAGE_ACCEPT } from '@/lib/constants/admin-image-upload';
-import { processAdminImageFile } from '@/lib/utils/process-admin-image-file';
+import { processAdminImageFile, validateAdminImageFile } from '@/lib/utils/process-admin-image-file';
 import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '@/lib/utils/image-utils';
 import { showPopupConfirm } from '@/components/popup-service';
 import { showToast } from '../../../components/Toast';
@@ -26,7 +27,18 @@ interface Brand {
   logoUrl: string | null;
 }
 
+type BrandApiPayload = { data: Brand };
+
 const ITEMS_PER_PAGE = 20;
+
+function normalizeBrandRow(brand: Brand & { logoUrl?: string | null }): Brand {
+  return {
+    id: brand.id,
+    name: brand.name,
+    slug: brand.slug,
+    logoUrl: brand.logoUrl ?? null,
+  };
+}
 
 export default function BrandsPage() {
   const { t } = useTranslation();
@@ -42,12 +54,13 @@ export default function BrandsPage() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingBrand, setEditingBrand] = useState<Brand | null>(null);
   const [formData, setFormData] = useState({ name: '', logoUrl: '' });
-  const [saving, setSaving] = useState(false);
   const [deletingBulk, setDeletingBulk] = useState(false);
   const [selectedBrandIds, setSelectedBrandIds] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [brandSearch, setBrandSearch] = useState('');
-  const [logoUploading, setLogoUploading] = useState(false);
+  const [localLogoPreviewUrl, setLocalLogoPreviewUrl] = useState<string | null>(null);
+  const logoObjectUrlRef = useRef<string | null>(null);
+  const pendingLogoFileRef = useRef<File | null>(null);
 
   const filteredBrands = useMemo((): Brand[] => {
     const raw = brandSearch.trim().toLowerCase();
@@ -63,6 +76,37 @@ export default function BrandsPage() {
     });
   }, [brands, brandSearch]);
 
+  const applyBrandsList = useCallback((nextBrands: Brand[]) => {
+    writeAdminBrandsCache(nextBrands);
+    setBrands(nextBrands);
+    hadCacheRef.current = true;
+  }, []);
+
+  const upsertBrandInList = useCallback(
+    (brand: Brand, mode: 'create' | 'update') => {
+      setBrands((previous) => {
+        const next =
+          mode === 'create'
+            ? [brand, ...previous]
+            : previous.map((item) => (item.id === brand.id ? brand : item));
+        writeAdminBrandsCache(next);
+        hadCacheRef.current = true;
+        return next;
+      });
+    },
+    [],
+  );
+
+  const removeBrandsFromList = useCallback((brandIds: string[]) => {
+    const idsToRemove = new Set(brandIds);
+    setBrands((previous) => {
+      const next = previous.filter((brand) => !idsToRemove.has(brand.id));
+      writeAdminBrandsCache(next);
+      hadCacheRef.current = true;
+      return next;
+    });
+  }, []);
+
   const fetchBrands = useCallback(async (options?: { force?: boolean }) => {
     const cached = readAdminBrandsCache<Brand>();
     if (!options?.force && cached !== null) {
@@ -75,15 +119,7 @@ export default function BrandsPage() {
     try {
       beginAdminDataFetch(hadCacheRef.current, setLoading);
       const rows = await fetchAdminBrands<Brand & { logoUrl?: string | null }>(options);
-      setBrands(
-        rows.map((b) => ({
-          id: b.id,
-          name: b.name,
-          slug: b.slug,
-          logoUrl: b.logoUrl ?? null,
-        })),
-      );
-      hadCacheRef.current = true;
+      applyBrandsList(rows.map(normalizeBrandRow));
       logger.devLog('[ADMIN] Brands loaded:', rows.length);
     } catch (err: unknown) {
       logger.error('Error fetching brands', { error: err });
@@ -94,7 +130,7 @@ export default function BrandsPage() {
     } finally {
       setLoading(false);
     }
-  }, [t]);
+  }, [applyBrandsList, t]);
 
   useEffect(() => {
     fetchBrands();
@@ -124,22 +160,71 @@ export default function BrandsPage() {
     [brands, selectedBrandIds]
   );
 
+  const clearLocalLogoPreview = useCallback(() => {
+    if (logoObjectUrlRef.current) {
+      URL.revokeObjectURL(logoObjectUrlRef.current);
+      logoObjectUrlRef.current = null;
+    }
+    setLocalLogoPreviewUrl(null);
+  }, []);
+
+  const showLocalLogoPreview = useCallback((file: File) => {
+    const objectUrl = URL.createObjectURL(file);
+    if (logoObjectUrlRef.current) {
+      URL.revokeObjectURL(logoObjectUrlRef.current);
+    }
+    logoObjectUrlRef.current = objectUrl;
+    setLocalLogoPreviewUrl(objectUrl);
+  }, []);
+
   const safeFormLogoPreviewUrl = useMemo(
-    () => toSafeImgAttributeSrc(formData.logoUrl.trim()),
-    [formData.logoUrl],
+    () => localLogoPreviewUrl ?? toSafeImgAttributeSrc(formData.logoUrl.trim()),
+    [formData.logoUrl, localLogoPreviewUrl],
   );
 
+  useEffect(() => () => clearLocalLogoPreview(), [clearLocalLogoPreview]);
+
   const resetForm = () => {
+    pendingLogoFileRef.current = null;
+    clearLocalLogoPreview();
     setFormData({ name: '', logoUrl: '' });
   };
 
-  const handleLogoFile = async (event: ChangeEvent<HTMLInputElement>) => {
+  const uploadPendingLogo = async (
+    brandName: string,
+    options: {
+      slug?: string;
+      brandId?: string;
+      fallbackLogoUrl?: string;
+      file?: File | null;
+    },
+  ): Promise<string> => {
+    const pendingFile = options.file ?? pendingLogoFileRef.current;
+    if (!pendingFile) {
+      return options.fallbackLogoUrl?.trim() ?? '';
+    }
+
+    const image = await processAdminImageFile(pendingFile, 'logo');
+    const result = await apiClient.post<{ url: string }>('/api/v1/supersudo/brands/upload-logo', {
+      image,
+      name: brandName,
+      slug: options.slug,
+      brandId: options.brandId,
+    });
+    pendingLogoFileRef.current = null;
+    return result.url.trim();
+  };
+
+  const handleLogoFile = (event: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
-    const imageFile = files.find((f) => f.type === 'image/webp' || f.name.toLowerCase().endsWith('.webp'));
+    const imageFile = files[0];
     if (!imageFile) {
-      if (files.length > 0) {
-        showToast(t('admin.brands.logoInvalidFile'), 'warning');
-      }
+      return;
+    }
+
+    const validationError = validateAdminImageFile(imageFile, 'logo');
+    if (validationError) {
+      showToast(validationError || t('admin.brands.logoInvalidFile'), 'warning');
       if (event.target) {
         event.target.value = '';
       }
@@ -155,24 +240,12 @@ export default function BrandsPage() {
       return;
     }
 
-    try {
-      setLogoUploading(true);
-      const image = await processAdminImageFile(imageFile, 'logo');
-      const result = await apiClient.post<{ url: string }>('/api/v1/supersudo/brands/upload-logo', {
-        image,
-        name: brandName,
-        slug: editingBrand?.slug,
-        brandId: editingBrand?.id,
-      });
-      setFormData((prev) => ({ ...prev, logoUrl: result.url }));
-    } catch (err: unknown) {
-      logger.error('Brand logo upload failed', { error: err });
-      showToast(getApiOrErrorMessage(err, t('admin.brands.errorSaving')), 'error');
-    } finally {
-      setLogoUploading(false);
-      if (event.target) {
-        event.target.value = '';
-      }
+    pendingLogoFileRef.current = imageFile;
+    showLocalLogoPreview(imageFile);
+    setFormData((prev) => ({ ...prev, logoUrl: '' }));
+
+    if (event.target) {
+      event.target.value = '';
     }
   };
 
@@ -211,7 +284,7 @@ export default function BrandsPage() {
     try {
       logger.devLog(`[ADMIN] Deleting brand: ${brandName} (${brandId})`);
       await apiClient.delete(`/api/v1/supersudo/brands/${brandId}`);
-      await fetchBrands({ force: true });
+      removeBrandsFromList([brandId]);
       showToast(t('admin.brands.deletedSuccess'), 'success');
     } catch (err: unknown) {
       const status = getErrorHttpStatus(err);
@@ -244,13 +317,21 @@ export default function BrandsPage() {
       const results = await Promise.allSettled(
         selectedBrands.map((brand) => apiClient.delete(`/api/v1/supersudo/brands/${brand.id}`))
       );
+      const deletedBrandIds = selectedBrands
+        .filter((_, index) => results[index]?.status === 'fulfilled')
+        .map((brand) => brand.id);
       const failedCount = results.filter((result) => result.status === 'rejected').length;
 
-      await fetchBrands({ force: true });
+      if (deletedBrandIds.length > 0) {
+        removeBrandsFromList(deletedBrandIds);
+      }
       if (failedCount === 0) {
         setSelectedBrandIds([]);
         showToast(t('admin.brands.deletedSuccess'), 'success');
       } else {
+        setSelectedBrandIds((previousIds) =>
+          previousIds.filter((brandId) => !deletedBrandIds.includes(brandId)),
+        );
         showToast(t('admin.brands.errorDeleting') + `: ${failedCount} failed`, 'error');
       }
     } finally {
@@ -265,6 +346,7 @@ export default function BrandsPage() {
   };
 
   const handleOpenEditModal = (brand: Brand) => {
+    clearLocalLogoPreview();
     setEditingBrand(brand);
     setFormData({ name: brand.name, logoUrl: brand.logoUrl ?? '' });
     setShowEditModal(true);
@@ -281,54 +363,120 @@ export default function BrandsPage() {
     resetForm();
   };
 
-  const handleCreateBrand = async () => {
-    if (!formData.name.trim()) {
+  const handleCreateBrand = () => {
+    const name = formData.name.trim();
+    if (!name) {
       showToast(t('admin.brands.nameRequired'), 'warning');
       return;
     }
 
-    setSaving(true);
-    try {
-      const trimmedLogo = formData.logoUrl.trim();
-      await apiClient.post('/api/v1/supersudo/brands', {
-        name: formData.name.trim(),
-        ...(trimmedLogo ? { logoUrl: trimmedLogo } : {}),
-      });
-      await fetchBrands({ force: true });
-      handleCloseAddModal();
-      showToast(t('admin.brands.createdSuccess'), 'success');
-    } catch (err: unknown) {
-      logger.error('Error creating brand', { error: err });
-      const errorMessage = getApiOrErrorMessage(err, 'Unknown error occurred');
-      showToast(t('admin.brands.errorSaving') + `: ${errorMessage}`, 'error');
-    } finally {
-      setSaving(false);
-    }
+    const fallbackLogoUrl = formData.logoUrl.trim();
+    const pendingLogoFile = pendingLogoFileRef.current;
+    const optimisticId = `pending-${Date.now()}`;
+    upsertBrandInList(
+      {
+        id: optimisticId,
+        name,
+        slug: name.toLowerCase().replace(/\s+/g, '-'),
+        logoUrl: fallbackLogoUrl.length > 0 ? fallbackLogoUrl : null,
+      },
+      'create',
+    );
+    handleCloseAddModal();
+
+    void (async () => {
+      try {
+        const trimmedLogo = await uploadPendingLogo(name, {
+          fallbackLogoUrl,
+          file: pendingLogoFile,
+        });
+        if (trimmedLogo) {
+          upsertBrandInList(
+            {
+              id: optimisticId,
+              name,
+              slug: name.toLowerCase().replace(/\s+/g, '-'),
+              logoUrl: trimmedLogo,
+            },
+            'update',
+          );
+        }
+        await apiClient.post<BrandApiPayload>('/api/v1/supersudo/brands', {
+          name,
+          ...(trimmedLogo ? { logoUrl: trimmedLogo } : {}),
+        });
+        await fetchBrands({ force: true });
+        showToast(t('admin.brands.createdSuccess'), 'success');
+      } catch (err: unknown) {
+        logger.error('Error creating brand', { error: err });
+        removeBrandsFromList([optimisticId]);
+        const errorMessage = getApiOrErrorMessage(err, 'Unknown error occurred');
+        showToast(t('admin.brands.errorSaving') + `: ${errorMessage}`, 'error');
+      }
+    })();
   };
 
-  const handleUpdateBrand = async () => {
+  const handleUpdateBrand = () => {
     if (!editingBrand || !formData.name.trim()) {
       showToast(t('admin.brands.nameRequired'), 'warning');
       return;
     }
 
-    setSaving(true);
-    try {
-      const trimmedLogo = formData.logoUrl.trim();
-      await apiClient.put(`/api/v1/supersudo/brands/${editingBrand.id}`, {
-        name: formData.name.trim(),
-        logoUrl: trimmedLogo.length > 0 ? trimmedLogo : null,
-      });
-      await fetchBrands({ force: true });
-      handleCloseEditModal();
-      showToast(t('admin.brands.updatedSuccess'), 'success');
-    } catch (err: unknown) {
-      logger.error('Error updating brand', { error: err });
-      const errorMessage = getApiOrErrorMessage(err, 'Unknown error occurred');
-      showToast(t('admin.brands.errorSaving') + `: ${errorMessage}`, 'error');
-    } finally {
-      setSaving(false);
-    }
+    const name = formData.name.trim();
+    const previousBrand = editingBrand;
+    const fallbackLogoUrl = formData.logoUrl.trim();
+    const pendingLogoFile = pendingLogoFileRef.current;
+    upsertBrandInList(
+      {
+        id: previousBrand.id,
+        name,
+        slug: previousBrand.slug,
+        logoUrl:
+          pendingLogoFile !== null
+            ? previousBrand.logoUrl
+            : fallbackLogoUrl.length > 0
+              ? fallbackLogoUrl
+              : null,
+      },
+      'update',
+    );
+    handleCloseEditModal();
+
+    void (async () => {
+      try {
+        const trimmedLogo = await uploadPendingLogo(name, {
+          slug: previousBrand.slug,
+          brandId: previousBrand.id,
+          fallbackLogoUrl,
+          file: pendingLogoFile,
+        });
+        if (trimmedLogo) {
+          upsertBrandInList(
+            {
+              id: previousBrand.id,
+              name,
+              slug: previousBrand.slug,
+              logoUrl: trimmedLogo,
+            },
+            'update',
+          );
+        }
+        await apiClient.put<BrandApiPayload>(
+          `/api/v1/supersudo/brands/${previousBrand.id}`,
+          {
+            name,
+            logoUrl: trimmedLogo.length > 0 ? trimmedLogo : null,
+          },
+        );
+        await fetchBrands({ force: true });
+        showToast(t('admin.brands.updatedSuccess'), 'success');
+      } catch (err: unknown) {
+        logger.error('Error updating brand', { error: err });
+        upsertBrandInList(previousBrand, 'update');
+        const errorMessage = getApiOrErrorMessage(err, 'Unknown error occurred');
+        showToast(t('admin.brands.errorSaving') + `: ${errorMessage}`, 'error');
+      }
+    })();
   };
 
   const addBrandHeaderAction = (
@@ -502,6 +650,7 @@ export default function BrandsPage() {
                           <td className="px-2 py-2 align-middle">
                             {safeBrandLogoUrl ? (
                               <img
+                                key={safeBrandLogoUrl}
                                 src={toDomSafeImgSrcString(safeBrandLogoUrl)}
                                 alt=""
                                 className="h-12 w-12 rounded-lg border border-slate-200 bg-white object-contain p-0.5"
@@ -586,62 +735,56 @@ export default function BrandsPage() {
                 />
               </div>
               <div>
-                <label htmlFor="add-brand-logo-url" className="mb-1 block text-sm font-medium text-gray-700">
-                  {t('admin.brands.logoUrlLabel')}
+                <label className="mb-1 block text-sm font-medium text-gray-700">
+                  {t('admin.brands.logoLabel')}
                 </label>
-                <input
-                  id="add-brand-logo-url"
-                  type="text"
-                  value={formData.logoUrl}
-                  onChange={(event) => setFormData((prev) => ({ ...prev, logoUrl: event.target.value }))}
-                  className="admin-field mb-2"
-                  placeholder={t('admin.brands.logoUrlPlaceholder')}
-                  autoComplete="off"
-                />
-                <div className="flex flex-wrap items-center gap-2">
-                  <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">
+                <div className="space-y-2">
+                  <label className="group flex min-h-36 w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 p-4 text-center transition-colors hover:border-amber-400 hover:bg-amber-50/50">
                     <input
                       type="file"
                       accept={ADMIN_IMAGE_ACCEPT}
                       className="sr-only"
-                      disabled={logoUploading || saving}
                       onChange={handleLogoFile}
                     />
-                    {logoUploading ? t('admin.brands.logoUploading') : t('admin.brands.logoUpload')}
+                    {safeFormLogoPreviewUrl ? (
+                      <img
+                        src={toDomSafeImgSrcString(safeFormLogoPreviewUrl)}
+                        alt=""
+                        className="max-h-24 max-w-full object-contain"
+                      />
+                    ) : (
+                      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-2xl font-semibold text-slate-400 ring-1 ring-slate-200">
+                        +
+                      </span>
+                    )}
+                    <span className="text-sm font-semibold text-slate-800 group-hover:text-amber-900">
+                      {t('admin.brands.logoUpload')}
+                    </span>
                   </label>
-                  {formData.logoUrl.trim() !== '' ? (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      disabled={saving}
-                      onClick={() => setFormData((prev) => ({ ...prev, logoUrl: '' }))}
-                    >
-                      {t('admin.brands.logoRemove')}
-                    </Button>
+                  {safeFormLogoPreviewUrl ? (
+                    <div className="flex justify-end">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          pendingLogoFileRef.current = null;
+                          clearLocalLogoPreview();
+                          setFormData((prev) => ({ ...prev, logoUrl: '' }));
+                        }}
+                      >
+                        {t('admin.brands.logoRemove')}
+                      </Button>
+                    </div>
                   ) : null}
                 </div>
-                {safeFormLogoPreviewUrl ? (
-                  <div className="mt-3 flex justify-center rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    <img
-                      src={toDomSafeImgSrcString(safeFormLogoPreviewUrl)}
-                      alt=""
-                      className="max-h-28 max-w-full object-contain"
-                    />
-                  </div>
-                ) : null}
               </div>
               <div className="flex items-center justify-end gap-2 pt-3">
-                <Button type="button" variant="outline" onClick={handleCloseAddModal} disabled={saving}>
+                <Button type="button" variant="outline" onClick={handleCloseAddModal}>
                   {t('admin.brands.cancel')}
                 </Button>
-                <Button
-                  type="button"
-                  variant="primary"
-                  disabled={saving || logoUploading}
-                  onClick={handleCreateBrand}
-                >
-                  {saving ? t('admin.brands.saving') : t('admin.brands.create')}
+                <Button type="button" variant="primary" onClick={handleCreateBrand}>
+                  {t('admin.brands.create')}
                 </Button>
               </div>
             </div>
@@ -675,62 +818,56 @@ export default function BrandsPage() {
                 />
               </div>
               <div>
-                <label htmlFor="edit-brand-logo-url" className="mb-1 block text-sm font-medium text-gray-700">
-                  {t('admin.brands.logoUrlLabel')}
+                <label className="mb-1 block text-sm font-medium text-gray-700">
+                  {t('admin.brands.logoLabel')}
                 </label>
-                <input
-                  id="edit-brand-logo-url"
-                  type="text"
-                  value={formData.logoUrl}
-                  onChange={(event) => setFormData((prev) => ({ ...prev, logoUrl: event.target.value }))}
-                  className="admin-field mb-2"
-                  placeholder={t('admin.brands.logoUrlPlaceholder')}
-                  autoComplete="off"
-                />
-                <div className="flex flex-wrap items-center gap-2">
-                  <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100">
+                <div className="space-y-2">
+                  <label className="group flex min-h-36 w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 p-4 text-center transition-colors hover:border-amber-400 hover:bg-amber-50/50">
                     <input
                       type="file"
                       accept={ADMIN_IMAGE_ACCEPT}
                       className="sr-only"
-                      disabled={logoUploading || saving}
                       onChange={handleLogoFile}
                     />
-                    {logoUploading ? t('admin.brands.logoUploading') : t('admin.brands.logoUpload')}
+                    {safeFormLogoPreviewUrl ? (
+                      <img
+                        src={toDomSafeImgSrcString(safeFormLogoPreviewUrl)}
+                        alt=""
+                        className="max-h-24 max-w-full object-contain"
+                      />
+                    ) : (
+                      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-2xl font-semibold text-slate-400 ring-1 ring-slate-200">
+                        +
+                      </span>
+                    )}
+                    <span className="text-sm font-semibold text-slate-800 group-hover:text-amber-900">
+                      {t('admin.brands.logoUpload')}
+                    </span>
                   </label>
-                  {formData.logoUrl.trim() !== '' ? (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      disabled={saving}
-                      onClick={() => setFormData((prev) => ({ ...prev, logoUrl: '' }))}
-                    >
-                      {t('admin.brands.logoRemove')}
-                    </Button>
+                  {safeFormLogoPreviewUrl ? (
+                    <div className="flex justify-end">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          pendingLogoFileRef.current = null;
+                          clearLocalLogoPreview();
+                          setFormData((prev) => ({ ...prev, logoUrl: '' }));
+                        }}
+                      >
+                        {t('admin.brands.logoRemove')}
+                      </Button>
+                    </div>
                   ) : null}
                 </div>
-                {safeFormLogoPreviewUrl ? (
-                  <div className="mt-3 flex justify-center rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    <img
-                      src={toDomSafeImgSrcString(safeFormLogoPreviewUrl)}
-                      alt=""
-                      className="max-h-28 max-w-full object-contain"
-                    />
-                  </div>
-                ) : null}
               </div>
               <div className="flex items-center justify-end gap-2 pt-3">
-                <Button type="button" variant="outline" onClick={handleCloseEditModal} disabled={saving}>
+                <Button type="button" variant="outline" onClick={handleCloseEditModal}>
                   {t('admin.brands.cancel')}
                 </Button>
-                <Button
-                  type="button"
-                  variant="primary"
-                  disabled={saving || logoUploading}
-                  onClick={handleUpdateBrand}
-                >
-                  {saving ? t('admin.brands.saving') : t('admin.brands.update')}
+                <Button type="button" variant="primary" onClick={handleUpdateBrand}>
+                  {t('admin.brands.update')}
                 </Button>
               </div>
             </div>

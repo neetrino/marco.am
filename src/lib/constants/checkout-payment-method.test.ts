@@ -15,13 +15,16 @@ describe("normalizeCheckoutPaymentMethod", () => {
     expect(normalizeCheckoutPaymentMethod("cod")).toBe("cash");
   });
 
-  it("returns null for removed or unknown methods", () => {
-    expect(normalizeCheckoutPaymentMethod("arca")).toBeNull();
-    expect(normalizeCheckoutPaymentMethod("idram")).toBeNull();
-    expect(normalizeCheckoutPaymentMethod("card")).toBeNull();
-    expect(normalizeCheckoutPaymentMethod("visa")).toBeNull();
-    expect(normalizeCheckoutPaymentMethod("mastercard")).toBeNull();
+  it("normalizes idram and arca", () => {
+    expect(normalizeCheckoutPaymentMethod("idram")).toBe("idram");
+    expect(normalizeCheckoutPaymentMethod("arca")).toBe("arca");
+    expect(normalizeCheckoutPaymentMethod("card")).toBe("arca");
+    expect(normalizeCheckoutPaymentMethod("idbank")).toBe("arca");
+  });
+
+  it("returns null for unknown methods", () => {
     expect(normalizeCheckoutPaymentMethod("bitcoin")).toBeNull();
+    expect(normalizeCheckoutPaymentMethod("wire")).toBeNull();
   });
 });
 
@@ -39,6 +42,10 @@ describe("resolveCheckoutPaymentMethod", () => {
 
   it("throws for unknown string", () => {
     expect(() => resolveCheckoutPaymentMethod("wire")).toThrow();
-    expect(() => resolveCheckoutPaymentMethod("arca")).toThrow();
+  });
+
+  it("accepts online methods", () => {
+    expect(resolveCheckoutPaymentMethod("idram")).toBe("idram");
+    expect(resolveCheckoutPaymentMethod("arca")).toBe("arca");
   });
 });

@@ -52,6 +52,7 @@ export type AdminDashboardTopProduct = {
   sku: string;
   totalQuantity: number;
   totalRevenue: number;
+  currency?: string;
   orderCount: number;
   image?: string | null;
 };

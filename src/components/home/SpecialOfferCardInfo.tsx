@@ -3,6 +3,7 @@
 import { ProductColors } from '../ProductCard/ProductColors';
 import { ProductPdpPrefetchLink } from '../ProductPdpPrefetchLink';
 import type { ProductPdpNavigationSeed } from '@/lib/product-pdp/pdp-navigation-seed';
+import { useTranslation } from '@/lib/i18n-client';
 
 import {
   SPECIAL_OFFERS_COLOR_SWATCH_GAP_PX,
@@ -25,6 +26,8 @@ export function SpecialOfferCardInfo({
   detailsPending = false,
   navigationSeed,
 }: SpecialOfferCardInfoProps) {
+  const { t } = useTranslation();
+
   if (detailsPending) {
     return (
       <div
@@ -57,6 +60,11 @@ export function SpecialOfferCardInfo({
             {product.title}
           </h3>
         </ProductPdpPrefetchLink>
+        {product.sku ? (
+          <p className="mt-0.5 truncate text-left text-[11px] leading-4 text-gray-500" title={product.sku}>
+            {t('common.messages.sku')}: {product.sku}
+          </p>
+        ) : null}
         {product.colors && product.colors.length > 1 ? (
           <div className="mt-1">
             <ProductColors

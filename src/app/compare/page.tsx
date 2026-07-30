@@ -22,6 +22,7 @@ import {
   fetchComparePayload,
   removeCompareItemClient,
 } from '@/lib/compare/compare-client';
+import { MARCO_SLATE_PILL_BUTTON_CLASS } from '@/lib/constants/marco-brand-colors';
 
 type CompareSectionState = {
   categoryId: string;
@@ -253,7 +254,7 @@ export default function ComparePage() {
               <Button
                 variant="primary"
                 size="lg"
-                className="inline-flex !h-12 items-center justify-center whitespace-nowrap rounded-full !bg-black !px-10 !text-white leading-none !hover:bg-black/90"
+                className={`${MARCO_SLATE_PILL_BUTTON_CLASS} inline-flex !h-12 items-center justify-center whitespace-nowrap rounded-full !px-10 leading-none transition-[filter]`}
               >
                 {t('common.compare.browseProducts')}
               </Button>

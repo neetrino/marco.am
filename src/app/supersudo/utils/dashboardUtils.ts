@@ -2,15 +2,22 @@
  * Dashboard utility functions
  */
 
-/**
- * Formats currency amount
- */
-export function formatCurrency(amount: number, currency: string = 'USD'): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: currency,
-    minimumFractionDigits: 0,
-  }).format(amount);
+/** Dashboard money is order/checkout currency (AMD), not USD. */
+export function formatCurrency(amount: number, currency: string = 'AMD'): string {
+  const code = currency.trim() || 'AMD';
+  try {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: code,
+      minimumFractionDigits: 0,
+    }).format(amount);
+  } catch {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'AMD',
+      minimumFractionDigits: 0,
+    }).format(amount);
+  }
 }
 
 /**

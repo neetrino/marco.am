@@ -8,7 +8,6 @@ import type { LanguageCode } from '../lib/language';
 import { Header } from './Header';
 import { MobileBottomNav } from './MobileBottomNav';
 import { GlobalRoutePrefetch } from './navigation/GlobalRoutePrefetch';
-import { RouteNavigationIndicator } from './navigation/RouteNavigationIndicator';
 
 interface AppChromeProps {
   children: ReactNode;
@@ -57,7 +56,6 @@ export function AppChrome({ children, initialLanguage }: AppChromeProps) {
       <>
         <main>{children}</main>
         <GlobalRoutePrefetch />
-        <RouteNavigationIndicator />
       </>
     );
   }
@@ -76,7 +74,6 @@ export function AppChrome({ children, initialLanguage }: AppChromeProps) {
       </main>
       {footerNode}
       <GlobalRoutePrefetch />
-      <RouteNavigationIndicator />
       {showMobileBottomNav && <MobileBottomNav />}
     </>
   );

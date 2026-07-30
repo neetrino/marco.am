@@ -23,6 +23,7 @@ export function formatProductForList(product: {
   variants?: Array<{
     price: number;
     stock: number;
+    sku?: string | null;
     imageUrl?: string | null;
     discountType?: DiscountKind | null;
     discountValue?: number | null;
@@ -68,6 +69,8 @@ export function formatProductForList(product: {
   });
   const categories = sortedCategoryIds.map((id) => ({ id, title: '' }));
 
+  const sku = variant?.sku?.trim() || null;
+
   return {
     id: product.id,
     slug: translation?.slug || "",
@@ -77,6 +80,7 @@ export function formatProductForList(product: {
     featured: product.featured || false,
     price: resolvedPrice.currentPrice,
     stock: variant?.stock || 0,
+    sku,
     discountPercent: resolvedPrice.discountPercent ?? 0,
     discountExpiresAt:
       variant?.discountExpiresAt?.toISOString() ??

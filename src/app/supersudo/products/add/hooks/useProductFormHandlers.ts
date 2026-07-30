@@ -433,6 +433,7 @@ export function useProductFormHandlers({
       const primaryVariant = finalVariants[0] as
         | {
             price?: unknown;
+            sku?: unknown;
             discountType?: unknown;
             discountValue?: unknown;
             discountExpiresAt?: unknown;
@@ -459,6 +460,9 @@ export function useProductFormHandlers({
         (primaryVariant?.discountExpiresAt as string | null | undefined) ?? null;
       const optimisticImage =
         mainImage ?? finalMedia[0] ?? (currentFormData.mainProductImage || currentFormData.imageUrls[0] || null);
+      const optimisticSkuRaw =
+        typeof primaryVariant?.sku === 'string' ? primaryVariant.sku.trim() : '';
+      const optimisticSku = optimisticSkuRaw.length > 0 ? optimisticSkuRaw : null;
 
       const optimisticRow = {
         id: isEditMode && productId ? productId : `temp-${Date.now()}`,
@@ -466,6 +470,7 @@ export function useProductFormHandlers({
         slug: currentFormData.slug,
         price: optimisticPrice,
         stock: optimisticStock,
+        sku: optimisticSku,
         originalPrice: optimisticOriginalPrice,
         discountPercent: optimisticDiscountPercent,
         discountExpiresAt: optimisticDiscountExpiresAt,

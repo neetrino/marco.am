@@ -8,6 +8,12 @@ import { ADMIN_ORDER_STATUS_I18N_KEY } from '../supersudo/orders/utils/order-sta
 import { formatPriceInCurrency, convertPrice, type CurrencyCode } from '../../lib/currency';
 import { getStatusColor, getPaymentStatusColor, getFulfillmentStatusColor } from './utils';
 import type { OrderListItem } from './types';
+import {
+  PROFILE_OUTLINE_COMPACT_BUTTON_CLASS,
+  PROFILE_PRIMARY_COMPACT_BUTTON_CLASS,
+  PROFILE_FILTER_INACTIVE_CLASS,
+  PROFILE_PAGINATION_BUTTON_CLASS,
+} from './profile-button.classes';
 
 interface ProfileOrdersProps {
   orders: OrderListItem[];
@@ -51,7 +57,7 @@ export function ProfileOrders({
         className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
           ordersStatusFilter === ''
             ? 'bg-marco-yellow text-[#383838] dark:text-[#383838] border-marco-yellow'
-            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+            : PROFILE_FILTER_INACTIVE_CLASS
         }`}
       >
         {t('admin.orders.allStatuses')}
@@ -64,7 +70,7 @@ export function ProfileOrders({
           className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
             ordersStatusFilter === value
               ? 'bg-marco-yellow text-[#383838] dark:text-[#383838] border-marco-yellow'
-              : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+              : PROFILE_FILTER_INACTIVE_CLASS
           }`}
         >
           {t(ADMIN_ORDER_STATUS_I18N_KEY[value])}
@@ -104,7 +110,7 @@ export function ProfileOrders({
             <Button
               type="button"
               variant="outline"
-              className="mr-2 !h-10 !rounded-full !border !border-gray-300 !bg-white !px-5 !text-sm !font-medium !text-gray-700 transition-colors hover:!bg-gray-50 dark:!border-[#ffffff] dark:!bg-[#ffffff] dark:!text-[#383838] dark:hover:!bg-[#f2f2f2]"
+              className={`mr-2 ${PROFILE_OUTLINE_COMPACT_BUTTON_CLASS}`}
               onClick={() => onOrdersStatusFilterChange('')}
             >
               {t('profile.orders.showAllOrders')}
@@ -112,7 +118,7 @@ export function ProfileOrders({
           ) : null}
           <Link
             href="/products"
-            className="inline-flex h-10 items-center justify-center rounded-full bg-marco-black px-5 text-sm font-medium text-white transition-opacity hover:opacity-90"
+            className={`inline-flex items-center justify-center ${PROFILE_PRIMARY_COMPACT_BUTTON_CLASS}`}
           >
             {t('profile.dashboard.startShopping')}
           </Link>
@@ -196,7 +202,7 @@ export function ProfileOrders({
               <Button
                 variant="outline"
                 size="sm"
-                className="rounded-full px-4"
+                className={PROFILE_PAGINATION_BUTTON_CLASS}
                 onClick={() => setOrdersPage(prev => Math.max(1, prev - 1))}
                 disabled={ordersPage === 1 || ordersLoading}
               >
@@ -205,7 +211,7 @@ export function ProfileOrders({
               <Button
                 variant="outline"
                 size="sm"
-                className="rounded-full px-4"
+                className={PROFILE_PAGINATION_BUTTON_CLASS}
                 onClick={() => setOrdersPage(prev => Math.min(ordersMeta.totalPages, prev + 1))}
                 disabled={ordersPage === ordersMeta.totalPages || ordersLoading}
               >

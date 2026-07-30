@@ -93,7 +93,7 @@ export function HomeSecondaryBannerCta({ language }: HomeSecondaryBannerCtaProps
       href={HOME_SECONDARY_BANNER_CTA_HREF}
       ariaLabel={ariaLabel}
       slackStopPad={`${HOME_SECONDARY_BANNER_CTA_SLACK_HOVER_END_INSET_INLINE_START_PX}px`}
-      className={`${montserratSlateCta.className} pointer-events-auto bg-marco-black font-bold text-white transition hover:-translate-y-0.5 active:translate-y-px focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marco-black dark:text-[#383838] ${hyDesktopPillClass}`}
+      className={`${montserratSlateCta.className} pointer-events-auto bg-[var(--marco-slate)] font-bold text-white transition hover:-translate-y-0.5 active:translate-y-px focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--marco-slate)] ${hyDesktopPillClass}`}
       style={linkStyle}
       trailClassName="bg-marco-yellow"
       labelWrapperClassName={`min-w-0 shrink whitespace-nowrap text-left transition-colors [transition-duration:var(--slack-dur)] [transition-timing-function:var(--slack-ease)] motion-reduce:transition-none group-hover:text-marco-black group-focus-visible:text-marco-black dark:group-hover:text-marco-black dark:group-focus-visible:text-marco-black ${hyLabelTransformClass}`}
@@ -110,7 +110,7 @@ export function HomeSecondaryBannerCta({ language }: HomeSecondaryBannerCtaProps
           {label}
         </span>
       }
-      chipInnerClassName={`flex shrink-0 items-center justify-center rounded-full bg-marco-yellow text-marco-black transition-colors [transition-duration:var(--slack-dur)] [transition-timing-function:var(--slack-ease)] motion-reduce:transition-none group-hover:bg-black group-hover:text-white group-focus-visible:bg-black group-focus-visible:text-white dark:group-hover:bg-black dark:group-hover:text-white dark:group-focus-visible:bg-black dark:group-focus-visible:text-white ${hyDesktopIconTranslateClass}`}
+      chipInnerClassName={`flex shrink-0 items-center justify-center rounded-full bg-marco-yellow text-marco-black transition-colors [transition-duration:var(--slack-dur)] [transition-timing-function:var(--slack-ease)] motion-reduce:transition-none group-hover:bg-[var(--marco-slate)] group-hover:text-white group-focus-visible:bg-[var(--marco-slate)] group-focus-visible:text-white ${hyDesktopIconTranslateClass}`}
       chipInnerStyle={
         useArmenianLikeLayout
           ? {

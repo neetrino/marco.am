@@ -1,7 +1,6 @@
 ﻿'use client';
 
 import Image from 'next/image';
-import { ArrowUpRight } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from '../../lib/i18n-client';
@@ -27,46 +26,43 @@ const SUBPILL_LUCIDE_STROKE_PX = 26;
 const MEGA_GROUP_GRID_CLASS = HEADER_MEGA_MENU_SUBCATEGORY_GRID_CLASS;
 
 const MEGA_PARENT_LINK_CLASS =
-  `${headerCategoryNavFont.className} group mb-3 flex w-full max-w-full items-center gap-2 rounded-xl px-1 py-1.5 !text-[#383838] transition-[background-color,color] duration-150 hover:bg-marco-gray/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/15 dark:!text-[#383838]`;
+  `${headerCategoryNavFont.className} group flex w-full max-w-full items-center gap-2 rounded-xl px-1 py-1.5 !text-[var(--marco-slate)] transition-[background-color,color] duration-150 hover:bg-marco-gray/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/15 dark:!text-[var(--marco-slate)]`;
 
 const MEGA_DESCENDANT_LINK_CLASS =
-  `${headerCategoryNavFont.className} block rounded-lg px-2 py-1.5 text-sm leading-5 !text-[#383838]/85 transition-[background-color,color] duration-150 hover:bg-marco-gray/60 hover:!text-[#383838] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/10 dark:!text-[#383838]/85 dark:hover:!text-[#383838]`;
+  `${headerCategoryNavFont.className} block rounded-lg px-2 py-1.5 text-sm leading-5 !text-[var(--marco-slate)]/85 transition-[background-color,color] duration-150 hover:bg-marco-gray/60 hover:!text-[var(--marco-slate)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/10 dark:!text-[var(--marco-slate)]/85 dark:hover:!text-[var(--marco-slate)]`;
 
 const MEGA_DESCENDANT_SEE_ALL_CLASS =
-  `${headerCategoryNavFont.className} mt-0.5 block w-full rounded-lg px-2 py-1.5 text-left text-sm font-semibold leading-5 !text-[#383838] underline decoration-[#383838]/30 underline-offset-2 transition-[background-color,color,decoration-color] duration-150 hover:bg-marco-gray/60 hover:decoration-[#383838] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/10 dark:!text-[#383838]`;
+  `${headerCategoryNavFont.className} mt-0.5 block w-full rounded-lg px-2 py-1.5 text-left text-sm font-semibold leading-5 !text-[var(--marco-slate)] underline decoration-[var(--marco-slate)]/30 underline-offset-2 transition-[background-color,color,decoration-color] duration-150 hover:bg-marco-gray/60 hover:decoration-[var(--marco-slate)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/10 dark:!text-[var(--marco-slate)]`;
 
 function SubcategoryDescendantList({
-  descendants,
+  categories,
   lang,
   onNavigate,
+  level = 0,
 }: {
-  descendants: Category[];
+  categories: Category[];
   lang: LanguageCode;
   onNavigate: () => void;
+  level?: number;
 }) {
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
-  const hasMore = descendants.length > HEADER_MEGA_MENU_DESCENDANT_PREVIEW_COUNT;
+  const hasMore = categories.length > HEADER_MEGA_MENU_DESCENDANT_PREVIEW_COUNT;
   const visibleDescendants = expanded
-    ? descendants
-    : descendants.slice(0, HEADER_MEGA_MENU_DESCENDANT_PREVIEW_COUNT);
+    ? categories
+    : categories.slice(0, HEADER_MEGA_MENU_DESCENDANT_PREVIEW_COUNT);
 
   return (
-    <ul className="flex flex-col gap-0.5 pl-1">
-      {visibleDescendants.map((descendant: Category) => {
-        const row = resolveCategoryNavPresentation(descendant.slug, descendant.title, lang);
-        return (
-          <li key={descendant.id}>
-            <ShopListingLink
-              href={`/products?category=${descendant.slug}`}
-              onNavigate={onNavigate}
-              className={MEGA_DESCENDANT_LINK_CLASS}
-            >
-              {row.title}
-            </ShopListingLink>
-          </li>
-        );
-      })}
+    <ul className={level > 0 ? 'mt-1 flex flex-col gap-0.5 border-l border-marco-gray pl-3' : 'flex flex-col gap-0.5 pl-1'}>
+      {visibleDescendants.map((category) => (
+        <SubcategoryDescendantItem
+          key={category.id}
+          category={category}
+          lang={lang}
+          level={level}
+          onNavigate={onNavigate}
+        />
+      ))}
       {hasMore && !expanded ? (
         <li>
           <button
@@ -79,6 +75,41 @@ function SubcategoryDescendantList({
         </li>
       ) : null}
     </ul>
+  );
+}
+
+function SubcategoryDescendantItem({
+  category,
+  lang,
+  level,
+  onNavigate,
+}: {
+  category: Category;
+  lang: LanguageCode;
+  level: number;
+  onNavigate: () => void;
+}) {
+  const row = resolveCategoryNavPresentation(category.slug, category.title, lang);
+  const hasChildren = category.children.length > 0;
+
+  return (
+    <li>
+      <ShopListingLink
+        href={`/products?category=${category.slug}`}
+        onNavigate={onNavigate}
+        className={MEGA_DESCENDANT_LINK_CLASS}
+      >
+        {row.title}
+      </ShopListingLink>
+      {hasChildren ? (
+        <SubcategoryDescendantList
+          categories={category.children}
+          lang={lang}
+          level={level + 1}
+          onNavigate={onNavigate}
+        />
+      ) : null}
+    </li>
   );
 }
 
@@ -96,30 +127,47 @@ function SubcategoryGroupParent({
   const count = parent.productCount ?? 0;
 
   return (
-    <ShopListingLink href={`/products?category=${parent.slug}`} onNavigate={onNavigate} className={MEGA_PARENT_LINK_CLASS}>
-      <SubcategoryIcon icon={row.icon} imageSrc={imageSrc} />
-      <span className="min-w-0 text-left text-sm font-bold leading-[18px] tracking-[0.14px] !text-[#383838] dark:!text-[#383838]">
-        {row.title}
-      </span>
-      {count > 0 ? (
-        <span className="shrink-0 whitespace-nowrap text-sm font-normal tabular-nums !text-[#383838]/60 dark:!text-[#383838]/60">
-          ({count})
+    <div className="mb-2 min-w-0">
+      <ShopListingLink href={`/products?category=${parent.slug}`} onNavigate={onNavigate} className={MEGA_PARENT_LINK_CLASS}>
+        <SubcategoryIcon icon={row.icon} imageSrc={imageSrc} />
+        <span className="min-w-0 flex-1 text-left text-sm font-bold leading-[18px] tracking-[0.14px] !text-[var(--marco-slate)] dark:!text-[var(--marco-slate)]">
+          {row.title}
         </span>
+        {count > 0 ? (
+          <span className="shrink-0 whitespace-nowrap text-sm font-normal tabular-nums !text-[var(--marco-slate)]/60 dark:!text-[var(--marco-slate)]/60">
+            ({count})
+          </span>
+        ) : null}
+      </ShopListingLink>
+    </div>
+  );
+}
+
+function SubcategoryGroup({
+  group,
+  lang,
+  onNavigate,
+}: {
+  group: MegaMenuSubcategoryGroup;
+  lang: LanguageCode;
+  onNavigate: () => void;
+}) {
+  const hasChildren = group.children.length > 0;
+
+  return (
+    <li className="min-w-0 w-full">
+      <SubcategoryGroupParent parent={group.parent} lang={lang} onNavigate={onNavigate} />
+      {hasChildren ? (
+        <SubcategoryDescendantList categories={group.children} lang={lang} onNavigate={onNavigate} />
       ) : null}
-      <span
-        className="ml-0.5 flex size-7 shrink-0 items-center justify-center rounded-full !bg-[#383838] text-white opacity-80 transition-opacity group-hover:opacity-100 dark:!bg-[#383838]"
-        aria-hidden
-      >
-        <ArrowUpRight className="size-3 shrink-0 !text-white dark:!text-white" strokeWidth={2.25} />
-      </span>
-    </ShopListingLink>
+    </li>
   );
 }
 
 function SubcategoryIcon({ icon, imageSrc }: { icon: CategoryNavIcon; imageSrc: string | null }) {
   if (imageSrc) {
     return (
-      <span className="flex size-[34px] shrink-0 items-center justify-center !text-[#383838] dark:!text-[#383838]">
+      <span className="flex size-[34px] shrink-0 items-center justify-center !text-[var(--marco-slate)] dark:!text-[var(--marco-slate)]">
         <Image
           src={toDomSafeImgSrcString(imageSrc)}
           alt=""
@@ -135,7 +183,7 @@ function SubcategoryIcon({ icon, imageSrc }: { icon: CategoryNavIcon; imageSrc: 
   }
   if (icon.kind === 'figma') {
     return (
-      <span className="flex size-[34px] shrink-0 items-center justify-center !text-[#383838] dark:!text-[#383838]">
+      <span className="flex size-[34px] shrink-0 items-center justify-center !text-[var(--marco-slate)] dark:!text-[var(--marco-slate)]">
         <Image
           src={icon.src}
           alt=""
@@ -151,10 +199,10 @@ function SubcategoryIcon({ icon, imageSrc }: { icon: CategoryNavIcon; imageSrc: 
   }
   const RowLucide: LucideIcon = icon.Icon;
   return (
-    <span className="flex size-[34px] shrink-0 items-center justify-center !text-[#383838] dark:!text-[#383838]">
+    <span className="flex size-[34px] shrink-0 items-center justify-center !text-[var(--marco-slate)] dark:!text-[var(--marco-slate)]">
       <RowLucide
         size={SUBPILL_LUCIDE_STROKE_PX}
-        className="shrink-0 !text-[#383838] dark:!text-[#383838]"
+        className="shrink-0 !text-[var(--marco-slate)] dark:!text-[var(--marco-slate)]"
         strokeWidth={1.35}
         aria-hidden
       />
@@ -212,13 +260,13 @@ export function CategoryMegaSubcategoryPills({
         <div className="flex flex-wrap items-center gap-2.5 md:gap-3">
           <h2
             id={sectionHeadingId}
-            className={`${headerCategoryNavFont.className} text-[20px] font-bold uppercase leading-tight tracking-[-0.02em] !text-[#383838] md:text-[26px] md:leading-[1.1] lg:text-[32px] lg:leading-[37px] dark:!text-[#383838]`}
+            className={`${headerCategoryNavFont.className} text-[20px] font-bold uppercase leading-tight tracking-[-0.02em] !text-[var(--marco-slate)] md:text-[26px] md:leading-[1.1] lg:text-[32px] lg:leading-[37px] dark:!text-[var(--marco-slate)]`}
           >
             {sectionTitle}
           </h2>
           {sectionProductCount && sectionProductCount > 0 ? (
             <span
-              className={`${headerCategoryNavFont.className} inline-flex shrink-0 items-center rounded-full bg-marco-yellow px-2.5 py-0.5 text-sm font-bold tabular-nums !text-[#383838] dark:!text-[#383838]`}
+              className={`${headerCategoryNavFont.className} inline-flex shrink-0 items-center rounded-full bg-marco-yellow px-2.5 py-0.5 text-sm font-bold tabular-nums !text-[var(--marco-slate)] dark:!text-[var(--marco-slate)]`}
             >
               {sectionProductCount}
             </span>
@@ -228,17 +276,13 @@ export function CategoryMegaSubcategoryPills({
       </div>
 
       <ul aria-labelledby={sectionHeadingId} className={MEGA_GROUP_GRID_CLASS}>
-        {groups.map(({ parent, descendants }) => (
-          <li key={parent.id} className="min-w-0 w-full">
-            <SubcategoryGroupParent parent={parent} lang={lang} onNavigate={onNavigate} />
-            {descendants.length > 0 ? (
-              <SubcategoryDescendantList
-                descendants={descendants}
-                lang={lang}
-                onNavigate={onNavigate}
-              />
-            ) : null}
-          </li>
+        {groups.map((group) => (
+          <SubcategoryGroup
+            key={group.parent.id}
+            group={group}
+            lang={lang}
+            onNavigate={onNavigate}
+          />
         ))}
       </ul>
     </div>

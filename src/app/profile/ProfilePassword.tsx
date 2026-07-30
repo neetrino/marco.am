@@ -1,5 +1,6 @@
 import type { FormEvent } from 'react';
 import { Button, Input, Card } from '@shop/ui';
+import { PROFILE_PRIMARY_BUTTON_CLASS } from './profile-button.classes';
 
 interface ProfilePasswordProps {
   passwordForm: {
@@ -56,7 +57,7 @@ export function ProfilePassword({
             type="submit"
             variant="primary"
             disabled={savingPassword}
-            className="!rounded-full !px-4 sm:!px-6 !py-3 !bg-marco-black !text-white !hover:bg-marco-black hover:opacity-90 transition-opacity whitespace-nowrap"
+            className={`${PROFILE_PRIMARY_BUTTON_CLASS} whitespace-nowrap`}
           >
             {savingPassword ? (
               t('profile.password.changing')

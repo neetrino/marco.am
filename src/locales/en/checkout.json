@@ -44,7 +44,11 @@
     "cash": "Cash",
     "cashDescription": "Pay cash when you receive your order",
     "cashOnDelivery": "Cash on Delivery",
-    "cashOnDeliveryDescription": "Pay cash when you receive your order"
+    "cashOnDeliveryDescription": "Pay cash when you receive your order",
+    "arca": "By card",
+    "arcaDescription": "Pay with Visa, Mastercard, or ArCa",
+    "idram": "Idram",
+    "idramDescription": "Pay with your Idram wallet"
   },
   "summary": {
     "items": "Items",
@@ -60,16 +64,8 @@
     "continueShopping": "Continue Shopping",
     "cancel": "Cancel"
   },
-  "modals": {
-    "completeOrder": "Complete Your Order",
-    "confirmOrder": "Confirm Order",
-    "closeModal": "Close Window"
-  },
   "messages": {
-    "totalsStaleWarning": "Could not refresh totals. Showing last known amounts.",
-    "cashOnDeliveryInfo": "Cash on Delivery: You will pay cash when you receive your order. Card details are not required.",
-    "cashOnDeliveryPickup": "Cash on Delivery: You will pay cash when you pick up your order. Card details are not required.",
-    "storePickupInfo": "Store Pickup: You will pick up your order from our store. Delivery is free."
+    "totalsStaleWarning": "Could not refresh totals. Showing last known amounts."
   },
   "errors": {
     "firstNameRequired": "First name is required",
@@ -86,6 +82,7 @@
     "phoneRequiredDelivery": "Phone number is required for delivery",
     "invalidPhoneFormat": "Invalid phone number format",
     "fillShippingAddress": "Please fill in all shipping address fields",
+    "fillRequiredFields": "Please fill in all required fields",
     "branchRequired": "Please select a pickup branch",
     "cartEmpty": "Cart is empty",
     "failedToLoadCart": "Failed to load cart",

@@ -23,6 +23,7 @@ import {
   HOME_GRADIENT_BANNER_CTA_ICON_PULL_LEFT_RU_EXTRA_PX,
   HOME_GRADIENT_BANNER_CTA_LABEL_NUDGE_LEFT_PX,
   HOME_GRADIENT_BANNER_CTA_LABEL_NUDGE_LEFT_RU_EXTRA_PX,
+  HOME_GRADIENT_BANNER_CTA_HREF,
   HOME_GRADIENT_BANNER_CTA_SLACK_HOVER_END_INSET_INLINE_START_PX,
   HOME_GRADIENT_BANNER_CTA_SLACK_REST_INSET_INLINE_END_PX,
 } from './home-gradient-banner.constants';
@@ -72,12 +73,14 @@ function buildIconFrameStyle(language: LanguageCode): CSSProperties {
 
 type HomeGradientBannerCtaProps = {
   language: LanguageCode;
+  /** When the parent banner is already a link, render the pill without a nested anchor. */
+  decorative?: boolean;
 };
 
 /**
  * Pill shell matches hero slate CTA; dimensions from `home-banners-cta.constants` (slightly smaller).
  */
-export function HomeGradientBannerCta({ language }: HomeGradientBannerCtaProps) {
+export function HomeGradientBannerCta({ language, decorative = false }: HomeGradientBannerCtaProps) {
   const label = t(language, 'home.promo_featured_cta');
   const ariaLabel = `${t(language, 'home.promo_featured_cta')}. ${t(language, 'home.promo_featured_title')}`;
 
@@ -128,13 +131,14 @@ export function HomeGradientBannerCta({ language }: HomeGradientBannerCtaProps) 
 
   return (
     <HomeFloorBannerSlackCtaLink
-      href="/products"
+      href={HOME_GRADIENT_BANNER_CTA_HREF}
+      decorative={decorative}
       ariaLabel={ariaLabel}
       slackChipRestInsetInlineEndPx={HOME_GRADIENT_BANNER_CTA_SLACK_REST_INSET_INLINE_END_PX}
       slackStopPad={`${HOME_GRADIENT_BANNER_CTA_SLACK_HOVER_END_INSET_INLINE_START_PX}px`}
       className={`${montserratSlateCta.className} pointer-events-auto bg-marco-yellow font-bold text-[#383838] transition hover:-translate-y-0.5 active:translate-y-px dark:text-[#383838] ${enDesktopPillClass}`}
       style={linkStyle}
-      trailClassName="bg-marco-black"
+      trailClassName="bg-[var(--marco-slate)]"
       labelWrapperClassName={`transition-colors [transition-duration:var(--slack-dur)] [transition-timing-function:var(--slack-ease)] motion-reduce:transition-none group-hover:text-white group-focus-visible:text-white dark:group-hover:text-white dark:group-focus-visible:text-white ${labelSpanClassName} ${language === 'hy' ? labelHyDesktopClass : ''} ${labelRuTranslateClass}`}
       label={
         <span
@@ -149,7 +153,7 @@ export function HomeGradientBannerCta({ language }: HomeGradientBannerCtaProps) 
           {label}
         </span>
       }
-      chipInnerClassName={`flex shrink-0 items-center justify-center rounded-full bg-marco-black text-white transition-colors [transition-duration:var(--slack-dur)] [transition-timing-function:var(--slack-ease)] motion-reduce:transition-none group-hover:bg-marco-yellow group-hover:text-marco-black group-focus-visible:bg-marco-yellow group-focus-visible:text-marco-black dark:group-hover:bg-marco-yellow dark:group-hover:text-marco-black dark:group-focus-visible:bg-marco-yellow dark:group-focus-visible:text-marco-black ${iconRuDesktopTranslateClass} ${iconHyDesktopTranslateClass}`}
+      chipInnerClassName={`flex shrink-0 items-center justify-center rounded-full bg-[var(--marco-slate)] text-white transition-colors [transition-duration:var(--slack-dur)] [transition-timing-function:var(--slack-ease)] motion-reduce:transition-none group-hover:bg-marco-yellow group-hover:text-marco-black group-focus-visible:bg-marco-yellow group-focus-visible:text-marco-black dark:group-hover:bg-marco-yellow dark:group-hover:text-marco-black dark:group-focus-visible:bg-marco-yellow dark:group-focus-visible:text-marco-black ${iconRuDesktopTranslateClass} ${iconHyDesktopTranslateClass}`}
       chipInnerStyle={iconFrameStyle}
       chipChildren={
         <ArrowUpRight

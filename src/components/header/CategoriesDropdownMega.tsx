@@ -118,11 +118,11 @@ export function CategoriesDropdownMega({
                     onClick={() => setSelectedSlug(category.slug)}
                     className={`${MEGA_ROOT_ROW_CLASS} ${
                       isSelected
-                        ? 'bg-marco-yellow font-bold !text-[#383838] dark:!text-[#383838]'
-                        : 'font-normal !text-[#383838] hover:bg-marco-gray/70 dark:!text-[#383838]'
+                        ? 'bg-marco-yellow font-bold !text-[var(--marco-slate)] dark:!text-[var(--marco-slate)]'
+                        : 'font-normal !text-[var(--marco-slate)] hover:bg-marco-gray/70 dark:!text-[var(--marco-slate)]'
                     }`}
                   >
-                    <span className="flex size-[40px] shrink-0 items-center justify-center p-1 !text-[#383838] dark:!text-[#383838]">
+                    <span className="flex size-[40px] shrink-0 items-center justify-center p-1 !text-[var(--marco-slate)] dark:!text-[var(--marco-slate)]">
                       {categoryImage ? (
                         <Image
                           src={toDomSafeImgSrcString(categoryImage)}
@@ -149,7 +149,7 @@ export function CategoriesDropdownMega({
                         RowLucide && (
                           <RowLucide
                             size={MEGA_ROOT_LUCIDE_PX}
-                            className="shrink-0 !text-[#383838] dark:!text-[#383838]"
+                            className="shrink-0 !text-[var(--marco-slate)] dark:!text-[var(--marco-slate)]"
                             strokeWidth={1.35}
                             aria-hidden
                           />
@@ -160,7 +160,7 @@ export function CategoriesDropdownMega({
                       {row.title}
                     </span>
                     <ChevronRight
-                      className="size-[18px] shrink-0 self-center text-[#383838]/55 dark:text-[#383838]/55 md:size-5"
+                      className="size-[18px] shrink-0 self-center text-[var(--marco-slate)]/55 dark:text-[var(--marco-slate)]/55 md:size-5"
                       strokeWidth={2}
                       aria-hidden
                     />

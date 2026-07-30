@@ -47,3 +47,6 @@ export const HOME_GRADIENT_BANNER_CTA_ROW_OFFSET_Y_PX = -10;
 export const HOME_GRADIENT_BANNER_ASPECT_RATIO = '56 / 34';
 
 export const HOME_GRADIENT_BANNER_RADIUS_PX = 16;
+
+/** Shop PLP — sponge category (`Սպունգ`). */
+export const HOME_GRADIENT_BANNER_CTA_HREF = '/products?category=spovng';

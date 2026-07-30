@@ -1,5 +1,7 @@
 import type { Config } from 'tailwindcss';
 
+import { MARCO_SLATE_HEX } from './src/lib/constants/marco-brand-colors';
+
 const MARCO_ANTHRACITE = '#383838';
 const MARCO_YELLOW = '#ffca03';
 
@@ -44,10 +46,11 @@ const config: Config = {
         info: '#3B82F6',
         marco: {
           yellow: MARCO_YELLOW,
-          black: MARCO_ANTHRACITE,
+          black: MARCO_SLATE_HEX,
+          slate: MARCO_SLATE_HEX,
           gray: '#f4f4f4',
           border: '#ebebeb',
-          text: '#333333',
+          text: MARCO_SLATE_HEX,
         },
       },
       fontFamily: {

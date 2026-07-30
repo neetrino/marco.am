@@ -18,6 +18,9 @@ import { shouldChargeCourierShipping } from "./checkout-delivery-rules.service";
 import { resolveProductClass, type ProductClass } from "../constants/product-class";
 import { promoCodesService } from "./promo-codes.service";
 import { invalidateAdminAnalyticsCache } from "@/lib/services/admin/admin-stats/admin-analytics-cache";
+import { startOnlinePaymentIfNeeded } from "@/lib/payments/start-online-payment";
+import { assertArcaConfigured, resolveArcaConfig } from "@/lib/payments/arca/config";
+import { assertIdramConfigured, resolveIdramConfig } from "@/lib/payments/idram/config";
 
 type CartItemWithRelations = Prisma.CartItemGetPayload<{
   include: {
@@ -70,6 +73,12 @@ class OrdersService {
       } = data;
       const shippingMethod = normalizeShippingMethod(rawShippingMethod);
       const paymentMethod = resolveCheckoutPaymentMethod(rawPaymentMethod);
+      // Fail fast before creating an order if merchant credentials are missing on Vercel.
+      if (paymentMethod === "arca") {
+        assertArcaConfigured(resolveArcaConfig());
+      } else if (paymentMethod === "idram") {
+        assertIdramConfigured(resolveIdramConfig());
+      }
       // shippingAmount is ignored — computed server-side from shippingMethod and address
 
       const { email, phone, firstName, lastName, notes: orderNotes } =
@@ -246,22 +255,48 @@ class OrdersService {
       // Calculate totals
       const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
-      let resolvedCouponCode = couponCode;
-      if (!resolvedCouponCode && userId && cartId && cartId !== 'guest-cart') {
+      const explicitCouponCode = typeof couponCode === "string" ? couponCode.trim() : "";
+      let resolvedCouponCode = explicitCouponCode || undefined;
+      let couponFromCart = false;
+      if (!resolvedCouponCode && userId && cartId && cartId !== "guest-cart") {
         const couponRow = await db.cart.findFirst({
           where: { id: cartId, userId },
           select: { couponCode: true },
         });
-        resolvedCouponCode = couponRow?.couponCode ?? undefined;
+        if (couponRow?.couponCode) {
+          resolvedCouponCode = couponRow.couponCode;
+          couponFromCart = true;
+        }
       }
 
-      const promoDiscount = await promoCodesService.resolveDiscount({
-        couponCode: resolvedCouponCode,
-        subtotal,
-        userId,
-        customerEmail: email,
-        productClasses: cartItems.map((item) => item.productClass),
-      });
+      let promoDiscount = { couponCode: null as string | null, discountAmount: 0 };
+      try {
+        promoDiscount = await promoCodesService.resolveDiscount({
+          couponCode: resolvedCouponCode,
+          subtotal,
+          userId,
+          customerEmail: email,
+          productClasses: cartItems.map((item) => item.productClass),
+        });
+      } catch (promoError: unknown) {
+        // Stale cart coupon (expired/inactive) should not block checkout when the
+        // client did not explicitly send couponCode on this request.
+        if (!couponFromCart || explicitCouponCode) {
+          throw promoError;
+        }
+        logger.warn("Ignoring invalid coupon stored on cart during checkout", {
+          cartId,
+          couponCode: resolvedCouponCode,
+          error: promoError,
+        });
+        if (userId) {
+          await db.cart.updateMany({
+            where: { userId },
+            data: { couponCode: null },
+          });
+        }
+        promoDiscount = { couponCode: null, discountAmount: 0 };
+      }
       const discountAmount = promoDiscount.discountAmount;
       // Shipping: computed server-side only (never trust client-provided amount)
       let shippingAmount = 0;
@@ -439,7 +474,15 @@ class OrdersService {
         });
       });
 
-      // Return order and payment info
+      const onlinePayment = await startOnlinePaymentIfNeeded({
+        paymentMethod,
+        orderId: order.order.id,
+        orderNumber: order.order.number,
+        amount: Number(order.order.total),
+        locale: order.order.customerLocale,
+        paymentId: order.payment.id,
+      });
+
       return {
         order: {
           id: order.order.id,
@@ -451,10 +494,10 @@ class OrdersService {
         },
         payment: {
           provider: order.payment.provider,
-          paymentUrl: null,
-          expiresAt: null,
+          paymentUrl: onlinePayment.paymentUrl,
+          expiresAt: onlinePayment.expiresAt,
         },
-        nextAction: "view_order",
+        nextAction: onlinePayment.nextAction,
         confirmation: {
           orderId: order.order.id,
           orderNumber: order.order.number,

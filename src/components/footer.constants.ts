@@ -2,19 +2,36 @@
  * MARCO home footer (Figma 101:2835) — layout tokens and nav specs.
  */
 
+import { MARCO_SLATE_TEXT_CLASS } from '@/lib/constants/marco-brand-colors';
+
 /** Footer surface: matches the site page surface in dark mode. */
 export const FOOTER_SURFACE_CLASS = 'bg-[#f2f2f2] dark:bg-[var(--app-surface)]';
-/** Footer secondary text. */
-export const FOOTER_MUTED_TEXT_CLASS = 'text-[#6b7280] dark:text-[#cfcfcf]';
 
-/** Footer heading text. */
-export const FOOTER_HEADING_TEXT_CLASS = 'text-[#181111] dark:text-white';
+/** Footer top edge — slate tint in light mode. */
+export const FOOTER_BORDER_TOP_CLASS =
+  'border-t border-[var(--marco-slate)]/10 dark:border-white/10';
+
+/** Copyright strip separator — slate tint in light mode. */
+export const FOOTER_COPYRIGHT_BORDER_CLASS =
+  'border-t border-[var(--marco-slate)]/15 dark:border-white/10';
+
+/** Footer secondary / legal fine print — same brand ink as the header. */
+export const FOOTER_MUTED_TEXT_CLASS = `${MARCO_SLATE_TEXT_CLASS} dark:text-white/88`;
+
+/** Footer body copy and links — same brand ink as the header. */
+export const FOOTER_INK_TEXT_CLASS = `${MARCO_SLATE_TEXT_CLASS} dark:text-white/88`;
+
+/** Footer heading text — same brand ink as the header. */
+export const FOOTER_HEADING_TEXT_CLASS = `${MARCO_SLATE_TEXT_CLASS} dark:text-white/88`;
+
+/** Optional link emphasis on hover — opacity only; color stays slate. */
+export const FOOTER_LINK_HOVER_CLASS = 'hover:opacity-80 dark:hover:opacity-90';
 
 /** Nav / contacts column titles — slightly above legacy `text-xs` (12px). */
 export const FOOTER_NAV_HEADING_TEXT_CLASS =
   'text-[13px] sm:text-sm font-bold uppercase';
 
-/** Nav links, contact lines — matches heading scale; muted via {@link FOOTER_MUTED_TEXT_CLASS}. */
+/** Nav links, contact lines — brand slate by default in light mode. */
 export const FOOTER_NAV_BODY_TEXT_CLASS = 'text-[13px] sm:text-[14px]';
 
 /**
@@ -93,7 +110,7 @@ export const FOOTER_COLUMN_PIPE_CLASS = `hidden shrink-0 select-none lg:flex lg:
 
 /** Vertical rule inside {@link FOOTER_COLUMN_PIPE_CLASS}; `min-h-60` keeps a minimum length in short rows. */
 export const FOOTER_COLUMN_PIPE_BAR_CLASS =
-  'w-px flex-1 min-h-60 bg-gray-400/35 dark:bg-white/25';
+  'w-px flex-1 min-h-60 bg-[var(--marco-slate)]/25 dark:bg-white/25';
 
 /**
  * lg+: wraps Navigation, pipes, Support, Contacts in one flex row so free space splits evenly

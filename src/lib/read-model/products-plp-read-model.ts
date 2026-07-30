@@ -21,6 +21,7 @@ import { buildListingRowSearchWhereInput } from '@/lib/product-search/listing-ro
 import { findProductIdsBySkuSearch } from '@/lib/product-search/find-product-ids-by-sku';
 import { getCachedJson } from '@/lib/services/read-through-json-cache';
 import { aggregateProductsPlpFacets } from './product-facet-live-aggregation';
+import { attachListingCardSkus } from './attach-listing-card-skus';
 import {
   PRODUCTS_PLP_CACHE_TTL_SEC,
   buildPlpFiltersCacheKey,
@@ -244,38 +245,36 @@ async function computeListingItems(params: PlpReadModelSearchParams): Promise<Pl
   const categoryIdTokens = await resolveCategoryIdsFromSlugs(firstCsvTokens(params.category));
   const search = params.search?.trim();
   const productIdsFromSku = search ? await findProductIdsBySkuSearch(search) : [];
-  const rows = await fetchRows({
-    where: buildWhere(params, categoryIdTokens, productIdsFromSku),
-    orderBy,
-    skip,
-    take: limit + 1,
-  });
-  const hasNextPage = rows.length > limit;
-  const visibleRows = hasNextPage ? rows.slice(0, limit) : rows;
-  const total = hasNextPage ? skip + limit + 1 : skip + visibleRows.length;
+  const where = buildWhere(params, categoryIdTokens, productIdsFromSku);
+  const [rows, total] = await Promise.all([
+    fetchRows({
+      where,
+      orderBy,
+      skip,
+      take: limit + 1,
+    }),
+    countRows(where),
+  ]);
+  const hasOverflowRow = rows.length > limit;
+  const visibleRows = hasOverflowRow ? rows.slice(0, limit) : rows;
+  const totalPages = total > 0 ? Math.ceil(total / limit) : 0;
+  const hasNextPage = page < totalPages;
   return {
     items: visibleRows.map(mapListingRowToCard),
     pagination: {
       total,
       page,
       limit,
-      totalPages: Math.ceil(total / limit),
+      totalPages,
       hasNextPage,
       nextCursor: null,
-      totalIsExact: !hasNextPage,
+      totalIsExact: true,
     },
   };
 }
 
-async function getCachedListingItems(
-  params: PlpReadModelSearchParams,
-): Promise<PlpListingItemsPayload> {
-  if (shouldSkipPlpCache(params)) {
-    return computeListingItems(params);
-  }
-  return getCachedJson(buildPlpListingCacheKey(params), PRODUCTS_PLP_CACHE_TTL_SEC, () =>
-    computeListingItems(params),
-  );
+async function countRows(where: Prisma.ProductListingRowWhereInput): Promise<number> {
+  return db.productListingRow.count({ where });
 }
 
 async function fetchRows(args: {
@@ -291,6 +290,21 @@ async function fetchRows(args: {
     take: args.take,
     select: LISTING_CARD_SELECT,
   });
+}
+
+async function getCachedListingItems(
+  params: PlpReadModelSearchParams,
+): Promise<PlpListingItemsPayload> {
+  const payload = shouldSkipPlpCache(params)
+    ? await computeListingItems(params)
+    : await getCachedJson(buildPlpListingCacheKey(params), PRODUCTS_PLP_CACHE_TTL_SEC, () =>
+        computeListingItems(params),
+      );
+  return {
+    ...payload,
+    // Attach outside cache so SKU still appears on older cached listing payloads.
+    items: await attachListingCardSkus(payload.items),
+  };
 }
 
 export async function getProductsPlpReadModelPayload(

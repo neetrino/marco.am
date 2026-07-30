@@ -307,7 +307,7 @@ export function MobileBottomNavShopSheet({
 
                   return (
                     <div key={`${category.id}-children`} className="rounded-2xl border border-marco-border/80 bg-white/80 p-2 dark:border-white/10 dark:bg-zinc-900/75">
-                      <p className="mb-2 px-1 text-[11px] font-bold uppercase tracking-wide text-marco-text/75 dark:text-zinc-400">
+                      <p className="mb-2 px-1 text-[13px] font-bold uppercase tracking-wide text-marco-text/75 dark:text-zinc-400">
                         {category.title}
                       </p>
                       <div className="grid grid-cols-2 gap-2">

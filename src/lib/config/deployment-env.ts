@@ -26,6 +26,37 @@ function stripTrailingSlash(url: string): string {
   return url.replace(/\/+$/, "");
 }
 
+const LOCAL_DEV_APP_URL = "http://localhost:3000";
+
+/**
+ * Normalizes a configured public origin to `https?://host[:port]` (no path/trailing slash).
+ * Accepts bare hostnames (`marco.am`, `*.vercel.app`) by prefixing `https://`.
+ * Returns null when the value cannot form a valid absolute http(s) URL.
+ */
+export function normalizePublicAppUrl(raw: string | undefined): string | null {
+  const trimmed = raw?.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  const withScheme = /^[a-zA-Z][a-zA-Z\d+.-]*:/.test(trimmed)
+    ? trimmed
+    : `https://${trimmed}`;
+
+  try {
+    const parsed = new URL(withScheme);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      return null;
+    }
+    if (!parsed.hostname) {
+      return null;
+    }
+    return stripTrailingSlash(`${parsed.protocol}//${parsed.host}`);
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Logical environment: local dev, Vercel Preview (staging), or production.
  * - Prefer `APP_ENV` on self-hosted or when you need to override Vercel defaults.
@@ -53,21 +84,23 @@ export function getDeploymentTier(): DeploymentTier {
 
 /**
  * Canonical public site URL (no trailing slash). Server-side absolute URLs and CORS fallbacks.
+ * Skips invalid `NEXT_PUBLIC_APP_URL` / `APP_URL` values instead of returning them raw
+ * (raw hostnames without a scheme cause `new URL(...)` → "Invalid URL" on checkout).
  */
 export function getPublicAppUrl(): string {
-  const fromPublic = process.env.NEXT_PUBLIC_APP_URL?.trim();
+  const fromPublic = normalizePublicAppUrl(process.env.NEXT_PUBLIC_APP_URL);
   if (fromPublic) {
-    return stripTrailingSlash(fromPublic);
+    return fromPublic;
   }
-  const fromApp = process.env.APP_URL?.trim();
+  const fromApp = normalizePublicAppUrl(process.env.APP_URL);
   if (fromApp) {
-    return stripTrailingSlash(fromApp);
+    return fromApp;
   }
-  const vercel = process.env.VERCEL_URL?.trim();
-  if (vercel) {
-    return `https://${vercel}`;
+  const fromVercel = normalizePublicAppUrl(process.env.VERCEL_URL);
+  if (fromVercel) {
+    return fromVercel;
   }
-  return "http://localhost:3000";
+  return LOCAL_DEV_APP_URL;
 }
 
 /**
@@ -79,15 +112,15 @@ export function getCorsAllowedOrigins(): string[] {
   if (cors) {
     return cors
       .split(",")
-      .map((origin) => stripTrailingSlash(origin.trim()))
-      .filter(Boolean);
+      .map((origin) => normalizePublicAppUrl(origin.trim()))
+      .filter((origin): origin is string => origin !== null);
   }
-  const nextPublic = process.env.NEXT_PUBLIC_APP_URL?.trim();
+  const nextPublic = normalizePublicAppUrl(process.env.NEXT_PUBLIC_APP_URL);
   if (nextPublic) {
-    return [stripTrailingSlash(nextPublic)];
+    return [nextPublic];
   }
   if (process.env.NODE_ENV === "development") {
-    return ["http://localhost:3000"];
+    return [LOCAL_DEV_APP_URL];
   }
   return [getPublicAppUrl()];
 }

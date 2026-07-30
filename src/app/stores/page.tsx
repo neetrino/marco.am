@@ -1,8 +1,15 @@
 'use client';
 
 import { Card, Button } from '@shop/ui';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useTranslation } from '../../lib/i18n-client';
+import { MARCO_SLATE_PILL_BUTTON_CLASS } from '@/lib/constants/marco-brand-colors';
+import {
+  ALEC_MANOOGIAN_STORE_IMAGE,
+  AVAN_STORE_IMAGE,
+  PARAKAR_STORE_IMAGE,
+} from '@/lib/constants/store-location-images';
 
 export default function StoresPage() {
   const { t } = useTranslation();
@@ -12,6 +19,7 @@ export default function StoresPage() {
       nameKey: 'stores.locations.mainStore.name' as const,
       addressKey: 'stores.locations.mainStore.address' as const,
       hoursKey: 'stores.locations.mainStore.hours' as const,
+      image: ALEC_MANOOGIAN_STORE_IMAGE,
       phone: '+374 93 52 04 06',
       emails: ['marcofurniture@mail.ru', 'marcogrouparmenia@mail.ru'],
     },
@@ -20,6 +28,7 @@ export default function StoresPage() {
       nameKey: 'stores.locations.mallBranch.name' as const,
       addressKey: 'stores.locations.mallBranch.address' as const,
       hoursKey: 'stores.locations.mallBranch.hours' as const,
+      image: AVAN_STORE_IMAGE,
       phone: '+374 93 58 04 09',
       emails: ['marcofurniture@mail.ru', 'marcogrouparmenia@mail.ru'],
     },
@@ -28,6 +37,7 @@ export default function StoresPage() {
       nameKey: 'stores.locations.downtown.name' as const,
       addressKey: 'stores.locations.downtown.address' as const,
       hoursKey: 'stores.locations.downtown.hours' as const,
+      image: PARAKAR_STORE_IMAGE,
       phone: '+374 77 51 04 06',
       emails: ['marcofurniture@mail.ru', 'marcogrouparmenia@mail.ru'],
     },
@@ -45,10 +55,21 @@ export default function StoresPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {stores.map((store) => (
           <Card key={store.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-            <div className="aspect-video bg-gray-200 relative">
-              <div className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center">
-                <span className="text-gray-600 text-lg font-semibold">{t(store.nameKey)}</span>
-              </div>
+            <div className="relative aspect-square bg-gray-200">
+              {'image' in store && store.image ? (
+                <Image
+                  src={store.image.src}
+                  alt={`${t(store.nameKey)} — ${t(store.addressKey)}`}
+                  width={store.image.width}
+                  height={store.image.height}
+                  className="h-full w-full object-contain"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center">
+                  <span className="text-gray-600 text-lg font-semibold">{t(store.nameKey)}</span>
+                </div>
+              )}
             </div>
             <div className="p-6">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">{t(store.nameKey)}</h2>
@@ -166,7 +187,7 @@ export default function StoresPage() {
           <Button
             variant="primary"
             size="lg"
-            className="!h-11 !rounded-full !border-0 !bg-marco-black !px-8 !text-sm font-semibold uppercase tracking-wide !text-white hover:!brightness-95"
+            className={`${MARCO_SLATE_PILL_BUTTON_CLASS} !h-11 !rounded-full !border-0 !px-8 !text-sm font-semibold uppercase tracking-wide transition-[filter]`}
           >
             {t('stores.cantFind.contactUs')}
           </Button>

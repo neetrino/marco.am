@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import { useTranslation } from '../../lib/i18n-client';
+import { ADMIN_PRIMARY_BUTTON_CLASS } from './components/admin-button.classes';
 
 export default function AdminError({
   error,
@@ -28,7 +29,7 @@ export default function AdminError({
           <button
             type="button"
             onClick={reset}
-            className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 font-medium"
+            className={ADMIN_PRIMARY_BUTTON_CLASS}
           >
             {t('common.errors.tryAgain')}
           </button>

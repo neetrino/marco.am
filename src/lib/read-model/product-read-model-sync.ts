@@ -293,6 +293,16 @@ export async function syncProductListingReadModelBatch(
 ) {
   const startedAt = Date.now();
   const uniqueProductIds = [...new Set(productIds.filter(Boolean))];
+  if (uniqueProductIds.length === 0) {
+    return {
+      productsSynced: 0,
+      rowsDeleted: 0,
+      rowsWritten: 0,
+      durationMs: Date.now() - startedAt,
+      locales: normalizeLocales(options.locales),
+    };
+  }
+
   const locales = normalizeLocales(options.locales);
   const batchSize = normalizeBatchSize(options.batchSize, DEFAULT_AFFECTED_LISTING_BATCH_SIZE, 500);
   const [discountSettings, categoryAncestry] = await Promise.all([
@@ -437,6 +447,19 @@ export async function rebuildProductListingReadModel(
 }
 
 export async function syncProductListingReadModelByBrand(brandId: string) {
+  const linkedProductCount = await db.product.count({
+    where: { brandId, deletedAt: null },
+  });
+  if (linkedProductCount === 0) {
+    return {
+      productsSynced: 0,
+      rowsDeleted: 0,
+      rowsWritten: 0,
+      durationMs: 0,
+      locales: [],
+    };
+  }
+
   const products = await db.product.findMany({
     where: { brandId, deletedAt: null },
     select: { id: true },

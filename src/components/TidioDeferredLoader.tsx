@@ -10,6 +10,7 @@ import {
 } from '@/lib/tidio/tidio-script-loader';
 
 const HOST_OFFSET_STYLE_ID = 'marco-tidio-mobile-offset';
+const TIDIO_BRAND_COLOR = '#3f5466';
 
 type TidioChatApi = {
   adjustStyles: (css: string) => void;
@@ -28,8 +29,48 @@ function tidioMobileBottomCss(): string {
   return `@media (max-width: 1023px) { #tidio, #tidio-chat, #tidio-chat-iframe { bottom: ${bottom} !important; } }`;
 }
 
+function tidioBrandColorCss(): string {
+  return `
+    #tidio,
+    #tidio-chat,
+    #tidio-chat-iframe,
+    [id^="tidio-"] {
+      color: ${TIDIO_BRAND_COLOR} !important;
+      font-family: var(--font-mulish), var(--font-inter), system-ui, sans-serif !important;
+    }
+
+    #tidio *:not(svg):not(path),
+    #tidio-chat *:not(svg):not(path),
+    [id^="tidio-"] *:not(svg):not(path),
+    [class*="message"],
+    [class*="launcher"],
+    [class*="bubble"],
+    [class*="widget"],
+    [class*="conversation"],
+    [class*="operator"],
+    [class*="welcome"] {
+      color: ${TIDIO_BRAND_COLOR} !important;
+    }
+  `;
+}
+
+function tidioHostBrandColorCss(): string {
+  return `
+    #tidio,
+    #tidio-chat,
+    #tidio-chat-iframe,
+    [id^="tidio-"],
+    #tidio *:not(svg):not(path),
+    #tidio-chat *:not(svg):not(path),
+    [id^="tidio-"] *:not(svg):not(path) {
+      color: ${TIDIO_BRAND_COLOR} !important;
+      font-family: var(--font-mulish), var(--font-inter), system-ui, sans-serif !important;
+    }
+  `;
+}
+
 function syncHostPageTidioOffsetStyle(): void {
-  const css = tidioMobileBottomCss();
+  const css = `${tidioMobileBottomCss()}\n${tidioHostBrandColorCss()}`;
   let el = document.getElementById(HOST_OFFSET_STYLE_ID);
   if (!el) {
     el = document.createElement('style');
@@ -39,13 +80,14 @@ function syncHostPageTidioOffsetStyle(): void {
   el.textContent = css;
 }
 
-function applyTidioMobileBottomOffset(): void {
+function applyTidioBrandStyles(): void {
   syncHostPageTidioOffsetStyle();
   const api = getTidioChatApi();
   if (!api?.adjustStyles) {
     return;
   }
   api.adjustStyles(tidioMobileBottomCss());
+  api.adjustStyles(tidioBrandColorCss());
 }
 
 function useTidioActivation(): boolean {
@@ -100,14 +142,14 @@ export function TidioDeferredLoader() {
     loadTidioScript();
 
     const onTidioReady = () => {
-      applyTidioMobileBottomOffset();
-      window.setTimeout(applyTidioMobileBottomOffset, 300);
-      window.setTimeout(applyTidioMobileBottomOffset, 900);
-      window.setTimeout(applyTidioMobileBottomOffset, 2500);
+      applyTidioBrandStyles();
+      window.setTimeout(applyTidioBrandStyles, 300);
+      window.setTimeout(applyTidioBrandStyles, 900);
+      window.setTimeout(applyTidioBrandStyles, 2500);
     };
 
     document.addEventListener('tidioChat-ready', onTidioReady);
-    applyTidioMobileBottomOffset();
+    applyTidioBrandStyles();
 
     return () => {
       document.removeEventListener('tidioChat-ready', onTidioReady);

@@ -9,6 +9,7 @@ import { ListFilter, Search, Trash2, X } from 'lucide-react';
 import { useTranslation } from '../../../../lib/i18n-client';
 import type { useOrders } from '../useOrders';
 import { ADMIN_ORDER_STATUS_I18N_KEY } from '../utils/order-status-labels';
+import { ADMIN_FILTER_TOGGLE_ACTIVE_CLASS } from '../../components/admin-button.classes';
 
 interface OrdersFiltersProps {
   statusFilter: string;
@@ -244,7 +245,7 @@ export function OrdersFilters({
                 hasAnythingToClear
                   ? 'bg-red-500 text-white hover:bg-red-600'
                   : panelOpen
-                    ? 'bg-slate-900 text-white hover:bg-slate-800'
+                    ? ADMIN_FILTER_TOGGLE_ACTIVE_CLASS
                     : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
               }`}
               aria-label={

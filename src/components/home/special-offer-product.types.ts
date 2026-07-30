@@ -33,4 +33,6 @@ export interface SpecialOfferProduct {
    * First-paint shells before any listing payload (no slug yet). Disables links and side actions.
    */
   shellPlaceholder?: boolean;
+  /** Listing / default variant SKU shown under the title. */
+  sku?: string | null;
 }

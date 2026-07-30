@@ -52,7 +52,7 @@ export function ProductsShopLoadingSkeleton({ variant = 'full' }: ProductsShopLo
       aria-busy="true"
       aria-label={t('common.ariaLabels.loadingShop')}
     >
-      <div className="marco-header-container pt-[58px]">
+      <div className="marco-header-container pt-3 min-[744px]:pt-[58px]">
         <div className="flex flex-col min-[744px]:flex-row min-[744px]:gap-5 xl:gap-8">
           <aside className="hidden w-[16rem] shrink-0 min-[744px]:block xl:w-[20rem]" aria-hidden>
             <div className="space-y-3 border-r border-slate-200/90 pb-4 dark:border-white/15 min-[744px]:pr-3 xl:space-y-4 xl:pb-6 xl:pr-6">

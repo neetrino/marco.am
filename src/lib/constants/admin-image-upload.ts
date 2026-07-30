@@ -1,5 +1,5 @@
 export const ADMIN_IMAGE_MIME = 'image/webp' as const;
-export const ADMIN_IMAGE_ACCEPT = 'image/webp' as const;
+export const ADMIN_IMAGE_ACCEPT = 'image/*' as const;
 
 export type AdminImageUploadProfile = 'catalog' | 'banner' | 'logo';
 
@@ -20,7 +20,7 @@ export const ADMIN_IMAGE_MAX_BYTES: Record<AdminImageUploadProfile, number> = {
   logo: 200 * 1024,
 };
 
-/** Max raw WebP file before client compression (sanity limit). */
+/** Max raw image file before client conversion/compression (sanity limit). */
 export const ADMIN_IMAGE_MAX_RAW_BYTES: Record<AdminImageUploadProfile, number> = {
   catalog: 2 * 1024 * 1024,
   banner: 3 * 1024 * 1024,

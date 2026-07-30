@@ -3,6 +3,9 @@ import { getCorsAllowedOrigins } from "@/lib/config/deployment-env";
 
 const CSRF_EXEMPT_PATHS = new Set([
   "/api/v1/payments/webhook",
+  "/api/v1/payments/idram/callback",
+  "/api/v1/payments/idram/mock-complete",
+  "/wc-api/idram_result",
   // Internal loopback warm-up trigger (no Origin header); guarded by its own
   // localhost/secret authorization in the route handler, so CSRF is redundant.
   "/api/v1/internal/warm-storefront-listing",
@@ -13,7 +16,11 @@ function isUnsafeMethod(method: string): boolean {
 }
 
 function isCsrfExemptPath(pathname: string): boolean {
-  return CSRF_EXEMPT_PATHS.has(pathname);
+  if (CSRF_EXEMPT_PATHS.has(pathname)) {
+    return true;
+  }
+  // Provider server-to-server POSTs (Idram RESULT and legacy WC aliases).
+  return pathname.startsWith("/wc-api/");
 }
 
 function hasBearerAuthorization(request: NextRequest): boolean {

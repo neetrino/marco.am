@@ -8,6 +8,10 @@ import type { ProductPdpNavigationSeed } from '@/lib/product-pdp/pdp-navigation-
 import type { CompareClientItem } from '@/lib/compare/compare-client';
 import { formatCatalogPrice, type CurrencyCode } from '@/lib/currency';
 import { ProductImagePlaceholder } from '@/components/ProductImagePlaceholder';
+import {
+  MARCO_SLATE_ICON_CHIP_CLASS,
+  MARCO_SLATE_PILL_BUTTON_CLASS,
+} from '@/lib/constants/marco-brand-colors';
 
 export type CompareTableProduct = {
   id: string;
@@ -103,12 +107,12 @@ export function CompareCategoryTable({
                 <button
                   type="button"
                   onClick={(e) => handleRemove(e, product.id)}
-                  className="group absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full transition-all hover:bg-marco-yellow"
+                  className={`absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full ${MARCO_SLATE_ICON_CHIP_CLASS}`}
                   title={t('common.buttons.remove')}
                   aria-label={t('common.buttons.remove')}
                 >
                   <svg
-                    className="h-4 w-4 !text-[#9ca3af] transition-colors group-hover:!text-[#383838] dark:group-hover:!text-[#383838]"
+                    className="h-4 w-4 text-white"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -255,7 +259,7 @@ export function CompareCategoryTable({
                       type="button"
                       onClick={(e) => handleAddToCart(e, product)}
                       disabled={addingToCart.has(product.id)}
-                      className="inline-flex h-10 items-center justify-center whitespace-nowrap rounded-full bg-marco-yellow px-6 text-sm font-bold !text-[#383838] transition-[filter] hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50 dark:!text-[#383838]"
+                      className={`inline-flex h-10 items-center justify-center whitespace-nowrap rounded-full px-6 text-sm font-bold transition-[filter] disabled:cursor-not-allowed disabled:opacity-50 ${MARCO_SLATE_PILL_BUTTON_CLASS}`}
                     >
                       {addingToCart.has(product.id)
                         ? t('common.messages.adding')

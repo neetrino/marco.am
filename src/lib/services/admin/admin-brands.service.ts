@@ -2,11 +2,18 @@ import { db } from "@white-shop/db";
 import { assertPersistableBrandLogoUrl } from "@/lib/services/admin/brand-logo-storage";
 import { toSlug } from "@/lib/utils/slug";
 import { logger } from "@/lib/utils/logger";
+import { revalidateStorefrontBrands } from "@/lib/revalidate-storefront";
+import { invalidateHomeBrandPartnersPublicCache } from "@/lib/services/read-through-json-cache";
 import { revalidateProductCache } from "./admin-products-update/cache-revalidator";
 import {
   syncProductListingReadModelBatch,
   syncProductListingReadModelByBrand,
 } from "@/lib/read-model/product-read-model-sync";
+
+async function refreshStorefrontBrandSurfaces(): Promise<void> {
+  await invalidateHomeBrandPartnersPublicCache();
+  revalidateStorefrontBrands();
+}
 
 class AdminBrandsService {
   /**
@@ -111,6 +118,8 @@ class AdminBrandsService {
 
     await syncProductListingReadModelByBrand(brand.id);
 
+    await refreshStorefrontBrandSurfaces();
+
     return {
       data: {
         id: brand.id,
@@ -211,6 +220,8 @@ class AdminBrandsService {
 
     await syncProductListingReadModelByBrand(brandId);
 
+    await refreshStorefrontBrandSurfaces();
+
     return {
       data: {
         id: updatedBrand!.id,
@@ -282,6 +293,8 @@ class AdminBrandsService {
     await Promise.all(
       linkedProducts.map((product) => revalidateProductCache(product.id, product.translations[0]?.slug))
     );
+
+    await refreshStorefrontBrandSurfaces();
 
     logger.devLog('✅ [ADMIN SERVICE] Brand deleted:', brandId);
     return { success: true, detachedProductsCount: linkedProducts.length };

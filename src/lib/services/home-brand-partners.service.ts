@@ -119,32 +119,26 @@ async function loadStorage(): Promise<HomeBrandPartnersStorage> {
  * The projection already encodes "published, non-deleted, browsable" products, so the
  * result set matches the PLP and resolves via a single indexed `GROUP BY`.
  */
-async function fetchListedBrandIds(): Promise<Set<string>> {
-  const grouped = await db.productListingRow.groupBy({
-    by: ["brandId"],
-    where: { isPublished: true, deletedAt: null, brandId: { not: null } },
-  });
+async function fetchPublishedBrands(ids?: string[]): Promise<BrandRow[]> {
+  const where: {
+    published: true;
+    deletedAt: null;
+    id?: { in: string[] };
+  } = {
+    published: true,
+    deletedAt: null,
+  };
 
-  const ids = new Set<string>();
-  for (const row of grouped) {
-    if (row.brandId) {
-      ids.add(row.brandId);
+  if (ids !== undefined) {
+    const uniqueIds = [...new Set(ids.filter(Boolean))];
+    if (uniqueIds.length === 0) {
+      return [];
     }
-  }
-  return ids;
-}
-
-async function fetchBrandsWithListedProducts(ids?: string[]): Promise<BrandRow[]> {
-  const listedBrandIds = await fetchListedBrandIds();
-  const allowedIds =
-    ids !== undefined ? ids.filter((id) => listedBrandIds.has(id)) : [...listedBrandIds];
-
-  if (allowedIds.length === 0) {
-    return [];
+    where.id = { in: uniqueIds };
   }
 
   return db.brand.findMany({
-    where: { published: true, deletedAt: null, id: { in: allowedIds } },
+    where,
     include: {
       translations: true,
     },
@@ -186,14 +180,14 @@ export const homeBrandPartnersService = {
 
   async getPublicPayload(localeRaw: string | undefined): Promise<HomeBrandPartnersPublicPayload> {
     const locale = normalizeLocale(localeRaw);
-    const cacheKey = `home:brand-partners:public:v5:${locale}`;
+    const cacheKey = `home:brand-partners:public:v6:${locale}`;
 
     return getCachedJson(cacheKey, BRAND_PARTNERS_PUBLIC_CACHE_TTL_SEC, async () => {
       const storage = await loadStorage();
       const sectionTitle = storage.sectionTitle[locale];
 
       if (storage.entries.length === 0) {
-        const brands = await fetchBrandsWithListedProducts(undefined);
+        const brands = await fetchPublishedBrands(undefined);
         return {
           sectionTitle,
           brands: buildFromAll(brands, locale),
@@ -201,7 +195,7 @@ export const homeBrandPartnersService = {
       }
 
       const ids = [...new Set(storage.entries.map((e) => e.brandId))];
-      const rows = await fetchBrandsWithListedProducts(ids);
+      const rows = await fetchPublishedBrands(ids);
       const brandById = new Map(rows.map((b) => [b.id, b]));
       return {
         sectionTitle,

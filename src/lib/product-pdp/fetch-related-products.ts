@@ -22,6 +22,7 @@ export type RelatedProductRow = {
   title: string;
   price: number;
   defaultVariantId?: string | null;
+  sku?: string | null;
   originalPrice?: number | null;
   compareAtPrice: number | null;
   discountPercent?: number | null;

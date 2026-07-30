@@ -1,5 +1,5 @@
-import { FEATURED_PRODUCTS_VISIBLE_COUNT } from '@/components/featured-products-tabs.constants';
 import { SPECIAL_OFFERS_PRODUCTS_LIMIT } from '@/constants/specialOffersSection';
+import { HOME_NEW_ARRIVALS_SELECTION_POOL_SIZE } from '@/lib/home/home-new-arrivals-selection';
 import type { LanguageCode } from '@/lib/language';
 import { getProductsPlpReadModelPayload } from '@/lib/read-model/products-plp-read-model';
 import { homeBrandPartnersService } from '@/lib/services/home-brand-partners.service';
@@ -32,9 +32,14 @@ export async function warmHomeListingCache(): Promise<void> {
       }),
       getProductsPlpReadModelPayload({
         ...HOME_STRIP_LISTING_BASE,
-        limit: String(FEATURED_PRODUCTS_VISIBLE_COUNT),
+        limit: String(HOME_NEW_ARRIVALS_SELECTION_POOL_SIZE),
         lang,
         filter: 'new',
+      }),
+      getProductsPlpReadModelPayload({
+        ...HOME_STRIP_LISTING_BASE,
+        limit: String(HOME_NEW_ARRIVALS_SELECTION_POOL_SIZE),
+        lang,
       }),
       homeBrandPartnersService.getPublicPayload(lang),
       bannerManagementService.getPublicSlotPayload({

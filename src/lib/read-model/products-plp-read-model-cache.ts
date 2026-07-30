@@ -4,7 +4,7 @@ import type { PlpReadModelSearchParams } from './products-plp-read-model-types';
 /** Backstop TTL on top of on-demand invalidation (projection rebuild clears the cache). */
 export const PRODUCTS_PLP_CACHE_TTL_SEC = 120;
 
-const PLP_LISTING_CACHE_PREFIX = 'cache:products:plp:v1';
+const PLP_LISTING_CACHE_PREFIX = 'cache:products:plp:v2';
 const PLP_FILTERS_CACHE_PREFIX = 'cache:products:filters:v1';
 
 function normalizeToken(value: string | undefined): string {

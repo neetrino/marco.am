@@ -5,6 +5,7 @@ import { Heart, X } from 'lucide-react';
 import { CompareIcon } from '../icons/CompareIcon';
 import { HeaderNavbarCartIcon } from '../icons/HeaderNavbarCartIcon';
 import { NoPriceArrowIcon } from '../icons/NoPriceArrowIcon';
+import { MARCO_SLATE_ICON_ACTION_CLASS } from '../../lib/constants/marco-brand-colors';
 import { useTranslation } from '../../lib/i18n-client';
 
 interface ProductCardActionsProps {
@@ -49,7 +50,7 @@ export function ProductCardActions({
         className={`${buttonSize} rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
           isInCompare
             ? 'border-marco-yellow bg-marco-yellow text-marco-black shadow-lg dark:border-marco-yellow dark:bg-marco-yellow dark:!text-[#383838]'
-            : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50 dark:border-marco-black dark:bg-marco-black dark:text-white dark:hover:border-marco-black dark:hover:bg-marco-black'
+            : MARCO_SLATE_ICON_ACTION_CLASS
         }`}
         title={isInCompare ? t('common.messages.removedFromCompare') : t('common.messages.addedToCompare')}
         aria-label={isInCompare ? t('common.ariaLabels.removeFromCompare') : t('common.ariaLabels.addToCompare')}
@@ -61,7 +62,7 @@ export function ProductCardActions({
         <button
           type="button"
           onClick={onWishlistToggle}
-          className={`${buttonSize} rounded-full border-2 border-gray-200 bg-white text-gray-700 flex items-center justify-center transition-all duration-200 hover:border-gray-300 hover:bg-gray-50 dark:border-marco-black dark:bg-marco-black dark:text-white dark:hover:border-marco-black dark:hover:bg-marco-black`}
+          className={`${buttonSize} rounded-full border-2 ${MARCO_SLATE_ICON_ACTION_CLASS} flex items-center justify-center transition-all duration-200`}
           title={t('common.messages.removedFromWishlist')}
           aria-label={t('common.ariaLabels.removeFromWishlist')}
         >
@@ -74,7 +75,7 @@ export function ProductCardActions({
           className={`${buttonSize} rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
             isInWishlist
               ? 'border-red-600 bg-red-600 text-white shadow-lg dark:border-red-600 dark:bg-red-600 dark:text-white'
-              : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50 dark:border-marco-black dark:bg-marco-black dark:text-white dark:hover:border-marco-black dark:hover:bg-marco-black'
+              : MARCO_SLATE_ICON_ACTION_CLASS
           }`}
           title={isInWishlist ? t('common.messages.removedFromWishlist') : t('common.messages.addedToWishlist')}
           aria-label={isInWishlist ? t('common.ariaLabels.removeFromWishlist') : t('common.ariaLabels.addToWishlist')}

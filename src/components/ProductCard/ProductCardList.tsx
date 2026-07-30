@@ -6,12 +6,17 @@ import Image from 'next/image';
 import type { MouseEvent } from 'react';
 import type { ProductListingBrand } from '@/lib/types/product-listing-brand';
 import { formatCatalogPrice, type CurrencyCode } from '../../lib/currency';
+import { useTranslation } from '@/lib/i18n-client';
 import { ProductCardBrandMark } from './ProductCardBrandMark';
 import { ProductColors } from './ProductColors';
 import { ProductCardActions } from './ProductCardActions';
 import { ProductImagePlaceholder } from '../ProductImagePlaceholder';
 import type { ProductLabel } from '../ProductLabels';
 import { ProductPricePromoBadge } from './ProductPricePromoBadge';
+import {
+  PRODUCT_CARD_LIST_SURFACE_CLASS,
+  PRODUCT_CARD_PRICE_CLASS,
+} from './product-card-price.constants';
 
 interface ProductCardListProps {
   product: {
@@ -30,6 +35,7 @@ interface ProductCardListProps {
     isSpecialPrice?: boolean;
     colors?: Array<{ value: string; imageUrl?: string | null; colors?: string[] | null }>;
     categories?: Array<{ id: string; slug: string; title: string }>;
+    sku?: string | null;
   };
   currency: CurrencyCode;
   isInWishlist: boolean;
@@ -57,6 +63,7 @@ export function ProductCardList({
   onAddToCart,
   wishlistPage = false,
 }: ProductCardListProps) {
+  const { t } = useTranslation();
   const hasDisplayPrice = product.price > 0;
   const listSurfaceClass = wishlistPage
     ? 'border border-gray-200 shadow-sm dark:border-white/30'
@@ -64,7 +71,7 @@ export function ProductCardList({
 
   return (
     <div
-      className={`bg-white rounded-lg overflow-hidden hover:bg-gray-50 transition-colors ${listSurfaceClass}`}
+      className={`bg-white rounded-lg overflow-hidden hover:bg-gray-50 transition-colors ${listSurfaceClass} ${PRODUCT_CARD_LIST_SURFACE_CLASS}`}
     >
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 px-5 sm:px-6 py-4 sm:py-5">
         <ProductPdpPrefetchLink
@@ -129,6 +136,11 @@ export function ProductCardList({
             <h3 className="line-clamp-2 text-xl font-medium text-gray-900 transition-colors sm:text-2xl">
               {product.title}
             </h3>
+            {product.sku ? (
+              <p className="mt-0.5 truncate text-sm text-gray-500" title={product.sku}>
+                {t('common.messages.sku')}: {product.sku}
+              </p>
+            ) : null}
             <div className="mt-1">
               {product.brand ? (
                 <ProductCardBrandMark
@@ -149,7 +161,7 @@ export function ProductCardList({
           {hasDisplayPrice ? (
             <div className="flex w-full flex-shrink-0 flex-col sm:w-auto">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xl font-semibold text-marco-black sm:text-2xl">
+                <span className={`text-xl font-semibold sm:text-2xl ${PRODUCT_CARD_PRICE_CLASS}`}>
                   {formatCatalogPrice(product.price, currency)}
                 </span>
                 <ProductPricePromoBadge

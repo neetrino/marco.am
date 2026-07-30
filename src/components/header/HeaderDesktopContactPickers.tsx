@@ -16,13 +16,14 @@ import {
   HEADER_CONTACT_PICKER_DROPDOWN_Z_CLASS,
   HEADER_FIGMA_CONTACT_ADDRESS_ICON_TEXT_GAP_CLASS,
   HEADER_FIGMA_CONTACT_PHONE_ICON_TEXT_GAP_CLASS,
+  HEADER_INK_CLASS,
 } from './header.constants';
 
 const DROPDOWN_PANEL_CLASS =
   `absolute right-0 top-full ${HEADER_CONTACT_PICKER_DROPDOWN_Z_CLASS} mt-2 max-h-[min(24rem,70vh)] w-[min(20rem,calc(100vw-2rem))] overflow-y-auto overflow-x-hidden rounded-xl border border-gray-200/90 bg-white py-2 shadow-xl dark:border-white/15 dark:bg-[var(--app-bg)]`;
 
 const TRIGGER_BASE_CLASS =
-  'flex h-10 shrink-0 items-center text-marco-text transition-colors hover:text-marco-black dark:text-white/82 dark:hover:text-white';
+  `flex h-10 shrink-0 items-center ${HEADER_INK_CLASS} transition-opacity hover:opacity-90 dark:text-white/82 dark:hover:text-white`;
 
 type PhonePickerProps = {
   pickerRef: Ref<HTMLDivElement>;
@@ -154,7 +155,7 @@ function HeaderDesktopAddressPicker({
                   role="menuitem"
                   href={contactLocationMapHref(loc.id)}
                   aria-label={mapLinkAriaLabel}
-                  className="mx-1 mb-1 mt-1 block rounded-md px-2 py-2 text-left text-xs font-medium leading-snug text-marco-text no-underline transition-colors hover:bg-marco-gray/80 hover:text-marco-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-marco-black/25 dark:text-white/88 dark:hover:bg-white/10 dark:hover:text-white dark:focus-visible:outline-white/30"
+                  className={`mx-1 mb-1 mt-1 block rounded-md px-2 py-2 text-left text-xs font-medium leading-snug ${HEADER_INK_CLASS} no-underline transition-colors hover:bg-marco-gray/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-marco-black/25 dark:text-white/88 dark:hover:bg-white/10 dark:focus-visible:outline-white/30`}
                 >
                   {loc.address}
                 </Link>

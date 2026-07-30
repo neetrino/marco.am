@@ -14,6 +14,7 @@ import { buildCategoryTree, getAncestorIds, getDescendantIds } from '../utils';
 import { getLocalizedCategoryTitle } from '../utils';
 import { assessCategoryHierarchyUpdateRisk } from '@/lib/services/admin/admin-categories-hierarchy-guard';
 import type { Category, CategoryFormData } from '../types';
+import { ADMIN_LOCALE_TAB_ACTIVE_CLASS } from '../../components/admin-button.classes';
 
 type CategoryLocale = 'hy' | 'en' | 'ru';
 
@@ -225,7 +226,7 @@ export function EditCategoryModal({
                     onClick={() => setActiveTitleLocaleTab(tab.code)}
                     className={`rounded-md border px-3 py-1.5 text-xs font-semibold transition-colors ${
                       activeTitleLocaleTab === tab.code
-                        ? 'border-slate-900 bg-slate-900 text-white'
+                        ? ADMIN_LOCALE_TAB_ACTIVE_CLASS
                         : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900'
                     }`}
                     aria-pressed={activeTitleLocaleTab === tab.code}

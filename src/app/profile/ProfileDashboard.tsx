@@ -3,6 +3,7 @@ import { Button, Card } from '@shop/ui';
 import { formatPriceInCurrency, convertPrice, type CurrencyCode } from '../../lib/currency';
 import { getStatusColor, getPaymentStatusColor, getFulfillmentStatusColor } from './utils';
 import type { DashboardData, ProfileTab } from './types';
+import { PROFILE_PRIMARY_BUTTON_CLASS, PROFILE_QUICK_ACTION_BUTTON_CLASS } from './profile-button.classes';
 
 interface ProfileDashboardProps {
   dashboardData: DashboardData | null;
@@ -125,7 +126,7 @@ export function ProfileDashboard({
             <p className="text-gray-600 mb-4">{t('profile.dashboard.noOrders')}</p>
             <Link
               href="/products"
-              className="inline-flex items-center px-6 py-3 text-sm font-medium rounded-full bg-marco-black text-white hover:opacity-90 transition-opacity"
+              className={`inline-flex items-center ${PROFILE_PRIMARY_BUTTON_CLASS}`}
             >
               {t('profile.dashboard.startShopping')}
             </Link>
@@ -200,7 +201,7 @@ export function ProfileDashboard({
           <button
             type="button"
             onClick={() => onTabChange('orders')}
-            className="inline-flex w-full items-center justify-center whitespace-nowrap rounded-full border border-gray-300 bg-white px-5 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+            className={PROFILE_QUICK_ACTION_BUTTON_CLASS}
           >
             <span className="inline-flex items-center gap-2 whitespace-nowrap">
               <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -212,7 +213,7 @@ export function ProfileDashboard({
           <button
             type="button"
             onClick={() => onTabChange('addresses')}
-            className="inline-flex w-full items-center justify-center whitespace-nowrap rounded-full border border-gray-300 bg-white px-5 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+            className={PROFILE_QUICK_ACTION_BUTTON_CLASS}
           >
             <span className="inline-flex items-center gap-2 whitespace-nowrap">
               <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -224,7 +225,7 @@ export function ProfileDashboard({
           </button>
           <Link
             href="/products"
-            className="inline-flex w-full items-center justify-center whitespace-nowrap rounded-full border border-gray-300 bg-white px-5 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+            className={PROFILE_QUICK_ACTION_BUTTON_CLASS}
           >
             <span className="inline-flex items-center gap-2 whitespace-nowrap">
               <span className="inline-flex items-center gap-2 whitespace-nowrap">

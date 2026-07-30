@@ -2,8 +2,8 @@
   "title": "Welcome Back",
   "subtitle": "Sign in to your account to continue",
   "form": {
-    "emailOrPhone": "Email or Phone",
-    "emailOrPhonePlaceholder": "marcofurniture@mail.ru or +374 XX XXX XXX",
+    "email": "Email",
+    "emailPlaceholder": "marcofurniture@mail.ru",
     "password": "Password",
     "passwordPlaceholder": "••••••••",
     "forgotPassword": "Forgot password?",
@@ -13,7 +13,7 @@
     "signUp": "Sign Up"
   },
   "errors": {
-    "emailOrPhoneRequired": "Please enter your email or phone number",
+    "emailRequired": "Please enter your email",
     "passwordRequired": "Please enter your password",
     "loginFailed": "Login failed. Please try again."
   },

@@ -2,6 +2,18 @@
  * Row-2 compact toolbar (narrow categories pill, tight search pill, etc.) from `md` through this width — includes iPad Pro 12.9″ landscape (~1366px). Full Figma desktop row-2 from 1367px.
  * Tailwind: `md:max-[1366px]:…` / `min-[1367px]:…` (keep literals static for JIT).
  */
+
+/** Brand ink (#3F5466) — nav labels, mega-menu, yellow-surface text. */
+export const HEADER_INK_CLASS = 'text-[var(--marco-slate)]';
+export const HEADER_INK_IMPORTANT_CLASS = '!text-[var(--marco-slate)]';
+export const HEADER_INK_DARK_IMPORTANT_CLASS = 'dark:!text-[var(--marco-slate)]';
+export const HEADER_INK_HOVER_IMPORTANT_ONLY_CLASS = 'hover:!text-[var(--marco-slate)]';
+export const HEADER_INK_SURFACE_CLASS = 'bg-[var(--marco-slate)]';
+export const HEADER_INK_SURFACE_IMPORTANT_CLASS = '!bg-[var(--marco-slate)]';
+export const HEADER_INK_SURFACE_DARK_IMPORTANT_CLASS = 'dark:!bg-[var(--marco-slate)]';
+export const HEADER_INK_HOVER_CLASS = 'hover:text-[var(--marco-slate)]';
+export const HEADER_INK_HOVER_IMPORTANT_CLASS = 'dark:hover:!text-[var(--marco-slate)]';
+
 const HEADER_TABLET_ROW2_MAX_WIDTH_PX = 1366;
 
 /**
@@ -178,7 +190,7 @@ export function getHeaderSearchSubmitWidthClass(tabletLike: boolean): string {
 export function getHeaderSearchSubmitClass(tabletLike: boolean): string {
   const radius = getHeaderSearchFormRadiusClass(tabletLike);
   const textShrink = tabletLike ? 'md:text-[11px]' : '';
-  return `flex items-center justify-center self-center ${HEADER_SEARCH_SUBMIT_HEIGHT_CLASS} shrink-0 bg-marco-yellow text-xs font-semibold leading-normal text-[#383838] dark:text-[#383838] transition-[filter] hover:brightness-95 active:brightness-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/15 ${textShrink} ${radius}`.trim();
+  return `flex items-center justify-center self-center ${HEADER_SEARCH_SUBMIT_HEIGHT_CLASS} shrink-0 bg-marco-yellow text-xs font-semibold leading-normal ${HEADER_INK_IMPORTANT_CLASS} ${HEADER_INK_DARK_IMPORTANT_CLASS} transition-[filter] hover:brightness-95 active:brightness-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/15 ${textShrink} ${radius}`.trim();
 }
 
 export function getHeaderCategoryButtonClass(tabletLike: boolean, ipadDesktopRow2Like = false): string {
@@ -221,9 +233,9 @@ export function getHeaderToolbarIconSurfaceClass(active: boolean): string {
     'transition-[background-color,color] duration-200 ' +
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/25';
   if (active) {
-    return `${frame} bg-marco-yellow text-marco-black dark:!bg-marco-yellow dark:!text-[#383838]`.trim();
+    return `${frame} bg-marco-yellow text-marco-black dark:!bg-marco-yellow ${HEADER_INK_DARK_IMPORTANT_CLASS}`.trim();
   }
-  return `${frame} bg-marco-gray text-gray-900 hover:bg-marco-yellow hover:text-marco-black dark:!bg-[#383838] dark:text-white dark:hover:!bg-marco-yellow dark:hover:!text-[#383838]`.trim();
+  return `${frame} bg-marco-gray ${HEADER_INK_CLASS} hover:bg-marco-yellow hover:text-marco-black ${HEADER_INK_SURFACE_DARK_IMPORTANT_CLASS} dark:text-white dark:hover:!bg-marco-yellow ${HEADER_INK_DARK_IMPORTANT_CLASS}`.trim();
 }
 
 /**
@@ -238,9 +250,9 @@ export function getHeaderThemeToggleButtonClass(resolvedDark: boolean): string {
     'transition-[background-color,color,filter] duration-200 ' +
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/25';
   if (resolvedDark) {
-    return `${frame} !bg-[#383838] text-white hover:!bg-marco-yellow hover:!text-[#383838] dark:!bg-[#383838] dark:hover:!bg-marco-yellow dark:hover:!text-[#383838]`.trim();
+    return `${frame} ${HEADER_INK_SURFACE_IMPORTANT_CLASS} text-white hover:!bg-marco-yellow ${HEADER_INK_HOVER_IMPORTANT_ONLY_CLASS} ${HEADER_INK_SURFACE_DARK_IMPORTANT_CLASS} dark:hover:!bg-marco-yellow ${HEADER_INK_HOVER_IMPORTANT_CLASS}`.trim();
   }
-  return `${frame} bg-marco-yellow text-[#383838] hover:brightness-95 active:brightness-90`.trim();
+  return `${frame} bg-marco-yellow ${HEADER_INK_CLASS} hover:brightness-95 active:brightness-90`.trim();
 }
 
 /** Cart pill — same height as row-2 strip; wider pill for icon + price (Figma 111:4281 — gap 11px icon ↔ price) */
@@ -255,17 +267,17 @@ const HEADER_CART_BUTTON_CLASS =
 export function getHeaderCartButtonClass(resolvedDark: boolean): string {
   const frame = `${HEADER_CART_BUTTON_CLASS} relative`;
   if (resolvedDark) {
-    return `${frame} !bg-marco-yellow !text-[#383838] dark:!bg-marco-yellow dark:!text-[#383838]`.trim();
+    return `${frame} !bg-marco-yellow ${HEADER_INK_IMPORTANT_CLASS} dark:!bg-marco-yellow ${HEADER_INK_DARK_IMPORTANT_CLASS}`.trim();
   }
-  return `${frame} bg-marco-yellow text-[#383838]`.trim();
+  return `${frame} bg-marco-yellow ${HEADER_INK_CLASS}`.trim();
 }
 
 /**
  * Mobile header top row — round dark controls (Figma 314:2501 search, 314:2503 menu).
- * Compact: `p-2.5` (10px), inner glyph 24×24px (`h-6 w-6`); fill `#383838`.
+ * Compact: `p-2.5` (10px), inner glyph 24×24px (`h-6 w-6`); fill brand slate.
  */
 export const HEADER_MOBILE_HEADER_ROUND_CONTROL_CLASS =
-  'flex shrink-0 items-center justify-center rounded-full bg-[#383838] p-2.5 text-white shadow-sm transition-[opacity,filter] hover:opacity-95 active:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/25';
+  `flex shrink-0 items-center justify-center rounded-full ${HEADER_INK_SURFACE_CLASS} p-2.5 text-white shadow-sm transition-[opacity,filter] hover:opacity-95 active:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/25`;
 
 /**
  * Desktop primary nav — current page: yellow pill via `::before` (unchanged width vs Figma gaps).
@@ -281,10 +293,9 @@ export function getHeaderPrimaryNavDesktopLinkClass(active: boolean): string {
     'after:pointer-events-none after:absolute after:inset-x-0 after:bottom-2 after:block after:h-1 after:origin-left ' +
     'after:scale-x-0 after:bg-marco-yellow after:content-[\'\'] after:transition-transform after:duration-300 ' +
     'after:ease-out ' +
-    'hover:text-marco-black dark:hover:text-[#383838] ' +
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/25';
   if (active) {
-    return `${shell} header-primary-nav-link--active before:opacity-100 after:scale-x-0 text-marco-black dark:text-[#383838]`.trim();
+    return `${shell} header-primary-nav-link--active before:opacity-100 after:scale-x-0 text-marco-black ${HEADER_INK_DARK_IMPORTANT_CLASS}`.trim();
   }
-  return `${shell} before:opacity-0 hover:after:scale-x-100 text-marco-text dark:text-white/88`.trim();
+  return `${shell} before:opacity-0 hover:after:scale-x-100 ${HEADER_INK_CLASS} dark:text-white/88`.trim();
 }

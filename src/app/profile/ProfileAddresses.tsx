@@ -4,6 +4,10 @@ import {
   getProfileAddressCountryLabel,
 } from '@/lib/constants/profile-address-country';
 import type { Address, UserProfile } from './types';
+import {
+  PROFILE_PRIMARY_BUTTON_CLASS,
+  PROFILE_OUTLINE_BUTTON_CLASS,
+} from './profile-button.classes';
 
 const ARMENIA_STATE_PROVINCE_OPTIONS = [
   'Yerevan',
@@ -61,7 +65,7 @@ export function ProfileAddresses({
               onResetForm();
               setShowAddressForm(!showAddressForm);
             }}
-            className="mt-1 w-full sm:mt-0 sm:w-auto !rounded-full !px-6 !py-3 !bg-marco-black !text-white !hover:bg-marco-black hover:opacity-90 transition-opacity"
+            className={`mt-1 w-full sm:mt-0 sm:w-auto ${PROFILE_PRIMARY_BUTTON_CLASS}`}
           >
             {showAddressForm ? t('profile.addresses.form.cancel') : `+ ${t('profile.addresses.addNew')}`}
           </Button>
@@ -113,12 +117,18 @@ export function ProfileAddresses({
               <span className="ml-2 text-sm text-gray-700">{t('profile.addresses.form.isDefault')}</span>
             </label>
             <div className="flex gap-2">
-              <Button type="submit" variant="primary" disabled={savingAddress}>
+              <Button
+                type="submit"
+                variant="primary"
+                disabled={savingAddress}
+                className={PROFILE_PRIMARY_BUTTON_CLASS}
+              >
                 {savingAddress ? t('profile.addresses.form.saving') : editingAddress ? t('profile.addresses.form.update') : t('profile.addresses.form.add')}
               </Button>
               <Button
                 type="button"
                 variant="outline"
+                className={PROFILE_OUTLINE_BUTTON_CLASS}
                 onClick={() => {
                   setShowAddressForm(false);
                   onResetForm();
@@ -175,6 +185,7 @@ export function ProfileAddresses({
                       <Button
                         variant="outline"
                         size="sm"
+                        className={PROFILE_OUTLINE_BUTTON_CLASS}
                         onClick={() => onSetDefault((address.id || address._id)!)}
                       >
                         {t('profile.addresses.setDefault')}
@@ -183,6 +194,7 @@ export function ProfileAddresses({
                     <Button
                       variant="outline"
                       size="sm"
+                      className={PROFILE_OUTLINE_BUTTON_CLASS}
                       onClick={() => onEdit(address)}
                     >
                       {t('profile.addresses.edit')}

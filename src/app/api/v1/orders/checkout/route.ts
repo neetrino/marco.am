@@ -45,7 +45,9 @@ const checkoutBodySchema = z
       .optional(),
     couponCode: z.string().trim().min(1).max(64).optional(),
     shippingMethod: z.string().min(1).optional(),
-    paymentMethod: z.string().min(1).optional(),
+    /** Client hint only — server recalculates shipping; accepted so .strict() does not 400. */
+    shippingAmount: z.number().nonnegative().optional(),
+    paymentMethod: z.enum(["cash", "idram", "arca"]).optional(),
   })
   .strict();
 
@@ -62,12 +64,20 @@ export async function POST(req: NextRequest) {
         const raw = await req.json();
         const parsed = checkoutBodySchema.safeParse(raw);
         if (!parsed.success) {
+          const flat = parsed.error.flatten();
           return NextResponse.json(
             {
               type: "https://api.shop.am/problems/validation-error",
               title: "Validation Error",
               status: 400,
-              detail: parsed.error.flatten().fieldErrors,
+              detail:
+                flat.formErrors[0] ??
+                Object.values(flat.fieldErrors).flat()[0] ??
+                "Validation failed",
+              errors: {
+                formErrors: flat.formErrors,
+                fieldErrors: flat.fieldErrors,
+              },
               instance: req.url,
             },
             {

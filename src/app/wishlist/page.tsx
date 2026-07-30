@@ -17,6 +17,7 @@ import {
   ensureLegacyWishlistMigratedForGuest,
   fetchWishlistPayload,
 } from '@/lib/wishlist/wishlist-client';
+import { MARCO_SLATE_PILL_BUTTON_CLASS } from '@/lib/constants/marco-brand-colors';
 
 const WISHLIST_PRODUCT_GRID_CLASS =
   'grid grid-cols-2 gap-4 sm:gap-5 md:grid-cols-3 lg:grid-cols-4 md:gap-6';
@@ -247,7 +248,7 @@ export default function WishlistPage() {
               <Button
                 variant="primary"
                 size="lg"
-                className="!bg-black !text-white !rounded-full !h-12 !px-10 inline-flex items-center justify-center leading-none whitespace-nowrap !hover:bg-black/90 transition-colors"
+                className={`${MARCO_SLATE_PILL_BUTTON_CLASS} !rounded-full !h-12 !px-10 inline-flex items-center justify-center leading-none whitespace-nowrap transition-[filter]`}
               >
                 {t('common.buttons.browseProducts')}
               </Button>

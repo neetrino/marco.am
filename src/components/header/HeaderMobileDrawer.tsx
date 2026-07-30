@@ -34,13 +34,13 @@ import {
   MOBILE_DRAWER_CLOSE_BTN_CLASS,
   MOBILE_DRAWER_CONTACT_COMPACT_CLASS,
   MOBILE_DRAWER_CTA_COMPACT_CLASS,
-  MOBILE_DRAWER_CTA_PILL_CLASS,
   MOBILE_DRAWER_MENU_HEADER_ROW_CLASS,
   MOBILE_DRAWER_CONTENT_MAX_CLASS,
   MOBILE_DRAWER_PANEL_CLASS,
   mobileDrawerCompactPillClass,
   mobileDrawerNavPillClass,
 } from './header-mobile-drawer.classes';
+import { HEADER_INK_CLASS } from './header.constants';
 
 type Props = {
   data: ReturnType<typeof useHeaderData>;
@@ -232,25 +232,7 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
                     </Link>
                   ) : null}
                 </>
-              ) : (
-                <>
-                  <Link
-                    href="/register"
-                    onClick={closeDrawer}
-                    className={MOBILE_DRAWER_CTA_PILL_CLASS}
-                  >
-                    {t('register.form.createAccount')}
-                  </Link>
-                  <Link
-                    href="/login"
-                    onClick={closeDrawer}
-                    className={`${mobileDrawerNavPillClass(false)} normal-case font-semibold`}
-                  >
-                    <span>{t('common.navigation.login')}</span>
-                    <ChevronRight className="h-5 w-5 shrink-0 opacity-50" aria-hidden />
-                  </Link>
-                </>
-              )}
+              ) : null}
             </nav>
 
               <footer className="mt-auto flex shrink-0 flex-col pb-1">
@@ -306,7 +288,7 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
                           <button
                             type="button"
                             onClick={() => setCallFlow('idle')}
-                            className="w-full py-2 text-center text-[11px] font-semibold uppercase tracking-wide text-marco-text/75 underline-offset-2 hover:text-marco-black hover:underline dark:text-zinc-400 dark:hover:text-white"
+                            className={`w-full py-2 text-center text-[11px] font-semibold uppercase tracking-wide ${HEADER_INK_CLASS} opacity-75 underline-offset-2 hover:underline dark:text-zinc-400 dark:hover:text-white`}
                           >
                             {t('contact.drawerCall.cancel')}
                           </button>

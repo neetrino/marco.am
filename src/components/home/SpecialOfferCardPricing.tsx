@@ -4,6 +4,7 @@ import { useState, type MouseEvent } from 'react';
 
 import { formatCatalogPrice } from '../../lib/currency';
 import type { CurrencyCode } from '../../lib/currency';
+import { PRODUCT_CARD_PRICE_CLASS } from '../ProductCard/product-card-price.constants';
 import {
   SpecialOfferCartFigmaIcon,
 } from './SpecialOfferCartFigmaArt';
@@ -53,7 +54,7 @@ export function SpecialOfferCardPricing({
   return (
     <div className="min-w-0 max-md:pr-0 md:[padding-right:var(--special-offers-price-pad-end)]">
       <p
-        className="font-black text-[#181111]"
+        className={`font-black ${PRODUCT_CARD_PRICE_CLASS}`}
         style={{
           fontSize: SPECIAL_OFFERS_PRICE_FONT_SIZE_PX,
           lineHeight: `${SPECIAL_OFFERS_PRICE_LINE_HEIGHT_PX}px`,
