@@ -40,6 +40,8 @@
     "backfill:product-attribute-values:apply": "tsx src/scripts/backfill-product-attribute-values.ts --execute",
     "cleanup:single-variant-attributes": "tsx src/scripts/cleanup-single-variant-product-attributes.ts",
     "cleanup:single-variant-attributes:apply": "tsx src/scripts/cleanup-single-variant-product-attributes.ts --execute",
+    "cleanup:guest-lists": "tsx src/scripts/cleanup-guest-lists.ts",
+    "cleanup:guest-lists:apply": "tsx src/scripts/cleanup-guest-lists.ts --execute",
     "rebuild:plp-read-model": "tsx src/scripts/rebuild-product-listing-read-model.ts",
     "rebuild:pdp-read-model": "tsx src/scripts/rebuild-product-pdp-read-model.ts",
     "marco:reconcile-manifest": "python3 scripts/build-marco-reconcile-manifest.py",

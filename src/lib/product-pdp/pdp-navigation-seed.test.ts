@@ -6,7 +6,7 @@ import {
   type ProductPdpNavigationSeed,
 } from '@/lib/product-pdp/pdp-navigation-seed';
 import { isPdpListingShell } from '@/lib/product-pdp/resolve-pdp-listing-shell';
-import type { Product } from '@/app/products/[slug]/types';
+import type { Product } from '@/app/(storefront)/products/[slug]/types';
 
 const baseSeed: ProductPdpNavigationSeed = {
   id: 'p1',

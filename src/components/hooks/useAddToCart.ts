@@ -11,9 +11,10 @@ import {
   readStoredGuestCart,
   runGuestCartMutation,
   upsertGuestCartItem,
-} from '@/app/cart/guest-cart-local';
+} from '@/app/(storefront)/cart/guest-cart-local';
 import { computeGuestCartTotalsFromStorage } from '@/lib/cart/guest-cart-totals';
-import { fetchGuestCartCatalogProducts } from '@/app/cart/guest-cart-catalog-fetch';
+import { fetchGuestCartCatalogProducts } from '@/app/(storefront)/cart/guest-cart-catalog-fetch';
+import { isValidProductSlug, productPdpHref } from '@/lib/product-pdp/pdp-slug';
 
 interface ProductDetails {
   id: string;
@@ -128,12 +129,15 @@ export function useAddToCart({
     }
 
     if (needsAttributeSelection) {
-      router.push(`/products/${encodeURIComponent(productSlug.trim())}`);
+      if (!isValidProductSlug(productSlug)) {
+        return;
+      }
+      router.push(productPdpHref(productSlug.trim()));
       return;
     }
 
     // Validate product slug before making API call
-    if (!productSlug || productSlug.trim() === '' || productSlug.includes(' ')) {
+    if (!isValidProductSlug(productSlug) || productSlug.includes(' ')) {
       console.error('❌ [PRODUCT CARD] Invalid product slug:', productSlug);
       alert(t('common.alerts.invalidProduct'));
       return;

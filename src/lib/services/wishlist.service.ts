@@ -1,14 +1,17 @@
 import { db } from "@white-shop/db";
-import { nanoid } from "nanoid";
 import {
   WISHLIST_MAX_ITEMS,
   WISHLIST_SESSION_MAX_AGE_SECONDS,
 } from "@/lib/constants/wishlist-session";
 import { extractMediaUrl } from "@/lib/utils/extractMediaUrl";
-import { logger } from "@/lib/utils/logger";
+
+const EXPIRY_TOUCH_THRESHOLD_RATIO = 0.5;
+const MILLISECONDS_PER_SECOND = 1000;
 
 function wishlistExpiresAt(): Date {
-  return new Date(Date.now() + WISHLIST_SESSION_MAX_AGE_SECONDS * 1000);
+  return new Date(
+    Date.now() + WISHLIST_SESSION_MAX_AGE_SECONDS * MILLISECONDS_PER_SECOND
+  );
 }
 
 type WishlistApiItem = {
@@ -26,7 +29,26 @@ type WishlistApiPayload = {
   };
 };
 
-async function touchWishlistExpiry(wishlistId: string): Promise<void> {
+function emptyWishlistPayload(): WishlistApiPayload {
+  return {
+    wishlist: {
+      id: "",
+      items: [],
+    },
+  };
+}
+
+async function touchWishlistExpiry(
+  wishlistId: string,
+  currentExpiresAt: Date
+): Promise<void> {
+  const touchThresholdMilliseconds =
+    WISHLIST_SESSION_MAX_AGE_SECONDS *
+    MILLISECONDS_PER_SECOND *
+    EXPIRY_TOUCH_THRESHOLD_RATIO;
+  if (currentExpiresAt.getTime() - Date.now() >= touchThresholdMilliseconds) {
+    return;
+  }
   await db.wishlist.update({
     where: { id: wishlistId },
     data: { expiresAt: wishlistExpiresAt() },
@@ -36,7 +58,7 @@ async function touchWishlistExpiry(wishlistId: string): Promise<void> {
 async function getOrCreateUserWishlist(userId: string): Promise<string> {
   const existing = await db.wishlist.findUnique({ where: { userId } });
   if (existing) {
-    await touchWishlistExpiry(existing.id);
+    await touchWishlistExpiry(existing.id, existing.expiresAt);
     return existing.id;
   }
   const created = await db.wishlist.create({
@@ -48,30 +70,20 @@ async function getOrCreateUserWishlist(userId: string): Promise<string> {
   return created.id;
 }
 
-/**
- * Resolves guest wishlist: valid session token loads row; invalid/missing token creates a new session.
- */
-async function ensureGuestWishlist(
+async function resolveGuestWishlist(
   sessionToken: string | undefined
-): Promise<{ wishlistId: string; sessionToken: string; created: boolean }> {
-  if (sessionToken) {
-    const row = await db.wishlist.findUnique({
-      where: { sessionToken },
-    });
-    if (row) {
-      await touchWishlistExpiry(row.id);
-      return { wishlistId: row.id, sessionToken, created: false };
-    }
+): Promise<{ wishlistId: string; sessionToken: string } | null> {
+  if (!sessionToken) {
+    return null;
   }
-  const token = nanoid(32);
-  const createdRow = await db.wishlist.create({
-    data: {
-      sessionToken: token,
-      expiresAt: wishlistExpiresAt(),
-    },
+  const row = await db.wishlist.findUnique({
+    where: { sessionToken },
   });
-  logger.debug("Wishlist: new guest session", { wishlistId: createdRow.id });
-  return { wishlistId: createdRow.id, sessionToken: token, created: true };
+  if (!row) {
+    return null;
+  }
+  await touchWishlistExpiry(row.id, row.expiresAt);
+  return { wishlistId: row.id, sessionToken };
 }
 
 async function assertProductWishlistable(productId: string): Promise<void> {
@@ -215,12 +227,15 @@ export async function getWishlistForGuest(
   fields: "full" | "ids" = "full"
 ): Promise<{
   payload: WishlistApiPayload;
-  sessionToken: string;
-  sessionCreated: boolean;
+  sessionToken?: string;
+  sessionExists: boolean;
 }> {
-  const { wishlistId, sessionToken: token, created } = await ensureGuestWishlist(sessionToken);
-  const payload = await buildWishlistPayload(wishlistId, locale, fields);
-  return { payload, sessionToken: token, sessionCreated: created };
+  const session = await resolveGuestWishlist(sessionToken);
+  if (!session) {
+    return { payload: emptyWishlistPayload(), sessionExists: false };
+  }
+  const payload = await buildWishlistPayload(session.wishlistId, locale, fields);
+  return { payload, sessionToken: session.sessionToken, sessionExists: true };
 }
 
 export async function removeWishlistItemForGuest(
@@ -229,13 +244,16 @@ export async function removeWishlistItemForGuest(
   locale: string
 ): Promise<{
   payload: WishlistApiPayload;
-  sessionToken: string;
-  sessionCreated: boolean;
+  sessionToken?: string;
+  sessionExists: boolean;
 }> {
-  const { wishlistId, sessionToken: token, created } = await ensureGuestWishlist(sessionToken);
+  const session = await resolveGuestWishlist(sessionToken);
+  if (!session) {
+    return { payload: emptyWishlistPayload(), sessionExists: false };
+  }
   await db.wishlistItem.deleteMany({
-    where: { wishlistId, productId },
+    where: { wishlistId: session.wishlistId, productId },
   });
-  const payload = await buildWishlistPayload(wishlistId, locale);
-  return { payload, sessionToken: token, sessionCreated: created };
+  const payload = await buildWishlistPayload(session.wishlistId, locale);
+  return { payload, sessionToken: session.sessionToken, sessionExists: true };
 }

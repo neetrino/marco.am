@@ -1,4 +1,4 @@
-import type { ShopGridProduct } from '@/app/products/shop-grid-product';
+import type { ShopGridProduct } from '@/app/(storefront)/products/shop-grid-product';
 import type { LanguageCode } from '@/lib/language';
 import { normalizePdpSlug } from '@/lib/product-pdp/pdp-slug';
 

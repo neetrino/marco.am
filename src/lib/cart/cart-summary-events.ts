@@ -1,4 +1,4 @@
-import type { Cart } from '../../app/cart/types';
+import type { Cart } from '../../app/(storefront)/cart/types';
 
 type CartSummaryEventDetail = {
   itemsCount: number;

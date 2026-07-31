@@ -33,9 +33,15 @@ export async function GET(req: NextRequest) {
     }
 
     const sessionToken = readWishlistSessionToken(req);
-    const { payload, sessionToken: token } = await getWishlistForGuest(sessionToken, locale, fields);
+    const {
+      payload,
+      sessionToken: token,
+      sessionExists,
+    } = await getWishlistForGuest(sessionToken, locale, fields);
     const res = NextResponse.json(payload);
-    applyWishlistSessionCookie(res, token);
+    if (sessionExists && token) {
+      applyWishlistSessionCookie(res, token);
+    }
     return res;
   } catch (error: unknown) {
     logger.error("Wishlist GET failed", { error });

@@ -1,4 +1,4 @@
-import type { Product } from "@/app/products/[slug]/types";
+import type { Product } from "@/app/(storefront)/products/[slug]/types";
 import type { LanguageCode } from "@/lib/language";
 import type { RelatedProductsApiResponse } from "@/lib/product-pdp/fetch-related-products";
 

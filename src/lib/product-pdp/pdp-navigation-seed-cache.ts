@@ -1,6 +1,6 @@
 import type { QueryClient } from '@tanstack/react-query';
 
-import type { Product } from '@/app/products/[slug]/types';
+import type { Product } from '@/app/(storefront)/products/[slug]/types';
 import { readLanguageCookie, type LanguageCode } from '@/lib/language';
 import { normalizePdpSlug } from '@/lib/product-pdp/pdp-slug';
 import { queryKeys } from '@/lib/query-keys';

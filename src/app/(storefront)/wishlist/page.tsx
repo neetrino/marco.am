@@ -1,0 +1,261 @@
+'use client';
+
+import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { Button } from '@shop/ui';
+import { apiClient } from '../../../lib/api-client';
+import { getStoredLanguage } from '../../../lib/language';
+import { useTranslation } from '../../../lib/i18n-client';
+import { useAuth } from '../../../lib/auth/AuthContext';
+import { logger } from "@/lib/utils/logger";
+import type { ProductListingBrand } from '@/lib/types/product-listing-brand';
+import { ProductsGridOfferCard } from '@/components/ProductsGridOfferCard';
+import { useIsMaxMd } from '@/components/home/use-is-max-md';
+import { toSpecialOfferProduct } from '@/lib/product-listing/to-special-offer-product';
+import {
+  ensureLegacyWishlistMigratedForGuest,
+  fetchWishlistPayload,
+} from '@/lib/wishlist/wishlist-client';
+import { MARCO_SLATE_PILL_BUTTON_CLASS } from '@/lib/constants/marco-brand-colors';
+
+const WISHLIST_PRODUCT_GRID_CLASS =
+  'grid grid-cols-2 gap-4 sm:gap-5 md:grid-cols-3 lg:grid-cols-4 md:gap-6';
+
+const WISHLIST_CARD_MAX_WIDTH_PX = 286;
+
+interface Product {
+  id: string;
+  slug: string;
+  title: string;
+  price: number;
+  originalPrice: number | null;
+  compareAtPrice: number | null;
+  discountPercent: number | null;
+  image: string | null;
+  inStock: boolean;
+  brand: ProductListingBrand | null;
+}
+
+const WISHLIST_PRODUCT_IDS_CHUNK = 500;
+
+/**
+ * Loads catalog rows for exact wishlist IDs (avoids PLP page slice missing items).
+ */
+async function fetchProductsForWishlistIds(ids: string[], lang: string): Promise<Product[]> {
+  if (ids.length === 0) {
+    return [];
+  }
+  const chunks: string[][] = [];
+  for (let i = 0; i < ids.length; i += WISHLIST_PRODUCT_IDS_CHUNK) {
+    chunks.push(ids.slice(i, i + WISHLIST_PRODUCT_IDS_CHUNK));
+  }
+  const responses = await Promise.all(
+    chunks.map((chunk) =>
+      apiClient.get<{
+        items: Product[];
+      }>('/api/v1/products/plp', {
+        params: {
+          lang,
+          ids: chunk.join(','),
+          limit: String(chunk.length),
+          includeFilters: '0',
+        },
+      })
+    )
+  );
+  return responses.flatMap((response) => response.items);
+}
+
+type FetchWishlistOptions = {
+  /** When true, skip full-page loading skeleton (e.g. after heart toggle on this page). */
+  silent?: boolean;
+};
+
+/**
+ * Wishlist page that shows saved products and supports lightweight CRUD actions.
+ */
+export default function WishlistPage() {
+  const { t } = useTranslation();
+  const router = useRouter();
+  const isMaxMd = useIsMaxMd();
+  const specialOfferLayout = isMaxMd ? 'mobileGrid' : 'default';
+  const { isLoggedIn, isLoading: authLoading } = useAuth();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  /**
+   * Fetches wishlist products for provided ids and updates component state.
+   */
+  const fetchWishlistProducts = useCallback(async (options?: FetchWishlistOptions) => {
+    const showLoading = !options?.silent;
+    try {
+      if (showLoading) {
+        setLoading(true);
+      }
+      const languagePreference = getStoredLanguage();
+      await ensureLegacyWishlistMigratedForGuest(languagePreference);
+      const payload = await fetchWishlistPayload(languagePreference);
+      const idsToLoad = payload.wishlist.items.map((item) => item.productId);
+      if (idsToLoad.length === 0) {
+        logger.devInfo('[Wishlist] Skip fetch because ids array is empty');
+        setProducts([]);
+        return;
+      }
+
+      logger.devInfo(`[Wishlist] Fetching ${idsToLoad.length} products for render`);
+      const rows = await fetchProductsForWishlistIds(idsToLoad, languagePreference);
+      const positionById = new Map(idsToLoad.map((id, index) => [id, index] as const));
+      const wishlistProducts = rows
+        .filter((product) => idsToLoad.includes(product.id))
+        .sort((a, b) => {
+          const aPos = positionById.get(a.id) ?? Number.MAX_SAFE_INTEGER;
+          const bPos = positionById.get(b.id) ?? Number.MAX_SAFE_INTEGER;
+          return aPos - bPos;
+        });
+      setProducts(wishlistProducts);
+    } catch (error) {
+      console.error('[Wishlist] Error fetching wishlist products:', error);
+      setProducts([]);
+    } finally {
+      if (showLoading) {
+        setLoading(false);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (authLoading) {
+      return;
+    }
+    if (!isLoggedIn) {
+      router.replace(`/login?redirect=${encodeURIComponent('/wishlist')}`);
+    }
+  }, [authLoading, isLoggedIn, router]);
+
+  useEffect(() => {
+    if (authLoading || !isLoggedIn) {
+      return;
+    }
+    void fetchWishlistProducts();
+
+    const handleWishlistUpdate = () => {
+      void fetchWishlistProducts({ silent: true });
+    };
+
+    const handleLanguageUpdate = () => {
+      void fetchWishlistProducts();
+    };
+
+    window.addEventListener('wishlist-updated', handleWishlistUpdate);
+    window.addEventListener('language-updated', handleLanguageUpdate);
+    return () => {
+      window.removeEventListener('wishlist-updated', handleWishlistUpdate);
+      window.removeEventListener('language-updated', handleLanguageUpdate);
+    };
+  }, [authLoading, isLoggedIn, fetchWishlistProducts]);
+
+  useEffect(() => {
+    if (authLoading || !isLoggedIn) {
+      return;
+    }
+    const onOptimisticRemove = (ev: Event) => {
+      const id = (ev as CustomEvent<{ productId?: string }>).detail?.productId;
+      if (!id) {
+        return;
+      }
+      setProducts((prev) => prev.filter((p) => p.id !== id));
+    };
+
+    const onRevertRemove = () => {
+      void fetchWishlistProducts({ silent: true });
+    };
+
+    window.addEventListener('wishlist-remove-optimistic', onOptimisticRemove);
+    window.addEventListener('wishlist-remove-reverted', onRevertRemove);
+    return () => {
+      window.removeEventListener('wishlist-remove-optimistic', onOptimisticRemove);
+      window.removeEventListener('wishlist-remove-reverted', onRevertRemove);
+    };
+  }, [authLoading, isLoggedIn, fetchWishlistProducts]);
+
+  if (authLoading || !isLoggedIn || loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/4 mb-8"></div>
+          <div className="h-64 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <h1 className="text-3xl font-bold text-gray-900 mb-8">{t('common.wishlist.title')}</h1>
+
+      {products.length > 0 ? (
+        <>
+          <div className="py-4 mb-6">
+            <div className="flex items-center gap-3">
+              <svg className="w-5 h-5 text-gray-600 dark:text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+              <span className="text-base font-medium text-gray-700 dark:text-white/80">
+                {t('common.wishlist.totalCount')}: <span className="font-bold text-gray-900 dark:text-white">{products.length}</span>
+              </span>
+            </div>
+          </div>
+
+          <div className={WISHLIST_PRODUCT_GRID_CLASS}>
+            {products.map((product) => (
+              <div
+                key={product.id}
+                className="flex min-w-0 justify-center sm:justify-end sm:pr-3 md:pr-4"
+              >
+                <ProductsGridOfferCard
+                  product={toSpecialOfferProduct(product)}
+                  layout={specialOfferLayout}
+                  maxWidthPx={WISHLIST_CARD_MAX_WIDTH_PX}
+                />
+              </div>
+            ))}
+          </div>
+        </>
+      ) : (
+        <div className="text-center py-16">
+          <div className="max-w-md mx-auto">
+            <svg
+              className="mx-auto h-24 w-24 text-gray-400 mb-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+              />
+            </svg>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              {t('common.wishlist.empty')}
+            </h2>
+            <p className="text-gray-600 my-6 text-center mx-auto">
+              {t('common.wishlist.emptyDescription')}
+            </p>
+            <Link href="/products">
+              <Button
+                variant="primary"
+                size="lg"
+                className={`${MARCO_SLATE_PILL_BUTTON_CLASS} !rounded-full !h-12 !px-10 inline-flex items-center justify-center leading-none whitespace-nowrap transition-[filter]`}
+              >
+                {t('common.buttons.browseProducts')}
+              </Button>
+            </Link>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

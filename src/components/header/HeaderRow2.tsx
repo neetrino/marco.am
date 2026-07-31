@@ -29,6 +29,7 @@ import { HeaderChevronDownIcon, HeaderSearchGlyph } from './HeaderInlineIcons';
 import { HeaderRow2RightToolbar } from './HeaderRow2RightToolbar';
 import type { useHeaderData } from './useHeaderData';
 import type { useHeaderLayoutMetrics } from './useHeaderLayoutMetrics';
+import { isValidProductSlug, productPdpHref } from '@/lib/product-pdp/pdp-slug';
 
 type HeaderRow2Props = {
   data: ReturnType<typeof useHeaderData>;
@@ -391,7 +392,9 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
                     selectedIndex={searchSelectedIndex}
                     query={searchQuery}
                     onResultClick={(result) => {
-                      router.push(`/products/${result.slug}`);
+                      if (isValidProductSlug(result.slug)) {
+                        router.push(productPdpHref(result.slug));
+                      }
                       clearSearch();
                     }}
                     onClose={() => setSearchDropdownOpen(false)}
@@ -476,7 +479,9 @@ export function HeaderRow2({ data, layout, compactPrimaryNav, initialLanguage }:
                         selectedIndex={searchSelectedIndex}
                         query={searchQuery}
                         onResultClick={(result) => {
-                          router.push(`/products/${result.slug}`);
+                          if (isValidProductSlug(result.slug)) {
+                            router.push(productPdpHref(result.slug));
+                          }
                           clearSearch();
                           setMobileSearchPopupOpen(false);
                           setSearchDropdownOpen(false);

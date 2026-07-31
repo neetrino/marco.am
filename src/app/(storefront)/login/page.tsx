@@ -1,0 +1,244 @@
+'use client';
+
+import { useState, FormEvent, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { Button, Input, Card } from '@shop/ui';
+import Link from 'next/link';
+import { getErrorMessage } from '@/lib/types/errors';
+import { useAuth } from '../../../lib/auth/AuthContext';
+import { scheduleGuestDataSyncAfterAuth } from '../../../lib/auth/sync-guest-data-after-auth';
+import { getStoredLanguage } from '../../../lib/language';
+import { useRouter } from 'next/navigation';
+import { useTranslation } from '../../../lib/i18n-client';
+import {
+  addPendingWishlistProductIfAny,
+  PENDING_WISHLIST_PRODUCT_QUERY_PARAM,
+} from '../../../lib/wishlist/wishlist-client';
+import { Eye, EyeOff } from 'lucide-react';
+import { logger } from "@/lib/utils/logger";
+
+type AuthStorageUser = {
+  roles?: string[];
+};
+
+const AUTH_USER_KEY = 'auth_user';
+const SUPERSUDO_ROUTE = '/supersudo';
+
+function getPostLoginRedirect(redirectTo: string): string {
+  try {
+    const rawUser = localStorage.getItem(AUTH_USER_KEY);
+    if (!rawUser) {
+      return redirectTo;
+    }
+
+    const parsed = JSON.parse(rawUser) as AuthStorageUser;
+    if (Array.isArray(parsed.roles) && parsed.roles.includes('admin')) {
+      return SUPERSUDO_ROUTE;
+    }
+  } catch {
+    // Fallback to regular redirect when storage payload is invalid.
+  }
+
+  return redirectTo;
+}
+
+function LoginPageContent() {
+  const { t } = useTranslation();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { login, isLoading, isLoggedIn } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams?.get('redirect') || '/';
+  const pendingWishlistProductId = searchParams?.get(PENDING_WISHLIST_PRODUCT_QUERY_PARAM);
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError(null);
+    setIsSubmitting(true);
+
+    logger.devLog('🔐 [LOGIN PAGE] Form submitted');
+
+    // Validation
+    if (!email.trim()) {
+      setError(t('login.errors.emailRequired'));
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (!password) {
+      setError(t('login.errors.passwordRequired'));
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      logger.devLog('📤 [LOGIN PAGE] Calling login function...');
+      const flow = await login(email.trim(), password);
+      if (flow.status === 'needs_verification') {
+        const verifyQs = new URLSearchParams();
+        verifyQs.set('redirect', redirectTo);
+        if (pendingWishlistProductId) {
+          verifyQs.set(PENDING_WISHLIST_PRODUCT_QUERY_PARAM, pendingWishlistProductId);
+        }
+        router.push(`/verify?${verifyQs.toString()}`);
+        return;
+      }
+      const postLoginRedirect = getPostLoginRedirect(redirectTo);
+      logger.devLog('✅ [LOGIN PAGE] Login successful, redirecting to:', postLoginRedirect);
+      await addPendingWishlistProductIfAny(pendingWishlistProductId, getStoredLanguage());
+      router.push(postLoginRedirect);
+    } catch (err: unknown) {
+      logger.error('Login page submission failed', {
+        message: err instanceof Error ? err.message : getErrorMessage(err),
+      });
+      setError(getErrorMessage(err) || t('login.errors.loginFailed'));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (!isLoggedIn || isLoading) {
+      return;
+    }
+    if (!pendingWishlistProductId) {
+      router.replace(getPostLoginRedirect(redirectTo));
+      return;
+    }
+    void (async () => {
+      scheduleGuestDataSyncAfterAuth();
+      await addPendingWishlistProductIfAny(pendingWishlistProductId, getStoredLanguage());
+      router.replace(getPostLoginRedirect(redirectTo));
+    })();
+  }, [isLoggedIn, isLoading, redirectTo, router, pendingWishlistProductId]);
+
+  return (
+    <div className="max-w-lg mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <Card className="p-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('login.title')}</h1>
+        <p className="text-gray-600 mb-8">{t('login.subtitle')}</p>
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-sm text-red-600">{error}</p>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              {t('login.form.email')}
+            </label>
+            <Input
+              id="email"
+              type="email"
+              autoComplete="email"
+              placeholder={t('login.form.emailPlaceholder')}
+              className="w-full"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={isSubmitting || isLoading}
+              required
+            />
+          </div>
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+              {t('login.form.password')}
+            </label>
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                placeholder={t('login.form.passwordPlaceholder')}
+                className="w-full pr-10"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={isSubmitting || isLoading}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                disabled={isSubmitting || isLoading}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-5 w-5" />
+                ) : (
+                  <Eye className="h-5 w-5" />
+                )}
+              </button>
+            </div>
+          </div>
+          <div className="flex justify-end">
+            <Link
+              href="/forgot-password"
+              className="text-sm text-blue-600 hover:underline"
+            >
+              {t('login.form.forgotPassword')}
+            </Link>
+          </div>
+          <Button 
+            variant="primary" 
+            className="w-full"
+            type="submit"
+            disabled={isSubmitting || isLoading}
+          >
+            {isSubmitting || isLoading ? t('login.form.submitting') : t('login.form.submit')}
+          </Button>
+        </form>
+
+        <div className="mt-6 text-center">
+          <p className="text-sm text-gray-600">
+            {t('login.form.noAccount')}{' '}
+            <Link
+              href={(() => {
+                const qs = new URLSearchParams();
+                if (redirectTo !== '/') {
+                  qs.set('redirect', redirectTo);
+                }
+                if (pendingWishlistProductId) {
+                  qs.set(PENDING_WISHLIST_PRODUCT_QUERY_PARAM, pendingWishlistProductId);
+                }
+                const q = qs.toString();
+                return q ? `/register?${q}` : '/register';
+              })()}
+              className="text-blue-600 hover:underline font-medium"
+            >
+              {t('login.form.signUp')}
+            </Link>
+          </p>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="max-w-lg mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <Card className="p-8">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 rounded w-3/4 mb-4"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/2 mb-8"></div>
+            <div className="space-y-4">
+              <div className="h-10 bg-gray-200 rounded"></div>
+              <div className="h-10 bg-gray-200 rounded"></div>
+              <div className="h-10 bg-gray-200 rounded"></div>
+            </div>
+          </div>
+        </Card>
+      </div>
+    }>
+      <LoginPageContent />
+    </Suspense>
+  );
+}
+

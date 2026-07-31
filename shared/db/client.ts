@@ -141,7 +141,7 @@ function isTransientDbConnectionError(error: unknown): boolean {
     return true;
   }
   if (error instanceof Error) {
-    return /Can't reach database server|ECONNREFUSED|ETIMEDOUT|ENOTFOUND|ECONNRESET|Connection terminated unexpectedly|forcibly closed by the remote host|Connection reset/i.test(
+    return /Can't reach database server|ECONNREFUSED|ETIMEDOUT|ENOTFOUND|ECONNRESET|Connection terminated unexpectedly|forcibly closed by the remote host|Connection reset|Error in PostgreSQL connection|kind:\s*Closed/i.test(
       error.message,
     );
   }

@@ -13,11 +13,40 @@ import {
   type CompareApiPayload,
 } from "@/lib/services/compare-payload.service";
 
+const EXPIRY_TOUCH_THRESHOLD_RATIO = 0.5;
+const MILLISECONDS_PER_SECOND = 1000;
+
 function compareExpiresAt(): Date {
-  return new Date(Date.now() + COMPARE_SESSION_MAX_AGE_SECONDS * 1000);
+  return new Date(
+    Date.now() + COMPARE_SESSION_MAX_AGE_SECONDS * MILLISECONDS_PER_SECOND
+  );
 }
 
-async function touchCompareExpiry(compareListId: string): Promise<void> {
+function emptyComparePayload(): CompareApiPayload {
+  return {
+    compare: {
+      id: "",
+      maxItems: COMPARE_MAX_PER_CATEGORY,
+      maxItemsPerCategory: COMPARE_MAX_PER_CATEGORY,
+      maxListItems: COMPARE_MAX_LIST_ITEMS,
+      items: [],
+      sections: [],
+    },
+    specRows: [],
+  };
+}
+
+async function touchCompareExpiry(
+  compareListId: string,
+  currentExpiresAt: Date
+): Promise<void> {
+  const touchThresholdMilliseconds =
+    COMPARE_SESSION_MAX_AGE_SECONDS *
+    MILLISECONDS_PER_SECOND *
+    EXPIRY_TOUCH_THRESHOLD_RATIO;
+  if (currentExpiresAt.getTime() - Date.now() >= touchThresholdMilliseconds) {
+    return;
+  }
   await db.compareList.update({
     where: { id: compareListId },
     data: { expiresAt: compareExpiresAt() },
@@ -27,7 +56,7 @@ async function touchCompareExpiry(compareListId: string): Promise<void> {
 async function getOrCreateUserCompareList(userId: string): Promise<string> {
   const existing = await db.compareList.findUnique({ where: { userId } });
   if (existing) {
-    await touchCompareExpiry(existing.id);
+    await touchCompareExpiry(existing.id, existing.expiresAt);
     return existing.id;
   }
   const created = await db.compareList.create({
@@ -50,7 +79,7 @@ async function ensureGuestCompareList(
       where: { sessionToken },
     });
     if (row) {
-      await touchCompareExpiry(row.id);
+      await touchCompareExpiry(row.id, row.expiresAt);
       return { compareListId: row.id, sessionToken, created: false };
     }
   }
@@ -64,6 +93,22 @@ async function ensureGuestCompareList(
   });
   logger.debug("Compare: new guest session", { compareListId: createdRow.id });
   return { compareListId: createdRow.id, sessionToken: token, created: true };
+}
+
+async function resolveGuestCompareList(
+  sessionToken: string | undefined
+): Promise<{ compareListId: string; sessionToken: string } | null> {
+  if (!sessionToken) {
+    return null;
+  }
+  const row = await db.compareList.findUnique({
+    where: { sessionToken },
+  });
+  if (!row) {
+    return null;
+  }
+  await touchCompareExpiry(row.id, row.expiresAt);
+  return { compareListId: row.id, sessionToken };
 }
 
 async function addProductToCompareList(
@@ -182,13 +227,15 @@ export async function getCompareForGuest(
   fields: "full" | "ids" = "full"
 ): Promise<{
   payload: CompareApiPayload;
-  sessionToken: string;
-  sessionCreated: boolean;
+  sessionToken?: string;
+  sessionExists: boolean;
 }> {
-  const { compareListId, sessionToken: token, created } =
-    await ensureGuestCompareList(sessionToken);
-  const payload = await buildComparePayload(compareListId, locale, fields);
-  return { payload, sessionToken: token, sessionCreated: created };
+  const session = await resolveGuestCompareList(sessionToken);
+  if (!session) {
+    return { payload: emptyComparePayload(), sessionExists: false };
+  }
+  const payload = await buildComparePayload(session.compareListId, locale, fields);
+  return { payload, sessionToken: session.sessionToken, sessionExists: true };
 }
 
 export async function addCompareItemForGuest(
@@ -213,14 +260,16 @@ export async function removeCompareItemForGuest(
   locale: ApiLocale
 ): Promise<{
   payload: CompareApiPayload;
-  sessionToken: string;
-  sessionCreated: boolean;
+  sessionToken?: string;
+  sessionExists: boolean;
 }> {
-  const { compareListId, sessionToken: token, created } =
-    await ensureGuestCompareList(sessionToken);
+  const session = await resolveGuestCompareList(sessionToken);
+  if (!session) {
+    return { payload: emptyComparePayload(), sessionExists: false };
+  }
   await db.compareItem.deleteMany({
-    where: { compareListId, productId },
+    where: { compareListId: session.compareListId, productId },
   });
-  const payload = await buildComparePayload(compareListId, locale);
-  return { payload, sessionToken: token, sessionCreated: created };
+  const payload = await buildComparePayload(session.compareListId, locale);
+  return { payload, sessionToken: session.sessionToken, sessionExists: true };
 }

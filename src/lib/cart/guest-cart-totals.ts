@@ -1,9 +1,9 @@
-import { fetchGuestCartCatalogProducts } from '../../app/cart/guest-cart-catalog-fetch';
-import { cartLineSubtotal, resolveGuestUnitPrice } from '../../app/cart/line-subtotal';
+import { fetchGuestCartCatalogProducts } from '../../app/(storefront)/cart/guest-cart-catalog-fetch';
+import { cartLineSubtotal, resolveGuestUnitPrice } from '../../app/(storefront)/cart/line-subtotal';
 import {
   readStoredGuestCart,
   type StoredGuestCartItem,
-} from '../../app/cart/guest-cart-local';
+} from '../../app/(storefront)/cart/guest-cart-local';
 
 type GuestCartTotals = {
   itemsCount: number;

@@ -34,13 +34,15 @@ export async function DELETE(
     }
 
     const sessionToken = readWishlistSessionToken(req);
-    const { payload, sessionToken: token } = await removeWishlistItemForGuest(
-      sessionToken,
-      productId,
-      locale
-    );
+    const {
+      payload,
+      sessionToken: token,
+      sessionExists,
+    } = await removeWishlistItemForGuest(sessionToken, productId, locale);
     const res = NextResponse.json(payload);
-    applyWishlistSessionCookie(res, token);
+    if (sessionExists && token) {
+      applyWishlistSessionCookie(res, token);
+    }
     return res;
   } catch (error: unknown) {
     logger.error("Wishlist DELETE failed", { error });

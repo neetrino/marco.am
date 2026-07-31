@@ -1,4 +1,4 @@
-import type { ShopGridProduct } from '@/app/products/shop-grid-product';
+import type { ShopGridProduct } from '@/app/(storefront)/products/shop-grid-product';
 import {
   resolveNavigationSeedImages,
   type ProductPdpNavigationSeed,

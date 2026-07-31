@@ -1,7 +1,7 @@
 'use client';
 
 import { coerceCurrencyCode, formatMoneyInCurrency, type CurrencyCode } from '../../lib/currency';
-import type { Cart } from '../../app/cart/types';
+import type { Cart } from '../../app/(storefront)/cart/types';
 
 interface CartDrawerSummaryProps {
   cart: Cart;

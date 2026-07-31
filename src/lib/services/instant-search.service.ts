@@ -7,6 +7,7 @@ import {
 } from '@/lib/i18n/api-locale';
 import { resolveListingHeroImageUrl } from '@/lib/products/product-gallery-urls';
 import { processImageUrl } from '@/lib/utils/image-utils';
+import { isValidProductSlug, productPdpHref } from '@/lib/product-pdp/pdp-slug';
 import { resolveProductPrice } from '@/lib/pricing/product-price';
 import { resolveEffectiveDiscount, type TypedDiscountInput } from '@/lib/discount/discount-expiry';
 import {
@@ -128,7 +129,7 @@ function mapProductResult(
   locale: ApiLocale,
 ): InstantSearchProductResult | null {
   const translation = pickTranslation(product.translations, locale);
-  if (!translation) {
+  if (!translation || !isValidProductSlug(translation.slug)) {
     return null;
   }
 
@@ -161,7 +162,7 @@ function mapProductResult(
     compareAtPrice: pricing.compareAtPrice ?? pricing.oldPrice,
     image,
     category: categoryTranslation?.title ?? null,
-    href: `/products/${translation.slug}`,
+    href: productPdpHref(translation.slug),
   };
 }
 

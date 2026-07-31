@@ -8,6 +8,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { getStoredLanguage } from '@/lib/language';
 import { seedProductPdpCache } from '@/lib/product-pdp/pdp-navigation-seed-cache';
 import { resolveNavigationSeedImages } from '@/lib/product-pdp/pdp-navigation-seed';
+import { isValidProductSlug, productPdpHref } from '@/lib/product-pdp/pdp-slug';
 
 import {
   getSpecialOfferBrandTextClass,
@@ -180,11 +181,11 @@ export function SpecialOfferCard({
 
   const router = useRouter();
   const queryClient = useQueryClient();
-  const cardPdpEnabled = Boolean(product.slug) && !product.shellPlaceholder;
+  const cardPdpEnabled = isValidProductSlug(product.slug) && !product.shellPlaceholder;
   const warrantyYears = product.warrantyYears ?? product.warrantyBadge?.years ?? null;
   const shouldShowCartCutouts = true;
   const handleNoPriceButtonClick = useCallback((event: MouseEvent) => {
-    if (hasDisplayPrice || detailsPending || !product.slug) {
+    if (hasDisplayPrice || detailsPending || !isValidProductSlug(product.slug)) {
       return;
     }
     event.preventDefault();
@@ -195,7 +196,7 @@ export function SpecialOfferCard({
       language: getStoredLanguage(),
       navigationSeed,
     });
-    router.push(`/products/${encodeURIComponent(product.slug.trim())}`);
+    router.push(productPdpHref(product.slug.trim()));
   }, [detailsPending, hasDisplayPrice, navigationSeed, product.slug, queryClient, router]);
 
   return (
@@ -277,7 +278,7 @@ export function SpecialOfferCard({
             showPlaceholder={showPlaceholder}
             onImageError={onImageError}
             imagePriority={imagePriority}
-            navigationDisabled={Boolean(product.shellPlaceholder)}
+            navigationDisabled={!isValidProductSlug(product.slug) || Boolean(product.shellPlaceholder)}
             navigationSeed={navigationSeed}
           />
 

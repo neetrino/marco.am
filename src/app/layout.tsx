@@ -1,16 +1,11 @@
-import React, { Suspense } from 'react';
+import React from 'react';
 import type { Metadata } from 'next';
 import Script from 'next/script';
 import { Analytics } from '@vercel/analytics/next';
 import './globals.css';
-import { TidioDynamicLoader } from '../components/TidioDynamicLoader';
-import { ClientProviders } from '../components/ClientProviders';
-import { AppChrome } from '../components/AppChrome';
 import { appBodyFontClassName, appHtmlFontClassName } from '@/fonts/app-fonts';
 import { DEFAULT_STOREFRONT_LANGUAGE } from '../lib/language';
-import { LanguagePreferenceProvider } from '../lib/language-context';
 import '../lib/i18n/register-admin-server';
-import { serializeClientI18nSeed } from '../lib/i18n/server-storefront-language-payload';
 import { t } from '../lib/i18n';
 import { APP_VIEWPORT } from '../constants/viewport';
 import { SITE_LOGO_SRC } from '@/lib/constants/site-brand';
@@ -30,20 +25,19 @@ export function generateMetadata(): Metadata {
   };
 }
 
-export default async function RootLayout({
+/**
+ * Minimal root shell (html/body/fonts/theme/lang). Storefront chrome lives in `(storefront)/layout`.
+ */
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const initialLanguage = DEFAULT_STOREFRONT_LANGUAGE;
-  const i18nSeed = serializeClientI18nSeed(initialLanguage);
 
   return (
     <html lang={initialLanguage} className={`h-full ${appHtmlFontClassName}`} suppressHydrationWarning>
       <body className={`${appBodyFontClassName} min-h-full bg-[var(--app-bg)] text-[var(--app-text)] antialiased transition-colors duration-200`}>
-        <Script id="i18n-init" strategy="beforeInteractive">
-          {`window.__MARCO_I18N__=${i18nSeed};`}
-        </Script>
         <Script id="lang-init" strategy="beforeInteractive">
           {`
             (() => {
@@ -74,17 +68,9 @@ export default async function RootLayout({
             })();
           `}
         </Script>
-        <TidioDynamicLoader />
-        <Suspense fallback={null}>
-          <LanguagePreferenceProvider initialLanguage={initialLanguage}>
-            <ClientProviders>
-              <AppChrome initialLanguage={initialLanguage}>{children}</AppChrome>
-            </ClientProviders>
-          </LanguagePreferenceProvider>
-        </Suspense>
+        {children}
         <Analytics />
       </body>
     </html>
   );
 }
-

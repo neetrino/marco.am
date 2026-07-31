@@ -16,6 +16,9 @@ import {
 } from '@/lib/product-pdp/pdp-navigation-seed';
 import { seedProductPdpCache } from '@/lib/product-pdp/pdp-navigation-seed-cache';
 import {
+  isValidProductSlug,
+} from '@/lib/product-pdp/pdp-slug';
+import {
   prefetchProductPdp,
   prefetchProductPdpOnCommit,
 } from '@/lib/product-pdp/prefetch-product-pdp';
@@ -56,8 +59,12 @@ export function ProductPdpPrefetchLink({
   const router = useRouter();
   const queryClient = useQueryClient();
   const warmedRef = useRef(false);
+  const slugValid = isValidProductSlug(productSlug);
 
   const warm = useCallback(() => {
+    if (!slugValid) {
+      return;
+    }
     if (warmedRef.current) {
       return;
     }
@@ -68,10 +75,10 @@ export function ProductPdpPrefetchLink({
     if (prefetchRoute) {
       void router.prefetch(href);
     }
-  }, [queryClient, productSlug, href, prefetchRoute, prefetchData, router]);
+  }, [queryClient, productSlug, href, prefetchRoute, prefetchData, router, slugValid]);
 
   const persistSeed = useCallback(() => {
-    if (!navigationSeed) {
+    if (!slugValid || !navigationSeed) {
       return;
     }
     const language = getStoredLanguage();
@@ -91,7 +98,11 @@ export function ProductPdpPrefetchLink({
       const img = new window.Image();
       img.src = url;
     }
-  }, [navigationSeed, productSlug, queryClient]);
+  }, [navigationSeed, productSlug, queryClient, slugValid]);
+
+  if (!slugValid) {
+    return <span {...rest}>{children}</span>;
+  }
 
   return (
     <Link

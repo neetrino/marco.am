@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { CashPaymentIcon } from '@/app/checkout/components/CashPaymentIcon';
+import { CashPaymentIcon } from '@/app/(storefront)/checkout/components/CashPaymentIcon';
 import type { AdminOrderListStatus } from '@/lib/constants/admin-order-list-status';
 import { useTranslation } from '../../../../lib/i18n-client';
 import type { CurrencyCode } from '../../../../lib/currency';

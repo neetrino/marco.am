@@ -13,12 +13,19 @@
     },
     "src/app/api/v1/cron/reconcile-payments/route.ts": {
       "maxDuration": 60
+    },
+    "src/app/api/v1/cron/cleanup-guest-lists/route.ts": {
+      "maxDuration": 60
     }
   },
   "crons": [
     {
       "path": "/api/v1/cron/reconcile-payments",
       "schedule": "*/30 * * * *"
+    },
+    {
+      "path": "/api/v1/cron/cleanup-guest-lists",
+      "schedule": "0 4 * * *"
     }
   ],
   "rewrites": [

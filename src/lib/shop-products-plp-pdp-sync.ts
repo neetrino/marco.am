@@ -1,6 +1,6 @@
 import type { QueryClient } from '@tanstack/react-query';
 
-import type { ShopGridProduct } from '@/app/products/shop-grid-product';
+import type { ShopGridProduct } from '@/app/(storefront)/products/shop-grid-product';
 import type { LanguageCode } from '@/lib/language';
 import { writeProductPdpQueryCache } from '@/lib/product-pdp/pdp-navigation-seed-cache';
 import { shopGridProductToPdpNavigationSeed } from '@/lib/shop-grid-product-pdp-seed';
