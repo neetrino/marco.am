@@ -20,6 +20,7 @@ import type { Category, CategoriesResponse } from './category-nav-types';
 import { prepareRootCategoriesForNav } from './categoryNavList';
 import { prefetchMegaMenuCategories } from './megaMenuQueries';
 import { queryKeys } from '../../lib/query-keys';
+import { isValidProductSlug, productPdpHref } from '@/lib/product-pdp/pdp-slug';
 
 const PRODUCTS_PATH_PREFIX = '/products';
 
@@ -241,8 +242,8 @@ export function useHeaderData() {
     e.preventDefault();
     const query = searchQuery.trim();
     const selected = searchSelectedIndex >= 0 && searchResults[searchSelectedIndex];
-    if (selected) {
-      router.push(`/products/${selected.slug}`);
+    if (selected && isValidProductSlug(selected.slug)) {
+      router.push(productPdpHref(selected.slug));
       clearSearch();
       return;
     }

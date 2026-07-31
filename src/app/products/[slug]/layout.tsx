@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { cookies } from "next/headers";
 import { formatProductDescriptionForSeo } from "@/lib/products/product-description";
@@ -9,13 +10,21 @@ import {
   type LanguageCode,
 } from "@/lib/language";
 import { getCachedPdpDetail } from "@/lib/product-pdp/pdp-server-cache";
-import { normalizePdpSlug } from "@/lib/product-pdp/pdp-slug";
+import { isValidProductSlug, normalizePdpSlug } from "@/lib/product-pdp/pdp-slug";
 
 import { ProductPdpLayoutGate } from "./ProductPdpLayoutGate";
 import { ProductPdpSSRSeed } from "./ProductPdpSSRSeed";
 import { ProductSlugLayoutClient } from "./ProductSlugLayoutClient";
 
 const DEFAULT_TITLE = "Product";
+
+function resolvePdpSlugOrNotFound(slugParam: string): string {
+  const baseSlug = normalizePdpSlug(slugParam);
+  if (!isValidProductSlug(baseSlug)) {
+    notFound();
+  }
+  return baseSlug;
+}
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -26,11 +35,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const lang: LanguageCode =
     parseLanguageFromServer(cookieStore.get(LANGUAGE_PREFERENCE_KEY)?.value) ?? "en";
   const { slug } = await params;
+  const baseSlug = resolvePdpSlugOrNotFound(slug);
   const siteName = t(lang, "common.meta.siteName");
   const browserTabTitle = t(lang, "common.meta.productTabTitle");
 
   try {
-    const product = await getCachedPdpDetail(normalizePdpSlug(slug), lang);
+    const product = await getCachedPdpDetail(baseSlug, lang);
     const title = product.seo?.title || product.title || DEFAULT_TITLE;
     const description =
       product.seo?.description || formatProductDescriptionForSeo(product.description ?? []) || null;
@@ -70,10 +80,10 @@ export default async function ProductSlugLayout({
   params: Promise<{ slug: string }>;
 }) {
   const { slug: slugParam } = await params;
+  const baseSlug = resolvePdpSlugOrNotFound(slugParam);
   const cookieStore = await cookies();
   const serverLanguage: LanguageCode =
     parseLanguageFromServer(cookieStore.get(LANGUAGE_PREFERENCE_KEY)?.value) ?? "en";
-  const baseSlug = normalizePdpSlug(slugParam);
 
   return (
     <>
