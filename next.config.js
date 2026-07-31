@@ -171,6 +171,41 @@ const nextConfig = {
       },
     ];
   },
+  /** Permanent redirects for legacy WooCommerce URL patterns. */
+  async redirects() {
+    return [
+      {
+        source: '/product/:slug',
+        destination: '/products/:slug',
+        permanent: true,
+      },
+      {
+        source: '/shop',
+        destination: '/products',
+        permanent: true,
+      },
+      {
+        source: '/shop/page/:page',
+        destination: '/products',
+        permanent: true,
+      },
+      {
+        source: '/product-tag/:tag',
+        destination: '/products',
+        permanent: true,
+      },
+      {
+        source: '/product-category/:path*',
+        destination: '/products',
+        permanent: true,
+      },
+      {
+        source: '/brands/:brand',
+        destination: '/products',
+        permanent: true,
+      },
+    ];
+  },
   async rewrites() {
     if (!r2PublicBase) {
       return [];
