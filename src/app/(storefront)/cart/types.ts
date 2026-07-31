@@ -1,0 +1,42 @@
+import type { CartVariantOption } from '../../../lib/cart/format-cart-variant-options';
+
+/**
+ * Cart item interface
+ */
+export interface CartItem {
+  id: string;
+  variant: {
+    id: string;
+    sku: string;
+    stock?: number;
+    options?: CartVariantOption[];
+    product: {
+      id: string;
+      title: string;
+      slug: string;
+      image?: string | null;
+    };
+  };
+  quantity: number;
+  price: number;
+  originalPrice?: number | null;
+  total: number;
+}
+
+/**
+ * Cart interface
+ */
+export interface Cart {
+  id: string;
+  couponCode?: string | null;
+  items: CartItem[];
+  totals: {
+    subtotal: number;
+    discount: number;
+    shipping: number;
+    tax: number;
+    total: number;
+    currency: string;
+  };
+  itemsCount: number;
+}

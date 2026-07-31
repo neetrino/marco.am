@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildAllowedCategorySlugs } from '@/lib/shop-category-filter-descendant-slugs';
 import { applyOptimisticShopListingFilter } from '@/lib/shop-products-listing-optimistic-filter';
-import type { ShopGridProduct } from '@/app/products/shop-grid-product';
+import type { ShopGridProduct } from '@/app/(storefront)/products/shop-grid-product';
 
 const categoryTree = [
   {

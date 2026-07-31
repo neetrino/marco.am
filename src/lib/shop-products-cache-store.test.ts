@@ -1,7 +1,7 @@
 import { QueryClient } from '@tanstack/react-query';
 import { describe, expect, it } from 'vitest';
 
-import type { ShopGridProduct } from '@/app/products/shop-grid-product';
+import type { ShopGridProduct } from '@/app/(storefront)/products/shop-grid-product';
 import { shopGridProductToPdpNavigationSeed } from '@/lib/shop-grid-product-pdp-seed';
 import { buildProductFromPdpNavigationSeed } from '@/lib/product-pdp/pdp-navigation-seed';
 import { resolvePdpInitialFromListingCache, resolvePdpInstantShell } from '@/lib/product-pdp/resolve-pdp-listing-shell';

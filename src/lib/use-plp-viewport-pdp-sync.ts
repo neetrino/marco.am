@@ -1,6 +1,6 @@
 import type { RefObject } from 'react';
 import { useEffect, useRef } from 'react';
-import type { ShopGridProduct } from '@/app/products/shop-grid-product';
+import type { ShopGridProduct } from '@/app/(storefront)/products/shop-grid-product';
 import type { LanguageCode } from '@/lib/language';
 import { getQueryClient } from '@/lib/query/get-query-client';
 import { syncShopListingProductsToPdpCache } from '@/lib/shop-products-plp-pdp-sync';

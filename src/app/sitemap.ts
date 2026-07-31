@@ -1,15 +1,13 @@
 import type { MetadataRoute } from 'next';
 import { getSitemapDynamicPayload } from '@/lib/sitemap/sitemap-dynamic-entries';
-import {
-  PUBLIC_STATIC_SITEMAP_PATHS,
-  SITEMAP_REVALIDATE_SECONDS,
-} from '@/lib/sitemap/sitemap-constants';
+import { PUBLIC_STATIC_SITEMAP_PATHS } from '@/lib/sitemap/sitemap-constants';
 import {
   buildSitemapAbsoluteUrl,
   buildSitemapCategoryUrl,
 } from '@/lib/sitemap/sitemap-url';
 
-export const revalidate = SITEMAP_REVALIDATE_SECONDS;
+/** Must be a literal for Next segment config (see SITEMAP_REVALIDATE_SECONDS). */
+export const revalidate = 3600;
 
 function buildStaticSitemapEntries(): MetadataRoute.Sitemap {
   return PUBLIC_STATIC_SITEMAP_PATHS.map((path) => ({

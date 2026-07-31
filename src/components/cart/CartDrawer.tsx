@@ -4,7 +4,7 @@ import { useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
-import { useCartData } from '../../app/cart/use-cart-data';
+import { useCartData } from '../../app/(storefront)/cart/use-cart-data';
 import { coerceCurrencyCode } from '../../lib/currency';
 import { useCartDrawer } from '../../lib/cart/cart-drawer-context';
 import { useCartSummary } from '../../lib/cart/cart-summary-context';

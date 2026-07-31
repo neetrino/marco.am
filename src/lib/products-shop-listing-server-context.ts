@@ -11,7 +11,7 @@ import {
   SHOP_PLP_MAX_PAGE_SIZE,
 } from '@/lib/constants/shop-plp-pagination';
 import { searchParamsRecordToUrlSearchParams } from '@/lib/search-params-record';
-import type { ProductsPageSearchParams } from '@/app/products/products-page-search-params';
+import type { ProductsPageSearchParams } from '@/app/(storefront)/products/products-page-search-params';
 
 function firstParam(value: string | string[] | undefined): string | undefined {
   if (value === undefined) {

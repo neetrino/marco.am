@@ -7,8 +7,8 @@ import type { ProductPdpNavigationSeed } from '@/lib/product-pdp/pdp-navigation-
 import { ProductImagePlaceholder } from '../ProductImagePlaceholder';
 import { shouldShowCartSku } from '../../lib/cart/format-cart-variant-options';
 import { formatMoneyInCurrency, type CurrencyCode } from '../../lib/currency';
-import type { CartItem } from '../../app/cart/types';
-import { cartLineSubtotal } from '../../app/cart/line-subtotal';
+import type { CartItem } from '../../app/(storefront)/cart/types';
+import { cartLineSubtotal } from '../../app/(storefront)/cart/line-subtotal';
 
 interface CartDrawerItemRowProps {
   item: CartItem;

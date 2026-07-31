@@ -1,7 +1,7 @@
 import type { QueryClient } from '@tanstack/react-query';
 
-import { RESERVED_ROUTES } from '@/app/products/[slug]/types';
-import type { Product } from '@/app/products/[slug]/types';
+import { RESERVED_ROUTES } from '@/app/(storefront)/products/[slug]/types';
+import type { Product } from '@/app/(storefront)/products/[slug]/types';
 import { type LanguageCode } from '@/lib/language';
 import { queryKeys } from '@/lib/query-keys';
 

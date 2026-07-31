@@ -1,6 +1,6 @@
 import type { QueryClient } from '@tanstack/react-query';
 
-import type { Product } from '@/app/products/[slug]/types';
+import type { Product } from '@/app/(storefront)/products/[slug]/types';
 import { getStoredLanguage, type LanguageCode } from '@/lib/language';
 import {
   buildProductFromPdpNavigationSeed,

@@ -1,5 +1,5 @@
 import type { ProductsFiltersData } from '@/lib/shop-products-filters-types';
-import { normalizeShopGridProduct } from '@/app/products/shop-grid-product';
+import { normalizeShopGridProduct } from '@/app/(storefront)/products/shop-grid-product';
 import { apiClient } from '@/lib/api-client';
 import { SHOP_PLP_DEFAULT_PAGE_SIZE, PLP_PDP_CACHE_SYNC_BATCH_SIZE } from '@/lib/constants/shop-plp-pagination';
 import { buildProductsFiltersScopeKeyFromSearchParams } from '@/lib/products-filters-client-key';

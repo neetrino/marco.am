@@ -1,5 +1,5 @@
 import type { LanguageCode } from '@/lib/language';
-import type { Product } from '@/app/products/[slug]/types';
+import type { Product } from '@/app/(storefront)/products/[slug]/types';
 import { normalizePdpSlug } from '@/lib/product-pdp/pdp-slug';
 
 type ProductCategorySeed = {

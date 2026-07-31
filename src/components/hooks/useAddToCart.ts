@@ -11,9 +11,9 @@ import {
   readStoredGuestCart,
   runGuestCartMutation,
   upsertGuestCartItem,
-} from '@/app/cart/guest-cart-local';
+} from '@/app/(storefront)/cart/guest-cart-local';
 import { computeGuestCartTotalsFromStorage } from '@/lib/cart/guest-cart-totals';
-import { fetchGuestCartCatalogProducts } from '@/app/cart/guest-cart-catalog-fetch';
+import { fetchGuestCartCatalogProducts } from '@/app/(storefront)/cart/guest-cart-catalog-fetch';
 import { isValidProductSlug, productPdpHref } from '@/lib/product-pdp/pdp-slug';
 
 interface ProductDetails {

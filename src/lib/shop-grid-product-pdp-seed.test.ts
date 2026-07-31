@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { shopGridProductToPdpNavigationSeed } from '@/lib/shop-grid-product-pdp-seed';
-import type { ShopGridProduct } from '@/app/products/shop-grid-product';
+import type { ShopGridProduct } from '@/app/(storefront)/products/shop-grid-product';
 
 describe('shopGridProductToPdpNavigationSeed', () => {
   it('copies canonical PLP gallery into navigation seed', () => {

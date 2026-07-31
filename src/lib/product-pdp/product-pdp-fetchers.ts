@@ -1,4 +1,4 @@
-import type { Product } from '@/app/products/[slug]/types';
+import type { Product } from '@/app/(storefront)/products/[slug]/types';
 import { apiClient, getErrorHttpStatus } from '@/lib/api-client';
 import { type LanguageCode } from '@/lib/language';
 
