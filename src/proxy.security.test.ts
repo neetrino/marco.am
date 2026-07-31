@@ -1,10 +1,23 @@
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-const getAuthContextMock = vi.fn();
-const validateSessionAtEdgeMock = vi.fn();
+const {
+  getAuthContextMock,
+  validateSessionAtEdgeMock,
+  enforceUpstashRateLimitMock,
+  checkPublicApiGetRateLimitMock,
+} = vi.hoisted(() => ({
+  getAuthContextMock: vi.fn(),
+  validateSessionAtEdgeMock: vi.fn(),
+  enforceUpstashRateLimitMock: vi.fn(
+    async (): Promise<NextResponse | null> => null
+  ),
+  checkPublicApiGetRateLimitMock: vi.fn(
+    async (): Promise<NextResponse | null> => null
+  ),
+}));
 
 vi.mock("@/lib/middleware/auth-edge", () => ({
   getAuthContext: (...args: unknown[]) => getAuthContextMock(...args),
@@ -16,7 +29,11 @@ vi.mock("@/lib/middleware/auth-session-edge", () => ({
 }));
 
 vi.mock("@/lib/middleware/upstash-rate-limit", () => ({
-  enforceUpstashRateLimit: vi.fn(async () => null),
+  enforceUpstashRateLimit: enforceUpstashRateLimitMock,
+}));
+
+vi.mock("@/lib/middleware/public-api-rate-limit", () => ({
+  checkPublicApiGetRateLimit: checkPublicApiGetRateLimitMock,
 }));
 
 import { config, proxy } from "./proxy";
@@ -59,7 +76,11 @@ describe("proxy auth and CSRF behavior", () => {
   beforeEach(() => {
     getAuthContextMock.mockReset();
     validateSessionAtEdgeMock.mockReset();
+    enforceUpstashRateLimitMock.mockReset();
+    checkPublicApiGetRateLimitMock.mockReset();
     getAuthContextMock.mockResolvedValue({ token: null, decoded: null });
+    enforceUpstashRateLimitMock.mockResolvedValue(null);
+    checkPublicApiGetRateLimitMock.mockResolvedValue(null);
   });
 
   it("redirects unauthenticated /profile to login with return URL", async () => {
@@ -182,5 +203,62 @@ describe("proxy auth and CSRF behavior", () => {
     expect(csp).toContain("script-src 'self' 'unsafe-inline'");
     expect(csp).toContain("object-src 'none'");
     expect(csp).toContain("frame-ancestors 'none'");
+  });
+});
+
+describe("proxy public API GET rate-limit dispatch", () => {
+  beforeEach(() => {
+    getAuthContextMock.mockReset();
+    validateSessionAtEdgeMock.mockReset();
+    enforceUpstashRateLimitMock.mockReset();
+    checkPublicApiGetRateLimitMock.mockReset();
+    getAuthContextMock.mockResolvedValue({ token: null, decoded: null });
+    enforceUpstashRateLimitMock.mockResolvedValue(null);
+    checkPublicApiGetRateLimitMock.mockResolvedValue(null);
+  });
+
+  it("invokes the public API limiter for GET /api/v1/*", async () => {
+    const response = await proxy(buildRequest("/api/v1/products"));
+    expect(response.status).toBe(200);
+    expect(checkPublicApiGetRateLimitMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not invoke the public API limiter for page navigations", async () => {
+    await proxy(buildRequest("/"));
+    expect(checkPublicApiGetRateLimitMock).not.toHaveBeenCalled();
+  });
+
+  it("gives auth POST limiter precedence (public GET limiter not consulted)", async () => {
+    await proxy(
+      buildRequest("/api/v1/auth/login", {
+        method: "POST",
+        headers: { Origin: "http://localhost:3000" },
+      })
+    );
+
+    expect(enforceUpstashRateLimitMock).toHaveBeenCalledWith(
+      expect.any(NextRequest),
+      expect.objectContaining({ prefix: "ratelimit:auth" }),
+      true
+    );
+    expect(checkPublicApiGetRateLimitMock).not.toHaveBeenCalled();
+  });
+
+  it("returns the public API limiter response with CORS headers", async () => {
+    checkPublicApiGetRateLimitMock.mockResolvedValue(
+      NextResponse.json(
+        {
+          type: "https://api.shop.am/problems/too-many-requests",
+          title: "Too Many Requests",
+          status: 429,
+          detail: "Too many API requests. Try again later.",
+        },
+        { status: 429 }
+      )
+    );
+
+    const response = await proxy(buildRequest("/api/v1/products"));
+    expect(response.status).toBe(429);
+    expect(response.headers.get("Access-Control-Allow-Methods")).toContain("GET");
   });
 });

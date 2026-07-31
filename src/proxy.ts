@@ -13,6 +13,7 @@ import {
 import {
   enforceUpstashRateLimit,
 } from "@/lib/middleware/upstash-rate-limit";
+import { checkPublicApiGetRateLimit } from "@/lib/middleware/public-api-rate-limit";
 import {
   guardAuthenticatedPage,
   isAuthRequiredOrdersApi,
@@ -233,6 +234,15 @@ export async function proxy(request: NextRequest) {
         return applyCorsHeaders(checkoutRateLimitResponse, corsHeaders);
       }
     }
+
+    // After specific POST limiters (auth/checkout/upload) so they keep precedence.
+    if (request.method === "GET") {
+      const publicApiRateLimitResponse = await checkPublicApiGetRateLimit(request);
+      if (publicApiRateLimitResponse) {
+        return applyCorsHeaders(publicApiRateLimitResponse, corsHeaders);
+      }
+    }
+
     const response = NextResponse.next({
       request: {
         headers: forwardedHeaders,
