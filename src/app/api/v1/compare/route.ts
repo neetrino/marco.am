@@ -40,13 +40,15 @@ export async function GET(req: NextRequest) {
     }
 
     const sessionToken = readCompareSessionToken(req);
-    const { payload, sessionToken: token } = await getCompareForGuest(
-      sessionToken,
-      locale,
-      fields
-    );
+    const {
+      payload,
+      sessionToken: token,
+      sessionExists,
+    } = await getCompareForGuest(sessionToken, locale, fields);
     const res = NextResponse.json(payload);
-    applyCompareSessionCookie(res, token);
+    if (sessionExists && token) {
+      applyCompareSessionCookie(res, token);
+    }
     return res;
   } catch (error: unknown) {
     logger.error("Compare GET failed", { error });

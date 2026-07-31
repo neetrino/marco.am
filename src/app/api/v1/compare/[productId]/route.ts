@@ -40,13 +40,15 @@ export async function DELETE(
     }
 
     const sessionToken = readCompareSessionToken(req);
-    const { payload, sessionToken: token } = await removeCompareItemForGuest(
-      sessionToken,
-      productId,
-      locale
-    );
+    const {
+      payload,
+      sessionToken: token,
+      sessionExists,
+    } = await removeCompareItemForGuest(sessionToken, productId, locale);
     const res = NextResponse.json(payload);
-    applyCompareSessionCookie(res, token);
+    if (sessionExists && token) {
+      applyCompareSessionCookie(res, token);
+    }
     return res;
   } catch (error: unknown) {
     logger.error("Compare DELETE failed", { error });
