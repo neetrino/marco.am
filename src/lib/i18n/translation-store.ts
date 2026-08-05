@@ -4,7 +4,7 @@ import type { StorefrontNamespacesPayload } from './languages/en';
 
 const translations: TranslationStore = {};
 const loadedStorefrontLanguages = new Set<LanguageCode>();
-let adminRegistered = false;
+let registeredAdminStore: TranslationStore | null = null;
 
 export function isStorefrontLanguageLoaded(lang: LanguageCode): boolean {
   return loadedStorefrontLanguages.has(lang);
@@ -24,7 +24,7 @@ export function registerStorefrontLanguage(
 
 /** Merges admin locale JSON into the in-memory store (`/supersudo` client + server bootstrap). */
 export function registerAdminTranslations(store: TranslationStore): void {
-  if (adminRegistered) {
+  if (registeredAdminStore === store) {
     return;
   }
   for (const lang of Object.keys(store) as LanguageCode[]) {
@@ -37,7 +37,7 @@ export function registerAdminTranslations(store: TranslationStore): void {
       admin: adminNamespace,
     };
   }
-  adminRegistered = true;
+  registeredAdminStore = store;
 }
 
 export function loadTranslation(lang: LanguageCode, namespace: Namespace): unknown {

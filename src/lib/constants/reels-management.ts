@@ -34,3 +34,6 @@ export const REEL_MODERATION_STATUSES = [
 
 /** Used when reel poster metadata is missing for the feed card/video placeholder. */
 export const REELS_POSTER_FALLBACK_SRC = "/images/home/reels/reel-1.webp" as const;
+
+/** Media fragment that makes browsers paint an opening frame of a poster-less reel. */
+export const REEL_VIDEO_FRAME_FRAGMENT = "#t=0.1" as const;
