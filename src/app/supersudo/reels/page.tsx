@@ -10,11 +10,8 @@ import { showPopupConfirm } from '@/components/popup-service';
 import type { ReelsManagementStorage } from '@/lib/schemas/reels-management.schema';
 import { REELS_MANAGEMENT_STORAGE_VERSION } from '@/lib/constants/reels-management';
 import { ADMIN_IMAGE_ACCEPT } from '@/lib/constants/admin-image-upload';
-import {
-  adminWebpFileFromDataUrl,
-  processAdminImageFile,
-} from '@/lib/utils/process-admin-image-file';
 import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '@/lib/utils/image-utils';
+import { logger } from '@/lib/utils/logger';
 import { ADMIN_CACHE_KEYS } from '@/lib/admin/admin-cache-keys';
 import { beginAdminDataFetch } from '@/lib/admin/admin-fetch-helpers';
 import { dedupedAdminRequest } from '@/lib/admin/admin-request-dedup';
@@ -24,7 +21,15 @@ import {
   writeAdminSessionCache,
 } from '@/lib/admin/admin-session-cache';
 import { AdminPageLayout } from '../components/AdminPageLayout';
+import { ReelListThumbnail } from './components/ReelListThumbnail';
 import { ReelPreviewDialog } from './components/ReelPreviewDialog';
+import { VideoUploadField } from './components/VideoUploadField';
+import {
+  uploadReelPoster,
+  uploadReelPosterFromVideo,
+  uploadReelVideo,
+  validateReelVideoFile,
+} from './reel-media-upload';
 
 type ReelsLikesResponse = {
   likesByReelId: Record<string, number>;
@@ -34,13 +39,10 @@ type ReelsViewsResponse = {
   viewsByReelId: Record<string, number>;
 };
 
-type UploadPosterResponse = {
-  url: string;
-};
-
 type ReelFormState = {
   titleHy: string;
   videoUrl: string;
+  videoFileName: string;
   posterUrl: string;
 };
 
@@ -53,6 +55,7 @@ type PreviewReelState = {
 const EMPTY_FORM: ReelFormState = {
   titleHy: '',
   videoUrl: '',
+  videoFileName: '',
   posterUrl: '',
 };
 const REELS_LIKES_LABEL = 'likes';
@@ -108,6 +111,7 @@ export default function ReelsPage() {
   const [viewsByReelId, setViewsByReelId] = useState<Record<string, number>>(cachedReels?.viewsByReelId ?? {});
   const [form, setForm] = useState<ReelFormState>(EMPTY_FORM);
   const [isAddFormOpen, setIsAddFormOpen] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
   const [uploadingPoster, setUploadingPoster] = useState(false);
   const [previewReel, setPreviewReel] = useState<PreviewReelState | null>(null);
   const posterInputRef = useRef<HTMLInputElement | null>(null);
@@ -158,8 +162,8 @@ export default function ReelsPage() {
   }, [reload]);
 
   const canAdd = useMemo(() => {
-    return form.titleHy.trim().length > 0 && form.videoUrl.trim().length > 0;
-  }, [form]);
+    return form.videoUrl.trim().length > 0;
+  }, [form.videoUrl]);
 
   const sortedItems = useMemo(() => {
     return (
@@ -213,7 +217,7 @@ export default function ReelsPage() {
             ru: form.titleHy.trim(),
             en: form.titleHy.trim(),
           },
-          sourceType: 'external_url',
+          sourceType: 'admin_upload',
           videoUrl: form.videoUrl.trim(),
           posterUrl: form.posterUrl.trim().length > 0 ? form.posterUrl.trim() : null,
           active: true,
@@ -279,26 +283,8 @@ export default function ReelsPage() {
 
     setUploadingPoster(true);
     try {
-      const dataUrl = await processAdminImageFile(file, 'catalog');
-      const webpFile = await adminWebpFileFromDataUrl(dataUrl, 'poster.webp');
-      const payload = new FormData();
-      payload.append('file', webpFile);
-
-      const response = await fetch('/api/v1/supersudo/reels/upload-poster', {
-        method: 'POST',
-        body: payload,
-      });
-
-      const responseBody = (await response.json().catch(() => null)) as UploadPosterResponse | { detail?: string } | null;
-      if (!response.ok || !responseBody || !('url' in responseBody)) {
-        const detail = responseBody && 'detail' in responseBody ? responseBody.detail : null;
-        throw new Error(detail || t('admin.reels.posterUploadFailed'));
-      }
-
-      setForm((prev) => ({
-        ...prev,
-        posterUrl: responseBody.url,
-      }));
+      const url = await uploadReelPoster(file);
+      setForm((prev) => ({ ...prev, posterUrl: url }));
     } catch (error: unknown) {
       alert(getApiOrErrorMessage(error, t('admin.reels.posterUploadFailed')));
     } finally {
@@ -306,11 +292,46 @@ export default function ReelsPage() {
     }
   };
 
+  /** Poster stays optional: a failed capture must not block the finished video. */
+  const generatePosterFromVideo = async (file: File) => {
+    setUploadingPoster(true);
+    try {
+      const url = await uploadReelPosterFromVideo(file);
+      setForm((prev) => (prev.posterUrl.trim().length > 0 ? prev : { ...prev, posterUrl: url }));
+    } catch (error: unknown) {
+      logger.warn('Reel poster auto-capture failed', { error });
+    } finally {
+      setUploadingPoster(false);
+    }
+  };
+
+  const handleVideoUpload = async (file: File) => {
+    const problem = validateReelVideoFile(file);
+    if (problem) {
+      alert(
+        t(problem === 'type' ? 'admin.reels.videoTypeInvalid' : 'admin.reels.videoSizeInvalid'),
+      );
+      return;
+    }
+
+    setUploadingVideo(true);
+    try {
+      const url = await uploadReelVideo(file);
+      setForm((prev) => ({ ...prev, videoUrl: url, videoFileName: file.name }));
+      await generatePosterFromVideo(file);
+    } catch (error: unknown) {
+      alert(getApiOrErrorMessage(error, t('admin.reels.uploadFailed')));
+    } finally {
+      setUploadingVideo(false);
+    }
+  };
+
   const addReelHeaderAction = (
     <button
       type="button"
       onClick={() => setIsAddFormOpen((prev) => !prev)}
-      className="inline-flex h-10 items-center rounded-lg bg-marco-yellow px-4 text-sm font-semibold text-marco-black transition hover:brightness-95"
+      disabled={uploadingVideo}
+      className="inline-flex h-10 items-center rounded-lg bg-marco-yellow px-4 text-sm font-semibold text-marco-black transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-60"
     >
       {isAddFormOpen ? t('admin.common.close') : t('admin.reels.add')}
     </button>
@@ -350,7 +371,7 @@ export default function ReelsPage() {
           <section className="rounded-xl border border-marco-border bg-gradient-to-b from-marco-yellow/10 to-white p-4 shadow-sm sm:p-5">
             <div className="grid gap-3 md:grid-cols-2">
               <label className="space-y-1 md:col-span-2">
-                <span className="text-xs font-medium text-gray-600">{t('admin.reels.titleHy')}</span>
+                <span className="text-xs font-medium text-gray-600">{t('admin.reels.titleHyOptional')}</span>
                 <input
                   value={form.titleHy}
                   onChange={(e) => setForm((prev) => ({ ...prev, titleHy: e.target.value }))}
@@ -358,16 +379,22 @@ export default function ReelsPage() {
                   className="admin-field"
                 />
               </label>
-              <label className="space-y-1 md:col-span-2">
-                <span className="text-xs font-medium text-gray-600">{t('admin.reels.videoUrl')}</span>
-                <input
-                  value={form.videoUrl}
-                  onChange={(e) => setForm((prev) => ({ ...prev, videoUrl: e.target.value }))}
-                  placeholder={t('admin.reels.videoUrlPlaceholder')}
-                  className="admin-field"
-                />
-                <p className="text-xs text-gray-500">{t('admin.reels.videoUrlHint')}</p>
-              </label>
+              <VideoUploadField
+                videoUrl={form.videoUrl}
+                fileName={form.videoFileName}
+                uploading={uploadingVideo}
+                labels={{
+                  field: t('admin.reels.video'),
+                  hint: t('admin.reels.videoUploadHint'),
+                  select: t('admin.reels.selectVideo'),
+                  replace: t('admin.reels.replaceVideo'),
+                  remove: t('admin.reels.removeVideo'),
+                  uploading: t('admin.reels.uploadingVideo'),
+                  ready: t('admin.reels.videoReady'),
+                }}
+                onSelect={(file) => void handleVideoUpload(file)}
+                onRemove={() => setForm((prev) => ({ ...prev, videoUrl: '', videoFileName: '' }))}
+              />
               <div className="space-y-2 md:col-span-2">
                 <span className="text-xs font-medium text-gray-600">{t('admin.reels.poster')}</span>
                 <div className="rounded-xl border border-dashed border-marco-border bg-white/80 p-3">
@@ -409,7 +436,7 @@ export default function ReelsPage() {
               <div className="mt-1 flex items-center gap-2 md:col-span-2">
                 <button
                   onClick={handleAdd}
-                  disabled={!canAdd || saving}
+                  disabled={!canAdd || saving || uploadingVideo}
                   className="inline-flex h-10 items-center rounded-lg bg-marco-yellow px-4 text-sm font-semibold text-marco-black transition hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {saving ? t('admin.reels.saving') : t('admin.reels.add')}
@@ -417,7 +444,8 @@ export default function ReelsPage() {
                 <button
                   type="button"
                   onClick={() => setIsAddFormOpen(false)}
-                  className="inline-flex h-10 items-center rounded-lg border border-marco-border bg-white px-4 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+                  disabled={uploadingVideo}
+                  className="inline-flex h-10 items-center rounded-lg border border-marco-border bg-white px-4 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {t('admin.common.cancel')}
                 </button>
@@ -440,33 +468,20 @@ export default function ReelsPage() {
             <p className="text-sm text-gray-500">{t('admin.reels.empty')}</p>
           ) : (
             <div className="space-y-3">
-              {sortedItems.map((item) => {
-                const safePosterUrl = toSafeImgAttributeSrc(item.posterUrl ?? '');
-                return (
+              {sortedItems.map((item) => (
                 <article
                   key={item.id}
                   className="rounded-2xl border border-gray-200 bg-gradient-to-b from-white to-slate-50/70 p-4 shadow-sm transition hover:border-slate-300 hover:shadow-md"
                 >
                   <div className="flex gap-4">
                     <div className="shrink-0">
-                      {safePosterUrl ? (
-                        <img
-                          src={toDomSafeImgSrcString(safePosterUrl)}
-                          alt=""
-                          className="h-28 w-20 rounded-xl border border-gray-200 bg-slate-100 object-cover shadow-inner"
-                        />
-                      ) : (
-                        <div
-                          className="flex h-28 w-20 items-center justify-center rounded-xl border border-dashed border-gray-200 bg-slate-50 text-xs font-medium uppercase tracking-wide text-gray-400"
-                          aria-hidden
-                        >
-                          —
-                        </div>
-                      )}
+                      <ReelListThumbnail posterUrl={item.posterUrl} videoUrl={item.videoUrl} />
                     </div>
                     <div className="flex min-w-0 flex-1 flex-wrap items-start justify-between gap-3">
                     <div className="space-y-2">
-                      <p className="font-semibold text-gray-900">{item.title.hy}</p>
+                      <p className="font-semibold text-gray-900">
+                        {item.title.hy.trim() || t('admin.reels.untitled')}
+                      </p>
                       <p className="text-xs text-gray-500">ID: {item.id}</p>
                       <div className="flex flex-wrap items-center gap-2 text-xs font-medium">
                         <span className="rounded-full bg-indigo-50 px-2.5 py-1 text-indigo-700 ring-1 ring-indigo-100">
@@ -506,7 +521,7 @@ export default function ReelsPage() {
                         type="button"
                         onClick={() =>
                           setPreviewReel({
-                            title: item.title.hy,
+                            title: item.title.hy.trim() || t('admin.reels.untitled'),
                             videoUrl: item.videoUrl,
                             posterUrl: item.posterUrl,
                           })
@@ -526,8 +541,7 @@ export default function ReelsPage() {
                     </div>
                   </div>
                 </article>
-                );
-              })}
+              ))}
             </div>
           )}
         </section>

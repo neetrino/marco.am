@@ -1,11 +1,9 @@
 'use client';
 
-import Image from 'next/image';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Montserrat } from 'next/font/google';
 import { useCallback, useRef, useState } from 'react';
 
-import { shouldBypassNextImageOptimizer } from '@/lib/utils/should-bypass-next-image-optimizer';
 import { useTranslation } from '../../lib/i18n-client';
 import {
   REELS_MOBILE_CIRCLE_SIZE_PX,
@@ -45,7 +43,10 @@ import { useHomeReelsCarousel } from './useHomeReelsCarousel';
 import { useIsMaxMd } from './use-is-max-md';
 import type { PublicReelItem } from '../../lib/schemas/reels-management.schema';
 import { HomeReelPreviewDialog } from './HomeReelPreviewDialog';
+import { HomeReelThumbnail } from './HomeReelThumbnail';
 import { useReelsFeedData } from '../reels/useReelsFeedData';
+
+const REEL_THUMBNAIL_SIZES = '(max-width: 768px) 128px, 128px';
 
 const montserratReels = Montserrat({
   subsets: ['latin'],
@@ -253,14 +254,10 @@ export function HomeReelsSection({ items }: HomeReelsSectionProps) {
                 <div
                   className="relative mx-auto shrink-0 overflow-hidden rounded-full border border-marco-border bg-marco-gray shadow-[0_6px_16px_rgba(0,0,0,0.08)] transition-shadow duration-200 group-hover:shadow-[0_12px_26px_rgba(0,0,0,0.18)] max-md:h-[var(--reels-mobile-circle)] max-md:w-[var(--reels-mobile-circle)] md:mx-0 md:h-32 md:w-32"
                 >
-                  <Image
-                    src={item.posterUrl}
-                    alt={label}
-                    fill
-                    className="object-cover object-center transition duration-300 group-hover:scale-105"
-                    sizes="(max-width: 768px) 128px, 128px"
-                    loading="lazy"
-                    unoptimized={shouldBypassNextImageOptimizer(item.posterUrl)}
+                  <HomeReelThumbnail
+                    item={item}
+                    label={label}
+                    sizes={REEL_THUMBNAIL_SIZES}
                   />
                 </div>
                 <span

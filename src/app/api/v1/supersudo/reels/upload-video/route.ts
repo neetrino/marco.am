@@ -1,18 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { nanoid } from "nanoid";
 
+import {
+  ADMIN_VIDEO_ALLOWED_MIME_TYPES,
+  ADMIN_VIDEO_MAX_SIZE_BYTES,
+} from "@/lib/constants/admin-video-upload";
 import { authenticateToken, requireAdmin } from "@/lib/middleware/auth";
 import { isR2Configured, uploadToR2 } from "@/lib/r2";
 import { logger } from "@/lib/utils/logger";
 
-const ALLOWED_VIDEO_MIME_TYPES = new Set([
-  "video/mp4",
-  "video/webm",
-  "video/quicktime",
-  "video/ogg",
-]);
-
-const MAX_VIDEO_SIZE_BYTES = 200 * 1024 * 1024;
+const ALLOWED_VIDEO_MIME_TYPES = new Set<string>(ADMIN_VIDEO_ALLOWED_MIME_TYPES);
 
 function getVideoExtension(mimeType: string): string {
   switch (mimeType) {
@@ -115,7 +112,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (file.size <= 0 || file.size > MAX_VIDEO_SIZE_BYTES) {
+    if (file.size <= 0 || file.size > ADMIN_VIDEO_MAX_SIZE_BYTES) {
       return NextResponse.json(
         {
           type: "https://api.shop.am/problems/validation-error",
