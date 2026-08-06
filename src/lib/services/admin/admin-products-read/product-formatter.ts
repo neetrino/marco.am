@@ -25,12 +25,15 @@ export function formatProductForList(product: {
     stock: number;
     sku?: string | null;
     imageUrl?: string | null;
+    published?: boolean;
     discountType?: DiscountKind | null;
     discountValue?: number | null;
     discountExpiresAt?: Date | null;
   }>;
   media?: unknown[];
   categoryIds?: string[];
+  /** Denormalized listing-row image for thumbnail fallback (batch-loaded). */
+  listingRowImage?: string | null;
 }, locale: string = "en") {
   // locale reserved for future list fields; category titles resolve on the client.
   void locale;
@@ -58,7 +61,11 @@ export function formatProductForList(product: {
   });
   const resolvedPrice = resolveProductPrice({ standardPrice, discount: appliedDiscount });
 
-  const image = resolveAdminProductListImageUrl(product.media, product.variants ?? []);
+  const image = resolveAdminProductListImageUrl(
+    product.media,
+    product.variants ?? [],
+    product.listingRowImage ?? null,
+  );
 
   const rawCategoryIds = product.categoryIds ?? [];
   const primaryId = product.primaryCategoryId ?? null;

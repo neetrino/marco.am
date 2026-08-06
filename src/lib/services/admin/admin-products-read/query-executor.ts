@@ -3,23 +3,30 @@ import { db } from "@white-shop/db";
 import { logger } from "../../../utils/logger";
 
 /**
- * Base include configuration for product list queries
+ * Admin products list always loads English title/slug, independent of UI language.
+ * Listing-row filters still use the request locale for pagination/search.
  */
-const getProductListInclude = (locale: string) => ({
+export const ADMIN_LIST_PRODUCT_TITLE_LOCALE = "en" as const;
+
+/**
+ * Base include configuration for product list queries.
+ * Loads all published variants (lean select) so list images can fall back across variants.
+ */
+const getProductListInclude = () => ({
   translations: {
-    where: { locale },
+    where: { locale: ADMIN_LIST_PRODUCT_TITLE_LOCALE },
     take: 1,
     select: { slug: true, title: true },
   },
   variants: {
     where: { published: true },
-    take: 1,
     orderBy: { price: "asc" as const },
     select: {
       price: true,
       stock: true,
       sku: true,
       imageUrl: true,
+      published: true,
       discountType: true,
       discountValue: true,
       discountExpiresAt: true,
@@ -99,16 +106,17 @@ export function isProductAttributesError(error: unknown): boolean {
 
 /**
  * Execute admin product list via listing read model (correct global sort/pagination).
+ * Product title/slug always come from the English translation include.
+ * Listing-row `image` is selected in the same batch for thumbnail fallback.
  */
 export async function executeAdminProductListViaListingRows(
   where: Prisma.ProductListingRowWhereInput,
   orderBy: Prisma.ProductListingRowOrderByWithRelationInput[],
   skip: number,
   take: number,
-  locale: string,
 ) {
   const queryStartTime = Date.now();
-  const listInclude = getProductListInclude(locale);
+  const listInclude = getProductListInclude();
 
   const [rows, total] = await Promise.all([
     db.productListingRow.findMany({
@@ -116,7 +124,7 @@ export async function executeAdminProductListViaListingRows(
       orderBy,
       skip,
       take,
-      select: { productId: true },
+      select: { productId: true, image: true },
     }),
     db.productListingRow.count({ where }),
   ]);
@@ -126,6 +134,10 @@ export async function executeAdminProductListViaListingRows(
   }
 
   const productIds = rows.map((row) => row.productId);
+  const listingImageByProductId = new Map(
+    rows.map((row) => [row.productId, row.image ?? null] as const),
+  );
+
   const products = await db.product.findMany({
     where: { id: { in: productIds }, deletedAt: null },
     include: listInclude,
@@ -133,8 +145,19 @@ export async function executeAdminProductListViaListingRows(
 
   const byId = new Map(products.map((product) => [product.id, product]));
   const ordered = productIds
-    .map((id) => byId.get(id))
-    .filter((product): product is (typeof products)[number] => product !== undefined);
+    .map((id) => {
+      const product = byId.get(id);
+      if (!product) {
+        return undefined;
+      }
+      return {
+        ...product,
+        listingRowImage: listingImageByProductId.get(id) ?? null,
+      };
+    })
+    .filter(
+      (product): product is NonNullable<typeof product> => product !== undefined,
+    );
 
   const queryTime = Date.now() - queryStartTime;
   logger.debug(`Admin listing-row query completed in ${queryTime}ms`, {

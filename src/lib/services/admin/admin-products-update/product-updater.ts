@@ -2,9 +2,9 @@ import { Prisma } from "@white-shop/db/prisma";
 import { logger } from "../../../utils/logger";
 import { cleanImageUrls, separateMainAndVariantImages, smartSplitUrls } from "../../../utils/image-utils";
 import {
-  normalizeInboundRasterStringToWebpDataUrl,
-  normalizeProductMediaPayload,
-} from "@/lib/utils/normalize-inbound-raster-to-webp-data-url";
+  assertPersistedProductImageUrl,
+  assertPersistedProductMediaPayload,
+} from "@/lib/products/persisted-product-image-url";
 import type { UpdateProductData } from "./types";
 import { normalizeProductClass } from "@/lib/constants/product-class";
 import { normalizeProductWarrantyYears } from "@/lib/constants/product-warranty";
@@ -77,19 +77,14 @@ export async function buildProductUpdateData(
   }
   
   if (data.media !== undefined) {
-    const normalizedMedia = await normalizeProductMediaPayload(
-      data.media as Array<string | { url?: string; src?: string; value?: string }>,
-    );
+    const normalizedMedia = assertPersistedProductMediaPayload(data.media);
     const { main } = separateMainAndVariantImages(normalizedMedia, allVariantImages);
     let cleanedMainMedia = cleanImageUrls(main);
 
     if (data.mainProductImage) {
-      const featuredNorm = await normalizeInboundRasterStringToWebpDataUrl(data.mainProductImage);
-      const featuredImage = cleanImageUrls([featuredNorm])[0] ?? null;
-      if (featuredImage) {
-        const existingWithoutFeatured = cleanedMainMedia.filter((url) => url !== featuredImage);
-        cleanedMainMedia = [featuredImage, ...existingWithoutFeatured];
-      }
+      const featuredImage = assertPersistedProductImageUrl(data.mainProductImage);
+      const existingWithoutFeatured = cleanedMainMedia.filter((url) => url !== featuredImage);
+      cleanedMainMedia = [featuredImage, ...existingWithoutFeatured];
     }
 
     updateData.media = cleanedMainMedia;

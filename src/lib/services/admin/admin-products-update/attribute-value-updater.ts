@@ -1,6 +1,7 @@
 import { Prisma } from "@white-shop/db/prisma";
 import { logger } from "../../../utils/logger";
 import { processImageUrl, smartSplitUrls } from "../../../utils/image-utils";
+import { isDataOrBlobImageReference } from "@/lib/products/persisted-product-image-url";
 
 type AttributeValueUpdaterClient = Pick<
   Prisma.TransactionClient,
@@ -81,8 +82,10 @@ export async function updateAttributeValueImageUrls(
           // Only update if:
           // 1. Attribute value doesn't have an imageUrl, OR
           // 2. Variant image is a base64 (more specific) and attribute value has a URL
-          const shouldUpdate = !attrValue.imageUrl || 
-            (firstVariantImageUrl.startsWith('data:image/') && attrValue.imageUrl && !attrValue.imageUrl.startsWith('data:image/'));
+          const shouldUpdate =
+            Boolean(firstVariantImageUrl) &&
+            !isDataOrBlobImageReference(firstVariantImageUrl) &&
+            (!attrValue.imageUrl || isDataOrBlobImageReference(attrValue.imageUrl));
 
           if (shouldUpdate) {
             logger.debug(`Updating attribute value ${valueId} imageUrl from variant ${variant.id}`, { 

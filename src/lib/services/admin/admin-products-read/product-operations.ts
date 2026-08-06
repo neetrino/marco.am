@@ -68,7 +68,6 @@ export async function getProducts(filters: ProductFilters) {
     listingOrderBy,
     skip,
     limit,
-    locale,
   );
 
   const data = products.map((product) => formatProductForList(product, locale));

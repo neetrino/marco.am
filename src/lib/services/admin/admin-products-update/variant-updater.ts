@@ -1,7 +1,7 @@
 import { Prisma } from "@white-shop/db/prisma";
 import { logger } from "../../../utils/logger";
 import { processImageUrl, smartSplitUrls } from "../../../utils/image-utils";
-import { normalizeCommaSeparatedRasterDataUrls } from "@/lib/utils/normalize-inbound-raster-to-webp-data-url";
+import { assertPersistedCommaSeparatedImageUrls } from "@/lib/products/persisted-product-image-url";
 import { processVariantOptions, parseVariantPrices } from "./variant-processor";
 import {
   resolveProductClass,
@@ -104,7 +104,7 @@ async function processVariantImageUrl(imageUrl: string | undefined): Promise<str
   if (processedUrls.length === 0) {
     return undefined;
   }
-  return normalizeCommaSeparatedRasterDataUrls(processedUrls.join(","));
+  return assertPersistedCommaSeparatedImageUrls(processedUrls.join(","));
 }
 
 /**
