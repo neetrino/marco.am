@@ -9,10 +9,27 @@ import {
 } from "@/lib/utils/validate-admin-image-upload";
 import { logger } from "@/lib/utils/logger";
 
+const UPLOAD_SESSION_ID_PATTERN = /^[A-Za-z0-9_-]{8,64}$/;
+
+type UploadedImageMeta = {
+  url: string;
+  objectKey: string;
+  mimeType: string;
+  size: number;
+};
+
+function resolveObjectKey(uploadSessionId: string | undefined, extension: string): string {
+  const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  const id = nanoid(12);
+  if (uploadSessionId && UPLOAD_SESSION_ID_PATTERN.test(uploadSessionId)) {
+    return `products/drafts/${uploadSessionId}/${id}.${extension}`;
+  }
+  return `products/${date}-${id}.${extension}`;
+}
+
 /**
  * POST /api/v1/supersudo/products/upload-images
- * Upload images to Cloudflare R2 and return public URLs.
- * Requires R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, R2_PUBLIC_URL.
+ * Accepts compressed WebP data URLs as transport, uploads to R2, returns HTTPS URLs.
  */
 export async function POST(req: NextRequest) {
   const requestStartTime = Date.now();
@@ -30,7 +47,7 @@ export async function POST(req: NextRequest) {
           detail: "Admin access required",
           instance: req.url,
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -44,11 +61,11 @@ export async function POST(req: NextRequest) {
             "R2 is not configured. Set R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME, R2_PUBLIC_URL in .env",
           instance: req.url,
         },
-        { status: 503 }
+        { status: 503 },
       );
     }
 
-    let body: { images?: unknown };
+    let body: { images?: unknown; uploadSessionId?: unknown };
     try {
       body = await req.json();
     } catch {
@@ -60,7 +77,7 @@ export async function POST(req: NextRequest) {
           detail: "Invalid JSON in request body",
           instance: req.url,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -73,7 +90,7 @@ export async function POST(req: NextRequest) {
           detail: "Field 'images' is required and must be a non-empty array",
           instance: req.url,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -86,9 +103,12 @@ export async function POST(req: NextRequest) {
           detail: `Maximum ${getMaxAdminImageCount()} images are allowed per upload`,
           instance: req.url,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
+
+    const uploadSessionId =
+      typeof body.uploadSessionId === "string" ? body.uploadSessionId.trim() : undefined;
 
     const validImages: string[] = [];
     for (let i = 0; i < body.images.length; i++) {
@@ -102,13 +122,13 @@ export async function POST(req: NextRequest) {
             detail: `Image at index ${i} must be a valid base64 image (data:image/...)`,
             instance: req.url,
           },
-          { status: 400 }
+          { status: 400 },
         );
       }
       validImages.push(image);
     }
 
-    const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+    const images: UploadedImageMeta[] = [];
     const urls: string[] = [];
 
     for (let i = 0; i < validImages.length; i++) {
@@ -122,14 +142,14 @@ export async function POST(req: NextRequest) {
             detail: `Invalid, unsupported, or oversized WebP image at index ${i}`,
             instance: req.url,
           },
-          { status: 400 }
+          { status: 400 },
         );
       }
       const prepared = await prepareRasterForR2Upload(parsed.buffer, parsed.mime);
-      const key = `products/${date}-${nanoid(10)}.${prepared.extension}`;
-      const url = await uploadToR2(key, prepared.buffer, prepared.contentType);
+      const objectKey = resolveObjectKey(uploadSessionId, prepared.extension);
+      const url = await uploadToR2(objectKey, prepared.buffer, prepared.contentType);
       if (!url) {
-        logger.error("Admin upload images: R2 upload failed", { key });
+        logger.error("Admin upload images: R2 upload failed", { objectKey });
         return NextResponse.json(
           {
             type: "https://api.shop.am/problems/internal-error",
@@ -138,19 +158,32 @@ export async function POST(req: NextRequest) {
             detail: "Failed to upload image to storage",
             instance: req.url,
           },
-          { status: 500 }
+          { status: 500 },
         );
       }
+      const meta: UploadedImageMeta = {
+        url,
+        objectKey,
+        mimeType: prepared.contentType,
+        size: prepared.buffer.length,
+      };
+      images.push(meta);
       urls.push(url);
     }
 
     const totalTime = Date.now() - requestStartTime;
     logger.info("Admin upload images: done", { count: urls.length, totalTime });
 
-    return NextResponse.json({ urls }, { status: 200 });
+    return NextResponse.json({ urls, images }, { status: 200 });
   } catch (error: unknown) {
     const totalTime = Date.now() - requestStartTime;
-    const err = error as { message?: string; status?: number; type?: string; title?: string; detail?: string };
+    const err = error as {
+      message?: string;
+      status?: number;
+      type?: string;
+      title?: string;
+      detail?: string;
+    };
     logger.error("Admin upload images: POST error", {
       message: err?.message,
       status: err?.status,
@@ -164,8 +197,7 @@ export async function POST(req: NextRequest) {
         detail: err?.detail ?? err?.message ?? "An error occurred",
         instance: req.url,
       },
-      { status: err?.status ?? 500 }
+      { status: err?.status ?? 500 },
     );
   }
 }
-

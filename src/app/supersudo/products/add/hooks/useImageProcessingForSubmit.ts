@@ -1,3 +1,9 @@
+import {
+  PRODUCT_IMAGE_MUST_BE_R2_MESSAGE,
+  assertPersistedProductImageUrl,
+  isDataOrBlobImageReference,
+} from '@/lib/products/persisted-product-image-url';
+
 /** Variant-like objects that may carry comma-separated image URLs for submit. */
 type VariantImageCarrier = { imageUrl?: string };
 
@@ -8,7 +14,12 @@ interface ProcessImagesForSubmitProps {
   variants: VariantImageCarrier[];
 }
 
-const MAX_BASE64_SIZE = 5 * 1024 * 1024;
+function assertSubmitImageUrl(url: string): string {
+  if (isDataOrBlobImageReference(url)) {
+    throw new Error(PRODUCT_IMAGE_MUST_BE_R2_MESSAGE);
+  }
+  return assertPersistedProductImageUrl(url);
+}
 
 export function processImagesForSubmit({
   imageUrls,
@@ -20,105 +31,25 @@ export function processImagesForSubmit({
   mainImage: string | null;
   processedVariants: VariantImageCarrier[];
 } {
-  const isBase64Image = (url: string): boolean => {
-    return url.startsWith('data:image/');
-  };
-
-  const isUrl = (url: string): boolean => {
-    return url.startsWith('http://') || url.startsWith('https://');
-  };
-
-  const getBase64Size = (base64: string): number => {
-    const base64Data = base64.includes(',') ? base64.split(',')[1] : base64;
-    return Math.ceil(base64Data.length * 0.75);
-  };
-
-  const processImages = (images: string[]): { processed: string[]; skipped: number } => {
-    let skippedCount = 0;
-
-    const processed = images.filter((img) => {
-      if (isUrl(img)) {
-        return true;
-      }
-
-      if (isBase64Image(img)) {
-        const size = getBase64Size(img);
-        if (size > MAX_BASE64_SIZE) {
-          console.warn(`⚠️ [ADMIN] Image too large (${Math.round(size / 1024)}KB), skipping to avoid 413 error.`);
-          skippedCount++;
-          return false;
-        }
-        return true;
-      }
-
-      return true;
-    });
-
-    return { processed, skipped: skippedCount };
-  };
-
-  /** One slot in `imageUrls` → processed URL or null; indices match `imageUrls` exactly (no `filter` / `indexOf` bugs). */
-  const processMainImageSlot = (url: string): { slot: string | null; skipped: number } => {
+  const processMainImageSlot = (url: string): string | null => {
     if (!url || !url.trim()) {
-      return { slot: null, skipped: 0 };
+      return null;
     }
-    if (isUrl(url)) {
-      return { slot: url, skipped: 0 };
-    }
-    if (isBase64Image(url)) {
-      const size = getBase64Size(url);
-      if (size > MAX_BASE64_SIZE) {
-        console.warn(
-          `⚠️ [ADMIN] Main image too large (${Math.round(size / 1024)}KB), skipping to avoid 413 error.`
-        );
-        return { slot: null, skipped: 1 };
-      }
-      return { slot: url, skipped: 0 };
-    }
-    return { slot: url, skipped: 0 };
+    return assertSubmitImageUrl(url.trim());
   };
 
-  let mainSkipped = 0;
-  const mainImageMapping: (string | null)[] = imageUrls.map((url) => {
-    const { slot, skipped } = processMainImageSlot(url);
-    mainSkipped += skipped;
-    return slot;
-  });
+  const mainImageMapping: (string | null)[] = imageUrls.map((url) => processMainImageSlot(url));
 
-  const variantImages: string[] = [];
-  variants.forEach((variant) => {
-    if (variant.imageUrl) {
-      const parts = variant.imageUrl
-        .split(',')
-        .map((p: string) => p.trim())
-        .filter(Boolean);
-      variantImages.push(...parts);
+  const processedVariants = variants.map((variant) => {
+    if (!variant.imageUrl) {
+      return { ...variant };
     }
-  });
-
-  const variantImagesProcessed = variantImages.length > 0 ? processImages(variantImages) : { processed: [], skipped: 0 };
-  const processedVariantImages = variantImagesProcessed.processed;
-  const skippedImagesCount = mainSkipped + variantImagesProcessed.skipped;
-
-  if (skippedImagesCount > 0) {
-    console.warn(`⚠️ [ADMIN] ${skippedImagesCount} large image(s) were skipped to avoid 413 error.`);
-  }
-
-  const processedVariants = [...variants];
-  let variantImageIndex = 0;
-  processedVariants.forEach((variant) => {
-    if (variant.imageUrl) {
-      const parts = variant.imageUrl
-        .split(',')
-        .map((p: string) => p.trim())
-        .filter(Boolean);
-      const processedUrls = processedVariantImages.slice(
-        variantImageIndex,
-        variantImageIndex + parts.length
-      );
-      variant.imageUrl = processedUrls.join(',');
-      variantImageIndex += parts.length;
-    }
+    const parts = variant.imageUrl
+      .split(',')
+      .map((part) => part.trim())
+      .filter(Boolean)
+      .map((part) => assertSubmitImageUrl(part));
+    return { ...variant, imageUrl: parts.join(',') };
   });
 
   const finalMedia: string[] = [];
@@ -133,7 +64,7 @@ export function processImagesForSubmit({
       }
     });
   } else if (mainProductImage) {
-    const { slot } = processMainImageSlot(mainProductImage);
+    const slot = processMainImageSlot(mainProductImage);
     if (slot) {
       finalMedia.push(slot);
     }
@@ -145,12 +76,10 @@ export function processImagesForSubmit({
       if (atFeatured) {
         return atFeatured;
       }
-      const first = mainImageMapping.find((u) => u) ?? null;
-      return first;
+      return mainImageMapping.find((u) => u) ?? null;
     }
     if (mainProductImage) {
-      const { slot } = processMainImageSlot(mainProductImage);
-      return slot;
+      return processMainImageSlot(mainProductImage);
     }
     return null;
   })();

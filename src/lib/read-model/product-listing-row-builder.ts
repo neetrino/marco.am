@@ -4,6 +4,7 @@ import { productRequiresAttributeSelection } from '@/lib/product-requires-attrib
 import { pickVariantForListingPrice } from '@/lib/product-variant-listing-pick';
 import { resolveProductPrice } from '@/lib/pricing/product-price';
 import { buildProductGalleryUrls } from '@/lib/products/product-gallery-urls';
+import { toPersistedProductImageUrl } from '@/lib/products/persisted-product-image-url';
 import {
   buildTechnicalSpecFilterToken,
   isReservedShopAttributeFilterKey,
@@ -499,7 +500,10 @@ export function buildProductListingRowsForLocales(args: {
     standardPrice: variant?.price ?? 0,
     discount: appliedDiscount,
   });
-  const images = buildProductGalleryUrls(product.media, variants).slice(0, 1);
+  const images = buildProductGalleryUrls(product.media, variants)
+    .map((url) => toPersistedProductImageUrl(url))
+    .filter((url): url is string => Boolean(url))
+    .slice(0, 1);
   const categoryIds = expandCategoryIdsWithAncestors(
     collectCategoryIds(product),
     categoryAncestry.parentById,

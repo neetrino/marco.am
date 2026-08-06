@@ -1,7 +1,8 @@
 'use client';
 
 import Image from 'next/image';
-import { processImageUrl, toDomSafeImgSrcString } from '@/lib/utils/image-utils';
+import { normalizeAdminListImageUrl } from '@/lib/admin/admin-list-product-image';
+import { toDomSafeImgSrcString } from '@/lib/utils/image-utils';
 
 const THUMB_SIZE_PX = 40;
 
@@ -11,8 +12,8 @@ interface AdminProductListImageProps {
 }
 
 export function AdminProductListImage({ src, alt }: AdminProductListImageProps) {
-  const processed = processImageUrl(src);
-  if (!processed || processed.startsWith('data:')) {
+  const processed = normalizeAdminListImageUrl(src);
+  if (!processed) {
     return null;
   }
 

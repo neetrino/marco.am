@@ -5,9 +5,12 @@ import { useRef, useEffect } from 'react';
 import { getErrorMessage } from '@/lib/types/errors';
 import {
   ADMIN_IMAGE_INVALID_MESSAGE,
-  processAdminImageFile,
   validateAdminImageFile,
 } from '@/lib/utils/process-admin-image-file';
+import {
+  getOrCreateProductImageUploadSessionId,
+  uploadProductCatalogImageFile,
+} from '@/lib/products/upload-product-images-client';
 import type { Variant } from '../types';
 import type { GeneratedVariant } from '../types';
 import { logger } from "@/lib/utils/logger";
@@ -148,20 +151,14 @@ export function useImageHandling({
 
           logger.devLog(`📸 [UPLOAD] Processing file ${index + 1}/${files.length}:`, file.name, `(${Math.round(file.size / 1024)}KB)`);
 
-          const base64 = await processAdminImageFile(file, 'catalog');
-
-          if (base64 && base64.trim()) {
-            logger.devLog(`✅ [UPLOAD] Successfully processed file ${index + 1}/${files.length}:`, file.name);
-            return { success: true, base64, index };
-          } else {
-            const errorMsg = `Failed to convert "${file.name}" to base64`;
-            console.error(`❌ [UPLOAD] Empty base64 result for file ${index + 1}/${files.length}:`, file.name);
-            return { success: false, error: errorMsg, index };
-          }
+          const sessionId = getOrCreateProductImageUploadSessionId();
+          const uploaded = await uploadProductCatalogImageFile(file, sessionId);
+          logger.devLog(`✅ [UPLOAD] R2 upload ok for file ${index + 1}/${files.length}:`, file.name);
+          return { success: true as const, url: uploaded.url, index };
         } catch (error: unknown) {
           const errorMsg = `Error processing "${file.name}": ${getErrorMessage(error)}`;
           console.error(`❌ [UPLOAD] Error processing file ${index + 1}/${files.length}:`, file.name, error);
-          return { success: false, error: errorMsg, index };
+          return { success: false as const, error: errorMsg, index };
         }
       });
 
@@ -170,8 +167,8 @@ export function useImageHandling({
       results.forEach((result) => {
         if (result.status === 'fulfilled') {
           const fileResult = result.value;
-          if (fileResult.success && fileResult.base64) {
-            uploadedImages.push(fileResult.base64);
+          if (fileResult.success && fileResult.url) {
+            uploadedImages.push(fileResult.url);
           } else if (!fileResult.success && fileResult.error) {
             errors.push(fileResult.error);
           }
@@ -237,10 +234,13 @@ export function useImageHandling({
         originalSize: `${Math.round(file.size / 1024)}KB`,
       });
 
-      const base64 = await processAdminImageFile(file, 'catalog');
+      const sessionId = getOrCreateProductImageUploadSessionId();
+      const uploaded = await uploadProductCatalogImageFile(file, sessionId);
 
-      setGeneratedVariants((prev) => prev.map((v) => (v.id === variantId ? { ...v, image: base64 } : v)));
-      logger.devLog('✅ [VARIANT BUILDER] Variant image uploaded and processed for variant:', variantId);
+      setGeneratedVariants((prev) =>
+        prev.map((v) => (v.id === variantId ? { ...v, image: uploaded.url } : v)),
+      );
+      logger.devLog('✅ [VARIANT BUILDER] Variant image uploaded to R2 for variant:', variantId);
     } catch (error: unknown) {
       console.error('❌ [VARIANT IMAGE] Error processing variant image:', error);
       setImageUploadError(getErrorMessage(error) || t('admin.products.add.failedToProcessImage'));
@@ -282,10 +282,10 @@ export function useImageHandling({
             originalSize: `${Math.round(file.size / 1024)}KB`,
           });
 
-          const base64 = await processAdminImageFile(file, 'catalog');
-
-          logger.devLog(`✅ [COLOR IMAGE] Image ${index + 1}/${imageFiles.length} processed, base64 length:`, base64.length);
-          return base64;
+          const sessionId = getOrCreateProductImageUploadSessionId();
+          const uploaded = await uploadProductCatalogImageFile(file, sessionId);
+          logger.devLog(`✅ [COLOR IMAGE] Image ${index + 1}/${imageFiles.length} uploaded to R2`);
+          return uploaded.url;
         })
       );
 

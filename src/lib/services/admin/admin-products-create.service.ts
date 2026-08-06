@@ -9,10 +9,10 @@ import {
   separateMainAndVariantImages,
 } from "../../utils/image-utils";
 import {
-  normalizeCommaSeparatedRasterDataUrls,
-  normalizeInboundRasterStringToWebpDataUrl,
-  normalizeProductMediaPayload,
-} from "@/lib/utils/normalize-inbound-raster-to-webp-data-url";
+  assertPersistedCommaSeparatedImageUrls,
+  assertPersistedProductImageUrl,
+  assertPersistedProductMediaPayload,
+} from "@/lib/products/persisted-product-image-url";
 import {
   resolveProductClass,
   type ProductClass,
@@ -269,13 +269,15 @@ class AdminProductsCreateService {
 
             logger.devLog(`📦 [ADMIN PRODUCTS CREATE SERVICE] Variant ${variantIndex + 1} attributes:`, JSON.stringify(attributesJson ?? null, null, 2));
 
-            // Process and validate variant imageUrl
+            // Process and validate variant imageUrl (HTTPS / site-relative only)
             let processedVariantImageUrl: string | undefined = undefined;
             if (variant.imageUrl) {
               const urls = smartSplitUrls(variant.imageUrl);
-              const processedUrls = urls.map(url => processImageUrl(url)).filter((url): url is string => url !== null);
+              const processedUrls = urls
+                .map((url) => processImageUrl(url))
+                .filter((url): url is string => url !== null);
               if (processedUrls.length > 0) {
-                processedVariantImageUrl = await normalizeCommaSeparatedRasterDataUrls(
+                processedVariantImageUrl = assertPersistedCommaSeparatedImageUrls(
                   processedUrls.join(","),
                 );
               }
@@ -324,10 +326,11 @@ class AdminProductsCreateService {
           }
         });
 
-        // Prepare media array — normalize inline rasters to WebP data URLs before persist / R2 paths
-        let rawMedia = await normalizeProductMediaPayload(data.media || []);
+        // Prepare media — only persisted HTTPS / site-relative URLs (no Base64)
+        let rawMedia: Array<string | { url?: string; src?: string; value?: string }> =
+          assertPersistedProductMediaPayload(data.media || []);
         const mainProductImageNorm = data.mainProductImage
-          ? await normalizeInboundRasterStringToWebpDataUrl(data.mainProductImage)
+          ? assertPersistedProductImageUrl(data.mainProductImage)
           : undefined;
 
         if (mainProductImageNorm && rawMedia.length === 0) {
