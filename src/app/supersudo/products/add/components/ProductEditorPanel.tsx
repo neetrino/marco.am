@@ -24,6 +24,7 @@ import { useProductFormCallbacks } from '../hooks/useProductFormCallbacks';
 import { isClothingCategory as checkIsClothingCategory } from '../utils/productUtils';
 import { type ProductEditorTabId } from '../product-editor-tabs';
 import type { OptimisticSaveRequest } from '../hooks/useProductPayloadCreation';
+import { AUTO_STOCK_LEVEL } from '@/lib/constants/auto-stock';
 import {
   GATED_SECTIONS,
   computeGatedFingerprints,
@@ -378,7 +379,7 @@ export function ProductEditorPanel({
                   selectedValueIds: Object.values(formState.selectedAttributeValueIds).flat(),
                   price: '',
                   discount: EMPTY_VARIANT_DISCOUNT,
-                  stock: '',
+                  stock: String(AUTO_STOCK_LEVEL),
                   sku: '',
                   image: null,
                 }

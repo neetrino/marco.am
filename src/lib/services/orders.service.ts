@@ -21,6 +21,7 @@ import { invalidateAdminAnalyticsCache } from "@/lib/services/admin/admin-stats/
 import { startOnlinePaymentIfNeeded } from "@/lib/payments/start-online-payment";
 import { assertArcaConfigured, resolveArcaConfig } from "@/lib/payments/arca/config";
 import { assertIdramConfigured, resolveIdramConfig } from "@/lib/payments/idram/config";
+import { replenishVariantStockIfNeeded } from "@/lib/services/inventory/auto-stock-replenish";
 
 type CartItemWithRelations = Prisma.CartItemGetPayload<{
   include: {
@@ -420,6 +421,7 @@ class OrdersService {
                 detail: `Insufficient stock for SKU ${variant?.sku ?? variantId}. Available: ${variant?.stock ?? 0}, requested: ${quantity}`,
               };
             }
+            await replenishVariantStockIfNeeded(tx, variantId);
             logger.debug('Stock decremented', { variantId, quantity });
           }
           logger.info('All variant stocks updated successfully');

@@ -22,6 +22,7 @@ import { findAttributeBySemanticKey } from '@/lib/attribute-keys';
 import type { ProductDescriptionEntry } from '@/lib/products/product-description';
 import { t as translateByLocale } from '@/lib/i18n';
 import { getStoredLanguage } from '@/lib/language';
+import { AUTO_STOCK_LEVEL } from '@/lib/constants/auto-stock';
 
 interface UseProductFormHandlersProps {
   formData: {
@@ -149,7 +150,7 @@ export function useProductFormHandlers({
         const trimmedSku = simpleProductData.sku.trim();
         const simpleVariant: Record<string, unknown> = {
           price: priceCatalog,
-          stock: parseInt(simpleProductData.quantity) || 0,
+          stock: AUTO_STOCK_LEVEL,
           productClass: selectedProductClass,
           published: true,
           discountType: simpleDiscount.discountType,
@@ -211,7 +212,7 @@ export function useProductFormHandlers({
               variants.push({
                 price: variantPriceCatalog,
                 ...variantDiscount,
-                stock: parseInt(genVariant.stock || '0') || 0,
+                stock: AUTO_STOCK_LEVEL,
                 sku: finalSku || undefined,
                 imageUrl: genVariant.image || undefined,
                 published: true,
@@ -262,7 +263,7 @@ export function useProductFormHandlers({
                 variants.push({
                   price: variantPriceCatalog,
                   ...variantDiscount,
-                  stock: parseInt(genVariant.stock || '0') || 0,
+                  stock: AUTO_STOCK_LEVEL,
                   sku: finalSku || undefined,
                   imageUrl: genVariant.image || undefined,
                   published: true,
@@ -291,10 +292,8 @@ export function useProductFormHandlers({
             if (colorDataArray.length > 0) {
               colorDataArray.forEach((colorData) => {
                 const colorSizes = colorData.sizes || [];
-                const colorSizeStocks = colorData.sizeStocks || {};
                 if (colorSizes.length > 0) {
                   colorSizes.forEach((size) => {
-                    const stockForVariant = colorSizeStocks[size] || colorData.stock || '0';
                     const finalSku = (colorData.sizeLabels?.[size] || variant.sku || '').trim();
                     if (finalSku && variantSkuSet.has(finalSku)) {
                       alert(mt('admin.products.add.duplicateSku').replace('{sku}', finalSku));
@@ -336,7 +335,7 @@ export function useProductFormHandlers({
                       price: finalPrice,
                       color: colorData.colorValue,
                       size: size,
-                      stock: parseInt(stockForVariant) || 0,
+                      stock: AUTO_STOCK_LEVEL,
                       sku: finalSku || undefined,
                       imageUrl: variantImageUrl,
                       options: variantOptions.length > 0 ? variantOptions : undefined,

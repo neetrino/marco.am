@@ -7,6 +7,7 @@ import type { Category, GeneratedVariant } from '../types';
 import { EMPTY_VARIANT_DISCOUNT } from '../utils/variant-discount';
 import { generateSlug } from '../utils/productUtils';
 import { logger } from "@/lib/utils/logger";
+import { AUTO_STOCK_LEVEL } from '@/lib/constants/auto-stock';
 
 interface UseProductFormCallbacksProps {
   formData: {
@@ -82,7 +83,7 @@ export function useProductFormCallbacks({
       selectedValueIds: [],
       price: '0.00',
       discount: { ...EMPTY_VARIANT_DISCOUNT },
-      stock: '0',
+      stock: String(AUTO_STOCK_LEVEL),
       sku: '',
       image: null,
     };
