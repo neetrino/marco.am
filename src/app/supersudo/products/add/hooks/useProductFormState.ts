@@ -4,6 +4,7 @@ import { EMPTY_VARIANT_DISCOUNT } from '../utils/variant-discount';
 import type { Product } from '../../types';
 import type { CurrencyCode } from '@/lib/currency';
 import type { ProductClass } from '@/lib/constants/product-class';
+import { AUTO_STOCK_LEVEL } from '@/lib/constants/auto-stock';
 import type { ProductDescriptionEntry } from '@/lib/products/product-description';
 
 export function useProductFormState(listProduct: Product | null = null) {
@@ -48,7 +49,7 @@ export function useProductFormState(listProduct: Product | null = null) {
     price: '',
     discount: { ...EMPTY_VARIANT_DISCOUNT },
     sku: '',
-    quantity: '',
+    quantity: String(AUTO_STOCK_LEVEL),
     variantId: '',
   });
   const [selectedAttributesForVariants, setSelectedAttributesForVariants] = useState<Set<string>>(new Set());

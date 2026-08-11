@@ -25,12 +25,12 @@ export function SimpleProductFields({
   price,
   discount,
   sku,
-  quantity,
+  quantity: _quantity,
   defaultCurrency,
   onPriceChange,
   onDiscountChange,
   onSkuChange,
-  onQuantityChange,
+  onQuantityChange: _onQuantityChange,
   embedded,
 }: SimpleProductFieldsProps) {
   const { t } = useTranslation();
@@ -79,21 +79,6 @@ export function SimpleProductFields({
               onChange={(e) => onSkuChange(e.target.value)}
               placeholder={t('admin.products.add.skuPlaceholder')}
               className="w-full"
-            />
-          </div>
-
-          {/* Quantity */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t('admin.products.add.quantity')}
-            </label>
-            <Input
-              type="number"
-              value={quantity}
-              onChange={(e) => onQuantityChange(e.target.value)}
-              placeholder={t('admin.products.add.quantityPlaceholder')}
-              className="w-full"
-              min="0"
             />
           </div>
         </div>

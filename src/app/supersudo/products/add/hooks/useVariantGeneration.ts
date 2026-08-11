@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import type { GeneratedVariant } from '../types';
 import { EMPTY_VARIANT_DISCOUNT } from '../utils/variant-discount';
 import { logger } from "@/lib/utils/logger";
+import { AUTO_STOCK_LEVEL } from '@/lib/constants/auto-stock';
 
 interface UseVariantGenerationProps {
   selectedAttributesForVariants: Set<string>;
@@ -65,7 +66,7 @@ export function useVariantGeneration({
         selectedValueIds: allSelectedValueIds,
         price: existingAutoVariant?.price || '',
         discount: existingAutoVariant?.discount ?? { ...EMPTY_VARIANT_DISCOUNT },
-        stock: existingAutoVariant?.stock || '',
+        stock: existingAutoVariant?.stock || String(AUTO_STOCK_LEVEL),
         sku: existingAutoVariant?.sku || '',
         image: existingAutoVariant?.image || null,
       };

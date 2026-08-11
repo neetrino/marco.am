@@ -7,6 +7,7 @@ import {
   resolveProductClass,
   type ProductClass,
 } from "@/lib/constants/product-class";
+import { AUTO_STOCK_LEVEL } from "@/lib/constants/auto-stock";
 import { normalizeVariantDiscountForWrite } from "../variant-discount-write";
 import type { DiscountKind } from "@/lib/discount/discount-expiry";
 
@@ -131,7 +132,7 @@ async function updateExistingVariant(
       discountType: variant.discountType,
       discountValue: variant.discountValue,
       discountExpiresAt: variant.discountExpiresAt,
-      stock: isNaN(variant.stock) ? 0 : variant.stock,
+      // Stock is managed automatically (create level + order replenish); do not overwrite on edit.
       imageUrl: variant.normalizedImageUrl,
       published: variant.published !== false,
       attributes: (attributesJson || undefined) as Prisma.InputJsonValue | undefined,
@@ -182,7 +183,7 @@ async function createNewVariant(
       discountType: variant.discountType,
       discountValue: variant.discountValue,
       discountExpiresAt: variant.discountExpiresAt,
-      stock: isNaN(variant.stock) ? 0 : variant.stock,
+      stock: AUTO_STOCK_LEVEL,
       imageUrl: variant.normalizedImageUrl,
       published: variant.published !== false,
       attributes: (attributesJson || undefined) as Prisma.InputJsonValue | undefined,

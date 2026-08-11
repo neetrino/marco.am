@@ -40,6 +40,7 @@ import { syncProductListingReadModel } from "@/lib/read-model/product-read-model
 import { normalizeVariantDiscountForWrite } from "./variant-discount-write";
 import type { DiscountKind } from "@/lib/discount/discount-expiry";
 import { syncProductAttributeValues } from "./product-attribute-values.service";
+import { AUTO_STOCK_LEVEL } from "@/lib/constants/auto-stock";
 
 type ProductMediaItem = string | { url: string };
 
@@ -252,7 +253,6 @@ class AdminProductsCreateService {
 
             const rawPrice = typeof variant.price === 'number' ? variant.price : parseFloat(String(variant.price));
             const price = Number.isNaN(rawPrice) ? 0 : rawPrice;
-            const stock = typeof variant.stock === 'number' ? variant.stock : parseInt(String(variant.stock), 10);
             const discount = normalizeVariantDiscountForWrite(variant);
 
             // Generate unique SKU for this variant
@@ -290,7 +290,7 @@ class AdminProductsCreateService {
               discountType: discount.discountType,
               discountValue: discount.discountValue,
               discountExpiresAt: discount.discountExpiresAt,
-              stock: isNaN(stock) ? 0 : stock,
+              stock: AUTO_STOCK_LEVEL,
               imageUrl: processedVariantImageUrl,
               published: variant.published !== false,
               ...(attributesJson !== undefined ? { attributes: attributesJson } : {}),

@@ -18,7 +18,6 @@ const VARIANT_FIELD_LABEL =
   'mb-1.5 block text-xs font-medium uppercase tracking-wider text-gray-500';
 const VARIANT_ROW_GAP = 'gap-x-4 gap-y-2';
 const VARIANT_PRICE_WIDTH = 'w-[148px] sm:w-[168px]';
-const VARIANT_STOCK_WIDTH = 'w-[96px]';
 const VARIANT_SKU_WIDTH = 'w-[112px] sm:w-[128px]';
 const VARIANT_ROW_DIVIDER =
   'flex h-9 shrink-0 items-center px-1 text-base font-light leading-none text-slate-300';
@@ -100,19 +99,6 @@ export function VariantBuilder({
                   }}
                 >
                   {t('admin.products.add.applyPriceToAll')}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={async () => {
-                    const stock = await showPopupPrompt(t('admin.products.add.enterDefaultStock'));
-                    if (stock !== null) {
-                      onApplyToAll('stock', stock);
-                    }
-                  }}
-                >
-                  {t('admin.products.add.applyStockToAll')}
                 </Button>
                 <Button
                   type="button"
@@ -272,23 +258,6 @@ export function VariantBuilder({
                             }}
                             placeholder={t('admin.products.add.skuPlaceholder')}
                             className="h-9 w-full text-sm"
-                          />
-                        </div>
-                        <div className={VARIANT_STOCK_WIDTH}>
-                          <label className={VARIANT_FIELD_LABEL}>
-                            {t('admin.products.add.stock')}
-                          </label>
-                          <Input
-                            type="number"
-                            value={variant.stock}
-                            onChange={(e) => {
-                              onVariantUpdate((prev) =>
-                                prev.map((v) => (v.id === variant.id ? { ...v, stock: e.target.value } : v))
-                              );
-                            }}
-                            placeholder={t('admin.products.add.quantityPlaceholder')}
-                            className="h-9 w-full text-sm"
-                            min="0"
                           />
                         </div>
                       </div>
