@@ -265,7 +265,7 @@ export default function DeliveryPage() {
                 <Button
                   variant="primary"
                   onClick={handleSave}
-                  disabled={saving || locations.length === 0}
+                  disabled={saving}
                   className="inline-flex h-11 min-w-[160px] flex-1 items-center justify-center rounded-xl bg-marco-yellow px-5 text-sm font-semibold text-marco-black transition-all hover:-translate-y-0.5 hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-60 sm:flex-none"
                 >
                   {saving ? t('admin.delivery.saving') : t('admin.delivery.saveSettings')}

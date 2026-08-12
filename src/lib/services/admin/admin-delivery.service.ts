@@ -111,6 +111,20 @@ class AdminDeliveryService {
       id: location.id || `location-${Date.now()}-${index}`,
     }));
 
+    const value = { locations: locationsWithIds };
+
+    await db.settings.upsert({
+      where: { key: 'delivery-locations' },
+      update: {
+        value,
+        updatedAt: new Date(),
+      },
+      create: {
+        key: 'delivery-locations',
+        value,
+        description: 'Delivery prices by city/location',
+      },
+    });
 
     return {
       locations: locationsWithIds,
