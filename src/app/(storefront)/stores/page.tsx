@@ -20,7 +20,7 @@ export default function StoresPage() {
       addressKey: 'stores.locations.mainStore.address' as const,
       hoursKey: 'stores.locations.mainStore.hours' as const,
       image: ALEC_MANOOGIAN_STORE_IMAGE,
-      phone: '+374 93 52 04 06',
+      phones: ['+374 98 19 04 06', '+374 93 52 04 06'],
       emails: ['marcofurniture@mail.ru', 'marcogrouparmenia@mail.ru'],
     },
     {
@@ -29,7 +29,7 @@ export default function StoresPage() {
       addressKey: 'stores.locations.mallBranch.address' as const,
       hoursKey: 'stores.locations.mallBranch.hours' as const,
       image: AVAN_STORE_IMAGE,
-      phone: '+374 93 58 04 09',
+      phones: ['+374 41 48 04 06', '+374 41 49 04 06'],
       emails: ['marcofurniture@mail.ru', 'marcogrouparmenia@mail.ru'],
     },
     {
@@ -38,7 +38,7 @@ export default function StoresPage() {
       addressKey: 'stores.locations.downtown.address' as const,
       hoursKey: 'stores.locations.downtown.hours' as const,
       image: PARAKAR_STORE_IMAGE,
-      phone: '+374 77 51 04 06',
+      phones: ['+374 93 58 04 09', '+374 41 34 04 06'],
       emails: ['marcofurniture@mail.ru', 'marcogrouparmenia@mail.ru'],
     },
   ];
@@ -112,12 +112,17 @@ export default function StoresPage() {
                       d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
                     />
                   </svg>
-                  <a
-                    href={`tel:${store.phone}`}
-                    className="text-gray-600 text-sm hover:text-gray-900 transition-colors"
-                  >
-                    {store.phone}
-                  </a>
+                  <div className="flex flex-col gap-1">
+                    {store.phones.map((phone) => (
+                      <a
+                        key={phone}
+                        href={`tel:${phone}`}
+                        className="text-gray-600 text-sm hover:text-gray-900 transition-colors"
+                      >
+                        {phone}
+                      </a>
+                    ))}
+                  </div>
                 </div>
 
                 <div className="space-y-1">

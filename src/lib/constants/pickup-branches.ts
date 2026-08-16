@@ -12,7 +12,7 @@ export type PickupBranch = {
   label: string;
 };
 
-const CONTACT_LOCATION_IDS: readonly ContactLocationId[] = ['yerevan', 'argavand', 'parakar'];
+const CONTACT_LOCATION_IDS: readonly ContactLocationId[] = ['yerevan', 'avan', 'argavand'];
 
 /** Store pickup branches — same locations as the Contact page. */
 export function getPickupBranches(lang: LanguageCode): PickupBranch[] {

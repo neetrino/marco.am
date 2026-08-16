@@ -1,7 +1,7 @@
 import type { LanguageCode } from './language';
 import { t } from './i18n';
 
-export type ContactLocationId = 'yerevan' | 'argavand' | 'parakar';
+export type ContactLocationId = 'yerevan' | 'avan' | 'argavand';
 
 export type ContactPhoneSectionId = ContactLocationId | 'delivery';
 
@@ -34,20 +34,20 @@ export function getContactLocations(lang: LanguageCode): ContactLocation[] {
     {
       id: 'yerevan',
       address: t(lang, 'contact.locations.yerevan.address'),
-      phones: ['+374 93 52 04 06', '+374 98 19 04 06', '011 52 04 06'],
+      phones: ['+374 98 19 04 06', '+374 93 52 04 06'],
       map: { lat: 40.173852, lng: 44.521961, zoom: 18 },
+    },
+    {
+      id: 'avan',
+      address: t(lang, 'contact.locations.avan.address'),
+      phones: ['+374 41 48 04 06', '+374 41 49 04 06'],
+      map: { lat: 40.22234, lng: 44.560337, zoom: 18 },
     },
     {
       id: 'argavand',
       address: t(lang, 'contact.locations.argavand.address'),
-      phones: ['+374 93 58 04 09', '+374 41 34 04 06', '+374 77 64 04 06'],
+      phones: ['+374 93 58 04 09', '+374 41 34 04 06'],
       map: { lat: 40.1518, lng: 44.3962, zoom: 17 },
-    },
-    {
-      id: 'parakar',
-      address: t(lang, 'contact.locations.parakar.address'),
-      phones: ['+374 77 51 04 06'],
-      map: { lat: 40.163887, lng: 44.403473, zoom: 18 },
     },
   ];
 }
@@ -82,7 +82,7 @@ export function mapsEmbedUrlForLocation(location: ContactLocation): string {
   return `https://www.google.com/maps?q=${lat},${lng}&z=${z}&output=embed`;
 }
 
-const LOCATION_HASH_RE = /^#loc-(yerevan|argavand|parakar)$/;
+const LOCATION_HASH_RE = /^#loc-(yerevan|avan|argavand)$/;
 
 export function parseContactLocationHash(hash: string): ContactLocationId | null {
   const match = LOCATION_HASH_RE.exec(hash);
