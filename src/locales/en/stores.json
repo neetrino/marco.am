@@ -14,9 +14,9 @@
       "hours": "Mon-Sun: 10:00 AM - 10:00 PM"
     },
     "downtown": {
-      "name": "Downtown Location",
-      "address": "1 Mesrop Mashtots St, Parakar",
-      "hours": "Mon-Fri: 8:00 AM - 7:00 PM"
+      "name": "Argavand Branch",
+      "address": "1 Airport St, Argavand",
+      "hours": "Mon-Fri: 9:00 AM - 7:00 PM"
     }
   },
   "cantFind": {
