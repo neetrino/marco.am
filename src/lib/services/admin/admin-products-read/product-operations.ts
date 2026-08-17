@@ -1,4 +1,4 @@
-import { parseProductDescriptionJson } from "@/lib/products/product-description";
+import { parseProductDescriptionJson, pickTranslationForProductDescription } from "@/lib/products/product-description";
 import { logger } from "../../../utils/logger";
 import { expandCategoryIdsWithDescendants } from "../../category-subtree.service";
 import type { ProductFilters } from "./types";
@@ -109,7 +109,10 @@ export async function getProductById(productId: string) {
     attributeValues?: Array<{ attributeId?: string; attributeValueId?: string }>;
   };
   const translations = Array.isArray(productWithRelations.translations) ? productWithRelations.translations : [];
-  const translation = translations.find((t: { locale: string }) => t.locale === "en") || translations[0] || null;
+  const translation =
+    translations.find((t: { locale: string }) => t.locale === "en") || translations[0] || null;
+  const descriptionTranslation =
+    pickTranslationForProductDescription(translations, "en") ?? translation;
 
   // Безопасное получение labels с проверкой на существование массива
   const labels = Array.isArray(productWithRelations.labels) ? productWithRelations.labels : [];
@@ -143,8 +146,8 @@ export async function getProductById(productId: string) {
     id: product.id,
     title: translation?.title || "",
     slug: translation?.slug || "",
-    subtitle: translation?.subtitle || null,
-    description: parseProductDescriptionJson(translation?.description),
+    subtitle: descriptionTranslation?.subtitle || translation?.subtitle || null,
+    description: parseProductDescriptionJson(descriptionTranslation?.description),
     brandId: product.brandId || null,
     productClass: product.productClass || "retail",
     primaryCategoryId: product.primaryCategoryId || null,

@@ -64,6 +64,8 @@ interface UseProductFormHandlersProps {
   onSubmit: (request: OptimisticSaveRequest) => void;
   /** Baseline fingerprints captured on load; unchanged heavy sections are stripped from the update payload. */
   baselineRef?: MutableRefObject<SectionFingerprints>;
+  /** True once the description editor section has been loaded (or create mode). */
+  descriptionSectionReady: boolean;
 }
 
 export function useProductFormHandlers({
@@ -81,6 +83,7 @@ export function useProductFormHandlers({
   productId,
   onSubmit,
   baselineRef,
+  descriptionSectionReady,
 }: UseProductFormHandlersProps) {
   const mt = (path: string): string => translateByLocale(getStoredLanguage(), path);
   const { convertGeneratedVariantsToFormData } = useVariantConversionToFormData({
@@ -399,13 +402,18 @@ export function useProductFormHandlers({
       });
 
       // Skip re-sending heavy sections the user did not touch → backend takes its fast path.
+      // Description/subtitle always persist when the section is ready; never send [] before load
+      // (that would wipe hy/ru specs that live outside the admin en row).
+      if (isEditMode && !descriptionSectionReady) {
+        delete payload.subtitle;
+        delete payload.description;
+      }
+
       if (isEditMode && baselineRef) {
         const current = computeGatedFingerprints({
           imageUrls: currentFormData.imageUrls,
           featuredImageIndex: currentFormData.featuredImageIndex,
           mainProductImage: currentFormData.mainProductImage,
-          subtitleHtml: currentFormData.subtitleHtml,
-          description: currentFormData.description,
           productType,
           simpleProductData,
           variants: currentFormData.variants,
@@ -417,10 +425,6 @@ export function useProductFormHandlers({
         if (!dirty.media) {
           delete payload.media;
           delete payload.mainProductImage;
-        }
-        if (!dirty.description) {
-          delete payload.subtitle;
-          delete payload.description;
         }
         if (!dirty.pricing) {
           delete payload.variants;

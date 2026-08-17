@@ -79,6 +79,39 @@ export function installTidioFontPreloadGuard(): () => void {
   };
 }
 
+const TIDIO_ARTIFACT_SELECTORS = [
+  `#${TIDIO_SCRIPT_ID}`,
+  '#marco-tidio-mobile-offset',
+  '#tidio',
+  '#tidio-chat',
+  '#tidio-chat-iframe',
+  'iframe[src*="tidio.co"]',
+  '[id^="tidio-"]',
+] as const;
+
+/**
+ * Removes Tidio DOM/script artifacts and window globals.
+ * Used when leaving the storefront or entering admin (chat is storefront-only).
+ */
+export function cleanupTidioArtifacts(): void {
+  if (typeof document === 'undefined') {
+    return;
+  }
+
+  TIDIO_ARTIFACT_SELECTORS.forEach((selector) => {
+    document.querySelectorAll(selector).forEach((node) => node.remove());
+  });
+
+  const tidioWindow = window as Window & {
+    tidioChat?: unknown;
+    tidioChatApi?: unknown;
+    tidioChatReady?: unknown;
+  };
+  delete tidioWindow.tidioChat;
+  delete tidioWindow.tidioChatApi;
+  delete tidioWindow.tidioChatReady;
+}
+
 /** Idempotent Tidio script injection shared by the deferred loader and programmatic open. */
 export function loadTidioScript(): HTMLScriptElement | null {
   if (typeof document === 'undefined') {

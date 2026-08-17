@@ -1,6 +1,9 @@
 import { db } from "@white-shop/db";
 import type { ProductEditorSection } from "@/app/supersudo/products/add/product-editor-tabs";
-import { parseProductDescriptionJson } from "@/lib/products/product-description";
+import {
+  parseProductDescriptionJson,
+  pickTranslationForProductDescription,
+} from "@/lib/products/product-description";
 import { loadPricingSection } from "./product-editor-pricing-loader";
 import { createProductNotFoundError } from "./product-not-found-error";
 
@@ -65,7 +68,7 @@ async function loadDescriptionSection(productId: string) {
     select: {
       id: true,
       translations: {
-        select: { locale: true, description: true },
+        select: { locale: true, description: true, subtitle: true },
       },
     },
   });
@@ -74,10 +77,14 @@ async function loadDescriptionSection(productId: string) {
     createProductNotFoundError(productId);
   }
 
-  const translation = pickTranslation(product.translations);
+  const translation = pickTranslationForProductDescription(
+    product.translations,
+    ADMIN_PRODUCT_LOCALE,
+  );
 
   return {
     id: product.id,
+    subtitle: translation?.subtitle ?? null,
     description: parseProductDescriptionJson(translation?.description),
   };
 }

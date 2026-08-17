@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { parseDescriptionHtmlToEntries, parseProductDescriptionJson } from './product-description';
+import {
+  parseDescriptionHtmlToEntries,
+  parseProductDescriptionJson,
+  pickTranslationForProductDescription,
+} from './product-description';
 
 describe('parseDescriptionHtmlToEntries', () => {
   it('parses strong label rows from legacy HTML', () => {
@@ -27,5 +31,32 @@ describe('parseProductDescriptionJson', () => {
         { title: '  ', value: ' ' },
       ]),
     ).toEqual([{ title: 'Material', value: 'Fabric' }]);
+  });
+});
+
+describe('pickTranslationForProductDescription', () => {
+  it('prefers en when it already has specs', () => {
+    const picked = pickTranslationForProductDescription([
+      { locale: 'en', description: [{ title: 'Color', value: 'Black' }] },
+      { locale: 'hy', description: [{ title: 'Գույն', value: 'Սև' }] },
+    ]);
+    expect(picked?.locale).toBe('en');
+  });
+
+  it('falls back to hy when en exists but has no specs', () => {
+    const picked = pickTranslationForProductDescription([
+      { locale: 'en', description: [] },
+      { locale: 'hy', description: [{ title: 'Գույն', value: 'Սև' }] },
+      { locale: 'ru', description: [{ title: 'Цвет', value: 'Чёрный' }] },
+    ]);
+    expect(picked?.locale).toBe('hy');
+  });
+
+  it('returns preferred locale when no locale has specs', () => {
+    const picked = pickTranslationForProductDescription([
+      { locale: 'en', description: [] },
+      { locale: 'hy', description: null },
+    ]);
+    expect(picked?.locale).toBe('en');
   });
 });
