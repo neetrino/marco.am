@@ -186,6 +186,7 @@ export function ProductEditorPanel({
     productId,
     onSubmit,
     baselineRef,
+    descriptionSectionReady: !isEditMode || loadedTabs.has('description'),
   });
 
   useEffect(() => {
@@ -200,8 +201,6 @@ export function ProductEditorPanel({
       imageUrls: formState.formData.imageUrls,
       featuredImageIndex: formState.formData.featuredImageIndex,
       mainProductImage: formState.formData.mainProductImage,
-      subtitleHtml: formState.formData.subtitleHtml,
-      description: formState.formData.description,
       productType: formState.productType,
       simpleProductData: formState.simpleProductData,
       variants: formState.formData.variants,

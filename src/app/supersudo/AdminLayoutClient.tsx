@@ -8,6 +8,7 @@ import { AdminThemeGuard } from './AdminThemeGuard';
 import { AdminAccessGate } from './components/AdminAccessGate';
 import { AdminRoutePrefetch } from './components/AdminRoutePrefetch';
 import { AdminShell } from './components/AdminShell';
+import { AdminTidioGuard } from './components/AdminTidioGuard';
 
 /** Register before first admin render — async useEffect caused raw i18n keys in the sidebar. */
 registerAdminTranslations(adminTranslations);
@@ -20,6 +21,7 @@ export function AdminLayoutClient({ children }: AdminLayoutClientProps) {
   return (
     <>
       <AdminThemeGuard />
+      <AdminTidioGuard />
       <AdminAccessGate>
         <AdminShell>
           <AdminRoutePrefetch />

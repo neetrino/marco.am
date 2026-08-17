@@ -108,7 +108,9 @@ export async function buildProductUpdateData(
 }
 
 /**
- * Update product translation
+ * Update product translation.
+ * Title/slug stay on the admin locale; description + subtitle are shared catalog
+ * specs and are written to every locale so storefront PDP rows stay in sync.
  */
 export async function updateProductTranslation(
   productId: string,
@@ -152,6 +154,21 @@ export async function updateProductTranslation(
         description: toPrismaProductDescription(sanitizedDescription ?? []),
       },
     });
+
+    if (sanitizedDescription !== undefined || sanitizedSubtitle !== undefined) {
+      await tx.productTranslation.updateMany({
+        where: {
+          productId,
+          locale: { not: locale },
+        },
+        data: {
+          ...(sanitizedSubtitle !== undefined && { subtitle: sanitizedSubtitle }),
+          ...(sanitizedDescription !== undefined && {
+            description: toPrismaProductDescription(sanitizedDescription),
+          }),
+        },
+      });
+    }
   }
 }
 

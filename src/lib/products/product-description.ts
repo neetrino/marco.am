@@ -118,6 +118,52 @@ export function parseProductDescriptionJson(value: unknown): ProductDescriptionE
     .filter((item) => item.title.length > 0 || item.value.length > 0);
 }
 
+type TranslationWithDescription = {
+  locale: string;
+  description?: unknown;
+  subtitle?: string | null;
+};
+
+const ADMIN_DESCRIPTION_LOCALE_PRIORITY = ['en', 'hy', 'ru', 'ka'] as const;
+
+/**
+ * Picks the translation row that should feed the admin description editor.
+ * Prefers the admin locale when it has specs; otherwise falls back to any
+ * locale that already stores specification rows (import often wrote hy/ru only).
+ */
+export function pickTranslationForProductDescription<T extends TranslationWithDescription>(
+  translations: T[],
+  preferredLocale: string = 'en',
+): T | null {
+  if (translations.length === 0) {
+    return null;
+  }
+
+  const withSpecs = translations.filter(
+    (row) => parseProductDescriptionJson(row.description).length > 0,
+  );
+
+  if (withSpecs.length === 0) {
+    return (
+      translations.find((row) => row.locale === preferredLocale) ?? translations[0] ?? null
+    );
+  }
+
+  const preferredWithSpecs = withSpecs.find((row) => row.locale === preferredLocale);
+  if (preferredWithSpecs) {
+    return preferredWithSpecs;
+  }
+
+  for (const locale of ADMIN_DESCRIPTION_LOCALE_PRIORITY) {
+    const match = withSpecs.find((row) => row.locale === locale);
+    if (match) {
+      return match;
+    }
+  }
+
+  return withSpecs[0] ?? null;
+}
+
 /** Returns spec rows (non-empty title) for the specifications table. */
 export function getProductDescriptionSpecs(entries: ProductDescriptionEntry[]): ProductDescriptionEntry[] {
   return entries.filter((entry) => entry.title.trim().length > 0);

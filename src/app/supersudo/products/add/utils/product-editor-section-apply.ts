@@ -72,7 +72,7 @@ interface ApplyDescriptionParams {
 function applyDescriptionSection({ product, setFormData }: ApplyDescriptionParams): void {
   setFormData((prev) => ({
     ...prev,
-    subtitleHtml: product.subtitle ?? '',
+    subtitleHtml: product.subtitle ?? prev.subtitleHtml ?? '',
     description: (product.description ?? []).filter((entry) => entry.title.trim().length > 0),
   }));
 }
