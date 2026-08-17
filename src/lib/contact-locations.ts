@@ -47,7 +47,7 @@ export function getContactLocations(lang: LanguageCode): ContactLocation[] {
       id: 'argavand',
       address: t(lang, 'contact.locations.argavand.address'),
       phones: ['+374 93 58 04 09', '+374 41 34 04 06'],
-      map: { lat: 40.1518, lng: 44.3962, zoom: 17 },
+      map: { lat: 40.15244, lng: 44.43523, zoom: 17 },
     },
   ];
 }
