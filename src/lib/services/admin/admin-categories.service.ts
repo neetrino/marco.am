@@ -17,6 +17,8 @@ import {
   normalizeCategoryMedia,
   normalizeCategoryTitle,
   normalizeOptionalText,
+  normalizePromoBannerImageUrl,
+  toCategoryNode,
   type CategoryInput,
   type CategoryMoveDirection,
   type CategoryMoveScope,
@@ -71,20 +73,8 @@ class AdminCategoriesService {
     }
 
     return {
-      id: category.id,
-      parentId: category.parentId,
-      requiresSizes: category.requiresSizes,
-      showInHeader: category.showInHeader,
-      media: Array.isArray(category.media) ? category.media.filter((item): item is string => typeof item === "string") : [],
-      translations: category.translations,
-      children: category.children.map((child) => ({
-        id: child.id,
-        parentId: child.parentId,
-        requiresSizes: child.requiresSizes,
-        showInHeader: child.showInHeader,
-        media: Array.isArray(child.media) ? child.media.filter((item): item is string => typeof item === "string") : [],
-        translations: child.translations,
-      })),
+      ...toCategoryNode(category),
+      children: category.children.map((child) => toCategoryNode(child)),
     };
   }
 
@@ -468,14 +458,7 @@ class AdminCategoriesService {
     return {
       data: categories.map((category) =>
         mapCategory(
-          {
-            id: category.id,
-            parentId: category.parentId,
-            requiresSizes: category.requiresSizes,
-            showInHeader: category.showInHeader,
-            media: Array.isArray(category.media) ? category.media.filter((item): item is string => typeof item === "string") : [],
-            translations: category.translations,
-          },
+          toCategoryNode(category),
           locale,
           this.defaultLocale,
           this.supportedLocales,
@@ -524,6 +507,10 @@ class AdminCategoriesService {
         parentId: data.parentId || undefined,
         requiresSizes: data.requiresSizes ?? false,
         showInHeader: data.showInHeader ?? true,
+        promoBannerEnabled: data.parentId ? false : (data.promoBannerEnabled ?? false),
+        promoBannerImageUrl: data.parentId
+          ? null
+          : (normalizePromoBannerImageUrl(data.promoBannerImageUrl) ?? null),
         media: normalizedMedia,
         published: true,
         translations: {
@@ -601,14 +588,7 @@ class AdminCategoriesService {
 
     return {
       data: mapCategory(
-        {
-          id: reloaded.id,
-          parentId: reloaded.parentId,
-          requiresSizes: reloaded.requiresSizes,
-          showInHeader: reloaded.showInHeader,
-          media: Array.isArray(reloaded.media) ? reloaded.media.filter((item): item is string => typeof item === "string") : [],
-          translations: reloaded.translations,
-        },
+        toCategoryNode(reloaded),
         locale,
         this.defaultLocale,
         this.supportedLocales,
@@ -633,28 +613,14 @@ class AdminCategoriesService {
 
     return {
       ...mapCategory(
-        {
-          id: category.id,
-          parentId: category.parentId,
-          requiresSizes: category.requiresSizes,
-          showInHeader: category.showInHeader,
-          media: Array.isArray(category.media) ? category.media.filter((item): item is string => typeof item === "string") : [],
-          translations: category.translations,
-        },
+        category,
         locale,
         this.defaultLocale,
         this.supportedLocales,
       ),
       children: category.children.map((child) =>
         mapCategory(
-          {
-            id: child.id,
-            parentId: child.parentId,
-            requiresSizes: child.requiresSizes,
-            showInHeader: child.showInHeader,
-            media: Array.isArray(child.media) ? child.media.filter((item): item is string => typeof item === "string") : [],
-            translations: child.translations,
-          },
+          child,
           locale,
           this.defaultLocale,
           this.supportedLocales,
@@ -722,6 +688,7 @@ class AdminCategoriesService {
       const categoryPatch = buildCategoryUpdatePatch(
         data,
         prepared.normalizedMedia,
+        prepared.normalizedPromoBannerImageUrl,
       );
       if (categoryPatch) {
         await tx.category.update({
@@ -802,14 +769,7 @@ class AdminCategoriesService {
 
     return {
       data: mapCategory(
-        {
-          id: updatedCategory.id,
-          parentId: updatedCategory.parentId,
-          requiresSizes: updatedCategory.requiresSizes,
-          showInHeader: updatedCategory.showInHeader,
-          media: Array.isArray(updatedCategory.media) ? updatedCategory.media.filter((item): item is string => typeof item === "string") : [],
-          translations: updatedCategory.translations,
-        },
+        toCategoryNode(updatedCategory),
         prepared.locale,
         this.defaultLocale,
         this.supportedLocales,

@@ -25,20 +25,20 @@ export default function StoresPage() {
     },
     {
       id: 2,
-      nameKey: 'stores.locations.mallBranch.name' as const,
-      addressKey: 'stores.locations.mallBranch.address' as const,
-      hoursKey: 'stores.locations.mallBranch.hours' as const,
-      image: AVAN_STORE_IMAGE,
-      phones: ['+374 41 48 04 06', '+374 41 49 04 06'],
-      emails: ['marcofurniture@mail.ru', 'marcogrouparmenia@mail.ru'],
-    },
-    {
-      id: 3,
       nameKey: 'stores.locations.downtown.name' as const,
       addressKey: 'stores.locations.downtown.address' as const,
       hoursKey: 'stores.locations.downtown.hours' as const,
       image: PARAKAR_STORE_IMAGE,
       phones: ['+374 93 58 04 09', '+374 41 34 04 06'],
+      emails: ['marcofurniture@mail.ru', 'marcogrouparmenia@mail.ru'],
+    },
+    {
+      id: 3,
+      nameKey: 'stores.locations.mallBranch.name' as const,
+      addressKey: 'stores.locations.mallBranch.address' as const,
+      hoursKey: 'stores.locations.mallBranch.hours' as const,
+      image: AVAN_STORE_IMAGE,
+      phones: ['+374 41 48 04 06', '+374 41 49 04 06'],
       emails: ['marcofurniture@mail.ru', 'marcogrouparmenia@mail.ru'],
     },
   ];
@@ -165,7 +165,7 @@ export default function StoresPage() {
                       d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                   </svg>
-                  <p className="text-gray-600 text-sm">{t(store.hoursKey)}</p>
+                  <p className="whitespace-pre-line text-gray-600 text-sm">{t(store.hoursKey)}</p>
                 </div>
               </div>
 

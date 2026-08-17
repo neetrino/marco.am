@@ -3,13 +3,18 @@ import { db } from '@white-shop/db';
 import { filterHeaderNavCategoryTree } from '@/lib/constants/excluded-shop-category-slugs';
 import { resolveCategoryTranslation } from '@/lib/i18n/category-translation';
 import { getCachedJson } from '@/lib/services/read-through-json-cache';
+import { filterCategoryMediaStrings } from '@/lib/services/admin/admin-categories.shared';
 
 const MEGA_MENU_CACHE_TTL_SEC = 300;
+/** Bump when mega-menu node shape changes (promo fields). */
+const MEGA_MENU_CACHE_VERSION = 'v4';
 
 type CategoryRecord = {
   id: string;
   parentId: string | null;
   showInHeader: boolean;
+  promoBannerEnabled: boolean;
+  promoBannerImageUrl: string | null;
   media: unknown[];
   translations: Array<{ locale: string; slug: string; title: string; fullPath: string }>;
 };
@@ -19,6 +24,8 @@ type MegaMenuCategoryNode = {
   slug: string;
   title: string;
   showInHeader: boolean;
+  promoBannerEnabled: boolean;
+  promoBannerImageUrl: string | null;
   fullPath: string;
   media: string[];
   productCount: number;
@@ -62,10 +69,10 @@ function buildCategoryGraph(categories: CategoryRecord[], lang: string): Categor
       slug: translation.slug,
       title: translation.title,
       showInHeader: category.showInHeader,
+      promoBannerEnabled: category.promoBannerEnabled,
+      promoBannerImageUrl: category.promoBannerImageUrl,
       fullPath: translation.fullPath,
-      media: Array.isArray(category.media)
-        ? category.media.filter((item): item is string => typeof item === 'string')
-        : [],
+      media: filterCategoryMediaStrings(category.media),
       productCount: 0,
       children: [],
     };
@@ -185,7 +192,7 @@ function cloneBranch(node: MegaMenuCategoryNode): MegaMenuCategoryNode {
 }
 
 async function getCachedCategoryAllRoots(lang: string): Promise<MegaMenuCategoryNode[]> {
-  const cacheKey = `categories:mega-menu:all-roots:v3:${lang}`;
+  const cacheKey = `categories:mega-menu:all-roots:${MEGA_MENU_CACHE_VERSION}:${lang}`;
   return getCachedJson(cacheKey, MEGA_MENU_CACHE_TTL_SEC, async () => {
     const records = await fetchPublishedCategoryRecords();
     const graph = buildCategoryGraph(records, lang);

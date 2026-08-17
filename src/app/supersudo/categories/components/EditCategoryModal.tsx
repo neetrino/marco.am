@@ -15,6 +15,7 @@ import { getLocalizedCategoryTitle } from '../utils';
 import { assessCategoryHierarchyUpdateRisk } from '@/lib/services/admin/admin-categories-hierarchy-guard';
 import type { Category, CategoryFormData } from '../types';
 import { ADMIN_LOCALE_TAB_ACTIVE_CLASS } from '../../components/admin-button.classes';
+import { CategoryPromoBannerFields } from './CategoryPromoBannerFields';
 
 type CategoryLocale = 'hy' | 'en' | 'ru';
 
@@ -50,6 +51,7 @@ export function EditCategoryModal({
   const initialLocaleTab = normalizeCategoryLocale(lang ?? getStoredLanguage());
   const [activeTitleLocaleTab, setActiveTitleLocaleTab] = useState<CategoryLocale>(initialLocaleTab);
   const [imageUploading, setImageUploading] = useState(false);
+  const [promoImageUploading, setPromoImageUploading] = useState(false);
   const [parentCategorySearch, setParentCategorySearch] = useState('');
   const [subcategorySearch, setSubcategorySearch] = useState('');
   const mt = (path: string) => translateByLocale(activeTitleLocaleTab, path);
@@ -57,6 +59,7 @@ export function EditCategoryModal({
     () => toSafeImgAttributeSrc(formData.imageUrl.trim()),
     [formData.imageUrl],
   );
+  const isRootCategory = !formData.parentId;
 
   const handleImageFile = async (event: ChangeEvent<HTMLInputElement>) => {
     const imageFile = event.target.files?.[0];
@@ -304,6 +307,31 @@ export function EditCategoryModal({
               </div>
             ) : null}
           </div>
+          {isRootCategory ? (
+            <CategoryPromoBannerFields
+              formData={{
+                promoBannerEnabled: formData.promoBannerEnabled,
+                promoBannerImageUrl: formData.promoBannerImageUrl,
+              }}
+              imageUploading={promoImageUploading}
+              onImageUploadingChange={setPromoImageUploading}
+              onChange={(next) =>
+                onFormDataChange({
+                  ...formData,
+                  promoBannerEnabled: next.promoBannerEnabled,
+                  promoBannerImageUrl: next.promoBannerImageUrl,
+                })
+              }
+              labels={{
+                sectionTitle: mt('admin.categories.promoBannerSection'),
+                enabledLabel: mt('admin.categories.promoBannerEnabled'),
+                imageUpload: mt('admin.categories.promoBannerImageUpload'),
+                imageUploading: mt('admin.categories.imageUploading'),
+                imageRemove: mt('admin.categories.promoBannerImageRemove'),
+                imageUploadFailed: mt('admin.categories.imageUploadFailed'),
+              }}
+            />
+          ) : null}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               {mt('admin.categories.subcategories')}

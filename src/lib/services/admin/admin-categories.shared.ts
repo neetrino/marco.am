@@ -1,4 +1,5 @@
 import type { CategoryGraph } from "@/lib/services/product-category-links.service";
+import { CATEGORY_PROMO_BANNER_IMAGE_URL_MAX_LENGTH } from "@/lib/constants/category-promo-banner";
 
 export type SupportedCategoryLocale = "hy" | "en" | "ru";
 export type CategoryMoveDirection = "up" | "down";
@@ -18,6 +19,8 @@ export type CategoryNode = {
   id: string;
   parentId: string | null;
   showInHeader: boolean;
+  promoBannerEnabled: boolean;
+  promoBannerImageUrl: string | null;
   requiresSizes: boolean;
   media: string[];
   translations: CategoryTranslation[];
@@ -33,6 +36,8 @@ type CategoryResponseItem = {
   media: string[];
   parentId: string | null;
   showInHeader: boolean;
+  promoBannerEnabled: boolean;
+  promoBannerImageUrl: string | null;
   requiresSizes: boolean;
   productCount: number;
   translations: Partial<Record<SupportedCategoryLocale, string>>;
@@ -51,6 +56,8 @@ export type CategoryInput = {
   translations?: Partial<Record<SupportedCategoryLocale, string>>;
   parentId?: string;
   showInHeader?: boolean;
+  promoBannerEnabled?: boolean;
+  promoBannerImageUrl?: string | null;
   requiresSizes?: boolean;
   media?: unknown;
   seoTitle?: string;
@@ -63,6 +70,8 @@ export type CategoryUpdateInput = {
   translations?: Partial<Record<SupportedCategoryLocale, string>>;
   parentId?: string | null;
   showInHeader?: boolean;
+  promoBannerEnabled?: boolean;
+  promoBannerImageUrl?: string | null;
   requiresSizes?: boolean;
   media?: unknown;
   subcategoryIds?: string[];
@@ -109,6 +118,15 @@ export function normalizeOptionalText(value: string | null | undefined): string 
   return normalized.length > 0 ? normalized : null;
 }
 
+function isAllowedCategoryImageUrl(value: string): boolean {
+  return (
+    value.startsWith("data:image/") ||
+    value.startsWith("https://") ||
+    value.startsWith("http://") ||
+    value.startsWith("/")
+  );
+}
+
 export function normalizeCategoryMedia(media: unknown): string[] {
   if (!Array.isArray(media)) {
     return [];
@@ -119,18 +137,66 @@ export function normalizeCategoryMedia(media: unknown): string[] {
       continue;
     }
     const trimmed = item.trim();
-    if (!trimmed) {
-      continue;
-    }
-    const isDataImage = trimmed.startsWith("data:image/");
-    const isHttpUrl = trimmed.startsWith("https://") || trimmed.startsWith("http://");
-    const isRelativePath = trimmed.startsWith("/");
-    if (!isDataImage && !isHttpUrl && !isRelativePath) {
+    if (!trimmed || !isAllowedCategoryImageUrl(trimmed)) {
       continue;
     }
     normalized.push(trimmed);
   }
   return [...new Set(normalized)];
+}
+
+/**
+ * Normalizes promo banner image URL. Empty / invalid → null (clear).
+ * Returns `undefined` only when the caller passes `undefined` (no change).
+ */
+export function normalizePromoBannerImageUrl(
+  value: string | null | undefined,
+): string | null | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+  if (value === null) {
+    return null;
+  }
+  const trimmed = value.trim();
+  if (
+    !trimmed ||
+    trimmed.length > CATEGORY_PROMO_BANNER_IMAGE_URL_MAX_LENGTH ||
+    !isAllowedCategoryImageUrl(trimmed)
+  ) {
+    return null;
+  }
+  return trimmed;
+}
+
+export function filterCategoryMediaStrings(media: unknown): string[] {
+  if (!Array.isArray(media)) {
+    return [];
+  }
+  return media.filter((item): item is string => typeof item === "string");
+}
+
+/** Maps a DB category row (+ translations) into the shared `CategoryNode` shape. */
+export function toCategoryNode(category: {
+  id: string;
+  parentId: string | null;
+  showInHeader: boolean;
+  promoBannerEnabled: boolean;
+  promoBannerImageUrl: string | null;
+  requiresSizes: boolean;
+  media: unknown;
+  translations: CategoryTranslation[];
+}): CategoryNode {
+  return {
+    id: category.id,
+    parentId: category.parentId,
+    showInHeader: category.showInHeader,
+    promoBannerEnabled: category.promoBannerEnabled,
+    promoBannerImageUrl: category.promoBannerImageUrl,
+    requiresSizes: category.requiresSizes,
+    media: filterCategoryMediaStrings(category.media),
+    translations: category.translations,
+  };
 }
 
 function normalizeLocalizedTitles(
@@ -222,6 +288,8 @@ export function mapCategory(
     media: category.media,
     parentId: category.parentId,
     showInHeader: category.showInHeader,
+    promoBannerEnabled: category.promoBannerEnabled,
+    promoBannerImageUrl: category.promoBannerImageUrl,
     requiresSizes: category.requiresSizes,
     productCount: productCountByCategoryId?.get(category.id) ?? 0,
     translations: mapTranslationsByLocale(category.translations, supportedLocales),

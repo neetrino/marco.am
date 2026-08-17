@@ -25,6 +25,7 @@ interface CategoryItemProps {
   onEdit: (category: Category) => void;
   onDelete: (categoryId: string, categoryTitle: string) => void;
   onToggleHeaderVisibility: (category: Category, nextVisible: boolean) => void;
+  onTogglePromoBanner: (category: Category, nextEnabled: boolean) => void;
   onToggleCategoryKind: (category: Category) => Promise<void>;
   onReorder: (
     categoryId: string,
@@ -57,6 +58,7 @@ export function CategoryItem({
   onEdit,
   onDelete,
   onToggleHeaderVisibility,
+  onTogglePromoBanner,
   onToggleCategoryKind,
   onReorder,
   onDragStart,
@@ -297,6 +299,34 @@ export function CategoryItem({
               <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.044 3.214a1 1 0 00.95.69h3.38c.969 0 1.371 1.24.588 1.81l-2.736 1.988a1 1 0 00-.364 1.118l1.045 3.214c.3.921-.755 1.688-1.539 1.118l-2.737-1.988a1 1 0 00-1.175 0l-2.737 1.988c-.783.57-1.838-.197-1.539-1.118l1.045-3.214a1 1 0 00-.364-1.118L2.087 8.64c-.783-.57-.38-1.81.588-1.81h3.38a1 1 0 00.95-.69l1.044-3.214z" />
             </svg>
           </button>
+          {isRootView ? (
+            <button
+              type="button"
+              onClick={() => onTogglePromoBanner(category, !category.promoBannerEnabled)}
+              disabled={moving || converting}
+              className={`inline-flex h-10 w-10 items-center justify-center rounded-md border transition-colors ${
+                category.promoBannerEnabled
+                  ? 'border-yellow-400 bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
+                  : 'border-slate-200 bg-white text-slate-400 hover:border-slate-300 hover:text-slate-600'
+              }`}
+              aria-label={
+                category.promoBannerEnabled
+                  ? t('admin.categories.hidePromoBanner')
+                  : t('admin.categories.showPromoBanner')
+              }
+              title={
+                category.promoBannerEnabled
+                  ? t('admin.categories.hidePromoBanner')
+                  : t('admin.categories.showPromoBanner')
+              }
+            >
+              <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.044 3.214a1 1 0 00.95.69h3.38c.969 0 1.371 1.24.588 1.81l-2.736 1.988a1 1 0 00-.364 1.118l1.045 3.214c.3.921-.755 1.688-1.539 1.118l-2.737-1.988a1 1 0 00-1.175 0l-2.737 1.988c-.783.57-1.838-.197-1.539-1.118l1.045-3.214a1 1 0 00-.364-1.118L2.087 8.64c-.783-.57-.38-1.81.588-1.81h3.38a1 1 0 00.95-.69l1.044-3.214z" />
+              </svg>
+            </button>
+          ) : (
+            <span className="inline-flex h-10 w-10" aria-hidden />
+          )}
           <button
             type="button"
             onClick={() => onEdit(category)}

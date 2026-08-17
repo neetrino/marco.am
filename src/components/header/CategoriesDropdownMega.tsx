@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import Image from 'next/image';
 import { ChevronRight } from 'lucide-react';
@@ -8,7 +8,6 @@ import { LanguagePreferenceContext } from '../../lib/language-context';
 import { CategoryMegaSubcategoryPills } from './CategoryMegaSubcategoryPills';
 import { CategoryDropdownPromoBanner } from './CategoryDropdownPromoBanner';
 import {
-  normalizeCategoryKey,
   prepareMegaMenuSubcategoryGroups,
   prepareRootCategoriesForNav,
 } from './categoryNavList';
@@ -22,11 +21,7 @@ import {
 import { useMegaMenuBranch, useMegaMenuRoots } from './useMegaMenuCategories';
 import { toDomSafeImgSrcString, toSafeImgAttributeSrc } from '../../lib/utils/image-utils';
 import { shouldBypassNextImageOptimizer } from '@/lib/utils/should-bypass-next-image-optimizer';
-
-function isTechAndElectronicsCategory(value: string): boolean {
-  const normalized = normalizeCategoryKey(value);
-  return normalized.includes('տեխնիկա') && normalized.includes('էլեկտրոն');
-}
+import type { LanguageCode } from '../../lib/language';
 
 /** Left mega-rail root category row — keep img attrs in sync with `h-[…] w-[…]` on the image. */
 const MEGA_ROOT_ICON_INNER_PX = 28;
@@ -35,6 +30,30 @@ const MEGA_ROOT_LUCIDE_PX = 28;
 
 const MEGA_ROOT_ROW_CLASS =
   `${headerCategoryNavFont.className} flex w-full min-w-0 shrink-0 cursor-pointer items-center gap-2 rounded-[40px] px-1.5 py-0 text-left text-[13px] leading-[21px] tracking-[0.15px] transition-[background-color,color,opacity] duration-150`;
+
+type PromoSource = {
+  slug: string;
+  title: string;
+  promoBannerEnabled?: boolean;
+  promoBannerImageUrl?: string | null;
+};
+
+function resolvePromoCopy(
+  selected: PromoSource,
+  fallbackPromo: { badge: string; headline: string; subline: string },
+  lang: LanguageCode,
+): { badge: string; headline: string; subline: string; imageUrl: string | null } | null {
+  if (!selected.promoBannerEnabled) {
+    return null;
+  }
+  const preview = resolveCategoryNavPresentation(selected.slug, selected.title, lang);
+  return {
+    badge: fallbackPromo.badge || preview.promo.badge,
+    headline: fallbackPromo.headline || preview.promo.headline,
+    subline: fallbackPromo.subline || preview.promo.subline,
+    imageUrl: selected.promoBannerImageUrl?.trim() || null,
+  };
+}
 
 export function CategoriesDropdownMega({
   menuOpen,
@@ -89,9 +108,8 @@ export function CategoriesDropdownMega({
   }
 
   const preview = resolveCategoryNavPresentation(selected.slug, selected.title, lang);
-  const isTechAndElectronics =
-    isTechAndElectronicsCategory(preview.title) || isTechAndElectronicsCategory(selected.title);
-  const showPromoBanner = !isTechAndElectronics;
+  const promoSource = selectedBranch ?? selected;
+  const promoCopy = resolvePromoCopy(promoSource, preview.promo, lang);
   const sectionProductCount = selectedBranch?.productCount ?? selected.productCount;
 
   return (
@@ -176,11 +194,12 @@ export function CategoriesDropdownMega({
         ref={rightScrollRef}
         className={`flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto overflow-x-hidden overscroll-y-contain [-webkit-overflow-scrolling:touch] touch-pan-y bg-white pb-6 pt-4 md:pb-8 md:pt-5 ${HEADER_MEGA_MENU_CONTENT_PADDING_CLASS}`}
       >
-        {showPromoBanner ? (
+        {promoCopy ? (
           <CategoryDropdownPromoBanner
-            badge={preview.promo.badge}
-            headline={preview.promo.headline}
-            subline={preview.promo.subline}
+            badge={promoCopy.badge}
+            headline={promoCopy.headline}
+            subline={promoCopy.subline}
+            imageUrl={promoCopy.imageUrl}
             href={`/products?category=${selected.slug}`}
             onNavigate={onClose}
             ctaLabel={t('common.buttons.shopNow')}

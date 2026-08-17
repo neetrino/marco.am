@@ -3,6 +3,8 @@ export interface Category {
   slug: string;
   title: string;
   showInHeader?: boolean;
+  promoBannerEnabled?: boolean;
+  promoBannerImageUrl?: string | null;
   fullPath: string;
   media?: string[];
   /** Published products with this category as primary (from `/api/v1/categories/tree`). */

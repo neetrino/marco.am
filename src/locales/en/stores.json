@@ -4,19 +4,19 @@
   "getDirections": "Get Directions",
   "locations": {
     "mainStore": {
-      "name": "Main Store",
+      "name": "Alek Manukyan",
       "address": "23 Alek Manukyan St, Yerevan",
-      "hours": "Mon-Sat: 9:00 AM - 8:00 PM"
+      "hours": "Mon - Sat 10:00-19:00\nSunday - 10:00-18:00"
     },
     "mallBranch": {
-      "name": "Avan Branch",
+      "name": "Avan",
       "address": "39/7 Hrachya Acharyan St, Avan, Yerevan",
-      "hours": "Mon-Sun: 10:00 AM - 10:00 PM"
+      "hours": "Mon - Sunday 10:00-19:00"
     },
     "downtown": {
-      "name": "Argavand Branch",
+      "name": "Argavand Airport 1",
       "address": "1 Airport St, Argavand",
-      "hours": "Mon-Fri: 9:00 AM - 7:00 PM"
+      "hours": "Mon - Sat 9:00-19:00\nSunday - 10:00-18:00"
     }
   },
   "cantFind": {

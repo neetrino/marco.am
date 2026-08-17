@@ -28,6 +28,7 @@ interface CategoriesListProps {
   onEdit: (category: Category) => void;
   onDelete: (categoryId: string, categoryTitle: string) => void;
   onToggleHeaderVisibility: (category: Category, nextVisible: boolean) => void;
+  onTogglePromoBanner: (category: Category, nextEnabled: boolean) => void;
   onToggleCategoryKind: (category: Category) => Promise<void>;
   onReorder: (
     categoryId: string,
@@ -57,6 +58,7 @@ export function CategoriesList({
   onEdit,
   onDelete,
   onToggleHeaderVisibility,
+  onTogglePromoBanner,
   onToggleCategoryKind,
   onReorder,
   movingCategoryId,
@@ -526,6 +528,7 @@ export function CategoriesList({
                     onEdit={onEdit}
                     onDelete={onDelete}
                     onToggleHeaderVisibility={onToggleHeaderVisibility}
+                    onTogglePromoBanner={onTogglePromoBanner}
                     onToggleCategoryKind={onToggleCategoryKind}
                     categoryTitle={getLocalizedCategoryTitle(category, activeLocale)}
                     parentCategoryTitle={getLocalizedCategoryTitle(parentCategory, activeLocale)}

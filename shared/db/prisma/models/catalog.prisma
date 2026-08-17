@@ -1,15 +1,19 @@
 model Category {
-  id            String                @id @default(cuid())
-  parentId      String?
-  position      Int                   @default(0)
-  published     Boolean               @default(false)
-  showInHeader  Boolean               @default(true)
-  requiresSizes Boolean               @default(false)
-  media         Json[]                @default([])
-  translations  CategoryTranslation[]
-  deletedAt     DateTime?
-  createdAt     DateTime              @default(now())
-  updatedAt     DateTime              @updatedAt
+  id                   String                @id @default(cuid())
+  parentId             String?
+  position             Int                   @default(0)
+  published            Boolean               @default(false)
+  showInHeader         Boolean               @default(true)
+  /** When true, mega-menu shows the promo strip for this root category. */
+  promoBannerEnabled   Boolean               @default(false)
+  /** Optional image for the mega-menu promo strip (HTTPS / relative / data URL). */
+  promoBannerImageUrl  String?
+  requiresSizes        Boolean               @default(false)
+  media                Json[]                @default([])
+  translations         CategoryTranslation[]
+  deletedAt            DateTime?
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
 
   // Relations
   parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id])

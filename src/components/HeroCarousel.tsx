@@ -4,6 +4,7 @@ import Image from 'next/image';
 import type { HeroCarouselImageUrls } from '../lib/home-hero-carousel-urls';
 import { shouldBypassNextImageOptimizer } from '../lib/utils/should-bypass-next-image-optimizer';
 import { HOME_PAGE_SECTION_SHELL_CLASS } from './home/home-page-section-shell.constants';
+import { HeroMobileCarousel } from './HeroMobileCarousel';
 
 const HERO_PAGE_CONTAINER_CLASS = `${HOME_PAGE_SECTION_SHELL_CLASS} pt-8 sm:pt-11 lg:pt-10`;
 
@@ -21,17 +22,7 @@ export function HeroCarousel({ heroImageUrls }: HeroCarouselProps) {
     <div className={HERO_PAGE_CONTAINER_CLASS} id="hero">
       {/* Mobile aspect 399/288 — sync with hero.constants HERO_MOBILE_HOME_BANNER_ASPECT_* */}
       <div className="relative aspect-[399/288] w-full min-w-0 overflow-hidden rounded-[24px] bg-neutral-950 box-border md:aspect-[141/68] md:rounded-[32px] md:bg-transparent">
-        <div className="absolute inset-0 z-0 md:hidden">
-          <Image
-            src={mobile}
-            alt=""
-            fill
-            priority
-            unoptimized={shouldBypassNextImageOptimizer(mobile)}
-            className="object-cover object-center"
-            sizes="100vw"
-          />
-        </div>
+        <HeroMobileCarousel images={mobile} />
 
         <div className="hidden h-full w-full grid-cols-[minmax(0,1.24fr)_minmax(0,0.96fr)] gap-3 md:grid md:p-0 lg:gap-4 lg:p-0">
           <div className="grid h-full min-w-0 grid-rows-2 gap-3 lg:gap-4">

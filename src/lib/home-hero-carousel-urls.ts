@@ -3,14 +3,15 @@ import {
   HOME_HERO_PRIMARY_TOP_DEFAULT_IMAGE_URL,
   HOME_HERO_SECONDARY_DEFAULT_IMAGE_URL,
 } from '@/lib/constants/home-hero-admin-banners';
+import { buildHeroMobileImageUrls } from '@/lib/home-hero-mobile-urls';
 import type { PublicBannersPayload } from '@/lib/services/banner-management.service';
-import { resolveHeroMobileImageUrl } from '@/lib/utils/resolve-hero-mobile-image-url';
 
 export type HeroCarouselImageUrls = {
   leftTop: string;
   leftBottom: string;
   right: string;
-  mobile: string;
+  /** Mobile home hero slides (one or more). */
+  mobile: string[];
 };
 
 function sortBannerItems<T extends { sortOrder: number; id: string }>(items: T[]): T[] {
@@ -23,6 +24,7 @@ function sortBannerItems<T extends { sortOrder: number; id: string }>(items: T[]
 export function buildHeroCarouselImageUrls(
   primary: PublicBannersPayload,
   secondary: PublicBannersPayload,
+  mobile?: PublicBannersPayload | null,
 ): HeroCarouselImageUrls {
   const primaryItems = sortBannerItems(primary.items);
   const secondaryItems = sortBannerItems(secondary.items);
@@ -31,7 +33,6 @@ export function buildHeroCarouselImageUrls(
     leftTop: primaryItems[0]?.imageDesktopUrl ?? HOME_HERO_PRIMARY_TOP_DEFAULT_IMAGE_URL,
     leftBottom: primaryItems[1]?.imageDesktopUrl ?? HOME_HERO_PRIMARY_BOTTOM_DEFAULT_IMAGE_URL,
     right: secondaryItems[0]?.imageDesktopUrl ?? HOME_HERO_SECONDARY_DEFAULT_IMAGE_URL,
-    mobile: resolveHeroMobileImageUrl(primaryItems[0]?.imageMobileUrl),
+    mobile: buildHeroMobileImageUrls(mobile, primary),
   };
 }
-
