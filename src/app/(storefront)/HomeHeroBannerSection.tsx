@@ -12,8 +12,17 @@ export async function HomeHeroBannerSection() {
   const heroSlots = await bannerManagementService.getPublicHomeHeroSlotsPayload({
     localeRaw: DEFAULT_STOREFRONT_LANGUAGE,
   });
-  const heroImageUrls = buildHeroCarouselImageUrls(heroSlots.primary, heroSlots.secondary);
-  const preconnectOrigins = collectImageOrigins(Object.values(heroImageUrls));
+  const heroImageUrls = buildHeroCarouselImageUrls(
+    heroSlots.primary,
+    heroSlots.secondary,
+    heroSlots.mobile,
+  );
+  const preconnectOrigins = collectImageOrigins([
+    heroImageUrls.leftTop,
+    heroImageUrls.leftBottom,
+    heroImageUrls.right,
+    ...heroImageUrls.mobile,
+  ]);
 
   return (
     <>

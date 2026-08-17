@@ -144,6 +144,7 @@ function buildPublicSlotPayload(
 type HomeHeroSlotsPayload = {
   primary: PublicBannersPayload;
   secondary: PublicBannersPayload;
+  mobile: PublicBannersPayload;
 };
 
 export const bannerManagementService = {
@@ -217,8 +218,8 @@ export const bannerManagementService = {
     const nowMs = now.getTime();
     const cacheKey =
       args.now !== undefined
-        ? `banners:public:v1:home-hero-bundle:${locale}:at:${nowMs}`
-        : `banners:public:v1:home-hero-bundle:${locale}`;
+        ? `banners:public:v2:home-hero-bundle:${locale}:at:${nowMs}`
+        : `banners:public:v2:home-hero-bundle:${locale}`;
 
     return getCachedJson(
       cacheKey,
@@ -228,6 +229,7 @@ export const bannerManagementService = {
         return {
           primary: buildPublicSlotPayload(storage, 'home.hero.primary', locale, now),
           secondary: buildPublicSlotPayload(storage, 'home.hero.secondary', locale, now),
+          mobile: buildPublicSlotPayload(storage, 'home.hero.mobile', locale, now),
         };
       },
     );

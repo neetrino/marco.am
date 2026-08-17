@@ -8,6 +8,7 @@ export const BANNER_MANAGEMENT_VERSION = 1 as const;
 export const BANNER_SLOT_IDS = [
   "home.hero.primary",
   "home.hero.secondary",
+  "home.hero.mobile",
   "home.promo.strip",
   "home.app.banner",
   "catalog.top",

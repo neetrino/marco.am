@@ -17,32 +17,22 @@ import {
   writeAdminSessionCache,
 } from '@/lib/admin/admin-session-cache';
 import { ADMIN_IMAGE_ACCEPT } from '@/lib/constants/admin-image-upload';
+import { HOME_HERO_MOBILE_SLIDES_MAX } from '@/lib/constants/home-hero-mobile-slides';
 import { processAdminImageFile } from '@/lib/utils/process-admin-image-file';
-import {
-  HOME_APP_DOWNLOAD_BANNER_ID,
-  HOME_APP_DOWNLOAD_DEFAULT_IMAGE_URL,
-  HOME_HERO_DEFAULT_BANNER_ITEMS,
-  HOME_HERO_PRIMARY_BOTTOM_BANNER_ID,
-  HOME_HERO_PRIMARY_BOTTOM_DEFAULT_IMAGE_URL,
-  HOME_HERO_PRIMARY_TOP_BANNER_ID,
-  HOME_HERO_PRIMARY_TOP_DEFAULT_IMAGE_URL,
-  HOME_PROMO_PRIMARY_BANNER_ID,
-  HOME_PROMO_PRIMARY_DEFAULT_IMAGE_URL,
-  HOME_PROMO_PRIMARY_MOBILE_DEFAULT_IMAGE_URL,
-  HOME_PROMO_SECONDARY_BANNER_ID,
-  HOME_PROMO_SECONDARY_DEFAULT_IMAGE_URL,
-  HOME_HERO_SECONDARY_BANNER_ID,
-  HOME_HERO_SECONDARY_DEFAULT_IMAGE_URL,
-} from '../../../lib/constants/home-hero-admin-banners';
-import { HERO_MOBILE_PRIMARY_IMAGE_SRC } from '../../../components/hero.constants';
 import { HOME_BANNERS_TWO_COL_GRID_CLASS } from '../../../components/home/home-secondary-banner.constants';
+import { HeroBannerMobileSlidesSection } from './HeroBannerMobileSlidesSection';
+import {
+  buildFormState,
+  buildHeroBannerStorage,
+  buildNextHeroBannerStorageFromForm,
+  type HeroBannerFormState,
+  type HeroBannerUploadingField,
+} from './hero-banner-form';
 
 type HeroBannerPlatformTab = 'desktop' | 'mobile';
 
 /** Matches `HeroCarousel` outer box — `aspect-[141/68]`. */
 const HERO_DESKTOP_LAYOUT_ASPECT_CLASS = 'aspect-[141/68]';
-/** Matches mobile hero — Figma 399×288. */
-const HERO_MOBILE_PREVIEW_CLASS = 'aspect-[399/288] w-full';
 /** Matches `HomeGradientBanner` — `56 / 34`. */
 const PROMO_DESKTOP_LEFT_PREVIEW_CLASS = 'aspect-[56/34] w-full';
 const PROMO_STRIP_GRID_CLASS = `grid w-full grid-cols-1 ${HOME_BANNERS_TWO_COL_GRID_CLASS} items-stretch gap-4`;
@@ -53,177 +43,6 @@ const MOBILE_FLOOR_PREVIEW_CLASS = 'aspect-[522/372] w-full';
 
 /** Matches `HomeAppBanner` raster — 2306×861. */
 const APP_DOWNLOAD_PREVIEW_CLASS = 'aspect-[2306/861] w-full';
-
-type HeroBannerFormState = {
-  primaryTopDesktopUrl: string;
-  primaryBottomDesktopUrl: string;
-  secondaryDesktopUrl: string;
-  appDownloadDesktopUrl: string;
-  promoPrimaryDesktopUrl: string;
-  promoPrimaryMobileUrl: string;
-  promoSecondaryDesktopUrl: string;
-  mobileImageUrl: string;
-};
-
-type UploadingField = keyof HeroBannerFormState | null;
-
-function normalizeOptionalUrl(value: string): string | null {
-  const trimmed = value.trim();
-  return trimmed.length === 0 ? null : trimmed;
-}
-
-function buildHeroBannerStorage(
-  storage: BannerManagementStorage | null,
-): BannerManagementStorage {
-  const baseStorage: BannerManagementStorage = storage ?? {
-    version: 1,
-    banners: [],
-  };
-  const heroDefaults = [...HOME_HERO_DEFAULT_BANNER_ITEMS];
-  const nonHeroBanners = baseStorage.banners.filter(
-    (banner) =>
-      banner.id !== HOME_HERO_PRIMARY_TOP_BANNER_ID &&
-      banner.id !== HOME_HERO_PRIMARY_BOTTOM_BANNER_ID &&
-      banner.id !== HOME_HERO_SECONDARY_BANNER_ID &&
-      banner.id !== HOME_PROMO_PRIMARY_BANNER_ID &&
-      banner.id !== HOME_PROMO_SECONDARY_BANNER_ID &&
-      banner.id !== HOME_APP_DOWNLOAD_BANNER_ID,
-  );
-
-  const mergedHeroBanners = heroDefaults.map((defaultBanner) => {
-    const existingBanner = baseStorage.banners.find(
-      (banner) => banner.id === defaultBanner.id,
-    );
-
-    return existingBanner
-      ? {
-          ...defaultBanner,
-          ...existingBanner,
-          title: existingBanner.title ?? defaultBanner.title,
-          link: existingBanner.link ?? defaultBanner.link,
-          schedule: existingBanner.schedule ?? defaultBanner.schedule,
-        }
-      : defaultBanner;
-  });
-
-  return {
-    version: baseStorage.version,
-    banners: [...nonHeroBanners, ...mergedHeroBanners],
-  };
-}
-
-function buildFormState(storage: BannerManagementStorage | null): HeroBannerFormState {
-  const mergedStorage = buildHeroBannerStorage(storage);
-  const primaryTop = mergedStorage.banners.find(
-    (banner) => banner.id === HOME_HERO_PRIMARY_TOP_BANNER_ID,
-  );
-  const primaryBottom = mergedStorage.banners.find(
-    (banner) => banner.id === HOME_HERO_PRIMARY_BOTTOM_BANNER_ID,
-  );
-  const secondary = mergedStorage.banners.find(
-    (banner) => banner.id === HOME_HERO_SECONDARY_BANNER_ID,
-  );
-  const promoPrimary = mergedStorage.banners.find(
-    (banner) => banner.id === HOME_PROMO_PRIMARY_BANNER_ID,
-  );
-  const promoSecondary = mergedStorage.banners.find(
-    (banner) => banner.id === HOME_PROMO_SECONDARY_BANNER_ID,
-  );
-  const appDownload = mergedStorage.banners.find(
-    (banner) => banner.id === HOME_APP_DOWNLOAD_BANNER_ID,
-  );
-
-  return {
-    primaryTopDesktopUrl:
-      primaryTop?.imageDesktopUrl ?? HOME_HERO_PRIMARY_TOP_DEFAULT_IMAGE_URL,
-    primaryBottomDesktopUrl:
-      primaryBottom?.imageDesktopUrl ?? HOME_HERO_PRIMARY_BOTTOM_DEFAULT_IMAGE_URL,
-    secondaryDesktopUrl:
-      secondary?.imageDesktopUrl ?? HOME_HERO_SECONDARY_DEFAULT_IMAGE_URL,
-    appDownloadDesktopUrl:
-      appDownload?.imageDesktopUrl ?? HOME_APP_DOWNLOAD_DEFAULT_IMAGE_URL,
-    promoPrimaryDesktopUrl:
-      promoPrimary?.imageDesktopUrl ?? HOME_PROMO_PRIMARY_DEFAULT_IMAGE_URL,
-    promoPrimaryMobileUrl:
-      promoPrimary?.imageMobileUrl ?? HOME_PROMO_PRIMARY_MOBILE_DEFAULT_IMAGE_URL,
-    promoSecondaryDesktopUrl:
-      promoSecondary?.imageDesktopUrl ?? HOME_PROMO_SECONDARY_DEFAULT_IMAGE_URL,
-    mobileImageUrl: primaryTop?.imageMobileUrl ?? HERO_MOBILE_PRIMARY_IMAGE_SRC,
-  };
-}
-
-function buildNextHeroBannerStorageFromForm(
-  storage: BannerManagementStorage | null,
-  form: HeroBannerFormState,
-): BannerManagementStorage {
-  const mergedStorage = buildHeroBannerStorage(storage);
-  return {
-    ...mergedStorage,
-    banners: mergedStorage.banners.map((banner) => {
-      if (banner.id === HOME_HERO_PRIMARY_TOP_BANNER_ID) {
-        return {
-          ...banner,
-          imageDesktopUrl:
-            normalizeOptionalUrl(form.primaryTopDesktopUrl) ??
-            HOME_HERO_PRIMARY_TOP_DEFAULT_IMAGE_URL,
-          imageMobileUrl:
-            normalizeOptionalUrl(form.mobileImageUrl) ?? HERO_MOBILE_PRIMARY_IMAGE_SRC,
-        };
-      }
-
-      if (banner.id === HOME_HERO_PRIMARY_BOTTOM_BANNER_ID) {
-        return {
-          ...banner,
-          imageDesktopUrl:
-            normalizeOptionalUrl(form.primaryBottomDesktopUrl) ??
-            HOME_HERO_PRIMARY_BOTTOM_DEFAULT_IMAGE_URL,
-        };
-      }
-
-      if (banner.id === HOME_HERO_SECONDARY_BANNER_ID) {
-        return {
-          ...banner,
-          imageDesktopUrl:
-            normalizeOptionalUrl(form.secondaryDesktopUrl) ??
-            HOME_HERO_SECONDARY_DEFAULT_IMAGE_URL,
-        };
-      }
-
-      if (banner.id === HOME_PROMO_PRIMARY_BANNER_ID) {
-        return {
-          ...banner,
-          imageDesktopUrl:
-            normalizeOptionalUrl(form.promoPrimaryDesktopUrl) ??
-            HOME_PROMO_PRIMARY_DEFAULT_IMAGE_URL,
-          imageMobileUrl:
-            normalizeOptionalUrl(form.promoPrimaryMobileUrl) ??
-            HOME_PROMO_PRIMARY_MOBILE_DEFAULT_IMAGE_URL,
-        };
-      }
-
-      if (banner.id === HOME_APP_DOWNLOAD_BANNER_ID) {
-        return {
-          ...banner,
-          imageDesktopUrl:
-            normalizeOptionalUrl(form.appDownloadDesktopUrl) ??
-            HOME_APP_DOWNLOAD_DEFAULT_IMAGE_URL,
-        };
-      }
-
-      if (banner.id === HOME_PROMO_SECONDARY_BANNER_ID) {
-        return {
-          ...banner,
-          imageDesktopUrl:
-            normalizeOptionalUrl(form.promoSecondaryDesktopUrl) ??
-            HOME_PROMO_SECONDARY_DEFAULT_IMAGE_URL,
-        };
-      }
-
-      return banner;
-    }),
-  };
-}
-
 
 function ImageLightbox({ url, label, onClose, onReplace }: { url: string; label: string; onClose: () => void; onReplace: () => void }) {
   const { t } = useTranslation();
@@ -278,7 +97,7 @@ type ImageUploadFieldProps = {
   label: string;
   fieldKey: keyof HeroBannerFormState;
   currentUrl: string;
-  uploadingField: UploadingField;
+  uploadingField: HeroBannerUploadingField;
   onUpload: (fieldKey: keyof HeroBannerFormState, file: File) => Promise<void>;
   onRemove?: (fieldKey: keyof HeroBannerFormState) => Promise<void>;
   removeLabel?: string;
@@ -357,7 +176,7 @@ function HeroBannerPromoStripRow({
   t,
 }: {
   form: HeroBannerFormState;
-  uploadingField: UploadingField;
+  uploadingField: HeroBannerUploadingField;
   onUpload: (fieldKey: keyof HeroBannerFormState, file: File) => Promise<void>;
   t: (key: string) => string;
 }) {
@@ -544,7 +363,7 @@ export default function HeroBannerPage() {
   const hadCacheRef = useRef(cachedBanners !== null);
   const [loading, setLoading] = useState(cachedBanners === null);
   const [saving, setSaving] = useState(false);
-  const [uploadingField, setUploadingField] = useState<UploadingField>(null);
+  const [uploadingField, setUploadingField] = useState<HeroBannerUploadingField>(null);
   const [storage, setStorage] = useState<BannerManagementStorage | null>(
     buildHeroBannerStorage(cachedBanners),
   );
@@ -609,6 +428,36 @@ export default function HeroBannerPage() {
       );
       setStorage(buildHeroBannerStorage(saved));
       setForm(buildFormState(saved));
+      writeAdminSessionCache(ADMIN_CACHE_KEYS.banners, saved);
+      alert(t('admin.heroBanner.savedAfterUpload'));
+    } catch (error: unknown) {
+      alert(
+        `${t('admin.heroBanner.uploadOrSaveFailed')}: ${getApiOrErrorMessage(error, 'Unknown error')}`,
+      );
+    } finally {
+      setUploadingField(null);
+    }
+  }
+
+  async function handleMobileSlideUpload(index: number, file: File) {
+    try {
+      setUploadingField(`mobileSlide:${index}`);
+      const dataUrl = await processAdminImageFile(file, 'banner');
+      const result = await apiClient.post<{ url: string }>(
+        '/api/v1/supersudo/banners/upload-image',
+        { image: dataUrl },
+      );
+      const nextSlides = [...form.mobileSlideUrls];
+      nextSlides[index] = result.url;
+      const nextForm: HeroBannerFormState = { ...form, mobileSlideUrls: nextSlides };
+      const nextStorage = buildNextHeroBannerStorageFromForm(storage, nextForm);
+      const saved = await apiClient.put<BannerManagementStorage>(
+        '/api/v1/supersudo/banners',
+        nextStorage,
+      );
+      setStorage(buildHeroBannerStorage(saved));
+      setForm(buildFormState(saved));
+      writeAdminSessionCache(ADMIN_CACHE_KEYS.banners, saved);
       alert(t('admin.heroBanner.savedAfterUpload'));
     } catch (error: unknown) {
       alert(
@@ -630,6 +479,7 @@ export default function HeroBannerPage() {
       );
       setStorage(buildHeroBannerStorage(saved));
       setForm(buildFormState(saved));
+      writeAdminSessionCache(ADMIN_CACHE_KEYS.banners, saved);
       alert(t('admin.heroBanner.savedSuccess'));
     } catch (error: unknown) {
       alert(
@@ -654,6 +504,7 @@ export default function HeroBannerPage() {
       );
       setStorage(buildHeroBannerStorage(saved));
       setForm(buildFormState(saved));
+      writeAdminSessionCache(ADMIN_CACHE_KEYS.banners, saved);
       alert(t('admin.heroBanner.savedSuccess'));
     } catch (error: unknown) {
       alert(
@@ -662,6 +513,38 @@ export default function HeroBannerPage() {
     } finally {
       setUploadingField(null);
     }
+  }
+
+  async function handleRemoveMobileSlide(index: number) {
+    if (form.mobileSlideUrls.length <= 1) return;
+    try {
+      setUploadingField(`mobileSlide:${index}`);
+      const nextSlides = form.mobileSlideUrls.filter((_, i) => i !== index);
+      const nextForm: HeroBannerFormState = { ...form, mobileSlideUrls: nextSlides };
+      const nextStorage = buildNextHeroBannerStorageFromForm(storage, nextForm);
+      const saved = await apiClient.put<BannerManagementStorage>(
+        '/api/v1/supersudo/banners',
+        nextStorage,
+      );
+      setStorage(buildHeroBannerStorage(saved));
+      setForm(buildFormState(saved));
+      writeAdminSessionCache(ADMIN_CACHE_KEYS.banners, saved);
+      alert(t('admin.heroBanner.savedSuccess'));
+    } catch (error: unknown) {
+      alert(
+        `${t('admin.heroBanner.uploadOrSaveFailed')}: ${getApiOrErrorMessage(error, 'Unknown error')}`,
+      );
+    } finally {
+      setUploadingField(null);
+    }
+  }
+
+  function handleAddMobileSlide() {
+    if (form.mobileSlideUrls.length >= HOME_HERO_MOBILE_SLIDES_MAX) return;
+    setForm((prev) => ({
+      ...prev,
+      mobileSlideUrls: [...prev.mobileSlideUrls, ''],
+    }));
   }
 
   if (loading) {
@@ -770,14 +653,12 @@ export default function HeroBannerPage() {
                 title={t('admin.heroBanner.sectionMobileHero')}
                 hint={t('admin.heroBanner.sectionMobileHeroHint')}
               />
-              <ImageUploadField
-                label={t('admin.heroBanner.mobileHeroImage')}
-                fieldKey="mobileImageUrl"
-                currentUrl={form.mobileImageUrl}
+              <HeroBannerMobileSlidesSection
+                slideUrls={form.mobileSlideUrls}
                 uploadingField={uploadingField}
-                onUpload={handleUpload}
-                previewClassName={HERO_MOBILE_PREVIEW_CLASS}
-                previewRadiusClassName="rounded-[24px]"
+                onUploadSlide={handleMobileSlideUpload}
+                onRemoveSlide={handleRemoveMobileSlide}
+                onAddSlide={handleAddMobileSlide}
               />
             </Card>
 
