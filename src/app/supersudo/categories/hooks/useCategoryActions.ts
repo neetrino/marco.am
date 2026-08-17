@@ -64,6 +64,8 @@ const initialFormData: CategoryFormData = {
   seoTitle: '',
   seoDescription: '',
   imageUrl: '',
+  promoBannerEnabled: false,
+  promoBannerImageUrl: '',
   parentId: '',
   requiresSizes: false,
   subcategoryIds: [],
@@ -129,6 +131,10 @@ export function useCategoryActions(): UseCategoryActionsReturn {
         media: formData.imageUrl.trim() ? [formData.imageUrl.trim()] : undefined,
         parentId: formData.parentId || undefined,
         requiresSizes: formData.requiresSizes,
+        promoBannerEnabled: formData.parentId ? false : formData.promoBannerEnabled,
+        promoBannerImageUrl: formData.parentId
+          ? null
+          : formData.promoBannerImageUrl.trim() || null,
         locale: writeLocale,
       });
       setShowAddModal(false);
@@ -167,6 +173,8 @@ export function useCategoryActions(): UseCategoryActionsReturn {
         seoTitle: categoryWithChildren.seoTitle || '',
         seoDescription: categoryWithChildren.seoDescription || '',
         imageUrl: categoryWithChildren.media?.[0] || '',
+        promoBannerEnabled: Boolean(categoryWithChildren.promoBannerEnabled),
+        promoBannerImageUrl: categoryWithChildren.promoBannerImageUrl || '',
         parentId: category.parentId || '',
         requiresSizes: category.requiresSizes || false,
         subcategoryIds: categoryWithChildren.children?.map(child => child.id) || [],
@@ -188,6 +196,8 @@ export function useCategoryActions(): UseCategoryActionsReturn {
         seoTitle: category.seoTitle || '',
         seoDescription: category.seoDescription || '',
         imageUrl: category.media?.[0] || '',
+        promoBannerEnabled: Boolean(category.promoBannerEnabled),
+        promoBannerImageUrl: category.promoBannerImageUrl || '',
         parentId: category.parentId || '',
         requiresSizes: category.requiresSizes || false,
         subcategoryIds: [],
@@ -237,6 +247,10 @@ export function useCategoryActions(): UseCategoryActionsReturn {
         seoDescription: formData.seoDescription.trim() || null,
         media: formData.imageUrl.trim() ? [formData.imageUrl.trim()] : [],
         requiresSizes: formData.requiresSizes,
+        promoBannerEnabled: nextParentId ? false : formData.promoBannerEnabled,
+        promoBannerImageUrl: nextParentId
+          ? null
+          : formData.promoBannerImageUrl.trim() || null,
         locale: writeLocale,
       };
 
@@ -284,6 +298,10 @@ export function useCategoryActions(): UseCategoryActionsReturn {
                 seoDescription: formData.seoDescription.trim() || null,
                 media: formData.imageUrl.trim() ? [formData.imageUrl.trim()] : [],
                 requiresSizes: formData.requiresSizes,
+                promoBannerEnabled: nextParentId ? false : formData.promoBannerEnabled,
+                promoBannerImageUrl: nextParentId
+                  ? null
+                  : formData.promoBannerImageUrl.trim() || null,
                 parentId: nextParentId,
               };
             }

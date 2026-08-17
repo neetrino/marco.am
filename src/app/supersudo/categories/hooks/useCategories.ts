@@ -26,6 +26,7 @@ interface UseCategoriesReturn {
     parentId?: string | null,
   ) => void;
   setCategoryHeaderVisibilityOptimistically: (categoryId: string, showInHeader: boolean) => void;
+  setCategoryPromoBannerOptimistically: (categoryId: string, promoBannerEnabled: boolean) => void;
 }
 
 /**
@@ -189,6 +190,33 @@ export function useCategories(language: LanguageCode): UseCategoriesReturn {
     [writeCategoriesCacheDeferred],
   );
 
+  const setCategoryPromoBannerOptimistically = useCallback(
+    (categoryId: string, promoBannerEnabled: boolean) => {
+      let nextSnapshot: Category[] | null = null;
+      setCategories((prev) => {
+        const categoryIndex = prev.findIndex((category) => category.id === categoryId);
+        if (categoryIndex < 0) {
+          return prev;
+        }
+        if (Boolean(prev[categoryIndex]?.promoBannerEnabled) === promoBannerEnabled) {
+          return prev;
+        }
+        const next = [...prev];
+        next[categoryIndex] = {
+          ...next[categoryIndex],
+          promoBannerEnabled,
+        };
+        nextSnapshot = next;
+        return next;
+      });
+
+      if (nextSnapshot) {
+        writeCategoriesCacheDeferred(nextSnapshot);
+      }
+    },
+    [writeCategoriesCacheDeferred],
+  );
+
   useEffect(() => {
     return () => {
       if (cacheWriteTimeoutRef.current !== null && typeof window !== 'undefined') {
@@ -210,5 +238,6 @@ export function useCategories(language: LanguageCode): UseCategoriesReturn {
     applyOptimisticCategories,
     reorderCategoriesOptimistically,
     setCategoryHeaderVisibilityOptimistically,
+    setCategoryPromoBannerOptimistically,
   };
 }

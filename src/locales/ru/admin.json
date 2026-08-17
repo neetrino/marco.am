@@ -308,7 +308,13 @@
     "hierarchyConfirmDetach": "• Эти подкатегории будут отвязаны в корень: {names}.",
     "hierarchyConfirmReassign": "• Эти категории будут перенесены от другого родителя: {names}.",
     "showInHeaderSidebar": "Показать в боковом меню шапки",
-    "hideFromHeaderSidebar": "Скрыть из бокового меню шапки"
+    "hideFromHeaderSidebar": "Скрыть из бокового меню шапки",
+    "showPromoBanner": "Показать промо-баннер mega menu",
+    "hidePromoBanner": "Скрыть промо-баннер mega menu",
+    "promoBannerSection": "Промо-баннер mega menu",
+    "promoBannerEnabled": "Звезда — показывать промо-баннер",
+    "promoBannerImageUpload": "Загрузить промо-изображение",
+    "promoBannerImageRemove": "Удалить промо-изображение"
   },
   "delivery": {
     "title": "Доставка",

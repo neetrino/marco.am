@@ -34,6 +34,7 @@ export default function CategoriesPage() {
     applyOptimisticCategories,
     reorderCategoriesOptimistically,
     setCategoryHeaderVisibilityOptimistically,
+    setCategoryPromoBannerOptimistically,
   } = useCategories(activeLocale);
   const {
     showAddModal,
@@ -223,6 +224,23 @@ export default function CategoriesPage() {
       notifyShopCategoryTreeUpdated();
     } catch (error: unknown) {
       setCategoryHeaderVisibilityOptimistically(category.id, Boolean(category.showInHeader));
+      const message = getApiOrErrorMessage(error, t('admin.common.unknownErrorFallback'));
+      showToast(message, 'error');
+    }
+  };
+
+  const handleToggleCategoryPromoBanner = async (
+    category: Category,
+    nextEnabled: boolean,
+  ) => {
+    setCategoryPromoBannerOptimistically(category.id, nextEnabled);
+    try {
+      await apiClient.put(`/api/v1/supersudo/categories/${category.id}`, {
+        promoBannerEnabled: nextEnabled,
+      });
+      notifyShopCategoryTreeUpdated();
+    } catch (error: unknown) {
+      setCategoryPromoBannerOptimistically(category.id, Boolean(category.promoBannerEnabled));
       const message = getApiOrErrorMessage(error, t('admin.common.unknownErrorFallback'));
       showToast(message, 'error');
     }
@@ -493,6 +511,7 @@ export default function CategoriesPage() {
                   handleDeleteCategory(categoryId, categoryTitle, fetchCategories, categories)
                 }
                 onToggleHeaderVisibility={handleToggleCategoryHeaderVisibility}
+                onTogglePromoBanner={handleToggleCategoryPromoBanner}
                 onToggleCategoryKind={handleToggleCategoryKind}
                 onReorder={handleReorderCategory}
                 movingCategoryId={movingCategoryId}

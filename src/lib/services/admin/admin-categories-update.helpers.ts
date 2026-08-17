@@ -5,6 +5,7 @@ import {
   normalizeCategoryMedia,
   normalizeCategoryTitle,
   normalizeOptionalText,
+  normalizePromoBannerImageUrl,
   sameSortedIds,
   toSortedUniqueIds,
   type CategoryUpdateInput,
@@ -28,6 +29,7 @@ export type PreparedCategoryUpdate = {
   hasTranslationPayload: boolean;
   normalizedSubcategoryIds: string[] | undefined;
   normalizedMedia: string[] | undefined;
+  normalizedPromoBannerImageUrl: string | null | undefined;
   parentChanged: boolean;
   subcategoriesChanged: boolean;
   removedChildIds: string[];
@@ -71,6 +73,9 @@ export function prepareCategoryUpdateData(args: {
       : undefined;
   const normalizedMedia =
     args.data.media !== undefined ? normalizeCategoryMedia(args.data.media) : undefined;
+  const normalizedPromoBannerImageUrl = normalizePromoBannerImageUrl(
+    args.data.promoBannerImageUrl,
+  );
 
   const currentChildIds = new Set(args.category.children.map((child) => child.id));
   const currentChildIdsSorted = toSortedUniqueIds([...currentChildIds]);
@@ -99,6 +104,7 @@ export function prepareCategoryUpdateData(args: {
     hasTranslationPayload,
     normalizedSubcategoryIds,
     normalizedMedia,
+    normalizedPromoBannerImageUrl,
     parentChanged,
     subcategoriesChanged,
     removedChildIds,
@@ -108,15 +114,20 @@ export function prepareCategoryUpdateData(args: {
 export function buildCategoryUpdatePatch(
   data: CategoryUpdateInput,
   normalizedMedia: string[] | undefined,
+  normalizedPromoBannerImageUrl: string | null | undefined,
 ): {
   parentId?: string | null;
   showInHeader?: boolean;
+  promoBannerEnabled?: boolean;
+  promoBannerImageUrl?: string | null;
   requiresSizes?: boolean;
   media?: string[];
 } | null {
   const needsPatch =
     data.parentId !== undefined ||
     data.showInHeader !== undefined ||
+    data.promoBannerEnabled !== undefined ||
+    normalizedPromoBannerImageUrl !== undefined ||
     data.requiresSizes !== undefined ||
     normalizedMedia !== undefined;
   if (!needsPatch) {
@@ -126,6 +137,8 @@ export function buildCategoryUpdatePatch(
   const categoryUpdateData: {
     parentId?: string | null;
     showInHeader?: boolean;
+    promoBannerEnabled?: boolean;
+    promoBannerImageUrl?: string | null;
     requiresSizes?: boolean;
     media?: string[];
   } = {};
@@ -134,6 +147,12 @@ export function buildCategoryUpdatePatch(
   }
   if (data.showInHeader !== undefined) {
     categoryUpdateData.showInHeader = data.showInHeader;
+  }
+  if (data.promoBannerEnabled !== undefined) {
+    categoryUpdateData.promoBannerEnabled = data.promoBannerEnabled;
+  }
+  if (normalizedPromoBannerImageUrl !== undefined) {
+    categoryUpdateData.promoBannerImageUrl = normalizedPromoBannerImageUrl;
   }
   if (data.requiresSizes !== undefined) {
     categoryUpdateData.requiresSizes = data.requiresSizes;

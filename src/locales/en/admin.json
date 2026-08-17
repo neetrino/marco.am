@@ -308,7 +308,13 @@
     "hierarchyConfirmDetach": "• These subcategories will be detached to root: {names}.",
     "hierarchyConfirmReassign": "• These categories will be moved from another parent: {names}.",
     "showInHeaderSidebar": "Show in header sidebar",
-    "hideFromHeaderSidebar": "Hide from header sidebar"
+    "hideFromHeaderSidebar": "Hide from header sidebar",
+    "showPromoBanner": "Show mega-menu promo banner",
+    "hidePromoBanner": "Hide mega-menu promo banner",
+    "promoBannerSection": "Mega-menu promo banner",
+    "promoBannerEnabled": "Star — show promo banner",
+    "promoBannerImageUpload": "Upload promo image",
+    "promoBannerImageRemove": "Remove promo image"
   },
   "delivery": {
     "title": "Delivery",

@@ -3,6 +3,8 @@ export interface Category {
   slug: string;
   title: string;
   showInHeader?: boolean;
+  promoBannerEnabled?: boolean;
+  promoBannerImageUrl?: string | null;
   translations?: Partial<Record<'hy' | 'en' | 'ru', string>>;
   fullPath?: string;
   seoTitle?: string | null;
@@ -27,6 +29,8 @@ export interface CategoryFormData {
   seoTitle: string;
   seoDescription: string;
   imageUrl: string;
+  promoBannerEnabled: boolean;
+  promoBannerImageUrl: string;
   parentId: string;
   requiresSizes: boolean;
   subcategoryIds: string[];
