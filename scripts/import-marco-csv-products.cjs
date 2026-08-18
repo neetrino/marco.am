@@ -16,6 +16,7 @@ const {
   chooseExistingAttributeValue,
   chooseExistingFilterAttribute,
   hashText,
+  inferProductClass,
   mergeManagedAttributeIds,
   mergeManagedVariantAttributes,
   parseCsv,
@@ -159,19 +160,6 @@ function normalizeProductWarrantyYears(value) {
     return parsed;
   }
   return null;
-}
-
-function inferProductClass(value) {
-  const normalized = String(value || "").trim().toLowerCase();
-  if (!normalized) return "retail";
-  if (
-    normalized.includes("մեծածախ") ||
-    normalized.includes("wholesale") ||
-    normalized.includes("опт")
-  ) {
-    return "wholesale";
-  }
-  return "retail";
 }
 
 function parseImages(value) {

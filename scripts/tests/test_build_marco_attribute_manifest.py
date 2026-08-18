@@ -77,13 +77,14 @@ class BuildMarcoAttributeManifestTests(unittest.TestCase):
 
     def test_legacy_marco_filter_index_matches_historical_converter_numbering(self) -> None:
         definitions = MODULE.build_attribute_definitions(
-            ["ID", "Short description", "Stock", "Color", "Օգտակար ծավալ"]
+            ["ID", "Խոշոր Մանր", "Short description", "Stock", "Color", "Օգտակար ծավալ"]
         )
         useful_volume = next(item for item in definitions if item["kind"] == "technical")
 
         self.assertEqual(useful_volume["filterIndex"], 1)
         self.assertEqual(useful_volume["legacyFilterIndex"], 3)
         self.assertEqual(useful_volume["compatibilityKeys"], ["marco_filter_3"])
+        self.assertFalse(any(item["label"] == "Խոշոր Մանր" for item in definitions))
 
     def test_splits_and_deduplicates_comma_separated_colors(self) -> None:
         self.assertEqual(

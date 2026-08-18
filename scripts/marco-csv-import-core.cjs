@@ -162,6 +162,20 @@ function splitColorValues(value) {
     });
 }
 
+function inferProductClass(value) {
+  const normalized = String(value || "").trim().toLowerCase();
+  if (!normalized) return "retail";
+  if (
+    normalized.includes("մեծածախ") ||
+    normalized.includes("խոշոր") ||
+    normalized.includes("wholesale") ||
+    normalized.includes("опт")
+  ) {
+    return "wholesale";
+  }
+  return "retail";
+}
+
 function uniqueSelections(selections) {
   const seen = new Set();
   return selections.filter((selection) => {
@@ -270,6 +284,7 @@ module.exports = {
   chooseExistingFilterAttribute,
   filterAttributeKey,
   hashText,
+  inferProductClass,
   mergeManagedAttributeIds,
   mergeManagedVariantAttributes,
   parseCsv,

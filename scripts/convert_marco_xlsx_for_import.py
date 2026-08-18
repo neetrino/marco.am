@@ -25,6 +25,16 @@ def normalize_cell(cell: openpyxl.cell.cell.Cell) -> str:
     return str(value).strip()
 
 
+def select_filter_source_columns(
+    headers: list[str], excluded_headers: set[str]
+) -> list[tuple[int, str]]:
+    return [
+        (column_index, header)
+        for column_index, header in enumerate(headers)
+        if header not in excluded_headers
+    ]
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Convert Marco XLSX into import-compatible CSV.")
     parser.add_argument("--xlsx", required=True, help="Absolute path to source XLSX")
@@ -74,9 +84,11 @@ def main() -> None:
         "",
         "ID",
         "Name",
+        "ƒ",
         "SKU",
         "Артикул",
         "Արտիկուլ",
+        "Խոշոր Մանր",
         "Տիպ Մեծածախ /  Մանրածախ",
         "Тип Мեծածախ /  Մանրածախ",
         "Type",
@@ -95,8 +107,11 @@ def main() -> None:
         "Color",
         "Images",
     }
-    filter_source_headers = [h for h in headers if h not in excluded_headers]
-    filter_headers = [f"Filter{idx + 1} - {header}" for idx, header in enumerate(filter_source_headers)]
+    filter_source_columns = select_filter_source_columns(headers, excluded_headers)
+    filter_headers = [
+        f"Filter{idx + 1} - {header}"
+        for idx, (_, header) in enumerate(filter_source_columns)
+    ]
     output_headers = base_out_headers + filter_headers
 
     csv_path.parent.mkdir(parents=True, exist_ok=True)
@@ -121,15 +136,20 @@ def main() -> None:
                 "Category": pick(raw_row, "Category"),
                 "Brand": pick(raw_row, "Brand"),
                 "Color": pick(raw_row, "Color"),
-                "Type": pick(raw_row, "Type", "Тип Մեծածախ /  Մանրածախ", "Տիպ Մեծածախ /  Մանրածախ"),
+                "Type": pick(
+                    raw_row,
+                    "Type",
+                    "Тип Մեծածախ /  Մանրածախ",
+                    "Տիպ Մեծածախ /  Մանրածախ",
+                    "Խոշոր Մանր",
+                ),
                 "Warranty": pick(raw_row, "Warranty", "Երաշխիք"),
                 "Images": pick(raw_row, "Images"),
             }
 
-            for idx, source_header in enumerate(filter_source_headers):
-                source_idx = header_index.get(source_header)
+            for idx, (source_idx, source_header) in enumerate(filter_source_columns):
                 output_row[f"Filter{idx + 1} - {source_header}"] = (
-                    raw_row[source_idx] if source_idx is not None else ""
+                    raw_row[source_idx] if source_idx < len(raw_row) else ""
                 )
 
             writer.writerow(output_row)

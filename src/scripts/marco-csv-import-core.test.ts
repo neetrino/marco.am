@@ -37,6 +37,7 @@ const core = require("../../scripts/marco-csv-import-core.cjs") as {
       translations: Array<{ name: string }>;
     }>,
   ): { id: string; key: string } | null;
+  inferProductClass(value: string): "retail" | "wholesale";
   mergeManagedAttributeIds(
     existingIds: string[],
     managedAttributeIds: string[],
@@ -107,6 +108,11 @@ describe("Marco CSV attribute import core", () => {
         "Սև",
       ),
     ).toMatchObject({ id: "black" });
+  });
+
+  it("maps the current Խոշոր/Մանր source values to product class", () => {
+    expect(core.inferProductClass("Խոշորր")).toBe("wholesale");
+    expect(core.inferProductClass("Մանր")).toBe("retail");
   });
 
   it("replaces only import-managed legacy ids and variant JSON", () => {
