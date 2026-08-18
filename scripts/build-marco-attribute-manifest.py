@@ -133,6 +133,20 @@ def semantic_attribute_key(label: str, filter_index: int) -> str:
     return slug or f"spec-{filter_index}-{sha1_text(label)}"
 
 
+def split_cell_values(value: str, kind: str) -> list[str]:
+    if kind != "color":
+        return [value]
+    seen: set[str] = set()
+    values: list[str] = []
+    for item in value.split(","):
+        normalized = normalize_text(item)
+        match_key = normalized.casefold()
+        if normalized and match_key not in seen:
+            seen.add(match_key)
+            values.append(normalized)
+    return values
+
+
 def find_header_index(headers: list[str], candidates: tuple[str, ...]) -> int:
     for candidate in candidates:
         try:
@@ -240,13 +254,14 @@ def build_manifest(xlsx_path: Path, sheet_name: str = "Worksheet") -> dict[str, 
                 # A styled/formatted cell without a value is intentionally blank.
                 if not value:
                     continue
-                values.append(
-                    {
-                        "definitionId": definition["id"],
-                        "value": value,
-                        "sourceCell": cells[column_index].coordinate,
-                    }
-                )
+                for item in split_cell_values(value, str(definition["kind"])):
+                    values.append(
+                        {
+                            "definitionId": definition["id"],
+                            "value": item,
+                            "sourceCell": cells[column_index].coordinate,
+                        }
+                    )
 
             entries.append(
                 {

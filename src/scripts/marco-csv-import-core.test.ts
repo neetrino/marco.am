@@ -25,6 +25,10 @@ const core = require("../../scripts/marco-csv-import-core.cjs") as {
     };
   };
   buildFilterColumnDefinitions(row: Record<string, string>): FilterDefinition[];
+  chooseExistingAttributeValue(
+    values: Array<{ id: string; value: string; translations: Array<{ label: string }> }>,
+    label: string,
+  ): { id: string } | null;
   chooseExistingFilterAttribute(
     definition: FilterDefinition,
     attributes: Array<{
@@ -94,6 +98,15 @@ describe("Marco CSV attribute import core", () => {
     };
 
     expect(core.chooseExistingFilterAttribute(definition, [existing])).toEqual(existing);
+  });
+
+  it("reuses an attribute value matched through a translation", () => {
+    expect(
+      core.chooseExistingAttributeValue(
+        [{ id: "black", value: "Black", translations: [{ label: "Սև" }] }],
+        "Սև",
+      ),
+    ).toMatchObject({ id: "black" });
   });
 
   it("replaces only import-managed legacy ids and variant JSON", () => {

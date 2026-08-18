@@ -104,6 +104,36 @@ describe("Marco attribute reconciliation planning", () => {
     );
   });
 
+  it("keeps multiple values from one Color cell in the desired canonical links", () => {
+    const input = manifest([
+      {
+        sku: "09468",
+        sourceRow: 1613,
+        values: [
+          { definitionId: "color", value: "Սև", sourceCell: "M1613" },
+          { definitionId: "color", value: "Սպիտակ", sourceCell: "M1613" },
+        ],
+      },
+    ]);
+    const [plan] = planReconciliation(
+      input,
+      [
+        {
+          id: "product-09468",
+          sku: "09468",
+          productAttributes: [{ attributeId: "attr-color" }],
+          attributeValues: [],
+        },
+      ],
+      attributes,
+    );
+
+    expect(plan.desired.map((item: { attributeValueId: string }) => item.attributeValueId)).toEqual([
+      "black",
+      "white",
+    ]);
+  });
+
   it("plans value creation, stale removal, and retains unrelated manual values", () => {
     const input = manifest([
       {

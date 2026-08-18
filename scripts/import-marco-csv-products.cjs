@@ -13,6 +13,7 @@ const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
 const {
   buildNewProductAttributeRelations,
   buildFilterColumnDefinitions,
+  chooseExistingAttributeValue,
   chooseExistingFilterAttribute,
   hashText,
   mergeManagedAttributeIds,
@@ -505,13 +506,25 @@ async function ensureAttributeValue(attributeId, key, label) {
   const cacheKey = `${attributeId}:${cleanLabel.toLowerCase()}`;
   if (attributeValueCache.has(cacheKey)) return attributeValueCache.get(cacheKey);
 
-  let value = await prisma.attributeValue.findFirst({
+  const matchingValues = await prisma.attributeValue.findMany({
     where: {
       attributeId,
-      value: { equals: cleanLabel, mode: "insensitive" },
+      OR: [
+        { value: { equals: cleanLabel, mode: "insensitive" } },
+        {
+          translations: {
+            some: { label: { equals: cleanLabel, mode: "insensitive" } },
+          },
+        },
+      ],
     },
-    select: { id: true },
+    select: {
+      id: true,
+      value: true,
+      translations: { select: { label: true } },
+    },
   });
+  let value = chooseExistingAttributeValue(matchingValues, cleanLabel);
 
   if (!value) {
     value = await prisma.attributeValue.create({

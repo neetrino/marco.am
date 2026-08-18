@@ -104,6 +104,21 @@ function hasMatchingTranslation(attribute, label) {
   );
 }
 
+function chooseExistingAttributeValue(values, label) {
+  const target = normalizeComparable(label);
+  const matches = values.filter((value) => {
+    if (normalizeComparable(value.value) === target) return true;
+    return (value.translations || []).some(
+      (translation) => normalizeComparable(translation.label) === target,
+    );
+  });
+
+  if (matches.length > 1) {
+    throw new Error(`Ambiguous attribute value label: ${label}`);
+  }
+  return matches[0] || null;
+}
+
 /**
  * Prefer an existing semantic match, with the same-position legacy key winning ties.
  * This keeps old `marco_filter_N` catalogs stable while avoiding a second attribute
@@ -251,6 +266,7 @@ module.exports = {
   asciiSlug,
   buildNewProductAttributeRelations,
   buildFilterColumnDefinitions,
+  chooseExistingAttributeValue,
   chooseExistingFilterAttribute,
   filterAttributeKey,
   hashText,

@@ -85,6 +85,13 @@ class BuildMarcoAttributeManifestTests(unittest.TestCase):
         self.assertEqual(useful_volume["legacyFilterIndex"], 3)
         self.assertEqual(useful_volume["compatibilityKeys"], ["marco_filter_3"])
 
+    def test_splits_and_deduplicates_comma_separated_colors(self) -> None:
+        self.assertEqual(
+            MODULE.split_cell_values(" Սև, Սպիտակ, սև ", "color"),
+            ["Սև", "Սպիտակ"],
+        )
+        self.assertEqual(MODULE.split_cell_values("60,5", "technical"), ["60,5"])
+
 
 if __name__ == "__main__":
     unittest.main()

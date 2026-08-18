@@ -17,6 +17,8 @@ python3 scripts/build-marco-attribute-manifest.py \
 ```
 
 The manifest contains `Color` plus every non-empty technical Worksheet cell.
+Comma-separated Color cells are split into distinct, de-duplicated values just
+like the canonical CSV importer.
 Its source SHA-256 makes the reviewed Excel version explicit. There is no
 generation timestamp, so the same workbook produces identical JSON.
 

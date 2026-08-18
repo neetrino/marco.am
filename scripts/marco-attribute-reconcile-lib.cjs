@@ -161,14 +161,19 @@ function planEntry(entry, product, definitionResolutions) {
 
   const statuses = [];
   const desiredByAttribute = new Map();
-  const valueByDefinition = new Map(entry.values.map((item) => [item.definitionId, item]));
+  const valuesByDefinition = new Map();
+  for (const item of entry.values) {
+    const values = valuesByDefinition.get(item.definitionId) ?? [];
+    values.push(item);
+    valuesByDefinition.set(item.definitionId, values);
+  }
   const managedAttributeIds = new Set();
   const blockedAttributeIds = new Set();
 
   for (const [definitionId, resolution] of definitionResolutions) {
-    const sourceValue = valueByDefinition.get(definitionId);
+    const sourceValues = valuesByDefinition.get(definitionId) ?? [];
     if (!resolution.attribute) {
-      if (sourceValue) {
+      for (const sourceValue of sourceValues) {
         statuses.push({
           status: "attribute_unresolved",
           definitionId,
@@ -183,44 +188,47 @@ function planEntry(entry, product, definitionResolutions) {
 
     const attribute = resolution.attribute;
     managedAttributeIds.add(attribute.id);
-    if (!sourceValue) continue;
+    for (const sourceValue of sourceValues) {
+      const valueResolution = resolveAttributeValue(attribute, sourceValue.value);
+      if (valueResolution.ambiguous) {
+        blockedAttributeIds.add(attribute.id);
+        statuses.push({
+          status: "attribute_unresolved",
+          definitionId,
+          label: resolution.definition.label,
+          value: sourceValue.value,
+          reason: "ambiguous_value",
+          candidates: valueResolution.candidates.map((value) => ({
+            id: value.id,
+            value: value.value,
+          })),
+        });
+        continue;
+      }
 
-    const valueResolution = resolveAttributeValue(attribute, sourceValue.value);
-    if (valueResolution.ambiguous) {
-      blockedAttributeIds.add(attribute.id);
-      statuses.push({
-        status: "attribute_unresolved",
-        definitionId,
-        label: resolution.definition.label,
-        value: sourceValue.value,
-        reason: "ambiguous_value",
-        candidates: valueResolution.candidates.map((value) => ({ id: value.id, value: value.value })),
-      });
-      continue;
-    }
-
-    const desired = desiredByAttribute.get(attribute.id) ?? [];
-    const item = {
-      definitionId,
-      attributeId: attribute.id,
-      attributeKey: attribute.key,
-      attributeLabel: resolution.definition.label,
-      resolutionMethod: resolution.method,
-      value: normalizeText(sourceValue.value),
-      valueRef: valueRef(attribute.id, sourceValue.value),
-      attributeValueId: valueResolution.attributeValue?.id ?? null,
-      sourceCell: sourceValue.sourceCell ?? null,
-    };
-    if (!desired.some((existing) => existing.valueRef === item.valueRef)) desired.push(item);
-    desiredByAttribute.set(attribute.id, desired);
-    if (!item.attributeValueId) {
-      statuses.push({
-        status: "value_create",
+      const desired = desiredByAttribute.get(attribute.id) ?? [];
+      const item = {
         definitionId,
         attributeId: attribute.id,
         attributeKey: attribute.key,
-        value: item.value,
-      });
+        attributeLabel: resolution.definition.label,
+        resolutionMethod: resolution.method,
+        value: normalizeText(sourceValue.value),
+        valueRef: valueRef(attribute.id, sourceValue.value),
+        attributeValueId: valueResolution.attributeValue?.id ?? null,
+        sourceCell: sourceValue.sourceCell ?? null,
+      };
+      if (!desired.some((existing) => existing.valueRef === item.valueRef)) desired.push(item);
+      desiredByAttribute.set(attribute.id, desired);
+      if (!item.attributeValueId) {
+        statuses.push({
+          status: "value_create",
+          definitionId,
+          attributeId: attribute.id,
+          attributeKey: attribute.key,
+          value: item.value,
+        });
+      }
     }
   }
 
