@@ -1,5 +1,6 @@
 import argparse
 import csv
+import re
 from pathlib import Path
 
 import openpyxl
@@ -11,11 +12,16 @@ def normalize_header(value: object) -> str:
     return str(value).strip().replace("\n", " ")
 
 
-def normalize_cell(value: object) -> str:
+def normalize_cell(cell: openpyxl.cell.cell.Cell) -> str:
+    value = cell.value
     if value is None:
         return ""
-    if isinstance(value, float) and value.is_integer():
-        return str(int(value))
+    if isinstance(value, (int, float)) and float(value).is_integer():
+        integer_value = int(value)
+        number_format = str(cell.number_format or "")
+        if re.fullmatch(r"0+", number_format):
+            return str(integer_value).zfill(len(number_format))
+        return str(integer_value)
     return str(value).strip()
 
 
@@ -99,7 +105,10 @@ def main() -> None:
         writer.writeheader()
 
         for row_idx in range(2, ws.max_row + 1):
-            raw_row = [normalize_cell(ws.cell(row=row_idx, column=col).value) for col in range(1, ws.max_column + 1)]
+            raw_row = [
+                normalize_cell(ws.cell(row=row_idx, column=col))
+                for col in range(1, ws.max_column + 1)
+            ]
             output_row = {
                 "ID": pick(raw_row, "ID"),
                 "Name": pick(raw_row, "Name", "ƒ"),
