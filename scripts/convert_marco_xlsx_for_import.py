@@ -1,5 +1,6 @@
 import argparse
 import csv
+import re
 from pathlib import Path
 
 import openpyxl
@@ -11,12 +12,27 @@ def normalize_header(value: object) -> str:
     return str(value).strip().replace("\n", " ")
 
 
-def normalize_cell(value: object) -> str:
+def normalize_cell(cell: openpyxl.cell.cell.Cell) -> str:
+    value = cell.value
     if value is None:
         return ""
-    if isinstance(value, float) and value.is_integer():
-        return str(int(value))
+    if isinstance(value, (int, float)) and float(value).is_integer():
+        integer_value = int(value)
+        number_format = str(cell.number_format or "")
+        if re.fullmatch(r"0+", number_format):
+            return str(integer_value).zfill(len(number_format))
+        return str(integer_value)
     return str(value).strip()
+
+
+def select_filter_source_columns(
+    headers: list[str], excluded_headers: set[str]
+) -> list[tuple[int, str]]:
+    return [
+        (column_index, header)
+        for column_index, header in enumerate(headers)
+        if header not in excluded_headers
+    ]
 
 
 def main() -> None:
@@ -68,9 +84,11 @@ def main() -> None:
         "",
         "ID",
         "Name",
+        "ƒ",
         "SKU",
         "Артикул",
         "Արտիկուլ",
+        "Խոշոր Մանր",
         "Տիպ Մեծածախ /  Մանրածախ",
         "Тип Мեծածախ /  Մանրածախ",
         "Type",
@@ -89,8 +107,11 @@ def main() -> None:
         "Color",
         "Images",
     }
-    filter_source_headers = [h for h in headers if h not in excluded_headers]
-    filter_headers = [f"Filter{idx + 1} - {header}" for idx, header in enumerate(filter_source_headers)]
+    filter_source_columns = select_filter_source_columns(headers, excluded_headers)
+    filter_headers = [
+        f"Filter{idx + 1} - {header}"
+        for idx, (_, header) in enumerate(filter_source_columns)
+    ]
     output_headers = base_out_headers + filter_headers
 
     csv_path.parent.mkdir(parents=True, exist_ok=True)
@@ -99,7 +120,10 @@ def main() -> None:
         writer.writeheader()
 
         for row_idx in range(2, ws.max_row + 1):
-            raw_row = [normalize_cell(ws.cell(row=row_idx, column=col).value) for col in range(1, ws.max_column + 1)]
+            raw_row = [
+                normalize_cell(ws.cell(row=row_idx, column=col))
+                for col in range(1, ws.max_column + 1)
+            ]
             output_row = {
                 "ID": pick(raw_row, "ID"),
                 "Name": pick(raw_row, "Name", "ƒ"),
@@ -112,15 +136,20 @@ def main() -> None:
                 "Category": pick(raw_row, "Category"),
                 "Brand": pick(raw_row, "Brand"),
                 "Color": pick(raw_row, "Color"),
-                "Type": pick(raw_row, "Type", "Тип Մեծածախ /  Մանրածախ", "Տիպ Մեծածախ /  Մանրածախ"),
+                "Type": pick(
+                    raw_row,
+                    "Type",
+                    "Тип Մեծածախ /  Մանրածախ",
+                    "Տիպ Մեծածախ /  Մանրածախ",
+                    "Խոշոր Մանր",
+                ),
                 "Warranty": pick(raw_row, "Warranty", "Երաշխիք"),
                 "Images": pick(raw_row, "Images"),
             }
 
-            for idx, source_header in enumerate(filter_source_headers):
-                source_idx = header_index.get(source_header)
+            for idx, (source_idx, source_header) in enumerate(filter_source_columns):
                 output_row[f"Filter{idx + 1} - {source_header}"] = (
-                    raw_row[source_idx] if source_idx is not None else ""
+                    raw_row[source_idx] if source_idx < len(raw_row) else ""
                 )
 
             writer.writerow(output_row)

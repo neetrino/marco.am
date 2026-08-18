@@ -1,160 +1,18 @@
 /**
- * Import products from Marco WooCommerce-style CSV into Neon (Prisma) and Cloudflare R2.
- *
- * Usage (from repo root):
- *   pnpm run import:products-csv -- "C:\path\Marco - Sheet1.csv"
- *
- * Requires: DATABASE_URL, R2_* vars (see .env.example). Optional: --dry-run
+ * Compatibility wrapper for the canonical Marco CSV importer.
+ * Prefer `pnpm import:products-csv -- <path>`.
  */
+import { spawnSync } from "node:child_process";
+import path from "node:path";
 
-import { readFileSync } from "node:fs";
-import { loadEnvConfig } from "@next/env";
-import { parseDescriptionHtmlToEntries } from "../lib/products/product-description";
-import { nanoid } from "nanoid";
-import { db } from "@white-shop/db";
-import { adminProductsCreateService } from "@/lib/services/admin/admin-products-create.service";
-import { logger } from "@/lib/utils/logger";
-import {
-  DEFAULT_STOCK,
-  LOCALE,
-  buildR2Client,
-  findOrCreateBrandId,
-  parseCsvRows,
-  parseImportArgs,
-  parseMoney,
-  productSlug,
-  resolveCategoryIdsFromHyPath,
-  splitImageUrls,
-  uploadRowImagesToR2,
-} from "@/scripts/marco-csv-import/lib";
-
-function loadEnv(): void {
-  loadEnvConfig(process.cwd());
-}
-
-async function main(): Promise<void> {
-  loadEnv();
-  const { csvPath, dryRun } = parseImportArgs(process.argv.slice(2));
-
-  const raw = readFileSync(csvPath, "utf8");
-  const rows = parseCsvRows(raw);
-
-  const bucket = process.env.R2_BUCKET_NAME ?? "";
-  const publicUrl = process.env.R2_PUBLIC_URL?.replace(/\/$/, "") ?? "";
-  const r2 = dryRun ? null : buildR2Client();
-
-  if (!dryRun) {
-    if (!r2 || !bucket || !publicUrl) {
-      throw new Error("R2 is not configured (R2_ACCOUNT_ID, keys, R2_BUCKET_NAME, R2_PUBLIC_URL).");
-    }
-  }
-
-  let ok = 0;
-  let skipped = 0;
-  let failed = 0;
-
-  for (const row of rows) {
-    const sku = (row["SKU"] ?? "").trim();
-    const name = (row["Name"] ?? "").trim();
-    if (!sku || !name) {
-      skipped += 1;
-      continue;
-    }
-
-    const existing = await db.productVariant.findUnique({ where: { sku } });
-    if (existing) {
-      skipped += 1;
-      logger.alwaysInfo(`[skip] SKU already exists: ${sku}`);
-      continue;
-    }
-
-    const listPrice = parseMoney(row["price"]);
-    const salePrice = parseMoney(row["Sale price"]);
-    if (listPrice === undefined) {
-      skipped += 1;
-      logger.warn(`[skip] No price for SKU ${sku}`);
-      continue;
-    }
-
-    const hasSale = salePrice !== undefined && salePrice > 0 && listPrice > salePrice;
-    // Standard price is the list price; an active sale becomes an AMOUNT (final sale price) discount.
-    const variantPrice = hasSale
-      ? listPrice
-      : salePrice !== undefined && salePrice > 0
-        ? salePrice
-        : listPrice;
-
-    const legacyId = (row["ID"] ?? "").trim() || nanoid(8);
-    const imagesCell = row["Images"] ?? "";
-    const urls = splitImageUrls(imagesCell);
-
-    if (dryRun) {
-      logger.alwaysInfo(`[dry-run] ${sku} ${name} images=${urls.length}`);
-      ok += 1;
-      continue;
-    }
-
-    const media =
-      r2 !== null ? await uploadRowImagesToR2(r2, bucket, publicUrl, legacyId, urls) : [];
-
-    if (urls.length > 0 && media.length === 0) {
-      logger.warn(`No images uploaded for ${sku}; continuing with empty media.`);
-    }
-
-    const brandName = (row["Brand"] ?? "").trim();
-    const brandId = brandName ? await findOrCreateBrandId(brandName) : undefined;
-    const categoryCell = row["Category"] ?? "";
-    const { categoryIds, primaryCategoryId } = await resolveCategoryIdsFromHyPath(categoryCell);
-
-    const slug = productSlug(name, sku);
-    const shortDesc = (row["Short description"] ?? "").trim();
-    const desc = (row["Description"] ?? "").trim();
-    // Color cell may hold several comma-separated colors; keep each as its own clean attribute option.
-    const colorOptions = (row["Color"] ?? "")
-      .split(",")
-      .map((value) => value.trim())
-      .filter((value) => value.length > 0)
-      .map((value) => ({ attributeKey: "color", value }));
-
-    try {
-      await adminProductsCreateService.createProduct({
-        title: name,
-        slug,
-        subtitle: shortDesc || undefined,
-        description: desc ? parseDescriptionHtmlToEntries(desc) : undefined,
-        brandId: brandId ?? undefined,
-        primaryCategoryId,
-        categoryIds,
-        published: true,
-        locale: LOCALE,
-        media: media.length > 0 ? media : undefined,
-        mainProductImage: media[0],
-        variants: [
-          {
-            price: variantPrice,
-            discountType: hasSale ? "AMOUNT" : "NONE",
-            discountValue: hasSale ? (salePrice ?? null) : null,
-            stock: DEFAULT_STOCK,
-            sku,
-            options: colorOptions.length > 0 ? colorOptions : undefined,
-            published: true,
-          },
-        ],
-      });
-      ok += 1;
-      logger.alwaysInfo(`[ok] ${sku} ${name}`);
-    } catch (e) {
-      failed += 1;
-      logger.error(`[fail] ${sku}`, { error: e });
-    }
-  }
-
-  logger.alwaysInfo("Import finished", { ok, skipped, failed, dryRun });
-  await db.$disconnect();
-}
-
-main().catch((e) => {
-  logger.error("Import script failed", { error: e });
-  void db.$disconnect();
-  process.exit(1);
+const importerPath = path.join(process.cwd(), "scripts", "import-marco-csv-products.cjs");
+const result = spawnSync(process.execPath, [importerPath, ...process.argv.slice(2)], {
+  stdio: "inherit",
+  env: process.env,
 });
+
+if (result.error) {
+  throw result.error;
+}
+
+process.exitCode = result.status ?? 1;
