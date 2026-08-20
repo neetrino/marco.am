@@ -1,66 +1,57 @@
 {
   "title": "Delivery and Returns",
-  "methods": [
-    { "id": "standard", "enabled": true, "name": "Standard Delivery", "price": 2000, "freeAbove": 50000, "estimatedDays": 3, "locations": [] },
-    { "id": "express", "enabled": true, "name": "Express Delivery", "price": 5000, "freeAbove": 100000, "estimatedDays": 1, "locations": [] },
-    { "id": "pickup", "enabled": true, "name": "Store Pickup", "price": 0, "freeAbove": null, "estimatedDays": 0, "locations": [{ "name": "Main Store", "address": "Yerevan, Armenia", "workingHours": "Mon-Sat: 10:00-20:00" }] }
-  ],
   "deliveryInformation": {
-    "title": "Delivery Information",
-    "freeDelivery": "Free Delivery",
-    "deliveryCost": "Delivery Cost: {price}",
-    "freeForOrdersAbove": "Free for orders above {amount}",
-    "estimatedDelivery": "Estimated Delivery: {days} {daysText}",
-    "day": "day",
-    "days": "days",
-    "pickupLocations": "Pickup Locations:"
+    "title": "Delivery: fast, convenient and affordable",
+    "intro": "At Marco Group, we make sure that receiving your order is just as convenient as shopping.",
+    "timeframe": "Your order will be delivered to the address you specify within 1–3 business days.",
+    "freeWithin": "Delivery is free within a distance of 20 km.",
+    "extraKm": "Each additional kilometer beyond 20 km costs 150 AMD."
   },
   "returnPolicy": {
     "title": "Return Policy",
-    "thirtyDayPolicy": {
-      "title": "30-Day Return Policy",
-      "description": "You have 30 days from the date of purchase to return items in their original condition with tags attached."
-    },
-    "returnConditions": {
-      "title": "Return Conditions",
+    "eligibility": {
+      "intro": "To be eligible for a return, please make sure that:",
       "items": [
-        "Items must be unworn, unwashed and in original packaging",
-        "All tags and labels must be attached",
-        "Items must be in saleable condition",
-        "Proof of purchase required"
+        "The item is undamaged by the buyer, in its original condition, and in the original packaging.",
+        "The return request is submitted within 14 days of purchase, unless otherwise specified.",
+        "Proof of purchase is provided (order number or receipt).",
+        "Final sale or non-returnable items cannot be returned."
       ]
     },
-    "howToReturn": {
-      "title": "How to Return",
-      "steps": [
-        "Contact our customer service team to initiate a return",
-        "Get a return authorization number",
-        "Package items securely with return form",
-        "Ship the package to our return address",
-        "After receipt we will process your return within 5-7 business days"
+    "howToStart": {
+      "title": "How to start a return",
+      "items": [
+        "Contact our support team with your order number and return request.",
+        "Receive instructions on the return terms.",
+        "Return the item including all details provided at the time of purchase, the warranty slip, and the tags.",
+        "After we receive and inspect the item, we will confirm approval or rejection of the refund."
       ]
     },
-    "refundProcess": {
-      "title": "Refund Process",
-      "description": "Refunds will be processed to the original payment method. Please allow 5-7 business days for the refund to appear on your account."
-    },
-    "nonReturnableItems": {
-      "title": "Non-Returnable Items",
+    "refundMethod": {
+      "title": "Refund method and timing",
       "items": [
-        "Personalized or custom-made items",
-        "Items without original packaging",
-        "Items damaged due to misuse",
-        "Discounted items (unless defective)"
+        "Approved refunds are issued to the original payment method.",
+        "Processing time is usually 3–5 business days after approval; bank times may vary.",
+        "Shipping fees are not refunded, except when the return is due to our error or a defective item."
+      ]
+    },
+    "nonRefundable": {
+      "title": "Non-refundable items",
+      "items": [
+        "Purchases made with gift cards.",
+        "Personalized or custom-made items, except defective items.",
+        "Items returned without prior authorization.",
+        "Items that are not in original condition, are damaged, or have missing parts, unless this is due to our error."
       ]
     }
   },
   "contact": {
-    "title": "Need Help?",
-    "description": "If you have questions about delivery or returns, please don't hesitate to contact us.",
+    "description": "If you have questions about delivery or returns, please contact us through the following channels",
     "email": "Email:",
     "phone": "Phone:",
     "hours": "Business Hours:",
-    "hoursValue": "Monday - Friday, 9:00 - 18:00"
+    "hoursWeekdays": "Monday - Saturday 10:00 - 19:00",
+    "hoursSunday": "Sunday 10:00 - 18:00"
   }
 }
 

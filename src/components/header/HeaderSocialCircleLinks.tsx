@@ -3,7 +3,14 @@
 import type { JSX } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { Facebook, Instagram, Send } from 'lucide-react';
+import { useCallback, useRef } from 'react';
 import { useTranslation } from '../../lib/i18n-client';
+import { HeaderSocialAccountsDropdown } from './HeaderSocialAccountsDropdown';
+import {
+  HEADER_FACEBOOK_ACCOUNTS,
+  HEADER_INSTAGRAM_ACCOUNTS,
+  type HeaderSocialAccount,
+} from './header-social-accounts.constants';
 
 const SOCIAL_VECTOR_ICON_PX = 20;
 const SOCIAL_LUCIDE_CLASS = 'shrink-0 text-marco-black dark:text-[var(--marco-slate)]';
@@ -54,6 +61,20 @@ type GlyphSocialEntry = {
 };
 
 type SocialEntry = LucideSocialEntry | GlyphSocialEntry;
+
+const SOCIAL_ACCOUNT_MENUS: Record<
+  string,
+  { accounts: readonly HeaderSocialAccount[]; ariaKey: string }
+> = {
+  'contact.social.instagram': {
+    accounts: HEADER_INSTAGRAM_ACCOUNTS,
+    ariaKey: 'common.ariaLabels.instagramChooseAccount',
+  },
+  'contact.social.facebook': {
+    accounts: HEADER_FACEBOOK_ACCOUNTS,
+    ariaKey: 'common.ariaLabels.facebookChooseAccount',
+  },
+};
 
 const SOCIAL_ENTRIES: SocialEntry[] = [
   { translationKey: 'contact.social.instagram', Icon: Instagram, ariaKey: 'common.ariaLabels.instagram' },
@@ -116,6 +137,91 @@ interface HeaderSocialCircleLinksProps {
   desktopBalancedIcons?: boolean;
   /** Mobile drawer footer: compact circles + glyphs (aligned with nav density). */
   comfortableTouch?: boolean;
+  onMenuOpenChange?: (open: boolean) => void;
+}
+
+type SocialCircleItemProps = {
+  entry: SocialEntry;
+  href: string;
+  name: string;
+  iconPx: number;
+  desktopBalancedIcons: boolean;
+  comfortableTouch: boolean;
+  onAccountMenuOpenChange?: (open: boolean) => void;
+};
+
+function SocialCircleItem({
+  entry,
+  href,
+  name,
+  iconPx,
+  desktopBalancedIcons,
+  comfortableTouch,
+  onAccountMenuOpenChange,
+}: SocialCircleItemProps) {
+  const { t } = useTranslation();
+  const accountMenu = SOCIAL_ACCOUNT_MENUS[entry.translationKey];
+  const hasHref = href.length > 0 && href !== '#';
+  const inner = <SocialGlyph entry={entry} iconPx={iconPx} />;
+  const surfaceClass = socialControlClass(
+    entry,
+    Boolean(accountMenu) || hasHref,
+    desktopBalancedIcons,
+    comfortableTouch,
+  );
+
+  if (accountMenu) {
+    return (
+      <HeaderSocialAccountsDropdown
+        triggerClassName={surfaceClass}
+        accounts={accountMenu.accounts}
+        ariaLabel={t(accountMenu.ariaKey)}
+        menuPlacement={comfortableTouch ? 'above' : 'below'}
+        onOpenChange={onAccountMenuOpenChange}
+      >
+        {inner}
+      </HeaderSocialAccountsDropdown>
+    );
+  }
+
+  if (!hasHref) {
+    return (
+      <span role="listitem" className={surfaceClass} aria-label={name}>
+        {inner}
+      </span>
+    );
+  }
+
+  return (
+    <a
+      role="listitem"
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={surfaceClass}
+      aria-label={name}
+    >
+      {inner}
+    </a>
+  );
+}
+
+function useAccountMenuOpenReporter(
+  onMenuOpenChange?: (open: boolean) => void,
+): (id: string, open: boolean) => void {
+  const openIdsRef = useRef(new Set<string>());
+
+  return useCallback(
+    (id: string, open: boolean) => {
+      if (open) {
+        openIdsRef.current.add(id);
+      } else {
+        openIdsRef.current.delete(id);
+      }
+      onMenuOpenChange?.(openIdsRef.current.size > 0);
+    },
+    [onMenuOpenChange],
+  );
 }
 
 /** Round social buttons — MARCO yellow pills */
@@ -123,10 +229,12 @@ export function HeaderSocialCircleLinks({
   className = '',
   desktopBalancedIcons = false,
   comfortableTouch = false,
+  onMenuOpenChange,
 }: HeaderSocialCircleLinksProps) {
   const { t } = useTranslation();
   const iconPx = comfortableTouch ? 18 : SOCIAL_VECTOR_ICON_PX;
   const gapClass = comfortableTouch ? 'gap-4' : 'gap-6';
+  const reportAccountMenuOpen = useAccountMenuOpenReporter(onMenuOpenChange);
 
   return (
     <div
@@ -134,42 +242,18 @@ export function HeaderSocialCircleLinks({
       role="list"
       aria-label={t('common.ariaLabels.socialLinks')}
     >
-      {SOCIAL_ENTRIES.map((entry) => {
-        const { translationKey, ariaKey } = entry;
-        const href = t(translationKey)?.trim();
-        const hasHref = href.length > 0 && href !== '#';
-        const name = t(ariaKey);
-
-        const inner = <SocialGlyph entry={entry} iconPx={iconPx} />;
-        const surfaceClass = socialControlClass(entry, hasHref, desktopBalancedIcons, comfortableTouch);
-
-        if (!hasHref) {
-          return (
-            <span
-              key={translationKey}
-              role="listitem"
-              className={surfaceClass}
-              aria-label={name}
-            >
-              {inner}
-            </span>
-          );
-        }
-
-        return (
-          <a
-            key={translationKey}
-            role="listitem"
-            href={href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={surfaceClass}
-            aria-label={name}
-          >
-            {inner}
-          </a>
-        );
-      })}
+      {SOCIAL_ENTRIES.map((entry) => (
+        <SocialCircleItem
+          key={entry.translationKey}
+          entry={entry}
+          href={t(entry.translationKey)?.trim()}
+          name={t(entry.ariaKey)}
+          iconPx={iconPx}
+          desktopBalancedIcons={desktopBalancedIcons}
+          comfortableTouch={comfortableTouch}
+          onAccountMenuOpenChange={(open) => reportAccountMenuOpen(entry.translationKey, open)}
+        />
+      ))}
     </div>
   );
 }

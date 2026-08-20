@@ -238,8 +238,8 @@ const DEFAULT_STORAGE: SiteFooterStorage = {
     {
       id: "legal-terms",
       label: {
-        en: "Terms of Service",
-        hy: "Ծառայությունների պայմաններ",
+        en: "Terms and Conditions",
+        hy: "Օգտագործման պայմաններ",
         ru: "Условия использования",
       },
       href: "/terms",

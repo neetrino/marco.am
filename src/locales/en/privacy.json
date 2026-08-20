@@ -1,83 +1,85 @@
 {
   "title": "Privacy Policy",
-  "lastUpdated": "Last Updated:",
-  "introduction": {
-    "title": "Introduction",
-    "description1": "At White-Shop, we are committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose and protect your information when you visit our website and use our services.",
-    "description2": "Please read this privacy policy carefully. If you do not agree with the terms of this privacy policy, please do not access the site."
-  },
-  "informationWeCollect": {
-    "title": "Information We Collect",
-    "personalInformation": {
-      "title": "Personal Information",
-      "description": "We may collect personal information that you voluntarily provide to us when you:",
-      "items": {
-        "register": "Register for an account",
-        "order": "Place an order",
-        "newsletter": "Subscribe to our newsletter",
-        "contact": "Contact us for customer support",
-        "surveys": "Participate in surveys or promotions"
-      },
-      "details": "This information may include your name, email address, phone number, shipping address, billing address and payment information."
+  "intro": [
+    "By visiting the website marco.am (hereinafter referred to as the \"Website\") and making purchases, you automatically consent to the collection, processing, and use of your personal data.",
+    "By \"Personal Data,\" we mean any information that allows or may allow us to directly or indirectly identify your identity, such as your name, surname, address, email, phone number, and other data (hereinafter referred to as \"Data\").",
+    "In this Privacy Policy, \"we,\" \"us,\" and \"our\" refer to Website (for more information, please visit the \"About Us\" section), while \"you,\" \"your,\" and \"yours\" refer to any individual who visits the Website or uses our services."
+  ],
+  "sections": [
+    {
+      "title": "1. Collected Data",
+      "intro": "We may collect the following types of information:",
+      "items": [
+        "Contact information – name, surname, address, phone number, email address",
+        "Purchase information – products purchased, payment methods",
+        "Technical information – device type, browser, operating system",
+        "Cookies and tracking technologies – for website usage analysis"
+      ]
     },
-    "automaticallyCollected": {
-      "title": "Automatically Collected Information",
-      "description": "When you visit our website, we automatically collect certain information about your device, including information about your web browser, IP address, time zone and some cookies that are installed on your device."
+    {
+      "title": "2. Use of Data",
+      "intro": "Collected data is never sold or provided to third parties for marketing purposes. It is used only for the following purposes:",
+      "items": [
+        "Processing and shipping orders",
+        "Providing user support",
+        "Improving website functionality",
+        "Complying with legal requirements"
+      ]
+    },
+    {
+      "title": "3. Data Retention Periods",
+      "intro": "Your personal data is stored as follows:",
+      "items": [
+        "User account data – as long as the account is active",
+        "Purchase history – 5 years (to comply with tax and accounting regulations)",
+        "Marketing data – 2 years or until the user opts out"
+      ]
+    },
+    {
+      "title": "4. Data Security",
+      "intro": "We implement appropriate technical and organizational measures to ensure the protection of your data, including:",
+      "items": [
+        "SSL encryption – to secure payment and personal data transmission",
+        "Access control – limited access to personal data",
+        "Regular audits – to detect potential security vulnerabilities"
+      ]
+    },
+    {
+      "title": "5. Sharing Data with Third Parties",
+      "intro": "We do not sell or provide your data to third parties, except for:",
+      "items": [
+        "Shipping services – to ensure order delivery",
+        "Payment systems – for secure payment processing",
+        "Law enforcement authorities – in cases required by law"
+      ],
+      "closing": [
+        "All third parties are obligated to protect your data and cannot use it for other purposes."
+      ]
+    },
+    {
+      "title": "6. User Rights",
+      "intro": "You have the right to:",
+      "items": [
+        "Receive a copy of your personal data",
+        "Edit or delete your data (through our website settings or customer support)",
+        "Opt-out of marketing emails (via the \"unsubscribe\" link in each email)",
+        "Request that your data is not processed for specific purposes, except in cases required by law"
+      ]
+    },
+    {
+      "title": "7. Cookies Usage",
+      "intro": "Our website uses cookies to optimize user experience. We use:",
+      "items": [
+        "Functional cookies – to ensure proper website operation",
+        "Analytical cookies – to understand user behavior and improve the website",
+        "Marketing cookies (only with your consent) – to provide more relevant advertisements"
+      ]
+    },
+    {
+      "title": "8. Policy Changes",
+      "paragraphs": [
+        "We reserve the right to make legally permitted changes to this page and the above sections. Updates will be posted on the Website."
+      ]
     }
-  },
-  "howWeUse": {
-    "title": "How We Use Your Information",
-    "description": "We use the collected information to:",
-    "items": {
-      "process": "Process and fulfill your orders",
-      "confirmations": "Send you order confirmations and updates",
-      "support": "Respond to your customer service requests",
-      "marketing": "Send you marketing communications (with your consent)",
-      "improve": "Improve our website and services",
-      "fraud": "Detect and prevent fraud",
-      "legal": "Comply with legal obligations"
-    }
-  },
-  "informationSharing": {
-    "title": "Information Sharing and Disclosure",
-    "description": "We do not sell, trade or rent your personal information to third parties. We may share your information only in the following circumstances:",
-    "items": {
-      "providers": "With service providers who help us operate our website and conduct our business",
-      "law": "When required by law or to protect our rights",
-      "transfer": "In connection with a business transfer or merger",
-      "consent": "With your explicit consent"
-    }
-  },
-  "dataSecurity": {
-    "title": "Data Security",
-    "description": "We implement appropriate technical and organizational security measures to protect your personal information from unauthorized access, alteration, disclosure or destruction. However, no method of transmission over the Internet or electronic storage is 100% secure."
-  },
-  "yourRights": {
-    "title": "Your Rights",
-    "description": "You have the right to:",
-    "items": {
-      "access": "Access your personal information",
-      "correct": "Correct inaccurate information",
-      "delete": "Request deletion of your information",
-      "object": "Object to processing of your information",
-      "portability": "Request data portability",
-      "withdraw": "Withdraw consent at any time"
-    }
-  },
-  "cookies": {
-    "title": "Cookies",
-    "description1": "We use cookies and similar tracking technologies to track activity on our website and hold certain information. You can instruct your browser to refuse all cookies or to indicate when a cookie is being sent.",
-    "description2": "For more detailed information about our use of cookies, please see our",
-    "linkText": "Cookie Policy"
-  },
-  "contact": {
-    "title": "Contact Us",
-    "description": "If you have questions about this Privacy Policy, please contact us at:"
-  }
+  ]
 }
-
-
-
-
-
-

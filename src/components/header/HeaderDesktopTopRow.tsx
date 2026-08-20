@@ -24,6 +24,7 @@ import { isPrimaryNavHrefActive, primaryNavLinks } from './nav-config';
 type HeaderDesktopTopRowProps = {
   innerRef: Ref<HTMLDivElement>;
   onContactPickerOpenChange?: (open: boolean) => void;
+  onSocialMenuOpenChange?: (open: boolean) => void;
 };
 
 /**
@@ -32,6 +33,7 @@ type HeaderDesktopTopRowProps = {
 export function HeaderDesktopTopRow({
   innerRef,
   onContactPickerOpenChange,
+  onSocialMenuOpenChange,
 }: HeaderDesktopTopRowProps) {
   const pathname = usePathname();
   const hideHeaderSocialLinks = useShouldHideHeaderSocialLinks();
@@ -84,6 +86,7 @@ export function HeaderDesktopTopRow({
         {!hideHeaderSocialLinks && (
           <HeaderSocialCircleLinks
             desktopBalancedIcons
+            onMenuOpenChange={onSocialMenuOpenChange}
             className={`${HEADER_NAV_TO_SOCIAL_GAP_CLASS} min-h-11 min-[1367px]:min-h-9 shrink-0 items-center`}
           />
         )}
