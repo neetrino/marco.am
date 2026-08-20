@@ -13,9 +13,29 @@ import {
   FOOTER_SOCIAL_VIBER_SURFACE_CLASS,
   type FooterSocialTileSpec,
 } from './footer-social.constants';
+import { HeaderSocialAccountsDropdown } from './header/HeaderSocialAccountsDropdown';
+import {
+  HEADER_FACEBOOK_ACCOUNTS,
+  HEADER_INSTAGRAM_ACCOUNTS,
+  type HeaderSocialAccount,
+} from './header/header-social-accounts.constants';
 
 const FOOTER_SOCIAL_LINK_BASE =
   'inline-flex shrink-0 items-center justify-center rounded-full transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--marco-slate)] dark:focus-visible:outline-white';
+
+const FOOTER_SOCIAL_ACCOUNT_MENUS: Record<
+  string,
+  { readonly accounts: readonly HeaderSocialAccount[]; readonly ariaKey: string }
+> = {
+  'contact.social.instagram': {
+    accounts: HEADER_INSTAGRAM_ACCOUNTS,
+    ariaKey: 'common.ariaLabels.instagramChooseAccount',
+  },
+  'contact.social.facebook': {
+    accounts: HEADER_FACEBOOK_ACCOUNTS,
+    ariaKey: 'common.ariaLabels.facebookChooseAccount',
+  },
+};
 
 type FooterSocialLinksDensity = 'default' | 'compact';
 
@@ -68,25 +88,39 @@ function buildFooterSocialInner(spec: FooterSocialTileSpec, ctx: TileRenderCtx) 
   );
 }
 
-function FooterSocialTileControl({
-  spec,
-  href,
-  hasHref,
-  name,
-  ctx,
-}: {
+function footerSocialSurfaceClass(spec: FooterSocialTileSpec, tileClass: string): string {
+  if (spec.kind === 'full') {
+    return `${FOOTER_SOCIAL_LINK_BASE} ${tileClass} overflow-hidden`;
+  }
+  return `${FOOTER_SOCIAL_LINK_BASE} flex ${tileClass} items-center justify-center ${FOOTER_SOCIAL_VIBER_SURFACE_CLASS}`;
+}
+
+type FooterSocialTileControlProps = {
   spec: FooterSocialTileSpec;
   href: string;
   hasHref: boolean;
   name: string;
   ctx: TileRenderCtx;
-}) {
-  const { tileClass } = ctx;
-  const surfaceClass =
-    spec.kind === 'full'
-      ? `${FOOTER_SOCIAL_LINK_BASE} ${tileClass} overflow-hidden`
-      : `${FOOTER_SOCIAL_LINK_BASE} flex ${tileClass} items-center justify-center ${FOOTER_SOCIAL_VIBER_SURFACE_CLASS}`;
+};
+
+function FooterSocialTileControl({ spec, href, hasHref, name, ctx }: FooterSocialTileControlProps) {
+  const { t } = useTranslation();
+  const surfaceClass = footerSocialSurfaceClass(spec, ctx.tileClass);
   const inner = buildFooterSocialInner(spec, ctx);
+  const accountMenu = FOOTER_SOCIAL_ACCOUNT_MENUS[spec.translationKey];
+
+  if (accountMenu) {
+    return (
+      <HeaderSocialAccountsDropdown
+        triggerClassName={surfaceClass}
+        accounts={accountMenu.accounts}
+        ariaLabel={t(accountMenu.ariaKey)}
+        menuPlacement="above-start"
+      >
+        {inner}
+      </HeaderSocialAccountsDropdown>
+    );
+  }
 
   if (!hasHref) {
     return (

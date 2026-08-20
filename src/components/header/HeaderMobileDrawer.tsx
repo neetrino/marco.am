@@ -21,8 +21,6 @@ import { HeaderSocialCircleLinks } from './HeaderSocialCircleLinks';
 import { useShouldHideHeaderSocialLinks } from './useShouldHideHeaderSocialLinks';
 import { HeaderPrimaryNavLink } from './HeaderPrimaryNavLink';
 import { isPrimaryNavHrefActive, primaryNavLinks, type PrimaryNavLink } from './nav-config';
-import { ThemeToggleButton } from '../theme/ThemeToggleButton';
-import { useTheme } from '../theme/ThemeProvider';
 import type { useHeaderData } from './useHeaderData';
 import {
   contactLocationMapHref,
@@ -111,8 +109,6 @@ function renderPrimaryNavLink(
 
 export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
   const pathname = usePathname() ?? '';
-  const { theme, mounted: themeMounted } = useTheme();
-  const drawerThemeDark = themeMounted && theme === 'dark';
   const lang = useContext(LanguagePreferenceContext);
   const [callFlow, setCallFlow] = useState<'idle' | 'branches' | 'phones'>('idle');
   const [callBranchId, setCallBranchId] = useState<ContactPhoneSectionId | null>(null);
@@ -205,19 +201,6 @@ export function HeaderMobileDrawer({ data, compactPrimaryNav }: Props) {
                     mobileDrawerNavPillClass(isPrimaryNavHrefActive(pathname, reelsLink.href))
                   )
                 : null}
-
-              <div className="overflow-hidden rounded-full border border-marco-black/12 dark:border-white/12">
-                <ThemeToggleButton
-                  className={
-                    drawerThemeDark
-                      ? 'flex min-h-[3.5rem] w-full items-center justify-between bg-zinc-900 px-6 py-3.5 text-left text-white transition-[background-color] duration-200 hover:bg-zinc-800'
-                      : 'flex min-h-[3.5rem] w-full items-center justify-between bg-marco-gray px-6 py-3.5 text-left text-marco-black transition-[background-color] duration-200 hover:bg-marco-border dark:bg-zinc-800 dark:text-white'
-                  }
-                  iconClassName="h-6 w-6 shrink-0"
-                  labelClassName="text-xs font-bold uppercase tracking-wide"
-                  showLabel
-                />
-              </div>
 
               {isLoggedIn ? (
                 <>

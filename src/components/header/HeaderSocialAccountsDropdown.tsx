@@ -11,7 +11,7 @@ import {
 const MENU_ITEM_CLASS =
   'block whitespace-nowrap px-4 py-2.5 text-left text-sm font-medium text-marco-black hover:bg-marco-gray/80 dark:text-white dark:hover:bg-white/10';
 
-type MenuPlacement = 'below' | 'above';
+type MenuPlacement = 'below' | 'above' | 'above-start';
 
 interface HeaderSocialAccountsDropdownProps {
   triggerClassName: string;
@@ -26,6 +26,9 @@ function socialMenuPanelClass(placement: MenuPlacement): string {
   const base = `absolute ${HEADER_CONTACT_PICKER_DROPDOWN_Z_CLASS} w-max ${HEADER_SOCIAL_MENU_MIN_WIDTH_CLASS} overflow-hidden rounded-xl border border-gray-200/90 bg-white py-1.5 shadow-xl dark:border-white/15 dark:bg-[var(--app-bg)]`;
   if (placement === 'above') {
     return `${base} bottom-full left-1/2 mb-2 -translate-x-1/2`;
+  }
+  if (placement === 'above-start') {
+    return `${base} bottom-full left-0 mb-2`;
   }
   return `${base} left-0 top-full mt-2`;
 }

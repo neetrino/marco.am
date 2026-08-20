@@ -8,9 +8,8 @@ import { HeaderLocaleCurrencyPill } from './HeaderLocaleCurrencyPill';
 import {
   getHeaderCartButtonClass,
   HEADER_FIGMA_ROW2_RIGHT_INNER_GAP_CLASS,
-  HEADER_LOCALE_TO_THEME_MARGIN_CLASS,
+  HEADER_LOCALE_TO_ICONS_MARGIN_CLASS,
   HEADER_TOOLBAR_ICON_CLUSTER_CLASS,
-  getHeaderThemeToggleButtonClass,
   getHeaderToolbarIconSurfaceClass,
 } from './header.constants';
 import {
@@ -21,7 +20,6 @@ import {
 import { CompareIcon } from '../icons/CompareIcon';
 import { HeaderNavbarCartIcon } from '../icons/HeaderNavbarCartIcon';
 import { HeaderNavbarWishlistIcon } from '../icons/HeaderNavbarWishlistIcon';
-import { ThemeToggleButton } from '../theme/ThemeToggleButton';
 import { useTheme } from '../theme/ThemeProvider';
 import { formatMoneyInCurrency } from '../../lib/currency';
 import type { useHeaderData } from './useHeaderData';
@@ -48,7 +46,7 @@ export function HeaderRow2RightToolbar({ data, compactPrimaryNav, headerMobileLi
   const pathname = usePathname();
   const { openCartDrawer } = useCartDrawer();
   const { theme, mounted: themeMounted } = useTheme();
-  const themeToggleResolvedDark = themeMounted && theme === 'dark';
+  const resolvedDark = themeMounted && theme === 'dark';
   const {
     t,
     router,
@@ -88,11 +86,9 @@ export function HeaderRow2RightToolbar({ data, compactPrimaryNav, headerMobileLi
           onMenuOpenChange={setShowLocaleCurrencyMenu}
         />
       )}
-      <ThemeToggleButton
-        className={`${getHeaderThemeToggleButtonClass(themeToggleResolvedDark)} ${!compactPrimaryNav ? HEADER_LOCALE_TO_THEME_MARGIN_CLASS : ''}`}
-        iconClassName="h-6 w-6 shrink-0"
-      />
-      <div className={HEADER_TOOLBAR_ICON_CLUSTER_CLASS}>
+      <div
+        className={`${HEADER_TOOLBAR_ICON_CLUSTER_CLASS} ${!compactPrimaryNav ? HEADER_LOCALE_TO_ICONS_MARGIN_CLASS : ''}`}
+      >
         <div
           className="relative shrink-0"
           ref={userMenuRef}
@@ -191,7 +187,7 @@ export function HeaderRow2RightToolbar({ data, compactPrimaryNav, headerMobileLi
       <button
         type="button"
         onClick={openCartDrawer}
-        className={getHeaderCartButtonClass(themeToggleResolvedDark)}
+        className={getHeaderCartButtonClass(resolvedDark)}
         aria-label={t('common.navigation.cart')}
       >
         <HeaderNavbarCartIcon className="h-[21px] w-[22px] shrink-0 text-inherit" />
