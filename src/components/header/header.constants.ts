@@ -7,12 +7,9 @@
 export const HEADER_INK_CLASS = 'text-[var(--marco-slate)]';
 export const HEADER_INK_IMPORTANT_CLASS = '!text-[var(--marco-slate)]';
 export const HEADER_INK_DARK_IMPORTANT_CLASS = 'dark:!text-[var(--marco-slate)]';
-export const HEADER_INK_HOVER_IMPORTANT_ONLY_CLASS = 'hover:!text-[var(--marco-slate)]';
 export const HEADER_INK_SURFACE_CLASS = 'bg-[var(--marco-slate)]';
-export const HEADER_INK_SURFACE_IMPORTANT_CLASS = '!bg-[var(--marco-slate)]';
 export const HEADER_INK_SURFACE_DARK_IMPORTANT_CLASS = 'dark:!bg-[var(--marco-slate)]';
 export const HEADER_INK_HOVER_CLASS = 'hover:text-[var(--marco-slate)]';
-export const HEADER_INK_HOVER_IMPORTANT_CLASS = 'dark:hover:!text-[var(--marco-slate)]';
 
 const HEADER_TABLET_ROW2_MAX_WIDTH_PX = 1366;
 
@@ -101,9 +98,9 @@ export const HEADER_FIGMA_ROW2_RIGHT_INNER_GAP_CLASS =
   'gap-x-0.5 md:gap-x-0.5 lg:gap-x-1 xl:gap-x-1.5 min-[1800px]:gap-x-2';
 
 /**
- * Additional space between locale/currency pill and theme toggle (row-2 toolbar).
+ * Additional space between locale/currency pill and toolbar icons (row-2).
  */
-export const HEADER_LOCALE_TO_THEME_MARGIN_CLASS =
+export const HEADER_LOCALE_TO_ICONS_MARGIN_CLASS =
   'ml-2 md:ml-2.5 lg:ml-3 xl:ml-3.5 min-[1800px]:ml-4';
 
 /**
@@ -236,23 +233,6 @@ export function getHeaderToolbarIconSurfaceClass(active: boolean): string {
     return `${frame} bg-marco-yellow text-marco-black dark:!bg-marco-yellow ${HEADER_INK_DARK_IMPORTANT_CLASS}`.trim();
   }
   return `${frame} bg-marco-gray ${HEADER_INK_CLASS} hover:bg-marco-yellow hover:text-marco-black ${HEADER_INK_SURFACE_DARK_IMPORTANT_CLASS} dark:text-white dark:hover:!bg-marco-yellow ${HEADER_INK_DARK_IMPORTANT_CLASS}`.trim();
-}
-
-/**
- * Row-2 circular theme toggle — when site is **light**, yellow pill (not white); when **dark**, black pill.
- * Hover on the dark pill switches to brand yellow like other toolbar icon surfaces.
- *
- * @param resolvedDark pass `mounted && theme === 'dark'` from `useTheme()`.
- */
-export function getHeaderThemeToggleButtonClass(resolvedDark: boolean): string {
-  const frame =
-    `${HEADER_TOOLBAR_ICON_BUTTON_CLASS} flex shrink-0 items-center justify-center rounded-full border border-transparent ` +
-    'transition-[background-color,color,filter] duration-200 ' +
-    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marco-black/25';
-  if (resolvedDark) {
-    return `${frame} ${HEADER_INK_SURFACE_IMPORTANT_CLASS} text-white hover:!bg-marco-yellow ${HEADER_INK_HOVER_IMPORTANT_ONLY_CLASS} ${HEADER_INK_SURFACE_DARK_IMPORTANT_CLASS} dark:hover:!bg-marco-yellow ${HEADER_INK_HOVER_IMPORTANT_CLASS}`.trim();
-  }
-  return `${frame} bg-marco-yellow ${HEADER_INK_CLASS} hover:brightness-95 active:brightness-90`.trim();
 }
 
 /** Cart pill — same height as row-2 strip; wider pill for icon + price (Figma 111:4281 — gap 11px icon ↔ price) */
