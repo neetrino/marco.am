@@ -24,8 +24,16 @@
   "address": "23 Alek Manukyan St, Yerevan",
   "workingHours": "Mon-Fri 10:00-19:00",
   "social": {
-    "instagram": "https://www.instagram.com/marco_electronics?igsh=MXQwZ2ZtenU5bmhzaQ%3D%3D",
-    "facebook": "https://www.facebook.com/marcoelectronicss?mibextid=wwXIfr&rdid=Nj7NUSDoayMfRNf1&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1AvqAFX6o9%2F%3Fmibextid%3DwwXIfr",
+    "instagram": "https://www.instagram.com/marco_electronics/",
+    "instagramAccounts": {
+      "group": "Marco Group",
+      "electronics": "Marco Electronics"
+    },
+    "facebook": "https://www.facebook.com/marcoelectronicss",
+    "facebookAccounts": {
+      "electronics": "Marco Electronics",
+      "furniture": "Marco Furniture"
+    },
     "linkedin": "",
     "telegram": "https://t.me/+37460500406",
     "whatsapp": "https://wa.me/37460500406",

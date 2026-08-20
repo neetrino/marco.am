@@ -40,6 +40,8 @@ export function Header({ initialLanguage }: HeaderProps) {
   const [desktopTopRowHeightPx, setDesktopTopRowHeightPx] = useState(0);
   const [row2HeightPx, setRow2HeightPx] = useState(0);
   const [contactPickerOpen, setContactPickerOpen] = useState(false);
+  const [socialMenuOpen, setSocialMenuOpen] = useState(false);
+  const topRowMenuOpen = contactPickerOpen || socialMenuOpen;
   const desktopTopRowContentRef = useRef<HTMLDivElement>(null);
   const row2ContentRef = useRef<HTMLDivElement>(null);
 
@@ -144,7 +146,7 @@ export function Header({ initialLanguage }: HeaderProps) {
       {!compactPrimaryNav && (
         <div
           className={`w-full ${HEADER_ROW2_WRAPPER_CLASS} ${
-            contactPickerOpen
+            topRowMenuOpen
               ? `relative overflow-visible ${HEADER_CONTACT_PICKER_DROPDOWN_Z_CLASS}`
               : 'overflow-hidden'
           }`}
@@ -168,6 +170,7 @@ export function Header({ initialLanguage }: HeaderProps) {
               <HeaderDesktopTopRow
                 innerRef={desktopTopRowInnerRef}
                 onContactPickerOpenChange={setContactPickerOpen}
+                onSocialMenuOpenChange={setSocialMenuOpen}
               />
             </div>
           </div>
