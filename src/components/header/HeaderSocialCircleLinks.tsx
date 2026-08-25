@@ -6,6 +6,7 @@ import { Facebook, Instagram, Send } from 'lucide-react';
 import { useCallback, useRef } from 'react';
 import { useTranslation } from '../../lib/i18n-client';
 import { HeaderSocialAccountsDropdown } from './HeaderSocialAccountsDropdown';
+import { getMessengerBranchAccounts } from './header-messenger-contacts.constants';
 import {
   HEADER_FACEBOOK_ACCOUNTS,
   HEADER_INSTAGRAM_ACCOUNTS,
@@ -73,6 +74,18 @@ const SOCIAL_ACCOUNT_MENUS: Record<
   'contact.social.facebook': {
     accounts: HEADER_FACEBOOK_ACCOUNTS,
     ariaKey: 'common.ariaLabels.facebookChooseAccount',
+  },
+  'contact.social.telegram': {
+    accounts: getMessengerBranchAccounts('telegram'),
+    ariaKey: 'common.ariaLabels.telegramChooseBranch',
+  },
+  'contact.social.whatsapp': {
+    accounts: getMessengerBranchAccounts('whatsapp'),
+    ariaKey: 'common.ariaLabels.whatsappChooseBranch',
+  },
+  'contact.social.viber': {
+    accounts: getMessengerBranchAccounts('viber'),
+    ariaKey: 'common.ariaLabels.viberChooseBranch',
   },
 };
 
