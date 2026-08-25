@@ -9,7 +9,12 @@ import {
 } from './header-social-accounts.constants';
 
 const MENU_ITEM_CLASS =
-  'block whitespace-nowrap px-4 py-2.5 text-left text-sm font-medium text-marco-black hover:bg-marco-gray/80 dark:text-white dark:hover:bg-white/10';
+  'block px-4 py-2.5 text-left text-marco-black hover:bg-marco-gray/80 dark:text-white dark:hover:bg-white/10';
+
+const MENU_ITEM_LABEL_CLASS = 'block whitespace-nowrap text-sm font-medium';
+
+const MENU_ITEM_SUBTITLE_CLASS =
+  'mt-0.5 block whitespace-nowrap text-xs font-normal text-marco-text/70 dark:text-white/55';
 
 type MenuPlacement = 'below' | 'above' | 'above-start';
 
@@ -116,7 +121,10 @@ export function HeaderSocialAccountsDropdown({
               className={MENU_ITEM_CLASS}
               onClick={() => setOpen(false)}
             >
-              {t(account.labelKey)}
+              <span className={MENU_ITEM_LABEL_CLASS}>{t(account.labelKey)}</span>
+              {account.subtitle ? (
+                <span className={MENU_ITEM_SUBTITLE_CLASS}>{account.subtitle}</span>
+              ) : null}
             </a>
           ))}
         </div>

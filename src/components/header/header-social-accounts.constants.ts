@@ -2,6 +2,8 @@ export type HeaderSocialAccount = {
   readonly id: string;
   readonly href: string;
   readonly labelKey: string;
+  /** Optional secondary line (e.g. phone for messenger branches). */
+  readonly subtitle?: string;
 };
 
 export const HEADER_INSTAGRAM_GROUP_HREF = 'https://www.instagram.com/_marcogroup_/';

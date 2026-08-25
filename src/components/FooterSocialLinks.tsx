@@ -14,6 +14,7 @@ import {
   type FooterSocialTileSpec,
 } from './footer-social.constants';
 import { HeaderSocialAccountsDropdown } from './header/HeaderSocialAccountsDropdown';
+import { getMessengerBranchAccounts } from './header/header-messenger-contacts.constants';
 import {
   HEADER_FACEBOOK_ACCOUNTS,
   HEADER_INSTAGRAM_ACCOUNTS,
@@ -34,6 +35,18 @@ const FOOTER_SOCIAL_ACCOUNT_MENUS: Record<
   'contact.social.facebook': {
     accounts: HEADER_FACEBOOK_ACCOUNTS,
     ariaKey: 'common.ariaLabels.facebookChooseAccount',
+  },
+  'contact.social.telegram': {
+    accounts: getMessengerBranchAccounts('telegram'),
+    ariaKey: 'common.ariaLabels.telegramChooseBranch',
+  },
+  'contact.social.whatsapp': {
+    accounts: getMessengerBranchAccounts('whatsapp'),
+    ariaKey: 'common.ariaLabels.whatsappChooseBranch',
+  },
+  'contact.social.viber': {
+    accounts: getMessengerBranchAccounts('viber'),
+    ariaKey: 'common.ariaLabels.viberChooseBranch',
   },
 };
 
