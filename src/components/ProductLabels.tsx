@@ -13,6 +13,8 @@ export interface ProductLabel {
 
 interface ProductLabelsProps {
   labels: ProductLabel[];
+  /** Replaces default `top-2` on the top-right stack (PDP: sit below the discount badge). */
+  topRightClassName?: string;
 }
 
 /**
@@ -23,7 +25,10 @@ interface ProductLabelsProps {
  * Սա ապահովում է, որ միաժամանակ մի քանի label ունենալու դեպքում
  * դրանք իրար վրա չեն նստում, այլ ունեն հստակ вертикալ հեռավորություն։
  */
-export const ProductLabels: React.FC<ProductLabelsProps> = ({ labels }) => {
+export const ProductLabels: React.FC<ProductLabelsProps> = ({
+  labels,
+  topRightClassName,
+}) => {
   if (!labels || labels.length === 0) return null;
 
   // Փոքր logging, որ հեշտ լինի debug անել label-ների խնդիրները
@@ -62,7 +67,7 @@ export const ProductLabels: React.FC<ProductLabelsProps> = ({ labels }) => {
       case 'top-left':
         return 'top-2 left-2 items-start';
       case 'top-right':
-        return 'top-2 right-2 items-end';
+        return `${topRightClassName ?? 'top-2'} right-2 items-end`;
       case 'bottom-left':
         return 'bottom-2 left-2 items-start';
       case 'bottom-right':
@@ -86,10 +91,10 @@ export const ProductLabels: React.FC<ProductLabelsProps> = ({ labels }) => {
             {labelsForPosition.map((label) => (
               <div
                 key={label.id}
-                className={`px-2 py-0.5 text-[10px] font-semibold rounded-md shadow-sm pointer-events-auto ${getColorClasses(
-                  label,
-                )}`}
-                style={label.color ? { backgroundColor: label.color, color: 'white' } : undefined}
+                className={`px-3 py-0.5 text-[10px] font-semibold rounded-md shadow-sm pointer-events-auto ${
+                  label.color ? 'text-marco-black' : ''
+                } ${getColorClasses(label)}`}
+                style={label.color ? { backgroundColor: label.color } : undefined}
               >
                 {label.type === 'percentage' ? `${label.value}%` : label.value}
               </div>
