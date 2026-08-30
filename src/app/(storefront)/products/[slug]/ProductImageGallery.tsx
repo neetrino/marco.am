@@ -26,6 +26,8 @@ interface ProductImageGalleryProps {
 }
 
 const THUMBNAILS_PER_VIEW = 3;
+/** Discount circle is `top-4` + `h-14`; labels sit just below with an 8px gap. */
+const PDP_LABELS_BELOW_DISCOUNT_TOP_CLASS = "top-20";
 
 export function ProductImageGallery({
   images,
@@ -178,7 +180,16 @@ export function ProductImageGallery({
             </div>
           )}
 
-          {product.labels && <ProductLabels labels={product.labels} />}
+          {product.labels && (
+            <ProductLabels
+              labels={product.labels}
+              topRightClassName={
+                isSpecialPrice || discountPercent
+                  ? PDP_LABELS_BELOW_DISCOUNT_TOP_CLASS
+                  : undefined
+              }
+            />
+          )}
           
           {/* Control Buttons - Bottom left */}
           <div className="absolute bottom-4 left-4 flex flex-col gap-3 z-10">
