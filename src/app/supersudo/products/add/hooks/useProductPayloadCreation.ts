@@ -91,7 +91,7 @@ export function buildProductPayload({
   payload.labels = (formData.labels || [])
     .filter((label) => label.value && label.value.trim() !== '')
     .map((label) => ({
-      type: label.type,
+      type: 'text',
       value: label.value.trim(),
       position: label.position,
       color: label.color || null,
