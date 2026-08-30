@@ -65,34 +65,13 @@ export function ProductLabels({ labels, onAddLabel, onRemoveLabel, onUpdateLabel
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                   <div>
                     <label className="mb-1 block text-[11px] font-medium text-slate-600">
-                      {t('admin.products.add.type')}
-                    </label>
-                    <select
-                      className={FIELD_CLASS}
-                      value={label.type}
-                      onChange={(event) =>
-                        onUpdateLabel(index, 'type', event.target.value as 'text' | 'percentage')
-                      }
-                      required
-                    >
-                      <option value="text">{t('admin.products.add.textType')}</option>
-                      <option value="percentage">{t('admin.products.add.percentageType')}</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="mb-1 block text-[11px] font-medium text-slate-600">
                       {t('admin.products.add.value')}
                     </label>
                     <Input
                       type="text"
                       value={label.value}
                       onChange={(event) => onUpdateLabel(index, 'value', event.target.value)}
-                      placeholder={
-                        label.type === 'percentage'
-                          ? t('admin.products.add.percentagePlaceholder')
-                          : t('admin.products.add.newProductLabel')
-                      }
+                      placeholder={t('admin.products.add.newProductLabel')}
                       required
                       className={FIELD_CLASS}
                     />

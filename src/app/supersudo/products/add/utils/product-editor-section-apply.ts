@@ -41,7 +41,7 @@ function applyGeneralSection({ product, setFormData }: ApplyGeneralParams): void
         : null,
     labels: (product.labels || []).map((label) => ({
       id: label.id || '',
-      type: label.type || 'text',
+      type: 'text',
       value: label.value || '',
       position: label.position || 'top-left',
       color: label.color || null,
