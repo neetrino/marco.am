@@ -91,7 +91,7 @@ export const ProductLabels: React.FC<ProductLabelsProps> = ({
             {labelsForPosition.map((label) => (
               <div
                 key={label.id}
-                className={`px-3 py-0.5 text-[10px] font-semibold rounded-md shadow-sm pointer-events-auto ${
+                className={`px-3 py-1.5 text-sm font-semibold rounded-md shadow-sm pointer-events-auto ${
                   label.color ? 'text-marco-black' : ''
                 } ${getColorClasses(label)}`}
                 style={label.color ? { backgroundColor: label.color } : undefined}

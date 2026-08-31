@@ -10,6 +10,7 @@ interface ProductEditorSheetProps {
   listProduct?: Product | null;
   onClose: () => void;
   onSubmit: (request: OptimisticSaveRequest) => void;
+  onFeaturedChange?: (productId: string, featured: boolean) => void;
 }
 
 export function ProductEditorSheet({
@@ -18,6 +19,7 @@ export function ProductEditorSheet({
   listProduct = null,
   onClose,
   onSubmit,
+  onFeaturedChange,
 }: ProductEditorSheetProps) {
   const editorKey = productId ?? 'create';
 
@@ -29,6 +31,7 @@ export function ProductEditorSheet({
       listProduct={listProduct}
       onCancel={onClose}
       onSubmit={onSubmit}
+      onFeaturedChange={onFeaturedChange}
     />
   );
 }
