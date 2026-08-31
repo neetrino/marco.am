@@ -1,6 +1,7 @@
 import { apiClient, getApiOrErrorMessage } from '../../../../lib/api-client';
 import { useTranslation } from '../../../../lib/i18n-client';
 import { showPopupConfirm } from '@/components/popup-service';
+import { invalidateProductEditorSectionCaches } from '@/lib/admin/product-editor-section-cache';
 import type { Product } from '../types';
 import { logger } from "@/lib/utils/logger";
 
@@ -112,6 +113,7 @@ export function useProductHandlers({
       
       logger.devLog(`✅ [ADMIN] Product ${newStatus ? 'published' : 'unpublished'} successfully`);
 
+      invalidateProductEditorSectionCaches(productId);
       _setProducts((prev) =>
         prev.map((product) =>
           product.id === productId ? { ...product, published: newStatus } : product
@@ -144,6 +146,7 @@ export function useProductHandlers({
       
       logger.devLog(`✅ [ADMIN] Product ${newStatus ? 'marked as featured' : 'removed from featured'} successfully`);
 
+      invalidateProductEditorSectionCaches(productId);
       _setProducts((prev) =>
         prev.map((product) =>
           product.id === productId ? { ...product, featured: newStatus } : product

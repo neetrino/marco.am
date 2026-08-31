@@ -4,6 +4,8 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { Button } from '@shop/ui';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { useTranslation } from '@/lib/i18n-client';
+import { apiClient, getApiOrErrorMessage } from '@/lib/api-client';
+import { invalidateProductEditorSectionCaches } from '@/lib/admin/product-editor-section-cache';
 import { AdminSideSheet } from '../../../components/AdminSideSheet';
 import { ADMIN_PRODUCT_EDITOR_FORM_ID } from '../../../components/admin-side-sheet.constants';
 import { ValueSelectionModal } from './ValueSelectionModal';
@@ -39,6 +41,7 @@ interface ProductEditorPanelProps {
   listProduct?: Product | null;
   onCancel: () => void;
   onSubmit: (request: OptimisticSaveRequest) => void;
+  onFeaturedChange?: (productId: string, featured: boolean) => void;
 }
 
 export function ProductEditorPanel({
@@ -47,15 +50,19 @@ export function ProductEditorPanel({
   listProduct = null,
   onCancel,
   onSubmit,
+  onFeaturedChange,
 }: ProductEditorPanelProps) {
   const { t } = useTranslation();
   const { isLoggedIn, isAdmin } = useAuth();
   const isEditMode = Boolean(productId);
+  const [featuredUpdating, setFeaturedUpdating] = useState(false);
 
   const formState = useProductFormState(listProduct);
   const [activeTab, setActiveTab] = useState<ProductEditorTabId>('general');
   const scrollRef = useRef<HTMLDivElement>(null);
   const [slugCollapsed, setSlugCollapsed] = useState(false);
+  /** Keeps star toggles from being overwritten by an in-flight general section fetch. */
+  const featuredOverrideRef = useRef<boolean | null>(null);
 
   const handleBodyScroll = useCallback(() => {
     const scrollTop = scrollRef.current?.scrollTop ?? 0;
@@ -63,6 +70,23 @@ export function ProductEditorPanel({
   }, []);
 
   const baselineRef = useRef<SectionFingerprints>({});
+
+  useEffect(() => {
+    featuredOverrideRef.current = null;
+  }, [open, productId]);
+
+  const setFormDataPreservingFeatured = useCallback(
+    (updater: (prev: typeof formState.formData) => typeof formState.formData) => {
+      formState.setFormData((prev) => {
+        const next = updater(prev);
+        if (featuredOverrideRef.current === null) {
+          return next;
+        }
+        return { ...next, featured: featuredOverrideRef.current };
+      });
+    },
+    [formState.setFormData],
+  );
 
   const { loadedTabs, visitedTabs, loadingTab, visitTab } = useProductEditorTabLoader({
     open,
@@ -73,7 +97,7 @@ export function ProductEditorPanel({
     activeTab,
     defaultCurrency: formState.defaultCurrency,
     attributes: formState.attributes,
-    setFormData: formState.setFormData,
+    setFormData: setFormDataPreservingFeatured,
     setHasVariantsToLoad: formState.setHasVariantsToLoad,
     setProductType: formState.setProductType,
     setSelectedAttributesForVariants: formState.setSelectedAttributesForVariants,
@@ -229,15 +253,57 @@ export function ProductEditorPanel({
     setActiveTab(tabId);
   }, [visitTab]);
 
+  const handleFeaturedToggle = useCallback(async () => {
+    if (featuredUpdating) {
+      return;
+    }
+
+    const previous = formState.formData.featured;
+    const next = !previous;
+    featuredOverrideRef.current = next;
+    formState.setFormData((prev) => ({ ...prev, featured: next }));
+
+    // Create flow: featured is persisted with the full create payload.
+    if (!isEditMode || !productId) {
+      return;
+    }
+
+    setFeaturedUpdating(true);
+    try {
+      await apiClient.put(`/api/v1/supersudo/products/${productId}`, { featured: next });
+      invalidateProductEditorSectionCaches(productId);
+      onFeaturedChange?.(productId, next);
+    } catch (err: unknown) {
+      featuredOverrideRef.current = previous;
+      formState.setFormData((prev) => ({ ...prev, featured: previous }));
+      alert(
+        t('admin.products.errorUpdatingFeatured').replace(
+          '{message}',
+          getApiOrErrorMessage(err, t('admin.common.unknownErrorFallback')),
+        ),
+      );
+    } finally {
+      setFeaturedUpdating(false);
+    }
+  }, [
+    featuredUpdating,
+    formState.formData.featured,
+    formState.setFormData,
+    isEditMode,
+    productId,
+    onFeaturedChange,
+    t,
+  ]);
+
   const sheetHeader = (
     <div className="flex items-start justify-between gap-4">
       <div className="min-w-0 flex-1 pr-4">
         <div className="flex items-start gap-3">
           <FeaturedStarToggle
             featured={formState.formData.featured}
-            onToggle={() =>
-              formState.setFormData((prev) => ({ ...prev, featured: !prev.featured }))
-            }
+            onToggle={() => {
+              void handleFeaturedToggle();
+            }}
             markLabel={t('admin.products.clickToMarkFeatured')}
             removeLabel={t('admin.products.clickToRemoveFeatured')}
           />

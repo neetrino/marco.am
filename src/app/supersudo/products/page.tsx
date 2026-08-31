@@ -444,6 +444,12 @@ function ProductsPageContent() {
     })();
   };
 
+  const handleEditorFeaturedChange = useCallback((productId: string, featured: boolean) => {
+    setProducts((prev) =>
+      prev.map((product) => (product.id === productId ? { ...product, featured } : product)),
+    );
+  }, []);
+
   const editingListProduct = useMemo(
     () => (sheetProductId ? products.find((product) => product.id === sheetProductId) ?? null : null),
     [sheetProductId, products],
@@ -529,6 +535,7 @@ function ProductsPageContent() {
           listProduct={editingListProduct}
           onClose={closeProductEditor}
           onSubmit={handleProductSubmit}
+          onFeaturedChange={handleEditorFeaturedChange}
         />
       ) : null}
     </AdminPageLayout>

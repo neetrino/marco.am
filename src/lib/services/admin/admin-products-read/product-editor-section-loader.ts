@@ -28,6 +28,7 @@ async function loadGeneralSection(productId: string) {
     select: {
       id: true,
       featured: true,
+      published: true,
       productClass: true,
       warrantyYears: true,
       translations: {
@@ -50,6 +51,7 @@ async function loadGeneralSection(productId: string) {
     title: translation?.title || "",
     slug: translation?.slug || "",
     featured: Boolean(product.featured),
+    published: Boolean(product.published),
     productClass: product.productClass || "retail",
     warrantyYears: normalizeWarrantyYears(product.warrantyYears),
     labels: product.labels.map((label) => ({

@@ -9,7 +9,7 @@ import {
   PRODUCT_EDITOR_DEFAULT_TAB,
   type ProductEditorTabId,
 } from '../product-editor-tabs';
-import type { Attribute } from '../types';
+import type { Attribute, ProductData } from '../types';
 import type { VariantDiscount } from '../utils/variant-discount';
 import type { AddProductFormState } from '../utils/productFormDataBuilder';
 import {
@@ -24,6 +24,21 @@ import {
 import { logger } from '@/lib/utils/logger';
 
 const BACKGROUND_SECTIONS: ProductEditorSection[] = ['description', 'catalog', 'media'];
+
+/** Prefer list-row featured when merging a possibly stale general section cache. */
+function mergeGeneralSectionWithListProduct(
+  sectionData: ProductData,
+  listProduct: Product | null,
+): ProductData {
+  if (listProduct === null) {
+    return sectionData;
+  }
+  return {
+    ...sectionData,
+    featured: Boolean(listProduct.featured),
+    published: listProduct.published,
+  };
+}
 
 function deferAfterPaint(callback: () => void): void {
   if (typeof window === 'undefined') {
@@ -181,7 +196,11 @@ export function useProductEditorTabLoader({
       return;
     }
 
-    applyProductEditorSection(PRODUCT_EDITOR_DEFAULT_TAB, cachedGeneral, applyHandlers());
+    applyProductEditorSection(
+      PRODUCT_EDITOR_DEFAULT_TAB,
+      mergeGeneralSectionWithListProduct(cachedGeneral, listProductRef.current),
+      applyHandlers(),
+    );
     markTabLoaded(PRODUCT_EDITOR_DEFAULT_TAB);
   }, [open, productId, applyHandlers, markTabLoaded]);
 
@@ -202,7 +221,11 @@ export function useProductEditorTabLoader({
       const showSpinner = !options?.silent && cached === null && !hasListSeed;
 
       if (cached !== null) {
-        applyProductEditorSection(section, cached, applyHandlers());
+        const sectionData =
+          section === PRODUCT_EDITOR_DEFAULT_TAB
+            ? mergeGeneralSectionWithListProduct(cached, listProductRef.current)
+            : cached;
+        applyProductEditorSection(section, sectionData, applyHandlers());
         markTabLoaded(section);
       }
 
@@ -220,7 +243,8 @@ export function useProductEditorTabLoader({
         });
 
         const product = await fetchProductEditorSection(productId, section, {
-          force: options?.force,
+          // Always revalidate general so list-toggled `featured` is not stuck behind session cache.
+          force: Boolean(options?.force) || section === PRODUCT_EDITOR_DEFAULT_TAB,
         });
 
         applyProductEditorSection(section, product, applyHandlers());
